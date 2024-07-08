@@ -1,0 +1,46 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Glucosin</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-button expand="block" (click)="scanForDevices()" [disabled]="isScanning || selectedDevice">
+    {{ isScanning ? 'Scanning...' : 'Scan for Devices' }}
+  </ion-button>
+
+  <ion-list *ngIf="devices.length > 0 && !selectedDevice">
+    <ion-item *ngFor="let device of devices" (click)="connectToDevice(device)">
+      <ion-label>{{ device.device.name || 'Unnamed Device' }}</ion-label>
+      <ion-note slot="end">{{ device.device.deviceId }}</ion-note>
+    </ion-item>
+  </ion-list>
+
+  <ion-card *ngIf="selectedDevice">
+    <ion-card-header>
+      <ion-card-title>Connected Device</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Name: {{ selectedDevice.device.name || 'Unnamed Device' }}</p>
+      <p>Manufacturer: {{ manufacturer }}</p>
+      <ion-button expand="block" (click)="read()">Read Glucose Data</ion-button>
+      <ion-button expand="block" (click)="showResults()">Show Results</ion-button>
+      <ion-button expand="block" (click)="disconnect()">Disconnect</ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-list *ngIf="allReadings.length > 0">
+    <ion-list-header>
+      <ion-label>Glucose Readings</ion-label>
+    </ion-list-header>
+    <ion-item *ngFor="let reading of allReadings">
+      <ion-label>
+        <h2>{{ reading.glucoseConcentration.toFixed(2) }} {{ reading.unit }}</h2>
+        <p>Time: {{ reading.timestamp | date:'medium' }}</p>
+        <ng-container *ngIf="reading.type !== undefined">
+          <p>Type: {{ getReadingTypeString(reading.type) }}</p>
+        </ng-container>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

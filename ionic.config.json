@@ -1,0 +1,7 @@
+{
+  "name": "diabetify",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
