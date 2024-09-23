@@ -1,0 +1,39 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Menú Principal</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-grid>
+    <ion-row>
+      <ion-col size="6">
+        <ion-card routerLink="/connect-device">
+          <img src="assets/connect_device.png" alt="Conectar Dispositivo" />
+          <ion-card-header>
+            <ion-card-title>Conectar Dispositivo</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+      <ion-col size="6">
+        <ion-card routerLink="/glucose-readings">
+          <img src="assets/glucose_readings.png" alt="Lecturas de Glucosa" />
+          <ion-card-header>
+            <ion-card-title>Lecturas de Glucosa</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="6">
+        <ion-card routerLink="/profile">
+          <img src="assets/profile.png" alt="Perfil" />
+          <ion-card-header>
+            <ion-card-title>Perfil</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+      <!-- Puedes añadir más opciones aquí -->
+    </ion-row>
+  </ion-grid>
+</ion-content>
