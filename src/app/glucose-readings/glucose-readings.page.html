@@ -1,0 +1,43 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Lecturas de Glucosa</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Leyendas:</ion-label>
+    </ion-list-header>
+    <ion-item>
+      <ion-label>Normal</ion-label>
+      <ion-badge color="success">🟢</ion-badge>
+    </ion-item>
+    <ion-item>
+      <ion-label>Alto</ion-label>
+      <ion-badge color="warning">🟠</ion-badge>
+    </ion-item>
+    <ion-item>
+      <ion-label>Bajo</ion-label>
+      <ion-badge color="danger">🔴</ion-badge>
+    </ion-item>
+  </ion-list>
+
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Tus Lecturas</ion-label>
+    </ion-list-header>
+    <ion-item *ngFor="let reading of allReadings">
+      <ion-label>
+        <h2>{{ reading.glucoseConcentration.toFixed(2) }} {{ reading.unit }}</h2>
+        <p>Hora: {{ reading.timestamp | date:'medium' }}</p>
+        <ng-container *ngIf="reading.type !== undefined">
+          <p>Tipo: {{ getReadingTypeString(reading.type) }}</p>
+        </ng-container>
+      </ion-label>
+      <ion-badge [color]="getReadingColor(reading.glucoseConcentration)">
+        {{ getReadingEmoji(reading.glucoseConcentration) }}
+      </ion-badge>
+    </ion-item>
+  </ion-list>
+</ion-content>
