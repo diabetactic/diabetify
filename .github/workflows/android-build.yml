@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         node-version: [20.x]
-        java-version: [11]
+        java-version: [17]
         android-api-level: [30, 31, 33]
     steps:
       - name: Checkout repository
@@ -51,6 +51,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}
+
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v3
         with:
@@ -74,11 +83,24 @@ jobs:
           cd android
           ./gradlew assembleRelease
 
-      - name: Run instrumentation tests
+      - name: Instrumentations tests(create AVD and generate snapshot for caching)
+        if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ matrix.android-api-level }}
-          script: ./gradlew connectedAndroidTest
+          api-level: ${{ matrix.api-level }}
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Run instrumentations tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: ./gradlew connectedCheck
 
       - name: Upload APK
         uses: actions/upload-artifact@v3
