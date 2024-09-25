@@ -1,0 +1,96 @@
+name: Android CI/CD Pipeline
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+        java-version: [11, 17]
+        android-api-level: [30, 31, 33]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Cache Gradle files
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Install Android SDK components
+        run: |
+          sdkmanager "platforms;android-${{ matrix.android-api-level }}" "build-tools;33.0.0"
+          sdkmanager --licenses
+
+      - name: Build Android App
+        env:
+          SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+        run: |
+          npm run build
+          npx cap sync android
+          cd android
+          ./gradlew assembleRelease
+
+      - name: Run instrumentation tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.android-api-level }}
+          script: ./gradlew connectedAndroidTest
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release-${{ matrix.android-api-level }}.apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: 'android/app/build/outputs/apk/release/diabetech.apk'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: Release ${{ github.sha }}
+          tag: ${{ github.sha }}
+          draft: false
+          prerelease: false
