@@ -45,8 +45,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
+            ~/android/.gradle/caches
+            ~/android/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
@@ -108,7 +108,7 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew connectedCheck
+          script: ./android/gradlew connectedCheck
 
       - name: Upload APK
         uses: actions/upload-artifact@v3
