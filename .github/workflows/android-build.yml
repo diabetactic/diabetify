@@ -66,13 +66,13 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.java-version }}
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-
-      - name: Install Android SDK components
-        run: |
-          sdkmanager "platforms;android-${{ matrix.android-api-level }}" "build-tools;33.0.0"
-          sdkmanager --licenses
+#      - name: Setup Android SDK
+#        uses: android-actions/setup-android@v2
+#
+#      - name: Install Android SDK components
+#        run: |
+#          sdkmanager "platforms;android-${{ matrix.android-api-level }}" "build-tools;33.0.0"
+#          sdkmanager --licenses
 
       - name: Build Android App
         env:
@@ -82,6 +82,12 @@ jobs:
           npx cap sync android
           cd android
           ./gradlew assembleRelease
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
 
       - name: Instrumentations tests(create AVD and generate snapshot for caching)
         if: steps.avd-cache.outputs.cache-hit != 'true'
