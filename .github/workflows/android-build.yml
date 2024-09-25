@@ -120,7 +120,7 @@ jobs:
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         uses: ncipollo/release-action@v1
         with:
-          artifacts: 'android/app/build/outputs/apk/release/diabetech.apk'
+          artifacts: 'android/app/build/outputs/apk/release/app-release-unsigned.apk'
           token: ${{ secrets.GITHUB_TOKEN }}
           name: Release ${{ github.sha }}
           tag: ${{ github.sha }}
