@@ -168,8 +168,15 @@ jobs:
         with:
           name: app-release.apk
 
+      - name: Show downloaded file
+        run: |
+          ls ${{ steps.download-artifact.outputs.download-path }} -la
+          ls ${{ steps.download-artifact.outputs.download-path }}/app-release.apk -la
+          ls ./ -la
+          ls ~/ -la
+
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{ steps.download-artifact.outputs.download-path }}/app-release.apk
           tag_name: v1.0.${{ github.run_number }}
