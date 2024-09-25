@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       matrix:
         node-version: [20.x]
@@ -108,9 +108,7 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: |
-            cd android
-            ./gradlew connectedCheck
+          script: cd android && ./gradlew connectedCheck
 
       - name: Upload APK
         uses: actions/upload-artifact@v3
