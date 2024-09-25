@@ -163,7 +163,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download APK artifact
-        uses: actions/download-artifact@v3
+        id: download-artifact
+        uses: actions/download-artifact@v4
         with:
           name: app-release.apk
 
