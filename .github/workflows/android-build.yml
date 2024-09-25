@@ -15,7 +15,7 @@ jobs:
       matrix:
         node-version: [20.x]
         java-version: [17]
-        android-api-level: [30]
+        android-api-level: [30, 31, 33]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -86,11 +86,11 @@ jobs:
           cd android
           ./gradlew assembleRelease
 
-      - name: Enable KVM
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
+#      - name: Enable KVM
+#        run: |
+#          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+#          sudo udevadm control --reload-rules
+#          sudo udevadm trigger --name-match=kvm
 
       - name: Instrumentations tests(create AVD and generate snapshot for caching)
         if: steps.avd-cache.outputs.cache-hit != 'true'
