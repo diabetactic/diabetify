@@ -5,39 +5,118 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-list>
-    <ion-list-header>
-      <ion-label>Leyendas:</ion-label>
-    </ion-list-header>
-    <ion-item>
-      <ion-label>Normal</ion-label>
-      <ion-badge color="success">🟢</ion-badge>
-    </ion-item>
-    <ion-item>
-      <ion-label>Alto</ion-label>
-      <ion-badge color="warning">🟠</ion-badge>
-    </ion-item>
-    <ion-item>
-      <ion-label>Bajo</ion-label>
-      <ion-badge color="danger">🔴</ion-badge>
-    </ion-item>
-  </ion-list>
+  <ion-segment [(ngModel)]="selectedTab" (ionChange)="changeTab($event.detail.value)">
+    <ion-segment-button value="chart">
+      <ion-label>Gráfico</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="manual">
+      <ion-label>Manual</ion-label>
+    </ion-segment-button>
+  </ion-segment>
 
-  <ion-list>
-    <ion-list-header>
-      <ion-label>Tus Lecturas</ion-label>
-    </ion-list-header>
-    <ion-item *ngFor="let reading of allReadings">
-      <ion-label>
-        <h2>{{ reading.glucoseConcentration.toFixed(2) }} {{ reading.unit }}</h2>
-        <p>Hora: {{ reading.timestamp | date:'medium' }}</p>
-        <ng-container *ngIf="reading.type !== undefined">
-          <p>Tipo: {{ getReadingTypeString(reading.type) }}</p>
-        </ng-container>
-      </ion-label>
-      <ion-badge [color]="getReadingColor(reading.glucoseConcentration)">
-        {{ getReadingEmoji(reading.glucoseConcentration) }}
-      </ion-badge>
-    </ion-item>
-  </ion-list>
+  <div [ngSwitch]="selectedTab">
+    <div *ngSwitchCase="'chart'">
+      <!-- Resumen estadístico -->
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Resumen del período</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-grid>
+            <ion-row>
+              <ion-col>
+                <strong class="text-danger">Máximo:</strong> {{stats.max}} mg/dL
+              </ion-col>
+              <ion-col>
+                <strong class="text-primary">Mínimo:</strong> {{stats.min}} mg/dL
+              </ion-col>
+              <ion-col>
+                <strong class="text-success">Promedio:</strong> {{stats.avg}} mg/dL
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Selector de período -->
+      <ion-item class="period-selector">
+        <ion-buttons slot="start">
+          <ion-button (click)="previousPeriod()">
+            <ion-icon name="arrow-back"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-segment [(ngModel)]="selectedPeriod" (ionChange)="changePeriod($event.detail.value)">
+          <ion-segment-button value="24h">
+            <ion-label>24h</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="3d">
+            <ion-label>3 días</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="7d">
+            <ion-label>7 días</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+        <ion-buttons slot="end">
+          <ion-button (click)="nextPeriod()">
+            <ion-icon name="arrow-forward"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-item>
+
+      <!-- Rango de fechas del periodo actual -->
+      <ion-item lines="none" class="period-dates">
+        <ion-label class="ion-text-center">
+          {{ periodStart | date:'dd/MM/yyyy' }} - {{ periodEnd | date:'dd/MM/yyyy' }}
+        </ion-label>
+      </ion-item>
+
+      <!-- Gráfico -->
+      <div class="chart-container">
+        <canvas baseChart
+          [type]="'line'"
+          [data]="lineChartData"
+          [options]="lineChartOptions">
+        </canvas>
+      </div>
+
+      <!-- Lista de lecturas -->
+      <ion-list>
+        <ion-list-header>
+          <ion-label>Últimas lecturas</ion-label>
+        </ion-list-header>
+        <ion-item *ngFor="let reading of filteredReadings">
+          <ion-label>
+            <h2>{{ reading.glucoseConcentration.toFixed(2) }} {{ reading.unit }}</h2>
+            <p>{{ reading.timestamp | date:'medium' }}</p>
+            <p *ngIf="reading.type">{{ getReadingTypeString(reading.type) }}</p>
+          </ion-label>
+          <ion-badge [color]="getReadingColor(reading.glucoseConcentration)">
+            {{ getReadingEmoji(reading.glucoseConcentration) }}
+          </ion-badge>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <div *ngSwitchCase="'manual'">
+      <!-- Lista de mediciones manuales (placeholder) -->
+      <ion-list>
+        <ion-list-header>
+          <ion-label>Mediciones Manuales</ion-label>
+        </ion-list-header>
+        <ion-item *ngFor="let manualReading of manualReadings">
+          <ion-label>
+            <h2>{{ manualReading.glucoseConcentration }} {{ manualReading.unit }}</h2>
+            <p>{{ manualReading.timestamp | date:'medium' }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+
+      <!-- Botón para agregar medición (placeholder) -->
+      <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+        <ion-fab-button (click)="addManualReading()">
+          <ion-icon name="add"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
+    </div>
+  </div>
 </ion-content>

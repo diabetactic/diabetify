@@ -75,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        android-api-level: [30, 31, 33]
+        android-api-level: [30, 32, 34]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
