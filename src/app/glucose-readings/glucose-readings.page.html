@@ -21,21 +21,21 @@
         <ion-card-header>
           <ion-card-title>Resumen del período</ion-card-title>
         </ion-card-header>
-        <ion-card-content>
-          <ion-grid>
-            <ion-row>
-              <ion-col>
-                <strong class="text-danger">Máximo:</strong> {{stats.max}} mg/dL
-              </ion-col>
-              <ion-col>
-                <strong class="text-primary">Mínimo:</strong> {{stats.min}} mg/dL
-              </ion-col>
-              <ion-col>
-                <strong class="text-success">Promedio:</strong> {{stats.avg}} mg/dL
-              </ion-col>
-            </ion-row>
-          </ion-grid>
-        </ion-card-content>
+<ion-card-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <strong class="text-danger">Máximo:</strong> {{ stats.max !== null ? stats.max + ' mg/dL' : '-' }}
+      </ion-col>
+      <ion-col>
+        <strong class="text-primary">Mínimo:</strong> {{ stats.min !== null ? stats.min + ' mg/dL' : '-' }}
+      </ion-col>
+      <ion-col>
+        <strong class="text-success">Promedio:</strong> {{ stats.avg !== null ? stats.avg + ' mg/dL' : '-' }}
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-card-content>
       </ion-card>
 
       <!-- Selector de período -->
@@ -88,7 +88,6 @@
           <ion-label>
             <h2>{{ reading.glucoseConcentration.toFixed(2) }} {{ reading.unit }}</h2>
             <p>{{ reading.timestamp | date:'medium' }}</p>
-            <p *ngIf="reading.type">{{ getReadingTypeString(reading.type) }}</p>
           </ion-label>
           <ion-badge [color]="getReadingColor(reading.glucoseConcentration)">
             {{ getReadingEmoji(reading.glucoseConcentration) }}

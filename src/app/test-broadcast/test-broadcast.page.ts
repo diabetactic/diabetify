@@ -24,14 +24,14 @@ export class TestBroadcastPage implements OnInit, OnDestroy {
   }
 
   fetchData() {
-    this.xdripService.getGlucoseData().subscribe(
-      (data) => {
+    this.xdripService.getGlucoseData().subscribe({
+      next: (data) => {
         console.log('Glucose data:', data);
         this.glucoseData = data.slice(0, 10); // Últimas 10 mediciones
       },
-      (error) => {
+      error: (error) => {
         console.error('Error fetching glucose data:', error);
       }
-    );
+    });
   }
 }

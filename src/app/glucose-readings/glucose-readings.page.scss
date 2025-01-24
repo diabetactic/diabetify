@@ -21,6 +21,13 @@
 
 ion-segment {
   margin: 16px 0;
+  ion-segment-button {
+    --color-checked: var(--ion-color-primary); // Color del texto seleccionado
+    --indicator-color: var(--ion-color-primary); // Color de la línea inferior
+    --color: var(--ion-color-medium); // Color del texto no seleccionado
+    font-weight: bold;
+    text-transform: none;
+  }
 }
 
 .period-selector {
@@ -31,4 +38,15 @@ ion-segment {
 .period-dates {
   margin-top: 8px;
   margin-bottom: 16px;
+}
+
+:host {
+  ion-fab {
+      ion-fab-button.fab-button-in-list.ion-focusable.hydrated {
+          --background: var(--ion-color-primary);
+          --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          --color: white;
+          transform: scale(1.1);
+      }
+  }
 }

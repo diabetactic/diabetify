@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class XdripService {
-  private readonly baseUrl = 'http://192.168.0.131:17580/sgv.json';
+  private readonly baseUrl = 'http://192.168.0.130:17580/sgv.json';
   private readonly endpoint = `${this.baseUrl}/sgv.json`;
   private readonly apiSecretHash = 'f7c3bc1d808e04732adf679965ccc34ca7ae3441'; // Hash SHA-1 de tu contraseña
 

@@ -4,7 +4,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { format, subDays, addDays, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays, addDays, startOfDay, endOfDay, addMinutes, getHours, startOfHour, setHours } from 'date-fns';
 import annotationPlugin from 'chartjs-plugin-annotation';
 
 Chart.register(annotationPlugin);
@@ -19,7 +19,11 @@ Chart.register(annotationPlugin);
 export class GlucoseReadingsPage implements OnInit {
   public selectedPeriod: '24h' | '3d' | '7d' = '24h';
   public selectedTab: 'chart' | 'manual' = 'chart';
-  public stats = {
+  public stats: {
+    max: number | null;
+    min: number | null;
+    avg: number | null;
+  } = {
     max: 0,
     min: 0,
     avg: 0
@@ -123,85 +127,130 @@ export class GlucoseReadingsPage implements OnInit {
     }
   };
 
+  generateGlucoseReadings(days = 14) {
+    const readingsPerDay = 24 * 4; // Lecturas cada 15 minutos
+    const readings = [];
+    const events = [];
+    const baselineGlucose = 95;
+  
+    // Funciones auxiliares para calcular efectos
+    function getMealEffect(timeDiff: number, intensity: number) {
+      const peakTime = 45;
+      const duration = 180;
+      if (timeDiff > duration) return 0;
+      return intensity * 80 * Math.exp(-Math.pow(timeDiff - peakTime, 2) / (2 * Math.pow(duration/3, 2)));
+    }
+  
+    function getInsulinEffect(timeDiff: number, intensity: number) {
+      const peakTime = 75;
+      const duration = 240;
+      if (timeDiff > duration) return 0;
+      return intensity * 70 * Math.exp(-Math.pow(timeDiff - peakTime, 2) / (2 * Math.pow(duration/3, 2)));
+    }
+  
+    function getExerciseEffect(timeDiff: number, intensity: number) {
+      const duration = 120;
+      if (timeDiff > duration) return 0;
+      return intensity * 30 * Math.exp(-timeDiff / duration);
+    }
+  
+    // Generar eventos para todos los días
+    for (let day = 0; day < days; day++) {
+      const date = new Date();
+      date.setDate(date.getDate() - days + day);
+      date.setHours(0, 0, 0, 0);
+  
+      // 4 comidas al día con horarios semi-aleatorios
+      const meals = [
+        { hour: 7 + Math.random() * 1.5, intensity: 0.7 },  // Desayuno
+        { hour: 12 + Math.random() * 1.5, intensity: 1 },   // Almuerzo
+        { hour: 16 + Math.random(), intensity: 0.4 },       // Merienda
+        { hour: 20 + Math.random() * 1.5, intensity: 0.8 }  // Cena
+      ];
+  
+      // Agregar comidas y su insulina correspondiente
+      meals.forEach(meal => {
+        const mealTime = new Date(date);
+        mealTime.setHours(Math.floor(meal.hour), (meal.hour % 1) * 60, 0, 0);
+        
+        events.push({
+          type: 'meal',
+          time: mealTime,
+          intensity: meal.intensity
+        });
+  
+        // Insulina 15 minutos después
+        const insulinTime = new Date(mealTime.getTime() + 15 * 60 * 1000);
+        events.push({
+          type: 'insulin',
+          time: insulinTime,
+          intensity: meal.intensity * 0.9
+        });
+      });
+  
+      // 50% de probabilidad de ejercicio
+      if (Math.random() > 0.5) {
+        const exerciseHour = 18 + Math.random();
+        const exerciseTime = new Date(date);
+        exerciseTime.setHours(Math.floor(exerciseHour), (exerciseHour % 1) * 60, 0, 0);
+        
+        events.push({
+          type: 'exercise',
+          time: exerciseTime,
+          intensity: 0.6
+        });
+      }
+    }
+  
+    // Generar lecturas
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+  
+    for (let i = 0; i < days * readingsPerDay; i++) {
+      const currentTime = new Date(startDate.getTime() + i * 15 * 60 * 1000);
+      let glucose = baselineGlucose;
+  
+      // Calcular efecto de cada evento
+      events.forEach(event => {
+        const timeDiffMinutes = (currentTime.getTime() - event.time.getTime()) / (1000 * 60);
+        
+        if (timeDiffMinutes >= 0) {
+          switch (event.type) {
+            case 'meal':
+              glucose += getMealEffect(timeDiffMinutes, event.intensity);
+              break;
+            case 'insulin':
+              glucose -= getInsulinEffect(timeDiffMinutes, event.intensity);
+              break;
+            case 'exercise':
+              glucose -= getExerciseEffect(timeDiffMinutes, event.intensity);
+              break;
+          }
+        }
+      });
+  
+      // Pequeña variación suave
+      glucose += Math.sin(currentTime.getTime() / 5000) * 3;
+  
+      // Mantener en rango seguro
+      glucose = Math.max(65, Math.min(200, glucose));
+  
+      readings.push({
+        glucoseConcentration: Math.round(glucose),
+        timestamp: currentTime,
+        unit: 'mg/dL'
+      });
+    }
+  
+    return readings;
+  }
+
   constructor() {}
 
   ngOnInit() {
-    const now = new Date();
-    this.allReadings = [
-      {
-        glucoseConcentration: 120,
-        timestamp: now,
-        unit: 'mg/dL',
-        type: 'pre-meal'
-      },
-      {
-        glucoseConcentration: 140,
-        timestamp: new Date(now.getTime() - 3600000), // 1 hora antes
-        unit: 'mg/dL',
-        type: 'post-meal'
-      },
-      {
-        glucoseConcentration: 65,
-        timestamp: new Date(now.getTime() - 7200000), // 2 horas antes
-        unit: 'mg/dL',
-        type: 'pre-exercise'
-      },
-      {
-        glucoseConcentration: 185,
-        timestamp: new Date(now.getTime() - 10800000), // 3 horas antes
-        unit: 'mg/dL',
-        type: 'post-meal'
-      },
-      {
-        glucoseConcentration: 110,
-        timestamp: new Date(now.getTime() - 14400000), // 4 horas antes
-        unit: 'mg/dL',
-        type: 'pre-meal'
-      },
-      // Agregar algunas lecturas para los días anteriores
-      {
-        glucoseConcentration: 95,
-        timestamp: subDays(now, 1),
-        unit: 'mg/dL',
-        type: 'pre-meal'
-      },
-      {
-        glucoseConcentration: 130,
-        timestamp: subDays(now, 2),
-        unit: 'mg/dL',
-        type: 'post-meal'
-      },
-      {
-        glucoseConcentration: 78,
-        timestamp: subDays(now, 3),
-        unit: 'mg/dL',
-        type: 'pre-exercise'
-      },
-      {
-        glucoseConcentration: 160,
-        timestamp: subDays(now, 4),
-        unit: 'mg/dL',
-        type: 'post-meal'
-      },
-      {
-        glucoseConcentration: 105,
-        timestamp: subDays(now, 5),
-        unit: 'mg/dL',
-        type: 'pre-meal'
-      },
-      {
-        glucoseConcentration: 88,
-        timestamp: subDays(now, 6),
-        unit: 'mg/dL',
-        type: 'pre-exercise'
-      },
-      {
-        glucoseConcentration: 175,
-        timestamp: subDays(now, 7),
-        unit: 'mg/dL',
-        type: 'post-meal'
-      }
-    ];
+    this.allReadings = this.generateGlucoseReadings();
+
     // Placeholder de mediciones manuales
     this.manualReadings = [
       {
@@ -220,28 +269,96 @@ export class GlucoseReadingsPage implements OnInit {
   }
 
   updateChartData() {
-    if (!this.allReadings?.length) return;
-
+    if (!this.allReadings?.length) {
+      this.stats = { max: null, min: null, avg: null };
+      this.lineChartData = { ...this.lineChartData, labels: [], datasets: [{ ...this.lineChartData.datasets[0], data: [] }] };
+      this.filteredReadings = [];
+      return;
+    }
+  
     this.filteredReadings = this.allReadings.filter(reading => {
       const readingDate = new Date(reading.timestamp);
       return readingDate >= this.periodStart && readingDate <= this.periodEnd;
     });
-
+  
+    if (this.filteredReadings.length === 0) {
+        this.stats = { max: null, min: null, avg: null };
+        this.lineChartData = { ...this.lineChartData, labels: [], datasets: [{ ...this.lineChartData.datasets[0], data: [] }] };
+        return;
+    }
+  
+    // Determinar si se deben agrupar las lecturas por hora
+    const groupHourly = this.selectedPeriod === '7d';
+  
+    // Filtrar y/o agrupar las lecturas
+    let chartReadings = [];
+    if (groupHourly) {
+      chartReadings = this.groupReadingsByHour(this.filteredReadings);
+    } else {
+      chartReadings = this.filterReadingsForChart(this.filteredReadings);
+    }
+  
     // Actualizar datos del gráfico
-    this.lineChartData.labels = this.filteredReadings.map(reading => 
-      format(new Date(reading.timestamp), 'HH:mm')
-    );
-    this.lineChartData.datasets[0].data = this.filteredReadings.map(reading => 
-      reading.glucoseConcentration
-    );
-
+    const newLabels = chartReadings.map(reading => {
+      if (groupHourly) {
+        // Mostrar la fecha y la hora para las lecturas agrupadas por hora
+        return format(new Date(reading.timestamp), 'dd/MM HH:mm');
+      } else {
+        // Mostrar solo la hora para las demás lecturas
+        return format(new Date(reading.timestamp), 'HH:mm');
+      }
+    });
+    const newData = chartReadings.map(reading => reading.glucoseConcentration);
+  
+    this.lineChartData = { ...this.lineChartData, labels: newLabels, datasets: [{ ...this.lineChartData.datasets[0], data: newData }] };
+  
     // Calcular estadísticas
     this.stats = {
       max: Math.max(...this.filteredReadings.map(r => r.glucoseConcentration)),
       min: Math.min(...this.filteredReadings.map(r => r.glucoseConcentration)),
-      avg: Math.round(this.filteredReadings.reduce((acc, curr) => 
+      avg: Math.round(this.filteredReadings.reduce((acc, curr) =>
         acc + curr.glucoseConcentration, 0) / this.filteredReadings.length)
     };
+  }
+
+  filterReadingsForChart(readings: any[]): any[] {
+    // Determinar la frecuencia de muestreo según el período seleccionado
+    const sampleFrequency = this.selectedPeriod === '24h' ? 2 :
+                            this.selectedPeriod === '3d' ? 6 :
+                            this.selectedPeriod === '7d' ? 12 : 1;
+  
+    return readings.filter((reading, index) => index % sampleFrequency === 0);
+  }
+
+  groupReadingsByHour(readings: any[]): any[] {
+    const groupedReadings: { [key: string]: any[] } = {};
+
+    readings.forEach(reading => {
+      const threeHourBlock = Math.floor(getHours(new Date(reading.timestamp)) / 3); // Dividimos las horas en bloques de 3
+      const timestamp = startOfHour(new Date(reading.timestamp));
+      const threeHourTimestamp = setHours(timestamp, threeHourBlock * 3); // Redondeamos a la hora de inicio del bloque de 3 horas
+      const hourKey = format(threeHourTimestamp, 'yyyy-MM-dd HH:mm'); // Usamos la hora de inicio del bloque como clave
+
+      if (!groupedReadings[hourKey]) {
+        groupedReadings[hourKey] = [];
+      }
+
+      groupedReadings[hourKey].push(reading);
+    });
+
+    const averagedReadings = Object.keys(groupedReadings).map(hourKey => {
+      const readingsInHour = groupedReadings[hourKey];
+      const sum = readingsInHour.reduce((acc, curr) => acc + curr.glucoseConcentration, 0);
+      const avg = Math.round(sum / readingsInHour.length);
+
+      return {
+        timestamp: new Date(hourKey),
+        glucoseConcentration: avg,
+        unit: 'mg/dL',
+      };
+    });
+
+    return averagedReadings;
   }
 
   changePeriod(period: any) {
@@ -253,31 +370,55 @@ export class GlucoseReadingsPage implements OnInit {
   }
 
   previousPeriod() {
+    let newPeriodStart: Date;
+    let newPeriodEnd: Date;
+  
     if (this.selectedPeriod === '24h') {
-      this.periodStart = subDays(this.periodStart, 1);
-      this.periodEnd = subDays(this.periodEnd, 1);
+      newPeriodStart = subDays(this.periodStart, 1);
+      newPeriodEnd = subDays(this.periodEnd, 1);
     } else if (this.selectedPeriod === '3d') {
-      this.periodStart = subDays(this.periodStart, 3);
-      this.periodEnd = subDays(this.periodEnd, 3);
-    } else if (this.selectedPeriod === '7d') {
-      this.periodStart = subDays(this.periodStart, 7);
-      this.periodEnd = subDays(this.periodEnd, 7);
+      newPeriodStart = subDays(this.periodStart, 3);
+      newPeriodEnd = subDays(this.periodEnd, 3);
+    } else { // 7d
+      newPeriodStart = subDays(this.periodStart, 7);
+      newPeriodEnd = subDays(this.periodEnd, 7);
     }
-    this.updateChartData();
+  
+    // Verificar si hay lecturas antes de la nueva fecha de inicio
+    const hasReadingsBefore = this.allReadings.some(reading =>
+      new Date(reading.timestamp) < newPeriodStart
+    );
+  
+    if (hasReadingsBefore) {
+      this.periodStart = newPeriodStart;
+      this.periodEnd = newPeriodEnd;
+      this.updateChartData();
+    }
   }
-
+  
   nextPeriod() {
+    let newPeriodStart: Date;
+    let newPeriodEnd: Date;
+  
     if (this.selectedPeriod === '24h') {
-      this.periodStart = addDays(this.periodStart, 1);
-      this.periodEnd = addDays(this.periodEnd, 1);
+      newPeriodStart = addDays(this.periodStart, 1);
+      newPeriodEnd = addDays(this.periodEnd, 1);
     } else if (this.selectedPeriod === '3d') {
-      this.periodStart = addDays(this.periodStart, 3);
-      this.periodEnd = addDays(this.periodEnd, 3);
-    } else if (this.selectedPeriod === '7d') {
-      this.periodStart = addDays(this.periodStart, 7);
-      this.periodEnd = addDays(this.periodEnd, 7);
+      newPeriodStart = addDays(this.periodStart, 3);
+      newPeriodEnd = addDays(this.periodEnd, 3);
+    } else { // 7d
+      newPeriodStart = addDays(this.periodStart, 7);
+      newPeriodEnd = addDays(this.periodEnd, 7);
     }
-    this.updateChartData();
+  
+    // Verificar si la nueva fecha de fin está en el futuro
+    const isFuture = newPeriodEnd > new Date();
+  
+    if (!isFuture) {
+      this.periodStart = newPeriodStart;
+      this.periodEnd = newPeriodEnd;
+      this.updateChartData();
+    }
   }
 
   setPeriodDates() {
