@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Chart, ChartConfiguration, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { format, subDays, addDays, startOfDay, endOfDay, addMinutes, getHours, startOfHour, setHours } from 'date-fns';
+import { format, subDays, addDays, startOfDay, endOfDay, getHours, startOfHour, setHours } from 'date-fns';
 import annotationPlugin from 'chartjs-plugin-annotation';
+import { XdripService } from 'src/app/services/xdrip.service';
+import { Subscription, interval } from 'rxjs';
 
 Chart.register(annotationPlugin);
 
@@ -16,7 +18,9 @@ Chart.register(annotationPlugin);
   standalone: true,
   imports: [CommonModule, IonicModule, FormsModule, BaseChartDirective],
 })
-export class GlucoseReadingsPage implements OnInit {
+export class GlucoseReadingsPage implements OnInit, OnDestroy {
+  private glucoseDataSubscription: Subscription | null = null;
+  private readonly localStorageKey = 'glucoseReadings';
   public selectedPeriod: '24h' | '3d' | '7d' = '24h';
   public selectedTab: 'chart' | 'manual' = 'chart';
   public stats: {
@@ -30,7 +34,7 @@ export class GlucoseReadingsPage implements OnInit {
   };
   allReadings: any[] = [];
   filteredReadings: any[] = [];
-  manualReadings: any[] = []; // Placeholder para mediciones manuales
+  manualReadings: any[] = [];
   periodStart: Date = new Date();
   periodEnd: Date = new Date();
 
@@ -127,145 +131,88 @@ export class GlucoseReadingsPage implements OnInit {
     }
   };
 
-  generateGlucoseReadings(days = 14) {
-    const readingsPerDay = 24 * 4; // Lecturas cada 15 minutos
-    const readings = [];
-    const events = [];
-    const baselineGlucose = 95;
-  
-    // Funciones auxiliares para calcular efectos
-    function getMealEffect(timeDiff: number, intensity: number) {
-      const peakTime = 45;
-      const duration = 180;
-      if (timeDiff > duration) return 0;
-      return intensity * 80 * Math.exp(-Math.pow(timeDiff - peakTime, 2) / (2 * Math.pow(duration/3, 2)));
-    }
-  
-    function getInsulinEffect(timeDiff: number, intensity: number) {
-      const peakTime = 75;
-      const duration = 240;
-      if (timeDiff > duration) return 0;
-      return intensity * 70 * Math.exp(-Math.pow(timeDiff - peakTime, 2) / (2 * Math.pow(duration/3, 2)));
-    }
-  
-    function getExerciseEffect(timeDiff: number, intensity: number) {
-      const duration = 120;
-      if (timeDiff > duration) return 0;
-      return intensity * 30 * Math.exp(-timeDiff / duration);
-    }
-  
-    // Generar eventos para todos los días
-    for (let day = 0; day < days; day++) {
-      const date = new Date();
-      date.setDate(date.getDate() - days + day);
-      date.setHours(0, 0, 0, 0);
-  
-      // 4 comidas al día con horarios semi-aleatorios
-      const meals = [
-        { hour: 7 + Math.random() * 1.5, intensity: 0.7 },  // Desayuno
-        { hour: 12 + Math.random() * 1.5, intensity: 1 },   // Almuerzo
-        { hour: 16 + Math.random(), intensity: 0.4 },       // Merienda
-        { hour: 20 + Math.random() * 1.5, intensity: 0.8 }  // Cena
-      ];
-  
-      // Agregar comidas y su insulina correspondiente
-      meals.forEach(meal => {
-        const mealTime = new Date(date);
-        mealTime.setHours(Math.floor(meal.hour), (meal.hour % 1) * 60, 0, 0);
-        
-        events.push({
-          type: 'meal',
-          time: mealTime,
-          intensity: meal.intensity
-        });
-  
-        // Insulina 15 minutos después
-        const insulinTime = new Date(mealTime.getTime() + 15 * 60 * 1000);
-        events.push({
-          type: 'insulin',
-          time: insulinTime,
-          intensity: meal.intensity * 0.9
-        });
-      });
-  
-      // 50% de probabilidad de ejercicio
-      if (Math.random() > 0.5) {
-        const exerciseHour = 18 + Math.random();
-        const exerciseTime = new Date(date);
-        exerciseTime.setHours(Math.floor(exerciseHour), (exerciseHour % 1) * 60, 0, 0);
-        
-        events.push({
-          type: 'exercise',
-          time: exerciseTime,
-          intensity: 0.6
-        });
-      }
-    }
-  
-    // Generar lecturas
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-    startDate.setHours(0, 0, 0, 0);
-  
-    for (let i = 0; i < days * readingsPerDay; i++) {
-      const currentTime = new Date(startDate.getTime() + i * 15 * 60 * 1000);
-      let glucose = baselineGlucose;
-  
-      // Calcular efecto de cada evento
-      events.forEach(event => {
-        const timeDiffMinutes = (currentTime.getTime() - event.time.getTime()) / (1000 * 60);
-        
-        if (timeDiffMinutes >= 0) {
-          switch (event.type) {
-            case 'meal':
-              glucose += getMealEffect(timeDiffMinutes, event.intensity);
-              break;
-            case 'insulin':
-              glucose -= getInsulinEffect(timeDiffMinutes, event.intensity);
-              break;
-            case 'exercise':
-              glucose -= getExerciseEffect(timeDiffMinutes, event.intensity);
-              break;
-          }
-        }
-      });
-  
-      // Pequeña variación suave
-      glucose += Math.sin(currentTime.getTime() / 5000) * 3;
-  
-      // Mantener en rango seguro
-      glucose = Math.max(65, Math.min(200, glucose));
-  
-      readings.push({
-        glucoseConcentration: Math.round(glucose),
-        timestamp: currentTime,
-        unit: 'mg/dL'
-      });
-    }
-  
-    return readings;
-  }
-
-  constructor() {}
+  constructor(private xdripService: XdripService) {}
 
   ngOnInit() {
-    this.allReadings = this.generateGlucoseReadings();
+    // Cargar las lecturas desde el LocalStorage al inicio
+    this.loadReadingsFromLocalStorage();
 
-    // Placeholder de mediciones manuales
-    this.manualReadings = [
-      {
-        glucoseConcentration: 95,
-        timestamp: new Date(),
-        unit: 'mg/dL'
+    // Obtener datos y configurar la actualización periódica
+    this.getGlucoseData();
+    this.glucoseDataSubscription = interval(6000).subscribe(() => this.getGlucoseData());
+  }
+
+  ngOnDestroy() {
+    if (this.glucoseDataSubscription) {
+      this.glucoseDataSubscription.unsubscribe();
+    }
+  }
+
+  getGlucoseData() {
+    this.xdripService.getGlucoseData().subscribe({
+      next: (newReadings) => {
+        this.updateLocalData(newReadings);
+        this.setPeriodDates();
+        this.updateChartData();
       },
-      {
-        glucoseConcentration: 110,
-        timestamp: subDays(new Date(), 2),
-        unit: 'mg/dL'
+      error: (error) => {
+        console.error('Error al obtener datos de glucosa:', error);
+        // Manejar el error, por ejemplo, mostrar un mensaje al usuario
       }
-    ];
-    this.setPeriodDates();
-    this.updateChartData();
+    });
+  }
+
+  private updateLocalData(newReadings: any[]) {
+    // Cargar las lecturas actuales del LocalStorage
+    console.log('Nuevas lecturas:', JSON.stringify(newReadings));
+    let currentReadings: any[] = [];
+    const readingsString = localStorage.getItem(this.localStorageKey);
+    if (readingsString) {
+      currentReadings = JSON.parse(readingsString);
+    }
+
+    // Asumiendo que cada objeto en newReadings tiene un campo '_id' único y 'date' para timestamp
+    const updatedReadings = this.mergeReadings(currentReadings, newReadings);
+    console.log('Lecturas combinadas:', JSON.stringify(updatedReadings));
+
+    // Guardar las lecturas actualizadas en el LocalStorage
+    this.saveReadingsToLocalStorage(updatedReadings);
+
+    // Actualizar allReadings con las lecturas combinadas
+    this.allReadings = updatedReadings;
+  }
+  
+  private mergeReadings(currentReadings: any[], newReadings: any[]): any[] {
+    const readingsMap = new Map(currentReadings.map(reading => [reading._id, reading]));
+  
+    newReadings.forEach(newReading => {
+      if (!readingsMap.has(newReading._id)) {
+        readingsMap.set(newReading._id, newReading);
+      } else {
+        const existingReading = readingsMap.get(newReading._id);
+  
+        if (new Date(newReading.date) > new Date(existingReading.date)) {
+          readingsMap.set(newReading._id, newReading);
+        }
+      }
+    });
+  
+    return Array.from(readingsMap.values()).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }
+  
+
+  private saveReadingsToLocalStorage(readings: any[]) {
+    localStorage.setItem(this.localStorageKey, JSON.stringify(readings));
+  }
+
+  private loadReadingsFromLocalStorage() {
+    const readingsString = localStorage.getItem(this.localStorageKey);
+    if (readingsString) {
+      this.allReadings = JSON.parse(readingsString);
+      console.log('Lecturas cargadas:', JSON.stringify(this.allReadings));
+      this.setPeriodDates();
+      this.updateChartData();
+    }
   }
 
   updateChartData() {
@@ -461,10 +408,7 @@ export class GlucoseReadingsPage implements OnInit {
 
   getReadingTypeString(type: string): string {
     switch(type) {
-      case 'pre-meal': return 'Antes de comer';
-      case 'post-meal': return 'Después de comer';
-      case 'pre-exercise': return 'Antes de ejercicio';
-      case 'post-exercise': return 'Después de ejercicio';
+      case 'sgv': return 'Sensor';
       default: return type;
     }
   }
