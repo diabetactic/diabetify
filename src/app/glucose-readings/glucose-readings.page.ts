@@ -4,12 +4,13 @@ import { BaseChartDirective } from 'ng2-charts';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { format, subDays, addDays, startOfDay, endOfDay, getHours, startOfHour, setHours } from 'date-fns';
+import { format, subDays, addDays, startOfDay, endOfDay, getHours, startOfHour, setHours, subHours } from 'date-fns';
 import annotationPlugin from 'chartjs-plugin-annotation';
+import zoomPlugin from 'chartjs-plugin-zoom';
 import { XdripService } from 'src/app/services/xdrip.service';
 import { Subscription, interval } from 'rxjs';
 
-Chart.register(annotationPlugin);
+Chart.register(annotationPlugin, zoomPlugin);
 
 @Component({
   selector: 'app-glucose-readings',
@@ -37,6 +38,27 @@ export class GlucoseReadingsPage implements OnInit, OnDestroy {
   manualReadings: any[] = [];
   periodStart: Date = new Date();
   periodEnd: Date = new Date();
+
+  generateManualReadings(): any[] {
+    const now = new Date();
+    const manualReadings = [
+      {
+        _id: 'manual-1',
+        glucoseConcentration: 95,
+        timestamp: subHours(now, 3), // Hace 3 horas
+        unit: 'mg/dL',
+        type: 'manual'
+      },
+      {
+        _id: 'manual-2',
+        glucoseConcentration: 130,
+        timestamp: subDays(now, 1), // Hace 1 día
+        unit: 'mg/dL',
+        type: 'manual'
+      }
+    ];
+    return manualReadings;
+  }
 
   public lineChartData: ChartConfiguration<'line'>['data'] = {
     datasets: [
@@ -127,7 +149,22 @@ export class GlucoseReadingsPage implements OnInit, OnDestroy {
             }
           }
         }
-      }
+      },
+      zoom: {
+        pan: {
+          enabled: true,       // Permite "arrastrar" el gráfico
+          mode: 'x',           // O 'xy' para mover en ambos ejes
+        },
+        zoom: {
+          pinch: {
+            enabled: true,     // Habilita zoom con "pellizco" (pinch)
+          },
+          wheel: {
+            enabled: true,     // Habilita zoom con scroll del mouse (en web)
+          },
+          mode: 'x',           // Zoom principal en el eje X, o 'xy' si prefieres
+        },
+      },
     }
   };
 
@@ -139,7 +176,8 @@ export class GlucoseReadingsPage implements OnInit, OnDestroy {
 
     // Obtener datos y configurar la actualización periódica
     this.getGlucoseData();
-    this.glucoseDataSubscription = interval(6000).subscribe(() => this.getGlucoseData());
+    this.glucoseDataSubscription = interval(60000).subscribe(() => this.getGlucoseData()); // cada 6 segundos para pruebas
+    this.manualReadings = this.generateManualReadings();
   }
 
   ngOnDestroy() {
@@ -171,7 +209,7 @@ export class GlucoseReadingsPage implements OnInit, OnDestroy {
       currentReadings = JSON.parse(readingsString);
     }
 
-    // Asumiendo que cada objeto en newReadings tiene un campo '_id' único y 'date' para timestamp
+    // Combinar lecturas, usando el _id como clave
     const updatedReadings = this.mergeReadings(currentReadings, newReadings);
     console.log('Lecturas combinadas:', JSON.stringify(updatedReadings));
 
@@ -181,25 +219,23 @@ export class GlucoseReadingsPage implements OnInit, OnDestroy {
     // Actualizar allReadings con las lecturas combinadas
     this.allReadings = updatedReadings;
   }
-  
+
   private mergeReadings(currentReadings: any[], newReadings: any[]): any[] {
     const readingsMap = new Map(currentReadings.map(reading => [reading._id, reading]));
-  
+
     newReadings.forEach(newReading => {
       if (!readingsMap.has(newReading._id)) {
         readingsMap.set(newReading._id, newReading);
       } else {
         const existingReading = readingsMap.get(newReading._id);
-  
-        if (new Date(newReading.date) > new Date(existingReading.date)) {
+        if (new Date(newReading.timestamp).getTime() > new Date(existingReading.timestamp).getTime()) {
           readingsMap.set(newReading._id, newReading);
         }
       }
     });
-  
-    return Array.from(readingsMap.values()).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    return Array.from(readingsMap.values()).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
   }
-  
 
   private saveReadingsToLocalStorage(readings: any[]) {
     localStorage.setItem(this.localStorageKey, JSON.stringify(readings));
@@ -209,7 +245,6 @@ export class GlucoseReadingsPage implements OnInit, OnDestroy {
     const readingsString = localStorage.getItem(this.localStorageKey);
     if (readingsString) {
       this.allReadings = JSON.parse(readingsString);
-      console.log('Lecturas cargadas:', JSON.stringify(this.allReadings));
       this.setPeriodDates();
       this.updateChartData();
     }
@@ -270,7 +305,7 @@ export class GlucoseReadingsPage implements OnInit, OnDestroy {
 
   filterReadingsForChart(readings: any[]): any[] {
     // Determinar la frecuencia de muestreo según el período seleccionado
-    const sampleFrequency = this.selectedPeriod === '24h' ? 2 :
+    const sampleFrequency = this.selectedPeriod === '24h' ? 1 :
                             this.selectedPeriod === '3d' ? 6 :
                             this.selectedPeriod === '7d' ? 12 : 1;
   
