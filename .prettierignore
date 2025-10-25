@@ -1,0 +1,29 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+www
+.angular
+
+# Coverage
+coverage
+
+# Capacitor
+android
+ios
+.capacitor
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Other
+package-lock.json
