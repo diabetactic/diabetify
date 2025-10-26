@@ -1,0 +1,21 @@
+{
+  "meta": {
+    "generatedAt": "2025-10-10T08:17:58.471Z",
+    "tasksAnalyzed": 1,
+    "totalTasks": 10,
+    "analysisCount": 1,
+    "thresholdScore": 5,
+    "projectName": "Taskmaster",
+    "usedResearch": false
+  },
+  "complexityAnalysis": [
+    {
+      "taskId": 1,
+      "taskTitle": "Remove BLE Dependencies and Clean Legacy Code",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down this cleanup task into systematic removal steps: 1) Remove BLE package dependencies, 2) Clean BLE imports and code from all tab1.page.ts files, 3) Remove GlucoseReading interface and BLE-specific types, 4) Update routing to use feature modules instead of legacy tabs, 5) Remove legacy tab1/tab2/tab3 modules completely",
+      "reasoning": "Medium-high complexity due to extensive BLE code throughout multiple files (5+ pages with duplicate implementations), routing changes needed, package.json modifications, and potential breaking changes. Requires careful removal to avoid breaking the app structure."
+    }
+  ]
+}

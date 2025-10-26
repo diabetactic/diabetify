@@ -1,0 +1,1645 @@
+<context>
+# Overview
+
+Diabetify is an Ionic Angular mobile application for managing diabetes glucose readings, designed specifically for children aged 5-14 with Type 1 diabetes. The app is undergoing a significant architectural transformation from direct BLE (Bluetooth Low Energy) glucose monitor reading to integration with Tidepool, a free platform for diabetes data management.
+
+**Current State**: The app has BLE functionality duplicated across multiple pages (dashboard, devices, readings, profile) with legacy tab1/tab2/tab3 structure alongside new feature-named modules.
+
+**Target State**: A clean, modern, child-friendly diabetes management app that:
+- Integrates with Tidepool API to sync glucose readings (replacing direct BLE reading)
+- Connects patient Tidepool accounts for data access
+- Syncs data to a backoffice system for doctors to view
+- Provides modern, engaging UI following Material Design guidelines
+- Features age-appropriate visualizations, colors, and interactions for children
+- Has a clean, properly structured codebase with feature-based routing
+
+**Problem It Solves**: Young patients (5-14 years) using xDrip for glucose monitoring need a way to engage with their diabetes management while sharing data with healthcare providers and parents through an integrated platform. Diabetify bridges the gap between patient data (stored in Tidepool) and healthcare provider access with an interface designed for children.
+
+**Target Users**:
+- **Primary**: Children aged 5-14 with Type 1 diabetes
+- **Secondary**: Parents/caregivers monitoring children's glucose data
+- Healthcare providers monitoring patient glucose data
+- Clinic administrators managing patient data
+
+# Core Features
+
+## 1. Tidepool Integration
+**What it does**: Connects to Tidepool API to authenticate users and sync glucose readings
+**Why it's important**: Replaces complex BLE implementation with reliable cloud-based data sync
+**How it works**:
+- OAuth2 authentication with Tidepool
+- Periodic sync of glucose readings from Tidepool to local storage
+- Real-time updates when new data is available
+
+## 2. Account Connection
+**What it does**: Allows patients/parents to connect their Tidepool account to Diabetify
+**Why it's important**: Enables secure access to patient glucose data
+**How it works**:
+- OAuth login flow with Tidepool
+- Store authentication tokens securely
+- Link Tidepool user ID to app profile
+
+## 3. Doctor/Backoffice Sync
+**What it does**: Syncs patient data to a backoffice system for healthcare provider access
+**Why it's important**: Enables remote monitoring and care management
+**How it works**:
+- Background sync service
+- REST API integration with backoffice
+- Optional: Include Tidepool dashboard URL for direct access
+
+## 4. Dashboard (Home View)
+**What it does**: Displays current glucose status, trends, and quick insights in a child-friendly format
+**Why it's important**: Primary view for at-a-glance health status that children can understand
+**How it works**:
+- Large, easy-to-read current glucose reading with timestamp
+- Visual trend indicator with friendly icons (rising, falling, stable)
+- Daily statistics with colorful badges (average, high, low, time in range)
+- Encouraging messages and positive reinforcement
+- Quick action buttons with icons
+
+## 5. Readings History
+**What it does**: Displays historical glucose readings with filtering and search in an accessible format
+**Why it's important**: Allows patients, parents, and doctors to review patterns over time
+**How it works**:
+- Visual list view with color-coded readings
+- Date range filtering with child-friendly date pickers
+- Simple search and sort capabilities
+- Export functionality (primarily for parents/doctors)
+
+## 6. Data Visualization
+**What it does**: Charts and graphs showing glucose trends in an engaging, easy-to-understand format
+**Why it's important**: Children respond better to visual patterns than raw numbers
+**How it works**:
+- Colorful, animated line charts for glucose over time
+- Daily pattern overlays with friendly visual indicators
+- Time-in-range visualization with gamification elements (progress bars, badges)
+- Configurable date ranges (24h, 7d, 30d)
+- Child-appropriate color schemes and animations
+
+## 7. Profile Management
+**What it does**: User profile, settings, Tidepool connection status with parent controls
+**Why it's important**: Centralized location for account and app configuration
+**How it works**:
+- Avatar/profile picture display
+- Tidepool account connection/disconnection
+- Notification preferences (with parent approval)
+- Units preferences (mg/dL vs mmol/L)
+- Target range configuration
+- Parental controls section
+
+## 8. Alerts & Notifications
+**What it does**: Configurable alerts for high/low glucose readings with child-appropriate notifications
+**Why it's important**: Helps young patients respond quickly to dangerous glucose levels with parent notification
+**How it works**:
+- Threshold-based alerts (high/low)
+- Push notifications to both child and parent devices
+- Friendly, non-alarming notification messages for children
+- Urgent alerts for parents
+- In-app alert history with visual timeline
+- Snooze/acknowledgment features
+
+# User Experience
+
+## User Personas
+
+**Persona 1: Emma - 8-year-old Type 1 Diabetes Patient**
+- Diagnosed at age 6
+- Uses xDrip with Dexcom CGM
+- Likes colorful apps and games
+- Needs simple, visual interface
+- Wants to see "good job" messages when glucose is in range
+- Parents manage most of her care but she likes to check her numbers
+
+**Persona 2: Sarah - Mother of Emma**
+- Age: 35, tech-savvy
+- Primary caregiver, manages Emma's diabetes
+- Needs to share data with Emma's endocrinologist
+- Wants alerts when Emma's glucose is out of range
+- Looks for trends and patterns in data
+
+**Persona 3: Dr. Rodriguez - Pediatric Endocrinologist**
+- Age: 45
+- Manages 100+ pediatric diabetes patients
+- Needs remote access to patient glucose data
+- Prefers visual summaries over raw data
+- Wants to see compliance and patterns
+
+**Persona 4: Alex - 13-year-old Type 1 Diabetes Patient**
+- Diagnosed at age 10
+- More independent in diabetes management
+- Uses smartphone regularly
+- Wants data but doesn't want to feel "different"
+- Prefers clean, modern interface (not too childish)
+
+## Key User Flows
+
+### Flow 1: First-Time Setup (Parent-Assisted)
+1. Parent downloads and opens Diabetify
+2. Create child profile with avatar selection
+3. Connect Tidepool account (OAuth flow)
+4. Configure preferences (units, targets) with age-appropriate explanations
+5. View dashboard with synced data and welcome message
+
+### Flow 2: Daily Monitoring (Child)
+1. Child opens app to colorful dashboard
+2. See large, clear current glucose number with friendly emoji/icon
+3. View encouraging message ("Great job!" or "Let's check what's next")
+4. Check time-in-range with visual progress bar
+5. Optional: View fun chart showing today's pattern
+
+### Flow 3: Parent Review
+1. Parent opens app (same account or linked parent account)
+2. View detailed statistics and trends
+3. Check alert history
+4. Review patterns for discussion with doctor
+5. Export data if needed
+
+### Flow 4: Doctor Review
+1. Patient/parent shares Tidepool dashboard link with doctor
+2. Doctor accesses backoffice system
+3. Views patient's glucose data and trends
+4. Identifies patterns and makes treatment recommendations
+
+## UI/UX Considerations
+
+### Material Design Implementation
+- **Material Design 3 (Material You)**: Latest Material Design guidelines with dynamic theming
+- **Material Components**: Use Angular Material or Ionic's Material Design mode
+- **Typography**: Roboto font family (Material Design standard)
+- **Elevation & Shadows**: Proper use of Material elevation for cards and surfaces
+- **Motion**: Material motion principles for transitions and animations
+- **Navigation**: Material navigation patterns (bottom navigation, FAB if needed)
+- **Buttons**: Material button styles (filled, outlined, text)
+- **Cards**: Material card components for data presentation
+
+### Child-Friendly Design Principles (Ages 5-14)
+- **Large Touch Targets**: Minimum 48x48dp buttons/interactive elements
+- **High Contrast**: Easy-to-read text and clear visual hierarchy
+- **Friendly Color Palette**:
+  - Bright, cheerful colors for in-range readings (greens, blues)
+  - Warm, attention-grabbing colors for alerts (oranges, not harsh reds)
+  - Soft, encouraging pastels for backgrounds
+  - Avoid scary or clinical colors
+- **Visual Feedback**:
+  - Haptic feedback for interactions
+  - Animated confirmations
+  - Celebratory animations for good readings
+- **Simplified Language**:
+  - Age-appropriate terminology
+  - Avoid medical jargon where possible
+  - Use encouraging, positive language
+  - "Your number is..." instead of "Blood glucose level:"
+- **Icons & Illustrations**:
+  - Friendly, rounded icon style
+  - Custom illustrations for empty states
+  - Visual indicators instead of text when possible
+  - Fun badges/achievements for time in range
+- **Gamification Elements** (Age-Appropriate):
+  - Progress bars for time in range
+  - Streak counters for consistent checking
+  - Achievement badges (without pressure)
+  - Positive reinforcement, never punishment
+- **Accessibility**:
+  - Support for larger text sizes
+  - Color blind friendly palettes
+  - Screen reader support
+  - Simple navigation structure
+
+### Age-Adaptive Interface
+- **Younger Children (5-9)**: More visual, larger elements, simpler navigation
+- **Older Children (10-14)**: Slightly more data, modern aesthetic, less "childish" but still friendly
+
+### General UX Principles
+- **Clean, Medical-Grade Foundation**: Professional enough for parents/doctors, friendly for kids
+- **Color-Coded Status**:
+  - Green (in range) - happy, encouraging
+  - Yellow/Orange (borderline) - gentle reminder
+  - Red (critical) - clear but not frightening
+- **Responsive Animations**: Smooth, playful transitions (Material motion)
+- **Minimal Taps**: Most common actions within 1-2 taps from dashboard
+- **Offline Support**: Cache data locally, sync when online
+- **Loading States**: Fun loading animations, not just spinners
+- **Error Handling**: Child-friendly error messages ("Oops! Let's try again")
+- **Dark Mode Support**: Material Design dynamic theming with dark mode option
+
+### Parent Controls
+- Settings lock/parental PIN option
+- Parent notification preferences separate from child
+- Access to detailed data exports and medical reports
+</context>
+
+<PRD>
+# Technical Architecture
+
+## System Components
+
+### Frontend (Ionic Angular)
+- **Framework**: Ionic 8 + Angular 18 + Capacitor 6
+- **UI Framework**:
+  - Ionic components with Material Design mode enabled
+  - Angular Material for complex components
+  - Material Design 3 (Material You) design tokens
+- **State Management**: Angular Services with RxJS
+- **Local Storage**: Capacitor Preferences API + IndexedDB for readings cache
+- **Charts**: Chart.js with custom child-friendly themes and animations
+- **HTTP Client**: Angular HttpClient for API calls
+- **Animations**: Angular Animations + Material motion principles
+
+### Design System
+- **Material Design 3**:
+  - Color system: Dynamic color with custom child-friendly palette
+  - Typography scale: Roboto font with larger sizes for readability
+  - Component library: Material Components with Ionic integration
+  - Elevation: Material shadow and elevation system
+  - Motion: Material motion easing and duration
+- **Custom Theme**:
+  - Primary color: Friendly blue/teal (configurable)
+  - Secondary color: Warm orange/yellow for accents
+  - Success: Encouraging green
+  - Warning: Soft orange (not alarming)
+  - Error: Clear red but not scary
+  - Surface colors: Soft whites and light grays
+  - Dark theme: Gentle dark colors with colorful accents
+
+### Backend Integration
+
+⚠️ **IMPORTANT UPDATE**: After comprehensive backend analysis, this project uses a custom microservices architecture (NOT Tidepool). The backend consists of:
+- API Gateway (FastAPI) - Main entry point for mobile app
+- Login Service (FastAPI) - OAuth2/JWT authentication
+- Appointments Service (FastAPI) - Queue-based appointment scheduling
+- Glucoserver Service (FastAPI) - Glucose reading storage and retrieval
+- Backoffice Web (React) - Admin dashboard for healthcare providers
+- Container Managing - Docker orchestration scripts
+
+**See comprehensive backend documentation**:
+- `.taskmaster/docs/backend-services-analysis.md` - Complete architecture analysis
+- `.taskmaster/docs/backend-api-reference.md` - API gateway endpoint documentation
+- `.taskmaster/docs/mobile-backend-integration.md` - Mobile integration specifications
+
+#### API Gateway (Mobile App Entry Point)
+- **Base URL**: To be configured (e.g., `https://api.diabetify.com`)
+- **Authentication**: JWT Bearer tokens (30-minute expiry, HS256)
+- **Architecture**: FastAPI 0.114.0 synchronous HTTP proxy to microservices
+- **Key Endpoints** (28 total documented):
+  - **Auth Router**: `POST /token`, `GET /users/me`
+  - **Users Router**: User CRUD operations (admin only)
+  - **Glucose Router**: `POST /readings/`, `GET /readings/`, `GET /readings/{id}`
+  - **Appointments Router**: Appointment CRUD with queue management
+
+#### Login Service (Authentication Microservice)
+- **Purpose**: User authentication and management
+- **Technology**: FastAPI 0.109.0 + PostgreSQL + SQLAlchemy 2.0.25
+- **Authentication Flow**: OAuth2 Password Flow
+- **JWT Structure**:
+  ```json
+  {
+    "sub": "user@example.com",
+    "exp": 1234567890  // 30 minutes from issue
+  }
+  ```
+- **Critical Security Issues**:
+  - ⚠️ **P0 URGENT**: SHA-256 password hashing (must migrate to bcrypt)
+  - ❌ No refresh token mechanism (re-login required after 30min)
+  - ⚠️ CORS wildcard configuration
+- **Mobile Integration**: See detailed auth flow in mobile-backend-integration.md
+
+#### Appointments Service (Scheduling Microservice)
+- **Purpose**: Queue-based appointment scheduling
+- **Technology**: FastAPI 0.109.0 + PostgreSQL
+- **Critical Issues**:
+  - ⚠️ **BUG**: Queue capacity logic error (may allow overbooking)
+  - ❌ No authentication (endpoints are open)
+  - ❌ Missing user_id foreign key
+- **Queue Management**: Automatic position reassignment on cancellation
+
+#### Glucoserver Service (Glucose Data Microservice)
+- **Purpose**: Glucose reading storage and retrieval
+- **Technology**: FastAPI 0.109.0 + PostgreSQL
+- **Critical Performance Issue**:
+  - ⚠️ **P0 URGENT**: No pagination (returns ALL readings)
+  - Mobile must implement client-side pagination workaround
+- **Security Issues**:
+  - ❌ No authentication (endpoints are open)
+  - ❌ No user scoping (privacy violation)
+  - ❌ Missing user_id in readings table
+- **Data Model Gaps**: Missing BLE metadata fields (sequence_number, sample_type, sample_location)
+
+#### Backoffice Web Application
+- **Purpose**: Healthcare provider admin dashboard
+- **Technology**: React 18 + TypeScript + Vite + React Admin 5
+- **Security**: JWT stored in localStorage (XSS vulnerable)
+- **Integration**: Separate web app, not directly used by mobile
+
+**Cross-Service Integration Patterns**:
+- All services use synchronous I/O (requests library, not async)
+- No service-to-service authentication
+- No circuit breakers or resilience patterns
+- No distributed tracing
+- API Gateway acts as simple reverse proxy
+
+### Data Models
+
+**GlucoseReading** (updated from BLE version):
+```typescript
+interface GlucoseReading {
+  id: string;
+  userId: string;
+  timestamp: Date;
+  value: number;
+  unit: 'mg/dL' | 'mmol/L';
+  source: 'tidepool' | 'manual';
+  tidepoolId?: string;
+  type?: string; // bgm, cbg, etc.
+  synced: boolean;
+  status?: 'low' | 'in-range' | 'high'; // calculated based on target range
+}
+```
+
+**UserProfile**:
+```typescript
+interface UserProfile {
+  id: string;
+  name: string;
+  age: number; // for age-appropriate UI adjustments
+  avatarUrl?: string;
+  email: string;
+  tidepoolUserId?: string;
+  tidepoolConnected: boolean;
+  tidepoolDashboardUrl?: string;
+  parentEmail?: string; // for notifications
+  preferences: {
+    unit: 'mg/dL' | 'mmol/L';
+    targetLow: number;
+    targetHigh: number;
+    alertsEnabled: boolean;
+    syncInterval: number; // minutes
+    theme: 'light' | 'dark' | 'auto';
+    language: string;
+    celebrationsEnabled: boolean; // fun animations for good readings
+  };
+}
+```
+
+**TidepoolAuth**:
+```typescript
+interface TidepoolAuth {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: Date;
+  userId: string;
+}
+```
+
+### Services Architecture
+
+1. **TidepoolService**: Handles Tidepool API authentication and data fetching
+2. **SyncService**: Background sync coordinator
+3. **ReadingsService**: Local readings storage and retrieval
+4. **ProfileService**: User profile management
+5. **BackofficeService**: Backoffice API integration
+6. **AlertService**: Alert monitoring and notifications
+7. **ChartService**: Data transformation for visualization
+8. **ThemeService**: Material Design theme management and dynamic theming
+9. **AnimationService**: Manages celebratory animations and visual feedback
+
+### Infrastructure Requirements
+
+- **Mobile Platforms**: Android (iOS optional for later)
+- **API Keys**: Tidepool OAuth client credentials
+- **Background Tasks**: Capacitor Background Runner or similar
+- **Push Notifications**: Firebase Cloud Messaging (FCM)
+- **Secure Storage**: Capacitor Secure Storage for tokens
+- **Fonts**: Roboto font family (Material Design standard)
+- **Icons**: Material Icons + custom health-related icons
+
+# Development Roadmap
+
+## Phase 1: Foundation & Cleanup (MVP Core)
+**Goal**: Remove legacy code, establish clean architecture, implement Material Design foundation, basic Tidepool integration
+
+### 1.1 Code Cleanup & Restructuring
+- Remove all BLE-related code and dependencies from all pages
+- Uninstall `@capacitor-community/bluetooth-le` package
+- Consolidate duplicate code across dashboard/devices/readings/profile pages
+- Migrate legacy tab1/tab2/tab3 structure to feature-named modules
+- Update routing to use feature names consistently
+- Remove BLE-related constants, interfaces, and methods
+- Clean up unused imports and dependencies
+
+### 1.2 Material Design Foundation
+- Install and configure Angular Material
+- Set up Ionic Material Design mode
+- Create Material Design 3 theme with child-friendly color palette
+- Configure typography scale with Roboto font
+- Set up dark mode support with Material theming
+- Create reusable Material component library
+- Implement theme service for dynamic theming
+- Configure Material icons
+
+### 1.3 Core Data Models & Services
+- Create new data models (GlucoseReading, UserProfile, TidepoolAuth)
+- Implement ReadingsService with local storage (IndexedDB)
+- Implement ProfileService with Capacitor Preferences
+- Set up Angular HttpClient configuration
+- Create environment configuration for API endpoints
+- Implement ThemeService for Material theme management
+
+### 1.4 Tidepool OAuth Integration
+- Research Tidepool OAuth2 flow and requirements
+- Implement TidepoolService with authentication methods
+- Create OAuth login flow with Capacitor Browser plugin
+- Implement token storage and refresh logic
+- Handle authentication errors and edge cases
+
+### 1.5 Basic Tidepool Data Sync
+- Implement Tidepool data fetching endpoint integration
+- Parse Tidepool glucose data format
+- Store synced readings in local database
+- Calculate reading status (low/in-range/high) based on targets
+- Handle sync errors and retries
+- Add manual sync trigger
+
+## Phase 2: Core UI Features (MVP Usable)
+**Goal**: Implement essential user-facing features with Material Design and child-friendly UI
+
+### 2.1 Profile Page
+- Design Material Design profile layout with child-friendly elements
+- Add avatar selection/upload functionality
+- Display Tidepool connection status with visual indicators
+- Implement "Connect Tidepool" button with Material Design styling
+- Add "Disconnect" functionality
+- Display user info with age-appropriate layout
+- Create preferences UI with Material Design form controls
+- Implement theme selector (light/dark/auto)
+- Add celebration toggle setting
+- Persist user preferences
+
+### 2.2 Dashboard Page (Child-Friendly Design)
+- Design Material Design dashboard with card-based layout
+- Implement large, easy-to-read glucose display with Material typography
+- Add friendly status icons/emojis based on reading status
+- Create animated trend indicator (Material motion)
+- Display daily statistics with colorful Material cards and badges
+- Add encouraging messages based on glucose status
+- Implement manual refresh with Material pull-to-refresh
+- Show last sync time with friendly language
+- Add loading states with fun animations
+- Implement celebration animations for good readings (if enabled)
+- Use Material elevation for depth and hierarchy
+
+### 2.3 Readings History Page
+- Design Material Design list with card items
+- Implement color-coded reading items (Material color system)
+- Add Material date picker for filtering
+- Display readings with friendly icons and clear typography
+- Implement Material expansion panels for reading details
+- Add search functionality with Material search bar
+- Implement infinite scroll or pagination
+- Show reading source with icons
+- Add Material empty state with friendly illustration
+- Use Material dividers and spacing
+
+### 2.4 Navigation & Layout
+- Implement Material bottom navigation with icons
+- Create consistent Material app bar/toolbar
+- Add Material FAB for quick actions (if needed)
+- Implement Material navigation transitions
+- Add haptic feedback for key interactions
+- Ensure proper Material touch targets (48x48dp minimum)
+
+### 2.5 Basic Sync Service
+- Implement SyncService with periodic background sync
+- Add sync scheduling (every 15 minutes when app active)
+- Handle online/offline status detection
+- Show sync status in UI with Material indicators
+- Implement pull-to-refresh with Material design
+
+## Phase 3: Advanced Features (Enhanced Experience)
+**Goal**: Add visualization, alerts, and advanced functionality with engaging design
+
+### 3.1 Data Visualization (Child-Friendly)
+- Integrate Chart.js with custom child-friendly theme
+- Design colorful, animated line chart for glucose over time
+- Implement Material Design time range selector (chips/segmented buttons)
+- Create time-in-range visualization with progress bars and badges
+- Add daily pattern overlay with friendly colors
+- Implement celebration badges for achievements
+- Create reusable chart components with Material styling
+- Add smooth animations using Material motion principles
+- Optimize chart performance for mobile
+
+### 3.2 Alerts & Notifications (Age-Appropriate)
+- Design Material Design alert configuration UI
+- Implement AlertService for monitoring readings
+- Set up Firebase Cloud Messaging integration
+- Create child-friendly notification messages
+- Implement high/low glucose threshold alerts with appropriate urgency
+- Add alert history view with Material timeline component
+- Implement snooze/acknowledgment with Material dialogs
+- Add notification preferences with Material switches
+- Create separate parent alert notifications (more detailed)
+- Use Material snackbars for in-app alerts
+
+### 3.3 Gamification & Encouragement
+- Implement streak counter for consistent checking
+- Create achievement badge system with Material cards
+- Add progress tracking with Material progress indicators
+- Implement celebratory animations for milestones
+- Add positive reinforcement messages
+- Create visual rewards (using Material elevation/color)
+- Ensure gamification is supportive, never punitive
+
+### 3.4 Backoffice Integration
+- Design backoffice API contract
+- Implement BackofficeService
+- Add patient data sync to backoffice
+- Handle backoffice authentication
+- Store Tidepool dashboard URL in profile
+- Implement error handling and retry logic
+
+### 3.5 Enhanced Profile Features
+- Add detailed account information editing with Material forms
+- Implement settings for alert thresholds with Material sliders
+- Add sync frequency configuration with Material select
+- Create app info and about section with Material cards
+- Add data export settings
+- Implement logout functionality with Material confirmation dialog
+- Add parental controls section (optional PIN protection)
+
+## Phase 4: Polish & Optimization (Production Ready)
+**Goal**: Ensure app is stable, performant, accessible, and production-ready
+
+### 4.1 Accessibility & Inclusivity
+- Implement Material accessibility features
+- Add screen reader support (ARIA labels)
+- Ensure color blind friendly palettes
+- Support dynamic text sizing
+- Add keyboard navigation support
+- Test with accessibility tools
+- Implement proper focus management
+- Add haptic feedback for important actions
+
+### 4.2 Data Export (Parent/Doctor Feature)
+- Implement CSV export functionality
+- Implement PDF report generation with Material styling
+- Add date range selection with Material date pickers
+- Implement share functionality (email, etc.)
+- Add export format preferences
+- Create printable reports for doctor visits
+
+### 4.3 Offline Support & Performance
+- Implement robust offline data caching
+- Add Material Design offline mode indicator
+- Optimize local database queries
+- Implement data pruning (keep last 90 days locally)
+- Add lazy loading for large datasets
+- Optimize bundle size and load time
+- Implement Material skeleton loading screens
+- Optimize Material animations for performance
+
+### 4.4 Error Handling & UX Polish
+- Implement comprehensive error handling across all services
+- Add child-friendly Material error messages ("Oops! Let's try again")
+- Implement retry mechanisms with Material progress indicators
+- Add connection status indicators using Material chips
+- Polish all animations with Material motion
+- Add haptic feedback throughout
+- Refine Material transitions between screens
+- Ensure smooth 60fps animations
+
+### 4.5 Testing & Documentation
+- Write unit tests for services
+- Write integration tests for Tidepool sync
+- Test error scenarios and edge cases
+- Test with children in target age range (usability testing)
+- Test on multiple Android devices and screen sizes
+- Perform accessibility audit
+- Document Material Design implementation
+- Create user documentation for parents
+- Test Material Design responsiveness
+
+### 4.6 Security & Compliance
+- Implement secure token storage
+- Add OAuth token refresh before expiry
+- Implement session timeout
+- Add biometric authentication option (optional)
+- Review HIPAA considerations (if applicable)
+- Implement proper data encryption
+- Add parental PIN protection option
+- Ensure COPPA compliance (Children's Online Privacy Protection Act)
+
+## Phase 5: Future Enhancements (Post-Launch)
+**Goal**: Additional features based on user feedback
+
+- Meal logging with fun food icons
+- Medication tracking with reminders
+- A1C calculator and tracking with visual progress
+- Sharing data with caregivers/family members
+- Integration with other health platforms
+- Apple Health / Google Fit integration
+- Insulin dose tracking (age-appropriate interface)
+- Carb counting tools with visual guides
+- iOS version with iOS design guidelines
+- Multiple language support
+- Custom avatar creation
+- Educational content for children about diabetes
+- Integration with school nurse systems
+- Remind parents/children about regular checks
+
+# Logical Dependency Chain
+
+## Foundation First (Phase 1)
+1. **Code Cleanup** (1.1) - Must happen first to remove technical debt
+2. **Material Design Foundation** (1.2) - Establishes UI/UX foundation
+3. **Data Models & Services** (1.3) - Establishes data layer
+4. **Tidepool Auth** (1.4) - Required for all Tidepool features
+5. **Basic Sync** (1.5) - Core functionality to get data
+
+## Quick Wins for Visibility (Phase 2)
+6. **Profile Page** (2.1) - First visible feature, enables account connection
+7. **Dashboard** (2.2) - Primary user interface, shows value immediately with child-friendly design
+8. **Readings History** (2.3) - Essential for data review
+9. **Navigation & Layout** (2.4) - Consistent Material Design throughout
+10. **Sync Service** (2.5) - Makes data automatically refresh
+
+## Value-Add Features (Phase 3)
+11. **Visualization** (3.1) - Major UX improvement with child-friendly charts
+12. **Alerts** (3.2) - High-value feature with age-appropriate notifications
+13. **Gamification** (3.3) - Engagement and motivation for children
+14. **Backoffice** (3.4) - Important for doctors, but not blocking patient use
+15. **Enhanced Profile** (3.5) - Incremental improvements
+
+## Production Readiness (Phase 4)
+16. **Accessibility** (4.1) - Critical for inclusive design
+17. **Export** (4.2) - Nice-to-have for parents/doctors
+18. **Offline & Performance** (4.3) - Critical before launch
+19. **Error Handling & Polish** (4.4) - Final UX improvements
+20. **Testing** (4.5) - Ongoing throughout, intensive before launch including child usability testing
+21. **Security** (4.6) - Critical before launch, COPPA compliance essential
+
+**Key Principle**: Build in incremental, testable chunks with Material Design consistency. Each phase should produce a working app that can be demonstrated to children and parents for feedback.
+
+# Risks and Mitigations
+
+## Technical Challenges
+
+**Risk**: Material Design implementation complexity with Ionic
+**Mitigation**: Use Ionic's Material Design mode, leverage Angular Material components, follow Material Design 3 guidelines strictly, test on reference Android devices
+
+**Risk**: Tidepool API documentation may be incomplete or outdated
+**Mitigation**: Start with API research task, test endpoints early, join Tidepool developer community if available
+
+**Risk**: OAuth flow complexity in mobile app
+**Mitigation**: Use Capacitor Browser plugin for OAuth, implement robust token refresh, test thoroughly
+
+**Risk**: Background sync limitations on Android
+**Mitigation**: Research Android background task restrictions, implement foreground service if needed, test on multiple Android versions
+
+**Risk**: Large dataset performance issues
+**Mitigation**: Implement pagination, data pruning, lazy loading from the start, optimize Material animations
+
+**Risk**: Age-appropriate design for wide age range (5-14)
+**Mitigation**: Create adaptive UI that adjusts complexity based on age setting, test with children in both age groups, allow parent customization
+
+## MVP Scope Management
+
+**Risk**: Feature creep delaying launch
+**Mitigation**:
+- Focus on Phase 1 + Phase 2 for initial MVP
+- Phase 2 completion = usable app with child-friendly design
+- Can launch with Phase 2, add Phase 3 features post-launch
+- Strict prioritization: Material Design + Tidepool connection + Dashboard + Readings = core value
+
+**Essential MVP Features**:
+1. Material Design foundation with child-friendly theme
+2. Tidepool OAuth connection
+3. Data sync from Tidepool
+4. Child-friendly dashboard with current reading
+5. Readings history with color coding
+6. Basic profile management with avatar
+
+**Post-MVP Features** (can wait):
+- Detailed charts and visualization
+- Alerts and notifications
+- Gamification elements
+- Backoffice integration
+- Export functionality
+
+## Resource Constraints
+
+**Risk**: Single developer working on full stack
+**Mitigation**:
+- Use Task Master AI for task breakdown and tracking
+- Focus on one feature at a time
+- Leverage Angular Material and Ionic Material components
+- Use Chart.js for visualization
+- Start with Android only (defer iOS)
+
+**Risk**: No backend team for backoffice API
+**Mitigation**:
+- Define API contract early
+- Create mock API for development
+- Implement backoffice integration as Phase 3 (non-blocking)
+
+**Risk**: Limited budget for child testing and UX research
+**Mitigation**:
+- Start with parent/guardian feedback
+- Use material design guidelines as baseline
+- Iterate based on user feedback post-launch
+- Engage with diabetes parent communities online
+
+## User Experience Challenges
+
+**Risk**: Designing for both 5-year-olds and 14-year-olds
+**Mitigation**:
+- Implement age field in profile to adapt UI complexity
+- Test with children across age spectrum
+- Allow customization of "fun" elements (celebrations, badges)
+- Ensure core functionality is accessible to all ages
+
+**Risk**: Medical app concerns from parents
+**Mitigation**:
+- Professional, trustworthy Material Design foundation
+- Clear privacy policy and data handling
+- COPPA compliance
+- Parental controls and oversight features
+- Medical accuracy in all displayed information
+
+## Dependencies
+
+**Risk**: Tidepool API changes or downtime
+**Mitigation**:
+- Implement robust error handling with child-friendly messages
+- Cache data locally for offline access
+- Monitor Tidepool status/updates
+- Have fallback for sync failures
+
+**Risk**: Material Design component library updates breaking changes
+**Mitigation**:
+- Pin dependency versions initially
+- Thorough testing before updates
+- Follow Angular Material update guidelines
+
+# Appendix
+
+## Tidepool API Resources
+- Developer Portal: https://developer.tidepool.org/
+- API Documentation: https://tidepool.org/developers
+- OAuth Flow: Standard OAuth2 with PKCE (research required)
+
+## Material Design Resources
+- Material Design 3: https://m3.material.io/
+- Angular Material: https://material.angular.io/
+- Material Design Icons: https://fonts.google.com/icons
+- Material Color Tool: https://material.io/resources/color/
+- Material Motion: https://material.io/design/motion/
+
+## Technical Specifications
+
+### Supported Platforms
+- Android 7.0+ (API level 24+)
+- Target Android 14 (API level 34)
+- Material Design 3 with Android 12+ dynamic theming support
+
+### Dependencies to Remove
+- `@capacitor-community/bluetooth-le`
+- Any BLE-related permissions in AndroidManifest.xml
+
+### New Dependencies to Add
+- `@angular/material` - Material Design components for Angular
+- `@angular/cdk` - Angular Component Dev Kit (Material dependency)
+- `chart.js` - Data visualization with custom child-friendly themes
+- `@capacitor/browser` - OAuth flow
+- `@capacitor/preferences` - Settings storage
+- `@capacitor/haptics` - Haptic feedback
+- Firebase SDK - Push notifications (Phase 3)
+- `dexie` - IndexedDB wrapper for local storage
+- Material Icons font
+
+### Material Design Configuration
+- **Primary Color**: Custom blue-teal (#00ACC1 - friendly, medical)
+- **Secondary Color**: Warm orange (#FFA726 - encouraging, energetic)
+- **Typography**: Roboto (Regular, Medium, Bold)
+- **Border Radius**: 16dp for cards (friendly, modern)
+- **Elevation**: Material elevation levels (2dp, 4dp, 8dp)
+- **Motion**: Material standard easing (cubic-bezier)
+
+### API Endpoints (Tidepool)
+- Auth: `https://api.tidepool.org/auth/login`
+- User Data: `https://api.tidepool.org/data/{userId}`
+- OAuth: Research required for exact endpoints
+
+### Data Retention
+- Keep last 90 days of readings locally
+- Sync all available data from Tidepool initially
+- Implement incremental sync (only new data)
+
+### Performance Targets
+- App launch: < 2 seconds
+- Dashboard load: < 1 second
+- Sync operation: < 10 seconds for typical dataset
+- Chart rendering: < 500ms
+- Material animations: 60fps target
+- Touch response: < 100ms (Material standard)
+
+### Security Requirements
+- Secure token storage using Capacitor Secure Storage
+- Token refresh before expiry (refresh at 80% of lifetime)
+- No logging of sensitive data
+- HTTPS only for all API calls
+- COPPA compliance for children's data
+- Parental consent mechanisms
+- Optional PIN protection for sensitive settings
+- Implement certificate pinning (optional, Phase 4)
+
+### Design Specifications
+- **Touch Targets**: Minimum 48x48dp (Material guideline)
+- **Text Sizes**:
+  - Large readings: 48sp-64sp
+  - Body: 16sp
+  - Captions: 12sp
+- **Color Contrast**: WCAG AA compliant minimum
+- **Spacing**: 8dp grid system (Material Design)
+- **Card Padding**: 16dp standard
+- **Icon Size**: 24dp standard, 48dp for primary actions
+
+---
+
+# BACKEND INTEGRATION REQUIREMENTS
+
+**Document References**:
+- Complete architecture analysis: `.taskmaster/docs/backend-services-analysis.md`
+- API endpoint mappings: `.taskmaster/docs/backend-api-reference.md`
+- Mobile integration specifications: `.taskmaster/docs/mobile-backend-integration.md`
+
+## 1. API Integration Architecture
+
+### Overview
+The mobile app integrates with a custom FastAPI microservices backend through a centralized API Gateway. All requests from the mobile app go through the gateway, which routes to appropriate backend services.
+
+### Integration Layers
+```
+Mobile App (Ionic/Angular)
+    ↓ HTTPS
+API Gateway (FastAPI reverse proxy)
+    ↓
+├── Login Service (Authentication)
+├── Appointments Service (Scheduling)
+└── Glucoserver Service (Glucose Data)
+```
+
+### API Gateway Endpoints (Mobile App Integration Points)
+
+**Authentication Endpoints**:
+- `POST /token` - Login with email/password, returns JWT
+- `GET /users/me` - Get current authenticated user profile
+
+**Glucose Reading Endpoints**:
+- `POST /readings/` - Create new glucose reading (from BLE or manual)
+- `GET /readings/` - Retrieve all readings (⚠️ NO PAGINATION - see workarounds)
+- `GET /readings/{id}` - Get specific reading by ID
+- `PUT /readings/{id}` - Update existing reading
+- `DELETE /readings/{id}` - Delete reading
+
+**Appointment Endpoints**:
+- `POST /appointments/` - Create appointment, returns queue position
+- `GET /appointments/` - List all appointments
+- `GET /appointments/{id}` - Get appointment details
+- `PUT /appointments/{id}` - Update appointment
+- `DELETE /appointments/{id}` - Cancel appointment (triggers queue reassignment)
+- `GET /appointments/queue-position/{id}` - Get current queue position
+
+**User Management Endpoints** (Admin Only):
+- `POST /users/` - Create new user (admin)
+- `GET /users/` - List all users (admin)
+- `GET /users/{user_id}` - Get user by ID (admin)
+- `PUT /users/{user_id}` - Update user (admin)
+- `DELETE /users/{user_id}` - Delete user (admin)
+
+### Request/Response Format Standards
+
+**All Requests Include**:
+- `Authorization: Bearer <JWT>` header (except `/token` endpoint)
+- `Content-Type: application/json` for POST/PUT requests
+- HTTPS only
+
+**Standard Response Format**:
+```json
+{
+  "data": { ... },
+  "message": "Success message (optional)",
+  "timestamp": "2025-10-10T12:00:00Z"
+}
+```
+
+**Standard Error Response**:
+```json
+{
+  "detail": "Error message",
+  "status_code": 400,
+  "timestamp": "2025-10-10T12:00:00Z"
+}
+```
+
+## 2. Authentication & Authorization Flows
+
+### OAuth2 Password Flow (Login)
+
+**Flow Diagram**:
+```
+1. User enters email + password
+2. Mobile → POST /token with {username: email, password}
+3. API Gateway → Login Service (validates SHA-256 hash ⚠️)
+4. Login Service → API Gateway {access_token, token_type}
+5. API Gateway → Mobile App JWT
+6. Mobile stores JWT in SecureStorage (NOT localStorage)
+7. Mobile → GET /users/me to fetch profile
+8. Mobile stores profile in IndexedDB
+```
+
+**JWT Token Structure**:
+```json
+{
+  "sub": "user@example.com",
+  "exp": 1234567890
+}
+```
+
+**Token Lifecycle**:
+- **Expiration**: 30 minutes (non-configurable from mobile)
+- **Refresh**: ❌ NOT SUPPORTED - user must re-login
+- **Storage**: Capacitor SecureStorage (encrypted, NOT localStorage)
+- **Injection**: HTTP Interceptor adds `Authorization: Bearer <token>` to all requests
+
+### Session Management Requirements
+
+**Mobile App Must**:
+1. Store JWT in SecureStorage immediately after login
+2. Check token expiry before each request
+3. Warn user at 25 minutes (5 min before expiry)
+4. Handle 401 errors gracefully (clear token, redirect to login)
+5. Support biometric re-authentication for quick re-login
+
+**Session Warning Implementation**:
+```typescript
+// Check every 60 seconds
+interval(60000).subscribe(async () => {
+  const expiresIn5Min = await this.token.expiresInMinutes(5);
+  if (expiresIn5Min) {
+    this.showSessionExpiryWarning();
+  }
+});
+```
+
+### Security Best Practices
+
+**REQUIRED**:
+- ✅ Use Capacitor SecureStorage for JWT (encrypted)
+- ✅ Never use localStorage (XSS vulnerable)
+- ✅ Implement biometric authentication (fingerprint/face) for re-login
+- ✅ Clear all tokens on logout
+- ✅ Validate token expiry client-side before requests
+- ✅ Handle 401 responses automatically (clear session, redirect)
+
+**BACKEND LIMITATIONS** (Mobile Must Compensate):
+- ⚠️ No refresh token mechanism
+- ⚠️ SHA-256 password hashing (weak)
+- ⚠️ CORS wildcard (can't control from mobile)
+- ⚠️ No rate limiting (implement client-side throttling)
+
+## 3. Data Synchronization Strategies
+
+### Offline-First Architecture
+
+**Core Principle**: All data operations work offline, sync when online
+
+**Local Storage Strategy**:
+```
+IndexedDB (Dexie)
+├── glucoseReadings (permanent)
+├── appointments (permanent)
+├── syncQueue (until completed)
+└── userProfile (permanent)
+```
+
+### Glucose Reading Sync Flow
+
+**BLE Device → Mobile → Backend**:
+```
+1. BLE device sends glucose reading
+2. Mobile parses SFLOAT16 format
+3. Mobile saves to IndexedDB with synced: false
+4. If online:
+   - POST /readings/ to backend
+   - On success: update IndexedDB with backend_id, synced: true
+   - On failure: keep synced: false, add to sync queue
+5. If offline:
+   - Keep in IndexedDB with synced: false
+   - Add to sync queue
+   - Retry when connection restored
+```
+
+**Backend → Mobile Sync**:
+```
+1. Mobile: GET /readings/ (⚠️ returns ALL readings, no pagination)
+2. Mobile filters locally by timestamp (last_sync)
+3. Merge with IndexedDB:
+   - Match by backend_id
+   - If exists: update (backend wins)
+   - If new: insert
+4. Update last_sync timestamp
+```
+
+### Sync Queue Implementation
+
+**Purpose**: Retry failed operations with exponential backoff
+
+**Queue Structure**:
+```typescript
+interface SyncOperation {
+  id: string;
+  type: 'CREATE' | 'UPDATE' | 'DELETE';
+  entity: 'glucose_reading' | 'appointment';
+  data: any;
+  timestamp: number;
+  retries: number;
+  status: 'pending' | 'processing' | 'failed' | 'completed';
+}
+```
+
+**Retry Strategy**:
+- Max retries: 5
+- Backoff: 1s, 2s, 4s, 8s, 16s
+- After 5 failures: mark as failed, notify user
+
+**Trigger Conditions**:
+- Network becomes available
+- App comes to foreground
+- Manual sync triggered by user
+
+### Conflict Resolution Strategy
+
+| Scenario | Strategy | Rationale |
+|----------|----------|-----------|
+| Reading exists in both (synced) | Backend wins | Server is source of truth |
+| Reading in backend only | Add to local | New data from other device |
+| Reading in local only (not synced) | Push to backend | Offline creation |
+| Modified on both sides | Last-write-wins (timestamp) | Rare for glucose data |
+| Appointment modified both sides | Backend wins | Server-authoritative scheduling |
+
+### Pagination Workaround
+
+**Problem**: Backend `GET /readings/` returns ALL readings (thousands)
+
+**Mobile Workaround**:
+```typescript
+// Client-side pagination
+getReadings(page: number = 1, pageSize: number = 50): Observable<Reading[]> {
+  return this.api.getAllReadings().pipe(
+    map(readings => {
+      const start = (page - 1) * pageSize;
+      return readings.slice(start, start + pageSize);
+    })
+  );
+}
+
+// Aggressive caching (5 minutes)
+// Only fetch once per session if possible
+// Filter by last_sync timestamp client-side
+```
+
+**Future Backend Fix Required**:
+```python
+# Backend should implement
+@router.get("/readings/")
+async def get_readings(
+    skip: int = 0,
+    limit: int = 50,
+    since: Optional[datetime] = None
+):
+    # Return paginated results
+    # Filter by since timestamp for incremental sync
+```
+
+## 4. Real-Time Integration
+
+### Current Backend Capabilities
+- ❌ WebSocket: NOT IMPLEMENTED
+- ❌ Server-Sent Events (SSE): NOT IMPLEMENTED
+- ❌ Push Notifications: NOT IMPLEMENTED
+
+### Mobile App Real-Time Options
+
+**Option 1: Short Polling** (MVP Approach) ✅
+- Poll every 30 seconds when app is active
+- Stop polling when app in background
+- Resume polling on foreground
+- Adaptive: slow down if no new data (30s → 60s → 120s → 300s max)
+
+**Implementation**:
+```typescript
+@Injectable()
+export class GlucosePollingService {
+  startPolling(): void {
+    interval(30000).pipe(
+      switchMap(() => this.api.getReadings()),
+      filter(readings => this.hasNewReadings(readings))
+    ).subscribe(readings => {
+      this.updateLocalDatabase(readings);
+      this.notifyUI();
+    });
+  }
+}
+```
+
+**Option 2: Background Fetch** (Better UX) ⭐
+```typescript
+// Capacitor Background Fetch
+BackgroundFetch.configure({
+  minimumFetchInterval: 15 // minutes
+}, async (taskId) => {
+  await this.syncGlucoseReadings();
+  BackgroundFetch.finish(taskId);
+});
+```
+
+**Option 3: Future WebSocket** (Backend Enhancement Required)
+```python
+# Backend implementation needed
+@app.websocket("/ws/readings")
+async def websocket_endpoint(websocket: WebSocket, token: str):
+    user = await validate_token(token)
+    await manager.connect(user.id, websocket)
+    # Push new readings in real-time
+```
+
+```typescript
+// Mobile client (future)
+this.ws = new WebSocket('wss://api.diabetify.com/ws/readings');
+this.ws.onmessage = (event) => {
+  const reading = JSON.parse(event.data);
+  this.addReadingToLocal(reading);
+};
+```
+
+## 5. Security Requirements & HIPAA Compliance
+
+### Data Encryption
+
+**In Transit**:
+- ✅ HTTPS only (TLS 1.2+)
+- ✅ Certificate pinning (optional, Phase 4)
+
+**At Rest**:
+- ✅ JWT in SecureStorage (hardware-encrypted on modern Android)
+- ⚠️ IndexedDB NOT encrypted by default
+  - Consider encryption layer for sensitive data
+  - Or rely on Android Full Disk Encryption (FDE/FBE)
+
+### Authentication Security
+
+**Current Backend Issues**:
+- ⚠️ **CRITICAL**: SHA-256 password hashing (vulnerable to brute-force)
+  - **Mobile Mitigation**: Warn users to use long passphrases (15+ chars)
+  - **Backend Fix Required**: Migrate to bcrypt or Argon2
+
+**Mobile Enhancements**:
+- ✅ Implement biometric authentication (fingerprint/face)
+- ✅ Auto-logout after inactivity (5 minutes default)
+- ✅ Optional PIN lock for app
+- ✅ Clear tokens on device wipe/app uninstall
+
+### HIPAA Compliance Considerations
+
+**Required for Healthcare Data**:
+1. **Access Logging**:
+   - Log all data access with timestamps
+   - Store logs locally, upload to backend
+   - Track who accessed what data when
+
+2. **Data Retention**:
+   - Define clear retention policy
+   - Automatic data deletion after X days (configurable)
+   - User-initiated data export before deletion
+
+3. **User Consent**:
+   - Explicit consent screen on first launch
+   - Track consent version
+   - Allow consent withdrawal (with data deletion)
+
+4. **Data Minimization**:
+   - Only collect necessary data
+   - Don't store sensitive data unnecessarily
+   - Clear data on logout option
+
+5. **Audit Trail**:
+   - Track all CRUD operations
+   - Log authentication events
+   - Store audit logs securely
+
+### COPPA Compliance (Children's Privacy)
+
+**Required for Ages 5-14**:
+1. **Parental Consent**:
+   - Verifiable parental consent before data collection
+   - Parent email verification
+   - Parental control features
+
+2. **Data Collection**:
+   - Clear privacy policy in age-appropriate language
+   - Minimal data collection
+   - No third-party advertising or tracking
+
+3. **Parental Access**:
+   - Parents can review child's data
+   - Parents can request data deletion
+   - Parents control notification preferences
+
+### Threat Mitigation Matrix
+
+| Threat | Risk | Mobile Mitigation |
+|--------|------|-------------------|
+| Weak Password Hash (SHA-256) | HIGH | Enforce strong passwords (15+ chars), biometric auth |
+| No Refresh Token | MEDIUM | Session warnings, biometric quick re-login |
+| Token in Response Body | MEDIUM | Store in SecureStorage immediately, never localStorage |
+| CORS Wildcard | LOW | None (backend issue) |
+| No Rate Limiting | MEDIUM | Client-side throttling, exponential backoff |
+| XSS Attacks | MEDIUM | Never use innerHTML, sanitize all user input |
+| Man-in-the-Middle | HIGH | HTTPS only, certificate pinning (optional) |
+| Credential Stuffing | MEDIUM | Retry delays, suggest unique passwords |
+
+## 6. Performance Requirements
+
+### Response Time Targets
+
+| Operation | Target | Backend Reality | Mobile Strategy |
+|-----------|--------|----------------|-----------------|
+| Login | < 2s | ~1s | ✅ Acceptable |
+| Dashboard Load | < 1s | N/A (local data) | ✅ IndexedDB cache |
+| Sync Glucose Readings | < 5s | ⚠️ 10s+ (all records) | Cache aggressively, warn user |
+| Create Reading | < 1s | ~500ms | ✅ Acceptable |
+| Appointment Booking | < 2s | ~1s | ✅ Acceptable |
+| Chart Rendering | < 500ms | N/A (client-side) | Optimize with Chart.js config |
+
+### Network Optimization
+
+**Required**:
+- Implement HTTP caching (5-minute TTL)
+- Compress large payloads (gzip)
+- Batch operations when possible
+- Use incremental sync (filter by timestamp)
+
+**Bandwidth Considerations**:
+- Initial sync: May download MBs of data (⚠️ no pagination)
+- Incremental sync: Should be KBs (if backend supports filtering)
+- Typical reading: ~100 bytes JSON
+
+### Battery Optimization
+
+**Strategies**:
+- Use adaptive polling (slow down when no new data)
+- Stop polling when app in background
+- Use background fetch (iOS/Android native) instead of continuous polling
+- Batch network requests
+- Avoid wake locks
+
+### Memory Management
+
+**IndexedDB Cleanup**:
+- Keep last 90 days of readings locally
+- Delete older data automatically
+- Implement data pruning on app startup
+- Provide manual "Clear Cache" option
+
+## 7. Monitoring & Observability
+
+### Error Tracking
+
+**Required Logging**:
+```typescript
+interface ErrorLog {
+  timestamp: Date;
+  context: string;
+  message: string;
+  stack?: string;
+  http_status?: number;
+  http_url?: string;
+  user_id?: number;
+  app_version: string;
+  platform: string;
+}
+```
+
+**Log Storage**:
+- Store errors in IndexedDB
+- Upload to backend when online (if backend supports)
+- Integrate with Sentry or Firebase Crashlytics (optional)
+
+### Analytics Events
+
+**Track Key Events**:
+- Login success/failure
+- Sync operations (success/failure/duration)
+- Glucose reading creation (source: BLE/manual)
+- Appointment booking
+- Session expiry warnings
+- Offline mode entered/exited
+- Sync queue size
+
+### Performance Metrics
+
+**Track**:
+- App launch time
+- Dashboard load time
+- Sync operation duration
+- API response times
+- IndexedDB query performance
+- Memory usage
+- Battery impact
+
+### Health Checks
+
+**Mobile App Health**:
+- Token expiry status
+- Last successful sync timestamp
+- Sync queue size
+- IndexedDB size
+- Network connectivity status
+
+**Backend Health** (if available):
+- API Gateway status
+- Service availability
+- Response times
+
+## 8. Recommended Angular Patterns & Ionic Plugins
+
+### Angular Service Architecture
+
+**Directory Structure**:
+```
+src/app/core/services/
+├── auth/
+│   ├── auth.service.ts
+│   ├── token.service.ts
+│   ├── auth-guard.service.ts
+│   └── session-manager.service.ts
+├── api/
+│   ├── base-api.service.ts
+│   ├── glucose-api.service.ts
+│   ├── appointment-api.service.ts
+│   └── user-api.service.ts
+├── sync/
+│   ├── sync-orchestrator.service.ts
+│   ├── sync-queue.service.ts
+│   ├── conflict-resolver.service.ts
+│   └── network-monitor.service.ts
+├── storage/
+│   ├── database.service.ts
+│   ├── preferences.service.ts
+│   └── secure-storage.service.ts
+├── ble/ (existing)
+│   ├── ble-connection.service.ts
+│   ├── glucose-parser.service.ts
+│   └── ble-sync-bridge.service.ts
+└── domain/
+    ├── glucose-readings.service.ts (facade)
+    ├── appointments.service.ts (facade)
+    └── user-profile.service.ts (facade)
+```
+
+### HTTP Interceptors (Priority Order)
+
+**1. AuthInterceptor** - JWT injection
+```typescript
+req = req.clone({
+  setHeaders: { Authorization: `Bearer ${token}` }
+});
+```
+
+**2. ErrorInterceptor** - Global error handling
+- 401 → Clear token, redirect to login
+- 400 → Show validation errors
+- 500 → Show generic error, retry
+- 0 → Network error, queue operation
+
+**3. RetryInterceptor** - Exponential backoff
+- Only retry GET requests (idempotent)
+- Max 3 retries: 1s, 2s, 4s delays
+- Don't retry 4xx errors
+
+**4. CacheInterceptor** - HTTP caching
+- Cache GET /readings/ for 5 minutes
+- Cache GET /appointments/ for 5 minutes
+- Clear cache on mutations
+
+**5. OfflineInterceptor** - Queue when offline
+- Detect offline state
+- Queue POST/PUT/DELETE operations
+- Return synthetic 202 Accepted response
+- Process queue when online
+
+### State Management
+
+**Recommended: Angular Services + RxJS** (for this app)
+- Simpler than NgRx
+- Sufficient for app complexity
+- Faster development
+- Easy to migrate to NgRx later if needed
+
+**Implementation**:
+```typescript
+@Injectable({ providedIn: 'root' })
+export class GlucoseStateService {
+  private readingsSubject = new BehaviorSubject<GlucoseReading[]>([]);
+  readings$ = this.readingsSubject.asObservable();
+
+  // Derived state
+  latestReading$ = this.readings$.pipe(
+    map(readings => readings[0] || null)
+  );
+}
+```
+
+**Facade Pattern**:
+```typescript
+@Injectable({ providedIn: 'root' })
+export class GlucoseFacadeService {
+  readings$ = this.glucoseState.readings$;
+  loading$ = this.glucoseState.loading$;
+
+  async loadReadings(forceRefresh = false) {
+    // Orchestrate: IndexedDB → API → Merge → State
+  }
+
+  async createReading(reading: GlucoseReading) {
+    // IndexedDB → Queue → API → State
+  }
+}
+```
+
+### Required Capacitor Plugins
+
+**Authentication & Security**:
+- `@capacitor-community/secure-storage` - Encrypted JWT storage
+- `@aparajita/capacitor-biometric-auth` - Fingerprint/Face ID
+
+**Storage**:
+- `@capacitor/preferences` - Key-value settings
+- `dexie` - IndexedDB wrapper (not Capacitor, but essential)
+
+**Networking**:
+- `@capacitor/network` - Online/offline detection
+- `@capacitor/http` - Native HTTP (optional, for certificate pinning)
+
+**Background**:
+- `@transistorsoft/capacitor-background-fetch` - Background sync
+
+**Notifications**:
+- `@capacitor/push-notifications` - Push notifications (Phase 3)
+- `@capacitor/local-notifications` - Local alerts
+
+**User Experience**:
+- `@capacitor/haptics` - Haptic feedback
+- `@capacitor/status-bar` - Status bar styling
+- `@capacitor/splash-screen` - Splash screen control
+
+**Existing (Keep)**:
+- `@capacitor-community/bluetooth-le` - BLE glucose monitors
+
+### Recommended NPM Packages
+
+**HTTP & Data**:
+- `rxjs` - Reactive programming (already in Angular)
+- `date-fns` - Date manipulation (lighter than moment.js)
+
+**Charts**:
+- `chart.js` - Data visualization
+- `ng2-charts` - Angular wrapper for Chart.js
+
+**Utilities**:
+- `uuid` - UUID generation for local IDs
+- `lodash-es` - Utility functions (tree-shakeable)
+
+**Development**:
+- `@ngrx/store-devtools` - If migrating to NgRx later
+
+## 9. Backend Migration Roadmap
+
+**See comprehensive 4-phase backend improvement plan in `.taskmaster/docs/mobile-backend-integration.md`**
+
+### Phase 1: Security Fixes (Week 1-2) 🔴 CRITICAL
+
+**P0 Issues - Block Production Launch**:
+- [ ] Migrate password hashing from SHA-256 to bcrypt
+- [ ] Restrict CORS to specific origins (not wildcard)
+- [ ] Add JWT authentication to appointments and glucoserver services
+- [ ] Implement user_id filtering in glucoserver (privacy)
+
+**Mobile Impact**:
+- Password migration: Users must reset passwords
+- CORS fix: No mobile changes needed
+- Auth added: No mobile changes (already sends JWT)
+- User filtering: Better security, no functional changes
+
+### Phase 2: Performance Improvements (Week 3-4) 🟡 HIGH
+
+**P1 Issues - Impacts UX**:
+- [ ] Add pagination to `GET /readings/` endpoint
+- [ ] Migrate to async I/O (httpx instead of requests)
+- [ ] Add database indexes for performance
+- [ ] Fix appointments queue capacity bug
+
+**Mobile Impact**:
+- Pagination: Update API integration to use skip/limit params
+- Async I/O: Faster responses, no mobile changes
+- DB indexes: Faster responses, no mobile changes
+- Queue bug fix: More reliable scheduling
+
+### Phase 3: Feature Enhancements (Week 5-6) 🟢 MEDIUM
+
+**P2 Issues - Nice to Have**:
+- [ ] Implement refresh token flow
+- [ ] Add WebSocket support for real-time updates
+- [ ] Implement rate limiting
+- [ ] Add health check endpoints
+
+**Mobile Impact**:
+- Refresh tokens: Update auth flow (major UX improvement)
+- WebSocket: Replace polling with real-time (major UX improvement)
+- Rate limiting: Add client-side throttling
+- Health checks: Better error messaging
+
+### Phase 4: Architecture Redesign (Month 2+) 🔵 LONG-TERM
+
+**Architectural Improvements**:
+- [ ] Event-driven architecture (RabbitMQ/Kafka)
+- [ ] CQRS for glucose readings
+- [ ] Distributed tracing (Jaeger)
+- [ ] Circuit breakers
+- [ ] Comprehensive monitoring
+
+**Mobile Impact**: Minimal, better reliability and performance
+
+### Mobile Readiness Checklist
+
+**Can Launch MVP With Current Backend** ✅ (with workarounds):
+- [x] Authentication works (JWT, 30min expiry)
+- [x] Glucose CRUD operations work
+- [x] Appointment CRUD operations work
+- [x] Mobile implements workarounds (pagination, caching, offline queue)
+
+**Required Before Production** ❌:
+- [ ] Backend: SHA-256 → bcrypt migration
+- [ ] Backend: CORS restriction
+- [ ] Backend: Add authentication to all services
+- [ ] Mobile: Comprehensive error handling
+- [ ] Mobile: Security audit
+- [ ] Mobile: COPPA compliance implementation
+
+**High Priority Post-Launch**:
+- [ ] Backend: Pagination support
+- [ ] Backend: Refresh token flow
+- [ ] Mobile: WebSocket integration (when backend ready)
+- [ ] Backend: Rate limiting
+- [ ] Mobile: Background sync optimization
+
+---
+
+## Integration Implementation Checklist
+
+**Phase 1: Foundation (Week 1-2)**
+- [ ] Install required Capacitor plugins
+- [ ] Set up HTTP interceptors (Auth, Error, Retry, Cache, Offline)
+- [ ] Implement TokenService with SecureStorage
+- [ ] Create Dexie database schema
+- [ ] Implement base API services
+
+**Phase 2: Core Integration (Week 3-4)**
+- [ ] Implement authentication flow with session management
+- [ ] Create SyncQueueService with retry logic
+- [ ] Implement ConflictResolverService
+- [ ] Build GlucoseFacadeService for offline-first
+- [ ] Add client-side pagination workaround
+- [ ] Implement session expiry warnings
+
+**Phase 3: Advanced Features (Week 5-6)**
+- [ ] Integrate existing BLE code with new sync architecture
+- [ ] Implement BLE→Backend sync bridge
+- [ ] Add polling service (adaptive or background fetch)
+- [ ] Create error logging system
+- [ ] Implement biometric authentication
+
+**Phase 4: Production Readiness (Week 7-8)**
+- [ ] Comprehensive error handling and recovery
+- [ ] Security audit (token storage, data encryption)
+- [ ] COPPA compliance implementation
+- [ ] Performance optimization
+- [ ] Monitoring and analytics setup
+- [ ] User acceptance testing with children
+
+---
+
+**For complete implementation details, architecture diagrams, code examples, and TypeScript models, see**:
+- **`.taskmaster/docs/mobile-backend-integration.md`** - 1000+ lines of comprehensive integration specifications
+
+</PRD>
