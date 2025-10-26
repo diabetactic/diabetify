@@ -1,0 +1,137 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onCancel()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Add Reading</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page-container">
+    <!-- Info Banner with Tip -->
+    <div class="banner-container">
+      <app-alert-banner
+        type="info"
+        message="For accurate readings, wash hands before testing and use the side of your fingertip."
+      ></app-alert-banner>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="readingForm" (ngSubmit)="onSubmit()" class="reading-form">
+      <!-- Glucose Value Input -->
+      <div class="form-section">
+        <ion-item lines="none" class="form-item">
+          <ion-label position="stacked" class="form-label">
+            Glucose Reading <span class="required">*</span>
+          </ion-label>
+          <div class="input-with-unit">
+            <ion-input
+              formControlName="value"
+              type="number"
+              inputmode="decimal"
+              placeholder="Enter value"
+              class="glucose-input"
+              [class.invalid]="
+                readingForm.get('value')?.invalid && readingForm.get('value')?.touched
+              "
+            ></ion-input>
+            <span class="unit-label">{{ getUnitLabel() }}</span>
+          </div>
+        </ion-item>
+        <div class="validation-message" *ngIf="getValidationMessage('value')">
+          <ion-icon name="alert-circle" color="danger"></ion-icon>
+          <span>{{ getValidationMessage('value') }}</span>
+        </div>
+      </div>
+
+      <!-- Status Preview -->
+      <div class="status-preview" *ngIf="glucoseStatus">
+        <div class="status-badge" [attr.data-status]="glucoseStatusColor">
+          <span class="status-emoji">{{ glucoseStatusEmoji }}</span>
+          <span class="status-text">{{ getStatusLabel() }}</span>
+        </div>
+      </div>
+
+      <!-- Date & Time Picker -->
+      <div class="form-section">
+        <ion-item lines="none" class="form-item">
+          <ion-label position="stacked" class="form-label">
+            Date & Time <span class="required">*</span>
+          </ion-label>
+          <ion-datetime-button datetime="reading-datetime"></ion-datetime-button>
+        </ion-item>
+
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime
+              id="reading-datetime"
+              formControlName="datetime"
+              presentation="date-time"
+              [max]="readingForm.get('datetime')?.value"
+              [preferWheel]="true"
+            ></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </div>
+
+      <!-- Meal Context Selector -->
+      <div class="form-section">
+        <ion-item lines="none" class="form-item">
+          <ion-label position="stacked" class="form-label"> Meal Context (Optional) </ion-label>
+          <ion-select
+            formControlName="mealContext"
+            placeholder="Select meal context"
+            interface="action-sheet"
+            cancelText="Cancel"
+          >
+            <ion-select-option [value]="null">None</ion-select-option>
+            <ion-select-option *ngFor="let option of mealContextOptions" [value]="option.value">
+              {{ option.label }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <!-- Notes Field -->
+      <div class="form-section">
+        <ion-item lines="none" class="form-item">
+          <ion-label position="stacked" class="form-label"> Notes (Optional) </ion-label>
+          <ion-textarea
+            formControlName="notes"
+            placeholder="Add any additional notes..."
+            rows="4"
+            maxlength="500"
+            class="notes-textarea"
+          ></ion-textarea>
+        </ion-item>
+        <div class="character-count">{{ readingForm.get('notes')?.value?.length || 0 }} / 500</div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <ion-button
+          expand="block"
+          color="medium"
+          fill="outline"
+          (click)="onCancel()"
+          [disabled]="isSubmitting"
+          class="cancel-button"
+        >
+          Cancel
+        </ion-button>
+        <ion-button
+          expand="block"
+          type="submit"
+          [disabled]="readingForm.invalid || isSubmitting"
+          class="save-button"
+        >
+          <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>
+          <span *ngIf="!isSubmitting">Save Reading</span>
+        </ion-button>
+      </div>
+    </form>
+  </div>
+</ion-content>

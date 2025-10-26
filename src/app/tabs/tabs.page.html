@@ -1,23 +1,37 @@
 <ion-tabs>
   <ion-tab-bar slot="bottom">
+    <!-- Dashboard Tab -->
     <ion-tab-button tab="dashboard">
-      <ion-icon name="home"></ion-icon>
+      <span class="material-symbols-outlined"> home </span>
       <ion-label>Inicio</ion-label>
     </ion-tab-button>
 
+    <!-- Readings Tab -->
     <ion-tab-button tab="readings">
-      <ion-icon name="analytics"></ion-icon>
+      <span class="material-symbols-outlined"> menu_book </span>
       <ion-label>Lecturas</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="devices">
-      <ion-icon name="bluetooth"></ion-icon>
-      <ion-label>Dispositivos</ion-label>
+    <!-- Spacer for FAB -->
+    <div class="fab-spacer"></div>
+
+    <!-- Trends Tab (placeholder) -->
+    <ion-tab-button tab="trends">
+      <span class="material-symbols-outlined"> trending_up </span>
+      <ion-label>Tendencias</ion-label>
     </ion-tab-button>
 
+    <!-- Profile Tab -->
     <ion-tab-button tab="profile">
-      <ion-icon name="person"></ion-icon>
+      <span class="material-symbols-outlined"> person </span>
       <ion-label>Perfil</ion-label>
     </ion-tab-button>
   </ion-tab-bar>
+
+  <!-- Centered FAB Button -->
+  <ion-fab class="center-fab" vertical="bottom" slot="fixed">
+    <ion-fab-button (click)="navigateToAddReading()">
+      <span class="material-symbols-outlined"> add </span>
+    </ion-fab-button>
+  </ion-fab>
 </ion-tabs>

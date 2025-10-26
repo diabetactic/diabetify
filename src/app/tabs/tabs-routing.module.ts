@@ -12,12 +12,12 @@ const routes: Routes = [
         loadChildren: () => import('../dashboard/tab1.module').then(m => m.Tab1PageModule),
       },
       {
-        path: 'devices',
-        loadChildren: () => import('../devices/tab1.module').then(m => m.Tab1PageModule),
-      },
-      {
         path: 'readings',
         loadChildren: () => import('../readings/tab1.module').then(m => m.Tab1PageModule),
+      },
+      {
+        path: 'trends',
+        loadChildren: () => import('../trends/trends.module').then(m => m.TrendsPageModule),
       },
       {
         path: 'profile',

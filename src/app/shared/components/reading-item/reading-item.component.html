@@ -1,0 +1,23 @@
+<ion-item class="reading-item" lines="none">
+  <div class="reading-content">
+    <div class="reading-left">
+      <span class="glucose-emoji">{{ getStatusEmoji() }}</span>
+      <div class="reading-info">
+        <div class="glucose-value">
+          <span class="value">{{ reading.value }}</span>
+          <span class="unit">{{ reading.units }}</span>
+        </div>
+        <div class="reading-time">
+          <span class="date">{{ formatDate(reading.time) }}</span>
+          <span class="time-separator">•</span>
+          <span class="time">{{ formatTime(reading.time) }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="reading-right">
+      <span class="status-badge" [ngClass]="getStatusClass()">
+        {{ getStatusText() }}
+      </span>
+    </div>
+  </div>
+</ion-item>

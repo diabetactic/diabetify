@@ -1,0 +1,148 @@
+.alert-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  gap: 12px;
+
+  .alert-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+
+    .alert-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .alert-message {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.4;
+      flex: 1;
+    }
+  }
+
+  .dismiss-button {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+
+    span {
+      font-size: 20px;
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+      background-color: rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  // Success variant (green)
+  &.success {
+    background-color: rgba(34, 197, 94, 0.12);
+    color: #16a34a;
+
+    .alert-icon,
+    .alert-message,
+    .dismiss-button span {
+      color: #16a34a;
+    }
+
+    .dismiss-button:hover {
+      background-color: rgba(34, 197, 94, 0.2);
+    }
+  }
+
+  // Info variant (blue)
+  &.info {
+    background-color: rgba(37, 175, 244, 0.12);
+    color: #0284c7;
+
+    .alert-icon,
+    .alert-message,
+    .dismiss-button span {
+      color: #0284c7;
+    }
+
+    .dismiss-button:hover {
+      background-color: rgba(37, 175, 244, 0.2);
+    }
+  }
+
+  // Warning variant (orange)
+  &.warning {
+    background-color: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+
+    .alert-icon,
+    .alert-message,
+    .dismiss-button span {
+      color: #d97706;
+    }
+
+    .dismiss-button:hover {
+      background-color: rgba(245, 158, 11, 0.2);
+    }
+  }
+}
+
+// Dark mode adjustments
+@media (prefers-color-scheme: dark) {
+  .alert-banner {
+    &.success {
+      background-color: rgba(34, 197, 94, 0.18);
+      color: #4ade80;
+
+      .alert-icon,
+      .alert-message,
+      .dismiss-button span {
+        color: #4ade80;
+      }
+    }
+
+    &.info {
+      background-color: rgba(37, 175, 244, 0.18);
+      color: #38bdf8;
+
+      .alert-icon,
+      .alert-message,
+      .dismiss-button span {
+        color: #38bdf8;
+      }
+    }
+
+    &.warning {
+      background-color: rgba(245, 158, 11, 0.18);
+      color: #fbbf24;
+
+      .alert-icon,
+      .alert-message,
+      .dismiss-button span {
+        color: #fbbf24;
+      }
+    }
+
+    .dismiss-button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .dismiss-button:active {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+  }
+}

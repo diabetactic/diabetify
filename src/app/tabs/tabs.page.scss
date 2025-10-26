@@ -1,0 +1,79 @@
+ion-tab-bar {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-bottom: env(safe-area-inset-bottom);
+  height: calc(56px + env(safe-area-inset-bottom));
+
+  // Dark mode border
+  @media (prefers-color-scheme: dark) {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+ion-tab-button {
+  --color: #94a3b8; // Inactive tab color (gray)
+  --color-selected: var(--ion-color-primary); // Active tab color (primary blue)
+  max-width: none;
+
+  .material-symbols-outlined {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+
+  ion-label {
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 4px;
+  }
+
+  // Active tab state
+  &.tab-selected {
+    .material-symbols-outlined {
+      font-variation-settings:
+        'FILL' 1,
+        'wght' 500,
+        'GRAD' 0,
+        'opsz' 24;
+    }
+  }
+}
+
+// FAB spacer to create space for the centered FAB
+.fab-spacer {
+  width: 20%;
+  min-width: 64px;
+}
+
+// Center FAB styling (additional to global.scss)
+ion-fab.center-fab {
+  // Position FAB above tab bar
+  bottom: calc(56px - 32px + env(safe-area-inset-bottom));
+
+  ion-fab-button {
+    --background: var(--ion-color-primary);
+    --background-activated: var(--ion-color-primary-shade);
+    --background-hover: var(--ion-color-primary-tint);
+    --color: white;
+    --box-shadow: 0 4px 12px rgba(37, 175, 244, 0.3);
+    --border-radius: 50%;
+
+    .material-symbols-outlined {
+      font-size: 28px;
+      font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 28;
+    }
+
+    // Hover effect for web
+    &:hover {
+      --box-shadow: 0 6px 16px rgba(37, 175, 244, 0.4);
+    }
+
+    // Active press effect
+    &:active {
+      transform: scale(0.95);
+      transition: transform 0.1s ease;
+    }
+  }
+}
