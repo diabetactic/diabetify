@@ -14,6 +14,7 @@ interface MealContext {
 }
 
 @Component({
+  
   selector: 'app-add-reading',
   templateUrl: './add-reading.page.html',
   styleUrls: ['./add-reading.page.scss'],
