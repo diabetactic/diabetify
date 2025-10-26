@@ -6,6 +6,7 @@ import { TidepoolSyncService } from '../core/services/tidepool-sync.service';
 import { LocalGlucoseReading, GlucoseStatistics } from '../core/models/glucose-reading.model';
 
 @Component({
+  
   selector: 'app-tab1',
   templateUrl: './dashboard.html',
   styleUrls: ['./tab1.page.scss'],
