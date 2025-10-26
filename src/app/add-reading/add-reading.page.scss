@@ -1,0 +1,263 @@
+.page-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.banner-container {
+  margin-bottom: 24px;
+}
+
+.reading-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// Form Section Styling
+.form-section {
+  margin-bottom: 4px;
+
+  .form-item {
+    --background: var(--ion-color-light);
+    --border-radius: 12px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+    --min-height: auto;
+    margin-bottom: 8px;
+  }
+
+  .form-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ion-color-dark);
+    margin-bottom: 8px;
+
+    .required {
+      color: var(--ion-color-danger);
+    }
+  }
+}
+
+// Glucose Input with Unit Label
+.input-with-unit {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+
+  .glucose-input {
+    flex: 1;
+    font-size: 24px;
+    font-weight: 600;
+    --padding-start: 0;
+    --padding-end: 0;
+
+    &.invalid {
+      --color: var(--ion-color-danger);
+    }
+  }
+
+  .unit-label {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ion-color-medium);
+    white-space: nowrap;
+  }
+}
+
+// Validation Message
+.validation-message {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  font-size: 12px;
+  color: var(--ion-color-danger);
+  margin-top: -4px;
+
+  ion-icon {
+    font-size: 16px;
+  }
+}
+
+// Status Preview
+.status-preview {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 16px;
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+
+    &[data-status='success'] {
+      background-color: rgba(var(--ion-color-success-rgb), 0.15);
+      color: var(--ion-color-success);
+      border: 2px solid var(--ion-color-success);
+    }
+
+    &[data-status='warning'] {
+      background-color: rgba(var(--ion-color-warning-rgb), 0.15);
+      color: var(--ion-color-warning);
+      border: 2px solid var(--ion-color-warning);
+    }
+
+    &[data-status='danger'] {
+      background-color: rgba(var(--ion-color-danger-rgb), 0.15);
+      color: var(--ion-color-danger);
+      border: 2px solid var(--ion-color-danger);
+    }
+
+    .status-emoji {
+      font-size: 18px;
+    }
+
+    .status-text {
+      font-size: 14px;
+    }
+  }
+}
+
+// Notes Textarea
+.notes-textarea {
+  --background: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  font-size: 14px;
+}
+
+.character-count {
+  text-align: right;
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  padding: 0 16px;
+  margin-top: -4px;
+}
+
+// Date Time Button
+ion-datetime-button {
+  --background: var(--ion-color-light);
+  --color: var(--ion-color-dark);
+  width: 100%;
+}
+
+// Select
+ion-select {
+  --padding-start: 0;
+  --padding-end: 0;
+  width: 100%;
+}
+
+// Action Buttons
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+  padding-bottom: 16px;
+
+  .cancel-button {
+    --border-width: 2px;
+    --border-color: var(--ion-color-medium);
+  }
+
+  .save-button {
+    position: relative;
+
+    ion-spinner {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 576px) {
+  .page-container {
+    padding: 12px;
+  }
+
+  .action-buttons {
+    grid-template-columns: 1fr;
+
+    .cancel-button {
+      order: 2;
+    }
+
+    .save-button {
+      order: 1;
+    }
+  }
+}
+
+// Dark Mode Adjustments
+@media (prefers-color-scheme: dark) {
+  .form-section {
+    .form-item {
+      --background: var(--ion-color-step-50);
+    }
+  }
+
+  .status-preview {
+    .status-badge {
+      &[data-status='success'] {
+        background-color: rgba(var(--ion-color-success-rgb), 0.25);
+      }
+
+      &[data-status='warning'] {
+        background-color: rgba(var(--ion-color-warning-rgb), 0.25);
+      }
+
+      &[data-status='danger'] {
+        background-color: rgba(var(--ion-color-danger-rgb), 0.25);
+      }
+    }
+  }
+}
+
+// High Contrast Mode
+.high-contrast {
+  .form-item {
+    --border-width: 2px;
+    --border-color: var(--ion-color-dark);
+  }
+
+  .status-badge {
+    border-width: 3px !important;
+  }
+}
+
+// Accessibility - Focus States
+ion-input:focus-within,
+ion-textarea:focus-within,
+ion-select:focus-within {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+// Animation for Status Badge
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.status-preview {
+  animation: fadeIn 0.3s ease-in-out;
+}

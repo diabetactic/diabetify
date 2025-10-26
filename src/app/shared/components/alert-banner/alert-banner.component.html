@@ -1,0 +1,9 @@
+<div class="alert-banner" [ngClass]="type" *ngIf="visible">
+  <div class="alert-content">
+    <span class="material-symbols-outlined alert-icon">{{ getIcon() }}</span>
+    <p class="alert-message">{{ message }}</p>
+  </div>
+  <button *ngIf="dismissible" class="dismiss-button" (click)="dismiss()" aria-label="Dismiss alert">
+    <span class="material-symbols-outlined">close</span>
+  </button>
+</div>

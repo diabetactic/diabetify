@@ -1,10 +1,109 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>Dashboard</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onSync()" [disabled]="isSyncing">
+        <ion-icon slot="icon-only" name="sync-outline" [class.spinning]="isSyncing"> </ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <h1>Bienvenido a Diabetify</h1>
-  <p>Aplicación para gestión de diabetes</p>
+<ion-content>
+  <!-- Pull to Refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="dashboard-container">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading your glucose data...</p>
+    </div>
+
+    <!-- Dashboard Content -->
+    <ng-container *ngIf="!isLoading">
+      <!-- Success Alert Banner -->
+      <app-alert-banner
+        *ngIf="showSuccessAlert"
+        type="success"
+        message="Great job keeping your glucose in range! Keep it up."
+        [dismissible]="true"
+        (dismissed)="onAlertDismissed()"
+        class="alert-banner"
+      >
+      </app-alert-banner>
+
+      <!-- Stats Grid (2x2) -->
+      <div class="stats-grid">
+        <!-- HbA1c Card -->
+        <app-stat-card
+          title="HbA1c"
+          [value]="formatPercentage(statistics?.estimatedA1C)"
+          unit=""
+          [icon]="icons.hba1c"
+          [gradientColors]="gradients.hba1c"
+        >
+        </app-stat-card>
+
+        <!-- Time in Range Card -->
+        <app-stat-card
+          title="Time in Range"
+          [value]="formatPercentage(statistics?.timeInRange)"
+          unit=""
+          [icon]="icons.timeInRange"
+          [gradientColors]="gradients.timeInRange"
+        >
+        </app-stat-card>
+
+        <!-- Average Glucose Card -->
+        <app-stat-card
+          title="Average Glucose"
+          [value]="formatGlucose(statistics?.average)"
+          unit="mg/dL"
+          [icon]="icons.avgGlucose"
+          [gradientColors]="gradients.avgGlucose"
+        >
+        </app-stat-card>
+
+        <!-- GMI Card -->
+        <app-stat-card
+          title="GMI"
+          [value]="formatPercentage(statistics?.gmi)"
+          unit=""
+          [icon]="icons.gmi"
+          [gradientColors]="gradients.gmi"
+        >
+        </app-stat-card>
+      </div>
+
+      <!-- Recent Readings Section -->
+      <div class="recent-readings-section">
+        <div class="section-header">
+          <h2>Recent Readings</h2>
+          <ion-button fill="clear" size="small" routerLink="/tabs/readings">
+            View All
+            <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
+          </ion-button>
+        </div>
+
+        <!-- Empty State -->
+        <app-empty-state
+          *ngIf="recentReadings.length === 0"
+          illustration="fitness"
+          heading="No readings yet"
+          message="Start tracking your glucose readings to see them here."
+          ctaText=""
+        >
+        </app-empty-state>
+
+        <!-- Reading Items -->
+        <div class="readings-list" *ngIf="recentReadings.length > 0">
+          <app-reading-item *ngFor="let reading of recentReadings" [reading]="reading">
+          </app-reading-item>
+        </div>
+      </div>
+    </ng-container>
+  </div>
 </ion-content>
