@@ -1,0 +1,214 @@
+<!doctype html>
+<html class="light" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Profile Page</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#25aff4',
+              'background-light': '#f5f7f8',
+              'background-dark': '#101c22',
+            },
+            fontFamily: {
+              display: ['Be Vietnam Pro', 'sans-serif'],
+            },
+            borderRadius: {
+              DEFAULT: '0.5rem',
+              lg: '1rem',
+              xl: '1.5rem',
+              full: '9999px',
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="font-display">
+    <div
+      class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden"
+    >
+      <div
+        class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between"
+      >
+        <div class="flex size-12 shrink-0 items-center"></div>
+        <h2
+          class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center"
+        >
+          Perfil
+        </h2>
+        <div class="flex w-12 items-center justify-end">
+          <button
+            class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 bg-transparent text-slate-900 dark:text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0"
+          >
+            <span class="material-symbols-outlined text-slate-900 dark:text-white">settings</span>
+          </button>
+        </div>
+      </div>
+      <div class="flex p-4 @container">
+        <div class="flex w-full flex-col gap-4 items-center">
+          <div class="flex gap-4 flex-col items-center">
+            <div
+              class="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32"
+              data-alt="A playful cartoon monster avatar"
+              style="
+                background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCIiQ8acsm7ASFdcG5QU_9W34tmUWRPeUgeSNMKl2gie6yI8FWZ1iNEfB2t3baFSy3Y8sO4b8qpH6T2gpy5EuhGk4SmKXJ7igSx57Cs8H1z9H4j7ys0u3XOGSQBn_h-X2lcwNBfGgtTB-P8miyFmFgzeROcXQbk0pv-Kz6J6s_-YaZIQFjg28L1fKnZOvh_qdQ_s2prQsX6JSriQ-DolgLjAGVEgIxqdyG6z48ZL7IJ4wDo_N_kn2AROuAuCl4TeKRGk0RkCg7Z7dQ');
+              "
+            ></div>
+            <p
+              class="text-slate-900 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] text-center"
+            >
+              ¡Hola, Alex!
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="px-4 space-y-4">
+        <div
+          class="flex items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl min-h-[72px] justify-between"
+        >
+          <div class="flex items-center gap-4">
+            <div
+              class="text-slate-900 dark:text-white flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12"
+            >
+              <span class="material-symbols-outlined">cake</span>
+            </div>
+            <div class="flex flex-col justify-center">
+              <p
+                class="text-slate-900 dark:text-white text-base font-medium leading-normal line-clamp-1"
+              >
+                Edad
+              </p>
+              <p
+                class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal line-clamp-2"
+              >
+                Tengo 10 años
+              </p>
+            </div>
+          </div>
+        </div>
+        <div
+          class="flex items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl min-h-[72px] justify-between"
+        >
+          <div class="flex items-center gap-4">
+            <div
+              class="text-slate-900 dark:text-white flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12"
+            >
+              <span class="material-symbols-outlined">book</span>
+            </div>
+            <div class="flex flex-col justify-center">
+              <p
+                class="text-slate-900 dark:text-white text-base font-medium leading-normal line-clamp-1"
+              >
+                Mi Historia con la Diabetes
+              </p>
+              <p
+                class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal line-clamp-2"
+              >
+                Diagnosticado el 01/01/2022
+              </p>
+            </div>
+          </div>
+        </div>
+        <div
+          class="flex items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl min-h-[72px] justify-between"
+        >
+          <div class="flex items-center gap-4">
+            <div
+              class="text-slate-900 dark:text-white flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12"
+            >
+              <span class="material-symbols-outlined">emergency</span>
+            </div>
+            <div class="flex flex-col justify-center">
+              <p
+                class="text-slate-900 dark:text-white text-base font-medium leading-normal line-clamp-1"
+              >
+                En Caso de Emergencia
+              </p>
+              <p
+                class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal line-clamp-2"
+              >
+                Llamar a Mamá al 123-456-7890
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-4">
+          <div class="bg-white dark:bg-slate-800 p-4 rounded-xl flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <span class="material-symbols-outlined text-green-500 text-3xl">check_circle</span>
+              <div>
+                <p class="text-slate-900 dark:text-white font-medium">Conectado a Tidepool</p>
+              </div>
+            </div>
+            <button class="px-4 py-2 bg-red-500/10 text-red-500 rounded-lg text-sm font-bold">
+              Desconectar
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="px-4 pt-8 pb-4">
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div
+                class="text-slate-900 dark:text-white flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12"
+              >
+                <span class="material-symbols-outlined">palette</span>
+              </div>
+              <p class="text-slate-900 dark:text-white text-base font-medium">Tema</p>
+            </div>
+          </div>
+          <div class="mt-4 flex flex-col gap-2">
+            <button
+              class="flex items-center justify-between p-3 rounded-lg bg-slate-100 dark:bg-slate-700 w-full"
+            >
+              <span class="text-slate-900 dark:text-white text-sm font-medium"
+                >Seguir tema del sistema</span
+              >
+              <span class="material-symbols-outlined text-primary">check_circle</span>
+            </button>
+            <button
+              class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 w-full"
+            >
+              <span class="text-slate-900 dark:text-white text-sm font-medium">Claro</span>
+            </button>
+            <button
+              class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 w-full"
+            >
+              <span class="text-slate-900 dark:text-white text-sm font-medium">Oscuro</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

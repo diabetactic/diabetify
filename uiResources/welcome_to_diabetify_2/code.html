@@ -1,0 +1,101 @@
+<!doctype html>
+<html class="light" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Diabetify Welcome</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#00C6AE',
+              secondary: '#FFD700',
+              'background-light': '#f5f7f8',
+              'background-dark': '#101c22',
+              coral: '#FF7F50',
+              'light-blue': '#ADD8E6',
+            },
+            fontFamily: {
+              display: ['Be Vietnam Pro', 'sans-serif'],
+            },
+            borderRadius: {
+              DEFAULT: '1rem',
+              lg: '2rem',
+              xl: '3rem',
+              full: '9999px',
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="bg-background-light dark:bg-background-dark font-display">
+    <div
+      class="relative flex h-auto min-h-screen w-full flex-col bg-[#f5f7f8] group/design-root overflow-x-hidden dark:bg-background-dark"
+      style="font-family: 'Be Vietnam Pro', 'Noto Sans', sans-serif"
+    >
+      <div class="flex-grow flex flex-col justify-center items-center px-4">
+        <div class="flex w-full grow bg-[#f5f7f8] @container py-3 dark:bg-background-dark">
+          <div
+            class="w-full gap-1 overflow-hidden bg-[#f5f7f8] @[480px]:gap-2 aspect-[1/1] flex max-w-sm mx-auto dark:bg-background-dark"
+          >
+            <div
+              class="w-full bg-center bg-no-repeat bg-contain aspect-auto rounded-none flex-1"
+              data-alt="A cheerful illustration of a child superhero confidently managing their diabetes."
+              style="
+                background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBf8Fe5gKNYGiPfhPn-21Br3vmfaNsTL1Nsj_-cZv7gz_shtiWyPB0LUPniyFaRq5fX9g09VQCurbaW5mncAVTbtoVRSKRf--U7giLtkYjGtB7kNbMZCsnz8tJ3VjCkdf-0igG1-F-E0IPgB2sjMMD9lW4kQwcuTEPCCRQa6D-wz8bBrP1RF6F5iLJCV1pcbDn7uezfdfNPGq5P4RxuGhQjCJK4LNFXhI3HrRo3E26Om9KEjpICgPgE6jMvEvuVa35VDd7byWNL064');
+              "
+            ></div>
+          </div>
+        </div>
+        <h1
+          class="text-[#0d171c] tracking-light text-[32px] font-bold leading-tight px-4 text-center pb-3 pt-6 dark:text-white"
+        >
+          ¡Bienvenido a Diabetify!
+        </h1>
+        <p
+          class="text-[#0d171c] text-base font-normal leading-normal pb-3 pt-1 px-4 text-center dark:text-gray-300"
+        >
+          Tu compañero amigable para controlar la diabetes con una sonrisa.
+        </p>
+      </div>
+      <div class="pb-8 px-4">
+        <div class="flex px-4 py-3 justify-center">
+          <button
+            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 flex-1 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-primary/30"
+          >
+            <span class="truncate">Empezar</span>
+          </button>
+        </div>
+        <div class="flex px-4 py-3 justify-center">
+          <button
+            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 flex-1 bg-primary/20 text-primary text-base font-bold leading-normal tracking-[0.015em] dark:bg-primary/30 dark:text-white"
+          >
+            <span class="truncate">Iniciar Sesión</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
