@@ -1,0 +1,250 @@
+/**
+ * Readings Page Styles
+ */
+
+// === Header & Search ===
+ion-header {
+  ion-toolbar {
+    ion-button {
+      position: relative;
+
+      ion-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        min-width: 16px;
+        height: 16px;
+        font-size: 10px;
+        padding: 2px 4px;
+      }
+    }
+  }
+
+  ion-searchbar {
+    padding: 8px 16px;
+  }
+}
+
+// === Active Filters ===
+.filters-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--ion-color-light);
+  border-bottom: 1px solid var(--ion-color-light-shade);
+  overflow-x: auto;
+  white-space: nowrap;
+
+  ion-chip {
+    margin: 0;
+    cursor: pointer;
+  }
+
+  ion-button {
+    flex-shrink: 0;
+  }
+}
+
+// === Loading State ===
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 32px;
+
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 14px;
+    margin: 0;
+  }
+}
+
+// === Empty State ===
+.empty-state-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 32px;
+}
+
+// === Readings Summary ===
+.readings-summary {
+  padding: 12px 16px 8px;
+  border-bottom: 1px solid var(--ion-color-light-shade);
+
+  ion-text p {
+    margin: 0;
+    font-size: 13px;
+    text-align: center;
+  }
+}
+
+// === Readings List ===
+.readings-list {
+  padding-bottom: 80px; // Space for FAB
+
+  .reading-group {
+    margin-bottom: 24px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// === Date Header ===
+.date-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 8px;
+  background: var(--ion-background-color);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 2px solid var(--ion-color-primary);
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
+}
+
+// === Readings Group List ===
+.readings-group-list {
+  padding: 8px 16px;
+  margin: 0;
+
+  .reading-item-wrapper {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    // Reading item is full-width
+    app-reading-item {
+      display: block;
+      width: 100%;
+    }
+  }
+}
+
+// === Floating Action Buttons ===
+ion-fab {
+  &.scroll-to-top-fab {
+    bottom: 80px; // Position above main FAB
+  }
+
+  ion-fab-button {
+    // Default Ionic FAB styling
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// === Filter Modal ===
+ion-modal {
+  .filter-section {
+    margin-bottom: 24px;
+
+    ion-list-header {
+      padding-left: 0;
+      padding-right: 0;
+      margin-bottom: 8px;
+
+      ion-label {
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--ion-color-medium);
+      }
+    }
+
+    ion-list {
+      padding: 0;
+    }
+
+    ion-button {
+      margin-top: 8px;
+
+      &:first-of-type {
+        margin-top: 0;
+      }
+    }
+  }
+
+  .filter-actions {
+    margin-top: 32px;
+    padding-bottom: 16px;
+
+    ion-button {
+      margin-top: 12px;
+
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+  }
+}
+
+// === Responsive Design ===
+@media (min-width: 768px) {
+  .readings-list {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .date-header {
+    padding: 20px 24px 12px;
+  }
+}
+
+// === Dark Mode Support ===
+@media (prefers-color-scheme: dark) {
+  .filters-container {
+    background: var(--ion-color-step-50);
+    border-bottom-color: var(--ion-color-step-100);
+  }
+
+  .date-header {
+    background: var(--ion-background-color);
+  }
+}
+
+// === Accessibility ===
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// === Print Styles ===
+@media print {
+  ion-fab,
+  .filters-container,
+  ion-searchbar {
+    display: none;
+  }
+
+  .reading-group {
+    page-break-inside: avoid;
+  }
+}

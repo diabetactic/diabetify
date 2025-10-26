@@ -1,0 +1,240 @@
+// Profile Page Styles
+
+ion-content {
+  --background: var(--ion-color-light, #f4f5f8);
+}
+
+// Profile Header Section
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+  background: var(--ion-color-primary, #2196f3);
+  color: white;
+  border-radius: 0 0 24px 24px;
+  margin: -16px -16px 24px -16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-container {
+  margin-bottom: 16px;
+}
+
+.user-avatar {
+  width: 128px;
+  height: 128px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+  .default-avatar {
+    font-size: 128px;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  img {
+    object-fit: cover;
+  }
+}
+
+.user-info {
+  text-align: center;
+  width: 100%;
+}
+
+.user-name {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: white;
+}
+
+.user-email {
+  font-size: 14px;
+  margin: 0 0 4px 0;
+  opacity: 0.9;
+  color: white;
+}
+
+.member-since {
+  font-size: 12px;
+  margin: 0;
+  opacity: 0.75;
+  color: white;
+}
+
+// Profile Sections
+.profile-section {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222);
+  margin: 0 0 12px 0;
+  padding: 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+}
+
+// Preference Items (for select inputs)
+.preference-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--ion-color-light-shade, #e0e0e0);
+  position: relative;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.preference-header {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.preference-icon {
+  font-size: 24px;
+  margin-right: 16px;
+  color: var(--ion-color-primary, #2196f3);
+  flex-shrink: 0;
+}
+
+.preference-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.preference-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ion-color-dark, #222);
+  margin-bottom: 2px;
+}
+
+.preference-subtitle {
+  font-size: 14px;
+  color: var(--ion-color-medium, #666);
+}
+
+.preference-select {
+  max-width: 120px;
+  padding: 4px 8px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+}
+
+// Connection Button
+.connection-button-container {
+  margin-top: 16px;
+  padding: 0 8px;
+
+  ion-button {
+    --border-radius: 8px;
+    font-weight: 600;
+  }
+}
+
+// Sign Out Button
+.sign-out-container {
+  margin-top: 24px;
+  padding: 0 8px 24px 8px;
+
+  ion-button {
+    --border-radius: 8px;
+    font-weight: 600;
+  }
+}
+
+// Dark Theme Support
+@media (prefers-color-scheme: dark) {
+  ion-content {
+    --background: #121212;
+  }
+
+  .profile-section {
+    background: #1e1e1e;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .section-title {
+    color: var(--ion-color-light, #f4f5f8);
+  }
+
+  .preference-title {
+    color: var(--ion-color-light, #f4f5f8);
+  }
+
+  .preference-subtitle {
+    color: var(--ion-color-medium-shade, #999);
+  }
+
+  .preference-item {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+// Dark theme class support (when explicitly set)
+body.dark-theme {
+  ion-content {
+    --background: #121212;
+  }
+
+  .profile-section {
+    background: #1e1e1e;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .section-title {
+    color: var(--ion-color-light, #f4f5f8);
+  }
+
+  .preference-title {
+    color: var(--ion-color-light, #f4f5f8);
+  }
+
+  .preference-subtitle {
+    color: var(--ion-color-medium-shade, #999);
+  }
+
+  .preference-item {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+// Responsive adjustments
+@media (min-width: 768px) {
+  .profile-header {
+    padding: 32px 24px;
+    margin: -16px -16px 32px -16px;
+  }
+
+  .profile-section {
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .user-avatar {
+    width: 144px;
+    height: 144px;
+
+    .default-avatar {
+      font-size: 144px;
+    }
+  }
+
+  .user-name {
+    font-size: 28px;
+  }
+}

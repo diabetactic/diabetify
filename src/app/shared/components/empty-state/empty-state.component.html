@@ -1,0 +1,10 @@
+<div class="empty-state">
+  <div class="illustration">
+    <span class="material-symbols-outlined">{{ illustration }}</span>
+  </div>
+  <h2 class="heading">{{ heading }}</h2>
+  <p class="message">{{ message }}</p>
+  <ion-button *ngIf="ctaText" expand="block" class="cta-button" (click)="onCtaClick()">
+    {{ ctaText }}
+  </ion-button>
+</div>

@@ -1,10 +1,198 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Perfil</ion-title>
+    <ion-title>Profile</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <h2>Tu Perfil</h2>
-  <p>Gestiona tu información personal y configuración</p>
+  <!-- User Info Header -->
+  <div class="profile-header">
+    <div class="avatar-container">
+      <ion-avatar class="user-avatar">
+        <ion-icon *ngIf="!profileData?.avatarUrl" name="person-circle" class="default-avatar">
+        </ion-icon>
+        <img *ngIf="profileData?.avatarUrl" [src]="profileData?.avatarUrl" alt="User avatar" />
+      </ion-avatar>
+    </div>
+
+    <div class="user-info" *ngIf="profileData">
+      <h2 class="user-name">{{ profileData.name }}</h2>
+      <p class="user-email">{{ profileData.email }}</p>
+      <p class="member-since">{{ profileData.memberSince }}</p>
+    </div>
+  </div>
+
+  <!-- Personal Information Section -->
+  <div class="profile-section">
+    <h3 class="section-title">Personal Information</h3>
+
+    <app-profile-item
+      icon="calendar-outline"
+      title="Age"
+      [subtitle]="profile?.age ? profile?.age + ' years old' : 'Not set'"
+      actionType="chevron"
+      (itemClick)="editAge()"
+    >
+    </app-profile-item>
+
+    <app-profile-item
+      icon="mail-outline"
+      title="Email"
+      [subtitle]="profileData?.email || 'Not available'"
+      actionType="none"
+    >
+    </app-profile-item>
+
+    <app-profile-item
+      icon="person-outline"
+      title="Username"
+      [subtitle]="profile?.name || 'Not set'"
+      actionType="chevron"
+      (itemClick)="editUsername()"
+    >
+    </app-profile-item>
+  </div>
+
+  <!-- Preferences Section -->
+  <div class="profile-section">
+    <h3 class="section-title">Preferences</h3>
+
+    <div class="preference-item">
+      <div class="preference-header">
+        <ion-icon name="contrast-outline" class="preference-icon"></ion-icon>
+        <div class="preference-label">
+          <div class="preference-title">Theme</div>
+          <div class="preference-subtitle">
+            {{ currentTheme === 'auto' ? 'System' : currentTheme === 'dark' ? 'Dark' : 'Light' }}
+          </div>
+        </div>
+      </div>
+      <ion-select
+        [value]="currentTheme"
+        (ionChange)="onThemeChange($event)"
+        interface="action-sheet"
+        class="preference-select"
+      >
+        <ion-select-option *ngFor="let option of themeOptions" [value]="option.value">
+          {{ option.label }}
+        </ion-select-option>
+      </ion-select>
+    </div>
+
+    <div class="preference-item">
+      <div class="preference-header">
+        <ion-icon name="language-outline" class="preference-icon"></ion-icon>
+        <div class="preference-label">
+          <div class="preference-title">Language</div>
+          <div class="preference-subtitle">
+            {{ currentLanguage === 'en' ? 'English' : 'Spanish' }}
+          </div>
+        </div>
+      </div>
+      <ion-select
+        [value]="currentLanguage"
+        (ionChange)="onLanguageChange($event)"
+        interface="action-sheet"
+        class="preference-select"
+      >
+        <ion-select-option *ngFor="let option of languageOptions" [value]="option.value">
+          {{ option.label }}
+        </ion-select-option>
+      </ion-select>
+    </div>
+
+    <div class="preference-item">
+      <div class="preference-header">
+        <ion-icon name="water-outline" class="preference-icon"></ion-icon>
+        <div class="preference-label">
+          <div class="preference-title">Glucose Units</div>
+          <div class="preference-subtitle">{{ currentGlucoseUnit }}</div>
+        </div>
+      </div>
+      <ion-select
+        [value]="currentGlucoseUnit"
+        (ionChange)="onGlucoseUnitChange($event)"
+        interface="action-sheet"
+        class="preference-select"
+      >
+        <ion-select-option *ngFor="let option of unitOptions" [value]="option.value">
+          {{ option.label }}
+        </ion-select-option>
+      </ion-select>
+    </div>
+  </div>
+
+  <!-- Tidepool Integration Section -->
+  <div class="profile-section">
+    <h3 class="section-title">Tidepool Integration</h3>
+
+    <app-profile-item
+      icon="cloud-outline"
+      title="Connection Status"
+      [subtitle]="isConnected ? 'Connected' : 'Not connected'"
+      actionType="badge"
+      [iconColor]="isConnected ? '#4caf50' : '#f44336'"
+    >
+    </app-profile-item>
+
+    <app-profile-item
+      *ngIf="isConnected"
+      icon="sync-outline"
+      title="Last Sync"
+      [subtitle]="formatLastSyncTime()"
+      actionType="none"
+    >
+    </app-profile-item>
+
+    <div class="connection-button-container">
+      <ion-button
+        expand="block"
+        [color]="isConnected ? 'danger' : 'primary'"
+        (click)="onToggleTidepoolConnection()"
+      >
+        <ion-icon slot="start" [name]="isConnected ? 'log-out-outline' : 'log-in-outline'">
+        </ion-icon>
+        {{ isConnected ? 'Disconnect from Tidepool' : 'Connect to Tidepool' }}
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- About Section -->
+  <div class="profile-section">
+    <h3 class="section-title">About</h3>
+
+    <app-profile-item
+      icon="information-circle-outline"
+      title="App Version"
+      [subtitle]="appVersion"
+      actionType="none"
+    >
+    </app-profile-item>
+
+    <app-profile-item
+      icon="document-text-outline"
+      title="Terms of Service"
+      subtitle="View our terms"
+      actionType="chevron"
+      (itemClick)="openTermsOfService()"
+    >
+    </app-profile-item>
+
+    <app-profile-item
+      icon="shield-checkmark-outline"
+      title="Privacy Policy"
+      subtitle="View our policy"
+      actionType="chevron"
+      (itemClick)="openPrivacyPolicy()"
+    >
+    </app-profile-item>
+  </div>
+
+  <!-- Sign Out Button -->
+  <div class="sign-out-container">
+    <ion-button expand="block" color="danger" fill="outline" (click)="onSignOut()">
+      <ion-icon slot="start" name="exit-outline"></ion-icon>
+      Sign Out
+    </ion-button>
+  </div>
 </ion-content>

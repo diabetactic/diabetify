@@ -45,9 +45,9 @@
  * Child-friendly global styles
  */
 
-// Set Roboto as the default font family
+// Set Be Vietnam Pro as the default font family with Roboto as fallback
 body {
-  font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+  font-family: 'Be Vietnam Pro', 'Roboto', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -59,47 +59,79 @@ body {
   margin: 0;
 }
 
-// Override Ionic variables with Material Design colors
+// Override Ionic variables with Diabetify Design System colors
 :root {
-  // Primary color (Teal)
-  --ion-color-primary: #00acc1;
-  --ion-color-primary-rgb: 0, 172, 193;
+  // Primary color (Blue - from mockups)
+  --ion-color-primary: #25aff4;
+  --ion-color-primary-rgb: 37, 175, 244;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #0097aa;
-  --ion-color-primary-tint: #1ab4c7;
+  --ion-color-primary-shade: #2099d7;
+  --ion-color-primary-tint: #3bb7f5;
 
-  // Secondary color (Orange)
-  --ion-color-secondary: #ffa726;
-  --ion-color-secondary-rgb: 255, 167, 38;
-  --ion-color-secondary-contrast: #000000;
-  --ion-color-secondary-contrast-rgb: 0, 0, 0;
-  --ion-color-secondary-shade: #e09321;
-  --ion-color-secondary-tint: #ffb03c;
+  // Secondary color (Teal variant)
+  --ion-color-secondary: #00c6ae;
+  --ion-color-secondary-rgb: 0, 198, 174;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #00ae99;
+  --ion-color-secondary-tint: #1accb6;
 
-  // Success color (Green)
-  --ion-color-success: #4caf50;
-  --ion-color-success-rgb: 76, 175, 80;
+  // Success color (Green - for normal glucose)
+  --ion-color-success: #22c55e;
+  --ion-color-success-rgb: 34, 197, 94;
   --ion-color-success-contrast: #ffffff;
   --ion-color-success-contrast-rgb: 255, 255, 255;
-  --ion-color-success-shade: #439a46;
-  --ion-color-success-tint: #5eb762;
+  --ion-color-success-shade: #1ead53;
+  --ion-color-success-tint: #38cb6e;
 
-  // Warning color (Orange)
-  --ion-color-warning: #ff9800;
-  --ion-color-warning-rgb: 255, 152, 0;
+  // Warning color (Orange - for low glucose)
+  --ion-color-warning: #f59e0b;
+  --ion-color-warning-rgb: 245, 158, 11;
   --ion-color-warning-contrast: #000000;
   --ion-color-warning-contrast-rgb: 0, 0, 0;
-  --ion-color-warning-shade: #e08600;
-  --ion-color-warning-tint: #ffa21a;
+  --ion-color-warning-shade: #d88b0a;
+  --ion-color-warning-tint: #f6a823;
 
-  // Danger color (Red)
-  --ion-color-danger: #f44336;
-  --ion-color-danger-rgb: 244, 67, 54;
+  // Danger color (Red - for high glucose)
+  --ion-color-danger: #ef4444;
+  --ion-color-danger-rgb: 239, 68, 68;
   --ion-color-danger-contrast: #ffffff;
   --ion-color-danger-contrast-rgb: 255, 255, 255;
-  --ion-color-danger-shade: #d73b30;
-  --ion-color-danger-tint: #f5574a;
+  --ion-color-danger-shade: #d13c3c;
+  --ion-color-danger-tint: #f05757;
+
+  // Custom Diabetify colors
+  --diabetify-gold: #ffd700;
+  --diabetify-coral: #ff7f50;
+  --diabetify-light-blue: #add8e6;
+
+  // Background colors
+  --diabetify-background-light: #f5f7f8;
+  --diabetify-background-dark: #101c22;
+  --diabetify-surface-light: #ffffff;
+  --diabetify-surface-dark: #1e293b;
+
+  // Text colors
+  --diabetify-text-primary: #0d171c;
+  --diabetify-text-secondary: #49819c;
+  --diabetify-text-tertiary: #94a3b8;
+
+  // Glucose status colors
+  --glucose-normal: #22c55e;
+  --glucose-low: #f59e0b;
+  --glucose-high: #ef4444;
+  --glucose-critical: #dc2626;
+
+  // Gradient colors for stat cards
+  --gradient-blue-start: #3b82f6;
+  --gradient-blue-end: #60a5fa;
+  --gradient-purple-start: #8b5cf6;
+  --gradient-purple-end: #a78bfa;
+  --gradient-green-start: #10b981;
+  --gradient-green-end: #34d399;
+  --gradient-yellow-start: #f59e0b;
+  --gradient-yellow-end: #fbbf24;
 }
 
 // Enhanced touch targets for accessibility
@@ -116,4 +148,106 @@ body {
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
+}
+
+// Typography System
+h1 {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+h2 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+h3 {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+h4 {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+p,
+.body-text {
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.015em;
+}
+
+.small-text {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+// Material Symbols Outlined configuration
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+// Common component styles
+.stat-card-gradient {
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+}
+
+.glucose-emoji {
+  font-size: 24px;
+  margin-right: 8px;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+
+  &.normal {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: var(--glucose-normal);
+  }
+
+  &.low {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--glucose-low);
+  }
+
+  &.high {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--glucose-high);
+  }
+}
+
+// FAB button centering for navigation
+.center-fab {
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: -8px;
+
+  ion-fab-button {
+    width: 64px;
+    height: 64px;
+    --background: var(--ion-color-primary);
+    --box-shadow: 0 4px 12px rgba(37, 175, 244, 0.3);
+  }
+}
+
+// Dark mode adjustments
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-background-color: var(--diabetify-background-dark);
+    --ion-background-color-rgb: 16, 28, 34;
+    --ion-text-color: #ffffff;
+    --ion-text-color-rgb: 255, 255, 255;
+    --ion-card-background: var(--diabetify-surface-dark);
+  }
 }

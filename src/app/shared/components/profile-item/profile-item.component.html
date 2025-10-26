@@ -1,0 +1,43 @@
+<ion-item
+  class="profile-item"
+  [button]="actionType !== 'toggle' && actionType !== 'none'"
+  [detail]="false"
+  lines="none"
+  (click)="onItemClick()"
+>
+  <div class="profile-item-content">
+    <div class="item-left">
+      <div
+        class="icon-container"
+        [style.background-color]="iconColor + '20'"
+        [style.color]="iconColor"
+      >
+        <span class="material-symbols-outlined">{{ icon }}</span>
+      </div>
+      <div class="item-text">
+        <h3 class="item-title">{{ title }}</h3>
+        <p class="item-subtitle" *ngIf="subtitle">{{ subtitle }}</p>
+      </div>
+    </div>
+    <div class="item-right">
+      <!-- Toggle action -->
+      <ion-toggle
+        *ngIf="actionType === 'toggle'"
+        [checked]="actionValue"
+        (ionChange)="onToggleChange($event)"
+        slot="end"
+      >
+      </ion-toggle>
+
+      <!-- Badge action -->
+      <span class="badge" *ngIf="actionType === 'badge' && actionValue">
+        {{ actionValue }}
+      </span>
+
+      <!-- Chevron action -->
+      <span class="material-symbols-outlined chevron" *ngIf="actionType === 'chevron'">
+        chevron_right
+      </span>
+    </div>
+  </div>
+</ion-item>

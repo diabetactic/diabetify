@@ -1,10 +1,261 @@
-<ion-header>
+<ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Lecturas</ion-title>
+    <ion-title>Readings</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openFilterModal()">
+        <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
+        <ion-badge *ngIf="getFilterCount() > 0" color="primary">{{ getFilterCount() }}</ion-badge>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Search Bar -->
+  <ion-toolbar>
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      (ionInput)="onSearchChange($event)"
+      placeholder="Search readings, notes..."
+      [debounce]="300"
+      animated="true"
+      showCancelButton="focus"
+      (ionClear)="clearSearch()"
+    >
+    </ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <h2>Historial de Lecturas</h2>
-  <p>Aquí verás tus mediciones de glucosa</p>
+<ion-content [fullscreen]="true">
+  <!-- Pull to refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="circles"
+      refreshingText="Refreshing..."
+    >
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Active Filters Chips -->
+  <div class="filters-container" *ngIf="hasActiveFilters()">
+    <ion-chip
+      *ngIf="filters.status && filters.status !== 'all'"
+      (click)="clearFilters()"
+      color="primary"
+    >
+      <ion-label>{{ filters.status }}</ion-label>
+      <ion-icon name="close-circle"></ion-icon>
+    </ion-chip>
+    <ion-chip *ngIf="filters.startDate" (click)="clearFilters()" color="primary">
+      <ion-label
+        >{{ filters.startDate | date: 'MMM d' }} - {{ filters.endDate | date: 'MMM d' }}</ion-label
+      >
+      <ion-icon name="close-circle"></ion-icon>
+    </ion-chip>
+    <ion-chip *ngIf="filters.searchTerm" (click)="clearSearch()" color="primary">
+      <ion-label>Search: {{ filters.searchTerm }}</ion-label>
+      <ion-icon name="close-circle"></ion-icon>
+    </ion-chip>
+    <ion-button fill="clear" size="small" (click)="clearFilters()"> Clear All </ion-button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <ion-spinner name="circular"></ion-spinner>
+    <p>Loading readings...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && totalCount === 0" class="empty-state-container">
+    <app-empty-state
+      illustration="document-text-outline"
+      heading="No Readings Yet"
+      message="Start tracking your glucose levels by adding your first reading."
+      ctaText="Add Reading"
+      (ctaClick)="addReading()"
+    >
+    </app-empty-state>
+  </div>
+
+  <!-- No Results State (after filtering) -->
+  <div
+    *ngIf="!isLoading && totalCount > 0 && filteredReadings.length === 0"
+    class="empty-state-container"
+  >
+    <app-empty-state
+      illustration="search-outline"
+      heading="No Results Found"
+      message="Try adjusting your filters or search terms."
+      ctaText="Clear Filters"
+      (ctaClick)="clearFilters()"
+    >
+    </app-empty-state>
+  </div>
+
+  <!-- Readings Count -->
+  <div class="readings-summary" *ngIf="!isLoading && filteredReadings.length > 0">
+    <ion-text color="medium">
+      <p>
+        Showing {{ filteredReadings.length }} of {{ totalCount }} readings
+        <span *ngIf="hasActiveFilters()"> (filtered)</span>
+      </p>
+    </ion-text>
+  </div>
+
+  <!-- Grouped Readings List with Virtual Scrolling -->
+  <div class="readings-list" *ngIf="!isLoading && groupedReadings.length > 0">
+    <!-- Group by Date -->
+    <div *ngFor="let group of groupedReadings; trackBy: trackByGroup" class="reading-group">
+      <!-- Date Header -->
+      <div class="date-header">
+        <ion-text>
+          <h2>{{ group.displayDate }}</h2>
+        </ion-text>
+        <ion-text color="medium">
+          <p>{{ group.readings.length }} reading{{ group.readings.length !== 1 ? 's' : '' }}</p>
+        </ion-text>
+      </div>
+
+      <!-- Readings in this group -->
+      <div class="readings-group-list">
+        <div
+          *ngFor="let reading of group.readings; trackBy: trackByReading"
+          class="reading-item-wrapper"
+          (click)="onReadingClick(reading)"
+        >
+          <app-reading-item [reading]="reading"></app-reading-item>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll to Top Button -->
+  <ion-fab
+    vertical="bottom"
+    horizontal="end"
+    slot="fixed"
+    class="scroll-to-top-fab"
+    *ngIf="groupedReadings.length > 2"
+  >
+    <ion-fab-button size="small" (click)="scrollToTop()" color="light">
+      <ion-icon name="arrow-up"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <!-- Add Reading FAB -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="addReading()" color="primary">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>
+
+<!-- Filter Modal -->
+<ion-modal [isOpen]="isFilterModalOpen" (didDismiss)="closeFilterModal()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Filter Readings</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeFilterModal()">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <!-- Status Filter -->
+      <div class="filter-section">
+        <ion-list-header>
+          <ion-label>Glucose Status</ion-label>
+        </ion-list-header>
+        <ion-list>
+          <ion-item>
+            <ion-select
+              [(ngModel)]="filters.status"
+              placeholder="Select status"
+              interface="popover"
+            >
+              <ion-select-option value="all">All</ion-select-option>
+              <ion-select-option value="normal">Normal</ion-select-option>
+              <ion-select-option value="low">Low</ion-select-option>
+              <ion-select-option value="critical-low">Critical Low</ion-select-option>
+              <ion-select-option value="high">High</ion-select-option>
+              <ion-select-option value="critical-high">Critical High</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-list>
+      </div>
+
+      <!-- Date Range Filter -->
+      <div class="filter-section">
+        <ion-list-header>
+          <ion-label>Date Range</ion-label>
+        </ion-list-header>
+        <ion-list>
+          <ion-item>
+            <ion-label position="stacked">Start Date</ion-label>
+            <ion-datetime-button datetime="startDatetime"></ion-datetime-button>
+            <ion-modal [keepContentsMounted]="true">
+              <ng-template>
+                <ion-datetime
+                  id="startDatetime"
+                  [(ngModel)]="filters.startDate"
+                  presentation="date"
+                  [max]="filters.endDate || undefined"
+                >
+                </ion-datetime>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">End Date</ion-label>
+            <ion-datetime-button datetime="endDatetime"></ion-datetime-button>
+            <ion-modal [keepContentsMounted]="true">
+              <ng-template>
+                <ion-datetime
+                  id="endDatetime"
+                  [(ngModel)]="filters.endDate"
+                  presentation="date"
+                  [min]="filters.startDate || undefined"
+                >
+                </ion-datetime>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+        </ion-list>
+      </div>
+
+      <!-- Quick Date Filters -->
+      <div class="filter-section">
+        <ion-list-header>
+          <ion-label>Quick Filters</ion-label>
+        </ion-list-header>
+        <ion-button expand="block" fill="outline" (click)="setFilterAllTime()">
+          All Time
+        </ion-button>
+        <ion-button expand="block" fill="outline" (click)="setFilterLast24Hours()">
+          Last 24 Hours
+        </ion-button>
+        <ion-button expand="block" fill="outline" (click)="setFilterLast7Days()">
+          Last 7 Days
+        </ion-button>
+        <ion-button expand="block" fill="outline" (click)="setFilterLast30Days()">
+          Last 30 Days
+        </ion-button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="filter-actions">
+        <ion-button expand="block" (click)="applyFiltersAndCloseModal()">
+          Apply Filters
+        </ion-button>
+        <ion-button expand="block" fill="clear" (click)="clearFiltersAndCloseModal()">
+          Clear All
+        </ion-button>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

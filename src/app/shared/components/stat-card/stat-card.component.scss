@@ -1,0 +1,58 @@
+.stat-card {
+  margin: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  color: white;
+
+  ion-card-content {
+    padding: 16px;
+  }
+
+  .stat-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    .icon {
+      font-size: 24px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .stat-card-value {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+
+    .value {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1;
+      color: white;
+    }
+
+    .unit {
+      font-size: 16px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+}
+
+// Dark mode adjustments
+@media (prefers-color-scheme: dark) {
+  .stat-card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
