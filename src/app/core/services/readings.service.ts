@@ -168,7 +168,7 @@ export class ReadingsService {
           : existing.status,
     };
 
-    await db.readings.update(id, updated);
+    await db.readings.update(id, updated as any);
 
     // Add to sync queue
     if (!updated.synced) {

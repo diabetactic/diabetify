@@ -257,7 +257,7 @@ export class TidepoolStorageService {
     tidepoolReading: GlucoseReading
   ): LocalGlucoseReading {
     // Transform Tidepool reading to local format
-    const transformedReading = transformTidepoolToLocal(tidepoolReading, localReading.userId);
+    const transformedReading = transformTidepoolToLocal(tidepoolReading, localReading.userId || '');
 
     // Merge: prefer Tidepool data, preserve local metadata
     const resolved: LocalGlucoseReading = {

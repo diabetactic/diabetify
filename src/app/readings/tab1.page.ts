@@ -30,6 +30,7 @@ interface ReadingFilters {
 }
 
 @Component({
+  
   selector: 'app-tab1',
   templateUrl: './readings.html',
   styleUrls: ['./tab1.page.scss'],

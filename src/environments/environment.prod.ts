@@ -36,10 +36,43 @@ export const environment = {
     logLevel: 'error' as 'debug' | 'info' | 'warn' | 'error',
   },
 
+  // Backend Services Configuration
+  backendServices: {
+    // Glucose data management service
+    glucoserver: {
+      baseUrl: 'https://api.diabetify.com', // TODO: Replace with actual production URL
+      apiPath: '/api/v1',
+      requestTimeout: 30000,
+    },
+
+    // Appointment management service
+    appointments: {
+      baseUrl: 'https://api.diabetify.com', // TODO: Replace with actual production URL
+      apiPath: '/api/appointments',
+      requestTimeout: 30000,
+    },
+
+    // Authentication service
+    auth: {
+      baseUrl: 'https://api.diabetify.com', // TODO: Replace with actual production URL
+      apiPath: '/api/auth',
+      requestTimeout: 30000,
+    },
+
+    // API Gateway
+    apiGateway: {
+      baseUrl: 'https://api.diabetify.com', // TODO: Replace with actual production URL
+      apiPath: '/api',
+      requestTimeout: 30000,
+    },
+  },
+
   // Feature flags
   features: {
     offlineMode: true,
     analyticsEnabled: true,
     crashReporting: true,
+    useLocalBackend: false, // Use production backend services
+    useTidepoolIntegration: true, // Keep Tidepool integration active
   },
 };
