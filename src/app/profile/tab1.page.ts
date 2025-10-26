@@ -18,6 +18,7 @@ interface ProfileDisplayData {
 }
 
 @Component({
+  
   selector: 'app-tab1',
   templateUrl: './profile.html',
   styleUrls: ['./tab1.page.scss'],
