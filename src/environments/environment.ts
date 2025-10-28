@@ -44,29 +44,29 @@ export const environment = {
   backendServices: {
     // Glucose data management service
     glucoserver: {
-      baseUrl: 'http://localhost:8001',
-      apiPath: '/api/v1',
+      baseUrl: '',
+      apiPath: '',
       requestTimeout: 30000,
     },
 
     // Appointment management service
     appointments: {
-      baseUrl: 'http://localhost:8002',
-      apiPath: '/api',
+      baseUrl: 'http://localhost:8000',
+      apiPath: '/appointments',
       requestTimeout: 30000,
     },
 
     // Authentication service
     auth: {
-      baseUrl: 'http://localhost:8003',
-      apiPath: '/api/auth',
+      baseUrl: 'http://localhost:8000',
+      apiPath: '',
       requestTimeout: 30000,
     },
 
     // API Gateway (if running)
     apiGateway: {
       baseUrl: 'http://localhost:8000',
-      apiPath: '/api',
+      apiPath: '',
       requestTimeout: 30000,
     },
   },

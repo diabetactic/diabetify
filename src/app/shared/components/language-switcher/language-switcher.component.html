@@ -1,0 +1,53 @@
+<!-- Language Switcher Component Template -->
+
+<!-- Button Mode -->
+<ion-button
+  *ngIf="displayMode === 'button'"
+  [fill]="'clear'"
+  [disabled]="isLoading"
+  (click)="toggleLanguage()"
+>
+  <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+  <ng-container *ngIf="!isLoading">
+    <span *ngIf="showIcon && currentLanguage" class="flag-icon">
+      {{ getFlagEmoji(currentLanguage.code) }}
+    </span>
+    <span *ngIf="showText">
+      {{ getDisplayText() }}
+    </span>
+  </ng-container>
+</ion-button>
+
+<!-- Select Mode -->
+<ion-select
+  *ngIf="displayMode === 'select'"
+  [value]="currentLanguage?.code"
+  [disabled]="isLoading"
+  (ionChange)="onLanguageSelect($event)"
+  interface="popover"
+  placeholder="{{ 'settings.language.title' | translate }}"
+>
+  <ion-select-option *ngFor="let lang of availableLanguages" [value]="lang.code">
+    <span class="flag-icon">{{ getFlagEmoji(lang.code) }}</span>
+    {{ showNativeName ? lang.nativeName : lang.name }}
+  </ion-select-option>
+</ion-select>
+
+<!-- Popover Trigger Mode -->
+<ion-button
+  *ngIf="displayMode === 'popover'"
+  [fill]="'clear'"
+  [disabled]="isLoading"
+  (click)="showLanguagePopover($event)"
+>
+  <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+  <ng-container *ngIf="!isLoading">
+    <span *ngIf="showIcon && currentLanguage" class="flag-icon">
+      {{ getFlagEmoji(currentLanguage.code) }}
+    </span>
+    <span *ngIf="showText">
+      {{ getDisplayText() }}
+    </span>
+    <ion-icon name="chevron-down" slot="end"></ion-icon>
+  </ng-container>
+</ion-button>

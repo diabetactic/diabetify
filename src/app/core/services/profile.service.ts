@@ -117,6 +117,7 @@ export class ProfileService {
       healthcareProvider: input.healthcareProvider,
       emergencyContact: input.emergencyContact,
       notes: input.notes,
+      hasCompletedOnboarding: input.hasCompletedOnboarding ?? false,
     };
 
     await this.saveProfile(profile);

@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { catchError, map, retry, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { ReadingsService, TeleAppointmentReadingSummary } from './readings.service';
 
 /**
  * Appointment status types
@@ -119,7 +120,10 @@ export class AppointmentService {
   private upcomingAppointmentSubject = new BehaviorSubject<Appointment | null>(null);
   public upcomingAppointment$ = this.upcomingAppointmentSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private readingsService: ReadingsService
+  ) {
     const config = environment.backendServices.appointments;
     this.baseUrl = config.baseUrl;
     this.apiPath = config.apiPath;
@@ -306,6 +310,61 @@ export class AppointmentService {
         recordCount: number;
       }>(`${this.fullUrl}/appointments/${appointmentId}/share-glucose`, body)
       .pipe(retry(1), catchError(this.handleError));
+  }
+
+  /**
+   * Share glucose data with manual readings summary included in the request body.
+   * This supports "manual-only" mode where readings live locally and the backend
+   * cannot fetch them itself. Falls back to the same endpoint contract, adding an
+   * optional field `manualReadingsSummary` that backends can consume when present.
+   */
+  shareManualGlucoseData(
+    appointmentId: string,
+    options?: {
+      dateRange?: { start: Date; end: Date };
+      days?: number; // when dateRange is not provided
+    }
+  ): Observable<{ shared: boolean; recordCount: number }> {
+    const startEnd = options?.dateRange
+      ? options.dateRange
+      : (() => {
+          const end = new Date();
+          const start = new Date();
+          const days = options?.days ?? 14;
+          start.setDate(end.getDate() - days);
+          return { start, end };
+        })();
+
+    return new Observable<{ shared: boolean; recordCount: number }>(subscriber => {
+      // Build manual summary first, then POST
+      this.readingsService
+        .exportManualReadingsSummary(
+          Math.max(
+            1,
+            Math.round((startEnd.end.getTime() - startEnd.start.getTime()) / (1000 * 60 * 60 * 24))
+          )
+        )
+        .then((summary: TeleAppointmentReadingSummary) => {
+          const body: any = {
+            startDate: startEnd.start.toISOString(),
+            endDate: startEnd.end.toISOString(),
+            manualReadingsSummary: summary,
+          };
+
+          this.http
+            .post<{ shared: boolean; recordCount: number }>(
+              `${this.fullUrl}/appointments/${appointmentId}/share-glucose`,
+              body
+            )
+            .pipe(retry(1), catchError(this.handleError))
+            .subscribe({
+              next: resp => subscriber.next(resp),
+              error: err => subscriber.error(err),
+              complete: () => subscriber.complete(),
+            });
+        })
+        .catch(err => subscriber.error(err));
+    });
   }
 
   /**

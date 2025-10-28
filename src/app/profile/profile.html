@@ -1,198 +1,177 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Profile</ion-title>
+    <ion-title>{{ 'tabs.profile' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <!-- User Info Header -->
-  <div class="profile-header">
-    <div class="avatar-container">
-      <ion-avatar class="user-avatar">
-        <ion-icon *ngIf="!profileData?.avatarUrl" name="person-circle" class="default-avatar">
-        </ion-icon>
-        <img *ngIf="profileData?.avatarUrl" [src]="profileData?.avatarUrl" alt="User avatar" />
-      </ion-avatar>
-    </div>
+<ion-content class="profile-content" [fullscreen]="true">
+  <div class="profile-container">
+    <section class="profile-hero">
+      <div class="avatar-wrapper">
+        <ion-avatar class="hero-avatar">
+          <ion-icon *ngIf="!avatarUrl" name="person-circle-outline" class="avatar-fallback">
+          </ion-icon>
+          <img *ngIf="avatarUrl" [src]="avatarUrl" alt="User avatar" />
+        </ion-avatar>
+      </div>
+      <h2 class="hero-greeting">{{ greeting }}</h2>
+      <p class="hero-email">{{ emailText }}</p>
+      <p class="hero-subtext">{{ memberSinceText }}</p>
+    </section>
 
-    <div class="user-info" *ngIf="profileData">
-      <h2 class="user-name">{{ profileData.name }}</h2>
-      <p class="user-email">{{ profileData.email }}</p>
-      <p class="member-since">{{ profileData.memberSince }}</p>
-    </div>
-  </div>
+    <section class="overview-grid">
+      <button type="button" class="overview-card" (click)="editAge()">
+        <ion-icon name="accessibility-outline" aria-hidden="true"></ion-icon>
+        <div class="overview-text">
+          <p class="card-title">{{ 'profile.age' | translate }}</p>
+          <p class="card-subtitle">{{ ageDescription }}</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron" aria-hidden="true"></ion-icon>
+      </button>
 
-  <!-- Personal Information Section -->
-  <div class="profile-section">
-    <h3 class="section-title">Personal Information</h3>
+      <div class="overview-card">
+        <ion-icon name="medkit-outline" aria-hidden="true"></ion-icon>
+        <div class="overview-text">
+          <p class="card-title">{{ 'profile.diabetesInfo' | translate }}</p>
+          <p class="card-subtitle">{{ diabetesSummary }}</p>
+        </div>
+      </div>
 
-    <app-profile-item
-      icon="calendar-outline"
-      title="Age"
-      [subtitle]="profile?.age ? profile?.age + ' years old' : 'Not set'"
-      actionType="chevron"
-      (itemClick)="editAge()"
-    >
-    </app-profile-item>
+      <div class="overview-card" [class.overview-card--placeholder]="!hasEmergencyContact">
+        <ion-icon name="warning-outline" aria-hidden="true"></ion-icon>
+        <div class="overview-text">
+          <p class="card-title">{{ 'profile.emergencyContact' | translate }}</p>
+          <p class="card-subtitle">{{ emergencySummary }}</p>
+        </div>
+      </div>
+    </section>
 
-    <app-profile-item
-      icon="mail-outline"
-      title="Email"
-      [subtitle]="profileData?.email || 'Not available'"
-      actionType="none"
-    >
-    </app-profile-item>
+    <section class="card preferences-card">
+      <h3 class="card-heading">{{ 'profile.preferences' | translate }}</h3>
 
-    <app-profile-item
-      icon="person-outline"
-      title="Username"
-      [subtitle]="profile?.name || 'Not set'"
-      actionType="chevron"
-      (itemClick)="editUsername()"
-    >
-    </app-profile-item>
-  </div>
-
-  <!-- Preferences Section -->
-  <div class="profile-section">
-    <h3 class="section-title">Preferences</h3>
-
-    <div class="preference-item">
-      <div class="preference-header">
-        <ion-icon name="contrast-outline" class="preference-icon"></ion-icon>
-        <div class="preference-label">
-          <div class="preference-title">Theme</div>
-          <div class="preference-subtitle">
-            {{ currentTheme === 'auto' ? 'System' : currentTheme === 'dark' ? 'Dark' : 'Light' }}
+      <div class="preference-row">
+        <div class="row-details">
+          <ion-icon name="contrast-outline" aria-hidden="true"></ion-icon>
+          <div>
+            <p class="card-title">{{ 'profile.theme.title' | translate }}</p>
+            <p class="card-subtitle">{{ 'profile.theme.' + currentTheme | translate }}</p>
           </div>
         </div>
+        <ion-select
+          interface="popover"
+          [value]="currentTheme"
+          (ionChange)="onThemeChange($event)"
+          aria-label="{{ 'profile.theme.title' | translate }}"
+        >
+          <ion-select-option value="light">{{
+            'profile.theme.light' | translate
+          }}</ion-select-option>
+          <ion-select-option value="dark">{{ 'profile.theme.dark' | translate }}</ion-select-option>
+          <ion-select-option value="auto">{{ 'profile.theme.auto' | translate }}</ion-select-option>
+        </ion-select>
       </div>
-      <ion-select
-        [value]="currentTheme"
-        (ionChange)="onThemeChange($event)"
-        interface="action-sheet"
-        class="preference-select"
-      >
-        <ion-select-option *ngFor="let option of themeOptions" [value]="option.value">
-          {{ option.label }}
-        </ion-select-option>
-      </ion-select>
-    </div>
 
-    <div class="preference-item">
-      <div class="preference-header">
-        <ion-icon name="language-outline" class="preference-icon"></ion-icon>
-        <div class="preference-label">
-          <div class="preference-title">Language</div>
-          <div class="preference-subtitle">
-            {{ currentLanguage === 'en' ? 'English' : 'Spanish' }}
+      <div class="preference-row">
+        <div class="row-details">
+          <ion-icon name="language-outline" aria-hidden="true"></ion-icon>
+          <div>
+            <p class="card-title">{{ 'profile.language.title' | translate }}</p>
+            <p class="card-subtitle">{{ 'profile.language.' + currentLanguage | translate }}</p>
           </div>
         </div>
+        <ion-select
+          interface="popover"
+          [value]="currentLanguage"
+          (ionChange)="onLanguageChange($event)"
+          aria-label="{{ 'profile.language.title' | translate }}"
+        >
+          <ion-select-option value="en">{{ 'profile.language.en' | translate }}</ion-select-option>
+          <ion-select-option value="es">{{ 'profile.language.es' | translate }}</ion-select-option>
+        </ion-select>
       </div>
-      <ion-select
-        [value]="currentLanguage"
-        (ionChange)="onLanguageChange($event)"
-        interface="action-sheet"
-        class="preference-select"
-      >
-        <ion-select-option *ngFor="let option of languageOptions" [value]="option.value">
-          {{ option.label }}
-        </ion-select-option>
-      </ion-select>
-    </div>
 
-    <div class="preference-item">
-      <div class="preference-header">
-        <ion-icon name="water-outline" class="preference-icon"></ion-icon>
-        <div class="preference-label">
-          <div class="preference-title">Glucose Units</div>
-          <div class="preference-subtitle">{{ currentGlucoseUnit }}</div>
+      <div class="preference-row">
+        <div class="row-details">
+          <ion-icon name="water-outline" aria-hidden="true"></ion-icon>
+          <div>
+            <p class="card-title">{{ 'profile.glucoseUnits' | translate }}</p>
+            <p class="card-subtitle">{{ currentGlucoseUnit }}</p>
+          </div>
+        </div>
+        <ion-select
+          interface="popover"
+          [value]="currentGlucoseUnit"
+          (ionChange)="onGlucoseUnitChange($event)"
+          aria-label="{{ 'profile.glucoseUnits' | translate }}"
+        >
+          <ion-select-option *ngFor="let option of unitOptions" [value]="option.value">
+            {{ option.label }}
+          </ion-select-option>
+        </ion-select>
+      </div>
+    </section>
+
+    <section class="card tidepool-card">
+      <div class="tidepool-status">
+        <ion-icon name="cloud-outline" aria-hidden="true"></ion-icon>
+        <div>
+          <p class="card-title">{{ 'profile.tidepoolIntegration' | translate }}</p>
+          <p class="card-subtitle">
+            {{
+              isConnected ? ('profile.connected' | translate) : ('profile.notConnected' | translate)
+            }}
+          </p>
         </div>
       </div>
-      <ion-select
-        [value]="currentGlucoseUnit"
-        (ionChange)="onGlucoseUnitChange($event)"
-        interface="action-sheet"
-        class="preference-select"
-      >
-        <ion-select-option *ngFor="let option of unitOptions" [value]="option.value">
-          {{ option.label }}
-        </ion-select-option>
-      </ion-select>
-    </div>
-  </div>
-
-  <!-- Tidepool Integration Section -->
-  <div class="profile-section">
-    <h3 class="section-title">Tidepool Integration</h3>
-
-    <app-profile-item
-      icon="cloud-outline"
-      title="Connection Status"
-      [subtitle]="isConnected ? 'Connected' : 'Not connected'"
-      actionType="badge"
-      [iconColor]="isConnected ? '#4caf50' : '#f44336'"
-    >
-    </app-profile-item>
-
-    <app-profile-item
-      *ngIf="isConnected"
-      icon="sync-outline"
-      title="Last Sync"
-      [subtitle]="formatLastSyncTime()"
-      actionType="none"
-    >
-    </app-profile-item>
-
-    <div class="connection-button-container">
+      <p class="last-sync" *ngIf="isConnected">
+        {{ 'profile.lastSync' | translate }}: {{ formatLastSyncTime() }}
+      </p>
       <ion-button
         expand="block"
         [color]="isConnected ? 'danger' : 'primary'"
         (click)="onToggleTidepoolConnection()"
       >
-        <ion-icon slot="start" [name]="isConnected ? 'log-out-outline' : 'log-in-outline'">
-        </ion-icon>
-        {{ isConnected ? 'Disconnect from Tidepool' : 'Connect to Tidepool' }}
+        <ion-icon
+          slot="start"
+          [name]="isConnected ? 'log-out-outline' : 'log-in-outline'"
+        ></ion-icon>
+        {{ isConnected ? ('profile.disconnect' | translate) : ('profile.connect' | translate) }}
       </ion-button>
-    </div>
-  </div>
+    </section>
 
-  <!-- About Section -->
-  <div class="profile-section">
-    <h3 class="section-title">About</h3>
+    <section class="card about-card">
+      <h3 class="card-heading">{{ 'profile.about' | translate }}</h3>
 
-    <app-profile-item
-      icon="information-circle-outline"
-      title="App Version"
-      [subtitle]="appVersion"
-      actionType="none"
-    >
-    </app-profile-item>
+      <div class="about-row">
+        <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
+        <div>
+          <p class="card-title">{{ 'profile.appVersion' | translate }}</p>
+          <p class="card-subtitle">{{ appVersion }}</p>
+        </div>
+      </div>
 
-    <app-profile-item
-      icon="document-text-outline"
-      title="Terms of Service"
-      subtitle="View our terms"
-      actionType="chevron"
-      (itemClick)="openTermsOfService()"
-    >
-    </app-profile-item>
+      <button type="button" class="about-row link" (click)="openTermsOfService()">
+        <ion-icon name="document-text-outline" aria-hidden="true"></ion-icon>
+        <div>
+          <p class="card-title">{{ 'profile.termsOfService' | translate }}</p>
+          <p class="card-subtitle">{{ 'profile.viewTerms' | translate }}</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron" aria-hidden="true"></ion-icon>
+      </button>
 
-    <app-profile-item
-      icon="shield-checkmark-outline"
-      title="Privacy Policy"
-      subtitle="View our policy"
-      actionType="chevron"
-      (itemClick)="openPrivacyPolicy()"
-    >
-    </app-profile-item>
-  </div>
+      <button type="button" class="about-row link" (click)="openPrivacyPolicy()">
+        <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
+        <div>
+          <p class="card-title">{{ 'profile.privacyPolicy' | translate }}</p>
+          <p class="card-subtitle">{{ 'profile.viewPolicy' | translate }}</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="chevron" aria-hidden="true"></ion-icon>
+      </button>
+    </section>
 
-  <!-- Sign Out Button -->
-  <div class="sign-out-container">
-    <ion-button expand="block" color="danger" fill="outline" (click)="onSignOut()">
-      <ion-icon slot="start" name="exit-outline"></ion-icon>
-      Sign Out
+    <ion-button expand="block" fill="outline" color="danger" class="sign-out" (click)="onSignOut()">
+      <ion-icon slot="start" name="log-out-outline"></ion-icon>
+      {{ 'profile.signOut' | translate }}
     </ion-button>
   </div>
 </ion-content>

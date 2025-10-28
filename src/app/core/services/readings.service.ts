@@ -3,7 +3,7 @@
  * Provides CRUD operations, offline queue, and statistics calculation
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, Optional, Inject, InjectionToken } from '@angular/core';
 import { BehaviorSubject, Observable, from, of } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { liveQuery } from 'dexie';
@@ -14,8 +14,11 @@ import {
   GlucoseStatistics,
   GlucoseType,
   GlucoseUnit,
+  GlucoseStatus,
 } from '../models';
-import { db, SyncQueueItem } from './database.service';
+import { db, DiabetifyDatabase, SyncQueueItem } from './database.service';
+
+export const LIVE_QUERY_FN = new InjectionToken<typeof liveQuery>('LIVE_QUERY_FN');
 
 /**
  * Pagination result for readings
@@ -26,6 +29,31 @@ export interface PaginatedReadings {
   hasMore: boolean;
   offset: number;
   limit: number;
+}
+
+/**
+ * Summary payload with manual readings to support tele-appointment submissions
+ */
+export interface TeleAppointmentReadingSummary {
+  generatedAt: string;
+  range: {
+    start: string;
+    end: string;
+  };
+  unit: GlucoseUnit;
+  totalReadings: number;
+  statistics: {
+    average?: number;
+    minimum?: number;
+    maximum?: number;
+  };
+  readings: Array<{
+    id: string;
+    time: string;
+    value: number;
+    status?: GlucoseStatus;
+    notes?: string[];
+  }>;
 }
 
 @Injectable({
@@ -42,7 +70,15 @@ export class ReadingsService {
   private _pendingSyncCount$ = new BehaviorSubject<number>(0);
   public readonly pendingSyncCount$ = this._pendingSyncCount$.asObservable();
 
-  constructor() {
+  private readonly db: DiabetifyDatabase;
+  private readonly liveQueryFn: typeof liveQuery;
+
+  constructor(
+    @Optional() database?: DiabetifyDatabase,
+    @Optional() @Inject(LIVE_QUERY_FN) liveQueryFn?: typeof liveQuery
+  ) {
+    this.db = database ?? db;
+    this.liveQueryFn = liveQueryFn ?? liveQuery;
     this.initializeObservables();
   }
 
@@ -51,21 +87,23 @@ export class ReadingsService {
    */
   private initializeObservables(): void {
     // Subscribe to readings changes
-    liveQuery(() => db.readings.orderBy('time').reverse().toArray()).subscribe(readings =>
-      this._readings$.next(readings)
+    this.liveQueryFn(() => this.db.readings.orderBy('time').reverse().toArray()).subscribe(
+      readings => this._readings$.next(readings)
     );
 
     // Subscribe to sync queue changes
-    liveQuery(() => db.syncQueue.count()).subscribe(count => this._pendingSyncCount$.next(count));
+    this.liveQueryFn(() => this.db.syncQueue.count()).subscribe(count =>
+      this._pendingSyncCount$.next(count)
+    );
   }
 
   /**
    * Get all readings with optional pagination
    */
   async getAllReadings(limit?: number, offset: number = 0): Promise<PaginatedReadings> {
-    const total = await db.readings.count();
+    const total = await this.db.readings.count();
 
-    let query = db.readings.orderBy('time').reverse();
+    let query = this.db.readings.orderBy('time').reverse();
 
     if (offset > 0) {
       query = query.offset(offset);
@@ -97,7 +135,7 @@ export class ReadingsService {
     const startTime = startDate.toISOString();
     const endTime = endDate.toISOString();
 
-    let query = db.readings.where('time').between(startTime, endTime, true, true);
+    let query = this.db.readings.where('time').between(startTime, endTime, true, true);
 
     const readings = await query.toArray();
 
@@ -113,26 +151,36 @@ export class ReadingsService {
    * Get reading by ID
    */
   async getReadingById(id: string): Promise<LocalGlucoseReading | undefined> {
-    return await db.readings.get(id);
+    return await this.db.readings.get(id);
   }
 
   /**
    * Add a new reading
    */
-  async addReading(reading: GlucoseReading, userId?: string): Promise<LocalGlucoseReading> {
+  async addReading(
+    reading: Partial<GlucoseReading> & Omit<GlucoseReading, 'id'>,
+    userId?: string
+  ): Promise<LocalGlucoseReading> {
+    // Generate unique ID if not provided or if it's empty
+    const uniqueId =
+      (reading as any).id && (reading as any).id !== ''
+        ? (reading as any).id
+        : this.generateLocalId();
+
     const localReading: LocalGlucoseReading = {
       ...reading,
+      id: uniqueId,
       localId: this.generateLocalId(),
       synced: false,
-      userId: userId || reading.id, // Use reading.id as fallback
+      userId: userId || 'local-user',
       localStoredAt: new Date().toISOString(),
-      isLocalOnly: !reading.id || reading.id.startsWith('local_'),
-    };
+      isLocalOnly: !reading.id || reading.id === '' || uniqueId.startsWith('local_'),
+    } as LocalGlucoseReading;
 
     // Calculate status based on value and unit
     localReading.status = this.calculateGlucoseStatus(localReading.value, localReading.units);
 
-    await db.readings.add(localReading);
+    await this.db.readings.add(localReading);
 
     // Add to sync queue if not synced
     if (!localReading.synced) {
@@ -149,7 +197,7 @@ export class ReadingsService {
     id: string,
     updates: Partial<LocalGlucoseReading>
   ): Promise<LocalGlucoseReading | undefined> {
-    const existing = await db.readings.get(id);
+    const existing = await this.db.readings.get(id);
 
     if (!existing) {
       throw new Error(`Reading with id ${id} not found`);
@@ -168,7 +216,7 @@ export class ReadingsService {
           : existing.status,
     };
 
-    await db.readings.update(id, updated as any);
+    await this.db.readings.update(id, updated as any);
 
     // Add to sync queue
     if (!updated.synced) {
@@ -182,13 +230,13 @@ export class ReadingsService {
    * Delete a reading
    */
   async deleteReading(id: string): Promise<void> {
-    const reading = await db.readings.get(id);
+    const reading = await this.db.readings.get(id);
 
     if (!reading) {
       throw new Error(`Reading with id ${id} not found`);
     }
 
-    await db.readings.delete(id);
+    await this.db.readings.delete(id);
 
     // Add to sync queue if it was synced before
     if (reading.synced) {
@@ -200,14 +248,14 @@ export class ReadingsService {
    * Get unsynced readings
    */
   async getUnsyncedReadings(): Promise<LocalGlucoseReading[]> {
-    return await db.readings.where('synced').equals(0).toArray();
+    return await this.db.readings.where('synced').equals(0).toArray();
   }
 
   /**
    * Mark reading as synced
    */
   async markAsSynced(id: string): Promise<void> {
-    await db.readings.update(id, { synced: true });
+    await this.db.readings.update(id, { synced: true });
   }
 
   /**
@@ -222,14 +270,14 @@ export class ReadingsService {
    */
   private async queryReadings(params?: GlucoseQueryParams): Promise<LocalGlucoseReading[]> {
     if (!params) {
-      return await db.readings.orderBy('time').reverse().toArray();
+      return await this.db.readings.orderBy('time').reverse().toArray();
     }
 
-    let query = db.readings.toCollection();
+    let query = this.db.readings.toCollection();
 
     // Date range filter
     if (params.startDate && params.endDate) {
-      query = db.readings.where('time').between(params.startDate, params.endDate, true, true);
+      query = this.db.readings.where('time').between(params.startDate, params.endDate, true, true);
     }
 
     let results = await query.toArray();
@@ -286,6 +334,7 @@ export class ReadingsService {
         break;
     }
 
+    const displayUnit: GlucoseUnit = unit || 'mg/dL';
     const readings = await this.getReadingsByDateRange(startDate, now);
 
     if (readings.length === 0) {
@@ -293,7 +342,7 @@ export class ReadingsService {
     }
 
     // Convert all values to the target unit
-    const values = readings.map(r => this.convertToUnit(r.value, r.units, unit));
+    const values = readings.map(r => this.convertToUnit(r.value, r.units, displayUnit));
 
     const average = values.reduce((a, b) => a + b, 0) / values.length;
     const sortedValues = [...values].sort((a, b) => a - b);
@@ -302,16 +351,19 @@ export class ReadingsService {
     const coefficientOfVariation = (standardDeviation / average) * 100;
 
     // Time in range calculations
-    const inRange = values.filter(v => v >= targetMin && v <= targetMax).length;
-    const aboveRange = values.filter(v => v > targetMax).length;
-    const belowRange = values.filter(v => v < targetMin).length;
+    const normalizedMin = this.convertToUnit(targetMin, 'mg/dL', displayUnit);
+    const normalizedMax = this.convertToUnit(targetMax, 'mg/dL', displayUnit);
+
+    const inRange = values.filter(v => v >= normalizedMin && v <= normalizedMax).length;
+    const aboveRange = values.filter(v => v > normalizedMax).length;
+    const belowRange = values.filter(v => v < normalizedMin).length;
 
     const timeInRange = (inRange / values.length) * 100;
     const timeAboveRange = (aboveRange / values.length) * 100;
     const timeBelowRange = (belowRange / values.length) * 100;
 
     // Estimated A1C (using ADAG formula)
-    const estimatedA1C = this.calculateEstimatedA1C(average, unit);
+    const estimatedA1C = this.calculateEstimatedA1C(average, displayUnit);
     const gmi = estimatedA1C; // GMI is essentially the same as eA1C
 
     return {
@@ -343,14 +395,14 @@ export class ReadingsService {
       retryCount: 0,
     };
 
-    await db.syncQueue.add(queueItem);
+    await this.db.syncQueue.add(queueItem);
   }
 
   /**
    * Process sync queue
    */
   async syncPendingReadings(): Promise<{ success: number; failed: number }> {
-    const queueItems = await db.syncQueue.toArray();
+    const queueItems = await this.db.syncQueue.toArray();
     let success = 0;
     let failed = 0;
 
@@ -361,7 +413,7 @@ export class ReadingsService {
         console.log(`Syncing ${item.operation} for reading ${item.readingId}`);
 
         // Remove from queue on success
-        await db.syncQueue.delete(item.id!);
+        await this.db.syncQueue.delete(item.id!);
 
         // Mark reading as synced if it was create/update
         if (item.operation !== 'delete') {
@@ -377,10 +429,10 @@ export class ReadingsService {
 
         if (retryCount >= this.SYNC_RETRY_LIMIT) {
           // Remove from queue after max retries
-          await db.syncQueue.delete(item.id!);
+          await this.db.syncQueue.delete(item.id!);
         } else {
           // Update retry count
-          await db.syncQueue.update(item.id!, {
+          await this.db.syncQueue.update(item.id!, {
             retryCount,
             lastError: error instanceof Error ? error.message : 'Unknown error',
           });
@@ -395,8 +447,82 @@ export class ReadingsService {
    * Clear all local readings (use with caution)
    */
   async clearAllReadings(): Promise<void> {
-    await db.readings.clear();
-    await db.syncQueue.clear();
+    await this.db.readings.clear();
+    await this.db.syncQueue.clear();
+  }
+
+  /**
+   * Generate a summary of manual readings suitable for tele-appointment submissions.
+   * The summary focuses on manual SMBG entries collected over the specified window.
+   *
+   * @param days Window (in days) to look back from today. Defaults to 14 days.
+   */
+  async exportManualReadingsSummary(days: number = 14): Promise<TeleAppointmentReadingSummary> {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - days);
+
+    const readings = await this.getReadingsByDateRange(start, end);
+    const manualReadings = readings
+      .filter(reading => reading.type === 'smbg')
+      .filter(reading => {
+        const subType = (reading as any).subType;
+        return !subType || subType === 'manual';
+      })
+      .filter(reading => Number.isFinite(reading.value))
+      .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+
+    const unit = (manualReadings[0]?.units || 'mg/dL') as GlucoseUnit;
+    const decimals = unit === 'mmol/L' ? 2 : 1;
+
+    const normalized = manualReadings.map(reading => {
+      const value =
+        reading.units === unit
+          ? reading.value
+          : this.convertToUnit(reading.value, reading.units, unit);
+
+      return {
+        reading,
+        value,
+      };
+    });
+
+    const values = normalized.map(entry => entry.value);
+
+    const average =
+      values.length > 0
+        ? Number((values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(decimals))
+        : undefined;
+    const minimum = values.length > 0 ? Number(Math.min(...values).toFixed(decimals)) : undefined;
+    const maximum = values.length > 0 ? Number(Math.max(...values).toFixed(decimals)) : undefined;
+
+    return {
+      generatedAt: new Date().toISOString(),
+      range: {
+        start: start.toISOString(),
+        end: end.toISOString(),
+      },
+      unit,
+      totalReadings: manualReadings.length,
+      statistics: {
+        average,
+        minimum,
+        maximum,
+      },
+      readings: normalized.map(({ reading, value }) => {
+        const formattedValue = Number(value.toFixed(decimals));
+        const status: GlucoseStatus | undefined =
+          reading.status || this.calculateGlucoseStatus(formattedValue, unit);
+
+        return {
+          id: reading.id,
+          time: reading.time,
+          value: formattedValue,
+          status,
+          notes: reading.notes && reading.notes.length > 0 ? [...reading.notes] : undefined,
+        };
+      }),
+    };
   }
 
   // === Helper Methods ===
