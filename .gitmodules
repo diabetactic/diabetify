@@ -1,0 +1,30 @@
+[submodule "extServices/api-gateway"]
+    path = extServices/api-gateway
+    url = https://github.com/diabetactic/api-gateway.git
+
+[submodule "extServices/api-gateway-backoffice"]
+    path = extServices/api-gateway-backoffice
+    url = https://github.com/diabetactic/api-gateway-backoffice.git
+
+[submodule "extServices/appointments"]
+    path = extServices/appointments
+    url = https://github.com/diabetactic/appointments.git
+
+[submodule "extServices/container-managing"]
+    path = extServices/container-managing
+    url = https://github.com/diabetactic/container-managing.git
+
+[submodule "extServices/login"]
+    path = extServices/login
+    url = https://github.com/diabetactic/login.git
+
+[submodule "extServices/backoffice-web"]
+    path = extServices/backoffice-web
+    url = https://github.com/diabetactic/backoffice-web.git
+
+[submodule "extServices/glucoserver"]
+    path = extServices/glucoserver
+    url = https://github.com/diabetactic/glucoserver.git
+[submodule "TidepoolApi"]
+	path = TidepoolApi
+	url = https://github.com/tidepool-org/TidepoolApi.git

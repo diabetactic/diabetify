@@ -17,6 +17,11 @@ const routes: Routes = [
         loadChildren: () => import('../readings/readings.module').then(m => m.ReadingsPageModule),
       },
       {
+        path: 'appointments',
+        loadChildren: () =>
+          import('../appointments/appointments.module').then(m => m.AppointmentsPageModule),
+      },
+      {
         path: 'trends',
         loadChildren: () => import('../trends/trends.module').then(m => m.TrendsPageModule),
       },

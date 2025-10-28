@@ -1,8 +1,15 @@
+/**
+ * Appointment Service
+ *
+ * Manages healthcare appointments and data sharing.
+ * All API calls are routed through the API Gateway for centralized
+ * authentication, caching, and error handling.
+ */
+
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { catchError, map, retry, tap } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
+import { Observable, BehaviorSubject, throwError, from } from 'rxjs';
+import { catchError, map, tap, switchMap } from 'rxjs/operators';
+import { ApiGatewayService, ApiResponse } from './api-gateway.service';
 import { ReadingsService, TeleAppointmentReadingSummary } from './readings.service';
 
 /**
@@ -104,14 +111,19 @@ export interface AppointmentStats {
   nextAppointmentDate?: string;
 }
 
+/**
+ * Share glucose data response
+ */
+export interface ShareGlucoseResponse {
+  shared: boolean;
+  recordCount: number;
+  message?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class AppointmentService {
-  private readonly baseUrl: string;
-  private readonly apiPath: string;
-  private readonly fullUrl: string;
-
   // Reactive state for appointments
   private appointmentsSubject = new BehaviorSubject<Appointment[]>([]);
   public appointments$ = this.appointmentsSubject.asObservable();
@@ -121,14 +133,9 @@ export class AppointmentService {
   public upcomingAppointment$ = this.upcomingAppointmentSubject.asObservable();
 
   constructor(
-    private http: HttpClient,
+    private apiGateway: ApiGatewayService,
     private readingsService: ReadingsService
-  ) {
-    const config = environment.backendServices.appointments;
-    this.baseUrl = config.baseUrl;
-    this.apiPath = config.apiPath;
-    this.fullUrl = `${this.baseUrl}${this.apiPath}`;
-  }
+  ) {}
 
   /**
    * Get all appointments for the current user
@@ -140,20 +147,28 @@ export class AppointmentService {
     limit = 50,
     offset = 0
   ): Observable<Appointment[]> {
-    let params = new HttpParams().set('limit', limit.toString()).set('offset', offset.toString());
+    const params: any = {
+      limit: limit.toString(),
+      offset: offset.toString(),
+    };
 
     if (status) {
-      params = params.set('status', status);
+      params.status = status;
     }
     if (startDate) {
-      params = params.set('start_date', startDate.toISOString());
+      params.start_date = startDate.toISOString();
     }
     if (endDate) {
-      params = params.set('end_date', endDate.toISOString());
+      params.end_date = endDate.toISOString();
     }
 
-    return this.http.get<Appointment[]>(`${this.fullUrl}/appointments`, { params }).pipe(
-      retry(2),
+    return this.apiGateway.request<Appointment[]>('appointments.list', { params }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to fetch appointments');
+      }),
       tap(appointments => {
         this.appointmentsSubject.next(appointments);
         this.updateUpcomingAppointment(appointments);
@@ -166,31 +181,52 @@ export class AppointmentService {
    * Get a single appointment by ID
    */
   getAppointment(id: string): Observable<Appointment> {
-    return this.http
-      .get<Appointment>(`${this.fullUrl}/appointments/${id}`)
-      .pipe(retry(2), catchError(this.handleError));
+    // Since we don't have a specific endpoint for single appointment, fetch from list
+    return this.getAppointments().pipe(
+      map(appointments => {
+        const appointment = appointments.find(apt => apt.id === id);
+        if (!appointment) {
+          throw new Error('Appointment not found');
+        }
+        return appointment;
+      })
+    );
   }
 
   /**
    * Create a new appointment request
    */
   createAppointment(request: CreateAppointmentRequest): Observable<Appointment> {
-    return this.http.post<Appointment>(`${this.fullUrl}/appointments`, request).pipe(
-      retry(1),
-      tap(() => this.refreshAppointments()),
-      catchError(this.handleError)
-    );
+    return this.apiGateway
+      .request<Appointment>('appointments.create', { body: request })
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          }
+          throw new Error(response.error?.message || 'Failed to create appointment');
+        }),
+        tap(() => this.refreshAppointments()),
+        catchError(this.handleError)
+      );
   }
 
   /**
    * Update an existing appointment
    */
   updateAppointment(id: string, updates: Partial<Appointment>): Observable<Appointment> {
-    return this.http.put<Appointment>(`${this.fullUrl}/appointments/${id}`, updates).pipe(
-      retry(1),
-      tap(() => this.refreshAppointments()),
-      catchError(this.handleError)
-    );
+    return this.apiGateway
+      .request<Appointment>('appointments.update', { body: updates }, { id })
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          }
+          throw new Error(response.error?.message || 'Failed to update appointment');
+        }),
+        tap(() => this.refreshAppointments()),
+        catchError(this.handleError)
+      );
   }
 
   /**
@@ -202,11 +238,18 @@ export class AppointmentService {
       cancelledReason: reason,
     };
 
-    return this.http.put<Appointment>(`${this.fullUrl}/appointments/${id}/cancel`, body).pipe(
-      retry(1),
-      tap(() => this.refreshAppointments()),
-      catchError(this.handleError)
-    );
+    return this.apiGateway
+      .request<Appointment>('appointments.cancel', { body }, { id })
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          }
+          throw new Error(response.error?.message || 'Failed to cancel appointment');
+        }),
+        tap(() => this.refreshAppointments()),
+        catchError(this.handleError)
+      );
   }
 
   /**
@@ -225,78 +268,135 @@ export class AppointmentService {
       status: 'rescheduled' as AppointmentStatus,
     };
 
-    return this.http.put<Appointment>(`${this.fullUrl}/appointments/${id}/reschedule`, body).pipe(
-      retry(1),
-      tap(() => this.refreshAppointments()),
-      catchError(this.handleError)
-    );
+    // Use the update endpoint for rescheduling
+    return this.updateAppointment(id, body);
   }
 
   /**
    * Get list of available doctors
    */
   getDoctors(specialty?: string): Observable<Doctor[]> {
-    let params = new HttpParams();
+    const params: any = {};
     if (specialty) {
-      params = params.set('specialty', specialty);
+      params.specialty = specialty;
     }
 
-    return this.http
-      .get<Doctor[]>(`${this.fullUrl}/doctors`, { params })
-      .pipe(retry(2), catchError(this.handleError));
+    return this.apiGateway.request<Doctor[]>('appointments.doctors.list', { params }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to fetch doctors');
+      }),
+      catchError(this.handleError)
+    );
   }
 
   /**
    * Get doctor details by ID
    */
   getDoctor(id: string): Observable<Doctor> {
-    return this.http
-      .get<Doctor>(`${this.fullUrl}/doctors/${id}`)
-      .pipe(retry(2), catchError(this.handleError));
+    // Fetch from the doctors list and filter
+    return this.getDoctors().pipe(
+      map(doctors => {
+        const doctor = doctors.find(doc => doc.id === id);
+        if (!doctor) {
+          throw new Error('Doctor not found');
+        }
+        return doctor;
+      })
+    );
   }
 
   /**
    * Get available time slots for a doctor
    */
   getAvailableSlots(doctorId: string, date: Date, days = 7): Observable<TimeSlot[]> {
-    const params = new HttpParams()
-      .set('doctor_id', doctorId)
-      .set('start_date', date.toISOString())
-      .set('days', days.toString());
+    const params = {
+      doctor_id: doctorId,
+      start_date: date.toISOString(),
+      days: days.toString(),
+    };
 
-    return this.http
-      .get<TimeSlot[]>(`${this.fullUrl}/slots`, { params })
-      .pipe(retry(2), catchError(this.handleError));
+    return this.apiGateway
+      .request<TimeSlot[]>('appointments.slots.available', { params })
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          }
+          throw new Error(response.error?.message || 'Failed to fetch time slots');
+        }),
+        catchError(this.handleError)
+      );
   }
 
   /**
    * Get appointment statistics
    */
   getStatistics(): Observable<AppointmentStats> {
-    return this.http
-      .get<AppointmentStats>(`${this.fullUrl}/appointments/stats`)
-      .pipe(retry(2), catchError(this.handleError));
+    // This might need a new endpoint in the gateway
+    // For now, calculate from local appointments
+    return this.getAppointments().pipe(
+      map(appointments => {
+        const now = new Date();
+        const stats: AppointmentStats = {
+          totalAppointments: appointments.length,
+          completedAppointments: appointments.filter(apt => apt.status === 'completed').length,
+          upcomingAppointments: appointments.filter(
+            apt => new Date(`${apt.date} ${apt.startTime}`) > now && apt.status === 'confirmed'
+          ).length,
+          cancelledAppointments: appointments.filter(apt => apt.status === 'cancelled').length,
+        };
+
+        // Find last and next appointments
+        const completed = appointments
+          .filter(apt => apt.status === 'completed')
+          .sort(
+            (a, b) =>
+              new Date(`${b.date} ${b.startTime}`).getTime() -
+              new Date(`${a.date} ${a.startTime}`).getTime()
+          );
+
+        if (completed.length > 0) {
+          stats.lastAppointmentDate = completed[0].date;
+        }
+
+        const upcoming = appointments
+          .filter(apt => new Date(`${apt.date} ${apt.startTime}`) > now && apt.status === 'confirmed')
+          .sort(
+            (a, b) =>
+              new Date(`${a.date} ${a.startTime}`).getTime() -
+              new Date(`${b.date} ${b.startTime}`).getTime()
+          );
+
+        if (upcoming.length > 0) {
+          stats.nextAppointmentDate = upcoming[0].date;
+        }
+
+        return stats;
+      })
+    );
   }
 
   /**
    * Join video call for an appointment
+   * Note: This might need a specific endpoint in the gateway
    */
   joinVideoCall(appointmentId: string): Observable<{ url: string; token?: string }> {
-    return this.http
-      .post<{
-        url: string;
-        token?: string;
-      }>(`${this.fullUrl}/appointments/${appointmentId}/join-call`, {})
-      .pipe(retry(1), catchError(this.handleError));
+    // This would need a new endpoint in the gateway
+    // For now, returning a mock response
+    return throwError(() => new Error('Video call feature not yet implemented'));
   }
 
   /**
    * Share glucose data with doctor for an appointment
+   * Legacy method - prefer shareManualGlucoseData for manual-first approach
    */
   shareGlucoseData(
     appointmentId: string,
     dateRange?: { start: Date; end: Date }
-  ): Observable<{ shared: boolean; recordCount: number }> {
+  ): Observable<ShareGlucoseResponse> {
     const body = dateRange
       ? {
           startDate: dateRange.start.toISOString(),
@@ -304,92 +404,112 @@ export class AppointmentService {
         }
       : {};
 
-    return this.http
-      .post<{
-        shared: boolean;
-        recordCount: number;
-      }>(`${this.fullUrl}/appointments/${appointmentId}/share-glucose`, body)
-      .pipe(retry(1), catchError(this.handleError));
+    return this.apiGateway
+      .request<ShareGlucoseResponse>('appointments.shareGlucose', { body }, { id: appointmentId })
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          }
+          throw new Error(response.error?.message || 'Failed to share glucose data');
+        }),
+        catchError(this.handleError)
+      );
   }
 
   /**
    * Share glucose data with manual readings summary included in the request body.
-   * This supports "manual-only" mode where readings live locally and the backend
-   * cannot fetch them itself. Falls back to the same endpoint contract, adding an
-   * optional field `manualReadingsSummary` that backends can consume when present.
+   * This is the primary method for sharing glucose data, supporting manual-first mode
+   * where readings live locally and the backend cannot fetch them itself.
+   *
+   * @param appointmentId The appointment ID to share data with
+   * @param options Configuration for the date range
+   * @returns Observable with sharing result
    */
   shareManualGlucoseData(
     appointmentId: string,
     options?: {
       dateRange?: { start: Date; end: Date };
-      days?: number; // when dateRange is not provided
+      days?: number; // when dateRange is not provided, default 30
     }
-  ): Observable<{ shared: boolean; recordCount: number }> {
+  ): Observable<ShareGlucoseResponse> {
+    // Calculate date range (default to last 30 days as per spec)
     const startEnd = options?.dateRange
       ? options.dateRange
       : (() => {
           const end = new Date();
           const start = new Date();
-          const days = options?.days ?? 14;
+          const days = options?.days ?? 30; // Default to 30 days as per spec
           start.setDate(end.getDate() - days);
           return { start, end };
         })();
 
-    return new Observable<{ shared: boolean; recordCount: number }>(subscriber => {
-      // Build manual summary first, then POST
-      this.readingsService
-        .exportManualReadingsSummary(
-          Math.max(
-            1,
-            Math.round((startEnd.end.getTime() - startEnd.start.getTime()) / (1000 * 60 * 60 * 24))
-          )
-        )
-        .then((summary: TeleAppointmentReadingSummary) => {
-          const body: any = {
-            startDate: startEnd.start.toISOString(),
-            endDate: startEnd.end.toISOString(),
-            manualReadingsSummary: summary,
-          };
+    // Calculate number of days for the summary
+    const dayCount = Math.max(
+      1,
+      Math.round((startEnd.end.getTime() - startEnd.start.getTime()) / (1000 * 60 * 60 * 24))
+    );
 
-          this.http
-            .post<{ shared: boolean; recordCount: number }>(
-              `${this.fullUrl}/appointments/${appointmentId}/share-glucose`,
-              body
-            )
-            .pipe(retry(1), catchError(this.handleError))
-            .subscribe({
-              next: resp => subscriber.next(resp),
-              error: err => subscriber.error(err),
-              complete: () => subscriber.complete(),
-            });
-        })
-        .catch(err => subscriber.error(err));
-    });
+    // Get the manual readings summary and then share
+    return from(this.readingsService.exportManualReadingsSummary(dayCount)).pipe(
+      switchMap((summary: TeleAppointmentReadingSummary) => {
+        const body = {
+          startDate: startEnd.start.toISOString(),
+          endDate: startEnd.end.toISOString(),
+          manualReadingsSummary: summary,
+        };
+
+        return this.apiGateway
+          .request<ShareGlucoseResponse>(
+            'appointments.shareGlucose',
+            { body },
+            { id: appointmentId }
+          );
+      }),
+      map(response => {
+        if (response.success && response.data) {
+          return {
+            shared: response.data.shared,
+            recordCount: response.data.recordCount || 0,
+            message: response.data.message || 'Datos compartidos exitosamente',
+          };
+        }
+        throw new Error(response.error?.message || 'Failed to share glucose data');
+      }),
+      catchError(error => {
+        // If no manual readings are available, return a specific response
+        if (error.message?.includes('No manual readings')) {
+          return throwError(() => new Error('No hay lecturas manuales para compartir en este período'));
+        }
+        return this.handleError(error);
+      })
+    );
   }
 
   /**
    * Get appointment reminders settings
    */
   getReminderSettings(): Observable<any> {
-    return this.http
-      .get(`${this.fullUrl}/appointments/reminders`)
-      .pipe(retry(2), catchError(this.handleError));
+    // This would need a new endpoint in the gateway
+    // For now, returning default settings
+    return throwError(() => new Error('Reminder settings not yet implemented'));
   }
 
   /**
    * Update appointment reminder settings
    */
   updateReminderSettings(settings: any): Observable<any> {
-    return this.http
-      .put(`${this.fullUrl}/appointments/reminders`, settings)
-      .pipe(retry(1), catchError(this.handleError));
+    // This would need a new endpoint in the gateway
+    return throwError(() => new Error('Reminder settings not yet implemented'));
   }
 
   /**
    * Refresh appointments list
    */
   private refreshAppointments(): void {
-    this.getAppointments().subscribe();
+    this.getAppointments().subscribe({
+      error: err => console.error('Failed to refresh appointments:', err),
+    });
   }
 
   /**
@@ -409,30 +529,41 @@ export class AppointmentService {
   }
 
   /**
-   * Handle HTTP errors
+   * Handle errors
    */
   private handleError(error: any): Observable<never> {
     let errorMessage = 'An error occurred';
 
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
-      errorMessage = `Error: ${error.error.message}`;
-    } else {
-      // Server-side error
-      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+    if (error?.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error?.message) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
 
-      if (error.status === 401) {
-        errorMessage = 'Unauthorized. Please log in again.';
-      } else if (error.status === 404) {
-        errorMessage = 'Appointment not found.';
-      } else if (error.status === 409) {
-        errorMessage = 'Time slot is no longer available.';
-      } else if (error.status === 500) {
-        errorMessage = 'Server error. Please try again later.';
+    // Check for specific error codes from ApiGatewayService
+    if (error?.error?.code) {
+      switch (error.error.code) {
+        case 'UNAUTHORIZED':
+          errorMessage = 'No autorizado. Por favor, inicie sesión nuevamente.';
+          break;
+        case 'NOT_FOUND':
+          errorMessage = 'Cita no encontrada.';
+          break;
+        case 'CONFLICT':
+          errorMessage = 'El horario ya no está disponible.';
+          break;
+        case 'SERVICE_UNAVAILABLE':
+          errorMessage = 'Servicio no disponible. Por favor, intente más tarde.';
+          break;
+        case 'NETWORK_ERROR':
+          errorMessage = 'Error de conexión. Verifique su conexión a internet.';
+          break;
       }
     }
 
-    console.error('AppointmentService Error:', errorMessage);
+    console.error('AppointmentService Error:', errorMessage, error);
     return throwError(() => new Error(errorMessage));
   }
 }
