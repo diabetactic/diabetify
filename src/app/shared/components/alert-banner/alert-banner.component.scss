@@ -52,19 +52,36 @@
     }
   }
 
-  // Success variant (green)
+  // Success variant (yellow celebration style - matching uiResources)
   &.success {
-    background-color: rgba(34, 197, 94, 0.12);
-    color: #16a34a;
+    background-color: rgba(254, 240, 138, 0.5); // yellow-200/50
+    color: #92400e; // yellow-800
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
 
-    .alert-icon,
-    .alert-message,
-    .dismiss-button span {
-      color: #16a34a;
+    .alert-icon {
+      color: #ca8a04; // yellow-600
+      font-variation-settings: 'FILL' 1; // Filled icon style
+    }
+
+    .alert-message {
+      color: #92400e; // yellow-800
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .dismiss-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+
+      span {
+        color: #a16207; // yellow-700
+      }
     }
 
     .dismiss-button:hover {
-      background-color: rgba(34, 197, 94, 0.2);
+      background-color: rgba(202, 138, 4, 0.15);
     }
   }
 
@@ -105,13 +122,20 @@
 @media (prefers-color-scheme: dark) {
   .alert-banner {
     &.success {
-      background-color: rgba(34, 197, 94, 0.18);
-      color: #4ade80;
+      background-color: rgba(254, 240, 138, 0.25); // yellow-200/25 for dark mode
+      color: #fef3c7; // yellow-100
 
-      .alert-icon,
-      .alert-message,
+      .alert-icon {
+        color: #fbbf24; // yellow-400
+        font-variation-settings: 'FILL' 1;
+      }
+
+      .alert-message {
+        color: #fef3c7; // yellow-100
+      }
+
       .dismiss-button span {
-        color: #4ade80;
+        color: #fde68a; // yellow-200
       }
     }
 

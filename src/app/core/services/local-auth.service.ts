@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
-import { catchError, map, retry, tap, switchMap } from 'rxjs/operators';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable, BehaviorSubject, throwError, from } from 'rxjs';
+import { catchError, map, retry, switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
@@ -58,7 +58,8 @@ export interface UserPreferences {
  * Login request interface
  */
 export interface LoginRequest {
-  email: string;
+  email?: string;
+  dni?: string;
   password: string;
   rememberMe?: boolean;
 }
@@ -83,9 +84,9 @@ export interface RegisterRequest {
  */
 export interface TokenResponse {
   access_token: string;
-  refresh_token: string;
+  refresh_token: string | null;
   token_type: string;
-  expires_in: number;
+  expires_in?: number | null;
   user: LocalUser;
 }
 
@@ -154,23 +155,30 @@ export class LocalAuthService {
           Preferences.get({ key: STORAGE_KEYS.EXPIRES_AT }),
         ]);
 
-        if (accessToken.value && refreshToken.value && userStr.value) {
+        const hasAccessToken = !!accessToken.value;
+        const hasRefreshToken = !!refreshToken.value;
+        const hasUser = !!userStr.value;
+
+        if (hasAccessToken && hasUser) {
           const user = JSON.parse(userStr.value) as LocalUser;
           const expiresAt = expiresAtStr.value ? parseInt(expiresAtStr.value, 10) : null;
 
           // Check if token is expired
-          if (expiresAt && Date.now() < expiresAt) {
+          if (!expiresAt || Date.now() < expiresAt) {
             this.authStateSubject.next({
               isAuthenticated: true,
               user,
               accessToken: accessToken.value,
-              refreshToken: refreshToken.value,
+              refreshToken: hasRefreshToken ? refreshToken.value : null,
               expiresAt,
             });
-          } else if (refreshToken.value) {
+          } else if (hasRefreshToken) {
             // Try to refresh the token
             this.refreshAccessToken().subscribe();
           }
+        } else if (hasRefreshToken) {
+          // Try to refresh the token
+          this.refreshAccessToken().subscribe();
         }
       } catch (error) {
         console.error('Failed to initialize auth state:', error);
@@ -182,23 +190,54 @@ export class LocalAuthService {
    * Login with email and password
    */
   login(request: LoginRequest): Observable<LocalAuthState> {
-    return this.http.post<TokenResponse>(`${this.fullUrl}/login`, request).pipe(
-      retry(1),
-      tap(response => this.handleAuthResponse(response)),
-      map(() => this.authStateSubject.value),
-      catchError(this.handleError)
-    );
+    const identifier = request.dni ?? request.email;
+
+    if (!identifier) {
+      return throwError(() => new Error('DNI or email required for login.'));
+    }
+
+    const body = new HttpParams().set('username', identifier).set('password', request.password);
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+
+    return this.http
+      .post<GatewayTokenResponse>(`${this.baseUrl}/token`, body.toString(), { headers })
+      .pipe(
+        retry(1),
+        switchMap(token => {
+          if (!token?.access_token) {
+            return throwError(
+              () => new Error('Authentication service did not return an access token.')
+            );
+          }
+
+          return this.fetchUserProfile(token.access_token).pipe(
+            switchMap(profile => {
+              const response: TokenResponse = {
+                access_token: token.access_token,
+                refresh_token: null,
+                token_type: token.token_type || 'bearer',
+                expires_in: token.expires_in ?? null,
+                user: this.mapGatewayUser(profile),
+              };
+
+              return from(this.handleAuthResponse(response));
+            })
+          );
+        }),
+        map(() => this.authStateSubject.value),
+        catchError(error => this.handleError(error))
+      );
   }
 
   /**
    * Register a new user
    */
   register(request: RegisterRequest): Observable<LocalAuthState> {
-    return this.http.post<TokenResponse>(`${this.fullUrl}/register`, request).pipe(
-      retry(1),
-      tap(response => this.handleAuthResponse(response)),
-      map(() => this.authStateSubject.value),
-      catchError(this.handleError)
+    return throwError(
+      () => new Error('User registration is not yet supported by the local auth service.')
     );
   }
 
@@ -206,18 +245,6 @@ export class LocalAuthService {
    * Logout the user
    */
   async logout(): Promise<void> {
-    const refreshToken = this.authStateSubject.value.refreshToken;
-
-    // Call logout endpoint if we have a refresh token
-    if (refreshToken) {
-      this.http
-        .post(`${this.fullUrl}/logout`, { refresh_token: refreshToken })
-        .pipe(
-          catchError(() => of(null)) // Ignore errors on logout
-        )
-        .subscribe();
-    }
-
     // Clear local state
     this.authStateSubject.next({
       isAuthenticated: false,
@@ -242,26 +269,9 @@ export class LocalAuthService {
    * Refresh the access token
    */
   refreshAccessToken(): Observable<LocalAuthState> {
-    const refreshToken = this.authStateSubject.value.refreshToken;
-
-    if (!refreshToken) {
-      return throwError(() => new Error('No refresh token available'));
-    }
-
-    return this.http
-      .post<TokenResponse>(`${this.fullUrl}/refresh`, {
-        refresh_token: refreshToken,
-      })
-      .pipe(
-        retry(1),
-        tap(response => this.handleAuthResponse(response)),
-        map(() => this.authStateSubject.value),
-        catchError(error => {
-          // If refresh fails, logout the user
-          this.logout();
-          return this.handleError(error);
-        })
-      );
+    return throwError(
+      () => new Error('Token refresh is not supported by the current authentication backend.')
+    );
   }
 
   /**
@@ -290,19 +300,8 @@ export class LocalAuthService {
    * Update user profile
    */
   updateProfile(updates: Partial<LocalUser>): Observable<LocalUser> {
-    return this.http.put<LocalUser>(`${this.fullUrl}/profile`, updates).pipe(
-      retry(1),
-      tap(user => {
-        const currentState = this.authStateSubject.value;
-        this.authStateSubject.next({ ...currentState, user });
-        if (Capacitor.isNativePlatform()) {
-          Preferences.set({
-            key: STORAGE_KEYS.USER,
-            value: JSON.stringify(user),
-          });
-        }
-      }),
-      catchError(this.handleError)
+    return throwError(
+      () => new Error('Updating profiles through the authentication service is not supported yet.')
     );
   }
 
@@ -310,19 +309,11 @@ export class LocalAuthService {
    * Update user preferences
    */
   updatePreferences(preferences: Partial<UserPreferences>): Observable<LocalUser> {
-    return this.http.put<LocalUser>(`${this.fullUrl}/preferences`, preferences).pipe(
-      retry(1),
-      tap(user => {
-        const currentState = this.authStateSubject.value;
-        this.authStateSubject.next({ ...currentState, user });
-        if (Capacitor.isNativePlatform()) {
-          Preferences.set({
-            key: STORAGE_KEYS.USER,
-            value: JSON.stringify(user),
-          });
-        }
-      }),
-      catchError(this.handleError)
+    return throwError(
+      () =>
+        new Error(
+          'Updating remote preferences is not supported by the current authentication backend.'
+        )
     );
   }
 
@@ -330,58 +321,53 @@ export class LocalAuthService {
    * Request password reset
    */
   requestPasswordReset(email: string): Observable<{ message: string }> {
-    return this.http
-      .post<{ message: string }>(`${this.fullUrl}/password/reset-request`, { email })
-      .pipe(retry(1), catchError(this.handleError));
+    return throwError(
+      () => new Error('Password reset is not supported by the current authentication backend.')
+    );
   }
 
   /**
    * Reset password with token
    */
   resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
-    return this.http
-      .post<{ message: string }>(`${this.fullUrl}/password/reset`, {
-        token,
-        new_password: newPassword,
-      })
-      .pipe(retry(1), catchError(this.handleError));
+    return throwError(
+      () => new Error('Password reset is not supported by the current authentication backend.')
+    );
   }
 
   /**
    * Change password (requires current password)
    */
   changePassword(currentPassword: string, newPassword: string): Observable<{ message: string }> {
-    return this.http
-      .post<{ message: string }>(`${this.fullUrl}/password/change`, {
-        current_password: currentPassword,
-        new_password: newPassword,
-      })
-      .pipe(retry(1), catchError(this.handleError));
+    return throwError(
+      () => new Error('Password changes are not supported by the current authentication backend.')
+    );
   }
 
   /**
    * Verify email with token
    */
   verifyEmail(token: string): Observable<{ message: string }> {
-    return this.http
-      .post<{ message: string }>(`${this.fullUrl}/verify-email`, { token })
-      .pipe(retry(1), catchError(this.handleError));
+    return throwError(
+      () => new Error('Email verification is not supported by the current authentication backend.')
+    );
   }
 
   /**
    * Resend verification email
    */
   resendVerificationEmail(): Observable<{ message: string }> {
-    return this.http
-      .post<{ message: string }>(`${this.fullUrl}/resend-verification`, {})
-      .pipe(retry(1), catchError(this.handleError));
+    return throwError(
+      () => new Error('Email verification is not supported by the current authentication backend.')
+    );
   }
 
   /**
    * Handle authentication response
    */
   private async handleAuthResponse(response: TokenResponse): Promise<void> {
-    const expiresAt = Date.now() + response.expires_in * 1000;
+    const expiresInSeconds = response.expires_in ?? null;
+    const expiresAt = expiresInSeconds ? Date.now() + expiresInSeconds * 1000 : null;
 
     // Update auth state
     this.authStateSubject.next({
@@ -399,23 +385,29 @@ export class LocalAuthService {
           key: STORAGE_KEYS.ACCESS_TOKEN,
           value: response.access_token,
         }),
-        Preferences.set({
-          key: STORAGE_KEYS.REFRESH_TOKEN,
-          value: response.refresh_token,
-        }),
+        response.refresh_token
+          ? Preferences.set({
+              key: STORAGE_KEYS.REFRESH_TOKEN,
+              value: response.refresh_token,
+            })
+          : Preferences.remove({ key: STORAGE_KEYS.REFRESH_TOKEN }),
         Preferences.set({
           key: STORAGE_KEYS.USER,
           value: JSON.stringify(response.user),
         }),
-        Preferences.set({
-          key: STORAGE_KEYS.EXPIRES_AT,
-          value: expiresAt.toString(),
-        }),
+        expiresAt !== null
+          ? Preferences.set({
+              key: STORAGE_KEYS.EXPIRES_AT,
+              value: expiresAt.toString(),
+            })
+          : Preferences.remove({ key: STORAGE_KEYS.EXPIRES_AT }),
       ]);
     }
 
     // Schedule token refresh
-    this.scheduleTokenRefresh(response.expires_in);
+    if (response.refresh_token && expiresInSeconds) {
+      this.scheduleTokenRefresh(expiresInSeconds);
+    }
   }
 
   /**
@@ -435,34 +427,112 @@ export class LocalAuthService {
   }
 
   /**
+   * Fetch user profile information from the API Gateway after successful login
+   */
+  private fetchUserProfile(accessToken: string): Observable<GatewayUserResponse> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${accessToken}`,
+    });
+
+    return this.http.get<GatewayUserResponse>(`${this.baseUrl}/users/me`, { headers });
+  }
+
+  /**
+   * Map API Gateway user payload into the local user format used by the app
+   */
+  private mapGatewayUser(user: GatewayUserResponse): LocalUser {
+    return {
+      id: user.dni,
+      email: user.email,
+      firstName: user.name,
+      lastName: user.surname,
+      role: 'patient',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      preferences: {
+        glucoseUnit: 'mg/dL',
+        targetRange: {
+          low: 70,
+          high: 180,
+        },
+        language: 'es',
+        notifications: {
+          appointments: true,
+          readings: true,
+          reminders: true,
+        },
+        theme: 'auto',
+      },
+    };
+  }
+
+  /**
    * Handle HTTP errors
    */
   private handleError(error: any): Observable<never> {
     let errorMessage = 'An error occurred';
+
+    if (!error) {
+      return throwError(() => new Error(errorMessage));
+    }
+
+    if (typeof error === 'string') {
+      return throwError(() => new Error(error));
+    }
 
     if (error.error instanceof ErrorEvent) {
       // Client-side error
       errorMessage = `Error: ${error.error.message}`;
     } else {
       // Server-side error
-      errorMessage = `Error Code: ${error.status}\nMessage: ${
-        error.error?.message || error.message
-      }`;
+      const status = typeof error.status === 'number' ? error.status : 0;
+      const message = error.error?.message || error.message || errorMessage;
+      errorMessage = status ? `Error Code: ${status}\nMessage: ${message}` : message;
 
-      if (error.status === 401) {
+      if (status === 401) {
         errorMessage = 'Invalid credentials or session expired.';
-      } else if (error.status === 403) {
+      } else if (status === 403) {
         errorMessage = 'Access forbidden. Please verify your account.';
-      } else if (error.status === 409) {
+      } else if (status === 409) {
         errorMessage = 'User already exists with this email.';
-      } else if (error.status === 422) {
+      } else if (status === 422) {
         errorMessage = 'Invalid data provided. Please check your input.';
-      } else if (error.status === 500) {
+      } else if (status === 500) {
         errorMessage = 'Server error. Please try again later.';
+      }
+      if (error.error?.detail) {
+        errorMessage = Array.isArray(error.error.detail)
+          ? error.error.detail.map((d: any) => d.msg || d.detail || d).join(', ')
+          : error.error.detail;
       }
     }
 
     console.error('LocalAuthService Error:', errorMessage);
     return throwError(() => new Error(errorMessage));
   }
+}
+
+/**
+ * Token payload returned by the API Gateway auth route
+ */
+interface GatewayTokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in?: number;
+}
+
+/**
+ * User payload returned by the login microservice through the API Gateway
+ */
+interface GatewayUserResponse {
+  dni: string;
+  name: string;
+  surname: string;
+  blocked: boolean;
+  email: string;
+  tidepool?: string | null;
+  hospital_account: string;
+  times_measured: number;
+  streak: number;
+  max_streak: number;
 }

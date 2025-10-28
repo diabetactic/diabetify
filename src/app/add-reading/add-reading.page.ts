@@ -1,23 +1,39 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { ToastController } from '@ionic/angular';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { IonicModule, ToastController } from '@ionic/angular';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 
 import { ReadingsService } from '../core/services/readings.service';
 import { ProfileService } from '../core/services/profile.service';
-import { GlucoseReading, GlucoseUnit, GlucoseStatus } from '../core/models/glucose-reading.model';
+import {
+  GlucoseReading,
+  SMBGReading,
+  GlucoseUnit,
+  GlucoseStatus,
+} from '../core/models/glucose-reading.model';
+import { AlertBannerComponent } from '../shared/components/alert-banner/alert-banner.component';
 
-interface MealContext {
+interface MealContextOption {
   value: string;
-  label: string;
+  labelKey: string;
 }
 
 @Component({
-  
   selector: 'app-add-reading',
   templateUrl: './add-reading.page.html',
   styleUrls: ['./add-reading.page.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    IonicModule,
+    RouterModule,
+    ReactiveFormsModule,
+    TranslateModule,
+    AlertBannerComponent,
+  ],
 })
 export class AddReadingPage implements OnInit, OnDestroy {
   readingForm!: FormGroup;
@@ -29,16 +45,16 @@ export class AddReadingPage implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  mealContextOptions: MealContext[] = [
-    { value: 'before-breakfast', label: 'Before Breakfast' },
-    { value: 'after-breakfast', label: 'After Breakfast' },
-    { value: 'before-lunch', label: 'Before Lunch' },
-    { value: 'after-lunch', label: 'After Lunch' },
-    { value: 'before-dinner', label: 'Before Dinner' },
-    { value: 'after-dinner', label: 'After Dinner' },
-    { value: 'snack', label: 'Snack' },
-    { value: 'bedtime', label: 'Bedtime' },
-    { value: 'other', label: 'Other' },
+  mealContextOptions: MealContextOption[] = [
+    { value: 'before-breakfast', labelKey: 'glucose.meal.beforeBreakfast' },
+    { value: 'after-breakfast', labelKey: 'glucose.meal.afterBreakfast' },
+    { value: 'before-lunch', labelKey: 'glucose.meal.beforeLunch' },
+    { value: 'after-lunch', labelKey: 'glucose.meal.afterLunch' },
+    { value: 'before-dinner', labelKey: 'glucose.meal.beforeDinner' },
+    { value: 'after-dinner', labelKey: 'glucose.meal.afterDinner' },
+    { value: 'snack', labelKey: 'glucose.tags.snack' },
+    { value: 'bedtime', labelKey: 'glucose.meal.bedtime' },
+    { value: 'other', labelKey: 'glucose.meal.other' },
   ];
 
   constructor(
@@ -46,7 +62,8 @@ export class AddReadingPage implements OnInit, OnDestroy {
     private readingsService: ReadingsService,
     private profileService: ProfileService,
     private router: Router,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private translate: TranslateService
   ) {}
 
   ngOnInit() {
@@ -139,26 +156,31 @@ export class AddReadingPage implements OnInit, OnDestroy {
   }
 
   getStatusLabel(): string {
-    if (!this.glucoseStatus) return '';
-
-    switch (this.glucoseStatus) {
-      case 'critical-low':
-        return 'Critical Low';
-      case 'low':
-        return 'Low';
-      case 'normal':
-        return 'Normal';
-      case 'high':
-        return 'High';
-      case 'critical-high':
-        return 'Critical High';
-      default:
-        return '';
-    }
+    const key = this.getStatusLabelKey();
+    return key ? this.translate.instant(key) : '';
   }
 
   getUnitLabel(): string {
     return this.currentUnit;
+  }
+
+  getStatusLabelKey(): string | null {
+    if (!this.glucoseStatus) return null;
+
+    switch (this.glucoseStatus) {
+      case 'critical-low':
+        return 'glucose.status.veryLow';
+      case 'low':
+        return 'glucose.status.low';
+      case 'normal':
+        return 'glucose.status.normal';
+      case 'high':
+        return 'glucose.status.high';
+      case 'critical-high':
+        return 'glucose.status.veryHigh';
+      default:
+        return null;
+    }
   }
 
   getValidationMessage(fieldName: string): string {
@@ -166,17 +188,23 @@ export class AddReadingPage implements OnInit, OnDestroy {
     if (!control || !control.errors || !control.touched) return '';
 
     if (control.errors['required']) {
-      return 'This field is required';
+      return this.translate.instant('addReading.validation.required');
     }
 
     if (fieldName === 'value') {
+      const minValue = this.currentUnit === 'mmol/L' ? '1.1' : '20';
+      const maxValue = this.currentUnit === 'mmol/L' ? '33.3' : '600';
       if (control.errors['min']) {
-        const minValue = this.currentUnit === 'mmol/L' ? '1.1' : '20';
-        return `Value must be at least ${minValue} ${this.currentUnit}`;
+        return this.translate.instant('addReading.validation.minValue', {
+          value: minValue,
+          unit: this.currentUnit,
+        });
       }
       if (control.errors['max']) {
-        const maxValue = this.currentUnit === 'mmol/L' ? '33.3' : '600';
-        return `Value must be at most ${maxValue} ${this.currentUnit}`;
+        return this.translate.instant('addReading.validation.maxValue', {
+          value: maxValue,
+          unit: this.currentUnit,
+        });
       }
     }
 
@@ -197,9 +225,8 @@ export class AddReadingPage implements OnInit, OnDestroy {
     try {
       const formValue = this.readingForm.value;
 
-      // Create glucose reading object
-      const reading: GlucoseReading = {
-        id: '', // Will be generated by the service
+      // Create glucose reading object (ID will be generated by the service)
+      const reading: Omit<SMBGReading, 'id'> = {
         type: 'smbg', // Self-monitored blood glucose
         value: parseFloat(formValue.value),
         units: this.currentUnit,
@@ -231,7 +258,7 @@ export class AddReadingPage implements OnInit, OnDestroy {
 
   private async showSuccessToast(): Promise<void> {
     const toast = await this.toastController.create({
-      message: 'Reading saved successfully',
+      message: this.translate.instant('addReading.toast.success'),
       duration: 2000,
       position: 'bottom',
       color: 'success',
@@ -243,7 +270,7 @@ export class AddReadingPage implements OnInit, OnDestroy {
   private async showErrorToast(error: any): Promise<void> {
     const errorMessage = error instanceof Error ? error.message : 'Failed to save reading';
     const toast = await this.toastController.create({
-      message: errorMessage,
+      message: this.translate.instant('addReading.toast.error', { message: errorMessage }),
       duration: 3000,
       position: 'bottom',
       color: 'danger',

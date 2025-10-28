@@ -120,9 +120,10 @@ export interface TokenRequest {
 }
 
 /**
- * Authentication state during OAuth flow
+ * OAuth flow state (internal state machine for authorization process)
+ * Renamed from AuthState to avoid confusion with TidepoolAuthService.AuthState
  */
-export interface AuthState {
+export interface OAuthFlowState {
   /** Current state of the authentication process */
   status: 'idle' | 'authorizing' | 'exchanging_token' | 'authenticated' | 'error';
 

@@ -40,29 +40,29 @@ export const environment = {
   backendServices: {
     // Glucose data management service
     glucoserver: {
-      baseUrl: 'https://api.diabetify.com', // TODO: Replace with actual production URL
-      apiPath: '/api/v1',
+      baseUrl: '', // Disabled by default after removing xDrip/glucoserver integration
+      apiPath: '',
       requestTimeout: 30000,
     },
 
     // Appointment management service
     appointments: {
-      baseUrl: 'https://api.diabetify.com', // TODO: Replace with actual production URL
-      apiPath: '/api/appointments',
+      baseUrl: 'https://api.diabetify.com', // TODO: Replace with API Gateway URL when available
+      apiPath: '/appointments',
       requestTimeout: 30000,
     },
 
     // Authentication service
     auth: {
-      baseUrl: 'https://api.diabetify.com', // TODO: Replace with actual production URL
-      apiPath: '/api/auth',
+      baseUrl: 'https://api.diabetify.com', // TODO: Replace with API Gateway URL when available
+      apiPath: '',
       requestTimeout: 30000,
     },
 
     // API Gateway
     apiGateway: {
-      baseUrl: 'https://api.diabetify.com', // TODO: Replace with actual production URL
-      apiPath: '/api',
+      baseUrl: 'https://api.diabetify.com', // TODO: Replace with API Gateway URL when available
+      apiPath: '',
       requestTimeout: 30000,
     },
   },

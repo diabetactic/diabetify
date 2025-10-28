@@ -1,0 +1,133 @@
+// Language Switcher Component Styles
+
+:host {
+  display: inline-block;
+}
+
+.flag-icon {
+  font-size: 20px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+ion-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  ion-spinner {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+ion-select {
+  min-width: 120px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+
+  &::part(icon) {
+    color: var(--ion-color-primary);
+  }
+
+  &::part(text) {
+    font-weight: 500;
+  }
+}
+
+// Popover specific styles
+::ng-deep .language-popover {
+  --width: 280px;
+  --max-width: 90vw;
+
+  ion-list {
+    background: transparent;
+  }
+
+  ion-item {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --min-height: 48px;
+
+    &.selected {
+      --background: var(--ion-color-light);
+      font-weight: 500;
+    }
+
+    &:hover {
+      --background: var(--ion-color-light-shade);
+    }
+  }
+
+  .flag-icon {
+    font-size: 24px;
+    margin-right: 12px;
+  }
+
+  .language-name {
+    font-size: 16px;
+  }
+
+  .language-code {
+    font-size: 12px;
+    color: var(--ion-color-medium);
+    margin-left: 8px;
+  }
+}
+
+// Dark mode adjustments
+@media (prefers-color-scheme: dark) {
+  ::ng-deep .language-popover {
+    ion-item {
+      &.selected {
+        --background: var(--ion-color-dark-tint);
+      }
+
+      &:hover {
+        --background: var(--ion-color-dark-shade);
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 576px) {
+  ion-button {
+    --padding-start: 4px;
+    --padding-end: 4px;
+
+    &[displayMode='button'] span:not(.flag-icon) {
+      display: none;
+    }
+  }
+
+  ion-select {
+    min-width: 80px;
+    --padding-start: 8px;
+    --padding-end: 8px;
+  }
+}
+
+// Animation for language change
+@keyframes languageChange {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.language-changing {
+  animation: languageChange 0.3s ease-in-out;
+}

@@ -1,15 +1,19 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
-import { Subject, combineLatest } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
+import { TranslateModule } from '@ngx-translate/core';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { TidepoolAuthService, AuthState } from '../core/services/tidepool-auth.service';
 import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
+import { TranslationService, Language } from '../core/services/translation.service';
 import { TidepoolSyncService } from '../core/services/tidepool-sync.service';
 import { UserProfile, ThemeMode } from '../core/models/user-profile.model';
 import { SyncStatus } from '../core/models/tidepool-sync.model';
-
 interface ProfileDisplayData {
   name: string;
   email: string;
@@ -18,12 +22,13 @@ interface ProfileDisplayData {
 }
 
 @Component({
-  
-  selector: 'app-tab1',
+  selector: 'app-profile',
   templateUrl: './profile.html',
-  styleUrls: ['./tab1.page.scss'],
+  styleUrls: ['./profile.page.scss'],
+  standalone: true,
+  imports: [CommonModule, IonicModule, RouterModule, FormsModule, TranslateModule],
 })
-export class Tab1Page implements OnInit, OnDestroy {
+export class ProfilePage implements OnInit, OnDestroy {
   // User data
   profileData: ProfileDisplayData | null = null;
   profile: UserProfile | null = null;
@@ -36,7 +41,7 @@ export class Tab1Page implements OnInit, OnDestroy {
 
   // Preferences
   currentTheme: ThemeMode = 'auto';
-  currentLanguage = 'en';
+  currentLanguage!: Language;
   currentGlucoseUnit = 'mg/dL';
 
   // App info
@@ -65,15 +70,19 @@ export class Tab1Page implements OnInit, OnDestroy {
     private authService: TidepoolAuthService,
     private profileService: ProfileService,
     private themeService: ThemeService,
+    private translationService: TranslationService,
     private syncService: TidepoolSyncService,
     private router: Router
-  ) {}
+  ) {
+    this.currentLanguage = this.translationService.getCurrentLanguage();
+  }
 
   ngOnInit(): void {
     this.loadUserData();
     this.subscribeToAuthState();
     this.subscribeToProfile();
     this.subscribeToSyncStatus();
+    this.subscribeToLanguageChanges();
   }
 
   ngOnDestroy(): void {
@@ -90,9 +99,9 @@ export class Tab1Page implements OnInit, OnDestroy {
       if (profile) {
         this.profile = profile;
         this.currentTheme = profile.preferences.themeMode;
-        this.currentLanguage = profile.preferences.language;
         this.currentGlucoseUnit = profile.preferences.glucoseUnit;
       }
+      this.currentLanguage = this.translationService.getCurrentLanguage();
     } catch (error) {
       console.error('Failed to load user data:', error);
     }
@@ -108,8 +117,8 @@ export class Tab1Page implements OnInit, OnDestroy {
 
       if (state.isAuthenticated) {
         this.profileData = {
-          name: state.userId || 'User',
-          email: state.email || 'No email',
+          name: state.userId || this.translationService.instant('profile.defaultName'),
+          email: state.email || this.translationService.instant('profile.noEmail'),
           memberSince: this.formatMemberSince(),
           avatarUrl: this.profile?.avatar?.imagePath,
         };
@@ -127,7 +136,6 @@ export class Tab1Page implements OnInit, OnDestroy {
         this.isConnected = profile.tidepoolConnection.connected;
         this.lastSyncTime = profile.tidepoolConnection.lastSyncTime || null;
         this.currentTheme = profile.preferences.themeMode;
-        this.currentLanguage = profile.preferences.language;
         this.currentGlucoseUnit = profile.preferences.glucoseUnit;
       }
     });
@@ -150,7 +158,7 @@ export class Tab1Page implements OnInit, OnDestroy {
    */
   private formatMemberSince(): string {
     if (!this.profile?.createdAt) {
-      return 'Recently joined';
+      return this.translationService.instant('profile.memberSince.recent');
     }
 
     const createdDate = new Date(this.profile.createdAt);
@@ -159,14 +167,131 @@ export class Tab1Page implements OnInit, OnDestroy {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays < 30) {
-      return 'Recently joined';
+      return this.translationService.instant('profile.memberSince.recent');
     } else if (diffDays < 365) {
       const months = Math.floor(diffDays / 30);
-      return `Member for ${months} month${months > 1 ? 's' : ''}`;
+      const key = months === 1 ? 'profile.memberSince.month' : 'profile.memberSince.months';
+      return this.translationService.instant(key, { count: months });
     } else {
       const years = Math.floor(diffDays / 365);
-      return `Member for ${years} year${years > 1 ? 's' : ''}`;
+      const key = years === 1 ? 'profile.memberSince.year' : 'profile.memberSince.years';
+      return this.translationService.instant(key, { count: years });
     }
+  }
+
+  /**
+   * Human friendly member since label used in the header.
+   */
+  get memberSinceText(): string {
+    if (this.profileData?.memberSince) {
+      return this.profileData.memberSince;
+    }
+    return this.formatMemberSince();
+  }
+
+  /**
+   * Friendly greeting using the user's first name when available.
+   */
+  get greeting(): string {
+    return this.translationService.instant('profile.greeting', {
+      name: this.getFirstName(),
+    });
+  }
+
+  /**
+   * Email text for the header section.
+   */
+  get emailText(): string {
+    const email = this.profileData?.email ?? this.profile?.tidepoolConnection?.email ?? '';
+    if (email.trim()) {
+      return email;
+    }
+    return this.translationService.instant('profile.notAvailable');
+  }
+
+  /**
+   * Avatar image URL if available.
+   */
+  get avatarUrl(): string | undefined {
+    return this.profileData?.avatarUrl || this.profile?.avatar?.imagePath;
+  }
+
+  /**
+   * Age description card text.
+   */
+  get ageDescription(): string {
+    if (this.profile?.age) {
+      return `${this.profile.age} ${this.translationService.instant('profile.yearsOld')}`;
+    }
+    return this.translationService.instant('profile.notSet');
+  }
+
+  /**
+   * Diabetes overview card text.
+   */
+  get diabetesSummary(): string {
+    const pieces: string[] = [];
+
+    const typeLabel = this.getDiabetesTypeLabel();
+    if (typeLabel) {
+      pieces.push(typeLabel);
+    }
+
+    const diagnosisLabel = this.getDiagnosisLabel();
+    if (diagnosisLabel) {
+      pieces.push(diagnosisLabel);
+    }
+
+    if (!pieces.length) {
+      return this.translationService.instant('profile.notSet');
+    }
+
+    return pieces.join(' - ');
+  }
+
+  /**
+   * Emergency contact card text.
+   */
+  get emergencySummary(): string {
+    const emergency = this.profile?.emergencyContact;
+    if (!emergency) {
+      return this.translationService.instant('profile.emergencyContactPlaceholder');
+    }
+
+    const parts: string[] = [];
+    if (emergency.name) {
+      if (emergency.relationship) {
+        parts.push(
+          this.translationService.instant('profile.emergencyContactWithRelationship', {
+            name: emergency.name,
+            relationship: emergency.relationship,
+          })
+        );
+      } else {
+        parts.push(emergency.name);
+      }
+    }
+
+    if (emergency.phone) {
+      parts.push(
+        this.translationService.instant('profile.emergencyContactPhone', {
+          phone: emergency.phone,
+        })
+      );
+    }
+
+    if (!parts.length) {
+      return this.translationService.instant('profile.emergencyContactPlaceholder');
+    }
+
+    return parts.join(' - ');
+  }
+
+  /**
+   * Determine if emergency contact data exists.
+   */
+  get hasEmergencyContact(): boolean {
+    return !!this.profile?.emergencyContact;
   }
 
   /**
@@ -174,7 +299,7 @@ export class Tab1Page implements OnInit, OnDestroy {
    */
   formatLastSyncTime(): string {
     if (!this.lastSyncTime) {
-      return 'Never synced';
+      return this.translationService.instant('profile.lastSyncStatus.never');
     }
 
     const syncDate = new Date(this.lastSyncTime);
@@ -183,15 +308,20 @@ export class Tab1Page implements OnInit, OnDestroy {
     const diffMins = Math.floor(diffMs / (1000 * 60));
 
     if (diffMins < 1) {
-      return 'Just now';
+      return this.translationService.instant('profile.lastSyncStatus.justNow');
     } else if (diffMins < 60) {
-      return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+      const key =
+        diffMins === 1 ? 'profile.lastSyncStatus.oneMinute' : 'profile.lastSyncStatus.manyMinutes';
+      return this.translationService.instant(key, { count: diffMins });
     } else if (diffMins < 1440) {
       const hours = Math.floor(diffMins / 60);
-      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+      const key =
+        hours === 1 ? 'profile.lastSyncStatus.oneHour' : 'profile.lastSyncStatus.manyHours';
+      return this.translationService.instant(key, { count: hours });
     } else {
       const days = Math.floor(diffMins / 1440);
-      return `${days} day${days > 1 ? 's' : ''} ago`;
+      const key = days === 1 ? 'profile.lastSyncStatus.oneDay' : 'profile.lastSyncStatus.manyDays';
+      return this.translationService.instant(key, { count: days });
     }
   }
 
@@ -208,9 +338,10 @@ export class Tab1Page implements OnInit, OnDestroy {
    * Handle language change
    */
   async onLanguageChange(event: any): Promise<void> {
-    const language = event.detail.value;
+    const language = event.detail.value as Language;
+    // Update translation service (this will also save to preferences)
+    await this.translationService.setLanguage(language);
     await this.profileService.updatePreferences({ language });
-    this.currentLanguage = language;
   }
 
   /**
@@ -263,8 +394,7 @@ export class Tab1Page implements OnInit, OnDestroy {
     try {
       await this.authService.logout();
       await this.profileService.deleteProfile();
-      // Navigate to login or onboarding screen
-      // this.router.navigate(['/login']);
+      await this.router.navigate(['/welcome'], { replaceUrl: true });
     } catch (error) {
       console.error('Failed to sign out:', error);
     }
@@ -300,5 +430,71 @@ export class Tab1Page implements OnInit, OnDestroy {
   async editUsername(): Promise<void> {
     // TODO: Implement username edit dialog
     console.log('Edit username...');
+  }
+
+  /**
+   * Listen for language changes emitted by the translation service
+   */
+  private subscribeToLanguageChanges(): void {
+    this.translationService.currentLanguage$.pipe(takeUntil(this.destroy$)).subscribe(language => {
+      this.currentLanguage = language;
+    });
+  }
+
+  private getFirstName(): string {
+    const name = this.profile?.name || this.profileData?.name || '';
+    const trimmed = name.trim();
+    if (!trimmed) {
+      return this.translationService.instant('profile.defaultName');
+    }
+
+    const [first] = trimmed.split(' ');
+    return first || trimmed;
+  }
+
+  private getDiabetesTypeLabel(): string | null {
+    if (!this.profile?.diabetesType) {
+      return null;
+    }
+    const key = `profile.${this.profile.diabetesType}`;
+    return this.translationService.instant(key);
+  }
+
+  private getDiagnosisLabel(): string | null {
+    if (!this.profile?.diagnosisDate) {
+      return null;
+    }
+
+    const formatted = this.formatDateValue(this.profile.diagnosisDate);
+    if (!formatted) {
+      return null;
+    }
+
+    return this.translationService.instant('profile.diagnosisSummary', {
+      date: formatted,
+    });
+  }
+
+  private formatDateValue(value: string): string | null {
+    if (!value) {
+      return null;
+    }
+
+    try {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return null;
+      }
+
+      const locale = this.currentLanguage === 'es' ? 'es-ES' : 'en-US';
+      return new Intl.DateTimeFormat(locale, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      }).format(date);
+    } catch (error) {
+      console.warn('Failed to format date value', error);
+      return null;
+    }
   }
 }

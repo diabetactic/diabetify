@@ -1,10 +1,25 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Dispositivos</ion-title>
+    <ion-title>{{ 'devices.title' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <h2>Gestión de Dispositivos</h2>
-  <p>Conecta tus dispositivos de medición de glucosa</p>
+  <div class="placeholder-notice">
+    <ion-card color="warning">
+      <ion-card-header>
+        <ion-card-title>{{ 'common.inDevelopment' | translate }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ 'devices.bluetooth.notAvailable' | translate }}</p>
+        <p>{{ 'common.comingSoon' | translate }}</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Future BLE UI will go here -->
+  <!--
+  <h2>{{ 'devices.management' | translate }}</h2>
+  <p>{{ 'devices.connectedDevices' | translate }}</p>
+  -->
 </ion-content>

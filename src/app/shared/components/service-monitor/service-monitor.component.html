@@ -1,0 +1,303 @@
+<!-- Service Monitor Component Template -->
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Service Health Monitor</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleAutoRefresh()">
+        <ion-icon
+          slot="icon-only"
+          [name]="autoRefresh ? 'pause' : 'play'"
+          [color]="autoRefresh ? 'primary' : 'medium'"
+        >
+        </ion-icon>
+      </ion-button>
+      <ion-button (click)="checkAllServices()">
+        <ion-icon slot="icon-only" name="refresh"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Overall Status -->
+  <ion-card *ngIf="servicesState">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon
+          [name]="statusIcons[servicesState.overallHealth]"
+          [style.color]="statusColors[servicesState.overallHealth]"
+        >
+        </ion-icon>
+        System Status: {{ servicesState.overallHealth }}
+      </ion-card-title>
+      <ion-card-subtitle>
+        <span *ngIf="servicesState.isOnline" class="status-online">
+          <ion-icon name="wifi"></ion-icon> Online
+        </span>
+        <span *ngIf="!servicesState.isOnline" class="status-offline">
+          <ion-icon name="cloud-offline"></ion-icon> Offline
+        </span>
+        <span class="separator">|</span>
+        Last Check: {{ formatDate(servicesState.lastFullCheck) }}
+      </ion-card-subtitle>
+    </ion-card-header>
+  </ion-card>
+
+  <!-- Services Grid -->
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-md="6" size-lg="4" *ngFor="let service of services">
+        <ion-card (click)="showServiceDetails(service.service)">
+          <ion-card-header>
+            <ion-card-subtitle>
+              <ion-icon
+                [name]="statusIcons[service.status]"
+                [style.color]="statusColors[service.status]"
+              >
+              </ion-icon>
+              {{ service.status }}
+            </ion-card-subtitle>
+            <ion-card-title>{{ getServiceName(service.service) }}</ion-card-title>
+          </ion-card-header>
+
+          <ion-card-content>
+            <ion-list lines="none">
+              <ion-item>
+                <ion-label>Response Time</ion-label>
+                <ion-note slot="end">
+                  {{ service.responseTime ? formatDuration(service.responseTime) : 'N/A' }}
+                </ion-note>
+              </ion-item>
+
+              <ion-item>
+                <ion-label>Last Checked</ion-label>
+                <ion-note slot="end">
+                  {{ formatDate(service.lastChecked) }}
+                </ion-note>
+              </ion-item>
+
+              <!-- Circuit Breaker Status -->
+              <ion-item *ngIf="circuitBreakers">
+                <ion-label>Circuit Breaker</ion-label>
+                <ion-note
+                  slot="end"
+                  *ngFor="let cb of circuitBreakers"
+                  [style.color]="
+                    cb.service === service.service ? circuitBreakerColors[cb.state] : ''
+                  "
+                >
+                  <span *ngIf="cb.service === service.service">
+                    {{ cb.state }}
+                  </span>
+                </ion-note>
+              </ion-item>
+
+              <ion-item *ngIf="service.message">
+                <ion-label class="ion-text-wrap">
+                  <p class="error-message">{{ service.message }}</p>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+
+            <!-- Service Actions -->
+            <ion-button
+              fill="clear"
+              size="small"
+              (click)="checkService(service.service); $event.stopPropagation()"
+            >
+              <ion-icon slot="start" name="reload"></ion-icon>
+              Check
+            </ion-button>
+            <ion-button
+              fill="clear"
+              size="small"
+              (click)="clearServiceCache(service.service); $event.stopPropagation()"
+            >
+              <ion-icon slot="start" name="trash"></ion-icon>
+              Clear Cache
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Active Workflows -->
+  <ion-card *ngIf="activeWorkflows.length > 0">
+    <ion-card-header>
+      <ion-card-title>Active Workflows</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let workflow of activeWorkflows">
+          <ion-label>
+            <h2>{{ workflow.type }}</h2>
+            <p>Status: {{ workflow.status }}</p>
+            <ion-progress-bar
+              [value]="getWorkflowProgress(workflow) / 100"
+              [color]="workflow.status === 'failed' ? 'danger' : 'primary'"
+            >
+            </ion-progress-bar>
+          </ion-label>
+          <ion-note slot="end">
+            {{ getWorkflowDuration(workflow) }}
+          </ion-note>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Completed Workflows -->
+  <ion-card *ngIf="completedWorkflows.length > 0">
+    <ion-card-header>
+      <ion-card-title>Recent Workflows</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let workflow of completedWorkflows.slice(0, 5)">
+          <ion-icon
+            slot="start"
+            [name]="workflow.status === 'completed' ? 'checkmark-circle' : 'close-circle'"
+            [color]="workflow.status === 'completed' ? 'success' : 'danger'"
+          >
+          </ion-icon>
+          <ion-label>
+            <h2>{{ workflow.type }}</h2>
+            <p>{{ formatDate(workflow.startTime) }}</p>
+            <p *ngIf="workflow.error" class="error-message">{{ workflow.error }}</p>
+          </ion-label>
+          <ion-note slot="end">
+            {{ getWorkflowDuration(workflow) }}
+          </ion-note>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Service Details Modal -->
+  <ion-modal [isOpen]="showDetails" (didDismiss)="hideServiceDetails()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{
+            selectedService ? getServiceName(selectedService) : 'Service Details'
+          }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="hideServiceDetails()">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding" *ngIf="selectedService">
+        <!-- Service Configuration -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Configuration</ion-card-title>
+          </ion-card-header>
+          <ion-card-content *ngIf="getServiceConfig(selectedService) as config">
+            <ion-list>
+              <ion-item>
+                <ion-label>Base URL</ion-label>
+                <ion-note slot="end">{{ config.baseUrl }}</ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label>Health Endpoint</ion-label>
+                <ion-note slot="end">{{ config.healthEndpoint || 'N/A' }}</ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label>Timeout</ion-label>
+                <ion-note slot="end">{{ formatDuration(config.timeout) }}</ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label>Retry Attempts</ion-label>
+                <ion-note slot="end">{{ config.retryAttempts }}</ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label>Circuit Breaker Threshold</ion-label>
+                <ion-note slot="end">{{ config.circuitBreakerThreshold }}</ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label>Circuit Breaker Timeout</ion-label>
+                <ion-note slot="end">{{ formatDuration(config.circuitBreakerTimeout) }}</ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label>Cache Duration</ion-label>
+                <ion-note slot="end">
+                  {{ config.cacheDuration ? formatDuration(config.cacheDuration) : 'No Cache' }}
+                </ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label>Offline Support</ion-label>
+                <ion-note slot="end">
+                  <ion-icon [name]="config.offlineSupport ? 'checkmark' : 'close'"></ion-icon>
+                </ion-note>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Circuit Breaker Details -->
+        <ion-card *ngFor="let cb of circuitBreakers">
+          <ion-card-header *ngIf="cb.service === selectedService">
+            <ion-card-title>Circuit Breaker</ion-card-title>
+          </ion-card-header>
+          <ion-card-content *ngIf="cb.service === selectedService">
+            <ion-list>
+              <ion-item>
+                <ion-label>State</ion-label>
+                <ion-badge
+                  [color]="
+                    cb.state === 'CLOSED' ? 'success' : cb.state === 'OPEN' ? 'danger' : 'warning'
+                  "
+                >
+                  {{ cb.state }}
+                </ion-badge>
+              </ion-item>
+              <ion-item>
+                <ion-label>Failure Count</ion-label>
+                <ion-note slot="end">{{ cb.failureCount }}</ion-note>
+              </ion-item>
+              <ion-item *ngIf="cb.lastFailureTime">
+                <ion-label>Last Failure</ion-label>
+                <ion-note slot="end">{{ formatDate(cb.lastFailureTime) }}</ion-note>
+              </ion-item>
+              <ion-item *ngIf="cb.nextAttemptTime">
+                <ion-label>Next Attempt</ion-label>
+                <ion-note slot="end">{{ formatDate(cb.nextAttemptTime) }}</ion-note>
+              </ion-item>
+            </ion-list>
+
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="resetCircuitBreaker(selectedService)"
+              [disabled]="cb.state === 'CLOSED'"
+            >
+              <ion-icon slot="start" name="refresh"></ion-icon>
+              Reset Circuit Breaker
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Service Actions -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Actions</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-button expand="block" (click)="checkService(selectedService)">
+              <ion-icon slot="start" name="medical"></ion-icon>
+              Health Check
+            </ion-button>
+            <ion-button expand="block" fill="outline" (click)="clearServiceCache(selectedService)">
+              <ion-icon slot="start" name="trash"></ion-icon>
+              Clear Cache
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, combineLatest, of } from 'rxjs';
+import { Observable, BehaviorSubject, combineLatest, of, from } from 'rxjs';
 import { map, switchMap, tap, catchError } from 'rxjs/operators';
 import { TidepoolAuthService, AuthState as TidepoolAuthState } from './tidepool-auth.service';
 import {
@@ -7,6 +7,7 @@ import {
   LocalAuthState,
   LoginRequest,
   RegisterRequest,
+  UserPreferences as LocalUserPreferences,
 } from './local-auth.service';
 
 /**
@@ -94,7 +95,7 @@ export class UnifiedAuthService {
    * Initialize unified authentication by combining both providers
    */
   private initializeUnifiedAuth(): void {
-    combineLatest([this.tidepoolAuth.authState$, this.localAuth.authState$]).subscribe(
+    combineLatest([this.tidepoolAuth.authState, this.localAuth.authState$]).subscribe(
       ([tidepoolState, localState]) => {
         this.updateUnifiedState(tidepoolState, localState);
       }
@@ -150,7 +151,7 @@ export class UnifiedAuthService {
    * Login with Tidepool
    */
   loginTidepool(): Observable<void> {
-    return this.tidepoolAuth.login();
+    return from(this.tidepoolAuth.login());
   }
 
   /**
@@ -208,7 +209,7 @@ export class UnifiedAuthService {
     }
 
     if (state.tidepoolAuth?.isAuthenticated) {
-      return this.tidepoolAuth.getValidAccessToken();
+      return from(this.tidepoolAuth.getAccessToken());
     }
 
     return of(null);
@@ -221,7 +222,7 @@ export class UnifiedAuthService {
     if (provider === 'local') {
       return of(this.localAuth.getAccessToken());
     } else {
-      return this.tidepoolAuth.getValidAccessToken();
+      return from(this.tidepoolAuth.getAccessToken());
     }
   }
 
@@ -246,7 +247,7 @@ export class UnifiedAuthService {
       throw new Error('Must be logged in locally to link Tidepool account');
     }
 
-    return this.tidepoolAuth.login().pipe(
+    return from(this.tidepoolAuth.login()).pipe(
       tap(() => {
         // After successful Tidepool login, update the backend
         // to link the accounts (implementation depends on backend API)
@@ -287,7 +288,7 @@ export class UnifiedAuthService {
 
     if (state.tidepoolAuth?.isAuthenticated) {
       refreshObservables.push(
-        this.tidepoolAuth.refreshTokenIfNeeded().pipe(
+        from(this.tidepoolAuth.refreshAccessToken()).pipe(
           catchError(error => {
             console.warn('Tidepool token refresh failed:', error);
             return of(null);
@@ -387,8 +388,8 @@ export class UnifiedAuthService {
       dateOfBirth: localUser.dateOfBirth,
       diabetesType: localUser.diabetesType,
       diagnosisDate: localUser.diagnosisDate,
-      tidepoolUserId: tidepoolState.userId,
-      tidepoolEmail: tidepoolState.email,
+      tidepoolUserId: tidepoolState.userId || undefined,
+      tidepoolEmail: tidepoolState.email || undefined,
       preferences: localUser.preferences,
     };
   }
@@ -396,11 +397,41 @@ export class UnifiedAuthService {
   /**
    * Update user preferences
    */
-  updatePreferences(preferences: Partial<UnifiedUser['preferences']>): Observable<void> {
+  updatePreferences(preferences?: Partial<UnifiedUser['preferences']>): Observable<void> {
     const state = this.unifiedAuthStateSubject.value;
 
+    if (!preferences || Object.keys(preferences).length === 0) {
+      return of(void 0);
+    }
+
     if (state.localAuth?.isAuthenticated) {
-      return this.localAuth.updatePreferences(preferences).pipe(map(() => void 0));
+      const payload: Partial<LocalUserPreferences> = {};
+
+      if (preferences.glucoseUnit) {
+        payload.glucoseUnit = preferences.glucoseUnit;
+      }
+
+      if (preferences.targetRange) {
+        payload.targetRange = { ...preferences.targetRange };
+      }
+
+      if (preferences.language) {
+        payload.language = preferences.language;
+      }
+
+      if (preferences.theme) {
+        payload.theme = preferences.theme;
+      }
+
+      if (preferences.notifications) {
+        payload.notifications = { ...preferences.notifications };
+      }
+
+      if (Object.keys(payload).length === 0) {
+        return of(void 0);
+      }
+
+      return this.localAuth.updatePreferences(payload).pipe(map(() => void 0));
     }
 
     // For Tidepool-only users, store preferences locally

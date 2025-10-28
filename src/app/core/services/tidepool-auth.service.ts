@@ -13,8 +13,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Browser } from '@capacitor/browser';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
-import { BehaviorSubject, Observable, throwError, from } from 'rxjs';
-import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, throwError, from, timer, of } from 'rxjs';
+import { catchError, map, switchMap, tap, retryWhen, delay, take, concatMap } from 'rxjs/operators';
 
 import { TidepoolAuth, TidepoolTokenResponse } from '../models/tidepool-auth.model';
 import { getOAuthConfig, OAuthConfig, OAUTH_CONSTANTS } from '../config/oauth.config';
@@ -25,6 +25,7 @@ import {
   PKCEChallenge,
 } from '../utils/pkce.utils';
 import { TokenStorageService } from './token-storage.service';
+import { environment } from '../../../environments/environment';
 
 /**
  * Authentication state interface
@@ -36,10 +37,16 @@ export interface AuthState {
   isLoading: boolean;
   /** Error message if auth failed */
   error: string | null;
+  /** Error code for programmatic error handling */
+  errorCode?: string | null;
   /** User ID if authenticated */
   userId: string | null;
   /** User email if available */
   email: string | null;
+  /** Auth flow step for debugging */
+  flowStep?: 'idle' | 'initiating' | 'authorizing' | 'exchanging' | 'refreshing' | 'restoring';
+  /** Last successful authentication timestamp */
+  lastAuthenticated?: number | null;
 }
 
 /**
@@ -56,27 +63,68 @@ interface OAuthCallbackData {
   errorDescription?: string;
 }
 
+/**
+ * Authentication error codes for programmatic error handling
+ */
+export enum AuthErrorCode {
+  NETWORK_ERROR = 'NETWORK_ERROR',
+  INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
+  TOKEN_EXPIRED = 'TOKEN_EXPIRED',
+  REFRESH_FAILED = 'REFRESH_FAILED',
+  CSRF_VIOLATION = 'CSRF_VIOLATION',
+  INVALID_STATE = 'INVALID_STATE',
+  USER_CANCELLED = 'USER_CANCELLED',
+  BROWSER_ERROR = 'BROWSER_ERROR',
+  SERVER_ERROR = 'SERVER_ERROR',
+  UNKNOWN = 'UNKNOWN',
+}
+
+/**
+ * Custom error class for authentication errors
+ */
+export class AuthenticationError extends Error {
+  constructor(
+    public code: AuthErrorCode,
+    message: string,
+    public details?: any
+  ) {
+    super(message);
+    this.name = 'AuthenticationError';
+  }
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class TidepoolAuthService {
   private readonly oauthConfig: OAuthConfig;
+  private readonly MAX_RETRY_ATTEMPTS = 3;
+  private readonly RETRY_DELAY_MS = 1000;
 
   // Temporary storage for OAuth flow state
   private pendingCodeVerifier: string | null = null;
   private pendingState: string | null = null;
+
+  // Deep link listener reference for cleanup
+  private deepLinkListener: any = null;
 
   // Authentication state observable
   private authState$ = new BehaviorSubject<AuthState>({
     isAuthenticated: false,
     isLoading: false,
     error: null,
+    errorCode: null,
     userId: null,
     email: null,
+    flowStep: 'idle',
+    lastAuthenticated: null,
   });
 
   /** Observable for components to subscribe to auth state changes */
   public readonly authState: Observable<AuthState> = this.authState$.asObservable();
+
+  /** Logging configuration */
+  private readonly enableDebugLogging = !environment.production;
 
   constructor(
     private http: HttpClient,

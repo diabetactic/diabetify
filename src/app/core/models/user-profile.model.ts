@@ -198,6 +198,9 @@ export interface UserProfile {
 
   /** Optional notes */
   notes?: string;
+
+  /** Has user completed onboarding */
+  hasCompletedOnboarding?: boolean;
 }
 
 /**

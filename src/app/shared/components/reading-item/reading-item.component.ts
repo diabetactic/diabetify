@@ -1,7 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { LocalGlucoseReading, GlucoseStatus } from '../../../core/models/glucose-reading.model';
+import { LocalGlucoseReading } from '../../../core/models/glucose-reading.model';
+import { TranslationService } from '../../../core/services/translation.service';
 
 @Component({
   selector: 'app-reading-item',
@@ -12,6 +13,8 @@ import { LocalGlucoseReading, GlucoseStatus } from '../../../core/models/glucose
 })
 export class ReadingItemComponent {
   @Input() reading!: LocalGlucoseReading;
+
+  constructor(private translationService: TranslationService) {}
 
   getStatusEmoji(): string {
     if (!this.reading.status) return '😐';
@@ -31,21 +34,23 @@ export class ReadingItemComponent {
   }
 
   getStatusText(): string {
-    if (!this.reading.status) return 'Normal';
+    if (!this.reading.status) {
+      return this.translationService.instant('glucose.status.normal');
+    }
 
     switch (this.reading.status) {
       case 'normal':
-        return 'Normal';
+        return this.translationService.instant('glucose.status.normal');
       case 'low':
-        return 'Low';
+        return this.translationService.instant('glucose.status.low');
       case 'critical-low':
-        return 'Critical Low';
+        return this.translationService.instant('glucose.status.veryLow');
       case 'high':
-        return 'High';
+        return this.translationService.instant('glucose.status.high');
       case 'critical-high':
-        return 'Critical High';
+        return this.translationService.instant('glucose.status.veryHigh');
       default:
-        return 'Normal';
+        return this.translationService.instant('glucose.status.normal');
     }
   }
 
@@ -67,13 +72,7 @@ export class ReadingItemComponent {
   }
 
   formatTime(timeString: string): string {
-    const date = new Date(timeString);
-    const hours = date.getHours();
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const displayHours = hours % 12 || 12;
-
-    return `${displayHours}:${minutes} ${ampm}`;
+    return this.translationService.formatTime(timeString);
   }
 
   formatDate(timeString: string): string {
@@ -83,11 +82,12 @@ export class ReadingItemComponent {
     yesterday.setDate(yesterday.getDate() - 1);
 
     if (date.toDateString() === today.toDateString()) {
-      return 'Today';
+      return this.translationService.instant('common.today');
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
+      return this.translationService.instant('common.yesterday');
     } else {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const locale = this.translationService.getCurrentLanguage();
+      return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
     }
   }
 }
