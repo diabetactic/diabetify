@@ -197,16 +197,16 @@ export class ExternalServicesManager {
 
     // Monitor Tidepool sync state
     this.tidepoolSync.syncStatus$.subscribe(syncStatus => {
-      if (syncStatus.status === 'error') {
-        this.recordServiceError(ExternalService.TIDEPOOL, syncStatus.error || 'Sync failed');
+      if (syncStatus.errors && syncStatus.errors.length > 0) {
+        const error = syncStatus.errors[0];
+        this.recordServiceError(ExternalService.TIDEPOOL, error.message || 'Sync failed');
       }
     });
 
     // Monitor local auth state
     this.localAuth.authState$.subscribe(authState => {
-      if (authState.error) {
-        this.recordServiceError(ExternalService.LOCAL_AUTH, authState.error);
-      }
+      // Local auth doesn't have an error field in the state
+      // Errors should be caught in the auth methods themselves
     });
   }
 
