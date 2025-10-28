@@ -16,8 +16,8 @@ import { AlertBannerComponent } from '../shared/components/alert-banner/alert-ba
     ReactiveFormsModule,
     IonicModule,
     AddReadingPageRoutingModule,
+    AddReadingPage,
     AlertBannerComponent,
   ],
-  declarations: [AddReadingPage],
 })
 export class AddReadingPageModule {}

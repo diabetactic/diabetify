@@ -4,16 +4,17 @@ import { TabsPage } from './tabs.page';
 
 const routes: Routes = [
   {
-    path: 'tabs',
+    path: '',
     component: TabsPage,
     children: [
       {
         path: 'dashboard',
-        loadChildren: () => import('../dashboard/tab1.module').then(m => m.Tab1PageModule),
+        loadChildren: () =>
+          import('../dashboard/dashboard.module').then(m => m.DashboardPageModule),
       },
       {
         path: 'readings',
-        loadChildren: () => import('../readings/tab1.module').then(m => m.Tab1PageModule),
+        loadChildren: () => import('../readings/readings.module').then(m => m.ReadingsPageModule),
       },
       {
         path: 'trends',
@@ -21,19 +22,14 @@ const routes: Routes = [
       },
       {
         path: 'profile',
-        loadChildren: () => import('../profile/tab1.module').then(m => m.Tab1PageModule),
+        loadChildren: () => import('../profile/profile.module').then(m => m.ProfilePageModule),
       },
       {
         path: '',
-        redirectTo: '/tabs/dashboard',
+        redirectTo: 'dashboard',
         pathMatch: 'full',
       },
     ],
-  },
-  {
-    path: '',
-    redirectTo: '/tabs/dashboard',
-    pathMatch: 'full',
   },
 ];
 

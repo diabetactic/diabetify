@@ -4,13 +4,15 @@
   [style.--gradient-end]="gradientColors[1]"
 >
   <ion-card-content>
-    <div class="stat-card-header">
-      <span class="material-symbols-outlined icon">{{ icon }}</span>
+    <div class="stat-card-inner">
+      <div class="stat-card-top">
+        <span class="material-symbols-outlined icon">{{ icon }}</span>
+        <div class="stat-card-value">
+          <span class="value">{{ value }}</span>
+          <span class="unit" *ngIf="unit">{{ unit }}</span>
+        </div>
+      </div>
       <h3 class="title">{{ title }}</h3>
-    </div>
-    <div class="stat-card-value">
-      <span class="value">{{ value }}</span>
-      <span class="unit" *ngIf="unit">{{ unit }}</span>
     </div>
   </ion-card-content>
 </ion-card>

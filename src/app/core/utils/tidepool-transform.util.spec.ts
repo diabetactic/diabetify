@@ -64,13 +64,14 @@ describe('TidepoolTransformUtil', () => {
         expect(calculateGlucoseStatus(10.0, 'mmol/L')).toBe('normal');
       });
 
-      it('should return high for values between 10.1-13.9 mmol/L', () => {
+      it('should return high for values between 10.1-13.8 mmol/L', () => {
         expect(calculateGlucoseStatus(10.1, 'mmol/L')).toBe('high');
         expect(calculateGlucoseStatus(12.0, 'mmol/L')).toBe('high');
-        expect(calculateGlucoseStatus(13.9, 'mmol/L')).toBe('high');
+        expect(calculateGlucoseStatus(13.8, 'mmol/L')).toBe('high');
       });
 
-      it('should return critical-high for values above 13.9 mmol/L', () => {
+      it('should return critical-high for values at or above 13.9 mmol/L', () => {
+        expect(calculateGlucoseStatus(13.9, 'mmol/L')).toBe('critical-high');
         expect(calculateGlucoseStatus(14.0, 'mmol/L')).toBe('critical-high');
         expect(calculateGlucoseStatus(20.0, 'mmol/L')).toBe('critical-high');
       });

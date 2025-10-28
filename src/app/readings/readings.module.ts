@@ -2,9 +2,9 @@ import { IonicModule } from '@ionic/angular';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Tab1Page } from './tab1.page';
+import { ReadingsPage } from './readings.page';
 
-import { Tab1PageRoutingModule } from './tab1-routing.module';
+import { ReadingsPageRoutingModule } from './readings-routing.module';
 
 // Import shared components (standalone)
 import { ReadingItemComponent, EmptyStateComponent } from '../shared/components';
@@ -14,11 +14,11 @@ import { ReadingItemComponent, EmptyStateComponent } from '../shared/components'
     IonicModule,
     CommonModule,
     FormsModule,
-    Tab1PageRoutingModule,
+    ReadingsPageRoutingModule,
+    ReadingsPage,
     // Standalone components
     ReadingItemComponent,
     EmptyStateComponent,
   ],
-  declarations: [Tab1Page],
 })
-export class Tab1PageModule {}
+export class ReadingsPageModule {}

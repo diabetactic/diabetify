@@ -14,7 +14,6 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, RouterModule.forChild(routes)],
-  declarations: [TrendsPage],
+  imports: [CommonModule, FormsModule, IonicModule, TrendsPage, RouterModule.forChild(routes)],
 })
 export class TrendsPageModule {}

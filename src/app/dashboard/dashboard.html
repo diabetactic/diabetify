@@ -1,7 +1,8 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Dashboard</ion-title>
+    <ion-title>{{ 'dashboard.title' | translate }}</ion-title>
     <ion-buttons slot="end">
+      <app-language-switcher displayMode="button" [showText]="false"></app-language-switcher>
       <ion-button (click)="onSync()" [disabled]="isSyncing">
         <ion-icon slot="icon-only" name="sync-outline" [class.spinning]="isSyncing"> </ion-icon>
       </ion-button>
@@ -19,7 +20,7 @@
     <!-- Loading State -->
     <div *ngIf="isLoading" class="loading-container">
       <ion-spinner name="crescent"></ion-spinner>
-      <p>Loading your glucose data...</p>
+      <p>{{ 'app.loading' | translate }}</p>
     </div>
 
     <!-- Dashboard Content -->
@@ -28,7 +29,7 @@
       <app-alert-banner
         *ngIf="showSuccessAlert"
         type="success"
-        message="Great job keeping your glucose in range! Keep it up."
+        [message]="'messages.saveSuccess' | translate"
         [dismissible]="true"
         (dismissed)="onAlertDismissed()"
         class="alert-banner"
@@ -39,7 +40,7 @@
       <div class="stats-grid">
         <!-- HbA1c Card -->
         <app-stat-card
-          title="HbA1c"
+          [title]="'readings.statistics.hba1c' | translate"
           [value]="formatPercentage(statistics?.estimatedA1C)"
           unit=""
           [icon]="icons.hba1c"
@@ -49,7 +50,7 @@
 
         <!-- Time in Range Card -->
         <app-stat-card
-          title="Time in Range"
+          [title]="'dashboard.timeInRange' | translate"
           [value]="formatPercentage(statistics?.timeInRange)"
           unit=""
           [icon]="icons.timeInRange"
@@ -59,9 +60,9 @@
 
         <!-- Average Glucose Card -->
         <app-stat-card
-          title="Average Glucose"
+          [title]="'dashboard.averageGlucose' | translate"
           [value]="formatGlucose(statistics?.average)"
-          unit="mg/dL"
+          [unit]="getCurrentGlucoseUnit()"
           [icon]="icons.avgGlucose"
           [gradientColors]="gradients.avgGlucose"
         >
@@ -69,7 +70,7 @@
 
         <!-- GMI Card -->
         <app-stat-card
-          title="GMI"
+          [title]="'readings.statistics.gmi' | translate"
           [value]="formatPercentage(statistics?.gmi)"
           unit=""
           [icon]="icons.gmi"
@@ -78,12 +79,108 @@
         </app-stat-card>
       </div>
 
+      <!-- Upcoming Appointment Card -->
+      <ion-card *ngIf="upcomingAppointment" class="appointment-card">
+        <ion-card-header>
+          <ion-card-subtitle>{{ 'dashboard.upcomingAppointments' | translate }}</ion-card-subtitle>
+          <ion-card-title>{{
+            upcomingAppointment.doctorName || ('appointments.doctor' | translate)
+          }}</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item lines="none">
+            <ion-icon slot="start" name="calendar-outline" color="primary"></ion-icon>
+            <ion-label>
+              <p>{{ upcomingAppointment.date | date: 'fullDate' }}</p>
+              <h3>{{ upcomingAppointment.startTime }} - {{ upcomingAppointment.endTime }}</h3>
+            </ion-label>
+            <ion-badge slot="end" color="primary">{{ getTimeUntilAppointment() }}</ion-badge>
+          </ion-item>
+
+          <ion-item lines="none" *ngIf="upcomingAppointment.reason">
+            <ion-icon slot="start" name="medical-outline" color="medium"></ion-icon>
+            <ion-label>
+              <p>{{ 'appointments.reason' | translate }}</p>
+              <h3>{{ upcomingAppointment.reason }}</h3>
+            </ion-label>
+          </ion-item>
+
+          <div class="appointment-actions">
+            <ion-button
+              expand="block"
+              (click)="shareGlucoseData()"
+              [disabled]="isSharingGlucose || !upcomingAppointment.glucoseDataShared"
+            >
+              <ion-spinner name="crescent" *ngIf="isSharingGlucose"></ion-spinner>
+              <span *ngIf="!isSharingGlucose">
+                <ion-icon slot="start" name="share-outline"></ion-icon>
+                {{ 'dashboard.shareReadings' | translate }}
+              </span>
+            </ion-button>
+            <ion-button expand="block" fill="outline" (click)="viewAppointmentDetails()">
+              {{ 'common.viewDetails' | translate }}
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Quick Actions Card -->
+      <ion-card class="quick-actions-card">
+        <ion-card-header>
+          <ion-card-title>{{ 'dashboard.quickActions' | translate }}</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-grid>
+            <ion-row>
+              <ion-col size="6">
+                <ion-button
+                  expand="block"
+                  fill="outline"
+                  (click)="addReading()"
+                  class="quick-action-btn"
+                >
+                  <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                  {{ 'dashboard.addReading' | translate }}
+                </ion-button>
+              </ion-col>
+              <ion-col size="6">
+                <ion-button
+                  expand="block"
+                  fill="outline"
+                  (click)="onSync()"
+                  [disabled]="isSyncing"
+                  class="quick-action-btn"
+                >
+                  <ion-icon
+                    slot="start"
+                    name="sync-outline"
+                    [class.spinning]="isSyncing"
+                  ></ion-icon>
+                  {{ 'dashboard.syncNow' | translate }}
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          <ion-item lines="none" class="sync-status">
+            <ion-label>
+              <p>{{ 'dashboard.lastSync' | translate }}: {{ getLastSyncDisplay() }}</p>
+              <h4 *ngIf="syncStatus">
+                {{ syncStatus.itemsSynced }} {{ 'sync.items' | translate }}
+                <span *ngIf="syncStatus.itemsFailed > 0" class="sync-error">
+                  ({{ syncStatus.itemsFailed }} {{ 'sync.failed' | translate }})
+                </span>
+              </h4>
+            </ion-label>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
       <!-- Recent Readings Section -->
       <div class="recent-readings-section">
         <div class="section-header">
-          <h2>Recent Readings</h2>
+          <h2>{{ 'dashboard.recentReadings' | translate }}</h2>
           <ion-button fill="clear" size="small" routerLink="/tabs/readings">
-            View All
+            {{ 'common.viewAll' | translate }}
             <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
           </ion-button>
         </div>
@@ -91,9 +188,9 @@
         <!-- Empty State -->
         <app-empty-state
           *ngIf="recentReadings.length === 0"
-          illustration="fitness"
-          heading="No readings yet"
-          message="Start tracking your glucose readings to see them here."
+          illustration="fitness_center"
+          [heading]="'dashboard.noReadings' | translate"
+          [message]="'dashboard.noReadingsMessage' | translate"
           ctaText=""
         >
         </app-empty-state>

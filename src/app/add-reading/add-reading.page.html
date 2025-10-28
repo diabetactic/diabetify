@@ -5,7 +5,7 @@
         <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Add Reading</ion-title>
+    <ion-title>{{ 'addReading.title' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -13,10 +13,7 @@
   <div class="page-container">
     <!-- Info Banner with Tip -->
     <div class="banner-container">
-      <app-alert-banner
-        type="info"
-        message="For accurate readings, wash hands before testing and use the side of your fingertip."
-      ></app-alert-banner>
+      <app-alert-banner type="info" [message]="'addReading.tip' | translate"></app-alert-banner>
     </div>
 
     <!-- Form -->
@@ -25,14 +22,14 @@
       <div class="form-section">
         <ion-item lines="none" class="form-item">
           <ion-label position="stacked" class="form-label">
-            Glucose Reading <span class="required">*</span>
+            {{ 'addReading.glucoseLabel' | translate }} <span class="required">*</span>
           </ion-label>
           <div class="input-with-unit">
             <ion-input
               formControlName="value"
               type="number"
               inputmode="decimal"
-              placeholder="Enter value"
+              [placeholder]="'addReading.glucosePlaceholder' | translate"
               class="glucose-input"
               [class.invalid]="
                 readingForm.get('value')?.invalid && readingForm.get('value')?.touched
@@ -59,7 +56,7 @@
       <div class="form-section">
         <ion-item lines="none" class="form-item">
           <ion-label position="stacked" class="form-label">
-            Date & Time <span class="required">*</span>
+            {{ 'addReading.dateTimeLabel' | translate }} <span class="required">*</span>
           </ion-label>
           <ion-datetime-button datetime="reading-datetime"></ion-datetime-button>
         </ion-item>
@@ -80,16 +77,18 @@
       <!-- Meal Context Selector -->
       <div class="form-section">
         <ion-item lines="none" class="form-item">
-          <ion-label position="stacked" class="form-label"> Meal Context (Optional) </ion-label>
+          <ion-label position="stacked" class="form-label">
+            {{ 'addReading.mealContext.label' | translate }}
+          </ion-label>
           <ion-select
             formControlName="mealContext"
-            placeholder="Select meal context"
+            [placeholder]="'addReading.mealContext.placeholder' | translate"
             interface="action-sheet"
-            cancelText="Cancel"
+            [cancelText]="'common.cancel' | translate"
           >
-            <ion-select-option [value]="null">None</ion-select-option>
+            <ion-select-option [value]="null">{{ 'common.none' | translate }}</ion-select-option>
             <ion-select-option *ngFor="let option of mealContextOptions" [value]="option.value">
-              {{ option.label }}
+              {{ option.labelKey | translate }}
             </ion-select-option>
           </ion-select>
         </ion-item>
@@ -98,16 +97,23 @@
       <!-- Notes Field -->
       <div class="form-section">
         <ion-item lines="none" class="form-item">
-          <ion-label position="stacked" class="form-label"> Notes (Optional) </ion-label>
+          <ion-label position="stacked" class="form-label">
+            {{ 'addReading.notes.label' | translate }}
+          </ion-label>
           <ion-textarea
             formControlName="notes"
-            placeholder="Add any additional notes..."
+            [placeholder]="'addReading.notes.placeholder' | translate"
             rows="4"
             maxlength="500"
             class="notes-textarea"
           ></ion-textarea>
         </ion-item>
-        <div class="character-count">{{ readingForm.get('notes')?.value?.length || 0 }} / 500</div>
+        <div class="character-count">
+          {{
+            'addReading.notes.counter'
+              | translate: { count: readingForm.get('notes')?.value?.length || 0, max: 500 }
+          }}
+        </div>
       </div>
 
       <!-- Action Buttons -->
@@ -120,7 +126,7 @@
           [disabled]="isSubmitting"
           class="cancel-button"
         >
-          Cancel
+          {{ 'common.cancel' | translate }}
         </ion-button>
         <ion-button
           expand="block"
@@ -129,7 +135,7 @@
           class="save-button"
         >
           <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>
-          <span *ngIf="!isSubmitting">Save Reading</span>
+          <span *ngIf="!isSubmitting">{{ 'addReading.actions.save' | translate }}</span>
         </ion-button>
       </div>
     </form>
