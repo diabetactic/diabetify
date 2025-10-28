@@ -94,10 +94,10 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       retryAttempts: 3,
       cache: {
         duration: 300000, // 5 minutes
-        key: params => `glucose_${params.userId}_${params.startDate}_${params.endDate}`,
+        key: (params: any) => `glucose_${params.userId}_${params.startDate}_${params.endDate}`,
       },
       transform: {
-        response: data => data.data || [],
+        response: (data: any) => data.data || [],
       },
     },
   ],
@@ -126,7 +126,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       retryAttempts: 2,
       cache: {
         duration: 60000, // 1 minute
-        key: params => `readings_${params.limit}_${params.offset}`,
+        key: (params: any) => `readings_${params.limit}_${params.offset}`,
       },
     },
   ],
@@ -140,7 +140,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       timeout: 30000,
       retryAttempts: 1,
       transform: {
-        request: data => ({
+        request: (data: any) => ({
           ...data,
           timestamp: new Date(data.timestamp).toISOString(),
         }),
@@ -249,6 +249,22 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     },
   ],
   [
+    'appointments.shareGlucose',
+    {
+      service: ExternalService.APPOINTMENTS,
+      path: '/appointments/appointments/{id}/share-glucose',
+      method: 'POST',
+      authenticated: true,
+      timeout: 60000,
+      transform: {
+        request: (data: any) => {
+          // Ensure manualReadingsSummary is included if present
+          return data;
+        },
+      },
+    },
+  ],
+  [
     'appointments.doctors.list',
     {
       service: ExternalService.APPOINTMENTS,
@@ -269,7 +285,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       authenticated: false,
       cache: {
         duration: 300000, // 5 minutes
-        key: params => `slots_${params.doctorId}_${params.date}`,
+        key: (params: any) => `slots_${params.doctorId}_${params.date}`,
       },
     },
   ],
@@ -537,7 +553,9 @@ export class ApiGatewayService {
     const url = `${baseUrl}${path}`;
 
     // Prepare headers
-    let headers = new HttpHeaders(options?.headers || {});
+    let headers = options?.headers instanceof HttpHeaders
+      ? options.headers
+      : new HttpHeaders(options?.headers as { [header: string]: string | string[] } || {});
 
     // Add authentication if required
     if (endpoint.authenticated) {
@@ -565,17 +583,18 @@ export class ApiGatewayService {
 
   /**
    * Get base URL for a service
+   * IMPORTANT: All non-Tidepool services should route through the API Gateway
    */
   private getBaseUrl(service: ExternalService): string {
     switch (service) {
       case ExternalService.TIDEPOOL:
+        // Tidepool remains direct for now (may route through gateway in future)
         return environment.tidepool.baseUrl;
       case ExternalService.GLUCOSERVER:
-        return `${environment.backendServices.glucoserver.baseUrl}${environment.backendServices.glucoserver.apiPath}`;
       case ExternalService.APPOINTMENTS:
-        return `${environment.backendServices.appointments.baseUrl}${environment.backendServices.appointments.apiPath}`;
       case ExternalService.LOCAL_AUTH:
-        return environment.backendServices.auth.baseUrl;
+        // Route all backend services through the API Gateway
+        return environment.backendServices.apiGateway.baseUrl;
       default:
         throw new Error(`Unknown service: ${service}`);
     }
@@ -587,11 +606,11 @@ export class ApiGatewayService {
   private async getAuthToken(service: ExternalService): Promise<string | null> {
     switch (service) {
       case ExternalService.TIDEPOOL:
-        return await this.unifiedAuth.getProviderToken('tidepool');
+        return await this.unifiedAuth.getProviderToken('tidepool').toPromise() ?? null;
       case ExternalService.GLUCOSERVER:
       case ExternalService.APPOINTMENTS:
       case ExternalService.LOCAL_AUTH:
-        return await this.unifiedAuth.getProviderToken('local');
+        return await this.unifiedAuth.getProviderToken('local').toPromise() ?? null;
       default:
         return null;
     }

@@ -1,0 +1,155 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>{{ 'appointments.title' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="createAppointment()">
+        <span class="material-symbols-outlined">add</span>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar>
+    <ion-segment [(ngModel)]="selectedSegment" (ionChange)="onSegmentChange($event)">
+      <ion-segment-button value="upcoming">
+        <ion-label>Próximas</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="past">
+        <ion-label>Pasadas</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Pull to refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading spinner -->
+  <div *ngIf="loading" class="ion-padding ion-text-center">
+    <ion-spinner name="circular"></ion-spinner>
+    <p>Cargando citas...</p>
+  </div>
+
+  <!-- Error message -->
+  <ion-card *ngIf="error && !loading" color="danger">
+    <ion-card-content>
+      <ion-text>
+        <p>{{ error }}</p>
+      </ion-text>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Upcoming appointments -->
+  <div *ngIf="selectedSegment === 'upcoming' && !loading">
+    <!-- Empty state -->
+    <ion-card *ngIf="upcomingAppointments.length === 0" class="empty-state">
+      <ion-card-content class="ion-text-center">
+        <span class="material-symbols-outlined large-icon">event_busy</span>
+        <h2>No hay citas próximas</h2>
+        <p>Programa una cita con tu médico</p>
+        <ion-button (click)="createAppointment()" expand="block" class="ion-margin-top">
+          Agendar Cita
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Appointments list -->
+    <ion-list *ngIf="upcomingAppointments.length > 0">
+      <ion-item-sliding *ngFor="let appointment of upcomingAppointments">
+        <ion-item button (click)="viewAppointment(appointment)">
+          <ion-avatar slot="start">
+            <div class="appointment-avatar">
+              <span class="material-symbols-outlined">person</span>
+            </div>
+          </ion-avatar>
+
+          <ion-label>
+            <h2>{{ appointment.doctorName || 'Doctor' }}</h2>
+            <h3>{{ formatDate(appointment.date) }}</h3>
+            <p>
+              <ion-icon name="time-outline"></ion-icon>
+              {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}
+            </p>
+            <p *ngIf="appointment.reason">
+              <ion-icon name="medical-outline"></ion-icon>
+              {{ appointment.reason }}
+            </p>
+          </ion-label>
+
+          <ion-note slot="end">
+            <ion-badge [color]="getStatusColor(appointment.status)">
+              <span class="material-symbols-outlined badge-icon">{{ getStatusIcon(appointment.status) }}</span>
+              {{ appointment.status }}
+            </ion-badge>
+            <ion-badge
+              *ngIf="appointment.urgency !== 'routine'"
+              [color]="getUrgencyColor(appointment.urgency)"
+              class="urgency-badge">
+              {{ appointment.urgency }}
+            </ion-badge>
+          </ion-note>
+        </ion-item>
+
+        <ion-item-options side="end">
+          <ion-item-option color="warning">
+            <span class="material-symbols-outlined">edit</span>
+            Editar
+          </ion-item-option>
+          <ion-item-option color="danger">
+            <span class="material-symbols-outlined">cancel</span>
+            Cancelar
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </ion-list>
+  </div>
+
+  <!-- Past appointments -->
+  <div *ngIf="selectedSegment === 'past' && !loading">
+    <!-- Empty state -->
+    <ion-card *ngIf="pastAppointments.length === 0" class="empty-state">
+      <ion-card-content class="ion-text-center">
+        <span class="material-symbols-outlined large-icon">history</span>
+        <h2>No hay citas pasadas</h2>
+        <p>Las citas completadas aparecerán aquí</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Appointments list -->
+    <ion-list *ngIf="pastAppointments.length > 0">
+      <ion-item *ngFor="let appointment of pastAppointments" button (click)="viewAppointment(appointment)">
+        <ion-avatar slot="start">
+          <div class="appointment-avatar past">
+            <span class="material-symbols-outlined">person</span>
+          </div>
+        </ion-avatar>
+
+        <ion-label>
+          <h2>{{ appointment.doctorName || 'Doctor' }}</h2>
+          <h3>{{ formatDate(appointment.date) }}</h3>
+          <p>
+            <ion-icon name="time-outline"></ion-icon>
+            {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}
+          </p>
+          <p *ngIf="appointment.reason">
+            <ion-icon name="medical-outline"></ion-icon>
+            {{ appointment.reason }}
+          </p>
+        </ion-label>
+
+        <ion-note slot="end">
+          <ion-badge [color]="getStatusColor(appointment.status)">
+            <span class="material-symbols-outlined badge-icon">{{ getStatusIcon(appointment.status) }}</span>
+            {{ appointment.status }}
+          </ion-badge>
+          <div *ngIf="appointment.glucoseDataShared" class="shared-indicator">
+            <ion-icon name="share-outline" color="success"></ion-icon>
+            <small>Datos compartidos</small>
+          </div>
+        </ion-note>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content>

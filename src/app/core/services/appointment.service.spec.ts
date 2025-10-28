@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { of, throwError } from 'rxjs';
 import {
   AppointmentService,
   Appointment,
@@ -7,538 +7,709 @@ import {
   TimeSlot,
   CreateAppointmentRequest,
   AppointmentStats,
+  ShareGlucoseResponse,
 } from './appointment.service';
-import { environment } from '../../../environments/environment';
+import { ApiGatewayService } from './api-gateway.service';
+import { ReadingsService, TeleAppointmentReadingSummary } from './readings.service';
 
 describe('AppointmentService', () => {
   let service: AppointmentService;
-  let httpMock: HttpTestingController;
-  const baseUrl = `${environment.backendServices.appointments.baseUrl}${environment.backendServices.appointments.apiPath}`;
+  let apiGatewaySpy: jasmine.SpyObj<ApiGatewayService>;
+  let readingsServiceSpy: jasmine.SpyObj<ReadingsService>;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [AppointmentService],
-    });
-    service = TestBed.inject(AppointmentService);
-    httpMock = TestBed.inject(HttpTestingController);
-  });
+    // Create spy objects for dependencies
+    const apiGatewaySpyObj = jasmine.createSpyObj('ApiGatewayService', ['request']);
+    const readingsServiceSpyObj = jasmine.createSpyObj('ReadingsService', [
+      'exportManualReadingsSummary',
+    ]);
 
-  afterEach(() => {
-    httpMock.verify();
+    TestBed.configureTestingModule({
+      providers: [
+        AppointmentService,
+        { provide: ApiGatewayService, useValue: apiGatewaySpyObj },
+        { provide: ReadingsService, useValue: readingsServiceSpyObj },
+      ],
+    });
+
+    service = TestBed.inject(AppointmentService);
+    apiGatewaySpy = TestBed.inject(ApiGatewayService) as jasmine.SpyObj<ApiGatewayService>;
+    readingsServiceSpy = TestBed.inject(ReadingsService) as jasmine.SpyObj<ReadingsService>;
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('getAppointments', () => {
-    it('should retrieve appointments with filters', () => {
-      const mockAppointments: Appointment[] = [
-        {
-          id: '1',
-          patientId: 'patient1',
-          doctorId: 'doctor1',
-          doctorName: 'Dr. Smith',
-          date: '2024-02-15',
-          startTime: '10:00',
-          endTime: '10:30',
-          status: 'confirmed',
-          urgency: 'routine',
-          reason: 'Regular checkup',
+  describe('Gateway Integration Tests', () => {
+    describe('shareManualGlucoseData', () => {
+      const mockSummary: TeleAppointmentReadingSummary = {
+        generatedAt: '2024-01-31T12:00:00.000Z',
+        range: {
+          start: '2024-01-01T00:00:00.000Z',
+          end: '2024-01-31T23:59:59.999Z',
         },
-        {
-          id: '2',
-          patientId: 'patient1',
-          doctorId: 'doctor2',
-          doctorName: 'Dr. Jones',
-          date: '2024-02-20',
-          startTime: '14:00',
-          endTime: '14:30',
-          status: 'pending',
-          urgency: 'urgent',
-          reason: 'High glucose levels',
+        unit: 'mg/dL',
+        totalReadings: 120,
+        statistics: {
+          average: 142.5,
+          minimum: 78,
+          maximum: 210,
         },
-      ];
+        readings: [
+          {
+            id: 'reading-1',
+            time: '2024-01-15T10:00:00.000Z',
+            value: 142,
+            status: 'normal',
+          },
+          {
+            id: 'reading-2',
+            time: '2024-01-16T10:00:00.000Z',
+            value: 156,
+            status: 'normal',
+          },
+        ],
+      };
 
-      const startDate = new Date('2024-02-01');
-      const endDate = new Date('2024-02-28');
+      it('should call correct gateway endpoint with default 30-day window', (done) => {
+        const appointmentId = 'apt-123';
+        const mockResponse: ShareGlucoseResponse = {
+          shared: true,
+          message: '120 lecturas compartidas exitosamente',
+          recordCount: 120,
+        };
 
-      service.getAppointments('confirmed', startDate, endDate).subscribe(appointments => {
-        expect(appointments).toEqual(mockAppointments);
-      });
-
-      const req = httpMock.expectOne(request => {
-        return (
-          request.url === `${baseUrl}/appointments` &&
-          request.params.get('status') === 'confirmed' &&
-          request.params.get('start_date') === startDate.toISOString() &&
-          request.params.get('end_date') === endDate.toISOString()
+        // Mock ReadingsService to return summary
+        readingsServiceSpy.exportManualReadingsSummary.and.returnValue(
+          Promise.resolve(mockSummary)
         );
+
+        // Mock ApiGatewayService to return successful response
+        apiGatewaySpy.request.and.returnValue(
+          of({
+            success: true,
+            data: mockResponse,
+          })
+        );
+
+        service.shareManualGlucoseData(appointmentId).subscribe({
+          next: (response) => {
+            // Verify ReadingsService was called with 30 days (default)
+            expect(readingsServiceSpy.exportManualReadingsSummary).toHaveBeenCalledWith(30);
+
+            // Verify ApiGatewayService was called with correct endpoint and payload
+            expect(apiGatewaySpy.request).toHaveBeenCalledWith(
+              'appointments.shareGlucose',
+              jasmine.objectContaining({
+                body: jasmine.objectContaining({
+                  startDate: jasmine.any(String),
+                  endDate: jasmine.any(String),
+                  manualReadingsSummary: mockSummary,
+                }),
+              }),
+              { id: appointmentId }
+            );
+
+            // Verify response
+            expect(response.shared).toBe(true);
+            expect(response.recordCount).toBe(120);
+            done();
+          },
+          error: (err) => fail(err),
+        });
       });
 
-      expect(req.request.method).toBe('GET');
-      req.flush(mockAppointments);
+      it('should use custom days parameter when provided', (done) => {
+        const appointmentId = 'apt-456';
+        const customDays = 7;
+        const mockResponse: ShareGlucoseResponse = {
+          shared: true,
+          message: '35 lecturas compartidas',
+          recordCount: 35,
+        };
+
+        readingsServiceSpy.exportManualReadingsSummary.and.returnValue(
+          Promise.resolve(mockSummary)
+        );
+
+        apiGatewaySpy.request.and.returnValue(
+          of({
+            success: true,
+            data: mockResponse,
+          })
+        );
+
+        service.shareManualGlucoseData(appointmentId, { days: customDays }).subscribe({
+          next: () => {
+            // Verify ReadingsService was called with custom days
+            expect(readingsServiceSpy.exportManualReadingsSummary).toHaveBeenCalledWith(
+              customDays
+            );
+            done();
+          },
+          error: (err) => fail(err),
+        });
+      });
+
+      it('should use custom date range when provided', (done) => {
+        const appointmentId = 'apt-789';
+        const customRange = {
+          start: new Date('2024-01-15'),
+          end: new Date('2024-02-15'),
+        };
+        const mockResponse: ShareGlucoseResponse = {
+          shared: true,
+          message: '95 lecturas compartidas',
+          recordCount: 95,
+        };
+
+        readingsServiceSpy.exportManualReadingsSummary.and.returnValue(
+          Promise.resolve(mockSummary)
+        );
+
+        apiGatewaySpy.request.and.returnValue(
+          of({
+            success: true,
+            data: mockResponse,
+          })
+        );
+
+        service.shareManualGlucoseData(appointmentId, { dateRange: customRange }).subscribe({
+          next: () => {
+            // Verify correct date range was sent
+            const callArgs = apiGatewaySpy.request.calls.mostRecent().args;
+            const requestBody = callArgs[1]?.body as any;
+
+            expect(requestBody.startDate).toBe(customRange.start.toISOString());
+            expect(requestBody.endDate).toBe(customRange.end.toISOString());
+
+            // Verify days calculation (31 days between Jan 15 and Feb 15)
+            expect(readingsServiceSpy.exportManualReadingsSummary).toHaveBeenCalledWith(31);
+            done();
+          },
+          error: (err) => fail(err),
+        });
+      });
+
+      it('should send complete summary with readings array', (done) => {
+        const appointmentId = 'apt-123';
+        const mockResponse: ShareGlucoseResponse = {
+          shared: true,
+          message: 'Data shared',
+          recordCount: 120,
+        };
+
+        readingsServiceSpy.exportManualReadingsSummary.and.returnValue(
+          Promise.resolve(mockSummary)
+        );
+
+        apiGatewaySpy.request.and.returnValue(
+          of({
+            success: true,
+            data: mockResponse,
+          })
+        );
+
+        service.shareManualGlucoseData(appointmentId).subscribe({
+          next: () => {
+            const callArgs = apiGatewaySpy.request.calls.mostRecent().args;
+            const requestBody = callArgs[1]?.body as any;
+
+            // Verify payload structure
+            expect(requestBody).toEqual(
+              jasmine.objectContaining({
+                startDate: jasmine.any(String),
+                endDate: jasmine.any(String),
+                manualReadingsSummary: jasmine.objectContaining({
+                  generatedAt: jasmine.any(String),
+                  range: jasmine.any(Object),
+                  unit: 'mg/dL',
+                  totalReadings: 120,
+                  statistics: jasmine.objectContaining({
+                    average: 142.5,
+                    minimum: 78,
+                    maximum: 210,
+                  }),
+                  readings: jasmine.any(Array),
+                }),
+              })
+            );
+
+            // Verify manualReadingsSummary has expected structure
+            expect(requestBody.manualReadingsSummary.statistics.average).toBeDefined();
+            expect(requestBody.manualReadingsSummary.readings.length).toBe(2);
+            done();
+          },
+          error: (err) => fail(err),
+        });
+      });
+
+      it('should handle error when no readings available', (done) => {
+        const appointmentId = 'apt-123';
+
+        // Mock ReadingsService to throw error (no readings)
+        readingsServiceSpy.exportManualReadingsSummary.and.returnValue(
+          Promise.reject(new Error('No hay lecturas de glucosa en el rango especificado'))
+        );
+
+        service.shareManualGlucoseData(appointmentId).subscribe({
+          next: () => fail('should have thrown error'),
+          error: (error) => {
+            expect(error.message).toContain('No hay lecturas');
+            expect(apiGatewaySpy.request).not.toHaveBeenCalled();
+            done();
+          },
+        });
+      });
+
+      it('should handle API gateway errors', (done) => {
+        const appointmentId = 'apt-123';
+        const mockError = {
+          success: false,
+          error: {
+            message: 'Failed to share glucose data',
+            code: 'SHARE_FAILED',
+          },
+        };
+
+        readingsServiceSpy.exportManualReadingsSummary.and.returnValue(
+          Promise.resolve(mockSummary)
+        );
+
+        apiGatewaySpy.request.and.returnValue(throwError(() => mockError));
+
+        service.shareManualGlucoseData(appointmentId).subscribe({
+          next: () => fail('should have thrown error'),
+          error: (error) => {
+            expect(error).toEqual(mockError);
+            done();
+          },
+        });
+      });
     });
 
-    it('should update appointments subject after fetching', () => {
-      const mockAppointments: Appointment[] = [
-        {
-          id: '1',
-          patientId: 'patient1',
-          doctorId: 'doctor1',
-          date: '2024-02-15',
-          startTime: '10:00',
-          endTime: '10:30',
-          status: 'confirmed',
-          urgency: 'routine',
-          reason: 'Checkup',
-        },
-      ];
+    describe('getAppointments', () => {
+      it('should call correct gateway endpoint with filters', (done) => {
+        const mockAppointments: Appointment[] = [
+          {
+            id: '1',
+            patientId: 'patient1',
+            doctorId: 'doctor1',
+            doctorName: 'Dr. Smith',
+            date: '2024-02-15',
+            startTime: '10:00',
+            endTime: '10:30',
+            status: 'confirmed',
+            urgency: 'routine',
+            reason: 'Regular checkup',
+          },
+        ];
 
-      let emittedAppointments: Appointment[] = [];
-      service.appointments$.subscribe(appointments => {
-        emittedAppointments = appointments;
+        apiGatewaySpy.request.and.returnValue(
+          of({
+            success: true,
+            data: mockAppointments,
+          })
+        );
+
+        const startDate = new Date('2024-02-01');
+        const endDate = new Date('2024-02-28');
+
+        service.getAppointments('confirmed', startDate, endDate).subscribe({
+          next: (appointments) => {
+            expect(apiGatewaySpy.request).toHaveBeenCalledWith(
+              'appointments.list',
+              jasmine.objectContaining({
+                params: jasmine.objectContaining({
+                  status: 'confirmed',
+                  start_date: startDate.toISOString(),
+                  end_date: endDate.toISOString(),
+                }),
+              })
+            );
+            expect(appointments).toEqual(mockAppointments);
+            done();
+          },
+          error: (err) => fail(err),
+        });
       });
 
-      service.getAppointments().subscribe();
+      it('should update appointments$ observable', (done) => {
+        const mockAppointments: Appointment[] = [
+          {
+            id: '1',
+            patientId: 'patient1',
+            doctorId: 'doctor1',
+            date: '2024-02-15',
+            startTime: '10:00',
+            endTime: '10:30',
+            status: 'confirmed',
+            urgency: 'routine',
+            reason: 'Checkup',
+          },
+        ];
 
-      const req = httpMock.expectOne(`${baseUrl}/appointments?limit=50&offset=0`);
-      req.flush(mockAppointments);
+        apiGatewaySpy.request.and.returnValue(
+          of({
+            success: true,
+            data: mockAppointments,
+          })
+        );
 
-      expect(emittedAppointments).toEqual(mockAppointments);
-    });
-
-    it('should identify upcoming appointment correctly', () => {
-      const futureDate = new Date();
-      futureDate.setDate(futureDate.getDate() + 5);
-
-      const mockAppointments: Appointment[] = [
-        {
-          id: '1',
-          patientId: 'patient1',
-          doctorId: 'doctor1',
-          date: futureDate.toISOString().split('T')[0],
-          startTime: '10:00',
-          endTime: '10:30',
-          status: 'confirmed',
-          urgency: 'routine',
-          reason: 'Checkup',
-        },
-        {
-          id: '2',
-          patientId: 'patient1',
-          doctorId: 'doctor2',
-          date: '2020-01-01',
-          startTime: '14:00',
-          endTime: '14:30',
-          status: 'completed',
-          urgency: 'routine',
-          reason: 'Old appointment',
-        },
-      ];
-
-      let upcomingAppointment: Appointment | null = null;
-      service.upcomingAppointment$.subscribe(apt => {
-        upcomingAppointment = apt;
-      });
-
-      service.getAppointments().subscribe();
-
-      const req = httpMock.expectOne(`${baseUrl}/appointments?limit=50&offset=0`);
-      req.flush(mockAppointments);
-
-      expect(upcomingAppointment).toBeTruthy();
-      expect(upcomingAppointment!).toEqual(mockAppointments[0]);
-    });
-  });
-
-  describe('createAppointment', () => {
-    it('should create a new appointment', () => {
-      const request: CreateAppointmentRequest = {
-        doctorId: 'doctor1',
-        date: '2024-02-20',
-        startTime: '10:00',
-        endTime: '10:30',
-        urgency: 'routine',
-        reason: 'Regular checkup',
-        shareGlucoseData: true,
-      };
-
-      const mockResponse: Appointment = {
-        id: 'new-appointment-id',
-        patientId: 'patient1',
-        ...request,
-        status: 'pending',
-      };
-
-      service.createAppointment(request).subscribe(appointment => {
-        expect(appointment).toEqual(mockResponse);
-      });
-
-      const req = httpMock.expectOne(`${baseUrl}/appointments`);
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual(request);
-      req.flush(mockResponse);
-
-      // Verify refresh is called
-      const refreshReq = httpMock.expectOne(`${baseUrl}/appointments?limit=50&offset=0`);
-      refreshReq.flush([]);
-    });
-
-    it('should handle appointment creation errors', () => {
-      const request: CreateAppointmentRequest = {
-        doctorId: 'doctor1',
-        date: '2024-02-20',
-        startTime: '10:00',
-        endTime: '10:30',
-        urgency: 'routine',
-        reason: 'Checkup',
-      };
-
-      service.createAppointment(request).subscribe({
-        next: () => fail('should have failed'),
-        error: error => {
-          expect(error.message).toContain('Time slot is no longer available');
-        },
-      });
-
-      const firstReq = httpMock.expectOne(`${baseUrl}/appointments`);
-      expect(firstReq.request.method).toBe('POST');
-      firstReq.flush(null, { status: 409, statusText: 'Conflict' });
-
-      const retryReq = httpMock.expectOne(`${baseUrl}/appointments`);
-      expect(retryReq.request.method).toBe('POST');
-      retryReq.flush(null, { status: 409, statusText: 'Conflict' });
-    });
-  });
-
-  describe('cancelAppointment', () => {
-    it('should cancel an appointment with reason', () => {
-      const appointmentId = 'apt-123';
-      const reason = 'Patient requested cancellation';
-
-      const mockResponse: Appointment = {
-        id: appointmentId,
-        patientId: 'patient1',
-        doctorId: 'doctor1',
-        date: '2024-02-20',
-        startTime: '10:00',
-        endTime: '10:30',
-        status: 'cancelled',
-        urgency: 'routine',
-        reason: 'Checkup',
-        cancelledReason: reason,
-      };
-
-      service.cancelAppointment(appointmentId, reason).subscribe(appointment => {
-        expect(appointment.status).toBe('cancelled');
-        expect(appointment.cancelledReason).toBe(reason);
-      });
-
-      const req = httpMock.expectOne(`${baseUrl}/appointments/${appointmentId}/cancel`);
-      expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toEqual({
-        status: 'cancelled',
-        cancelledReason: reason,
-      });
-      req.flush(mockResponse);
-
-      // Verify refresh is called
-      const refreshReq = httpMock.expectOne(`${baseUrl}/appointments?limit=50&offset=0`);
-      refreshReq.flush([]);
-    });
-  });
-
-  describe('rescheduleAppointment', () => {
-    it('should reschedule an appointment to new time', () => {
-      const appointmentId = 'apt-123';
-      const newDate = '2024-02-25';
-      const newStartTime = '14:00';
-      const newEndTime = '14:30';
-
-      const mockResponse: Appointment = {
-        id: appointmentId,
-        patientId: 'patient1',
-        doctorId: 'doctor1',
-        date: newDate,
-        startTime: newStartTime,
-        endTime: newEndTime,
-        status: 'rescheduled',
-        urgency: 'routine',
-        reason: 'Checkup',
-      };
-
-      service
-        .rescheduleAppointment(appointmentId, newDate, newStartTime, newEndTime)
-        .subscribe(appointment => {
-          expect(appointment.date).toBe(newDate);
-          expect(appointment.startTime).toBe(newStartTime);
-          expect(appointment.status).toBe('rescheduled');
+        let emittedAppointments: Appointment[] = [];
+        service.appointments$.subscribe((appointments) => {
+          emittedAppointments = appointments;
         });
 
-      const req = httpMock.expectOne(`${baseUrl}/appointments/${appointmentId}/reschedule`);
-      expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toEqual({
-        date: newDate,
-        startTime: newStartTime,
-        endTime: newEndTime,
-        status: 'rescheduled',
+        service.getAppointments().subscribe({
+          next: () => {
+            expect(emittedAppointments).toEqual(mockAppointments);
+            done();
+          },
+          error: (err) => fail(err),
+        });
       });
-      req.flush(mockResponse);
-
-      // Verify refresh is called
-      const refreshReq = httpMock.expectOne(`${baseUrl}/appointments?limit=50&offset=0`);
-      refreshReq.flush([]);
-    });
-  });
-
-  describe('getDoctors', () => {
-    it('should retrieve list of doctors', () => {
-      const mockDoctors: Doctor[] = [
-        {
-          id: 'doctor1',
-          name: 'Dr. Smith',
-          specialty: 'Endocrinology',
-          title: 'MD',
-          email: 'smith@clinic.com',
-          languages: ['English', 'Spanish'],
-        },
-        {
-          id: 'doctor2',
-          name: 'Dr. Jones',
-          specialty: 'Endocrinology',
-          title: 'MD, PhD',
-          email: 'jones@clinic.com',
-          languages: ['English'],
-        },
-      ];
-
-      service.getDoctors('Endocrinology').subscribe(doctors => {
-        expect(doctors.length).toBe(2);
-        expect(doctors).toEqual(mockDoctors);
-      });
-
-      const req = httpMock.expectOne(`${baseUrl}/doctors?specialty=Endocrinology`);
-      expect(req.request.method).toBe('GET');
-      req.flush(mockDoctors);
     });
 
-    it('should retrieve all doctors without filter', () => {
-      const mockDoctors: Doctor[] = [];
-
-      service.getDoctors().subscribe(doctors => {
-        expect(doctors).toEqual(mockDoctors);
-      });
-
-      const req = httpMock.expectOne(`${baseUrl}/doctors`);
-      expect(req.request.method).toBe('GET');
-      req.flush(mockDoctors);
-    });
-  });
-
-  describe('getAvailableSlots', () => {
-    it('should retrieve available time slots for a doctor', () => {
-      const doctorId = 'doctor1';
-      const date = new Date('2024-02-20');
-      const days = 7;
-
-      const mockSlots: TimeSlot[] = [
-        {
+    describe('createAppointment', () => {
+      it('should call correct gateway endpoint with request body', (done) => {
+        const request: CreateAppointmentRequest = {
+          doctorId: 'doctor1',
           date: '2024-02-20',
           startTime: '10:00',
           endTime: '10:30',
-          available: true,
-          doctorId: doctorId,
-        },
-        {
-          date: '2024-02-20',
-          startTime: '10:30',
-          endTime: '11:00',
-          available: false,
-          doctorId: doctorId,
-        },
-        {
-          date: '2024-02-21',
-          startTime: '14:00',
-          endTime: '14:30',
-          available: true,
-          doctorId: doctorId,
-        },
-      ];
+          urgency: 'routine',
+          reason: 'Regular checkup',
+          shareGlucoseData: true,
+        };
 
-      service.getAvailableSlots(doctorId, date, days).subscribe(slots => {
-        expect(slots.length).toBe(3);
-        const availableSlots = slots.filter(s => s.available);
-        expect(availableSlots.length).toBe(2);
-      });
+        const mockResponse: Appointment = {
+          id: 'new-apt-id',
+          patientId: 'patient1',
+          ...request,
+          status: 'pending',
+        };
 
-      const req = httpMock.expectOne(request => {
-        return (
-          request.url === `${baseUrl}/slots` &&
-          request.params.get('doctor_id') === doctorId &&
-          request.params.get('start_date') === date.toISOString() &&
-          request.params.get('days') === days.toString()
+        apiGatewaySpy.request.and.returnValues(
+          of({
+            success: true,
+            data: mockResponse,
+          }),
+          of({ success: true, data: [] }) // refresh call
         );
+
+        service.createAppointment(request).subscribe({
+          next: (appointment) => {
+            expect(apiGatewaySpy.request).toHaveBeenCalledWith(
+              'appointments.create',
+              jasmine.objectContaining({
+                body: request,
+              })
+            );
+            expect(appointment).toEqual(mockResponse);
+            done();
+          },
+          error: (err) => fail(err),
+        });
       });
-
-      expect(req.request.method).toBe('GET');
-      req.flush(mockSlots);
-    });
-  });
-
-  describe('getStatistics', () => {
-    it('should retrieve appointment statistics', () => {
-      const mockStats: AppointmentStats = {
-        totalAppointments: 50,
-        completedAppointments: 40,
-        upcomingAppointments: 5,
-        cancelledAppointments: 5,
-        averageWaitTime: 15,
-        lastAppointmentDate: '2024-02-10',
-        nextAppointmentDate: '2024-02-20',
-      };
-
-      service.getStatistics().subscribe(stats => {
-        expect(stats).toEqual(mockStats);
-        expect(stats.totalAppointments).toBe(50);
-      });
-
-      const req = httpMock.expectOne(`${baseUrl}/appointments/stats`);
-      expect(req.request.method).toBe('GET');
-      req.flush(mockStats);
-    });
-  });
-
-  describe('shareGlucoseData', () => {
-    it('should share glucose data for an appointment with date range', () => {
-      const appointmentId = 'apt-123';
-      const dateRange = {
-        start: new Date('2024-01-01'),
-        end: new Date('2024-01-31'),
-      };
-
-      const mockResponse = {
-        shared: true,
-        recordCount: 150,
-      };
-
-      service.shareGlucoseData(appointmentId, dateRange).subscribe(response => {
-        expect(response.shared).toBe(true);
-        expect(response.recordCount).toBe(150);
-      });
-
-      const req = httpMock.expectOne(`${baseUrl}/appointments/${appointmentId}/share-glucose`);
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual({
-        startDate: dateRange.start.toISOString(),
-        endDate: dateRange.end.toISOString(),
-      });
-      req.flush(mockResponse);
     });
 
-    it('should share all glucose data when no date range specified', () => {
-      const appointmentId = 'apt-123';
+    describe('cancelAppointment', () => {
+      it('should call correct gateway endpoint with reason', (done) => {
+        const appointmentId = 'apt-123';
+        const reason = 'Patient requested cancellation';
+        const mockResponse: Appointment = {
+          id: appointmentId,
+          patientId: 'patient1',
+          doctorId: 'doctor1',
+          date: '2024-02-20',
+          startTime: '10:00',
+          endTime: '10:30',
+          status: 'cancelled',
+          urgency: 'routine',
+          reason: 'Checkup',
+          cancelledReason: reason,
+        };
 
-      const mockResponse = {
-        shared: true,
-        recordCount: 500,
-      };
+        apiGatewaySpy.request.and.returnValues(
+          of({
+            success: true,
+            data: mockResponse,
+          }),
+          of({ success: true, data: [] }) // refresh call
+        );
 
-      service.shareGlucoseData(appointmentId).subscribe(response => {
-        expect(response.shared).toBe(true);
-        expect(response.recordCount).toBe(500);
+        service.cancelAppointment(appointmentId, reason).subscribe({
+          next: (appointment) => {
+            expect(apiGatewaySpy.request).toHaveBeenCalledWith(
+              'appointments.cancel',
+              jasmine.objectContaining({
+                body: {
+                  status: 'cancelled',
+                  cancelledReason: reason,
+                },
+              }),
+              { id: appointmentId }
+            );
+            expect(appointment.status).toBe('cancelled');
+            done();
+          },
+          error: (err) => fail(err),
+        });
       });
-
-      const req = httpMock.expectOne(`${baseUrl}/appointments/${appointmentId}/share-glucose`);
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual({});
-      req.flush(mockResponse);
     });
-  });
 
-  describe('joinVideoCall', () => {
-    it('should return video call URL and token', () => {
-      const appointmentId = 'apt-123';
-      const mockResponse = {
-        url: 'https://video.platform.com/room/12345',
-        token: 'jwt-token-for-video',
-      };
+    describe('rescheduleAppointment', () => {
+      it('should call correct gateway endpoint with new time', (done) => {
+        const appointmentId = 'apt-123';
+        const newDate = '2024-02-25';
+        const newStartTime = '14:00';
+        const newEndTime = '14:30';
 
-      service.joinVideoCall(appointmentId).subscribe(response => {
-        expect(response.url).toBe(mockResponse.url);
-        expect(response.token).toBe(mockResponse.token);
+        const mockResponse: Appointment = {
+          id: appointmentId,
+          patientId: 'patient1',
+          doctorId: 'doctor1',
+          date: newDate,
+          startTime: newStartTime,
+          endTime: newEndTime,
+          status: 'rescheduled',
+          urgency: 'routine',
+          reason: 'Checkup',
+        };
+
+        apiGatewaySpy.request.and.returnValues(
+          of({
+            success: true,
+            data: mockResponse,
+          }),
+          of({ success: true, data: [] }) // refresh call
+        );
+
+        service.rescheduleAppointment(appointmentId, newDate, newStartTime, newEndTime).subscribe({
+          next: (appointment) => {
+            expect(apiGatewaySpy.request).toHaveBeenCalledWith(
+              'appointments.reschedule',
+              jasmine.objectContaining({
+                body: {
+                  date: newDate,
+                  startTime: newStartTime,
+                  endTime: newEndTime,
+                  status: 'rescheduled',
+                },
+              }),
+              { id: appointmentId }
+            );
+            expect(appointment.date).toBe(newDate);
+            done();
+          },
+          error: (err) => fail(err),
+        });
       });
+    });
 
-      const req = httpMock.expectOne(`${baseUrl}/appointments/${appointmentId}/join-call`);
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual({});
-      req.flush(mockResponse);
+    describe('getDoctors', () => {
+      it('should call correct gateway endpoint with specialty filter', (done) => {
+        const mockDoctors: Doctor[] = [
+          {
+            id: 'doctor1',
+            name: 'Dr. Smith',
+            specialty: 'Endocrinology',
+            title: 'MD',
+            email: 'smith@clinic.com',
+            languages: ['English', 'Spanish'],
+          },
+        ];
+
+        apiGatewaySpy.request.and.returnValue(
+          of({
+            success: true,
+            data: mockDoctors,
+          })
+        );
+
+        service.getDoctors('Endocrinology').subscribe({
+          next: (doctors) => {
+            expect(apiGatewaySpy.request).toHaveBeenCalledWith(
+              'appointments.doctors',
+              jasmine.objectContaining({
+                params: { specialty: 'Endocrinology' },
+              })
+            );
+            expect(doctors).toEqual(mockDoctors);
+            done();
+          },
+          error: (err) => fail(err),
+        });
+      });
+    });
+
+    describe('getAvailableSlots', () => {
+      it('should call correct gateway endpoint with parameters', (done) => {
+        const doctorId = 'doctor1';
+        const date = new Date('2024-02-20');
+        const days = 7;
+
+        const mockSlots: TimeSlot[] = [
+          {
+            date: '2024-02-20',
+            startTime: '10:00',
+            endTime: '10:30',
+            available: true,
+            doctorId: doctorId,
+          },
+        ];
+
+        apiGatewaySpy.request.and.returnValue(
+          of({
+            success: true,
+            data: mockSlots,
+          })
+        );
+
+        service.getAvailableSlots(doctorId, date, days).subscribe({
+          next: (slots) => {
+            expect(apiGatewaySpy.request).toHaveBeenCalledWith(
+              'appointments.slots',
+              jasmine.objectContaining({
+                params: {
+                  doctor_id: doctorId,
+                  start_date: date.toISOString(),
+                  days: days.toString(),
+                },
+              })
+            );
+            expect(slots).toEqual(mockSlots);
+            done();
+          },
+          error: (err) => fail(err),
+        });
+      });
+    });
+
+    describe('getStatistics', () => {
+      it('should call correct gateway endpoint', (done) => {
+        const mockStats: AppointmentStats = {
+          totalAppointments: 50,
+          completedAppointments: 40,
+          upcomingAppointments: 5,
+          cancelledAppointments: 5,
+          averageWaitTime: 15,
+          lastAppointmentDate: '2024-02-10',
+          nextAppointmentDate: '2024-02-20',
+        };
+
+        apiGatewaySpy.request.and.returnValue(
+          of({
+            success: true,
+            data: mockStats,
+          })
+        );
+
+        service.getStatistics().subscribe({
+          next: (stats) => {
+            expect(apiGatewaySpy.request).toHaveBeenCalledWith('appointments.stats');
+            expect(stats).toEqual(mockStats);
+            done();
+          },
+          error: (err) => fail(err),
+        });
+      });
+    });
+
+    describe('joinVideoCall', () => {
+      it('should call correct gateway endpoint', (done) => {
+        const appointmentId = 'apt-123';
+        const mockResponse = {
+          url: 'https://video.platform.com/room/12345',
+          token: 'jwt-token-for-video',
+        };
+
+        apiGatewaySpy.request.and.returnValue(
+          of({
+            success: true,
+            data: mockResponse,
+          })
+        );
+
+        service.joinVideoCall(appointmentId).subscribe({
+          next: (response) => {
+            expect(apiGatewaySpy.request).toHaveBeenCalledWith(
+              'appointments.joinCall',
+              jasmine.objectContaining({
+                body: {},
+              }),
+              { id: appointmentId }
+            );
+            expect(response.url).toBe(mockResponse.url);
+            done();
+          },
+          error: (err) => fail(err),
+        });
+      });
     });
   });
 
   describe('Error Handling', () => {
-    it('should handle 401 unauthorized error', () => {
+    it('should handle gateway authentication errors', (done) => {
+      const mockError = {
+        success: false,
+        error: {
+          message: 'Unauthorized',
+          code: 'AUTH_REQUIRED',
+        },
+      };
+
+      apiGatewaySpy.request.and.returnValue(throwError(() => mockError));
+
       service.getAppointments().subscribe({
-        next: () => fail('should have failed'),
-        error: error => {
-          expect(error.message).toContain('Unauthorized');
+        next: () => fail('should have thrown error'),
+        error: (error) => {
+          expect(error).toEqual(mockError);
+          done();
         },
       });
-
-      const firstReq = httpMock.expectOne(`${baseUrl}/appointments?limit=50&offset=0`);
-      expect(firstReq.request.method).toBe('GET');
-      firstReq.flush(null, { status: 401, statusText: 'Unauthorized' });
-
-      const secondReq = httpMock.expectOne(`${baseUrl}/appointments?limit=50&offset=0`);
-      expect(secondReq.request.method).toBe('GET');
-      secondReq.flush(null, { status: 401, statusText: 'Unauthorized' });
-
-      const thirdReq = httpMock.expectOne(`${baseUrl}/appointments?limit=50&offset=0`);
-      expect(thirdReq.request.method).toBe('GET');
-      thirdReq.flush(null, { status: 401, statusText: 'Unauthorized' });
     });
 
-    it('should handle 404 not found error', () => {
+    it('should handle gateway not found errors', (done) => {
+      const mockError = {
+        success: false,
+        error: {
+          message: 'Appointment not found',
+          code: 'NOT_FOUND',
+        },
+      };
+
+      apiGatewaySpy.request.and.returnValue(throwError(() => mockError));
+
       service.getAppointment('non-existent').subscribe({
-        next: () => fail('should have failed'),
-        error: error => {
-          expect(error.message).toContain('not found');
+        next: () => fail('should have thrown error'),
+        error: (error) => {
+          expect(error).toEqual(mockError);
+          done();
         },
       });
-
-      const firstReq = httpMock.expectOne(`${baseUrl}/appointments/non-existent`);
-      expect(firstReq.request.method).toBe('GET');
-      firstReq.flush(null, { status: 404, statusText: 'Not Found' });
-
-      const secondReq = httpMock.expectOne(`${baseUrl}/appointments/non-existent`);
-      expect(secondReq.request.method).toBe('GET');
-      secondReq.flush(null, { status: 404, statusText: 'Not Found' });
-
-      const thirdReq = httpMock.expectOne(`${baseUrl}/appointments/non-existent`);
-      expect(thirdReq.request.method).toBe('GET');
-      thirdReq.flush(null, { status: 404, statusText: 'Not Found' });
     });
 
-    it('should handle 500 server error', () => {
+    it('should handle gateway server errors', (done) => {
+      const mockError = {
+        success: false,
+        error: {
+          message: 'Server error',
+          code: 'INTERNAL_ERROR',
+        },
+      };
+
+      apiGatewaySpy.request.and.returnValue(throwError(() => mockError));
+
       service.getAppointments().subscribe({
-        next: () => fail('should have failed'),
-        error: error => {
-          expect(error.message).toContain('Server error');
+        next: () => fail('should have thrown error'),
+        error: (error) => {
+          expect(error).toEqual(mockError);
+          done();
         },
       });
-
-      const firstReq = httpMock.expectOne(`${baseUrl}/appointments?limit=50&offset=0`);
-      expect(firstReq.request.method).toBe('GET');
-      firstReq.flush(null, { status: 500, statusText: 'Internal Server Error' });
-
-      const secondReq = httpMock.expectOne(`${baseUrl}/appointments?limit=50&offset=0`);
-      expect(secondReq.request.method).toBe('GET');
-      secondReq.flush(null, { status: 500, statusText: 'Internal Server Error' });
-
-      const thirdReq = httpMock.expectOne(`${baseUrl}/appointments?limit=50&offset=0`);
-      expect(thirdReq.request.method).toBe('GET');
-      thirdReq.flush(null, { status: 500, statusText: 'Internal Server Error' });
     });
   });
 });
