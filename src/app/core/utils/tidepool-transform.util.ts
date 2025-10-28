@@ -123,14 +123,18 @@ export function calculateGlucoseStatus(value: number, unit: GlucoseUnit): Glucos
     throw new Error(`Invalid unit: ${unit}. Must be 'mg/dL' or 'mmol/L'`);
   }
 
-  // Convert to mg/dL for consistent comparison
-  const mgdl = unit === 'mmol/L' ? value * MMOLL_TO_MGDL : value;
+  if (unit === 'mmol/L') {
+    if (value < 3.0) return 'critical-low';
+    if (value < 3.9) return 'low';
+    if (value >= 13.9) return 'critical-high';
+    if (value > 10.0) return 'high';
+    return 'normal';
+  }
 
-  // Apply clinical ranges
-  if (mgdl < 54) return 'critical-low';
-  if (mgdl < 70) return 'low';
-  if (mgdl > 250) return 'critical-high';
-  if (mgdl > 180) return 'high';
+  if (value < 54) return 'critical-low';
+  if (value < 70) return 'low';
+  if (value > 250) return 'critical-high';
+  if (value > 180) return 'high';
   return 'normal';
 }
 

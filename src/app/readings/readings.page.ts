@@ -1,7 +1,10 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
-import { IonContent } from '@ionic/angular';
-import { Subject, Subscription, combineLatest } from 'rxjs';
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { IonicModule, IonContent } from '@ionic/angular';
+import { TranslateModule } from '@ngx-translate/core';
+import { Subject, Subscription } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {
   LocalGlucoseReading,
@@ -9,6 +12,10 @@ import {
   GlucoseUnit,
 } from '../core/models/glucose-reading.model';
 import { ReadingsService } from '../core/services/readings.service';
+import { ProfileService } from '../core/services/profile.service';
+import { TranslationService } from '../core/services/translation.service';
+import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
+import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
 
 /**
  * Interface for grouped readings by date
@@ -30,12 +37,22 @@ interface ReadingFilters {
 }
 
 @Component({
-  
-  selector: 'app-tab1',
+  selector: 'app-readings',
   templateUrl: './readings.html',
-  styleUrls: ['./tab1.page.scss'],
+  styleUrls: ['./readings.page.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    IonicModule,
+    RouterModule,
+    FormsModule,
+    TranslateModule,
+    DatePipe,
+    ReadingItemComponent,
+    EmptyStateComponent,
+  ],
 })
-export class Tab1Page implements OnInit, OnDestroy {
+export class ReadingsPage implements OnInit, OnDestroy {
   @ViewChild(IonContent) content?: IonContent;
 
   // State
@@ -52,7 +69,7 @@ export class Tab1Page implements OnInit, OnDestroy {
   isFilterModalOpen: boolean = false;
 
   // User preferences
-  preferredUnit: GlucoseUnit = 'mg/dL'; // TODO: Get from user profile/settings
+  preferredUnit: GlucoseUnit = 'mg/dL';
 
   // Search
   searchTerm: string = '';
@@ -64,10 +81,13 @@ export class Tab1Page implements OnInit, OnDestroy {
 
   constructor(
     private readingsService: ReadingsService,
-    private router: Router
+    private router: Router,
+    private profileService: ProfileService,
+    private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {
+    this.subscribeToUserPreferences();
     this.loadReadings();
     this.setupSearchDebounce();
   }
@@ -220,11 +240,12 @@ export class Tab1Page implements OnInit, OnDestroy {
     const yesterdayKey = this.getDateKey(yesterday);
 
     if (dateKey === todayKey) {
-      return 'Today';
+      return this.translationService.instant('common.today');
     } else if (dateKey === yesterdayKey) {
-      return 'Yesterday';
+      return this.translationService.instant('common.yesterday');
     } else {
-      return date.toLocaleDateString('en-US', {
+      const locale = this.translationService.getCurrentLanguage();
+      return date.toLocaleDateString(locale, {
         weekday: 'long',
         month: 'long',
         day: 'numeric',
@@ -276,6 +297,41 @@ export class Tab1Page implements OnInit, OnDestroy {
       !!this.filters.endDate ||
       !!this.filters.searchTerm
     );
+  }
+
+  /**
+   * Get localized label for status chips
+   */
+  getStatusLabel(status: GlucoseStatus | 'all'): string {
+    if (!status || status === 'all') {
+      return this.translationService.instant('readings.filter.all');
+    }
+
+    switch (status) {
+      case 'critical-low':
+        return this.translationService.instant('glucose.status.veryLow');
+      case 'low':
+        return this.translationService.instant('glucose.status.low');
+      case 'normal':
+        return this.translationService.instant('glucose.status.normal');
+      case 'high':
+        return this.translationService.instant('glucose.status.high');
+      case 'critical-high':
+        return this.translationService.instant('glucose.status.veryHigh');
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * Subscribe to profile preferences to determine glucose unit
+   */
+  private subscribeToUserPreferences(): void {
+    this.profileService.profile$.pipe(takeUntil(this.destroy$)).subscribe(profile => {
+      if (profile?.preferences?.glucoseUnit) {
+        this.preferredUnit = profile.preferences.glucoseUnit;
+      }
+    });
   }
 
   /**
