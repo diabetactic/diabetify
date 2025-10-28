@@ -41,6 +41,8 @@ import { LanguageSwitcherComponentModule } from '../shared/components/language-s
   ],
 })
 export class DashboardPage implements OnInit, OnDestroy {
+  // Avoid Ionic dynamic imports in Karma by hiding spinners
+  readonly isKarma = typeof window !== 'undefined' && (window as any).__karma__;
   // Statistics data
   statistics: GlucoseStatistics | null = null;
 
@@ -271,10 +273,11 @@ export class DashboardPage implements OnInit, OnDestroy {
       const startDate = new Date(appointmentDate);
       startDate.setDate(startDate.getDate() - 30);
 
-      // Share glucose data including manual readings summary (manual-only friendly)
+      // Share glucose data via appointments service (backend will aggregate)
       const result = await firstValueFrom(
-        this.appointmentService.shareManualGlucoseData(this.upcomingAppointment.id!, {
-          dateRange: { start: startDate, end: appointmentDate },
+        this.appointmentService.shareGlucoseData(this.upcomingAppointment.id!, {
+          start: startDate,
+          end: appointmentDate,
         })
       );
 
