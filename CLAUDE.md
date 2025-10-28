@@ -8,11 +8,20 @@ Diabetify is an Ionic Angular mobile application for managing diabetes glucose r
 
 **Current State**: Production-ready backend (85% complete) with OAuth2 authentication, data synchronization, and glucose statistics. Frontend is in prototype stage (15% complete) with UI shells. BLE functionality documented but not implemented (0%).
 
+## Architecture Documentation
+
+**⚠️ IMPORTANT**: Before implementing features related to readings, appointments, or Tidepool sync, consult these documents:
+
+- **`ARCHITECTURE_READINGS_APPOINTMENTS.md`** - Comprehensive architecture for manual readings, appointment integration, and Tidepool data sync. Includes data flows, implementation roadmap, and API specifications.
+- **`QUICK_REFERENCE_READINGS.md`** - Fast lookup reference for common code patterns, data types, and implementation snippets for readings-related features.
+
 ## Technology Stack
 
-- **Framework**: Ionic 8 + Angular 18, TypeScript 5.4
+- **Framework**: Ionic 8 + Angular 20, TypeScript 5.8
 - **Mobile Platform**: Capacitor 6.1.0
-- **Key Libraries**: Dexie (IndexedDB), RxJS, Angular Material 18
+- **Key Libraries**: Dexie (IndexedDB), RxJS, Angular Material 20
+- **Internationalization**: ngx-translate 17
+- **Code Quality**: ESLint, Prettier, Husky + lint-staged
 
 ## Development Commands
 
@@ -115,13 +124,50 @@ core/
 - `syncQueue` table: offline operations queue
 - Singleton: `export const db = new DiabetifyDatabase()`
 
-**Other Services**:
+**Other Core Services**:
 
 - **TidepoolStorageService**: Transform Tidepool ↔ local format, duplicate detection
 - **TokenStorageService**: Secure token storage via Capacitor Preferences
 - **ProfileService**: User profile management
 - **ThemeService**: Dark/light mode theming
 - **ErrorHandlerService**: Global error handling
+
+**Backend Integration Services** (New Architecture):
+
+- **ExternalServicesManagerService** (`external-services-manager.service.ts`) - ✅ Production-ready
+  - Health monitoring with circuit breaker pattern
+  - Network awareness and offline caching
+  - Manages: Tidepool, Glucoserver, Appointments, LocalAuth
+  - **Exposes**: `state$: Observable<ExternalServicesState>`
+
+- **ServiceOrchestratorService** (`service-orchestrator.service.ts`) - ✅ Production-ready
+  - Saga pattern for multi-service workflows
+  - Compensating transactions for rollback
+  - Workflow types: FULL_SYNC, AUTH_AND_SYNC, APPOINTMENT_WITH_DATA
+  - **Exposes**: `activeWorkflows$: Observable<WorkflowState[]>`
+
+- **ApiGatewayService** (`api-gateway.service.ts`) - ✅ Production-ready
+  - Unified API entry point with request routing
+  - Automatic authentication and caching
+  - Response transformation and error standardization
+
+- **AppointmentService** (`appointment.service.ts`) - ✅ Production-ready
+  - Healthcare provider scheduling
+  - Glucose data sharing with doctors
+  - **Exposes**: `appointments$: Observable<Appointment[]>`
+
+- **GlucoserverService** (`glucoserver.service.ts`) - ✅ Production-ready
+  - Local backend for glucose management
+  - Alternative to Tidepool for offline-first architecture
+
+- **UnifiedAuthService** (`unified-auth.service.ts`) - ✅ Production-ready
+  - Coordinates Tidepool and local authentication
+  - Single sign-on experience
+
+- **TranslationService** (`translation.service.ts`) - ✅ Production-ready
+  - Multi-language support (English, Spanish)
+  - Automatic device language detection
+  - Locale-aware formatting (dates, numbers, glucose values)
 
 ### Data Flow
 
@@ -156,8 +202,7 @@ Tidepool API → TidepoolSyncService → TidepoolStorageService → DatabaseServ
 
 **Environment files**: `src/environments/environment.ts` (dev) and `environment.prod.ts` (prod)
 
-Key configuration values:
-
+**Tidepool Configuration**:
 - `tidepool.baseUrl`: API base URL (default: `https://api.tidepool.org`)
 - `tidepool.clientId`: OAuth2 client ID (**TODO: Replace with actual client ID from Tidepool developer portal**)
 - `tidepool.redirectUri`: `diabetify://oauth/callback` (custom URL scheme for OAuth)
@@ -165,8 +210,18 @@ Key configuration values:
 - `tidepool.requestTimeout`: 30 seconds
 - `tidepool.maxRetries`: 3 attempts
 
-**Build configuration**:
+**Backend Services Configuration**:
+- `backendServices.glucoserver.baseUrl`: Local glucose management service (default: `http://localhost:8001`)
+- `backendServices.appointments.baseUrl`: Appointment service (default: `http://localhost:8002`)
+- `backendServices.auth.baseUrl`: Authentication service (default: `http://localhost:8003`)
+- `backendServices.apiGateway.baseUrl`: API gateway (default: `http://localhost:8000`)
 
+**Feature Flags**:
+- `features.offlineMode`: Enable offline support (default: `true`)
+- `features.useLocalBackend`: Use local backend services (default: `true` in dev)
+- `features.useTidepoolIntegration`: Enable Tidepool sync (default: `true`)
+
+**Build Configuration**:
 - Output: `www/` (Capacitor web directory)
 - Java 17 required for Android builds
 - Bundle budgets: 2MB warning, 5MB error
@@ -217,6 +272,56 @@ Pattern:
 - Import `ExploreContainerComponentModule` for placeholder content
 - Place pages under `src/app/[feature-name]/`
 
+### Shared Components
+
+Reusable UI components in `src/app/shared/components/`:
+
+**StatCardComponent** - Dashboard metric cards:
+```html
+<app-stat-card
+  [title]="'Average Glucose'"
+  [value]="avgGlucose"
+  [unit]="'mg/dL'"
+  [icon]="'analytics'"
+  [trend]="'up'">
+</app-stat-card>
+```
+
+**ReadingItemComponent** - Glucose reading display:
+```html
+<app-reading-item
+  [reading]="reading"
+  [showStatus]="true"
+  (edit)="onEdit($event)"
+  (delete)="onDelete($event)">
+</app-reading-item>
+```
+
+**AlertBannerComponent** - Contextual alerts:
+```html
+<app-alert-banner
+  [type]="'warning'"
+  [message]="'Sync pending'"
+  [dismissible]="true">
+</app-alert-banner>
+```
+
+**EmptyStateComponent** - Empty list states:
+```html
+<app-empty-state
+  [icon]="'glucose-outline'"
+  [message]="'No readings yet'"
+  [actionText]="'Add Reading'"
+  (action)="navigateToAddReading()">
+</app-empty-state>
+```
+
+**ProfileItemComponent** - Settings/profile list items
+**LanguageSwitcherComponent** - Language selection
+**ServiceMonitorComponent** - Real-time service health display
+
+See `src/app/shared/components/README.md` and `USAGE_EXAMPLES.md` for detailed usage.
+
 ### Reactive Patterns with RxJS
 
 Services use BehaviorSubjects for reactive state:
@@ -240,6 +345,13 @@ this.syncService.syncStatus$.subscribe(status => {
 this.readingsService.readings$.subscribe(readings => {
   /* update UI with latest readings */
 });
+
+// Monitor external services health
+this.externalServices.state$.subscribe(state => {
+  if (state.overallHealth === 'unhealthy') {
+    /* show error banner */
+  }
+});
 ```
 
 ### HTTP Interceptors
@@ -256,6 +368,49 @@ this.readingsService.readings$.subscribe(readings => {
 - Protects routes requiring authentication
 - Redirects to login if not authenticated
 - Usage: `{ path: 'profile', canActivate: [AuthGuard], ... }`
+
+### Internationalization (i18n)
+
+**Translation System**:
+- Automatic device language detection on first launch
+- Supported languages: English (en), Spanish (es)
+- Language preference persisted via Capacitor Preferences
+- Locale-aware formatting for dates, numbers, and glucose values
+
+**Usage in templates**:
+```html
+<!-- Simple translation -->
+<ion-title>{{ 'dashboard.title' | translate }}</ion-title>
+
+<!-- With parameters -->
+<p>{{ 'messages.welcome' | translate:{ name: userName } }}</p>
+```
+
+**Usage in components**:
+```typescript
+constructor(private translationService: TranslationService) {}
+
+// Get instant translation
+const title = this.translationService.instant('dashboard.title');
+
+// Format glucose value with locale
+const formatted = this.translationService.formatGlucose(120);
+```
+
+**LanguageSwitcherComponent** (`shared/components/language-switcher/`):
+- Reusable component with 3 display modes: button, select, popover
+- Visual feedback with flag emojis
+- Import `TranslateModule` in each lazy-loaded module that needs translations
+
+**Translation Files**: `src/assets/i18n/en.json`, `src/assets/i18n/es.json`
+
+**Key Structure**:
+- `app.*` - Global strings
+- `dashboard.*`, `readings.*`, `devices.*`, `profile.*` - Page-specific
+- `glucose.*` - Glucose terminology
+- `errors.*`, `messages.*` - System messages
+
+See `TRANSLATION_GUIDE.md` for detailed documentation.
 
 ## Testing
 
@@ -317,9 +472,78 @@ Configured in `package.json` (lint-staged section) and `.husky/pre-commit`.
 
 ### Key Files to Reference
 
-- **Tidepool API docs**: See `tidepool_some_resources.md`
-- **Material Design setup**: See `MATERIAL_DESIGN_SETUP.md` (Angular Material 18 integration)
-- **Task Master integration**: See `.taskmaster/CLAUDE.md` for task management workflows
+- **Architecture Documentation**:
+  - `ARCHITECTURE_READINGS_APPOINTMENTS.md` - Complete readings & appointments architecture
+  - `EXTERNAL_SERVICES_INTEGRATION.md` - Service orchestration and integration patterns
+  - `QUICK_REFERENCE_READINGS.md` - Quick lookup for readings implementation
+
+- **Development Guides**:
+  - `TRANSLATION_GUIDE.md` - i18n system and adding new languages
+  - `TRANSLATION_MAPPING.md` - Complete translation key reference
+  - `MATERIAL_DESIGN_SETUP.md` - Angular Material 20 integration
+
+- **Reference**:
+  - `tidepool_some_resources.md` - Tidepool API documentation
+  - `.taskmaster/CLAUDE.md` - Task Master AI workflows
+
+---
+
+## External Services Integration Architecture
+
+The app implements a sophisticated multi-service integration layer with:
+
+### Circuit Breaker Pattern
+
+Prevents cascading failures when external services are down:
+- Each service has configurable failure threshold
+- States: CLOSED (normal) → OPEN (blocked) → HALF_OPEN (testing)
+- Automatic recovery attempts after timeout period
+
+### Service Health Monitoring
+
+Real-time monitoring of all external services:
+- Periodic health checks with configurable intervals
+- Network awareness (online/offline detection)
+- Response time tracking
+- Visual monitoring via ServiceMonitorComponent
+
+### Workflow Orchestration (Saga Pattern)
+
+Complex multi-service operations with automatic rollback:
+- **FULL_SYNC**: Complete data synchronization across all services
+- **AUTH_AND_SYNC**: Authentication followed by initial sync
+- **APPOINTMENT_WITH_DATA**: Share glucose data with healthcare provider
+
+Example workflow with compensation:
+```typescript
+// ServiceOrchestratorService automatically handles rollback on failure
+const result = await orchestrator.executeFullSync();
+// On failure, compensating transactions execute in reverse order
+```
+
+### Caching Strategy
+
+Multi-level caching for offline support and performance:
+- HTTP response cache with per-endpoint TTL
+- Service-level data cache
+- IndexedDB for persistent offline storage
+- Automatic cache invalidation on mutations
+
+### API Gateway Pattern
+
+Unified entry point for all external API calls:
+- Request routing to appropriate backend service
+- Automatic authentication token injection
+- Response transformation and normalization
+- Consistent error handling across services
+
+**Managed Services**:
+1. **Tidepool** - OAuth2, CGM data sync
+2. **Glucoserver** - Local glucose management
+3. **Appointments** - Healthcare provider integration
+4. **LocalAuth** - User authentication
+
+See `EXTERNAL_SERVICES_INTEGRATION.md` for complete documentation.
 
 ---
 

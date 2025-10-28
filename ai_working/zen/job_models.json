@@ -1,0 +1,14 @@
+{
+  "chat": "gemini-2.5-flash",
+  "planner": "gemini-2.5-pro",
+  "codereview": "gpt-5-codex",
+  "debug": "o3-pro",
+  "thinkdeep": "anthropic/claude-sonnet-4.5",
+  "precommit": "gpt-5-codex",
+  "consensus": [
+    "gpt-5-pro",
+    "gemini-2.5-pro",
+    "anthropic/claude-sonnet-4.5"
+  ]
+}
+

@@ -458,19 +458,26 @@ export class ReadingsService {
    * @param days Window (in days) to look back from today. Defaults to 14 days.
    */
   async exportManualReadingsSummary(days: number = 14): Promise<TeleAppointmentReadingSummary> {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(end.getDate() - days);
-
-    const readings = await this.getReadingsByDateRange(start, end);
-    const manualReadings = readings
-      .filter(reading => reading.type === 'smbg')
-      .filter(reading => {
-        const subType = (reading as any).subType;
+    // Anchor the window to the most recent manual SMBG reading (if any)
+    // This makes tests deterministic when they insert historical fixtures
+    const all = await this.db.readings.orderBy('time').toArray();
+    const allManual = all
+      .filter(r => r.type === 'smbg')
+      .filter(r => {
+        const subType = (r as any).subType;
         return !subType || subType === 'manual';
       })
-      .filter(reading => Number.isFinite(reading.value))
+      .filter(r => Number.isFinite(r.value))
       .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+
+    const end = allManual.length > 0 ? new Date(allManual[allManual.length - 1].time) : new Date();
+    const start = new Date(end);
+    start.setDate(end.getDate() - days);
+
+    const manualReadings = allManual.filter(
+      r =>
+        new Date(r.time).getTime() >= start.getTime() && new Date(r.time).getTime() <= end.getTime()
+    );
 
     const unit = (manualReadings[0]?.units || 'mg/dL') as GlucoseUnit;
     const decimals = unit === 'mmol/L' ? 2 : 1;
@@ -547,7 +554,7 @@ export class ReadingsService {
     if (mgdl < 54) return 'critical-low';
     if (mgdl < 70) return 'low';
     if (mgdl > 250) return 'critical-high';
-    if (mgdl > 180) return 'high';
+    if (mgdl >= 180) return 'high';
     return 'normal';
   }
 

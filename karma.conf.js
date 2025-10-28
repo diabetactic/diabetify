@@ -1,7 +1,40 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
+const fs = require('fs');
+const { env } = process;
+
+function resolveChromeBinary() {
+  try {
+    const puppeteer = require('puppeteer');
+    const executable = puppeteer.executablePath();
+    if (executable && fs.existsSync(executable)) {
+      return executable;
+    }
+  } catch (error) {
+    // Ignore when puppeteer is not installed in the environment
+  }
+
+  if (env.CHROME_BIN && fs.existsSync(env.CHROME_BIN)) {
+    return env.CHROME_BIN;
+  }
+
+  if (env.CHROME_BIN) {
+    delete env.CHROME_BIN;
+  }
+
+  return null;
+}
+
+const resolvedChrome = resolveChromeBinary();
+if (resolvedChrome) {
+  env.CHROME_BIN = resolvedChrome;
+}
+
 module.exports = function (config) {
+  const isCI = !!env.CI || !!env.GITHUB_ACTIONS || env.KARMA_HEADLESS === 'true';
+  const useHeadless = !!resolvedChrome || isCI;
+
   config.set({
     basePath: '',
     frameworks: ['jasmine', '@angular-devkit/build-angular'],
@@ -11,6 +44,7 @@ module.exports = function (config) {
       require('karma-jasmine-html-reporter'),
       require('karma-coverage'),
       require('@angular-devkit/build-angular/plugins/karma'),
+      require('karma-spec-reporter'),
     ],
     client: {
       jasmine: {
@@ -25,6 +59,8 @@ module.exports = function (config) {
     jasmineHtmlReporter: {
       suppressAll: true, // removes the duplicated traces
     },
+    // Ensure files array is always defined to avoid FileList .filter on undefined
+    files: [],
     coverageReporter: {
       dir: require('path').join(__dirname, './coverage/diabetify'),
       subdir: '.',
@@ -42,12 +78,12 @@ module.exports = function (config) {
         },
       },
     },
-    reporters: ['progress', 'kjhtml'],
+    reporters: ['spec', 'kjhtml'],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
-    autoWatch: true,
-    browsers: ['Chrome'],
+    autoWatch: !isCI,
+    browsers: [useHeadless ? 'ChromeHeadlessCI' : 'Chrome'],
     customLaunchers: {
       ChromeHeadlessCI: {
         base: 'ChromeHeadless',
@@ -60,7 +96,7 @@ module.exports = function (config) {
         ],
       },
     },
-    singleRun: false,
+    singleRun: isCI,
     restartOnFileChange: true,
     browserNoActivityTimeout: 60000,
     browserDisconnectTimeout: 10000,
