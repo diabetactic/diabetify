@@ -159,7 +159,7 @@ export class LocalAuthService {
         const hasRefreshToken = !!refreshToken.value;
         const hasUser = !!userStr.value;
 
-        if (hasAccessToken && hasUser) {
+        if (hasAccessToken && hasUser && userStr.value) {
           const user = JSON.parse(userStr.value) as LocalUser;
           const expiresAt = expiresAtStr.value ? parseInt(expiresAtStr.value, 10) : null;
 
