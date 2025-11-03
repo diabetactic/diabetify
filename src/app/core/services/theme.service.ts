@@ -66,7 +66,7 @@ export class ThemeService {
   private renderer: Renderer2;
 
   // Theme state observables
-  private _themeMode$ = new BehaviorSubject<ThemeMode>('auto');
+  private _themeMode$ = new BehaviorSubject<ThemeMode>('light');
   private _colorPalette$ = new BehaviorSubject<ColorPalette>('default');
   private _highContrast$ = new BehaviorSubject<boolean>(false);
   private _isDark$ = new BehaviorSubject<boolean>(false);
