@@ -32,6 +32,7 @@
     "viewAll": "Ver Todo",
     "close": "Cerrar",
     "cancel": "Cancelar",
+    "no": "No",
     "pullToRefresh": "Desliza para actualizar",
     "refreshing": "Actualizando...",
     "none": "Ninguno",
@@ -83,7 +84,24 @@
       "accountExists": "Ya existe una cuenta con este correo",
       "networkError": "Error de red. Por favor verifica tu conexión",
       "serverError": "Error del servidor. Por favor intenta más tarde",
-      "sessionExpired": "Tu sesión ha expirado. Por favor inicia sesión nuevamente"
+      "sessionExpired": "Tu sesión ha expirado. Por favor inicia sesión nuevamente",
+      "accountPending": "Tu cuenta está pendiente de activación. Contacta al administrador.",
+      "accountDisabled": "Tu cuenta ha sido desactivada. Contacta al administrador."
+    },
+    "accountStates": {
+      "pending": {
+        "title": "Cuenta Pendiente de Activación",
+        "message": "Tu cuenta está siendo revisada por nuestro equipo administrativo.",
+        "subtitle": "Te notificaremos por correo electrónico cuando tu cuenta esté activa.",
+        "support": "Si tienes preguntas, contacta a:",
+        "signOut": "Cerrar sesión"
+      },
+      "disabled": {
+        "title": "Cuenta Desactivada",
+        "message": "Tu cuenta ha sido desactivada.",
+        "contactSupport": "Por favor contacta al soporte para más información."
+      },
+      "active": "Activa"
     }
   },
   "dashboard": {
@@ -110,7 +128,6 @@
     "noReadingsMessage": "Comienza a rastrear tus lecturas de glucosa para verlas aquí.",
     "shareReadings": "Compartir Últimas 30 Días de Lecturas",
     "syncError": "Error de sincronización",
-    "recentReadings": "Lecturas Recientes",
     "defaultDoctorName": "tu médico",
     "shareToast": {
       "success": "Se compartieron {{count}} lecturas con {{doctor}}",
@@ -356,27 +373,79 @@
   },
   "appointments": {
     "title": "Citas",
-    "upcoming": "Próximas Citas",
-    "past": "Citas Pasadas",
+    "upcoming": "Próximas",
+    "past": "Historial",
+    "history": "Historial",
     "schedule": "Programar Cita",
-    "cancel": "Cancelar Cita",
+    "loading": "Cargando citas...",
+    "dataShared": "Datos Compartidos",
+    "tabs": {
+      "upcoming": "Próximas",
+      "past": "Pasadas"
+    },
+    "empty": {
+      "upcoming": "No tienes citas próximas",
+      "past": "No hay citas en tu historial",
+      "message": "Las citas aparecerán aquí cuando tu proveedor de salud las programe"
+    },
+    "actions": {
+      "schedule": "Agendar Cita",
+      "edit": "Editar",
+      "cancel": "Cancelar"
+    },
+    "cancel": {
+      "title": "Cancelar cita",
+      "confirm": "¿Está seguro de que desea cancelar esta cita?",
+      "reasonPlaceholder": "Motivo de cancelación (opcional)",
+      "action": "Sí, cancelar",
+      "cancelling": "Cancelando cita...",
+      "success": "Cita cancelada exitosamente",
+      "error": "Error al cancelar la cita"
+    },
+    "errors": {
+      "loadFailed": "Error al cargar la cita",
+      "loadListFailed": "Error al cargar las citas",
+      "unauthorized": "No autorizado. Por favor, inicie sesión nuevamente.",
+      "notFound": "Cita no encontrada.",
+      "slotUnavailable": "El horario ya no está disponible.",
+      "serviceUnavailable": "Servicio no disponible. Por favor, intente más tarde.",
+      "networkError": "Error de conexión. Verifique su conexión a internet."
+    },
     "reason": "Motivo",
     "doctor": "Doctor",
-    "reschedule": "Reprogramar",
+    "reschedule": {
+      "title": "Reprogramar",
+      "unavailable": "Función de reprogramación no disponible aún"
+    },
     "details": "Detalles de la Cita",
-    "doctor": "Doctor",
     "specialty": "Especialidad",
     "date": "Fecha",
     "time": "Hora",
     "duration": "Duración",
     "location": "Ubicación",
-    "reason": "Motivo de la Visita",
     "notes": "Notas",
-    "videoCall": "Videollamada",
+    "videoCall": {
+      "title": "Videollamada",
+      "join": "Unirse a la Llamada",
+      "unavailable": "La videollamada no está disponible aún"
+    },
     "inPerson": "En Persona",
     "joinCall": "Unirse a la Llamada",
-    "shareData": "Compartir Datos de Glucosa",
-    "dataShared": "Datos Compartidos",
+    "shareData": {
+      "title": "Compartir datos de glucosa",
+      "confirm": "¿Desea compartir sus lecturas de glucosa de los últimos 30 días con su médico?",
+      "action": "Compartir",
+      "sharing": "Compartiendo datos de glucosa...",
+      "successWithCount": "Datos compartidos exitosamente. {{count}} registros enviados",
+      "successMessage": "Datos compartidos exitosamente",
+      "error": "Error al compartir los datos",
+      "noReadings": "No hay lecturas de glucosa para compartir en los últimos 30 días",
+      "shareButton": "Compartir últimos 30 días",
+      "shareRawReadings": "Compartir lecturas individuales",
+      "consentMessage": "Al activar esta opción, compartiré mis lecturas de glucosa individuales además del resumen estadístico. Entiendo que esta información será visible para mi proveedor de salud.",
+      "consentCheckbox": "Acepto compartir mis lecturas individuales",
+      "offlineMessage": "Sin conexión. La acción se completará cuando se restablezca la conexión."
+    },
     "shareReadings": "Compartir Últimos 30 Días de Lecturas",
     "confirmCancel": "¿Estás seguro de que quieres cancelar esta cita?",
     "status": {
@@ -395,6 +464,85 @@
       "minutes": "minutos",
       "hours": "horas",
       "days": "días"
+    },
+    "provider": {
+      "title": "Proveedor",
+      "name": "Dr. {{name}}",
+      "specialty": "{{specialty}}",
+      "contact": "Contacto"
+    },
+    "type": {
+      "video": "Videoconsulta",
+      "inPerson": "Presencial",
+      "phone": "Telefónica"
+    },
+    "detail": {
+      "title": "Detalle de Cita",
+      "loading": "Cargando detalles de la cita...",
+      "physician": "Médico",
+      "defaultDoctor": "Doctor",
+      "specialty": "Especialidad",
+      "specialtyGeneral": "General",
+      "virtualAvailable": "Cita virtual disponible",
+      "information": "Información de la Cita",
+      "schedule": "Horario",
+      "status": "Estado",
+      "urgency": "Urgencia",
+      "reason": "Motivo",
+      "notes": "Notas",
+      "shareGlucoseData": "Compartir Datos de Glucosa",
+      "last30Days": "Últimos 30 días",
+      "readingsShared": "{{count}} lecturas compartidas",
+      "sharedOn": "Compartido el {{date}}",
+      "shareDescription": "Comparte tus lecturas de glucosa de los últimos 30 días con tu médico para un mejor seguimiento.",
+      "shareButton": "Compartir últimos 30 días",
+      "alreadyShared": "Los datos ya fueron compartidos anteriormente",
+      "joinVideoCall": "Unirse a videollamada",
+      "reschedule": "Reprogramar cita",
+      "cancel": "Cancelar cita",
+      "followUp": "Cita de seguimiento",
+      "prescriptions": "Prescripciones"
+    },
+    "create": {
+      "title": "Nueva Cita",
+      "steps": {
+        "doctor": "Doctor",
+        "date": "Fecha",
+        "details": "Detalles",
+        "confirm": "Confirmar"
+      },
+      "selectDoctor": "Selecciona tu doctor",
+      "selectDoctorSubtitle": "Elige el profesional con el que deseas agendar tu cita",
+      "searchPlaceholder": "Buscar por nombre, especialidad u hospital",
+      "nextAvailable": "Próximo disponible",
+      "noDoctorsFound": "No se encontraron doctores",
+      "selectDateTime": "Selecciona fecha y hora",
+      "appointmentDate": "Fecha de la cita",
+      "availableSlots": "Horarios disponibles",
+      "loadingSlots": "Cargando horarios...",
+      "noSlotsAvailable": "No hay horarios disponibles para esta fecha",
+      "appointmentDetails": "Detalles de la cita",
+      "additionalInfo": "Información adicional sobre tu cita",
+      "appointmentType": "Tipo de cita",
+      "additionalNotes": "Notas adicionales",
+      "optional": "Opcional",
+      "notesPlaceholder": "Describe tus síntomas, preguntas o cualquier información relevante...",
+      "shareGlucoseSubtitle": "Ayuda a tu doctor a tener una mejor visión de tu salud",
+      "shareReadings": "Compartir lecturas",
+      "shareReadingsSubtitle": "Resumen de tus lecturas manuales",
+      "lastDays": "Últimos días",
+      "days": "{{count}} días",
+      "statisticalSummaryOnly": "Solo se compartirá un resumen estadístico, no las lecturas individuales.",
+      "confirmAppointment": "Confirma tu cita",
+      "reviewDetails": "Revisa los detalles antes de confirmar",
+      "dateAndTime": "Fecha y Hora",
+      "duration": "Duración",
+      "minutes": "minutos",
+      "glucoseData": "Datos de Glucosa",
+      "shareSummaryDays": "Se compartirá resumen de {{days}} días",
+      "privacyNotice": "Tu información está protegida. Solo tu doctor podrá ver los datos compartidos. Puedes cancelar o modificar la cita en cualquier momento.",
+      "previous": "Anterior",
+      "confirmButton": "Confirmar Cita"
     }
   },
   "profile": {
@@ -513,21 +661,39 @@
     "exportDescription": "Exporta tus datos de glucosa",
     "aboutDescription": "Información y soporte de la aplicación",
     "appVersion": "Versión de la Aplicación",
-    "language": {
-      "title": "Idioma",
-      "auto": "Auto (Idioma del Dispositivo)",
-      "english": "English",
-      "spanish": "Español"
+    "advanced": {
+      "title": "Configuración Avanzada",
+      "signOut": "Cerrar Sesión",
+      "clearData": "Borrar Datos Locales",
+      "clearDataConfirm": "¿Estás seguro de que quieres borrar todos los datos locales? Esta acción no se puede deshacer.",
+      "clearDataButton": "Borrar Todo",
+      "clearDataSuccess": "Datos locales borrados exitosamente",
+      "clearDataError": "Error al borrar datos locales",
+      "developerTools": "Herramientas de Desarrollador",
+      "accountStateToggle": "Estado de Cuenta (Solo Desarrollo)",
+      "accountState": {
+        "pending": "Pendiente",
+        "active": "Activa",
+        "disabled": "Desactivada"
+      }
     },
-    "notifications": {
-      "enable": "Habilitar Notificaciones",
-      "disable": "Deshabilitar Notificaciones",
-      "readings": "Recordatorios de Lecturas",
-      "appointments": "Recordatorios de Citas",
-      "medications": "Recordatorios de Medicamentos",
-      "sync": "Notificaciones de Sincronización",
-      "sound": "Sonido",
-      "vibration": "Vibración"
+    "language": {
+      "now": "Ahora",
+      "today": "Hoy",
+      "yesterday": "Ayer",
+      "tomorrow": "Mañana",
+      "thisWeek": "Esta Semana",
+      "lastWeek": "Semana Pasada",
+      "thisMonth": "Este Mes",
+      "lastMonth": "Mes Pasado",
+      "days": "días",
+      "hours": "horas",
+      "minutes": "minutos",
+      "seconds": "segundos",
+      "ago": "hace",
+      "in": "en",
+      "am": "AM",
+      "pm": "PM"
     }
   },
   "sync": {
@@ -597,22 +763,221 @@
     "updateNow": "Actualizar Ahora",
     "later": "Más Tarde"
   },
-  "time": {
-    "now": "Ahora",
-    "today": "Hoy",
-    "yesterday": "Ayer",
-    "tomorrow": "Mañana",
-    "thisWeek": "Esta Semana",
-    "lastWeek": "Semana Pasada",
-    "thisMonth": "Este Mes",
-    "lastMonth": "Mes Pasado",
-    "days": "días",
-    "hours": "horas",
-    "minutes": "minutos",
-    "seconds": "segundos",
-    "ago": "hace",
-    "in": "en",
-    "am": "AM",
-    "pm": "PM"
+  "clinicalForm": {
+    "title": "Formulario Médico",
+    "tabs": {
+      "technology": "Tecnología",
+      "objectives": "Objetivos",
+      "reason": "Motivo",
+      "data": "Datos",
+      "resolution": "Resolución"
+    },
+    "visitContext": {
+      "title": "Contexto de Visita",
+      "reasonForVisit": "Motivo de Consulta",
+      "objectives": "Objetivos",
+      "previousResolution": "Resolución Anterior"
+    },
+    "therapy": {
+      "title": "Terapia",
+      "basal": "Insulina Basal",
+      "rapid": "Insulina Rápida",
+      "ratio": "Ratio Insulina:Carbohidratos",
+      "sensitivity": "Factor de Sensibilidad",
+      "pump": "Bomba de Insulina",
+      "sensor": "Sensor CGM"
+    },
+    "provenance": {
+      "manual": "Manual",
+      "sensor": "Sensor",
+      "clinician": "Médico"
+    },
+    "glucoseEvidence": {
+      "title": "Evidencia de Glucosa",
+      "average7d": "Promedio 7 días",
+      "average14d": "Promedio 14 días",
+      "average30d": "Promedio 30 días",
+      "timeInRange": "Tiempo en Rango",
+      "coefficientOfVariation": "CV%"
+    },
+    "resolution": {
+      "title": "Resolución",
+      "therapyChanges": "Cambios en Terapia",
+      "referral": "Derivación",
+      "prescriptions": "Recetas"
+    },
+    "actions": {
+      "save": "Guardar Formulario",
+      "load": "Cargar Anterior",
+      "uploadPhoto": "Subir Foto de Libreta"
+    }
+  },
+  "debug": {
+    "title": "Panel de Depuración",
+    "tabs": {
+      "info": "Info",
+      "status": "Estado",
+      "mock": "Simulación",
+      "actions": "Acciones",
+      "config": "Config"
+    },
+    "device": {
+      "title": "Información del Dispositivo",
+      "platform": "Plataforma",
+      "appVersion": "Versión de la App",
+      "deviceModel": "Modelo del Dispositivo",
+      "osVersion": "Versión del SO",
+      "network": "Red",
+      "environment": "Entorno",
+      "apiBaseUrl": "URL Base de la API"
+    },
+    "storage": {
+      "title": "Estadísticas de Almacenamiento",
+      "readings": "Lecturas",
+      "records": "registros",
+      "syncQueue": "Cola de Sincronización",
+      "pending": "pendientes"
+    },
+    "auth": {
+      "title": "Estado de Autenticación",
+      "tidepool": "Tidepool",
+      "authenticated": "Autenticado",
+      "notAuthenticated": "No Autenticado",
+      "userId": "ID de Usuario"
+    },
+    "sync": {
+      "title": "Estado de Sincronización",
+      "status": "Estado",
+      "lastSync": "Última Sincronización",
+      "itemsSynced": "Elementos Sincronizados"
+    },
+    "health": {
+      "title": "Salud de los Servicios",
+      "overall": "Salud General"
+    },
+    "mock": {
+      "title": "Estado del Modo Simulación",
+      "backend": "Backend Simulado",
+      "enabled": "🟢 Habilitado - Usando datos simulados",
+      "disabled": "🔴 Deshabilitado - Usando backends reales",
+      "description": "Cuando está habilitado, todas las llamadas a la API usan datos simulados locales en lugar de backends reales. ¡No se requiere conexión de red!",
+      "serviceControls": "Controles por Servicio",
+      "appointments": "Citas",
+      "glucoseReadings": "Lecturas de Glucosa",
+      "authentication": "Autenticación",
+      "mockLabel": "🟢 Simulado",
+      "realLabel": "🔴 Real",
+      "quickActions": "Acciones Rápidas",
+      "enableAll": "Habilitar Todas las Simulaciones",
+      "disableAll": "Deshabilitar Todas las Simulaciones",
+      "clearData": "Limpiar Datos Simulados",
+      "tip": "💡 Consejo: El modo simulación te permite probar la app sin conexión y sin datos reales.",
+      "demoCredentials": "Credenciales de demostración: demo@diabetify.com / demo123"
+    },
+    "actions": {
+      "dataManagement": "Gestión de Datos",
+      "clearReadings": "Limpiar Lecturas",
+      "clearPreferences": "Limpiar Preferencias",
+      "clearAllData": "Limpiar TODOS los Datos",
+      "syncActions": "Acciones de Sincronización",
+      "forceSync": "Forzar Sincronización Ahora",
+      "accountSimulator": "Simulador de Estado de Cuenta",
+      "simulatorDescription": "Simular diferentes estados de cuenta para pruebas:",
+      "active": "Activa",
+      "pending": "Pendiente",
+      "disabled": "Desactivada"
+    },
+    "config": {
+      "featureFlags": "Banderas de Funcionalidad",
+      "offlineMode": "Modo Sin Conexión",
+      "tidepoolIntegration": "Integración Tidepool",
+      "tidepoolMock": "Simulación Tidepool",
+      "localBackend": "Backend Local",
+      "featureFlagsNote": "Las banderas de funcionalidad son de solo lectura. Modifica environment.ts para cambiarlas.",
+      "customBackendUrl": "URL de Backend Personalizada",
+      "customBackendDescription": "Sobrescribir la URL del backend para probar diferentes entornos:",
+      "saveAndRestart": "Guardar y Reiniciar",
+      "clearOverride": "Limpiar Sobrescritura",
+      "restartWarning": "⚠️ La app se reiniciará después de guardar. URL actual:"
+    }
+  },
+  "serviceMonitor": {
+    "title": "Monitor de Salud de Servicios",
+    "systemStatus": "Estado del Sistema",
+    "online": "En Línea",
+    "offline": "Fuera de Línea",
+    "lastCheck": "Última Verificación",
+    "responseTime": "Tiempo de Respuesta",
+    "lastChecked": "Última Verificación",
+    "circuitBreaker": "Cortacircuitos",
+    "notAvailable": "N/D",
+    "check": "Verificar",
+    "clearCache": "Limpiar Caché",
+    "activeWorkflows": "Flujos de Trabajo Activos",
+    "recentWorkflows": "Flujos de Trabajo Recientes",
+    "status": "Estado",
+    "serviceDetails": "Detalles del Servicio",
+    "configuration": "Configuración",
+    "config": {
+      "baseUrl": "URL Base",
+      "healthEndpoint": "Endpoint de Salud",
+      "timeout": "Tiempo de Espera",
+      "retryAttempts": "Intentos de Reintento",
+      "circuitBreakerThreshold": "Umbral de Cortacircuitos",
+      "circuitBreakerTimeout": "Tiempo de Espera del Cortacircuitos",
+      "cacheDuration": "Duración del Caché",
+      "noCache": "Sin Caché",
+      "offlineSupport": "Soporte Sin Conexión"
+    },
+    "circuitBreakerDetails": {
+      "state": "Estado",
+      "failureCount": "Conteo de Fallos",
+      "lastFailure": "Último Fallo",
+      "nextAttempt": "Próximo Intento",
+      "reset": "Restablecer Cortacircuitos"
+    },
+    "actions": {
+      "title": "Acciones",
+      "healthCheck": "Verificación de Salud",
+      "clearCache": "Limpiar Caché"
+    }
+  },
+  "login": {
+    "logoAlt": "Logo de Diabetify",
+    "appName": "Diabetify",
+    "tagline": "Tu compañero de salud digital",
+    "demoHint": {
+      "testAccount": "Cuenta de Prueba:",
+      "message": "DNI: 1000 | Contraseña: tuvieja"
+    },
+    "username": {
+      "label": "DNI o Email",
+      "placeholder": "Ingresa tu DNI o email"
+    },
+    "password": {
+      "label": "Contraseña",
+      "placeholder": "Ingresa tu contraseña"
+    },
+    "rememberMe": "Recordar mis datos",
+    "submitButton": "Iniciar Sesión",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "divider": "O",
+    "demoButton": "Explorar Modo Demo",
+    "register": {
+      "prompt": "¿No tienes una cuenta?",
+      "link": "Regístrate aquí"
+    },
+    "footer": {
+      "copyright": "© 2024 Diabetify • v1.0.0",
+      "links": {
+        "terms": "Términos",
+        "privacy": "Privacidad",
+        "support": "Soporte"
+      }
+    }
+  },
+  "explore": {
+    "explorePrefix": "Explora",
+    "uiComponents": "Componentes de UI"
   }
 }
