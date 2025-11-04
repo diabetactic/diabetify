@@ -1,8 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject, takeUntil, combineLatest } from 'rxjs';
-import { AppointmentService, Appointment, AppointmentStatus } from '../core/services/appointment.service';
+import { Subject, takeUntil, combineLatest, firstValueFrom } from 'rxjs';
+import {
+  AppointmentService,
+  Appointment,
+  AppointmentStatus,
+} from '../core/services/appointment.service';
 import { TranslationService } from '../core/services/translation.service';
+import { LoggerService } from '../core/services/logger.service';
 
 @Component({
   selector: 'app-appointments',
@@ -23,8 +28,11 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   constructor(
     private appointmentService: AppointmentService,
     private router: Router,
-    private translationService: TranslationService
-  ) {}
+    private translationService: TranslationService,
+    private logger: LoggerService
+  ) {
+    this.logger.info('Init', 'AppointmentsPage initialized');
+  }
 
   ngOnInit(): void {
     this.loadAppointments();
@@ -40,12 +48,10 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    * Subscribe to appointments updates
    */
   private subscribeToAppointments(): void {
-    this.appointmentService.appointments$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(appointments => {
-        this.appointments = appointments;
-        this.categorizeAppointments();
-      });
+    this.appointmentService.appointments$.pipe(takeUntil(this.destroy$)).subscribe(appointments => {
+      this.appointments = appointments;
+      this.categorizeAppointments();
+    });
   }
 
   /**
@@ -56,10 +62,11 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     this.error = null;
 
     try {
-      await this.appointmentService.getAppointments().toPromise();
+      await firstValueFrom(this.appointmentService.getAppointments());
     } catch (error: any) {
       console.error('Error loading appointments:', error);
-      this.error = error?.message || 'Error al cargar las citas';
+      this.error =
+        error?.message || this.translationService.instant('appointments.errors.loadListFailed');
     } finally {
       this.loading = false;
     }
@@ -74,8 +81,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     this.upcomingAppointments = this.appointments
       .filter(apt => {
         const aptDate = new Date(`${apt.date} ${apt.startTime}`);
-        return aptDate >= now &&
-               (apt.status === 'confirmed' || apt.status === 'pending');
+        return aptDate >= now && (apt.status === 'confirmed' || apt.status === 'pending');
       })
       .sort((a, b) => {
         const dateA = new Date(`${a.date} ${a.startTime}`);
@@ -86,10 +92,12 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     this.pastAppointments = this.appointments
       .filter(apt => {
         const aptDate = new Date(`${apt.date} ${apt.startTime}`);
-        return aptDate < now ||
-               apt.status === 'completed' ||
-               apt.status === 'cancelled' ||
-               apt.status === 'no_show';
+        return (
+          aptDate < now ||
+          apt.status === 'completed' ||
+          apt.status === 'cancelled' ||
+          apt.status === 'no_show'
+        );
       })
       .sort((a, b) => {
         const dateA = new Date(`${a.date} ${a.startTime}`);
@@ -109,6 +117,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    * Navigate to appointment detail
    */
   viewAppointment(appointment: Appointment): void {
+    this.logger.info('UI', 'Appointment clicked', { appointmentId: appointment.id });
     if (appointment.id) {
       this.router.navigate(['/tabs/appointments/appointment-detail', appointment.id]);
     }
@@ -118,6 +127,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    * Create a new appointment
    */
   createAppointment(): void {
+    this.logger.info('UI', 'Create appointment button clicked');
     // TODO: Navigate to create appointment page
     this.router.navigate(['/tabs/appointments/new']);
   }
@@ -126,6 +136,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    * Handle pull to refresh
    */
   async doRefresh(event: any): Promise<void> {
+    this.logger.info('UI', 'Appointments refresh initiated');
     await this.loadAppointments();
     event.target.complete();
   }
