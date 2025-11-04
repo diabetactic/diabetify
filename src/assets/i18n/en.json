@@ -32,6 +32,7 @@
     "viewAll": "View All",
     "close": "Close",
     "cancel": "Cancel",
+    "no": "No",
     "pullToRefresh": "Pull to refresh",
     "refreshing": "Refreshing...",
     "none": "None",
@@ -83,7 +84,24 @@
       "accountExists": "An account with this email already exists",
       "networkError": "Network error. Please check your connection",
       "serverError": "Server error. Please try again later",
-      "sessionExpired": "Your session has expired. Please sign in again"
+      "sessionExpired": "Your session has expired. Please sign in again",
+      "accountPending": "Your account is pending activation. Please contact the administrator.",
+      "accountDisabled": "Your account has been disabled. Please contact the administrator."
+    },
+    "accountStates": {
+      "pending": {
+        "title": "Account Pending Activation",
+        "message": "Your account is being reviewed by our administrative team.",
+        "subtitle": "We'll notify you by email when your account is active.",
+        "support": "If you have questions, contact:",
+        "signOut": "Sign Out"
+      },
+      "disabled": {
+        "title": "Account Disabled",
+        "message": "Your account has been disabled.",
+        "contactSupport": "Please contact support for more information."
+      },
+      "active": "Active"
     }
   },
   "dashboard": {
@@ -110,7 +128,6 @@
     "noReadingsMessage": "Start tracking your glucose readings to see them here.",
     "shareReadings": "Share Last 30 Days of Readings",
     "syncError": "Sync error",
-    "recentReadings": "Recent Readings",
     "defaultDoctorName": "your doctor",
     "shareToast": {
       "success": "Shared {{count}} readings with {{doctor}}",
@@ -356,27 +373,79 @@
   },
   "appointments": {
     "title": "Appointments",
-    "upcoming": "Upcoming Appointments",
-    "past": "Past Appointments",
+    "upcoming": "Upcoming",
+    "past": "History",
+    "history": "History",
     "schedule": "Schedule Appointment",
-    "cancel": "Cancel Appointment",
+    "loading": "Loading appointments...",
+    "dataShared": "Data Shared",
+    "tabs": {
+      "upcoming": "Upcoming",
+      "past": "Past"
+    },
+    "empty": {
+      "upcoming": "You have no upcoming appointments",
+      "past": "No appointments in your history",
+      "message": "Appointments will appear here when your healthcare provider schedules them"
+    },
+    "actions": {
+      "schedule": "Schedule Appointment",
+      "edit": "Edit",
+      "cancel": "Cancel"
+    },
+    "cancel": {
+      "title": "Cancel appointment",
+      "confirm": "Are you sure you want to cancel this appointment?",
+      "reasonPlaceholder": "Reason for cancellation (optional)",
+      "action": "Yes, cancel",
+      "cancelling": "Cancelling appointment...",
+      "success": "Appointment cancelled successfully",
+      "error": "Error cancelling appointment"
+    },
+    "errors": {
+      "loadFailed": "Error loading appointment",
+      "loadListFailed": "Error loading appointments",
+      "unauthorized": "Unauthorized. Please log in again.",
+      "notFound": "Appointment not found.",
+      "slotUnavailable": "The time slot is no longer available.",
+      "serviceUnavailable": "Service unavailable. Please try again later.",
+      "networkError": "Connection error. Please check your internet connection."
+    },
     "reason": "Reason",
     "doctor": "Doctor",
-    "reschedule": "Reschedule",
+    "reschedule": {
+      "title": "Reschedule",
+      "unavailable": "Rescheduling feature not available yet"
+    },
     "details": "Appointment Details",
-    "doctor": "Doctor",
     "specialty": "Specialty",
     "date": "Date",
     "time": "Time",
     "duration": "Duration",
     "location": "Location",
-    "reason": "Reason for Visit",
     "notes": "Notes",
-    "videoCall": "Video Call",
+    "videoCall": {
+      "title": "Video Call",
+      "join": "Join Call",
+      "unavailable": "Video call is not available yet"
+    },
     "inPerson": "In Person",
     "joinCall": "Join Call",
-    "shareData": "Share Glucose Data",
-    "dataShared": "Data Shared",
+    "shareData": {
+      "title": "Share glucose data",
+      "confirm": "Do you want to share your glucose readings from the last 30 days with your doctor?",
+      "action": "Share",
+      "sharing": "Sharing glucose data...",
+      "successWithCount": "Data shared successfully. {{count}} records sent",
+      "successMessage": "Data shared successfully",
+      "error": "Error sharing data",
+      "noReadings": "No glucose readings to share from the last 30 days",
+      "shareButton": "Share last 30 days",
+      "shareRawReadings": "Share individual readings",
+      "consentMessage": "By enabling this option, I will share my individual glucose readings in addition to the statistical summary. I understand this information will be visible to my healthcare provider.",
+      "consentCheckbox": "I agree to share my individual readings",
+      "offlineMessage": "Offline. The action will complete when connection is restored."
+    },
     "shareReadings": "Share Last 30 Days of Readings",
     "confirmCancel": "Are you sure you want to cancel this appointment?",
     "status": {
@@ -395,6 +464,85 @@
       "minutes": "minutes",
       "hours": "hours",
       "days": "days"
+    },
+    "provider": {
+      "title": "Provider",
+      "name": "Dr. {{name}}",
+      "specialty": "{{specialty}}",
+      "contact": "Contact"
+    },
+    "type": {
+      "video": "Video Consultation",
+      "inPerson": "In-Person",
+      "phone": "Phone"
+    },
+    "detail": {
+      "title": "Appointment Detail",
+      "loading": "Loading appointment details...",
+      "physician": "Physician",
+      "defaultDoctor": "Doctor",
+      "specialty": "Specialty",
+      "specialtyGeneral": "General",
+      "virtualAvailable": "Virtual appointment available",
+      "information": "Appointment Information",
+      "schedule": "Schedule",
+      "status": "Status",
+      "urgency": "Urgency",
+      "reason": "Reason",
+      "notes": "Notes",
+      "shareGlucoseData": "Share Glucose Data",
+      "last30Days": "Last 30 days",
+      "readingsShared": "{{count}} readings shared",
+      "sharedOn": "Shared on {{date}}",
+      "shareDescription": "Share your glucose readings from the last 30 days with your physician for better monitoring.",
+      "shareButton": "Share last 30 days",
+      "alreadyShared": "Data has already been shared previously",
+      "joinVideoCall": "Join video call",
+      "reschedule": "Reschedule appointment",
+      "cancel": "Cancel appointment",
+      "followUp": "Follow-up appointment",
+      "prescriptions": "Prescriptions"
+    },
+    "create": {
+      "title": "New Appointment",
+      "steps": {
+        "doctor": "Doctor",
+        "date": "Date",
+        "details": "Details",
+        "confirm": "Confirm"
+      },
+      "selectDoctor": "Select your doctor",
+      "selectDoctorSubtitle": "Choose the professional you want to schedule your appointment with",
+      "searchPlaceholder": "Search by name, specialty or hospital",
+      "nextAvailable": "Next available",
+      "noDoctorsFound": "No doctors found",
+      "selectDateTime": "Select date and time",
+      "appointmentDate": "Appointment date",
+      "availableSlots": "Available slots",
+      "loadingSlots": "Loading slots...",
+      "noSlotsAvailable": "No slots available for this date",
+      "appointmentDetails": "Appointment details",
+      "additionalInfo": "Additional information about your appointment",
+      "appointmentType": "Appointment type",
+      "additionalNotes": "Additional notes",
+      "optional": "Optional",
+      "notesPlaceholder": "Describe your symptoms, questions or any relevant information...",
+      "shareGlucoseSubtitle": "Help your doctor get a better view of your health",
+      "shareReadings": "Share readings",
+      "shareReadingsSubtitle": "Summary of your manual readings",
+      "lastDays": "Last days",
+      "days": "{{count}} days",
+      "statisticalSummaryOnly": "Only a statistical summary will be shared, not individual readings.",
+      "confirmAppointment": "Confirm your appointment",
+      "reviewDetails": "Review details before confirming",
+      "dateAndTime": "Date & Time",
+      "duration": "Duration",
+      "minutes": "minutes",
+      "glucoseData": "Glucose Data",
+      "shareSummaryDays": "Summary of {{days}} days will be shared",
+      "privacyNotice": "Your information is protected. Only your doctor will be able to see the shared data. You can cancel or modify the appointment at any time.",
+      "previous": "Previous",
+      "confirmButton": "Confirm Appointment"
     }
   },
   "profile": {
@@ -493,7 +641,16 @@
     "title": "Settings",
     "general": "General",
     "appearance": "Appearance",
-    "notifications": "Notifications",
+    "notifications": {
+      "enable": "Enable Notifications",
+      "disable": "Disable Notifications",
+      "readings": "Reading Reminders",
+      "appointments": "Appointment Reminders",
+      "medications": "Medication Reminders",
+      "sync": "Sync Notifications",
+      "sound": "Sound",
+      "vibration": "Vibration"
+    },
     "privacy": "Privacy",
     "security": "Security",
     "about": "About",
@@ -519,15 +676,21 @@
       "english": "English",
       "spanish": "Español"
     },
-    "notifications": {
-      "enable": "Enable Notifications",
-      "disable": "Disable Notifications",
-      "readings": "Reading Reminders",
-      "appointments": "Appointment Reminders",
-      "medications": "Medication Reminders",
-      "sync": "Sync Notifications",
-      "sound": "Sound",
-      "vibration": "Vibration"
+    "advanced": {
+      "title": "Advanced Settings",
+      "signOut": "Sign Out",
+      "clearData": "Clear Local Data",
+      "clearDataConfirm": "Are you sure you want to clear all local data? This action cannot be undone.",
+      "clearDataButton": "Clear All",
+      "clearDataSuccess": "Local data cleared successfully",
+      "clearDataError": "Error clearing local data",
+      "developerTools": "Developer Tools",
+      "accountStateToggle": "Account State (Development Only)",
+      "accountState": {
+        "pending": "Pending",
+        "active": "Active",
+        "disabled": "Disabled"
+      }
     }
   },
   "sync": {
@@ -597,6 +760,55 @@
     "updateNow": "Update Now",
     "later": "Later"
   },
+  "clinicalForm": {
+    "title": "Medical Form",
+    "tabs": {
+      "technology": "Technology",
+      "objectives": "Objectives",
+      "reason": "Reason",
+      "data": "Data",
+      "resolution": "Resolution"
+    },
+    "visitContext": {
+      "title": "Visit Context",
+      "reasonForVisit": "Reason for Visit",
+      "objectives": "Objectives",
+      "previousResolution": "Previous Resolution"
+    },
+    "therapy": {
+      "title": "Therapy",
+      "basal": "Basal Insulin",
+      "rapid": "Rapid Insulin",
+      "ratio": "Insulin:Carbohydrate Ratio",
+      "sensitivity": "Sensitivity Factor",
+      "pump": "Insulin Pump",
+      "sensor": "CGM Sensor"
+    },
+    "provenance": {
+      "manual": "Manual",
+      "sensor": "Sensor",
+      "clinician": "Clinician"
+    },
+    "glucoseEvidence": {
+      "title": "Glucose Evidence",
+      "average7d": "7-day Average",
+      "average14d": "14-day Average",
+      "average30d": "30-day Average",
+      "timeInRange": "Time in Range",
+      "coefficientOfVariation": "CV%"
+    },
+    "resolution": {
+      "title": "Resolution",
+      "therapyChanges": "Therapy Changes",
+      "referral": "Referral",
+      "prescriptions": "Prescriptions"
+    },
+    "actions": {
+      "save": "Save Form",
+      "load": "Load Previous",
+      "uploadPhoto": "Upload Logbook Photo"
+    }
+  },
   "time": {
     "now": "Now",
     "today": "Today",
@@ -614,5 +826,173 @@
     "in": "in",
     "am": "AM",
     "pm": "PM"
+  },
+  "debug": {
+    "title": "Debug Panel",
+    "tabs": {
+      "info": "Info",
+      "status": "Status",
+      "mock": "Mock",
+      "actions": "Actions",
+      "config": "Config"
+    },
+    "device": {
+      "title": "Device Information",
+      "platform": "Platform",
+      "appVersion": "App Version",
+      "deviceModel": "Device Model",
+      "osVersion": "OS Version",
+      "network": "Network",
+      "environment": "Environment",
+      "apiBaseUrl": "API Base URL"
+    },
+    "storage": {
+      "title": "Storage Stats",
+      "readings": "Readings",
+      "records": "records",
+      "syncQueue": "Sync Queue",
+      "pending": "pending"
+    },
+    "auth": {
+      "title": "Authentication Status",
+      "tidepool": "Tidepool",
+      "authenticated": "Authenticated",
+      "notAuthenticated": "Not Authenticated",
+      "userId": "User ID"
+    },
+    "sync": {
+      "title": "Sync Status",
+      "status": "Status",
+      "lastSync": "Last Sync",
+      "itemsSynced": "Items Synced"
+    },
+    "health": {
+      "title": "Services Health",
+      "overall": "Overall Health"
+    },
+    "mock": {
+      "title": "Mock Mode Status",
+      "backend": "Mock Backend",
+      "enabled": "🟢 Enabled - Using mock data",
+      "disabled": "🔴 Disabled - Using real backends",
+      "description": "When enabled, all API calls use local mock data instead of real backends. No network connection required!",
+      "serviceControls": "Service-Level Controls",
+      "appointments": "Appointments",
+      "glucoseReadings": "Glucose Readings",
+      "authentication": "Authentication",
+      "mockLabel": "🟢 Mock",
+      "realLabel": "🔴 Real",
+      "quickActions": "Quick Actions",
+      "enableAll": "Enable All Mocks",
+      "disableAll": "Disable All Mocks",
+      "clearData": "Clear Mock Data",
+      "tip": "💡 Tip: Mock mode lets you test the app offline without real data.",
+      "demoCredentials": "Demo credentials: demo@diabetify.com / demo123"
+    },
+    "actions": {
+      "dataManagement": "Data Management",
+      "clearReadings": "Clear Readings",
+      "clearPreferences": "Clear Preferences",
+      "clearAllData": "Clear ALL Data",
+      "syncActions": "Sync Actions",
+      "forceSync": "Force Sync Now",
+      "accountSimulator": "Account State Simulator",
+      "simulatorDescription": "Simulate different account states for testing:",
+      "active": "Active",
+      "pending": "Pending",
+      "disabled": "Disabled"
+    },
+    "config": {
+      "featureFlags": "Feature Flags",
+      "offlineMode": "Offline Mode",
+      "tidepoolIntegration": "Tidepool Integration",
+      "tidepoolMock": "Tidepool Mock",
+      "localBackend": "Local Backend",
+      "featureFlagsNote": "Feature flags are read-only. Modify environment.ts to change them.",
+      "customBackendUrl": "Custom Backend URL",
+      "customBackendDescription": "Override the backend URL for testing different environments:",
+      "saveAndRestart": "Save & Restart",
+      "clearOverride": "Clear Override",
+      "restartWarning": "⚠️ App will restart after saving. Current URL:"
+    }
+  },
+  "serviceMonitor": {
+    "title": "Service Health Monitor",
+    "systemStatus": "System Status",
+    "online": "Online",
+    "offline": "Offline",
+    "lastCheck": "Last Check",
+    "responseTime": "Response Time",
+    "lastChecked": "Last Checked",
+    "circuitBreaker": "Circuit Breaker",
+    "notAvailable": "N/A",
+    "check": "Check",
+    "clearCache": "Clear Cache",
+    "activeWorkflows": "Active Workflows",
+    "recentWorkflows": "Recent Workflows",
+    "status": "Status",
+    "serviceDetails": "Service Details",
+    "configuration": "Configuration",
+    "config": {
+      "baseUrl": "Base URL",
+      "healthEndpoint": "Health Endpoint",
+      "timeout": "Timeout",
+      "retryAttempts": "Retry Attempts",
+      "circuitBreakerThreshold": "Circuit Breaker Threshold",
+      "circuitBreakerTimeout": "Circuit Breaker Timeout",
+      "cacheDuration": "Cache Duration",
+      "noCache": "No Cache",
+      "offlineSupport": "Offline Support"
+    },
+    "circuitBreakerDetails": {
+      "state": "State",
+      "failureCount": "Failure Count",
+      "lastFailure": "Last Failure",
+      "nextAttempt": "Next Attempt",
+      "reset": "Reset Circuit Breaker"
+    },
+    "actions": {
+      "title": "Actions",
+      "healthCheck": "Health Check",
+      "clearCache": "Clear Cache"
+    }
+  },
+  "login": {
+    "logoAlt": "Diabetify Logo",
+    "appName": "Diabetify",
+    "tagline": "Your digital health companion",
+    "demoHint": {
+      "testAccount": "Test Account:",
+      "message": "DNI: 1000 | Password: tuvieja"
+    },
+    "username": {
+      "label": "DNI or Email",
+      "placeholder": "Enter your DNI or email"
+    },
+    "password": {
+      "label": "Password",
+      "placeholder": "Enter your password"
+    },
+    "rememberMe": "Remember me",
+    "submitButton": "Sign In",
+    "forgotPassword": "Forgot your password?",
+    "divider": "Or",
+    "demoButton": "Explore Demo",
+    "register": {
+      "prompt": "Don't have an account?",
+      "link": "Sign up here"
+    },
+    "footer": {
+      "copyright": "© 2024 Diabetify • v1.0.0",
+      "links": {
+        "terms": "Terms",
+        "privacy": "Privacy",
+        "support": "Support"
+      }
+    }
+  },
+  "explore": {
+    "explorePrefix": "Explore",
+    "uiComponents": "UI Components"
   }
 }
