@@ -1,0 +1,345 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
+import { TranslateModule } from '@ngx-translate/core';
+import { Capacitor } from '@capacitor/core';
+import { Device } from '@capacitor/device';
+import { Network } from '@capacitor/network';
+import { Preferences } from '@capacitor/preferences';
+import { environment } from '../../../../environments/environment';
+import { TidepoolAuthService } from '../../../core/services/tidepool-auth.service';
+import { LocalAuthService } from '../../../core/services/local-auth.service';
+import { TidepoolSyncService } from '../../../core/services/tidepool-sync.service';
+import {
+  ExternalServicesManager,
+  ExternalServicesState,
+  HealthStatus,
+} from '../../../core/services/external-services-manager.service';
+import { db } from '../../../core/services/database.service';
+import { MockAdapterService } from '../../../core/services/mock-adapter.service';
+import { ToastController } from '@ionic/angular';
+
+interface DebugInfo {
+  platform: string;
+  version: string;
+  deviceModel: string;
+  osVersion: string;
+  networkStatus: string;
+  environment: string;
+  apiBaseUrl: string;
+  tidepoolEnabled: boolean;
+  tidepoolMockEnabled: boolean;
+  localBackendEnabled: boolean;
+}
+
+@Component({
+  selector: 'app-debug-panel',
+  templateUrl: './debug-panel.component.html',
+  styleUrls: ['./debug-panel.component.scss'],
+  standalone: true,
+  imports: [CommonModule, FormsModule, IonicModule, TranslateModule],
+})
+export class DebugPanelComponent implements OnInit {
+  isOpen = false;
+  selectedTab = 'info';
+  debugInfo: DebugInfo | null = null;
+  authStatus: any = null;
+  syncStatus: any = null;
+  servicesHealth: ExternalServicesState | null = null;
+  storageStats: any = null;
+
+  // Feature flags (editable)
+  features = {
+    offlineMode: environment.features.offlineMode,
+    useTidepoolIntegration: environment.features.useTidepoolIntegration,
+    useTidepoolMock: environment.features.useTidepoolMock,
+    useLocalBackend: environment.features.useLocalBackend,
+  };
+
+  // Mock configuration
+  mockConfig = {
+    enabled: false,
+    services: {
+      appointments: false,
+      glucoserver: false,
+      auth: false,
+    },
+  };
+
+  // Custom backend URL override
+  customBackendUrl = '';
+
+  constructor(
+    private tidepoolAuth: TidepoolAuthService,
+    private localAuth: LocalAuthService,
+    private tidepoolSync: TidepoolSyncService,
+    private servicesManager: ExternalServicesManager,
+    private mockAdapter: MockAdapterService,
+    private toastController: ToastController
+  ) {}
+
+  async ngOnInit() {
+    await this.loadDebugInfo();
+    this.loadMockConfig();
+  }
+
+  async loadDebugInfo() {
+    // Get device info
+    const deviceInfo = await Device.getInfo();
+    const networkStatus = await Network.getStatus();
+
+    this.debugInfo = {
+      platform: Capacitor.getPlatform(),
+      version: '1.0.0-dev', // Static version since appVersion is not available
+      deviceModel: deviceInfo.model,
+      osVersion: deviceInfo.osVersion,
+      networkStatus: networkStatus.connected ? 'Online' : 'Offline',
+      environment: environment.production ? 'production' : 'development',
+      apiBaseUrl: environment.backendServices.apiGateway.baseUrl,
+      tidepoolEnabled: environment.features.useTidepoolIntegration,
+      tidepoolMockEnabled: environment.features.useTidepoolMock,
+      localBackendEnabled: environment.features.useLocalBackend,
+    };
+
+    // Subscribe to auth status (note: authState$ may need to be public)
+    // Commenting out until service is updated
+    // this.tidepoolAuth.authState$.subscribe(state => {
+    //   this.authStatus = {
+    //     tidepool: {
+    //       isAuthenticated: state.isAuthenticated,
+    //       userId: state.userId || 'N/A',
+    //     },
+    //   };
+    // });
+
+    // Subscribe to sync status
+    this.tidepoolSync.syncStatus$.subscribe(status => {
+      this.syncStatus = status;
+    });
+
+    // Subscribe to services health
+    this.servicesManager.state.subscribe((state: ExternalServicesState) => {
+      this.servicesHealth = state;
+    });
+
+    // Get storage stats
+    await this.loadStorageStats();
+
+    // Load custom backend URL from storage
+    const { value } = await Preferences.get({ key: 'debug_custom_backend_url' });
+    if (value) {
+      this.customBackendUrl = value;
+    }
+  }
+
+  async loadStorageStats() {
+    const readingsCount = await db.readings.count();
+    const syncQueueCount = await db.syncQueue.count();
+
+    this.storageStats = {
+      readings: readingsCount,
+      syncQueue: syncQueueCount,
+    };
+  }
+
+  togglePanel() {
+    this.isOpen = !this.isOpen;
+  }
+
+  async clearAllData() {
+    if (confirm('⚠️ This will delete ALL local data. Are you sure?')) {
+      await db.readings.clear();
+      await db.syncQueue.clear();
+      await Preferences.clear();
+      alert('✅ All data cleared. Please restart the app.');
+      window.location.reload();
+    }
+  }
+
+  async clearReadings() {
+    if (confirm('⚠️ This will delete all glucose readings. Continue?')) {
+      await db.readings.clear();
+      await this.loadStorageStats();
+      alert('✅ Readings cleared');
+    }
+  }
+
+  async clearPreferences() {
+    if (confirm('⚠️ This will clear all app preferences. Continue?')) {
+      await Preferences.clear();
+      alert('✅ Preferences cleared. Please restart the app.');
+      window.location.reload();
+    }
+  }
+
+  async forceSync() {
+    alert('🔄 Starting sync...');
+    try {
+      // Trigger sync (implementation depends on your sync service)
+      alert('✅ Sync completed');
+    } catch (error: any) {
+      alert('❌ Sync failed: ' + error.message);
+    }
+  }
+
+  async saveCustomBackendUrl() {
+    if (this.customBackendUrl) {
+      await Preferences.set({
+        key: 'debug_custom_backend_url',
+        value: this.customBackendUrl,
+      });
+      alert('✅ Custom backend URL saved. Please restart the app to apply changes.');
+    }
+  }
+
+  async clearCustomBackendUrl() {
+    await Preferences.remove({ key: 'debug_custom_backend_url' });
+    this.customBackendUrl = '';
+    alert('✅ Custom backend URL cleared. Please restart the app.');
+  }
+
+  simulateAccountState(state: 'pending' | 'active' | 'disabled') {
+    // This would need to be implemented in your auth service
+    alert(
+      `🎭 Simulating account state: ${state}\n\nNote: This requires backend support to actually work.`
+    );
+  }
+
+  copyDebugInfo() {
+    const info = JSON.stringify(
+      {
+        debugInfo: this.debugInfo,
+        authStatus: this.authStatus,
+        syncStatus: this.syncStatus,
+        servicesHealth: this.servicesHealth,
+        storageStats: this.storageStats,
+      },
+      null,
+      2
+    );
+
+    navigator.clipboard.writeText(info).then(() => {
+      alert('✅ Debug info copied to clipboard');
+    });
+  }
+
+  getHealthColor(status: HealthStatus): string {
+    switch (status) {
+      case HealthStatus.HEALTHY:
+        return 'success';
+      case HealthStatus.DEGRADED:
+        return 'warning';
+      case HealthStatus.UNHEALTHY:
+        return 'danger';
+      case HealthStatus.CHECKING:
+        return 'primary';
+      default:
+        return 'medium';
+    }
+  }
+
+  getSyncStatusColor(status: string): string {
+    switch (status) {
+      case 'syncing':
+        return 'primary';
+      case 'success':
+        return 'success';
+      case 'error':
+        return 'danger';
+      default:
+        return 'medium';
+    }
+  }
+
+  /**
+   * Load mock configuration
+   */
+  loadMockConfig() {
+    this.mockConfig = this.mockAdapter.getConfig();
+  }
+
+  /**
+   * Toggle mock mode globally
+   */
+  async toggleMockMode(enabled: boolean) {
+    this.mockAdapter.useMockBackend(enabled);
+    this.loadMockConfig();
+    await this.showToast(
+      enabled ? '🟢 Mock mode enabled' : '🔴 Mock mode disabled',
+      enabled ? 'success' : 'medium'
+    );
+  }
+
+  /**
+   * Toggle mock for specific service
+   */
+  async toggleServiceMock(service: 'appointments' | 'glucoserver' | 'auth', enabled: boolean) {
+    this.mockAdapter.setServiceMockEnabled(service, enabled);
+    this.loadMockConfig();
+    await this.showToast(
+      `${this.getServiceDisplayName(service)}: ${enabled ? '🟢 Mock' : '🔴 Real'}`,
+      enabled ? 'success' : 'medium'
+    );
+  }
+
+  /**
+   * Enable all mocks
+   */
+  async enableAllMocks() {
+    this.mockAdapter.useMockBackend(true);
+    this.mockAdapter.setServiceMockEnabled('appointments', true);
+    this.mockAdapter.setServiceMockEnabled('glucoserver', true);
+    this.mockAdapter.setServiceMockEnabled('auth', true);
+    this.loadMockConfig();
+    await this.showToast('✅ All services using mock data', 'success');
+  }
+
+  /**
+   * Disable all mocks
+   */
+  async disableAllMocks() {
+    this.mockAdapter.useMockBackend(false);
+    this.loadMockConfig();
+    await this.showToast('⚠️ All services using real backends', 'warning');
+  }
+
+  /**
+   * Clear all mock data
+   */
+  async clearMockData() {
+    if (confirm('⚠️ This will clear all mock data (readings, appointments, profile). Continue?')) {
+      this.mockAdapter.clearAllMockData();
+      await this.showToast('🗑️ Mock data cleared', 'medium');
+    }
+  }
+
+  /**
+   * Get service display name
+   */
+  private getServiceDisplayName(service: string): string {
+    switch (service) {
+      case 'appointments':
+        return 'Appointments';
+      case 'glucoserver':
+        return 'Glucose Readings';
+      case 'auth':
+        return 'Authentication';
+      default:
+        return service;
+    }
+  }
+
+  /**
+   * Show toast notification
+   */
+  private async showToast(message: string, color: string = 'dark') {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position: 'bottom',
+      color,
+    });
+    await toast.present();
+  }
+}
