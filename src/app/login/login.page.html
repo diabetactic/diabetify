@@ -1,0 +1,140 @@
+<ion-content class="login-content">
+  <div class="login-container">
+    <!-- Logo and Title -->
+    <div class="login-header">
+      <img src="assets/icon/favicon.png" [alt]="'login.logoAlt' | translate" class="app-logo" />
+      <h1 class="app-title">{{ 'login.appName' | translate }}</h1>
+      <p class="app-subtitle">{{ 'login.tagline' | translate }}</p>
+    </div>
+
+    <!-- Demo Hint Card -->
+    <ion-card *ngIf="showDemoHint" class="demo-hint-card">
+      <ion-card-content>
+        <div class="demo-hint">
+          <ion-icon name="information-circle-outline" color="primary"></ion-icon>
+          <div>
+            <strong>{{ 'login.demoHint.testAccount' | translate }}</strong
+            ><br />
+            {{ 'login.demoHint.message' | translate }}
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <!-- Username Field (DNI or Email) -->
+      <ion-item class="form-item" [class.item-has-error]="isFieldInvalid('username')">
+        <ion-label position="floating">{{ 'login.username.label' | translate }}</ion-label>
+        <ion-input
+          type="text"
+          formControlName="username"
+          [placeholder]="'login.username.placeholder' | translate"
+          [disabled]="isLoading"
+          autocomplete="username"
+          inputmode="email"
+        ></ion-input>
+        <ion-icon name="person-outline" slot="start" class="field-icon"></ion-icon>
+      </ion-item>
+      <div class="error-message" *ngIf="usernameError">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        {{ usernameError }}
+      </div>
+
+      <!-- Password Field -->
+      <ion-item class="form-item" [class.item-has-error]="isFieldInvalid('password')">
+        <ion-label position="floating">{{ 'login.password.label' | translate }}</ion-label>
+        <ion-input
+          [type]="showPassword ? 'text' : 'password'"
+          formControlName="password"
+          [placeholder]="'login.password.placeholder' | translate"
+          [disabled]="isLoading"
+          autocomplete="current-password"
+        ></ion-input>
+        <ion-icon name="lock-closed-outline" slot="start" class="field-icon"></ion-icon>
+        <ion-button
+          fill="clear"
+          slot="end"
+          (click)="togglePasswordVisibility()"
+          [disabled]="isLoading"
+          class="password-toggle"
+        >
+          <ion-icon
+            slot="icon-only"
+            [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+          ></ion-icon>
+        </ion-button>
+      </ion-item>
+      <div class="error-message" *ngIf="passwordError">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        {{ passwordError }}
+      </div>
+
+      <!-- Remember Me Checkbox -->
+      <ion-item lines="none" class="checkbox-item">
+        <ion-checkbox formControlName="rememberMe" [disabled]="isLoading"></ion-checkbox>
+        <ion-label class="remember-label">{{ 'login.rememberMe' | translate }}</ion-label>
+      </ion-item>
+
+      <!-- Submit Button -->
+      <ion-button
+        expand="block"
+        type="submit"
+        [disabled]="loginForm.invalid || isLoading"
+        class="submit-button"
+      >
+        <ion-spinner name="crescent" *ngIf="isLoading"></ion-spinner>
+        <span *ngIf="!isLoading">{{ 'login.submitButton' | translate }}</span>
+      </ion-button>
+
+      <!-- Forgot Password Link -->
+      <div class="form-links">
+        <a (click)="forgotPassword()" class="link-button">{{
+          'login.forgotPassword' | translate
+        }}</a>
+      </div>
+    </form>
+
+    <!-- Alternative Actions -->
+    <div class="alternative-actions">
+      <div class="divider">
+        <span>{{ 'login.divider' | translate }}</span>
+      </div>
+
+      <!-- Demo Mode Button -->
+      <ion-button
+        expand="block"
+        fill="outline"
+        color="primary"
+        (click)="useDemoMode()"
+        [disabled]="isLoading"
+        class="demo-button"
+      >
+        <ion-icon name="flask-outline" slot="start"></ion-icon>
+        {{ 'login.demoButton' | translate }}
+      </ion-button>
+
+      <!-- Register Link -->
+      <div class="register-section">
+        <p>{{ 'login.register.prompt' | translate }}</p>
+        <a (click)="navigateToRegister()" class="register-link">{{
+          'login.register.link' | translate
+        }}</a>
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<!-- Footer -->
+<ion-footer class="login-footer">
+  <ion-toolbar color="light">
+    <ion-text color="medium" class="footer-text">
+      <p>{{ 'login.footer.copyright' | translate }}</p>
+      <p>
+        <a href="#">{{ 'login.footer.links.terms' | translate }}</a> •
+        <a href="#">{{ 'login.footer.links.privacy' | translate }}</a> •
+        <a href="#">{{ 'login.footer.links.support' | translate }}</a>
+      </p>
+    </ion-text>
+  </ion-toolbar>
+</ion-footer>
