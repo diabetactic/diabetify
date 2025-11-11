@@ -1,31 +1,24 @@
 // ============================================
-// DASHBOARD PAGE - TAILWIND MIGRATED
+// DASHBOARD PAGE - TAILWIND V4 MIGRATED
 // ============================================
-// All layout, spacing, and colors moved to Tailwind classes
-// Only animations and Ionic component properties remain
+// Layout, spacing, typography, and colors moved to Tailwind
+// Preserves: Animations, Ionic CSS variables, nested selectors
 
 // ============================================
 // CUSTOM ANIMATIONS
 // ============================================
 
-// Sync button spinner animation
-.spinning {
-  animation: spin 1s linear infinite;
-}
-
 @keyframes spin {
   from {
     transform: rotate(0deg);
   }
-
   to {
     transform: rotate(360deg);
   }
 }
 
-// Status icon bounce animation
-.status-icon-large {
-  animation: bounce 2s ease-in-out infinite;
+.spinning {
+  animation: spin 1s linear infinite;
 }
 
 @keyframes bounce {
@@ -33,15 +26,13 @@
   100% {
     transform: translateY(0);
   }
-
   50% {
     transform: translateY(-10px);
   }
 }
 
-// Primary action pulse animation
-.primary-action {
-  animation: pulse 2s ease-in-out infinite;
+.status-icon-large {
+  animation: bounce 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
@@ -49,50 +40,45 @@
   100% {
     transform: scale(1);
   }
-
   50% {
     transform: scale(1.02);
   }
 }
 
-// ============================================
-// IONIC COMPONENT PROPERTIES
-// ============================================
-
-// Alert Banner
-.alert-banner {
-  margin-bottom: 16px;
+.primary-action {
+  animation: pulse 2s ease-in-out infinite;
 }
 
-// Appointment Card - Ionic Item Properties
+// ============================================
+// IONIC COMPONENT VARIABLES
+// ============================================
+
 .appointment-card {
   ion-item {
     --padding-start: 0;
     --inner-padding-end: 0;
-
     margin-bottom: 12px;
+  }
 
-    ion-label {
-      p {
-        color: var(--ion-color-medium);
-        font-size: 12px;
-        margin-bottom: 4px;
-      }
-
-      h3 {
-        font-size: 14px;
-        font-weight: 500;
-      }
+  ion-label {
+    p {
+      color: var(--ion-color-medium);
+      font-size: 12px;
+      margin-bottom: 4px;
     }
 
-    ion-badge {
-      font-weight: 600;
-      padding: 4px 8px;
+    h3 {
+      font-size: 14px;
+      font-weight: 500;
     }
+  }
+
+  ion-badge {
+    font-weight: 600;
+    padding: 4px 8px;
   }
 }
 
-// Kids Action Buttons - Ionic Properties
 .kids-action-btn {
   height: 64px;
   font-size: 18px;
@@ -107,21 +93,13 @@
   }
 }
 
-// Parent View Button
 .parent-view-btn {
   .material-symbols-outlined {
     font-size: 20px;
   }
 }
 
-// Status Card - Component Styling
 .status-indicator {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-
   .status-icon-large {
     font-size: 80px;
   }
@@ -140,37 +118,12 @@
   }
 }
 
-// Recent Readings Section
 .recent-readings-section {
-  .section-header {
-    h2 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--ion-text-color);
-    }
-
-    ion-button {
-      --color: var(--ion-color-primary);
-
-      font-size: 14px;
-      font-weight: 500;
-      margin: 0;
-      height: auto;
-
-      ion-icon {
-        font-size: 16px;
-      }
-    }
+  ion-button {
+    --color: var(--ion-color-primary);
   }
 
-  .readings-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  // Kid-friendly version
+  // Kid-friendly version enhancements
   &.kids-view {
     .section-header {
       h2 {
@@ -201,7 +154,10 @@
   }
 }
 
-// Dark mode - Component-specific adjustments
+// ============================================
+// DARK MODE - IONIC COMPONENT OVERRIDES
+// ============================================
+
 .dark {
   .appointment-card {
     ion-item {
