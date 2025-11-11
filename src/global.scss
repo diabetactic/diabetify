@@ -12,7 +12,7 @@
 /* ============================================
  * TAILWIND CSS V4 + DAISYUI
  * ============================================ */
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* DaisyUI Component Library */
 @plugin "daisyui";
@@ -70,19 +70,19 @@
   /* ========== SPACING & SIZING ========== */
 
   /* Spacing scale (4px base) */
-  --spacing-xs: 0.5rem;   /* 8px */
-  --spacing-sm: 1rem;     /* 16px */
-  --spacing-md: 1.5rem;   /* 24px */
-  --spacing-lg: 2rem;     /* 32px */
-  --spacing-xl: 3rem;     /* 48px */
-  --spacing-2xl: 4rem;    /* 64px */
+  --spacing-xs: 0.5rem; /* 8px */
+  --spacing-sm: 1rem; /* 16px */
+  --spacing-md: 1.5rem; /* 24px */
+  --spacing-lg: 2rem; /* 32px */
+  --spacing-xl: 3rem; /* 48px */
+  --spacing-2xl: 4rem; /* 64px */
 
   /* Border radius */
-  --radius-sm: 0.75rem;   /* 12px */
-  --radius-md: 1rem;      /* 16px */
-  --radius-lg: 1.25rem;   /* 20px */
-  --radius-xl: 1.5rem;    /* 24px */
-  --radius-2xl: 2rem;     /* 32px */
+  --radius-sm: 0.75rem; /* 12px */
+  --radius-md: 1rem; /* 16px */
+  --radius-lg: 1.25rem; /* 20px */
+  --radius-xl: 1.5rem; /* 24px */
+  --radius-2xl: 2rem; /* 32px */
 
   /* ========== TRANSITIONS ========== */
   --duration-fast: 150ms;
@@ -99,7 +99,7 @@
 @layer components {
   /* ========== CARDS ========== */
   .card-elevated {
-    @apply rounded-2xl bg-white p-6 shadow-card backdrop-blur-xl dark:bg-gray-900;
+    @apply shadow-card rounded-2xl bg-white p-6 backdrop-blur-xl dark:bg-gray-900;
   }
 
   .card-gradient {
@@ -236,7 +236,8 @@
 }
 
 @keyframes pulseGlow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 20px rgb(37 175 244 / 30%);
   }
 
@@ -246,7 +247,8 @@
 }
 
 @keyframes shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
 

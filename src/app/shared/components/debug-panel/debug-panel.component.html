@@ -1,6 +1,6 @@
 <!-- Debug Panel Component -->
 <!-- Floating toggle button (bottom-right corner) -->
-<div class="fixed bottom-20 right-4 z-50 md:bottom-4">
+<div class="fixed right-4 bottom-20 z-50 md:bottom-4">
   <ion-fab-button
     size="small"
     (click)="togglePanel()"
@@ -14,7 +14,7 @@
 <!-- Debug Panel (sliding from bottom on mobile, sidebar on desktop) -->
 <div
   *ngIf="isOpen"
-  class="fixed inset-x-0 bottom-0 z-40 flex max-h-[80vh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl dark:bg-gray-900 md:inset-y-0 md:left-auto md:right-0 md:max-h-full md:w-96 md:rounded-none md:rounded-l-2xl"
+  class="fixed inset-x-0 bottom-0 z-40 flex max-h-[80vh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl md:inset-y-0 md:right-0 md:left-auto md:max-h-full md:w-96 md:rounded-none md:rounded-l-2xl dark:bg-gray-900"
   [@slideIn]
 >
   <!-- Header -->
@@ -22,7 +22,7 @@
     class="flex items-center justify-between border-b border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800"
   >
     <div class="flex items-center gap-2">
-      <ion-icon name="bug" class="text-xl text-primary"></ion-icon>
+      <ion-icon name="bug" class="text-primary text-xl"></ion-icon>
       <h2 class="text-lg font-bold text-gray-900 dark:text-white">Debug Panel</h2>
     </div>
     <ion-button fill="clear" size="small" (click)="togglePanel()">
@@ -37,7 +37,7 @@
     <button
       *ngFor="let tab of ['info', 'services', 'mock', 'storage', 'actions']"
       (click)="selectedTab = tab"
-      class="flex-1 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors"
+      class="flex-1 border-b-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors"
       [ngClass]="{
         'border-primary text-primary': selectedTab === tab,
         'border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200':
@@ -95,7 +95,7 @@
           </div>
           <div class="flex justify-between">
             <span class="text-gray-600 dark:text-gray-400">API URL:</span>
-            <span class="break-all font-mono text-xs text-gray-900 dark:text-white">{{
+            <span class="font-mono text-xs break-all text-gray-900 dark:text-white">{{
               debugInfo.apiBaseUrl
             }}</span>
           </div>
@@ -321,7 +321,7 @@
             </div>
             <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
               <div
-                class="h-full rounded-full bg-primary"
+                class="bg-primary h-full rounded-full"
                 [style.width.%]="(storageStats.readings / 1000) * 100"
               ></div>
             </div>

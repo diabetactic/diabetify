@@ -184,7 +184,7 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   imports: [CommonModule, IonicModule, TranslateModule],
   template: `
     <ion-list class="m-0">
-      <ion-list-header class="uppercase font-semibold text-xs">
+      <ion-list-header class="text-xs font-semibold uppercase">
         <ion-label>{{ 'settings.language.title' | translate }}</ion-label>
       </ion-list-header>
       <ion-item
@@ -195,9 +195,9 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
         class="language-item"
       >
         <ion-label>
-          <span class="text-xl mr-3">{{ getFlagEmoji(lang.code) }}</span>
+          <span class="mr-3 text-xl">{{ getFlagEmoji(lang.code) }}</span>
           <span class="font-medium">{{ lang.nativeName }}</span>
-          <span class="text-gray-500 dark:text-gray-400 ml-2 text-xs">({{ lang.code }})</span>
+          <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">({{ lang.code }})</span>
         </ion-label>
         <ion-icon *ngIf="isSelected(lang.code)" name="checkmark" slot="end" color="primary">
         </ion-icon>

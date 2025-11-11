@@ -3,7 +3,7 @@
  */
 
 import { TestBed } from '@angular/core/testing';
-import { LoggerService, LogLevel } from './logger.service';
+import { LoggerService } from './logger.service';
 import { environment } from '../../../environments/environment';
 
 describe('LoggerService', () => {
@@ -89,13 +89,16 @@ describe('LoggerService', () => {
       expect(args[0]).toContain(`[${requestId}]`);
     });
 
-    it('should use "no-request-id" when request ID is not set', () => {
-      service.setRequestId(null);
+    it('should not include request ID prefix when request ID is not set', () => {
+      // Don't set any request ID
       service.info('API', 'Test message');
 
       expect(consoleLogSpy).toHaveBeenCalled();
       const args = consoleLogSpy.calls.mostRecent().args;
-      expect(args[0]).toContain('[no-request-id]');
+      // When no request ID is set, the log should not have a request ID prefix
+      expect(args[0]).not.toContain('[req-');
+      expect(args[0]).toContain('[INFO]');
+      expect(args[0]).toContain('[API]');
     });
   });
 

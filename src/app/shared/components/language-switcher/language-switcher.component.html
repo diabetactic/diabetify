@@ -8,15 +8,15 @@
   (click)="toggleLanguage()"
   class="language-btn"
 >
-  <ion-spinner *ngIf="isLoading" name="crescent" class="w-[18px] h-[18px]"></ion-spinner>
+  <ion-spinner *ngIf="isLoading" name="crescent" class="h-[18px] w-[18px]"></ion-spinner>
   <ng-container *ngIf="!isLoading">
     <span
       *ngIf="showIcon && currentLanguage"
-      class="inline-flex items-center text-xl mr-2 align-middle"
+      class="mr-2 inline-flex items-center align-middle text-xl"
     >
       {{ getFlagEmoji(currentLanguage.code) }}
     </span>
-    <span *ngIf="showText" class="inline-flex items-center sm:inline hidden">
+    <span *ngIf="showText" class="hidden inline-flex items-center sm:inline">
       {{ getDisplayText() }}
     </span>
   </ng-container>
@@ -33,7 +33,7 @@
   class="language-select min-w-[120px] sm:min-w-[80px]"
 >
   <ion-select-option *ngFor="let lang of availableLanguages" [value]="lang.code">
-    <span class="inline-flex items-center text-xl mr-2 align-middle">{{
+    <span class="mr-2 inline-flex items-center align-middle text-xl">{{
       getFlagEmoji(lang.code)
     }}</span>
     {{ showNativeName ? lang.nativeName : lang.name }}
@@ -48,15 +48,15 @@
   (click)="showLanguagePopover($event)"
   class="language-btn"
 >
-  <ion-spinner *ngIf="isLoading" name="crescent" class="w-[18px] h-[18px]"></ion-spinner>
+  <ion-spinner *ngIf="isLoading" name="crescent" class="h-[18px] w-[18px]"></ion-spinner>
   <ng-container *ngIf="!isLoading">
     <span
       *ngIf="showIcon && currentLanguage"
-      class="inline-flex items-center text-xl mr-2 align-middle"
+      class="mr-2 inline-flex items-center align-middle text-xl"
     >
       {{ getFlagEmoji(currentLanguage.code) }}
     </span>
-    <span *ngIf="showText" class="inline-flex items-center sm:inline hidden">
+    <span *ngIf="showText" class="hidden inline-flex items-center sm:inline">
       {{ getDisplayText() }}
     </span>
     <ion-icon name="chevron-down" slot="end"></ion-icon>

@@ -3,13 +3,13 @@
     <!-- Dashboard Tab -->
     <ion-tab-button tab="dashboard" class="transition-colors duration-200">
       <span class="material-symbols-outlined text-2xl"> home </span>
-      <ion-label class="text-xs font-medium mt-1">{{ 'tabs.home' | translate }}</ion-label>
+      <ion-label class="mt-1 text-xs font-medium">{{ 'tabs.home' | translate }}</ion-label>
     </ion-tab-button>
 
     <!-- Readings Tab -->
     <ion-tab-button tab="readings" class="transition-colors duration-200">
       <span class="material-symbols-outlined text-2xl"> menu_book </span>
-      <ion-label class="text-xs font-medium mt-1">{{ 'tabs.readings' | translate }}</ion-label>
+      <ion-label class="mt-1 text-xs font-medium">{{ 'tabs.readings' | translate }}</ion-label>
     </ion-tab-button>
 
     <!-- Spacer for FAB -->
@@ -18,13 +18,13 @@
     <!-- Appointments Tab -->
     <ion-tab-button tab="appointments" class="transition-colors duration-200">
       <span class="material-symbols-outlined text-2xl"> calendar_today </span>
-      <ion-label class="text-xs font-medium mt-1">{{ 'appointments.title' | translate }}</ion-label>
+      <ion-label class="mt-1 text-xs font-medium">{{ 'appointments.title' | translate }}</ion-label>
     </ion-tab-button>
 
     <!-- Profile Tab -->
     <ion-tab-button tab="profile" class="transition-colors duration-200">
       <span class="material-symbols-outlined text-2xl"> person </span>
-      <ion-label class="text-xs font-medium mt-1">{{ 'tabs.profile' | translate }}</ion-label>
+      <ion-label class="mt-1 text-xs font-medium">{{ 'tabs.profile' | translate }}</ion-label>
     </ion-tab-button>
   </ion-tab-bar>
 
@@ -32,7 +32,7 @@
   <ion-fab class="center-fab" vertical="bottom" slot="fixed">
     <ion-fab-button
       (click)="navigateToAddReading()"
-      class="shadow-lg hover:shadow-xl transition-shadow duration-200"
+      class="shadow-lg transition-shadow duration-200 hover:shadow-xl"
     >
       <span class="material-symbols-outlined text-3xl"> add </span>
     </ion-fab-button>
