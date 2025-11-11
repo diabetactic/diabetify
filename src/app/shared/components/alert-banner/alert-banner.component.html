@@ -1,6 +1,6 @@
 <div
   *ngIf="visible"
-  class="flex items-center justify-between gap-3 rounded-xl p-3 mb-4 shadow-md transition-all duration-200"
+  class="mb-4 flex items-center justify-between gap-3 rounded-xl p-3 shadow-md transition-all duration-200"
   [ngClass]="{
     'bg-yellow-200/50 dark:bg-yellow-200/25': type === 'success',
     'bg-sky-500/12 dark:bg-sky-500/18': type === 'info',
@@ -8,10 +8,10 @@
   }"
 >
   <!-- Alert Content -->
-  <div class="flex items-center gap-3 flex-1">
+  <div class="flex flex-1 items-center gap-3">
     <!-- Icon -->
     <span
-      class="material-symbols-outlined text-2xl flex-shrink-0"
+      class="material-symbols-outlined flex-shrink-0 text-2xl"
       [ngClass]="{
         'text-yellow-600 dark:text-yellow-400': type === 'success',
         'text-sky-600 dark:text-sky-400': type === 'info',
@@ -24,7 +24,7 @@
 
     <!-- Message -->
     <p
-      class="m-0 text-sm font-medium leading-snug flex-1"
+      class="m-0 flex-1 text-sm leading-snug font-medium"
       [ngClass]="{
         'text-yellow-800 dark:text-yellow-100': type === 'success',
         'text-sky-700 dark:text-sky-300': type === 'info',
@@ -40,7 +40,7 @@
     *ngIf="dismissible"
     (click)="dismiss()"
     aria-label="Dismiss alert"
-    class="flex items-center justify-center p-1 bg-transparent border-0 rounded-full cursor-pointer flex-shrink-0 transition-colors duration-200 hover:bg-black/10 dark:hover:bg-white/10 active:bg-black/15 dark:active:bg-white/15"
+    class="flex flex-shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-1 transition-colors duration-200 hover:bg-black/10 active:bg-black/15 dark:hover:bg-white/10 dark:active:bg-white/15"
   >
     <span
       class="material-symbols-outlined text-xl"

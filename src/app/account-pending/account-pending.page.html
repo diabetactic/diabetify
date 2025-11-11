@@ -7,7 +7,9 @@
 <ion-content [fullscreen]="true" class="account-pending-content">
   <ion-card class="card-elevated mx-auto w-full max-w-lg">
     <ion-card-header class="pb-4">
-      <ion-card-title class="text-xl font-semibold text-primary">{{ 'auth.accountStates.pending.title' | translate }}</ion-card-title>
+      <ion-card-title class="text-primary text-xl font-semibold">{{
+        'auth.accountStates.pending.title' | translate
+      }}</ion-card-title>
     </ion-card-header>
 
     <ion-card-content>
@@ -17,16 +19,18 @@
       </p>
 
       <!-- Subtitle with email notification info -->
-      <p class="mb-6 mt-3 text-center text-sm leading-normal text-gray-500 dark:text-gray-400">
+      <p class="mt-3 mb-6 text-center text-sm leading-normal text-gray-500 dark:text-gray-400">
         {{ 'auth.accountStates.pending.subtitle' | translate }}
       </p>
 
       <!-- Support section -->
-      <div class="my-6 rounded border-l-4 border-primary bg-blue-50 p-3 dark:bg-blue-900/20">
-        <ion-label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+      <div class="border-primary my-6 rounded border-l-4 bg-blue-50 p-3 dark:bg-blue-900/20">
+        <ion-label
+          class="mb-2 block text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400"
+        >
           {{ 'auth.accountStates.pending.support' | translate }}
         </ion-label>
-        <p class="m-0 break-all text-base font-medium text-primary">
+        <p class="text-primary m-0 text-base font-medium break-all">
           {{ appConfig.supportEmail }}
         </p>
       </div>

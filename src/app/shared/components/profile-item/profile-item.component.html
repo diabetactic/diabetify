@@ -6,13 +6,13 @@
   (click)="onItemClick()"
 >
   <div
-    class="flex justify-between items-center w-full p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md dark:shadow-black/30 transition-colors duration-200"
+    class="flex w-full items-center justify-between rounded-xl bg-white p-4 shadow-md transition-colors duration-200 dark:bg-gray-800 dark:shadow-black/30"
   >
     <!-- Left Section: Icon + Text -->
-    <div class="flex items-center gap-4 flex-1 min-w-0">
+    <div class="flex min-w-0 flex-1 items-center gap-4">
       <!-- Icon Container -->
       <div
-        class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+        class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl"
         [style.background-color]="iconColor + '20'"
         [style.color]="iconColor"
       >
@@ -20,15 +20,15 @@
       </div>
 
       <!-- Text Content -->
-      <div class="flex-1 min-w-0">
+      <div class="min-w-0 flex-1">
         <h3
-          class="m-0 mb-1 text-base font-semibold text-gray-900 dark:text-white leading-snug whitespace-nowrap overflow-hidden text-ellipsis"
+          class="m-0 mb-1 overflow-hidden text-base leading-snug font-semibold text-ellipsis whitespace-nowrap text-gray-900 dark:text-white"
         >
           {{ title }}
         </h3>
         <p
           *ngIf="subtitle"
-          class="m-0 text-sm font-normal text-gray-400 dark:text-gray-500 leading-snug whitespace-nowrap overflow-hidden text-ellipsis"
+          class="m-0 overflow-hidden text-sm leading-snug font-normal text-ellipsis whitespace-nowrap text-gray-400 dark:text-gray-500"
         >
           {{ subtitle }}
         </p>
@@ -36,7 +36,7 @@
     </div>
 
     <!-- Right Section: Action Elements -->
-    <div class="flex items-center ml-3 flex-shrink-0">
+    <div class="ml-3 flex flex-shrink-0 items-center">
       <!-- Toggle action -->
       <ion-toggle
         *ngIf="actionType === 'toggle'"
@@ -50,7 +50,7 @@
       <!-- Badge action -->
       <span
         *ngIf="actionType === 'badge' && actionValue"
-        class="px-3 py-1 rounded-xl text-xs font-semibold bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light"
+        class="bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light rounded-xl px-3 py-1 text-xs font-semibold"
       >
         {{ actionValue }}
       </span>

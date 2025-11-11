@@ -17,9 +17,11 @@
 <ion-content>
   <div class="p-4 pb-6">
     <!-- Loading State -->
-    <div *ngIf="isLoading" class="flex flex-col items-center justify-center min-h-[300px] gap-4">
-      <ion-spinner name="crescent" *ngIf="!isKarma" class="w-12 h-12"></ion-spinner>
-      <p class="text-base" style="color: var(--ion-color-medium)">{{ 'app.loading' | translate }}</p>
+    <div *ngIf="isLoading" class="flex min-h-[300px] flex-col items-center justify-center gap-4">
+      <ion-spinner name="crescent" *ngIf="!isKarma" class="h-12 w-12"></ion-spinner>
+      <p class="text-base" style="color: var(--ion-color-medium)">
+        {{ 'app.loading' | translate }}
+      </p>
     </div>
 
     <!-- Detail Content -->
@@ -28,14 +30,20 @@
       <ion-card class="info-banner mb-5 rounded-2xl border border-blue-400/20">
         <ion-card-content>
           <div class="flex items-center gap-3">
-            <ion-icon name="information-circle-outline" color="primary" class="text-[32px] shrink-0"></ion-icon>
-            <p class="m-0 text-sm leading-[1.5]" style="color: var(--ion-color-medium)">{{ 'dashboard.detail.description' | translate }}</p>
+            <ion-icon
+              name="information-circle-outline"
+              color="primary"
+              class="shrink-0 text-[32px]"
+            ></ion-icon>
+            <p class="m-0 text-sm leading-[1.5]" style="color: var(--ion-color-medium)">
+              {{ 'dashboard.detail.description' | translate }}
+            </p>
           </div>
         </ion-card-content>
       </ion-card>
 
       <!-- All Statistics Grid -->
-      <div class="grid grid-cols-2 gap-4 mb-6 sm:grid-cols-1 sm:gap-3">
+      <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-1 sm:gap-3">
         <!-- HbA1c (Estimated A1C) -->
         <app-stat-card
           [title]="'readings.statistics.hba1c' | translate"
@@ -106,40 +114,77 @@
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <div class="flex flex-col gap-4 mb-5">
-            <div class="sync-item flex items-center gap-3 p-3 rounded-xl" style="background: var(--ion-color-light)">
-              <ion-icon name="time-outline" color="primary" class="text-[28px] shrink-0"></ion-icon>
+          <div class="mb-5 flex flex-col gap-4">
+            <div
+              class="sync-item flex items-center gap-3 rounded-xl p-3"
+              style="background: var(--ion-color-light)"
+            >
+              <ion-icon name="time-outline" color="primary" class="shrink-0 text-[28px]"></ion-icon>
               <div class="flex-1">
-                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">{{ 'dashboard.lastSync' | translate }}</h4>
-                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">{{ getLastSyncDisplay() }}</p>
+                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">
+                  {{ 'dashboard.lastSync' | translate }}
+                </h4>
+                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">
+                  {{ getLastSyncDisplay() }}
+                </p>
               </div>
             </div>
 
-            <div class="sync-item flex items-center gap-3 p-3 rounded-xl" style="background: var(--ion-color-light)">
-              <ion-icon name="cloud-upload-outline" color="success" class="text-[28px] shrink-0"></ion-icon>
+            <div
+              class="sync-item flex items-center gap-3 rounded-xl p-3"
+              style="background: var(--ion-color-light)"
+            >
+              <ion-icon
+                name="cloud-upload-outline"
+                color="success"
+                class="shrink-0 text-[28px]"
+              ></ion-icon>
               <div class="flex-1">
-                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">{{ 'dashboard.syncedItems' | translate }}</h4>
-                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">{{ syncStatus?.itemsSynced || 0 }}</p>
+                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">
+                  {{ 'dashboard.syncedItems' | translate }}
+                </h4>
+                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">
+                  {{ syncStatus?.itemsSynced || 0 }}
+                </p>
               </div>
             </div>
 
-            <div *ngIf="syncStatus && syncStatus.itemsFailed > 0" class="sync-item flex items-center gap-3 p-3 rounded-xl" style="background: var(--ion-color-light)">
-              <ion-icon name="alert-circle-outline" color="danger" class="text-[28px] shrink-0"></ion-icon>
+            <div
+              *ngIf="syncStatus && syncStatus.itemsFailed > 0"
+              class="sync-item flex items-center gap-3 rounded-xl p-3"
+              style="background: var(--ion-color-light)"
+            >
+              <ion-icon
+                name="alert-circle-outline"
+                color="danger"
+                class="shrink-0 text-[28px]"
+              ></ion-icon>
               <div class="flex-1">
-                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">{{ 'dashboard.failedItems' | translate }}</h4>
-                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">{{ syncStatus.itemsFailed }}</p>
+                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">
+                  {{ 'dashboard.failedItems' | translate }}
+                </h4>
+                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">
+                  {{ syncStatus.itemsFailed }}
+                </p>
               </div>
             </div>
 
-            <div class="sync-item flex items-center gap-3 p-3 rounded-xl" style="background: var(--ion-color-light)">
+            <div
+              class="sync-item flex items-center gap-3 rounded-xl p-3"
+              style="background: var(--ion-color-light)"
+            >
               <ion-icon
                 [name]="isSyncing ? 'ellipse' : 'checkmark-circle'"
                 [color]="isSyncing ? 'warning' : 'success'"
-                class="text-[28px] shrink-0"
+                class="shrink-0 text-[28px]"
               ></ion-icon>
               <div class="flex-1">
-                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">{{ 'dashboard.status' | translate }}</h4>
-                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">{{ getSyncStatusText() }}</p>
+                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">
+                  {{ 'dashboard.status' | translate }}
+                </h4>
+                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">
+                  {{ getSyncStatusText() }}
+                </p>
               </div>
             </div>
           </div>
@@ -163,17 +208,29 @@
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <div class="metric-explanation py-4 border-b border-[var(--ion-color-light)]">
-            <h4 class="m-0 mb-2 text-base font-semibold" style="color: var(--ion-color-primary)">{{ 'readings.statistics.hba1c' | translate }}</h4>
-            <p class="m-0 text-sm leading-[1.6]" style="color: var(--ion-color-medium)">{{ 'dashboard.detail.hba1cExplanation' | translate }}</p>
+          <div class="metric-explanation border-b border-[var(--ion-color-light)] py-4">
+            <h4 class="m-0 mb-2 text-base font-semibold" style="color: var(--ion-color-primary)">
+              {{ 'readings.statistics.hba1c' | translate }}
+            </h4>
+            <p class="m-0 text-sm leading-[1.6]" style="color: var(--ion-color-medium)">
+              {{ 'dashboard.detail.hba1cExplanation' | translate }}
+            </p>
           </div>
-          <div class="metric-explanation py-4 border-b border-[var(--ion-color-light)]">
-            <h4 class="m-0 mb-2 text-base font-semibold" style="color: var(--ion-color-primary)">{{ 'readings.statistics.gmi' | translate }}</h4>
-            <p class="m-0 text-sm leading-[1.6]" style="color: var(--ion-color-medium)">{{ 'dashboard.detail.gmiExplanation' | translate }}</p>
+          <div class="metric-explanation border-b border-[var(--ion-color-light)] py-4">
+            <h4 class="m-0 mb-2 text-base font-semibold" style="color: var(--ion-color-primary)">
+              {{ 'readings.statistics.gmi' | translate }}
+            </h4>
+            <p class="m-0 text-sm leading-[1.6]" style="color: var(--ion-color-medium)">
+              {{ 'dashboard.detail.gmiExplanation' | translate }}
+            </p>
           </div>
           <div class="metric-explanation py-4 pb-0">
-            <h4 class="m-0 mb-2 text-base font-semibold" style="color: var(--ion-color-primary)">{{ 'readings.statistics.cv' | translate }}</h4>
-            <p class="m-0 text-sm leading-[1.6]" style="color: var(--ion-color-medium)">{{ 'dashboard.detail.cvExplanation' | translate }}</p>
+            <h4 class="m-0 mb-2 text-base font-semibold" style="color: var(--ion-color-primary)">
+              {{ 'readings.statistics.cv' | translate }}
+            </h4>
+            <p class="m-0 text-sm leading-[1.6]" style="color: var(--ion-color-medium)">
+              {{ 'dashboard.detail.cvExplanation' | translate }}
+            </p>
           </div>
         </ion-card-content>
       </ion-card>

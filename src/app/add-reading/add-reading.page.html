@@ -10,7 +10,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="max-w-[600px] mx-auto p-4">
+  <div class="mx-auto max-w-[600px] p-4">
     <!-- Info Banner with Tip -->
     <div class="mb-6">
       <app-alert-banner type="info" [message]="'addReading.tip' | translate"></app-alert-banner>
@@ -35,10 +35,15 @@
                 readingForm.get('value')?.invalid && readingForm.get('value')?.touched
               "
             ></ion-input>
-            <span class="text-lg font-medium text-medium whitespace-nowrap">{{ getUnitLabel() }}</span>
+            <span class="text-medium text-lg font-medium whitespace-nowrap">{{
+              getUnitLabel()
+            }}</span>
           </div>
         </ion-item>
-        <div class="flex items-center gap-1.5 px-4 text-xs text-danger -mt-1" *ngIf="getValidationMessage('value')">
+        <div
+          class="text-danger -mt-1 flex items-center gap-1.5 px-4 text-xs"
+          *ngIf="getValidationMessage('value')"
+        >
           <ion-icon name="alert-circle" color="danger" class="text-base"></ion-icon>
           <span>{{ getValidationMessage('value') }}</span>
         </div>
@@ -109,7 +114,7 @@
             class="notes-textarea"
           ></ion-textarea>
         </ion-item>
-        <div class="text-right text-xs text-medium px-4 -mt-1">
+        <div class="text-medium -mt-1 px-4 text-right text-xs">
           {{
             'addReading.notes.counter'
               | translate: { count: readingForm.get('notes')?.value?.length || 0, max: 500 }
