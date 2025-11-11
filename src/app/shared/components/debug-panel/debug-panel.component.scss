@@ -1,0 +1,128 @@
+// Debug Panel Component Styles
+// Most styles use Tailwind v4 utilities
+// Keeping only Ionic-specific CSS variables and animations
+
+// Ionic input custom styling
+ion-input {
+  --background: transparent;
+  --color: var(--ion-text-color, #000);
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+
+  @media (prefers-color-scheme: dark) {
+    --color: var(--ion-color-step-850, #e0e0e0);
+  }
+}
+
+// Ionic toggle custom styling
+ion-toggle {
+  --background: rgba(0, 0, 0, 0.1);
+  --background-checked: var(--ion-color-primary);
+  --handle-background: #fff;
+  --handle-background-checked: #fff;
+
+  @media (prefers-color-scheme: dark) {
+    --background: rgba(255, 255, 255, 0.1);
+    --handle-background: #e0e0e0;
+  }
+}
+
+// Ionic button sizing
+ion-button {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  font-size: 13px;
+  height: auto;
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+
+// FAB button positioning
+ion-fab-button {
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  &:hover {
+    --box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// Smooth scrollbar
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+// Animation keyframes (used in TypeScript)
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Mobile slide-up animation
+@media (max-width: 768px) {
+  @keyframes slideIn {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 640px) {
+  .debug-panel-content {
+    padding: 12px;
+  }
+
+  ion-button {
+    font-size: 12px;
+  }
+}
