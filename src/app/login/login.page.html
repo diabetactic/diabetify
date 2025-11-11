@@ -43,8 +43,8 @@
       class="card-elevated animate-slide-in-up w-full max-w-md p-8 sm:p-6"
     >
       <!-- Username Field (DNI or Email) -->
-      <ion-item class="form-item" [class.item-has-error]="isFieldInvalid('username')">
-        <ion-label position="floating">{{ 'login.username.label' | translate }}</ion-label>
+      <ion-item class="form-item mb-4 rounded-xl border border-gray-200 transition-all duration-300 dark:border-gray-700" [class.item-has-error]="isFieldInvalid('username')">
+        <ion-label position="floating" class="ml-10 font-medium text-gray-600 dark:text-gray-400">{{ 'login.username.label' | translate }}</ion-label>
         <ion-input
           type="text"
           formControlName="username"
@@ -52,8 +52,9 @@
           [disabled]="isLoading"
           autocomplete="username"
           inputmode="email"
+          class="text-base"
         ></ion-input>
-        <ion-icon name="person-outline" slot="start" class="field-icon"></ion-icon>
+        <ion-icon name="person-outline" slot="start" class="absolute left-4 z-10 text-xl text-gray-400"></ion-icon>
       </ion-item>
       <div
         class="animate-shake -mt-2.5 mb-2.5 ml-1 flex items-center gap-1.5 text-xs text-danger"
@@ -64,26 +65,28 @@
       </div>
 
       <!-- Password Field -->
-      <ion-item class="form-item" [class.item-has-error]="isFieldInvalid('password')">
-        <ion-label position="floating">{{ 'login.password.label' | translate }}</ion-label>
+      <ion-item class="form-item mb-4 rounded-xl border border-gray-200 transition-all duration-300 dark:border-gray-700" [class.item-has-error]="isFieldInvalid('password')">
+        <ion-label position="floating" class="ml-10 font-medium text-gray-600 dark:text-gray-400">{{ 'login.password.label' | translate }}</ion-label>
         <ion-input
           [type]="showPassword ? 'text' : 'password'"
           formControlName="password"
           [placeholder]="'login.password.placeholder' | translate"
           [disabled]="isLoading"
           autocomplete="current-password"
+          class="text-base"
         ></ion-input>
-        <ion-icon name="lock-closed-outline" slot="start" class="field-icon"></ion-icon>
+        <ion-icon name="lock-closed-outline" slot="start" class="absolute left-4 z-10 text-xl text-gray-400"></ion-icon>
         <ion-button
           fill="clear"
           slot="end"
           (click)="togglePasswordVisibility()"
           [disabled]="isLoading"
-          class="password-toggle"
+          class="password-toggle m-0 h-10"
         >
           <ion-icon
             slot="icon-only"
             [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+            class="text-xl text-gray-600"
           ></ion-icon>
         </ion-button>
       </ion-item>
@@ -97,8 +100,8 @@
 
       <!-- Remember Me Checkbox -->
       <ion-item lines="none" class="checkbox-item my-5">
-        <ion-checkbox formControlName="rememberMe" [disabled]="isLoading"></ion-checkbox>
-        <ion-label class="remember-label ml-2 text-sm text-gray-600 dark:text-gray-400">{{
+        <ion-checkbox formControlName="rememberMe" [disabled]="isLoading" class="mr-2.5"></ion-checkbox>
+        <ion-label class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{
           'login.rememberMe' | translate
         }}</ion-label>
       </ion-item>
@@ -160,8 +163,8 @@
 
 <!-- Footer -->
 <ion-footer class="login-footer">
-  <ion-toolbar color="light">
-    <ion-text color="medium" class="footer-text">
+  <ion-toolbar color="light" class="py-2.5 text-center">
+    <ion-text color="medium">
       <p class="my-0.5 text-xs">{{ 'login.footer.copyright' | translate }}</p>
       <p class="my-0.5 text-xs">
         <a href="#" class="mx-1.5 text-primary no-underline hover:underline">{{

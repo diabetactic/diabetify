@@ -15,27 +15,27 @@
 </ion-header>
 
 <ion-content>
-  <div class="detail-container">
+  <div class="p-4 pb-6">
     <!-- Loading State -->
-    <div *ngIf="isLoading" class="loading-container">
-      <ion-spinner name="crescent" *ngIf="!isKarma"></ion-spinner>
-      <p>{{ 'app.loading' | translate }}</p>
+    <div *ngIf="isLoading" class="flex flex-col items-center justify-center min-h-[300px] gap-4">
+      <ion-spinner name="crescent" *ngIf="!isKarma" class="w-12 h-12"></ion-spinner>
+      <p class="text-base" style="color: var(--ion-color-medium)">{{ 'app.loading' | translate }}</p>
     </div>
 
     <!-- Detail Content -->
     <ng-container *ngIf="!isLoading">
       <!-- Info Banner -->
-      <ion-card class="info-banner">
+      <ion-card class="info-banner mb-5 rounded-2xl border border-blue-400/20">
         <ion-card-content>
-          <div class="info-content">
-            <ion-icon name="information-circle-outline" color="primary"></ion-icon>
-            <p>{{ 'dashboard.detail.description' | translate }}</p>
+          <div class="flex items-center gap-3">
+            <ion-icon name="information-circle-outline" color="primary" class="text-[32px] shrink-0"></ion-icon>
+            <p class="m-0 text-sm leading-[1.5]" style="color: var(--ion-color-medium)">{{ 'dashboard.detail.description' | translate }}</p>
           </div>
         </ion-card-content>
       </ion-card>
 
       <!-- All Statistics Grid -->
-      <div class="stats-grid">
+      <div class="grid grid-cols-2 gap-4 mb-6 sm:grid-cols-1 sm:gap-3">
         <!-- HbA1c (Estimated A1C) -->
         <app-stat-card
           [title]="'readings.statistics.hba1c' | translate"
@@ -98,52 +98,53 @@
       </div>
 
       <!-- Sync Status Card -->
-      <ion-card class="sync-status-card">
+      <ion-card class="mb-5 rounded-2xl">
         <ion-card-header>
-          <ion-card-title>
-            <ion-icon name="sync-outline"></ion-icon>
+          <ion-card-title class="flex items-center gap-2 text-lg font-bold">
+            <ion-icon name="sync-outline" class="text-2xl"></ion-icon>
             {{ 'dashboard.detail.syncStatus' | translate }}
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <div class="sync-details">
-            <div class="sync-item">
-              <ion-icon name="time-outline" color="primary"></ion-icon>
-              <div class="sync-item-content">
-                <h4>{{ 'dashboard.lastSync' | translate }}</h4>
-                <p>{{ getLastSyncDisplay() }}</p>
+          <div class="flex flex-col gap-4 mb-5">
+            <div class="sync-item flex items-center gap-3 p-3 rounded-xl" style="background: var(--ion-color-light)">
+              <ion-icon name="time-outline" color="primary" class="text-[28px] shrink-0"></ion-icon>
+              <div class="flex-1">
+                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">{{ 'dashboard.lastSync' | translate }}</h4>
+                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">{{ getLastSyncDisplay() }}</p>
               </div>
             </div>
 
-            <div class="sync-item">
-              <ion-icon name="cloud-upload-outline" color="success"></ion-icon>
-              <div class="sync-item-content">
-                <h4>{{ 'dashboard.syncedItems' | translate }}</h4>
-                <p>{{ syncStatus?.itemsSynced || 0 }}</p>
+            <div class="sync-item flex items-center gap-3 p-3 rounded-xl" style="background: var(--ion-color-light)">
+              <ion-icon name="cloud-upload-outline" color="success" class="text-[28px] shrink-0"></ion-icon>
+              <div class="flex-1">
+                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">{{ 'dashboard.syncedItems' | translate }}</h4>
+                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">{{ syncStatus?.itemsSynced || 0 }}</p>
               </div>
             </div>
 
-            <div class="sync-item" *ngIf="syncStatus && syncStatus.itemsFailed > 0">
-              <ion-icon name="alert-circle-outline" color="danger"></ion-icon>
-              <div class="sync-item-content">
-                <h4>{{ 'dashboard.failedItems' | translate }}</h4>
-                <p>{{ syncStatus.itemsFailed }}</p>
+            <div *ngIf="syncStatus && syncStatus.itemsFailed > 0" class="sync-item flex items-center gap-3 p-3 rounded-xl" style="background: var(--ion-color-light)">
+              <ion-icon name="alert-circle-outline" color="danger" class="text-[28px] shrink-0"></ion-icon>
+              <div class="flex-1">
+                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">{{ 'dashboard.failedItems' | translate }}</h4>
+                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">{{ syncStatus.itemsFailed }}</p>
               </div>
             </div>
 
-            <div class="sync-item">
+            <div class="sync-item flex items-center gap-3 p-3 rounded-xl" style="background: var(--ion-color-light)">
               <ion-icon
                 [name]="isSyncing ? 'ellipse' : 'checkmark-circle'"
                 [color]="isSyncing ? 'warning' : 'success'"
+                class="text-[28px] shrink-0"
               ></ion-icon>
-              <div class="sync-item-content">
-                <h4>{{ 'dashboard.status' | translate }}</h4>
-                <p>{{ getSyncStatusText() }}</p>
+              <div class="flex-1">
+                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">{{ 'dashboard.status' | translate }}</h4>
+                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">{{ getSyncStatusText() }}</p>
               </div>
             </div>
           </div>
 
-          <ion-button expand="block" (click)="onSync()" [disabled]="isSyncing" class="sync-button">
+          <ion-button expand="block" (click)="onSync()" [disabled]="isSyncing" class="mt-4">
             <ion-spinner name="crescent" *ngIf="isSyncing && !isKarma"></ion-spinner>
             <span *ngIf="!isSyncing">
               <ion-icon slot="start" name="sync-outline"></ion-icon>
@@ -154,25 +155,25 @@
       </ion-card>
 
       <!-- Additional Info Card -->
-      <ion-card class="info-card">
+      <ion-card class="mb-5 rounded-2xl">
         <ion-card-header>
-          <ion-card-title>
-            <ion-icon name="help-circle-outline"></ion-icon>
+          <ion-card-title class="flex items-center gap-2 text-lg font-bold">
+            <ion-icon name="help-circle-outline" class="text-2xl"></ion-icon>
             {{ 'dashboard.detail.aboutMetrics' | translate }}
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <div class="metric-explanation">
-            <h4>{{ 'readings.statistics.hba1c' | translate }}</h4>
-            <p>{{ 'dashboard.detail.hba1cExplanation' | translate }}</p>
+          <div class="metric-explanation py-4 border-b border-[var(--ion-color-light)]">
+            <h4 class="m-0 mb-2 text-base font-semibold" style="color: var(--ion-color-primary)">{{ 'readings.statistics.hba1c' | translate }}</h4>
+            <p class="m-0 text-sm leading-[1.6]" style="color: var(--ion-color-medium)">{{ 'dashboard.detail.hba1cExplanation' | translate }}</p>
           </div>
-          <div class="metric-explanation">
-            <h4>{{ 'readings.statistics.gmi' | translate }}</h4>
-            <p>{{ 'dashboard.detail.gmiExplanation' | translate }}</p>
+          <div class="metric-explanation py-4 border-b border-[var(--ion-color-light)]">
+            <h4 class="m-0 mb-2 text-base font-semibold" style="color: var(--ion-color-primary)">{{ 'readings.statistics.gmi' | translate }}</h4>
+            <p class="m-0 text-sm leading-[1.6]" style="color: var(--ion-color-medium)">{{ 'dashboard.detail.gmiExplanation' | translate }}</p>
           </div>
-          <div class="metric-explanation">
-            <h4>{{ 'readings.statistics.cv' | translate }}</h4>
-            <p>{{ 'dashboard.detail.cvExplanation' | translate }}</p>
+          <div class="metric-explanation py-4 pb-0">
+            <h4 class="m-0 mb-2 text-base font-semibold" style="color: var(--ion-color-primary)">{{ 'readings.statistics.cv' | translate }}</h4>
+            <p class="m-0 text-sm leading-[1.6]" style="color: var(--ion-color-medium)">{{ 'dashboard.detail.cvExplanation' | translate }}</p>
           </div>
         </ion-card-content>
       </ion-card>
