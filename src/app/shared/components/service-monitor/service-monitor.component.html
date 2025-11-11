@@ -1,7 +1,7 @@
 <!-- Service Monitor Component Template -->
 <ion-header>
   <ion-toolbar>
-    <ion-title>Service Health Monitor</ion-title>
+    <ion-title class="text-lg font-semibold">Service Health Monitor</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="toggleAutoRefresh()">
         <ion-icon
@@ -18,104 +18,162 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content class="ion-padding bg-gray-50 dark:bg-gray-900">
   <!-- Overall Status -->
-  <ion-card *ngIf="servicesState">
+  <ion-card
+    *ngIf="servicesState"
+    class="card-elevated mb-4 transition-transform hover:-translate-y-0.5"
+  >
     <ion-card-header>
-      <ion-card-title>
+      <ion-card-title class="flex items-center gap-3">
         <ion-icon
           [name]="statusIcons[servicesState.overallHealth]"
           [style.color]="statusColors[servicesState.overallHealth]"
+          class="text-2xl"
         >
         </ion-icon>
-        System Status: {{ servicesState.overallHealth }}
+        <span class="text-gray-900 dark:text-white font-semibold"
+          >System Status: {{ servicesState.overallHealth }}</span
+        >
       </ion-card-title>
-      <ion-card-subtitle>
-        <span *ngIf="servicesState.isOnline" class="status-online">
+      <ion-card-subtitle class="mt-2 flex flex-wrap items-center gap-2 text-sm">
+        <span
+          *ngIf="servicesState.isOnline"
+          class="inline-flex items-center gap-1 text-green-600 dark:text-green-400"
+        >
           <ion-icon name="wifi"></ion-icon> Online
         </span>
-        <span *ngIf="!servicesState.isOnline" class="status-offline">
+        <span
+          *ngIf="!servicesState.isOnline"
+          class="inline-flex items-center gap-1 text-red-600 dark:text-red-400"
+        >
           <ion-icon name="cloud-offline"></ion-icon> Offline
         </span>
-        <span class="separator">|</span>
-        Last Check: {{ formatDate(servicesState.lastFullCheck) }}
+        <span class="mx-2 text-gray-400">|</span>
+        <span class="text-gray-600 dark:text-gray-400"
+          >Last Check: {{ formatDate(servicesState.lastFullCheck) }}</span
+        >
       </ion-card-subtitle>
     </ion-card-header>
   </ion-card>
 
   <!-- Services Grid -->
-  <ion-grid>
-    <ion-row>
-      <ion-col size="12" size-md="6" size-lg="4" *ngFor="let service of services">
-        <ion-card (click)="showServiceDetails(service.service)">
+  <ion-grid class="p-0 md:p-2">
+    <ion-row class="gap-y-3">
+      <ion-col
+        size="12"
+        size-md="6"
+        size-lg="4"
+        *ngFor="let service of services"
+        class="px-1 md:px-2"
+      >
+        <ion-card
+          (click)="showServiceDetails(service.service)"
+          class="card-elevated mb-0 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg active:translate-y-0"
+        >
           <ion-card-header>
-            <ion-card-subtitle>
-              <ion-icon
-                [name]="statusIcons[service.status]"
-                [style.color]="statusColors[service.status]"
+            <ion-card-subtitle class="flex items-center gap-2 font-medium">
+              <!-- Status indicator with pulse animation -->
+              <div class="relative flex h-3 w-3">
+                <span
+                  class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+                  [ngClass]="{
+                    'bg-green-400': service.status === 'HEALTHY',
+                    'bg-yellow-400': service.status === 'DEGRADED',
+                    'bg-red-400': service.status === 'UNHEALTHY',
+                  }"
+                ></span>
+                <span
+                  class="relative inline-flex h-3 w-3 rounded-full"
+                  [ngClass]="{
+                    'bg-green-500': service.status === 'HEALTHY',
+                    'bg-yellow-500': service.status === 'DEGRADED',
+                    'bg-red-500': service.status === 'UNHEALTHY',
+                  }"
+                ></span>
+              </div>
+              <span
+                class="text-xs font-semibold uppercase tracking-wide"
+                [ngClass]="{
+                  'text-green-600 dark:text-green-400': service.status === 'HEALTHY',
+                  'text-yellow-600 dark:text-yellow-400': service.status === 'DEGRADED',
+                  'text-red-600 dark:text-red-400': service.status === 'UNHEALTHY',
+                }"
               >
-              </ion-icon>
-              {{ service.status }}
+                {{ service.status }}
+              </span>
             </ion-card-subtitle>
-            <ion-card-title>{{ getServiceName(service.service) }}</ion-card-title>
+            <ion-card-title class="mt-2 text-base font-semibold text-gray-900 dark:text-white">{{
+              getServiceName(service.service)
+            }}</ion-card-title>
           </ion-card-header>
 
           <ion-card-content>
-            <ion-list lines="none">
-              <ion-item>
-                <ion-label>Response Time</ion-label>
-                <ion-note slot="end">
+            <div class="space-y-2">
+              <!-- Response Time -->
+              <div class="flex items-center justify-between py-2">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Response Time</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {{ service.responseTime ? formatDuration(service.responseTime) : 'N/A' }}
-                </ion-note>
-              </ion-item>
+                </span>
+              </div>
 
-              <ion-item>
-                <ion-label>Last Checked</ion-label>
-                <ion-note slot="end">
+              <!-- Last Checked -->
+              <div class="flex items-center justify-between py-2">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Last Checked</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {{ formatDate(service.lastChecked) }}
-                </ion-note>
-              </ion-item>
+                </span>
+              </div>
 
               <!-- Circuit Breaker Status -->
-              <ion-item *ngIf="circuitBreakers">
-                <ion-label>Circuit Breaker</ion-label>
-                <ion-note
-                  slot="end"
+              <div *ngIf="circuitBreakers" class="flex items-center justify-between py-2">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Circuit Breaker</span>
+                <span
                   *ngFor="let cb of circuitBreakers"
-                  [style.color]="
-                    cb.service === service.service ? circuitBreakerColors[cb.state] : ''
-                  "
+                  class="text-sm font-medium"
+                  [ngClass]="{
+                    'text-green-600 dark:text-green-400':
+                      cb.service === service.service && cb.state === 'CLOSED',
+                    'text-red-600 dark:text-red-400':
+                      cb.service === service.service && cb.state === 'OPEN',
+                    'text-yellow-600 dark:text-yellow-400':
+                      cb.service === service.service && cb.state === 'HALF_OPEN',
+                  }"
                 >
                   <span *ngIf="cb.service === service.service">
                     {{ cb.state }}
                   </span>
-                </ion-note>
-              </ion-item>
+                </span>
+              </div>
 
-              <ion-item *ngIf="service.message">
-                <ion-label class="ion-text-wrap">
-                  <p class="error-message">{{ service.message }}</p>
-                </ion-label>
-              </ion-item>
-            </ion-list>
+              <!-- Error Message -->
+              <div *ngIf="service.message" class="rounded-md bg-red-50 p-2 dark:bg-red-900/20">
+                <p class="text-xs text-red-600 dark:text-red-400">{{ service.message }}</p>
+              </div>
+            </div>
 
             <!-- Service Actions -->
-            <ion-button
-              fill="clear"
-              size="small"
-              (click)="checkService(service.service); $event.stopPropagation()"
-            >
-              <ion-icon slot="start" name="reload"></ion-icon>
-              Check
-            </ion-button>
-            <ion-button
-              fill="clear"
-              size="small"
-              (click)="clearServiceCache(service.service); $event.stopPropagation()"
-            >
-              <ion-icon slot="start" name="trash"></ion-icon>
-              Clear Cache
-            </ion-button>
+            <div class="mt-4 flex gap-2">
+              <ion-button
+                fill="clear"
+                size="small"
+                (click)="checkService(service.service); $event.stopPropagation()"
+                class="flex-1 text-xs"
+              >
+                <ion-icon slot="start" name="reload" class="text-base"></ion-icon>
+                Check
+              </ion-button>
+              <ion-button
+                fill="clear"
+                size="small"
+                (click)="clearServiceCache(service.service); $event.stopPropagation()"
+                class="flex-1 text-xs"
+              >
+                <ion-icon slot="start" name="trash" class="text-base"></ion-icon>
+                Clear Cache
+              </ion-button>
+            </div>
           </ion-card-content>
         </ion-card>
       </ion-col>
@@ -123,54 +181,73 @@
   </ion-grid>
 
   <!-- Active Workflows -->
-  <ion-card *ngIf="activeWorkflows.length > 0">
+  <ion-card *ngIf="activeWorkflows.length > 0" class="card-elevated mb-4">
     <ion-card-header>
-      <ion-card-title>Active Workflows</ion-card-title>
+      <ion-card-title class="text-base font-semibold text-gray-900 dark:text-white"
+        >Active Workflows</ion-card-title
+      >
     </ion-card-header>
     <ion-card-content>
-      <ion-list>
-        <ion-item *ngFor="let workflow of activeWorkflows">
-          <ion-label>
-            <h2>{{ workflow.type }}</h2>
-            <p>Status: {{ workflow.status }}</p>
-            <ion-progress-bar
-              [value]="getWorkflowProgress(workflow) / 100"
-              [color]="workflow.status === 'failed' ? 'danger' : 'primary'"
-            >
-            </ion-progress-bar>
-          </ion-label>
-          <ion-note slot="end">
-            {{ getWorkflowDuration(workflow) }}
-          </ion-note>
-        </ion-item>
-      </ion-list>
+      <div class="space-y-3">
+        <div
+          *ngFor="let workflow of activeWorkflows"
+          class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800"
+        >
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ workflow.type }}</h3>
+              <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                Status: {{ workflow.status }}
+              </p>
+              <ion-progress-bar
+                [value]="getWorkflowProgress(workflow) / 100"
+                [color]="workflow.status === 'failed' ? 'danger' : 'primary'"
+                class="mt-2 h-1 rounded-full"
+              >
+              </ion-progress-bar>
+            </div>
+            <span class="ml-3 text-xs font-medium text-gray-500 dark:text-gray-400">
+              {{ getWorkflowDuration(workflow) }}
+            </span>
+          </div>
+        </div>
+      </div>
     </ion-card-content>
   </ion-card>
 
   <!-- Completed Workflows -->
-  <ion-card *ngIf="completedWorkflows.length > 0">
+  <ion-card *ngIf="completedWorkflows.length > 0" class="card-elevated mb-4">
     <ion-card-header>
-      <ion-card-title>Recent Workflows</ion-card-title>
+      <ion-card-title class="text-base font-semibold text-gray-900 dark:text-white"
+        >Recent Workflows</ion-card-title
+      >
     </ion-card-header>
     <ion-card-content>
-      <ion-list>
-        <ion-item *ngFor="let workflow of completedWorkflows.slice(0, 5)">
+      <div class="space-y-2">
+        <div
+          *ngFor="let workflow of completedWorkflows.slice(0, 5)"
+          class="flex items-start gap-3 rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+        >
           <ion-icon
-            slot="start"
             [name]="workflow.status === 'completed' ? 'checkmark-circle' : 'close-circle'"
             [color]="workflow.status === 'completed' ? 'success' : 'danger'"
+            class="text-xl"
           >
           </ion-icon>
-          <ion-label>
-            <h2>{{ workflow.type }}</h2>
-            <p>{{ formatDate(workflow.startTime) }}</p>
-            <p *ngIf="workflow.error" class="error-message">{{ workflow.error }}</p>
-          </ion-label>
-          <ion-note slot="end">
+          <div class="flex-1">
+            <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ workflow.type }}</h3>
+            <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+              {{ formatDate(workflow.startTime) }}
+            </p>
+            <p *ngIf="workflow.error" class="mt-1 text-xs text-red-600 dark:text-red-400">
+              {{ workflow.error }}
+            </p>
+          </div>
+          <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
             {{ getWorkflowDuration(workflow) }}
-          </ion-note>
-        </ion-item>
-      </ion-list>
+          </span>
+        </div>
+      </div>
     </ion-card-content>
   </ion-card>
 
@@ -179,7 +256,7 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-title>{{
+          <ion-title class="text-lg font-semibold">{{
             selectedService ? getServiceName(selectedService) : 'Service Details'
           }}</ion-title>
           <ion-buttons slot="end">
@@ -190,104 +267,160 @@
         </ion-toolbar>
       </ion-header>
 
-      <ion-content class="ion-padding" *ngIf="selectedService">
+      <ion-content class="ion-padding bg-gray-50 dark:bg-gray-900" *ngIf="selectedService">
         <!-- Service Configuration -->
-        <ion-card>
+        <ion-card class="card-elevated mb-4">
           <ion-card-header>
-            <ion-card-title>Configuration</ion-card-title>
+            <ion-card-title class="text-base font-semibold text-gray-900 dark:text-white"
+              >Configuration</ion-card-title
+            >
           </ion-card-header>
           <ion-card-content *ngIf="getServiceConfig(selectedService) as config">
-            <ion-list>
-              <ion-item>
-                <ion-label>Base URL</ion-label>
-                <ion-note slot="end">{{ config.baseUrl }}</ion-note>
-              </ion-item>
-              <ion-item>
-                <ion-label>Health Endpoint</ion-label>
-                <ion-note slot="end">{{ config.healthEndpoint || 'N/A' }}</ion-note>
-              </ion-item>
-              <ion-item>
-                <ion-label>Timeout</ion-label>
-                <ion-note slot="end">{{ formatDuration(config.timeout) }}</ion-note>
-              </ion-item>
-              <ion-item>
-                <ion-label>Retry Attempts</ion-label>
-                <ion-note slot="end">{{ config.retryAttempts }}</ion-note>
-              </ion-item>
-              <ion-item>
-                <ion-label>Circuit Breaker Threshold</ion-label>
-                <ion-note slot="end">{{ config.circuitBreakerThreshold }}</ion-note>
-              </ion-item>
-              <ion-item>
-                <ion-label>Circuit Breaker Timeout</ion-label>
-                <ion-note slot="end">{{ formatDuration(config.circuitBreakerTimeout) }}</ion-note>
-              </ion-item>
-              <ion-item>
-                <ion-label>Cache Duration</ion-label>
-                <ion-note slot="end">
+            <div class="space-y-3">
+              <div
+                class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700"
+              >
+                <span class="text-sm text-gray-700 dark:text-gray-300">Base URL</span>
+                <span
+                  class="text-sm font-medium text-gray-900 dark:text-gray-100 break-all text-right ml-2"
+                  >{{ config.baseUrl }}</span
+                >
+              </div>
+              <div
+                class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700"
+              >
+                <span class="text-sm text-gray-700 dark:text-gray-300">Health Endpoint</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{
+                  config.healthEndpoint || 'N/A'
+                }}</span>
+              </div>
+              <div
+                class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700"
+              >
+                <span class="text-sm text-gray-700 dark:text-gray-300">Timeout</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{
+                  formatDuration(config.timeout)
+                }}</span>
+              </div>
+              <div
+                class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700"
+              >
+                <span class="text-sm text-gray-700 dark:text-gray-300">Retry Attempts</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{
+                  config.retryAttempts
+                }}</span>
+              </div>
+              <div
+                class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700"
+              >
+                <span class="text-sm text-gray-700 dark:text-gray-300"
+                  >Circuit Breaker Threshold</span
+                >
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{
+                  config.circuitBreakerThreshold
+                }}</span>
+              </div>
+              <div
+                class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700"
+              >
+                <span class="text-sm text-gray-700 dark:text-gray-300"
+                  >Circuit Breaker Timeout</span
+                >
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{
+                  formatDuration(config.circuitBreakerTimeout)
+                }}</span>
+              </div>
+              <div
+                class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700"
+              >
+                <span class="text-sm text-gray-700 dark:text-gray-300">Cache Duration</span>
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {{ config.cacheDuration ? formatDuration(config.cacheDuration) : 'No Cache' }}
-                </ion-note>
-              </ion-item>
-              <ion-item>
-                <ion-label>Offline Support</ion-label>
-                <ion-note slot="end">
-                  <ion-icon [name]="config.offlineSupport ? 'checkmark' : 'close'"></ion-icon>
-                </ion-note>
-              </ion-item>
-            </ion-list>
+                </span>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Offline Support</span>
+                <ion-icon
+                  [name]="config.offlineSupport ? 'checkmark-circle' : 'close-circle'"
+                  [color]="config.offlineSupport ? 'success' : 'danger'"
+                  class="text-xl"
+                ></ion-icon>
+              </div>
+            </div>
           </ion-card-content>
         </ion-card>
 
         <!-- Circuit Breaker Details -->
-        <ion-card *ngFor="let cb of circuitBreakers">
-          <ion-card-header *ngIf="cb.service === selectedService">
-            <ion-card-title>Circuit Breaker</ion-card-title>
-          </ion-card-header>
-          <ion-card-content *ngIf="cb.service === selectedService">
-            <ion-list>
-              <ion-item>
-                <ion-label>State</ion-label>
-                <ion-badge
-                  [color]="
-                    cb.state === 'CLOSED' ? 'success' : cb.state === 'OPEN' ? 'danger' : 'warning'
-                  "
+        <ion-card *ngFor="let cb of circuitBreakers" class="card-elevated mb-4">
+          <div *ngIf="cb.service === selectedService">
+            <ion-card-header>
+              <ion-card-title class="text-base font-semibold text-gray-900 dark:text-white"
+                >Circuit Breaker</ion-card-title
+              >
+            </ion-card-header>
+            <ion-card-content>
+              <div class="space-y-3">
+                <div
+                  class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700"
                 >
-                  {{ cb.state }}
-                </ion-badge>
-              </ion-item>
-              <ion-item>
-                <ion-label>Failure Count</ion-label>
-                <ion-note slot="end">{{ cb.failureCount }}</ion-note>
-              </ion-item>
-              <ion-item *ngIf="cb.lastFailureTime">
-                <ion-label>Last Failure</ion-label>
-                <ion-note slot="end">{{ formatDate(cb.lastFailureTime) }}</ion-note>
-              </ion-item>
-              <ion-item *ngIf="cb.nextAttemptTime">
-                <ion-label>Next Attempt</ion-label>
-                <ion-note slot="end">{{ formatDate(cb.nextAttemptTime) }}</ion-note>
-              </ion-item>
-            </ion-list>
+                  <span class="text-sm text-gray-700 dark:text-gray-300">State</span>
+                  <ion-badge
+                    [color]="
+                      cb.state === 'CLOSED' ? 'success' : cb.state === 'OPEN' ? 'danger' : 'warning'
+                    "
+                    class="px-2 py-1 text-xs font-semibold uppercase"
+                  >
+                    {{ cb.state }}
+                  </ion-badge>
+                </div>
+                <div
+                  class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700"
+                >
+                  <span class="text-sm text-gray-700 dark:text-gray-300">Failure Count</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{
+                    cb.failureCount
+                  }}</span>
+                </div>
+                <div
+                  *ngIf="cb.lastFailureTime"
+                  class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700"
+                >
+                  <span class="text-sm text-gray-700 dark:text-gray-300">Last Failure</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{
+                    formatDate(cb.lastFailureTime)
+                  }}</span>
+                </div>
+                <div *ngIf="cb.nextAttemptTime" class="flex items-center justify-between py-2">
+                  <span class="text-sm text-gray-700 dark:text-gray-300">Next Attempt</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{
+                    formatDate(cb.nextAttemptTime)
+                  }}</span>
+                </div>
+              </div>
 
-            <ion-button
-              expand="block"
-              fill="outline"
-              (click)="resetCircuitBreaker(selectedService)"
-              [disabled]="cb.state === 'CLOSED'"
-            >
-              <ion-icon slot="start" name="refresh"></ion-icon>
-              Reset Circuit Breaker
-            </ion-button>
-          </ion-card-content>
+              <ion-button
+                expand="block"
+                fill="outline"
+                (click)="resetCircuitBreaker(selectedService)"
+                [disabled]="cb.state === 'CLOSED'"
+                class="mt-4"
+              >
+                <ion-icon slot="start" name="refresh"></ion-icon>
+                Reset Circuit Breaker
+              </ion-button>
+            </ion-card-content>
+          </div>
         </ion-card>
 
         <!-- Service Actions -->
-        <ion-card>
+        <ion-card class="card-elevated">
           <ion-card-header>
-            <ion-card-title>Actions</ion-card-title>
+            <ion-card-title class="text-base font-semibold text-gray-900 dark:text-white"
+              >Actions</ion-card-title
+            >
           </ion-card-header>
           <ion-card-content>
-            <ion-button expand="block" (click)="checkService(selectedService)">
+            <ion-button expand="block" (click)="checkService(selectedService)" class="mb-3">
               <ion-icon slot="start" name="medical"></ion-icon>
               Health Check
             </ion-button>
