@@ -1,32 +1,24 @@
-// Language Switcher Component Styles
+// language-switcher.component.scss
+// Most styling migrated to Tailwind classes in the template
+// Keeping only Ionic-specific CSS variables and animations
 
 :host {
   display: inline-block;
 }
 
-.flag-icon {
-  font-size: 20px;
-  margin-right: 8px;
-  vertical-align: middle;
-}
-
-ion-button {
+// Ionic CSS variables for buttons
+.language-btn {
   --padding-start: 8px;
   --padding-end: 8px;
 
-  span {
-    display: inline-flex;
-    align-items: center;
-  }
-
-  ion-spinner {
-    width: 18px;
-    height: 18px;
+  @media (max-width: 576px) {
+    --padding-start: 4px;
+    --padding-end: 4px;
   }
 }
 
-ion-select {
-  min-width: 120px;
+// Ionic CSS variables for select
+.language-select {
   --padding-start: 12px;
   --padding-end: 12px;
 
@@ -37,9 +29,14 @@ ion-select {
   &::part(text) {
     font-weight: 500;
   }
+
+  @media (max-width: 576px) {
+    --padding-start: 8px;
+    --padding-end: 8px;
+  }
 }
 
-// Popover specific styles
+// Popover specific Ionic CSS variables
 ::ng-deep .language-popover {
   --width: 280px;
   --max-width: 90vw;
@@ -54,7 +51,6 @@ ion-select {
     --min-height: 48px;
 
     &.selected {
-      --background: var(--ion-color-light);
       font-weight: 500;
     }
 
@@ -62,31 +58,12 @@ ion-select {
       --background: var(--ion-color-light-shade);
     }
   }
-
-  .flag-icon {
-    font-size: 24px;
-    margin-right: 12px;
-  }
-
-  .language-name {
-    font-size: 16px;
-  }
-
-  .language-code {
-    font-size: 12px;
-    color: var(--ion-color-medium);
-    margin-left: 8px;
-  }
 }
 
-// Dark mode adjustments
+// Dark mode for popover hover state
 @media (prefers-color-scheme: dark) {
   ::ng-deep .language-popover {
     ion-item {
-      &.selected {
-        --background: var(--ion-color-dark-tint);
-      }
-
       &:hover {
         --background: var(--ion-color-dark-shade);
       }
@@ -94,25 +71,7 @@ ion-select {
   }
 }
 
-// Responsive adjustments
-@media (max-width: 576px) {
-  ion-button {
-    --padding-start: 4px;
-    --padding-end: 4px;
-
-    &[displayMode='button'] span:not(.flag-icon) {
-      display: none;
-    }
-  }
-
-  ion-select {
-    min-width: 80px;
-    --padding-start: 8px;
-    --padding-end: 8px;
-  }
-}
-
-// Animation for language change
+// Animation for language change (keep as-is - cannot migrate to Tailwind)
 @keyframes languageChange {
   0% {
     opacity: 1;

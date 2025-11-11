@@ -5,37 +5,61 @@
   lines="none"
   (click)="onItemClick()"
 >
-  <div class="profile-item-content">
-    <div class="item-left">
+  <div
+    class="flex justify-between items-center w-full p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md dark:shadow-black/30 transition-colors duration-200"
+  >
+    <!-- Left Section: Icon + Text -->
+    <div class="flex items-center gap-4 flex-1 min-w-0">
+      <!-- Icon Container -->
       <div
-        class="icon-container"
+        class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
         [style.background-color]="iconColor + '20'"
         [style.color]="iconColor"
       >
-        <span class="material-symbols-outlined">{{ icon }}</span>
+        <span class="material-symbols-outlined text-2xl">{{ icon }}</span>
       </div>
-      <div class="item-text">
-        <h3 class="item-title">{{ title }}</h3>
-        <p class="item-subtitle" *ngIf="subtitle">{{ subtitle }}</p>
+
+      <!-- Text Content -->
+      <div class="flex-1 min-w-0">
+        <h3
+          class="m-0 mb-1 text-base font-semibold text-gray-900 dark:text-white leading-snug whitespace-nowrap overflow-hidden text-ellipsis"
+        >
+          {{ title }}
+        </h3>
+        <p
+          *ngIf="subtitle"
+          class="m-0 text-sm font-normal text-gray-400 dark:text-gray-500 leading-snug whitespace-nowrap overflow-hidden text-ellipsis"
+        >
+          {{ subtitle }}
+        </p>
       </div>
     </div>
-    <div class="item-right">
+
+    <!-- Right Section: Action Elements -->
+    <div class="flex items-center ml-3 flex-shrink-0">
       <!-- Toggle action -->
       <ion-toggle
         *ngIf="actionType === 'toggle'"
         [checked]="actionValue"
         (ionChange)="onToggleChange($event)"
         slot="end"
+        class="m-0"
       >
       </ion-toggle>
 
       <!-- Badge action -->
-      <span class="badge" *ngIf="actionType === 'badge' && actionValue">
+      <span
+        *ngIf="actionType === 'badge' && actionValue"
+        class="px-3 py-1 rounded-xl text-xs font-semibold bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light"
+      >
         {{ actionValue }}
       </span>
 
       <!-- Chevron action -->
-      <span class="material-symbols-outlined chevron" *ngIf="actionType === 'chevron'">
+      <span
+        *ngIf="actionType === 'chevron'"
+        class="material-symbols-outlined text-2xl text-gray-400 dark:text-gray-500"
+      >
         chevron_right
       </span>
     </div>
