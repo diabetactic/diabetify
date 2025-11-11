@@ -1,32 +1,28 @@
+// Tabs Page Styles
+// Most styles migrated to Tailwind v4 utilities
+// Keeping only Ionic-specific CSS variables that can't be replaced
+
 ion-tab-bar {
-  border-top: 1px solid rgb(0 0 0 / 8%);
+  // Safe area inset for devices with notches
   padding-bottom: env(safe-area-inset-bottom);
   height: calc(56px + env(safe-area-inset-bottom));
-}
 
-// Dark mode border (class-based for manual control)
-.dark ion-tab-bar {
-  border-top: 1px solid rgb(255 255 255 / 10%);
+  // Border is now handled by Tailwind classes in HTML
+  // but keeping this as fallback for Ionic-specific scenarios
+  --border: 1px solid rgba(0, 0, 0, 0.08);
+
+  @media (prefers-color-scheme: dark) {
+    --border: 1px solid rgba(255, 255, 255, 0.1);
+  }
 }
 
 ion-tab-button {
-  --color: #94a3b8; // Inactive tab color (gray)
+  // Tab colors (Ionic CSS variables - required)
+  --color: #94a3b8; // Inactive tab color (gray-400)
   --color-selected: var(--ion-color-primary); // Active tab color (primary blue)
-
   max-width: none;
 
-  .material-symbols-outlined {
-    font-size: 24px;
-    margin-bottom: 4px;
-  }
-
-  ion-label {
-    font-size: 12px;
-    font-weight: 500;
-    margin-top: 4px;
-  }
-
-  // Active tab state
+  // Active tab state - Material symbols filled variant
   &.tab-selected {
     .material-symbols-outlined {
       font-variation-settings:
@@ -38,27 +34,22 @@ ion-tab-button {
   }
 }
 
-// FAB spacer to create space for the centered FAB
-.fab-spacer {
-  width: 20%;
-  min-width: 64px;
-}
-
-// Center FAB styling (additional to global.scss)
+// Center FAB styling (Ionic-specific positioning)
 ion-fab.center-fab {
-  // Position FAB above tab bar
+  // Position FAB above tab bar with safe area consideration
   bottom: calc(56px - 32px + env(safe-area-inset-bottom));
 
   ion-fab-button {
+    // Ionic CSS variables for FAB button
     --background: var(--ion-color-primary);
     --background-activated: var(--ion-color-primary-shade);
     --background-hover: var(--ion-color-primary-tint);
     --color: white;
-    --box-shadow: 0 4px 12px rgb(37 175 244 / 30%);
+    --box-shadow: 0 4px 12px rgba(37, 175, 244, 0.3);
     --border-radius: 50%;
 
+    // Material symbol sizing
     .material-symbols-outlined {
-      font-size: 28px;
       font-variation-settings:
         'FILL' 0,
         'wght' 400,
@@ -66,9 +57,9 @@ ion-fab.center-fab {
         'opsz' 28;
     }
 
-    // Hover effect for web
+    // Hover effect for web (enhanced by Tailwind class in HTML)
     &:hover {
-      --box-shadow: 0 6px 16px rgb(37 175 244 / 40%);
+      --box-shadow: 0 6px 16px rgba(37, 175, 244, 0.4);
     }
 
     // Active press effect

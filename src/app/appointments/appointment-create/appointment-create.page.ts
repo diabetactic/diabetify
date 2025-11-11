@@ -406,6 +406,24 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
   }
 
   /**
+   * Get step label for display
+   */
+  getStepLabel(step: number): string {
+    switch (step) {
+      case 1:
+        return 'Doctor';
+      case 2:
+        return 'Fecha';
+      case 3:
+        return 'Detalles';
+      case 4:
+        return 'Confirmar';
+      default:
+        return '';
+    }
+  }
+
+  /**
    * Show toast message
    */
   private async showToast(message: string, color: 'success' | 'warning' | 'danger') {

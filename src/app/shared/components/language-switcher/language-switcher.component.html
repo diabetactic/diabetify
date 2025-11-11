@@ -6,13 +6,17 @@
   [fill]="'clear'"
   [disabled]="isLoading"
   (click)="toggleLanguage()"
+  class="language-btn"
 >
-  <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+  <ion-spinner *ngIf="isLoading" name="crescent" class="w-[18px] h-[18px]"></ion-spinner>
   <ng-container *ngIf="!isLoading">
-    <span *ngIf="showIcon && currentLanguage" class="flag-icon">
-      {{ getLanguageCode(currentLanguage.code) }}
+    <span
+      *ngIf="showIcon && currentLanguage"
+      class="inline-flex items-center text-xl mr-2 align-middle"
+    >
+      {{ getFlagEmoji(currentLanguage.code) }}
     </span>
-    <span *ngIf="showText">
+    <span *ngIf="showText" class="inline-flex items-center sm:inline hidden">
       {{ getDisplayText() }}
     </span>
   </ng-container>
@@ -26,9 +30,12 @@
   (ionChange)="onLanguageSelect($event)"
   interface="popover"
   placeholder="{{ 'settings.language.title' | translate }}"
+  class="language-select min-w-[120px] sm:min-w-[80px]"
 >
   <ion-select-option *ngFor="let lang of availableLanguages" [value]="lang.code">
-    <span class="flag-icon">{{ getLanguageCode(lang.code) }}</span>
+    <span class="inline-flex items-center text-xl mr-2 align-middle">{{
+      getFlagEmoji(lang.code)
+    }}</span>
     {{ showNativeName ? lang.nativeName : lang.name }}
   </ion-select-option>
 </ion-select>
@@ -39,13 +46,17 @@
   [fill]="'clear'"
   [disabled]="isLoading"
   (click)="showLanguagePopover($event)"
+  class="language-btn"
 >
-  <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+  <ion-spinner *ngIf="isLoading" name="crescent" class="w-[18px] h-[18px]"></ion-spinner>
   <ng-container *ngIf="!isLoading">
-    <span *ngIf="showIcon && currentLanguage" class="flag-icon">
-      {{ getLanguageCode(currentLanguage.code) }}
+    <span
+      *ngIf="showIcon && currentLanguage"
+      class="inline-flex items-center text-xl mr-2 align-middle"
+    >
+      {{ getFlagEmoji(currentLanguage.code) }}
     </span>
-    <span *ngIf="showText">
+    <span *ngIf="showText" class="inline-flex items-center sm:inline hidden">
       {{ getDisplayText() }}
     </span>
     <ion-icon name="chevron-down" slot="end"></ion-icon>
