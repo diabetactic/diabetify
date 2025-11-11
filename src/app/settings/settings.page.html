@@ -12,35 +12,36 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="pb-20">
   <!-- Profile Section -->
-  <ion-list-header>
+  <ion-list-header class="pt-5 pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider">
     <ion-label>Perfil</ion-label>
   </ion-list-header>
-  <ion-list>
+  <ion-list class="mb-4">
     <ion-item button (click)="goToProfile()">
-      <ion-avatar slot="start">
+      <ion-avatar slot="start" class="w-12 h-12">
         <img src="assets/icon/favicon.png" alt="Profile" />
       </ion-avatar>
       <ion-label>
-        <h2>{{ profileSettings.name || 'Usuario' }}</h2>
-        <p>{{ profileSettings.email }}</p>
+        <h2 class="font-medium mb-1">{{ profileSettings.name || 'Usuario' }}</h2>
+        <p class="text-sm">{{ profileSettings.email }}</p>
       </ion-label>
       <ion-icon name="chevron-forward" slot="end"></ion-icon>
     </ion-item>
   </ion-list>
 
   <!-- Glucose Settings -->
-  <ion-list-header>
+  <ion-list-header class="pt-5 pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider">
     <ion-label>Configuración de Glucosa</ion-label>
   </ion-list-header>
-  <ion-list>
+  <ion-list class="mb-4">
     <ion-item>
       <ion-label>Unidad de Glucosa</ion-label>
       <ion-select
         [(ngModel)]="glucoseSettings.unit"
         (ionChange)="onGlucoseUnitChange($event)"
         interface="popover"
+        class="max-w-[50%]"
       >
         <ion-select-option value="mg/dL">mg/dL</ion-select-option>
         <ion-select-option value="mmol/L">mmol/L</ion-select-option>
@@ -49,8 +50,8 @@
 
     <ion-item>
       <ion-label>
-        <h3>Rango Objetivo</h3>
-        <p>
+        <h3 class="font-medium mb-1">Rango Objetivo</h3>
+        <p class="text-sm">
           {{ glucoseSettings.targetLow }} - {{ glucoseSettings.targetHigh }}
           {{ glucoseSettings.unit }}
         </p>
@@ -66,9 +67,10 @@
         [step]="glucoseSettings.unit === 'mg/dL' ? 5 : 0.1"
         pin="true"
         (ionChange)="hasChanges = true"
+        class="py-2"
       >
-        <ion-label slot="start">{{ glucoseSettings.unit === 'mg/dL' ? 50 : 2.8 }}</ion-label>
-        <ion-label slot="end">{{ glucoseSettings.unit === 'mg/dL' ? 100 : 5.6 }}</ion-label>
+        <ion-label slot="start" class="text-xs">{{ glucoseSettings.unit === 'mg/dL' ? 50 : 2.8 }}</ion-label>
+        <ion-label slot="end" class="text-xs">{{ glucoseSettings.unit === 'mg/dL' ? 100 : 5.6 }}</ion-label>
       </ion-range>
     </ion-item>
 
@@ -81,22 +83,23 @@
         [step]="glucoseSettings.unit === 'mg/dL' ? 10 : 0.5"
         pin="true"
         (ionChange)="hasChanges = true"
+        class="py-2"
       >
-        <ion-label slot="start">{{ glucoseSettings.unit === 'mg/dL' ? 140 : 7.8 }}</ion-label>
-        <ion-label slot="end">{{ glucoseSettings.unit === 'mg/dL' ? 250 : 13.9 }}</ion-label>
+        <ion-label slot="start" class="text-xs">{{ glucoseSettings.unit === 'mg/dL' ? 140 : 7.8 }}</ion-label>
+        <ion-label slot="end" class="text-xs">{{ glucoseSettings.unit === 'mg/dL' ? 250 : 13.9 }}</ion-label>
       </ion-range>
     </ion-item>
   </ion-list>
 
   <!-- Notification Settings -->
-  <ion-list-header>
+  <ion-list-header class="pt-5 pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider">
     <ion-label>Notificaciones</ion-label>
   </ion-list-header>
-  <ion-list>
+  <ion-list class="mb-4">
     <ion-item>
       <ion-label>
-        <h3>Citas Médicas</h3>
-        <p>Recordatorios de próximas citas</p>
+        <h3 class="font-medium mb-1">Citas Médicas</h3>
+        <p class="text-sm">Recordatorios de próximas citas</p>
       </ion-label>
       <ion-toggle
         [(ngModel)]="notificationSettings.appointments"
@@ -110,6 +113,7 @@
         [(ngModel)]="notificationSettings.appointmentReminder"
         (ionChange)="hasChanges = true"
         interface="popover"
+        class="max-w-[50%]"
       >
         <ion-select-option [value]="1">1 hora</ion-select-option>
         <ion-select-option [value]="2">2 horas</ion-select-option>
@@ -122,8 +126,8 @@
 
     <ion-item>
       <ion-label>
-        <h3>Lecturas de Glucosa</h3>
-        <p>Recordatorios para tomar lecturas</p>
+        <h3 class="font-medium mb-1">Lecturas de Glucosa</h3>
+        <p class="text-sm">Recordatorios para tomar lecturas</p>
       </ion-label>
       <ion-toggle
         [(ngModel)]="notificationSettings.readings"
@@ -133,8 +137,8 @@
 
     <ion-item *ngIf="notificationSettings.readings">
       <ion-label>
-        <h3>Horarios de Recordatorio</h3>
-        <p>Toca para eliminar</p>
+        <h3 class="font-medium mb-1">Horarios de Recordatorio</h3>
+        <p class="text-sm">Toca para eliminar</p>
       </ion-label>
       <ion-button fill="clear" slot="end" (click)="addReadingReminder()">
         <ion-icon name="add" slot="icon-only"></ion-icon>
@@ -150,8 +154,8 @@
 
     <ion-item>
       <ion-label>
-        <h3>Reporte Semanal</h3>
-        <p>Resumen de tu progreso semanal</p>
+        <h3 class="font-medium mb-1">Reporte Semanal</h3>
+        <p class="text-sm">Resumen de tu progreso semanal</p>
       </ion-label>
       <ion-toggle
         [(ngModel)]="notificationSettings.weeklyReport"
@@ -161,8 +165,8 @@
 
     <ion-item>
       <ion-label>
-        <h3>Alertas Críticas</h3>
-        <p>Valores fuera de rango</p>
+        <h3 class="font-medium mb-1">Alertas Críticas</h3>
+        <p class="text-sm">Valores fuera de rango</p>
       </ion-label>
       <ion-toggle
         [(ngModel)]="notificationSettings.criticalAlerts"
@@ -172,16 +176,17 @@
   </ion-list>
 
   <!-- Appearance Settings -->
-  <ion-list-header>
+  <ion-list-header class="pt-5 pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider">
     <ion-label>Apariencia</ion-label>
   </ion-list-header>
-  <ion-list>
+  <ion-list class="mb-4">
     <ion-item>
       <ion-label>Tema</ion-label>
       <ion-select
         [(ngModel)]="preferences.theme"
         (ionChange)="onThemeChange($event)"
         interface="popover"
+        class="max-w-[50%]"
       >
         <ion-select-option value="light">Claro</ion-select-option>
         <ion-select-option value="dark">Oscuro</ion-select-option>
@@ -195,6 +200,7 @@
         [(ngModel)]="preferences.language"
         (ionChange)="onLanguageChange($event)"
         interface="popover"
+        class="max-w-[50%]"
       >
         <ion-select-option value="es">Español</ion-select-option>
         <ion-select-option value="en">English</ion-select-option>
@@ -203,14 +209,14 @@
   </ion-list>
 
   <!-- Privacy Settings -->
-  <ion-list-header>
+  <ion-list-header class="pt-5 pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider">
     <ion-label>Privacidad</ion-label>
   </ion-list-header>
-  <ion-list>
+  <ion-list class="mb-4">
     <ion-item>
       <ion-label>
-        <h3>Compartir con Doctor</h3>
-        <p>Permitir que tu doctor vea tus datos</p>
+        <h3 class="font-medium mb-1">Compartir con Doctor</h3>
+        <p class="text-sm">Permitir que tu doctor vea tus datos</p>
       </ion-label>
       <ion-toggle
         [(ngModel)]="privacySettings.shareDataWithDoctor"
@@ -220,8 +226,8 @@
 
     <ion-item>
       <ion-label>
-        <h3>Estadísticas Anónimas</h3>
-        <p>Ayuda a mejorar la app</p>
+        <h3 class="font-medium mb-1">Estadísticas Anónimas</h3>
+        <p class="text-sm">Ayuda a mejorar la app</p>
       </ion-label>
       <ion-toggle
         [(ngModel)]="privacySettings.anonymousStatistics"
@@ -235,6 +241,7 @@
         [(ngModel)]="privacySettings.dataRetentionDays"
         (ionChange)="hasChanges = true"
         interface="popover"
+        class="max-w-[50%]"
       >
         <ion-select-option [value]="30">30 días</ion-select-option>
         <ion-select-option [value]="90">90 días</ion-select-option>
@@ -251,6 +258,7 @@
         [(ngModel)]="privacySettings.exportFormat"
         (ionChange)="hasChanges = true"
         interface="popover"
+        class="max-w-[50%]"
       >
         <ion-select-option value="pdf">PDF</ion-select-option>
         <ion-select-option value="csv">CSV</ion-select-option>
@@ -265,14 +273,14 @@
   </ion-list>
 
   <!-- Sync Settings -->
-  <ion-list-header>
+  <ion-list-header class="pt-5 pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider">
     <ion-label>Sincronización</ion-label>
   </ion-list-header>
-  <ion-list>
+  <ion-list class="mb-4">
     <ion-item>
       <ion-label>
-        <h3>Sincronización Automática</h3>
-        <p>Sincronizar datos automáticamente</p>
+        <h3 class="font-medium mb-1">Sincronización Automática</h3>
+        <p class="text-sm">Sincronizar datos automáticamente</p>
       </ion-label>
       <ion-toggle [(ngModel)]="syncSettings.autoSync" (ionChange)="hasChanges = true"></ion-toggle>
     </ion-item>
@@ -283,6 +291,7 @@
         [(ngModel)]="syncSettings.syncInterval"
         (ionChange)="hasChanges = true"
         interface="popover"
+        class="max-w-[50%]"
       >
         <ion-select-option [value]="5">5 minutos</ion-select-option>
         <ion-select-option [value]="15">15 minutos</ion-select-option>
@@ -293,16 +302,16 @@
 
     <ion-item *ngIf="syncSettings.autoSync">
       <ion-label>
-        <h3>Solo Wi-Fi</h3>
-        <p>Sincronizar solo con conexión Wi-Fi</p>
+        <h3 class="font-medium mb-1">Solo Wi-Fi</h3>
+        <p class="text-sm">Sincronizar solo con conexión Wi-Fi</p>
       </ion-label>
       <ion-toggle [(ngModel)]="syncSettings.wifiOnly" (ionChange)="hasChanges = true"></ion-toggle>
     </ion-item>
 
     <ion-item *ngIf="syncSettings.autoSync">
       <ion-label>
-        <h3>Sincronización en Segundo Plano</h3>
-        <p>Permite sincronización cuando la app está cerrada</p>
+        <h3 class="font-medium mb-1">Sincronización en Segundo Plano</h3>
+        <p class="text-sm">Permite sincronización cuando la app está cerrada</p>
       </ion-label>
       <ion-toggle
         [(ngModel)]="syncSettings.backgroundSync"
@@ -312,16 +321,16 @@
   </ion-list>
 
   <!-- Advanced Settings -->
-  <ion-list-header>
+  <ion-list-header class="pt-5 pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider">
     <ion-label>Avanzado</ion-label>
   </ion-list-header>
-  <ion-list>
+  <ion-list class="mb-4">
     <!-- Debug Panel Toggle (only in dev mode) -->
     <ion-item button (click)="toggleDebugPanel()" *ngIf="isDevEnvironment">
       <ion-icon name="bug-outline" slot="start" color="warning"></ion-icon>
       <ion-label>
-        <h3>Panel de Depuración</h3>
-        <p>Herramientas para desarrolladores</p>
+        <h3 class="font-medium mb-1">Panel de Depuración</h3>
+        <p class="text-sm">Herramientas para desarrolladores</p>
       </ion-label>
       <ion-icon [name]="showDebugPanel ? 'chevron-up' : 'chevron-down'" slot="end"></ion-icon>
     </ion-item>
@@ -350,15 +359,15 @@
 
   <!-- Demo Mode Notice -->
   <ion-card *ngIf="isDemoMode" class="demo-notice">
-    <ion-card-content>
-      <ion-icon name="information-circle-outline" color="warning"></ion-icon>
-      <p>Estás en modo demo. Algunos cambios no se guardarán permanentemente.</p>
+    <ion-card-content class="flex items-center gap-3 p-3">
+      <ion-icon name="information-circle-outline" color="warning" class="text-2xl shrink-0"></ion-icon>
+      <p class="m-0 text-sm">Estás en modo demo. Algunos cambios no se guardarán permanentemente.</p>
     </ion-card-content>
   </ion-card>
 
   <!-- Version Info -->
-  <div class="version-info">
-    <p>Diabetify v1.0.0</p>
-    <p>© 2024 Diabetify</p>
+  <div class="text-center p-5">
+    <p class="my-1 text-sm text-gray-500 dark:text-gray-400">Diabetify v1.0.0</p>
+    <p class="my-1 text-sm text-gray-500 dark:text-gray-400">© 2024 Diabetify</p>
   </div>
 </ion-content>
