@@ -15,8 +15,8 @@ import { AppointmentDetailPage } from './appointment-detail.page';
     FormsModule,
     IonicModule,
     AppointmentDetailPageRoutingModule,
-    TranslateModule
+    TranslateModule,
   ],
-  declarations: [AppointmentDetailPage]
+  declarations: [AppointmentDetailPage],
 })
 export class AppointmentDetailPageModule {}
