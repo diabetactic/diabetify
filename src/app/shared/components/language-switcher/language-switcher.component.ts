@@ -169,8 +169,8 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   standalone: true,
   imports: [CommonModule, IonicModule, TranslateModule],
   template: `
-    <ion-list>
-      <ion-list-header>
+    <ion-list class="m-0">
+      <ion-list-header class="uppercase font-semibold text-xs">
         <ion-label>{{ 'settings.language.title' | translate }}</ion-label>
       </ion-list-header>
       <ion-item
@@ -178,11 +178,12 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
         button
         (click)="selectLanguage(lang.code)"
         [class.selected]="isSelected(lang.code)"
+        class="language-item"
       >
         <ion-label>
-          <span class="flag">{{ getLanguageCode(lang.code) }}</span>
-          <span class="name">{{ lang.nativeName }}</span>
-          <span class="code">({{ lang.code }})</span>
+          <span class="text-xl mr-3">{{ getFlagEmoji(lang.code) }}</span>
+          <span class="font-medium">{{ lang.nativeName }}</span>
+          <span class="text-gray-500 dark:text-gray-400 ml-2 text-xs">({{ lang.code }})</span>
         </ion-label>
         <ion-icon *ngIf="isSelected(lang.code)" name="checkmark" slot="end" color="primary">
         </ion-icon>
@@ -199,28 +200,14 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   `,
   styles: [
     `
-      ion-list {
-        margin: 0;
-      }
-      ion-list-header {
-        text-transform: uppercase;
-        font-weight: 600;
-        font-size: 12px;
-      }
-      .flag {
-        font-size: 20px;
-        margin-right: 12px;
-      }
-      .name {
-        font-weight: 500;
-      }
-      .code {
-        color: var(--ion-color-medium);
-        margin-left: 8px;
-        font-size: 12px;
-      }
-      .selected {
+      .language-item.selected {
         --background: var(--ion-color-light);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .language-item.selected {
+          --background: var(--ion-color-dark-tint);
+        }
       }
     `,
   ],

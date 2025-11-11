@@ -1,449 +1,122 @@
-.step-toolbar {
-  --background: var(--ion-color-light);
+// Appointment Create Page Styles
+// Most styles use Tailwind v4 utilities
+// Keeping only Ionic-specific CSS variables and complex animations
 
-  padding: 12px 16px;
+// Ionic datetime custom styling
+ion-datetime {
+  --background: var(--ion-background-color, #fff);
+  --background-rgb: var(--ion-background-color-rgb, 255, 255, 255);
+
+  @media (prefers-color-scheme: dark) {
+    --background: var(--ion-color-step-50, #1e1e1e);
+  }
 }
 
-.step-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 600px;
-  margin: 0 auto;
+// Ionic textarea custom styling
+ion-textarea {
+  --background: var(--ion-background-color, #fff);
+  --color: var(--ion-text-color, #000);
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
 
-  .step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    flex: 0 0 auto;
-
-    .step-number {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--ion-color-light-shade);
-      color: var(--ion-color-medium);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all 0.3s ease;
-    }
-
-    .step-label {
-      font-size: 11px;
-      color: var(--ion-color-medium);
-      font-weight: 500;
-    }
-
-    &.active {
-      .step-number {
-        background: var(--ion-color-primary);
-        color: white;
-      }
-
-      .step-label {
-        color: var(--ion-color-primary);
-      }
-    }
-
-    &.completed {
-      .step-number {
-        background: var(--ion-color-success);
-        color: white;
-      }
-
-      .step-label {
-        color: var(--ion-color-success);
-      }
-    }
+  @media (prefers-color-scheme: dark) {
+    --background: var(--ion-color-step-100, #1a1a1a);
+    --color: var(--ion-color-step-850, #e0e0e0);
   }
+}
 
-  .step-line {
-    flex: 1;
-    height: 2px;
-    background: var(--ion-color-light-shade);
-    margin: 0 8px;
-    max-width: 80px;
-    transition: all 0.3s ease;
+// Ionic toggle custom styling
+ion-toggle {
+  --background: rgba(0, 0, 0, 0.1);
+  --background-checked: var(--ion-color-primary);
+  --handle-background: #fff;
+  --handle-background-checked: #fff;
 
-    &.completed {
-      background: var(--ion-color-success);
-    }
+  @media (prefers-color-scheme: dark) {
+    --background: rgba(255, 255, 255, 0.1);
+    --handle-background: #e0e0e0;
+  }
+}
+
+// Ionic range (for glucose data days selector)
+ion-range {
+  --bar-background: rgba(var(--ion-color-primary-rgb), 0.2);
+  --bar-background-active: var(--ion-color-primary);
+  --bar-height: 4px;
+  --bar-border-radius: 2px;
+  --knob-background: var(--ion-color-primary);
+  --knob-size: 24px;
+  --pin-background: var(--ion-color-primary);
+  --pin-color: #fff;
+
+  padding: 8px 0;
+}
+
+// Ionic searchbar custom styling
+ion-searchbar {
+  --background: var(--ion-background-color, #fff);
+  --color: var(--ion-text-color, #000);
+  --placeholder-color: var(--ion-color-step-600, #666);
+  --icon-color: var(--ion-color-step-600, #666);
+  --border-radius: 12px;
+  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  @media (prefers-color-scheme: dark) {
+    --background: var(--ion-color-step-100, #1a1a1a);
+    --color: var(--ion-color-step-850, #e0e0e0);
+    --placeholder-color: var(--ion-color-step-400, #888);
+    --icon-color: var(--ion-color-step-400, #888);
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+// Step animation (fade in)
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 .step-content {
-  padding: 16px;
-  animation: slideIn 0.3s ease;
+  animation: fadeIn 0.3s ease-out;
 }
 
-.step-header {
-  margin-bottom: 20px;
-
-  h2 {
-    margin: 0 0 8px;
-    font-size: 24px;
-    font-weight: 600;
-  }
-
-  p {
-    margin: 0;
-    color: var(--ion-color-medium);
-    font-size: 14px;
-
-    strong {
-      color: var(--ion-color-primary);
-    }
+// Doctor card hover effect enhancement (beyond Tailwind)
+.doctor-card {
+  &:active {
+    transform: translateY(0) !important;
+    transition: transform 0.1s ease;
   }
 }
 
-// Doctor Selection
-.doctors-list {
-  ion-card {
-    margin: 8px 0;
-    transition: all 0.2s ease;
-
-    &.selected {
-      border: 2px solid var(--ion-color-primary);
-      box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.2);
-    }
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
-    }
+// Responsive adjustments
+@media (max-width: 640px) {
+  .appointment-create-container {
+    padding: 0 8px;
   }
 
-  .doctor-card {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    position: relative;
-
-    ion-avatar {
-      width: 64px;
-      height: 64px;
-      flex-shrink: 0;
-    }
-
-    .doctor-info {
-      flex: 1;
-
-      h3 {
-        margin: 0 0 4px;
-        font-size: 18px;
-        font-weight: 600;
-      }
-
-      .specialty {
-        color: var(--ion-color-primary);
-        font-weight: 500;
-        margin: 0 0 4px;
-        font-size: 14px;
-      }
-
-      .hospital {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        color: var(--ion-color-medium);
-        font-size: 13px;
-        margin: 0 0 8px;
-
-        ion-icon {
-          font-size: 16px;
-        }
-      }
-
-      .doctor-meta {
-        display: flex;
-        gap: 16px;
-        font-size: 13px;
-        margin-bottom: 8px;
-
-        .rating {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          color: var(--ion-color-warning);
-
-          ion-icon {
-            font-size: 16px;
-          }
-        }
-
-        .experience {
-          color: var(--ion-color-medium);
-        }
-      }
-
-      .next-available {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        color: var(--ion-color-primary);
-        font-size: 13px;
-        font-weight: 500;
-        margin: 4px 0 0;
-
-        ion-icon {
-          font-size: 16px;
-        }
-      }
-    }
-
-    .selected-icon {
-      position: absolute;
-      top: 0;
-      right: 0;
-      font-size: 32px;
-    }
-  }
-}
-
-.no-results {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--ion-color-medium);
-
-  ion-icon {
-    font-size: 64px;
-    opacity: 50%;
-  }
-
-  p {
-    margin-top: 16px;
-    font-size: 16px;
-  }
-}
-
-// Date & Time Selection
-.date-picker {
-  width: 100%;
-}
-
-.time-slots {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-
-  ion-chip {
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &.selected {
-      background: var(--ion-color-primary);
-      color: white;
-
-      ion-icon,
-      ion-label {
-        color: white;
-      }
-    }
-
-    &[disabled] {
-      opacity: 40%;
-      cursor: not-allowed;
-    }
-
-    &:not([disabled]):hover {
-      transform: translateY(-2px);
-      box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
-    }
-  }
-}
-
-.loading-slots,
-.no-slots {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--ion-color-medium);
-
-  ion-spinner,
-  ion-icon {
-    font-size: 48px;
-  }
-
-  p {
-    margin-top: 16px;
-    font-size: 14px;
-  }
-}
-
-// Appointment Details
-.appointment-types {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-
-  ion-chip {
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &.selected {
-      background: var(--ion-color-primary);
-      color: white;
-
-      ion-icon,
-      ion-label {
-        color: white;
-      }
-    }
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
-    }
-  }
-}
-
-.char-count {
-  text-align: right;
-  font-size: 12px;
-  color: var(--ion-color-medium);
-  margin-top: 8px;
-}
-
-ion-note {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 12px;
-  background: rgba(var(--ion-color-primary-rgb), 0.1);
-  border-radius: 8px;
-  font-size: 13px;
-
-  ion-icon {
-    font-size: 20px;
-    flex-shrink: 0;
-  }
-}
-
-// Confirmation
-.confirmation-card {
-  .confirmation-section {
-    padding: 16px 0;
-
-    h3 {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 0 0 12px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--ion-color-medium);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-
-      ion-icon {
-        font-size: 20px;
-        color: var(--ion-color-primary);
-      }
-    }
-
-    .value {
-      margin: 0 0 4px;
-      font-size: 18px;
-      font-weight: 500;
-    }
-
-    .subtitle {
-      margin: 0;
-      font-size: 14px;
-      color: var(--ion-color-medium);
-    }
-  }
-
-  ion-item-divider {
-    --background: var(--ion-color-light);
-
-    min-height: 1px;
-    margin: 8px 0;
-  }
-}
-
-.privacy-notice {
-  background: rgba(var(--ion-color-primary-rgb), 0.05);
-  border-left: 4px solid var(--ion-color-primary);
-
-  ion-card-content {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 16px;
-
-    ion-icon {
-      font-size: 24px;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    p {
-      margin: 0;
-      font-size: 13px;
-      line-height: 1.5;
-      color: var(--ion-color-dark);
-    }
-  }
-}
-
-// Footer
-.footer-buttons {
-  display: flex;
-  gap: 8px;
-  padding: 8px;
-
-  ion-button {
-    flex: 1;
-
-    &[fill='outline'] {
-      flex: 0 0 auto;
-      min-width: 100px;
-    }
-  }
-}
-
-// Animations
-@keyframes slideIn {
-  from {
-    opacity: 0%;
-    transform: translateX(20px);
-  }
-
-  to {
-    opacity: 100%;
-    transform: translateX(0);
-  }
-}
-
-// Responsive
-@media (width <= 576px) {
+  // Smaller step indicators on mobile
   .step-indicator {
-    .step-label {
-      font-size: 10px;
+    .step-circle {
+      width: 32px;
+      height: 32px;
+      font-size: 14px;
     }
 
-    .step-number {
-      width: 28px;
-      height: 28px;
-      font-size: 12px;
-    }
-
-    .step-line {
+    .connector-line {
       margin: 0 4px;
-      max-width: 40px;
     }
   }
 }
 
-@media (width >= 768px) {
-  .step-content {
-    max-width: 800px;
-    margin: 0 auto;
-  }
+// Progress bar animation
+ion-header .h-1 div {
+  transition: width 0.3s ease-in-out;
 }

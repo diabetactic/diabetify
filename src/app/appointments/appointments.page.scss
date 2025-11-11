@@ -112,26 +112,5 @@ ion-segment {
   ion-segment-button {
     --indicator-color: var(--ion-color-primary);
     --color-checked: var(--ion-color-primary-contrast);
-    --color: #333; // Dark grey text when unchecked in light mode
-
-    font-weight: 600;
-  }
-
-  // Light mode - ensure segment text is clearly visible
-  ion-label {
-    color: #333;
-    font-weight: 600;
-  }
-}
-
-// Dark mode adjustments (class-based for manual theme toggle)
-.dark ion-segment {
-  ion-segment-button {
-    --color: #fff; // White text in dark mode
-  }
-
-  ion-label {
-    color: #fff;
-    font-weight: 600;
   }
 }
