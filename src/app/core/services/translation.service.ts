@@ -91,7 +91,7 @@ export class TranslationService {
   private readonly DEFAULT_LANGUAGE = Language.ES;
 
   // Storage key for language preference
-  private readonly LANGUAGE_KEY = 'diabetify_language';
+  private readonly LANGUAGE_KEY = 'diabetactic_language';
 
   // Translation state
   private state$ = new BehaviorSubject<TranslationState>({
@@ -145,15 +145,10 @@ export class TranslationService {
         return stored;
       }
 
-      // If no stored preference, detect from device
-      const deviceLang = await this.detectDeviceLanguage();
-      console.log(`Detected device language: ${deviceLang}`);
-
-      // Map device language to supported language
-      const mappedLang = this.mapDeviceLanguage(deviceLang);
-      console.log(`Mapped to supported language: ${mappedLang}`);
-
-      return mappedLang;
+      // If no stored preference, use DEFAULT_LANGUAGE (Spanish)
+      // User can manually change language later via language switcher
+      console.log(`No stored preference, using default language: ${this.DEFAULT_LANGUAGE}`);
+      return this.DEFAULT_LANGUAGE;
     } catch (error) {
       console.error('Error detecting initial language:', error);
       return this.DEFAULT_LANGUAGE;

@@ -1,5 +1,5 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-title>{{ 'tabs.readings' | translate }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="openFilterModal()">
@@ -10,7 +10,7 @@
   </ion-toolbar>
 
   <!-- Search Bar -->
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-searchbar
       [(ngModel)]="searchTerm"
       (ionInput)="onSearchChange($event)"

@@ -8,11 +8,17 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, of, from } from 'rxjs';
+import { Observable, throwError, of, from, firstValueFrom } from 'rxjs';
 import { switchMap, catchError, map, timeout, retry, tap, shareReplay } from 'rxjs/operators';
 
 import { ExternalServicesManager, ExternalService } from './external-services-manager.service';
-import { UnifiedAuthService } from './unified-auth.service';
+import { LocalAuthService } from './local-auth.service';
+import { TidepoolAuthService } from './tidepool-auth.service';
+import { EnvironmentDetectorService } from './environment-detector.service';
+import { PlatformDetectorService } from './platform-detector.service';
+import { LoggerService } from './logger.service';
+import { MockAdapterService } from './mock-adapter.service';
+import { CapacitorHttpService } from './capacitor-http.service';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -94,7 +100,8 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       retryAttempts: 3,
       cache: {
         duration: 300000, // 5 minutes
-        key: (params: any) => `glucose_${params.userId}_${params.startDate}_${params.endDate}`,
+        key: (params: any) =>
+          `glucose_${params?.userId ?? 'user'}_${params?.startDate ?? ''}_${params?.endDate ?? ''}`,
       },
       transform: {
         response: (data: any) => data.data || [],
@@ -126,7 +133,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       retryAttempts: 2,
       cache: {
         duration: 60000, // 1 minute
-        key: (params: any) => `readings_${params.limit}_${params.offset}`,
+        key: (params: any) => `readings_${params?.limit ?? 'all'}_${params?.offset ?? 0}`,
       },
     },
   ],
@@ -140,10 +147,25 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       timeout: 30000,
       retryAttempts: 1,
       transform: {
-        request: (data: any) => ({
-          ...data,
-          timestamp: new Date(data.timestamp).toISOString(),
-        }),
+        request: (data: any) => {
+          if (!data.timestamp) {
+            return data;
+          }
+          // Handle both Date objects and ISO strings
+          // Remove milliseconds to match expected format (2024-01-15T10:00:00Z instead of 2024-01-15T10:00:00.000Z)
+          let timestamp: string;
+          if (data.timestamp instanceof Date) {
+            timestamp = data.timestamp.toISOString().replace(/\.\d{3}Z$/, 'Z');
+          } else if (typeof data.timestamp === 'string') {
+            timestamp = new Date(data.timestamp).toISOString().replace(/\.\d{3}Z$/, 'Z');
+          } else {
+            timestamp = data.timestamp;
+          }
+          return {
+            ...data,
+            timestamp,
+          };
+        },
       },
     },
   ],
@@ -209,6 +231,19 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     },
   ],
   [
+    'appointments.detail',
+    {
+      service: ExternalService.APPOINTMENTS,
+      path: '/api/appointments/{id}',
+      method: 'GET',
+      authenticated: true,
+      timeout: 30000,
+      cache: {
+        duration: 60000, // 1 minute
+      },
+    },
+  ],
+  [
     'appointments.create',
     {
       service: ExternalService.APPOINTMENTS,
@@ -239,27 +274,32 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     },
   ],
   [
-    'appointments.shareData',
+    'appointments.shareGlucose',
     {
       service: ExternalService.APPOINTMENTS,
       path: '/api/appointments/{id}/share-glucose',
       method: 'POST',
       authenticated: true,
       timeout: 60000,
-    },
-  ],
-  [
-    'appointments.shareGlucose',
-    {
-      service: ExternalService.APPOINTMENTS,
-      path: '/appointments/appointments/{id}/share-glucose',
-      method: 'POST',
-      authenticated: true,
-      timeout: 60000,
       transform: {
         request: (data: any) => {
-          // Ensure manualReadingsSummary is included if present
-          return data;
+          // Privacy-first: Strip raw readings unless explicitly enabled with consent
+          // Default to summary-only data (manual readings summary)
+          const transformed: any = {
+            days: data.days || 30,
+          };
+
+          // Only include manualReadingsSummary if present (privacy-compliant)
+          if (data.manualReadingsSummary) {
+            transformed.manualReadingsSummary = data.manualReadingsSummary;
+          }
+
+          // Only include raw readings if explicitly enabled with user consent
+          if (data.includeRawReadings === true && data.userConsent === true) {
+            transformed.readings = data.readings;
+          }
+
+          return transformed;
         },
       },
     },
@@ -285,12 +325,71 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       authenticated: false,
       cache: {
         duration: 300000, // 5 minutes
-        key: (params: any) => `slots_${params.doctorId}_${params.date}`,
+        key: (params: any) => `slots_${params?.doctorId ?? 'doctor'}_${params?.date ?? ''}`,
       },
     },
   ],
 
+  // Clinical Form endpoints
+  [
+    'clinicalForm.get',
+    {
+      service: ExternalService.APPOINTMENTS,
+      path: '/api/appointments/{appointmentId}/clinical-form',
+      method: 'GET',
+      authenticated: true,
+      timeout: 30000,
+      cache: {
+        duration: 300000, // 5 minutes
+      },
+    },
+  ],
+  [
+    'clinicalForm.save',
+    {
+      service: ExternalService.APPOINTMENTS,
+      path: '/api/appointments/{appointmentId}/clinical-form',
+      method: 'POST',
+      authenticated: true,
+      timeout: 30000,
+    },
+  ],
+  [
+    'clinicalForm.update',
+    {
+      service: ExternalService.APPOINTMENTS,
+      path: '/api/appointments/{appointmentId}/clinical-form',
+      method: 'PUT',
+      authenticated: true,
+      timeout: 30000,
+    },
+  ],
+
   // Auth endpoints
+  [
+    'auth.token',
+    {
+      service: ExternalService.LOCAL_AUTH,
+      path: '/token',
+      method: 'POST',
+      authenticated: false,
+      timeout: 15000,
+      retryAttempts: 1,
+    },
+  ],
+  [
+    'auth.user.me',
+    {
+      service: ExternalService.LOCAL_AUTH,
+      path: '/users/me',
+      method: 'GET',
+      authenticated: true,
+      timeout: 15000,
+      cache: {
+        duration: 300000, // 5 minutes
+      },
+    },
+  ],
   [
     'auth.login',
     {
@@ -365,9 +464,17 @@ export class ApiGatewayService {
 
   constructor(
     private http: HttpClient,
+    private capacitorHttp: CapacitorHttpService,
     private externalServices: ExternalServicesManager,
-    private unifiedAuth: UnifiedAuthService
-  ) {}
+    private localAuth: LocalAuthService,
+    private tidepoolAuth: TidepoolAuthService,
+    private envDetector: EnvironmentDetectorService,
+    private platformDetector: PlatformDetectorService,
+    private logger: LoggerService,
+    private mockAdapter: MockAdapterService
+  ) {
+    this.logger.info('Init', 'ApiGatewayService initialized');
+  }
 
   /**
    * Make an API request through the gateway
@@ -377,22 +484,39 @@ export class ApiGatewayService {
     options?: ApiRequestOptions,
     pathParams?: { [key: string]: string }
   ): Observable<ApiResponse<T>> {
+    const requestId = this.logger.getRequestId() || `req-${Date.now()}`;
+    this.logger.setRequestId(requestId);
+
     const endpoint = API_ENDPOINTS.get(endpointKey);
 
     if (!endpoint) {
-      return throwError({
+      this.logger.error('API', 'Unknown endpoint', undefined, { endpointKey, requestId });
+      return throwError(() => ({
         success: false,
         error: {
           code: 'UNKNOWN_ENDPOINT',
           message: `Unknown endpoint: ${endpointKey}`,
           retryable: false,
         },
-      });
+      }));
     }
+
+    this.logger.debug('API', 'Request initiated', {
+      endpoint: endpointKey,
+      service: endpoint.service,
+      method: endpoint.method,
+      requestId,
+    });
 
     // Check service availability
     if (!this.externalServices.isServiceAvailable(endpoint.service)) {
+      this.logger.warn('API', 'Service unavailable', {
+        service: endpoint.service,
+        endpoint: endpointKey,
+      });
+
       if (endpoint.fallback) {
+        this.logger.info('API', 'Using fallback data', { endpoint: endpointKey });
         return of({
           success: true,
           data: endpoint.fallback(),
@@ -406,7 +530,7 @@ export class ApiGatewayService {
         });
       }
 
-      return throwError({
+      return throwError(() => ({
         success: false,
         error: {
           code: 'SERVICE_UNAVAILABLE',
@@ -415,7 +539,7 @@ export class ApiGatewayService {
           endpoint: endpointKey,
           retryable: true,
         },
-      });
+      }));
     }
 
     // Check cache
@@ -424,6 +548,7 @@ export class ApiGatewayService {
       const cached = this.getFromCache(cacheKey, endpoint.cache.duration);
 
       if (cached) {
+        this.logger.debug('API', 'Cache hit', { endpoint: endpointKey, cacheKey });
         return of({
           success: true,
           data: cached,
@@ -435,7 +560,19 @@ export class ApiGatewayService {
             timestamp: new Date(),
           },
         });
+      } else {
+        this.logger.debug('API', 'Cache miss', { endpoint: endpointKey, cacheKey });
       }
+    }
+
+    // Check if mock mode is enabled for this service
+    if (this.shouldUseMock(endpoint.service)) {
+      this.logger.info('API', 'Using mock data', {
+        endpoint: endpointKey,
+        service: endpoint.service,
+        requestId,
+      });
+      return this.getMockResponse<T>(endpointKey, endpoint, options, pathParams);
     }
 
     // Execute request
@@ -457,50 +594,39 @@ export class ApiGatewayService {
       switchMap(({ url, headers, body }) => {
         let request$: Observable<any>;
 
+        // Use CapacitorHttp service (bypasses CORS on native platforms)
+        const requestOptions = {
+          headers,
+          params: options?.params,
+          responseType: (options?.responseType as any) || 'json',
+        };
+
         switch (endpoint.method) {
           case 'GET':
-            request$ = this.http.get(url, {
-              headers,
-              params: options?.params,
-              responseType: (options?.responseType as any) || 'json',
-            });
+            request$ = this.capacitorHttp.get(url, requestOptions);
             break;
           case 'POST':
-            request$ = this.http.post(url, body, {
-              headers,
-              params: options?.params,
-              responseType: (options?.responseType as any) || 'json',
-            });
+            request$ = this.capacitorHttp.post(url, body, requestOptions);
             break;
           case 'PUT':
-            request$ = this.http.put(url, body, {
-              headers,
-              params: options?.params,
-              responseType: (options?.responseType as any) || 'json',
-            });
+            request$ = this.capacitorHttp.put(url, body, requestOptions);
             break;
           case 'DELETE':
-            request$ = this.http.delete(url, {
-              headers,
-              params: options?.params,
-              responseType: (options?.responseType as any) || 'json',
-            });
+            request$ = this.capacitorHttp.delete(url, requestOptions);
             break;
           case 'PATCH':
-            request$ = this.http.patch(url, body, {
-              headers,
-              params: options?.params,
-              responseType: (options?.responseType as any) || 'json',
-            });
+            request$ = this.capacitorHttp.patch(url, body, requestOptions);
             break;
           default:
-            return throwError('Unsupported method');
+            return throwError(() => new Error('Unsupported method'));
         }
 
         return request$.pipe(
           timeout(endpoint.timeout || 30000),
           retry(endpoint.retryAttempts || 0),
           map(response => {
+            const responseTime = Date.now() - startTime;
+
             // Transform response if needed
             const data = endpoint.transform?.response
               ? endpoint.transform.response(response)
@@ -512,19 +638,38 @@ export class ApiGatewayService {
               this.addToCache(cacheKey, data);
             }
 
+            this.logger.info('API', 'Request completed successfully', {
+              endpoint: endpointKey,
+              method: endpoint.method,
+              responseTime: `${responseTime}ms`,
+              dataSize: JSON.stringify(data).length,
+              requestId: this.logger.getRequestId(),
+              status: 200,
+            });
+
             return {
               success: true,
               data: data as T,
               metadata: {
                 service: endpoint.service,
                 endpoint: endpointKey,
-                responseTime: Date.now() - startTime,
+                responseTime,
                 cached: false,
                 timestamp: new Date(),
               },
             };
           }),
-          catchError(error => this.handleError(error, endpoint, endpointKey))
+          catchError(error => {
+            const responseTime = Date.now() - startTime;
+            this.logger.error('API', 'Request failed', error, {
+              endpoint: endpointKey,
+              method: endpoint.method,
+              responseTime: `${responseTime}ms`,
+              statusCode: error?.status,
+              requestId: this.logger.getRequestId(),
+            });
+            return this.handleError(error, endpoint, endpointKey);
+          })
         );
       }),
       shareReplay(1) // Share the observable for multiple subscribers
@@ -553,9 +698,10 @@ export class ApiGatewayService {
     const url = `${baseUrl}${path}`;
 
     // Prepare headers
-    let headers = options?.headers instanceof HttpHeaders
-      ? options.headers
-      : new HttpHeaders(options?.headers as { [header: string]: string | string[] } || {});
+    let headers =
+      options?.headers instanceof HttpHeaders
+        ? options.headers
+        : new HttpHeaders((options?.headers as { [header: string]: string | string[] }) || {});
 
     // Add authentication if required
     if (endpoint.authenticated) {
@@ -594,7 +740,10 @@ export class ApiGatewayService {
       case ExternalService.APPOINTMENTS:
       case ExternalService.LOCAL_AUTH:
         // Route all backend services through the API Gateway
-        return environment.backendServices.apiGateway.baseUrl;
+        // Use platform detector to get the correct URL for the current environment
+        const defaultUrl =
+          environment.backendServices.apiGateway.baseUrl || 'http://localhost:8000';
+        return this.platformDetector.getApiBaseUrl(defaultUrl);
       default:
         throw new Error(`Unknown service: ${service}`);
     }
@@ -602,15 +751,16 @@ export class ApiGatewayService {
 
   /**
    * Get authentication token for a service
+   * Uses direct service injection to avoid circular dependencies
    */
   private async getAuthToken(service: ExternalService): Promise<string | null> {
     switch (service) {
       case ExternalService.TIDEPOOL:
-        return await this.unifiedAuth.getProviderToken('tidepool').toPromise() ?? null;
+        return await this.tidepoolAuth.getAccessToken();
       case ExternalService.GLUCOSERVER:
       case ExternalService.APPOINTMENTS:
       case ExternalService.LOCAL_AUTH:
-        return await this.unifiedAuth.getProviderToken('local').toPromise() ?? null;
+        return this.localAuth.getAccessToken();
       default:
         return null;
     }
@@ -665,10 +815,10 @@ export class ApiGatewayService {
       });
     }
 
-    return throwError({
+    return throwError(() => ({
       success: false,
       error: apiError,
-    });
+    }));
   }
 
   /**
@@ -789,5 +939,181 @@ export class ApiGatewayService {
    */
   public listEndpoints(): string[] {
     return Array.from(API_ENDPOINTS.keys());
+  }
+
+  /**
+   * Check if mock should be used for a service
+   */
+  private shouldUseMock(service: ExternalService): boolean {
+    // Tidepool always uses real API (not routed through mock system)
+    if (service === ExternalService.TIDEPOOL) {
+      return false;
+    }
+
+    // Check mock adapter configuration
+    const serviceName = this.getServiceMockKey(service);
+    return serviceName ? this.mockAdapter.isServiceMockEnabled(serviceName) : false;
+  }
+
+  /**
+   * Map ExternalService to MockAdapter service key
+   */
+  private getServiceMockKey(
+    service: ExternalService
+  ): 'appointments' | 'glucoserver' | 'auth' | null {
+    switch (service) {
+      case ExternalService.APPOINTMENTS:
+        return 'appointments';
+      case ExternalService.GLUCOSERVER:
+        return 'glucoserver';
+      case ExternalService.LOCAL_AUTH:
+        return 'auth';
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * Get mock response for an endpoint
+   */
+  private getMockResponse<T>(
+    endpointKey: string,
+    endpoint: ApiEndpoint,
+    options?: ApiRequestOptions,
+    pathParams?: { [key: string]: string }
+  ): Observable<ApiResponse<T>> {
+    const startTime = Date.now();
+
+    return from(this.executeMockRequest<T>(endpointKey, endpoint, options, pathParams)).pipe(
+      map(data => {
+        const responseTime = Date.now() - startTime;
+
+        this.logger.info('API', 'Mock request completed', {
+          endpoint: endpointKey,
+          method: endpoint.method,
+          responseTime: `${responseTime}ms`,
+          requestId: this.logger.getRequestId(),
+          status: 200,
+        });
+
+        return {
+          success: true,
+          data: data as T,
+          metadata: {
+            service: endpoint.service,
+            endpoint: endpointKey,
+            responseTime,
+            cached: false,
+            timestamp: new Date(),
+          },
+        };
+      }),
+      catchError(error => {
+        const responseTime = Date.now() - startTime;
+        this.logger.error('API', 'Mock request failed', error, {
+          endpoint: endpointKey,
+          method: endpoint.method,
+          responseTime: `${responseTime}ms`,
+          requestId: this.logger.getRequestId(),
+        });
+
+        return throwError(() => ({
+          success: false,
+          error: {
+            code: 'MOCK_ERROR',
+            message: error.message || 'Mock request failed',
+            retryable: false,
+            service: endpoint.service,
+            endpoint: endpointKey,
+          },
+        }));
+      })
+    );
+  }
+
+  /**
+   * Execute mock request based on endpoint
+   */
+  private async executeMockRequest<T>(
+    endpointKey: string,
+    endpoint: ApiEndpoint,
+    options?: ApiRequestOptions,
+    pathParams?: { [key: string]: string }
+  ): Promise<T> {
+    const params = options?.params as any;
+    const body = options?.body;
+
+    switch (endpointKey) {
+      // Appointments endpoints
+      case 'appointments.list':
+        return this.mockAdapter.mockGetAllAppointments() as Promise<T>;
+
+      case 'appointments.detail':
+        const appointments = await this.mockAdapter.mockGetAllAppointments();
+        const aptId = pathParams?.['id'];
+        const appointment = appointments.find((a: any) => a.id === aptId);
+        if (!appointment) {
+          throw new Error('Appointment not found');
+        }
+        return appointment as T;
+
+      case 'appointments.create':
+        return this.mockAdapter.mockBookAppointment(body) as Promise<T>;
+
+      case 'appointments.update':
+        return this.mockAdapter.mockUpdateAppointment(pathParams?.['id'] || '', body) as Promise<T>;
+
+      case 'appointments.cancel':
+        await this.mockAdapter.mockCancelAppointment(pathParams?.['id'] || '');
+        return { success: true } as T;
+
+      // Glucoserver endpoints
+      case 'glucoserver.readings.list':
+        return this.mockAdapter.mockGetAllReadings(
+          params?.offset || 0,
+          params?.limit || 100
+        ) as Promise<T>;
+
+      case 'glucoserver.readings.create':
+        return this.mockAdapter.mockAddReading(body) as Promise<T>;
+
+      case 'glucoserver.readings.update':
+        return this.mockAdapter.mockUpdateReading(pathParams?.['id'] || '', body) as Promise<T>;
+
+      case 'glucoserver.readings.delete':
+        await this.mockAdapter.mockDeleteReading(pathParams?.['id'] || '');
+        return { success: true } as T;
+
+      case 'glucoserver.statistics':
+        return this.mockAdapter.mockGetStatistics(params?.days || 30) as Promise<T>;
+
+      // Auth endpoints
+      case 'auth.login':
+        return this.mockAdapter.mockLogin(body.email || body.dni, body.password) as Promise<T>;
+
+      case 'auth.register':
+        return this.mockAdapter.mockRegister(body) as Promise<T>;
+
+      case 'auth.logout':
+        await this.mockAdapter.mockLogout();
+        return { success: true } as T;
+
+      case 'auth.user.me':
+      case 'auth.profile.update':
+      case 'auth.preferences.update':
+        if (endpoint.method === 'GET') {
+          return this.mockAdapter.mockGetProfile() as Promise<T>;
+        } else {
+          return this.mockAdapter.mockUpdateProfile(body) as Promise<T>;
+        }
+
+      case 'auth.refresh':
+        const newToken = await this.mockAdapter.mockRefreshToken(body.token || '');
+        return { token: newToken } as T;
+
+      default:
+        console.warn(`🟡 No mock implementation for endpoint: ${endpointKey}`);
+        throw new Error(`Mock not implemented for endpoint: ${endpointKey}`);
+    }
   }
 }

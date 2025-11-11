@@ -1,4 +1,4 @@
-# Diabetify
+# Diabetactic
 
 An Ionic Angular mobile application for managing diabetes glucose readings with Tidepool integration.
 
@@ -30,7 +30,7 @@ npm start
 - **Framework**: Ionic 8 + Angular 18
 - **Mobile Platform**: Capacitor 6.1.0
 - **Language**: TypeScript 5.4
-- **Testing**: Jasmine + Karma
+- **Testing**: Jasmine + Karma (unit), Playwright (end-to-end)
 - **Code Quality**: ESLint + Prettier + Husky
 
 ## 📜 Available Scripts
@@ -54,10 +54,10 @@ npm run build:prod     # Production build (optimized)
 
 ```bash
 npm test               # Run tests in watch mode
-npm run test:watch     # Run tests with watch mode
 npm run test:ci        # Run tests once with coverage (for CI)
-npm run test:headless  # Run tests in headless Chrome
 npm run test:coverage  # Run tests with coverage report
+npm run test:e2e       # Run Playwright end-to-end suite (headless)
+npm run test:e2e:headed # Run Playwright suite in headed mode
 ```
 
 ### Code Quality
@@ -93,7 +93,7 @@ npm run update:deps    # Update all dependencies
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd diabetify
+cd diabetactic
 
 # Install dependencies
 npm install
@@ -143,21 +143,35 @@ npm run test:ci
 
 # With coverage report
 npm run test:coverage
+
+# End-to-end UI suite (Playwright)
+npm run test:e2e
+
+# Debug mode with visible browser
+npm run test:e2e:headed
 ```
 
 ### Test Configuration
 
-- **Framework**: Jasmine + Karma
+- **Unit Tests**: Jasmine + Karma (launched via Angular CLI)
 - **Browsers**: Chrome (dev), ChromeHeadless (CI)
 - **Coverage**: HTML + Text + LCOV reports
 - **Thresholds**: 50% coverage for statements, branches, functions, lines
+
+### Playwright E2E Notes
+
+- One-time setup: `npx playwright install` (and optionally `npx playwright install --with-deps` in CI environments).
+- Tests live under `playwright/tests/` with shared seed helpers in `playwright/config/`.
+- The suite boots the Angular dev server automatically (override with `E2E_SKIP_SERVER=1` if you want to start it manually).
+- Storage is pre-seeded so routes gated by onboarding guards load without manual setup.
+- Default reporter emits HTML (`playwright-report/`) and list output; adjust via `playwright.config.ts`.
 
 ### Coverage Reports
 
 After running tests with coverage, open:
 
 ```
-coverage/diabetify/index.html
+coverage/diabetactic/index.html
 ```
 
 ## ✨ Code Quality
@@ -228,7 +242,7 @@ npm run cap:sync
 ## 📁 Project Structure
 
 ```
-diabetify/
+diabetactic/
 ├── .claude/                 # Claude Code configuration
 │   └── settings.local.json  # Tool permissions & hooks
 ├── .husky/                  # Git hooks

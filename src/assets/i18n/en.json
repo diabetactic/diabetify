@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Diabetify",
+    "name": "Diabetactic",
     "tagline": "Your Diabetes Management Companion",
     "version": "Version",
     "loading": "Loading...",
@@ -32,6 +32,7 @@
     "viewAll": "View All",
     "close": "Close",
     "cancel": "Cancel",
+    "save": "Save",
     "no": "No",
     "pullToRefresh": "Pull to refresh",
     "refreshing": "Refreshing...",
@@ -46,11 +47,16 @@
     "profile": "Profile"
   },
   "welcome": {
-    "title": "Welcome to Diabetify!",
+    "title": "Welcome to Diabetactic!",
     "subtitle": "Your friendly companion to manage diabetes with a smile.",
     "getStarted": "Get Started",
     "login": "Login",
-    "heroAlt": "A cheerful illustration of a child superhero confidently managing their diabetes"
+    "heroAlt": "A cheerful illustration of a child superhero confidently managing their diabetes",
+    "quotes": [
+      "You are stronger than diabetes!",
+      "Every day is a new opportunity to thrive!",
+      "Your courage inspires everyone around you!"
+    ]
   },
   "auth": {
     "title": "Welcome to Diabetify",
@@ -129,6 +135,44 @@
     "shareReadings": "Share Last 30 Days of Readings",
     "syncError": "Sync error",
     "defaultDoctorName": "your doctor",
+    "kids": {
+      "title": "My Health",
+      "timeInRange": "Time in Good Range",
+      "avgGlucose": "Average Sugar",
+      "addReading": "Add New Reading",
+      "viewAll": "See All Readings",
+      "moreInfo": "More Details",
+      "parentView": "Parent View",
+      "keepGoing": "Keep up the great work!",
+      "recentReadings": "My Recent Readings",
+      "noReadings": "No readings yet",
+      "noReadingsMessage": "Let's add your first reading!",
+      "status": {
+        "noData": "Add readings to see your status",
+        "great": "You're doing amazing!",
+        "good": "Good job! Keep it up!",
+        "needsWork": "Let's work on this together"
+      }
+    },
+    "detail": {
+      "title": "Detailed Statistics",
+      "description": "This section contains technical information and medical metrics for parents, caregivers, and healthcare providers.",
+      "syncStatus": "Sync Status",
+      "aboutMetrics": "About These Metrics",
+      "hba1cExplanation": "Estimated HbA1c shows your average blood glucose over the past 2-3 months. Target is usually below 7% for most people with diabetes.",
+      "gmiExplanation": "GMI (Glucose Management Indicator) is calculated from your continuous glucose monitor data and gives a similar picture to HbA1c.",
+      "cvExplanation": "Coefficient of Variation measures how much your glucose levels vary. Lower is better, with a target below 36%."
+    },
+    "syncedItems": "Synced Items",
+    "failedItems": "Failed Items",
+    "status": "Status",
+    "syncStatus": {
+      "unknown": "Unknown",
+      "syncing": "Syncing...",
+      "failed": "{{count}} items failed to sync",
+      "success": "{{count}} items synced successfully",
+      "idle": "Ready to sync"
+    },
     "shareToast": {
       "success": "Shared {{count}} readings with {{doctor}}",
       "error": "Failed to share glucose data. Please try again."
@@ -384,9 +428,14 @@
       "past": "Past"
     },
     "empty": {
-      "upcoming": "You have no upcoming appointments",
-      "past": "No appointments in your history",
-      "message": "Appointments will appear here when your healthcare provider schedules them"
+      "upcoming": {
+        "title": "No Upcoming Appointments",
+        "message": "Schedule your next appointment with your healthcare provider"
+      },
+      "past": {
+        "title": "No Past Appointments",
+        "message": "Completed appointments will appear here"
+      }
     },
     "actions": {
       "schedule": "Schedule Appointment",
@@ -557,6 +606,8 @@
     "dateOfBirth": "Date of Birth",
     "age": "Age",
     "yearsOld": "years old",
+    "editAge": "Edit Age",
+    "agePlaceholder": "Enter your age",
     "notSet": "Not set",
     "notAvailable": "Not available",
     "username": "Username",
@@ -887,7 +938,7 @@
       "disableAll": "Disable All Mocks",
       "clearData": "Clear Mock Data",
       "tip": "💡 Tip: Mock mode lets you test the app offline without real data.",
-      "demoCredentials": "Demo credentials: demo@diabetify.com / demo123"
+      "demoCredentials": "Demo credentials: demo@diabetactic.com / demo123"
     },
     "actions": {
       "dataManagement": "Data Management",

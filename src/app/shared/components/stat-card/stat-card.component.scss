@@ -1,69 +1,35 @@
-.stat-card {
-  margin: 0;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  color: white;
-  height: 100%;
-  min-height: 160px;
+// Stat Card - Tailwind-based (AI-safe, no specificity issues!)
+// Most styling is now in the HTML template using Tailwind utilities
 
-  ion-card-content {
-    padding: 16px;
-    height: 100%;
+// Screen reader only utility (Tailwind has sr-only but adding for safety)
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// Custom pulse animation for critical glucose values
+// Note: Could also use Tailwind's animate-pulse, but this is more specific
+@keyframes pulse-shadow {
+  0%,
+  100% {
+    box-shadow: 0 8px 16px rgb(0 0 0 / 15%);
   }
 
-  .stat-card-inner {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-  }
-
-  .stat-card-top {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .icon {
-    font-size: 30px;
-    color: white;
-    margin-bottom: 8px;
-  }
-
-  .stat-card-value {
-    display: flex;
-    align-items: baseline;
-    gap: 4px;
-
-    .value {
-      font-size: 30px;
-      font-weight: 700;
-      line-height: 1;
-      color: white;
-    }
-
-    .unit {
-      font-size: 14px;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.85);
-    }
-  }
-
-  .title {
-    margin: 0;
-    margin-top: 16px;
-    font-size: 15px;
-    font-weight: 600;
-    color: white;
-    line-height: 1.2;
+  50% {
+    box-shadow: 0 8px 24px rgb(235 68 90 / 40%);
   }
 }
 
-// Dark mode adjustments
-@media (prefers-color-scheme: dark) {
-  .stat-card {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
+.animate-pulse-shadow {
+  animation: pulse-shadow 2s ease-in-out infinite;
 }
+
+// That's it! No more custom CSS, no more !important, no more specificity wars!
+// AI agents can now safely modify the Tailwind classes in the HTML without creating conflicts

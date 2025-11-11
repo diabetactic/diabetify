@@ -26,6 +26,7 @@
     --padding-top: 12px;
     --padding-bottom: 12px;
     --min-height: auto;
+
     margin-bottom: 8px;
   }
 
@@ -52,6 +53,7 @@
     flex: 1;
     font-size: 24px;
     font-weight: 600;
+
     --padding-start: 0;
     --padding-end: 0;
 
@@ -132,6 +134,7 @@
   --background: transparent;
   --padding-start: 0;
   --padding-end: 0;
+
   font-size: 14px;
 }
 
@@ -147,6 +150,7 @@
 ion-datetime-button {
   --background: var(--ion-color-light);
   --color: var(--ion-color-dark);
+
   width: 100%;
 }
 
@@ -154,6 +158,7 @@ ion-datetime-button {
 ion-select {
   --padding-start: 0;
   --padding-end: 0;
+
   width: 100%;
 }
 
@@ -182,7 +187,7 @@ ion-select {
 }
 
 // Responsive Design
-@media (max-width: 576px) {
+@media (width <= 576px) {
   .page-container {
     padding: 12px;
   }
@@ -200,27 +205,25 @@ ion-select {
   }
 }
 
-// Dark Mode Adjustments
-@media (prefers-color-scheme: dark) {
-  .form-section {
-    .form-item {
-      --background: var(--ion-color-step-50);
-    }
+// Dark Mode Adjustments (class-based for manual theme toggle)
+.dark .form-section {
+  .form-item {
+    --background: var(--ion-color-step-50);
   }
+}
 
-  .status-preview {
-    .status-badge {
-      &[data-status='success'] {
-        background-color: rgba(var(--ion-color-success-rgb), 0.25);
-      }
+.dark .status-preview {
+  .status-badge {
+    &[data-status='success'] {
+      background-color: rgba(var(--ion-color-success-rgb), 0.25);
+    }
 
-      &[data-status='warning'] {
-        background-color: rgba(var(--ion-color-warning-rgb), 0.25);
-      }
+    &[data-status='warning'] {
+      background-color: rgba(var(--ion-color-warning-rgb), 0.25);
+    }
 
-      &[data-status='danger'] {
-        background-color: rgba(var(--ion-color-danger-rgb), 0.25);
-      }
+    &[data-status='danger'] {
+      background-color: rgba(var(--ion-color-danger-rgb), 0.25);
     }
   }
 }
@@ -233,7 +236,7 @@ ion-select {
   }
 
   .status-badge {
-    border-width: 3px !important;
+    border-width: 3px;
   }
 }
 
@@ -249,11 +252,12 @@ ion-select:focus-within {
 // Animation for Status Badge
 @keyframes fadeIn {
   from {
-    opacity: 0;
+    opacity: 0%;
     transform: translateY(-10px);
   }
+
   to {
-    opacity: 1;
+    opacity: 100%;
     transform: translateY(0);
   }
 }

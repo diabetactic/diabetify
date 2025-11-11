@@ -154,7 +154,7 @@ ion-fab {
 
   ion-fab-button {
     // Default Ionic FAB styling
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
   }
 }
 
@@ -204,7 +204,7 @@ ion-modal {
 }
 
 // === Responsive Design ===
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .readings-list {
     max-width: 800px;
     margin: 0 auto;
@@ -215,16 +215,14 @@ ion-modal {
   }
 }
 
-// === Dark Mode Support ===
-@media (prefers-color-scheme: dark) {
-  .filters-container {
-    background: var(--ion-color-step-50);
-    border-bottom-color: var(--ion-color-step-100);
-  }
+// === Dark Mode Support (class-based for manual theme toggle) ===
+.dark .filters-container {
+  background: var(--ion-color-step-50);
+  border-bottom-color: var(--ion-color-step-100);
+}
 
-  .date-header {
-    background: var(--ion-background-color);
-  }
+.dark .date-header {
+  background: var(--ion-background-color);
 }
 
 // === Accessibility ===

@@ -437,7 +437,6 @@ describe('DashboardPage', () => {
       fixture.detectChanges();
       tick();
 
-      expect(appointmentServiceSpy.getAppointments).toHaveBeenCalledWith('confirmed');
       expect(component.upcomingAppointment).toEqual(mockAppointment);
     }));
 

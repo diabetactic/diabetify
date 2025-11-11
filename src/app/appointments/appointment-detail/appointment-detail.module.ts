@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -15,8 +15,9 @@ import { AppointmentDetailPage } from './appointment-detail.page';
     FormsModule,
     IonicModule,
     AppointmentDetailPageRoutingModule,
-    TranslateModule
+    TranslateModule,
   ],
-  declarations: [AppointmentDetailPage]
+  declarations: [AppointmentDetailPage],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppointmentDetailPageModule {}

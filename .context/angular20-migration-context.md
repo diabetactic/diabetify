@@ -116,7 +116,7 @@ readingsService.pendingSyncCount$: Observable<number>
 1. **TidepoolAuthService**
    - OAuth2 Authorization Code Flow with PKCE
    - Automatic token refresh with rotation
-   - Deep link handling: `diabetify://oauth/callback`
+   - Deep link handling: `diabetactic://oauth/callback`
    - Session persistence via Capacitor Preferences
 
 2. **TidepoolSyncService**
@@ -214,7 +214,7 @@ export const environment = {
   tidepool: {
     baseUrl: 'https://api.tidepool.org',
     clientId: 'YOUR_CLIENT_ID', // TODO: Replace with actual
-    redirectUri: 'diabetify://oauth/callback',
+    redirectUri: 'diabetactic://oauth/callback',
     scopes: 'data:read data:write profile:read',
     requestTimeout: 30000,
     maxRetries: 3,
@@ -281,7 +281,7 @@ export const environment = {
 Project: Diabetify
 Version: 0.0.1
 Angular: 20.0.0
-Context ID: diabetify-ng20-2025-10-26
+Context ID: diabetactic-ng20-2025-10-26
 Hash: a7b3c9d2e5f8g1h4i6j8k0l2m4n6o8p0
 ```
 

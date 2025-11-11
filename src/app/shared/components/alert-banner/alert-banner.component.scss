@@ -44,19 +44,19 @@
     }
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.1);
+      background-color: rgb(0 0 0 / 10%);
     }
 
     &:active {
-      background-color: rgba(0, 0, 0, 0.15);
+      background-color: rgb(0 0 0 / 15%);
     }
   }
 
   // Success variant (yellow celebration style - matching uiResources)
   &.success {
-    background-color: rgba(254, 240, 138, 0.5); // yellow-200/50
+    background-color: rgb(254 240 138 / 50%); // yellow-200/50
     color: #92400e; // yellow-800
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 8px rgb(0 0 0 / 8%);
     position: relative;
 
     .alert-icon {
@@ -81,13 +81,13 @@
     }
 
     .dismiss-button:hover {
-      background-color: rgba(202, 138, 4, 0.15);
+      background-color: rgb(202 138 4 / 15%);
     }
   }
 
   // Info variant (blue)
   &.info {
-    background-color: rgba(37, 175, 244, 0.12);
+    background-color: rgb(37 175 244 / 12%);
     color: #0284c7;
 
     .alert-icon,
@@ -97,13 +97,13 @@
     }
 
     .dismiss-button:hover {
-      background-color: rgba(37, 175, 244, 0.2);
+      background-color: rgb(37 175 244 / 20%);
     }
   }
 
   // Warning variant (orange)
   &.warning {
-    background-color: rgba(245, 158, 11, 0.12);
+    background-color: rgb(245 158 11 / 12%);
     color: #d97706;
 
     .alert-icon,
@@ -113,60 +113,58 @@
     }
 
     .dismiss-button:hover {
-      background-color: rgba(245, 158, 11, 0.2);
+      background-color: rgb(245 158 11 / 20%);
     }
   }
 }
 
-// Dark mode adjustments
-@media (prefers-color-scheme: dark) {
-  .alert-banner {
-    &.success {
-      background-color: rgba(254, 240, 138, 0.25); // yellow-200/25 for dark mode
+// Dark mode adjustments (class-based for manual theme toggle)
+.dark .alert-banner {
+  &.success {
+    background-color: rgb(254 240 138 / 25%); // yellow-200/25 for dark mode
+    color: #fef3c7; // yellow-100
+
+    .alert-icon {
+      color: #fbbf24; // yellow-400
+      font-variation-settings: 'FILL' 1;
+    }
+
+    .alert-message {
       color: #fef3c7; // yellow-100
-
-      .alert-icon {
-        color: #fbbf24; // yellow-400
-        font-variation-settings: 'FILL' 1;
-      }
-
-      .alert-message {
-        color: #fef3c7; // yellow-100
-      }
-
-      .dismiss-button span {
-        color: #fde68a; // yellow-200
-      }
     }
 
-    &.info {
-      background-color: rgba(37, 175, 244, 0.18);
+    .dismiss-button span {
+      color: #fde68a; // yellow-200
+    }
+  }
+
+  &.info {
+    background-color: rgb(37 175 244 / 18%);
+    color: #38bdf8;
+
+    .alert-icon,
+    .alert-message,
+    .dismiss-button span {
       color: #38bdf8;
-
-      .alert-icon,
-      .alert-message,
-      .dismiss-button span {
-        color: #38bdf8;
-      }
     }
+  }
 
-    &.warning {
-      background-color: rgba(245, 158, 11, 0.18);
+  &.warning {
+    background-color: rgb(245 158 11 / 18%);
+    color: #fbbf24;
+
+    .alert-icon,
+    .alert-message,
+    .dismiss-button span {
       color: #fbbf24;
-
-      .alert-icon,
-      .alert-message,
-      .dismiss-button span {
-        color: #fbbf24;
-      }
     }
+  }
 
-    .dismiss-button:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-    }
+  .dismiss-button:hover {
+    background-color: rgb(255 255 255 / 10%);
+  }
 
-    .dismiss-button:active {
-      background-color: rgba(255, 255, 255, 0.15);
-    }
+  .dismiss-button:active {
+    background-color: rgb(255 255 255 / 15%);
   }
 }

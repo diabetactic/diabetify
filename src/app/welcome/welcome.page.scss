@@ -68,14 +68,38 @@
 
 .primary-button {
   --border-radius: 2rem;
+
   font-weight: 700;
+
   --box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.3);
+  --background: var(--ion-color-primary);
+  --background-activated: var(--ion-color-primary-shade);
+  --background-hover: var(--ion-color-primary-tint);
+  --color: var(--ion-color-primary-contrast);
+
+  height: 54px;
+  font-size: 18px;
+  text-transform: none;
+  letter-spacing: 0.5px;
 }
 
 .secondary-button {
   --border-radius: 2rem;
+
   font-weight: 700;
+
   --border-width: 2px;
+  --border-style: solid;
+  --border-color: var(--ion-color-primary);
+  --color: var(--ion-color-primary);
+  --background: transparent;
+  --background-hover: rgba(var(--ion-color-primary-rgb), 0.1);
+  --background-activated: rgba(var(--ion-color-primary-rgb), 0.15);
+
+  height: 54px;
+  font-size: 18px;
+  text-transform: none;
+  letter-spacing: 0.5px;
 }
 
 // Dark mode adjustments
@@ -83,8 +107,35 @@ ion-content {
   --background: var(--ion-background-color);
 }
 
+.dark-theme {
+  .welcome-container {
+    background: var(--ion-background-color);
+  }
+
+  .welcome-title {
+    color: #fff; // Pure white for maximum readability
+    font-weight: 700; // Bolder for better visibility
+    text-shadow: 0 2px 4px rgb(0 0 0 / 30%); // Subtle shadow for depth
+  }
+
+  .welcome-subtitle {
+    color: #e5e7eb; // Very bright gray for excellent contrast
+    text-shadow: 0 1px 2px rgb(0 0 0 / 20%); // Subtle shadow for depth
+  }
+
+  // Ensure buttons are highly visible
+  .primary-button {
+    --box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.4);
+  }
+
+  .secondary-button {
+    --border-width: 2px;
+    --color: #f5f5f5; // Bright button text
+  }
+}
+
 // Responsive design
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .hero-image {
     max-width: 400px;
   }
@@ -98,7 +149,7 @@ ion-content {
   }
 }
 
-@media (max-height: 700px) {
+@media (height <= 700px) {
   .hero-image {
     max-width: 280px;
   }

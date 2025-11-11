@@ -1,0 +1,30 @@
+appId: io.diabetify.app
+---
+# Test: Appointments Tab
+# Validates appointments list and interactions
+
+- launchApp
+- waitForAnimationToEnd
+
+# Navigate to Appointments tab
+- tapOn: "Citas|Appointments"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/appointments-initial.png
+
+# Verify appointments tab
+- assertVisible: "Citas|Appointments"
+
+# Check for empty state or appointment list
+# (Will pass if either exists)
+- waitForAnimationToEnd
+
+# Try scrolling if there are appointments
+- scroll:
+    direction: DOWN
+- waitForAnimationToEnd
+
+- takeScreenshot: screenshots/appointments-scrolled.png
+
+# Navigate back to home
+- tapOn: "Inicio|Home"
+- waitForAnimationToEnd

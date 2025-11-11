@@ -7,6 +7,7 @@ import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { ColorPalette, ThemeMode } from '../models';
 import { ProfileService } from './profile.service';
+import { LoggerService } from './logger.service';
 
 /**
  * Color palette definitions
@@ -62,10 +63,10 @@ export const COLOR_PALETTES: PaletteDefinition[] = [
   providedIn: 'root',
 })
 export class ThemeService {
-  private readonly LEGACY_THEME_KEY = 'diabetify-theme';
+  private readonly LEGACY_THEME_KEY = 'diabetactic-theme';
   private renderer: Renderer2;
 
-  // Theme state observables
+  // Theme state observables (default to 'light' theme)
   private _themeMode$ = new BehaviorSubject<ThemeMode>('light');
   private _colorPalette$ = new BehaviorSubject<ColorPalette>('default');
   private _highContrast$ = new BehaviorSubject<boolean>(false);
@@ -78,8 +79,10 @@ export class ThemeService {
 
   constructor(
     private rendererFactory: RendererFactory2,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private logger: LoggerService
   ) {
+    this.logger.info('Init', 'ThemeService initialized');
     this.renderer = this.rendererFactory.createRenderer(null, null);
     this.initialize();
   }
@@ -103,8 +106,8 @@ export class ThemeService {
     // Apply initial theme
     this.applyTheme();
 
-    // Listen for system theme changes
-    this.setupSystemThemeListener();
+    // System theme listener disabled - using manual light/dark mode only
+    // this.setupSystemThemeListener();
   }
 
   /**
@@ -148,13 +151,15 @@ export class ThemeService {
 
   /**
    * Determine if dark theme should be applied
+   * Note: 'auto' mode disabled - only manual light/dark switching
    */
   private shouldUseDarkTheme(): boolean {
     const mode = this._themeMode$.value;
 
     if (mode === 'dark') return true;
     if (mode === 'light') return false;
-    return this.getSystemThemePreference();
+    // Auto mode disabled - default to light
+    return false;
   }
 
   /**
@@ -168,12 +173,23 @@ export class ThemeService {
     this._isDark$.next(isDark);
 
     const body = document.body;
+    const html = document.documentElement;
 
-    // Remove all theme classes
+    // Remove all theme classes from both body and html
     this.removeThemeClasses(body);
+    this.removeThemeClasses(html);
 
-    // Add theme mode class
-    this.renderer.addClass(body, isDark ? 'dark-theme' : 'light-theme');
+    // Add theme mode class to both body and html for proper Ionic styling
+    const themeClass = isDark ? 'dark' : 'light';
+    this.renderer.addClass(body, themeClass);
+    this.renderer.addClass(html, themeClass);
+
+    // Add 'ion-palette-dark' class for Ionic dark mode (required for Ionic components)
+    if (isDark) {
+      this.renderer.addClass(html, 'ion-palette-dark');
+    } else {
+      this.renderer.removeClass(html, 'ion-palette-dark');
+    }
 
     // Add palette class
     this.renderer.addClass(body, `palette-${palette}`);
@@ -185,6 +201,8 @@ export class ThemeService {
 
     // Update CSS custom properties
     this.updateCSSProperties(palette, isDark, highContrast);
+
+    this.logger.debug('UI', 'Theme applied', { isDark, palette, highContrast });
   }
 
   /**
@@ -192,8 +210,8 @@ export class ThemeService {
    */
   private removeThemeClasses(element: HTMLElement): void {
     const classesToRemove = [
-      'dark-theme',
-      'light-theme',
+      'dark',
+      'light',
       'high-contrast',
       ...COLOR_PALETTES.map(p => `palette-${p.id}`),
     ];
@@ -229,20 +247,26 @@ export class ThemeService {
   // === Public API ===
 
   /**
-   * Set theme mode
+   * Set theme mode (with synchronization fix)
    */
   async setThemeMode(mode: ThemeMode): Promise<void> {
+    this.logger.info('UI', 'Theme mode changed', { mode });
     this._themeMode$.next(mode);
     this.applyTheme();
 
     // Save to profile
     await this.profileService.updatePreferences({ themeMode: mode });
+
+    // Ensure observable emits the new value for UI synchronization
+    // This fixes the theme switcher text not updating
+    setTimeout(() => this._themeMode$.next(mode), 0);
   }
 
   /**
    * Set color palette
    */
   async setColorPalette(palette: ColorPalette): Promise<void> {
+    this.logger.info('UI', 'Color palette changed', { palette });
     this._colorPalette$.next(palette);
     this.applyTheme();
 
@@ -255,6 +279,7 @@ export class ThemeService {
    */
   async toggleHighContrast(): Promise<void> {
     const newValue = !this._highContrast$.value;
+    this.logger.info('UI', 'High contrast toggled', { enabled: newValue });
     this._highContrast$.next(newValue);
     this.applyTheme();
 
@@ -263,12 +288,16 @@ export class ThemeService {
   }
 
   /**
-   * Toggle between light and dark
+   * Toggle between light and dark (with synchronization fix)
    */
   async toggleTheme(): Promise<void> {
     const currentMode = this._themeMode$.value;
     const newMode: ThemeMode = currentMode === 'dark' ? 'light' : 'dark';
+    this.logger.info('UI', 'Theme toggled', { from: currentMode, to: newMode });
     await this.setThemeMode(newMode);
+
+    // Force UI update for theme switcher text synchronization
+    this._isDark$.next(this.shouldUseDarkTheme());
   }
 
   /**

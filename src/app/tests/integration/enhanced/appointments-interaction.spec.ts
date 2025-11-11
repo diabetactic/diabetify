@@ -11,6 +11,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { getTranslateModuleForTesting } from '../../helpers/translate-test.helper';
 import { TranslationService } from '../../../core/services/translation.service';
 import { of, throwError } from 'rxjs';
 
@@ -128,11 +129,13 @@ describe('Enhanced Appointments Interaction', () => {
       imports: [
         AppointmentsPageModule,
         AppointmentDetailPageModule,
-        RouterTestingModule,
+        RouterTestingModule.withRoutes([
+          { path: 'tabs/appointments', component: AppointmentsPage },
+        ]),
         HttpClientTestingModule,
         FormsModule,
         ReactiveFormsModule,
-        TranslateModule.forRoot(),
+        getTranslateModuleForTesting(),
       ],
       providers: [
         { provide: AppointmentService, useValue: appointmentService },
@@ -154,6 +157,12 @@ describe('Enhanced Appointments Interaction', () => {
   });
 
   afterEach(() => {
+    const healthRequests = httpMock.match(request => request.url.endsWith('/health'));
+    healthRequests.forEach(req => {
+      if (!req.cancelled) {
+        req.flush({ status: 'ok' });
+      }
+    });
     httpMock.verify();
     memoryDetector.takeSnapshot('teardown');
     memoryDetector.analyze();

@@ -1,17 +1,32 @@
 <ion-content class="login-content">
-  <div class="login-container">
+  <div
+    class="glass-surface flex min-h-screen flex-col items-center justify-center p-5"
+  >
     <!-- Logo and Title -->
-    <div class="login-header">
-      <img src="assets/icon/favicon.png" [alt]="'login.logoAlt' | translate" class="app-logo" />
-      <h1 class="app-title">{{ 'login.appName' | translate }}</h1>
-      <p class="app-subtitle">{{ 'login.tagline' | translate }}</p>
+    <div class="animate-fade-in-down mb-8 text-center">
+      <img
+        src="assets/icon/favicon.png"
+        [alt]="'login.logoAlt' | translate"
+        class="mb-4 h-20 w-20 rounded-xl shadow-elevated"
+      />
+      <h1 class="m-0 text-4xl font-bold text-white drop-shadow-lg sm:text-3xl">
+        {{ 'login.appName' | translate }}
+      </h1>
+      <p class="mt-2 text-sm text-white/90">{{ 'login.tagline' | translate }}</p>
     </div>
 
     <!-- Demo Hint Card -->
-    <ion-card *ngIf="showDemoHint" class="demo-hint-card">
-      <ion-card-content>
-        <div class="demo-hint">
-          <ion-icon name="information-circle-outline" color="primary"></ion-icon>
+    <ion-card
+      *ngIf="showDemoHint"
+      class="card-glass animate-slide-in-up mb-5 w-full max-w-md"
+    >
+      <ion-card-content class="p-3">
+        <div class="flex items-center gap-3">
+          <ion-icon
+            name="information-circle-outline"
+            color="primary"
+            class="shrink-0 text-2xl"
+          ></ion-icon>
           <div>
             <strong>{{ 'login.demoHint.testAccount' | translate }}</strong
             ><br />
@@ -22,7 +37,11 @@
     </ion-card>
 
     <!-- Login Form -->
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+    <form
+      [formGroup]="loginForm"
+      (ngSubmit)="onSubmit()"
+      class="card-elevated animate-slide-in-up w-full max-w-md p-8 sm:p-6"
+    >
       <!-- Username Field (DNI or Email) -->
       <ion-item class="form-item" [class.item-has-error]="isFieldInvalid('username')">
         <ion-label position="floating">{{ 'login.username.label' | translate }}</ion-label>
@@ -36,8 +55,11 @@
         ></ion-input>
         <ion-icon name="person-outline" slot="start" class="field-icon"></ion-icon>
       </ion-item>
-      <div class="error-message" *ngIf="usernameError">
-        <ion-icon name="alert-circle-outline"></ion-icon>
+      <div
+        class="animate-shake -mt-2.5 mb-2.5 ml-1 flex items-center gap-1.5 text-xs text-danger"
+        *ngIf="usernameError"
+      >
+        <ion-icon name="alert-circle-outline" class="text-sm"></ion-icon>
         {{ usernameError }}
       </div>
 
@@ -65,15 +87,20 @@
           ></ion-icon>
         </ion-button>
       </ion-item>
-      <div class="error-message" *ngIf="passwordError">
-        <ion-icon name="alert-circle-outline"></ion-icon>
+      <div
+        class="animate-shake -mt-2.5 mb-2.5 ml-1 flex items-center gap-1.5 text-xs text-danger"
+        *ngIf="passwordError"
+      >
+        <ion-icon name="alert-circle-outline" class="text-sm"></ion-icon>
         {{ passwordError }}
       </div>
 
       <!-- Remember Me Checkbox -->
-      <ion-item lines="none" class="checkbox-item">
+      <ion-item lines="none" class="checkbox-item my-5">
         <ion-checkbox formControlName="rememberMe" [disabled]="isLoading"></ion-checkbox>
-        <ion-label class="remember-label">{{ 'login.rememberMe' | translate }}</ion-label>
+        <ion-label class="remember-label ml-2 text-sm text-gray-600 dark:text-gray-400">{{
+          'login.rememberMe' | translate
+        }}</ion-label>
       </ion-item>
 
       <!-- Submit Button -->
@@ -81,24 +108,28 @@
         expand="block"
         type="submit"
         [disabled]="loginForm.invalid || isLoading"
-        class="submit-button"
+        class="btn-glow submit-button mt-5 h-12 text-base font-semibold"
       >
-        <ion-spinner name="crescent" *ngIf="isLoading"></ion-spinner>
+        <ion-spinner name="crescent" *ngIf="isLoading" class="mr-2"></ion-spinner>
         <span *ngIf="!isLoading">{{ 'login.submitButton' | translate }}</span>
       </ion-button>
 
       <!-- Forgot Password Link -->
-      <div class="form-links">
-        <a (click)="forgotPassword()" class="link-button">{{
-          'login.forgotPassword' | translate
-        }}</a>
+      <div class="mt-4 text-center">
+        <a
+          (click)="forgotPassword()"
+          class="cursor-pointer text-sm text-primary no-underline transition-colors hover:text-primary-shade hover:underline"
+          >{{ 'login.forgotPassword' | translate }}</a
+        >
       </div>
     </form>
 
     <!-- Alternative Actions -->
-    <div class="alternative-actions">
-      <div class="divider">
-        <span>{{ 'login.divider' | translate }}</span>
+    <div class="animate-fade-in mt-5 w-full max-w-md">
+      <div class="divider relative my-5 text-center">
+        <span class="relative bg-transparent px-4 text-sm font-medium text-white">{{
+          'login.divider' | translate
+        }}</span>
       </div>
 
       <!-- Demo Mode Button -->
@@ -108,18 +139,20 @@
         color="primary"
         (click)="useDemoMode()"
         [disabled]="isLoading"
-        class="demo-button"
+        class="demo-button h-12 font-semibold"
       >
         <ion-icon name="flask-outline" slot="start"></ion-icon>
         {{ 'login.demoButton' | translate }}
       </ion-button>
 
       <!-- Register Link -->
-      <div class="register-section">
-        <p>{{ 'login.register.prompt' | translate }}</p>
-        <a (click)="navigateToRegister()" class="register-link">{{
-          'login.register.link' | translate
-        }}</a>
+      <div class="mt-5 text-center">
+        <p class="mb-1 text-sm text-white/90">{{ 'login.register.prompt' | translate }}</p>
+        <a
+          (click)="navigateToRegister()"
+          class="cursor-pointer font-semibold text-white no-underline transition-opacity hover:opacity-80 hover:underline"
+          >{{ 'login.register.link' | translate }}</a
+        >
       </div>
     </div>
   </div>
@@ -129,11 +162,19 @@
 <ion-footer class="login-footer">
   <ion-toolbar color="light">
     <ion-text color="medium" class="footer-text">
-      <p>{{ 'login.footer.copyright' | translate }}</p>
-      <p>
-        <a href="#">{{ 'login.footer.links.terms' | translate }}</a> •
-        <a href="#">{{ 'login.footer.links.privacy' | translate }}</a> •
-        <a href="#">{{ 'login.footer.links.support' | translate }}</a>
+      <p class="my-0.5 text-xs">{{ 'login.footer.copyright' | translate }}</p>
+      <p class="my-0.5 text-xs">
+        <a href="#" class="mx-1.5 text-primary no-underline hover:underline">{{
+          'login.footer.links.terms' | translate
+        }}</a>
+        •
+        <a href="#" class="mx-1.5 text-primary no-underline hover:underline">{{
+          'login.footer.links.privacy' | translate
+        }}</a>
+        •
+        <a href="#" class="mx-1.5 text-primary no-underline hover:underline">{{
+          'login.footer.links.support' | translate
+        }}</a>
       </p>
     </ion-text>
   </ion-toolbar>

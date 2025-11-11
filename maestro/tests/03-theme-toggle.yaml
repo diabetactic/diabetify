@@ -1,0 +1,26 @@
+appId: io.diabetify.app
+---
+# Test 3: Theme toggle (dark/light mode)
+- launchApp
+- assertVisible: "Diabetactic"
+
+# Navigate to Profile
+- tapOn: "Profile"
+- assertVisible: "Profile"
+
+# Take screenshot in light mode
+- takeScreenshot: maestro/screenshots/03-light-mode.png
+
+# Toggle to dark mode (assumes toggle exists in profile)
+- scroll
+
+# Try to find and tap theme toggle
+- tapOn:
+    text: ".*[Tt]heme.*"
+    index: 0
+
+# Wait for theme change
+- waitForAnimationToEnd
+
+# Take screenshot in dark mode
+- takeScreenshot: maestro/screenshots/03-dark-mode.png

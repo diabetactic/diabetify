@@ -2,549 +2,803 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## 🚨 CRITICAL: CONCURRENT EXECUTION & FILE MANAGEMENT
 
-Diabetify is an Ionic Angular mobile application for managing diabetes glucose readings with Tidepool integration.
+**ABSOLUTE RULES**:
+1. ALL operations MUST be concurrent/parallel in a single message
+2. **NEVER save working files, text/mds and tests to the root folder**
+3. ALWAYS organize files in appropriate subdirectories
+4. **USE CLAUDE CODE'S TASK TOOL** for spawning agents concurrently, not just MCP
 
-**Current State**: Production-ready backend (85% complete) with OAuth2 authentication, data synchronization, and glucose statistics. Frontend is in prototype stage (15% complete) with UI shells. BLE functionality documented but not implemented (0%).
+### ⚡ GOLDEN RULE: "1 MESSAGE = ALL RELATED OPERATIONS"
 
-## Architecture Documentation
+**MANDATORY PATTERNS:**
+- **TodoWrite**: ALWAYS batch ALL todos in ONE call (5-10+ todos minimum)
+- **Task tool (Claude Code)**: ALWAYS spawn ALL agents in ONE message with full instructions
+- **File operations**: ALWAYS batch ALL reads/writes/edits in ONE message
+- **Bash commands**: ALWAYS batch ALL terminal operations in ONE message
+- **Memory operations**: ALWAYS batch ALL memory store/retrieve in ONE message
 
-**⚠️ IMPORTANT**: Before implementing features related to readings, appointments, or Tidepool sync, consult these documents:
+### 🎯 CRITICAL: Claude Code Task Tool for Agent Execution
 
-- **`ARCHITECTURE_READINGS_APPOINTMENTS.md`** - Comprehensive architecture for manual readings, appointment integration, and Tidepool data sync. Includes data flows, implementation roadmap, and API specifications.
-- **`QUICK_REFERENCE_READINGS.md`** - Fast lookup reference for common code patterns, data types, and implementation snippets for readings-related features.
+**Claude Code's Task tool is the PRIMARY way to spawn agents:**
+```javascript
+// ✅ CORRECT: Use Claude Code's Task tool for parallel agent execution
+[Single Message]:
+  Task("Research agent", "Analyze requirements and patterns...", "researcher")
+  Task("Coder agent", "Implement core features...", "coder")
+  Task("Tester agent", "Create comprehensive tests...", "tester")
+  Task("Reviewer agent", "Review code quality...", "reviewer")
+  Task("Architect agent", "Design system architecture...", "system-architect")
+```
 
-## Technology Stack
+**MCP tools are ONLY for coordination setup:**
+- `mcp__claude-flow__swarm_init` - Initialize coordination topology
+- `mcp__claude-flow__agent_spawn` - Define agent types for coordination
+- `mcp__claude-flow__task_orchestrate` - Orchestrate high-level workflows
 
-- **Framework**: Ionic 8 + Angular 20, TypeScript 5.8
-- **Mobile Platform**: Capacitor 6.1.0
-- **Key Libraries**: Dexie (IndexedDB), RxJS, Angular Material 20
-- **Internationalization**: ngx-translate 17
-- **Code Quality**: ESLint, Prettier, Husky + lint-staged
+### 📁 File Organization Rules
 
-## Development Commands
+**NEVER save to root folder. Use these directories:**
+- `/src` - Source code files
+- `/playwright/tests` - E2E test files
+- `/docs` - Documentation and markdown files
+- `/scripts` - Utility scripts
+- `/specs` - Feature specifications
 
-### Essential Commands
+## 📱 Project Overview: Diabetify Mobile Health App
+
+**Diabetify** is an Angular/Ionic mobile application for diabetes management with Tidepool API integration.
+
+### Tech Stack
+- **Frontend**: Angular 20 + Ionic 8 + Angular Material 20
+- **Mobile**: Capacitor 6 (iOS/Android)
+- **Data**: Dexie (IndexedDB) for offline storage, RxJS for reactive state
+- **Testing**: Jasmine/Karma (unit), Playwright (E2E)
+- **i18n**: @ngx-translate for multi-language support
+- **Backend**: Tidepool API for glucose readings and patient data
+
+### Key Features
+1. **Tidepool Authentication**: OAuth2/PKCE login flow
+2. **Glucose Readings**: Fetch and display patient glucose data
+3. **Patient Dashboard**: Link to Tidepool clinic dashboard
+4. **Offline-First**: Local data storage with sync
+5. **Multi-Language**: English/Spanish translations
+
+### Development Methodology
+This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Completion) methodology with Claude-Flow orchestration for systematic Test-Driven Development.
+
+## 🚀 Claude-Flow: Multi-Agent Orchestration
+
+Claude-Flow is the primary orchestration framework for coordinating agents, memory, and workflows.
+
+### Core Commands
+
+```bash
+# SPARC Development Workflow
+npx claude-flow sparc modes                    # List available modes
+npx claude-flow sparc run <mode> "<task>"      # Execute specific mode
+npx claude-flow sparc tdd "<feature>"          # Run complete TDD workflow
+npx claude-flow sparc info <mode>              # Get mode details
+
+# Batch Processing
+npx claude-flow sparc batch <modes> "<task>"   # Parallel execution
+npx claude-flow sparc pipeline "<task>"        # Full pipeline processing
+npx claude-flow sparc concurrent <mode> "<tasks-file>"  # Multi-task
+
+# Hooks (for agent coordination)
+npx claude-flow hooks pre-task --description "[task]"
+npx claude-flow hooks post-edit --file "[file]"
+npx claude-flow hooks post-task --task-id "[task]"
+npx claude-flow hooks session-restore --session-id "[id]"
+npx claude-flow hooks session-end --export-metrics true
+```
+
+### MCP Tools
+
+Claude-flow MCP tools coordinate multi-agent workflows. Use with Claude Code's Task tool:
+
+```javascript
+// Step 1: Initialize swarm topology (optional)
+mcp__claude-flow__swarm_init { topology: "mesh", maxAgents: 6 }
+
+// Step 2: Define agent types for coordination
+mcp__claude-flow__agent_spawn { type: "researcher", name: "Research Agent" }
+mcp__claude-flow__agent_spawn { type: "coder", name: "Implementation Agent" }
+
+// Step 3: Claude Code Task tool spawns ACTUAL agents
+Task("Research agent", "Analyze API patterns. Store findings in memory.", "researcher")
+Task("Coder agent", "Implement endpoints. Check memory for decisions.", "coder")
+Task("Tester agent", "Write comprehensive tests. Coordinate via hooks.", "tester")
+
+// Monitoring
+mcp__claude-flow__swarm_status { swarmId: "swarm-123" }
+mcp__claude-flow__agent_metrics { agentId: "agent-456" }
+mcp__claude-flow__task_status { taskId: "task-789" }
+
+// Memory Management
+mcp__claude-flow__memory_usage {
+  action: "store",
+  key: "api-design",
+  value: "REST endpoints specification",
+  namespace: "project"
+}
+mcp__claude-flow__memory_search { pattern: "api-*", limit: 10 }
+```
+
+### Available Agents (54 Total)
+
+**Core Development**: `coder`, `reviewer`, `tester`, `planner`, `researcher`
+
+**SPARC Methodology**: `sparc-coord`, `sparc-coder`, `specification`, `pseudocode`, `architecture`, `refinement`
+
+**Specialized**: `backend-dev`, `mobile-dev`, `system-architect`, `code-analyzer`, `api-docs`
+
+**Testing**: `tdd-london-swarm`, `production-validator`
+
+**Performance**: `perf-analyzer`, `performance-benchmarker`, `task-orchestrator`
+
+**GitHub**: `github-modes`, `pr-manager`, `code-review-swarm`, `issue-tracker`, `release-manager`
+
+**Coordination**: `hierarchical-coordinator`, `mesh-coordinator`, `adaptive-coordinator`
+
+**Consensus**: `byzantine-coordinator`, `raft-manager`, `gossip-coordinator`
+
+## 🔧 Development MCP Servers
+
+Your project has these MCP servers configured. Use them for specialized tasks:
+
+### 1. 🔍 Tavily - Web Search & Content Extraction (FREE)
+
+Real-time web search and content extraction for research.
+
+```javascript
+// Search the web for current information
+mcp__tavily__tavily-search {
+  query: "Angular 20 standalone components best practices",
+  max_results: 10,
+  search_depth: "advanced"
+}
+
+// Extract content from specific URLs
+mcp__tavily__tavily-extract {
+  urls: ["https://angular.dev/guide/standalone-components"],
+  format: "markdown",
+  extract_depth: "advanced"
+}
+
+// Crawl documentation sites
+mcp__tavily__tavily-crawl {
+  url: "https://ionicframework.com/docs",
+  max_depth: 2,
+  limit: 50,
+  instructions: "Focus on Ionic 8 migration guides"
+}
+
+// Map website structure
+mcp__tavily__tavily-map {
+  url: "https://capacitorjs.com/docs",
+  max_depth: 3,
+  limit: 100
+}
+```
+
+**When to use Tavily:**
+- Research current best practices
+- Find solutions to specific problems
+- Extract content from documentation sites
+- Stay updated on framework changes
+- Discover community solutions
+
+### 2. 📚 Context7 - Library Documentation (FREE)
+
+Get up-to-date documentation for any library or framework.
+
+```javascript
+// Find library documentation
+mcp__context7__resolve-library-id {
+  libraryName: "angular"
+}
+
+// Get specific docs with focused topic
+mcp__context7__get-library-docs {
+  context7CompatibleLibraryID: "/angular/docs",
+  topic: "dependency injection",
+  tokens: 5000  // Adjust for more/less context
+}
+
+// Examples for this project
+// - Angular: "/angular/docs"
+// - Ionic: "/ionic-team/ionic-framework"
+// - Capacitor: "/ionic-team/capacitor"
+// - RxJS: "/reactivex/rxjs"
+```
+
+**When to use Context7:**
+- Look up API documentation
+- Understand framework features
+- Find usage examples
+- Check migration guides
+- Verify method signatures
+
+### 3. 🎭 Playwright - Browser Automation & E2E Testing (FREE)
+
+Comprehensive browser automation for E2E testing.
+
+```javascript
+// Navigate and capture state
+mcp__playwright__browser_navigate { url: "http://localhost:4200" }
+mcp__playwright__browser_snapshot {}  // Get accessibility tree
+
+// Interact with UI
+mcp__playwright__browser_click {
+  element: "Login button",
+  ref: "[data-testid='login-btn']"
+}
+
+mcp__playwright__browser_type {
+  element: "Username input",
+  ref: "input[name='username']",
+  text: "testuser@example.com",
+  submit: false
+}
+
+mcp__playwright__browser_fill_form {
+  fields: [
+    { name: "email", type: "textbox", ref: "#email", value: "test@example.com" },
+    { name: "password", type: "textbox", ref: "#password", value: "password123" },
+    { name: "remember", type: "checkbox", ref: "#remember-me", value: "true" }
+  ]
+}
+
+// Take screenshots and visual validation
+mcp__playwright__browser_take_screenshot {
+  filename: "playwright/screenshots/login-page.png",
+  fullPage: true
+}
+
+// Handle navigation
+mcp__playwright__browser_navigate_back {}
+
+// Tabs management
+mcp__playwright__browser_tabs { action: "list" }
+mcp__playwright__browser_tabs { action: "new" }
+mcp__playwright__browser_tabs { action: "select", index: 1 }
+
+// Wait for conditions
+mcp__playwright__browser_wait_for { text: "Welcome" }
+mcp__playwright__browser_wait_for { time: 2 }  // seconds
+
+// Network and console monitoring
+mcp__playwright__browser_network_requests {}
+mcp__playwright__browser_console_messages { onlyErrors: false }
+```
+
+**When to use Playwright:**
+- E2E test automation (npm run test:e2e)
+- UI interaction testing
+- Visual regression testing
+- Form validation testing
+- Network request monitoring
+- Console error detection
+
+### 4. 📱 Android-ADB - Android Device Management (FREE)
+
+Interact with Android devices and emulators via ADB.
+
+```javascript
+// List connected devices
+mcp__android-adb__adb_devices {}
+
+// Install APK (after npm run cap:sync)
+mcp__android-adb__adb_install {
+  path: "android/app/build/outputs/apk/debug/app-debug.apk"
+}
+
+// Uninstall app
+mcp__android-adb__adb_uninstall {
+  package_name: "com.diabetactic.app"
+}
+
+// List installed packages
+mcp__android-adb__adb_list_packages {
+  filter: "diabetactic"
+}
+
+// Execute shell commands
+mcp__android-adb__adb_shell {
+  command: "dumpsys activity top | grep ACTIVITY"
+}
+
+// Launch app
+mcp__android-adb__launch_app {
+  package_name: "com.diabetactic.app"
+}
+
+// Take screenshot
+mcp__android-adb__take_screenshot_and_save {
+  output_path: "screenshots/android-home.png",
+  format: "png"
+}
+
+// Push/pull files
+mcp__android-adb__adb_push {
+  local_path: "test-data.json",
+  remote_path: "/sdcard/Download/test-data.json"
+}
+
+mcp__android-adb__adb_pull {
+  remote_path: "/sdcard/DCIM/Screenshots/",
+  local_path: "./android-screenshots/"
+}
+```
+
+**When to use Android-ADB:**
+- Install development builds on devices
+- Debug app behavior on real devices
+- Capture screenshots for documentation
+- Test with different data sets
+- Inspect app state and logs
+- Automate device testing workflows
+
+### 5. 🧪 BrowserStack - Cross-Device Testing (Requires Account)
+
+Test on real devices and browsers in the cloud.
+
+**Note**: Requires BrowserStack account. Update `.mcp.json` with your credentials:
+```json
+"BROWSERSTACK_USERNAME": "your-username",
+"BROWSERSTACK_ACCESS_KEY": "your-access-key"
+```
+
+```javascript
+// Start live testing session (desktop)
+mcp__browserstack__runBrowserLiveSession {
+  platformType: "desktop",
+  desiredURL: "http://localhost:4200",
+  desiredOS: "Windows",
+  desiredOSVersion: "11",
+  desiredBrowser: "chrome",
+  desiredBrowserVersion: "latest"
+}
+
+// Start live testing session (mobile)
+mcp__browserstack__runBrowserLiveSession {
+  platformType: "mobile",
+  desiredURL: "http://localhost:4200",
+  desiredOS: "android",
+  desiredOSVersion: "14.0",
+  desiredDevice: "Samsung Galaxy S24"
+}
+
+// Run app on real device
+mcp__browserstack__runAppLiveSession {
+  desiredPlatform: "android",
+  desiredPhone: "Samsung Galaxy S24",
+  desiredPlatformVersion: "14.0",
+  appPath: "android/app/build/outputs/apk/debug/app-debug.apk"
+}
+
+// Automated testing setup
+mcp__browserstack__setupBrowserStackAutomateTests {
+  projectName: "Diabetify Web Tests",
+  detectedLanguage: "nodejs",
+  detectedBrowserAutomationFramework: "playwright",
+  detectedTestingFramework: "playwright",
+  devices: [
+    ['windows', '11', 'chrome', 'latest'],
+    ['android', 'Samsung Galaxy S24', '14', 'chrome']
+  ]
+}
+
+// App automation setup
+mcp__browserstack__setupBrowserStackAppAutomateTests {
+  project: "Diabetify Mobile",
+  detectedFramework: "appium",
+  detectedLanguage: "nodejs",
+  detectedTestingFramework: "mocha",
+  appPath: "android/app/build/outputs/apk/debug/app-debug.apk",
+  devices: [
+    ['android', 'Samsung Galaxy S24', '14'],
+    ['ios', 'iPhone 15', '17']
+  ]
+}
+
+// Take screenshot on device
+mcp__browserstack__takeAppScreenshot {
+  desiredPlatform: "android",
+  desiredPhone: "Google Pixel 8",
+  desiredPlatformVersion: "14",
+  appPath: "android/app/build/outputs/apk/debug/app-debug.apk"
+}
+```
+
+**When to use BrowserStack:**
+- Test on specific devices/browsers
+- Verify cross-platform compatibility
+- Debug device-specific issues
+- Automated testing on multiple platforms
+- Visual testing on real devices
+- Performance testing on actual hardware
+
+### 6. 🎬 Maestro - Mobile UI Testing (Requires Installation)
+
+Simple, effective mobile UI testing framework.
+
+**Installation Required:**
+```bash
+# Install Maestro
+curl -Ls "https://get.maestro.mobile.dev" | bash
+export PATH="$PATH:$HOME/.maestro/bin"
+maestro --version
+```
+
+**Configuration**: Maestro MCP requires maestro CLI to be installed and in PATH. The MCP server will work once maestro is installed.
+
+```yaml
+# Example: maestro/tests/login-flow.yaml
+appId: com.diabetactic.app
+---
+- launchApp
+- tapOn: "Login"
+- inputText: "test@example.com"
+- tapOn: "Password"
+- inputText: "password123"
+- tapOn: "Sign In"
+- assertVisible: "Welcome"
+```
+
+**When to use Maestro:**
+- Simple, readable UI tests
+- Quick mobile test automation
+- Integration with CI/CD
+- Cross-platform iOS/Android tests
+- Visual flow documentation
+
+### 7. 🧠 Zen - Multi-Model AI CLI with Agent Delegation
+
+Zen is an AI-powered CLI that complements claude-flow by providing multi-model comparisons and agent delegation.
+
+**Key Differences from Claude-Flow:**
+- **Claude-Flow**: Coordinates Claude agents with memory/hooks for code implementation
+- **Zen**: Delegates tasks to external AI CLIs, compares results across models, manages workflows
+
+```bash
+# Zen uses Gemini by default (configured in .mcp.json)
+# Can delegate to other CLI tools via "clink" feature
+
+# Use Cases (Non-overlapping with claude-flow):
+
+# 1. Compare AI Model Results
+# Use zen to get Gemini's perspective, compare with claude-flow's Claude agents
+Task("Zen Researcher", "Research Angular patterns using Gemini", "researcher")
+Task("Claude Researcher", "Research Angular patterns using Claude", "researcher")
+# Then compare approaches
+
+# 2. Delegate to External CLI Tools via Clink
+# Zen can invoke other CLI tools and process their output
+# Example: Use aider for code refactoring, compare with claude-flow
+zen clink --tool aider --task "Refactor auth service"
+zen clink --tool cursor --task "Generate component boilerplate"
+
+# 3. Workflow Orchestration Across Tools
+# Zen can chain multiple CLI tools in a workflow
+zen workflow --steps "aider:refactor,cursor:test,claude:review"
+
+# 4. Model Benchmarking
+# Compare performance/quality across different AI models
+zen benchmark --task "Generate test cases" --models "gemini,claude,gpt4"
+```
+
+**Zen MCP Usage:**
+
+```javascript
+// Note: Zen MCP tools are not directly exposed
+// Zen works as a CLI tool that can be called via Bash
+
+// Example workflow: Compare solutions
+Bash("zen ask 'Best approach for Ionic navigation guards' --model gemini")
+// Then use claude-flow agents to implement the chosen approach
+Task("Coder", "Implement navigation guards based on research", "coder")
+
+// Example: Delegate to external tools
+Bash("zen clink --tool aider --task 'Refactor database.service.ts'")
+// Review the changes with claude-flow
+Task("Reviewer", "Review refactored database service", "reviewer")
+```
+
+**When to use Zen:**
+- Get alternative perspectives (Gemini vs Claude)
+- Delegate to specialized CLI tools (aider, cursor, etc.)
+- Compare implementation approaches across models
+- Workflow orchestration with multiple tools
+- Benchmark AI model performance
+- Chain CLI tools together via clink
+
+**Zen + Claude-Flow Pattern:**
+```javascript
+// 1. Use Zen for multi-model research
+Bash("zen ask 'Compare Tidepool OAuth implementations' --verbose")
+
+// 2. Use claude-flow agents for implementation
+Task("Architect", "Design auth based on Zen research", "system-architect")
+Task("Coder", "Implement OAuth flow", "coder")
+Task("Tester", "Write auth tests", "tester")
+
+// 3. Use Zen clink to delegate specialized tasks
+Bash("zen clink --tool aider --task 'Optimize auth performance'")
+
+// 4. Use claude-flow for review and integration
+Task("Reviewer", "Review all auth changes", "reviewer")
+```
+
+## 🚀 Daily Development Commands
 
 ```bash
 # Development
-npm start              # Start dev server at http://localhost:4200
-npm run build          # Development build
-npm run build:prod     # Production build (optimized)
+npm start                           # Dev server (http://localhost:4200)
+npm run build                       # Production build
 
 # Testing
-npm test               # Run tests in watch mode
-npm run test:ci        # Single run with coverage (for CI)
-npm run test:coverage  # Generate coverage report → coverage/diabetify/index.html
+npm run test                        # Unit tests (watch mode)
+npm run test:ci                     # Unit tests (CI, headless)
+npm run test:coverage               # Coverage report
+npm run test:e2e                    # Playwright E2E tests
+npm run test:e2e:headed             # E2E with visible browser
+
+# Specialized test runs (faster)
+karma start karma-appointments-only.conf.js  # Test appointments only
+karma start karma-auth-only.conf.js         # Test auth only
 
 # Code Quality
-npm run lint           # Run ESLint
-npm run lint:fix       # Auto-fix linting issues
-npm run format         # Format with Prettier
-npm run format:check   # Verify formatting
+npm run lint                        # Check lint errors
+npm run lint:fix                    # Auto-fix lint errors
+npm run format                      # Format all code
+npm run format:check                # Check formatting
 
-# Capacitor
-npx cap sync           # Sync web → native (run after web build)
-npx cap open android   # Open in Android Studio
-npx cap run android    # Build and run on device/emulator
+# Mobile
+npm run cap:sync                    # Sync to native platforms
+npm run cap:android                 # Open Android Studio
+npm run cap:run:android             # Run on Android device
+
+# i18n
+npm run i18n:missing                # Check missing translations
+
+# Maintenance
+npm run clean                       # Clean reinstall
 ```
 
-## Architecture Overview
-
-### Application Structure
-
-Tab-based navigation with lazy-loaded modules:
+## 📂 Project Structure
 
 ```
-app-routing.module.ts → TabsPageModule → 4 tabs (lazy-loaded)
-  ├─ /tabs/dashboard  → Home/main view
-  ├─ /tabs/readings   → Glucose reading history
-  ├─ /tabs/devices    → BLE device management (not implemented)
-  └─ /tabs/profile    → User profile settings
+src/
+├── app/
+│   ├── core/                       # Singleton services
+│   │   ├── config/                 # App configuration
+│   │   ├── services/               # Business logic
+│   │   │   ├── tidepool-auth.service.ts
+│   │   │   ├── tidepool-mock.adapter.ts
+│   │   │   ├── readings.service.ts
+│   │   │   ├── database.service.ts
+│   │   │   ├── logger.service.ts
+│   │   │   └── demo-data.service.ts
+│   │   ├── guards/                 # Route guards
+│   │   ├── interceptors/           # HTTP interceptors
+│   │   └── models/                 # TypeScript types
+│   ├── shared/                     # Reusable components
+│   ├── tests/                      # Test helpers
+│   │   ├── helpers/
+│   │   ├── setup/
+│   │   ├── pages/                  # Page objects
+│   │   └── integration/
+│   ├── dashboard/
+│   ├── readings/
+│   ├── appointments/
+│   ├── profile/
+│   └── login/
+├── assets/
+│   ├── i18n/                       # Translations (en, es)
+│   └── mocks/                      # Mock data
+├── environments/
+│   ├── environment.ts              # Development
+│   ├── environment.prod.ts         # Production
+│   └── environment.test.ts         # Testing
+└── theme/                          # Global styles
+
+playwright/tests/                   # E2E tests
+docs/                               # Documentation
+scripts/                            # Utility scripts
+specs/                              # Feature specs
 ```
 
-**⚠️ Technical Debt**: Folder names use semantic naming (`dashboard/`, `devices/`, `readings/`, `profile/`) but module classes still use legacy names (`Tab1Page`, `Tab1Module`). Refactor when renaming components.
+## 🎯 Development Workflows
 
-### Core Layer Architecture
-
-The `src/app/core/` directory contains the application's business logic:
-
-```
-core/
-├── config/              # Configuration files
-│   └── oauth.config.ts  # OAuth2/PKCE configuration
-├── guards/              # Route guards
-│   └── auth.guard.ts    # Authentication guard
-├── interceptors/        # HTTP interceptors
-│   └── tidepool.interceptor.ts  # Adds auth headers to Tidepool API requests
-├── models/              # TypeScript interfaces/types
-│   ├── glucose-reading.model.ts  # Glucose data structures
-│   ├── tidepool-auth.model.ts    # Auth state & tokens
-│   ├── tidepool-sync.model.ts    # Sync status & metadata
-│   └── user-profile.model.ts     # User profile data
-├── services/            # Business logic services (see below)
-└── utils/               # Utility functions
-    ├── http-retry.util.ts           # Exponential backoff retry logic
-    ├── pkce.utils.ts                # PKCE challenge generation
-    └── tidepool-transform.util.ts   # Transform Tidepool ↔ local format
-```
-
-### Core Services (Production-Ready Backend)
-
-**TidepoolAuthService** (`tidepool-auth.service.ts`) - ✅ Complete
-
-- OAuth2 Authorization Code Flow with PKCE
-- Capacitor Browser for in-app auth flow + deep link handling
-- Automatic token refresh with rotation
-- Session restoration from stored refresh tokens
-- **Exposes**: `authState$: Observable<AuthState>` (reactive)
-
-**TidepoolSyncService** (`tidepool-sync.service.ts`) - ✅ Complete
-
-- Full/incremental sync with automatic pagination (RxJS `expand`)
-- Exponential backoff retry logic, network awareness
-- Persistent sync timestamps (Capacitor Preferences)
-- Sync history tracking (last 10 entries)
-- **Exposes**: `syncStatus$: Observable<SyncStatus>`
-
-**ReadingsService** (`readings.service.ts`) - ✅ Complete
-
-- CRUD operations with IndexedDB (Dexie)
-- **Advanced statistics**: HbA1c (ADAG), GMI, Time in Range, CV%, median, std dev
-- Unit conversion (mg/dL ↔ mmol/L, factor: 18.0182)
-- Glucose status (normal/low/high/critical)
-- Offline sync queue management
-- **Exposes**: `readings$: Observable<LocalGlucoseReading[]>` (Dexie `liveQuery`)
-
-**DatabaseService** (`database.service.ts`) - ✅ Complete
-
-- Dexie-based IndexedDB (type-safe)
-- `readings` table: indexed by id, time, type, userId, synced, localStoredAt
-- `syncQueue` table: offline operations queue
-- Singleton: `export const db = new DiabetifyDatabase()`
-
-**Other Core Services**:
-
-- **TidepoolStorageService**: Transform Tidepool ↔ local format, duplicate detection
-- **TokenStorageService**: Secure token storage via Capacitor Preferences
-- **ProfileService**: User profile management
-- **ThemeService**: Dark/light mode theming
-- **ErrorHandlerService**: Global error handling
-
-**Backend Integration Services** (New Architecture):
-
-- **ExternalServicesManagerService** (`external-services-manager.service.ts`) - ✅ Production-ready
-  - Health monitoring with circuit breaker pattern
-  - Network awareness and offline caching
-  - Manages: Tidepool, Glucoserver, Appointments, LocalAuth
-  - **Exposes**: `state$: Observable<ExternalServicesState>`
-
-- **ServiceOrchestratorService** (`service-orchestrator.service.ts`) - ✅ Production-ready
-  - Saga pattern for multi-service workflows
-  - Compensating transactions for rollback
-  - Workflow types: FULL_SYNC, AUTH_AND_SYNC, APPOINTMENT_WITH_DATA
-  - **Exposes**: `activeWorkflows$: Observable<WorkflowState[]>`
-
-- **ApiGatewayService** (`api-gateway.service.ts`) - ✅ Production-ready
-  - Unified API entry point with request routing
-  - Automatic authentication and caching
-  - Response transformation and error standardization
-
-- **AppointmentService** (`appointment.service.ts`) - ✅ Production-ready
-  - Healthcare provider scheduling
-  - Glucose data sharing with doctors
-  - **Exposes**: `appointments$: Observable<Appointment[]>`
-
-- **GlucoserverService** (`glucoserver.service.ts`) - ✅ Production-ready
-  - Local backend for glucose management
-  - Alternative to Tidepool for offline-first architecture
-
-- **UnifiedAuthService** (`unified-auth.service.ts`) - ✅ Production-ready
-  - Coordinates Tidepool and local authentication
-  - Single sign-on experience
-
-- **TranslationService** (`translation.service.ts`) - ✅ Production-ready
-  - Multi-language support (English, Spanish)
-  - Automatic device language detection
-  - Locale-aware formatting (dates, numbers, glucose values)
-
-### Data Flow
-
-```
-Tidepool API → TidepoolSyncService → TidepoolStorageService → DatabaseService (IndexedDB)
-                                                                        ↓
-                                                                ReadingsService
-                                                                        ↓
-                                                                  UI Components
-```
-
-### Authentication Flow (OAuth2 PKCE)
-
-1. `TidepoolAuthService.login()` → Generate PKCE challenge → Build auth URL
-2. Capacitor Browser opens Tidepool authorization page
-3. User authenticates → Tidepool redirects to `diabetify://oauth/callback?code=...`
-4. Deep link handler captures code → Exchange for tokens
-5. Store tokens (access + refresh) via `TokenStorageService`
-6. Decode JWT ID token for user info → Update `authState$`
-
-### Sync Flow
-
-1. Trigger sync (manual or automatic interval)
-2. Check network + authentication
-3. Fetch incremental data since last sync (or 30 days for first sync)
-4. Transform Tidepool data → Local format (TidepoolStorageService)
-5. Store in IndexedDB with duplicate detection
-6. Update sync metadata/timestamps
-7. Emit status updates via `syncStatus$`
-
-### Environment Configuration
-
-**Environment files**: `src/environments/environment.ts` (dev) and `environment.prod.ts` (prod)
-
-**Tidepool Configuration**:
-- `tidepool.baseUrl`: API base URL (default: `https://api.tidepool.org`)
-- `tidepool.clientId`: OAuth2 client ID (**TODO: Replace with actual client ID from Tidepool developer portal**)
-- `tidepool.redirectUri`: `diabetify://oauth/callback` (custom URL scheme for OAuth)
-- `tidepool.scopes`: `data:read data:write profile:read`
-- `tidepool.requestTimeout`: 30 seconds
-- `tidepool.maxRetries`: 3 attempts
-
-**Backend Services Configuration**:
-- `backendServices.glucoserver.baseUrl`: Local glucose management service (default: `http://localhost:8001`)
-- `backendServices.appointments.baseUrl`: Appointment service (default: `http://localhost:8002`)
-- `backendServices.auth.baseUrl`: Authentication service (default: `http://localhost:8003`)
-- `backendServices.apiGateway.baseUrl`: API gateway (default: `http://localhost:8000`)
-
-**Feature Flags**:
-- `features.offlineMode`: Enable offline support (default: `true`)
-- `features.useLocalBackend`: Use local backend services (default: `true` in dev)
-- `features.useTidepoolIntegration`: Enable Tidepool sync (default: `true`)
-
-**Build Configuration**:
-- Output: `www/` (Capacitor web directory)
-- Java 17 required for Android builds
-- Bundle budgets: 2MB warning, 5MB error
-
-## BLE Integration (Not Implemented)
-
-**⚠️ STATUS**: BLE functionality is documented but **not implemented**. The `@capacitor-community/bluetooth-le` dependency is installed but unused. `src/app/devices/tab1.page.ts` contains only a component shell.
-
-### BLE Specifications (for future implementation)
-
-**Glucose Service UUID**: `00001808-0000-1000-8000-00805f9b34fb`
-
-**Key Characteristics**:
-
-- Glucose Measurement: `00002a18-0000-1000-8000-00805f9b34fb`
-- Glucose Context: `00002a34-0000-1000-8000-00805f9b34fb`
-- Record Access Control Point: `00002a52-0000-1000-8000-00805f9b34fb`
-
-**Workflow**:
-
-1. Scan for devices (filter by Glucose Service UUID)
-2. Connect + establish disconnect callback
-3. Read Device Information Service for manufacturer
-4. Setup notifications on glucose characteristics
-5. Request all stored records
-6. Parse readings: SFLOAT16 format (IEEE-11073), convert units, extract timestamps/metadata
-
-**Important**: BLE callbacks run outside Angular's zone → Use `NgZone.run()` for UI updates.
-
-**Glucose Unit Conversion**:
-
-- Conversion factor: `MMOLL_TO_MGDL = 18.0182`
-- mg/dL ↔ mmol/L: `mg/dL = mmol/L × 18.0182`
-
-## Development Patterns
-
-### Creating New Feature Modules
-
-Use Ionic CLI for consistency:
+### Adding a New Feature
 
 ```bash
-ionic generate page [feature-name]
+# 1. SPARC workflow with claude-flow
+npx claude-flow sparc run spec-pseudocode "Add glucose chart"
+npx claude-flow sparc tdd "Implement glucose chart"
+
+# 2. Or use Task tool directly
+Task("Architect", "Design chart component architecture", "system-architect")
+Task("Coder", "Implement chart component", "coder")
+Task("Tester", "Write unit and E2E tests", "tester")
+
+# 3. Compare approaches with Zen (optional)
+Bash("zen ask 'Best charting library for Ionic Angular' --model gemini")
 ```
 
-Pattern:
+### Testing Strategy
 
-- Lazy-load modules through routing
-- Import `ExploreContainerComponentModule` for placeholder content
-- Place pages under `src/app/[feature-name]/`
+```bash
+# Unit tests (services, components)
+npm run test                        # Watch mode
+npm run test:coverage               # With coverage
 
-### Shared Components
+# Faster targeted runs
+karma start karma-auth-only.conf.js
 
-Reusable UI components in `src/app/shared/components/`:
+# E2E tests with Playwright
+npm run test:e2e                    # All tests
+npm run test:e2e:headed             # Debug mode
 
-**StatCardComponent** - Dashboard metric cards:
-```html
-<app-stat-card
-  [title]="'Average Glucose'"
-  [value]="avgGlucose"
-  [unit]="'mg/dL'"
-  [icon]="'analytics'"
-  [trend]="'up'">
-</app-stat-card>
+# Mobile testing
+npm run cap:run:android             # Run on device
+# Use android-adb MCP for screenshots/debugging
+# Use BrowserStack for cross-device testing
 ```
 
-**ReadingItemComponent** - Glucose reading display:
-```html
-<app-reading-item
-  [reading]="reading"
-  [showStatus]="true"
-  (edit)="onEdit($event)"
-  (delete)="onDelete($event)">
-</app-reading-item>
-```
-
-**AlertBannerComponent** - Contextual alerts:
-```html
-<app-alert-banner
-  [type]="'warning'"
-  [message]="'Sync pending'"
-  [dismissible]="true">
-</app-alert-banner>
-```
-
-**EmptyStateComponent** - Empty list states:
-```html
-<app-empty-state
-  [icon]="'glucose-outline'"
-  [message]="'No readings yet'"
-  [actionText]="'Add Reading'"
-  (action)="navigateToAddReading()">
-</app-empty-state>
-```
-
-**ProfileItemComponent** - Settings/profile list items
-**LanguageSwitcherComponent** - Language selection
-**ServiceMonitorComponent** - Real-time service health display
-
-See `src/app/shared/components/README.md` and `USAGE_EXAMPLES.md` for detailed usage.
-
-### Reactive Patterns with RxJS
-
-Services use BehaviorSubjects for reactive state:
+### Working with Tidepool API
 
 ```typescript
-// Subscribe to auth state changes
-this.authService.authState$.subscribe(state => {
-  if (state.isAuthenticated) {
-    /* ... */
-  }
-});
+// Authentication (OAuth2 PKCE)
+await tidepoolAuth.login();
 
-// Subscribe to sync status updates
-this.syncService.syncStatus$.subscribe(status => {
-  if (status.status === 'syncing') {
-    /* show spinner */
-  }
-});
+// Fetch glucose readings
+const readings = await readingsService.getReadings(userId, startDate, endDate);
 
-// Subscribe to readings (live query from IndexedDB)
-this.readingsService.readings$.subscribe(readings => {
-  /* update UI with latest readings */
-});
-
-// Monitor external services health
-this.externalServices.state$.subscribe(state => {
-  if (state.overallHealth === 'unhealthy') {
-    /* show error banner */
-  }
-});
+// Clinic dashboard link
+const url = `https://app.tidepool.org/patients/${userId}/data`;
 ```
 
-### HTTP Interceptors
+### Multi-Language Support
 
-**TidepoolInterceptor** (`tidepool.interceptor.ts`):
-
-- Automatically adds `Authorization: Bearer <token>` header to Tidepool API requests
-- Registered in `app.module.ts` via `HTTP_INTERCEPTORS`
-
-### Route Guards
-
-**AuthGuard** (`auth.guard.ts`):
-
-- Protects routes requiring authentication
-- Redirects to login if not authenticated
-- Usage: `{ path: 'profile', canActivate: [AuthGuard], ... }`
-
-### Internationalization (i18n)
-
-**Translation System**:
-- Automatic device language detection on first launch
-- Supported languages: English (en), Spanish (es)
-- Language preference persisted via Capacitor Preferences
-- Locale-aware formatting for dates, numbers, and glucose values
-
-**Usage in templates**:
-```html
-<!-- Simple translation -->
-<ion-title>{{ 'dashboard.title' | translate }}</ion-title>
-
-<!-- With parameters -->
-<p>{{ 'messages.welcome' | translate:{ name: userName } }}</p>
+```bash
+# 1. Add translation keys to assets/i18n/en.json and es.json
+# 2. Use in templates: {{ 'KEY' | translate }}
+# 3. Check for missing translations
+npm run i18n:missing
 ```
 
-**Usage in components**:
+## 🔧 Critical Files
+
+| File | Purpose |
+|------|---------|
+| `src/app/core/services/tidepool-auth.service.ts` | OAuth2/PKCE authentication |
+| `src/app/core/services/tidepool-mock.adapter.ts` | Mock Tidepool for demo |
+| `src/app/core/services/database.service.ts` | Dexie/IndexedDB setup |
+| `src/app/core/services/logger.service.ts` | Centralized logging |
+| `src/app/core/config/app-config.ts` | App configuration |
+| `karma.conf.js` | Main test config |
+| `karma-appointments-only.conf.js` | Targeted appointments tests |
+| `karma-auth-only.conf.js` | Targeted auth tests |
+| `playwright.config.ts` | E2E test config |
+| `capacitor.config.ts` | Native platform config |
+| `.mcp.json` | MCP server configuration |
+
+## 🐛 Troubleshooting
+
+```bash
+# Build errors
+npm run clean                       # Clean reinstall
+rm -rf .angular                     # Clear cache
+
+# Test failures
+npm run test -- --include='**/specific.spec.ts'
+rm -rf .angular/cache
+
+# Capacitor issues
+npx cap sync
+npx cap doctor
+
+# MCP connection issues
+claude mcp list                     # Check MCP status
+claude mcp restart <server-name>    # Restart specific server
+
+# Maestro MCP not working?
+# Install maestro first:
+curl -Ls "https://get.maestro.mobile.dev" | bash
+export PATH="$PATH:$HOME/.maestro/bin"
+```
+
+## ✅ Best Practices
+
+1. **Pre-commit hooks** (Husky + lint-staged)
+   - Auto-format with Prettier
+   - Auto-fix with ESLint
+   - Runs on staged files only
+
+2. **Standalone components** (Angular 20)
+   - Import dependencies directly
+   - No NgModule needed
+
+3. **Offline-first**
+   - Cache in IndexedDB
+   - Sync when online
+   - Handle network errors
+
+4. **Translation coverage**
+   - All UI text in i18n files
+   - Use `| translate` pipe
+   - Check `npm run i18n:missing`
+
+5. **Mobile optimization**
+   - Test on real devices
+   - Use Ionic components
+   - Handle touch gestures
+
+## 🔄 Git Workflow
+
+```bash
+# Feature branches
+git checkout -b feat/feature-name
+
+# Conventional commits
+git commit -m "feat: add glucose chart visualization"
+git commit -m "fix: resolve auth token refresh"
+git commit -m "test: add E2E tests for appointments"
+
+# Pre-commit hooks run automatically
+# Manual check:
+npm run test:ci && npm run lint && npm run format:check
+```
+
+## 🎯 MCP Server Selection Guide
+
+**When to use each MCP:**
+
+- **claude-flow**: Multi-agent coordination, memory, workflows, code implementation
+- **tavily**: Web research, find solutions, extract documentation
+- **context7**: Look up library APIs, framework documentation
+- **playwright**: E2E testing, browser automation, UI testing
+- **android-adb**: Android device management, APK installation, debugging
+- **browserstack**: Cross-device testing, real device testing (requires account)
+- **maestro**: Simple mobile UI tests (requires installation)
+- **zen**: Multi-model comparison, delegate to other CLIs, workflow orchestration
+
+**Complementary Usage:**
+- Use **zen** for research/comparison, **claude-flow** for implementation
+- Use **tavily** for general research, **context7** for API docs
+- Use **playwright** for web E2E, **android-adb** for mobile debugging
+- Use **browserstack** for cross-device, **maestro** for quick mobile tests
+
+## 📝 Environment Configuration
+
 ```typescript
-constructor(private translationService: TranslationService) {}
+// src/environments/environment.ts - Development
+export const environment = {
+  production: false,
+  tidepool: {
+    apiUrl: 'https://api.tidepool.org',
+    clientId: 'your-client-id',
+    redirectUri: 'http://localhost:4200/callback'
+  },
+  apiGateway: 'http://localhost:3000'
+};
 
-// Get instant translation
-const title = this.translationService.instant('dashboard.title');
-
-// Format glucose value with locale
-const formatted = this.translationService.formatGlucose(120);
+// src/environments/environment.test.ts - Testing
+// Includes mock adapters and demo data
 ```
-
-**LanguageSwitcherComponent** (`shared/components/language-switcher/`):
-- Reusable component with 3 display modes: button, select, popover
-- Visual feedback with flag emojis
-- Import `TranslateModule` in each lazy-loaded module that needs translations
-
-**Translation Files**: `src/assets/i18n/en.json`, `src/assets/i18n/es.json`
-
-**Key Structure**:
-- `app.*` - Global strings
-- `dashboard.*`, `readings.*`, `devices.*`, `profile.*` - Page-specific
-- `glucose.*` - Glucose terminology
-- `errors.*`, `messages.*` - System messages
-
-See `TRANSLATION_GUIDE.md` for detailed documentation.
-
-## Testing
-
-**Framework**: Jasmine + Karma
-
-**Current Status**: Test files (`.spec.ts`) exist but contain only boilerplate (0% coverage).
-
-**Commands**:
-
-- `npm test` - Watch mode
-- `npm run test:ci` - Single run with coverage (CI)
-- `npm run test:coverage` - Generate HTML report → `coverage/diabetify/index.html`
-
-**Priority for test implementation**:
-
-1. **ReadingsService** - Statistics calculations (A1C, GMI, Time in Range)
-2. **TidepoolSyncService** - Sync state machine, error handling
-3. **TidepoolAuthService** - Token refresh, OAuth edge cases
-
-## Project Status Summary
-
-### ✅ Complete (Production-Ready)
-
-- Backend services: OAuth2 auth, sync engine, glucose statistics, IndexedDB persistence
-- Data layer: Dexie with reactive RxJS observables
-- Architecture: Service-based design with proper separation of concerns
-
-### ⚠️ In Progress / Missing
-
-- **UI Components (85% missing)**: All pages are placeholder shells
-- **BLE Integration (100% missing)**: Documented but not implemented
-- **Tests (100% missing)**: No test coverage (`.spec.ts` files are boilerplate only)
-- **Technical Debt**: Tab1\* class names should be renamed to semantic names (Dashboard, Readings, Devices, Profile)
-
-### Development Priorities
-
-1. **Implement UI components** - Connect existing services to actual UI in dashboard/readings/profile pages
-2. **Add tests** - Focus on ReadingsService statistics, TidepoolSyncService state machine, TidepoolAuthService token refresh
-3. **Rename components** - Tab1Page → DashboardPage, etc. (update modules, routing, and references)
-4. **BLE decision** - Either implement Bluetooth integration or remove from scope
-
-## Important Notes
-
-### Pre-commit Hooks
-
-This project uses **Husky + lint-staged** to automatically format and lint code on commit:
-
-- TypeScript/JavaScript: Prettier → ESLint (auto-fix)
-- HTML: Prettier
-- JSON/SCSS/Markdown: Prettier
-
-Configured in `package.json` (lint-staged section) and `.husky/pre-commit`.
-
-### Android Development
-
-- **Java 17 required** for Android builds
-- Sync web assets before opening Android Studio: `npx cap sync`
-- Deep link configured: `diabetify://oauth/callback` (for OAuth flow)
-
-### Key Files to Reference
-
-- **Architecture Documentation**:
-  - `ARCHITECTURE_READINGS_APPOINTMENTS.md` - Complete readings & appointments architecture
-  - `EXTERNAL_SERVICES_INTEGRATION.md` - Service orchestration and integration patterns
-  - `QUICK_REFERENCE_READINGS.md` - Quick lookup for readings implementation
-
-- **Development Guides**:
-  - `TRANSLATION_GUIDE.md` - i18n system and adding new languages
-  - `TRANSLATION_MAPPING.md` - Complete translation key reference
-  - `MATERIAL_DESIGN_SETUP.md` - Angular Material 20 integration
-
-- **Reference**:
-  - `tidepool_some_resources.md` - Tidepool API documentation
-  - `.taskmaster/CLAUDE.md` - Task Master AI workflows
 
 ---
 
-## External Services Integration Architecture
+## Important Reminders
 
-The app implements a sophisticated multi-service integration layer with:
-
-### Circuit Breaker Pattern
-
-Prevents cascading failures when external services are down:
-- Each service has configurable failure threshold
-- States: CLOSED (normal) → OPEN (blocked) → HALF_OPEN (testing)
-- Automatic recovery attempts after timeout period
-
-### Service Health Monitoring
-
-Real-time monitoring of all external services:
-- Periodic health checks with configurable intervals
-- Network awareness (online/offline detection)
-- Response time tracking
-- Visual monitoring via ServiceMonitorComponent
-
-### Workflow Orchestration (Saga Pattern)
-
-Complex multi-service operations with automatic rollback:
-- **FULL_SYNC**: Complete data synchronization across all services
-- **AUTH_AND_SYNC**: Authentication followed by initial sync
-- **APPOINTMENT_WITH_DATA**: Share glucose data with healthcare provider
-
-Example workflow with compensation:
-```typescript
-// ServiceOrchestratorService automatically handles rollback on failure
-const result = await orchestrator.executeFullSync();
-// On failure, compensating transactions execute in reverse order
-```
-
-### Caching Strategy
-
-Multi-level caching for offline support and performance:
-- HTTP response cache with per-endpoint TTL
-- Service-level data cache
-- IndexedDB for persistent offline storage
-- Automatic cache invalidation on mutations
-
-### API Gateway Pattern
-
-Unified entry point for all external API calls:
-- Request routing to appropriate backend service
-- Automatic authentication token injection
-- Response transformation and normalization
-- Consistent error handling across services
-
-**Managed Services**:
-1. **Tidepool** - OAuth2, CGM data sync
-2. **Glucoserver** - Local glucose management
-3. **Appointments** - Healthcare provider integration
-4. **LocalAuth** - User authentication
-
-See `EXTERNAL_SERVICES_INTEGRATION.md` for complete documentation.
-
----
-
-**For MCP Workflow Strategies and Task Master AI integration, see the imported instructions from `.taskmaster/CLAUDE.md`**
+- Do what has been asked; nothing more, nothing less
+- NEVER create files unless absolutely necessary
+- ALWAYS prefer editing existing files
+- NEVER proactively create documentation files
+- Never save working files to root folder
+- Use TodoWrite for task tracking (5-10+ todos batched)
+- Batch all operations in single messages

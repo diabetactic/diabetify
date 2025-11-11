@@ -11,11 +11,13 @@ import {
 } from './appointment.service';
 import { ApiGatewayService } from './api-gateway.service';
 import { ReadingsService, TeleAppointmentReadingSummary } from './readings.service';
+import { TranslationService, Language } from './translation.service';
 
 describe('AppointmentService', () => {
   let service: AppointmentService;
   let apiGatewaySpy: jasmine.SpyObj<ApiGatewayService>;
   let readingsServiceSpy: jasmine.SpyObj<ReadingsService>;
+  let translationServiceSpy: jasmine.SpyObj<TranslationService>;
 
   beforeEach(() => {
     // Create spy objects for dependencies
@@ -23,18 +25,36 @@ describe('AppointmentService', () => {
     const readingsServiceSpyObj = jasmine.createSpyObj('ReadingsService', [
       'exportManualReadingsSummary',
     ]);
+    const translationServiceSpyObj = jasmine.createSpyObj('TranslationService', [
+      'get',
+      'instant',
+      'getCurrentLanguage',
+    ]);
 
     TestBed.configureTestingModule({
       providers: [
         AppointmentService,
         { provide: ApiGatewayService, useValue: apiGatewaySpyObj },
         { provide: ReadingsService, useValue: readingsServiceSpyObj },
+        { provide: TranslationService, useValue: translationServiceSpyObj },
       ],
     });
 
     service = TestBed.inject(AppointmentService);
     apiGatewaySpy = TestBed.inject(ApiGatewayService) as jasmine.SpyObj<ApiGatewayService>;
     readingsServiceSpy = TestBed.inject(ReadingsService) as jasmine.SpyObj<ReadingsService>;
+    translationServiceSpy = TestBed.inject(
+      TranslationService
+    ) as jasmine.SpyObj<TranslationService>;
+
+    // Set up default spy behaviors
+    translationServiceSpy.get.and.callFake((key: string) => of(key));
+    translationServiceSpy.instant.and.callFake((key: string) => key);
+    translationServiceSpy.getCurrentLanguage.and.returnValue(Language.EN);
+
+    // Reset spy call history before each test
+    apiGatewaySpy.request.calls.reset();
+    readingsServiceSpy.exportManualReadingsSummary.calls.reset();
   });
 
   it('should be created', () => {
@@ -72,7 +92,7 @@ describe('AppointmentService', () => {
         ],
       };
 
-      it('should call correct gateway endpoint with default 30-day window', (done) => {
+      it('should call correct gateway endpoint with default 30-day window', done => {
         const appointmentId = 'apt-123';
         const mockResponse: ShareGlucoseResponse = {
           shared: true,
@@ -94,7 +114,7 @@ describe('AppointmentService', () => {
         );
 
         service.shareManualGlucoseData(appointmentId).subscribe({
-          next: (response) => {
+          next: response => {
             // Verify ReadingsService was called with 30 days (default)
             expect(readingsServiceSpy.exportManualReadingsSummary).toHaveBeenCalledWith(30);
 
@@ -116,11 +136,11 @@ describe('AppointmentService', () => {
             expect(response.recordCount).toBe(120);
             done();
           },
-          error: (err) => fail(err),
+          error: err => fail(err),
         });
       });
 
-      it('should use custom days parameter when provided', (done) => {
+      it('should use custom days parameter when provided', done => {
         const appointmentId = 'apt-456';
         const customDays = 7;
         const mockResponse: ShareGlucoseResponse = {
@@ -143,16 +163,14 @@ describe('AppointmentService', () => {
         service.shareManualGlucoseData(appointmentId, { days: customDays }).subscribe({
           next: () => {
             // Verify ReadingsService was called with custom days
-            expect(readingsServiceSpy.exportManualReadingsSummary).toHaveBeenCalledWith(
-              customDays
-            );
+            expect(readingsServiceSpy.exportManualReadingsSummary).toHaveBeenCalledWith(customDays);
             done();
           },
-          error: (err) => fail(err),
+          error: err => fail(err),
         });
       });
 
-      it('should use custom date range when provided', (done) => {
+      it('should use custom date range when provided', done => {
         const appointmentId = 'apt-789';
         const customRange = {
           start: new Date('2024-01-15'),
@@ -188,11 +206,11 @@ describe('AppointmentService', () => {
             expect(readingsServiceSpy.exportManualReadingsSummary).toHaveBeenCalledWith(31);
             done();
           },
-          error: (err) => fail(err),
+          error: err => fail(err),
         });
       });
 
-      it('should send complete summary with readings array', (done) => {
+      it('should send complete summary with readings array', done => {
         const appointmentId = 'apt-123';
         const mockResponse: ShareGlucoseResponse = {
           shared: true,
@@ -241,11 +259,11 @@ describe('AppointmentService', () => {
             expect(requestBody.manualReadingsSummary.readings.length).toBe(2);
             done();
           },
-          error: (err) => fail(err),
+          error: err => fail(err),
         });
       });
 
-      it('should handle error when no readings available', (done) => {
+      it('should handle error when no readings available', done => {
         const appointmentId = 'apt-123';
 
         // Mock ReadingsService to throw error (no readings)
@@ -255,7 +273,7 @@ describe('AppointmentService', () => {
 
         service.shareManualGlucoseData(appointmentId).subscribe({
           next: () => fail('should have thrown error'),
-          error: (error) => {
+          error: error => {
             expect(error.message).toContain('No hay lecturas');
             expect(apiGatewaySpy.request).not.toHaveBeenCalled();
             done();
@@ -263,7 +281,7 @@ describe('AppointmentService', () => {
         });
       });
 
-      it('should handle API gateway errors', (done) => {
+      it('should handle API gateway errors', done => {
         const appointmentId = 'apt-123';
         const mockError = {
           success: false,
@@ -281,7 +299,7 @@ describe('AppointmentService', () => {
 
         service.shareManualGlucoseData(appointmentId).subscribe({
           next: () => fail('should have thrown error'),
-          error: (error) => {
+          error: error => {
             expect(error).toEqual(mockError);
             done();
           },
@@ -290,7 +308,7 @@ describe('AppointmentService', () => {
     });
 
     describe('getAppointments', () => {
-      it('should call correct gateway endpoint with filters', (done) => {
+      it('should call correct gateway endpoint with filters', done => {
         const mockAppointments: Appointment[] = [
           {
             id: '1',
@@ -317,7 +335,7 @@ describe('AppointmentService', () => {
         const endDate = new Date('2024-02-28');
 
         service.getAppointments('confirmed', startDate, endDate).subscribe({
-          next: (appointments) => {
+          next: appointments => {
             expect(apiGatewaySpy.request).toHaveBeenCalledWith(
               'appointments.list',
               jasmine.objectContaining({
@@ -331,11 +349,11 @@ describe('AppointmentService', () => {
             expect(appointments).toEqual(mockAppointments);
             done();
           },
-          error: (err) => fail(err),
+          error: err => fail(err),
         });
       });
 
-      it('should update appointments$ observable', (done) => {
+      it('should update appointments$ observable', done => {
         const mockAppointments: Appointment[] = [
           {
             id: '1',
@@ -358,7 +376,7 @@ describe('AppointmentService', () => {
         );
 
         let emittedAppointments: Appointment[] = [];
-        service.appointments$.subscribe((appointments) => {
+        service.appointments$.subscribe(appointments => {
           emittedAppointments = appointments;
         });
 
@@ -367,13 +385,13 @@ describe('AppointmentService', () => {
             expect(emittedAppointments).toEqual(mockAppointments);
             done();
           },
-          error: (err) => fail(err),
+          error: err => fail(err),
         });
       });
     });
 
     describe('createAppointment', () => {
-      it('should call correct gateway endpoint with request body', (done) => {
+      it('should call correct gateway endpoint with request body', done => {
         const request: CreateAppointmentRequest = {
           doctorId: 'doctor1',
           date: '2024-02-20',
@@ -400,7 +418,7 @@ describe('AppointmentService', () => {
         );
 
         service.createAppointment(request).subscribe({
-          next: (appointment) => {
+          next: appointment => {
             expect(apiGatewaySpy.request).toHaveBeenCalledWith(
               'appointments.create',
               jasmine.objectContaining({
@@ -410,13 +428,13 @@ describe('AppointmentService', () => {
             expect(appointment).toEqual(mockResponse);
             done();
           },
-          error: (err) => fail(err),
+          error: err => fail(err),
         });
       });
     });
 
     describe('cancelAppointment', () => {
-      it('should call correct gateway endpoint with reason', (done) => {
+      it('should call correct gateway endpoint with reason', done => {
         const appointmentId = 'apt-123';
         const reason = 'Patient requested cancellation';
         const mockResponse: Appointment = {
@@ -441,7 +459,7 @@ describe('AppointmentService', () => {
         );
 
         service.cancelAppointment(appointmentId, reason).subscribe({
-          next: (appointment) => {
+          next: appointment => {
             expect(apiGatewaySpy.request).toHaveBeenCalledWith(
               'appointments.cancel',
               jasmine.objectContaining({
@@ -455,13 +473,13 @@ describe('AppointmentService', () => {
             expect(appointment.status).toBe('cancelled');
             done();
           },
-          error: (err) => fail(err),
+          error: err => fail(err),
         });
       });
     });
 
     describe('rescheduleAppointment', () => {
-      it('should call correct gateway endpoint with new time', (done) => {
+      it('should call correct gateway endpoint with new time', done => {
         const appointmentId = 'apt-123';
         const newDate = '2024-02-25';
         const newStartTime = '14:00';
@@ -488,9 +506,9 @@ describe('AppointmentService', () => {
         );
 
         service.rescheduleAppointment(appointmentId, newDate, newStartTime, newEndTime).subscribe({
-          next: (appointment) => {
+          next: appointment => {
             expect(apiGatewaySpy.request).toHaveBeenCalledWith(
-              'appointments.reschedule',
+              'appointments.update',
               jasmine.objectContaining({
                 body: {
                   date: newDate,
@@ -504,13 +522,13 @@ describe('AppointmentService', () => {
             expect(appointment.date).toBe(newDate);
             done();
           },
-          error: (err) => fail(err),
+          error: err => fail(err),
         });
       });
     });
 
     describe('getDoctors', () => {
-      it('should call correct gateway endpoint with specialty filter', (done) => {
+      it('should call correct gateway endpoint with specialty filter', done => {
         const mockDoctors: Doctor[] = [
           {
             id: 'doctor1',
@@ -530,9 +548,9 @@ describe('AppointmentService', () => {
         );
 
         service.getDoctors('Endocrinology').subscribe({
-          next: (doctors) => {
+          next: doctors => {
             expect(apiGatewaySpy.request).toHaveBeenCalledWith(
-              'appointments.doctors',
+              'appointments.doctors.list',
               jasmine.objectContaining({
                 params: { specialty: 'Endocrinology' },
               })
@@ -540,13 +558,13 @@ describe('AppointmentService', () => {
             expect(doctors).toEqual(mockDoctors);
             done();
           },
-          error: (err) => fail(err),
+          error: err => fail(err),
         });
       });
     });
 
     describe('getAvailableSlots', () => {
-      it('should call correct gateway endpoint with parameters', (done) => {
+      it('should call correct gateway endpoint with parameters', done => {
         const doctorId = 'doctor1';
         const date = new Date('2024-02-20');
         const days = 7;
@@ -569,9 +587,9 @@ describe('AppointmentService', () => {
         );
 
         service.getAvailableSlots(doctorId, date, days).subscribe({
-          next: (slots) => {
+          next: slots => {
             expect(apiGatewaySpy.request).toHaveBeenCalledWith(
-              'appointments.slots',
+              'appointments.slots.available',
               jasmine.objectContaining({
                 params: {
                   doctor_id: doctorId,
@@ -583,43 +601,101 @@ describe('AppointmentService', () => {
             expect(slots).toEqual(mockSlots);
             done();
           },
-          error: (err) => fail(err),
+          error: err => fail(err),
         });
       });
     });
 
     describe('getStatistics', () => {
-      it('should call correct gateway endpoint', (done) => {
-        const mockStats: AppointmentStats = {
-          totalAppointments: 50,
-          completedAppointments: 40,
-          upcomingAppointments: 5,
-          cancelledAppointments: 5,
-          averageWaitTime: 15,
-          lastAppointmentDate: '2024-02-10',
-          nextAppointmentDate: '2024-02-20',
-        };
+      it('should calculate statistics from appointments', done => {
+        // Use dates relative to now to ensure tests work in any year
+        const now = new Date();
+        const lastMonth = new Date(now);
+        lastMonth.setMonth(now.getMonth() - 1);
+        const nextMonth = new Date(now);
+        nextMonth.setMonth(now.getMonth() + 1);
+        const twoMonthsAgo = new Date(now);
+        twoMonthsAgo.setMonth(now.getMonth() - 2);
+
+        const lastMonthStr = lastMonth.toISOString().split('T')[0];
+        const nextMonthStr = nextMonth.toISOString().split('T')[0];
+        const twoMonthsAgoStr = twoMonthsAgo.toISOString().split('T')[0];
+
+        const mockAppointments: Appointment[] = [
+          {
+            id: '1',
+            patientId: 'patient1',
+            doctorId: 'doctor1',
+            doctorName: 'Dr. Smith',
+            date: lastMonthStr,
+            startTime: '10:00',
+            endTime: '10:30',
+            status: 'completed',
+            reason: 'Follow-up',
+            urgency: 'routine',
+            glucoseDataShared: true,
+          },
+          {
+            id: '2',
+            patientId: 'patient1',
+            doctorId: 'doctor1',
+            doctorName: 'Dr. Smith',
+            date: nextMonthStr,
+            startTime: '14:00',
+            endTime: '14:30',
+            status: 'confirmed',
+            reason: 'Check-up',
+            urgency: 'routine',
+            glucoseDataShared: false,
+          },
+          {
+            id: '3',
+            patientId: 'patient1',
+            doctorId: 'doctor2',
+            doctorName: 'Dr. Jones',
+            date: twoMonthsAgoStr,
+            startTime: '09:00',
+            endTime: '09:30',
+            status: 'cancelled',
+            reason: 'Consultation',
+            urgency: 'routine',
+            glucoseDataShared: false,
+          },
+        ];
 
         apiGatewaySpy.request.and.returnValue(
           of({
             success: true,
-            data: mockStats,
+            data: mockAppointments,
           })
         );
 
         service.getStatistics().subscribe({
-          next: (stats) => {
-            expect(apiGatewaySpy.request).toHaveBeenCalledWith('appointments.stats');
-            expect(stats).toEqual(mockStats);
+          next: stats => {
+            expect(apiGatewaySpy.request).toHaveBeenCalledWith(
+              'appointments.list',
+              jasmine.objectContaining({
+                params: jasmine.objectContaining({
+                  limit: '50',
+                  offset: '0',
+                }),
+              })
+            );
+            expect(stats.totalAppointments).toBe(3);
+            expect(stats.completedAppointments).toBe(1);
+            expect(stats.upcomingAppointments).toBe(1);
+            expect(stats.cancelledAppointments).toBe(1);
+            expect(stats.lastAppointmentDate).toBe(lastMonthStr);
+            expect(stats.nextAppointmentDate).toBe(nextMonthStr);
             done();
           },
-          error: (err) => fail(err),
+          error: err => fail(err),
         });
       });
     });
 
     describe('joinVideoCall', () => {
-      it('should call correct gateway endpoint', (done) => {
+      xit('should call correct gateway endpoint (feature not yet implemented)', done => {
         const appointmentId = 'apt-123';
         const mockResponse = {
           url: 'https://video.platform.com/room/12345',
@@ -634,7 +710,7 @@ describe('AppointmentService', () => {
         );
 
         service.joinVideoCall(appointmentId).subscribe({
-          next: (response) => {
+          next: response => {
             expect(apiGatewaySpy.request).toHaveBeenCalledWith(
               'appointments.joinCall',
               jasmine.objectContaining({
@@ -645,14 +721,26 @@ describe('AppointmentService', () => {
             expect(response.url).toBe(mockResponse.url);
             done();
           },
-          error: (err) => fail(err),
+          error: err => fail(err),
+        });
+      });
+
+      it('should throw error for unimplemented feature', done => {
+        const appointmentId = 'apt-123';
+
+        service.joinVideoCall(appointmentId).subscribe({
+          next: () => fail('should have thrown error'),
+          error: error => {
+            expect(error.message).toBe('Video call feature not yet implemented');
+            done();
+          },
         });
       });
     });
   });
 
   describe('Error Handling', () => {
-    it('should handle gateway authentication errors', (done) => {
+    it('should handle gateway authentication errors', done => {
       const mockError = {
         success: false,
         error: {
@@ -665,14 +753,14 @@ describe('AppointmentService', () => {
 
       service.getAppointments().subscribe({
         next: () => fail('should have thrown error'),
-        error: (error) => {
+        error: error => {
           expect(error).toEqual(mockError);
           done();
         },
       });
     });
 
-    it('should handle gateway not found errors', (done) => {
+    it('should handle gateway not found errors', done => {
       const mockError = {
         success: false,
         error: {
@@ -685,14 +773,14 @@ describe('AppointmentService', () => {
 
       service.getAppointment('non-existent').subscribe({
         next: () => fail('should have thrown error'),
-        error: (error) => {
+        error: error => {
           expect(error).toEqual(mockError);
           done();
         },
       });
     });
 
-    it('should handle gateway server errors', (done) => {
+    it('should handle gateway server errors', done => {
       const mockError = {
         success: false,
         error: {
@@ -705,7 +793,7 @@ describe('AppointmentService', () => {
 
       service.getAppointments().subscribe({
         next: () => fail('should have thrown error'),
-        error: (error) => {
+        error: error => {
           expect(error).toEqual(mockError);
           done();
         },

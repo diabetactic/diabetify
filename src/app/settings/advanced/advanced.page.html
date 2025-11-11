@@ -1,0 +1,67 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'settings.advanced.title' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">{{ 'settings.advanced.title' | translate }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-list>
+    <!-- Sign Out Button -->
+    <ion-item>
+      <ion-button expand="block" color="danger" (click)="signOut()" class="sign-out-button">
+        <ion-icon slot="start" name="log-out-outline"></ion-icon>
+        {{ 'settings.advanced.signOut' | translate }}
+      </ion-button>
+    </ion-item>
+
+    <!-- Clear Local Data Button -->
+    <ion-item>
+      <ion-button
+        expand="block"
+        color="danger"
+        (click)="clearLocalData()"
+        class="clear-data-button"
+      >
+        <ion-icon slot="start" name="trash-outline"></ion-icon>
+        {{ 'settings.advanced.clearData' | translate }}
+      </ion-button>
+    </ion-item>
+
+    <!-- Developer Tools: Account State Toggle (Dev Mode Only) -->
+    @if (isDevMode) {
+      <ion-item-divider>
+        <ion-label>{{ 'settings.advanced.developerTools' | translate }}</ion-label>
+      </ion-item-divider>
+
+      <ion-item>
+        <ion-label position="stacked">
+          {{ 'settings.advanced.accountStateToggle' | translate }}
+        </ion-label>
+        <ion-select
+          [(ngModel)]="accountState"
+          (ionChange)="onAccountStateChange($event)"
+          placeholder="Select account state"
+        >
+          <ion-select-option value="pending">
+            {{ 'settings.advanced.accountState.pending' | translate }}
+          </ion-select-option>
+          <ion-select-option value="active">
+            {{ 'settings.advanced.accountState.active' | translate }}
+          </ion-select-option>
+          <ion-select-option value="disabled">
+            {{ 'settings.advanced.accountState.disabled' | translate }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+    }
+  </ion-list>
+</ion-content>
