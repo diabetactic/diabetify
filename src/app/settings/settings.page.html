@@ -14,16 +14,16 @@
 
 <ion-content class="pb-20">
   <!-- Profile Section -->
-  <ion-list-header class="pt-5 pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider">
+  <ion-list-header class="px-4 pt-5 pb-2.5 text-xs font-semibold tracking-wider uppercase">
     <ion-label>Perfil</ion-label>
   </ion-list-header>
   <ion-list class="mb-4">
     <ion-item button (click)="goToProfile()">
-      <ion-avatar slot="start" class="w-12 h-12">
+      <ion-avatar slot="start" class="h-12 w-12">
         <img src="assets/icon/favicon.png" alt="Profile" />
       </ion-avatar>
       <ion-label>
-        <h2 class="font-medium mb-1">{{ profileSettings.name || 'Usuario' }}</h2>
+        <h2 class="mb-1 font-medium">{{ profileSettings.name || 'Usuario' }}</h2>
         <p class="text-sm">{{ profileSettings.email }}</p>
       </ion-label>
       <ion-icon name="chevron-forward" slot="end"></ion-icon>
@@ -31,7 +31,7 @@
   </ion-list>
 
   <!-- Glucose Settings -->
-  <ion-list-header class="pt-5 pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider">
+  <ion-list-header class="px-4 pt-5 pb-2.5 text-xs font-semibold tracking-wider uppercase">
     <ion-label>Configuración de Glucosa</ion-label>
   </ion-list-header>
   <ion-list class="mb-4">
@@ -50,7 +50,7 @@
 
     <ion-item>
       <ion-label>
-        <h3 class="font-medium mb-1">Rango Objetivo</h3>
+        <h3 class="mb-1 font-medium">Rango Objetivo</h3>
         <p class="text-sm">
           {{ glucoseSettings.targetLow }} - {{ glucoseSettings.targetHigh }}
           {{ glucoseSettings.unit }}
@@ -69,8 +69,12 @@
         (ionChange)="hasChanges = true"
         class="py-2"
       >
-        <ion-label slot="start" class="text-xs">{{ glucoseSettings.unit === 'mg/dL' ? 50 : 2.8 }}</ion-label>
-        <ion-label slot="end" class="text-xs">{{ glucoseSettings.unit === 'mg/dL' ? 100 : 5.6 }}</ion-label>
+        <ion-label slot="start" class="text-xs">{{
+          glucoseSettings.unit === 'mg/dL' ? 50 : 2.8
+        }}</ion-label>
+        <ion-label slot="end" class="text-xs">{{
+          glucoseSettings.unit === 'mg/dL' ? 100 : 5.6
+        }}</ion-label>
       </ion-range>
     </ion-item>
 
@@ -85,20 +89,24 @@
         (ionChange)="hasChanges = true"
         class="py-2"
       >
-        <ion-label slot="start" class="text-xs">{{ glucoseSettings.unit === 'mg/dL' ? 140 : 7.8 }}</ion-label>
-        <ion-label slot="end" class="text-xs">{{ glucoseSettings.unit === 'mg/dL' ? 250 : 13.9 }}</ion-label>
+        <ion-label slot="start" class="text-xs">{{
+          glucoseSettings.unit === 'mg/dL' ? 140 : 7.8
+        }}</ion-label>
+        <ion-label slot="end" class="text-xs">{{
+          glucoseSettings.unit === 'mg/dL' ? 250 : 13.9
+        }}</ion-label>
       </ion-range>
     </ion-item>
   </ion-list>
 
   <!-- Notification Settings -->
-  <ion-list-header class="pt-5 pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider">
+  <ion-list-header class="px-4 pt-5 pb-2.5 text-xs font-semibold tracking-wider uppercase">
     <ion-label>Notificaciones</ion-label>
   </ion-list-header>
   <ion-list class="mb-4">
     <ion-item>
       <ion-label>
-        <h3 class="font-medium mb-1">Citas Médicas</h3>
+        <h3 class="mb-1 font-medium">Citas Médicas</h3>
         <p class="text-sm">Recordatorios de próximas citas</p>
       </ion-label>
       <ion-toggle
@@ -126,7 +134,7 @@
 
     <ion-item>
       <ion-label>
-        <h3 class="font-medium mb-1">Lecturas de Glucosa</h3>
+        <h3 class="mb-1 font-medium">Lecturas de Glucosa</h3>
         <p class="text-sm">Recordatorios para tomar lecturas</p>
       </ion-label>
       <ion-toggle
@@ -137,7 +145,7 @@
 
     <ion-item *ngIf="notificationSettings.readings">
       <ion-label>
-        <h3 class="font-medium mb-1">Horarios de Recordatorio</h3>
+        <h3 class="mb-1 font-medium">Horarios de Recordatorio</h3>
         <p class="text-sm">Toca para eliminar</p>
       </ion-label>
       <ion-button fill="clear" slot="end" (click)="addReadingReminder()">
@@ -154,7 +162,7 @@
 
     <ion-item>
       <ion-label>
-        <h3 class="font-medium mb-1">Reporte Semanal</h3>
+        <h3 class="mb-1 font-medium">Reporte Semanal</h3>
         <p class="text-sm">Resumen de tu progreso semanal</p>
       </ion-label>
       <ion-toggle
@@ -165,7 +173,7 @@
 
     <ion-item>
       <ion-label>
-        <h3 class="font-medium mb-1">Alertas Críticas</h3>
+        <h3 class="mb-1 font-medium">Alertas Críticas</h3>
         <p class="text-sm">Valores fuera de rango</p>
       </ion-label>
       <ion-toggle
@@ -176,7 +184,7 @@
   </ion-list>
 
   <!-- Appearance Settings -->
-  <ion-list-header class="pt-5 pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider">
+  <ion-list-header class="px-4 pt-5 pb-2.5 text-xs font-semibold tracking-wider uppercase">
     <ion-label>Apariencia</ion-label>
   </ion-list-header>
   <ion-list class="mb-4">
@@ -209,13 +217,13 @@
   </ion-list>
 
   <!-- Privacy Settings -->
-  <ion-list-header class="pt-5 pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider">
+  <ion-list-header class="px-4 pt-5 pb-2.5 text-xs font-semibold tracking-wider uppercase">
     <ion-label>Privacidad</ion-label>
   </ion-list-header>
   <ion-list class="mb-4">
     <ion-item>
       <ion-label>
-        <h3 class="font-medium mb-1">Compartir con Doctor</h3>
+        <h3 class="mb-1 font-medium">Compartir con Doctor</h3>
         <p class="text-sm">Permitir que tu doctor vea tus datos</p>
       </ion-label>
       <ion-toggle
@@ -226,7 +234,7 @@
 
     <ion-item>
       <ion-label>
-        <h3 class="font-medium mb-1">Estadísticas Anónimas</h3>
+        <h3 class="mb-1 font-medium">Estadísticas Anónimas</h3>
         <p class="text-sm">Ayuda a mejorar la app</p>
       </ion-label>
       <ion-toggle
@@ -273,13 +281,13 @@
   </ion-list>
 
   <!-- Sync Settings -->
-  <ion-list-header class="pt-5 pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider">
+  <ion-list-header class="px-4 pt-5 pb-2.5 text-xs font-semibold tracking-wider uppercase">
     <ion-label>Sincronización</ion-label>
   </ion-list-header>
   <ion-list class="mb-4">
     <ion-item>
       <ion-label>
-        <h3 class="font-medium mb-1">Sincronización Automática</h3>
+        <h3 class="mb-1 font-medium">Sincronización Automática</h3>
         <p class="text-sm">Sincronizar datos automáticamente</p>
       </ion-label>
       <ion-toggle [(ngModel)]="syncSettings.autoSync" (ionChange)="hasChanges = true"></ion-toggle>
@@ -302,7 +310,7 @@
 
     <ion-item *ngIf="syncSettings.autoSync">
       <ion-label>
-        <h3 class="font-medium mb-1">Solo Wi-Fi</h3>
+        <h3 class="mb-1 font-medium">Solo Wi-Fi</h3>
         <p class="text-sm">Sincronizar solo con conexión Wi-Fi</p>
       </ion-label>
       <ion-toggle [(ngModel)]="syncSettings.wifiOnly" (ionChange)="hasChanges = true"></ion-toggle>
@@ -310,7 +318,7 @@
 
     <ion-item *ngIf="syncSettings.autoSync">
       <ion-label>
-        <h3 class="font-medium mb-1">Sincronización en Segundo Plano</h3>
+        <h3 class="mb-1 font-medium">Sincronización en Segundo Plano</h3>
         <p class="text-sm">Permite sincronización cuando la app está cerrada</p>
       </ion-label>
       <ion-toggle
@@ -321,7 +329,7 @@
   </ion-list>
 
   <!-- Advanced Settings -->
-  <ion-list-header class="pt-5 pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider">
+  <ion-list-header class="px-4 pt-5 pb-2.5 text-xs font-semibold tracking-wider uppercase">
     <ion-label>Avanzado</ion-label>
   </ion-list-header>
   <ion-list class="mb-4">
@@ -329,7 +337,7 @@
     <ion-item button (click)="toggleDebugPanel()" *ngIf="isDevEnvironment">
       <ion-icon name="bug-outline" slot="start" color="warning"></ion-icon>
       <ion-label>
-        <h3 class="font-medium mb-1">Panel de Depuración</h3>
+        <h3 class="mb-1 font-medium">Panel de Depuración</h3>
         <p class="text-sm">Herramientas para desarrolladores</p>
       </ion-label>
       <ion-icon [name]="showDebugPanel ? 'chevron-up' : 'chevron-down'" slot="end"></ion-icon>
@@ -360,13 +368,19 @@
   <!-- Demo Mode Notice -->
   <ion-card *ngIf="isDemoMode" class="demo-notice">
     <ion-card-content class="flex items-center gap-3 p-3">
-      <ion-icon name="information-circle-outline" color="warning" class="text-2xl shrink-0"></ion-icon>
-      <p class="m-0 text-sm">Estás en modo demo. Algunos cambios no se guardarán permanentemente.</p>
+      <ion-icon
+        name="information-circle-outline"
+        color="warning"
+        class="shrink-0 text-2xl"
+      ></ion-icon>
+      <p class="m-0 text-sm">
+        Estás en modo demo. Algunos cambios no se guardarán permanentemente.
+      </p>
     </ion-card-content>
   </ion-card>
 
   <!-- Version Info -->
-  <div class="text-center p-5">
+  <div class="p-5 text-center">
     <p class="my-1 text-sm text-gray-500 dark:text-gray-400">Diabetify v1.0.0</p>
     <p class="my-1 text-sm text-gray-500 dark:text-gray-400">© 2024 Diabetify</p>
   </div>

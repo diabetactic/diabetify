@@ -1,6 +1,6 @@
 <ion-item class="reading-item" lines="none">
   <div
-    class="flex justify-between items-center w-full p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md dark:shadow-black/30 transition-colors duration-200"
+    class="flex w-full items-center justify-between rounded-xl bg-white p-4 shadow-md transition-colors duration-200 dark:bg-gray-800 dark:shadow-black/30"
   >
     <!-- Left Section: Emoji + Reading Info -->
     <div class="flex items-center gap-3">
@@ -11,7 +11,7 @@
       <div class="flex flex-col gap-1">
         <!-- Glucose Value -->
         <div class="flex items-baseline gap-1">
-          <span class="text-2xl font-bold text-gray-900 dark:text-white leading-none">
+          <span class="text-2xl leading-none font-bold text-gray-900 dark:text-white">
             {{ reading.value }}
           </span>
           <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -31,7 +31,7 @@
     <!-- Right Section: Status Badge -->
     <div class="flex items-center">
       <span
-        class="px-3 py-1.5 rounded-xl text-[11px] font-semibold uppercase tracking-wide"
+        class="rounded-xl px-3 py-1.5 text-[11px] font-semibold tracking-wide uppercase"
         [ngClass]="{
           'bg-green-500/10 text-green-600 dark:text-green-400': getStatusClass() === 'normal',
           'bg-orange-500/10 text-orange-600 dark:text-orange-400': getStatusClass() === 'low',

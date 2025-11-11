@@ -13,7 +13,7 @@
   <!-- Progress bar -->
   <div class="h-1 w-full bg-gray-200 dark:bg-gray-700">
     <div
-      class="h-full bg-primary transition-all duration-300 ease-in-out"
+      class="bg-primary h-full transition-all duration-300 ease-in-out"
       [style.width.%]="stepProgress"
     ></div>
   </div>
@@ -38,7 +38,7 @@
             <span *ngIf="currentStep <= step">{{ step }}</span>
           </div>
           <!-- Step label (mobile hidden) -->
-          <span class="mt-2 hidden text-xs font-medium text-gray-600 dark:text-gray-400 sm:block">
+          <span class="mt-2 hidden text-xs font-medium text-gray-600 sm:block dark:text-gray-400">
             {{ currentStep === step ? getStepLabel(step) : '' }}
           </span>
         </div>
@@ -89,9 +89,9 @@
             <div class="flex items-start gap-4">
               <!-- Doctor avatar -->
               <div
-                class="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-primary/10"
+                class="bg-primary/10 flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full"
               >
-                <span class="text-2xl font-bold text-primary">{{ doctor.name.charAt(0) }}</span>
+                <span class="text-primary text-2xl font-bold">{{ doctor.name.charAt(0) }}</span>
               </div>
 
               <!-- Doctor info -->
@@ -120,7 +120,7 @@
 
               <!-- Selected checkmark -->
               <div *ngIf="selectedDoctor?.id === doctor.id" class="flex-shrink-0">
-                <ion-icon name="checkmark-circle" class="text-3xl text-primary"></ion-icon>
+                <ion-icon name="checkmark-circle" class="text-primary text-3xl"></ion-icon>
               </div>
             </div>
           </div>
@@ -147,8 +147,8 @@
           *ngIf="selectedDoctor"
           class="card-elevated mb-6 flex items-center gap-3 rounded-lg p-4"
         >
-          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <span class="text-lg font-bold text-primary">{{ selectedDoctor.name.charAt(0) }}</span>
+          <div class="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-full">
+            <span class="text-primary text-lg font-bold">{{ selectedDoctor.name.charAt(0) }}</span>
           </div>
           <div>
             <p class="font-semibold text-gray-900 dark:text-white">{{ selectedDoctor.name }}</p>
@@ -197,7 +197,7 @@
               [ngClass]="{
                 'border-primary bg-primary text-white shadow-md':
                   selectedTimeSlot?.time === slot.time && slot.available,
-                'border-gray-200 bg-white text-gray-700 hover:border-primary/50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300':
+                'hover:border-primary/50 border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300':
                   selectedTimeSlot?.time !== slot.time && slot.available,
                 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400 dark:bg-gray-800/50':
                   !slot.available,
@@ -227,8 +227,8 @@
               [class.ring-primary]="selectedType?.id === type.id"
             >
               <div class="flex items-center gap-3">
-                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                  <ion-icon [name]="type.icon" class="text-2xl text-primary"></ion-icon>
+                <div class="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-full">
+                  <ion-icon [name]="type.icon" class="text-primary text-2xl"></ion-icon>
                 </div>
                 <div class="flex-1">
                   <p class="font-semibold text-gray-900 dark:text-white">{{ type.name }}</p>
@@ -239,7 +239,7 @@
                 <ion-icon
                   *ngIf="selectedType?.id === type.id"
                   name="checkmark-circle"
-                  class="text-2xl text-primary"
+                  class="text-primary text-2xl"
                 >
                 </ion-icon>
               </div>
@@ -302,13 +302,13 @@
           <!-- Doctor info -->
           <div class="card-elevated rounded-lg p-4">
             <p
-              class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400"
+              class="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400"
             >
               Doctor
             </p>
             <div class="flex items-center gap-3">
-              <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <span class="text-lg font-bold text-primary">{{
+              <div class="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-full">
+                <span class="text-primary text-lg font-bold">{{
                   confirmationData.doctor.name.charAt(0)
                 }}</span>
               </div>
@@ -326,16 +326,16 @@
           <!-- Date and time -->
           <div class="card-elevated rounded-lg p-4">
             <p
-              class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400"
+              class="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400"
             >
               Fecha y hora
             </p>
             <div class="flex items-center gap-2 text-gray-900 dark:text-white">
-              <ion-icon name="calendar-outline" class="text-xl text-primary"></ion-icon>
+              <ion-icon name="calendar-outline" class="text-primary text-xl"></ion-icon>
               <span class="font-medium">{{ formatDate(confirmationData.date) }}</span>
             </div>
             <div class="mt-2 flex items-center gap-2 text-gray-900 dark:text-white">
-              <ion-icon name="time-outline" class="text-xl text-primary"></ion-icon>
+              <ion-icon name="time-outline" class="text-primary text-xl"></ion-icon>
               <span class="font-medium">{{ confirmationData.time }}</span>
             </div>
           </div>
@@ -343,7 +343,7 @@
           <!-- Type and duration -->
           <div class="card-elevated rounded-lg p-4">
             <p
-              class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400"
+              class="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400"
             >
               Tipo de cita
             </p>
@@ -358,7 +358,7 @@
           <!-- Notes (if any) -->
           <div *ngIf="confirmationData.notes" class="card-elevated rounded-lg p-4">
             <p
-              class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400"
+              class="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400"
             >
               Notas
             </p>
@@ -368,10 +368,10 @@
           <!-- Glucose data sharing -->
           <div
             *ngIf="confirmationData.shareGlucose"
-            class="rounded-lg bg-primary/5 p-4 dark:bg-primary/10"
+            class="bg-primary/5 dark:bg-primary/10 rounded-lg p-4"
           >
             <div class="flex items-center gap-2">
-              <ion-icon name="analytics-outline" class="text-xl text-primary"></ion-icon>
+              <ion-icon name="analytics-outline" class="text-primary text-xl"></ion-icon>
               <p class="text-sm font-medium text-gray-900 dark:text-white">
                 Compartirás datos de glucosa de los últimos {{ confirmationData.glucoseDays }} días
               </p>
