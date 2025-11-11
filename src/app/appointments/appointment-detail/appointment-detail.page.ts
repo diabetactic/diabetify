@@ -103,7 +103,8 @@ export class AppointmentDetailPage implements OnInit {
       if (result) {
         this.shareSuccess = true;
         this.recordCount = result.recordCount || 0;
-        this.shareMessage = result.message || `${this.recordCount} lecturas compartidas exitosamente`;
+        this.shareMessage =
+          result.message || `${this.recordCount} lecturas compartidas exitosamente`;
 
         // Update appointment to mark data as shared
         if (this.appointment) {
@@ -152,7 +153,7 @@ export class AppointmentDetailPage implements OnInit {
         },
         {
           text: 'Sí, cancelar',
-          handler: async (data) => {
+          handler: async data => {
             await this.performCancelAppointment(data.reason);
           },
         },

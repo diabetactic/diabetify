@@ -80,13 +80,16 @@
 
           <ion-note slot="end">
             <ion-badge [color]="getStatusColor(appointment.status)">
-              <span class="material-symbols-outlined badge-icon">{{ getStatusIcon(appointment.status) }}</span>
+              <span class="material-symbols-outlined badge-icon">{{
+                getStatusIcon(appointment.status)
+              }}</span>
               {{ appointment.status }}
             </ion-badge>
             <ion-badge
               *ngIf="appointment.urgency !== 'routine'"
               [color]="getUrgencyColor(appointment.urgency)"
-              class="urgency-badge">
+              class="urgency-badge"
+            >
               {{ appointment.urgency }}
             </ion-badge>
           </ion-note>
@@ -119,7 +122,11 @@
 
     <!-- Appointments list -->
     <ion-list *ngIf="pastAppointments.length > 0">
-      <ion-item *ngFor="let appointment of pastAppointments" button (click)="viewAppointment(appointment)">
+      <ion-item
+        *ngFor="let appointment of pastAppointments"
+        button
+        (click)="viewAppointment(appointment)"
+      >
         <ion-avatar slot="start">
           <div class="appointment-avatar past">
             <span class="material-symbols-outlined">person</span>
@@ -141,7 +148,9 @@
 
         <ion-note slot="end">
           <ion-badge [color]="getStatusColor(appointment.status)">
-            <span class="material-symbols-outlined badge-icon">{{ getStatusIcon(appointment.status) }}</span>
+            <span class="material-symbols-outlined badge-icon">{{
+              getStatusIcon(appointment.status)
+            }}</span>
             {{ appointment.status }}
           </ion-badge>
           <div *ngIf="appointment.glucoseDataShared" class="shared-indicator">
