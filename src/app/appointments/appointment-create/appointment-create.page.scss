@@ -1,0 +1,122 @@
+// Appointment Create Page Styles
+// Most styles use Tailwind v4 utilities
+// Keeping only Ionic-specific CSS variables and complex animations
+
+// Ionic datetime custom styling
+ion-datetime {
+  --background: var(--ion-background-color, #fff);
+  --background-rgb: var(--ion-background-color-rgb, 255, 255, 255);
+
+  @media (prefers-color-scheme: dark) {
+    --background: var(--ion-color-step-50, #1e1e1e);
+  }
+}
+
+// Ionic textarea custom styling
+ion-textarea {
+  --background: var(--ion-background-color, #fff);
+  --color: var(--ion-text-color, #000);
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+
+  @media (prefers-color-scheme: dark) {
+    --background: var(--ion-color-step-100, #1a1a1a);
+    --color: var(--ion-color-step-850, #e0e0e0);
+  }
+}
+
+// Ionic toggle custom styling
+ion-toggle {
+  --background: rgba(0, 0, 0, 0.1);
+  --background-checked: var(--ion-color-primary);
+  --handle-background: #fff;
+  --handle-background-checked: #fff;
+
+  @media (prefers-color-scheme: dark) {
+    --background: rgba(255, 255, 255, 0.1);
+    --handle-background: #e0e0e0;
+  }
+}
+
+// Ionic range (for glucose data days selector)
+ion-range {
+  --bar-background: rgba(var(--ion-color-primary-rgb), 0.2);
+  --bar-background-active: var(--ion-color-primary);
+  --bar-height: 4px;
+  --bar-border-radius: 2px;
+  --knob-background: var(--ion-color-primary);
+  --knob-size: 24px;
+  --pin-background: var(--ion-color-primary);
+  --pin-color: #fff;
+
+  padding: 8px 0;
+}
+
+// Ionic searchbar custom styling
+ion-searchbar {
+  --background: var(--ion-background-color, #fff);
+  --color: var(--ion-text-color, #000);
+  --placeholder-color: var(--ion-color-step-600, #666);
+  --icon-color: var(--ion-color-step-600, #666);
+  --border-radius: 12px;
+  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  @media (prefers-color-scheme: dark) {
+    --background: var(--ion-color-step-100, #1a1a1a);
+    --color: var(--ion-color-step-850, #e0e0e0);
+    --placeholder-color: var(--ion-color-step-400, #888);
+    --icon-color: var(--ion-color-step-400, #888);
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+// Step animation (fade in)
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.step-content {
+  animation: fadeIn 0.3s ease-out;
+}
+
+// Doctor card hover effect enhancement (beyond Tailwind)
+.doctor-card {
+  &:active {
+    transform: translateY(0) !important;
+    transition: transform 0.1s ease;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 640px) {
+  .appointment-create-container {
+    padding: 0 8px;
+  }
+
+  // Smaller step indicators on mobile
+  .step-indicator {
+    .step-circle {
+      width: 32px;
+      height: 32px;
+      font-size: 14px;
+    }
+
+    .connector-line {
+      margin: 0 4px;
+    }
+  }
+}
+
+// Progress bar animation
+ion-header .h-1 div {
+  transition: width 0.3s ease-in-out;
+}
