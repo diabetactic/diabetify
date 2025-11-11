@@ -145,6 +145,20 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Get flag emoji for language
+   */
+  getFlagEmoji(language: Language): string {
+    switch (language) {
+      case Language.EN:
+        return '🇺🇸';
+      case Language.ES:
+        return '🇪🇸';
+      default:
+        return '🌐';
+    }
+  }
+
+  /**
    * Show language popover
    */
   async showLanguagePopover(event: Event) {
@@ -248,6 +262,20 @@ export class LanguagePopoverComponent implements OnInit {
         return 'ES';
       default:
         return '??';
+    }
+  }
+
+  /**
+   * Get flag emoji for language
+   */
+  getFlagEmoji(language: Language): string {
+    switch (language) {
+      case Language.EN:
+        return '🇺🇸';
+      case Language.ES:
+        return '🇪🇸';
+      default:
+        return '🌐';
     }
   }
 }
