@@ -10,13 +10,7 @@ import { AppointmentsPageRoutingModule } from './appointments-routing.module';
 import { AppointmentsPage } from './appointments.page';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    AppointmentsPageRoutingModule,
-    TranslateModule
-  ],
-  declarations: [AppointmentsPage]
+  imports: [CommonModule, FormsModule, IonicModule, AppointmentsPageRoutingModule, TranslateModule],
+  declarations: [AppointmentsPage],
 })
 export class AppointmentsPageModule {}

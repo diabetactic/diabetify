@@ -553,9 +553,10 @@ export class ApiGatewayService {
     const url = `${baseUrl}${path}`;
 
     // Prepare headers
-    let headers = options?.headers instanceof HttpHeaders
-      ? options.headers
-      : new HttpHeaders(options?.headers as { [header: string]: string | string[] } || {});
+    let headers =
+      options?.headers instanceof HttpHeaders
+        ? options.headers
+        : new HttpHeaders((options?.headers as { [header: string]: string | string[] }) || {});
 
     // Add authentication if required
     if (endpoint.authenticated) {
@@ -606,11 +607,11 @@ export class ApiGatewayService {
   private async getAuthToken(service: ExternalService): Promise<string | null> {
     switch (service) {
       case ExternalService.TIDEPOOL:
-        return await this.unifiedAuth.getProviderToken('tidepool').toPromise() ?? null;
+        return (await this.unifiedAuth.getProviderToken('tidepool').toPromise()) ?? null;
       case ExternalService.GLUCOSERVER:
       case ExternalService.APPOINTMENTS:
       case ExternalService.LOCAL_AUTH:
-        return await this.unifiedAuth.getProviderToken('local').toPromise() ?? null;
+        return (await this.unifiedAuth.getProviderToken('local').toPromise()) ?? null;
       default:
         return null;
     }
