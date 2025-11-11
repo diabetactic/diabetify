@@ -10,17 +10,17 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="ion-padding">
   <!-- Pull to Refresh -->
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <div class="dashboard-container">
+  <div class="mx-auto max-w-7xl px-4 py-6 md:px-6">
     <!-- Loading State -->
-    <div *ngIf="isLoading" class="loading-container">
+    <div *ngIf="isLoading" class="flex min-h-[400px] flex-col items-center justify-center gap-4">
       <ion-spinner name="crescent" *ngIf="!isKarma"></ion-spinner>
-      <p>{{ 'app.loading' | translate }}</p>
+      <p class="m-0 text-base text-gray-600 dark:text-gray-300">{{ 'app.loading' | translate }}</p>
     </div>
 
     <!-- Dashboard Content -->
@@ -37,7 +37,7 @@
       </app-alert-banner>
 
       <!-- Stats Grid (2x2) -->
-      <div class="stats-grid">
+      <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <!-- HbA1c Card -->
         <app-stat-card
           [title]="'readings.statistics.hba1c' | translate"
@@ -80,14 +80,14 @@
       </div>
 
       <!-- Upcoming Appointment Card -->
-      <ion-card *ngIf="upcomingAppointment" class="appointment-card">
-        <ion-card-header>
-          <ion-card-subtitle>{{ 'dashboard.upcomingAppointments' | translate }}</ion-card-subtitle>
-          <ion-card-title>{{
+      <ion-card *ngIf="upcomingAppointment" class="appointment-card mb-6">
+        <ion-card-header class="pb-2">
+          <ion-card-subtitle class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ 'dashboard.upcomingAppointments' | translate }}</ion-card-subtitle>
+          <ion-card-title class="text-xl font-bold text-gray-900 dark:text-white">{{
             upcomingAppointment.doctorName || ('appointments.doctor' | translate)
           }}</ion-card-title>
         </ion-card-header>
-        <ion-card-content>
+        <ion-card-content class="pt-2">
           <ion-item lines="none">
             <ion-icon slot="start" name="calendar-outline" color="primary"></ion-icon>
             <ion-label>
@@ -105,7 +105,7 @@
             </ion-label>
           </ion-item>
 
-          <div class="appointment-actions">
+          <div class="mt-4 flex flex-col gap-2">
             <ion-button
               expand="block"
               (click)="shareGlucoseData()"
@@ -125,11 +125,11 @@
       </ion-card>
 
       <!-- Quick Actions Card -->
-      <ion-card class="quick-actions-card">
-        <ion-card-header>
-          <ion-card-title>{{ 'dashboard.quickActions' | translate }}</ion-card-title>
+      <ion-card class="quick-actions-card mb-6">
+        <ion-card-header class="pb-2">
+          <ion-card-title class="text-xl font-bold text-gray-900 dark:text-white">{{ 'dashboard.quickActions' | translate }}</ion-card-title>
         </ion-card-header>
-        <ion-card-content>
+        <ion-card-content class="pt-2">
           <ion-grid>
             <ion-row>
               <ion-col size="6">
@@ -176,12 +176,12 @@
       </ion-card>
 
       <!-- Recent Readings Section -->
-      <div class="recent-readings-section">
-        <div class="section-header">
-          <h2>{{ 'dashboard.recentReadings' | translate }}</h2>
-          <ion-button fill="clear" size="small" routerLink="/tabs/readings">
+      <div class="recent-readings-section mt-6">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="m-0 text-xl font-bold text-gray-900 dark:text-white">{{ 'dashboard.recentReadings' | translate }}</h2>
+          <ion-button fill="clear" size="small" routerLink="/tabs/readings" class="m-0 h-auto text-sm font-medium">
             {{ 'common.viewAll' | translate }}
-            <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
+            <ion-icon slot="end" name="chevron-forward-outline" class="text-base"></ion-icon>
           </ion-button>
         </div>
 
@@ -196,7 +196,7 @@
         </app-empty-state>
 
         <!-- Reading Items -->
-        <div class="readings-list" *ngIf="recentReadings.length > 0">
+        <div class="flex flex-col gap-3" *ngIf="recentReadings.length > 0">
           <app-reading-item *ngFor="let reading of recentReadings" [reading]="reading">
           </app-reading-item>
         </div>
