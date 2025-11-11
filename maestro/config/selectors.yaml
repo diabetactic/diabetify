@@ -1,0 +1,116 @@
+# UI Element Selectors Configuration
+# Centralized selectors for common UI elements
+#
+# Usage in tests:
+#   - tapOn: ${LOGIN_BUTTON}
+#   - assertVisible: ${DASHBOARD_TITLE}
+
+# Authentication Screens
+LOGIN_BUTTON: "Login"
+SIGNUP_BUTTON: "Sign Up"
+LOGOUT_BUTTON: ".*[Ll]ogout.*"
+EMAIL_INPUT: "Email"
+PASSWORD_INPUT: "Password"
+SIGNIN_BUTTON: "Sign In"
+
+# Welcome Screen
+WELCOME_TITLE: "Welcome"
+GET_STARTED_BUTTON: "Get Started"
+
+# Main Navigation Tabs
+TAB_DASHBOARD: "Dashboard"
+TAB_READINGS: "Readings"
+TAB_APPOINTMENTS: "Appointments"
+TAB_PROFILE: "Profile"
+
+# Dashboard Elements
+DASHBOARD_TITLE: "Dashboard"
+DASHBOARD_GLUCOSE_CARD: ".*[Gg]lucose.*"
+DASHBOARD_APPOINTMENTS_CARD: ".*[Aa]ppointments.*"
+DASHBOARD_STATS_CARD: ".*[Ss]tats.*"
+
+# Readings Screen
+READINGS_TITLE: "Readings"
+READINGS_LIST: ".*[Rr]eadings.*"
+READINGS_EMPTY_STATE: "No readings available"
+READINGS_ADD_BUTTON: "Add Reading"
+READINGS_FILTER_BUTTON: "Filter"
+
+# Appointments Screen
+APPOINTMENTS_TITLE: "Appointments"
+APPOINTMENTS_LIST: ".*[Aa]ppointments.*"
+APPOINTMENTS_EMPTY_STATE: "No appointments"
+APPOINTMENTS_ADD_BUTTON: "Add Appointment"
+APPOINTMENTS_CALENDAR_BUTTON: "Calendar"
+
+# Profile Screen
+PROFILE_TITLE: "Profile"
+PROFILE_SETTINGS: "Settings"
+PROFILE_LANGUAGE: "Language"
+PROFILE_THEME: "Theme"
+PROFILE_SYNC_STATUS: "Sync Status"
+
+# Common UI Elements
+LOADING_INDICATOR: "Loading"
+ERROR_MESSAGE: "Error"
+SUCCESS_MESSAGE: "Success"
+OFFLINE_INDICATOR: "Offline"
+BACK_BUTTON: "Back"
+CLOSE_BUTTON: "Close"
+SAVE_BUTTON: "Save"
+CANCEL_BUTTON: "Cancel"
+
+# Theme Toggle
+THEME_TOGGLE: ".*[Tt]heme.*"
+DARK_MODE_TOGGLE: "Dark Mode"
+LIGHT_MODE_TOGGLE: "Light Mode"
+
+# Language Switcher
+LANGUAGE_SWITCHER: "Language"
+ENGLISH_OPTION: "English"
+SPANISH_OPTION: "Español"
+
+# Tidepool Integration
+TIDEPOOL_CONNECT_BUTTON: "Connect to Tidepool"
+TIDEPOOL_DISCONNECT_BUTTON: "Disconnect"
+TIDEPOOL_SYNC_BUTTON: "Sync"
+TIDEPOOL_STATUS: "Tidepool Status"
+
+# Empty States
+EMPTY_STATE_TITLE: "No data available"
+EMPTY_STATE_ACTION: "Get Started"
+
+# Loading States
+SKELETON_LOADER: "Loading..."
+SPINNER: ".*[Ll]oading.*"
+
+# Error States
+ERROR_TITLE: "Error"
+ERROR_RETRY_BUTTON: "Retry"
+ERROR_DISMISS_BUTTON: "Dismiss"
+
+# Success States
+SUCCESS_TITLE: "Success"
+SUCCESS_OK_BUTTON: "OK"
+
+# Form Elements
+INPUT_TEXT: ".*[Ii]nput.*"
+TEXTAREA: ".*[Tt]extarea.*"
+SELECT_DROPDOWN: ".*[Ss]elect.*"
+CHECKBOX: ".*[Cc]heckbox.*"
+RADIO_BUTTON: ".*[Rr]adio.*"
+
+# Buttons
+PRIMARY_BUTTON: ".*[Bb]utton.*"
+SECONDARY_BUTTON: ".*[Bb]utton.*"
+FAB_BUTTON: ".*[Ff]ab.*"
+
+# Cards
+CARD_TITLE: ".*[Cc]ard.*"
+CARD_CONTENT: ".*[Cc]ontent.*"
+CARD_ACTION: ".*[Aa]ction.*"
+
+# Lists
+LIST_ITEM: ".*[Ii]tem.*"
+LIST_EMPTY: "No items"
+LIST_LOADING: "Loading items"

@@ -1,0 +1,62 @@
+appId: io.diabetactic.app
+---
+# Reusable Flow: Authentication Login
+# This flow can be called from other tests using runFlow command
+#
+# Usage:
+#   - runFlow: maestro/flows/auth-login.yaml
+#
+# Environment variables supported:
+#   - USERNAME: Test user email (default: demo@diabetactic.com)
+#   - PASSWORD: Test user password (default: demo123)
+
+- launchApp:
+    clearState: ${CLEAR_STATE-false}
+    clearKeychain: ${CLEAR_KEYCHAIN-false}
+
+# Wait for app to load
+- assertVisible: "Diabetactic"
+
+# Check if already logged in
+- runFlow:
+    when:
+      visible: "Dashboard"
+    commands:
+      - tapOn: "Profile"
+      - tapOn: "Logout"
+      - waitForAnimationToEnd
+
+# Navigate to login if on welcome screen
+- runFlow:
+    when:
+      visible: "Welcome"
+    commands:
+      - tapOn: "Get Started"
+      - waitForAnimationToEnd
+
+# Perform login
+- tapOn:
+    text: "Login"
+    index: 0
+
+- assertVisible: "Login"
+
+# Fill email field
+- tapOn: "Email"
+- inputText: ${USERNAME-demo@diabetactic.com}
+
+# Fill password field
+- tapOn: "Password"
+- inputText: ${PASSWORD-demo123}
+
+# Submit login
+- tapOn: "Sign In"
+
+# Wait for navigation to complete
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Verify successful login
+- assertVisible: "Dashboard"
+
+- takeScreenshot: maestro/screenshots/auth-login-success.png

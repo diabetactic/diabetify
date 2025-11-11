@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Diabetify",
+    "name": "Diabetactic",
     "tagline": "Tu Compañero en el Manejo de la Diabetes",
     "version": "Versión",
     "loading": "Cargando...",
@@ -32,6 +32,7 @@
     "viewAll": "Ver Todo",
     "close": "Cerrar",
     "cancel": "Cancelar",
+    "save": "Guardar",
     "no": "No",
     "pullToRefresh": "Desliza para actualizar",
     "refreshing": "Actualizando...",
@@ -46,11 +47,16 @@
     "profile": "Perfil"
   },
   "welcome": {
-    "title": "¡Bienvenido a Diabetify!",
+    "title": "¡Bienvenido a Diabetactic!",
     "subtitle": "Tu compañero amigable para controlar la diabetes con una sonrisa.",
     "getStarted": "Empezar",
     "login": "Iniciar Sesión",
-    "heroAlt": "Una alegre ilustración de un niño superhéroe manejando con confianza su diabetes"
+    "heroAlt": "Una alegre ilustración de un niño superhéroe manejando con confianza su diabetes",
+    "quotes": [
+      "¡Eres más fuerte que la diabetes!",
+      "¡Cada día es una nueva oportunidad para prosperar!",
+      "¡Tu valentía inspira a todos a tu alrededor!"
+    ]
   },
   "auth": {
     "title": "Bienvenido a Diabetify",
@@ -129,6 +135,44 @@
     "shareReadings": "Compartir Últimas 30 Días de Lecturas",
     "syncError": "Error de sincronización",
     "defaultDoctorName": "tu médico",
+    "kids": {
+      "title": "Mi Salud",
+      "timeInRange": "Tiempo en Buen Rango",
+      "avgGlucose": "Azúcar Promedio",
+      "addReading": "Agregar Nueva Lectura",
+      "viewAll": "Ver Todas las Lecturas",
+      "moreInfo": "Más Detalles",
+      "parentView": "Vista para Padres",
+      "keepGoing": "¡Sigue así de bien!",
+      "recentReadings": "Mis Lecturas Recientes",
+      "noReadings": "Aún no hay lecturas",
+      "noReadingsMessage": "¡Vamos a agregar tu primera lectura!",
+      "status": {
+        "noData": "Agrega lecturas para ver tu estado",
+        "great": "¡Lo estás haciendo increíble!",
+        "good": "¡Buen trabajo! ¡Sigue así!",
+        "needsWork": "Trabajemos en esto juntos"
+      }
+    },
+    "detail": {
+      "title": "Estadísticas Detalladas",
+      "description": "Esta sección contiene información técnica y métricas médicas para padres, cuidadores y profesionales de la salud.",
+      "syncStatus": "Estado de Sincronización",
+      "aboutMetrics": "Acerca de Estas Métricas",
+      "hba1cExplanation": "La HbA1c estimada muestra tu glucosa promedio en sangre durante los últimos 2-3 meses. El objetivo suele estar por debajo del 7% para la mayoría de las personas con diabetes.",
+      "gmiExplanation": "GMI (Indicador de Gestión de Glucosa) se calcula a partir de los datos de tu monitor continuo de glucosa y proporciona una imagen similar a la HbA1c.",
+      "cvExplanation": "El Coeficiente de Variación mide cuánto varían tus niveles de glucosa. Menor es mejor, con un objetivo por debajo del 36%."
+    },
+    "syncedItems": "Elementos Sincronizados",
+    "failedItems": "Elementos Fallidos",
+    "status": "Estado",
+    "syncStatus": {
+      "unknown": "Desconocido",
+      "syncing": "Sincronizando...",
+      "failed": "{{count}} elementos no se pudieron sincronizar",
+      "success": "{{count}} elementos sincronizados exitosamente",
+      "idle": "Listo para sincronizar"
+    },
     "shareToast": {
       "success": "Se compartieron {{count}} lecturas con {{doctor}}",
       "error": "No se pudieron compartir los datos de glucosa. Inténtalo nuevamente."
@@ -384,9 +428,14 @@
       "past": "Pasadas"
     },
     "empty": {
-      "upcoming": "No tienes citas próximas",
-      "past": "No hay citas en tu historial",
-      "message": "Las citas aparecerán aquí cuando tu proveedor de salud las programe"
+      "upcoming": {
+        "title": "No Hay Citas Próximas",
+        "message": "Agenda tu próxima cita con tu proveedor de salud"
+      },
+      "past": {
+        "title": "No Hay Citas Pasadas",
+        "message": "Las citas completadas aparecerán aquí"
+      }
     },
     "actions": {
       "schedule": "Agendar Cita",
@@ -557,6 +606,8 @@
     "dateOfBirth": "Fecha de Nacimiento",
     "age": "Edad",
     "yearsOld": "años",
+    "editAge": "Editar Edad",
+    "agePlaceholder": "Ingresa tu edad",
     "notSet": "No establecido",
     "notAvailable": "No disponible",
     "username": "Nombre de usuario",
@@ -872,7 +923,7 @@
       "disableAll": "Deshabilitar Todas las Simulaciones",
       "clearData": "Limpiar Datos Simulados",
       "tip": "💡 Consejo: El modo simulación te permite probar la app sin conexión y sin datos reales.",
-      "demoCredentials": "Credenciales de demostración: demo@diabetify.com / demo123"
+      "demoCredentials": "Credenciales de demostración: demo@diabetactic.com / demo123"
     },
     "actions": {
       "dataManagement": "Gestión de Datos",

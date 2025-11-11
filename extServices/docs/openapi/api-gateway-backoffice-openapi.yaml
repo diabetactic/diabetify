@@ -1,0 +1,298 @@
+openapi: 3.0.3
+info:
+  title: Diabetify API Gateway (Backoffice)
+  version: 0.1.0
+  description: Backoffice-facing API used by the admin web UI.
+servers:
+  - url: http://localhost:8006
+tags:
+  - name: Auth
+  - name: Admin
+  - name: Users
+  - name: Glucose
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Token:
+      type: object
+      properties:
+        access_token: { type: string }
+        token_type: { type: string }
+      required: [access_token, token_type]
+    Admin:
+      type: object
+      properties:
+        username: { type: string }
+        email: { type: string, format: email }
+      required: [username, email]
+    AdminSignUp:
+      type: object
+      properties:
+        username: { type: string }
+        email: { type: string, format: email }
+        password: { type: string }
+      required: [username, email, password]
+    UserNoID:
+      type: object
+      properties:
+        dni: { type: string }
+        name: { type: string }
+        surname: { type: string }
+        blocked: { type: boolean }
+        email: { type: string, format: email }
+        tidepool: { type: string, nullable: true }
+        hospital_account: { type: string }
+        times_measured: { type: integer }
+        streak: { type: integer }
+        max_streak: { type: integer }
+      required: [dni, name, surname, blocked, email, hospital_account]
+    User:
+      allOf:
+        - $ref: '#/components/schemas/UserNoID'
+        - type: object
+          properties:
+            user_id: { type: integer }
+          required: [user_id]
+    UserSignUp:
+      allOf:
+        - $ref: '#/components/schemas/UserNoID'
+        - type: object
+          properties:
+            password: { type: string }
+          required: [password]
+    ReadingTypeEnum:
+      type: string
+      enum: [DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO]
+    GlucoseReading:
+      type: object
+      properties:
+        id: { type: integer }
+        user_id: { type: integer }
+        glucose_level: { type: number }
+        created_at: { type: string }
+        reading_type: { $ref: '#/components/schemas/ReadingTypeEnum' }
+      required: [id, user_id, glucose_level, created_at, reading_type]
+    GlucoseReadingList:
+      type: object
+      properties:
+        readings:
+          type: array
+          items: { $ref: '#/components/schemas/GlucoseReading' }
+      required: [readings]
+security:
+  - bearerAuth: []
+paths:
+  /token:
+    post:
+      tags: [Auth]
+      summary: Admin login (username + password)
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+                password: { type: string }
+              required: [username, password]
+      responses:
+        '200':
+          description: Access token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Token' }
+              examples:
+                example:
+                  value: { access_token: "eyJhbGciOi...", token_type: "bearer" }
+  /recover:
+    post:
+      tags: [Auth]
+      summary: Send password recovery email (best-effort)
+      parameters:
+        - in: query
+          name: email
+          required: true
+          schema: { type: string, format: email }
+      responses:
+        '200':
+          description: Status message
+          content:
+            application/json:
+              schema: { type: string }
+  /admin/me:
+    get:
+      tags: [Admin]
+      summary: Current admin profile
+      responses:
+        '200':
+          description: Admin
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Admin' }
+              examples:
+                example:
+                  value: { username: "admin", email: "admin@example.com" }
+  /admin/mail/change:
+    put:
+      tags: [Admin]
+      summary: Change admin email
+      parameters:
+        - in: query
+          name: new_mail
+          required: true
+          schema: { type: string, format: email }
+      responses:
+        '200':
+          description: Updated admin
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Admin' }
+  /admin/password:
+    put:
+      tags: [Admin]
+      summary: Change admin password
+      parameters:
+        - in: query
+          name: new_password
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Changed
+  /admin:
+    post:
+      tags: [Admin]
+      summary: Create new admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminSignUp' }
+      responses:
+        '200':
+          description: Created admin
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Admin' }
+  /users:
+    get:
+      tags: [Users]
+      summary: List users
+      responses:
+        '200':
+          description: Users
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/User' }
+              examples:
+                example:
+                  value:
+                    - { user_id: 1, dni: "1000", name: "Nacho", surname: "Scocco", blocked: false, email: "1@example.com", hospital_account: "1", times_measured: 0, streak: 0, max_streak: 0 }
+    post:
+      tags: [Users]
+      summary: Create user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserSignUp' }
+      responses:
+        '200':
+          description: Created user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+  /users/user/{user_id}:
+    get:
+      tags: [Users]
+      summary: Get user by ID
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: User
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserNoID' }
+  /glucose/user/{user_id}:
+    get:
+      tags: [Glucose]
+      summary: Readings by user
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlucoseReadingList' }
+  /glucose/user/{user_id}/latest:
+    get:
+      tags: [Glucose]
+      summary: Latest readings (15 days) by user
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlucoseReadingList' }
+  /glucose/readings:
+    get:
+      tags: [Glucose]
+      summary: All readings
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlucoseReadingList' }
+  /glucose/reading:
+    post:
+      tags: [Glucose]
+      summary: Create reading (proxy)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlucoseReading' }
+  /glucose/reading/{reading_id}:
+    delete:
+      tags: [Glucose]
+      summary: Delete reading
+      parameters:
+        - in: path
+          name: reading_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Deleted message
+          content:
+            application/json:
+              schema: { type: string }

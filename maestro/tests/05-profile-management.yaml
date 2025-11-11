@@ -1,0 +1,165 @@
+appId: io.diabetify.app
+---
+# Test: Profile Management and Settings
+# Description: Test profile page, language switching, and preferences
+# Prerequisites: User must be logged in
+
+# Launch app
+- launchApp
+- waitForAnimationToEnd
+
+# Navigate to Profile tab
+- tapOn:
+    text: ".*Profile.*|.*Perfil.*"
+- waitForAnimationToEnd
+
+# Verify profile page loaded
+- assertVisible:
+    text: ".*Profile.*|.*Perfil.*"
+
+# Take initial screenshot
+- takeScreenshot: screenshots/30_profile_initial.png
+
+# Verify user information section
+- assertVisible:
+    text: ".*demo.*|.*Demo.*"
+
+# Verify settings sections
+- assertVisible:
+    text: ".*Preferences.*|.*Preferencias.*"
+
+- assertVisible:
+    text: ".*Theme.*|.*Tema.*"
+
+- assertVisible:
+    text: ".*Language.*|.*Idioma.*"
+
+# Take screenshot showing all settings
+- takeScreenshot: screenshots/31_profile_settings.png
+
+# Test theme toggle (Light/Dark/Auto)
+- tapOn:
+    text: ".*Theme.*|.*Tema.*"
+- waitForAnimationToEnd
+
+# Select theme option (e.g., Dark)
+- tapOn:
+    text: ".*Dark.*|.*Oscuro.*"
+- waitForAnimationToEnd
+
+# Wait for theme to apply
+- waitForAnimationToEnd
+
+# Take screenshot with new theme
+- takeScreenshot: screenshots/32_profile_theme_dark.png
+
+# Switch back to Light theme
+- tapOn:
+    text: ".*Theme.*|.*Tema.*"
+- waitForAnimationToEnd
+
+- tapOn:
+    text: ".*Light.*|.*Claro.*"
+- waitForAnimationToEnd
+
+# Wait for theme to apply
+- waitForAnimationToEnd
+
+# Take screenshot back to light theme
+- takeScreenshot: screenshots/33_profile_theme_light.png
+
+# Test language switching
+- tapOn:
+    text: ".*Language.*|.*Idioma.*"
+- waitForAnimationToEnd
+
+# Get current language and switch to the other
+# If currently English, switch to Spanish
+- tapOn:
+    text: ".*Español.*|.*Spanish.*"
+- waitForAnimationToEnd
+
+# Wait for language change to apply
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify language changed - check for Spanish text
+- assertVisible:
+    text: ".*Perfil.*"
+
+# Take screenshot with Spanish language
+- takeScreenshot: screenshots/34_profile_language_spanish.png
+
+# Switch back to English
+- tapOn:
+    text: ".*Idioma.*|.*Language.*"
+- waitForAnimationToEnd
+
+- tapOn:
+    text: ".*English.*|.*Inglés.*"
+- waitForAnimationToEnd
+
+# Wait for language change
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify back to English
+- assertVisible:
+    text: ".*Profile.*"
+
+# Take screenshot back to English
+- takeScreenshot: screenshots/35_profile_language_english.png
+
+# Test glucose unit preferences
+- scroll
+
+# Tap on glucose unit setting
+- tapOn:
+    text: ".*mg/dL.*|.*mmol/L.*"
+- waitForAnimationToEnd
+
+# Select different unit (if currently mg/dL, select mmol/L)
+- tapOn:
+    text: ".*mmol/L.*"
+- waitForAnimationToEnd
+
+# Take screenshot with new unit
+- takeScreenshot: screenshots/36_profile_unit_changed.png
+
+# Scroll to see more profile options
+- scroll
+
+# Take screenshot of scrolled profile view
+- takeScreenshot: screenshots/37_profile_scrolled.png
+
+# Look for connection status or Tidepool info
+- assertVisible:
+    text: ".*Connection.*|.*Conexión.*|.*Tidepool.*"
+
+# Take screenshot of connection info
+- takeScreenshot: screenshots/38_profile_connection.png
+
+# Scroll to bottom for logout/sign out
+- scroll
+
+# Verify sign out button exists
+- assertVisible:
+    text: ".*Sign Out.*|.*Cerrar Sesión.*|.*Logout.*"
+
+# Take screenshot showing sign out
+- takeScreenshot: screenshots/39_profile_signout_visible.png
+
+# Return to top of profile
+- scrollUp
+
+# Navigate back to dashboard to verify settings applied
+- tapOn:
+    text: ".*Dashboard.*|.*Inicio.*"
+- waitForAnimationToEnd
+
+# Verify dashboard loads with applied settings
+- assertVisible:
+    text: ".*HbA1c.*"
+
+# Final screenshot
+- takeScreenshot: screenshots/40_profile_complete.png

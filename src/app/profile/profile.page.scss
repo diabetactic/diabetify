@@ -22,15 +22,15 @@ ion-content {
   align-items: center;
   text-align: center;
   gap: 12px;
-  color: #ffffff;
-  box-shadow: 0 12px 24px rgba(37, 175, 244, 0.2);
+  color: #fff;
+  box-shadow: 0 12px 24px rgb(37 175 244 / 20%);
 }
 
 .avatar-wrapper {
   width: 112px;
   height: 112px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgb(255 255 255 / 15%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -40,8 +40,8 @@ ion-content {
 .hero-avatar {
   width: 100%;
   height: 100%;
-  border: 3px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  border: 3px solid rgb(255 255 255 / 50%);
+  box-shadow: 0 8px 16px rgb(0 0 0 / 15%);
 
   img {
     object-fit: cover;
@@ -50,7 +50,7 @@ ion-content {
 
 .avatar-fallback {
   font-size: 72px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgb(255 255 255 / 85%);
 }
 
 .hero-greeting {
@@ -63,7 +63,7 @@ ion-content {
 .hero-subtext {
   margin: 0;
   font-size: 14px;
-  opacity: 0.85;
+  opacity: 85%;
 }
 
 .overview-grid {
@@ -77,9 +77,9 @@ ion-content {
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: var(--ion-color-light, #ffffff);
+  background: var(--ion-color-light, #fff);
   border-radius: 16px;
-  box-shadow: 0 8px 16px rgba(10, 31, 68, 0.08);
+  box-shadow: 0 8px 16px rgb(10 31 68 / 8%);
   color: var(--ion-color-dark, #0d1b2a);
   transition:
     transform 0.2s ease,
@@ -105,7 +105,7 @@ button.overview-card {
 .overview-card:hover,
 .overview-card:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 16px 32px rgba(10, 31, 68, 0.12);
+  box-shadow: 0 16px 32px rgb(10 31 68 / 12%);
 }
 
 .overview-text {
@@ -131,10 +131,10 @@ button.overview-card {
 }
 
 .card {
-  background: var(--ion-color-light, #ffffff);
+  background: var(--ion-color-light, #fff);
   border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 12px 24px rgba(10, 31, 68, 0.09);
+  box-shadow: 0 12px 24px rgb(10 31 68 / 9%);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -153,11 +153,19 @@ button.overview-card {
   justify-content: space-between;
   gap: 12px;
   padding: 12px 0;
-  border-top: 1px solid rgba(13, 27, 42, 0.08);
+  border-top: 1px solid rgb(13 27 42 / 8%);
 
   &:first-of-type {
     border-top: none;
     padding-top: 0;
+  }
+
+  .card-title {
+    color: var(--ion-color-dark, #0d1b2a);
+  }
+
+  .card-subtitle {
+    color: var(--ion-color-medium, #6b7280);
   }
 }
 
@@ -175,10 +183,13 @@ button.overview-card {
 }
 
 .preference-row ion-select {
-  --padding-start: 8px;
-  --padding-end: 8px;
-  min-width: 130px;
-  font-weight: 500;
+  --padding-start: 12px;
+  --padding-end: 12px;
+
+  min-width: 140px;
+  max-width: 180px;
+  font-weight: 600;
+  text-align: right;
 }
 
 .tidepool-card .tidepool-status {
@@ -200,6 +211,7 @@ button.overview-card {
 
 .tidepool-card ion-button {
   --border-radius: 12px;
+
   font-weight: 600;
 }
 
@@ -233,46 +245,82 @@ button.overview-card {
 
 .sign-out {
   margin-top: 8px;
+
   --border-radius: 14px;
+
   font-weight: 600;
 }
 
-@media (min-width: 540px) {
+@media (width >= 540px) {
   .overview-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (prefers-color-scheme: dark) {
+:host-context(.dark-theme) {
   ion-content {
     --background: #0f172a;
   }
 
   .profile-hero {
-    box-shadow: 0 12px 24px rgba(37, 175, 244, 0.35);
+    box-shadow: 0 12px 24px rgb(37 175 244 / 35%);
   }
 
   .overview-card,
   .card {
     background: var(--ion-color-step-150, #111827);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
-    color: var(--ion-color-light, #f8fafc);
+    box-shadow: 0 12px 24px rgb(0 0 0 / 35%);
+    color: #fff; // Pure white for maximum readability
   }
 
   .card-subtitle,
   .last-sync {
-    color: var(--ion-color-step-400, #94a3b8);
+    color: #d1d5db; // Much brighter for better readability
+  }
+
+  .card-heading {
+    color: #fff; // Pure white for headings
+    font-weight: 700; // Bolder for better visibility
+  }
+
+  .card-title {
+    color: #f5f5f5; // Very bright for primary text
+    font-weight: 600;
+  }
+
+  .preference-row .card-title {
+    color: #f5f5f5; // Very bright for primary text
+    font-weight: 600;
+  }
+
+  .preference-row .card-subtitle {
+    color: #d1d5db; // Much brighter for secondary text
   }
 
   .overview-card--placeholder .card-subtitle {
-    color: var(--ion-color-step-500, #64748b);
+    color: #c8c8c8; // Lighter for better visibility
   }
 
   .chevron {
-    color: var(--ion-color-step-400, #94a3b8);
+    color: #d1d5db; // Brighter chevrons
   }
 
   .about-row {
-    color: var(--ion-color-light, #f8fafc);
+    color: #f5f5f5; // Very bright for primary text
+  }
+
+  // Enhance specific text elements
+  .hero-greeting {
+    color: #fff !important; // Pure white for hero heading
+  }
+
+  .hero-email,
+  .hero-subtext {
+    color: rgb(255 255 255 / 95%) !important; // Nearly white for hero subtext
+  }
+
+  // Ensure ion-select text is readable
+  ion-select {
+    color: #f5f5f5 !important; // Very bright text
   }
 }

@@ -5,15 +5,19 @@
 
 import Dexie, { Table } from 'dexie';
 import { LocalGlucoseReading } from '../models';
+import { Appointment } from '../models/appointment.model';
+import { GlucoseShareRequest } from '../models/glucose-share.model';
 
 /**
  * Sync queue item for offline operations
  */
 export interface SyncQueueItem {
   id?: number;
-  operation: 'create' | 'update' | 'delete';
-  readingId: string;
+  operation: 'create' | 'update' | 'delete' | 'share-glucose';
+  readingId?: string;
   reading?: LocalGlucoseReading;
+  appointmentId?: string; // For share-glucose operations
+  payload?: GlucoseShareRequest; // For share-glucose payloads
   timestamp: number;
   retryCount: number;
   lastError?: string;
@@ -27,6 +31,7 @@ export class DiabetifyDatabase extends Dexie {
   // Tables
   readings!: Table<LocalGlucoseReading, string>;
   syncQueue!: Table<SyncQueueItem, number>;
+  appointments!: Table<Appointment, string>;
 
   constructor() {
     super('DiabetifyDB');
@@ -43,9 +48,21 @@ export class DiabetifyDatabase extends Dexie {
       syncQueue: '++id, timestamp, operation',
     });
 
+    // Version 2: Add appointments table
+    this.version(2).stores({
+      // Keep existing tables
+      readings: 'id, time, type, userId, synced, localStoredAt',
+      syncQueue: '++id, timestamp, operation, appointmentId',
+
+      // New appointments table cache
+      // Index by: id (primary), userId, dateTime, status, updatedAt
+      appointments: 'id, userId, dateTime, status, updatedAt',
+    });
+
     // Map tables to TypeScript classes
     this.readings = this.table('readings');
     this.syncQueue = this.table('syncQueue');
+    this.appointments = this.table('appointments');
   }
 
   /**
@@ -54,20 +71,23 @@ export class DiabetifyDatabase extends Dexie {
   async clearAllData(): Promise<void> {
     await this.readings.clear();
     await this.syncQueue.clear();
+    await this.appointments.clear();
   }
 
   /**
    * Get database statistics
    */
   async getStats() {
-    const [readingsCount, syncQueueCount] = await Promise.all([
+    const [readingsCount, syncQueueCount, appointmentsCount] = await Promise.all([
       this.readings.count(),
       this.syncQueue.count(),
+      this.appointments.count(),
     ]);
 
     return {
       readingsCount,
       syncQueueCount,
+      appointmentsCount,
       databaseName: this.name,
       version: this.verno,
     };

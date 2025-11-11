@@ -13,11 +13,12 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { getTranslateModuleForTesting } from '../../helpers/translate-test.helper';
 import { of } from 'rxjs';
 
 import { LoginPage } from '../../../login/login.page';
-import { LoginPageModule } from '../../../login/login.module';
 import { DashboardPage } from '../../../dashboard/dashboard.page';
+import { TabsPage } from '../../../tabs/tabs.page';
 import { UnifiedAuthService } from '../../../core/services/unified-auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { AuthGuard } from '../../../core/guards/auth.guard';
@@ -70,20 +71,27 @@ describe('Enhanced Auth User Journey', () => {
 
     await TestBed.configureTestingModule({
       imports: [
-        LoginPageModule,
+        LoginPage,
         DashboardPage,
+        TabsPage,
         RouterTestingModule.withRoutes([
-          { path: 'login', loadChildren: () => Promise.resolve(LoginPageModule) },
+          { path: 'login', component: LoginPage },
           {
-            path: 'dashboard',
-            component: DashboardPage,
-            canActivate: [AuthGuard],
+            path: 'tabs',
+            component: TabsPage,
+            children: [
+              {
+                path: 'dashboard',
+                component: DashboardPage,
+                canActivate: [AuthGuard],
+              },
+            ],
           },
         ]),
         HttpClientTestingModule,
         FormsModule,
         ReactiveFormsModule,
-        TranslateModule.forRoot(),
+        getTranslateModuleForTesting(),
       ],
       providers: [
         { provide: UnifiedAuthService, useValue: authService },
@@ -313,11 +321,11 @@ describe('Enhanced Auth User Journey', () => {
 
         // Navigate to dashboard (simulating successful auth)
         logger.log('📍 Navigating to dashboard');
-        router.navigate(['/dashboard']);
+        router.navigate(['/tabs/dashboard']);
         tick();
 
         logger.checkpoint('dashboard-navigated');
-        expect(location.path()).toBe('/dashboard');
+        expect(location.path()).toBe('/tabs/dashboard');
         logger.log('✅ At dashboard:', location.path());
       }
 
@@ -391,7 +399,7 @@ describe('Enhanced Auth User Journey', () => {
       PerformanceMeasurement.mark('guard-check-start');
 
       try {
-        router.navigate(['/dashboard']);
+        router.navigate(['/tabs/dashboard']);
         tick();
         tick(500);
       } catch (error) {
@@ -434,11 +442,11 @@ describe('Enhanced Auth User Journey', () => {
 
       logger.log('✅ Attempting to access /dashboard (authenticated)');
 
-      router.navigate(['/dashboard']);
+      router.navigate(['/tabs/dashboard']);
       tick();
       tick(500);
 
-      expect(location.path()).toBe('/dashboard');
+      expect(location.path()).toBe('/tabs/dashboard');
       logger.log('✅ Authenticated user accessed dashboard successfully');
 
       flush();
@@ -459,9 +467,9 @@ describe('Enhanced Auth User Journey', () => {
 
       authService.isAuthenticated.and.returnValue(true);
 
-      router.navigate(['/dashboard']);
+      router.navigate(['/tabs/dashboard']);
       tick();
-      expect(location.path()).toBe('/dashboard');
+      expect(location.path()).toBe('/tabs/dashboard');
       logger.log('At:', location.path());
 
       // Go back
@@ -480,7 +488,7 @@ describe('Enhanced Auth User Journey', () => {
       router.navigate(['/login']);
       tick();
 
-      router.navigate(['/dashboard']);
+      router.navigate(['/tabs/dashboard']);
       tick();
 
       location.back();
@@ -507,7 +515,7 @@ describe('Enhanced Auth User Journey', () => {
       // Try to deep link to dashboard
       logger.log('🔗 Deep linking to /dashboard?tab=readings');
 
-      router.navigate(['/dashboard'], { queryParams: { tab: 'readings' } });
+      router.navigate(['/tabs/dashboard'], { queryParams: { tab: 'readings' } });
       tick();
       tick(500);
 
@@ -528,7 +536,7 @@ describe('Enhanced Auth User Journey', () => {
       logger.log('📍 Navigating to /login?returnUrl=/dashboard&tab=appointments');
 
       router.navigate(['/login'], {
-        queryParams: { returnUrl: '/dashboard', tab: 'appointments' },
+        queryParams: { returnUrl: '/tabs/dashboard', tab: 'appointments' },
       });
       tick();
 

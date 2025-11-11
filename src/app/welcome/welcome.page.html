@@ -4,7 +4,7 @@
     <div class="hero-section">
       <div class="hero-image">
         <img
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBf8Fe5gKNYGiPfhPn-21Br3vmfaNsTL1Nsj_-cZv7gz_shtiWyPB0LUPniyFaRq5fX9g09VQCurbaW5mncAVTbtoVRSKRf--U7giLtkYjGtB7kNbMZCsnz8tJ3VjCkdf-0igG1-F-E0IPgB2sjMMD9lW4kQwcuTEPCCRQa6D-wz8bBrP1RF6F5iLJCV1pcbDn7uezfdfNPGq5P4RxuGhQjCJK4LNFXhI3HrRo3E26Om9KEjpICgPgE6jMvEvuVa35VDd7byWNL064"
+          src="assets/images/diabetifywelcomescreen.png"
           alt="{{ 'welcome.heroAlt' | translate }}"
         />
       </div>
@@ -22,7 +22,14 @@
 
     <!-- Action Buttons -->
     <div class="action-buttons">
-      <ion-button expand="block" size="large" (click)="onGetStarted()" class="primary-button">
+      <ion-button
+        expand="block"
+        size="large"
+        fill="solid"
+        color="primary"
+        (click)="onGetStarted()"
+        class="primary-button"
+      >
         {{ 'welcome.getStarted' | translate }}
       </ion-button>
 
@@ -30,6 +37,7 @@
         expand="block"
         size="large"
         fill="outline"
+        color="primary"
         (click)="onLogin()"
         class="secondary-button"
       >

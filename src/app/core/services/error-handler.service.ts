@@ -226,13 +226,14 @@ export class ErrorHandlerService {
 
   /**
    * Log error to console (development) or error tracking service (production)
+   * Sensitive health information (PHI) is redacted before logging
    */
   private logError(appError: AppError, originalError: HttpErrorResponse): void {
     const category = this.getErrorCategory(appError);
 
     const logData = {
       category,
-      error: appError,
+      error: this.redactPHI(appError),
       url: originalError.url,
       method: originalError.status ? 'HTTP' : 'Unknown',
       timestamp: appError.timestamp,
@@ -246,6 +247,72 @@ export class ErrorHandlerService {
     // if (environment.production && environment.features.crashReporting) {
     //   this.sendToErrorTracking(logData);
     // }
+  }
+
+  /**
+   * Redact Protected Health Information (PHI) from error objects
+   * Removes sensitive glucose and diabetes-related data before logging
+   *
+   * @param error - AppError object potentially containing PHI
+   * @returns AppError with sensitive fields redacted
+   */
+  private redactPHI(error: AppError): AppError {
+    if (!error.details) {
+      return error;
+    }
+
+    // List of sensitive fields that contain PHI
+    const sensitiveFields = [
+      'glucoseValue',
+      'readingValue',
+      'hba1c',
+      'rawReadings',
+      'glucose',
+      'reading',
+      'cgm',
+      'bloodGlucose',
+      'bloodSugar',
+      'readings',
+    ];
+
+    // Create a deep copy and redact sensitive fields
+    const redactedDetails = this.redactObject(error.details, sensitiveFields);
+
+    return {
+      ...error,
+      details: redactedDetails,
+    };
+  }
+
+  /**
+   * Recursively redact sensitive fields from an object
+   *
+   * @param obj - Object to redact
+   * @param sensitiveFields - Array of field names to redact
+   * @returns Object with sensitive fields redacted
+   */
+  private redactObject(obj: any, sensitiveFields: string[]): any {
+    if (!obj || typeof obj !== 'object') {
+      return obj;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.redactObject(item, sensitiveFields));
+    }
+
+    const redacted: any = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        if (sensitiveFields.some(field => key.toLowerCase().includes(field.toLowerCase()))) {
+          redacted[key] = '[REDACTED]';
+        } else if (typeof obj[key] === 'object') {
+          redacted[key] = this.redactObject(obj[key], sensitiveFields);
+        } else {
+          redacted[key] = obj[key];
+        }
+      }
+    }
+    return redacted;
   }
 
   /**

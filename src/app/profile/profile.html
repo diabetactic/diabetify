@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-title>{{ 'tabs.profile' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -54,11 +54,10 @@
           <ion-icon name="contrast-outline" aria-hidden="true"></ion-icon>
           <div>
             <p class="card-title">{{ 'profile.theme.title' | translate }}</p>
-            <p class="card-subtitle">{{ 'profile.theme.' + currentTheme | translate }}</p>
           </div>
         </div>
         <ion-select
-          interface="popover"
+          interface="alert"
           [value]="currentTheme"
           (ionChange)="onThemeChange($event)"
           aria-label="{{ 'profile.theme.title' | translate }}"
@@ -76,11 +75,10 @@
           <ion-icon name="language-outline" aria-hidden="true"></ion-icon>
           <div>
             <p class="card-title">{{ 'profile.language.title' | translate }}</p>
-            <p class="card-subtitle">{{ 'profile.language.' + currentLanguage | translate }}</p>
           </div>
         </div>
         <ion-select
-          interface="popover"
+          interface="alert"
           [value]="currentLanguage"
           (ionChange)="onLanguageChange($event)"
           aria-label="{{ 'profile.language.title' | translate }}"
@@ -95,11 +93,10 @@
           <ion-icon name="water-outline" aria-hidden="true"></ion-icon>
           <div>
             <p class="card-title">{{ 'profile.glucoseUnits' | translate }}</p>
-            <p class="card-subtitle">{{ currentGlucoseUnit }}</p>
           </div>
         </div>
         <ion-select
-          interface="popover"
+          interface="alert"
           [value]="currentGlucoseUnit"
           (ionChange)="onGlucoseUnitChange($event)"
           aria-label="{{ 'profile.glucoseUnits' | translate }}"

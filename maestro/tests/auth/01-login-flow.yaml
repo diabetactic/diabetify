@@ -1,0 +1,54 @@
+appId: io.diabetify.app
+tags:
+  - smoke
+  - auth
+  - critical
+---
+# Test: Complete login flow
+# Maps to: src/app/tests/integration/enhanced/auth-user-journey.spec.ts
+# Description: Verify user can log in with valid credentials and reach dashboard
+
+- launchApp:
+    clearState: true
+
+- takeScreenshot: "screenshots/auth-01-initial-state.png"
+
+# Navigate to login page
+- tapOn:
+    text: "Iniciar Sesión"
+
+- assertVisible: "DNI"
+- assertVisible: "Contraseña"
+- takeScreenshot: "screenshots/auth-02-login-page.png"
+
+# Fill login form
+- tapOn:
+    id: "dni-input"
+- inputText: "1000"
+
+- tapOn:
+    id: "password-input"
+- inputText: "tuvieja"
+
+- takeScreenshot: "screenshots/auth-03-form-filled.png"
+
+# Submit form
+- tapOn:
+    id: "login-submit-btn"
+
+# Wait for navigation
+- wait:
+    seconds: 2
+
+# Verify successful login
+- assertVisible: "Dashboard"
+- assertVisible: "Bienvenido"
+
+- takeScreenshot: "screenshots/auth-04-login-success.png"
+
+# Verify tab navigation is available
+- assertVisible: "Lecturas"
+- assertVisible: "Citas"
+- assertVisible: "Perfil"
+
+- takeScreenshot: "screenshots/auth-05-dashboard-complete.png"

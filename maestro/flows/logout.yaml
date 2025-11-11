@@ -1,0 +1,30 @@
+appId: io.diabetactic.app
+---
+# Reusable Flow: Logout
+# Logs out the current user
+#
+# Usage:
+#   - runFlow: maestro/flows/logout.yaml
+
+# Navigate to Profile tab
+- tapOn: "Profile"
+- assertVisible: "Profile"
+- waitForAnimationToEnd
+
+# Scroll to find logout button
+- scroll
+
+# Tap logout
+- tapOn:
+    text: ".*[Ll]ogout.*"
+    index: 0
+
+# Wait for navigation
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify we're back at welcome/login screen
+- assertVisible:
+    text: "(Welcome|Login)"
+
+- takeScreenshot: maestro/screenshots/logout-success.png

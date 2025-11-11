@@ -1,0 +1,215 @@
+.detail-container {
+  padding: 16px;
+  padding-bottom: 24px;
+}
+
+// Loading State
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 16px;
+
+  ion-spinner {
+    width: 48px;
+    height: 48px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 16px;
+  }
+}
+
+// Info Banner
+.info-banner {
+  margin-bottom: 20px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid rgb(59 130 246 / 20%);
+
+  .info-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    ion-icon {
+      font-size: 32px;
+      flex-shrink: 0;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--ion-color-medium);
+      line-height: 1.5;
+    }
+  }
+}
+
+// Stats Grid - Technical View (2 columns)
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+
+  @media (width <= 576px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+// Sync Status Card
+.sync-status-card {
+  margin-bottom: 20px;
+  border-radius: 16px;
+
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 700;
+
+    ion-icon {
+      font-size: 24px;
+    }
+  }
+
+  .sync-details {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+
+    .sync-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--ion-color-light);
+      border-radius: 12px;
+
+      ion-icon {
+        font-size: 28px;
+        flex-shrink: 0;
+      }
+
+      .sync-item-content {
+        flex: 1;
+
+        h4 {
+          margin: 0 0 4px;
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--ion-color-medium);
+        }
+
+        p {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--ion-text-color);
+        }
+      }
+    }
+  }
+
+  .sync-button {
+    margin-top: 16px;
+  }
+}
+
+// Info Card
+.info-card {
+  margin-bottom: 20px;
+  border-radius: 16px;
+
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 700;
+
+    ion-icon {
+      font-size: 24px;
+    }
+  }
+
+  .metric-explanation {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--ion-color-light);
+
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    h4 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ion-color-primary);
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--ion-color-medium);
+      line-height: 1.6;
+    }
+  }
+}
+
+// Spinning animation for sync icon
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive adjustments for larger screens
+@media (width >= 768px) {
+  .detail-container {
+    max-width: 768px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+// Dark mode adjustments (class-based for manual theme toggle)
+.dark .info-banner {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  border: 1px solid rgb(59 130 246 / 30%);
+
+  .info-content {
+    p {
+      color: rgb(255 255 255 / 80%);
+    }
+  }
+}
+
+.dark .sync-status-card,
+.dark .info-card {
+  .sync-item,
+  .metric-explanation {
+    background: rgb(255 255 255 / 5%);
+  }
+}

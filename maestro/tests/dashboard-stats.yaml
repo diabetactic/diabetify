@@ -1,0 +1,35 @@
+appId: io.diabetify.app
+---
+# Test: Dashboard Statistics Display
+# Validates that health stats and data are properly displayed
+
+- launchApp
+- waitForAnimationToEnd
+
+# Take initial screenshot
+- takeScreenshot: screenshots/dashboard-initial.png
+
+# Verify stat cards are visible (Spanish or English)
+- assertVisible:
+    text: "Tiempo en Buen Rango|Time in Range"
+- assertVisible:
+    text: "Azúcar Promedio|Average Glucose"
+
+# Verify percentage display
+- assertVisible: "%"
+
+# Verify glucose unit
+- assertVisible: "mg/dL"
+
+# Verify encouragement message
+- assertVisible: "Buen trabajo|Good job|Sigue así|Keep it up"
+
+# Verify add reading button
+- assertVisible: "Agregar Nueva Lectura|Add New Reading"
+
+# Test pull-to-refresh (if implemented)
+- scroll:
+    direction: DOWN
+
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/dashboard-after-refresh.png

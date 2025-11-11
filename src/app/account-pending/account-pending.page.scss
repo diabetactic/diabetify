@@ -1,0 +1,14 @@
+/**
+ * Account Pending Page Styles
+ * Ionic CSS variables preserved, layout/typography migrated to Tailwind
+ */
+
+// Ionic-specific: Must use CSS variable for ion-content background
+.account-pending-content {
+  --background: var(--ion-color-light);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}

@@ -1,0 +1,28 @@
+appId: io.diabetify.app
+---
+# Smoke Test: Quick validation that app launches and core features work
+# This is the fastest test - runs in ~10 seconds
+
+- launchApp
+- waitForAnimationToEnd
+
+# Verify app launched successfully
+- assertVisible: "Mi Salud|My Health"
+
+# Quick check all tabs are present
+- assertVisible: "Inicio"
+- assertVisible: "Lecturas"
+- assertVisible: "Citas"
+- assertVisible: "Perfil"
+
+# Take evidence screenshot
+- takeScreenshot: screenshots/smoke-test-success.png
+
+# Quick navigation test
+- tapOn: "Lecturas"
+- waitForAnimationToEnd
+- assertVisible: "Lecturas|Readings"
+
+- tapOn: "Inicio"
+- waitForAnimationToEnd
+- assertVisible: "Mi Salud|My Health"

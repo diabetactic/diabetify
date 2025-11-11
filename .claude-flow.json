@@ -1,0 +1,94 @@
+{
+  "version": "2.7.26",
+  "project": {
+    "name": "diabetactic",
+    "type": "angular-ionic",
+    "language": "typescript",
+    "testFramework": "jasmine",
+    "e2eFramework": "playwright"
+  },
+  "agentProfiles": {
+    "diabetactic-feature": {
+      "agents": ["system-architect", "backend-dev", "coder", "mobile-dev", "tester", "reviewer"],
+      "topology": "hierarchical",
+      "maxAgents": 10,
+      "coordination": "leader-follower"
+    },
+    "diabetactic-testing": {
+      "agents": ["tester", "e2e-automation", "integration-tester"],
+      "topology": "mesh",
+      "maxAgents": 5,
+      "coordination": "collaborative"
+    },
+    "diabetactic-research": {
+      "agents": ["researcher", "code-analyzer", "perf-analyzer"],
+      "topology": "mesh",
+      "maxAgents": 6,
+      "coordination": "consensus"
+    },
+    "diabetactic-backend": {
+      "agents": ["backend-dev", "api-docs", "database-architect", "cicd-engineer"],
+      "topology": "distributed",
+      "maxAgents": 15,
+      "coordination": "load-balanced"
+    }
+  },
+  "memory": {
+    "backend": "sqlite",
+    "namespace": "diabetactic",
+    "cacheSizeMB": 512,
+    "compressionEnabled": true,
+    "retentionDays": 90,
+    "indexingEnabled": true
+  },
+  "performance": {
+    "optimization": {
+      "batchProcessing": true,
+      "asyncExecution": true,
+      "agentPooling": true,
+      "connectionReuse": true
+    },
+    "scaling": {
+      "autoScale": true,
+      "minAgents": 2,
+      "maxAgents": 50,
+      "scaleUpThreshold": 80,
+      "scaleDownThreshold": 30
+    }
+  },
+  "testing": {
+    "coverage": {
+      "target": 90,
+      "enforce": true
+    },
+    "frameworks": {
+      "unit": "jasmine",
+      "integration": "jasmine",
+      "e2e": "playwright"
+    }
+  },
+  "diabetactic": {
+    "conventions": {
+      "propertyNames": {
+        "glucoseValue": "value",
+        "glucoseUnits": "units",
+        "timestamp": "time"
+      },
+      "serviceReturns": "promises",
+      "i18n": {
+        "primary": "es",
+        "fallback": "en"
+      },
+      "components": "standalone"
+    },
+    "environments": {
+      "android": "http://10.0.2.2:8000",
+      "ios": "http://localhost:8000",
+      "web": "http://localhost:8000"
+    },
+    "demo": {
+      "dni": "1000",
+      "password": "tuvieja"
+    }
+  }
+}

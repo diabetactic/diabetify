@@ -1,5 +1,5 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-title>{{ 'appointments.title' | translate }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="createAppointment()">
@@ -8,13 +8,13 @@
     </ion-buttons>
   </ion-toolbar>
 
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-segment [(ngModel)]="selectedSegment" (ionChange)="onSegmentChange($event)">
       <ion-segment-button value="upcoming">
-        <ion-label>Próximas</ion-label>
+        <ion-label>{{ 'appointments.tabs.upcoming' | translate }}</ion-label>
       </ion-segment-button>
       <ion-segment-button value="past">
-        <ion-label>Pasadas</ion-label>
+        <ion-label>{{ 'appointments.tabs.past' | translate }}</ion-label>
       </ion-segment-button>
     </ion-segment>
   </ion-toolbar>
@@ -29,7 +29,7 @@
   <!-- Loading spinner -->
   <div *ngIf="loading" class="ion-padding ion-text-center">
     <ion-spinner name="circular"></ion-spinner>
-    <p>Cargando citas...</p>
+    <p>{{ 'appointments.loading' | translate }}</p>
   </div>
 
   <!-- Error message -->
@@ -47,10 +47,10 @@
     <ion-card *ngIf="upcomingAppointments.length === 0" class="empty-state">
       <ion-card-content class="ion-text-center">
         <span class="material-symbols-outlined large-icon">event_busy</span>
-        <h2>No hay citas próximas</h2>
-        <p>Programa una cita con tu médico</p>
+        <h2>{{ 'appointments.empty.upcoming.title' | translate }}</h2>
+        <p>{{ 'appointments.empty.upcoming.message' | translate }}</p>
         <ion-button (click)="createAppointment()" expand="block" class="ion-margin-top">
-          Agendar Cita
+          {{ 'appointments.actions.schedule' | translate }}
         </ion-button>
       </ion-card-content>
     </ion-card>
@@ -80,13 +80,16 @@
 
           <ion-note slot="end">
             <ion-badge [color]="getStatusColor(appointment.status)">
-              <span class="material-symbols-outlined badge-icon">{{ getStatusIcon(appointment.status) }}</span>
+              <span class="material-symbols-outlined badge-icon">{{
+                getStatusIcon(appointment.status)
+              }}</span>
               {{ appointment.status }}
             </ion-badge>
             <ion-badge
               *ngIf="appointment.urgency !== 'routine'"
               [color]="getUrgencyColor(appointment.urgency)"
-              class="urgency-badge">
+              class="urgency-badge"
+            >
               {{ appointment.urgency }}
             </ion-badge>
           </ion-note>
@@ -95,11 +98,11 @@
         <ion-item-options side="end">
           <ion-item-option color="warning">
             <span class="material-symbols-outlined">edit</span>
-            Editar
+            {{ 'appointments.actions.edit' | translate }}
           </ion-item-option>
           <ion-item-option color="danger">
             <span class="material-symbols-outlined">cancel</span>
-            Cancelar
+            {{ 'appointments.actions.cancel' | translate }}
           </ion-item-option>
         </ion-item-options>
       </ion-item-sliding>
@@ -112,14 +115,18 @@
     <ion-card *ngIf="pastAppointments.length === 0" class="empty-state">
       <ion-card-content class="ion-text-center">
         <span class="material-symbols-outlined large-icon">history</span>
-        <h2>No hay citas pasadas</h2>
-        <p>Las citas completadas aparecerán aquí</p>
+        <h2>{{ 'appointments.empty.past.title' | translate }}</h2>
+        <p>{{ 'appointments.empty.past.message' | translate }}</p>
       </ion-card-content>
     </ion-card>
 
     <!-- Appointments list -->
     <ion-list *ngIf="pastAppointments.length > 0">
-      <ion-item *ngFor="let appointment of pastAppointments" button (click)="viewAppointment(appointment)">
+      <ion-item
+        *ngFor="let appointment of pastAppointments"
+        button
+        (click)="viewAppointment(appointment)"
+      >
         <ion-avatar slot="start">
           <div class="appointment-avatar past">
             <span class="material-symbols-outlined">person</span>
@@ -141,12 +148,14 @@
 
         <ion-note slot="end">
           <ion-badge [color]="getStatusColor(appointment.status)">
-            <span class="material-symbols-outlined badge-icon">{{ getStatusIcon(appointment.status) }}</span>
+            <span class="material-symbols-outlined badge-icon">{{
+              getStatusIcon(appointment.status)
+            }}</span>
             {{ appointment.status }}
           </ion-badge>
           <div *ngIf="appointment.glucoseDataShared" class="shared-indicator">
             <ion-icon name="share-outline" color="success"></ion-icon>
-            <small>Datos compartidos</small>
+            <small>{{ 'appointments.dataShared' | translate }}</small>
           </div>
         </ion-note>
       </ion-item>

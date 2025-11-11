@@ -1,15 +1,28 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { LoadingController, ToastController, AlertController } from '@ionic/angular';
+import { Router, RouterModule } from '@angular/router';
+import { LoadingController, ToastController, AlertController, IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { LocalAuthService } from '../core/services/local-auth.service';
 import { ProfileService } from '../core/services/profile.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    IonicModule,
+    RouterModule,
+    TranslateModule,
+  ],
 })
 export class LoginPage implements OnInit {
   loginForm: FormGroup;

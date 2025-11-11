@@ -1,0 +1,155 @@
+ion-content {
+  --padding-bottom: 80px;
+}
+
+ion-list-header {
+  background: var(--ion-color-light);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  padding-top: 20px;
+  padding-bottom: 10px;
+}
+
+ion-list {
+  margin-bottom: 16px;
+}
+
+ion-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 8px;
+
+  ion-label {
+    h3 {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    p {
+      font-size: 0.875rem;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  ion-avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  ion-select {
+    max-width: 50%;
+  }
+
+  ion-toggle {
+    --handle-width: 20px;
+    --handle-height: 20px;
+  }
+
+  &[button] {
+    --transition: all 0.2s ease;
+
+    &:hover {
+      --background: var(--ion-color-light);
+    }
+  }
+}
+
+ion-range {
+  padding-top: 8px;
+  padding-bottom: 8px;
+
+  ion-label {
+    font-size: 0.75rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.demo-notice {
+  margin: 16px;
+  background: var(--ion-color-warning-tint);
+  border-left: 4px solid var(--ion-color-warning);
+
+  ion-card-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+
+    ion-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--ion-color-warning-shade);
+    }
+  }
+}
+
+.version-info {
+  text-align: center;
+  padding: 20px;
+  color: var(--ion-color-medium);
+
+  p {
+    margin: 4px 0;
+    font-size: 0.875rem;
+  }
+}
+
+.danger-button {
+  --color: var(--ion-color-danger);
+}
+
+// Dark mode adjustments (class-based for manual theme toggle)
+.dark ion-list-header {
+  background: var(--ion-color-dark);
+}
+
+.dark .demo-notice {
+  background: rgb(255 206 84 / 10%);
+}
+
+// Debug panel container styling
+.debug-panel-container {
+  margin: 16px;
+  padding: 12px;
+  background: var(--ion-color-light);
+  border: 2px dashed var(--ion-color-warning);
+  border-radius: 8px;
+  animation: slideDown 0.3s ease-in-out;
+
+  @keyframes slideDown {
+    from {
+      opacity: 0%;
+      transform: translateY(-10px);
+    }
+
+    to {
+      opacity: 100%;
+      transform: translateY(0);
+    }
+  }
+}
+
+// Tablet/Desktop responsive
+@media (width >= 768px) {
+  ion-content {
+    --padding-start: 10%;
+    --padding-end: 10%;
+  }
+
+  ion-list {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .debug-panel-container {
+    margin: 20px auto;
+    max-width: 800px;
+  }
+}

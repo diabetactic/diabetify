@@ -9,7 +9,7 @@ ion-card {
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
   }
 
   &:active {
@@ -107,6 +107,7 @@ ion-card-content {
   ion-button {
     --padding-start: 8px;
     --padding-end: 8px;
+
     margin-right: 8px;
     font-size: 12px;
     height: 32px;
@@ -143,7 +144,7 @@ ion-badge {
 }
 
 // Responsive adjustments
-@media (max-width: 768px) {
+@media (width <= 768px) {
   ion-grid {
     padding: 8px;
   }
@@ -157,19 +158,17 @@ ion-badge {
   }
 }
 
-// Dark mode adjustments
-@media (prefers-color-scheme: dark) {
-  ion-card {
-    background: var(--ion-color-step-50);
+// Dark mode adjustments (class-based for manual theme toggle)
+.dark ion-card {
+  background: var(--ion-color-step-50);
 
-    &:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    }
+  &:hover {
+    box-shadow: 0 4px 12px rgb(0 0 0 / 50%);
   }
+}
 
-  .error-message {
-    color: var(--ion-color-danger-tint);
-  }
+.dark .error-message {
+  color: var(--ion-color-danger-tint);
 }
 
 // Animation for refresh icon
@@ -181,6 +180,7 @@ ion-icon[name='sync'] {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -218,39 +218,43 @@ ion-icon[name='sync'] {
 @keyframes pulse-success {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+    box-shadow: 0 0 0 0 rgb(76 175 80 / 70%);
   }
+
   50% {
-    box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+    box-shadow: 0 0 0 10px rgb(76 175 80 / 0%);
   }
 }
 
 @keyframes pulse-warning {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7);
+    box-shadow: 0 0 0 0 rgb(255 152 0 / 70%);
   }
+
   50% {
-    box-shadow: 0 0 0 10px rgba(255, 152, 0, 0);
+    box-shadow: 0 0 0 10px rgb(255 152 0 / 0%);
   }
 }
 
 @keyframes pulse-danger {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+    box-shadow: 0 0 0 0 rgb(244 67 54 / 70%);
   }
+
   50% {
-    box-shadow: 0 0 0 10px rgba(244, 67, 54, 0);
+    box-shadow: 0 0 0 10px rgb(244 67 54 / 0%);
   }
 }
 
 @keyframes pulse-primary {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7);
+    box-shadow: 0 0 0 0 rgb(33 150 243 / 70%);
   }
+
   50% {
-    box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
+    box-shadow: 0 0 0 10px rgb(33 150 243 / 0%);
   }
 }

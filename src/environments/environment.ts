@@ -2,6 +2,28 @@
 // `ng build` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 
+import { Capacitor } from '@capacitor/core';
+
+/**
+ * Get the appropriate base URL for backend services based on platform
+ *
+ * Platform-specific URLs:
+ * - Android emulator: 10.0.2.2 (special alias to host machine's localhost)
+ * - iOS simulator/device: localhost
+ * - Web: localhost
+ */
+function getBaseUrl(): string {
+  if (Capacitor.isNativePlatform()) {
+    const platform = Capacitor.getPlatform();
+    if (platform === 'android') {
+      return 'http://10.0.2.2:8000'; // Android emulator → host machine
+    } else if (platform === 'ios') {
+      return 'http://localhost:8000'; // iOS simulator/device
+    }
+  }
+  return 'http://localhost:8000'; // Web development
+}
+
 /**
  * Environment configuration for development
  */
@@ -18,11 +40,11 @@ export const environment = {
 
     // OAuth2 Configuration
     // TODO: Replace with actual client ID from Tidepool developer portal
-    clientId: 'diabetify-mobile-dev',
+    clientId: 'diabetactic-mobile-dev',
 
     // Redirect URI for OAuth flow (must be registered with Tidepool)
     // For Capacitor apps, use custom URL scheme
-    redirectUri: 'diabetify://oauth/callback',
+    redirectUri: 'diabetactic://oauth/callback',
 
     // OAuth scopes
     scopes: 'data:read data:write profile:read',
@@ -44,28 +66,28 @@ export const environment = {
   backendServices: {
     // Glucose data management service
     glucoserver: {
-      baseUrl: '',
+      baseUrl: '', // Disabled by default
       apiPath: '',
       requestTimeout: 30000,
     },
 
     // Appointment management service
     appointments: {
-      baseUrl: 'http://localhost:8000',
+      baseUrl: getBaseUrl(),
       apiPath: '/appointments',
       requestTimeout: 30000,
     },
 
     // Authentication service
     auth: {
-      baseUrl: 'http://localhost:8000',
+      baseUrl: getBaseUrl(),
       apiPath: '',
       requestTimeout: 30000,
     },
 
     // API Gateway (if running)
     apiGateway: {
-      baseUrl: 'http://localhost:8000',
+      baseUrl: getBaseUrl(),
       apiPath: '',
       requestTimeout: 30000,
     },
@@ -77,7 +99,9 @@ export const environment = {
     analyticsEnabled: false, // Disable analytics in development
     crashReporting: false,
     useLocalBackend: true, // Use local backend services
-    useTidepoolIntegration: true, // Keep Tidepool integration active
+    useTidepoolIntegration: false, // Disable Tidepool integration for MVP
+    useTidepoolMock: true, // Use mock Tidepool adapter for testing
+    devTools: true, // Enable developer tools (account state toggle, etc.)
   },
 };
 

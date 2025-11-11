@@ -1,0 +1,30 @@
+appId: io.diabetify.app
+---
+# Test: Profile and Settings
+# Tests profile tab and settings interactions
+
+- launchApp
+- waitForAnimationToEnd
+
+# Navigate to Profile tab
+- tapOn: "Perfil|Profile"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/profile-initial.png
+
+# Verify profile tab loaded
+- assertVisible: "Perfil|Profile"
+
+# Scroll to see all profile options
+- scroll:
+    direction: DOWN
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/profile-scrolled.png
+
+# Look for language switcher
+# Try to find and toggle language (ES <-> EN)
+- scroll:
+    direction: UP
+
+# Look for settings or preferences
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/profile-final.png

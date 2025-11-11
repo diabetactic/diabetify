@@ -9,8 +9,258 @@
  * https://ionicframework.com/docs/layout/global-stylesheets
  */
 
-/* Material Design Theme - Import first for proper cascade */
-@import './theme/material-theme.scss';
+/* ============================================
+ * TAILWIND CSS V4 + DAISYUI
+ * ============================================ */
+@import "tailwindcss";
+
+/* DaisyUI Component Library */
+@plugin "daisyui";
+
+/* Class-based Dark Mode (uses .dark class on html element) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================
+ * DESIGN TOKEN SYSTEM
+ * Beautiful gradients, shadows, and semantic colors
+ * ============================================ */
+@theme {
+  /* ========== GRADIENTS ========== */
+
+  /* Login gradient (purple-blue) */
+  --gradient-login: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  /* Semantic gradients */
+  --gradient-primary: linear-gradient(135deg, #3b82f6, #60a5fa);
+  --gradient-secondary: linear-gradient(135deg, #00c6ae, #1accb6);
+  --gradient-success: linear-gradient(135deg, #22c55e, #10b981);
+  --gradient-warning: linear-gradient(135deg, #f59e0b, #fb923c);
+  --gradient-danger: linear-gradient(135deg, #ef4444, #f87171);
+
+  /* Cool gradients */
+  --gradient-ocean: linear-gradient(135deg, #667eea, #25aff4);
+  --gradient-sunset: linear-gradient(135deg, #f59e0b, #ef4444);
+  --gradient-forest: linear-gradient(135deg, #10b981, #22c55e);
+
+  /* ========== SHADOWS ========== */
+
+  /* Elevation shadows */
+  --shadow-card: 0 20px 40px rgb(0 0 0 / 10%);
+  --shadow-card-dark: 0 20px 40px rgb(0 0 0 / 50%);
+  --shadow-elevated: 0 10px 30px rgb(0 0 0 / 15%);
+  --shadow-floating: 0 25px 50px rgb(0 0 0 / 25%);
+
+  /* Colored glow shadows */
+  --shadow-glow-primary: 0 10px 30px rgb(37 175 244 / 30%);
+  --shadow-glow-success: 0 10px 30px rgb(34 197 94 / 30%);
+  --shadow-glow-danger: 0 10px 30px rgb(239 68 68 / 30%);
+
+  /* ========== SEMANTIC COLORS ========== */
+
+  /* Surface colors */
+  --color-surface-light: #fff;
+  --color-surface-dark: #1e1e1e;
+  --color-on-surface-light: #0d171c;
+  --color-on-surface-dark: #fff;
+
+  /* Glass morphism */
+  --color-glass-light: rgb(255 255 255 / 95%);
+  --color-glass-dark: rgb(30 30 30 / 95%);
+
+  /* ========== SPACING & SIZING ========== */
+
+  /* Spacing scale (4px base) */
+  --spacing-xs: 0.5rem;   /* 8px */
+  --spacing-sm: 1rem;     /* 16px */
+  --spacing-md: 1.5rem;   /* 24px */
+  --spacing-lg: 2rem;     /* 32px */
+  --spacing-xl: 3rem;     /* 48px */
+  --spacing-2xl: 4rem;    /* 64px */
+
+  /* Border radius */
+  --radius-sm: 0.75rem;   /* 12px */
+  --radius-md: 1rem;      /* 16px */
+  --radius-lg: 1.25rem;   /* 20px */
+  --radius-xl: 1.5rem;    /* 24px */
+  --radius-2xl: 2rem;     /* 32px */
+
+  /* ========== TRANSITIONS ========== */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ============================================
+ * CUSTOM COMPONENT UTILITIES
+ * Beautiful, semantic component classes
+ * ============================================ */
+@layer components {
+  /* ========== CARDS ========== */
+  .card-elevated {
+    @apply rounded-2xl bg-white p-6 shadow-card backdrop-blur-xl dark:bg-gray-900;
+  }
+
+  .card-gradient {
+    background: var(--gradient-primary);
+
+    @apply rounded-2xl p-6 text-white shadow-xl;
+  }
+
+  .card-glass {
+    background: var(--color-glass-light);
+
+    @apply rounded-2xl p-6 backdrop-blur-xl dark:bg-gray-900/95;
+
+    border: 1px solid rgb(255 255 255 / 18%);
+  }
+
+  /* ========== BUTTONS ========== */
+  .btn-glow {
+    box-shadow: var(--shadow-glow-primary);
+
+    @apply transition-all hover:scale-105 active:scale-95;
+  }
+
+  /* ========== SURFACES ========== */
+  .glass-surface {
+    background: var(--color-glass-light);
+
+    @apply backdrop-blur-xl dark:bg-gray-900/95;
+
+    border: 1px solid rgb(255 255 255 / 18%);
+  }
+
+  .gradient-surface {
+    background: var(--gradient-primary);
+
+    @apply text-white;
+  }
+}
+
+/* ============================================
+ * ANIMATION UTILITIES
+ * ============================================ */
+@layer utilities {
+  /* Fade animations */
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  .animate-fade-in-down {
+    animation: fadeInDown 0.8s ease-out;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out;
+  }
+
+  /* Slide animations */
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  .animate-slide-in-up {
+    animation: slideInUp 0.8s ease-out;
+  }
+
+  /* Glow effect */
+  .animate-pulse-glow {
+    animation: pulseGlow 2s infinite;
+  }
+
+  /* Shake error */
+  .animate-shake {
+    animation: shake 0.3s ease;
+  }
+}
+
+/* Keyframe definitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0%;
+  }
+
+  to {
+    opacity: 100%;
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0%;
+    transform: translateY(-30px);
+  }
+
+  to {
+    opacity: 100%;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0%;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 100%;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0%;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 100%;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0%;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 100%;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgb(37 175 244 / 30%);
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgb(37 175 244 / 60%);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+/* Material Design Theme - Import after Tailwind for proper cascade */
+@import './theme/material-theme';
 
 /* Core CSS required for Ionic components to work properly */
 @import '@ionic/angular/css/core.css';
@@ -36,6 +286,7 @@
  */
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
+
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
 
@@ -64,7 +315,7 @@ body {
   // Primary color (Blue - from mockups)
   --ion-color-primary: #25aff4;
   --ion-color-primary-rgb: 37, 175, 244;
-  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast: #fff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
   --ion-color-primary-shade: #2099d7;
   --ion-color-primary-tint: #3bb7f5;
@@ -72,7 +323,7 @@ body {
   // Secondary color (Teal variant)
   --ion-color-secondary: #00c6ae;
   --ion-color-secondary-rgb: 0, 198, 174;
-  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast: #fff;
   --ion-color-secondary-contrast-rgb: 255, 255, 255;
   --ion-color-secondary-shade: #00ae99;
   --ion-color-secondary-tint: #1accb6;
@@ -80,7 +331,7 @@ body {
   // Success color (Green - for normal glucose)
   --ion-color-success: #22c55e;
   --ion-color-success-rgb: 34, 197, 94;
-  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast: #fff;
   --ion-color-success-contrast-rgb: 255, 255, 255;
   --ion-color-success-shade: #1ead53;
   --ion-color-success-tint: #38cb6e;
@@ -88,7 +339,7 @@ body {
   // Warning color (Orange - for low glucose)
   --ion-color-warning: #f59e0b;
   --ion-color-warning-rgb: 245, 158, 11;
-  --ion-color-warning-contrast: #000000;
+  --ion-color-warning-contrast: #000;
   --ion-color-warning-contrast-rgb: 0, 0, 0;
   --ion-color-warning-shade: #d88b0a;
   --ion-color-warning-tint: #f6a823;
@@ -96,7 +347,7 @@ body {
   // Danger color (Red - for high glucose)
   --ion-color-danger: #ef4444;
   --ion-color-danger-rgb: 239, 68, 68;
-  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast: #fff;
   --ion-color-danger-contrast-rgb: 255, 255, 255;
   --ion-color-danger-shade: #d13c3c;
   --ion-color-danger-tint: #f05757;
@@ -109,7 +360,7 @@ body {
   // Background colors
   --diabetify-background-light: #f5f7f8;
   --diabetify-background-dark: #101c22;
-  --diabetify-surface-light: #ffffff;
+  --diabetify-surface-light: #fff;
   --diabetify-surface-dark: #1e293b;
 
   // Text colors
@@ -212,17 +463,17 @@ p,
   text-transform: uppercase;
 
   &.normal {
-    background-color: rgba(34, 197, 94, 0.1);
+    background-color: rgb(34 197 94 / 10%);
     color: var(--glucose-normal);
   }
 
   &.low {
-    background-color: rgba(245, 158, 11, 0.1);
+    background-color: rgb(245 158 11 / 10%);
     color: var(--glucose-low);
   }
 
   &.high {
-    background-color: rgba(239, 68, 68, 0.1);
+    background-color: rgb(239 68 68 / 10%);
     color: var(--glucose-high);
   }
 }
@@ -236,8 +487,9 @@ p,
   ion-fab-button {
     width: 64px;
     height: 64px;
+
     --background: var(--ion-color-primary);
-    --box-shadow: 0 4px 12px rgba(37, 175, 244, 0.3);
+    --box-shadow: 0 4px 12px rgb(37 175 244 / 30%);
   }
 }
 
@@ -246,7 +498,7 @@ p,
   :root {
     --ion-background-color: var(--diabetify-background-dark);
     --ion-background-color-rgb: 16, 28, 34;
-    --ion-text-color: #ffffff;
+    --ion-text-color: #fff;
     --ion-text-color-rgb: 255, 255, 255;
     --ion-card-background: var(--diabetify-surface-dark);
   }

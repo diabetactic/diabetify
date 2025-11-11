@@ -12,15 +12,16 @@ import {
   UpdateUserProfileInput,
   DEFAULT_USER_PREFERENCES,
   TidepoolAuth,
+  AccountState,
 } from '../models';
 
 /**
  * Storage keys for Capacitor Preferences
  */
 const STORAGE_KEYS = {
-  PROFILE: 'diabetify_user_profile',
-  TIDEPOOL_AUTH: 'diabetify_tidepool_auth',
-  SCHEMA_VERSION: 'diabetify_schema_version',
+  PROFILE: 'diabetactic_user_profile',
+  TIDEPOOL_AUTH: 'diabetactic_tidepool_auth',
+  SCHEMA_VERSION: 'diabetactic_schema_version',
 } as const;
 
 /**
@@ -104,6 +105,7 @@ export class ProfileService {
       id: this.generateUserId(),
       name: input.name,
       age: input.age,
+      accountState: input.accountState || AccountState.PENDING,
       dateOfBirth: input.dateOfBirth,
       avatar: input.avatar,
       tidepoolConnection: input.tidepoolConnection || {

@@ -1,7 +1,7 @@
 <!-- Service Monitor Component Template -->
 <ion-header>
   <ion-toolbar>
-    <ion-title>Service Health Monitor</ion-title>
+    <ion-title>{{ 'serviceMonitor.title' | translate }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="toggleAutoRefresh()">
         <ion-icon
@@ -28,17 +28,17 @@
           [style.color]="statusColors[servicesState.overallHealth]"
         >
         </ion-icon>
-        System Status: {{ servicesState.overallHealth }}
+        {{ 'serviceMonitor.systemStatus' | translate }}: {{ servicesState.overallHealth }}
       </ion-card-title>
       <ion-card-subtitle>
         <span *ngIf="servicesState.isOnline" class="status-online">
-          <ion-icon name="wifi"></ion-icon> Online
+          <ion-icon name="wifi"></ion-icon> {{ 'serviceMonitor.online' | translate }}
         </span>
         <span *ngIf="!servicesState.isOnline" class="status-offline">
-          <ion-icon name="cloud-offline"></ion-icon> Offline
+          <ion-icon name="cloud-offline"></ion-icon> {{ 'serviceMonitor.offline' | translate }}
         </span>
         <span class="separator">|</span>
-        Last Check: {{ formatDate(servicesState.lastFullCheck) }}
+        {{ 'serviceMonitor.lastCheck' | translate }}: {{ formatDate(servicesState.lastFullCheck) }}
       </ion-card-subtitle>
     </ion-card-header>
   </ion-card>
@@ -63,14 +63,18 @@
           <ion-card-content>
             <ion-list lines="none">
               <ion-item>
-                <ion-label>Response Time</ion-label>
+                <ion-label>{{ 'serviceMonitor.responseTime' | translate }}</ion-label>
                 <ion-note slot="end">
-                  {{ service.responseTime ? formatDuration(service.responseTime) : 'N/A' }}
+                  {{
+                    service.responseTime
+                      ? formatDuration(service.responseTime)
+                      : ('serviceMonitor.notAvailable' | translate)
+                  }}
                 </ion-note>
               </ion-item>
 
               <ion-item>
-                <ion-label>Last Checked</ion-label>
+                <ion-label>{{ 'serviceMonitor.lastChecked' | translate }}</ion-label>
                 <ion-note slot="end">
                   {{ formatDate(service.lastChecked) }}
                 </ion-note>
@@ -78,7 +82,7 @@
 
               <!-- Circuit Breaker Status -->
               <ion-item *ngIf="circuitBreakers">
-                <ion-label>Circuit Breaker</ion-label>
+                <ion-label>{{ 'serviceMonitor.circuitBreaker' | translate }}</ion-label>
                 <ion-note
                   slot="end"
                   *ngFor="let cb of circuitBreakers"
@@ -106,7 +110,7 @@
               (click)="checkService(service.service); $event.stopPropagation()"
             >
               <ion-icon slot="start" name="reload"></ion-icon>
-              Check
+              {{ 'serviceMonitor.check' | translate }}
             </ion-button>
             <ion-button
               fill="clear"
@@ -114,7 +118,7 @@
               (click)="clearServiceCache(service.service); $event.stopPropagation()"
             >
               <ion-icon slot="start" name="trash"></ion-icon>
-              Clear Cache
+              {{ 'serviceMonitor.clearCache' | translate }}
             </ion-button>
           </ion-card-content>
         </ion-card>
@@ -125,14 +129,14 @@
   <!-- Active Workflows -->
   <ion-card *ngIf="activeWorkflows.length > 0">
     <ion-card-header>
-      <ion-card-title>Active Workflows</ion-card-title>
+      <ion-card-title>{{ 'serviceMonitor.activeWorkflows' | translate }}</ion-card-title>
     </ion-card-header>
     <ion-card-content>
       <ion-list>
         <ion-item *ngFor="let workflow of activeWorkflows">
           <ion-label>
             <h2>{{ workflow.type }}</h2>
-            <p>Status: {{ workflow.status }}</p>
+            <p>{{ 'serviceMonitor.status' | translate }}: {{ workflow.status }}</p>
             <ion-progress-bar
               [value]="getWorkflowProgress(workflow) / 100"
               [color]="workflow.status === 'failed' ? 'danger' : 'primary'"
@@ -150,7 +154,7 @@
   <!-- Completed Workflows -->
   <ion-card *ngIf="completedWorkflows.length > 0">
     <ion-card-header>
-      <ion-card-title>Recent Workflows</ion-card-title>
+      <ion-card-title>{{ 'serviceMonitor.recentWorkflows' | translate }}</ion-card-title>
     </ion-card-header>
     <ion-card-content>
       <ion-list>
@@ -180,7 +184,9 @@
       <ion-header>
         <ion-toolbar>
           <ion-title>{{
-            selectedService ? getServiceName(selectedService) : 'Service Details'
+            selectedService
+              ? getServiceName(selectedService)
+              : ('serviceMonitor.serviceDetails' | translate)
           }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="hideServiceDetails()">
@@ -194,42 +200,52 @@
         <!-- Service Configuration -->
         <ion-card>
           <ion-card-header>
-            <ion-card-title>Configuration</ion-card-title>
+            <ion-card-title>{{ 'serviceMonitor.configuration' | translate }}</ion-card-title>
           </ion-card-header>
           <ion-card-content *ngIf="getServiceConfig(selectedService) as config">
             <ion-list>
               <ion-item>
-                <ion-label>Base URL</ion-label>
+                <ion-label>{{ 'serviceMonitor.config.baseUrl' | translate }}</ion-label>
                 <ion-note slot="end">{{ config.baseUrl }}</ion-note>
               </ion-item>
               <ion-item>
-                <ion-label>Health Endpoint</ion-label>
-                <ion-note slot="end">{{ config.healthEndpoint || 'N/A' }}</ion-note>
+                <ion-label>{{ 'serviceMonitor.config.healthEndpoint' | translate }}</ion-label>
+                <ion-note slot="end">{{
+                  config.healthEndpoint || ('serviceMonitor.notAvailable' | translate)
+                }}</ion-note>
               </ion-item>
               <ion-item>
-                <ion-label>Timeout</ion-label>
+                <ion-label>{{ 'serviceMonitor.config.timeout' | translate }}</ion-label>
                 <ion-note slot="end">{{ formatDuration(config.timeout) }}</ion-note>
               </ion-item>
               <ion-item>
-                <ion-label>Retry Attempts</ion-label>
+                <ion-label>{{ 'serviceMonitor.config.retryAttempts' | translate }}</ion-label>
                 <ion-note slot="end">{{ config.retryAttempts }}</ion-note>
               </ion-item>
               <ion-item>
-                <ion-label>Circuit Breaker Threshold</ion-label>
+                <ion-label>{{
+                  'serviceMonitor.config.circuitBreakerThreshold' | translate
+                }}</ion-label>
                 <ion-note slot="end">{{ config.circuitBreakerThreshold }}</ion-note>
               </ion-item>
               <ion-item>
-                <ion-label>Circuit Breaker Timeout</ion-label>
+                <ion-label>{{
+                  'serviceMonitor.config.circuitBreakerTimeout' | translate
+                }}</ion-label>
                 <ion-note slot="end">{{ formatDuration(config.circuitBreakerTimeout) }}</ion-note>
               </ion-item>
               <ion-item>
-                <ion-label>Cache Duration</ion-label>
+                <ion-label>{{ 'serviceMonitor.config.cacheDuration' | translate }}</ion-label>
                 <ion-note slot="end">
-                  {{ config.cacheDuration ? formatDuration(config.cacheDuration) : 'No Cache' }}
+                  {{
+                    config.cacheDuration
+                      ? formatDuration(config.cacheDuration)
+                      : ('serviceMonitor.config.noCache' | translate)
+                  }}
                 </ion-note>
               </ion-item>
               <ion-item>
-                <ion-label>Offline Support</ion-label>
+                <ion-label>{{ 'serviceMonitor.config.offlineSupport' | translate }}</ion-label>
                 <ion-note slot="end">
                   <ion-icon [name]="config.offlineSupport ? 'checkmark' : 'close'"></ion-icon>
                 </ion-note>
@@ -241,12 +257,14 @@
         <!-- Circuit Breaker Details -->
         <ion-card *ngFor="let cb of circuitBreakers">
           <ion-card-header *ngIf="cb.service === selectedService">
-            <ion-card-title>Circuit Breaker</ion-card-title>
+            <ion-card-title>{{ 'serviceMonitor.circuitBreaker' | translate }}</ion-card-title>
           </ion-card-header>
           <ion-card-content *ngIf="cb.service === selectedService">
             <ion-list>
               <ion-item>
-                <ion-label>State</ion-label>
+                <ion-label>{{
+                  'serviceMonitor.circuitBreakerDetails.state' | translate
+                }}</ion-label>
                 <ion-badge
                   [color]="
                     cb.state === 'CLOSED' ? 'success' : cb.state === 'OPEN' ? 'danger' : 'warning'
@@ -256,15 +274,21 @@
                 </ion-badge>
               </ion-item>
               <ion-item>
-                <ion-label>Failure Count</ion-label>
+                <ion-label>{{
+                  'serviceMonitor.circuitBreakerDetails.failureCount' | translate
+                }}</ion-label>
                 <ion-note slot="end">{{ cb.failureCount }}</ion-note>
               </ion-item>
               <ion-item *ngIf="cb.lastFailureTime">
-                <ion-label>Last Failure</ion-label>
+                <ion-label>{{
+                  'serviceMonitor.circuitBreakerDetails.lastFailure' | translate
+                }}</ion-label>
                 <ion-note slot="end">{{ formatDate(cb.lastFailureTime) }}</ion-note>
               </ion-item>
               <ion-item *ngIf="cb.nextAttemptTime">
-                <ion-label>Next Attempt</ion-label>
+                <ion-label>{{
+                  'serviceMonitor.circuitBreakerDetails.nextAttempt' | translate
+                }}</ion-label>
                 <ion-note slot="end">{{ formatDate(cb.nextAttemptTime) }}</ion-note>
               </ion-item>
             </ion-list>
@@ -276,7 +300,7 @@
               [disabled]="cb.state === 'CLOSED'"
             >
               <ion-icon slot="start" name="refresh"></ion-icon>
-              Reset Circuit Breaker
+              {{ 'serviceMonitor.circuitBreakerDetails.reset' | translate }}
             </ion-button>
           </ion-card-content>
         </ion-card>
@@ -284,16 +308,16 @@
         <!-- Service Actions -->
         <ion-card>
           <ion-card-header>
-            <ion-card-title>Actions</ion-card-title>
+            <ion-card-title>{{ 'serviceMonitor.actions.title' | translate }}</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-button expand="block" (click)="checkService(selectedService)">
               <ion-icon slot="start" name="medical"></ion-icon>
-              Health Check
+              {{ 'serviceMonitor.actions.healthCheck' | translate }}
             </ion-button>
             <ion-button expand="block" fill="outline" (click)="clearServiceCache(selectedService)">
               <ion-icon slot="start" name="trash"></ion-icon>
-              Clear Cache
+              {{ 'serviceMonitor.actions.clearCache' | translate }}
             </ion-button>
           </ion-card-content>
         </ion-card>

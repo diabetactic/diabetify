@@ -1,0 +1,17 @@
+{
+  "name": "ionic-8",
+  "description": "Ionic Framework 8 components, navigation, lifecycle, and mobile patterns for building cross-platform apps",
+  "base_url": "https://ionicframework.com/docs",
+  "selectors": {
+    "main_content": "article",
+    "title": "h1",
+    "code_blocks": "pre code"
+  },
+  "url_patterns": {
+    "include": [],
+    "exclude": []
+  },
+  "categories": {},
+  "rate_limit": 0.5,
+  "max_pages": 150
+}

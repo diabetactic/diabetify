@@ -1,0 +1,464 @@
+<!-- Floating Debug Button -->
+<ion-fab *ngIf="!isOpen" vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab-button (click)="togglePanel()" color="danger" size="small">
+    <span class="material-symbols-outlined">bug_report</span>
+  </ion-fab-button>
+</ion-fab>
+
+<!-- Debug Panel Modal -->
+<ion-modal [isOpen]="isOpen" (didDismiss)="togglePanel()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="danger">
+        <ion-title>🐛 {{ 'debug.title' | translate }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="copyDebugInfo()">
+            <span class="material-symbols-outlined">content_copy</span>
+          </ion-button>
+          <ion-button (click)="togglePanel()">
+            <span class="material-symbols-outlined">close</span>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+
+      <ion-toolbar>
+        <ion-segment [(ngModel)]="selectedTab" value="info">
+          <ion-segment-button value="info">
+            <ion-label>{{ 'debug.tabs.info' | translate }}</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="status">
+            <ion-label>{{ 'debug.tabs.status' | translate }}</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="mock">
+            <ion-label>{{ 'debug.tabs.mock' | translate }}</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="actions">
+            <ion-label>{{ 'debug.tabs.actions' | translate }}</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="config">
+            <ion-label>{{ 'debug.tabs.config' | translate }}</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <!-- INFO TAB -->
+      <div *ngIf="selectedTab === 'info'">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ 'debug.device.title' | translate }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content *ngIf="debugInfo">
+            <ion-list>
+              <ion-item>
+                <ion-label>
+                  <h3>{{ 'debug.device.platform' | translate }}</h3>
+                  <p>{{ debugInfo.platform }}</p>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>
+                  <h3>{{ 'debug.device.appVersion' | translate }}</h3>
+                  <p>{{ debugInfo.version }}</p>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>
+                  <h3>{{ 'debug.device.deviceModel' | translate }}</h3>
+                  <p>{{ debugInfo.deviceModel }}</p>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>
+                  <h3>{{ 'debug.device.osVersion' | translate }}</h3>
+                  <p>{{ debugInfo.osVersion }}</p>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>
+                  <h3>{{ 'debug.device.network' | translate }}</h3>
+                  <p>{{ debugInfo.networkStatus }}</p>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>
+                  <h3>{{ 'debug.device.environment' | translate }}</h3>
+                  <p>{{ debugInfo.environment }}</p>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>
+                  <h3>{{ 'debug.device.apiBaseUrl' | translate }}</h3>
+                  <p>{{ debugInfo.apiBaseUrl }}</p>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ 'debug.storage.title' | translate }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content *ngIf="storageStats">
+            <ion-list>
+              <ion-item>
+                <ion-label>
+                  <h3>{{ 'debug.storage.readings' | translate }}</h3>
+                  <p>{{ storageStats.readings }} {{ 'debug.storage.records' | translate }}</p>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>
+                  <h3>{{ 'debug.storage.syncQueue' | translate }}</h3>
+                  <p>{{ storageStats.syncQueue }} {{ 'debug.storage.pending' | translate }}</p>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- STATUS TAB -->
+      <div *ngIf="selectedTab === 'status'">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ 'debug.auth.title' | translate }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content *ngIf="authStatus">
+            <ion-list>
+              <ion-item>
+                <ion-label>
+                  <h3>{{ 'debug.auth.tidepool' | translate }}</h3>
+                  <p>
+                    <ion-badge [color]="authStatus.tidepool.isAuthenticated ? 'success' : 'danger'">
+                      {{
+                        authStatus.tidepool.isAuthenticated
+                          ? ('debug.auth.authenticated' | translate)
+                          : ('debug.auth.notAuthenticated' | translate)
+                      }}
+                    </ion-badge>
+                  </p>
+                </ion-label>
+              </ion-item>
+              <ion-item *ngIf="authStatus.tidepool.userId">
+                <ion-label>
+                  <h3>{{ 'debug.auth.userId' | translate }}</h3>
+                  <p>{{ authStatus.tidepool.userId }}</p>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ 'debug.sync.title' | translate }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content *ngIf="syncStatus">
+            <ion-list>
+              <ion-item>
+                <ion-label>
+                  <h3>{{ 'debug.sync.status' | translate }}</h3>
+                  <p>
+                    <ion-badge [color]="getSyncStatusColor(syncStatus.status)">
+                      {{ syncStatus.status }}
+                    </ion-badge>
+                  </p>
+                </ion-label>
+              </ion-item>
+              <ion-item *ngIf="syncStatus.lastSyncTime">
+                <ion-label>
+                  <h3>{{ 'debug.sync.lastSync' | translate }}</h3>
+                  <p>{{ syncStatus.lastSyncTime | date: 'short' }}</p>
+                </ion-label>
+              </ion-item>
+              <ion-item *ngIf="syncStatus.itemsSynced !== undefined">
+                <ion-label>
+                  <h3>{{ 'debug.sync.itemsSynced' | translate }}</h3>
+                  <p>{{ syncStatus.itemsSynced }}</p>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ 'debug.health.title' | translate }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content *ngIf="servicesHealth">
+            <ion-list>
+              <ion-item>
+                <ion-label>
+                  <h3>{{ 'debug.health.overall' | translate }}</h3>
+                  <p>
+                    <ion-badge [color]="getHealthColor(servicesHealth.overallHealth)">
+                      {{ servicesHealth.overallHealth }}
+                    </ion-badge>
+                  </p>
+                </ion-label>
+              </ion-item>
+              <ion-item *ngFor="let service of servicesHealth.services | keyvalue">
+                <ion-label>
+                  <h3>{{ service.key }}</h3>
+                  <p>
+                    <ion-badge [color]="getHealthColor(service.value.status)">
+                      {{ service.value.status }}
+                    </ion-badge>
+                  </p>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- MOCK TAB -->
+      <div *ngIf="selectedTab === 'mock'">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ 'debug.mock.title' | translate }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item>
+              <ion-label>
+                <h3>{{ 'debug.mock.backend' | translate }}</h3>
+                <p>
+                  {{
+                    mockConfig.enabled
+                      ? ('debug.mock.enabled' | translate)
+                      : ('debug.mock.disabled' | translate)
+                  }}
+                </p>
+              </ion-label>
+              <ion-toggle
+                [(ngModel)]="mockConfig.enabled"
+                (ionChange)="toggleMockMode($event.detail.checked)"
+              ></ion-toggle>
+            </ion-item>
+            <ion-note class="ion-padding ion-text-wrap">
+              {{ 'debug.mock.description' | translate }}
+            </ion-note>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card *ngIf="mockConfig.enabled">
+          <ion-card-header>
+            <ion-card-title>{{ 'debug.mock.serviceControls' | translate }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              <ion-item>
+                <span class="material-symbols-outlined" slot="start">calendar_month</span>
+                <ion-label>
+                  <h3>{{ 'debug.mock.appointments' | translate }}</h3>
+                  <p>
+                    {{
+                      mockConfig.services.appointments
+                        ? ('debug.mock.mockLabel' | translate)
+                        : ('debug.mock.realLabel' | translate)
+                    }}
+                  </p>
+                </ion-label>
+                <ion-toggle
+                  [(ngModel)]="mockConfig.services.appointments"
+                  (ionChange)="toggleServiceMock('appointments', $event.detail.checked)"
+                ></ion-toggle>
+              </ion-item>
+
+              <ion-item>
+                <span class="material-symbols-outlined" slot="start">water_drop</span>
+                <ion-label>
+                  <h3>{{ 'debug.mock.glucoseReadings' | translate }}</h3>
+                  <p>
+                    {{
+                      mockConfig.services.glucoserver
+                        ? ('debug.mock.mockLabel' | translate)
+                        : ('debug.mock.realLabel' | translate)
+                    }}
+                  </p>
+                </ion-label>
+                <ion-toggle
+                  [(ngModel)]="mockConfig.services.glucoserver"
+                  (ionChange)="toggleServiceMock('glucoserver', $event.detail.checked)"
+                ></ion-toggle>
+              </ion-item>
+
+              <ion-item>
+                <span class="material-symbols-outlined" slot="start">lock</span>
+                <ion-label>
+                  <h3>{{ 'debug.mock.authentication' | translate }}</h3>
+                  <p>
+                    {{
+                      mockConfig.services.auth
+                        ? ('debug.mock.mockLabel' | translate)
+                        : ('debug.mock.realLabel' | translate)
+                    }}
+                  </p>
+                </ion-label>
+                <ion-toggle
+                  [(ngModel)]="mockConfig.services.auth"
+                  (ionChange)="toggleServiceMock('auth', $event.detail.checked)"
+                ></ion-toggle>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ 'debug.mock.quickActions' | translate }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-button expand="block" color="success" (click)="enableAllMocks()">
+              <span class="material-symbols-outlined" slot="start">check_circle</span>
+              {{ 'debug.mock.enableAll' | translate }}
+            </ion-button>
+            <ion-button expand="block" color="medium" (click)="disableAllMocks()">
+              <span class="material-symbols-outlined" slot="start">cancel</span>
+              {{ 'debug.mock.disableAll' | translate }}
+            </ion-button>
+            <ion-button expand="block" color="warning" (click)="clearMockData()">
+              <span class="material-symbols-outlined" slot="start">delete_sweep</span>
+              {{ 'debug.mock.clearData' | translate }}
+            </ion-button>
+            <ion-note class="ion-padding ion-text-wrap">
+              {{ 'debug.mock.tip' | translate }}
+              <br />
+              {{ 'debug.mock.demoCredentials' | translate }}
+            </ion-note>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- ACTIONS TAB -->
+      <div *ngIf="selectedTab === 'actions'">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ 'debug.actions.dataManagement' | translate }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-button expand="block" color="warning" (click)="clearReadings()">
+              <span class="material-symbols-outlined" slot="start">delete_sweep</span>
+              {{ 'debug.actions.clearReadings' | translate }}
+            </ion-button>
+            <ion-button expand="block" color="warning" (click)="clearPreferences()">
+              <span class="material-symbols-outlined" slot="start">settings_backup_restore</span>
+              {{ 'debug.actions.clearPreferences' | translate }}
+            </ion-button>
+            <ion-button expand="block" color="danger" (click)="clearAllData()">
+              <span class="material-symbols-outlined" slot="start">delete_forever</span>
+              {{ 'debug.actions.clearAllData' | translate }}
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ 'debug.actions.syncActions' | translate }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-button expand="block" color="primary" (click)="forceSync()">
+              <span class="material-symbols-outlined" slot="start">sync</span>
+              {{ 'debug.actions.forceSync' | translate }}
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ 'debug.actions.accountSimulator' | translate }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <p class="ion-text-wrap">{{ 'debug.actions.simulatorDescription' | translate }}</p>
+            <ion-button expand="block" fill="outline" (click)="simulateAccountState('active')">
+              <span class="material-symbols-outlined" slot="start">check_circle</span>
+              {{ 'debug.actions.active' | translate }}
+            </ion-button>
+            <ion-button expand="block" fill="outline" (click)="simulateAccountState('pending')">
+              <span class="material-symbols-outlined" slot="start">pending</span>
+              {{ 'debug.actions.pending' | translate }}
+            </ion-button>
+            <ion-button expand="block" fill="outline" (click)="simulateAccountState('disabled')">
+              <span class="material-symbols-outlined" slot="start">block</span>
+              {{ 'debug.actions.disabled' | translate }}
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- CONFIG TAB -->
+      <div *ngIf="selectedTab === 'config'">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ 'debug.config.featureFlags' | translate }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              <ion-item>
+                <ion-label>{{ 'debug.config.offlineMode' | translate }}</ion-label>
+                <ion-toggle [(ngModel)]="features.offlineMode" disabled></ion-toggle>
+              </ion-item>
+              <ion-item>
+                <ion-label>{{ 'debug.config.tidepoolIntegration' | translate }}</ion-label>
+                <ion-toggle [(ngModel)]="features.useTidepoolIntegration" disabled></ion-toggle>
+              </ion-item>
+              <ion-item>
+                <ion-label>{{ 'debug.config.tidepoolMock' | translate }}</ion-label>
+                <ion-toggle [(ngModel)]="features.useTidepoolMock" disabled></ion-toggle>
+              </ion-item>
+              <ion-item>
+                <ion-label>{{ 'debug.config.localBackend' | translate }}</ion-label>
+                <ion-toggle [(ngModel)]="features.useLocalBackend" disabled></ion-toggle>
+              </ion-item>
+            </ion-list>
+            <ion-note class="ion-padding">
+              {{ 'debug.config.featureFlagsNote' | translate }}
+            </ion-note>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ 'debug.config.customBackendUrl' | translate }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <p class="ion-text-wrap">
+              {{ 'debug.config.customBackendDescription' | translate }}
+            </p>
+            <ion-item>
+              <ion-input
+                [(ngModel)]="customBackendUrl"
+                placeholder="http://10.0.2.2:8000"
+                type="url"
+              ></ion-input>
+            </ion-item>
+            <ion-button
+              expand="block"
+              color="primary"
+              (click)="saveCustomBackendUrl()"
+              class="ion-margin-top"
+            >
+              <span class="material-symbols-outlined" slot="start">save</span>
+              {{ 'debug.config.saveAndRestart' | translate }}
+            </ion-button>
+            <ion-button
+              expand="block"
+              fill="outline"
+              color="medium"
+              (click)="clearCustomBackendUrl()"
+            >
+              <span class="material-symbols-outlined" slot="start">restore</span>
+              {{ 'debug.config.clearOverride' | translate }}
+            </ion-button>
+            <ion-note class="ion-padding">
+              {{ 'debug.config.restartWarning' | translate }} {{ debugInfo?.apiBaseUrl }}
+            </ion-note>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
