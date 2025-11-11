@@ -1,27 +1,28 @@
 <ion-content [fullscreen]="true" class="ion-padding">
-  <div class="welcome-container">
+  <div class="flex min-h-full flex-col items-center justify-between p-0">
     <!-- Hero Image -->
-    <div class="hero-section">
-      <div class="hero-image">
+    <div class="mx-auto flex w-full max-w-[500px] flex-1 items-center justify-center px-4 pb-4 pt-8">
+      <div class="flex w-full max-w-[350px] items-center justify-center aspect-square md:max-w-[400px] max-h-[280px]:max-w-[280px]">
         <img
           src="assets/images/diabetifywelcomescreen.png"
           alt="{{ 'welcome.heroAlt' | translate }}"
+          class="h-full w-full object-contain"
         />
       </div>
     </div>
 
     <!-- Content Section -->
-    <div class="content-section">
-      <h1 class="welcome-title">
+    <div class="mx-auto max-w-[500px] px-6 py-4 text-center max-h-[700px]:py-2">
+      <h1 class="mb-3 text-3xl font-bold leading-tight text-gray-900 dark:text-white dark:font-extrabold dark:drop-shadow-lg md:text-4xl max-h-[700px]:text-2xl">
         {{ 'welcome.title' | translate }}
       </h1>
-      <p class="welcome-subtitle">
+      <p class="m-0 text-base font-normal leading-normal text-gray-600 dark:text-gray-200 dark:drop-shadow-md md:text-lg">
         {{ 'welcome.subtitle' | translate }}
       </p>
     </div>
 
     <!-- Action Buttons -->
-    <div class="action-buttons">
+    <div class="mx-auto flex w-full max-w-[500px] flex-col gap-3 px-6 pb-8 pt-4">
       <ion-button
         expand="block"
         size="large"
