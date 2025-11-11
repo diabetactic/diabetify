@@ -1,0 +1,17 @@
+{
+  "name": "angular-material-20",
+  "description": "Angular Material 20 components, theming, accessibility, and design system implementation",
+  "base_url": "https://material.angular.io",
+  "selectors": {
+    "main_content": "article",
+    "title": "h1",
+    "code_blocks": "pre code"
+  },
+  "url_patterns": {
+    "include": [],
+    "exclude": []
+  },
+  "categories": {},
+  "rate_limit": 0.5,
+  "max_pages": 200
+}

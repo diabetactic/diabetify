@@ -1,3 +1,6 @@
 <ion-app>
   <ion-router-outlet></ion-router-outlet>
+
+  <!-- Debug Panel (only in dev mode with devTools enabled) -->
+  <app-debug-panel *ngIf="showDebugPanel"></app-debug-panel>
 </ion-app>

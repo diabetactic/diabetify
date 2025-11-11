@@ -1,0 +1,198 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-11-03T00:00:00.000Z",
+  "__export_source": "codex-cli",
+  "resources": [
+    {
+      "_id": "wrk_diabetactic",
+      "_type": "workspace",
+      "name": "Diabetify APIs",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_diabetactic",
+      "name": "Base Environment",
+      "data": {
+        "apiGatewayBaseUrl": "http://localhost:8004",
+        "apiGatewayBackofficeBaseUrl": "http://localhost:8006",
+        "loginBaseUrl": "http://localhost:8003",
+        "appointmentsBaseUrl": "http://localhost:8005",
+        "glucoserverBaseUrl": "http://localhost:8002",
+        "authToken": "",
+        "adminToken": ""
+      }
+    },
+    {"_id":"fld_gateway","_type":"request_group","parentId":"wrk_diabetactic","name":"API Gateway"},
+    {
+      "_id": "req_gateway_login",
+      "_type": "request",
+      "parentId": "fld_gateway",
+      "name": "Login (token)",
+      "method": "POST",
+      "url": "{{ _.apiGatewayBaseUrl }}/token",
+      "body": {
+        "mimeType": "application/x-www-form-urlencoded",
+        "params": [
+          {"name":"username","value":"1000"},
+          {"name":"password","value":"tuvieja"}
+        ]
+      },
+      "headers": [{"name":"Content-Type","value":"application/x-www-form-urlencoded"}]
+    },
+    {
+      "_id": "req_gateway_me",
+      "_type": "request",
+      "parentId": "fld_gateway",
+      "name": "Users - Me",
+      "method": "GET",
+      "url": "{{ _.apiGatewayBaseUrl }}/users/me",
+      "authentication": {"type":"bearer","token":"{{ _.authToken }}"}
+    },
+    {
+      "_id": "req_gateway_glu_mine",
+      "_type": "request",
+      "parentId": "fld_gateway",
+      "name": "Glucose - Mine",
+      "method": "GET",
+      "url": "{{ _.apiGatewayBaseUrl }}/glucose/mine",
+      "authentication": {"type":"bearer","token":"{{ _.authToken }}"}
+    },
+    {
+      "_id": "req_gateway_glu_latest",
+      "_type": "request",
+      "parentId": "fld_gateway",
+      "name": "Glucose - Mine Latest",
+      "method": "GET",
+      "url": "{{ _.apiGatewayBaseUrl }}/glucose/mine/latest",
+      "authentication": {"type":"bearer","token":"{{ _.authToken }}"}
+    },
+    {
+      "_id": "req_gateway_glu_create",
+      "_type": "request",
+      "parentId": "fld_gateway",
+      "name": "Glucose - Create",
+      "method": "POST",
+      "url": "{{ _.apiGatewayBaseUrl }}/glucose/create",
+      "parameters": [
+        {"name":"glucose_level","value":"120.5"},
+        {"name":"reading_type","value":"DESAYUNO"}
+      ],
+      "authentication": {"type":"bearer","token":"{{ _.authToken }}"}
+    },
+    {
+      "_id": "req_gateway_app_mine",
+      "_type": "request",
+      "parentId": "fld_gateway",
+      "name": "Appointments - Mine",
+      "method": "GET",
+      "url": "{{ _.apiGatewayBaseUrl }}/appointments/mine",
+      "authentication": {"type":"bearer","token":"{{ _.authToken }}"}
+    },
+    {
+      "_id": "req_gateway_app_state",
+      "_type": "request",
+      "parentId": "fld_gateway",
+      "name": "Appointments - State",
+      "method": "GET",
+      "url": "{{ _.apiGatewayBaseUrl }}/appointments/state",
+      "authentication": {"type":"bearer","token":"{{ _.authToken }}"}
+    },
+    {
+      "_id": "req_gateway_app_create",
+      "_type": "request",
+      "parentId": "fld_gateway",
+      "name": "Appointments - Create",
+      "method": "POST",
+      "url": "{{ _.apiGatewayBaseUrl }}/appointments/create",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"glucose_objective\":110,\n  \"insulin_type\":\"X\",\n  \"dose\":5,\n  \"fast_insulin\":\"Y\",\n  \"fixed_dose\":2,\n  \"ratio\":12,\n  \"sensitivity\":50,\n  \"pump_type\":\"Z\",\n  \"another_treatment\":null,\n  \"control_data\":\"https://link.pdf\",\n  \"motive\":[\"AJUSTE\"]\n}"
+      },
+      "authentication": {"type":"bearer","token":"{{ _.authToken }}"},
+      "headers": [{"name":"Content-Type","value":"application/json"}]
+    },
+    {
+      "_id": "req_gateway_app_submit",
+      "_type": "request",
+      "parentId": "fld_gateway",
+      "name": "Appointments - Submit",
+      "method": "POST",
+      "url": "{{ _.apiGatewayBaseUrl }}/appointments/submit",
+      "authentication": {"type":"bearer","token":"{{ _.authToken }}"}
+    },
+
+    {"_id":"fld_backoffice","_type":"request_group","parentId":"wrk_diabetactic","name":"Backoffice Gateway"},
+    {
+      "_id": "req_bo_login",
+      "_type": "request",
+      "parentId": "fld_backoffice",
+      "name": "Admin Login (token)",
+      "method": "POST",
+      "url": "{{ _.apiGatewayBackofficeBaseUrl }}/token",
+      "body": {
+        "mimeType": "application/x-www-form-urlencoded",
+        "params": [
+          {"name":"username","value":"admin"},
+          {"name":"password","value":"admin"}
+        ]
+      },
+      "headers": [{"name":"Content-Type","value":"application/x-www-form-urlencoded"}]
+    },
+    {
+      "_id": "req_bo_users",
+      "_type": "request",
+      "parentId": "fld_backoffice",
+      "name": "Users - List",
+      "method": "GET",
+      "url": "{{ _.apiGatewayBackofficeBaseUrl }}/users",
+      "authentication": {"type":"bearer","token":"{{ _.adminToken }}"}
+    },
+    {
+      "_id": "req_bo_user_get",
+      "_type": "request",
+      "parentId": "fld_backoffice",
+      "name": "Users - Get by ID",
+      "method": "GET",
+      "url": "{{ _.apiGatewayBackofficeBaseUrl }}/users/user/1",
+      "authentication": {"type":"bearer","token":"{{ _.adminToken }}"}
+    },
+
+    {"_id":"fld_login","_type":"request_group","parentId":"wrk_diabetactic","name":"Login Service"},
+    {
+      "_id": "req_login_user_grant",
+      "_type": "request",
+      "parentId": "fld_login",
+      "name": "Users - Grant Access",
+      "method": "POST",
+      "url": "{{ _.loginBaseUrl }}/users/grantaccess",
+      "body": {"mimeType":"application/json","text":"{\n  \"dni\": \"1000\",\n  \"password\": \"tuvieja\"\n}"},
+      "headers": [{"name":"Content-Type","value":"application/json"}]
+    },
+
+    {"_id":"fld_appointments","_type":"request_group","parentId":"wrk_diabetactic","name":"Appointments Service"},
+    {
+      "_id": "req_appt_queue_pending",
+      "_type": "request",
+      "parentId": "fld_appointments",
+      "name": "Queue - Pending",
+      "method": "GET",
+      "url": "{{ _.appointmentsBaseUrl }}/queue/pending"
+    },
+
+    {"_id":"fld_gluco","_type":"request_group","parentId":"wrk_diabetactic","name":"Glucoserver"},
+    {
+      "_id": "req_gluco_create",
+      "_type": "request",
+      "parentId": "fld_gluco",
+      "name": "Create Reading",
+      "method": "POST",
+      "url": "{{ _.glucoserverBaseUrl }}/readings/",
+      "body": {"mimeType":"application/json","text":"{\n  \"user_id\": 1,\n  \"glucose_level\": 120.5,\n  \"reading_type\": \"DESAYUNO\"\n}"},
+      "headers": [{"name":"Content-Type","value":"application/json"}]
+    }
+  ]
+}
+

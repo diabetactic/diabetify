@@ -1,0 +1,30 @@
+appId: io.diabetactic.app
+---
+# Reusable Flow: Navigate to Tab
+# Navigates to a specific tab in the application
+#
+# Usage:
+#   - runFlow:
+#       file: maestro/flows/navigate-to-tab.yaml
+#       env:
+#         TAB_NAME: "Dashboard"
+#
+# Required environment variables:
+#   - TAB_NAME: Name of the tab (Dashboard, Readings, Appointments, Profile)
+
+# Verify we're on main screen with tabs
+- assertVisible:
+    text: "Diabetactic"
+
+# Navigate to requested tab
+- tapOn: ${TAB_NAME}
+
+# Wait for navigation
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify we're on the correct tab
+- assertVisible: ${TAB_NAME}
+
+# Take screenshot for verification
+- takeScreenshot: maestro/screenshots/navigate-to-${TAB_NAME}.png

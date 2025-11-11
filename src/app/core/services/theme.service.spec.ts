@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { RendererFactory2 } from '@angular/core';
 import { ThemeService } from './theme.service';
 import { ProfileService } from './profile.service';
-import { UserProfile, DEFAULT_USER_PREFERENCES } from '../models/user-profile.model';
+import { UserProfile, DEFAULT_USER_PREFERENCES, AccountState } from '../models/user-profile.model';
 import { skip, take } from 'rxjs/operators';
 
 describe('ThemeService', () => {
@@ -15,6 +15,7 @@ describe('ThemeService', () => {
     id: 'test-user-id',
     name: 'Test User',
     age: 10,
+    accountState: AccountState.ACTIVE,
     dateOfBirth: '2014-01-01',
     tidepoolConnection: { connected: false },
     preferences: {
@@ -58,9 +59,9 @@ describe('ThemeService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should initialize with a theme mode', () => {
+  it('should initialize with light theme mode by default', () => {
     const currentMode = service.getCurrentThemeMode();
-    expect(['light', 'dark', 'auto']).toContain(currentMode);
+    expect(currentMode).toBe('light');
     expect(typeof service.isDarkTheme()).toBe('boolean');
   });
 

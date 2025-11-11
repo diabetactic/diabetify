@@ -56,11 +56,17 @@ export function generateRandomString(
 
 /**
  * Generate OAuth2 state parameter for CSRF protection
+ * State parameter doesn't need to follow code verifier length constraints
  *
  * @returns Random state string
  */
 export function generateState(): string {
-  return generateRandomString(OAUTH_CONSTANTS.STATE_LENGTH);
+  // Generate random bytes for state (32 characters)
+  const randomBytes = new Uint8Array(OAUTH_CONSTANTS.STATE_LENGTH);
+  crypto.getRandomValues(randomBytes);
+
+  // Convert to base64url (URL-safe base64 without padding)
+  return base64urlEncode(randomBytes);
 }
 
 /**

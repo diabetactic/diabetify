@@ -1,0 +1,335 @@
+openapi: 3.0.3
+info:
+  title: Diabetify Appointments Service
+  version: 0.1.0
+  description: Appointment intake, queue management, and resolutions.
+servers:
+  - url: http://localhost:8005
+tags:
+  - name: Appointments
+  - name: Queue
+components:
+  schemas:
+    MotivesEnum:
+      type: string
+      enum: [AJUSTE, HIPOGLUCEMIA, HIPERGLUCEMIA, CETOSIS, DUDAS, OTRO]
+    AppointmentStateEnum:
+      type: string
+      enum: [PENDING, ACCEPTED, DENIED, CREATED]
+    AppointmentCreate:
+      type: object
+      properties:
+        user_id: { type: integer }
+        glucose_objective: { type: number }
+        insulin_type: { type: string }
+        dose: { type: number }
+        fast_insulin: { type: string }
+        fixed_dose: { type: number }
+        ratio: { type: number }
+        sensitivity: { type: number }
+        pump_type: { type: string }
+        another_treatment: { type: string, nullable: true }
+        control_data: { type: string }
+        motive:
+          type: array
+          items: { $ref: '#/components/schemas/MotivesEnum' }
+        other_motive: { type: string, nullable: true }
+      required: [user_id, glucose_objective, insulin_type, dose, fast_insulin, fixed_dose, ratio, sensitivity, pump_type, control_data, motive]
+    Appointment:
+      allOf:
+        - $ref: '#/components/schemas/AppointmentCreate'
+        - type: object
+          properties:
+            appointment_id: { type: integer }
+          required: [appointment_id]
+    AppointmentResolution:
+      type: object
+      properties:
+        appointment_id: { type: integer }
+        change_basal_type: { type: string }
+        change_basal_dose: { type: number }
+        change_basal_time: { type: string }
+        change_fast_type: { type: string }
+        change_ratio: { type: number }
+        change_sensitivity: { type: number }
+        emergency_care: { type: boolean }
+        needed_physical_appointment: { type: boolean }
+      required: [appointment_id, emergency_care, needed_physical_appointment]
+    AppointmentQueue:
+      type: object
+      properties:
+        queue_placement: { type: integer }
+        user_id: { type: integer }
+        appointment_state: { $ref: '#/components/schemas/AppointmentStateEnum' }
+      required: [queue_placement, user_id, appointment_state]
+paths:
+  /appointments:
+    get:
+      tags: [Appointments]
+      summary: List appointments
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Appointment' }
+  /appointments/from_user/{user_id}:
+    get:
+      tags: [Appointments]
+      summary: Appointments by user
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Appointment' }
+  /appointments/{appointment_id}:
+    get:
+      tags: [Appointments]
+      summary: Appointment by ID
+      parameters:
+        - in: path
+          name: appointment_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Appointment
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Appointment' }
+        '404': { description: Not found }
+  /appointments/create:
+    post:
+      tags: [Appointments]
+      summary: Create appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AppointmentCreate' }
+            examples:
+              example:
+                value:
+                  user_id: 1
+                  glucose_objective: 110
+                  insulin_type: X
+                  dose: 5
+                  fast_insulin: Y
+                  fixed_dose: 2
+                  ratio: 12
+                  sensitivity: 50
+                  pump_type: Z
+                  another_treatment: null
+                  control_data: https://link.pdf
+                  motive: [AJUSTE]
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Appointment' }
+              examples:
+                example:
+                  value:
+                    appointment_id: 10
+                    user_id: 1
+                    glucose_objective: 110
+                    insulin_type: X
+                    dose: 5
+                    fast_insulin: Y
+                    fixed_dose: 2
+                    ratio: 12
+                    sensitivity: 50
+                    pump_type: Z
+                    another_treatment: null
+                    control_data: https://link.pdf
+                    motive: [AJUSTE]
+  /appointments/{appointment_id}/resolution:
+    get:
+      tags: [Appointments]
+      summary: Resolution by appointment ID
+      parameters:
+        - in: path
+          name: appointment_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Resolution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AppointmentResolution' }
+        '404': { description: Not found }
+  /appointments/create_resolution:
+    post:
+      tags: [Appointments]
+      summary: Create resolution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AppointmentResolution' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AppointmentResolution' }
+  /queue:
+    get:
+      tags: [Queue]
+      summary: Full queue
+      responses:
+        '200':
+          description: Items
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AppointmentQueue' }
+    delete:
+      tags: [Queue]
+      summary: Clear queue
+      responses:
+        '204': { description: Cleared }
+  /queue/pending:
+    get:
+      tags: [Queue]
+      summary: Pending appointments
+      responses:
+        '200':
+          description: Items
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AppointmentQueue' }
+  /queue/accepted:
+    get:
+      tags: [Queue]
+      summary: Accepted appointments
+      responses:
+        '200':
+          description: Items
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AppointmentQueue' }
+  /queue/created:
+    get:
+      tags: [Queue]
+      summary: Created appointments
+      responses:
+        '200':
+          description: Items
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AppointmentQueue' }
+  /queue/state/{user_id}:
+    get:
+      tags: [Queue]
+      summary: Queue state by user
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: State
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AppointmentStateEnum' }
+  /queue/placement/{user_id}:
+    get:
+      tags: [Queue]
+      summary: Placement by user
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Placement index
+          content:
+            application/json:
+              schema: { type: integer }
+  /queue/submit:
+    post:
+      tags: [Queue]
+      summary: Submit new appointment to queue
+      parameters:
+        - in: query
+          name: user_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '201':
+          description: Queue placement
+          content:
+            application/json:
+              schema: { type: integer }
+  /queue/size:
+    get:
+      tags: [Queue]
+      summary: Get queue max size
+      responses:
+        '200':
+          description: Size
+          content:
+            application/json:
+              schema: { type: integer }
+    post:
+      tags: [Queue]
+      summary: Set queue max size
+      parameters:
+        - in: query
+          name: new_size
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: Updated }
+  /queue/accept/{queue_placement}:
+    put:
+      tags: [Queue]
+      summary: Accept appointment
+      parameters:
+        - in: path
+          name: queue_placement
+          required: true
+          schema: { type: integer }
+      responses:
+        '201':
+          description: Updated
+          content:
+            application/json:
+              schema: { type: boolean }
+  /queue/deny/{queue_placement}:
+    put:
+      tags: [Queue]
+      summary: Deny appointment
+      parameters:
+        - in: path
+          name: queue_placement
+          required: true
+          schema: { type: integer }
+      responses:
+        '201':
+          description: Updated
+          content:
+            application/json:
+              schema: { type: boolean }

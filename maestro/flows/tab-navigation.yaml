@@ -1,0 +1,23 @@
+# Reusable Tab Navigation Flow
+# Usage: - runFlow: flows/tab-navigation.yaml
+---
+# Navigate through all main tabs
+- tapOn: "Dashboard"
+- waitForAnimationToEnd
+- assertVisible: "Dashboard"
+
+- tapOn: "Readings"
+- waitForAnimationToEnd
+- assertVisible: "Readings"
+
+- tapOn: "Appointments"
+- waitForAnimationToEnd
+- assertVisible: "Appointments"
+
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- assertVisible: "Profile"
+
+# Return to Dashboard
+- tapOn: "Dashboard"
+- waitForAnimationToEnd

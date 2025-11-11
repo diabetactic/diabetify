@@ -1,0 +1,181 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ 'dashboard.detail.title' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onSync()" [disabled]="isSyncing">
+        <ion-icon slot="icon-only" name="sync-outline" [class.spinning]="isSyncing"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="detail-container">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <ion-spinner name="crescent" *ngIf="!isKarma"></ion-spinner>
+      <p>{{ 'app.loading' | translate }}</p>
+    </div>
+
+    <!-- Detail Content -->
+    <ng-container *ngIf="!isLoading">
+      <!-- Info Banner -->
+      <ion-card class="info-banner">
+        <ion-card-content>
+          <div class="info-content">
+            <ion-icon name="information-circle-outline" color="primary"></ion-icon>
+            <p>{{ 'dashboard.detail.description' | translate }}</p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- All Statistics Grid -->
+      <div class="stats-grid">
+        <!-- HbA1c (Estimated A1C) -->
+        <app-stat-card
+          [title]="'readings.statistics.hba1c' | translate"
+          [value]="formatPercentage(statistics?.estimatedA1C)"
+          unit=""
+          [icon]="icons.hba1c"
+          [gradientColors]="gradients.hba1c"
+        >
+        </app-stat-card>
+
+        <!-- GMI (Glucose Management Indicator) -->
+        <app-stat-card
+          [title]="'readings.statistics.gmi' | translate"
+          [value]="formatPercentage(statistics?.gmi)"
+          unit=""
+          [icon]="icons.gmi"
+          [gradientColors]="gradients.gmi"
+        >
+        </app-stat-card>
+
+        <!-- Time in Range -->
+        <app-stat-card
+          [title]="'readings.statistics.timeInRange' | translate"
+          [value]="formatPercentage(statistics?.timeInRange)"
+          unit=""
+          [icon]="icons.timeInRange"
+          [gradientColors]="gradients.timeInRange"
+        >
+        </app-stat-card>
+
+        <!-- Average Glucose -->
+        <app-stat-card
+          [title]="'readings.statistics.average' | translate"
+          [value]="formatGlucose(statistics?.average)"
+          [unit]="getCurrentGlucoseUnit()"
+          [icon]="icons.avgGlucose"
+          [gradientColors]="gradients.avgGlucose"
+        >
+        </app-stat-card>
+
+        <!-- Standard Deviation -->
+        <app-stat-card
+          [title]="'readings.statistics.stdDev' | translate"
+          [value]="formatGlucose(statistics?.standardDeviation)"
+          [unit]="getCurrentGlucoseUnit()"
+          [icon]="icons.stdDev"
+          [gradientColors]="gradients.stdDev"
+        >
+        </app-stat-card>
+
+        <!-- Coefficient of Variation -->
+        <app-stat-card
+          [title]="'readings.statistics.cv' | translate"
+          [value]="formatPercentage(statistics?.coefficientOfVariation)"
+          unit=""
+          [icon]="icons.cv"
+          [gradientColors]="gradients.cv"
+        >
+        </app-stat-card>
+      </div>
+
+      <!-- Sync Status Card -->
+      <ion-card class="sync-status-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="sync-outline"></ion-icon>
+            {{ 'dashboard.detail.syncStatus' | translate }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="sync-details">
+            <div class="sync-item">
+              <ion-icon name="time-outline" color="primary"></ion-icon>
+              <div class="sync-item-content">
+                <h4>{{ 'dashboard.lastSync' | translate }}</h4>
+                <p>{{ getLastSyncDisplay() }}</p>
+              </div>
+            </div>
+
+            <div class="sync-item">
+              <ion-icon name="cloud-upload-outline" color="success"></ion-icon>
+              <div class="sync-item-content">
+                <h4>{{ 'dashboard.syncedItems' | translate }}</h4>
+                <p>{{ syncStatus?.itemsSynced || 0 }}</p>
+              </div>
+            </div>
+
+            <div class="sync-item" *ngIf="syncStatus && syncStatus.itemsFailed > 0">
+              <ion-icon name="alert-circle-outline" color="danger"></ion-icon>
+              <div class="sync-item-content">
+                <h4>{{ 'dashboard.failedItems' | translate }}</h4>
+                <p>{{ syncStatus.itemsFailed }}</p>
+              </div>
+            </div>
+
+            <div class="sync-item">
+              <ion-icon
+                [name]="isSyncing ? 'ellipse' : 'checkmark-circle'"
+                [color]="isSyncing ? 'warning' : 'success'"
+              ></ion-icon>
+              <div class="sync-item-content">
+                <h4>{{ 'dashboard.status' | translate }}</h4>
+                <p>{{ getSyncStatusText() }}</p>
+              </div>
+            </div>
+          </div>
+
+          <ion-button expand="block" (click)="onSync()" [disabled]="isSyncing" class="sync-button">
+            <ion-spinner name="crescent" *ngIf="isSyncing && !isKarma"></ion-spinner>
+            <span *ngIf="!isSyncing">
+              <ion-icon slot="start" name="sync-outline"></ion-icon>
+              {{ 'dashboard.syncNow' | translate }}
+            </span>
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Additional Info Card -->
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="help-circle-outline"></ion-icon>
+            {{ 'dashboard.detail.aboutMetrics' | translate }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="metric-explanation">
+            <h4>{{ 'readings.statistics.hba1c' | translate }}</h4>
+            <p>{{ 'dashboard.detail.hba1cExplanation' | translate }}</p>
+          </div>
+          <div class="metric-explanation">
+            <h4>{{ 'readings.statistics.gmi' | translate }}</h4>
+            <p>{{ 'dashboard.detail.gmiExplanation' | translate }}</p>
+          </div>
+          <div class="metric-explanation">
+            <h4>{{ 'readings.statistics.cv' | translate }}</h4>
+            <p>{{ 'dashboard.detail.cvExplanation' | translate }}</p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+  </div>
+</ion-content>

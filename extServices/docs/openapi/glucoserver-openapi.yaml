@@ -1,0 +1,112 @@
+openapi: 3.0.3
+info:
+  title: Diabetify Glucoserver
+  version: 0.1.0
+  description: Glucose readings storage and retrieval.
+servers:
+  - url: http://localhost:8002
+tags:
+  - name: Readings
+    description: Glucose readings CRUD
+components:
+  schemas:
+    ReadingTypeEnum:
+      type: string
+      enum: [DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO]
+    GlucoseReadingGet:
+      type: object
+      properties:
+        id: { type: integer }
+        user_id: { type: integer }
+        glucose_level: { type: number }
+        created_at: { type: string }
+        reading_type: { $ref: '#/components/schemas/ReadingTypeEnum' }
+      required: [id, user_id, glucose_level, created_at, reading_type]
+    GlucoseReadingPost:
+      type: object
+      properties:
+        user_id: { type: integer }
+        glucose_level: { type: number }
+        reading_type: { $ref: '#/components/schemas/ReadingTypeEnum' }
+      required: [user_id, glucose_level, reading_type]
+    GlucoseReadingList:
+      type: object
+      properties:
+        readings:
+          type: array
+          items: { $ref: '#/components/schemas/GlucoseReadingGet' }
+      required: [readings]
+paths:
+  /readings/:
+    post:
+      tags: [Readings]
+      summary: Create reading
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GlucoseReadingPost' }
+      responses:
+        '200':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlucoseReadingGet' }
+              examples:
+                example:
+                  value:
+                    { id: 2, user_id: 1, glucose_level: 120.5, created_at: "2025-11-03T12:00:00Z", reading_type: DESAYUNO }
+    get:
+      tags: [Readings]
+      summary: List all readings
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlucoseReadingList' }
+  /readings/user:
+    get:
+      tags: [Readings]
+      summary: Readings by user_id
+      parameters:
+        - in: query
+          name: user_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlucoseReadingList' }
+  /readings/user/latest:
+    get:
+      tags: [Readings]
+      summary: Latest readings by user_id (15 days)
+      parameters:
+        - in: query
+          name: user_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlucoseReadingList' }
+  /readings/{reading_id}:
+    delete:
+      tags: [Readings]
+      summary: Delete reading
+      parameters:
+        - in: path
+          name: reading_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Deleted message
+          content:
+            application/json:
+              schema: { type: string }

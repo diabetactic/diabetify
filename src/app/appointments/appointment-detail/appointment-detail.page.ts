@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingController, AlertController, ToastController } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
 import { AppointmentService, Appointment } from '../../core/services/appointment.service';
 import { TranslationService } from '../../core/services/translation.service';
 
@@ -43,10 +44,12 @@ export class AppointmentDetailPage implements OnInit {
   async loadAppointment(id: string): Promise<void> {
     this.loading = true;
     try {
-      this.appointment = (await this.appointmentService.getAppointment(id).toPromise()) ?? null;
+      this.appointment = (await firstValueFrom(this.appointmentService.getAppointment(id))) ?? null;
     } catch (error: any) {
       console.error('Error loading appointment:', error);
-      await this.showError(error?.message || 'Error al cargar la cita');
+      await this.showError(
+        error?.message || this.translationService.instant('appointments.errors.loadFailed')
+      );
       this.router.navigate(['/tabs/appointments']);
     } finally {
       this.loading = false;
@@ -60,15 +63,15 @@ export class AppointmentDetailPage implements OnInit {
     if (!this.appointment?.id) return;
 
     const alert = await this.alertController.create({
-      header: 'Compartir datos de glucosa',
-      message: '¿Desea compartir sus lecturas de glucosa de los últimos 30 días con su médico?',
+      header: this.translationService.instant('appointments.shareData.title'),
+      message: this.translationService.instant('appointments.shareData.confirm'),
       buttons: [
         {
-          text: 'Cancelar',
+          text: this.translationService.instant('common.cancel'),
           role: 'cancel',
         },
         {
-          text: 'Compartir',
+          text: this.translationService.instant('appointments.shareData.action'),
           handler: () => {
             this.performShareGlucoseData();
           },
@@ -86,7 +89,7 @@ export class AppointmentDetailPage implements OnInit {
     if (!this.appointment?.id) return;
 
     const loading = await this.loadingController.create({
-      message: 'Compartiendo datos de glucosa...',
+      message: this.translationService.instant('appointments.shareData.sharing'),
       spinner: 'circular',
     });
 
@@ -96,14 +99,18 @@ export class AppointmentDetailPage implements OnInit {
 
     try {
       // Use the manual-first sharing method with last 30 days
-      const result = await this.appointmentService
-        .shareManualGlucoseData(this.appointment.id, { days: 30 })
-        .toPromise();
+      const result = await firstValueFrom(
+        this.appointmentService.shareManualGlucoseData(this.appointment.id, { days: 30 })
+      );
 
       if (result) {
         this.shareSuccess = true;
         this.recordCount = result.recordCount || 0;
-        this.shareMessage = result.message || `${this.recordCount} lecturas compartidas exitosamente`;
+        this.shareMessage =
+          result.message ||
+          this.translationService.instant('appointments.shareData.successWithCount', {
+            count: this.recordCount,
+          });
 
         // Update appointment to mark data as shared
         if (this.appointment) {
@@ -115,9 +122,9 @@ export class AppointmentDetailPage implements OnInit {
     } catch (error: any) {
       console.error('Error sharing glucose data:', error);
 
-      let errorMessage = 'Error al compartir los datos';
+      let errorMessage = this.translationService.instant('appointments.shareData.error');
       if (error?.message?.includes('No hay lecturas')) {
-        errorMessage = 'No hay lecturas de glucosa para compartir en los últimos 30 días';
+        errorMessage = this.translationService.instant('appointments.shareData.noReadings');
       } else if (error?.message) {
         errorMessage = error.message;
       }
@@ -136,23 +143,23 @@ export class AppointmentDetailPage implements OnInit {
     if (!this.appointment?.id) return;
 
     const alert = await this.alertController.create({
-      header: 'Cancelar cita',
-      message: '¿Está seguro de que desea cancelar esta cita?',
+      header: this.translationService.instant('appointments.cancel.title'),
+      message: this.translationService.instant('appointments.cancel.confirm'),
       inputs: [
         {
           name: 'reason',
           type: 'text',
-          placeholder: 'Motivo de cancelación (opcional)',
+          placeholder: this.translationService.instant('appointments.cancel.reasonPlaceholder'),
         },
       ],
       buttons: [
         {
-          text: 'No',
+          text: this.translationService.instant('common.no'),
           role: 'cancel',
         },
         {
-          text: 'Sí, cancelar',
-          handler: async (data) => {
+          text: this.translationService.instant('appointments.cancel.action'),
+          handler: async data => {
             await this.performCancelAppointment(data.reason);
           },
         },
@@ -169,19 +176,21 @@ export class AppointmentDetailPage implements OnInit {
     if (!this.appointment?.id) return;
 
     const loading = await this.loadingController.create({
-      message: 'Cancelando cita...',
+      message: this.translationService.instant('appointments.cancel.cancelling'),
       spinner: 'circular',
     });
 
     await loading.present();
 
     try {
-      await this.appointmentService.cancelAppointment(this.appointment.id, reason).toPromise();
-      await this.showSuccessToast('Cita cancelada exitosamente');
+      await firstValueFrom(this.appointmentService.cancelAppointment(this.appointment.id, reason));
+      await this.showSuccessToast(this.translationService.instant('appointments.cancel.success'));
       this.router.navigate(['/tabs/appointments']);
     } catch (error: any) {
       console.error('Error canceling appointment:', error);
-      await this.showError(error?.message || 'Error al cancelar la cita');
+      await this.showError(
+        error?.message || this.translationService.instant('appointments.cancel.error')
+      );
     } finally {
       await loading.dismiss();
     }
@@ -193,7 +202,7 @@ export class AppointmentDetailPage implements OnInit {
   rescheduleAppointment(): void {
     if (this.appointment?.id) {
       // TODO: Navigate to reschedule page
-      this.showError('Función de reprogramación no disponible aún');
+      this.showError(this.translationService.instant('appointments.reschedule.unavailable'));
     }
   }
 
@@ -204,13 +213,15 @@ export class AppointmentDetailPage implements OnInit {
     if (!this.appointment?.id) return;
 
     try {
-      const result = await this.appointmentService.joinVideoCall(this.appointment.id).toPromise();
+      const result = await firstValueFrom(
+        this.appointmentService.joinVideoCall(this.appointment.id)
+      );
       if (result?.url) {
         // Open video call URL
         window.open(result.url, '_blank');
       }
     } catch (error: any) {
-      await this.showError('La videollamada no está disponible aún');
+      await this.showError(this.translationService.instant('appointments.videoCall.unavailable'));
     }
   }
 

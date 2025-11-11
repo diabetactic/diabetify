@@ -1,0 +1,31 @@
+appId: io.diabetify.app
+---
+# Smoke Test v2: Quick validation using coordinates
+# Works with icon-only tabs
+
+- launchApp
+- waitForAnimationToEnd
+
+# Verify app launched - dashboard header visible
+- assertVisible: "Mi Salud|My Health"
+
+# Take screenshot for evidence
+- takeScreenshot: screenshots/smoke-dashboard.png
+
+# Test navigation by tapping tab bar positions
+# Tabs are at bottom: Home | Readings | + | Appointments | Profile
+
+# Tap Readings tab (2nd position, ~25% from left)
+- tapOn:
+    point: "25%,95%"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/smoke-readings.png
+
+# Tap Home tab (1st position, ~10% from left)
+- tapOn:
+    point: "10%,95%"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/smoke-home.png
+
+# Verify we're back on dashboard
+- assertVisible: "Mi Salud|My Health"

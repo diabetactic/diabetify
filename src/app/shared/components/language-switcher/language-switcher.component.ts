@@ -66,19 +66,30 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Toggle between languages (for button mode)
+   * Toggle between languages (for button mode) - with synchronization fix
    */
   async toggleLanguage() {
     if (this.isLoading) return;
     await this.translationService.toggleLanguage();
+
+    // Force UI update to ensure text synchronization
+    // This fixes the language switcher text not updating immediately
+    this.currentLanguage =
+      this.translationService
+        .getAvailableLanguages()
+        .find(l => l.code === this.translationService.getCurrentLanguage()) || null;
   }
 
   /**
-   * Change to specific language
+   * Change to specific language (with synchronization fix)
    */
   async changeLanguage(language: Language) {
     if (this.isLoading) return;
     await this.translationService.setLanguage(language);
+
+    // Force UI update to ensure text synchronization
+    this.currentLanguage =
+      this.translationService.getAvailableLanguages().find(l => l.code === language) || null;
 
     // Close popover if present
     try {
@@ -113,16 +124,16 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get flag emoji for language
+   * Get language code for display
    */
-  getFlagEmoji(language: Language): string {
+  getLanguageCode(language: Language): string {
     switch (language) {
       case Language.EN:
-        return '🇺🇸';
+        return 'EN';
       case Language.ES:
-        return '🇪🇸';
+        return 'ES';
       default:
-        return '🌐';
+        return '??';
     }
   }
 
@@ -169,7 +180,7 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
         [class.selected]="isSelected(lang.code)"
       >
         <ion-label>
-          <span class="flag">{{ getFlagEmoji(lang.code) }}</span>
+          <span class="flag">{{ getLanguageCode(lang.code) }}</span>
           <span class="name">{{ lang.nativeName }}</span>
           <span class="code">({{ lang.code }})</span>
         </ion-label>
@@ -242,14 +253,14 @@ export class LanguagePopoverComponent implements OnInit {
     return this.currentLanguage === language;
   }
 
-  getFlagEmoji(language: Language): string {
+  getLanguageCode(language: Language): string {
     switch (language) {
       case Language.EN:
-        return '🇺🇸';
+        return 'EN';
       case Language.ES:
-        return '🇪🇸';
+        return 'ES';
       default:
-        return '🌐';
+        return '??';
     }
   }
 }

@@ -2,6 +2,11 @@
  * AuthGuard - Route protection for authenticated routes
  *
  * Prevents unauthenticated users from accessing protected routes.
+ * Additionally checks account state to enforce pre-enabled account workflow:
+ * - PENDING accounts redirect to /account-pending
+ * - DISABLED accounts are logged out and denied access
+ * - ACTIVE accounts are allowed to proceed
+ *
  * Redirects to login page if user is not authenticated.
  *
  * Usage in routing module:
@@ -23,44 +28,77 @@ import {
   Router,
 } from '@angular/router';
 import { Observable } from 'rxjs';
-import { map, take } from 'rxjs/operators';
+import { map, take, switchMap } from 'rxjs/operators';
 import { TidepoolAuthService } from '../services/tidepool-auth.service';
+import { LocalAuthService } from '../services/local-auth.service';
+import { AccountState } from '../models/user-profile.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
   constructor(
-    private authService: TidepoolAuthService,
+    private tidepoolAuthService: TidepoolAuthService,
+    private localAuthService: LocalAuthService,
     private router: Router
   ) {}
 
   /**
    * Determine if route can be activated
    *
+   * Checks:
+   * 1. User authentication (Tidepool or Local)
+   * 2. Account state (PENDING, ACTIVE, DISABLED)
+   *
    * @param route - Activated route snapshot
    * @param state - Router state snapshot
-   * @returns True if user is authenticated, UrlTree to login otherwise
+   * @returns True if user can access, UrlTree for redirect otherwise
    */
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    // Check authentication state
-    return this.authService.authState.pipe(
-      take(1), // Take only the current value
-      map(authState => {
-        if (authState.isAuthenticated) {
-          // User is authenticated, allow access
-          return true;
+    // First check Tidepool authentication
+    return this.tidepoolAuthService.authState.pipe(
+      take(1),
+      switchMap(tidepoolAuthState => {
+        if (tidepoolAuthState.isAuthenticated) {
+          // Tidepool auth is active, allow access
+          return [true];
         }
 
-        // User is not authenticated, redirect to tabs (which shows login option)
-        // Store the attempted URL for redirecting after login
-        const returnUrl = state.url;
-        return this.router.createUrlTree(['/tabs'], {
-          queryParams: { returnUrl },
-        });
+        // Check local authentication
+        return this.localAuthService.authState$.pipe(
+          take(1),
+          map(localAuthState => {
+            if (!localAuthState.isAuthenticated) {
+              // User is not authenticated at all, redirect to login
+              const returnUrl = state.url;
+              return this.router.createUrlTree(['/tabs'], {
+                queryParams: { returnUrl },
+              });
+            }
+
+            // User is authenticated locally, check account state
+            const accountState = localAuthState.user?.preferences
+              ? (localAuthState.user as any).accountState
+              : null;
+
+            if (accountState === AccountState.PENDING) {
+              // Account is pending activation, redirect to pending page
+              return this.router.createUrlTree(['/account-pending']);
+            }
+
+            if (accountState === AccountState.DISABLED) {
+              // Account is disabled, logout and deny access
+              this.localAuthService.logout();
+              return this.router.createUrlTree(['/welcome']);
+            }
+
+            // Account is ACTIVE, allow access
+            return true;
+          })
+        );
       })
     );
   }

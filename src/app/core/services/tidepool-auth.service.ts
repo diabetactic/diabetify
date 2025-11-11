@@ -13,7 +13,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Browser } from '@capacitor/browser';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
-import { BehaviorSubject, Observable, throwError, from, timer, of } from 'rxjs';
+import { BehaviorSubject, Observable, throwError, from, timer, of, firstValueFrom } from 'rxjs';
 import { catchError, map, switchMap, tap, retryWhen, delay, take, concatMap } from 'rxjs/operators';
 
 import { TidepoolAuth, TidepoolTokenResponse } from '../models/tidepool-auth.model';
@@ -25,6 +25,7 @@ import {
   PKCEChallenge,
 } from '../utils/pkce.utils';
 import { TokenStorageService } from './token-storage.service';
+import { CapacitorHttpService } from './capacitor-http.service';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -128,6 +129,7 @@ export class TidepoolAuthService {
 
   constructor(
     private http: HttpClient,
+    private capacitorHttp: CapacitorHttpService,
     private tokenStorage: TokenStorageService
   ) {
     this.oauthConfig = getOAuthConfig();
@@ -283,10 +285,14 @@ export class TidepoolAuthService {
     });
 
     try {
-      // Exchange code for tokens
-      const tokenResponse = await this.http
-        .post<TidepoolTokenResponse>(this.oauthConfig.tokenEndpoint, body.toString(), { headers })
-        .toPromise();
+      // Exchange code for tokens using CapacitorHttp (bypasses CORS)
+      const tokenResponse = await firstValueFrom(
+        this.capacitorHttp.post<TidepoolTokenResponse>(
+          this.oauthConfig.tokenEndpoint,
+          body.toString(),
+          { headers }
+        )
+      );
 
       if (!tokenResponse) {
         throw new Error('No token response received');
@@ -385,10 +391,14 @@ export class TidepoolAuthService {
         'Content-Type': 'application/x-www-form-urlencoded',
       });
 
-      // Request new tokens
-      const tokenResponse = await this.http
-        .post<TidepoolTokenResponse>(this.oauthConfig.tokenEndpoint, body.toString(), { headers })
-        .toPromise();
+      // Request new tokens using CapacitorHttp (bypasses CORS)
+      const tokenResponse = await firstValueFrom(
+        this.capacitorHttp.post<TidepoolTokenResponse>(
+          this.oauthConfig.tokenEndpoint,
+          body.toString(),
+          { headers }
+        )
+      );
 
       if (!tokenResponse) {
         throw new Error('No token response received');

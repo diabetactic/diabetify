@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { OnboardingGuard } from './core/guards';
 
-const routes: Routes = [
+export const APP_ROUTES: Routes = [
   {
     path: '',
     redirectTo: 'welcome',
@@ -18,19 +18,40 @@ const routes: Routes = [
     loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule),
   },
   {
+    path: 'dashboard',
+    redirectTo: 'tabs/dashboard',
+    pathMatch: 'full',
+  },
+  {
     path: 'add-reading',
     canMatch: [OnboardingGuard],
     loadChildren: () =>
       import('./add-reading/add-reading.module').then(m => m.AddReadingPageModule),
   },
   {
+    path: 'account-pending',
+    loadChildren: () =>
+      import('./account-pending/account-pending.module').then(m => m.AccountPendingPageModule),
+  },
+  {
+    path: 'settings',
+    loadChildren: () => import('./settings/settings.module').then(m => m.SettingsModule),
+  },
+  {
     path: 'appointments',
-    loadChildren: () => import('./appointments/appointments.module').then( m => m.AppointmentsPageModule)
+    loadChildren: () =>
+      import('./appointments/appointments.module').then(m => m.AppointmentsPageModule),
+  },
+  {
+    path: 'dashboard/detail',
+    canMatch: [OnboardingGuard],
+    loadComponent: () =>
+      import('./dashboard/dashboard-detail/dashboard-detail.page').then(m => m.DashboardDetailPage),
   },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })],
+  imports: [RouterModule.forRoot(APP_ROUTES, { preloadingStrategy: PreloadAllModules })],
   exports: [RouterModule],
 })
 export class AppRoutingModule {}

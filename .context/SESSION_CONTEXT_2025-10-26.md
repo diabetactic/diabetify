@@ -171,7 +171,7 @@ npm start              # Dev server on localhost:4200
 ## Environment
 - **Platform**: Linux (WSL2)
 - **Node Version**: (from package.json engines)
-- **Working Directory**: `/home/julito/TPP/diabetify`
+- **Working Directory**: `/home/julito/TPP/diabetactic`
 - **Git Branch**: master
 - **Git Status**: Multiple modified files (M flag on 40+ files)
 

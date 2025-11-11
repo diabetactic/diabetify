@@ -1,0 +1,364 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Configuración</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="saveSettings()" [disabled]="!hasChanges">
+        <ion-icon name="save-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Profile Section -->
+  <ion-list-header>
+    <ion-label>Perfil</ion-label>
+  </ion-list-header>
+  <ion-list>
+    <ion-item button (click)="goToProfile()">
+      <ion-avatar slot="start">
+        <img src="assets/icon/favicon.png" alt="Profile" />
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ profileSettings.name || 'Usuario' }}</h2>
+        <p>{{ profileSettings.email }}</p>
+      </ion-label>
+      <ion-icon name="chevron-forward" slot="end"></ion-icon>
+    </ion-item>
+  </ion-list>
+
+  <!-- Glucose Settings -->
+  <ion-list-header>
+    <ion-label>Configuración de Glucosa</ion-label>
+  </ion-list-header>
+  <ion-list>
+    <ion-item>
+      <ion-label>Unidad de Glucosa</ion-label>
+      <ion-select
+        [(ngModel)]="glucoseSettings.unit"
+        (ionChange)="onGlucoseUnitChange($event)"
+        interface="popover"
+      >
+        <ion-select-option value="mg/dL">mg/dL</ion-select-option>
+        <ion-select-option value="mmol/L">mmol/L</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h3>Rango Objetivo</h3>
+        <p>
+          {{ glucoseSettings.targetLow }} - {{ glucoseSettings.targetHigh }}
+          {{ glucoseSettings.unit }}
+        </p>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Valor Mínimo ({{ glucoseSettings.unit }})</ion-label>
+      <ion-range
+        [(ngModel)]="glucoseSettings.targetLow"
+        [min]="glucoseSettings.unit === 'mg/dL' ? 50 : 2.8"
+        [max]="glucoseSettings.unit === 'mg/dL' ? 100 : 5.6"
+        [step]="glucoseSettings.unit === 'mg/dL' ? 5 : 0.1"
+        pin="true"
+        (ionChange)="hasChanges = true"
+      >
+        <ion-label slot="start">{{ glucoseSettings.unit === 'mg/dL' ? 50 : 2.8 }}</ion-label>
+        <ion-label slot="end">{{ glucoseSettings.unit === 'mg/dL' ? 100 : 5.6 }}</ion-label>
+      </ion-range>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Valor Máximo ({{ glucoseSettings.unit }})</ion-label>
+      <ion-range
+        [(ngModel)]="glucoseSettings.targetHigh"
+        [min]="glucoseSettings.unit === 'mg/dL' ? 140 : 7.8"
+        [max]="glucoseSettings.unit === 'mg/dL' ? 250 : 13.9"
+        [step]="glucoseSettings.unit === 'mg/dL' ? 10 : 0.5"
+        pin="true"
+        (ionChange)="hasChanges = true"
+      >
+        <ion-label slot="start">{{ glucoseSettings.unit === 'mg/dL' ? 140 : 7.8 }}</ion-label>
+        <ion-label slot="end">{{ glucoseSettings.unit === 'mg/dL' ? 250 : 13.9 }}</ion-label>
+      </ion-range>
+    </ion-item>
+  </ion-list>
+
+  <!-- Notification Settings -->
+  <ion-list-header>
+    <ion-label>Notificaciones</ion-label>
+  </ion-list-header>
+  <ion-list>
+    <ion-item>
+      <ion-label>
+        <h3>Citas Médicas</h3>
+        <p>Recordatorios de próximas citas</p>
+      </ion-label>
+      <ion-toggle
+        [(ngModel)]="notificationSettings.appointments"
+        (ionChange)="onNotificationToggle('appointments')"
+      ></ion-toggle>
+    </ion-item>
+
+    <ion-item *ngIf="notificationSettings.appointments">
+      <ion-label>Recordar antes de</ion-label>
+      <ion-select
+        [(ngModel)]="notificationSettings.appointmentReminder"
+        (ionChange)="hasChanges = true"
+        interface="popover"
+      >
+        <ion-select-option [value]="1">1 hora</ion-select-option>
+        <ion-select-option [value]="2">2 horas</ion-select-option>
+        <ion-select-option [value]="6">6 horas</ion-select-option>
+        <ion-select-option [value]="12">12 horas</ion-select-option>
+        <ion-select-option [value]="24">1 día</ion-select-option>
+        <ion-select-option [value]="48">2 días</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h3>Lecturas de Glucosa</h3>
+        <p>Recordatorios para tomar lecturas</p>
+      </ion-label>
+      <ion-toggle
+        [(ngModel)]="notificationSettings.readings"
+        (ionChange)="onNotificationToggle('readings')"
+      ></ion-toggle>
+    </ion-item>
+
+    <ion-item *ngIf="notificationSettings.readings">
+      <ion-label>
+        <h3>Horarios de Recordatorio</h3>
+        <p>Toca para eliminar</p>
+      </ion-label>
+      <ion-button fill="clear" slot="end" (click)="addReadingReminder()">
+        <ion-icon name="add" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-item>
+
+    <ion-item *ngFor="let time of notificationSettings.readingTimes">
+      <ion-label>{{ time }}</ion-label>
+      <ion-button fill="clear" slot="end" (click)="removeReadingReminder(time)">
+        <ion-icon name="close-circle-outline" color="danger" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h3>Reporte Semanal</h3>
+        <p>Resumen de tu progreso semanal</p>
+      </ion-label>
+      <ion-toggle
+        [(ngModel)]="notificationSettings.weeklyReport"
+        (ionChange)="hasChanges = true"
+      ></ion-toggle>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h3>Alertas Críticas</h3>
+        <p>Valores fuera de rango</p>
+      </ion-label>
+      <ion-toggle
+        [(ngModel)]="notificationSettings.criticalAlerts"
+        (ionChange)="hasChanges = true"
+      ></ion-toggle>
+    </ion-item>
+  </ion-list>
+
+  <!-- Appearance Settings -->
+  <ion-list-header>
+    <ion-label>Apariencia</ion-label>
+  </ion-list-header>
+  <ion-list>
+    <ion-item>
+      <ion-label>Tema</ion-label>
+      <ion-select
+        [(ngModel)]="preferences.theme"
+        (ionChange)="onThemeChange($event)"
+        interface="popover"
+      >
+        <ion-select-option value="light">Claro</ion-select-option>
+        <ion-select-option value="dark">Oscuro</ion-select-option>
+        <ion-select-option value="auto">Automático</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Idioma</ion-label>
+      <ion-select
+        [(ngModel)]="preferences.language"
+        (ionChange)="onLanguageChange($event)"
+        interface="popover"
+      >
+        <ion-select-option value="es">Español</ion-select-option>
+        <ion-select-option value="en">English</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </ion-list>
+
+  <!-- Privacy Settings -->
+  <ion-list-header>
+    <ion-label>Privacidad</ion-label>
+  </ion-list-header>
+  <ion-list>
+    <ion-item>
+      <ion-label>
+        <h3>Compartir con Doctor</h3>
+        <p>Permitir que tu doctor vea tus datos</p>
+      </ion-label>
+      <ion-toggle
+        [(ngModel)]="privacySettings.shareDataWithDoctor"
+        (ionChange)="hasChanges = true"
+      ></ion-toggle>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>
+        <h3>Estadísticas Anónimas</h3>
+        <p>Ayuda a mejorar la app</p>
+      </ion-label>
+      <ion-toggle
+        [(ngModel)]="privacySettings.anonymousStatistics"
+        (ionChange)="hasChanges = true"
+      ></ion-toggle>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Retención de Datos</ion-label>
+      <ion-select
+        [(ngModel)]="privacySettings.dataRetentionDays"
+        (ionChange)="hasChanges = true"
+        interface="popover"
+      >
+        <ion-select-option [value]="30">30 días</ion-select-option>
+        <ion-select-option [value]="90">90 días</ion-select-option>
+        <ion-select-option [value]="180">6 meses</ion-select-option>
+        <ion-select-option [value]="365">1 año</ion-select-option>
+        <ion-select-option [value]="730">2 años</ion-select-option>
+        <ion-select-option [value]="-1">Indefinido</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Formato de Exportación</ion-label>
+      <ion-select
+        [(ngModel)]="privacySettings.exportFormat"
+        (ionChange)="hasChanges = true"
+        interface="popover"
+      >
+        <ion-select-option value="pdf">PDF</ion-select-option>
+        <ion-select-option value="csv">CSV</ion-select-option>
+        <ion-select-option value="json">JSON</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item button (click)="exportData()">
+      <ion-icon name="download-outline" slot="start"></ion-icon>
+      <ion-label>Exportar Mis Datos</ion-label>
+    </ion-item>
+  </ion-list>
+
+  <!-- Sync Settings -->
+  <ion-list-header>
+    <ion-label>Sincronización</ion-label>
+  </ion-list-header>
+  <ion-list>
+    <ion-item>
+      <ion-label>
+        <h3>Sincronización Automática</h3>
+        <p>Sincronizar datos automáticamente</p>
+      </ion-label>
+      <ion-toggle [(ngModel)]="syncSettings.autoSync" (ionChange)="hasChanges = true"></ion-toggle>
+    </ion-item>
+
+    <ion-item *ngIf="syncSettings.autoSync">
+      <ion-label>Intervalo de Sincronización</ion-label>
+      <ion-select
+        [(ngModel)]="syncSettings.syncInterval"
+        (ionChange)="hasChanges = true"
+        interface="popover"
+      >
+        <ion-select-option [value]="5">5 minutos</ion-select-option>
+        <ion-select-option [value]="15">15 minutos</ion-select-option>
+        <ion-select-option [value]="30">30 minutos</ion-select-option>
+        <ion-select-option [value]="60">1 hora</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item *ngIf="syncSettings.autoSync">
+      <ion-label>
+        <h3>Solo Wi-Fi</h3>
+        <p>Sincronizar solo con conexión Wi-Fi</p>
+      </ion-label>
+      <ion-toggle [(ngModel)]="syncSettings.wifiOnly" (ionChange)="hasChanges = true"></ion-toggle>
+    </ion-item>
+
+    <ion-item *ngIf="syncSettings.autoSync">
+      <ion-label>
+        <h3>Sincronización en Segundo Plano</h3>
+        <p>Permite sincronización cuando la app está cerrada</p>
+      </ion-label>
+      <ion-toggle
+        [(ngModel)]="syncSettings.backgroundSync"
+        (ionChange)="hasChanges = true"
+      ></ion-toggle>
+    </ion-item>
+  </ion-list>
+
+  <!-- Advanced Settings -->
+  <ion-list-header>
+    <ion-label>Avanzado</ion-label>
+  </ion-list-header>
+  <ion-list>
+    <!-- Debug Panel Toggle (only in dev mode) -->
+    <ion-item button (click)="toggleDebugPanel()" *ngIf="isDevEnvironment">
+      <ion-icon name="bug-outline" slot="start" color="warning"></ion-icon>
+      <ion-label>
+        <h3>Panel de Depuración</h3>
+        <p>Herramientas para desarrolladores</p>
+      </ion-label>
+      <ion-icon [name]="showDebugPanel ? 'chevron-up' : 'chevron-down'" slot="end"></ion-icon>
+    </ion-item>
+
+    <ion-item button (click)="goToAdvancedSettings()">
+      <ion-icon name="settings-outline" slot="start"></ion-icon>
+      <ion-label>Configuración Avanzada</ion-label>
+      <ion-icon name="chevron-forward" slot="end"></ion-icon>
+    </ion-item>
+
+    <ion-item button (click)="signOut()">
+      <ion-icon name="log-out-outline" slot="start" color="primary"></ion-icon>
+      <ion-label color="primary">Cerrar Sesión</ion-label>
+    </ion-item>
+
+    <ion-item button (click)="deleteAccount()">
+      <ion-icon name="trash-outline" slot="start" color="danger"></ion-icon>
+      <ion-label color="danger">Eliminar Cuenta</ion-label>
+    </ion-item>
+  </ion-list>
+
+  <!-- Debug Panel (integrated into settings, only in dev mode) -->
+  <div *ngIf="showDebugPanel && isDevEnvironment" class="debug-panel-container">
+    <app-debug-panel></app-debug-panel>
+  </div>
+
+  <!-- Demo Mode Notice -->
+  <ion-card *ngIf="isDemoMode" class="demo-notice">
+    <ion-card-content>
+      <ion-icon name="information-circle-outline" color="warning"></ion-icon>
+      <p>Estás en modo demo. Algunos cambios no se guardarán permanentemente.</p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Version Info -->
+  <div class="version-info">
+    <p>Diabetify v1.0.0</p>
+    <p>© 2024 Diabetify</p>
+  </div>
+</ion-content>

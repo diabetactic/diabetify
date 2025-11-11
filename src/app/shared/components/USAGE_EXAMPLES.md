@@ -336,7 +336,7 @@ export class ProfilePage {
     margin: 0 0 16px 4px;
     font-size: 18px;
     font-weight: 600;
-    color: var(--diabetify-text-secondary);
+    color: var(--diabetactic-text-secondary);
   }
 }
 ```

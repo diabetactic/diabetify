@@ -1,114 +1,76 @@
-.dashboard-container {
-  padding: 16px;
-  padding-bottom: 24px;
+// ============================================
+// DASHBOARD PAGE - TAILWIND MIGRATED
+// ============================================
+// All layout, spacing, and colors moved to Tailwind classes
+// Only animations and Ionic component properties remain
+
+// ============================================
+// CUSTOM ANIMATIONS
+// ============================================
+
+// Sync button spinner animation
+.spinning {
+  animation: spin 1s linear infinite;
 }
 
-// Loading State
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-  gap: 16px;
-
-  ion-spinner {
-    width: 48px;
-    height: 48px;
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
   }
 
-  p {
-    color: var(--ion-color-medium);
-    font-size: 16px;
+  to {
+    transform: rotate(360deg);
   }
 }
+
+// Status icon bounce animation
+.status-icon-large {
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+// Primary action pulse animation
+.primary-action {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+// ============================================
+// IONIC COMPONENT PROPERTIES
+// ============================================
 
 // Alert Banner
 .alert-banner {
   margin-bottom: 16px;
 }
 
-// Stats Grid (2x2)
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-// Recent Readings Section
-.recent-readings-section {
-  margin-top: 24px;
-
-  .section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-
-    h2 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--ion-text-color);
-    }
-
-    ion-button {
-      --color: var(--ion-color-primary);
-      font-size: 14px;
-      font-weight: 500;
-      margin: 0;
-      height: auto;
-
-      ion-icon {
-        font-size: 16px;
-      }
-    }
-  }
-
-  .readings-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-}
-
-// Appointment Card
+// Appointment Card - Ionic Item Properties
 .appointment-card {
-  margin-bottom: 16px;
-  margin-top: 8px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); // Light blue gradient
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(59, 130, 246, 0.1);
-
-  ion-card-header {
-    padding-bottom: 8px;
-  }
-
-  ion-card-subtitle {
-    color: #3b82f6; // Blue accent
-    font-size: 11px;
-    text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-  }
-
-  ion-card-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--ion-text-color);
-  }
-
   ion-item {
     --padding-start: 0;
     --inner-padding-end: 0;
-    margin-bottom: 12px;
 
-    ion-icon {
-      font-size: 20px;
-      margin-right: 12px;
-    }
+    margin-bottom: 12px;
 
     ion-label {
       p {
@@ -128,129 +90,131 @@
       padding: 4px 8px;
     }
   }
+}
 
-  .appointment-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 16px;
+// Kids Action Buttons - Ionic Properties
+.kids-action-btn {
+  height: 64px;
+  font-size: 18px;
+  font-weight: 700;
+  border-radius: 16px;
+  text-transform: none;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
 
-    ion-button {
-      margin: 0;
-      --box-shadow: none;
-    }
+  ion-icon,
+  .material-symbols-outlined {
+    font-size: 32px;
   }
 }
 
-// Quick Actions Card
-.quick-actions-card {
-  margin-bottom: 16px;
-  border-radius: 16px;
-  background: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+// Parent View Button
+.parent-view-btn {
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
+}
 
-  ion-card-title {
-    font-size: 18px;
+// Status Card - Component Styling
+.status-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+
+  .status-icon-large {
+    font-size: 80px;
+  }
+
+  .status-text {
+    font-size: 24px;
     font-weight: 700;
+    margin: 0;
     color: var(--ion-text-color);
   }
 
-  ion-grid {
-    padding: 0;
-  }
-
-  .quick-action-btn {
+  .status-subtitle {
+    font-size: 16px;
+    color: var(--ion-color-medium);
     margin: 0;
-    --box-shadow: none;
-    font-size: 14px;
-    height: 48px;
+  }
+}
 
-    ion-icon {
+// Recent Readings Section
+.recent-readings-section {
+  .section-header {
+    h2 {
+      margin: 0;
       font-size: 20px;
+      font-weight: 700;
+      color: var(--ion-text-color);
+    }
+
+    ion-button {
+      --color: var(--ion-color-primary);
+
+      font-size: 14px;
+      font-weight: 500;
+      margin: 0;
+      height: auto;
+
+      ion-icon {
+        font-size: 16px;
+      }
     }
   }
 
-  .sync-status {
-    margin-top: 16px;
-    --padding-start: 0;
-    --inner-padding-end: 0;
+  .readings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 
-    ion-label {
-      p {
-        color: var(--ion-color-medium);
-        font-size: 12px;
-        margin-bottom: 4px;
+  // Kid-friendly version
+  &.kids-view {
+    .section-header {
+      h2 {
+        font-size: 22px;
+        font-weight: 700;
       }
 
-      h4 {
-        font-size: 14px;
-        font-weight: 500;
+      .readings-count {
+        font-size: 16px;
+        font-weight: 700;
+        padding: 8px 12px;
+        border-radius: 12px;
+      }
+    }
 
-        .sync-error {
-          color: var(--ion-color-danger);
-          font-weight: 600;
+    .readings-list.kids-friendly {
+      gap: 16px;
+
+      app-reading-item {
+        transform: scale(1);
+        transition: transform 0.2s ease;
+
+        &:active {
+          transform: scale(0.98);
         }
       }
     }
   }
 }
 
-// Sync button animation
-.spinning {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-// Responsive adjustments for larger screens
-@media (min-width: 768px) {
-  .dashboard-container {
-    max-width: 768px;
-    margin: 0 auto;
-    padding: 24px;
-  }
-
-  .stats-grid {
-    gap: 20px;
-  }
-}
-
-// Dark mode adjustments
-@media (prefers-color-scheme: dark) {
-  .loading-container p {
-    color: var(--ion-color-medium);
-  }
-
+// Dark mode - Component-specific adjustments
+.dark {
   .appointment-card {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); // Dark blue gradient
-    border: 1px solid rgba(59, 130, 246, 0.3);
-
-    ion-card-subtitle {
-      color: #93c5fd; // Light blue accent
-    }
-
-    ion-card-title {
-      color: white;
-    }
-
     ion-item {
       color: white;
 
-      ion-icon {
+      ion-icon,
+      .material-symbols-outlined {
         color: #93c5fd;
       }
 
       ion-label {
         p {
-          color: rgba(255, 255, 255, 0.7);
+          color: rgb(255 255 255 / 70%);
         }
 
         h3 {
@@ -259,14 +223,19 @@
       }
 
       ion-badge {
-        --background: rgba(59, 130, 246, 0.3);
+        --background: rgb(59 130 246 / 30%);
         --color: white;
       }
     }
   }
 
-  .quick-actions-card {
-    background: var(--ion-card-background);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  .status-indicator {
+    .status-text {
+      color: white;
+    }
+
+    .status-subtitle {
+      color: rgb(255 255 255 / 70%);
+    }
   }
 }

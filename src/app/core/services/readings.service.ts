@@ -416,7 +416,7 @@ export class ReadingsService {
         await this.db.syncQueue.delete(item.id!);
 
         // Mark reading as synced if it was create/update
-        if (item.operation !== 'delete') {
+        if (item.operation !== 'delete' && item.readingId) {
           await this.markAsSynced(item.readingId);
         }
 

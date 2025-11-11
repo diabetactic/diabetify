@@ -6,18 +6,20 @@
  * and coordinated error handling across all external services.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, timer, of, combineLatest, throwError } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  timer,
+  of,
+  combineLatest,
+  throwError,
+  firstValueFrom,
+} from 'rxjs';
 import { map, switchMap, catchError, timeout, retry, tap, filter } from 'rxjs/operators';
 import { Network } from '@capacitor/network';
 
-import { TidepoolAuthService } from './tidepool-auth.service';
-import { TidepoolSyncService } from './tidepool-sync.service';
-import { LocalAuthService } from './local-auth.service';
-import { UnifiedAuthService } from './unified-auth.service';
-import { GlucoserverService } from './glucoserver.service';
-import { AppointmentService } from './appointment.service';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -115,12 +117,7 @@ export class ExternalServicesManager {
 
   constructor(
     private http: HttpClient,
-    private tidepoolAuth: TidepoolAuthService,
-    private tidepoolSync: TidepoolSyncService,
-    private localAuth: LocalAuthService,
-    private unifiedAuth: UnifiedAuthService,
-    private glucoserver: GlucoserverService,
-    private appointments: AppointmentService
+    private injector: Injector
   ) {
     this.initialize();
   }
@@ -186,28 +183,16 @@ export class ExternalServicesManager {
 
   /**
    * Set up service-specific monitoring
+   * Note: Direct service monitoring removed to prevent circular dependencies.
+   * Services should report their own errors via the recordServiceError method
+   * or use a shared event bus pattern.
    */
   private setupServiceMonitoring(): void {
-    // Monitor Tidepool auth state
-    this.tidepoolAuth.authState.subscribe(authState => {
-      if (authState.error) {
-        this.recordServiceError(ExternalService.TIDEPOOL, authState.error);
-      }
-    });
-
-    // Monitor Tidepool sync state
-    this.tidepoolSync.syncStatus$.subscribe(syncStatus => {
-      if (syncStatus.errors && syncStatus.errors.length > 0) {
-        const error = syncStatus.errors[0];
-        this.recordServiceError(ExternalService.TIDEPOOL, error.message || 'Sync failed');
-      }
-    });
-
-    // Monitor local auth state
-    this.localAuth.authState$.subscribe(authState => {
-      // Local auth doesn't have an error field in the state
-      // Errors should be caught in the auth methods themselves
-    });
+    // Monitoring removed to prevent circular dependencies
+    // Services will report errors through the public API methods
+    console.debug(
+      'ExternalServicesManager: Service monitoring disabled to prevent circular dependencies'
+    );
   }
 
   /**
@@ -263,13 +248,12 @@ export class ExternalServicesManager {
 
       // Perform actual health check
       if (config.healthEndpoint) {
-        await this.http
-          .get(`${config.baseUrl}${config.healthEndpoint}`)
-          .pipe(timeout(5000), retry(1))
-          .toPromise();
+        await firstValueFrom(
+          this.http.get(`${config.baseUrl}${config.healthEndpoint}`).pipe(timeout(5000), retry(1))
+        );
       } else {
         // If no health endpoint, try a simple HEAD request
-        await this.http.head(config.baseUrl).pipe(timeout(5000), retry(1)).toPromise();
+        await firstValueFrom(this.http.head(config.baseUrl).pipe(timeout(5000), retry(1)));
       }
 
       const responseTime = Date.now() - startTime;

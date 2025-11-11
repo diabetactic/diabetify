@@ -8,6 +8,7 @@ import { takeUntil } from 'rxjs/operators';
 import { ReadingsService } from '../core/services/readings.service';
 import { TidepoolSyncService } from '../core/services/tidepool-sync.service';
 import { AppointmentService, Appointment } from '../core/services/appointment.service';
+import { LoggerService } from '../core/services/logger.service';
 import {
   LocalGlucoseReading,
   GlucoseStatistics,
@@ -16,6 +17,7 @@ import {
 import { SyncStatus } from '../core/models/tidepool-sync.model';
 import { TranslationService } from '../core/services/translation.service';
 import { ProfileService } from '../core/services/profile.service';
+import { ThemeService } from '../core/services/theme.service';
 import { StatCardComponent } from '../shared/components/stat-card/stat-card.component';
 import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
 import { AlertBannerComponent } from '../shared/components/alert-banner/alert-banner.component';
@@ -63,6 +65,9 @@ export class DashboardPage implements OnInit, OnDestroy {
   // Alert banner
   showSuccessAlert = false;
 
+  // Kid-friendly view toggle
+  showDetails = false;
+
   // Gradient colors for stat cards (matching uiResources design)
   gradients = {
     hba1c: ['#60a5fa', '#3b82f6'] as [string, string], // Blue gradient (blue-400 to blue-500)
@@ -90,8 +95,11 @@ export class DashboardPage implements OnInit, OnDestroy {
     private toastController: ToastController,
     private router: Router,
     private translationService: TranslationService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private logger: LoggerService,
+    private themeService: ThemeService
   ) {
+    this.logger.info('Init', 'DashboardPage initialized');
     this.preferredGlucoseUnit = this.translationService.getCurrentConfig().glucoseUnit;
   }
 
@@ -205,12 +213,14 @@ export class DashboardPage implements OnInit, OnDestroy {
    * Handle sync button click
    */
   async onSync() {
+    this.logger.info('UI', 'Manual sync button clicked');
     try {
       this.isSyncing = true;
       await this.syncService.performManualSync();
       await this.loadDashboardData();
+      this.logger.info('UI', 'Manual sync completed successfully');
     } catch (error) {
-      console.error('Error syncing data:', error);
+      this.logger.error('Error', 'Error syncing data', error);
     } finally {
       this.isSyncing = false;
     }
@@ -418,5 +428,62 @@ export class DashboardPage implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  /**
+   * Toggle technical details section
+   */
+  toggleDetails(): void {
+    this.showDetails = !this.showDetails;
+  }
+
+  /**
+   * Get kid-friendly status icon based on time in range
+   * Returns filled icons in dark mode for better visibility
+   * Using Material Symbols for emoji-like icons
+   */
+  getStatusIcon(): string {
+    const isDark = this.themeService.isDarkTheme();
+
+    if (!this.statistics) {
+      return isDark ? 'sentiment_satisfied' : 'sentiment_satisfied_outline';
+    }
+
+    const timeInRange = this.statistics.timeInRange;
+    if (timeInRange >= 70) return 'sentiment_satisfied'; // Excellent! (always filled)
+    if (timeInRange >= 50) {
+      return isDark ? 'sentiment_satisfied' : 'sentiment_satisfied_outline'; // Good (filled in dark mode)
+    }
+    return isDark ? 'sentiment_dissatisfied' : 'sentiment_dissatisfied_outline'; // Needs improvement
+  }
+
+  /**
+   * Get status color based on time in range
+   */
+  getStatusColor(): string {
+    if (!this.statistics) return 'medium';
+
+    const timeInRange = this.statistics.timeInRange;
+    if (timeInRange >= 70) return 'success';
+    if (timeInRange >= 50) return 'warning';
+    return 'danger';
+  }
+
+  /**
+   * Get kid-friendly status message
+   */
+  getKidFriendlyStatusMessage(): string {
+    if (!this.statistics) {
+      return this.translationService.instant('dashboard.kids.status.noData');
+    }
+
+    const timeInRange = this.statistics.timeInRange;
+    if (timeInRange >= 70) {
+      return this.translationService.instant('dashboard.kids.status.great');
+    }
+    if (timeInRange >= 50) {
+      return this.translationService.instant('dashboard.kids.status.good');
+    }
+    return this.translationService.instant('dashboard.kids.status.needsWork');
   }
 }

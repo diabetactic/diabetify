@@ -58,12 +58,13 @@ ion-card {
 
     p {
       margin-bottom: 16px;
-      opacity: 0.95;
+      opacity: 95%;
     }
 
     ion-button {
       --background: white;
       --color: var(--ion-color-primary);
+
       font-weight: 600;
 
       .material-symbols-outlined {
@@ -93,12 +94,12 @@ ion-card {
 
   p {
     font-size: 14px;
-    opacity: 0.9;
+    opacity: 90%;
   }
 
   small {
     font-size: 12px;
-    opacity: 0.8;
+    opacity: 80%;
     display: block;
     margin-top: 8px;
   }
@@ -132,7 +133,7 @@ ion-item {
   --padding-start: 0;
   --inner-padding-end: 0;
 
-  .material-symbols-outlined[slot="start"] {
+  .material-symbols-outlined[slot='start'] {
     margin-right: 16px;
     color: var(--ion-color-primary);
     font-size: 24px;

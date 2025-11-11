@@ -1,0 +1,13 @@
+# Reusable Profile Settings Flow
+# Usage: - runFlow: flows/profile-settings.yaml
+---
+# Navigate to Profile tab
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- assertVisible: "Profile"
+
+# Scroll to access all settings
+- scroll
+
+# Wait for any animations
+- waitForAnimationToEnd

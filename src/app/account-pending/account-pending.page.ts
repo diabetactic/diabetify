@@ -1,0 +1,34 @@
+import { Component, Inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
+import { TranslateModule } from '@ngx-translate/core';
+import { LocalAuthService } from '../core/services/local-auth.service';
+import { APP_CONFIG, AppConfig } from '../core/config/app-config';
+
+@Component({
+  selector: 'app-account-pending',
+  templateUrl: './account-pending.page.html',
+  styleUrls: ['./account-pending.page.scss'],
+  standalone: true,
+  imports: [CommonModule, IonicModule, TranslateModule],
+})
+export class AccountPendingPage {
+  constructor(
+    @Inject(APP_CONFIG) public appConfig: AppConfig,
+    private authService: LocalAuthService,
+    private router: Router
+  ) {}
+
+  /**
+   * Sign out the user and navigate to welcome page
+   */
+  async signOut(): Promise<void> {
+    try {
+      await this.authService.logout();
+      await this.router.navigate(['/welcome']);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  }
+}

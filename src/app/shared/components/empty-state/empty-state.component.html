@@ -1,10 +1,10 @@
-<div class="empty-state">
-  <div class="illustration">
-    <span class="material-symbols-outlined">{{ illustration }}</span>
+<div class="flex min-h-[400px] flex-col items-center justify-center px-6 py-12 text-center">
+  <div class="mb-6 flex h-30 w-30 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/25 dark:to-primary/15 dark:border-2 dark:border-primary/30">
+    <span [ngClass]="iconClass" class="text-6xl text-primary opacity-60 dark:text-blue-400 dark:opacity-95">{{ illustration }}</span>
   </div>
-  <h2 class="heading">{{ heading }}</h2>
-  <p class="message">{{ message }}</p>
-  <ion-button *ngIf="ctaText" expand="block" class="cta-button" (click)="onCtaClick()">
+  <h2 class="mb-3 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ heading }}</h2>
+  <p class="mb-6 max-w-[280px] text-base leading-relaxed text-gray-600 dark:text-gray-300">{{ message }}</p>
+  <ion-button *ngIf="ctaText" expand="block" (click)="onCtaClick()" class="btn-primary max-w-[240px]">
     {{ ctaText }}
   </ion-button>
 </div>

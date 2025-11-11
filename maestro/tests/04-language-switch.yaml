@@ -1,0 +1,24 @@
+appId: io.diabetify.app
+---
+# Test 4: Language switching
+- launchApp
+- assertVisible: "Diabetactic"
+
+# Navigate to Profile
+- tapOn: "Profile"
+- assertVisible: "Profile"
+
+# Screenshot in English
+- takeScreenshot: maestro/screenshots/04-english.png
+
+# Scroll to find language selector
+- scroll
+
+# Tap language selector (look for EN/ES or flag icons)
+- tapOn:
+    text: ".*EN.*|.*English.*"
+    index: 0
+    optional: true
+
+# Take screenshot after potential language change
+- takeScreenshot: maestro/screenshots/04-language-changed.png

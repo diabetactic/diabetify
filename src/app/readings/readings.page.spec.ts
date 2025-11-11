@@ -13,8 +13,23 @@ class ReadingsServiceStub {
   private readingsSubject = new BehaviorSubject<any[]>([]);
   readings$ = this.readingsSubject.asObservable();
 
-  async getAllReadings(): Promise<void> {
-    return Promise.resolve();
+  async getAllReadings(
+    limit?: number,
+    offset: number = 0
+  ): Promise<{
+    readings: any[];
+    total: number;
+    hasMore: boolean;
+    offset: number;
+    limit: number;
+  }> {
+    return Promise.resolve({
+      readings: [],
+      total: 0,
+      hasMore: false,
+      offset: offset,
+      limit: limit || 100,
+    });
   }
 }
 

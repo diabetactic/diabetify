@@ -14,6 +14,7 @@ import {
 import { ReadingsService } from '../core/services/readings.service';
 import { ProfileService } from '../core/services/profile.service';
 import { TranslationService } from '../core/services/translation.service';
+import { LoggerService } from '../core/services/logger.service';
 import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
 import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
 
@@ -83,8 +84,11 @@ export class ReadingsPage implements OnInit, OnDestroy {
     private readingsService: ReadingsService,
     private router: Router,
     private profileService: ProfileService,
-    private translationService: TranslationService
-  ) {}
+    private translationService: TranslationService,
+    private logger: LoggerService
+  ) {
+    this.logger.info('Init', 'ReadingsPage initialized');
+  }
 
   ngOnInit(): void {
     this.subscribeToUserPreferences();
@@ -338,6 +342,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
    * Navigate to add reading page
    */
   addReading(): void {
+    this.logger.info('UI', 'Add reading button clicked');
     // TODO: Navigate to add reading form
     this.router.navigate(['/add-reading']);
   }
@@ -346,6 +351,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
    * Handle reading item click
    */
   onReadingClick(reading: LocalGlucoseReading): void {
+    this.logger.info('UI', 'Reading clicked', { readingId: reading.id });
     // TODO: Navigate to reading details or edit page
     console.log('Reading clicked:', reading);
   }
@@ -354,12 +360,14 @@ export class ReadingsPage implements OnInit, OnDestroy {
    * Refresh readings (pull-to-refresh)
    */
   async doRefresh(event: any): Promise<void> {
+    this.logger.info('UI', 'Readings refresh initiated');
     try {
       // Reload readings - the observable will automatically update
       await this.readingsService.getAllReadings();
+      this.logger.info('UI', 'Readings refreshed successfully');
       event.target.complete();
     } catch (error) {
-      console.error('Error refreshing readings:', error);
+      this.logger.error('Error', 'Error refreshing readings', error);
       event.target.complete();
     }
   }

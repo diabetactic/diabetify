@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError, from } from 'rxjs';
-import { catchError, map, retry, switchMap } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
+import { Observable, BehaviorSubject, throwError, from, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
+import { PlatformDetectorService } from './platform-detector.service';
+import { LoggerService } from './logger.service';
+import { environment } from '../../../environments/environment';
 
 /**
  * Local authentication state
@@ -18,6 +20,15 @@ export interface LocalAuthState {
 }
 
 /**
+ * Account state enum
+ */
+export enum AccountState {
+  PENDING = 'pending',
+  ACTIVE = 'active',
+  DISABLED = 'disabled',
+}
+
+/**
  * Local user interface
  */
 export interface LocalUser {
@@ -26,6 +37,7 @@ export interface LocalUser {
   firstName: string;
   lastName: string;
   role: 'patient' | 'doctor' | 'admin';
+  accountState?: AccountState;
   profileImage?: string;
   phone?: string;
   dateOfBirth?: string;
@@ -62,6 +74,15 @@ export interface LoginRequest {
   dni?: string;
   password: string;
   rememberMe?: boolean;
+}
+
+/**
+ * Login result
+ */
+export interface LoginResult {
+  success: boolean;
+  user?: LocalUser;
+  error?: string;
 }
 
 /**
@@ -117,10 +138,6 @@ const STORAGE_KEYS = {
   providedIn: 'root',
 })
 export class LocalAuthService {
-  private readonly baseUrl: string;
-  private readonly apiPath: string;
-  private readonly fullUrl: string;
-
   // Authentication state
   private authStateSubject = new BehaviorSubject<LocalAuthState>({
     isAuthenticated: false,
@@ -132,11 +149,17 @@ export class LocalAuthService {
 
   public authState$ = this.authStateSubject.asObservable();
 
-  constructor(private http: HttpClient) {
-    const config = environment.backendServices.auth;
-    this.baseUrl = config.baseUrl;
-    this.apiPath = config.apiPath;
-    this.fullUrl = `${this.baseUrl}${this.apiPath}`;
+  private baseUrl: string;
+
+  constructor(
+    private http: HttpClient,
+    private platformDetector: PlatformDetectorService,
+    private logger: LoggerService
+  ) {
+    this.logger.info('Init', 'LocalAuthService initialized');
+    // Set base URL for API calls
+    const defaultUrl = environment.backendServices?.apiGateway?.baseUrl || 'http://localhost:8000';
+    this.baseUrl = this.platformDetector.getApiBaseUrl(defaultUrl);
 
     // Initialize auth state from storage
     this.initializeAuthState();
@@ -165,6 +188,7 @@ export class LocalAuthService {
 
           // Check if token is expired
           if (!expiresAt || Date.now() < expiresAt) {
+            this.logger.info('Auth', 'Auth state restored from storage', { userId: user.id });
             this.authStateSubject.next({
               isAuthenticated: true,
               user,
@@ -173,39 +197,41 @@ export class LocalAuthService {
               expiresAt,
             });
           } else if (hasRefreshToken) {
+            this.logger.info('Auth', 'Token expired, attempting refresh');
             // Try to refresh the token
             this.refreshAccessToken().subscribe();
           }
         } else if (hasRefreshToken) {
+          this.logger.info('Auth', 'No access token, attempting refresh');
           // Try to refresh the token
           this.refreshAccessToken().subscribe();
         }
       } catch (error) {
-        console.error('Failed to initialize auth state:', error);
+        this.logger.error('Auth', 'Failed to initialize auth state', error);
       }
     }
   }
 
   /**
-   * Login with email and password
+   * Login with username (DNI or email) and password
+   * Updated to be simpler and match the UI requirements
    */
-  login(request: LoginRequest): Observable<LocalAuthState> {
-    const identifier = request.dni ?? request.email;
+  login(username: string, password: string, rememberMe: boolean = false): Observable<LoginResult> {
+    this.logger.info('Auth', 'Login attempt', { username, rememberMe });
 
-    if (!identifier) {
-      return throwError(() => new Error('DNI or email required for login.'));
-    }
-
-    const body = new HttpParams().set('username', identifier).set('password', request.password);
+    // Prepare form-encoded body for /token endpoint
+    const body = new HttpParams()
+      .set('username', username) // Can be DNI or email
+      .set('password', password);
 
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
 
+    // Call token endpoint directly
     return this.http
       .post<GatewayTokenResponse>(`${this.baseUrl}/token`, body.toString(), { headers })
       .pipe(
-        retry(1),
         switchMap(token => {
           if (!token?.access_token) {
             return throwError(
@@ -213,38 +239,69 @@ export class LocalAuthService {
             );
           }
 
+          // After getting token, fetch user profile
           return this.fetchUserProfile(token.access_token).pipe(
             switchMap(profile => {
-              const response: TokenResponse = {
+              // Check account state
+              if (profile.state === 'pending') {
+                this.logger.warn('Auth', 'Account pending activation', { username });
+                return throwError(() => new Error('auth.errors.accountPending'));
+              }
+              if (profile.state === 'disabled') {
+                this.logger.warn('Auth', 'Account disabled', { username });
+                return throwError(() => new Error('auth.errors.accountDisabled'));
+              }
+
+              this.logger.info('Auth', 'Login successful', { username, userId: profile.dni });
+
+              const authResponse: TokenResponse = {
                 access_token: token.access_token,
-                refresh_token: null,
+                refresh_token: null, // No refresh token in current implementation
                 token_type: token.token_type || 'bearer',
-                expires_in: token.expires_in ?? null,
+                expires_in: token.expires_in ?? 1800, // Default 30 minutes
                 user: this.mapGatewayUser(profile),
               };
 
-              return from(this.handleAuthResponse(response));
+              return from(this.handleAuthResponse(authResponse, rememberMe)).pipe(
+                map(
+                  () =>
+                    ({
+                      success: true,
+                      user: authResponse.user,
+                    }) as LoginResult
+                )
+              );
             })
           );
         }),
-        map(() => this.authStateSubject.value),
-        catchError(error => this.handleError(error))
+        catchError(error => {
+          const errorMessage = this.extractErrorMessage(error);
+          this.logger.error('Auth', 'Login failed', error, { username });
+          return of({
+            success: false,
+            error: errorMessage,
+          } as LoginResult);
+        })
       );
   }
 
   /**
    * Register a new user
    */
-  register(request: RegisterRequest): Observable<LocalAuthState> {
-    return throwError(
-      () => new Error('User registration is not yet supported by the local auth service.')
-    );
+  register(request: RegisterRequest): Observable<LoginResult> {
+    return of({
+      success: false,
+      error: 'User registration is not yet supported by the local auth service.',
+    });
   }
 
   /**
    * Logout the user
    */
   async logout(): Promise<void> {
+    const user = this.authStateSubject.value.user;
+    this.logger.info('Auth', 'Logout initiated', { userId: user?.id });
+
     // Clear local state
     this.authStateSubject.next({
       isAuthenticated: false,
@@ -263,15 +320,18 @@ export class LocalAuthService {
         Preferences.remove({ key: STORAGE_KEYS.EXPIRES_AT }),
       ]);
     }
+
+    this.logger.info('Auth', 'Logout completed', { userId: user?.id });
   }
 
   /**
    * Refresh the access token
+   * Note: Current backend doesn't support refresh tokens, so this returns an error
    */
   refreshAccessToken(): Observable<LocalAuthState> {
-    return throwError(
-      () => new Error('Token refresh is not supported by the current authentication backend.')
-    );
+    this.logger.warn('Auth', 'Token refresh not supported');
+    // When 401 is received, user must re-login as per the requirements
+    return throwError(() => new Error('Token refresh is not supported. Please login again.'));
   }
 
   /**
@@ -291,9 +351,8 @@ export class LocalAuthService {
   /**
    * Check if user is authenticated
    */
-  isAuthenticated(): boolean {
-    const state = this.authStateSubject.value;
-    return state.isAuthenticated && !!state.accessToken;
+  isAuthenticated(): Observable<boolean> {
+    return this.authState$.pipe(map(state => state.isAuthenticated && !!state.accessToken));
   }
 
   /**
@@ -365,9 +424,9 @@ export class LocalAuthService {
   /**
    * Handle authentication response
    */
-  private async handleAuthResponse(response: TokenResponse): Promise<void> {
-    const expiresInSeconds = response.expires_in ?? null;
-    const expiresAt = expiresInSeconds ? Date.now() + expiresInSeconds * 1000 : null;
+  private async handleAuthResponse(response: TokenResponse, rememberMe: boolean): Promise<void> {
+    const expiresInSeconds = response.expires_in ?? 1800; // Default 30 minutes
+    const expiresAt = Date.now() + expiresInSeconds * 1000;
 
     // Update auth state
     this.authStateSubject.next({
@@ -378,8 +437,8 @@ export class LocalAuthService {
       expiresAt,
     });
 
-    // Store tokens and user info
-    if (Capacitor.isNativePlatform()) {
+    // Store tokens and user info if remember me is checked or on native platforms
+    if (Capacitor.isNativePlatform() || rememberMe) {
       await Promise.all([
         Preferences.set({
           key: STORAGE_KEYS.ACCESS_TOKEN,
@@ -390,39 +449,25 @@ export class LocalAuthService {
               key: STORAGE_KEYS.REFRESH_TOKEN,
               value: response.refresh_token,
             })
-          : Preferences.remove({ key: STORAGE_KEYS.REFRESH_TOKEN }),
+          : Promise.resolve(),
         Preferences.set({
           key: STORAGE_KEYS.USER,
           value: JSON.stringify(response.user),
         }),
-        expiresAt !== null
-          ? Preferences.set({
-              key: STORAGE_KEYS.EXPIRES_AT,
-              value: expiresAt.toString(),
-            })
-          : Preferences.remove({ key: STORAGE_KEYS.EXPIRES_AT }),
+        Preferences.set({
+          key: STORAGE_KEYS.EXPIRES_AT,
+          value: expiresAt.toString(),
+        }),
       ]);
     }
 
-    // Schedule token refresh
-    if (response.refresh_token && expiresInSeconds) {
-      this.scheduleTokenRefresh(expiresInSeconds);
-    }
-  }
-
-  /**
-   * Schedule automatic token refresh
-   */
-  private scheduleTokenRefresh(expiresIn: number): void {
-    // Refresh 5 minutes before expiration
-    const refreshTime = (expiresIn - 300) * 1000;
-
-    if (refreshTime > 0) {
+    // Schedule token expiration reminder (5 minutes before expiry)
+    const reminderTime = (expiresInSeconds - 300) * 1000;
+    if (reminderTime > 0) {
       setTimeout(() => {
-        if (this.isAuthenticated()) {
-          this.refreshAccessToken().subscribe();
-        }
-      }, refreshTime);
+        console.log('Token will expire soon. User should re-authenticate.');
+        // Could emit an event here for the UI to show a warning
+      }, reminderTime);
     }
   }
 
@@ -434,19 +479,27 @@ export class LocalAuthService {
       Authorization: `Bearer ${accessToken}`,
     });
 
-    return this.http.get<GatewayUserResponse>(`${this.baseUrl}/users/me`, { headers });
+    // Call user profile endpoint directly
+    return this.http.get<GatewayUserResponse>(`${this.baseUrl}/users/me`, { headers }).pipe(
+      catchError(error => {
+        return throwError(() => new Error('Failed to fetch user profile'));
+      })
+    );
   }
 
   /**
    * Map API Gateway user payload into the local user format used by the app
    */
   private mapGatewayUser(user: GatewayUserResponse): LocalUser {
+    const accountState = user.state ? (user.state as AccountState) : AccountState.ACTIVE;
+
     return {
       id: user.dni,
       email: user.email,
       firstName: user.name,
       lastName: user.surname,
       role: 'patient',
+      accountState,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       preferences: {
@@ -467,48 +520,61 @@ export class LocalAuthService {
   }
 
   /**
-   * Handle HTTP errors
+   * Extract error message from various error formats
    */
-  private handleError(error: any): Observable<never> {
-    let errorMessage = 'An error occurred';
-
+  private extractErrorMessage(error: any): string {
     if (!error) {
-      return throwError(() => new Error(errorMessage));
+      return 'An error occurred';
     }
 
     if (typeof error === 'string') {
-      return throwError(() => new Error(error));
+      return error;
     }
 
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
-      errorMessage = `Error: ${error.error.message}`;
-    } else {
-      // Server-side error
-      const status = typeof error.status === 'number' ? error.status : 0;
-      const message = error.error?.message || error.message || errorMessage;
-      errorMessage = status ? `Error Code: ${status}\nMessage: ${message}` : message;
-
-      if (status === 401) {
-        errorMessage = 'Invalid credentials or session expired.';
-      } else if (status === 403) {
-        errorMessage = 'Access forbidden. Please verify your account.';
-      } else if (status === 409) {
-        errorMessage = 'User already exists with this email.';
-      } else if (status === 422) {
-        errorMessage = 'Invalid data provided. Please check your input.';
-      } else if (status === 500) {
-        errorMessage = 'Server error. Please try again later.';
+    if (error.message) {
+      // Check for specific error codes
+      if (error.message.includes('accountPending')) {
+        return 'Tu cuenta está pendiente de activación. Por favor, contacta al administrador.';
       }
-      if (error.error?.detail) {
-        errorMessage = Array.isArray(error.error.detail)
-          ? error.error.detail.map((d: any) => d.msg || d.detail || d).join(', ')
-          : error.error.detail;
+      if (error.message.includes('accountDisabled')) {
+        return 'Tu cuenta ha sido deshabilitada. Por favor, contacta al administrador.';
+      }
+      return error.message;
+    }
+
+    if (error.error) {
+      if (error.error.detail) {
+        if (Array.isArray(error.error.detail)) {
+          return error.error.detail.map((d: any) => d.msg || d.detail || d).join(', ');
+        }
+        return error.error.detail;
+      }
+      if (error.error.message) {
+        return error.error.message;
       }
     }
 
-    console.error('LocalAuthService Error:', errorMessage);
-    return throwError(() => new Error(errorMessage));
+    // HTTP status code specific messages
+    if (error.status) {
+      switch (error.status) {
+        case 401:
+          return 'Credenciales incorrectas. Verifica tu DNI/email y contraseña.';
+        case 403:
+          return 'Acceso denegado. Por favor, verifica tu cuenta.';
+        case 409:
+          return 'El usuario ya existe con este email.';
+        case 422:
+          return 'Datos inválidos. Por favor, verifica tu información.';
+        case 500:
+          return 'Error del servidor. Por favor, intenta de nuevo más tarde.';
+        case 0:
+          return 'Error de conexión. Verifica tu conexión a internet.';
+        default:
+          return `Error ${error.status}: ${error.message || 'Algo salió mal'}`;
+      }
+    }
+
+    return 'Error al iniciar sesión. Por favor, intenta de nuevo.';
   }
 }
 
@@ -530,6 +596,7 @@ interface GatewayUserResponse {
   surname: string;
   blocked: boolean;
   email: string;
+  state?: 'pending' | 'active' | 'disabled';
   tidepool?: string | null;
   hospital_account: string;
   times_measured: number;

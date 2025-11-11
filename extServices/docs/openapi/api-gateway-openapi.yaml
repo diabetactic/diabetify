@@ -1,0 +1,302 @@
+openapi: 3.0.3
+info:
+  title: Diabetify API Gateway
+  version: 0.1.0
+  description: Front-door API for the Diabetify mobile app. Issues JWT and proxies to Users, Appointments and Glucose services.
+servers:
+  - url: http://localhost:8004
+    description: Local (docker-compose)
+tags:
+  - name: Auth
+    description: Authentication endpoints
+  - name: Users
+    description: User profile endpoints
+  - name: Glucose
+    description: Glucose readings endpoints
+  - name: Appointments
+    description: Appointment and queue endpoints
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Token:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+      required: [access_token, token_type]
+    User:
+      type: object
+      properties:
+        dni: { type: string }
+        name: { type: string }
+        surname: { type: string }
+        blocked: { type: boolean }
+      required: [dni, name, surname, blocked]
+    ReadingTypeEnum:
+      type: string
+      enum: [DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO]
+    GlucoseReading:
+      type: object
+      properties:
+        id: { type: integer }
+        user_id: { type: integer }
+        glucose_level: { type: number }
+        created_at: { type: string }
+        reading_type: { $ref: '#/components/schemas/ReadingTypeEnum' }
+      required: [id, user_id, glucose_level, created_at, reading_type]
+    GlucoseReadingList:
+      type: object
+      properties:
+        readings:
+          type: array
+          items: { $ref: '#/components/schemas/GlucoseReading' }
+      required: [readings]
+    MotivesEnum:
+      type: string
+      enum: [AJUSTE, HIPOGLUCEMIA, HIPERGLUCEMIA, CETOSIS, DUDAS, OTRO]
+    AppointmentStateEnum:
+      type: string
+      enum: [PENDING, ACCEPTED, DENIED, CREATED]
+    AppointmentPost:
+      type: object
+      properties:
+        glucose_objective: { type: number }
+        insulin_type: { type: string }
+        dose: { type: number }
+        fast_insulin: { type: string }
+        fixed_dose: { type: number }
+        ratio: { type: number }
+        sensitivity: { type: number }
+        pump_type: { type: string }
+        another_treatment: { type: string, nullable: true }
+        control_data: { type: string }
+        motive:
+          type: array
+          items: { $ref: '#/components/schemas/MotivesEnum' }
+        other_motive: { type: string, nullable: true }
+      required: [glucose_objective, insulin_type, dose, fast_insulin, fixed_dose, ratio, sensitivity, pump_type, control_data, motive]
+    Appointment:
+      allOf:
+        - $ref: '#/components/schemas/AppointmentPost'
+        - type: object
+          properties:
+            appointment_id: { type: integer }
+            user_id: { type: integer }
+          required: [appointment_id, user_id]
+    AppointmentResolution:
+      type: object
+      properties:
+        appointment_id: { type: integer }
+        change_basal_type: { type: string }
+        change_basal_dose: { type: number }
+        change_basal_time: { type: string }
+        change_fast_type: { type: string }
+        change_ratio: { type: number }
+        change_sensitivity: { type: number }
+        emergency_care: { type: boolean }
+        needed_physical_appointment: { type: boolean }
+      required: [appointment_id, emergency_care, needed_physical_appointment]
+security:
+  - bearerAuth: []
+paths:
+  /token:
+    post:
+      tags: [Auth]
+      summary: Login with DNI + password
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username: { type: string, description: DNI }
+                password: { type: string }
+              required: [username, password]
+      responses:
+        '200':
+          description: Access token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Token' }
+              examples:
+                example:
+                  value: { access_token: "eyJhbGciOi...", token_type: "bearer" }
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Current user profile
+      responses:
+        '200':
+          description: User
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+              examples:
+                example:
+                  value:
+                    { dni: "1000", name: "Nacho", surname: "Scocco", blocked: false }
+  /glucose/mine:
+    get:
+      tags: [Glucose]
+      summary: My glucose readings
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlucoseReadingList' }
+              examples:
+                example:
+                  value:
+                    readings:
+                      - { id: 1, user_id: 1, glucose_level: 120.5, created_at: "2025-11-01T09:12:00Z", reading_type: DESAYUNO }
+  /glucose/mine/latest:
+    get:
+      tags: [Glucose]
+      summary: My latest glucose readings (15 days)
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlucoseReadingList' }
+  /glucose/create:
+    post:
+      tags: [Glucose]
+      summary: Create a glucose reading
+      parameters:
+        - in: query
+          name: glucose_level
+          required: true
+          schema: { type: number }
+        - in: query
+          name: reading_type
+          required: true
+          schema: { $ref: '#/components/schemas/ReadingTypeEnum' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlucoseReading' }
+              examples:
+                example:
+                  value:
+                    { id: 2, user_id: 1, glucose_level: 120.5, created_at: "2025-11-03T12:00:00Z", reading_type: DESAYUNO }
+  /appointments/mine:
+    get:
+      tags: [Appointments]
+      summary: My appointments
+      responses:
+        '200':
+          description: List
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Appointment' }
+              examples:
+                example:
+                  value:
+                    - appointment_id: 10
+                      user_id: 1
+                      glucose_objective: 110
+                      insulin_type: X
+                      dose: 5
+                      fast_insulin: Y
+                      fixed_dose: 2
+                      ratio: 12
+                      sensitivity: 50
+                      pump_type: Z
+                      another_treatment: null
+                      control_data: https://link.pdf
+                      motive: [AJUSTE]
+  /appointments/state:
+    get:
+      tags: [Appointments]
+      summary: My queue state
+      responses:
+        '200':
+          description: State
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AppointmentStateEnum' }
+              examples:
+                example:
+                  value: PENDING
+  /appointments/create:
+    post:
+      tags: [Appointments]
+      summary: Create appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AppointmentPost' }
+            examples:
+              example:
+                value:
+                  glucose_objective: 110
+                  insulin_type: X
+                  dose: 5
+                  fast_insulin: Y
+                  fixed_dose: 2
+                  ratio: 12
+                  sensitivity: 50
+                  pump_type: Z
+                  another_treatment: null
+                  control_data: https://link.pdf
+                  motive: [AJUSTE, DUDAS]
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Appointment' }
+  /appointments/{appointment_id}/resolution:
+    get:
+      tags: [Appointments]
+      summary: Get my appointment resolution
+      parameters:
+        - in: path
+          name: appointment_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Resolution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AppointmentResolution' }
+              examples:
+                example:
+                  value:
+                    appointment_id: 10
+                    change_basal_type: NPH
+                    change_basal_dose: 12
+                    change_basal_time: "22:00"
+                    change_fast_type: Lispro
+                    change_ratio: 15
+                    change_sensitivity: 45
+                    emergency_care: false
+                    needed_physical_appointment: true
+  /appointments/submit:
+    post:
+      tags: [Appointments]
+      summary: Submit appointment to queue
+      responses:
+        '201':
+          description: Queue placement
+          content:
+            application/json:
+              schema: { type: integer }
+              examples:
+                example:
+                  value: 3
