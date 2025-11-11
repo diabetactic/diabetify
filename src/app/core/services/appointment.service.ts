@@ -197,18 +197,16 @@ export class AppointmentService {
    * Create a new appointment request
    */
   createAppointment(request: CreateAppointmentRequest): Observable<Appointment> {
-    return this.apiGateway
-      .request<Appointment>('appointments.create', { body: request })
-      .pipe(
-        map(response => {
-          if (response.success && response.data) {
-            return response.data;
-          }
-          throw new Error(response.error?.message || 'Failed to create appointment');
-        }),
-        tap(() => this.refreshAppointments()),
-        catchError(this.handleError)
-      );
+    return this.apiGateway.request<Appointment>('appointments.create', { body: request }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to create appointment');
+      }),
+      tap(() => this.refreshAppointments()),
+      catchError(this.handleError)
+    );
   }
 
   /**
@@ -238,18 +236,16 @@ export class AppointmentService {
       cancelledReason: reason,
     };
 
-    return this.apiGateway
-      .request<Appointment>('appointments.cancel', { body }, { id })
-      .pipe(
-        map(response => {
-          if (response.success && response.data) {
-            return response.data;
-          }
-          throw new Error(response.error?.message || 'Failed to cancel appointment');
-        }),
-        tap(() => this.refreshAppointments()),
-        catchError(this.handleError)
-      );
+    return this.apiGateway.request<Appointment>('appointments.cancel', { body }, { id }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to cancel appointment');
+      }),
+      tap(() => this.refreshAppointments()),
+      catchError(this.handleError)
+    );
   }
 
   /**
@@ -318,17 +314,15 @@ export class AppointmentService {
       days: days.toString(),
     };
 
-    return this.apiGateway
-      .request<TimeSlot[]>('appointments.slots.available', { params })
-      .pipe(
-        map(response => {
-          if (response.success && response.data) {
-            return response.data;
-          }
-          throw new Error(response.error?.message || 'Failed to fetch time slots');
-        }),
-        catchError(this.handleError)
-      );
+    return this.apiGateway.request<TimeSlot[]>('appointments.slots.available', { params }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to fetch time slots');
+      }),
+      catchError(this.handleError)
+    );
   }
 
   /**
@@ -363,7 +357,9 @@ export class AppointmentService {
         }
 
         const upcoming = appointments
-          .filter(apt => new Date(`${apt.date} ${apt.startTime}`) > now && apt.status === 'confirmed')
+          .filter(
+            apt => new Date(`${apt.date} ${apt.startTime}`) > now && apt.status === 'confirmed'
+          )
           .sort(
             (a, b) =>
               new Date(`${a.date} ${a.startTime}`).getTime() -
@@ -459,12 +455,11 @@ export class AppointmentService {
           manualReadingsSummary: summary,
         };
 
-        return this.apiGateway
-          .request<ShareGlucoseResponse>(
-            'appointments.shareGlucose',
-            { body },
-            { id: appointmentId }
-          );
+        return this.apiGateway.request<ShareGlucoseResponse>(
+          'appointments.shareGlucose',
+          { body },
+          { id: appointmentId }
+        );
       }),
       map(response => {
         if (response.success && response.data) {
@@ -479,7 +474,9 @@ export class AppointmentService {
       catchError(error => {
         // If no manual readings are available, return a specific response
         if (error.message?.includes('No manual readings')) {
-          return throwError(() => new Error('No hay lecturas manuales para compartir en este período'));
+          return throwError(
+            () => new Error('No hay lecturas manuales para compartir en este período')
+          );
         }
         return this.handleError(error);
       })

@@ -39,9 +39,7 @@ export class AuthInterceptor implements HttpInterceptor {
     null
   );
 
-  constructor(
-    private router: Router
-  ) {}
+  constructor(private router: Router) {}
 
   /**
    * Intercept HTTP requests to add authentication and handle 401 errors
@@ -51,7 +49,7 @@ export class AuthInterceptor implements HttpInterceptor {
     // This interceptor focuses on error handling and refresh
 
     return next.handle(request).pipe(
-      catchError((error) => {
+      catchError(error => {
         if (error instanceof HttpErrorResponse && error.status === 401) {
           return this.handle401Error(request, next);
         }
@@ -104,9 +102,9 @@ export class AuthInterceptor implements HttpInterceptor {
     } else {
       // Refresh already in progress, queue this request
       return this.refreshTokenSubject.pipe(
-        filter((token) => token !== null),
+        filter(token => token !== null),
         take(1),
-        switchMap((token) => next.handle(this.addTokenToRequest(request, token!)))
+        switchMap(token => next.handle(this.addTokenToRequest(request, token!)))
       );
     }
   }

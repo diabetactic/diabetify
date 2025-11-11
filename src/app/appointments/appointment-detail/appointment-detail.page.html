@@ -54,7 +54,9 @@
             <span class="material-symbols-outlined" slot="start">schedule</span>
             <ion-label>
               <p>Horario</p>
-              <h3>{{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}</h3>
+              <h3>
+                {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}
+              </h3>
             </ion-label>
           </ion-item>
 
@@ -109,17 +111,25 @@
           <ion-icon name="checkmark-circle" color="success"></ion-icon>
           <h3>{{ shareMessage }}</h3>
           <p>{{ recordCount }} lecturas compartidas</p>
-          <small>Compartido el {{ getCurrentDate() | date:'short' }}</small>
+          <small>Compartido el {{ getCurrentDate() | date: 'short' }}</small>
         </div>
 
         <!-- Share button -->
         <div *ngIf="!shareSuccess && !appointment.glucoseDataShared">
-          <p>Comparte tus lecturas de glucosa de los últimos 30 días con tu médico para un mejor seguimiento.</p>
+          <p>
+            Comparte tus lecturas de glucosa de los últimos 30 días con tu médico para un mejor
+            seguimiento.
+          </p>
           <ion-button
             expand="block"
             color="primary"
             (click)="shareGlucoseData()"
-            [disabled]="sharingData || appointment.status === 'cancelled' || appointment.status === 'completed'">
+            [disabled]="
+              sharingData ||
+              appointment.status === 'cancelled' ||
+              appointment.status === 'completed'
+            "
+          >
             <span class="material-symbols-outlined" slot="start">share</span>
             Compartir últimos 30 días
           </ion-button>
@@ -134,33 +144,29 @@
     </ion-card>
 
     <!-- Action buttons -->
-    <div class="action-buttons" *ngIf="appointment.status === 'confirmed' || appointment.status === 'pending'">
+    <div
+      class="action-buttons"
+      *ngIf="appointment.status === 'confirmed' || appointment.status === 'pending'"
+    >
       <!-- Video call button -->
       <ion-button
         *ngIf="appointment.videoCallUrl"
         expand="block"
         fill="outline"
-        (click)="joinVideoCall()">
+        (click)="joinVideoCall()"
+      >
         <span class="material-symbols-outlined" slot="start">videocam</span>
         Unirse a videollamada
       </ion-button>
 
       <!-- Reschedule button -->
-      <ion-button
-        expand="block"
-        fill="outline"
-        color="warning"
-        (click)="rescheduleAppointment()">
+      <ion-button expand="block" fill="outline" color="warning" (click)="rescheduleAppointment()">
         <span class="material-symbols-outlined" slot="start">update</span>
         Reprogramar cita
       </ion-button>
 
       <!-- Cancel button -->
-      <ion-button
-        expand="block"
-        fill="outline"
-        color="danger"
-        (click)="cancelAppointment()">
+      <ion-button expand="block" fill="outline" color="danger" (click)="cancelAppointment()">
         <span class="material-symbols-outlined" slot="start">cancel</span>
         Cancelar cita
       </ion-button>
