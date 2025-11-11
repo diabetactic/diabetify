@@ -10,19 +10,19 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page-container">
+  <div class="max-w-[600px] mx-auto p-4">
     <!-- Info Banner with Tip -->
-    <div class="banner-container">
+    <div class="mb-6">
       <app-alert-banner type="info" [message]="'addReading.tip' | translate"></app-alert-banner>
     </div>
 
     <!-- Form -->
-    <form [formGroup]="readingForm" (ngSubmit)="onSubmit()" class="reading-form">
+    <form [formGroup]="readingForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
       <!-- Glucose Value Input -->
-      <div class="form-section">
+      <div class="mb-1">
         <ion-item lines="none" class="form-item">
           <ion-label position="stacked" class="form-label">
-            {{ 'addReading.glucoseLabel' | translate }} <span class="required">*</span>
+            {{ 'addReading.glucoseLabel' | translate }} <span class="text-danger">*</span>
           </ion-label>
           <div class="input-with-unit">
             <ion-input
@@ -35,11 +35,11 @@
                 readingForm.get('value')?.invalid && readingForm.get('value')?.touched
               "
             ></ion-input>
-            <span class="unit-label">{{ getUnitLabel() }}</span>
+            <span class="text-lg font-medium text-medium whitespace-nowrap">{{ getUnitLabel() }}</span>
           </div>
         </ion-item>
-        <div class="validation-message" *ngIf="getValidationMessage('value')">
-          <ion-icon name="alert-circle" color="danger"></ion-icon>
+        <div class="flex items-center gap-1.5 px-4 text-xs text-danger -mt-1" *ngIf="getValidationMessage('value')">
+          <ion-icon name="alert-circle" color="danger" class="text-base"></ion-icon>
           <span>{{ getValidationMessage('value') }}</span>
         </div>
       </div>
@@ -47,16 +47,16 @@
       <!-- Status Preview -->
       <div class="status-preview" *ngIf="glucoseStatus">
         <div class="status-badge" [attr.data-status]="glucoseStatusColor">
-          <span class="status-emoji">{{ glucoseStatusEmoji }}</span>
-          <span class="status-text">{{ getStatusLabel() }}</span>
+          <span class="text-lg">{{ glucoseStatusEmoji }}</span>
+          <span class="text-sm">{{ getStatusLabel() }}</span>
         </div>
       </div>
 
       <!-- Date & Time Picker -->
-      <div class="form-section">
+      <div class="mb-1">
         <ion-item lines="none" class="form-item">
           <ion-label position="stacked" class="form-label">
-            {{ 'addReading.dateTimeLabel' | translate }} <span class="required">*</span>
+            {{ 'addReading.dateTimeLabel' | translate }} <span class="text-danger">*</span>
           </ion-label>
           <ion-datetime-button datetime="reading-datetime"></ion-datetime-button>
         </ion-item>
@@ -75,7 +75,7 @@
       </div>
 
       <!-- Meal Context Selector -->
-      <div class="form-section">
+      <div class="mb-1">
         <ion-item lines="none" class="form-item">
           <ion-label position="stacked" class="form-label">
             {{ 'addReading.mealContext.label' | translate }}
@@ -85,6 +85,7 @@
             [placeholder]="'addReading.mealContext.placeholder' | translate"
             interface="action-sheet"
             [cancelText]="'common.cancel' | translate"
+            class="ion-select-full"
           >
             <ion-select-option [value]="null">{{ 'common.none' | translate }}</ion-select-option>
             <ion-select-option *ngFor="let option of mealContextOptions" [value]="option.value">
@@ -95,7 +96,7 @@
       </div>
 
       <!-- Notes Field -->
-      <div class="form-section">
+      <div class="mb-1">
         <ion-item lines="none" class="form-item">
           <ion-label position="stacked" class="form-label">
             {{ 'addReading.notes.label' | translate }}
@@ -108,7 +109,7 @@
             class="notes-textarea"
           ></ion-textarea>
         </ion-item>
-        <div class="character-count">
+        <div class="text-right text-xs text-medium px-4 -mt-1">
           {{
             'addReading.notes.counter'
               | translate: { count: readingForm.get('notes')?.value?.length || 0, max: 500 }
