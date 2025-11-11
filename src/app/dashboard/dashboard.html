@@ -82,7 +82,9 @@
       <!-- Upcoming Appointment Card -->
       <ion-card *ngIf="upcomingAppointment" class="appointment-card mb-6">
         <ion-card-header class="pb-2">
-          <ion-card-subtitle class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ 'dashboard.upcomingAppointments' | translate }}</ion-card-subtitle>
+          <ion-card-subtitle class="text-sm font-medium text-gray-600 dark:text-gray-300">{{
+            'dashboard.upcomingAppointments' | translate
+          }}</ion-card-subtitle>
           <ion-card-title class="text-xl font-bold text-gray-900 dark:text-white">{{
             upcomingAppointment.doctorName || ('appointments.doctor' | translate)
           }}</ion-card-title>
@@ -127,7 +129,9 @@
       <!-- Quick Actions Card -->
       <ion-card class="quick-actions-card mb-6">
         <ion-card-header class="pb-2">
-          <ion-card-title class="text-xl font-bold text-gray-900 dark:text-white">{{ 'dashboard.quickActions' | translate }}</ion-card-title>
+          <ion-card-title class="text-xl font-bold text-gray-900 dark:text-white">{{
+            'dashboard.quickActions' | translate
+          }}</ion-card-title>
         </ion-card-header>
         <ion-card-content class="pt-2">
           <ion-grid>
@@ -178,8 +182,15 @@
       <!-- Recent Readings Section -->
       <div class="recent-readings-section mt-6">
         <div class="mb-4 flex items-center justify-between">
-          <h2 class="m-0 text-xl font-bold text-gray-900 dark:text-white">{{ 'dashboard.recentReadings' | translate }}</h2>
-          <ion-button fill="clear" size="small" routerLink="/tabs/readings" class="m-0 h-auto text-sm font-medium">
+          <h2 class="m-0 text-xl font-bold text-gray-900 dark:text-white">
+            {{ 'dashboard.recentReadings' | translate }}
+          </h2>
+          <ion-button
+            fill="clear"
+            size="small"
+            routerLink="/tabs/readings"
+            class="m-0 h-auto text-sm font-medium"
+          >
             {{ 'common.viewAll' | translate }}
             <ion-icon slot="end" name="chevron-forward-outline" class="text-base"></ion-icon>
           </ion-button>

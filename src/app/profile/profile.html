@@ -14,46 +14,64 @@
           <img *ngIf="avatarUrl" [src]="avatarUrl" alt="User avatar" />
         </ion-avatar>
       </div>
-      <h2 class="text-2xl font-bold m-0 text-white">{{ greeting }}</h2>
-      <p class="m-0 text-sm opacity-85 text-white">{{ emailText }}</p>
-      <p class="m-0 text-sm opacity-85 text-white">{{ memberSinceText }}</p>
+      <h2 class="m-0 text-2xl font-bold text-white">{{ greeting }}</h2>
+      <p class="m-0 text-sm text-white opacity-85">{{ emailText }}</p>
+      <p class="m-0 text-sm text-white opacity-85">{{ memberSinceText }}</p>
     </section>
 
     <section class="overview-grid">
       <button type="button" class="overview-card" (click)="editAge()">
-        <ion-icon name="accessibility-outline" aria-hidden="true" class="text-[28px] text-primary"></ion-icon>
-        <div class="flex-1 min-w-0">
+        <ion-icon
+          name="accessibility-outline"
+          aria-hidden="true"
+          class="text-primary text-[28px]"
+        ></ion-icon>
+        <div class="min-w-0 flex-1">
           <p class="m-0 text-base font-semibold">{{ 'profile.age' | translate }}</p>
-          <p class="mt-1 mb-0 text-sm text-medium">{{ ageDescription }}</p>
+          <p class="text-medium mt-1 mb-0 text-sm">{{ ageDescription }}</p>
         </div>
         <ion-icon name="chevron-forward-outline" class="text-medium" aria-hidden="true"></ion-icon>
       </button>
 
       <div class="overview-card">
-        <ion-icon name="medkit-outline" aria-hidden="true" class="text-[28px] text-primary"></ion-icon>
-        <div class="flex-1 min-w-0">
+        <ion-icon
+          name="medkit-outline"
+          aria-hidden="true"
+          class="text-primary text-[28px]"
+        ></ion-icon>
+        <div class="min-w-0 flex-1">
           <p class="m-0 text-base font-semibold">{{ 'profile.diabetesInfo' | translate }}</p>
-          <p class="mt-1 mb-0 text-sm text-medium">{{ diabetesSummary }}</p>
+          <p class="text-medium mt-1 mb-0 text-sm">{{ diabetesSummary }}</p>
         </div>
       </div>
 
       <div class="overview-card" [class.overview-card--placeholder]="!hasEmergencyContact">
-        <ion-icon name="warning-outline" aria-hidden="true" class="text-[28px] text-primary"></ion-icon>
-        <div class="flex-1 min-w-0">
+        <ion-icon
+          name="warning-outline"
+          aria-hidden="true"
+          class="text-primary text-[28px]"
+        ></ion-icon>
+        <div class="min-w-0 flex-1">
           <p class="m-0 text-base font-semibold">{{ 'profile.emergencyContact' | translate }}</p>
-          <p class="mt-1 mb-0 text-sm text-medium">{{ emergencySummary }}</p>
+          <p class="text-medium mt-1 mb-0 text-sm">{{ emergencySummary }}</p>
         </div>
       </div>
     </section>
 
     <section class="card">
-      <h3 class="m-0 text-lg font-bold text-dark">{{ 'profile.preferences' | translate }}</h3>
+      <h3 class="text-dark m-0 text-lg font-bold">{{ 'profile.preferences' | translate }}</h3>
 
       <div class="preference-row">
-        <div class="flex items-center gap-3 flex-1 min-w-0">
-          <ion-icon name="contrast-outline" aria-hidden="true" class="text-[26px] text-primary"></ion-icon>
+        <div class="flex min-w-0 flex-1 items-center gap-3">
+          <ion-icon
+            name="contrast-outline"
+            aria-hidden="true"
+            class="text-primary text-[26px]"
+          ></ion-icon>
           <div>
-            <p class="m-0 text-base font-semibold text-dark">{{ 'profile.theme.title' | translate }}</p>
+            <p class="text-dark m-0 text-base font-semibold">
+              {{ 'profile.theme.title' | translate }}
+            </p>
           </div>
         </div>
         <ion-select
@@ -71,10 +89,16 @@
       </div>
 
       <div class="preference-row">
-        <div class="flex items-center gap-3 flex-1 min-w-0">
-          <ion-icon name="language-outline" aria-hidden="true" class="text-[26px] text-primary"></ion-icon>
+        <div class="flex min-w-0 flex-1 items-center gap-3">
+          <ion-icon
+            name="language-outline"
+            aria-hidden="true"
+            class="text-primary text-[26px]"
+          ></ion-icon>
           <div>
-            <p class="m-0 text-base font-semibold text-dark">{{ 'profile.language.title' | translate }}</p>
+            <p class="text-dark m-0 text-base font-semibold">
+              {{ 'profile.language.title' | translate }}
+            </p>
           </div>
         </div>
         <ion-select
@@ -89,10 +113,16 @@
       </div>
 
       <div class="preference-row">
-        <div class="flex items-center gap-3 flex-1 min-w-0">
-          <ion-icon name="water-outline" aria-hidden="true" class="text-[26px] text-primary"></ion-icon>
+        <div class="flex min-w-0 flex-1 items-center gap-3">
+          <ion-icon
+            name="water-outline"
+            aria-hidden="true"
+            class="text-primary text-[26px]"
+          ></ion-icon>
           <div>
-            <p class="m-0 text-base font-semibold text-dark">{{ 'profile.glucoseUnits' | translate }}</p>
+            <p class="text-dark m-0 text-base font-semibold">
+              {{ 'profile.glucoseUnits' | translate }}
+            </p>
           </div>
         </div>
         <ion-select
@@ -109,18 +139,22 @@
     </section>
 
     <section class="card tidepool-card">
-      <div class="flex gap-3 items-center">
-        <ion-icon name="cloud-outline" aria-hidden="true" class="text-[28px] text-primary"></ion-icon>
+      <div class="flex items-center gap-3">
+        <ion-icon
+          name="cloud-outline"
+          aria-hidden="true"
+          class="text-primary text-[28px]"
+        ></ion-icon>
         <div>
           <p class="m-0 text-base font-semibold">{{ 'profile.tidepoolIntegration' | translate }}</p>
-          <p class="mt-1 mb-0 text-sm text-medium">
+          <p class="text-medium mt-1 mb-0 text-sm">
             {{
               isConnected ? ('profile.connected' | translate) : ('profile.notConnected' | translate)
             }}
           </p>
         </div>
       </div>
-      <p class="m-0 text-sm text-medium" *ngIf="isConnected">
+      <p class="text-medium m-0 text-sm" *ngIf="isConnected">
         {{ 'profile.lastSync' | translate }}: {{ formatLastSyncTime() }}
       </p>
       <ion-button
@@ -137,30 +171,42 @@
     </section>
 
     <section class="card">
-      <h3 class="m-0 text-lg font-bold text-dark">{{ 'profile.about' | translate }}</h3>
+      <h3 class="text-dark m-0 text-lg font-bold">{{ 'profile.about' | translate }}</h3>
 
-      <div class="flex items-center gap-3 py-3 text-dark">
-        <ion-icon name="information-circle-outline" aria-hidden="true" class="text-[26px] text-primary"></ion-icon>
+      <div class="text-dark flex items-center gap-3 py-3">
+        <ion-icon
+          name="information-circle-outline"
+          aria-hidden="true"
+          class="text-primary text-[26px]"
+        ></ion-icon>
         <div>
           <p class="m-0 text-base font-semibold">{{ 'profile.appVersion' | translate }}</p>
-          <p class="mt-1 mb-0 text-sm text-medium">{{ appVersion }}</p>
+          <p class="text-medium mt-1 mb-0 text-sm">{{ appVersion }}</p>
         </div>
       </div>
 
       <button type="button" class="about-row link" (click)="openTermsOfService()">
-        <ion-icon name="document-text-outline" aria-hidden="true" class="text-[26px] text-primary"></ion-icon>
+        <ion-icon
+          name="document-text-outline"
+          aria-hidden="true"
+          class="text-primary text-[26px]"
+        ></ion-icon>
         <div>
           <p class="m-0 text-base font-semibold">{{ 'profile.termsOfService' | translate }}</p>
-          <p class="mt-1 mb-0 text-sm text-medium">{{ 'profile.viewTerms' | translate }}</p>
+          <p class="text-medium mt-1 mb-0 text-sm">{{ 'profile.viewTerms' | translate }}</p>
         </div>
         <ion-icon name="chevron-forward-outline" class="text-medium" aria-hidden="true"></ion-icon>
       </button>
 
       <button type="button" class="about-row link" (click)="openPrivacyPolicy()">
-        <ion-icon name="shield-checkmark-outline" aria-hidden="true" class="text-[26px] text-primary"></ion-icon>
+        <ion-icon
+          name="shield-checkmark-outline"
+          aria-hidden="true"
+          class="text-primary text-[26px]"
+        ></ion-icon>
         <div>
           <p class="m-0 text-base font-semibold">{{ 'profile.privacyPolicy' | translate }}</p>
-          <p class="mt-1 mb-0 text-sm text-medium">{{ 'profile.viewPolicy' | translate }}</p>
+          <p class="text-medium mt-1 mb-0 text-sm">{{ 'profile.viewPolicy' | translate }}</p>
         </div>
         <ion-icon name="chevron-forward-outline" class="text-medium" aria-hidden="true"></ion-icon>
       </button>
