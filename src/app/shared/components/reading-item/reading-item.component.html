@@ -1,21 +1,43 @@
 <ion-item class="reading-item" lines="none">
-  <div class="reading-content">
-    <div class="reading-left">
-      <span class="glucose-emoji">{{ getStatusEmoji() }}</span>
-      <div class="reading-info">
-        <div class="glucose-value">
-          <span class="value">{{ reading.value }}</span>
-          <span class="unit">{{ reading.units }}</span>
+  <div
+    class="flex justify-between items-center w-full p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md dark:shadow-black/30 transition-colors duration-200"
+  >
+    <!-- Left Section: Emoji + Reading Info -->
+    <div class="flex items-center gap-3">
+      <!-- Status Emoji -->
+      <span class="text-3xl leading-none">{{ getStatusEmoji() }}</span>
+
+      <!-- Reading Info -->
+      <div class="flex flex-col gap-1">
+        <!-- Glucose Value -->
+        <div class="flex items-baseline gap-1">
+          <span class="text-2xl font-bold text-gray-900 dark:text-white leading-none">
+            {{ reading.value }}
+          </span>
+          <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {{ reading.units }}
+          </span>
         </div>
-        <div class="reading-time">
-          <span class="date">{{ formatDate(reading.time) }}</span>
-          <span class="time-separator">•</span>
-          <span class="time">{{ formatTime(reading.time) }}</span>
+
+        <!-- Date and Time -->
+        <div class="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+          <span class="font-normal">{{ formatDate(reading.time) }}</span>
+          <span class="text-[10px]">•</span>
+          <span class="font-normal">{{ formatTime(reading.time) }}</span>
         </div>
       </div>
     </div>
-    <div class="reading-right">
-      <span class="status-badge" [ngClass]="getStatusClass()">
+
+    <!-- Right Section: Status Badge -->
+    <div class="flex items-center">
+      <span
+        class="px-3 py-1.5 rounded-xl text-[11px] font-semibold uppercase tracking-wide"
+        [ngClass]="{
+          'bg-green-500/10 text-green-600 dark:text-green-400': getStatusClass() === 'normal',
+          'bg-orange-500/10 text-orange-600 dark:text-orange-400': getStatusClass() === 'low',
+          'bg-red-500/10 text-red-600 dark:text-red-400': getStatusClass() === 'high',
+        }"
+      >
         {{ getStatusText() }}
       </span>
     </div>
