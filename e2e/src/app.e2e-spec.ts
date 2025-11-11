@@ -1,6 +1,6 @@
 import { browser, by, element, ExpectedConditions as EC, protractor } from 'protractor';
 
-describe('Diabetify App E2E Tests', () => {
+describe('Diabetactic App E2E Tests', () => {
   const baseUrl = 'http://localhost:4200';
 
   beforeEach(async () => {

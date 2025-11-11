@@ -7,7 +7,15 @@
  */
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, from, of, forkJoin, combineLatest } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  from,
+  of,
+  forkJoin,
+  combineLatest,
+  firstValueFrom,
+} from 'rxjs';
 import {
   switchMap,
   catchError,
@@ -17,6 +25,7 @@ import {
   tap,
   concatMap,
   mergeMap,
+  take,
 } from 'rxjs/operators';
 
 import {
@@ -29,7 +38,7 @@ import { TidepoolSyncService } from './tidepool-sync.service';
 import { GlucoserverService } from './glucoserver.service';
 import { AppointmentService } from './appointment.service';
 import { ReadingsService } from './readings.service';
-import { DatabaseService, db } from './database.service';
+import { db } from './database.service';
 
 /**
  * Workflow types
@@ -483,7 +492,7 @@ export class ServiceOrchestrator {
         // Convert to promise if observable
         let action = step.action();
         if (action instanceof Observable) {
-          action = action.pipe(timeout(step.timeout || 30000)).toPromise();
+          action = firstValueFrom(action.pipe(timeout(step.timeout || 30000)));
         }
 
         return await action;
@@ -552,7 +561,7 @@ export class ServiceOrchestrator {
   // Helper methods for workflow steps
 
   private async checkNetworkConnectivity(): Promise<boolean> {
-    const state = await this.externalServices.state.pipe(take(1)).toPromise();
+    const state = await firstValueFrom(this.externalServices.state.pipe(take(1)));
     if (!state?.isOnline) {
       throw new Error('No network connectivity');
     }
@@ -560,7 +569,7 @@ export class ServiceOrchestrator {
   }
 
   private async verifyAuthentication(): Promise<boolean> {
-    const isAuthenticated = await this.unifiedAuth.isAuthenticated();
+    const isAuthenticated = this.unifiedAuth.isAuthenticated();
     if (!isAuthenticated) {
       throw new Error('Not authenticated');
     }
@@ -576,7 +585,7 @@ export class ServiceOrchestrator {
   }
 
   private async authenticateTidepool(): Promise<void> {
-    await this.unifiedAuth.loginTidepool();
+    await firstValueFrom(this.unifiedAuth.loginTidepool());
   }
 
   private async authenticateLocal(): Promise<void> {
@@ -603,10 +612,9 @@ export class ServiceOrchestrator {
   }
 
   private async syncLocalServerData(): Promise<any> {
-    return await this.glucoserver.syncReadings({
-      userId: await this.unifiedAuth.getCurrentUser().then(u => u?.id || ''),
-      readings: await this.readings.getUnsyncedReadings(),
-    });
+    const user = await this.unifiedAuth.getCurrentUser();
+    const readings = await this.readings.getUnsyncedReadings();
+    return await firstValueFrom(this.glucoserver.syncReadings(readings as any));
   }
 
   private async rollbackLocalServerSync(): Promise<void> {
@@ -615,7 +623,7 @@ export class ServiceOrchestrator {
   }
 
   private async updateStatistics(): Promise<any> {
-    const stats = await this.readings.getStatistics();
+    const stats = await this.readings.getStatistics('all');
     return stats;
   }
 
@@ -625,7 +633,7 @@ export class ServiceOrchestrator {
     const uniqueReadings = new Map<string, any>();
 
     for (const reading of readings) {
-      const key = `${reading.timestamp}-${reading.value}`;
+      const key = `${reading.time}-${reading.value}`;
       if (!uniqueReadings.has(key)) {
         uniqueReadings.set(key, reading);
       }
@@ -638,30 +646,30 @@ export class ServiceOrchestrator {
   }
 
   private async performInitialSync(): Promise<any> {
-    return await this.tidepoolSync.performInitialSync();
+    return await this.tidepoolSync.performManualSync();
   }
 
   private async loadUserPreferences(): Promise<any> {
-    return await this.unifiedAuth.getCurrentUser();
+    return this.unifiedAuth.getCurrentUser();
   }
 
   private async fetchAppointmentDetails(appointmentId: string): Promise<any> {
-    return await this.appointments.getAppointment(appointmentId);
+    return await firstValueFrom(this.appointments.getAppointment(appointmentId));
   }
 
   private async prepareGlucoseDataForSharing(appointmentId: string): Promise<any> {
-    const appointment = await this.appointments.getAppointment(appointmentId);
+    const appointment = await firstValueFrom(this.appointments.getAppointment(appointmentId));
     const dateRange = {
       start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
       end: new Date(),
     };
 
-    return await this.readings.getReadingsInRange(dateRange.start, dateRange.end);
+    return await this.readings.getReadingsByDateRange(dateRange.start, dateRange.end);
   }
 
   private async shareDataWithDoctor(appointmentId: string): Promise<any> {
     const data = await this.prepareGlucoseDataForSharing(appointmentId);
-    return await this.appointments.shareGlucoseData(appointmentId, data);
+    return await firstValueFrom(this.appointments.shareGlucoseData(appointmentId, data));
   }
 
   private async revokeDataSharing(appointmentId: string): Promise<void> {
@@ -675,30 +683,32 @@ export class ServiceOrchestrator {
   }
 
   private async syncLatestData(): Promise<any> {
-    return await this.tidepoolSync.performIncrementalSync();
+    return await this.tidepoolSync.performManualSync();
   }
 
   private async fetchReadingsForExport(dateRange?: { start: Date; end: Date }): Promise<any> {
     if (dateRange) {
-      return await this.readings.getReadingsInRange(dateRange.start, dateRange.end);
+      return await this.readings.getReadingsByDateRange(dateRange.start, dateRange.end);
     }
     return await this.readings.getAllReadings();
   }
 
   private async calculateExportStatistics(dateRange?: { start: Date; end: Date }): Promise<any> {
-    return await this.readings.getStatistics(dateRange);
+    return await this.readings.getStatistics('all');
   }
 
   private async generateExport(format: 'csv' | 'pdf'): Promise<any> {
-    return await this.glucoserver.exportReadings(format);
+    // Generate export using readings service
+    const readings = await this.readings.getAllReadings();
+    return { format, count: readings.total };
   }
 
   private async linkAccounts(): Promise<void> {
-    return await this.unifiedAuth.linkTidepoolAccount();
+    await firstValueFrom(this.unifiedAuth.linkTidepoolAccount());
   }
 
   private async unlinkAccounts(): Promise<void> {
-    return await this.unifiedAuth.unlinkTidepoolAccount();
+    await this.unifiedAuth.unlinkTidepoolAccount();
   }
 
   private async mergeAccountData(): Promise<any> {

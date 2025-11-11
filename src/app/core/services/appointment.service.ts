@@ -11,6 +11,7 @@ import { Observable, BehaviorSubject, throwError, from } from 'rxjs';
 import { catchError, map, tap, switchMap } from 'rxjs/operators';
 import { ApiGatewayService, ApiResponse } from './api-gateway.service';
 import { ReadingsService, TeleAppointmentReadingSummary } from './readings.service';
+import { TranslationService } from './translation.service';
 
 /**
  * Appointment status types
@@ -99,6 +100,23 @@ export interface CreateAppointmentRequest {
 }
 
 /**
+ * Simplified appointment creation from UI
+ */
+export interface SimpleAppointmentRequest {
+  patientId: string;
+  patientName: string;
+  doctorId: string;
+  doctorName: string;
+  specialty: string;
+  date: string;
+  time: string;
+  type: string;
+  location: string;
+  notes?: string;
+  status: AppointmentStatus;
+}
+
+/**
  * Appointment statistics
  */
 export interface AppointmentStats {
@@ -134,7 +152,8 @@ export class AppointmentService {
 
   constructor(
     private apiGateway: ApiGatewayService,
-    private readingsService: ReadingsService
+    private readingsService: ReadingsService,
+    private translationService: TranslationService
   ) {}
 
   /**
@@ -196,19 +215,64 @@ export class AppointmentService {
   /**
    * Create a new appointment request
    */
-  createAppointment(request: CreateAppointmentRequest): Observable<Appointment> {
-    return this.apiGateway
-      .request<Appointment>('appointments.create', { body: request })
-      .pipe(
-        map(response => {
-          if (response.success && response.data) {
-            return response.data;
-          }
-          throw new Error(response.error?.message || 'Failed to create appointment');
-        }),
-        tap(() => this.refreshAppointments()),
-        catchError(this.handleError)
-      );
+  createAppointment(
+    request: CreateAppointmentRequest | SimpleAppointmentRequest
+  ): Observable<Appointment> {
+    // Check if it's a simple request from the UI
+    const isSimpleRequest = 'time' in request;
+
+    let apiBody: any;
+
+    if (isSimpleRequest) {
+      // Convert simple request to API format
+      const simpleReq = request as SimpleAppointmentRequest;
+      apiBody = {
+        patient_id: simpleReq.patientId,
+        patient_name: simpleReq.patientName,
+        doctor_id: simpleReq.doctorId,
+        doctor_name: simpleReq.doctorName,
+        specialty: simpleReq.specialty,
+        date: simpleReq.date,
+        time: simpleReq.time,
+        type: simpleReq.type,
+        location: simpleReq.location,
+        notes: simpleReq.notes,
+        status: simpleReq.status,
+      };
+    } else {
+      apiBody = request;
+    }
+
+    return this.apiGateway.request<Appointment>('appointments.create', { body: apiBody }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        // If no data but success, create a local appointment object
+        if (response.success && isSimpleRequest) {
+          const simpleReq = request as SimpleAppointmentRequest;
+          return {
+            id: `apt-${Date.now()}`,
+            patientId: simpleReq.patientId,
+            patientName: simpleReq.patientName,
+            doctorId: simpleReq.doctorId,
+            doctorName: simpleReq.doctorName,
+            date: simpleReq.date,
+            startTime: simpleReq.time,
+            endTime: simpleReq.time, // Will be calculated by backend
+            status: simpleReq.status,
+            urgency: 'routine' as AppointmentUrgency,
+            reason: simpleReq.type,
+            notes: simpleReq.notes,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          } as Appointment;
+        }
+        throw new Error(response.error?.message || 'Failed to create appointment');
+      }),
+      tap(() => this.refreshAppointments()),
+      catchError(this.handleError)
+    );
   }
 
   /**
@@ -238,18 +302,16 @@ export class AppointmentService {
       cancelledReason: reason,
     };
 
-    return this.apiGateway
-      .request<Appointment>('appointments.cancel', { body }, { id })
-      .pipe(
-        map(response => {
-          if (response.success && response.data) {
-            return response.data;
-          }
-          throw new Error(response.error?.message || 'Failed to cancel appointment');
-        }),
-        tap(() => this.refreshAppointments()),
-        catchError(this.handleError)
-      );
+    return this.apiGateway.request<Appointment>('appointments.cancel', { body }, { id }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to cancel appointment');
+      }),
+      tap(() => this.refreshAppointments()),
+      catchError(this.handleError)
+    );
   }
 
   /**
@@ -318,17 +380,15 @@ export class AppointmentService {
       days: days.toString(),
     };
 
-    return this.apiGateway
-      .request<TimeSlot[]>('appointments.slots.available', { params })
-      .pipe(
-        map(response => {
-          if (response.success && response.data) {
-            return response.data;
-          }
-          throw new Error(response.error?.message || 'Failed to fetch time slots');
-        }),
-        catchError(this.handleError)
-      );
+    return this.apiGateway.request<TimeSlot[]>('appointments.slots.available', { params }).pipe(
+      map(response => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error?.message || 'Failed to fetch time slots');
+      }),
+      catchError(this.handleError)
+    );
   }
 
   /**
@@ -363,7 +423,9 @@ export class AppointmentService {
         }
 
         const upcoming = appointments
-          .filter(apt => new Date(`${apt.date} ${apt.startTime}`) > now && apt.status === 'confirmed')
+          .filter(
+            apt => new Date(`${apt.date} ${apt.startTime}`) > now && apt.status === 'confirmed'
+          )
           .sort(
             (a, b) =>
               new Date(`${a.date} ${a.startTime}`).getTime() -
@@ -459,19 +521,20 @@ export class AppointmentService {
           manualReadingsSummary: summary,
         };
 
-        return this.apiGateway
-          .request<ShareGlucoseResponse>(
-            'appointments.shareGlucose',
-            { body },
-            { id: appointmentId }
-          );
+        return this.apiGateway.request<ShareGlucoseResponse>(
+          'appointments.shareGlucose',
+          { body },
+          { id: appointmentId }
+        );
       }),
       map(response => {
         if (response.success && response.data) {
           return {
             shared: response.data.shared,
             recordCount: response.data.recordCount || 0,
-            message: response.data.message || 'Datos compartidos exitosamente',
+            message:
+              response.data.message ||
+              this.translationService.instant('appointments.shareData.successMessage'),
           };
         }
         throw new Error(response.error?.message || 'Failed to share glucose data');
@@ -479,7 +542,9 @@ export class AppointmentService {
       catchError(error => {
         // If no manual readings are available, return a specific response
         if (error.message?.includes('No manual readings')) {
-          return throwError(() => new Error('No hay lecturas manuales para compartir en este período'));
+          return throwError(
+            () => new Error(this.translationService.instant('appointments.shareData.noReadings'))
+          );
         }
         return this.handleError(error);
       })
@@ -532,6 +597,12 @@ export class AppointmentService {
    * Handle errors
    */
   private handleError(error: any): Observable<never> {
+    // If error is already in API Gateway format with success: false, pass it through
+    if (error?.success === false && error?.error) {
+      console.error('AppointmentService Error:', error.error.message, error);
+      return throwError(() => error);
+    }
+
     let errorMessage = 'An error occurred';
 
     if (error?.error?.message) {
@@ -546,19 +617,19 @@ export class AppointmentService {
     if (error?.error?.code) {
       switch (error.error.code) {
         case 'UNAUTHORIZED':
-          errorMessage = 'No autorizado. Por favor, inicie sesión nuevamente.';
+          errorMessage = this.translationService.instant('appointments.errors.unauthorized');
           break;
         case 'NOT_FOUND':
-          errorMessage = 'Cita no encontrada.';
+          errorMessage = this.translationService.instant('appointments.errors.notFound');
           break;
         case 'CONFLICT':
-          errorMessage = 'El horario ya no está disponible.';
+          errorMessage = this.translationService.instant('appointments.errors.slotUnavailable');
           break;
         case 'SERVICE_UNAVAILABLE':
-          errorMessage = 'Servicio no disponible. Por favor, intente más tarde.';
+          errorMessage = this.translationService.instant('appointments.errors.serviceUnavailable');
           break;
         case 'NETWORK_ERROR':
-          errorMessage = 'Error de conexión. Verifique su conexión a internet.';
+          errorMessage = this.translationService.instant('appointments.errors.networkError');
           break;
       }
     }

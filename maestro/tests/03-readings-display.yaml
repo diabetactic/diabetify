@@ -1,0 +1,107 @@
+appId: io.diabetify.app
+---
+# Test: Readings Display and Filtering
+# Description: Test glucose readings list, search, and filter functionality
+# Prerequisites: User must be logged in
+
+# Launch app
+- launchApp
+- waitForAnimationToEnd
+
+# Navigate to Readings tab
+- tapOn:
+    text: ".*Readings.*|.*Lecturas.*"
+- waitForAnimationToEnd
+
+# Verify readings page is displayed
+- assertVisible:
+    text: ".*Readings.*|.*Lecturas.*"
+
+# Take initial screenshot
+- takeScreenshot: screenshots/14_readings_initial.png
+
+# Verify date grouping headers
+- assertVisible:
+    text: ".*Today.*|.*Hoy.*|.*Yesterday.*|.*Ayer.*"
+
+# Test search functionality - look for search icon/input
+- tapOn:
+    id: ".*search.*"
+- waitForAnimationToEnd
+
+# Enter search term
+- inputText: "100"
+
+# Wait for search results
+- waitForAnimationToEnd
+
+# Take screenshot of search results
+- takeScreenshot: screenshots/15_readings_search.png
+
+# Clear search
+- tapOn:
+    id: ".*clear.*|.*close.*"
+- waitForAnimationToEnd
+
+# Test filter functionality
+- tapOn:
+    id: ".*filter.*"
+- waitForAnimationToEnd
+
+# Verify filter modal opened
+- assertVisible:
+    text: ".*Filter.*|.*Filtrar.*"
+
+# Take screenshot of filter modal
+- takeScreenshot: screenshots/16_readings_filter_modal.png
+
+# Select "High" glucose filter
+- tapOn:
+    text: ".*High.*|.*Alto.*"
+- waitForAnimationToEnd
+
+# Apply filters
+- tapOn:
+    text: ".*Apply.*|.*Aplicar.*"
+- waitForAnimationToEnd
+
+# Wait for filtered results
+- waitForAnimationToEnd
+
+# Take screenshot of filtered readings
+- takeScreenshot: screenshots/17_readings_filtered.png
+
+# Clear filters
+- tapOn:
+    id: ".*filter.*"
+- waitForAnimationToEnd
+
+- tapOn:
+    text: ".*Clear.*|.*Limpiar.*"
+- waitForAnimationToEnd
+
+# Test scroll through readings list
+- scroll
+- waitForAnimationToEnd
+
+# Take screenshot after scroll
+- takeScreenshot: screenshots/18_readings_scrolled.png
+
+# Test pull-to-refresh
+- scrollUp
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Take screenshot after refresh
+- takeScreenshot: screenshots/19_readings_refreshed.png
+
+# Tap on a reading item to view details
+- tapOn:
+    text: ".*mg/dL.*|.*mmol/L.*"
+- waitForAnimationToEnd
+
+# Take screenshot of reading detail/interaction
+- takeScreenshot: screenshots/20_readings_item_tapped.png
+
+# Final screenshot
+- takeScreenshot: screenshots/21_readings_complete.png

@@ -6,6 +6,7 @@ import {
   LocalAuthService,
   LocalAuthState,
   LoginRequest,
+  LoginResult,
   RegisterRequest,
 } from './local-auth.service';
 
@@ -187,29 +188,40 @@ describe('UnifiedAuthService', () => {
         rememberMe: true,
       };
 
+      const mockUser = {
+        id: 'user123',
+        email: 'test@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        role: 'patient' as const,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const mockLoginResult: LoginResult = {
+        success: true,
+        user: mockUser,
+      };
+
       const mockAuthState: LocalAuthState = {
         isAuthenticated: true,
-        user: {
-          id: 'user123',
-          email: 'test@example.com',
-          firstName: 'John',
-          lastName: 'Doe',
-          role: 'patient',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
+        user: mockUser,
         accessToken: 'token',
         refreshToken: 'refresh',
         expiresAt: Date.now() + 3600000,
       };
 
-      localAuthSpy.login.and.returnValue(of(mockAuthState));
+      localAuthSpy.login.and.returnValue(of(mockLoginResult));
       mockLocalAuthState.next(mockAuthState);
 
       service.loginLocal(loginRequest).subscribe(state => {
         expect(state.isAuthenticated).toBe(true);
         expect(state.provider).toBe('local');
-        expect(localAuthSpy.login).toHaveBeenCalledWith(loginRequest);
+        expect(localAuthSpy.login).toHaveBeenCalledWith(
+          loginRequest.email || loginRequest.dni || '',
+          loginRequest.password,
+          loginRequest.rememberMe || false
+        );
         done();
       });
     });
@@ -220,16 +232,16 @@ describe('UnifiedAuthService', () => {
         password: 'wrong-password',
       };
 
-      const error = new Error('Invalid credentials');
-      localAuthSpy.login.and.returnValue(throwError(() => error));
+      const mockLoginResult: LoginResult = {
+        success: false,
+        error: 'Invalid credentials',
+      };
+      localAuthSpy.login.and.returnValue(of(mockLoginResult));
 
-      service.loginLocal(loginRequest).subscribe(
-        () => fail('should have failed'),
-        err => {
-          expect(err).toEqual(error);
-          done();
-        }
-      );
+      service.loginLocal(loginRequest).subscribe(state => {
+        expect(state.isAuthenticated).toBe(false);
+        done();
+      });
     });
 
     it('should login with Tidepool', () => {
@@ -252,24 +264,31 @@ describe('UnifiedAuthService', () => {
         diabetesType: '1',
       };
 
+      const mockUser = {
+        id: 'new-user',
+        email: 'new@example.com',
+        firstName: 'Jane',
+        lastName: 'Doe',
+        role: 'patient' as const,
+        diabetesType: '1' as const,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const mockLoginResult: LoginResult = {
+        success: true,
+        user: mockUser,
+      };
+
       const mockAuthState: LocalAuthState = {
         isAuthenticated: true,
-        user: {
-          id: 'new-user',
-          email: 'new@example.com',
-          firstName: 'Jane',
-          lastName: 'Doe',
-          role: 'patient',
-          diabetesType: '1',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
+        user: mockUser,
         accessToken: 'token',
         refreshToken: 'refresh',
         expiresAt: Date.now() + 3600000,
       };
 
-      localAuthSpy.register.and.returnValue(of(mockAuthState));
+      localAuthSpy.register.and.returnValue(of(mockLoginResult));
       mockLocalAuthState.next(mockAuthState);
 
       service.register(registerRequest).subscribe(state => {
@@ -473,7 +492,7 @@ describe('UnifiedAuthService', () => {
 
   describe('Account Linking', () => {
     it('should link Tidepool account to local account', () => {
-      localAuthSpy.isAuthenticated.and.returnValue(true);
+      localAuthSpy.isAuthenticated.and.returnValue(of(true));
       tidepoolAuthSpy.login.and.returnValue(Promise.resolve());
 
       service.linkTidepoolAccount().subscribe(() => {
@@ -482,7 +501,7 @@ describe('UnifiedAuthService', () => {
     });
 
     it('should throw error if not logged in locally', () => {
-      localAuthSpy.isAuthenticated.and.returnValue(false);
+      localAuthSpy.isAuthenticated.and.returnValue(of(false));
 
       expect(() => service.linkTidepoolAccount()).toThrow(
         new Error('Must be logged in locally to link Tidepool account')

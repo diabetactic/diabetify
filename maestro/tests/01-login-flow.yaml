@@ -1,0 +1,63 @@
+appId: io.diabetify.app
+---
+# Test: Login Flow
+# Description: Test user authentication with demo credentials
+# Expected: User should successfully login and navigate to dashboard
+
+# Launch the app
+- launchApp
+
+# Wait for app to fully load
+- waitForAnimationToEnd
+
+# Take screenshot of welcome screen
+- takeScreenshot: screenshots/01_welcome_screen.png
+
+# Look for login button or form
+- assertVisible: "DNI"
+
+# Fill in username (DNI)
+- tapOn:
+    id: ".*username.*"
+- inputText: "1000"
+
+# Take screenshot after username entry
+- takeScreenshot: screenshots/02_username_entered.png
+
+# Fill in password
+- tapOn:
+    id: ".*password.*"
+- inputText: "tuvieja"
+
+# Take screenshot before submission
+- takeScreenshot: screenshots/03_credentials_ready.png
+
+# Submit login form
+- tapOn:
+    text: ".*Iniciar.*|.*Sign In.*|.*Login.*"
+- waitForAnimationToEnd
+
+# Wait for navigation to complete
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Verify successful login - should see dashboard
+- assertVisible:
+    text: ".*Dashboard.*|.*Inicio.*|.*Panel.*"
+
+# Take screenshot of dashboard
+- takeScreenshot: screenshots/04_login_success_dashboard.png
+
+# Verify key dashboard elements are present
+- assertVisible:
+    text: ".*HbA1c.*|.*Glucose.*|.*Glucosa.*"
+
+# Verify navigation tabs are visible
+- assertVisible:
+    text: ".*Readings.*|.*Lecturas.*"
+
+- assertVisible:
+    text: ".*Profile.*|.*Perfil.*"
+
+# Final success screenshot
+- takeScreenshot: screenshots/05_login_complete.png

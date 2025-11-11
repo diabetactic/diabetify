@@ -1,0 +1,41 @@
+{
+  "extends": [
+    "stylelint-config-standard-scss",
+    "stylelint-config-tailwindcss"
+  ],
+  "rules": {
+    "declaration-no-important": true,
+    "color-no-hex": null,
+    "function-no-unknown": [true, {
+      "ignoreFunctions": ["theme", "var"]
+    }],
+    "scss/at-rule-no-unknown": [true, {
+      "ignoreAtRules": ["tailwind", "theme", "import", "keyframes", "plugin", "custom-variant", "layer"]
+    }],
+    "selector-class-pattern": null,
+    "custom-property-pattern": null,
+    "at-rule-no-unknown": [true, {
+      "ignoreAtRules": ["tailwind", "theme", "import", "keyframes", "plugin", "custom-variant", "layer"]
+    }],
+    "no-invalid-position-at-import-rule": null,
+    "max-nesting-depth": [2, {
+      "message": "CSS Pro: Keep nesting ≤2 levels to prevent specificity conflicts",
+      "ignore": ["blockless-at-rules", "pseudo-classes"]
+    }],
+    "selector-max-specificity": null,
+    "color-function-notation": "modern",
+    "alpha-value-notation": "percentage",
+    "font-family-name-quotes": "always-unless-keyword",
+    "comment-empty-line-before": ["always", {
+      "except": ["first-nested"],
+      "ignore": ["stylelint-commands"]
+    }]
+  },
+  "ignoreFiles": [
+    "node_modules/**/*",
+    "dist/**/*",
+    "coverage/**/*",
+    "www/**/*",
+    ".angular/**/*"
+  ]
+}

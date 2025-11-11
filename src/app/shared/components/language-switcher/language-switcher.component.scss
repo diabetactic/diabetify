@@ -27,6 +27,7 @@ ion-button {
 
 ion-select {
   min-width: 120px;
+
   --padding-start: 12px;
   --padding-end: 12px;
 
@@ -55,6 +56,7 @@ ion-select {
 
     &.selected {
       --background: var(--ion-color-light);
+
       font-weight: 500;
     }
 
@@ -79,23 +81,21 @@ ion-select {
   }
 }
 
-// Dark mode adjustments
-@media (prefers-color-scheme: dark) {
-  ::ng-deep .language-popover {
-    ion-item {
-      &.selected {
-        --background: var(--ion-color-dark-tint);
-      }
+// Dark mode adjustments (class-based for manual theme toggle)
+.dark ::ng-deep .language-popover {
+  ion-item {
+    &.selected {
+      --background: var(--ion-color-dark-tint);
+    }
 
-      &:hover {
-        --background: var(--ion-color-dark-shade);
-      }
+    &:hover {
+      --background: var(--ion-color-dark-shade);
     }
   }
 }
 
 // Responsive adjustments
-@media (max-width: 576px) {
+@media (width <= 576px) {
   ion-button {
     --padding-start: 4px;
     --padding-end: 4px;
@@ -107,6 +107,7 @@ ion-select {
 
   ion-select {
     min-width: 80px;
+
     --padding-start: 8px;
     --padding-end: 8px;
   }
@@ -115,15 +116,17 @@ ion-select {
 // Animation for language change
 @keyframes languageChange {
   0% {
-    opacity: 1;
+    opacity: 100%;
     transform: scale(1);
   }
+
   50% {
-    opacity: 0.5;
+    opacity: 50%;
     transform: scale(0.95);
   }
+
   100% {
-    opacity: 1;
+    opacity: 100%;
     transform: scale(1);
   }
 }

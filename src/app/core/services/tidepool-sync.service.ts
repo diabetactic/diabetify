@@ -19,14 +19,15 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, from, throwError, BehaviorSubject } from 'rxjs';
-import { catchError, map, switchMap, expand, reduce, take } from 'rxjs/operators';
+import { Observable, from, throwError, BehaviorSubject, firstValueFrom } from 'rxjs';
+import { catchError, map, switchMap, expand, reduce, take, tap } from 'rxjs/operators';
 import { Preferences } from '@capacitor/preferences';
 import { Network } from '@capacitor/network';
 
 import { TidepoolAuthService } from './tidepool-auth.service';
 import { ReadingsService } from './readings.service';
 import { TidepoolStorageService } from './tidepool-storage.service';
+import { LoggerService } from './logger.service';
 import {
   SyncOptions,
   SyncStatus,
@@ -100,14 +101,21 @@ export class TidepoolSyncService {
     private http: HttpClient,
     private authService: TidepoolAuthService,
     private readingsService: ReadingsService,
-    private storageService: TidepoolStorageService
+    private storageService: TidepoolStorageService,
+    private logger: LoggerService
   ) {
+    this.logger.info('Init', 'TidepoolSyncService initialized');
+
     // Use dataUrl from environment configuration
     this.dataApiUrl = environment.tidepool.dataUrl;
 
     // Load initial sync status from stored metadata
     this.loadSyncMetadata().then(metadata => {
       if (metadata?.lastSyncTimestamp) {
+        this.logger.info('Sync', 'Previous sync metadata loaded', {
+          lastSyncTime: metadata.lastSyncTimestamp,
+          totalSynced: metadata.totalReadingsSynced,
+        });
         this.syncStatusSubject.next({
           ...this.syncStatusSubject.value,
           lastSyncTime: metadata.lastSyncTimestamp,
@@ -463,10 +471,11 @@ export class TidepoolSyncService {
    */
   async performManualSync(): Promise<SyncStatus> {
     const startTime = Date.now();
+    this.logger.info('Sync', 'Manual sync started');
 
     // Check if sync is already running
     if (this.syncStatusSubject.value.isRunning) {
-      console.warn('Sync already in progress, skipping...');
+      this.logger.warn('Sync', 'Sync already in progress, skipping');
       return this.syncStatusSubject.value;
     }
 
@@ -481,6 +490,7 @@ export class TidepoolSyncService {
 
     try {
       // Step 1: Check network connectivity
+      this.logger.debug('Sync', 'Checking network connectivity');
       const isConnected = await this.checkNetworkConnectivity();
       if (!isConnected) {
         throw {
@@ -495,7 +505,7 @@ export class TidepoolSyncService {
 
       // Step 2: Verify authentication (handled by fetchIncrementalData)
       // Step 3: Fetch incremental data
-      console.log('Fetching incremental data from Tidepool...');
+      this.logger.info('Sync', 'Fetching incremental data from Tidepool');
 
       const readings = await new Promise<GlucoseReading[]>((resolve, reject) => {
         this.fetchIncrementalData().subscribe({
@@ -504,11 +514,14 @@ export class TidepoolSyncService {
         });
       });
 
-      console.log(`Fetched ${readings.length} readings from Tidepool`);
+      this.logger.info('Sync', 'Data fetched from Tidepool', {
+        count: readings.length,
+        duration: `${Date.now() - startTime}ms`,
+      });
       this.updateSyncStatus({ progress: 50 });
 
       if (readings.length === 0) {
-        console.log('No new readings to sync');
+        this.logger.info('Sync', 'No new readings to sync');
         this.updateSyncStatus({
           isRunning: false,
           lastSyncTime: new Date().toISOString(),
@@ -526,16 +539,21 @@ export class TidepoolSyncService {
       }
 
       // Step 4 & 5: Transform and store readings (handled by TidepoolStorageService)
-      console.log('Storing readings in local database...');
-      const userId = await this.authService.authState
-        .pipe(
+      this.logger.info('Sync', 'Storing readings in local database');
+      const userId = await firstValueFrom(
+        this.authService.authState.pipe(
           take(1),
           map(state => state.userId!)
         )
-        .toPromise();
+      );
 
       const storageResult = await this.storageService.storeSyncedReadings(readings, userId!);
 
+      this.logger.info('Sync', 'Readings stored', {
+        stored: storageResult.stored,
+        duplicates: storageResult.duplicates,
+        errors: storageResult.errors.length,
+      });
       this.updateSyncStatus({ progress: 80 });
 
       // Step 6: Update last sync timestamp
@@ -573,13 +591,17 @@ export class TidepoolSyncService {
         success: true,
       });
 
-      console.log(
-        `Sync completed: ${storageResult.stored} stored, ${storageResult.duplicates} duplicates, ${storageResult.errors.length} errors`
-      );
+      const totalDuration = Date.now() - startTime;
+      this.logger.info('Sync', 'Sync completed successfully', {
+        stored: storageResult.stored,
+        duplicates: storageResult.duplicates,
+        errors: storageResult.errors.length,
+        duration: `${totalDuration}ms`,
+      });
 
       return this.syncStatusSubject.value;
     } catch (error: any) {
-      console.error('Sync failed:', error);
+      this.logger.error('Sync', 'Sync failed', error);
 
       const syncError: SyncError = {
         timestamp: new Date().toISOString(),

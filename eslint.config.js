@@ -17,6 +17,21 @@ module.exports = [
     },
     rules: {
       // Keep rules minimal to ensure pass; add back incrementally later
+      // CSS Pro: Warn about inline styles in TypeScript
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector: 'Literal[value=/style=/]',
+          message: 'CSS Pro: Avoid inline styles. Use Tailwind classes instead.',
+        },
+      ],
+    },
+  },
+  {
+    files: ['**/*.html'],
+    rules: {
+      // CSS Pro rules for HTML templates will be handled by Prettier
+      // (prettier-plugin-tailwindcss auto-sorts classes)
     },
   },
 ];

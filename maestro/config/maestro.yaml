@@ -1,0 +1,43 @@
+# Maestro Configuration for Diabetify
+# Global settings for all test flows
+
+# App Configuration
+appId: io.diabetactic.app
+
+# Default Environment Variables
+env:
+  EMAIL: test@example.com
+  PASSWORD: Test123!
+  API_URL: http://localhost:3000
+  TIMEOUT: 30000
+
+# Platform-specific settings
+platform:
+  android:
+    package: io.diabetactic.app
+    activity: .MainActivity
+  ios:
+    bundleId: io.diabetactic.app
+
+# Screenshot configuration
+screenshots:
+  enabled: true
+  path: maestro/screenshots
+  format: png
+
+# Timeouts (milliseconds)
+timeouts:
+  implicit: 10000
+  explicit: 30000
+  animation: 2000
+
+# Retry configuration
+retry:
+  attempts: 3
+  delay: 1000
+
+# Logging
+logging:
+  level: info
+  console: true
+  file: maestro/logs/test-run.log

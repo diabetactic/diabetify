@@ -1,0 +1,372 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ 'appointments.create.title' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()" fill="clear"> {{ 'app.cancel' | translate }} </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Progress Bar -->
+  <ion-progress-bar [value]="stepProgress / 100" color="primary"></ion-progress-bar>
+
+  <!-- Step Indicator -->
+  <ion-toolbar class="step-toolbar">
+    <div class="step-indicator">
+      <div class="step" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
+        <div class="step-number">1</div>
+        <div class="step-label">{{ 'appointments.create.steps.doctor' | translate }}</div>
+      </div>
+      <div class="step-line" [class.completed]="currentStep > 1"></div>
+      <div class="step" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2">
+        <div class="step-number">2</div>
+        <div class="step-label">{{ 'appointments.create.steps.date' | translate }}</div>
+      </div>
+      <div class="step-line" [class.completed]="currentStep > 2"></div>
+      <div class="step" [class.active]="currentStep >= 3" [class.completed]="currentStep > 3">
+        <div class="step-number">3</div>
+        <div class="step-label">{{ 'appointments.create.steps.details' | translate }}</div>
+      </div>
+      <div class="step-line" [class.completed]="currentStep > 3"></div>
+      <div class="step" [class.active]="currentStep >= 4">
+        <div class="step-number">4</div>
+        <div class="step-label">{{ 'appointments.create.steps.confirm' | translate }}</div>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Step 1: Select Doctor -->
+  <div class="step-content" *ngIf="currentStep === 1">
+    <div class="step-header">
+      <h2>{{ 'appointments.create.selectDoctor' | translate }}</h2>
+      <p>{{ 'appointments.create.selectDoctorSubtitle' | translate }}</p>
+    </div>
+
+    <!-- Search Bar -->
+    <ion-searchbar
+      [(ngModel)]="doctorSearchTerm"
+      (ionInput)="onDoctorSearch($event)"
+      [placeholder]="'appointments.create.searchPlaceholder' | translate"
+      animated
+    ></ion-searchbar>
+
+    <!-- Doctors List -->
+    <div class="doctors-list">
+      <ion-card
+        *ngFor="let doctor of filteredDoctors"
+        [class.selected]="selectedDoctor?.id === doctor.id"
+        (click)="selectDoctor(doctor)"
+        button
+      >
+        <ion-card-content>
+          <div class="doctor-card">
+            <ion-avatar>
+              <img [src]="doctor.profileImage || 'assets/icon/favicon.png'" [alt]="doctor.name" />
+            </ion-avatar>
+            <div class="doctor-info">
+              <h3>{{ doctor.name }}</h3>
+              <p class="specialty">{{ doctor.specialty }}</p>
+              <p class="hospital">
+                <ion-icon name="location-outline"></ion-icon>
+                {{ doctor.hospital }}
+              </p>
+              <div class="doctor-meta">
+                <span class="rating">
+                  <ion-icon name="star" color="warning"></ion-icon>
+                  {{ doctor.rating }} ({{ doctor.reviews }})
+                </span>
+                <span class="experience">{{ doctor.experience }}</span>
+              </div>
+              <p class="next-available" *ngIf="doctor.nextAvailable">
+                <ion-icon name="calendar-outline" color="primary"></ion-icon>
+                {{ 'appointments.create.nextAvailable' | translate }}:
+                {{ formatDate(doctor.nextAvailable) }}
+              </p>
+            </div>
+            <ion-icon
+              *ngIf="selectedDoctor?.id === doctor.id"
+              name="checkmark-circle"
+              color="primary"
+              class="selected-icon"
+            ></ion-icon>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <div *ngIf="filteredDoctors.length === 0" class="no-results">
+        <ion-icon name="search-outline"></ion-icon>
+        <p>{{ 'appointments.create.noDoctorsFound' | translate }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Select Date & Time -->
+  <div class="step-content" *ngIf="currentStep === 2">
+    <div class="step-header">
+      <h2>{{ 'appointments.create.selectDateTime' | translate }}</h2>
+      <p>
+        {{ 'appointments.doctor' | translate }}: <strong>{{ selectedDoctor?.name }}</strong>
+      </p>
+    </div>
+
+    <!-- Date Picker -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ 'appointments.create.appointmentDate' | translate }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-datetime
+          presentation="date"
+          [(ngModel)]="selectedDate"
+          (ionChange)="onDateChange($event)"
+          [min]="minDate"
+          [max]="maxDate"
+          locale="es-ES"
+          class="date-picker"
+        ></ion-datetime>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Time Slots -->
+    <ion-card *ngIf="selectedDate">
+      <ion-card-header>
+        <ion-card-title>{{ 'appointments.create.availableSlots' | translate }}</ion-card-title>
+        <ion-card-subtitle>{{ formatDate(selectedDate) }}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="time-slots" *ngIf="!loadingTimeSlots">
+          <ion-chip
+            *ngFor="let slot of timeSlots"
+            [class.selected]="selectedTimeSlot?.time === slot.time"
+            [disabled]="!slot.available"
+            (click)="selectTimeSlot(slot)"
+          >
+            <ion-icon [name]="slot.available ? 'time-outline' : 'close-circle-outline'"></ion-icon>
+            <ion-label>{{ slot.time }}</ion-label>
+          </ion-chip>
+        </div>
+
+        <div *ngIf="loadingTimeSlots" class="loading-slots">
+          <ion-spinner></ion-spinner>
+          <p>{{ 'appointments.create.loadingSlots' | translate }}</p>
+        </div>
+
+        <div *ngIf="!loadingTimeSlots && timeSlots.length === 0" class="no-slots">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <p>{{ 'appointments.create.noSlotsAvailable' | translate }}</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Step 3: Appointment Details -->
+  <div class="step-content" *ngIf="currentStep === 3">
+    <div class="step-header">
+      <h2>{{ 'appointments.create.appointmentDetails' | translate }}</h2>
+      <p>{{ 'appointments.create.additionalInfo' | translate }}</p>
+    </div>
+
+    <!-- Appointment Type -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ 'appointments.create.appointmentType' | translate }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="appointment-types">
+          <ion-chip
+            *ngFor="let type of appointmentTypes"
+            [class.selected]="selectedType?.id === type.id"
+            (click)="selectAppointmentType(type)"
+          >
+            <ion-icon [name]="type.icon"></ion-icon>
+            <ion-label>{{ type.name }}</ion-label>
+          </ion-chip>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Notes -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ 'appointments.create.additionalNotes' | translate }}</ion-card-title>
+        <ion-card-subtitle>{{ 'appointments.create.optional' | translate }}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-textarea
+          [(ngModel)]="appointmentNotes"
+          [placeholder]="'appointments.create.notesPlaceholder' | translate"
+          rows="4"
+          maxlength="500"
+        ></ion-textarea>
+        <p class="char-count">{{ appointmentNotes.length }}/500</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Share Glucose Data -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ 'appointments.shareData.title' | translate }}</ion-card-title>
+        <ion-card-subtitle>{{
+          'appointments.create.shareGlucoseSubtitle' | translate
+        }}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item lines="none">
+          <ion-label>
+            <h3>{{ 'appointments.create.shareReadings' | translate }}</h3>
+            <p>{{ 'appointments.create.shareReadingsSubtitle' | translate }}</p>
+          </ion-label>
+          <ion-toggle [(ngModel)]="shareGlucoseData"></ion-toggle>
+        </ion-item>
+
+        <ion-item *ngIf="shareGlucoseData" lines="none">
+          <ion-label>{{ 'appointments.create.lastDays' | translate }}</ion-label>
+          <ion-select [(ngModel)]="glucoseDataDays" interface="popover">
+            <ion-select-option [value]="7">{{
+              'appointments.create.days' | translate: { count: 7 }
+            }}</ion-select-option>
+            <ion-select-option [value]="14">{{
+              'appointments.create.days' | translate: { count: 14 }
+            }}</ion-select-option>
+            <ion-select-option [value]="30">{{
+              'appointments.create.days' | translate: { count: 30 }
+            }}</ion-select-option>
+            <ion-select-option [value]="60">{{
+              'appointments.create.days' | translate: { count: 60 }
+            }}</ion-select-option>
+            <ion-select-option [value]="90">{{
+              'appointments.create.days' | translate: { count: 90 }
+            }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-note *ngIf="shareGlucoseData" color="primary">
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+          {{ 'appointments.create.statisticalSummaryOnly' | translate }}
+        </ion-note>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Step 4: Confirmation -->
+  <div class="step-content" *ngIf="currentStep === 4">
+    <div class="step-header">
+      <h2>{{ 'appointments.create.confirmAppointment' | translate }}</h2>
+      <p>{{ 'appointments.create.reviewDetails' | translate }}</p>
+    </div>
+
+    <ion-card class="confirmation-card">
+      <ion-card-content>
+        <!-- Doctor Info -->
+        <div class="confirmation-section">
+          <h3>
+            <ion-icon name="person-outline"></ion-icon>
+            {{ 'appointments.doctor' | translate }}
+          </h3>
+          <p class="value">{{ confirmationData?.doctor?.name }}</p>
+          <p class="subtitle">{{ confirmationData?.doctor?.specialty }}</p>
+          <p class="subtitle">{{ confirmationData?.doctor?.hospital }}</p>
+        </div>
+
+        <ion-item-divider></ion-item-divider>
+
+        <!-- Date & Time -->
+        <div class="confirmation-section">
+          <h3>
+            <ion-icon name="calendar-outline"></ion-icon>
+            {{ 'appointments.create.dateAndTime' | translate }}
+          </h3>
+          <p class="value">{{ formatDate(confirmationData?.date) }}</p>
+          <p class="subtitle">{{ confirmationData?.time }}</p>
+        </div>
+
+        <ion-item-divider></ion-item-divider>
+
+        <!-- Appointment Type -->
+        <div class="confirmation-section">
+          <h3>
+            <ion-icon name="clipboard-outline"></ion-icon>
+            {{ 'appointments.create.appointmentType' | translate }}
+          </h3>
+          <p class="value">{{ confirmationData?.type?.name }}</p>
+          <p class="subtitle">
+            {{ 'appointments.create.duration' | translate }}:
+            {{ confirmationData?.type?.duration }} {{ 'appointments.create.minutes' | translate }}
+          </p>
+        </div>
+
+        <ion-item-divider *ngIf="confirmationData?.notes"></ion-item-divider>
+
+        <!-- Notes -->
+        <div class="confirmation-section" *ngIf="confirmationData?.notes">
+          <h3>
+            <ion-icon name="document-text-outline"></ion-icon>
+            {{ 'appointments.notes' | translate }}
+          </h3>
+          <p class="value">{{ confirmationData?.notes }}</p>
+        </div>
+
+        <ion-item-divider *ngIf="confirmationData?.shareGlucose"></ion-item-divider>
+
+        <!-- Glucose Sharing -->
+        <div class="confirmation-section" *ngIf="confirmationData?.shareGlucose">
+          <h3>
+            <ion-icon name="stats-chart-outline"></ion-icon>
+            {{ 'appointments.create.glucoseData' | translate }}
+          </h3>
+          <p class="value">
+            {{
+              'appointments.create.shareSummaryDays'
+                | translate: { days: confirmationData?.glucoseDays }
+            }}
+          </p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Privacy Notice -->
+    <ion-card class="privacy-notice">
+      <ion-card-content>
+        <ion-icon name="lock-closed-outline" color="primary"></ion-icon>
+        <p>{{ 'appointments.create.privacyNotice' | translate }}</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <div class="footer-buttons">
+      <ion-button *ngIf="currentStep > 1" fill="outline" (click)="previousStep()">
+        <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
+        {{ 'appointments.create.previous' | translate }}
+      </ion-button>
+
+      <ion-button
+        *ngIf="currentStep < totalSteps"
+        expand="block"
+        [disabled]="!canProceed"
+        (click)="nextStep()"
+      >
+        {{ 'app.next' | translate }}
+        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+      </ion-button>
+
+      <ion-button
+        *ngIf="currentStep === totalSteps"
+        expand="block"
+        color="primary"
+        (click)="createAppointment()"
+      >
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        {{ 'appointments.create.confirmButton' | translate }}
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

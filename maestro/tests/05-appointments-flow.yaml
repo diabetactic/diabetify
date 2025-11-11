@@ -1,0 +1,27 @@
+appId: io.diabetify.app
+---
+# Test 5: Appointments workflow
+- launchApp
+- assertVisible: "Diabetactic"
+
+# Navigate to Appointments
+- tapOn: "Appointments"
+- assertVisible: "Appointments"
+- takeScreenshot: maestro/screenshots/05-appointments-list.png
+
+# Try to add appointment (if button exists)
+- tapOn:
+    text: ".*[Aa]dd.*|.*[Nn]ew.*|.*[Cc]reate.*"
+    optional: true
+- waitForAnimationToEnd
+
+# Take screenshot of add form
+- takeScreenshot: maestro/screenshots/05-appointments-add.png
+
+# Cancel or go back
+- back
+- waitForAnimationToEnd
+
+# Verify back on appointments list
+- assertVisible: "Appointments"
+- takeScreenshot: maestro/screenshots/05-appointments-final.png

@@ -10,7 +10,7 @@
   <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
   <ng-container *ngIf="!isLoading">
     <span *ngIf="showIcon && currentLanguage" class="flag-icon">
-      {{ getFlagEmoji(currentLanguage.code) }}
+      {{ getLanguageCode(currentLanguage.code) }}
     </span>
     <span *ngIf="showText">
       {{ getDisplayText() }}
@@ -28,7 +28,7 @@
   placeholder="{{ 'settings.language.title' | translate }}"
 >
   <ion-select-option *ngFor="let lang of availableLanguages" [value]="lang.code">
-    <span class="flag-icon">{{ getFlagEmoji(lang.code) }}</span>
+    <span class="flag-icon">{{ getLanguageCode(lang.code) }}</span>
     {{ showNativeName ? lang.nativeName : lang.name }}
   </ion-select-option>
 </ion-select>
@@ -43,7 +43,7 @@
   <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
   <ng-container *ngIf="!isLoading">
     <span *ngIf="showIcon && currentLanguage" class="flag-icon">
-      {{ getFlagEmoji(currentLanguage.code) }}
+      {{ getLanguageCode(currentLanguage.code) }}
     </span>
     <span *ngIf="showText">
       {{ getDisplayText() }}

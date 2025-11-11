@@ -3,6 +3,7 @@
   --padding-start: 0;
   --padding-end: 0;
   --inner-padding-end: 0;
+
   margin-bottom: 12px;
 
   .profile-item-content {
@@ -11,9 +12,9 @@
     align-items: center;
     width: 100%;
     padding: 16px;
-    background: var(--ion-card-background, #ffffff);
+    background: var(--ion-card-background, #fff);
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
 
     .item-left {
       display: flex;
@@ -41,7 +42,7 @@
         min-width: 0; // Prevent text overflow
 
         .item-title {
-          margin: 0 0 4px 0;
+          margin: 0 0 4px;
           font-size: 16px;
           font-weight: 600;
           color: var(--ion-text-color);
@@ -80,7 +81,7 @@
         border-radius: 12px;
         font-size: 12px;
         font-weight: 600;
-        background-color: rgba(37, 175, 244, 0.12);
+        background-color: rgb(37 175 244 / 12%);
         color: var(--ion-color-primary);
       }
 
@@ -91,11 +92,9 @@
   }
 }
 
-// Dark mode adjustments
-@media (prefers-color-scheme: dark) {
-  .profile-item {
-    .profile-item-content {
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
+// Dark mode adjustments (class-based for manual theme toggle)
+.dark .profile-item {
+  .profile-item-content {
+    box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
   }
 }

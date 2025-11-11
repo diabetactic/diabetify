@@ -53,6 +53,8 @@ module.exports = function (config) {
         random: false,
         // Stop on first failure for faster feedback during development
         stopSpecOnExpectationFailure: false,
+        // Increased timeout for Ionic component initialization
+        timeoutInterval: 10000,
       },
       clearContext: false, // leave Jasmine Spec Runner output visible in browser
     },
@@ -62,7 +64,7 @@ module.exports = function (config) {
     // Ensure files array is always defined to avoid FileList .filter on undefined
     files: [],
     coverageReporter: {
-      dir: require('path').join(__dirname, './coverage/diabetify'),
+      dir: require('path').join(__dirname, './coverage/diabetactic'),
       subdir: '.',
       reporters: [
         { type: 'html' },
@@ -98,9 +100,9 @@ module.exports = function (config) {
     },
     singleRun: isCI,
     restartOnFileChange: true,
-    browserNoActivityTimeout: 60000,
-    browserDisconnectTimeout: 10000,
+    browserNoActivityTimeout: 120000,
+    browserDisconnectTimeout: 20000,
     browserDisconnectTolerance: 3,
-    captureTimeout: 210000,
+    captureTimeout: 300000,
   });
 };

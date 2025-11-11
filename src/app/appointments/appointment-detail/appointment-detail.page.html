@@ -5,7 +5,7 @@
         <span class="material-symbols-outlined">arrow_back</span>
       </ion-button>
     </ion-buttons>
-    <ion-title>Detalle de Cita</ion-title>
+    <ion-title>{{ 'appointments.detail.title' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -13,7 +13,7 @@
   <!-- Loading state -->
   <div *ngIf="loading" class="ion-padding ion-text-center">
     <ion-spinner name="circular"></ion-spinner>
-    <p>Cargando detalles de la cita...</p>
+    <p>{{ 'appointments.detail.loading' | translate }}</p>
   </div>
 
   <!-- Appointment details -->
@@ -21,8 +21,10 @@
     <!-- Doctor information card -->
     <ion-card>
       <ion-card-header>
-        <ion-card-subtitle>Médico</ion-card-subtitle>
-        <ion-card-title>{{ appointment.doctorName || 'Doctor' }}</ion-card-title>
+        <ion-card-subtitle>{{ 'appointments.detail.physician' | translate }}</ion-card-subtitle>
+        <ion-card-title>{{
+          appointment.doctorName || ('appointments.detail.defaultDoctor' | translate)
+        }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-item lines="none">
@@ -32,10 +34,13 @@
             </div>
           </ion-avatar>
           <ion-label>
-            <p>Especialidad: General</p>
+            <p>
+              {{ 'appointments.detail.specialty' | translate }}:
+              {{ 'appointments.detail.specialtyGeneral' | translate }}
+            </p>
             <p *ngIf="appointment.videoCallUrl">
               <ion-icon name="videocam-outline"></ion-icon>
-              Cita virtual disponible
+              {{ 'appointments.detail.virtualAvailable' | translate }}
             </p>
           </ion-label>
         </ion-item>
@@ -45,7 +50,7 @@
     <!-- Appointment info card -->
     <ion-card>
       <ion-card-header>
-        <ion-card-subtitle>Información de la Cita</ion-card-subtitle>
+        <ion-card-subtitle>{{ 'appointments.detail.information' | translate }}</ion-card-subtitle>
         <ion-card-title>{{ formatDate(appointment.date) }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
@@ -53,15 +58,17 @@
           <ion-item>
             <span class="material-symbols-outlined" slot="start">schedule</span>
             <ion-label>
-              <p>Horario</p>
-              <h3>{{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}</h3>
+              <p>{{ 'appointments.detail.schedule' | translate }}</p>
+              <h3>
+                {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}
+              </h3>
             </ion-label>
           </ion-item>
 
           <ion-item>
             <span class="material-symbols-outlined" slot="start">event_available</span>
             <ion-label>
-              <p>Estado</p>
+              <p>{{ 'appointments.detail.status' | translate }}</p>
               <ion-badge [color]="getStatusColor(appointment.status)">
                 {{ appointment.status }}
               </ion-badge>
@@ -71,7 +78,7 @@
           <ion-item *ngIf="appointment.urgency">
             <span class="material-symbols-outlined" slot="start">priority_high</span>
             <ion-label>
-              <p>Urgencia</p>
+              <p>{{ 'appointments.detail.urgency' | translate }}</p>
               <ion-badge [color]="getUrgencyColor(appointment.urgency)">
                 {{ appointment.urgency }}
               </ion-badge>
@@ -81,7 +88,7 @@
           <ion-item *ngIf="appointment.reason">
             <span class="material-symbols-outlined" slot="start">medical_information</span>
             <ion-label>
-              <p>Motivo</p>
+              <p>{{ 'appointments.detail.reason' | translate }}</p>
               <h3>{{ appointment.reason }}</h3>
             </ion-label>
           </ion-item>
@@ -89,7 +96,7 @@
           <ion-item *ngIf="appointment.notes">
             <span class="material-symbols-outlined" slot="start">notes</span>
             <ion-label>
-              <p>Notas</p>
+              <p>{{ 'appointments.detail.notes' | translate }}</p>
               <h3>{{ appointment.notes }}</h3>
             </ion-label>
           </ion-item>
@@ -100,76 +107,81 @@
     <!-- Data sharing card -->
     <ion-card class="share-card">
       <ion-card-header>
-        <ion-card-subtitle>Compartir Datos de Glucosa</ion-card-subtitle>
-        <ion-card-title>Últimos 30 días</ion-card-title>
+        <ion-card-subtitle>{{
+          'appointments.detail.shareGlucoseData' | translate
+        }}</ion-card-subtitle>
+        <ion-card-title>{{ 'appointments.detail.last30Days' | translate }}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <!-- Success message after sharing -->
         <div *ngIf="shareSuccess" class="share-success">
           <ion-icon name="checkmark-circle" color="success"></ion-icon>
           <h3>{{ shareMessage }}</h3>
-          <p>{{ recordCount }} lecturas compartidas</p>
-          <small>Compartido el {{ getCurrentDate() | date:'short' }}</small>
+          <p>{{ 'appointments.detail.readingsShared' | translate: { count: recordCount } }}</p>
+          <small>{{
+            'appointments.detail.sharedOn' | translate: { date: (getCurrentDate() | date: 'short') }
+          }}</small>
         </div>
 
         <!-- Share button -->
         <div *ngIf="!shareSuccess && !appointment.glucoseDataShared">
-          <p>Comparte tus lecturas de glucosa de los últimos 30 días con tu médico para un mejor seguimiento.</p>
+          <p>{{ 'appointments.detail.shareDescription' | translate }}</p>
           <ion-button
             expand="block"
             color="primary"
             (click)="shareGlucoseData()"
-            [disabled]="sharingData || appointment.status === 'cancelled' || appointment.status === 'completed'">
+            [disabled]="
+              sharingData ||
+              appointment.status === 'cancelled' ||
+              appointment.status === 'completed'
+            "
+          >
             <span class="material-symbols-outlined" slot="start">share</span>
-            Compartir últimos 30 días
+            {{ 'appointments.detail.shareButton' | translate }}
           </ion-button>
         </div>
 
         <!-- Already shared indicator -->
         <div *ngIf="appointment.glucoseDataShared && !shareSuccess" class="already-shared">
           <ion-icon name="checkmark-circle" color="success"></ion-icon>
-          <p>Los datos ya fueron compartidos anteriormente</p>
+          <p>{{ 'appointments.detail.alreadyShared' | translate }}</p>
         </div>
       </ion-card-content>
     </ion-card>
 
     <!-- Action buttons -->
-    <div class="action-buttons" *ngIf="appointment.status === 'confirmed' || appointment.status === 'pending'">
+    <div
+      class="action-buttons"
+      *ngIf="appointment.status === 'confirmed' || appointment.status === 'pending'"
+    >
       <!-- Video call button -->
       <ion-button
         *ngIf="appointment.videoCallUrl"
         expand="block"
         fill="outline"
-        (click)="joinVideoCall()">
+        (click)="joinVideoCall()"
+      >
         <span class="material-symbols-outlined" slot="start">videocam</span>
-        Unirse a videollamada
+        {{ 'appointments.detail.joinVideoCall' | translate }}
       </ion-button>
 
       <!-- Reschedule button -->
-      <ion-button
-        expand="block"
-        fill="outline"
-        color="warning"
-        (click)="rescheduleAppointment()">
+      <ion-button expand="block" fill="outline" color="warning" (click)="rescheduleAppointment()">
         <span class="material-symbols-outlined" slot="start">update</span>
-        Reprogramar cita
+        {{ 'appointments.detail.reschedule' | translate }}
       </ion-button>
 
       <!-- Cancel button -->
-      <ion-button
-        expand="block"
-        fill="outline"
-        color="danger"
-        (click)="cancelAppointment()">
+      <ion-button expand="block" fill="outline" color="danger" (click)="cancelAppointment()">
         <span class="material-symbols-outlined" slot="start">cancel</span>
-        Cancelar cita
+        {{ 'appointments.detail.cancel' | translate }}
       </ion-button>
     </div>
 
     <!-- Follow-up info -->
     <ion-card *ngIf="appointment.followUpDate">
       <ion-card-header>
-        <ion-card-subtitle>Cita de seguimiento</ion-card-subtitle>
+        <ion-card-subtitle>{{ 'appointments.detail.followUp' | translate }}</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
         <p>{{ formatDate(appointment.followUpDate) }}</p>
@@ -179,7 +191,7 @@
     <!-- Prescriptions -->
     <ion-card *ngIf="appointment.prescriptions && appointment.prescriptions.length > 0">
       <ion-card-header>
-        <ion-card-subtitle>Prescripciones</ion-card-subtitle>
+        <ion-card-subtitle>{{ 'appointments.detail.prescriptions' | translate }}</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
         <ion-list lines="none">

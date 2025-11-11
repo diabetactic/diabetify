@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "types": ["node", "@playwright/test"],
+    "outDir": "../dist/playwright",
+    "noEmit": false
+  },
+  "include": ["./tests/**/*.ts", "./config/**/*.ts"]
+}

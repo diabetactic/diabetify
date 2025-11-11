@@ -1,0 +1,181 @@
+═══════════════════════════════════════════════════════════════════════════
+                    TEST ERROR ANALYSIS SUMMARY
+═══════════════════════════════════════════════════════════════════════════
+
+Test Results: 510 specs, 167 failures (67% pass rate)
+Coverage:     48.57% (below 50% threshold)
+Analysis:     45+ "Cannot read properties" errors identified
+
+───────────────────────────────────────────────────────────────────────────
+                        ERROR DISTRIBUTION
+───────────────────────────────────────────────────────────────────────────
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 1. API Gateway Cache Keys          [████████████████████] 28 tests     │
+│    Location: api-gateway.service.ts:102, 134                            │
+│    Error: Cannot read 'limit', 'userId'                                 │
+│    Fix: Add optional chaining (params?.limit)                           │
+│    Priority: CRITICAL                                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 2. Dashboard DOM Queries           [█████████████████████████] 40+ tests│
+│    Location: dashboard-dom.spec.ts (multiple lines)                     │
+│    Error: Cannot read 'click', 'textContent', 'className'               │
+│    Fix: Add fixture.detectChanges() + null checks                       │
+│    Priority: CRITICAL                                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 3. DOM Utility Helpers             [████████] 8-11 tests                │
+│    Location: dom-utils.ts:47, 266                                       │
+│    Error: Cannot read 'getBoundingClientRect', 'textContent'            │
+│    Fix: Add null guards at function entry                               │
+│    Priority: HIGH                                                        │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 4. NavController Dependencies      [███] 4 tests                        │
+│    Location: AdvancedPage test setup                                    │
+│    Error: Cannot read 'subscribe' (NavController)                       │
+│    Fix: Add Router mock with events observable                          │
+│    Priority: HIGH                                                        │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 5. Stat Card DOM Tests             [█████] 5-8 tests                    │
+│    Location: stat-card-dom.spec.ts                                      │
+│    Error: Cannot read null properties (various)                         │
+│    Fix: Similar to dashboard fixes                                      │
+│    Priority: MEDIUM                                                      │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 6. Service Manager Config          [█] 1 test                           │
+│    Location: external-services-manager.spec.ts:497                      │
+│    Error: Cannot read 'services'                                        │
+│    Fix: Initialize mock config                                          │
+│    Priority: MEDIUM                                                      │
+└─────────────────────────────────────────────────────────────────────────┘
+
+───────────────────────────────────────────────────────────────────────────
+                        IMPACT PROJECTION
+───────────────────────────────────────────────────────────────────────────
+
+Fix Priority 1 (CRITICAL):
+  ├─ API Gateway cache keys          → +28 tests ✓
+  └─ Dashboard DOM queries            → +40-50 tests ✓
+     SUBTOTAL:                          68-78 tests (41-47% of failures)
+
+Fix Priority 2 (HIGH):
+  ├─ DOM utility helpers              → +8-11 tests ✓
+  └─ NavController mock               → +4 tests ✓
+     SUBTOTAL:                          12-15 tests (7-9% of failures)
+
+Fix Priority 3 (MEDIUM):
+  ├─ Stat card DOM tests              → +5-8 tests ✓
+  └─ Service manager config           → +1 test ✓
+     SUBTOTAL:                          6-9 tests (4-5% of failures)
+
+───────────────────────────────────────────────────────────────────────────
+TOTAL ESTIMATED FIXES:                   86-102 tests (51-61% of failures)
+───────────────────────────────────────────────────────────────────────────
+
+───────────────────────────────────────────────────────────────────────────
+                     RECOMMENDED FIX STRATEGY
+───────────────────────────────────────────────────────────────────────────
+
+Phase 1: Quick Wins (30 minutes)
+  Files: 2
+  1. api-gateway.service.ts          → Add ?. to lines 102, 134
+  2. dom-utils.ts                    → Add null guards to 2 functions
+  Expected: ~40 tests fixed
+
+Phase 2: Ionic Mocks (15 minutes)
+  Files: 1
+  3. AdvancedPage test setup         → Add Router mock
+  Expected: 4 tests fixed
+
+Phase 3: Dashboard DOM (1-2 hours)
+  Files: 1
+  4. dashboard-dom.spec.ts           → Fix DOM queries systematically
+  Expected: 40-50 tests fixed
+
+Phase 4: Cleanup (30 minutes)
+  Files: 2
+  5. external-services-manager       → Initialize mock
+  6. stat-card-dom.spec.ts           → Apply dashboard patterns
+  Expected: 6-9 tests fixed
+
+───────────────────────────────────────────────────────────────────────────
+TOTAL TIME ESTIMATE:                     2.5-3.5 hours
+───────────────────────────────────────────────────────────────────────────
+
+───────────────────────────────────────────────────────────────────────────
+                        SUCCESS METRICS
+───────────────────────────────────────────────────────────────────────────
+
+Current State:
+  Tests:    343 passing / 167 failing (67% success rate)
+  Coverage: 48.57% (below 50% threshold)
+
+Target State (after all phases):
+  Tests:    435-445 passing / 65-75 failing (85-87% success rate)
+  Coverage: 52-55% (above 50% threshold)
+
+Improvement:
+  ├─ Tests fixed:      +92-102 tests
+  ├─ Success rate:     +18-20 percentage points
+  └─ Coverage:         +3.5-6.5 percentage points
+
+───────────────────────────────────────────────────────────────────────────
+                     COMMON ERROR PATTERNS
+───────────────────────────────────────────────────────────────────────────
+
+Pattern A: Missing Optional Chaining
+  ❌ params.limit
+  ✅ params?.limit ?? 'default'
+
+Pattern B: Missing Fixture Updates
+  ❌ component.data = mock; querySelector('.el');
+  ✅ component.data = mock; fixture.detectChanges(); querySelector('.el');
+
+Pattern C: Missing Null Guards
+  ❌ function helper(el: Element) { el.getBoundingClientRect(); }
+  ✅ function helper(el: Element | null) { if (!el) return; }
+
+Pattern D: Missing Ionic Mocks
+  ❌ providers: [NavController]
+  ✅ providers: [NavController, { provide: Router, useValue: mock }]
+
+───────────────────────────────────────────────────────────────────────────
+                        FILES TO MODIFY
+───────────────────────────────────────────────────────────────────────────
+
+Core Services (2 files):
+  1. src/app/core/services/api-gateway.service.ts
+  2. src/app/core/services/external-services-manager.service.spec.ts
+
+Test Helpers (1 file):
+  3. src/app/tests/helpers/dom-utils.ts
+
+Test Specs (3+ files):
+  4. src/app/tests/integration/components/dashboard-dom.spec.ts
+  5. src/app/tests/integration/components/stat-card-dom.spec.ts
+  6. [AdvancedPage test file - location TBD]
+
+───────────────────────────────────────────────────────────────────────────
+                    DETAILED DOCUMENTATION
+───────────────────────────────────────────────────────────────────────────
+
+Full Analysis:       docs/TEST_ERROR_ANALYSIS.md
+Quick Reference:     docs/TEST_ERROR_QUICK_REFERENCE.md
+This Summary:        docs/TEST_ERROR_SUMMARY.txt
+
+───────────────────────────────────────────────────────────────────────────
+
+Generated: 2025-11-09
+Source:    /tmp/test-results.txt (713.8KB, 510 specs analyzed)
+Tool:      Grep pattern analysis
+
+═══════════════════════════════════════════════════════════════════════════

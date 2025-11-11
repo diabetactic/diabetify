@@ -9,6 +9,7 @@ import {
   RegisterRequest,
   UserPreferences as LocalUserPreferences,
 } from './local-auth.service';
+import { LoggerService } from './logger.service';
 
 /**
  * Unified authentication provider type
@@ -85,8 +86,10 @@ export class UnifiedAuthService {
 
   constructor(
     private tidepoolAuth: TidepoolAuthService,
-    private localAuth: LocalAuthService
+    private localAuth: LocalAuthService,
+    private logger: LoggerService
   ) {
+    this.logger.info('Init', 'UnifiedAuthService initialized');
     // Combine both authentication states
     this.initializeUnifiedAuth();
   }
@@ -125,6 +128,12 @@ export class UnifiedAuthService {
       user = this.createUserFromTidepool(tidepoolState);
     }
 
+    this.logger.info('Auth', 'Auth state updated', {
+      provider,
+      isAuthenticated,
+      userId: user?.id,
+    });
+
     this.unifiedAuthStateSubject.next({
       isAuthenticated,
       provider,
@@ -138,10 +147,16 @@ export class UnifiedAuthService {
    * Login with local backend
    */
   loginLocal(request: LoginRequest): Observable<UnifiedAuthState> {
-    return this.localAuth.login(request).pipe(
+    const username = request.email || request.dni || '';
+    this.logger.info('Auth', 'Local login initiated', { username, provider: 'local' });
+
+    return this.localAuth.login(username, request.password, request.rememberMe).pipe(
+      tap(() => {
+        this.logger.info('Auth', 'Local login successful', { username, provider: 'local' });
+      }),
       map(() => this.unifiedAuthStateSubject.value),
       catchError(error => {
-        console.error('Local login failed:', error);
+        this.logger.error('Auth', 'Local login failed', error, { username, provider: 'local' });
         throw error;
       })
     );
@@ -151,7 +166,17 @@ export class UnifiedAuthService {
    * Login with Tidepool
    */
   loginTidepool(): Observable<void> {
-    return from(this.tidepoolAuth.login());
+    this.logger.info('Auth', 'Tidepool login initiated', { provider: 'tidepool' });
+
+    return from(this.tidepoolAuth.login()).pipe(
+      tap(() => {
+        this.logger.info('Auth', 'Tidepool login successful', { provider: 'tidepool' });
+      }),
+      catchError(error => {
+        this.logger.error('Auth', 'Tidepool login failed', error, { provider: 'tidepool' });
+        throw error;
+      })
+    );
   }
 
   /**
@@ -171,19 +196,23 @@ export class UnifiedAuthService {
    * Logout from both providers
    */
   async logout(): Promise<void> {
+    this.logger.info('Auth', 'Logout initiated');
     const promises: Promise<void>[] = [];
 
     const state = this.unifiedAuthStateSubject.value;
 
     if (state.localAuth?.isAuthenticated) {
+      this.logger.debug('Auth', 'Logging out from local');
       promises.push(this.localAuth.logout());
     }
 
     if (state.tidepoolAuth?.isAuthenticated) {
+      this.logger.debug('Auth', 'Logging out from Tidepool');
       promises.push(this.tidepoolAuth.logout());
     }
 
     await Promise.all(promises);
+    this.logger.info('Auth', 'Logout completed');
   }
 
   /**
@@ -272,14 +301,18 @@ export class UnifiedAuthService {
    * Refresh tokens for active providers
    */
   refreshTokens(): Observable<UnifiedAuthState> {
+    this.logger.info('Auth', 'Token refresh initiated');
     const state = this.unifiedAuthStateSubject.value;
     const refreshObservables: Observable<any>[] = [];
 
     if (state.localAuth?.refreshToken) {
       refreshObservables.push(
         this.localAuth.refreshAccessToken().pipe(
+          tap(() => {
+            this.logger.info('Auth', 'Local token refreshed successfully');
+          }),
           catchError(error => {
-            console.warn('Local token refresh failed:', error);
+            this.logger.warn('Auth', 'Local token refresh failed', { error: error?.message });
             return of(null);
           })
         )
@@ -289,8 +322,11 @@ export class UnifiedAuthService {
     if (state.tidepoolAuth?.isAuthenticated) {
       refreshObservables.push(
         from(this.tidepoolAuth.refreshAccessToken()).pipe(
+          tap(() => {
+            this.logger.info('Auth', 'Tidepool token refreshed successfully');
+          }),
           catchError(error => {
-            console.warn('Tidepool token refresh failed:', error);
+            this.logger.warn('Auth', 'Tidepool token refresh failed', { error: error?.message });
             return of(null);
           })
         )
@@ -298,10 +334,16 @@ export class UnifiedAuthService {
     }
 
     if (refreshObservables.length === 0) {
+      this.logger.debug('Auth', 'No tokens to refresh');
       return of(this.unifiedAuthStateSubject.value);
     }
 
-    return combineLatest(refreshObservables).pipe(map(() => this.unifiedAuthStateSubject.value));
+    return combineLatest(refreshObservables).pipe(
+      tap(() => {
+        this.logger.info('Auth', 'All tokens refreshed');
+      }),
+      map(() => this.unifiedAuthStateSubject.value)
+    );
   }
 
   /**

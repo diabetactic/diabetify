@@ -1,0 +1,17 @@
+{
+  "name": "tidepool-api",
+  "description": "Tidepool API documentation for authentication (OAuth2/PKCE login), fetching patient glucose readings, notes, clinical data, and generating patient dashboard links for healthcare providers",
+  "base_url": "https://tidepool.redocly.app/",
+  "selectors": {
+    "main_content": "article",
+    "title": "h1",
+    "code_blocks": "pre code"
+  },
+  "url_patterns": {
+    "include": [],
+    "exclude": []
+  },
+  "categories": {},
+  "rate_limit": 0.5,
+  "max_pages": 150
+}

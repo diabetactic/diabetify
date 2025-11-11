@@ -3,6 +3,7 @@
   --padding-start: 0;
   --padding-end: 0;
   --inner-padding-end: 0;
+
   margin-bottom: 12px;
 
   .reading-content {
@@ -11,9 +12,9 @@
     align-items: center;
     width: 100%;
     padding: 16px;
-    background: var(--ion-card-background, #ffffff);
+    background: var(--ion-card-background, #fff);
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
 
     .reading-left {
       display: flex;
@@ -81,17 +82,17 @@
         letter-spacing: 0.5px;
 
         &.normal {
-          background-color: rgba(34, 197, 94, 0.1);
+          background-color: rgb(34 197 94 / 10%);
           color: var(--glucose-normal);
         }
 
         &.low {
-          background-color: rgba(245, 158, 11, 0.1);
+          background-color: rgb(245 158 11 / 10%);
           color: var(--glucose-low);
         }
 
         &.high {
-          background-color: rgba(239, 68, 68, 0.1);
+          background-color: rgb(239 68 68 / 10%);
           color: var(--glucose-high);
         }
       }
@@ -99,11 +100,9 @@
   }
 }
 
-// Dark mode adjustments
-@media (prefers-color-scheme: dark) {
-  .reading-item {
-    .reading-content {
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
+// Dark mode adjustments (class-based for manual theme toggle)
+.dark .reading-item {
+  .reading-content {
+    box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
   }
 }

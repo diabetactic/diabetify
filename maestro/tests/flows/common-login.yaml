@@ -1,0 +1,23 @@
+appId: io.diabetify.app
+---
+# Common login flow - reusable across all tests
+# Usage: - runFlow: flows/common-login.yaml
+
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: "Iniciar Sesión"
+
+- tapOn:
+    id: "dni-input"
+- inputText: "1000"
+
+- tapOn:
+    id: "password-input"
+- inputText: "tuvieja"
+
+- tapOn:
+    id: "login-submit-btn"
+
+- assertVisible: "Dashboard"

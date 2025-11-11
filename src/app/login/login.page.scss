@@ -1,0 +1,214 @@
+// Tailwind CSS Migration Complete
+// Migrated: Layout, spacing, colors, gradients, responsive, dark mode
+// Preserved: Animations, Ionic CSS properties, complex states
+
+.login-content {
+  // Ionic CSS property - background gradient (can't be migrated to Tailwind)
+  --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  // Form items - Ionic CSS properties (must stay in SCSS)
+  .form-item {
+    --background: transparent;
+    --border-radius: 12px;
+    --padding-start: 0;
+
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+
+    // Complex state - :focus-within with box-shadow (preserve in SCSS)
+    &:focus-within {
+      border-color: var(--ion-color-primary);
+      box-shadow: 0 0 0 3px rgb(102 126 234 / 10%);
+    }
+
+    &.item-has-error {
+      border-color: var(--ion-color-danger);
+    }
+
+    ion-label {
+      font-weight: 500;
+      color: #666;
+      margin-left: 40px;
+    }
+
+    ion-input {
+      --padding-start: 40px;
+
+      font-size: 16px;
+    }
+
+    // Field icon - absolute positioning (preserve in SCSS)
+    .field-icon {
+      position: absolute;
+      left: 15px;
+      color: #999;
+      font-size: 20px;
+      z-index: 1;
+    }
+
+    // Password toggle - Ionic properties
+    .password-toggle {
+      --padding-end: 0;
+      --padding-start: 0;
+
+      margin: 0;
+      height: 40px;
+
+      ion-icon {
+        font-size: 20px;
+        color: #666;
+      }
+    }
+  }
+
+  // Checkbox item - Ionic properties
+  .checkbox-item {
+    --background: transparent;
+
+    ion-checkbox {
+      --size: 20px;
+      --border-radius: 4px;
+
+      margin-right: 10px;
+    }
+  }
+
+  // Submit button - Ionic properties + hover transform
+  .submit-button {
+    --border-radius: 12px;
+    --box-shadow: 0 4px 10px rgb(102 126 234 / 30%);
+
+    // Hover transform (preserve in SCSS)
+    &:not([disabled]):hover {
+      transform: translateY(-2px);
+
+      --box-shadow: 0 6px 20px rgb(102 126 234 / 40%);
+    }
+  }
+
+  // Divider - ::before pseudo-element (must stay in SCSS)
+  .divider {
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgb(255 255 255 / 30%);
+    }
+  }
+
+  // Demo button - Ionic properties
+  .demo-button {
+    --border-color: rgb(255 255 255 / 80%);
+    --color: white;
+    --border-radius: 12px;
+
+    &:hover {
+      --background: rgb(255 255 255 / 10%);
+    }
+  }
+}
+
+// Footer - Ionic toolbar properties
+.login-footer {
+  ion-toolbar {
+    --background: rgb(255 255 255 / 95%);
+
+    text-align: center;
+    padding: 10px 0;
+  }
+}
+
+// ============================================
+// ANIMATIONS (Must stay in SCSS)
+// ============================================
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0%;
+    transform: translateY(-30px);
+  }
+
+  to {
+    opacity: 100%;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0%;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 100%;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0%;
+  }
+
+  to {
+    opacity: 100%;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+// Animation utility classes
+.animate-fade-in-down {
+  animation: fadeInDown 0.8s ease;
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.8s ease;
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease;
+}
+
+.animate-shake {
+  animation: shake 0.3s ease;
+}
+
+// ============================================
+// DARK MODE (migrated to Tailwind dark: prefix)
+// Only keep nested component rules that can't use Tailwind
+// ============================================
+
+.dark .login-content {
+  .form-item {
+    border-color: #333;
+
+    ion-label {
+      color: #aaa;
+    }
+
+    .field-icon {
+      color: #666;
+    }
+  }
+}

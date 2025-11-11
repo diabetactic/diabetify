@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, AlertController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -72,7 +72,8 @@ export class ProfilePage implements OnInit, OnDestroy {
     private themeService: ThemeService,
     private translationService: TranslationService,
     private syncService: TidepoolSyncService,
-    private router: Router
+    private router: Router,
+    private alertController: AlertController
   ) {
     this.currentLanguage = this.translationService.getCurrentLanguage();
   }
@@ -420,8 +421,40 @@ export class ProfilePage implements OnInit, OnDestroy {
    * Edit user age
    */
   async editAge(): Promise<void> {
-    // TODO: Implement age edit dialog
-    console.log('Edit age...');
+    const alert = await this.alertController.create({
+      header: this.translationService.instant('profile.editAge'),
+      inputs: [
+        {
+          name: 'age',
+          type: 'number',
+          placeholder: this.translationService.instant('profile.agePlaceholder'),
+          value: this.profile?.age || 10,
+          min: 1,
+          max: 120,
+        },
+      ],
+      buttons: [
+        {
+          text: this.translationService.instant('common.cancel'),
+          role: 'cancel',
+        },
+        {
+          text: this.translationService.instant('common.save'),
+          handler: async data => {
+            const age = parseInt(data.age, 10);
+            if (age && age > 0 && age <= 120) {
+              try {
+                await this.profileService.updateProfile({ age });
+              } catch (error) {
+                console.error('Failed to update age:', error);
+              }
+            }
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 
   /**

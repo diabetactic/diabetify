@@ -6,6 +6,15 @@
 import { GlucoseUnit } from './glucose-reading.model';
 
 /**
+ * Account state enum for pre-enabled account workflow
+ */
+export enum AccountState {
+  PENDING = 'pending', // Account created, awaiting admin activation
+  ACTIVE = 'active', // Account activated, user can log in
+  DISABLED = 'disabled', // Account deactivated (suspended or deleted)
+}
+
+/**
  * Available theme color palettes for child-friendly design
  */
 export type ColorPalette = 'default' | 'candy' | 'nature' | 'ocean';
@@ -95,7 +104,7 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
   showTrendArrows: true,
   autoSync: true,
   syncInterval: 15,
-  language: 'en',
+  language: 'es',
   dateFormat: '12h',
 };
 
@@ -157,6 +166,9 @@ export interface UserProfile {
 
   /** User's age (for age-appropriate UI adjustments) */
   age: number;
+
+  /** Account state for pre-enabled account workflow */
+  accountState: AccountState;
 
   /** Date of birth (ISO 8601 format) */
   dateOfBirth?: string;
