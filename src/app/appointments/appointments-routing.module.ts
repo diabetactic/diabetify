@@ -9,12 +9,7 @@ const routes: Routes = [
     component: AppointmentsPage,
   },
   {
-    path: 'create',
-    loadComponent: () =>
-      import('./appointment-create/appointment-create.page').then(m => m.AppointmentCreatePage),
-  },
-  {
-    path: 'appointment-detail/:id',
+    path: 'appointment-detail',
     loadChildren: () =>
       import('./appointment-detail/appointment-detail.module').then(
         m => m.AppointmentDetailPageModule
