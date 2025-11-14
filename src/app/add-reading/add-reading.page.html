@@ -33,33 +33,36 @@
     <form [formGroup]="readingForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
       <!-- Glucose Value Input -->
       <div class="mb-1">
-        <ion-item lines="none" class="form-item">
-          <ion-label position="stacked" class="form-label">
-            {{ 'addReading.glucoseLabel' | translate }} <span class="text-danger">*</span>
-          </ion-label>
-          <div class="input-with-unit">
-            <ion-input
-              formControlName="value"
-              type="number"
-              inputmode="decimal"
-              [placeholder]="'addReading.glucosePlaceholder' | translate"
-              class="glucose-input"
-              [class.invalid]="
-                readingForm.get('value')?.invalid && readingForm.get('value')?.touched
-              "
-            ></ion-input>
-            <span class="text-medium text-lg font-medium whitespace-nowrap">{{
-              getUnitLabel()
-            }}</span>
+        <ion-item lines="none">
+          <div class="form-control w-full">
+            <label class="label">
+              <span class="label-text font-medium">
+                {{ 'addReading.glucoseLabel' | translate }} <span class="text-danger">*</span>
+              </span>
+            </label>
+            <div class="input-with-unit flex items-center gap-2">
+              <ion-input
+                formControlName="value"
+                type="number"
+                inputmode="decimal"
+                [placeholder]="'addReading.glucosePlaceholder' | translate"
+                class="glucose-input flex-1"
+                [class.border-danger]="
+                  readingForm.get('value')?.invalid && readingForm.get('value')?.touched
+                "
+              ></ion-input>
+              <span class="text-medium text-lg font-medium whitespace-nowrap">{{
+                getUnitLabel()
+              }}</span>
+            </div>
+            <label class="label" *ngIf="getValidationMessage('value')">
+              <span class="label-text-alt text-error flex items-center gap-1.5">
+                <ion-icon name="alert-circle" class="text-base"></ion-icon>
+                {{ getValidationMessage('value') }}
+              </span>
+            </label>
           </div>
         </ion-item>
-        <div
-          class="text-danger -mt-1 flex items-center gap-1.5 px-4 text-xs"
-          *ngIf="getValidationMessage('value')"
-        >
-          <ion-icon name="alert-circle" color="danger" class="text-base"></ion-icon>
-          <span>{{ getValidationMessage('value') }}</span>
-        </div>
       </div>
 
       <!-- Status Preview -->
@@ -72,11 +75,15 @@
 
       <!-- Date & Time Picker -->
       <div class="mb-1">
-        <ion-item lines="none" class="form-item">
-          <ion-label position="stacked" class="form-label">
-            {{ 'addReading.dateTimeLabel' | translate }} <span class="text-danger">*</span>
-          </ion-label>
-          <ion-datetime-button datetime="reading-datetime"></ion-datetime-button>
+        <ion-item lines="none">
+          <div class="form-control w-full">
+            <label class="label">
+              <span class="label-text font-medium">
+                {{ 'addReading.dateTimeLabel' | translate }} <span class="text-danger">*</span>
+              </span>
+            </label>
+            <ion-datetime-button datetime="reading-datetime"></ion-datetime-button>
+          </div>
         </ion-item>
 
         <ion-modal [keepContentsMounted]="true">
@@ -94,45 +101,55 @@
 
       <!-- Meal Context Selector -->
       <div class="mb-1">
-        <ion-item lines="none" class="form-item">
-          <ion-label position="stacked" class="form-label">
-            {{ 'addReading.mealContext.label' | translate }}
-          </ion-label>
-          <ion-select
-            formControlName="mealContext"
-            [placeholder]="'addReading.mealContext.placeholder' | translate"
-            interface="action-sheet"
-            [cancelText]="'common.cancel' | translate"
-            class="ion-select-full"
-          >
-            <ion-select-option [value]="null">{{ 'common.none' | translate }}</ion-select-option>
-            <ion-select-option *ngFor="let option of mealContextOptions" [value]="option.value">
-              {{ option.labelKey | translate }}
-            </ion-select-option>
-          </ion-select>
+        <ion-item lines="none">
+          <div class="form-control w-full">
+            <label class="label">
+              <span class="label-text font-medium">
+                {{ 'addReading.mealContext.label' | translate }}
+              </span>
+            </label>
+            <ion-select
+              formControlName="mealContext"
+              [placeholder]="'addReading.mealContext.placeholder' | translate"
+              interface="action-sheet"
+              [cancelText]="'common.cancel' | translate"
+              class="ion-select-full w-full"
+            >
+              <ion-select-option [value]="null">{{ 'common.none' | translate }}</ion-select-option>
+              <ion-select-option *ngFor="let option of mealContextOptions" [value]="option.value">
+                {{ option.labelKey | translate }}
+              </ion-select-option>
+            </ion-select>
+          </div>
         </ion-item>
       </div>
 
       <!-- Notes Field -->
       <div class="mb-1">
-        <ion-item lines="none" class="form-item">
-          <ion-label position="stacked" class="form-label">
-            {{ 'addReading.notes.label' | translate }}
-          </ion-label>
-          <ion-textarea
-            formControlName="notes"
-            [placeholder]="'addReading.notes.placeholder' | translate"
-            rows="4"
-            maxlength="500"
-            class="notes-textarea"
-          ></ion-textarea>
+        <ion-item lines="none">
+          <div class="form-control w-full">
+            <label class="label">
+              <span class="label-text font-medium">
+                {{ 'addReading.notes.label' | translate }}
+              </span>
+            </label>
+            <ion-textarea
+              formControlName="notes"
+              [placeholder]="'addReading.notes.placeholder' | translate"
+              rows="4"
+              maxlength="500"
+              class="notes-textarea w-full"
+            ></ion-textarea>
+            <label class="label">
+              <span class="label-text-alt">
+                {{
+                  'addReading.notes.counter'
+                    | translate: { count: readingForm.get('notes')?.value?.length || 0, max: 500 }
+                }}
+              </span>
+            </label>
+          </div>
         </ion-item>
-        <div class="text-medium -mt-1 px-4 text-right text-xs">
-          {{
-            'addReading.notes.counter'
-              | translate: { count: readingForm.get('notes')?.value?.length || 0, max: 500 }
-          }}
-        </div>
       </div>
 
       <!-- Action Buttons -->
