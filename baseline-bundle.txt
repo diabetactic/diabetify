@@ -1,0 +1,10 @@
+Permissions Size User   Date Modified Git Name
+.rw-r--r--  2,6k julito 14 nov 06:46   -I www/323.980ae44e077fc7ea.js
+.rw-r--r--   36k julito 14 nov 06:46   -I www/441.331c80fd75a47988.js
+.rw-r--r--  5,8k julito 14 nov 06:46   -I www/770.e131d32aff9382d5.js
+.rw-r--r--   14k julito 14 nov 06:46   -I www/944.6e704a8c6e9d0fc9.js
+.rw-r--r--  3,2k julito 14 nov 06:46   -I www/964.1fa0b188a9754bf7.js
+.rw-r--r--  4,2k julito 14 nov 06:46   -I www/1049.0bae98805ad82bd8.js
+.rw-r--r--  4,4k julito 14 nov 06:46   -I www/1102.718212bfd85de542.js
+.rw-r--r--  9,7k julito 14 nov 06:46   -I www/1459.502975bfed867af3.js
+.rw-r--r--  1,1k julito 14 nov 06:46   -I www/1577.9bcead1cdd40af4c.js
