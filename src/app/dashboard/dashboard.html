@@ -59,8 +59,8 @@
         </button>
       </div>
 
-      <!-- Stats Grid (2x2) -->
-      <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <!-- Stats Grid (2x2) - Simplified, removed GMI -->
+      <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <!-- HbA1c Card -->
         <app-stat-card
           [title]="'readings.statistics.hba1c' | translate"
@@ -88,16 +88,6 @@
           [unit]="getCurrentGlucoseUnit()"
           [icon]="icons.avgGlucose"
           [gradientColors]="gradients.avgGlucose"
-        >
-        </app-stat-card>
-
-        <!-- GMI Card -->
-        <app-stat-card
-          [title]="'readings.statistics.gmi' | translate"
-          [value]="formatPercentage(statistics?.gmi)"
-          unit=""
-          [icon]="icons.gmi"
-          [gradientColors]="gradients.gmi"
         >
         </app-stat-card>
       </div>

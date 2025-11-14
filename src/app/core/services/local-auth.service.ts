@@ -219,6 +219,12 @@ export class LocalAuthService {
   login(username: string, password: string, rememberMe: boolean = false): Observable<LoginResult> {
     this.logger.info('Auth', 'Login attempt', { username, rememberMe });
 
+    // DEMO MODE: Check for demo credentials first
+    if (username === 'demo_patient' && password === 'demo123') {
+      this.logger.info('Auth', 'Demo mode login detected');
+      return from(this.handleDemoLogin(rememberMe));
+    }
+
     // Prepare form-encoded body for /token endpoint
     const body = new HttpParams()
       .set('username', username) // Can be DNI or email
@@ -283,6 +289,63 @@ export class LocalAuthService {
           } as LoginResult);
         })
       );
+  }
+
+  /**
+   * Handle demo mode login without calling backend
+   */
+  private async handleDemoLogin(rememberMe: boolean): Promise<LoginResult> {
+    try {
+      const demoUser: LocalUser = {
+        id: 'demo_patient',
+        email: 'demo@diabetactic.com',
+        firstName: 'Sofia',
+        lastName: 'Rodriguez',
+        role: 'patient',
+        accountState: AccountState.ACTIVE,
+        diabetesType: '1',
+        diagnosisDate: '2020-03-15',
+        dateOfBirth: '2013-08-22',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        preferences: {
+          glucoseUnit: 'mg/dL',
+          targetRange: {
+            low: 70,
+            high: 180,
+          },
+          language: 'es',
+          notifications: {
+            appointments: true,
+            readings: true,
+            reminders: true,
+          },
+          theme: 'light',
+        },
+      };
+
+      const mockToken: TokenResponse = {
+        access_token: 'demo_access_token',
+        refresh_token: null,
+        token_type: 'bearer',
+        expires_in: 86400, // 24 hours for demo
+        user: demoUser,
+      };
+
+      await this.handleAuthResponse(mockToken, rememberMe);
+
+      this.logger.info('Auth', 'Demo login successful');
+      return {
+        success: true,
+        user: demoUser,
+      };
+    } catch (error) {
+      this.logger.error('Auth', 'Demo login failed', error);
+      return {
+        success: false,
+        error: 'Error al iniciar sesión en modo demo',
+      };
+    }
   }
 
   /**

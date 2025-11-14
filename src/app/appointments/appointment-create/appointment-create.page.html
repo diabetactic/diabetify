@@ -13,6 +13,29 @@
       <div class="card-body">
         <h2 class="card-title">📅 Nueva Cita Médica</h2>
 
+        <!-- Sync Reminder Alert -->
+        <div class="alert alert-info mb-4 shadow-sm">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            class="h-6 w-6 shrink-0 stroke-current"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+          <div>
+            <h3 class="text-sm font-bold">💡 Tip: Sincroniza tus datos antes de la cita</h3>
+            <div class="text-xs">
+              Recuerda sincronizar tus lecturas de glucosa para compartirlas con tu médico.
+            </div>
+          </div>
+        </div>
+
         <form [formGroup]="appointmentForm" (ngSubmit)="submitAppointment()">
           <!-- Fecha -->
           <div class="form-control mb-4">
