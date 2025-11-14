@@ -37,9 +37,29 @@
   letter-spacing: 0.5px;
 }
 
-// Ionic content background
+// Ionic content background - ensure proper positioning and visibility
 ion-content {
   --background: var(--ion-background-color);
+  position: relative;
+  z-index: 1;
+  display: block;
+  height: 100%;
+
+  // Make sure inner scroll element is visible
+  &::part(scroll) {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+// Ensure welcome page doesn't persist after navigation
+:host {
+  display: block;
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  width: 100%;
 }
 
 // Dark mode button enhancements

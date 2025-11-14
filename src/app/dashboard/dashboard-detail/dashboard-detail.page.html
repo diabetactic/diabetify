@@ -1,14 +1,14 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-button (click)="goBack()">
-        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      <ion-button (click)="goBack()" class="inline-flex items-center gap-2">
+    <app-icon  name="arrow-back"></app-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>{{ 'dashboard.detail.title' | translate }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="onSync()" [disabled]="isSyncing">
-        <ion-icon slot="icon-only" name="sync-outline" [class.spinning]="isSyncing"></ion-icon>
+      <ion-button (click)="onSync()" [disabled]="isSyncing" class="inline-flex items-center gap-2">
+    <app-icon  name="sync-outline" [class.spinning]="isSyncing"></app-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -18,7 +18,7 @@
   <div class="p-4 pb-6">
     <!-- Loading State -->
     <div *ngIf="isLoading" class="flex min-h-[300px] flex-col items-center justify-center gap-4">
-      <ion-spinner name="crescent" *ngIf="!isKarma" class="h-12 w-12"></ion-spinner>
+      <app-icon  name="loader" *ngIf="!isKarma" class="h-12 w-12 animate-spin"></app-icon>
       <p class="text-base" style="color: var(--ion-color-medium)">
         {{ 'app.loading' | translate }}
       </p>
@@ -30,11 +30,9 @@
       <ion-card class="info-banner mb-5 rounded-2xl border border-blue-400/20">
         <ion-card-content>
           <div class="flex items-center gap-3">
-            <ion-icon
-              name="information-circle-outline"
-              color="primary"
-              class="shrink-0 text-[32px]"
-            ></ion-icon>
+            <app-icon
+               name="information-circle-outline"
+             class="shrink-0 text-[32px] text-primary"></app-icon>
             <p class="m-0 text-sm leading-[1.5]" style="color: var(--ion-color-medium)">
               {{ 'dashboard.detail.description' | translate }}
             </p>
@@ -109,7 +107,7 @@
       <ion-card class="mb-5 rounded-2xl">
         <ion-card-header>
           <ion-card-title class="flex items-center gap-2 text-lg font-bold">
-            <ion-icon name="sync-outline" class="text-2xl"></ion-icon>
+            <app-icon  name="sync-outline" class="text-2xl"></app-icon>
             {{ 'dashboard.detail.syncStatus' | translate }}
           </ion-card-title>
         </ion-card-header>
@@ -119,7 +117,7 @@
               class="sync-item flex items-center gap-3 rounded-xl p-3"
               style="background: var(--ion-color-light)"
             >
-              <ion-icon name="time-outline" color="primary" class="shrink-0 text-[28px]"></ion-icon>
+              <app-icon  name="time-outline" class="shrink-0 text-[28px] text-primary"></app-icon>
               <div class="flex-1">
                 <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">
                   {{ 'dashboard.lastSync' | translate }}
@@ -134,11 +132,9 @@
               class="sync-item flex items-center gap-3 rounded-xl p-3"
               style="background: var(--ion-color-light)"
             >
-              <ion-icon
-                name="cloud-upload-outline"
-                color="success"
-                class="shrink-0 text-[28px]"
-              ></ion-icon>
+              <app-icon
+                 name="cloud-upload-outline"
+               class="shrink-0 text-[28px] text-success"></app-icon>
               <div class="flex-1">
                 <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">
                   {{ 'dashboard.syncedItems' | translate }}
@@ -154,11 +150,9 @@
               class="sync-item flex items-center gap-3 rounded-xl p-3"
               style="background: var(--ion-color-light)"
             >
-              <ion-icon
-                name="alert-circle-outline"
-                color="danger"
-                class="shrink-0 text-[28px]"
-              ></ion-icon>
+              <app-icon
+                 name="alert-circle-outline"
+               class="shrink-0 text-[28px] text-danger"></app-icon>
               <div class="flex-1">
                 <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">
                   {{ 'dashboard.failedItems' | translate }}
@@ -189,10 +183,10 @@
             </div>
           </div>
 
-          <ion-button expand="block" (click)="onSync()" [disabled]="isSyncing" class="mt-4">
-            <ion-spinner name="crescent" *ngIf="isSyncing && !isKarma"></ion-spinner>
+          <ion-button expand="block" (click)="onSync()" [disabled]="isSyncing" class="mt-4 inline-flex items-center gap-2">
+    <app-icon  name="loader" *ngIf="isSyncing && !isKarma" class="animate-spin"></app-icon>
             <span *ngIf="!isSyncing">
-              <ion-icon slot="start" name="sync-outline"></ion-icon>
+              <app-icon  name="sync-outline"></app-icon>
               {{ 'dashboard.syncNow' | translate }}
             </span>
           </ion-button>
@@ -203,7 +197,7 @@
       <ion-card class="mb-5 rounded-2xl">
         <ion-card-header>
           <ion-card-title class="flex items-center gap-2 text-lg font-bold">
-            <ion-icon name="help-circle-outline" class="text-2xl"></ion-icon>
+            <app-icon  name="help-circle-outline" class="text-2xl"></app-icon>
             {{ 'dashboard.detail.aboutMetrics' | translate }}
           </ion-card-title>
         </ion-card-header>

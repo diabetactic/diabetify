@@ -14,106 +14,96 @@
     </div>
 
     <!-- Demo Hint Card -->
-    <div *ngIf="showDemoHint" class="card glass animate-slide-in-up mb-5 w-full max-w-md">
-      <div class="card-body p-3">
+    <ion-card *ngIf="showDemoHint" class="card-glass animate-slide-in-up mb-5 w-full max-w-md">
+      <ion-card-content class="p-3">
         <div class="flex items-center gap-3">
-          <ion-icon
-            name="information-circle-outline"
-            color="primary"
-            class="shrink-0 text-2xl"
-          ></ion-icon>
+          <app-icon
+             name="information-circle-outline"
+           class="shrink-0 text-2xl text-primary"></app-icon>
           <div>
             <strong>{{ 'login.demoHint.testAccount' | translate }}</strong
             ><br />
             {{ 'login.demoHint.message' | translate }}
           </div>
         </div>
-      </div>
-    </div>
+      </ion-card-content>
+    </ion-card>
 
     <!-- Login Form -->
     <form
       [formGroup]="loginForm"
       (ngSubmit)="onSubmit()"
-      class="card bg-base-100 shadow-xl animate-slide-in-up w-full max-w-md"
+      class="card-elevated animate-slide-in-up w-full max-w-md p-8 sm:p-6"
     >
-      <div class="card-body p-8 sm:p-6">
       <!-- Username Field (DNI or Email) -->
-      <ion-item lines="none" class="mb-4">
-        <div class="form-control w-full">
-          <label class="label">
-            <span class="label-text font-medium text-gray-600 dark:text-gray-400">
-              {{ 'login.username.label' | translate }}
-            </span>
-          </label>
-          <div class="relative">
-            <ion-icon
-              name="person-outline"
-              class="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-xl text-gray-400"
-            ></ion-icon>
-            <ion-input
-              type="text"
-              formControlName="username"
-              [placeholder]="'login.username.placeholder' | translate"
-              [disabled]="isLoading"
-              autocomplete="username"
-              inputmode="email"
-              class="w-full pl-12 rounded-xl border border-gray-200 transition-all duration-300 dark:border-gray-700 text-base"
-              [class.border-danger]="isFieldInvalid('username')"
-            ></ion-input>
-          </div>
-          <label class="label" *ngIf="usernameError">
-            <span class="label-text-alt text-error flex items-center gap-1.5 animate-shake">
-              <ion-icon name="alert-circle-outline" class="text-sm"></ion-icon>
-              {{ usernameError }}
-            </span>
-          </label>
-        </div>
+      <ion-item
+        class="form-item mb-4 rounded-xl border-2 border-gray-200 transition-all duration-300 dark:border-gray-700"
+        [class.item-has-error]="isFieldInvalid('username')"
+      >
+        <ion-label position="floating" class="ml-10 font-medium text-gray-600 dark:text-gray-400">{{
+          'login.username.label' | translate
+        }}</ion-label>
+        <ion-input
+          type="text"
+          formControlName="username"
+          [placeholder]="'login.username.placeholder' | translate"
+          [disabled]="isLoading"
+          autocomplete="username"
+          inputmode="email"
+          class="text-base"
+        ></ion-input>
+        <app-icon
+           name="person-outline"
+         class="absolute left-4 z-10 text-xl text-gray-400"></app-icon>
       </ion-item>
+      <div
+        class="animate-shake text-danger -mt-2.5 mb-2.5 ml-1 flex items-center gap-1.5 text-xs"
+        *ngIf="usernameError"
+      >
+        <app-icon  name="alert-circle-outline" class="text-sm"></app-icon>
+        {{ usernameError }}
+      </div>
 
       <!-- Password Field -->
-      <ion-item lines="none" class="mb-4">
-        <div class="form-control w-full">
-          <label class="label">
-            <span class="label-text font-medium text-gray-600 dark:text-gray-400">
-              {{ 'login.password.label' | translate }}
-            </span>
-          </label>
-          <div class="relative">
-            <ion-icon
-              name="lock-closed-outline"
-              class="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-xl text-gray-400"
-            ></ion-icon>
-            <ion-input
-              [type]="showPassword ? 'text' : 'password'"
-              formControlName="password"
-              [placeholder]="'login.password.placeholder' | translate"
-              [disabled]="isLoading"
-              autocomplete="current-password"
-              class="w-full pl-12 pr-12 rounded-xl border border-gray-200 transition-all duration-300 dark:border-gray-700 text-base"
-              [class.border-danger]="isFieldInvalid('password')"
-            ></ion-input>
-            <ion-button
-              fill="clear"
-              (click)="togglePasswordVisibility()"
-              [disabled]="isLoading"
-              class="password-toggle absolute right-0 top-1/2 -translate-y-1/2 m-0 h-10"
-            >
-              <ion-icon
-                slot="icon-only"
-                [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
-                class="text-xl text-gray-600"
-              ></ion-icon>
-            </ion-button>
-          </div>
-          <label class="label" *ngIf="passwordError">
-            <span class="label-text-alt text-error flex items-center gap-1.5 animate-shake">
-              <ion-icon name="alert-circle-outline" class="text-sm"></ion-icon>
-              {{ passwordError }}
-            </span>
-          </label>
-        </div>
+      <ion-item
+        class="form-item mb-4 rounded-xl border-2 border-gray-200 transition-all duration-300 dark:border-gray-700"
+        [class.item-has-error]="isFieldInvalid('password')"
+      >
+        <ion-label position="floating" class="ml-10 font-medium text-gray-600 dark:text-gray-400">{{
+          'login.password.label' | translate
+        }}</ion-label>
+        <ion-input
+          [type]="showPassword ? 'text' : 'password'"
+          formControlName="password"
+          [placeholder]="'login.password.placeholder' | translate"
+          [disabled]="isLoading"
+          autocomplete="current-password"
+          class="text-base"
+        ></ion-input>
+        <app-icon
+           name="lock-closed-outline"
+         class="absolute left-4 z-10 text-xl text-gray-400"></app-icon>
+        <ion-button
+          fill="clear"
+          slot="end"
+          (click)="togglePasswordVisibility()"
+          [disabled]="isLoading"
+          class="password-toggle m-0 h-10"
+        >
+          <ion-icon
+            slot="icon-only"
+            [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+            class="text-xl text-gray-600"
+          ></ion-icon>
+        </ion-button>
       </ion-item>
+      <div
+        class="animate-shake text-danger -mt-2.5 mb-2.5 ml-1 flex items-center gap-1.5 text-xs"
+        *ngIf="passwordError"
+      >
+        <app-icon  name="alert-circle-outline" class="text-sm"></app-icon>
+        {{ passwordError }}
+      </div>
 
       <!-- Remember Me Checkbox -->
       <ion-item lines="none" class="checkbox-item my-5">
@@ -132,9 +122,9 @@
         expand="block"
         type="submit"
         [disabled]="loginForm.invalid || isLoading"
-        class="btn-glow submit-button mt-5 h-12 text-base font-semibold"
+        class="btn-glow submit-button mt-5 h-12 text-base font-semibold inline-flex items-center gap-2"
       >
-        <ion-spinner name="crescent" *ngIf="isLoading" class="mr-2"></ion-spinner>
+    <app-icon  name="loader" *ngIf="isLoading" class="mr-2 animate-spin"></app-icon>
         <span *ngIf="!isLoading">{{ 'login.submitButton' | translate }}</span>
       </ion-button>
 
@@ -145,7 +135,6 @@
           class="text-primary hover:text-primary-shade cursor-pointer text-sm no-underline transition-colors hover:underline"
           >{{ 'login.forgotPassword' | translate }}</a
         >
-      </div>
       </div>
     </form>
 
@@ -164,9 +153,9 @@
         color="primary"
         (click)="useDemoMode()"
         [disabled]="isLoading"
-        class="demo-button h-12 font-semibold"
+        class="demo-button h-12 font-semibold inline-flex items-center gap-2"
       >
-        <ion-icon name="flask-outline" slot="start"></ion-icon>
+    <app-icon  name="flask-outline"></app-icon>
         {{ 'login.demoButton' | translate }}
       </ion-button>
 

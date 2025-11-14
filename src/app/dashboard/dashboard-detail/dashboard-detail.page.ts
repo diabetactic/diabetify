@@ -12,13 +12,16 @@ import { TranslationService } from '../../core/services/translation.service';
 import { GlucoseStatistics, GlucoseUnit } from '../../core/models/glucose-reading.model';
 import { SyncStatus } from '../../core/models/tidepool-sync.model';
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
+import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-dashboard-detail',
   templateUrl: './dashboard-detail.page.html',
   styleUrls: ['./dashboard-detail.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, TranslateModule, StatCardComponent],
+  imports: [CommonModule, IonicModule, RouterModule, TranslateModule, StatCardComponent,
+    AppIconComponent
+  ],
 })
 export class DashboardDetailPage implements OnInit, OnDestroy {
   readonly isKarma = typeof window !== 'undefined' && (window as any).__karma__;

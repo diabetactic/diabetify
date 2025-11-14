@@ -13,13 +13,16 @@ import { DemoDataService } from '../core/services/demo-data.service';
 import { LocalUser, UserPreferences } from '../core/services/local-auth.service';
 import { DebugPanelComponent } from '../shared/components/debug-panel/debug-panel.component';
 import { environment } from '../../environments/environment';
+import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, DebugPanelComponent],
+  imports: [CommonModule, FormsModule, IonicModule, DebugPanelComponent,
+    AppIconComponent
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class SettingsPage implements OnInit, OnDestroy {

@@ -1,123 +1,418 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
+      <ion-button (click)="cancel()" class="inline-flex items-center gap-2">
+    <app-icon  name="close"></app-icon>
+      </ion-button>
     </ion-buttons>
-    <ion-title>Agendar Nueva Cita</ion-title>
+    <ion-title class="text-lg font-semibold">{{
+      'appointments.create.title' | translate
+    }}</ion-title>
   </ion-toolbar>
+
+  <!-- Progress bar -->
+  <div class="h-1 w-full bg-gray-200 dark:bg-gray-700">
+    <div
+      class="bg-primary h-full transition-all duration-300 ease-in-out"
+      [style.width.%]="stepProgress"
+    ></div>
+  </div>
 </ion-header>
 
-<ion-content>
-  <div class="p-4">
-    <div class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h2 class="card-title">📅 Nueva Cita Médica</h2>
-
-        <!-- Sync Reminder Alert -->
-        <div class="alert alert-info mb-4 shadow-sm">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            class="h-6 w-6 shrink-0 stroke-current"
+<ion-content class="ion-padding bg-gray-50 dark:bg-gray-900">
+  <div class="appointment-create-container mx-auto max-w-3xl">
+    <!-- Step Indicator -->
+    <div class="mb-6 flex items-center justify-between px-4">
+      <div *ngFor="let step of [1, 2, 3, 4]; let i = index" class="flex flex-1 items-center">
+        <!-- Step circle -->
+        <div class="flex flex-col items-center">
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-full font-semibold transition-all duration-300"
+            [ngClass]="{
+              'bg-primary text-white shadow-md': currentStep === step,
+              'bg-green-500 text-white': currentStep > step,
+              'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400': currentStep < step,
+            }"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            ></path>
-          </svg>
-          <div>
-            <h3 class="text-sm font-bold">💡 Tip: Sincroniza tus datos antes de la cita</h3>
-            <div class="text-xs">
-              Recuerda sincronizar tus lecturas de glucosa para compartirlas con tu médico.
+            <ion-icon *ngIf="currentStep > step" name="checkmark" class="text-xl"> </ion-icon>
+            <span *ngIf="currentStep <= step">{{ step }}</span>
+          </div>
+          <!-- Step label (mobile hidden) -->
+          <span class="mt-2 hidden text-xs font-medium text-gray-600 sm:block dark:text-gray-400">
+            {{ currentStep === step ? getStepLabel(step) : '' }}
+          </span>
+        </div>
+
+        <!-- Connector line -->
+        <div
+          *ngIf="i < 3"
+          class="mx-2 h-1 flex-1 transition-all duration-300"
+          [ngClass]="{
+            'bg-primary': currentStep > step,
+            'bg-gray-200 dark:bg-gray-700': currentStep <= step,
+          }"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Step Content with fade animation -->
+    <div class="animate-fade-in">
+      <!-- Step 1: Select Doctor -->
+      <div *ngIf="currentStep === 1" class="step-content">
+        <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Selecciona un doctor</h2>
+
+        <!-- Search bar -->
+        <ion-searchbar
+          [(ngModel)]="doctorSearchTerm"
+          (ionInput)="onDoctorSearch($event)"
+          placeholder="Buscar por nombre, especialidad o hospital"
+          class="mb-4"
+          [disabled]="loadingDoctors"
+        >
+        </ion-searchbar>
+
+        <!-- Loading state -->
+        <div *ngIf="loadingDoctors" class="flex items-center justify-center py-8">
+          <app-icon  name="loader" class="animate-spin"></app-icon>
+          <span class="ml-3 text-gray-600 dark:text-gray-400">Cargando doctores...</span>
+        </div>
+
+        <!-- Doctors list -->
+        <div *ngIf="!loadingDoctors" class="space-y-3">
+          <div
+            *ngFor="let doctor of filteredDoctors"
+            (click)="selectDoctor(doctor)"
+            class="card-elevated cursor-pointer rounded-lg p-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+            [class.ring-2]="selectedDoctor?.id === doctor.id"
+            [class.ring-primary]="selectedDoctor?.id === doctor.id"
+          >
+            <div class="flex items-start gap-4">
+              <!-- Doctor avatar -->
+              <div
+                class="bg-primary/10 flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full"
+              >
+                <span class="text-primary text-2xl font-bold">{{ doctor.name.charAt(0) }}</span>
+              </div>
+
+              <!-- Doctor info -->
+              <div class="flex-1">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  {{ doctor.name }}
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ doctor.specialty }}</p>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-500">
+                  <app-icon  name="location-outline" class="align-middle"></app-icon>
+                  {{ doctor.hospital }}
+                </p>
+
+                <!-- Rating and experience -->
+                <div class="mt-2 flex items-center gap-4">
+                  <div class="flex items-center gap-1">
+                    <app-icon  name="star" class="text-yellow-500"></app-icon>
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                      doctor.rating
+                    }}</span>
+                    <span class="text-xs text-gray-500">({{ doctor.reviews }})</span>
+                  </div>
+                  <span class="text-xs text-gray-500">{{ doctor.experience }}</span>
+                </div>
+              </div>
+
+              <!-- Selected checkmark -->
+              <div *ngIf="selectedDoctor?.id === doctor.id" class="flex-shrink-0">
+                <app-icon  name="checkmark-circle" class="text-primary text-3xl"></app-icon>
+              </div>
             </div>
           </div>
         </div>
 
-        <form [formGroup]="appointmentForm" (ngSubmit)="submitAppointment()">
-          <!-- Fecha -->
-          <div class="form-control mb-4">
-            <label class="label">
-              <span class="label-text">📅 Fecha de la cita</span>
-            </label>
-            <input
-              type="date"
-              formControlName="date"
-              [min]="minDate"
-              class="input input-bordered"
-            />
-          </div>
-
-          <!-- Hora -->
-          <div class="form-control mb-4">
-            <label class="label">
-              <span class="label-text">🕐 Hora</span>
-            </label>
-            <input type="time" formControlName="time" class="input input-bordered" />
-          </div>
-
-          <!-- Doctor -->
-          <div class="form-control mb-4">
-            <label class="label">
-              <span class="label-text">👨‍⚕️ Médico</span>
-            </label>
-            <select formControlName="doctor" class="select select-bordered">
-              <option value="">Selecciona un médico</option>
-              <option *ngFor="let doc of doctors" [value]="doc.name">
-                {{ doc.name }} - {{ doc.specialty }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Tipo -->
-          <div class="form-control mb-4">
-            <label class="label">
-              <span class="label-text">📋 Tipo de cita</span>
-            </label>
-            <select formControlName="type" class="select select-bordered">
-              <option *ngFor="let type of appointmentTypes" [value]="type.value">
-                {{ type.label }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Notas -->
-          <div class="form-control mb-4">
-            <label class="label">
-              <span class="label-text">📝 Notas (opcional)</span>
-            </label>
-            <textarea
-              formControlName="notes"
-              class="textarea textarea-bordered"
-              placeholder="Motivo de la consulta, síntomas, etc."
-            ></textarea>
-          </div>
-
-          <!-- Reminders -->
-          <div class="form-control mb-4">
-            <label class="label cursor-pointer">
-              <span class="label-text">🔔 Recordatorios</span>
-              <input
-                type="checkbox"
-                formControlName="reminders"
-                class="checkbox checkbox-primary"
-              />
-            </label>
-          </div>
-
-          <!-- Submit -->
-          <button
-            type="submit"
-            class="btn btn-primary w-full"
-            [class.btn-disabled]="submitting || appointmentForm.invalid"
-          >
-            <span *ngIf="submitting" class="loading loading-spinner"></span>
-            {{ submitting ? 'Agendando...' : '✅ Agendar Cita' }}
-          </button>
-        </form>
+        <!-- Empty state -->
+        <div *ngIf="!loadingDoctors && filteredDoctors.length === 0" class="py-8 text-center">
+          <app-icon
+             name="search-outline"
+           class="text-6xl text-gray-300 dark:text-gray-600"></app-icon>
+          <p class="mt-4 text-gray-600 dark:text-gray-400">No se encontraron doctores</p>
+        </div>
       </div>
+
+      <!-- Step 2: Select Date & Time -->
+      <div *ngIf="currentStep === 2" class="step-content">
+        <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+          Selecciona fecha y hora
+        </h2>
+
+        <!-- Selected doctor info -->
+        <div
+          *ngIf="selectedDoctor"
+          class="card-elevated mb-6 flex items-center gap-3 rounded-lg p-4"
+        >
+          <div class="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-full">
+            <span class="text-primary text-lg font-bold">{{ selectedDoctor.name.charAt(0) }}</span>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white">{{ selectedDoctor.name }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedDoctor.specialty }}</p>
+          </div>
+        </div>
+
+        <!-- Date picker -->
+        <div class="mb-6">
+          <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >Fecha de la cita</label
+          >
+          <ion-datetime
+            presentation="date"
+            [(ngModel)]="selectedDate"
+            [min]="minDate"
+            [max]="maxDate"
+            (ionChange)="onDateChange($event)"
+            class="rounded-lg border border-gray-200 dark:border-gray-700"
+          >
+          </ion-datetime>
+        </div>
+
+        <!-- Time slots -->
+        <div *ngIf="selectedDate">
+          <label class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >Horarios disponibles</label
+          >
+
+          <!-- Loading time slots -->
+          <div *ngIf="loadingTimeSlots" class="flex items-center justify-center py-8">
+            <app-icon  name="loader" class="animate-spin"></app-icon>
+            <span class="ml-3 text-gray-600 dark:text-gray-400">Cargando horarios...</span>
+          </div>
+
+          <!-- Time slots grid -->
+          <div
+            *ngIf="!loadingTimeSlots"
+            class="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5"
+          >
+            <button
+              *ngFor="let slot of timeSlots"
+              (click)="selectTimeSlot(slot)"
+              [disabled]="!slot.available"
+              class="rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-all duration-200"
+              [ngClass]="{
+                'border-primary bg-primary text-white shadow-md':
+                  selectedTimeSlot?.time === slot.time && slot.available,
+                'hover:border-primary/50 border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300':
+                  selectedTimeSlot?.time !== slot.time && slot.available,
+                'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400 dark:bg-gray-800/50':
+                  !slot.available,
+              }"
+            >
+              {{ slot.time }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Appointment Details -->
+      <div *ngIf="currentStep === 3" class="step-content">
+        <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Detalles de la cita</h2>
+
+        <!-- Appointment type -->
+        <div class="mb-6">
+          <label class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >Tipo de cita</label
+          >
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div
+              *ngFor="let type of appointmentTypes"
+              (click)="selectAppointmentType(type)"
+              class="card-elevated cursor-pointer rounded-lg p-4 transition-all duration-200 hover:-translate-y-0.5"
+              [class.ring-2]="selectedType?.id === type.id"
+              [class.ring-primary]="selectedType?.id === type.id"
+            >
+              <div class="flex items-center gap-3">
+                <div class="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-full">
+                  <ion-icon [name]="type.icon" class="text-primary text-2xl"></ion-icon>
+                </div>
+                <div class="flex-1">
+                  <p class="font-semibold text-gray-900 dark:text-white">{{ type.name }}</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">
+                    {{ type.duration }} minutos
+                  </p>
+                </div>
+                <ion-icon
+                  *ngIf="selectedType?.id === type.id"
+                  name="checkmark-circle"
+                  class="text-primary text-2xl"
+                >
+                </ion-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="mb-6">
+          <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >Notas adicionales (opcional)</label
+          >
+          <ion-textarea
+            [(ngModel)]="appointmentNotes"
+            rows="4"
+            placeholder="Describe tus síntomas o motivo de la cita..."
+            class="rounded-lg border border-gray-200 dark:border-gray-700"
+          >
+          </ion-textarea>
+        </div>
+
+        <!-- Share glucose data -->
+        <div class="card-elevated rounded-lg p-4">
+          <div class="flex items-start gap-3">
+            <ion-toggle [(ngModel)]="shareGlucoseData" class="mt-1"> </ion-toggle>
+            <div class="flex-1">
+              <p class="font-medium text-gray-900 dark:text-white">Compartir datos de glucosa</p>
+              <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                Permite al doctor acceder a tus lecturas de glucosa recientes
+              </p>
+            </div>
+          </div>
+
+          <!-- Days selector (shown when toggle is on) -->
+          <div
+            *ngIf="shareGlucoseData"
+            class="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700"
+          >
+            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Datos de los últimos {{ glucoseDataDays }} días
+            </label>
+            <ion-range
+              [(ngModel)]="glucoseDataDays"
+              [min]="7"
+              [max]="90"
+              [step]="7"
+              [pin]="true"
+              class="glucose-range"
+            >
+            </ion-range>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Confirmation -->
+      <div *ngIf="currentStep === 4" class="step-content">
+        <h2 class="mb-6 text-xl font-bold text-gray-900 dark:text-white">Confirmar cita médica</h2>
+
+        <div *ngIf="confirmationData" class="space-y-4">
+          <!-- Doctor info -->
+          <div class="card-elevated rounded-lg p-4">
+            <p
+              class="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400"
+            >
+              Doctor
+            </p>
+            <div class="flex items-center gap-3">
+              <div class="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-full">
+                <span class="text-primary text-lg font-bold">{{
+                  confirmationData.doctor.name.charAt(0)
+                }}</span>
+              </div>
+              <div>
+                <p class="font-semibold text-gray-900 dark:text-white">
+                  {{ confirmationData.doctor.name }}
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  {{ confirmationData.doctor.specialty }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Date and time -->
+          <div class="card-elevated rounded-lg p-4">
+            <p
+              class="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400"
+            >
+              Fecha y hora
+            </p>
+            <div class="flex items-center gap-2 text-gray-900 dark:text-white">
+              <app-icon  name="calendar-outline" class="text-primary text-xl"></app-icon>
+              <span class="font-medium">{{ formatDate(confirmationData.date) }}</span>
+            </div>
+            <div class="mt-2 flex items-center gap-2 text-gray-900 dark:text-white">
+              <app-icon  name="time-outline" class="text-primary text-xl"></app-icon>
+              <span class="font-medium">{{ confirmationData.time }}</span>
+            </div>
+          </div>
+
+          <!-- Type and duration -->
+          <div class="card-elevated rounded-lg p-4">
+            <p
+              class="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400"
+            >
+              Tipo de cita
+            </p>
+            <p class="font-medium text-gray-900 dark:text-white">
+              {{ confirmationData.type.name }}
+            </p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Duración: {{ confirmationData.type.duration }} minutos
+            </p>
+          </div>
+
+          <!-- Notes (if any) -->
+          <div *ngIf="confirmationData.notes" class="card-elevated rounded-lg p-4">
+            <p
+              class="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400"
+            >
+              Notas
+            </p>
+            <p class="text-sm text-gray-700 dark:text-gray-300">{{ confirmationData.notes }}</p>
+          </div>
+
+          <!-- Glucose data sharing -->
+          <div
+            *ngIf="confirmationData.shareGlucose"
+            class="bg-primary/5 dark:bg-primary/10 rounded-lg p-4"
+          >
+            <div class="flex items-center gap-2">
+              <app-icon  name="analytics-outline" class="text-primary text-xl"></app-icon>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">
+                Compartirás datos de glucosa de los últimos {{ confirmationData.glucoseDays }} días
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation buttons -->
+    <div class="mt-8 flex gap-3">
+      <ion-button
+        *ngIf="currentStep > 1"
+        expand="block"
+        fill="outline"
+        (click)="previousStep()"
+        class="flex-1"
+      >
+        <app-icon  name="arrow-back"></app-icon>
+        Anterior
+      </ion-button>
+
+      <ion-button
+        *ngIf="currentStep < totalSteps"
+        expand="block"
+        (click)="nextStep()"
+        [disabled]="!canProceed"
+        class="flex-1"
+      >
+        Siguiente
+        <app-icon  name="arrow-forward"></app-icon>
+      </ion-button>
+
+      <ion-button
+        *ngIf="currentStep === totalSteps"
+        expand="block"
+        (click)="createAppointment()"
+        class="flex-1"
+      >
+    <app-icon  name="checkmark-circle"></app-icon>
+        Confirmar cita
+      </ion-button>
     </div>
   </div>
 </ion-content>

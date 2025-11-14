@@ -1,25 +1,27 @@
 // ============================================
-// Tailwind CSS v4 Migration - Login Page
-// Migrated to Tailwind: Layout, spacing, typography, colors, responsive, dark mode
-// Preserved in SCSS: Ionic CSS variables, animations, pseudo-elements, complex states
-// Reduction: 215 → 67 lines (69% reduction)
+// LOGIN PAGE - HYBRID TAILWIND V4 + SCSS
+// ============================================
+// Tailwind: Layout, spacing, typography, colors handled in HTML
+// SCSS: Gradients, Ionic variables, pseudo-elements, interactive states
+// Reduction: 215 → 78 lines (64% reduction)
 // ============================================
 
 .login-content {
   --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
+  // Form item with focus states (SCSS required for :focus-within)
   .form-item {
     --background: transparent;
     --border-radius: 12px;
     --padding-start: 0;
 
     &:focus-within {
-      border-color: var(--ion-color-primary);
+      border-color: var(--ion-color-primary) !important;
       box-shadow: 0 0 0 3px rgb(102 126 234 / 10%);
     }
 
     &.item-has-error {
-      border-color: var(--ion-color-danger);
+      border-color: var(--ion-color-danger) !important;
     }
 
     ion-input {
@@ -32,6 +34,7 @@
     }
   }
 
+  // Checkbox styling
   .checkbox-item {
     --background: transparent;
 
@@ -41,37 +44,64 @@
     }
   }
 
+  // Submit button with hover states
   .submit-button {
     --border-radius: 12px;
     --box-shadow: 0 4px 10px rgb(102 126 234 / 30%);
+
+    transition: transform 0.2s ease;
 
     &:not([disabled]):hover {
       transform: translateY(-2px);
       --box-shadow: 0 6px 20px rgb(102 126 234 / 40%);
     }
+
+    &:not([disabled]):active {
+      transform: translateY(0);
+    }
   }
 
-  .divider::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: rgb(255 255 255 / 30%);
+  // Divider pseudo-element (SCSS required for ::before)
+  .divider {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgb(255 255 255 / 30%);
+      z-index: 0;
+    }
+
+    span {
+      position: relative;
+      z-index: 1;
+    }
   }
 
+  // Demo button with hover states
   .demo-button {
     --border-color: rgb(255 255 255 / 80%);
     --color: white;
     --border-radius: 12px;
 
+    transition: transform 0.2s ease;
+
     &:hover {
       --background: rgb(255 255 255 / 10%);
+      transform: scale(1.02);
+    }
+
+    &:active {
+      transform: scale(0.98);
     }
   }
 }
 
+// Footer toolbar styling
 .login-footer ion-toolbar {
   --background: rgb(255 255 255 / 95%);
 }
