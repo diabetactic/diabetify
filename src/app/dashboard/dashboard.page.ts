@@ -8,6 +8,7 @@ import { takeUntil } from 'rxjs/operators';
 import { ReadingsService } from '../core/services/readings.service';
 import { TidepoolSyncService } from '../core/services/tidepool-sync.service';
 import { AppointmentService, Appointment } from '../core/services/appointment.service';
+import { MockDataService, MockAppointment } from '../core/services/mock-data.service';
 import { LoggerService } from '../core/services/logger.service';
 import {
   LocalGlucoseReading,
@@ -53,6 +54,7 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   // Appointment data
   upcomingAppointment: Appointment | null = null;
+  upcomingAppointments: MockAppointment[] = []; // For demo: show next 2-3 appointments
   isSharingGlucose = false;
 
   // Sync status
@@ -92,6 +94,7 @@ export class DashboardPage implements OnInit, OnDestroy {
     private readingsService: ReadingsService,
     private syncService: TidepoolSyncService,
     private appointmentService: AppointmentService,
+    private mockData: MockDataService,
     private toastController: ToastController,
     private router: Router,
     private translationService: TranslationService,
@@ -185,6 +188,7 @@ export class DashboardPage implements OnInit, OnDestroy {
    * Subscribe to upcoming appointments
    */
   private subscribeToAppointments() {
+    // Keep original appointment service for compatibility
     this.appointmentService.upcomingAppointment$
       .pipe(takeUntil(this.destroy$))
       .subscribe(appointment => {
@@ -193,6 +197,12 @@ export class DashboardPage implements OnInit, OnDestroy {
 
     // Load appointments initially
     this.appointmentService.getAppointments('confirmed').subscribe();
+
+    // DEMO: Load mock appointments for dashboard preview
+    this.mockData.getAppointments('upcoming').subscribe(appointments => {
+      // Show next 2-3 upcoming appointments
+      this.upcomingAppointments = appointments.slice(0, 3);
+    });
   }
 
   /**
@@ -485,5 +495,15 @@ export class DashboardPage implements OnInit, OnDestroy {
       return this.translationService.instant('dashboard.kids.status.good');
     }
     return this.translationService.instant('dashboard.kids.status.needsWork');
+  }
+
+  /**
+   * Get days until appointment (for mock appointments)
+   */
+  getDaysUntil(date: Date): number {
+    const now = new Date();
+    const appointmentDate = new Date(date);
+    const diff = appointmentDate.getTime() - now.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
   }
 }
