@@ -6,9 +6,9 @@
   [fill]="'clear'"
   [disabled]="isLoading"
   (click)="toggleLanguage()"
-  class="language-btn"
+  class="language-btn inline-flex items-center gap-2"
 >
-  <ion-spinner *ngIf="isLoading" name="crescent" class="h-[18px] w-[18px]"></ion-spinner>
+    <app-icon *ngIf="isLoading"  name="loader" class="h-[18px] w-[18px] animate-spin"></app-icon>
   <ng-container *ngIf="!isLoading">
     <span
       *ngIf="showIcon && currentLanguage"
@@ -46,9 +46,9 @@
   [fill]="'clear'"
   [disabled]="isLoading"
   (click)="showLanguagePopover($event)"
-  class="language-btn"
+  class="language-btn inline-flex items-center gap-2"
 >
-  <ion-spinner *ngIf="isLoading" name="crescent" class="h-[18px] w-[18px]"></ion-spinner>
+    <app-icon *ngIf="isLoading"  name="loader" class="h-[18px] w-[18px] animate-spin"></app-icon>
   <ng-container *ngIf="!isLoading">
     <span
       *ngIf="showIcon && currentLanguage"
@@ -59,6 +59,6 @@
     <span *ngIf="showText" class="hidden inline-flex items-center sm:inline">
       {{ getDisplayText() }}
     </span>
-    <ion-icon name="chevron-down" slot="end"></ion-icon>
+    <app-icon  name="chevron-down"></app-icon>
   </ng-container>
 </ion-button>

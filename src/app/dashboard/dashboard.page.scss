@@ -1,8 +1,14 @@
 // ============================================
-// DASHBOARD PAGE - TAILWIND V4 MIGRATED
+// DASHBOARD PAGE - HYBRID TAILWIND V4 + SCSS
 // ============================================
-// Layout, spacing, typography, and colors moved to Tailwind
-// Preserves: Animations, Ionic CSS variables, nested selectors
+// Tailwind: Layout, spacing, typography, colors handled in HTML
+// SCSS: Animations, Ionic CSS variables, nested selectors, shadows
+// ============================================
+
+// Ion content styling
+ion-content {
+  --background: #f5f7f8;
+}
 
 // ============================================
 // CUSTOM ANIMATIONS
@@ -50,10 +56,22 @@
 }
 
 // ============================================
-// IONIC COMPONENT VARIABLES
+// IONIC COMPONENT VARIABLES & CARD SHADOWS
 // ============================================
 
+// Appointment card with shadows
 .appointment-card {
+  box-shadow: 0 8px 16px rgb(10 31 68 / 8%);
+  border-radius: 16px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgb(10 31 68 / 12%);
+  }
+
   ion-item {
     --padding-start: 0;
     --inner-padding-end: 0;
@@ -76,6 +94,38 @@
   ion-badge {
     font-weight: 600;
     padding: 4px 8px;
+  }
+}
+
+// Quick actions card with shadows
+.quick-actions-card {
+  box-shadow: 0 8px 16px rgb(10 31 68 / 8%);
+  border-radius: 16px;
+
+  .quick-action-btn {
+    --border-radius: 12px;
+
+    height: 48px;
+    font-weight: 600;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+
+    &:not([disabled]):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgb(10 31 68 / 10%);
+    }
+
+    &:not([disabled]):active {
+      transform: translateY(0);
+    }
+  }
+
+  .sync-status {
+    --padding-start: 0;
+    --padding-end: 0;
+
+    margin-top: 8px;
   }
 }
 
@@ -158,13 +208,22 @@
 // DARK MODE - IONIC COMPONENT OVERRIDES
 // ============================================
 
-.dark {
-  .appointment-card {
+:host-context(.dark-theme) {
+  ion-content {
+    --background: #0f172a;
+  }
+
+  .appointment-card,
+  .quick-actions-card {
+    background: var(--ion-color-step-150, #111827);
+    box-shadow: 0 12px 24px rgb(0 0 0 / 35%);
+
     ion-item {
       color: white;
 
       ion-icon,
-      .material-symbols-outlined {
+      .material-symbols-outlined,
+      app-icon {
         color: #93c5fd;
       }
 

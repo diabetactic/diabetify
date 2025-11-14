@@ -2,8 +2,8 @@
   <ion-toolbar color="primary">
     <ion-title>{{ 'tabs.readings' | translate }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="openFilterModal()" class="relative">
-        <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
+      <ion-button (click)="openFilterModal()" class="relative inline-flex items-center gap-2">
+    <app-icon  name="filter-outline"></app-icon>
         <ion-badge
           *ngIf="getFilterCount() > 0"
           color="primary"
@@ -53,7 +53,7 @@
       class="m-0 cursor-pointer"
     >
       <ion-label>{{ getStatusLabel(filters.status) }}</ion-label>
-      <ion-icon name="close-circle"></ion-icon>
+      <app-icon  name="close-circle"></app-icon>
     </ion-chip>
     <ion-chip
       *ngIf="filters.startDate"
@@ -64,7 +64,7 @@
       <ion-label
         >{{ filters.startDate | date: 'MMM d' }} - {{ filters.endDate | date: 'MMM d' }}</ion-label
       >
-      <ion-icon name="close-circle"></ion-icon>
+      <app-icon  name="close-circle"></app-icon>
     </ion-chip>
     <ion-chip
       *ngIf="filters.searchTerm"
@@ -73,7 +73,7 @@
       class="m-0 cursor-pointer"
     >
       <ion-label>{{ 'readings.search' | translate }}: {{ filters.searchTerm }}</ion-label>
-      <ion-icon name="close-circle"></ion-icon>
+      <app-icon  name="close-circle"></app-icon>
     </ion-chip>
     <ion-button fill="clear" size="small" (click)="clearFilters()" class="shrink-0">{{
       'readings.clearAll' | translate
@@ -82,7 +82,7 @@
 
   <!-- Loading State -->
   <div class="flex min-h-[300px] flex-col items-center justify-center p-8" *ngIf="isLoading">
-    <ion-spinner name="circular" class="mb-4"></ion-spinner>
+    <app-icon  name="loader-circle" class="mb-4 animate-spin"></app-icon>
     <p class="m-0 text-sm text-[var(--ion-color-medium)]">
       {{ 'readings.loadingReadings' | translate }}
     </p>
@@ -184,7 +184,7 @@
       color="light"
       class="shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
     >
-      <ion-icon name="arrow-up"></ion-icon>
+      <app-icon  name="arrow-up"></app-icon>
     </ion-fab-button>
   </ion-fab>
 
@@ -195,7 +195,7 @@
       color="primary"
       class="shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
     >
-      <ion-icon name="add"></ion-icon>
+      <app-icon  name="add"></app-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-content>
@@ -207,8 +207,8 @@
       <ion-toolbar>
         <ion-title>{{ 'readings.filterReadings' | translate }}</ion-title>
         <ion-buttons slot="end">
-          <ion-button (click)="closeFilterModal()">
-            <ion-icon slot="icon-only" name="close"></ion-icon>
+          <ion-button (click)="closeFilterModal()" class="inline-flex items-center gap-2">
+    <app-icon  name="close"></app-icon>
           </ion-button>
         </ion-buttons>
       </ion-toolbar>

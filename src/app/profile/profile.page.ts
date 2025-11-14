@@ -1,9 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-import { IonicModule, AlertController, ToastController } from '@ionic/angular';
-import { TranslateModule } from '@ngx-translate/core';
+import { Router } from '@angular/router';
+import { AlertController } from '@ionic/angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -25,19 +22,13 @@ interface ProfileDisplayData {
   selector: 'app-profile',
   templateUrl: './profile.html',
   styleUrls: ['./profile.page.scss'],
-  standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, FormsModule, TranslateModule],
+  standalone: false,
 })
 export class ProfilePage implements OnInit, OnDestroy {
   // User data
   profileData: ProfileDisplayData | null = null;
   profile: UserProfile | null = null;
   authState: AuthState | null = null;
-
-  // Edit mode
-  editMode = false;
-  editableName = '';
-  editableEmail = '';
 
   // Tidepool connection
   isConnected = false;
@@ -78,8 +69,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private syncService: TidepoolSyncService,
     private router: Router,
-    private alertController: AlertController,
-    private toastController: ToastController
+    private alertController: AlertController
   ) {
     this.currentLanguage = this.translationService.getCurrentLanguage();
   }
@@ -358,63 +348,6 @@ export class ProfilePage implements OnInit, OnDestroy {
     const unit = event.detail.value;
     await this.profileService.updatePreferences({ glucoseUnit: unit });
     this.currentGlucoseUnit = unit;
-  }
-
-  /**
-   * Toggle edit mode for profile
-   */
-  toggleEdit(): void {
-    this.editMode = !this.editMode;
-    if (this.editMode) {
-      // Load current values into editable fields
-      this.editableName = this.profileData?.name || '';
-      this.editableEmail = this.profileData?.email || '';
-    }
-  }
-
-  /**
-   * Save profile changes
-   */
-  async saveProfile(): Promise<void> {
-    try {
-      // Update profile data
-      await this.profileService.updateProfile({
-        name: this.editableName,
-      });
-
-      // Update local display
-      if (this.profileData) {
-        this.profileData.name = this.editableName;
-        this.profileData.email = this.editableEmail;
-      }
-
-      this.editMode = false;
-
-      // Show success toast
-      const toast = await this.toastController.create({
-        message: '✅ Perfil actualizado correctamente',
-        duration: 2000,
-        color: 'success',
-        position: 'top',
-      });
-      await toast.present();
-    } catch (error) {
-      console.error('Error saving profile:', error);
-    }
-  }
-
-  /**
-   * Change profile photo (mock)
-   */
-  async changePhoto(): Promise<void> {
-    if (!this.editMode) return;
-
-    const alert = await this.alertController.create({
-      header: 'Cambiar Foto',
-      message: 'Función de cambio de foto no implementada en esta demo.',
-      buttons: ['OK'],
-    });
-    await alert.present();
   }
 
   /**

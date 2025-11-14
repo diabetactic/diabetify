@@ -1,9 +1,16 @@
-// Ion content background - uses DaisyUI base-200
+// ============================================
+// PROFILE PAGE - HYBRID TAILWIND V4 + SCSS
+// ============================================
+// Tailwind: Layout, spacing, typography handled in HTML
+// SCSS: Gradients, Ionic variables, pseudo-elements, animations
+// ============================================
+
+// Ion content background
 ion-content {
-  --background: oklch(var(--b2));
+  --background: #f5f7f8;
 }
 
-// Profile hero gradient background
+// Profile hero gradient background (SCSS required for gradient)
 .profile-hero {
   background: linear-gradient(
     135deg,
@@ -56,19 +63,20 @@ ion-content {
   gap: 12px;
 }
 
-// Overview card with transitions - uses DaisyUI base-100
+// Overview card with transitions (SCSS for hover/focus states)
 .overview-card {
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: oklch(var(--b1));
+  background: var(--ion-color-light, #fff);
   border-radius: 16px;
   box-shadow: 0 8px 16px rgb(10 31 68 / 8%);
-  color: oklch(var(--bc));
+  color: var(--ion-color-dark, #0d1b2a);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
+  cursor: pointer;
 }
 
 button.overview-card {
@@ -82,15 +90,20 @@ button.overview-card {
   color: var(--ion-color-medium, #6b7280);
 }
 
+// Hover states (SCSS required for interactive states)
 .overview-card:hover,
 .overview-card:focus-visible {
   transform: translateY(-2px);
   box-shadow: 0 16px 32px rgb(10 31 68 / 12%);
 }
 
-// Card base styling - uses DaisyUI base-100
+.overview-card:active {
+  transform: translateY(0);
+}
+
+// Card base styling
 .card {
-  background: oklch(var(--b1));
+  background: var(--ion-color-light, #fff);
   border-radius: 20px;
   padding: 20px;
   box-shadow: 0 12px 24px rgb(10 31 68 / 9%);
@@ -167,4 +180,24 @@ button.overview-card {
   }
 }
 
-// DaisyUI handles dark mode automatically via data-theme attribute
+// Dark theme overrides
+:host-context(.dark-theme) {
+  ion-content {
+    --background: #0f172a;
+  }
+
+  .profile-hero {
+    box-shadow: 0 12px 24px rgb(37 175 244 / 35%);
+  }
+
+  .overview-card,
+  .card {
+    background: var(--ion-color-step-150, #111827);
+    box-shadow: 0 12px 24px rgb(0 0 0 / 35%);
+    color: #fff;
+  }
+
+  .overview-card--placeholder .card-subtitle {
+    color: #c8c8c8;
+  }
+}

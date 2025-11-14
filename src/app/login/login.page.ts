@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { TranslateModule } from '@ngx-translate/core';
+import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-login',
@@ -22,6 +23,7 @@ import { TranslateModule } from '@ngx-translate/core';
     IonicModule,
     RouterModule,
     TranslateModule,
+    AppIconComponent
   ],
 })
 export class LoginPage implements OnInit {

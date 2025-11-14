@@ -24,6 +24,7 @@ import { ReadingItemComponent } from '../shared/components/reading-item/reading-
 import { AlertBannerComponent } from '../shared/components/alert-banner/alert-banner.component';
 import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
 import { LanguageSwitcherComponentModule } from '../shared/components/language-switcher/language-switcher.module';
+import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -41,6 +42,7 @@ import { LanguageSwitcherComponentModule } from '../shared/components/language-s
     AlertBannerComponent,
     EmptyStateComponent,
     LanguageSwitcherComponentModule,
+    AppIconComponent
   ],
 })
 export class DashboardPage implements OnInit, OnDestroy {

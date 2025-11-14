@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, PopoverController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
+import { AppIconComponent } from '../app-icon/app-icon.component';
 
 import {
   TranslationService,
@@ -23,7 +24,9 @@ import {
   templateUrl: './language-switcher.component.html',
   styleUrls: ['./language-switcher.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, TranslateModule],
+  imports: [CommonModule, IonicModule, FormsModule, TranslateModule,
+    AppIconComponent
+  ],
 })
 export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   @Input() displayMode: 'button' | 'select' | 'popover' = 'button';

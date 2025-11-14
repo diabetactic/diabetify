@@ -20,6 +20,7 @@ import {
 import { db } from '../../../core/services/database.service';
 import { MockAdapterService } from '../../../core/services/mock-adapter.service';
 import { ToastController } from '@ionic/angular';
+import { AppIconComponent } from '../app-icon/app-icon.component';
 
 interface DebugInfo {
   platform: string;
@@ -39,7 +40,9 @@ interface DebugInfo {
   templateUrl: './debug-panel.component.html',
   styleUrls: ['./debug-panel.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, TranslateModule],
+  imports: [CommonModule, FormsModule, IonicModule, TranslateModule,
+    AppIconComponent
+  ],
   animations: [
     trigger('slideIn', [
       transition(':enter', [
