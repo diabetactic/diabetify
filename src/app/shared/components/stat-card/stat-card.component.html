@@ -1,32 +1,36 @@
-<ion-card
-  (click)="onCardClicked()"
-  (keydown.enter)="onCardClicked()"
-  class="m-0 rounded-2xl shadow-lg text-white h-full min-h-[160px] transition-all duration-200"
-  [class.cursor-pointer]="clickable"
-  [class.hover:-translate-y-0.5]="clickable"
-  [class.hover:shadow-xl]="clickable"
-  [class.active:translate-y-0]="clickable"
-  [class.border-2]="error"
-  [class.border-danger]="error"
-  [class.ring-4]="error"
-  [class.ring-danger/10]="error"
-  [class.animate-pulse-shadow]="shouldPulse()"
-  style="background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end))"
-  role="article"
-  [attr.aria-label]="title"
-  [attr.tabindex]="clickable ? 0 : null"
-  [style.--gradient-start]="gradientColors[0]"
-  [style.--gradient-end]="gradientColors[1]"
->
+<!-- DaisyUI Stats Implementation -->
+<div *ngIf="useDaisyUI; else legacy" class="stats shadow-lg rounded-2xl overflow-hidden h-full min-h-[160px]"
+     (click)="onCardClicked()"
+     (keydown.enter)="onCardClicked()"
+     [class.cursor-pointer]="clickable"
+     [class.hover:-translate-y-0.5]="clickable"
+     [class.hover:shadow-xl]="clickable"
+     [class.transition-all]="true"
+     [class.duration-200]="true"
+     [class.border-2]="error"
+     [class.border-danger]="error"
+     [class.ring-4]="error"
+     [class.ring-danger/10]="error"
+     [class.animate-pulse-shadow]="shouldPulse()"
+     [attr.role]="'article'"
+     [attr.aria-label]="title"
+     [attr.tabindex]="clickable ? 0 : null">
+
   <ion-ripple-effect *ngIf="clickable"></ion-ripple-effect>
-  <ion-card-content class="p-4 h-full">
+
+  <div class="stat p-4 h-full" [ngClass]="gradientClass"
+       [style.background]="'linear-gradient(135deg, ' + gradientColors[0] + ', ' + gradientColors[1] + ')'">
+
+    <!-- Loading State -->
     <div *ngIf="loading; else content" class="flex flex-col gap-2">
-      <ion-spinner></ion-spinner>
+      <ion-spinner class="text-white"></ion-spinner>
       <ion-skeleton-text animated class="w-3/5"></ion-skeleton-text>
       <ion-skeleton-text animated class="w-2/5"></ion-skeleton-text>
       <div class="sr-only" role="status">Loading...</div>
     </div>
+
     <ng-template #content>
+      <!-- Error State -->
       <div *ngIf="error; else normal">
         <div class="flex flex-col items-center justify-center gap-2 p-5 text-center">
           <span class="material-symbols-outlined text-4xl text-red-400">error_outline</span>
@@ -34,39 +38,128 @@
           <button
             *ngIf="clickable"
             class="mt-2 px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white cursor-pointer transition-all hover:bg-white/30"
-            (click)="onCardClicked()"
-          >
+            (click)="onCardClicked()">
             Retry
           </button>
         </div>
       </div>
+
+      <!-- Normal State -->
       <ng-template #normal>
         <div class="flex flex-col justify-between h-full">
-          <div class="flex-1 flex flex-col gap-2">
-            <span class="material-symbols-outlined text-[30px] text-white mb-2 dark:drop-shadow-lg">{{ icon }}</span>
-            <div
-              class="flex items-baseline gap-1 transition-opacity duration-300"
-              [class.opacity-70]="valueUpdating"
-              aria-live="polite"
-              [attr.aria-label]="'Value: ' + formattedValue + (unit ? ' ' + unit : '')"
-            >
-              <span class="text-3xl font-bold leading-none text-white dark:text-4xl dark:drop-shadow-lg">{{ formattedValue }}</span>
-              <span class="text-sm font-medium text-white/85 dark:text-white/95 dark:drop-shadow-md" *ngIf="unit">{{ unit }}</span>
+          <!-- Icon -->
+          <div class="stat-figure text-white opacity-80" *ngIf="icon">
+            <span class="material-symbols-outlined text-5xl drop-shadow-lg">{{ icon }}</span>
+          </div>
+
+          <!-- Value -->
+          <div class="stat-value text-white mb-2"
+               [class.opacity-70]="valueUpdating"
+               aria-live="polite"
+               [attr.aria-label]="'Value: ' + formattedValue + (unit ? ' ' + unit : '')">
+            <span class="text-3xl font-bold leading-none drop-shadow-lg">{{ formattedValue }}</span>
+            <span class="text-sm font-medium opacity-85 ml-1" *ngIf="unit">{{ unit }}</span>
+          </div>
+
+          <!-- Title -->
+          <div class="stat-title text-white opacity-90 text-[15px] font-semibold leading-tight truncate drop-shadow-md"
+               [attr.title]="title">
+            {{ title }}
+          </div>
+
+          <!-- Trend -->
+          <div class="stat-desc text-white mt-2" *ngIf="trend">
+            <div class="flex items-center gap-1 text-sm"
+                 [class.text-green-400]="trend === 'up'"
+                 [class.text-red-400]="trend === 'down'"
+                 [class.text-white/80]="trend === 'stable'">
+              <span class="material-symbols-outlined text-lg">{{ trend === 'up' ? 'arrow_upward' : trend === 'down' ? 'arrow_downward' : 'remove' }}</span>
+              <span *ngIf="trendValue" class="font-semibold">{{ trendValue > 0 ? '+' : '' }}{{ trendValue }}</span>
             </div>
           </div>
-          <h3 class="m-0 mt-4 text-[15px] font-semibold text-white leading-tight truncate dark:drop-shadow-md" [attr.title]="title">{{ title }}</h3>
-          <div *ngIf="trend" class="flex items-center gap-1 mt-2 text-sm"
-               [class.text-green-400]="trend === 'up'"
-               [class.text-red-400]="trend === 'down'"
-               [class.text-white/80]="trend === 'stable'">
-            <span class="material-symbols-outlined text-lg">{{ trend === 'up' ? 'arrow_upward' : trend === 'down' ? 'arrow_downward' : 'remove' }}</span>
-            <span *ngIf="trendValue" class="font-semibold">{{ trendValue > 0 ? '+' : '' }}{{ trendValue }}</span>
-          </div>
+
+          <!-- Footer slot -->
           <div class="mt-2">
             <ng-content select="[slot='footer']"></ng-content>
           </div>
         </div>
       </ng-template>
     </ng-template>
-  </ion-card-content>
-</ion-card>
+  </div>
+</div>
+
+<!-- Legacy Implementation (Fallback) -->
+<ng-template #legacy>
+  <ion-card
+    (click)="onCardClicked()"
+    (keydown.enter)="onCardClicked()"
+    class="m-0 rounded-2xl shadow-lg text-white h-full min-h-[160px] transition-all duration-200"
+    [class.cursor-pointer]="clickable"
+    [class.hover:-translate-y-0.5]="clickable"
+    [class.hover:shadow-xl]="clickable"
+    [class.active:translate-y-0]="clickable"
+    [class.border-2]="error"
+    [class.border-danger]="error"
+    [class.ring-4]="error"
+    [class.ring-danger/10]="error"
+    [class.animate-pulse-shadow]="shouldPulse()"
+    style="background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end))"
+    role="article"
+    [attr.aria-label]="title"
+    [attr.tabindex]="clickable ? 0 : null"
+    [style.--gradient-start]="gradientColors[0]"
+    [style.--gradient-end]="gradientColors[1]"
+  >
+    <ion-ripple-effect *ngIf="clickable"></ion-ripple-effect>
+    <ion-card-content class="p-4 h-full">
+      <div *ngIf="loading; else content" class="flex flex-col gap-2">
+        <ion-spinner></ion-spinner>
+        <ion-skeleton-text animated class="w-3/5"></ion-skeleton-text>
+        <ion-skeleton-text animated class="w-2/5"></ion-skeleton-text>
+        <div class="sr-only" role="status">Loading...</div>
+      </div>
+      <ng-template #content>
+        <div *ngIf="error; else normal">
+          <div class="flex flex-col items-center justify-center gap-2 p-5 text-center">
+            <span class="material-symbols-outlined text-4xl text-red-400">error_outline</span>
+            <span class="text-white">Unable to load</span>
+            <button
+              *ngIf="clickable"
+              class="mt-2 px-4 py-2 bg-white/20 border border-white/30 rounded-lg text-white cursor-pointer transition-all hover:bg-white/30"
+              (click)="onCardClicked()"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+        <ng-template #normal>
+          <div class="flex flex-col justify-between h-full">
+            <div class="flex-1 flex flex-col gap-2">
+              <span class="material-symbols-outlined text-[30px] text-white mb-2 dark:drop-shadow-lg">{{ icon }}</span>
+              <div
+                class="flex items-baseline gap-1 transition-opacity duration-300"
+                [class.opacity-70]="valueUpdating"
+                aria-live="polite"
+                [attr.aria-label]="'Value: ' + formattedValue + (unit ? ' ' + unit : '')"
+              >
+                <span class="text-3xl font-bold leading-none text-white dark:text-4xl dark:drop-shadow-lg">{{ formattedValue }}</span>
+                <span class="text-sm font-medium text-white/85 dark:text-white/95 dark:drop-shadow-md" *ngIf="unit">{{ unit }}</span>
+              </div>
+            </div>
+            <h3 class="m-0 mt-4 text-[15px] font-semibold text-white leading-tight truncate dark:drop-shadow-md" [attr.title]="title">{{ title }}</h3>
+            <div *ngIf="trend" class="flex items-center gap-1 mt-2 text-sm"
+                 [class.text-green-400]="trend === 'up'"
+                 [class.text-red-400]="trend === 'down'"
+                 [class.text-white/80]="trend === 'stable'">
+              <span class="material-symbols-outlined text-lg">{{ trend === 'up' ? 'arrow_upward' : trend === 'down' ? 'arrow_downward' : 'remove' }}</span>
+              <span *ngIf="trendValue" class="font-semibold">{{ trendValue > 0 ? '+' : '' }}{{ trendValue }}</span>
+            </div>
+            <div class="mt-2">
+              <ng-content select="[slot='footer']"></ng-content>
+            </div>
+          </div>
+        </ng-template>
+      </ng-template>
+    </ion-card-content>
+  </ion-card>
+</ng-template>
