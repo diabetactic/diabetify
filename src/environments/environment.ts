@@ -13,19 +13,15 @@ import { Capacitor } from '@capacitor/core';
  * Note: For local development, temporarily change this to 'http://localhost:8000'
  */
 function getBaseUrl(): string {
-  // Use Heroku production API for all platforms
-  return 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
+  // IMPORTANT: Using proxy for development to bypass CORS
+  // The proxy.conf.json redirects /api -> Heroku API Gateway
+  if (Capacitor.isNativePlatform()) {
+    // Native platforms: direct connection to Heroku (CORS not a problem)
+    return 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
+  }
 
-  // Uncomment below for local development:
-  // if (Capacitor.isNativePlatform()) {
-  //   const platform = Capacitor.getPlatform();
-  //   if (platform === 'android') {
-  //     return 'http://10.0.2.2:8000'; // Android emulator → host machine
-  //   } else if (platform === 'ios') {
-  //     return 'http://localhost:8000'; // iOS simulator/device
-  //   }
-  // }
-  // return 'http://localhost:8000'; // Web development
+  // Web development: use proxy to bypass CORS
+  return '/api';
 }
 
 /**
