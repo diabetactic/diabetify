@@ -7,11 +7,12 @@
  */
 
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, throwError, from } from 'rxjs';
+import { Observable, BehaviorSubject, throwError, from, of } from 'rxjs';
 import { catchError, map, tap, switchMap } from 'rxjs/operators';
 import { ApiGatewayService, ApiResponse } from './api-gateway.service';
 import { ReadingsService, TeleAppointmentReadingSummary } from './readings.service';
 import { TranslationService } from './translation.service';
+import { MockDataService, MockAppointment } from './mock-data.service';
 
 /**
  * Appointment status types
@@ -153,11 +154,13 @@ export class AppointmentService {
   constructor(
     private apiGateway: ApiGatewayService,
     private readingsService: ReadingsService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private mockData: MockDataService
   ) {}
 
   /**
    * Get all appointments for the current user
+   * NOW USING MOCK DATA SERVICE
    */
   getAppointments(
     status?: AppointmentStatus,
@@ -166,28 +169,12 @@ export class AppointmentService {
     limit = 50,
     offset = 0
   ): Observable<Appointment[]> {
-    const params: any = {
-      limit: limit.toString(),
-      offset: offset.toString(),
-    };
+    // Use MockDataService instead of API
+    const mockStatus =
+      status === 'confirmed' ? 'upcoming' : status === 'completed' ? 'completed' : undefined;
 
-    if (status) {
-      params.status = status;
-    }
-    if (startDate) {
-      params.start_date = startDate.toISOString();
-    }
-    if (endDate) {
-      params.end_date = endDate.toISOString();
-    }
-
-    return this.apiGateway.request<Appointment[]>('appointments.list', { params }).pipe(
-      map(response => {
-        if (response.success && response.data) {
-          return response.data;
-        }
-        throw new Error(response.error?.message || 'Failed to fetch appointments');
-      }),
+    return this.mockData.getAppointments(mockStatus as any).pipe(
+      map(mockAppts => this.mapMockToAppointments(mockAppts)),
       tap(appointments => {
         this.appointmentsSubject.next(appointments);
         this.updateUpcomingAppointment(appointments);
@@ -214,6 +201,7 @@ export class AppointmentService {
 
   /**
    * Create a new appointment request
+   * NOW USING MOCK DATA SERVICE
    */
   createAppointment(
     request: CreateAppointmentRequest | SimpleAppointmentRequest
@@ -221,58 +209,30 @@ export class AppointmentService {
     // Check if it's a simple request from the UI
     const isSimpleRequest = 'time' in request;
 
-    let apiBody: any;
-
     if (isSimpleRequest) {
-      // Convert simple request to API format
       const simpleReq = request as SimpleAppointmentRequest;
-      apiBody = {
-        patient_id: simpleReq.patientId,
-        patient_name: simpleReq.patientName,
-        doctor_id: simpleReq.doctorId,
-        doctor_name: simpleReq.doctorName,
-        specialty: simpleReq.specialty,
-        date: simpleReq.date,
+      const mockAppt: Partial<MockAppointment> = {
+        date: new Date(simpleReq.date),
         time: simpleReq.time,
-        type: simpleReq.type,
+        doctor: simpleReq.doctorName,
+        specialty: simpleReq.specialty,
+        hospital: 'Centro Médico',
         location: simpleReq.location,
+        status: simpleReq.status === 'confirmed' ? 'upcoming' : 'upcoming',
+        type: 'control_routine',
         notes: simpleReq.notes,
-        status: simpleReq.status,
+        reminders: true,
       };
-    } else {
-      apiBody = request;
+
+      return this.mockData.addAppointment(mockAppt).pipe(
+        map(mockApp => this.mapMockToAppointment(mockApp)),
+        tap(() => this.refreshAppointments()),
+        catchError(this.handleError)
+      );
     }
 
-    return this.apiGateway.request<Appointment>('appointments.create', { body: apiBody }).pipe(
-      map(response => {
-        if (response.success && response.data) {
-          return response.data;
-        }
-        // If no data but success, create a local appointment object
-        if (response.success && isSimpleRequest) {
-          const simpleReq = request as SimpleAppointmentRequest;
-          return {
-            id: `apt-${Date.now()}`,
-            patientId: simpleReq.patientId,
-            patientName: simpleReq.patientName,
-            doctorId: simpleReq.doctorId,
-            doctorName: simpleReq.doctorName,
-            date: simpleReq.date,
-            startTime: simpleReq.time,
-            endTime: simpleReq.time, // Will be calculated by backend
-            status: simpleReq.status,
-            urgency: 'routine' as AppointmentUrgency,
-            reason: simpleReq.type,
-            notes: simpleReq.notes,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          } as Appointment;
-        }
-        throw new Error(response.error?.message || 'Failed to create appointment');
-      }),
-      tap(() => this.refreshAppointments()),
-      catchError(this.handleError)
-    );
+    // For CreateAppointmentRequest format
+    return throwError(() => new Error('CreateAppointmentRequest format not implemented for mock'));
   }
 
   /**
@@ -591,6 +551,40 @@ export class AppointmentService {
       )[0];
 
     this.upcomingAppointmentSubject.next(upcoming || null);
+  }
+
+  /**
+   * Map MockAppointment[] to Appointment[]
+   */
+  private mapMockToAppointments(mockAppts: MockAppointment[]): Appointment[] {
+    return mockAppts.map(mock => this.mapMockToAppointment(mock));
+  }
+
+  /**
+   * Map single MockAppointment to Appointment
+   */
+  private mapMockToAppointment(mock: MockAppointment): Appointment {
+    return {
+      id: mock.id,
+      patientId: 'pac001',
+      patientName: 'Sofia Rodriguez',
+      doctorId: mock.doctor,
+      doctorName: mock.doctor,
+      date: mock.date.toISOString().split('T')[0],
+      startTime: mock.time,
+      endTime: mock.time, // Same as start for now
+      status:
+        mock.status === 'upcoming'
+          ? 'confirmed'
+          : mock.status === 'completed'
+            ? 'completed'
+            : 'pending',
+      urgency: 'routine',
+      reason: mock.type,
+      notes: mock.notes,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
   }
 
   /**
