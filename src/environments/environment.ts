@@ -8,20 +8,24 @@ import { Capacitor } from '@capacitor/core';
  * Get the appropriate base URL for backend services based on platform
  *
  * Platform-specific URLs:
- * - Android emulator: 10.0.2.2 (special alias to host machine's localhost)
- * - iOS simulator/device: localhost
- * - Web: localhost
+ * - All platforms: Use Heroku production API
+ *
+ * Note: For local development, temporarily change this to 'http://localhost:8000'
  */
 function getBaseUrl(): string {
-  if (Capacitor.isNativePlatform()) {
-    const platform = Capacitor.getPlatform();
-    if (platform === 'android') {
-      return 'http://10.0.2.2:8000'; // Android emulator → host machine
-    } else if (platform === 'ios') {
-      return 'http://localhost:8000'; // iOS simulator/device
-    }
-  }
-  return 'http://localhost:8000'; // Web development
+  // Use Heroku production API for all platforms
+  return 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
+
+  // Uncomment below for local development:
+  // if (Capacitor.isNativePlatform()) {
+  //   const platform = Capacitor.getPlatform();
+  //   if (platform === 'android') {
+  //     return 'http://10.0.2.2:8000'; // Android emulator → host machine
+  //   } else if (platform === 'ios') {
+  //     return 'http://localhost:8000'; // iOS simulator/device
+  //   }
+  // }
+  // return 'http://localhost:8000'; // Web development
 }
 
 /**

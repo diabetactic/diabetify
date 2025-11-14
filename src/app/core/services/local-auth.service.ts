@@ -219,55 +219,9 @@ export class LocalAuthService {
    * Updated to be simpler and match the UI requirements
    */
   login(username: string, password: string, rememberMe: boolean = false): Observable<LoginResult> {
-    this.logger.info('Auth', 'Login attempt (ALWAYS USING MOCK DATA)', { username, rememberMe });
+    this.logger.info('Auth', 'Login attempt - trying REAL backend', { username, rememberMe });
 
-    // ALWAYS USE MOCK DATA SERVICE
-    return this.mockData.login(username, password).pipe(
-      switchMap(mockUser => {
-        const authResponse: TokenResponse = {
-          access_token: 'mock_access_token_' + Date.now(),
-          refresh_token: null,
-          token_type: 'bearer',
-          expires_in: 86400, // 24 hours
-          user: {
-            id: mockUser.id,
-            email: mockUser.email,
-            firstName: mockUser.name.split(' ')[0],
-            lastName: mockUser.name.split(' ').slice(1).join(' '),
-            role: 'patient',
-            accountState: AccountState.ACTIVE,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            preferences: {
-              glucoseUnit: 'mg/dL',
-              targetRange: { low: 70, high: 180 },
-              language: 'es',
-              notifications: { appointments: true, readings: true, reminders: true },
-              theme: 'light',
-            },
-          },
-        };
-
-        return from(this.handleAuthResponse(authResponse, rememberMe)).pipe(
-          map(
-            () =>
-              ({
-                success: true,
-                user: authResponse.user,
-              }) as LoginResult
-          )
-        );
-      }),
-      catchError(error => {
-        this.logger.error('Auth', 'Mock login failed', error);
-        return of({
-          success: false,
-          error: 'Error al iniciar sesión con datos mockeados',
-        } as LoginResult);
-      })
-    );
-
-    // Backend code removed - using only mock data
+    // Try REAL backend first
     const body = new HttpParams()
       .set('username', username) // Can be DNI or email
       .set('password', password);

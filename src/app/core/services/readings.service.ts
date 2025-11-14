@@ -81,10 +81,9 @@ export class ReadingsService {
   ) {
     this.db = database ?? db;
     this.liveQueryFn = liveQueryFn ?? liveQuery;
-    // Only initialize observables if NOT using mock data
-    if (!this.mockData) {
-      this.initializeObservables();
-    }
+    // ALWAYS initialize observables for reactive updates
+    // This ensures readings update when added/modified
+    this.initializeObservables();
   }
 
   /**
@@ -104,24 +103,11 @@ export class ReadingsService {
 
   /**
    * Get all readings with optional pagination
-   * NOW USING MOCK DATA SERVICE
+   * Uses IndexedDB for real-time reactive updates
    */
   async getAllReadings(limit?: number, offset: number = 0): Promise<PaginatedReadings> {
-    if (this.mockData) {
-      // Use mock data
-      const mockReadings = await this.mockData.getReadings().toPromise();
-      const mapped = mockReadings?.map(r => this.mapMockToLocal(r)) || [];
-
-      return {
-        readings: mapped,
-        total: mapped.length,
-        hasMore: false,
-        offset: 0,
-        limit: mapped.length,
-      };
-    }
-
-    // Original IndexedDB code
+    // ALWAYS use IndexedDB for reactive updates
+    // Mock data is only for initial seeding
     const total = await this.db.readings.count();
 
     let query = this.db.readings.orderBy('time').reverse();
