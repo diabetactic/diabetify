@@ -85,7 +85,7 @@ export interface ExtAuthState {
   providedIn: 'root',
 })
 export class ExtServicesClientService {
-  private readonly apiGatewayUrl: string;
+  public readonly apiGatewayUrl: string; // Made public for testing page access
 
   // Auth state
   private authState$ = new BehaviorSubject<ExtAuthState>({
@@ -95,7 +95,7 @@ export class ExtServicesClientService {
   });
 
   constructor(
-    private http: HttpClient,
+    public http: HttpClient, // Made public for testing page access
     private logger: LoggerService
   ) {
     // Get API Gateway URL from environment
