@@ -33,6 +33,9 @@ export class StatCardComponent implements OnChanges {
 
   @Output() cardClick = new EventEmitter<void>();
 
+  // Feature flag for DaisyUI stats
+  useDaisyUI = true;
+
   valueUpdating = false;
   private previousValue: number | string = 0;
 
@@ -66,6 +69,18 @@ export class StatCardComponent implements OnChanges {
       classes.push('stat-card-pulse');
     }
     return classes.join(' ');
+  }
+
+  get gradientClass(): string {
+    // Return Tailwind gradient classes based on color
+    const gradientMap: Record<string, string> = {
+      primary: 'bg-gradient-to-br from-blue-500 to-blue-600',
+      success: 'bg-gradient-to-br from-green-500 to-green-600',
+      warning: 'bg-gradient-to-br from-yellow-500 to-yellow-600',
+      danger: 'bg-gradient-to-br from-red-500 to-red-600',
+      info: 'bg-gradient-to-br from-cyan-500 to-cyan-600',
+    };
+    return this.color ? gradientMap[this.color] || '' : '';
   }
 
   get formattedValue(): string {
