@@ -63,31 +63,37 @@ export const environment = {
   },
 
   // Backend Services Configuration
+  // IMPORTANT: Using API Gateway for all backend services (port 8000)
+  // All services route through the gateway:
+  //   - POST /token (login)
+  //   - GET /users/me (user profile)
+  //   - GET /appointments/mine (appointments)
+  //   - POST /appointments/create
+  //   - GET /glucose/mine (glucose readings)
+  //   - POST /glucose/create
   backendServices: {
-    // Glucose data management service
-    glucoserver: {
-      baseUrl: '', // Disabled by default
-      apiPath: '',
-      requestTimeout: 30000,
-    },
-
-    // Appointment management service
-    appointments: {
-      baseUrl: getBaseUrl(),
-      apiPath: '/appointments',
-      requestTimeout: 30000,
-    },
-
-    // Authentication service
-    auth: {
-      baseUrl: getBaseUrl(),
-      apiPath: '',
-      requestTimeout: 30000,
-    },
-
-    // API Gateway (if running)
+    // API Gateway - main entry point for all backend services
     apiGateway: {
-      baseUrl: getBaseUrl(),
+      baseUrl: getBaseUrl(), // http://localhost:8000 (web/iOS) or http://10.0.2.2:8000 (Android)
+      apiPath: '',
+      requestTimeout: 30000,
+    },
+
+    // Legacy configs (kept for compatibility, but all requests go through API Gateway)
+    glucoserver: {
+      baseUrl: '', // Use API Gateway instead
+      apiPath: '',
+      requestTimeout: 30000,
+    },
+
+    appointments: {
+      baseUrl: '', // Use API Gateway instead
+      apiPath: '',
+      requestTimeout: 30000,
+    },
+
+    auth: {
+      baseUrl: '', // Use API Gateway instead
       apiPath: '',
       requestTimeout: 30000,
     },
