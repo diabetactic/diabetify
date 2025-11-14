@@ -10,18 +10,16 @@
  */
 
 /* ============================================
- * TAILWIND CSS V4 + DAISYUI
+ * TAILWIND CSS V3 + DAISYUI
  * ============================================ */
-@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* DaisyUI Component Library with Diabetify Themes
  * DaisyUI themes are configured in tailwind.config.js
  * Themes: diabetify (light), dark
  */
-@plugin "daisyui";
-
-/* Class-based Dark Mode (uses .dark class on html element) */
-@custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================
  * DAISYUI → IONIC CSS VARIABLE BRIDGES
@@ -370,7 +368,7 @@
 }
 
 /* Material Design Theme - Import after Tailwind for proper cascade */
-@import './theme/material-theme';
+/* @import './theme/material-theme'; */ /* Removed - file doesn't exist */
 
 /* Core CSS required for Ionic components to work properly */
 @import '@ionic/angular/css/core.css';
@@ -406,23 +404,23 @@
  * Child-friendly global styles
  */
 
-// Set Be Vietnam Pro as the default font family with Roboto as fallback
+/* Set Be Vietnam Pro as the default font family with Roboto as fallback */
 body {
   font-family: 'Be Vietnam Pro', 'Roboto', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-// Apply Material Design background and text colors
+/* Apply Material Design background and text colors */
 html,
 body {
   height: 100%;
   margin: 0;
 }
 
-// Override Ionic variables with Diabetify Design System colors
+/* Override Ionic variables with Diabetify Design System colors */
 :root {
-  // Primary color (Blue - from mockups)
+/* Primary color (Blue - from mockups) */
   --ion-color-primary: #25aff4;
   --ion-color-primary-rgb: 37, 175, 244;
   --ion-color-primary-contrast: #fff;
@@ -430,7 +428,7 @@ body {
   --ion-color-primary-shade: #2099d7;
   --ion-color-primary-tint: #3bb7f5;
 
-  // Secondary color (Teal variant)
+/* Secondary color (Teal variant) */
   --ion-color-secondary: #00c6ae;
   --ion-color-secondary-rgb: 0, 198, 174;
   --ion-color-secondary-contrast: #fff;
@@ -438,7 +436,7 @@ body {
   --ion-color-secondary-shade: #00ae99;
   --ion-color-secondary-tint: #1accb6;
 
-  // Success color (Green - for normal glucose)
+/* Success color (Green - for normal glucose) */
   --ion-color-success: #22c55e;
   --ion-color-success-rgb: 34, 197, 94;
   --ion-color-success-contrast: #fff;
@@ -446,7 +444,7 @@ body {
   --ion-color-success-shade: #1ead53;
   --ion-color-success-tint: #38cb6e;
 
-  // Warning color (Orange - for low glucose)
+/* Warning color (Orange - for low glucose) */
   --ion-color-warning: #f59e0b;
   --ion-color-warning-rgb: 245, 158, 11;
   --ion-color-warning-contrast: #000;
@@ -454,7 +452,7 @@ body {
   --ion-color-warning-shade: #d88b0a;
   --ion-color-warning-tint: #f6a823;
 
-  // Danger color (Red - for high glucose)
+/* Danger color (Red - for high glucose) */
   --ion-color-danger: #ef4444;
   --ion-color-danger-rgb: 239, 68, 68;
   --ion-color-danger-contrast: #fff;
@@ -462,29 +460,29 @@ body {
   --ion-color-danger-shade: #d13c3c;
   --ion-color-danger-tint: #f05757;
 
-  // Custom Diabetify colors
+/* Custom Diabetify colors */
   --diabetify-gold: #ffd700;
   --diabetify-coral: #ff7f50;
   --diabetify-light-blue: #add8e6;
 
-  // Background colors
+/* Background colors */
   --diabetify-background-light: #f5f7f8;
   --diabetify-background-dark: #101c22;
   --diabetify-surface-light: #fff;
   --diabetify-surface-dark: #1e293b;
 
-  // Text colors
+/* Text colors */
   --diabetify-text-primary: #0d171c;
   --diabetify-text-secondary: #49819c;
   --diabetify-text-tertiary: #94a3b8;
 
-  // Glucose status colors
+/* Glucose status colors */
   --glucose-normal: #22c55e;
   --glucose-low: #f59e0b;
   --glucose-high: #ef4444;
   --glucose-critical: #dc2626;
 
-  // Gradient colors for stat cards
+/* Gradient colors for stat cards */
   --gradient-blue-start: #3b82f6;
   --gradient-blue-end: #60a5fa;
   --gradient-purple-start: #8b5cf6;
@@ -495,7 +493,7 @@ body {
   --gradient-yellow-end: #fbbf24;
 }
 
-// Enhanced touch targets for accessibility
+/* Enhanced touch targets for accessibility */
 .touch-target {
   min-width: 44px;
   min-height: 44px;
@@ -504,14 +502,14 @@ body {
   justify-content: center;
 }
 
-// Smooth transitions for theme changes
+/* Smooth transitions for theme changes */
 * {
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
 }
 
-// Typography System
+/* Typography System */
 h1 {
   font-size: 32px;
   font-weight: 700;
@@ -546,7 +544,7 @@ p,
   font-weight: 400;
 }
 
-// Material Symbols Outlined configuration
+/* Material Symbols Outlined configuration */
 .material-symbols-outlined {
   font-variation-settings:
     'FILL' 0,
@@ -555,7 +553,7 @@ p,
     'opsz' 24;
 }
 
-// Common component styles
+/* Common component styles */
 .stat-card-gradient {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
 }
@@ -588,7 +586,7 @@ p,
   }
 }
 
-// FAB button centering for navigation
+/* FAB button centering for navigation */
 .center-fab {
   left: 50%;
   transform: translateX(-50%);
@@ -603,7 +601,7 @@ p,
   }
 }
 
-// Dark mode adjustments
+/* Dark mode adjustments */
 @media (prefers-color-scheme: dark) {
   :root {
     --ion-background-color: var(--diabetify-background-dark);
