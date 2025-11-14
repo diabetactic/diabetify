@@ -15,9 +15,10 @@ export class AppointmentCreatePage {
   minDate: string;
 
   doctors = [
-    { name: 'Dra. Sarah Johnson', specialty: 'Endocrinología Pediátrica' },
-    { name: 'Lic. Maria Lopez', specialty: 'Nutrición' },
-    { name: 'Dr. Carlos Mendez', specialty: 'Psicología' },
+    { name: 'Dra. María González', specialty: 'Endocrinología Pediátrica' },
+    { name: 'Dr. Carlos Rodriguez', specialty: 'Pediatría' },
+    { name: 'Lic. Ana Martínez', specialty: 'Nutrición' },
+    { name: 'Dra. Laura Fernández', specialty: 'Psicología' },
   ];
 
   appointmentTypes = [
@@ -58,7 +59,7 @@ export class AppointmentCreatePage {
       time: formValue.time,
       doctor: formValue.doctor,
       specialty: selectedDoctor?.specialty || 'General',
-      hospital: 'Hospital Garrahan',
+      hospital: 'Centro Médico',
       location: 'Consultorio TBD (se confirmará)',
       type: formValue.type,
       notes: formValue.notes,
