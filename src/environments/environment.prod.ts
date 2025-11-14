@@ -4,16 +4,13 @@ import { Capacitor } from '@capacitor/core';
  * Get the appropriate base URL for backend services based on platform
  *
  * Platform-specific URLs:
- * - Android: Use production API URL (native platform detection)
- * - iOS: Use production API URL
- * - Web: Use production API URL
+ * - All platforms: Use Heroku production API
  *
  * Note: In production, all platforms use HTTPS API endpoint
  */
 function getBaseUrl(): string {
-  // In production, always use the production API URL
-  // Platform detection is maintained for consistency with dev environment
-  return 'https://api.diabetactic.com';
+  // Use Heroku production API for all platforms
+  return 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
 }
 
 /**
