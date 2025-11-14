@@ -5,7 +5,8 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="account-pending-content">
-  <ion-card class="card-elevated mx-auto w-full max-w-lg">
+  <div class="card bg-base-100 shadow-xl mx-auto w-full max-w-lg">
+    <div class="card-body">
     <ion-card-header class="pb-4">
       <ion-card-title class="text-primary text-xl font-semibold">{{
         'auth.accountStates.pending.title' | translate
@@ -40,5 +41,6 @@
         {{ 'auth.accountStates.pending.signOut' | translate }}
       </ion-button>
     </ion-card-content>
-  </ion-card>
+    </div>
+  </div>
 </ion-content>

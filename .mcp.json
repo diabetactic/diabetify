@@ -36,32 +36,6 @@
       "type": "stdio",
       "description": "Web automation and E2E testing (FREE)"
     },
-    "zen": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "git+https://github.com/BeehiveInnovations/zen-mcp-server.git",
-        "zen-mcp-server"
-      ],
-      "type": "stdio",
-      "env": {
-        "GEMINI_API_KEY": "AIzaSyAe0_rCmmACMeEZ9mKovqFcDGI-FcG8W8E"
-      },
-      "description": "AI-powered MCP server with multiple language models"
-    },
-    // "browserstack": {
-    //   "command": "npx",
-    //   "args": [
-    //     "-y",
-    //     "@browserstack/mcp-server@latest"
-    //   ],
-    //   "type": "stdio",
-    //   "env": {
-    //     "BROWSERSTACK_USERNAME": "TU_USUARIO_AQUI",
-    //     "BROWSERSTACK_ACCESS_KEY": "TU_CLAVE_DE_ACCESO_AQUI"
-    //   },
-    //   "description": "Testing E2E en dispositivos reales con BrowserStack"
-    // },
     "android-adb": {
       "command": "npx",
       "args": [
@@ -71,23 +45,5 @@
       "type": "stdio",
       "description": "Interactuar con dispositivos Android via ADB (instalar APKs, etc.)"
     }
-    // "ionic-docs": {
-    //   "command": "npx",
-    //   "args": [
-    //     "-y",
-    //     "awesome-ionic-mcp@latest"
-    //   ],
-    //   "type": "stdio",
-    //   "description": "Documentación de Ionic, Capacitor y Capawesome"
-    // },
-    // "maestro": {
-    //   "command": "bash",
-    //   "args": [
-    //     "-c",
-    //     "export PATH=\"$PATH:$HOME/.maestro/bin\" && maestro mcp"
-    //   ],
-    //   "type": "stdio",
-    //   "description": "Testing de UI móvil con Maestro"
-    // }
   }
 }
