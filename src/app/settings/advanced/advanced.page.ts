@@ -12,13 +12,16 @@ import { environment } from '../../../environments/environment';
 import { UnifiedAuthService } from '../../core/services/unified-auth.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { db } from '../../core/services/database.service';
+import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-advanced',
   templateUrl: './advanced.page.html',
   styleUrls: ['./advanced.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, TranslateModule],
+  imports: [CommonModule, IonicModule, FormsModule, TranslateModule,
+    AppIconComponent
+  ],
 })
 export class AdvancedPage implements OnInit, OnDestroy {
   isDevMode = !environment.production;

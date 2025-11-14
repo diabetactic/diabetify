@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, NavigationStart } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
 import { DEFAULT_USER_PREFERENCES } from '../core/models/user-profile.model';
@@ -21,6 +22,7 @@ import { DEFAULT_USER_PREFERENCES } from '../core/models/user-profile.model';
 export class WelcomePage implements OnInit, OnDestroy {
   isDarkMode = false;
   private themeSubscription?: Subscription;
+  private navigationSubscription?: Subscription;
 
   // MOCK QUOTES - Set to false to remove quotes display
   showMockQuotes = false;
@@ -41,6 +43,17 @@ export class WelcomePage implements OnInit, OnDestroy {
       this.isDarkMode = isDark;
     });
 
+    // CRITICAL: Listen for navigation away from welcome page to ensure cleanup
+    this.navigationSubscription = this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationStart),
+        filter((event: NavigationStart) => !event.url.includes('/welcome'))
+      )
+      .subscribe(() => {
+        // Force cleanup when navigating away
+        this.cleanup();
+      });
+
     // MOCK QUOTES - Load translated quotes and set random quote
     if (this.showMockQuotes) {
       this.mockQuotes = this.translate.instant('welcome.quotes') as string[];
@@ -59,7 +72,17 @@ export class WelcomePage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.cleanup();
+  }
+
+  /**
+   * Cleanup method to properly dispose subscriptions and resources
+   */
+  private cleanup(): void {
     this.themeSubscription?.unsubscribe();
+    this.navigationSubscription?.unsubscribe();
+    this.themeSubscription = undefined;
+    this.navigationSubscription = undefined;
   }
 
   /**

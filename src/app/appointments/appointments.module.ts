@@ -8,9 +8,10 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AppointmentsPageRoutingModule } from './appointments-routing.module';
 
 import { AppointmentsPage } from './appointments.page';
+import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, AppointmentsPageRoutingModule, TranslateModule],
+  imports: [CommonModule, FormsModule, IonicModule, AppointmentsPageRoutingModule, TranslateModule, AppIconComponent],
   declarations: [AppointmentsPage],
 })
 export class AppointmentsPageModule {}

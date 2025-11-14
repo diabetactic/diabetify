@@ -19,7 +19,7 @@
   <div class="mx-auto max-w-7xl px-4 py-6 md:px-6">
     <!-- Loading State -->
     <div *ngIf="isLoading" class="flex min-h-[400px] flex-col items-center justify-center gap-4">
-      <ion-spinner name="crescent" *ngIf="!isKarma"></ion-spinner>
+      <app-icon  name="loader" *ngIf="!isKarma" class="animate-spin"></app-icon>
       <p class="m-0 text-base text-gray-600 dark:text-gray-300">{{ 'app.loading' | translate }}</p>
     </div>
 
@@ -103,8 +103,8 @@
           }}</ion-card-title>
         </ion-card-header>
         <ion-card-content class="pt-2">
-          <ion-item lines="none">
-            <ion-icon slot="start" name="calendar-outline" color="primary"></ion-icon>
+          <ion-item lines="none" class="flex items-center gap-2">
+    <app-icon  name="calendar-outline" class="text-primary"></app-icon>
             <ion-label>
               <p>{{ upcomingAppointment.date | date: 'fullDate' }}</p>
               <h3>{{ upcomingAppointment.startTime }} - {{ upcomingAppointment.endTime }}</h3>
@@ -112,8 +112,8 @@
             <ion-badge slot="end" color="primary">{{ getTimeUntilAppointment() }}</ion-badge>
           </ion-item>
 
-          <ion-item lines="none" *ngIf="upcomingAppointment.reason">
-            <ion-icon slot="start" name="medical-outline" color="medium"></ion-icon>
+          <ion-item lines="none" *ngIf="upcomingAppointment.reason" class="flex items-center gap-2">
+    <app-icon  name="medical-outline" class="text-medium"></app-icon>
             <ion-label>
               <p>{{ 'appointments.reason' | translate }}</p>
               <h3>{{ upcomingAppointment.reason }}</h3>
@@ -125,10 +125,10 @@
               expand="block"
               (click)="shareGlucoseData()"
               [disabled]="isSharingGlucose || !upcomingAppointment.glucoseDataShared"
-            >
-              <ion-spinner name="crescent" *ngIf="isSharingGlucose && !isKarma"></ion-spinner>
+             class="inline-flex items-center gap-2">
+    <app-icon  name="loader" *ngIf="isSharingGlucose && !isKarma" class="animate-spin"></app-icon>
               <span *ngIf="!isSharingGlucose">
-                <ion-icon slot="start" name="share-outline"></ion-icon>
+                <app-icon  name="share-outline"></app-icon>
                 {{ 'dashboard.shareReadings' | translate }}
               </span>
             </ion-button>
@@ -154,9 +154,9 @@
                   expand="block"
                   fill="outline"
                   (click)="addReading()"
-                  class="quick-action-btn"
+                  class="quick-action-btn inline-flex items-center gap-2"
                 >
-                  <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+    <app-icon  name="add-circle-outline"></app-icon>
                   {{ 'dashboard.addReading' | translate }}
                 </ion-button>
               </ion-col>
@@ -166,13 +166,12 @@
                   fill="outline"
                   (click)="onSync()"
                   [disabled]="isSyncing"
-                  class="quick-action-btn"
+                  class="quick-action-btn inline-flex items-center gap-2"
                 >
-                  <ion-icon
-                    slot="start"
-                    name="sync-outline"
+    <app-icon
+                     name="sync-outline"
                     [class.spinning]="isSyncing"
-                  ></ion-icon>
+                  ></app-icon>
                   {{ 'dashboard.syncNow' | translate }}
                 </ion-button>
               </ion-col>
@@ -254,7 +253,7 @@
             class="m-0 h-auto text-sm font-medium"
           >
             {{ 'common.viewAll' | translate }}
-            <ion-icon slot="end" name="chevron-forward-outline" class="text-base"></ion-icon>
+            <app-icon  name="chevron-forward-outline" class="text-base"></app-icon>
           </ion-button>
         </div>
 

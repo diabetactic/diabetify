@@ -8,6 +8,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AppointmentDetailPageRoutingModule } from './appointment-detail-routing.module';
 
 import { AppointmentDetailPage } from './appointment-detail.page';
+import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
 
 @NgModule({
   imports: [
@@ -16,6 +17,7 @@ import { AppointmentDetailPage } from './appointment-detail.page';
     IonicModule,
     AppointmentDetailPageRoutingModule,
     TranslateModule,
+    AppIconComponent,
   ],
   declarations: [AppointmentDetailPage],
 })

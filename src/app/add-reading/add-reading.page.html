@@ -1,8 +1,8 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="onCancel()">
-        <ion-icon slot="icon-only" name="close"></ion-icon>
+      <ion-button (click)="onCancel()" class="inline-flex items-center gap-2">
+    <app-icon  name="close"></app-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>{{ 'addReading.title' | translate }}</ion-title>
@@ -168,9 +168,9 @@
           expand="block"
           type="submit"
           [disabled]="readingForm.invalid || isSubmitting"
-          class="save-button"
+          class="save-button inline-flex items-center gap-2"
         >
-          <ion-spinner name="crescent" *ngIf="isSubmitting"></ion-spinner>
+    <app-icon  name="loader" *ngIf="isSubmitting" class="animate-spin"></app-icon>
           <span *ngIf="!isSubmitting">{{ 'addReading.actions.save' | translate }}</span>
         </ion-button>
       </div>
