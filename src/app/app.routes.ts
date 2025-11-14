@@ -47,4 +47,8 @@ export const APP_ROUTES: Routes = [
     loadComponent: () =>
       import('./dashboard/dashboard-detail/dashboard-detail.page').then(m => m.DashboardDetailPage),
   },
+  {
+    path: 'integration-test',
+    loadComponent: () => import('./testing/integration-test.page').then(m => m.IntegrationTestPage),
+  },
 ];
