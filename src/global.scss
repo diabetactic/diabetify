@@ -14,11 +14,162 @@
  * ============================================ */
 @import 'tailwindcss';
 
-/* DaisyUI Component Library */
-@plugin "daisyui";
+/* DaisyUI Component Library with Diabetify Themes */
+@plugin "daisyui" {
+  themes: [
+    {
+      diabetify: {
+        "primary": "#25aff4",
+        "primary-content": "#ffffff",
+        "secondary": "#00c6ae",
+        "secondary-content": "#ffffff",
+        "accent": "#667eea",
+        "accent-content": "#ffffff",
+        "neutral": "#0d171c",
+        "neutral-content": "#ffffff",
+        "base-100": "#ffffff",
+        "base-200": "#f5f7f8",
+        "base-300": "#e5e7eb",
+        "base-content": "#0d171c",
+        "info": "#3b82f6",
+        "info-content": "#ffffff",
+        "success": "#22c55e",
+        "success-content": "#ffffff",
+        "warning": "#f59e0b",
+        "warning-content": "#000000",
+        "error": "#ef4444",
+        "error-content": "#ffffff",
+      },
+      dark: {
+        "primary": "#25aff4",
+        "primary-content": "#ffffff",
+        "secondary": "#00c6ae",
+        "secondary-content": "#ffffff",
+        "accent": "#667eea",
+        "accent-content": "#ffffff",
+        "neutral": "#1e293b",
+        "neutral-content": "#ffffff",
+        "base-100": "#101c22",
+        "base-200": "#1e293b",
+        "base-300": "#334155",
+        "base-content": "#ffffff",
+        "info": "#3b82f6",
+        "info-content": "#ffffff",
+        "success": "#22c55e",
+        "success-content": "#ffffff",
+        "warning": "#f59e0b",
+        "warning-content": "#000000",
+        "error": "#ef4444",
+        "error-content": "#ffffff",
+      },
+    },
+  ],
+};
 
 /* Class-based Dark Mode (uses .dark class on html element) */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================
+ * DAISYUI → IONIC CSS VARIABLE BRIDGES
+ * Sync DaisyUI theme colors to Ionic variables
+ * ============================================ */
+:root[data-theme='diabetify'] {
+  /* Bridge DaisyUI primary to Ionic primary */
+  --ion-color-primary: #25aff4;
+  --ion-color-primary-rgb: 37, 175, 244;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #2099d7;
+  --ion-color-primary-tint: #3bb7f5;
+
+  /* Bridge DaisyUI secondary to Ionic secondary */
+  --ion-color-secondary: #00c6ae;
+  --ion-color-secondary-rgb: 0, 198, 174;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #00ae99;
+  --ion-color-secondary-tint: #1accb6;
+
+  /* Bridge DaisyUI success to Ionic success */
+  --ion-color-success: #22c55e;
+  --ion-color-success-rgb: 34, 197, 94;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #1ead53;
+  --ion-color-success-tint: #38cb6e;
+
+  /* Bridge DaisyUI warning to Ionic warning */
+  --ion-color-warning: #f59e0b;
+  --ion-color-warning-rgb: 245, 158, 11;
+  --ion-color-warning-contrast: #000000;
+  --ion-color-warning-contrast-rgb: 0, 0, 0;
+  --ion-color-warning-shade: #d88b0a;
+  --ion-color-warning-tint: #f6a823;
+
+  /* Bridge DaisyUI error to Ionic danger */
+  --ion-color-danger: #ef4444;
+  --ion-color-danger-rgb: 239, 68, 68;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #d13c3c;
+  --ion-color-danger-tint: #f05757;
+
+  /* Background and surface colors */
+  --ion-background-color: #ffffff;
+  --ion-background-color-rgb: 255, 255, 255;
+  --ion-text-color: #0d171c;
+  --ion-text-color-rgb: 13, 23, 28;
+  --ion-card-background: #ffffff;
+}
+
+:root[data-theme='dark'] {
+  /* Bridge DaisyUI primary to Ionic primary (same colors) */
+  --ion-color-primary: #25aff4;
+  --ion-color-primary-rgb: 37, 175, 244;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #2099d7;
+  --ion-color-primary-tint: #3bb7f5;
+
+  /* Bridge DaisyUI secondary to Ionic secondary */
+  --ion-color-secondary: #00c6ae;
+  --ion-color-secondary-rgb: 0, 198, 174;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #00ae99;
+  --ion-color-secondary-tint: #1accb6;
+
+  /* Bridge DaisyUI success to Ionic success */
+  --ion-color-success: #22c55e;
+  --ion-color-success-rgb: 34, 197, 94;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #1ead53;
+  --ion-color-success-tint: #38cb6e;
+
+  /* Bridge DaisyUI warning to Ionic warning */
+  --ion-color-warning: #f59e0b;
+  --ion-color-warning-rgb: 245, 158, 11;
+  --ion-color-warning-contrast: #000000;
+  --ion-color-warning-contrast-rgb: 0, 0, 0;
+  --ion-color-warning-shade: #d88b0a;
+  --ion-color-warning-tint: #f6a823;
+
+  /* Bridge DaisyUI error to Ionic danger */
+  --ion-color-danger: #ef4444;
+  --ion-color-danger-rgb: 239, 68, 68;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #d13c3c;
+  --ion-color-danger-tint: #f05757;
+
+  /* Dark theme background and surface colors */
+  --ion-background-color: #101c22;
+  --ion-background-color-rgb: 16, 28, 34;
+  --ion-text-color: #ffffff;
+  --ion-text-color-rgb: 255, 255, 255;
+  --ion-card-background: #1e293b;
+}
 
 /* ============================================
  * DESIGN TOKEN SYSTEM
@@ -98,14 +249,10 @@
  * ============================================ */
 @layer components {
   /* ========== CARDS ========== */
+  /* Migrated to DaisyUI card component - use class="card bg-base-100 shadow-xl" instead */
+  /*
   .card-elevated {
     @apply shadow-card rounded-2xl bg-white p-6 backdrop-blur-xl dark:bg-gray-900;
-  }
-
-  .card-gradient {
-    background: var(--gradient-primary);
-
-    @apply rounded-2xl p-6 text-white shadow-xl;
   }
 
   .card-glass {
@@ -114,6 +261,13 @@
     @apply rounded-2xl p-6 backdrop-blur-xl dark:bg-gray-900/95;
 
     border: 1px solid rgb(255 255 255 / 18%);
+  }
+  */
+
+  .card-gradient {
+    background: var(--gradient-primary);
+
+    @apply rounded-2xl p-6 text-white shadow-xl;
   }
 
   /* ========== BUTTONS ========== */

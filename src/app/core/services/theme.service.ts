@@ -184,6 +184,10 @@ export class ThemeService {
     this.renderer.addClass(body, themeClass);
     this.renderer.addClass(html, themeClass);
 
+    // Set DaisyUI data-theme attribute for DaisyUI components
+    const daisyTheme = isDark ? 'dark' : 'diabetify';
+    document.documentElement.setAttribute('data-theme', daisyTheme);
+
     // Add 'ion-palette-dark' class for Ionic dark mode (required for Ionic components)
     if (isDark) {
       this.renderer.addClass(html, 'ion-palette-dark');
@@ -202,7 +206,7 @@ export class ThemeService {
     // Update CSS custom properties
     this.updateCSSProperties(palette, isDark, highContrast);
 
-    this.logger.debug('UI', 'Theme applied', { isDark, palette, highContrast });
+    this.logger.debug('UI', 'Theme applied', { isDark, palette, highContrast, daisyTheme });
   }
 
   /**
