@@ -52,6 +52,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Tech Stack
 - **Frontend**: Angular 20 + Ionic 8 + Angular Material 20
+- **Styling**: Tailwind CSS v4 + DaisyUI v5.4.7 (see UI Components section)
 - **Mobile**: Capacitor 6 (iOS/Android)
 - **Data**: Dexie (IndexedDB) for offline storage, RxJS for reactive state
 - **Testing**: Jasmine/Karma (unit), Playwright (E2E)
@@ -531,6 +532,141 @@ Bash("zen clink --tool aider --task 'Optimize auth performance'")
 // 4. Use claude-flow for review and integration
 Task("Reviewer", "Review all auth changes", "reviewer")
 ```
+
+## 🎨 UI Components
+
+### Two-Library Approach
+
+Diabetify uses a **complementary two-library UI system**:
+
+**DaisyUI v5.4.7** - Content Components
+- Semantic HTML components with Tailwind utility classes
+- Pure CSS, no JavaScript runtime
+- Use for: badges, cards, alerts, forms, stats
+- Bundle impact: +12-15 KB gzipped
+- Documentation: [docs/DAISYUI_QUICK_GUIDE.md](./docs/DAISYUI_QUICK_GUIDE.md)
+
+**Ionic Angular** - Native Mobile Interactions
+- Platform-specific mobile UI components
+- Native gestures and animations
+- Use for: navigation, buttons, lists, modals, action sheets
+- Provides mobile-first, touch-optimized experience
+
+### When to Use Each
+
+**Use DaisyUI for:**
+```html
+<!-- Content badges -->
+<div class="badge badge-success">Normal</div>
+
+<!-- Data cards -->
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <h2 class="card-title">Reading Details</h2>
+    <p>Content here</p>
+  </div>
+</div>
+
+<!-- Alert messages -->
+<div role="alert" class="alert alert-info">
+  <span>Information message</span>
+</div>
+
+<!-- Forms -->
+<input type="text" class="input input-bordered" />
+<select class="select select-bordered">
+  <option>Option 1</option>
+</select>
+
+<!-- Statistics -->
+<div class="stats shadow">
+  <div class="stat">
+    <div class="stat-title">Avg Glucose</div>
+    <div class="stat-value">126</div>
+  </div>
+</div>
+```
+
+**Use Ionic for:**
+```html
+<!-- Navigation -->
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Dashboard</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<!-- Action buttons -->
+<ion-button expand="block" (click)="save()">
+  Save Reading
+</ion-button>
+
+<!-- Lists with gestures -->
+<ion-list>
+  <ion-item-sliding>
+    <ion-item>Content</ion-item>
+    <ion-item-options>
+      <ion-item-option (click)="delete()">Delete</ion-item-option>
+    </ion-item-options>
+  </ion-item-sliding>
+</ion-list>
+
+<!-- Modals and overlays -->
+<ion-modal>
+  <ng-template>Modal content</ng-template>
+</ion-modal>
+```
+
+### Theme Integration
+
+**DaisyUI themes** are controlled via `data-theme` attribute on `<html>`:
+```typescript
+// Theme service automatically syncs Ionic and DaisyUI themes
+this.themeService.setTheme('dark'); // Sets both Ionic and DaisyUI dark mode
+```
+
+**Available themes:** `light`, `dark` (configured in `tailwind.config.js`)
+
+### Custom Utilities Preserved
+
+Custom utilities work alongside DaisyUI:
+```html
+<!-- Button glow effect -->
+<ion-button class="btn-glow" color="primary">Glowing</ion-button>
+
+<!-- Card variants -->
+<div class="card-elevated">Elevated shadow</div>
+<div class="card-gradient">Gradient background</div>
+<div class="card-glass">Glass morphism</div>
+
+<!-- Animations -->
+<div class="alert animate-fade-in">Fades in</div>
+<div class="card animate-slide-up">Slides up</div>
+```
+
+### Important: Shadow DOM Limitations
+
+**Ionic components use Shadow DOM**, which isolates their internal styles. DaisyUI classes only work in Light DOM (regular Angular templates), not inside Shadow DOM.
+
+**Works:**
+```html
+<ion-content>
+  <div class="alert alert-success">This works!</div>
+</ion-content>
+```
+
+**Doesn't work:**
+```html
+<ion-button class="btn btn-primary">DaisyUI classes won't apply</ion-button>
+```
+
+**Solution:** Use Ionic styling for Ionic components, DaisyUI for content.
+
+### Quick Reference
+
+- Full guide: [docs/DAISYUI_QUICK_GUIDE.md](./docs/DAISYUI_QUICK_GUIDE.md)
+- CSS migration: [docs/CSS_MIGRATION_QUICK_REFERENCE.md](./docs/CSS_MIGRATION_QUICK_REFERENCE.md)
+- Styling conventions: [docs/STYLING_GUIDE.md](./docs/STYLING_GUIDE.md)
 
 ## 🚀 Daily Development Commands
 
