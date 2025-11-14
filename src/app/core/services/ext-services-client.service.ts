@@ -1,16 +1,8 @@
 /**
  * ExtServicesClientService - Direct HTTP client for extServices microservices
  *
- * Simple, direct HTTP calls to the API Gateway (port 8000) without complex abstractions.
- * This service connects directly to the Python/FastAPI microservices running in Docker.
- *
- * Available endpoints:
- * - POST /token (login with username/password)
- * - GET /users/me (get current user profile)
- * - GET /appointments/mine (get user appointments)
- * - POST /appointments/create (create appointment)
- * - GET /glucose/mine (get glucose readings)
- * - POST /glucose/create (create glucose reading)
+ * Complete implementation of all API Gateway endpoints based on OpenAPI schema.
+ * Connects directly to Heroku: https://diabetactic-api-gateway-37949d6f182f.herokuapp.com
  */
 
 import { Injectable } from '@angular/core';
@@ -20,72 +12,94 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { LoggerService } from './logger.service';
 
-/**
- * Token response from POST /token endpoint
- */
-export interface TokenResponse {
+// ===== INTERFACES FROM OPENAPI SCHEMA =====
+
+export interface Token {
   access_token: string;
   token_type: string;
 }
 
-/**
- * User profile from GET /users/me endpoint
- */
-export interface UserProfile {
+export interface User {
   dni: string;
   name: string;
   surname: string;
   blocked: boolean;
-  email: string;
-  state?: 'pending' | 'active' | 'disabled';
+  email?: string;
+  state?: string;
   tidepool?: string | null;
-  hospital_account: string;
-  times_measured: number;
-  streak: number;
-  max_streak: number;
+  hospital_account?: string;
+  times_measured?: number;
+  streak?: number;
+  max_streak?: number;
 }
 
-/**
- * Appointment from GET /appointments/mine endpoint
- */
-export interface ExtAppointment {
-  id: number;
-  start_time: string; // ISO datetime
-  type_: string;
-  data_field1?: string;
-  data_field2?: string;
+export interface Appointment {
+  glucose_objective: number;
+  insulin_type: string;
+  dose: number;
+  fast_insulin: string;
+  fixed_dose: number;
+  ratio: number;
+  sensitivity: number;
+  pump_type: string;
+  another_treatment?: string | null;
+  control_data: string;
+  motive: string[]; // MotivesEnum: AJUSTE, HIPOGLUCEMIA, HIPERGLUCEMIA, CETOSIS, DUDAS, OTRO
+  other_motive?: string | null;
+  appointment_id: number;
   user_id: number;
-  finished: boolean;
-  created_at: string;
-  updated_at: string;
-  clinic_notes?: string;
 }
 
-/**
- * Glucose reading from GET /glucose/mine endpoint
- */
-export interface ExtGlucoseReading {
-  id: number;
+export interface AppointmentPost {
+  glucose_objective: number;
+  insulin_type: string;
+  dose: number;
+  fast_insulin: string;
+  fixed_dose: number;
+  ratio: number;
+  sensitivity: number;
+  pump_type: string;
+  another_treatment?: string | null;
+  control_data: string;
+  motive: string[];
+  other_motive?: string | null;
+}
+
+export interface AppointmentResolution {
+  appointment_id: number;
+  change_basal_type: string;
+  change_basal_dose: number;
+  change_basal_time: string;
+  change_fast_type: string;
+  change_ratio: number;
+  change_sensitivity: number;
+  emergency_care: boolean;
+  needed_physical_appointment: boolean;
+}
+
+export interface GlucoseReading {
   user_id: number;
   glucose_level: number;
-  reading_type: string;
+  reading_type: string; // ReadingTypeEnum: DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO
+  id: number;
   created_at: string;
 }
 
-/**
- * Auth state
- */
+export interface GlucoseReadingList {
+  readings: GlucoseReading[];
+}
+
 export interface ExtAuthState {
   isAuthenticated: boolean;
   accessToken: string | null;
-  user: UserProfile | null;
+  user: User | null;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class ExtServicesClientService {
-  public readonly apiGatewayUrl: string; // Made public for testing page access
+  public readonly apiGatewayUrl: string;
 
   // Auth state
   private authState$ = new BehaviorSubject<ExtAuthState>({
@@ -95,7 +109,7 @@ export class ExtServicesClientService {
   });
 
   constructor(
-    public http: HttpClient, // Made public for testing page access
+    public http: HttpClient,
     private logger: LoggerService
   ) {
     // Get API Gateway URL from environment
@@ -105,77 +119,73 @@ export class ExtServicesClientService {
     this.logger.info('Init', 'ExtServicesClientService initialized', {
       apiGatewayUrl: this.apiGatewayUrl,
     });
+
+    // Check for existing token
+    const token = this.getAccessToken();
+    if (token) {
+      this.authState$.next({
+        isAuthenticated: true,
+        accessToken: token,
+        user: null,
+      });
+    }
   }
 
-  /**
-   * Get auth state observable
-   */
-  getAuthState(): Observable<ExtAuthState> {
-    return this.authState$.asObservable();
+  private getHeaders(): HttpHeaders {
+    const token = this.getAccessToken();
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
   }
 
-  /**
-   * Get current access token
-   */
-  getAccessToken(): string | null {
-    return this.authState$.value.accessToken;
-  }
+  // ===== AUTH ENDPOINTS =====
 
   /**
-   * Login with username (DNI) and password
-   * Calls POST /token endpoint
-   *
-   * @param username - User DNI or email
+   * POST /token - Login with username and password
+   * @param username - User DNI
    * @param password - User password
-   * @returns Observable with token response
    */
-  login(username: string, password: string): Observable<{ token: TokenResponse; user: UserProfile }> {
+  login(username: string, password: string): Observable<{ token: Token; user: User | null }> {
     this.logger.info('Auth', 'Login attempt', { username });
 
-    // Create form-urlencoded body (required by OAuth2PasswordRequestForm)
     const body = new HttpParams().set('username', username).set('password', password);
 
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
 
-    return this.http.post<TokenResponse>(`${this.apiGatewayUrl}/token`, body.toString(), { headers }).pipe(
+    return this.http.post<Token>(`${this.apiGatewayUrl}/token`, body.toString(), { headers }).pipe(
       tap(tokenResponse => {
         this.logger.info('Auth', 'Token received', { token_type: tokenResponse.token_type });
-      }),
-      // After getting token, fetch user profile
-      map(tokenResponse => {
-        // Store token temporarily
+
+        // Store token
+        localStorage.setItem('access_token', tokenResponse.access_token);
         this.authState$.next({
           isAuthenticated: true,
           accessToken: tokenResponse.access_token,
-          user: null, // Will be fetched next
+          user: null,
         });
-        return tokenResponse;
       }),
-      // Fetch user profile using the token
       map(tokenResponse => {
-        return { token: tokenResponse, user: null as any }; // Return token, user will be fetched separately
+        return { token: tokenResponse, user: null };
       }),
       catchError(error => this.handleError('Login failed', error))
     );
   }
 
   /**
-   * Get current user profile
-   * Calls GET /users/me endpoint (requires authentication)
+   * GET /users/me - Get current user profile
    */
-  getUserProfile(): Observable<UserProfile> {
+  getUserProfile(): Observable<User> {
     const token = this.getAccessToken();
     if (!token) {
       return throwError(() => new Error('No access token available. Please login first.'));
     }
 
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
-
-    return this.http.get<UserProfile>(`${this.apiGatewayUrl}/users/me`, { headers }).pipe(
+    return this.http.get<User>(`${this.apiGatewayUrl}/users/me`, {
+      headers: this.getHeaders(),
+    }).pipe(
       tap(user => {
         this.logger.info('Auth', 'User profile fetched', {
           dni: user.dni,
@@ -195,20 +205,46 @@ export class ExtServicesClientService {
   }
 
   /**
-   * Get user appointments
-   * Calls GET /appointments/mine endpoint (requires authentication)
+   * Logout - clear auth state
    */
-  getAppointments(): Observable<ExtAppointment[]> {
+  logout(): void {
+    this.logger.info('Auth', 'Logging out');
+    localStorage.removeItem('access_token');
+    this.authState$.next({
+      isAuthenticated: false,
+      accessToken: null,
+      user: null,
+    });
+  }
+
+  /**
+   * Get current access token
+   */
+  getAccessToken(): string | null {
+    return localStorage.getItem('access_token');
+  }
+
+  /**
+   * Get auth state observable
+   */
+  getAuthState(): Observable<ExtAuthState> {
+    return this.authState$.asObservable();
+  }
+
+  // ===== APPOINTMENTS ENDPOINTS =====
+
+  /**
+   * GET /appointments/mine - Get user's appointments
+   */
+  getAppointments(): Observable<Appointment[]> {
     const token = this.getAccessToken();
     if (!token) {
       return throwError(() => new Error('No access token available. Please login first.'));
     }
 
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
-
-    return this.http.get<ExtAppointment[]>(`${this.apiGatewayUrl}/appointments/mine`, { headers }).pipe(
+    return this.http.get<Appointment[]>(`${this.apiGatewayUrl}/appointments/mine`, {
+      headers: this.getHeaders(),
+    }).pipe(
       tap(appointments => {
         this.logger.info('Appointments', 'Fetched appointments', {
           count: appointments.length,
@@ -219,168 +255,176 @@ export class ExtServicesClientService {
   }
 
   /**
-   * Create new appointment
-   * Calls POST /appointments/create endpoint (requires authentication)
+   * GET /appointments/state - Get appointment queue state
    */
-  createAppointment(appointmentData: {
-    start_time: string;
-    type_: string;
-    data_field1?: string;
-    data_field2?: string;
-  }): Observable<ExtAppointment> {
+  getAppointmentState(): Observable<string> {
     const token = this.getAccessToken();
     if (!token) {
       return throwError(() => new Error('No access token available. Please login first.'));
     }
 
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    });
-
-    return this.http
-      .post<ExtAppointment>(`${this.apiGatewayUrl}/appointments/create`, appointmentData, { headers })
-      .pipe(
-        tap(appointment => {
-          this.logger.info('Appointments', 'Created appointment', {
-            id: appointment.id,
-            start_time: appointment.start_time,
-          });
-        }),
-        catchError(error => this.handleError('Failed to create appointment', error))
-      );
+    return this.http.get<string>(`${this.apiGatewayUrl}/appointments/state`, {
+      headers: this.getHeaders(),
+    }).pipe(
+      tap(state => {
+        this.logger.info('Appointments', 'Fetched appointment state', { state });
+      }),
+      catchError(error => this.handleError('Failed to fetch appointment state', error))
+    );
   }
 
   /**
-   * Get glucose readings
-   * Calls GET /glucose/mine endpoint (requires authentication)
+   * POST /appointments/create - Create new appointment
    */
-  getGlucoseReadings(): Observable<{ readings: ExtGlucoseReading[]; count: number }> {
+  createAppointment(data: AppointmentPost): Observable<Appointment> {
     const token = this.getAccessToken();
     if (!token) {
       return throwError(() => new Error('No access token available. Please login first.'));
     }
 
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
-
-    return this.http
-      .get<{ readings: ExtGlucoseReading[]; count: number }>(`${this.apiGatewayUrl}/glucose/mine`, {
-        headers,
-      })
-      .pipe(
-        tap(response => {
-          this.logger.info('Glucose', 'Fetched glucose readings', {
-            count: response.count,
-          });
-        }),
-        catchError(error => this.handleError('Failed to fetch glucose readings', error))
-      );
+    return this.http.post<Appointment>(`${this.apiGatewayUrl}/appointments/create`, data, {
+      headers: this.getHeaders(),
+    }).pipe(
+      tap(appointment => {
+        this.logger.info('Appointments', 'Created appointment', {
+          appointment_id: appointment.appointment_id,
+        });
+      }),
+      catchError(error => this.handleError('Failed to create appointment', error))
+    );
   }
 
   /**
-   * Get latest glucose readings
-   * Calls GET /glucose/mine/latest endpoint (requires authentication)
+   * GET /appointments/{appointment_id}/resolution - Get appointment resolution
    */
-  getLatestGlucoseReadings(): Observable<{ readings: ExtGlucoseReading[]; count: number }> {
+  getAppointmentResolution(appointmentId: number): Observable<AppointmentResolution> {
     const token = this.getAccessToken();
     if (!token) {
       return throwError(() => new Error('No access token available. Please login first.'));
     }
 
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
-
-    return this.http
-      .get<{ readings: ExtGlucoseReading[]; count: number }>(`${this.apiGatewayUrl}/glucose/mine/latest`, {
-        headers,
-      })
-      .pipe(
-        tap(response => {
-          this.logger.info('Glucose', 'Fetched latest glucose readings', {
-            count: response.count,
-          });
-        }),
-        catchError(error => this.handleError('Failed to fetch latest glucose readings', error))
-      );
+    return this.http.get<AppointmentResolution>(
+      `${this.apiGatewayUrl}/appointments/${appointmentId}/resolution`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap(resolution => {
+        this.logger.info('Appointments', 'Fetched resolution', {
+          appointment_id: resolution.appointment_id,
+        });
+      }),
+      catchError(error => this.handleError('Failed to fetch appointment resolution', error))
+    );
   }
 
   /**
-   * Create glucose reading
-   * Calls POST /glucose/create endpoint (requires authentication)
+   * POST /appointments/submit - Submit appointment to queue
    */
-  createGlucoseReading(glucoseLevel: number, readingType: string): Observable<ExtGlucoseReading> {
+  submitAppointment(): Observable<number> {
     const token = this.getAccessToken();
     if (!token) {
       return throwError(() => new Error('No access token available. Please login first.'));
     }
 
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
+    return this.http.post<number>(`${this.apiGatewayUrl}/appointments/submit`, {}, {
+      headers: this.getHeaders(),
+    }).pipe(
+      tap(id => {
+        this.logger.info('Appointments', 'Submitted appointment', { id });
+      }),
+      catchError(error => this.handleError('Failed to submit appointment', error))
+    );
+  }
 
-    const params = new HttpParams().set('glucose_level', glucoseLevel.toString()).set('reading_type', readingType);
+  // ===== GLUCOSE ENDPOINTS =====
 
-    return this.http
-      .post<ExtGlucoseReading>(`${this.apiGatewayUrl}/glucose/create`, null, {
-        headers,
-        params,
-      })
-      .pipe(
-        tap(reading => {
-          this.logger.info('Glucose', 'Created glucose reading', {
-            id: reading.id,
-            glucose_level: reading.glucose_level,
-            reading_type: reading.reading_type,
-          });
-        }),
-        catchError(error => this.handleError('Failed to create glucose reading', error))
-      );
+  /**
+   * GET /glucose/mine - Get all glucose readings
+   */
+  getGlucoseReadings(): Observable<GlucoseReadingList> {
+    const token = this.getAccessToken();
+    if (!token) {
+      return throwError(() => new Error('No access token available. Please login first.'));
+    }
+
+    return this.http.get<GlucoseReadingList>(`${this.apiGatewayUrl}/glucose/mine`, {
+      headers: this.getHeaders(),
+    }).pipe(
+      tap(response => {
+        this.logger.info('Glucose', 'Fetched glucose readings', {
+          count: response.readings?.length || 0,
+        });
+      }),
+      catchError(error => this.handleError('Failed to fetch glucose readings', error))
+    );
   }
 
   /**
-   * Logout - clear auth state
+   * GET /glucose/mine/latest - Get latest glucose readings
    */
-  logout(): void {
-    this.logger.info('Auth', 'Logging out');
-    this.authState$.next({
-      isAuthenticated: false,
-      accessToken: null,
-      user: null,
-    });
+  getLatestGlucoseReadings(): Observable<GlucoseReadingList> {
+    const token = this.getAccessToken();
+    if (!token) {
+      return throwError(() => new Error('No access token available. Please login first.'));
+    }
+
+    return this.http.get<GlucoseReadingList>(`${this.apiGatewayUrl}/glucose/mine/latest`, {
+      headers: this.getHeaders(),
+    }).pipe(
+      tap(response => {
+        this.logger.info('Glucose', 'Fetched latest glucose readings', {
+          count: response.readings?.length || 0,
+        });
+      }),
+      catchError(error => this.handleError('Failed to fetch latest glucose readings', error))
+    );
   }
 
   /**
-   * Handle HTTP errors
+   * POST /glucose/create - Create glucose reading
    */
+  createGlucoseReading(glucoseLevel: number, readingType: string): Observable<GlucoseReading> {
+    const token = this.getAccessToken();
+    if (!token) {
+      return throwError(() => new Error('No access token available. Please login first.'));
+    }
+
+    const params = new HttpParams()
+      .set('glucose_level', glucoseLevel.toString())
+      .set('reading_type', readingType);
+
+    return this.http.post<GlucoseReading>(
+      `${this.apiGatewayUrl}/glucose/create`,
+      null,
+      { headers: this.getHeaders(), params }
+    ).pipe(
+      tap(reading => {
+        this.logger.info('Glucose', 'Created glucose reading', {
+          id: reading.id,
+          glucose_level: reading.glucose_level,
+          reading_type: reading.reading_type,
+        });
+      }),
+      catchError(error => this.handleError('Failed to create glucose reading', error))
+    );
+  }
+
+  // ===== ERROR HANDLING =====
+
   private handleError(context: string, error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'Unknown error occurred';
 
     if (error.error instanceof ErrorEvent) {
       // Client-side error
-      errorMessage = `Error: ${error.error.message}`;
+      errorMessage = `Client Error: ${error.error.message}`;
     } else {
       // Server-side error
-      errorMessage = `Status: ${error.status}, Message: ${error.message}`;
-
-      // Extract detail from FastAPI error response
+      errorMessage = `Server Error: ${error.status} ${error.statusText}`;
       if (error.error?.detail) {
-        if (typeof error.error.detail === 'string') {
-          errorMessage = error.error.detail;
-        } else if (Array.isArray(error.error.detail)) {
-          errorMessage = error.error.detail.map((d: any) => d.msg || d.detail).join(', ');
-        }
+        errorMessage += ` - ${error.error.detail}`;
       }
     }
 
-    this.logger.error('ExtServices', context, error, {
-      status: error.status,
-      url: error.url,
-      errorMessage,
-    });
-
-    return throwError(() => new Error(`${context}: ${errorMessage}`));
+    this.logger.error(context, errorMessage, { error });
+    return throwError(() => new Error(errorMessage));
   }
 }
