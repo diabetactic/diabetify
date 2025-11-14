@@ -5,7 +5,7 @@
 
 import { Injectable, Optional, Inject, InjectionToken } from '@angular/core';
 import { BehaviorSubject, Observable, from, of } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { map, catchError, tap, switchMap } from 'rxjs/operators';
 import { liveQuery } from 'dexie';
 import {
   LocalGlucoseReading,
@@ -17,6 +17,7 @@ import {
   GlucoseStatus,
 } from '../models';
 import { db, DiabetifyDatabase, SyncQueueItem } from './database.service';
+import { MockDataService, MockReading } from './mock-data.service';
 
 export const LIVE_QUERY_FN = new InjectionToken<typeof liveQuery>('LIVE_QUERY_FN');
 
@@ -75,11 +76,15 @@ export class ReadingsService {
 
   constructor(
     @Optional() database?: DiabetifyDatabase,
-    @Optional() @Inject(LIVE_QUERY_FN) liveQueryFn?: typeof liveQuery
+    @Optional() @Inject(LIVE_QUERY_FN) liveQueryFn?: typeof liveQuery,
+    @Optional() private mockData?: MockDataService
   ) {
     this.db = database ?? db;
     this.liveQueryFn = liveQueryFn ?? liveQuery;
-    this.initializeObservables();
+    // Only initialize observables if NOT using mock data
+    if (!this.mockData) {
+      this.initializeObservables();
+    }
   }
 
   /**
@@ -99,8 +104,24 @@ export class ReadingsService {
 
   /**
    * Get all readings with optional pagination
+   * NOW USING MOCK DATA SERVICE
    */
   async getAllReadings(limit?: number, offset: number = 0): Promise<PaginatedReadings> {
+    if (this.mockData) {
+      // Use mock data
+      const mockReadings = await this.mockData.getReadings().toPromise();
+      const mapped = mockReadings?.map(r => this.mapMockToLocal(r)) || [];
+
+      return {
+        readings: mapped,
+        total: mapped.length,
+        hasMore: false,
+        offset: 0,
+        limit: mapped.length,
+      };
+    }
+
+    // Original IndexedDB code
     const total = await this.db.readings.count();
 
     let query = this.db.readings.orderBy('time').reverse();
@@ -308,7 +329,31 @@ export class ReadingsService {
   }
 
   /**
+   * Map MockReading to LocalGlucoseReading
+   */
+  private mapMockToLocal(mock: MockReading): LocalGlucoseReading {
+    const reading: LocalGlucoseReading = {
+      id: mock.id,
+      localId: mock.id,
+      time: mock.date.toISOString(),
+      value: mock.glucose,
+      units: 'mg/dL',
+      type: 'smbg' as const, // Mock data is manual SMBG
+      subType: 'manual', // SMBG subtype
+      deviceId: 'mock-device',
+      userId: 'pac001',
+      synced: true,
+      localStoredAt: new Date().toISOString(),
+      isLocalOnly: false,
+      status: this.calculateGlucoseStatus(mock.glucose, 'mg/dL'),
+      notes: mock.notes ? [mock.notes] : [],
+    };
+    return reading;
+  }
+
+  /**
    * Calculate statistics for a period
+   * NOW USING MOCK DATA SERVICE
    */
   async getStatistics(
     period: 'day' | 'week' | 'month' | 'all',
@@ -316,6 +361,24 @@ export class ReadingsService {
     targetMax: number = 180,
     unit: GlucoseUnit = 'mg/dL'
   ): Promise<GlucoseStatistics> {
+    if (this.mockData) {
+      // Use mock data stats
+      const stats = await this.mockData.getStats().toPromise();
+      if (stats) {
+        return {
+          average: stats.avgGlucose,
+          median: stats.avgGlucose, // Mock doesn't have median
+          standardDeviation: 15, // Mock value
+          coefficientOfVariation: 10, // Mock value
+          timeInRange: stats.timeInRange,
+          timeAboveRange: stats.timeAboveRange,
+          timeBelowRange: stats.timeBelowRange,
+          totalReadings: stats.readingsThisWeek,
+          estimatedA1C: stats.hba1c,
+          gmi: stats.hba1c,
+        };
+      }
+    }
     const now = new Date();
     let startDate: Date;
 

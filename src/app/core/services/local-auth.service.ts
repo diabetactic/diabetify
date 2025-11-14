@@ -6,6 +6,7 @@ import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
 import { PlatformDetectorService } from './platform-detector.service';
 import { LoggerService } from './logger.service';
+import { MockDataService } from './mock-data.service';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -154,9 +155,10 @@ export class LocalAuthService {
   constructor(
     private http: HttpClient,
     private platformDetector: PlatformDetectorService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private mockData: MockDataService
   ) {
-    this.logger.info('Init', 'LocalAuthService initialized');
+    this.logger.info('Init', 'LocalAuthService initialized (USING MOCK DATA)');
     // Set base URL for API calls
     const defaultUrl = environment.backendServices?.apiGateway?.baseUrl || 'http://localhost:8000';
     this.baseUrl = this.platformDetector.getApiBaseUrl(defaultUrl);
@@ -217,15 +219,55 @@ export class LocalAuthService {
    * Updated to be simpler and match the UI requirements
    */
   login(username: string, password: string, rememberMe: boolean = false): Observable<LoginResult> {
-    this.logger.info('Auth', 'Login attempt', { username, rememberMe });
+    this.logger.info('Auth', 'Login attempt (ALWAYS USING MOCK DATA)', { username, rememberMe });
 
-    // DEMO MODE: Check for demo credentials first
-    if (username === 'demo_patient' && password === 'demo123') {
-      this.logger.info('Auth', 'Demo mode login detected');
-      return from(this.handleDemoLogin(rememberMe));
-    }
+    // ALWAYS USE MOCK DATA SERVICE
+    return this.mockData.login(username, password).pipe(
+      switchMap(mockUser => {
+        const authResponse: TokenResponse = {
+          access_token: 'mock_access_token_' + Date.now(),
+          refresh_token: null,
+          token_type: 'bearer',
+          expires_in: 86400, // 24 hours
+          user: {
+            id: mockUser.id,
+            email: mockUser.email,
+            firstName: mockUser.name.split(' ')[0],
+            lastName: mockUser.name.split(' ').slice(1).join(' '),
+            role: 'patient',
+            accountState: AccountState.ACTIVE,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            preferences: {
+              glucoseUnit: 'mg/dL',
+              targetRange: { low: 70, high: 180 },
+              language: 'es',
+              notifications: { appointments: true, readings: true, reminders: true },
+              theme: 'light',
+            },
+          },
+        };
 
-    // Prepare form-encoded body for /token endpoint
+        return from(this.handleAuthResponse(authResponse, rememberMe)).pipe(
+          map(
+            () =>
+              ({
+                success: true,
+                user: authResponse.user,
+              }) as LoginResult
+          )
+        );
+      }),
+      catchError(error => {
+        this.logger.error('Auth', 'Mock login failed', error);
+        return of({
+          success: false,
+          error: 'Error al iniciar sesión con datos mockeados',
+        } as LoginResult);
+      })
+    );
+
+    // Backend code removed - using only mock data
     const body = new HttpParams()
       .set('username', username) // Can be DNI or email
       .set('password', password);
