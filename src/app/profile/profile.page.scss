@@ -1,6 +1,6 @@
-// Ion content background
+// Ion content background - uses DaisyUI base-200
 ion-content {
-  --background: #f5f7f8;
+  --background: oklch(var(--b2));
 }
 
 // Profile hero gradient background
@@ -56,16 +56,16 @@ ion-content {
   gap: 12px;
 }
 
-// Overview card with transitions
+// Overview card with transitions - uses DaisyUI base-100
 .overview-card {
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: var(--ion-color-light, #fff);
+  background: oklch(var(--b1));
   border-radius: 16px;
   box-shadow: 0 8px 16px rgb(10 31 68 / 8%);
-  color: var(--ion-color-dark, #0d1b2a);
+  color: oklch(var(--bc));
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
@@ -88,9 +88,9 @@ button.overview-card {
   box-shadow: 0 16px 32px rgb(10 31 68 / 12%);
 }
 
-// Card base styling
+// Card base styling - uses DaisyUI base-100
 .card {
-  background: var(--ion-color-light, #fff);
+  background: oklch(var(--b1));
   border-radius: 20px;
   padding: 20px;
   box-shadow: 0 12px 24px rgb(10 31 68 / 9%);
@@ -167,24 +167,4 @@ button.overview-card {
   }
 }
 
-// Dark theme overrides
-:host-context(.dark-theme) {
-  ion-content {
-    --background: #0f172a;
-  }
-
-  .profile-hero {
-    box-shadow: 0 12px 24px rgb(37 175 244 / 35%);
-  }
-
-  .overview-card,
-  .card {
-    background: var(--ion-color-step-150, #111827);
-    box-shadow: 0 12px 24px rgb(0 0 0 / 35%);
-    color: #fff;
-  }
-
-  .overview-card--placeholder .card-subtitle {
-    color: #c8c8c8;
-  }
-}
+// DaisyUI handles dark mode automatically via data-theme attribute

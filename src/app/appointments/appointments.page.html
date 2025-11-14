@@ -1,11 +1,23 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>📅 Mis Citas Médicas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/appointments/create">
+        <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <div class="p-4">
+    <!-- Botón para agendar nueva cita -->
+    <div class="mb-4">
+      <button class="btn btn-primary btn-block" routerLink="/appointments/create">
+        ➕ Agendar Nueva Cita
+      </button>
+    </div>
+
     <!-- Tabs para filtrar -->
     <div class="tabs tabs-boxed mb-4">
       <button

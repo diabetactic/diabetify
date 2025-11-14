@@ -67,8 +67,8 @@ export class LoginPage implements OnInit {
 
   fillDemoCredentials() {
     this.loginForm.patchValue({
-      username: '1000',
-      password: 'tuvieja',
+      username: 'demo_patient',
+      password: 'demo123',
       rememberMe: true,
     });
     this.showDemoHint = false;
@@ -176,8 +176,8 @@ export class LoginPage implements OnInit {
   }
 
   navigateToRegister() {
-    // For demo purposes, show message that registration is not available
-    this.showRegistrationNotAvailable();
+    // Navigate to register page
+    this.router.navigate(['/register']);
   }
 
   async showRegistrationNotAvailable() {

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { IonicModule, ToastController } from '@ionic/angular';
+import { IonicModule, ToastController, NavController } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -62,6 +62,7 @@ export class AddReadingPage implements OnInit, OnDestroy {
     private readingsService: ReadingsService,
     private profileService: ProfileService,
     private router: Router,
+    private navCtrl: NavController,
     private toastController: ToastController,
     private translate: TranslateService
   ) {}
@@ -242,8 +243,8 @@ export class AddReadingPage implements OnInit, OnDestroy {
       // Show success message
       await this.showSuccessToast();
 
-      // Navigate back to readings list
-      await this.router.navigate(['/tabs/readings']);
+      // Navigate back to previous page
+      this.navCtrl.back();
     } catch (error) {
       console.error('Error saving reading:', error);
       await this.showErrorToast(error);
@@ -253,7 +254,7 @@ export class AddReadingPage implements OnInit, OnDestroy {
   }
 
   async onCancel(): Promise<void> {
-    await this.router.navigate(['/tabs/readings']);
+    this.navCtrl.back();
   }
 
   private async showSuccessToast(): Promise<void> {

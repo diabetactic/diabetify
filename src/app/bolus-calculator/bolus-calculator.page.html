@@ -1,0 +1,138 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>💉 Calculadora de Bolos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="p-4">
+    <!-- Info Banner -->
+    <div class="alert alert-info mb-6">
+      <ion-icon name="information-circle-outline" class="mr-2"></ion-icon>
+      <span class="text-sm">
+        Esta calculadora te ayuda a determinar la dosis de insulina basada en tu glucosa actual y
+        los carbohidratos que vas a consumir.
+      </span>
+    </div>
+
+    <!-- Calculator Form -->
+    <form
+      [formGroup]="calculatorForm"
+      (ngSubmit)="calculateBolus()"
+      class="card bg-base-100 mb-6 shadow-xl"
+    >
+      <div class="card-body">
+        <h2 class="card-title mb-4">Ingresa tus datos</h2>
+
+        <!-- Current Glucose -->
+        <ion-item lines="none" class="mb-4">
+          <div class="form-control w-full">
+            <label class="label">
+              <span class="label-text font-medium">🩸 Glucosa Actual (mg/dL)</span>
+            </label>
+            <ion-input
+              type="number"
+              formControlName="currentGlucose"
+              placeholder="Ej: 180"
+              [disabled]="calculating"
+              inputmode="numeric"
+              class="input input-bordered w-full"
+              [class.input-error]="isFieldInvalid('currentGlucose')"
+            ></ion-input>
+            <label class="label" *ngIf="glucoseError">
+              <span class="label-text-alt text-error">{{ glucoseError }}</span>
+            </label>
+          </div>
+        </ion-item>
+
+        <!-- Carbs -->
+        <ion-item lines="none" class="mb-4">
+          <div class="form-control w-full">
+            <label class="label">
+              <span class="label-text font-medium">🍞 Carbohidratos a Consumir (gramos)</span>
+            </label>
+            <ion-input
+              type="number"
+              formControlName="carbGrams"
+              placeholder="Ej: 60"
+              [disabled]="calculating"
+              inputmode="numeric"
+              class="input input-bordered w-full"
+              [class.input-error]="isFieldInvalid('carbGrams')"
+            ></ion-input>
+            <label class="label" *ngIf="carbsError">
+              <span class="label-text-alt text-error">{{ carbsError }}</span>
+            </label>
+          </div>
+        </ion-item>
+
+        <!-- Calculate Button -->
+        <button
+          type="submit"
+          class="btn btn-primary btn-block mt-4"
+          [class.btn-disabled]="calculatorForm.invalid || calculating"
+        >
+          <span *ngIf="calculating" class="loading loading-spinner"></span>
+          <span *ngIf="!calculating">🧮 Calcular Dosis</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Result Card -->
+    <div *ngIf="result" class="card bg-primary text-primary-content animate-slide-in-up shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title mb-4">💉 Dosis Recomendada</h2>
+
+        <div class="mb-4 text-center">
+          <div class="mb-2 text-6xl font-bold">{{ result.recommendedInsulin.toFixed(1) }}</div>
+          <div class="text-xl">unidades de insulina</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h3 class="mb-3 text-lg font-semibold">📊 Detalles del cálculo:</h3>
+
+        <div class="space-y-2">
+          <div class="flex justify-between">
+            <span>Glucosa actual:</span>
+            <span class="font-bold">{{ result.currentGlucose }} mg/dL</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Glucosa objetivo:</span>
+            <span class="font-bold">{{ result.targetGlucose }} mg/dL</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Carbohidratos:</span>
+            <span class="font-bold">{{ result.carbGrams }} g</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Ratio carbohidratos:</span>
+            <span class="font-bold">1:{{ result.carbRatio }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Factor de corrección:</span>
+            <span class="font-bold">1:{{ result.correctionFactor }}</span>
+          </div>
+        </div>
+
+        <div class="alert alert-warning mt-4">
+          <ion-icon name="warning-outline" class="mr-2"></ion-icon>
+          <span class="text-sm">
+            <strong>Importante:</strong> Esta es solo una recomendación. Siempre consulta con tu
+            médico antes de ajustar tu dosis.
+          </span>
+        </div>
+
+        <!-- Reset Button -->
+        <button (click)="resetCalculator()" class="btn btn-ghost btn-block mt-4">
+          🔄 Nueva Calculación
+        </button>
+      </div>
+    </div>
+  </div>
+</ion-content>
