@@ -132,11 +132,10 @@ export class ExternalServicesManager {
     // Initialize circuit breakers
     this.initializeCircuitBreakers();
 
-    // Perform initial health check
-    await this.performHealthCheck();
-
-    // Set up periodic health checks
-    this.startHealthCheckInterval();
+    // DISABLED: Health checks cause 404 errors for /api/health endpoint
+    // Services are monitored via actual API calls instead
+    // await this.performHealthCheck();
+    // this.startHealthCheckInterval();
 
     // Set up service-specific monitoring
     this.setupServiceMonitoring();

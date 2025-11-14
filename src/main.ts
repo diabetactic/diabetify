@@ -29,6 +29,8 @@ import {
 } from '@ngx-translate/http-loader';
 import { APP_CONFIG, defaultAppConfig } from './app/core/config/app-config';
 import { APP_ROUTES } from './app/app-routing.module';
+import { LucideAngularModule } from 'lucide-angular';
+import { appIcons } from './app/shared/icons/lucide-icons';
 
 const httpLoaderConfig: TranslateHttpLoaderConfig = {
   prefix: './assets/i18n/',
@@ -62,7 +64,8 @@ bootstrapApplication(AppComponent, {
           deps: [],
         },
         fallbackLang: 'en',
-      })
+      }),
+      LucideAngularModule.pick(appIcons)
     ),
   ],
 }).catch(err => {
