@@ -1,9 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-import { IonicModule, IonContent } from '@ionic/angular';
-import { TranslateModule } from '@ngx-translate/core';
+import { DatePipe } from '@angular/common';
+import { Router } from '@angular/router';
+import { IonContent } from '@ionic/angular';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {
@@ -15,8 +13,6 @@ import { ReadingsService } from '../core/services/readings.service';
 import { ProfileService } from '../core/services/profile.service';
 import { TranslationService } from '../core/services/translation.service';
 import { LoggerService } from '../core/services/logger.service';
-import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
-import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
 
 /**
  * Interface for grouped readings by date
@@ -41,17 +37,7 @@ interface ReadingFilters {
   selector: 'app-readings',
   templateUrl: './readings.html',
   styleUrls: ['./readings.page.scss'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    IonicModule,
-    RouterModule,
-    FormsModule,
-    TranslateModule,
-    DatePipe,
-    ReadingItemComponent,
-    EmptyStateComponent,
-  ],
+  standalone: false,
 })
 export class ReadingsPage implements OnInit, OnDestroy {
   @ViewChild(IonContent) content?: IonContent;

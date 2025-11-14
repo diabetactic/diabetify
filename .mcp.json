@@ -36,6 +36,19 @@
       "type": "stdio",
       "description": "Web automation and E2E testing (FREE)"
     },
+    "zen": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/BeehiveInnovations/zen-mcp-server.git",
+        "zen-mcp-server"
+      ],
+      "type": "stdio",
+      "env": {
+        "GEMINI_API_KEY": "AIzaSyAe0_rCmmACMeEZ9mKovqFcDGI-FcG8W8E"
+      },
+      "description": "AI-powered MCP server with multiple language models"
+    },
     "android-adb": {
       "command": "npx",
       "args": [

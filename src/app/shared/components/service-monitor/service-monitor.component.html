@@ -11,8 +11,8 @@
         >
         </ion-icon>
       </ion-button>
-      <ion-button (click)="checkAllServices()">
-        <ion-icon slot="icon-only" name="refresh"></ion-icon>
+      <ion-button (click)="checkAllServices()" class="inline-flex items-center gap-2">
+    <app-icon  name="refresh"></app-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -42,13 +42,13 @@
           *ngIf="servicesState.isOnline"
           class="inline-flex items-center gap-1 text-green-600 dark:text-green-400"
         >
-          <ion-icon name="wifi"></ion-icon> Online
+          <app-icon  name="wifi"></app-icon> Online
         </span>
         <span
           *ngIf="!servicesState.isOnline"
           class="inline-flex items-center gap-1 text-red-600 dark:text-red-400"
         >
-          <ion-icon name="cloud-offline"></ion-icon> Offline
+          <app-icon  name="cloud-offline"></app-icon> Offline
         </span>
         <span class="mx-2 text-gray-400">|</span>
         <span class="text-gray-600 dark:text-gray-400"
@@ -164,7 +164,7 @@
                 (click)="checkService(service.service); $event.stopPropagation()"
                 class="flex-1 text-xs"
               >
-                <ion-icon slot="start" name="reload" class="text-base"></ion-icon>
+    <app-icon  name="reload" class="text-base"></app-icon>
                 Check
               </ion-button>
               <ion-button
@@ -173,7 +173,7 @@
                 (click)="clearServiceCache(service.service); $event.stopPropagation()"
                 class="flex-1 text-xs"
               >
-                <ion-icon slot="start" name="trash" class="text-base"></ion-icon>
+    <app-icon  name="trash" class="text-base"></app-icon>
                 Clear Cache
               </ion-button>
             </div>
@@ -268,8 +268,8 @@
             selectedService ? getServiceName(selectedService) : 'Service Details'
           }}</ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="hideServiceDetails()">
-              <ion-icon slot="icon-only" name="close"></ion-icon>
+            <ion-button (click)="hideServiceDetails()" class="inline-flex items-center gap-2">
+    <app-icon  name="close"></app-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
@@ -414,9 +414,9 @@
                 fill="outline"
                 (click)="resetCircuitBreaker(selectedService)"
                 [disabled]="cb.state === 'CLOSED'"
-                class="mt-4"
+                class="mt-4 inline-flex items-center gap-2"
               >
-                <ion-icon slot="start" name="refresh"></ion-icon>
+    <app-icon  name="refresh"></app-icon>
                 Reset Circuit Breaker
               </ion-button>
             </ion-card-content>
@@ -433,12 +433,12 @@
             >
           </ion-card-header>
           <ion-card-content>
-            <ion-button expand="block" (click)="checkService(selectedService)" class="mb-3">
-              <ion-icon slot="start" name="medical"></ion-icon>
+            <ion-button expand="block" (click)="checkService(selectedService)" class="mb-3 inline-flex items-center gap-2">
+    <app-icon  name="medical"></app-icon>
               Health Check
             </ion-button>
-            <ion-button expand="block" fill="outline" (click)="clearServiceCache(selectedService)">
-              <ion-icon slot="start" name="trash"></ion-icon>
+            <ion-button expand="block" fill="outline" (click)="clearServiceCache(selectedService)" class="inline-flex items-center gap-2">
+    <app-icon  name="trash"></app-icon>
               Clear Cache
             </ion-button>
           </ion-card-content>

@@ -22,12 +22,12 @@
     class="flex items-center justify-between border-b border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800"
   >
     <div class="flex items-center gap-2">
-      <ion-icon name="bug" class="text-primary text-xl"></ion-icon>
+      <app-icon  name="bug" class="text-primary text-xl"></app-icon>
       <h2 class="text-lg font-bold text-gray-900 dark:text-white">Debug Panel</h2>
     </div>
-    <ion-button fill="clear" size="small" (click)="togglePanel()">
-      <ion-icon slot="icon-only" name="close"></ion-icon>
-    </ion-button>
+    <ion-button fill="clear" size="small" (click)="togglePanel()" class="inline-flex items-center gap-2">
+    <app-icon  name="close" class="w-6 h-6"></app-icon>
+  </ion-button>
   </div>
 
   <!-- Tabs -->
@@ -135,8 +135,8 @@
         </div>
       </div>
 
-      <ion-button expand="block" size="small" (click)="copyDebugInfo()">
-        <ion-icon slot="start" name="copy-outline"></ion-icon>
+      <ion-button expand="block" size="small" (click)="copyDebugInfo()" class="inline-flex items-center gap-2">
+    <app-icon  name="copy-outline"></app-icon>
         Copy All Info
       </ion-button>
     </div>
@@ -226,7 +226,7 @@
     <div *ngIf="selectedTab === 'mock'" class="space-y-3">
       <div class="rounded-lg bg-yellow-50 p-3 dark:bg-yellow-900/20">
         <div class="flex gap-2">
-          <ion-icon name="warning" class="text-xl text-yellow-600 dark:text-yellow-400"></ion-icon>
+          <app-icon  name="warning" class="text-xl text-yellow-600 dark:text-yellow-400"></app-icon>
           <p class="text-xs text-yellow-800 dark:text-yellow-200">
             Mock mode allows testing without real backend services. Enable for development only.
           </p>
@@ -299,8 +299,8 @@
         fill="outline"
         size="small"
         (click)="clearMockData()"
-      >
-        <ion-icon slot="start" name="trash-outline"></ion-icon>
+       class="inline-flex items-center gap-2">
+    <app-icon  name="trash-outline"></app-icon>
         Clear Mock Data
       </ion-button>
     </div>
@@ -350,8 +350,8 @@
         fill="outline"
         size="small"
         (click)="clearReadings()"
-      >
-        <ion-icon slot="start" name="trash-outline"></ion-icon>
+       class="inline-flex items-center gap-2">
+    <app-icon  name="trash-outline"></app-icon>
         Clear Readings
       </ion-button>
 
@@ -361,8 +361,8 @@
         fill="outline"
         size="small"
         (click)="clearPreferences()"
-      >
-        <ion-icon slot="start" name="trash-outline"></ion-icon>
+       class="inline-flex items-center gap-2">
+    <app-icon  name="trash-outline"></app-icon>
         Clear Preferences
       </ion-button>
     </div>
@@ -423,8 +423,8 @@
 
       <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
         <h3 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Sync Actions</h3>
-        <ion-button expand="block" size="small" (click)="forceSync()">
-          <ion-icon slot="start" name="sync-outline"></ion-icon>
+        <ion-button expand="block" size="small" (click)="forceSync()" class="inline-flex items-center gap-2">
+    <app-icon  name="sync-outline"></app-icon>
           Force Sync
         </ion-button>
       </div>
@@ -434,8 +434,8 @@
       >
         <h3 class="mb-2 text-sm font-semibold text-red-900 dark:text-red-200">Danger Zone</h3>
         <p class="mb-3 text-xs text-red-700 dark:text-red-300">These actions cannot be undone!</p>
-        <ion-button expand="block" color="danger" size="small" (click)="clearAllData()">
-          <ion-icon slot="start" name="nuclear-outline"></ion-icon>
+        <ion-button expand="block" color="danger" size="small" (click)="clearAllData()" class="inline-flex items-center gap-2">
+    <app-icon  name="nuclear-outline"></app-icon>
           Clear All Data
         </ion-button>
       </div>

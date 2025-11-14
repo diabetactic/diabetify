@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingController, AlertController, ToastController } from '@ionic/angular';
 import { AppointmentService, Appointment } from '../../core/services/appointment.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-appointment-detail',
