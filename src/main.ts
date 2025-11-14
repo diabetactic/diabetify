@@ -1,6 +1,8 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
 import { provideIonicAngular } from '@ionic/angular/standalone';
 import {
   RouteReuseStrategy,
@@ -9,9 +11,12 @@ import {
   withPreloading,
 } from '@angular/router';
 import { IonicRouteStrategy } from '@ionic/angular';
-import { importProvidersFrom } from '@angular/core';
+import { importProvidersFrom, LOCALE_ID } from '@angular/core';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+
+// Register Spanish locale data
+registerLocaleData(localeEs, 'es');
 
 import { AppComponent } from './app/app.component';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -43,6 +48,7 @@ bootstrapApplication(AppComponent, {
     provideRouter(APP_ROUTES, withPreloading(PreloadAllModules)),
     provideHttpClient(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    { provide: LOCALE_ID, useValue: 'es' }, // Set default locale to Spanish
     { provide: HTTP_INTERCEPTORS, useClass: RequestIdInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: TidepoolInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
