@@ -1,164 +1,123 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="primary">
-    <ion-title>{{ 'appointments.title' | translate }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="createAppointment()">
-        <span class="material-symbols-outlined">add</span>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-
-  <ion-toolbar color="primary">
-    <ion-segment [(ngModel)]="selectedSegment" (ionChange)="onSegmentChange($event)">
-      <ion-segment-button value="upcoming">
-        <ion-label>{{ 'appointments.tabs.upcoming' | translate }}</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="past">
-        <ion-label>{{ 'appointments.tabs.past' | translate }}</ion-label>
-      </ion-segment-button>
-    </ion-segment>
+<ion-header>
+  <ion-toolbar>
+    <ion-title>📅 Mis Citas Médicas</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <!-- Pull to refresh -->
-  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
-
-  <!-- Loading spinner -->
-  <div *ngIf="loading" class="ion-padding ion-text-center">
-    <ion-spinner name="circular"></ion-spinner>
-    <p>{{ 'appointments.loading' | translate }}</p>
-  </div>
-
-  <!-- Error message -->
-  <ion-card *ngIf="error && !loading" color="danger">
-    <ion-card-content>
-      <ion-text>
-        <p>{{ error }}</p>
-      </ion-text>
-    </ion-card-content>
-  </ion-card>
-
-  <!-- Upcoming appointments -->
-  <div *ngIf="selectedSegment === 'upcoming' && !loading">
-    <!-- Empty state -->
-    <ion-card *ngIf="upcomingAppointments.length === 0" class="empty-state">
-      <ion-card-content class="ion-text-center">
-        <span class="material-symbols-outlined large-icon">event_busy</span>
-        <h2>{{ 'appointments.empty.upcoming.title' | translate }}</h2>
-        <p>{{ 'appointments.empty.upcoming.message' | translate }}</p>
-        <ion-button (click)="createAppointment()" expand="block" class="ion-margin-top">
-          {{ 'appointments.actions.schedule' | translate }}
-        </ion-button>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Appointments list -->
-    <ion-list *ngIf="upcomingAppointments.length > 0">
-      <ion-item-sliding *ngFor="let appointment of upcomingAppointments">
-        <ion-item button (click)="viewAppointment(appointment)">
-          <ion-avatar slot="start">
-            <div class="appointment-avatar">
-              <span class="material-symbols-outlined">person</span>
-            </div>
-          </ion-avatar>
-
-          <ion-label>
-            <h2>{{ appointment.doctorName || 'Doctor' }}</h2>
-            <h3>{{ formatDate(appointment.date) }}</h3>
-            <p>
-              <ion-icon name="time-outline"></ion-icon>
-              {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}
-            </p>
-            <p *ngIf="appointment.reason">
-              <ion-icon name="medical-outline"></ion-icon>
-              {{ appointment.reason }}
-            </p>
-          </ion-label>
-
-          <ion-note slot="end">
-            <ion-badge [color]="getStatusColor(appointment.status)">
-              <span class="material-symbols-outlined badge-icon">{{
-                getStatusIcon(appointment.status)
-              }}</span>
-              {{ appointment.status }}
-            </ion-badge>
-            <ion-badge
-              *ngIf="appointment.urgency !== 'routine'"
-              [color]="getUrgencyColor(appointment.urgency)"
-              class="urgency-badge"
-            >
-              {{ appointment.urgency }}
-            </ion-badge>
-          </ion-note>
-        </ion-item>
-
-        <ion-item-options side="end">
-          <ion-item-option color="warning">
-            <span class="material-symbols-outlined">edit</span>
-            {{ 'appointments.actions.edit' | translate }}
-          </ion-item-option>
-          <ion-item-option color="danger">
-            <span class="material-symbols-outlined">cancel</span>
-            {{ 'appointments.actions.cancel' | translate }}
-          </ion-item-option>
-        </ion-item-options>
-      </ion-item-sliding>
-    </ion-list>
-  </div>
-
-  <!-- Past appointments -->
-  <div *ngIf="selectedSegment === 'past' && !loading">
-    <!-- Empty state -->
-    <ion-card *ngIf="pastAppointments.length === 0" class="empty-state">
-      <ion-card-content class="ion-text-center">
-        <span class="material-symbols-outlined large-icon">history</span>
-        <h2>{{ 'appointments.empty.past.title' | translate }}</h2>
-        <p>{{ 'appointments.empty.past.message' | translate }}</p>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Appointments list -->
-    <ion-list *ngIf="pastAppointments.length > 0">
-      <ion-item
-        *ngFor="let appointment of pastAppointments"
-        button
-        (click)="viewAppointment(appointment)"
+<ion-content>
+  <div class="p-4">
+    <!-- Tabs para filtrar -->
+    <div class="tabs tabs-boxed mb-4">
+      <button
+        class="tab"
+        [class.tab-active]="segment === 'upcoming'"
+        (click)="segment = 'upcoming'"
       >
-        <ion-avatar slot="start">
-          <div class="appointment-avatar past">
-            <span class="material-symbols-outlined">person</span>
-          </div>
-        </ion-avatar>
+        Próximas ({{ upcomingAppointments.length }})
+      </button>
+      <button class="tab" [class.tab-active]="segment === 'past'" (click)="segment = 'past'">
+        Pasadas ({{ pastAppointments.length }})
+      </button>
+    </div>
 
-        <ion-label>
-          <h2>{{ appointment.doctorName || 'Doctor' }}</h2>
-          <h3>{{ formatDate(appointment.date) }}</h3>
-          <p>
-            <ion-icon name="time-outline"></ion-icon>
-            {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}
-          </p>
-          <p *ngIf="appointment.reason">
-            <ion-icon name="medical-outline"></ion-icon>
-            {{ appointment.reason }}
-          </p>
-        </ion-label>
+    <!-- Loading -->
+    <div *ngIf="loading" class="py-8 text-center">
+      <span class="loading loading-spinner loading-lg"></span>
+    </div>
 
-        <ion-note slot="end">
-          <ion-badge [color]="getStatusColor(appointment.status)">
-            <span class="material-symbols-outlined badge-icon">{{
-              getStatusIcon(appointment.status)
-            }}</span>
-            {{ appointment.status }}
-          </ion-badge>
-          <div *ngIf="appointment.glucoseDataShared" class="shared-indicator">
-            <ion-icon name="share-outline" color="success"></ion-icon>
-            <small>{{ 'appointments.dataShared' | translate }}</small>
+    <!-- Empty state -->
+    <div *ngIf="!loading && displayedAppointments.length === 0" class="py-12 text-center">
+      <span class="mb-4 text-6xl">📅</span>
+      <p class="text-lg">
+        {{ segment === 'upcoming' ? 'No tienes citas programadas' : 'No tienes citas pasadas' }}
+      </p>
+    </div>
+
+    <!-- Appointments List -->
+    <div *ngFor="let appointment of displayedAppointments" class="card bg-base-100 mb-4 shadow-xl">
+      <div class="card-body">
+        <!-- Header -->
+        <div class="mb-3 flex items-start justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">{{ getAppointmentTypeIcon(appointment.type) }}</span>
+              <h3 class="card-title text-lg">{{ appointment.doctor }}</h3>
+            </div>
+            <p class="text-base-content/70 text-sm">
+              {{ appointment.specialty }}
+            </p>
           </div>
-        </ion-note>
-      </ion-item>
-    </ion-list>
+          <span
+            [class]="
+              'badge ' +
+              (appointment.status === 'upcoming'
+                ? 'badge-primary'
+                : appointment.status === 'completed'
+                  ? 'badge-success'
+                  : 'badge-error')
+            "
+          >
+            {{
+              appointment.status === 'upcoming'
+                ? 'Próxima'
+                : appointment.status === 'completed'
+                  ? 'Completada'
+                  : 'Cancelada'
+            }}
+          </span>
+        </div>
+
+        <!-- Info -->
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <span>📅</span>
+            <span>{{ appointment.date | date: 'fullDate' : '' : 'es' }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span>🕐</span>
+            <span>{{ appointment.time }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span>🏥</span>
+            <span>{{ appointment.hospital }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span>📍</span>
+            <span class="text-sm">{{ appointment.location }}</span>
+          </div>
+          <div *ngIf="appointment.notes" class="flex items-start gap-2">
+            <span>📝</span>
+            <span class="text-sm">{{ appointment.notes }}</span>
+          </div>
+        </div>
+
+        <!-- Days until (solo upcoming) -->
+        <div *ngIf="appointment.status === 'upcoming'" class="alert alert-info mt-3">
+          <span>
+            ⏰ Faltan
+            <strong>{{ getDaysUntil(appointment.date) }} días</strong> para tu cita
+          </span>
+        </div>
+
+        <!-- Actions -->
+        <div class="card-actions mt-4 justify-end">
+          <button
+            *ngIf="appointment.status === 'upcoming'"
+            class="btn btn-sm btn-error btn-outline"
+            (click)="cancelAppointment(appointment.id)"
+          >
+            Cancelar
+          </button>
+          <button class="btn btn-sm btn-ghost" (click)="viewDetails(appointment)">
+            Ver Detalles
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add button -->
+    <button class="btn btn-primary btn-block mt-6" (click)="addNewAppointment()">
+      ➕ Agendar Nueva Cita
+    </button>
   </div>
 </ion-content>
