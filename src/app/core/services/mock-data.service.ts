@@ -66,12 +66,12 @@ export class MockDataService {
   private currentUser: MockUser = {
     id: 'pac001',
     username: 'demo_patient',
-    email: 'sofia.rodriguez@garrahan.gov.ar',
+    email: 'sofia.rodriguez@example.com',
     name: 'Sofia Rodriguez',
     age: 12,
     diagnosisDate: new Date(2020, 5, 15),
-    hospital: 'Hospital Garrahan',
-    medicalTeam: ['Dra. Sarah Johnson - Endocrinología', 'Lic. Maria Lopez - Nutrición'],
+    hospital: 'Centro Médico',
+    medicalTeam: ['Dra. María González - Endocrinología', 'Lic. Ana Martínez - Nutrición'],
     avatar: 'https://i.pravatar.cc/150?img=25',
   };
 
@@ -138,9 +138,9 @@ export class MockDataService {
       id: 'appt001',
       date: new Date(Date.now() + 86400000 * 7),
       time: '10:30 AM',
-      doctor: 'Dra. Sarah Johnson',
+      doctor: 'Dra. María González',
       specialty: 'Endocrinología Pediátrica',
-      hospital: 'Hospital Garrahan',
+      hospital: 'Centro Médico',
       location: 'Consultorio 3B, 2do piso',
       status: 'upcoming',
       type: 'control_routine',
@@ -151,9 +151,9 @@ export class MockDataService {
       id: 'appt002',
       date: new Date(Date.now() + 86400000 * 14),
       time: '2:00 PM',
-      doctor: 'Lic. Maria Lopez',
+      doctor: 'Lic. Ana Martínez',
       specialty: 'Nutrición',
-      hospital: 'Hospital Garrahan',
+      hospital: 'Centro Médico',
       location: 'Consultorio 1A, 1er piso',
       status: 'upcoming',
       type: 'nutritionist',
@@ -164,22 +164,22 @@ export class MockDataService {
       id: 'appt003',
       date: new Date(Date.now() + 86400000 * 21),
       time: '11:00 AM',
-      doctor: 'Dra. Sarah Johnson',
-      specialty: 'Endocrinología Pediátrica',
-      hospital: 'Hospital Garrahan',
-      location: 'Consultorio 3B, 2do piso',
+      doctor: 'Dr. Carlos Rodriguez',
+      specialty: 'Pediatría',
+      hospital: 'Centro Médico',
+      location: 'Consultorio 2C, 1er piso',
       status: 'upcoming',
       type: 'follow_up',
-      notes: 'Seguimiento de ajuste de insulina',
+      notes: 'Seguimiento de control pediátrico general',
       reminders: true,
     },
     {
       id: 'appt004',
       date: new Date(Date.now() - 86400000 * 90),
       time: '10:00 AM',
-      doctor: 'Dra. Sarah Johnson',
+      doctor: 'Dra. María González',
       specialty: 'Endocrinología Pediátrica',
-      hospital: 'Hospital Garrahan',
+      hospital: 'Centro Médico',
       location: 'Consultorio 3B, 2do piso',
       status: 'completed',
       type: 'control_routine',
@@ -192,7 +192,7 @@ export class MockDataService {
       time: '9:30 AM',
       doctor: 'Lic. Maria Lopez',
       specialty: 'Nutrición',
-      hospital: 'Hospital Garrahan',
+      hospital: 'Centro Médico',
       location: 'Consultorio 1A, 1er piso',
       status: 'completed',
       type: 'nutritionist',
@@ -202,7 +202,7 @@ export class MockDataService {
   ];
 
   constructor() {
-    console.log('🏥 DIABETACTIC Mock Service - Hospital Garrahan');
+    console.log('🏥 DIABETACTIC Mock Service - Centro Médico');
   }
 
   // ====== AUTH ======
@@ -333,7 +333,7 @@ export class MockDataService {
       time: appointment.time || '10:00 AM',
       doctor: appointment.doctor || 'Dr. Demo',
       specialty: appointment.specialty || 'General',
-      hospital: appointment.hospital || 'Hospital Garrahan',
+      hospital: appointment.hospital || 'Centro Médico',
       location: appointment.location || 'Consultorio TBD',
       status: 'upcoming',
       type: appointment.type || 'control_routine',
