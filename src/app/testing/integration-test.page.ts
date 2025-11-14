@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { AutoTestService, TestResult } from './auto-test.service';
 import { ExtServicesClientService } from '../core/services/ext-services-client.service';
 
 @Component({
@@ -10,116 +11,84 @@ import { ExtServicesClientService } from '../core/services/ext-services-client.s
   imports: [CommonModule, FormsModule, IonicModule],
   template: `
     <ion-header>
-      <ion-toolbar>
-        <ion-title>🧪 Integration Tests</ion-title>
+      <ion-toolbar color="primary">
+        <ion-title>🧪 Automated Integration Tests</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content class="ion-padding">
       <div class="test-container">
 
-        <!-- API URL Display -->
-        <div class="test-section">
-          <h3>🌐 API Gateway URL</h3>
-          <p class="api-url">{{ apiUrl }}</p>
+        <!-- Credentials Section -->
+        <div class="credentials-section">
+          <h2>🔑 Heroku API Gateway</h2>
+          <p class="api-url"><strong>URL:</strong> {{ apiUrl }}</p>
+
+          <ion-item>
+            <ion-label position="stacked">Username (DNI)</ion-label>
+            <ion-input [(ngModel)]="username" placeholder="1000" [disabled]="running"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Password</ion-label>
+            <ion-input [(ngModel)]="password" type="password" placeholder="tu contraseña" [disabled]="running"></ion-input>
+          </ion-item>
+
+          <ion-button
+            expand="block"
+            (click)="runAllTests()"
+            [disabled]="running"
+            color="success"
+            class="run-button">
+            <ion-icon name="{{ running ? 'hourglass-outline' : 'rocket-outline' }}" slot="start"></ion-icon>
+            {{ running ? '⏳ Running Tests...' : '🚀 Run All Tests' }}
+          </ion-button>
         </div>
 
-        <!-- Login Test -->
-        <div class="test-section">
-          <h3>🔑 Login Test</h3>
-          <ion-input [(ngModel)]="testUser" placeholder="Username (1000)" fill="outline"></ion-input>
-          <ion-input [(ngModel)]="testPassword" type="password" placeholder="Password" fill="outline"></ion-input>
-          <ion-button expand="block" (click)="testLogin()">Test Login</ion-button>
-          <div class="result" [class.success]="loginResult?.success" [class.error]="loginResult?.error">
-            {{ loginResult?.message }}
+        <!-- Results Section -->
+        <div *ngIf="results.length > 0" class="results-section">
+          <h2>📊 Test Results ({{ successCount }}/{{ results.length }} passed)</h2>
+
+          <div *ngFor="let result of results"
+               class="test-result"
+               [class.success]="result.status === 'success'"
+               [class.error]="result.status === 'error'"
+               [class.pending]="result.status === 'pending'">
+
+            <div class="result-header">
+              <span class="test-name">{{ result.name }}</span>
+              <span class="test-duration" *ngIf="result.duration">{{ result.duration }}ms</span>
+            </div>
+
+            <div class="result-message">{{ result.message }}</div>
+
+            <div *ngIf="result.data" class="result-data">
+              <pre>{{ result.data | json }}</pre>
+            </div>
+
+            <div *ngIf="result.error && result.status === 'error'" class="result-error">
+              <strong>Error Details:</strong>
+              <pre>{{ result.error | json }}</pre>
+            </div>
+          </div>
+
+          <!-- Summary -->
+          <div class="summary-card"
+               [class.all-pass]="successCount === results.length"
+               [class.some-fail]="successCount < results.length">
+            <h3>{{ summaryEmoji }} Summary</h3>
+            <p>
+              <strong>Passed:</strong> {{ successCount }} <br>
+              <strong>Failed:</strong> {{ errorCount }} <br>
+              <strong>Total Time:</strong> {{ totalDuration }}ms
+            </p>
           </div>
         </div>
 
-        <!-- User Profile Test -->
-        <div class="test-section">
-          <h3>👤 User Profile Test</h3>
-          <ion-button expand="block" (click)="testUserProfile()" [disabled]="!hasToken">Get User Profile</ion-button>
-          <pre class="result">{{ userProfileResult | json }}</pre>
-        </div>
-
-        <!-- Appointments Tests -->
-        <div class="test-section">
-          <h3>📅 Appointments Tests</h3>
-
-          <ion-button expand="block" (click)="testGetAppointments()" [disabled]="!hasToken">
-            Get My Appointments
-          </ion-button>
-          <pre class="result">{{ appointmentsResult | json }}</pre>
-
-          <hr/>
-
-          <h4>Create Appointment</h4>
-          <ion-input [(ngModel)]="newAppointment.date" type="date" placeholder="Date" fill="outline"></ion-input>
-          <ion-input [(ngModel)]="newAppointment.time" type="time" placeholder="Time" fill="outline"></ion-input>
-          <ion-input [(ngModel)]="newAppointment.type" placeholder="Type" fill="outline"></ion-input>
-          <ion-button expand="block" (click)="testCreateAppointment()" [disabled]="!hasToken">
-            Create Appointment
-          </ion-button>
-          <pre class="result">{{ createAppointmentResult | json }}</pre>
-
-          <hr/>
-
-          <h4>🏥 Backoffice: Queue State</h4>
-          <ion-button expand="block" (click)="testAppointmentQueueState()" [disabled]="!hasToken">
-            Get Queue State
-          </ion-button>
-          <pre class="result">{{ queueStateResult | json }}</pre>
-
-          <hr/>
-
-          <h4>🏥 Backoffice: Submit to Queue</h4>
-          <ion-input [(ngModel)]="submitAppointmentId" placeholder="Appointment ID" fill="outline"></ion-input>
-          <ion-button expand="block" (click)="testSubmitAppointment()" [disabled]="!hasToken">
-            Submit Appointment
-          </ion-button>
-          <pre class="result">{{ submitResult | json }}</pre>
-
-          <hr/>
-
-          <h4>🏥 Backoffice: Get Resolution</h4>
-          <ion-input [(ngModel)]="resolutionAppointmentId" placeholder="Appointment ID" fill="outline"></ion-input>
-          <ion-button expand="block" (click)="testGetResolution()" [disabled]="!hasToken">
-            Get Resolution
-          </ion-button>
-          <pre class="result">{{ resolutionResult | json }}</pre>
-        </div>
-
-        <!-- Glucose Tests -->
-        <div class="test-section">
-          <h3>🩸 Glucose Tests</h3>
-
-          <ion-button expand="block" (click)="testGetGlucose()" [disabled]="!hasToken">
-            Get My Readings
-          </ion-button>
-          <pre class="result">{{ glucoseResult | json }}</pre>
-
-          <hr/>
-
-          <h4>Create Reading</h4>
-          <ion-input [(ngModel)]="newReading.glucose" type="number" placeholder="Glucose Level" fill="outline"></ion-input>
-          <ion-select [(ngModel)]="newReading.type" placeholder="Select Type">
-            <ion-select-option value="before_meal">Before Meal</ion-select-option>
-            <ion-select-option value="after_meal">After Meal</ion-select-option>
-            <ion-select-option value="fasting">Fasting</ion-select-option>
-          </ion-select>
-          <ion-button expand="block" (click)="testCreateReading()" [disabled]="!hasToken">
-            Create Reading
-          </ion-button>
-          <pre class="result">{{ createReadingResult | json }}</pre>
-        </div>
-
-        <!-- Token Info -->
-        <div class="test-section">
-          <h3>🎫 Current Token</h3>
-          <div class="token-info">
-            <strong>Has Token:</strong> {{ hasToken ? '✅ Yes' : '❌ No' }}
-          </div>
-          <ion-button expand="block" color="danger" (click)="clearToken()">Clear Token</ion-button>
+        <!-- Empty State -->
+        <div *ngIf="results.length === 0 && !running" class="empty-state">
+          <ion-icon name="flask-outline" size="large"></ion-icon>
+          <p>Click "Run All Tests" to start automated testing</p>
         </div>
 
       </div>
@@ -127,304 +96,244 @@ import { ExtServicesClientService } from '../core/services/ext-services-client.s
   `,
   styles: [`
     .test-container {
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
     }
-    .test-section {
+
+    .credentials-section {
       margin-bottom: 2rem;
-      padding: 1rem;
-      border: 1px solid var(--ion-color-medium);
-      border-radius: 8px;
-    }
-    .api-url {
-      font-family: monospace;
+      padding: 1.5rem;
       background: var(--ion-color-light);
-      padding: 0.5rem;
-      border-radius: 4px;
-      word-break: break-all;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
-    .result {
-      margin-top: 1rem;
-      padding: 0.5rem;
-      background: var(--ion-color-light);
-      border-radius: 4px;
-      font-family: monospace;
-      font-size: 12px;
-      max-height: 300px;
-      overflow: auto;
-    }
-    .result.success {
-      background: #d4edda;
-      color: #155724;
-    }
-    .result.error {
-      background: #f8d7da;
-      color: #721c24;
-    }
-    ion-input, ion-select {
-      margin-bottom: 0.5rem;
-    }
-    hr {
-      margin: 1rem 0;
-      border: none;
-      border-top: 1px solid var(--ion-color-medium);
-    }
-    h4 {
-      margin-top: 1rem;
-    }
-    .token-info {
-      padding: 0.5rem;
-      background: var(--ion-color-light);
-      border-radius: 4px;
+
+    .credentials-section h2 {
+      margin-top: 0;
       margin-bottom: 1rem;
+      font-size: 22px;
+    }
+
+    .api-url {
+      padding: 0.75rem;
+      background: white;
+      border-radius: 6px;
+      font-size: 13px;
+      word-break: break-all;
+      margin-bottom: 1rem;
+      border: 1px solid var(--ion-color-medium);
+    }
+
+    ion-item {
+      margin-bottom: 1rem;
+      --background: white;
+      --border-radius: 8px;
+    }
+
+    .run-button {
+      margin-top: 1rem;
+      height: 56px;
+      font-size: 18px;
+      font-weight: bold;
+      --border-radius: 8px;
+    }
+
+    .results-section {
+      margin-top: 2rem;
+    }
+
+    .results-section h2 {
+      font-size: 20px;
+      margin-bottom: 1.5rem;
+      color: var(--ion-color-dark);
+    }
+
+    .test-result {
+      margin-bottom: 1rem;
+      padding: 1.25rem;
+      border-radius: 8px;
+      border-left: 4px solid var(--ion-color-medium);
+      background: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      transition: all 0.2s ease;
+    }
+
+    .test-result:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .test-result.success {
+      border-left-color: var(--ion-color-success);
+      background: #f0fdf4;
+    }
+
+    .test-result.error {
+      border-left-color: var(--ion-color-danger);
+      background: #fef2f2;
+    }
+
+    .test-result.pending {
+      border-left-color: var(--ion-color-warning);
+      background: #fffbeb;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .test-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--ion-color-dark);
+    }
+
+    .test-duration {
+      color: var(--ion-color-medium-shade);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 0.25rem 0.5rem;
+      background: var(--ion-color-light);
+      border-radius: 4px;
+    }
+
+    .result-message {
+      font-size: 14px;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .result-data, .result-error {
+      background: #f5f5f5;
+      padding: 0.75rem;
+      border-radius: 6px;
+      margin-top: 0.75rem;
+      border: 1px solid var(--ion-color-light-shade);
+    }
+
+    .result-data pre, .result-error pre {
+      margin: 0;
+      font-size: 12px;
+      max-height: 250px;
+      overflow: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.5;
+    }
+
+    .result-error {
+      background: #fee;
+      border-color: #fcc;
+    }
+
+    .summary-card {
+      padding: 2rem;
+      border-radius: 12px;
+      margin-top: 2rem;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .summary-card.all-pass {
+      background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+      border: 2px solid var(--ion-color-success);
+    }
+
+    .summary-card.some-fail {
+      background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+      border: 2px solid var(--ion-color-danger);
+    }
+
+    .summary-card h3 {
+      font-size: 28px;
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+
+    .summary-card p {
+      font-size: 16px;
+      line-height: 2;
+      margin: 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--ion-color-medium-shade);
+    }
+
+    .empty-state ion-icon {
+      font-size: 96px;
+      margin-bottom: 1rem;
+      opacity: 0.4;
+    }
+
+    .empty-state p {
+      font-size: 16px;
     }
   `]
 })
 export class IntegrationTestPage implements OnInit {
-  // API URL
   apiUrl: string;
+  username = '1000';
+  password = 'tuvieja';
+  running = false;
+  results: TestResult[] = [];
 
-  // Test credentials
-  testUser = '1000';
-  testPassword = 'tuvieja';
-
-  // Results
-  loginResult: any = null;
-  userProfileResult: any = null;
-  appointmentsResult: any = null;
-  createAppointmentResult: any = null;
-  queueStateResult: any = null;
-  submitResult: any = null;
-  resolutionResult: any = null;
-  glucoseResult: any = null;
-  createReadingResult: any = null;
-
-  // Form data
-  newAppointment = {
-    date: new Date().toISOString().split('T')[0],
-    time: '14:00',
-    type: 'consultation'
-  };
-  submitAppointmentId = '';
-  resolutionAppointmentId = '';
-  newReading = {
-    glucose: 120,
-    type: 'before_meal'
-  };
-
-  get hasToken(): boolean {
-    return !!this.extServices.getAccessToken();
-  }
-
-  constructor(public extServices: ExtServicesClientService) {
+  constructor(
+    private autoTest: AutoTestService,
+    private extServices: ExtServicesClientService
+  ) {
     this.apiUrl = this.extServices.apiGatewayUrl;
   }
 
   ngOnInit() {
     console.log('🧪 Integration Test Page loaded');
-    console.log('API Gateway URL:', this.apiUrl);
+    console.log('🌐 API URL:', this.apiUrl);
   }
 
-  // Login Test
-  testLogin() {
-    console.log('🔑 Testing login with:', this.testUser);
-    this.loginResult = { message: 'Testing...' };
+  async runAllTests() {
+    if (!this.password) {
+      alert('Por favor ingresa la contraseña');
+      return;
+    }
 
-    this.extServices.login(this.testUser, this.testPassword).subscribe({
-      next: (response) => {
-        console.log('✅ Login SUCCESS:', response);
-        this.loginResult = {
-          success: true,
-          message: `✅ Login exitoso! Token: ${response.token.access_token.substring(0, 20)}...`,
-          data: response
-        };
-        // Also fetch user profile automatically
-        this.testUserProfile();
-      },
-      error: (error) => {
-        console.error('❌ Login ERROR:', error);
-        this.loginResult = {
-          error: true,
-          message: `❌ Login failed: ${error.message}`,
-          data: error
-        };
-      }
-    });
+    this.running = true;
+    this.results = [];
+
+    try {
+      this.results = await this.autoTest.runAllTests(this.username, this.password);
+    } catch (error) {
+      console.error('Test suite error:', error);
+      alert('Error running tests: ' + (error as any).message);
+    } finally {
+      this.running = false;
+    }
   }
 
-  // User Profile Test
-  testUserProfile() {
-    console.log('👤 Testing get user profile');
-    this.userProfileResult = 'Loading...';
-
-    this.extServices.getUserProfile().subscribe({
-      next: (profile) => {
-        console.log('✅ User Profile SUCCESS:', profile);
-        this.userProfileResult = profile;
-      },
-      error: (error) => {
-        console.error('❌ User Profile ERROR:', error);
-        this.userProfileResult = { error: error.message };
-      }
-    });
+  get successCount(): number {
+    return this.results.filter(r => r.status === 'success').length;
   }
 
-  // Get Appointments Test
-  testGetAppointments() {
-    console.log('📅 Testing get appointments');
-    this.appointmentsResult = 'Loading...';
-
-    this.extServices.getAppointments().subscribe({
-      next: (appointments) => {
-        console.log('✅ Appointments SUCCESS:', appointments);
-        this.appointmentsResult = appointments;
-      },
-      error: (error) => {
-        console.error('❌ Appointments ERROR:', error);
-        this.appointmentsResult = { error: error.message };
-      }
-    });
+  get errorCount(): number {
+    return this.results.filter(r => r.status === 'error').length;
   }
 
-  // Create Appointment Test
-  testCreateAppointment() {
-    console.log('📅 Testing create appointment:', this.newAppointment);
-    this.createAppointmentResult = 'Creating...';
-
-    const startTime = `${this.newAppointment.date}T${this.newAppointment.time}:00`;
-
-    this.extServices.createAppointment({
-      start_time: startTime,
-      type_: this.newAppointment.type,
-      data_field1: 'Test appointment from integration page',
-      data_field2: ''
-    }).subscribe({
-      next: (appointment) => {
-        console.log('✅ Create Appointment SUCCESS:', appointment);
-        this.createAppointmentResult = appointment;
-        this.submitAppointmentId = appointment.id.toString();
-      },
-      error: (error) => {
-        console.error('❌ Create Appointment ERROR:', error);
-        this.createAppointmentResult = { error: error.message };
-      }
-    });
+  get totalDuration(): number {
+    return this.results.reduce((sum, r) => sum + (r.duration || 0), 0);
   }
 
-  // Queue State Test (Backoffice)
-  testAppointmentQueueState() {
-    console.log('🏥 Testing appointment queue state');
-    this.queueStateResult = 'Loading...';
-
-    const headers = {
-      'Authorization': `Bearer ${this.extServices.getAccessToken()}`
-    };
-
-    this.extServices.http.get(`${this.apiUrl}/appointments/state`, { headers }).subscribe({
-      next: (state) => {
-        console.log('✅ Queue State SUCCESS:', state);
-        this.queueStateResult = state;
-      },
-      error: (error) => {
-        console.error('❌ Queue State ERROR:', error);
-        this.queueStateResult = { error: error.message };
-      }
-    });
-  }
-
-  // Submit Appointment Test (Backoffice)
-  testSubmitAppointment() {
-    console.log('🏥 Testing submit appointment:', this.submitAppointmentId);
-    this.submitResult = 'Submitting...';
-
-    const headers = {
-      'Authorization': `Bearer ${this.extServices.getAccessToken()}`,
-      'Content-Type': 'application/json'
-    };
-
-    this.extServices.http.post(
-      `${this.apiUrl}/appointments/submit`,
-      { appointment_id: this.submitAppointmentId },
-      { headers }
-    ).subscribe({
-      next: (result) => {
-        console.log('✅ Submit Appointment SUCCESS:', result);
-        this.submitResult = result;
-      },
-      error: (error) => {
-        console.error('❌ Submit Appointment ERROR:', error);
-        this.submitResult = { error: error.message };
-      }
-    });
-  }
-
-  // Get Resolution Test (Backoffice)
-  testGetResolution() {
-    console.log('🏥 Testing get resolution:', this.resolutionAppointmentId);
-    this.resolutionResult = 'Loading...';
-
-    const headers = {
-      'Authorization': `Bearer ${this.extServices.getAccessToken()}`
-    };
-
-    this.extServices.http.get(
-      `${this.apiUrl}/appointments/${this.resolutionAppointmentId}/resolution`,
-      { headers }
-    ).subscribe({
-      next: (resolution) => {
-        console.log('✅ Resolution SUCCESS:', resolution);
-        this.resolutionResult = resolution;
-      },
-      error: (error) => {
-        console.error('❌ Resolution ERROR:', error);
-        this.resolutionResult = { error: error.message };
-      }
-    });
-  }
-
-  // Get Glucose Test
-  testGetGlucose() {
-    console.log('🩸 Testing get glucose readings');
-    this.glucoseResult = 'Loading...';
-
-    this.extServices.getGlucoseReadings().subscribe({
-      next: (data) => {
-        console.log('✅ Glucose Readings SUCCESS:', data);
-        this.glucoseResult = data;
-      },
-      error: (error) => {
-        console.error('❌ Glucose Readings ERROR:', error);
-        this.glucoseResult = { error: error.message };
-      }
-    });
-  }
-
-  // Create Reading Test
-  testCreateReading() {
-    console.log('🩸 Testing create glucose reading:', this.newReading);
-    this.createReadingResult = 'Creating...';
-
-    this.extServices.createGlucoseReading(
-      this.newReading.glucose,
-      this.newReading.type
-    ).subscribe({
-      next: (reading) => {
-        console.log('✅ Create Reading SUCCESS:', reading);
-        this.createReadingResult = reading;
-      },
-      error: (error) => {
-        console.error('❌ Create Reading ERROR:', error);
-        this.createReadingResult = { error: error.message };
-      }
-    });
-  }
-
-  clearToken() {
-    this.extServices.logout();
-    this.loginResult = null;
-    this.userProfileResult = null;
-    this.appointmentsResult = null;
-    this.glucoseResult = null;
-    console.log('🗑️ Token cleared');
+  get summaryEmoji(): string {
+    if (this.results.length === 0) return '📊';
+    if (this.successCount === this.results.length) return '🎉';
+    if (this.successCount > 0) return '⚠️';
+    return '❌';
   }
 }
