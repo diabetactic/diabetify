@@ -170,3 +170,21 @@ yarn.lock
 # Documentation temp directories
 docs/logs/
 docs/archive/
+
+# Test results and reports
+test-results/
+playwright-report/
+maestro/screenshots/
+maestro/.maestro/
+
+# Temporary test files
+/tmp/*.yaml
+/tmp/*.png
+/tmp/*.md
+/tmp/*.json
+
+# Android build artifacts
+android/app/build/
+android/.gradle/
+android/.npm-cache/
+.npm-cache/
