@@ -2,94 +2,68 @@ import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import {
-  IonicModule,
-  AlertController,
-  LoadingController,
-  ToastController,
-  ModalController,
-} from '@ionic/angular';
+import { IonicModule, AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { AppointmentService } from '../../core/services/appointment.service';
-import { DemoDataService } from '../../core/services/demo-data.service';
-import { ReadingsService } from '../../core/services/readings.service';
+import {
+  AppointmentService,
+  ClinicalAppointmentForm,
+} from '../../core/services/appointment.service';
 import { LocalAuthService } from '../../core/services/local-auth.service';
-import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
-
-interface Doctor {
-  id: string;
-  name: string;
-  specialty: string;
-  hospital: string;
-  experience: string;
-  rating: number;
-  reviews: number;
-  availableDays: string[];
-  nextAvailable?: string;
-  profileImage?: string;
-}
-
-interface TimeSlot {
-  time: string;
-  available: boolean;
-  doctorId: string;
-  date: string;
-}
-
-interface AppointmentType {
-  id: string;
-  name: string;
-  duration: number;
-  icon: string;
-}
 
 @Component({
   selector: 'app-appointment-create',
   templateUrl: './appointment-create.page.html',
   styleUrls: ['./appointment-create.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, TranslateModule,
-    AppIconComponent
-  ],
+  imports: [CommonModule, FormsModule, IonicModule, TranslateModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppointmentCreatePage implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  // Wizard steps
-  currentStep = 1;
-  totalSteps = 4;
+  // Clinical form data
+  formData: ClinicalAppointmentForm = {
+    glucose_objective: 100,
+    insulin_type: 'rapid',
+    dose: 0,
+    fast_insulin: '',
+    fixed_dose: 0,
+    ratio: 0,
+    sensitivity: 0,
+    pump_type: 'none',
+    control_data: '',
+    motive: [],
+    other_motive: '',
+    another_treatment: '',
+  };
 
-  // Step 1: Select Doctor
-  doctors: Doctor[] = [];
-  selectedDoctor: Doctor | null = null;
-  doctorSearchTerm = '';
-  filteredDoctors: Doctor[] = [];
+  // Dropdown options
+  insulinTypes = [
+    { value: 'rapid', label: 'appointments.create.insulin_rapid' },
+    { value: 'slow', label: 'appointments.create.insulin_slow' },
+    { value: 'mixed', label: 'appointments.create.insulin_mixed' },
+  ];
 
-  // Step 2: Select Date & Time
-  selectedDate: string = '';
-  minDate: string = '';
-  maxDate: string = '';
-  timeSlots: TimeSlot[] = [];
-  selectedTimeSlot: TimeSlot | null = null;
+  pumpTypes = [
+    { value: 'none', label: 'appointments.create.pump_none' },
+    { value: 'pump', label: 'appointments.create.pump_pump' },
+    { value: 'pen', label: 'appointments.create.pump_pen' },
+  ];
 
-  // Step 3: Appointment Details
-  appointmentTypes: AppointmentType[] = [];
-  selectedType: AppointmentType | null = null;
-  appointmentNotes = '';
-  shareGlucoseData = false;
-  glucoseDataDays = 30;
-
-  // Step 4: Confirmation
-  confirmationData: any = null;
+  motiveOptions = [
+    { value: 'control_routine', label: 'appointments.create.motive_control_routine' },
+    { value: 'follow_up', label: 'appointments.create.motive_follow_up' },
+    { value: 'emergency', label: 'appointments.create.motive_emergency' },
+    { value: 'consultation', label: 'appointments.create.motive_consultation' },
+    { value: 'other', label: 'appointments.create.motive_other' },
+  ];
 
   // UI state
   isLoading = false;
-  loadingDoctors = false;
-  loadingTimeSlots = false;
+  showOtherMotive = false;
 
   constructor(
     private router: Router,
@@ -97,21 +71,11 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
     private loadingController: LoadingController,
     private toastController: ToastController,
     private appointmentService: AppointmentService,
-    private demoDataService: DemoDataService,
-    private readingsService: ReadingsService,
     private authService: LocalAuthService
-  ) {
-    // Set date constraints
-    const today = new Date();
-    this.minDate = today.toISOString().split('T')[0];
-    const maxDateObj = new Date();
-    maxDateObj.setMonth(maxDateObj.getMonth() + 3);
-    this.maxDate = maxDateObj.toISOString().split('T')[0];
-  }
+  ) {}
 
   ngOnInit() {
-    this.loadDoctors();
-    this.loadAppointmentTypes();
+    // Initialize form
   }
 
   ngOnDestroy() {
@@ -120,319 +84,168 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
   }
 
   /**
-   * Load available doctors
+   * Handle motive selection
    */
-  private async loadDoctors() {
-    this.loadingDoctors = true;
-    try {
-      this.doctors = await firstValueFrom(this.demoDataService.getDoctors());
-      this.filteredDoctors = [...this.doctors];
-    } catch (error) {
-      console.error('Error loading doctors:', error);
-      await this.showToast('Error al cargar la lista de doctores', 'danger');
-    } finally {
-      this.loadingDoctors = false;
-    }
-  }
-
-  /**
-   * Load appointment types
-   */
-  private async loadAppointmentTypes() {
-    try {
-      this.appointmentTypes = await firstValueFrom(this.demoDataService.getAppointmentTypes());
-      // Pre-select regular type
-      this.selectedType = this.appointmentTypes.find(t => t.id === 'regular') || null;
-    } catch (error) {
-      console.error('Error loading appointment types:', error);
-    }
-  }
-
-  /**
-   * Filter doctors by search term
-   */
-  onDoctorSearch(event: any) {
-    const searchTerm = event.detail.value?.toLowerCase() || '';
-    this.doctorSearchTerm = searchTerm;
-
-    if (!searchTerm) {
-      this.filteredDoctors = [...this.doctors];
+  onMotiveChange(motive: string, event: any) {
+    if (event.detail.checked) {
+      this.formData.motive.push(motive);
+      if (motive === 'other') {
+        this.showOtherMotive = true;
+      }
     } else {
-      this.filteredDoctors = this.doctors.filter(
-        doctor =>
-          doctor.name.toLowerCase().includes(searchTerm) ||
-          doctor.specialty.toLowerCase().includes(searchTerm) ||
-          doctor.hospital.toLowerCase().includes(searchTerm)
-      );
-    }
-  }
-
-  /**
-   * Select a doctor
-   */
-  selectDoctor(doctor: Doctor) {
-    this.selectedDoctor = doctor;
-    // Pre-select the next available date
-    if (doctor.nextAvailable) {
-      this.selectedDate = doctor.nextAvailable;
-      this.loadTimeSlots();
-    }
-  }
-
-  /**
-   * Handle date change
-   */
-  onDateChange(event: any) {
-    this.selectedDate = event.detail.value;
-    this.selectedTimeSlot = null;
-    this.loadTimeSlots();
-  }
-
-  /**
-   * Load available time slots for selected doctor and date
-   */
-  private async loadTimeSlots() {
-    if (!this.selectedDoctor || !this.selectedDate) {
-      return;
-    }
-
-    this.loadingTimeSlots = true;
-    try {
-      this.timeSlots = await firstValueFrom(
-        this.demoDataService.getTimeSlots(this.selectedDoctor.id, this.selectedDate)
-      );
-    } catch (error) {
-      console.error('Error loading time slots:', error);
-      await this.showToast('Error al cargar los horarios disponibles', 'danger');
-    } finally {
-      this.loadingTimeSlots = false;
-    }
-  }
-
-  /**
-   * Select a time slot
-   */
-  selectTimeSlot(slot: TimeSlot) {
-    if (slot.available) {
-      this.selectedTimeSlot = slot;
-    }
-  }
-
-  /**
-   * Select appointment type
-   */
-  selectAppointmentType(type: AppointmentType) {
-    this.selectedType = type;
-  }
-
-  /**
-   * Go to next step
-   */
-  async nextStep() {
-    // Validation
-    if (this.currentStep === 1 && !this.selectedDoctor) {
-      await this.showToast('Por favor, selecciona un doctor', 'warning');
-      return;
-    }
-
-    if (this.currentStep === 2 && (!this.selectedDate || !this.selectedTimeSlot)) {
-      await this.showToast('Por favor, selecciona fecha y hora', 'warning');
-      return;
-    }
-
-    if (this.currentStep === 3 && !this.selectedType) {
-      await this.showToast('Por favor, selecciona el tipo de cita', 'warning');
-      return;
-    }
-
-    // Move to next step
-    if (this.currentStep < this.totalSteps) {
-      this.currentStep++;
-
-      // Prepare confirmation data
-      if (this.currentStep === 4) {
-        await this.prepareConfirmation();
+      const index = this.formData.motive.indexOf(motive);
+      if (index > -1) {
+        this.formData.motive.splice(index, 1);
+      }
+      if (motive === 'other') {
+        this.showOtherMotive = false;
+        this.formData.other_motive = '';
       }
     }
   }
 
   /**
-   * Go to previous step
+   * Check if a motive is selected
    */
-  previousStep() {
-    if (this.currentStep > 1) {
-      this.currentStep--;
+  isMotiveSelected(motive: string): boolean {
+    return this.formData.motive.includes(motive);
+  }
+
+  /**
+   * Validate form
+   */
+  private validateForm(): boolean {
+    // Required fields
+    if (this.formData.glucose_objective <= 0) {
+      this.showToast('Por favor, ingresa un objetivo de glucosa válido', 'warning');
+      return false;
     }
+
+    if (!this.formData.insulin_type) {
+      this.showToast('Por favor, selecciona el tipo de insulina', 'warning');
+      return false;
+    }
+
+    if (this.formData.dose <= 0) {
+      this.showToast('Por favor, ingresa una dosis válida', 'warning');
+      return false;
+    }
+
+    if (!this.formData.fast_insulin || this.formData.fast_insulin.trim() === '') {
+      this.showToast('Por favor, ingresa la marca de insulina rápida', 'warning');
+      return false;
+    }
+
+    if (this.formData.fixed_dose < 0) {
+      this.showToast('Por favor, ingresa una dosis fija válida', 'warning');
+      return false;
+    }
+
+    if (this.formData.ratio <= 0) {
+      this.showToast('Por favor, ingresa un ratio válido', 'warning');
+      return false;
+    }
+
+    if (this.formData.sensitivity <= 0) {
+      this.showToast('Por favor, ingresa un factor de sensibilidad válido', 'warning');
+      return false;
+    }
+
+    if (!this.formData.pump_type) {
+      this.showToast('Por favor, selecciona el método de administración', 'warning');
+      return false;
+    }
+
+    if (!this.formData.control_data || this.formData.control_data.trim() === '') {
+      this.showToast('Por favor, ingresa la URL del PDF de control', 'warning');
+      return false;
+    }
+
+    if (this.formData.motive.length === 0) {
+      this.showToast('Por favor, selecciona al menos un motivo de visita', 'warning');
+      return false;
+    }
+
+    if (this.formData.motive.includes('other') && !this.formData.other_motive) {
+      this.showToast('Por favor, especifica el otro motivo', 'warning');
+      return false;
+    }
+
+    return true;
   }
 
   /**
-   * Prepare confirmation data
+   * Submit appointment request
    */
-  private async prepareConfirmation() {
-    const user = this.authService.getCurrentUser();
+  async submitAppointment() {
+    // Validate
+    if (!this.validateForm()) {
+      return;
+    }
 
-    this.confirmationData = {
-      doctor: this.selectedDoctor,
-      date: this.selectedDate,
-      time: this.selectedTimeSlot?.time,
-      type: this.selectedType,
-      notes: this.appointmentNotes,
-      shareGlucose: this.shareGlucoseData,
-      glucoseDays: this.glucoseDataDays,
-      patient: {
-        name: user ? `${user.firstName} ${user.lastName}` : 'Usuario',
-        email: user?.email || '',
-      },
-    };
-  }
-
-  /**
-   * Create the appointment
-   */
-  async createAppointment() {
+    // Show loading
     const loading = await this.loadingController.create({
-      message: 'Creando cita médica...',
+      message: 'Creando cita...',
     });
     await loading.present();
 
+    this.isLoading = true;
+
     try {
-      const user = this.authService.getCurrentUser();
-      if (!user) {
-        throw new Error('Usuario no autenticado');
-      }
-
-      // Prepare appointment data
-      const appointmentData = {
-        patientId: user.id,
-        patientName: `${user.firstName} ${user.lastName}`,
-        doctorId: this.selectedDoctor!.id,
-        doctorName: this.selectedDoctor!.name,
-        specialty: this.selectedDoctor!.specialty,
-        date: this.selectedDate,
-        time: this.selectedTimeSlot!.time,
-        type: this.selectedType!.id,
-        location: this.selectedDoctor!.hospital,
-        notes: this.appointmentNotes,
-        status: 'pending' as const,
-      };
-
-      // Create appointment
+      // Call backend API
       const appointment = await firstValueFrom(
-        this.appointmentService.createAppointment(appointmentData)
+        this.appointmentService.createAppointment(this.formData)
       );
 
-      // Share glucose data if enabled
-      if (this.shareGlucoseData && appointment.id) {
-        try {
-          const dateRange = {
-            end: new Date(),
-            start: new Date(Date.now() - this.glucoseDataDays * 24 * 60 * 60 * 1000),
-          };
-          await firstValueFrom(this.appointmentService.shareGlucoseData(appointment.id, dateRange));
-        } catch (error) {
-          console.error('Error sharing glucose data:', error);
-          // Continue anyway, just log the error
-        }
-      }
-
       await loading.dismiss();
-      await this.showToast('Cita médica creada exitosamente', 'success');
+      await this.showToast('Cita creada exitosamente', 'success');
 
-      // Navigate to appointment detail
-      this.router.navigate(['/tabs/appointments', appointment.id]);
-    } catch (error) {
+      // Navigate back to appointments list
+      this.router.navigate(['/tabs/appointments']);
+    } catch (error: any) {
+      await loading.dismiss();
       console.error('Error creating appointment:', error);
-      await loading.dismiss();
-      await this.showToast('Error al crear la cita médica', 'danger');
+      await this.showToast(
+        error.message || 'Error al crear la cita. Por favor, intenta de nuevo.',
+        'danger'
+      );
+    } finally {
+      this.isLoading = false;
     }
   }
 
   /**
-   * Cancel appointment creation
+   * Cancel and go back
    */
   async cancel() {
     const alert = await this.alertController.create({
-      header: 'Cancelar',
-      message: '¿Estás seguro de que deseas cancelar? Se perderán todos los datos ingresados.',
+      header: '¿Cancelar cita?',
+      message: '¿Estás seguro de que deseas cancelar? Se perderán los datos ingresados.',
       buttons: [
         {
-          text: 'Continuar editando',
+          text: 'No',
           role: 'cancel',
         },
         {
-          text: 'Cancelar cita',
+          text: 'Sí, cancelar',
+          role: 'destructive',
           handler: () => {
             this.router.navigate(['/tabs/appointments']);
           },
         },
       ],
     });
+
     await alert.present();
-  }
-
-  /**
-   * Get step progress percentage
-   */
-  get stepProgress(): number {
-    return (this.currentStep / this.totalSteps) * 100;
-  }
-
-  /**
-   * Check if can proceed to next step
-   */
-  get canProceed(): boolean {
-    switch (this.currentStep) {
-      case 1:
-        return !!this.selectedDoctor;
-      case 2:
-        return !!this.selectedDate && !!this.selectedTimeSlot;
-      case 3:
-        return !!this.selectedType;
-      case 4:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  /**
-   * Format date for display
-   */
-  formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  }
-
-  /**
-   * Get step label for display
-   */
-  getStepLabel(step: number): string {
-    switch (step) {
-      case 1:
-        return 'Doctor';
-      case 2:
-        return 'Fecha';
-      case 3:
-        return 'Detalles';
-      case 4:
-        return 'Confirmar';
-      default:
-        return '';
-    }
   }
 
   /**
    * Show toast message
    */
-  private async showToast(message: string, color: 'success' | 'warning' | 'danger') {
+  private async showToast(message: string, color: string) {
     const toast = await this.toastController.create({
       message,
-      duration: 2000,
+      duration: 3000,
       color,
       position: 'bottom',
     });

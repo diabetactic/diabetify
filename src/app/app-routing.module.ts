@@ -5,7 +5,7 @@ import { OnboardingGuard } from './core/guards';
 export const APP_ROUTES: Routes = [
   {
     path: '',
-    redirectTo: 'login',
+    redirectTo: 'welcome',
     pathMatch: 'full',
   },
   {
@@ -49,11 +49,6 @@ export const APP_ROUTES: Routes = [
     path: 'appointments',
     loadChildren: () =>
       import('./appointments/appointments.module').then(m => m.AppointmentsPageModule),
-  },
-  {
-    path: 'bolus-calculator',
-    loadComponent: () =>
-      import('./bolus-calculator/bolus-calculator.page').then(m => m.BolusCalculatorPage),
   },
   {
     path: 'dashboard/detail',
