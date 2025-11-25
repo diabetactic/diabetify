@@ -1,14 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject, takeUntil, combineLatest, firstValueFrom } from 'rxjs';
-import {
-  AppointmentService,
-  Appointment,
-  AppointmentStatus,
-} from '../core/services/appointment.service';
+import { Subject, takeUntil, firstValueFrom } from 'rxjs';
+import { AppointmentService } from '../core/services/appointment.service';
+import { Appointment } from '../core/models/appointment.model';
 import { TranslationService } from '../core/services/translation.service';
 import { LoggerService } from '../core/services/logger.service';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-appointments',
@@ -18,11 +14,23 @@ import { AppIconComponent } from '../shared/components/app-icon/app-icon.compone
 })
 export class AppointmentsPage implements OnInit, OnDestroy {
   appointments: Appointment[] = [];
-  upcomingAppointments: Appointment[] = [];
-  pastAppointments: Appointment[] = [];
   loading = false;
   error: string | null = null;
-  selectedSegment = 'upcoming';
+  pastAppointmentsExpanded = false;
+
+  /**
+   * Get the current/upcoming appointment (first in list)
+   */
+  get currentAppointment(): Appointment | null {
+    return this.appointments.length > 0 ? this.appointments[0] : null;
+  }
+
+  /**
+   * Get past appointments (all except first)
+   */
+  get pastAppointments(): Appointment[] {
+    return this.appointments.length > 1 ? this.appointments.slice(1) : [];
+  }
 
   private destroy$ = new Subject<void>();
 
@@ -51,7 +59,6 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   private subscribeToAppointments(): void {
     this.appointmentService.appointments$.pipe(takeUntil(this.destroy$)).subscribe(appointments => {
       this.appointments = appointments;
-      this.categorizeAppointments();
     });
   }
 
@@ -74,54 +81,11 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Categorize appointments into upcoming and past
-   */
-  private categorizeAppointments(): void {
-    const now = new Date();
-
-    this.upcomingAppointments = this.appointments
-      .filter(apt => {
-        const aptDate = new Date(`${apt.date} ${apt.startTime}`);
-        return aptDate >= now && (apt.status === 'confirmed' || apt.status === 'pending');
-      })
-      .sort((a, b) => {
-        const dateA = new Date(`${a.date} ${a.startTime}`);
-        const dateB = new Date(`${b.date} ${b.startTime}`);
-        return dateA.getTime() - dateB.getTime();
-      });
-
-    this.pastAppointments = this.appointments
-      .filter(apt => {
-        const aptDate = new Date(`${apt.date} ${apt.startTime}`);
-        return (
-          aptDate < now ||
-          apt.status === 'completed' ||
-          apt.status === 'cancelled' ||
-          apt.status === 'no_show'
-        );
-      })
-      .sort((a, b) => {
-        const dateA = new Date(`${a.date} ${a.startTime}`);
-        const dateB = new Date(`${b.date} ${b.startTime}`);
-        return dateB.getTime() - dateA.getTime();
-      });
-  }
-
-  /**
-   * Handle segment change
-   */
-  onSegmentChange(event: any): void {
-    this.selectedSegment = event.detail.value;
-  }
-
-  /**
    * Navigate to appointment detail
    */
   viewAppointment(appointment: Appointment): void {
-    this.logger.info('UI', 'Appointment clicked', { appointmentId: appointment.id });
-    if (appointment.id) {
-      this.router.navigate(['/tabs/appointments/appointment-detail', appointment.id]);
-    }
+    this.logger.info('UI', 'Appointment clicked', { appointmentId: appointment.appointment_id });
+    this.router.navigate(['/tabs/appointments/appointment-detail', appointment.appointment_id]);
   }
 
   /**
@@ -129,8 +93,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    */
   createAppointment(): void {
     this.logger.info('UI', 'Create appointment button clicked');
-    // TODO: Navigate to create appointment page
-    this.router.navigate(['/tabs/appointments/new']);
+    this.router.navigate(['/tabs/appointments/create']);
   }
 
   /**
@@ -143,79 +106,19 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Get status color
+   * Format motive array to string
    */
-  getStatusColor(status: AppointmentStatus): string {
-    switch (status) {
-      case 'confirmed':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      case 'cancelled':
-      case 'no_show':
-        return 'danger';
-      case 'completed':
-        return 'medium';
-      case 'rescheduled':
-        return 'tertiary';
-      default:
-        return 'medium';
-    }
+  formatMotive(motive: string[]): string {
+    if (!motive || motive.length === 0) return '-';
+    return motive
+      .map(m => this.translationService.instant(`appointments.motives.${m}`) || m)
+      .join(', ');
   }
 
   /**
-   * Get status icon
+   * Format insulin type
    */
-  getStatusIcon(status: AppointmentStatus): string {
-    switch (status) {
-      case 'confirmed':
-        return 'check_circle';
-      case 'pending':
-        return 'schedule';
-      case 'cancelled':
-        return 'cancel';
-      case 'completed':
-        return 'task_alt';
-      case 'no_show':
-        return 'person_off';
-      case 'rescheduled':
-        return 'update';
-      default:
-        return 'event';
-    }
-  }
-
-  /**
-   * Format appointment date
-   */
-  formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  }
-
-  /**
-   * Format appointment time
-   */
-  formatTime(time: string): string {
-    return time.substring(0, 5); // Show HH:MM only
-  }
-
-  /**
-   * Get urgency badge color
-   */
-  getUrgencyColor(urgency: string): string {
-    switch (urgency) {
-      case 'emergency':
-        return 'danger';
-      case 'urgent':
-        return 'warning';
-      case 'routine':
-      default:
-        return 'primary';
-    }
+  formatInsulinType(type: string): string {
+    return this.translationService.instant(`appointments.insulinTypes.${type}`) || type;
   }
 }

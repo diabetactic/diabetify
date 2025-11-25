@@ -7,10 +7,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import {
-  AppointmentService,
-  ClinicalAppointmentForm,
-} from '../../core/services/appointment.service';
+import { AppointmentService } from '../../core/services/appointment.service';
+import { CreateAppointmentRequest } from '../../core/models/appointment.model';
 import { LocalAuthService } from '../../core/services/local-auth.service';
 
 @Component({
@@ -25,7 +23,7 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   // Clinical form data
-  formData: ClinicalAppointmentForm = {
+  formData: CreateAppointmentRequest = {
     glucose_objective: 100,
     insulin_type: 'rapid',
     dose: 0,

@@ -2,12 +2,22 @@
   <ion-toolbar color="primary">
     <ion-title>{{ 'tabs.readings' | translate }}</ion-title>
     <ion-buttons slot="end">
+      <ion-button
+        (click)="syncWithBackend()"
+        [disabled]="isSyncing"
+        class="relative inline-flex items-center gap-2"
+      >
+        <app-icon
+          [name]="isSyncing ? 'loader-circle' : 'refresh-cw'"
+          [class.animate-spin]="isSyncing"
+        ></app-icon>
+      </ion-button>
       <ion-button (click)="openFilterModal()" class="relative inline-flex items-center gap-2">
-    <app-icon  name="filter-outline"></app-icon>
+        <app-icon name="filter-outline"></app-icon>
         <ion-badge
           *ngIf="getFilterCount() > 0"
           color="primary"
-          class="absolute top-2 right-2 h-4 min-w-4 px-1 py-0.5 text-[10px]"
+          class="absolute right-2 top-2 h-4 min-w-4 px-1 py-0.5 text-[10px]"
           >{{ getFilterCount() }}</ion-badge
         >
       </ion-button>
@@ -43,7 +53,7 @@
 
   <!-- Active Filters Chips -->
   <div
-    class="flex items-center gap-2 overflow-x-auto border-b border-[var(--ion-color-light-shade)] bg-[var(--ion-color-light)] px-4 py-3 whitespace-nowrap"
+    class="flex items-center gap-2 overflow-x-auto whitespace-nowrap border-b border-[var(--ion-color-light-shade)] bg-[var(--ion-color-light)] px-4 py-3"
     *ngIf="hasActiveFilters()"
   >
     <ion-chip
@@ -53,7 +63,7 @@
       class="m-0 cursor-pointer"
     >
       <ion-label>{{ getStatusLabel(filters.status) }}</ion-label>
-      <app-icon  name="close-circle"></app-icon>
+      <app-icon name="close-circle"></app-icon>
     </ion-chip>
     <ion-chip
       *ngIf="filters.startDate"
@@ -64,7 +74,7 @@
       <ion-label
         >{{ filters.startDate | date: 'MMM d' }} - {{ filters.endDate | date: 'MMM d' }}</ion-label
       >
-      <app-icon  name="close-circle"></app-icon>
+      <app-icon name="close-circle"></app-icon>
     </ion-chip>
     <ion-chip
       *ngIf="filters.searchTerm"
@@ -73,7 +83,7 @@
       class="m-0 cursor-pointer"
     >
       <ion-label>{{ 'readings.search' | translate }}: {{ filters.searchTerm }}</ion-label>
-      <app-icon  name="close-circle"></app-icon>
+      <app-icon name="close-circle"></app-icon>
     </ion-chip>
     <ion-button fill="clear" size="small" (click)="clearFilters()" class="shrink-0">{{
       'readings.clearAll' | translate
@@ -82,7 +92,7 @@
 
   <!-- Loading State -->
   <div class="flex min-h-[300px] flex-col items-center justify-center p-8" *ngIf="isLoading">
-    <app-icon  name="loader-circle" class="mb-4 animate-spin"></app-icon>
+    <app-icon name="loader-circle" class="mb-4 animate-spin"></app-icon>
     <p class="m-0 text-sm text-[var(--ion-color-medium)]">
       {{ 'readings.loadingReadings' | translate }}
     </p>
@@ -184,7 +194,7 @@
       color="light"
       class="shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
     >
-      <app-icon  name="arrow-up"></app-icon>
+      <app-icon name="arrow-up"></app-icon>
     </ion-fab-button>
   </ion-fab>
 
@@ -195,7 +205,7 @@
       color="primary"
       class="shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
     >
-      <app-icon  name="add"></app-icon>
+      <app-icon name="add"></app-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-content>
@@ -208,7 +218,7 @@
         <ion-title>{{ 'readings.filterReadings' | translate }}</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="closeFilterModal()" class="inline-flex items-center gap-2">
-    <app-icon  name="close"></app-icon>
+            <app-icon name="close"></app-icon>
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
@@ -218,7 +228,7 @@
       <!-- Status Filter -->
       <div class="mb-6">
         <ion-list-header class="mb-2 !px-0 !pr-0">
-          <ion-label class="text-sm font-semibold text-[var(--ion-color-medium)] uppercase">{{
+          <ion-label class="text-sm font-semibold uppercase text-[var(--ion-color-medium)]">{{
             'readings.glucoseStatus' | translate
           }}</ion-label>
         </ion-list-header>
@@ -255,7 +265,7 @@
       <!-- Date Range Filter -->
       <div class="mb-6">
         <ion-list-header class="mb-2 !px-0 !pr-0">
-          <ion-label class="text-sm font-semibold text-[var(--ion-color-medium)] uppercase">{{
+          <ion-label class="text-sm font-semibold uppercase text-[var(--ion-color-medium)]">{{
             'readings.dateRange' | translate
           }}</ion-label>
         </ion-list-header>
@@ -297,7 +307,7 @@
       <!-- Quick Date Filters -->
       <div class="mb-6">
         <ion-list-header class="mb-2 !px-0 !pr-0">
-          <ion-label class="text-sm font-semibold text-[var(--ion-color-medium)] uppercase">{{
+          <ion-label class="text-sm font-semibold uppercase text-[var(--ion-color-medium)]">{{
             'readings.quickFilters' | translate
           }}</ion-label>
         </ion-list-header>

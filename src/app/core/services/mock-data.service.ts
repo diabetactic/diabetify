@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, delay } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface MockUser {
   id: string;
@@ -81,6 +82,8 @@ export class MockDataService {
     targetGlucose: 120,
     targetRange: { min: 70, max: 180 },
   };
+
+  private readonly isMockMode = environment.backendMode === 'mock';
 
   private readings: MockReading[] = [
     {
@@ -202,18 +205,18 @@ export class MockDataService {
   ];
 
   constructor() {
-    console.log('🏥 DIABETACTIC Mock Service - Centro Médico');
+    this.debugLog('🏥 DIABETACTIC Mock Service - Centro Médico');
   }
 
   // ====== AUTH ======
 
   login(username: string, password: string): Observable<MockUser> {
-    console.log('🎭 MOCK LOGIN:', username);
+    this.debugLog('🎭 MOCK LOGIN:', username);
     return of(this.currentUser).pipe(delay(800));
   }
 
   logout(): Observable<boolean> {
-    console.log('🎭 MOCK LOGOUT');
+    this.debugLog('🎭 MOCK LOGOUT');
     return of(true).pipe(delay(200));
   }
 
@@ -235,7 +238,7 @@ export class MockDataService {
 
     filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    console.log('🎭 MOCK GET READINGS:', filtered.length);
+    this.debugLog('🎭 MOCK GET READINGS:', filtered.length);
     return of(filtered).pipe(delay(300));
   }
 
@@ -253,7 +256,7 @@ export class MockDataService {
     };
 
     this.readings.unshift(newReading);
-    console.log('🎭 MOCK ADD READING:', newReading);
+    this.debugLog('🎭 MOCK ADD READING:', newReading);
     return of(newReading).pipe(delay(500));
   }
 
@@ -261,7 +264,7 @@ export class MockDataService {
     const index = this.readings.findIndex(r => r.id === id);
     if (index > -1) {
       this.readings.splice(index, 1);
-      console.log('🎭 MOCK DELETE READING:', id);
+      this.debugLog('🎭 MOCK DELETE READING:', id);
     }
     return of(true).pipe(delay(300));
   }
@@ -289,7 +292,7 @@ export class MockDataService {
       recommendedInsulin: Math.round(totalInsulin * 10) / 10,
     };
 
-    console.log('🎭 MOCK BOLUS CALCULATION:', result);
+    this.debugLog('🎭 MOCK BOLUS CALCULATION:', result);
     return of(result).pipe(delay(400));
   }
 
@@ -316,13 +319,13 @@ export class MockDataService {
       return 1;
     });
 
-    console.log('🎭 MOCK GET APPOINTMENTS:', filtered.length);
+    this.debugLog('🎭 MOCK GET APPOINTMENTS:', filtered.length);
     return of(filtered).pipe(delay(300));
   }
 
   getAppointmentById(id: string): Observable<MockAppointment | null> {
     const appt = this.appointments.find(a => a.id === id);
-    console.log('🎭 MOCK GET APPOINTMENT BY ID:', id, appt);
+    this.debugLog('🎭 MOCK GET APPOINTMENT BY ID:', id, appt);
     return of(appt || null).pipe(delay(200));
   }
 
@@ -342,7 +345,7 @@ export class MockDataService {
     };
 
     this.appointments.unshift(newAppt);
-    console.log('🎭 MOCK ADD APPOINTMENT:', newAppt);
+    this.debugLog('🎭 MOCK ADD APPOINTMENT:', newAppt);
     return of(newAppt).pipe(delay(500));
   }
 
@@ -353,7 +356,7 @@ export class MockDataService {
     const appt = this.appointments.find(a => a.id === id);
     if (appt) {
       Object.assign(appt, updates);
-      console.log('🎭 MOCK UPDATE APPOINTMENT:', appt);
+      this.debugLog('🎭 MOCK UPDATE APPOINTMENT:', appt);
       return of(appt).pipe(delay(400));
     }
     return of(null).pipe(delay(400));
@@ -363,7 +366,7 @@ export class MockDataService {
     const appt = this.appointments.find(a => a.id === id);
     if (appt) {
       appt.status = 'cancelled';
-      console.log('🎭 MOCK CANCEL APPOINTMENT:', id);
+      this.debugLog('🎭 MOCK CANCEL APPOINTMENT:', id);
     }
     return of(true).pipe(delay(300));
   }
@@ -372,7 +375,7 @@ export class MockDataService {
     const index = this.appointments.findIndex(a => a.id === id);
     if (index > -1) {
       this.appointments.splice(index, 1);
-      console.log('🎭 MOCK DELETE APPOINTMENT:', id);
+      this.debugLog('🎭 MOCK DELETE APPOINTMENT:', id);
     }
     return of(true).pipe(delay(300));
   }
@@ -433,7 +436,7 @@ export class MockDataService {
       trend,
     };
 
-    console.log('🎭 MOCK GET STATS:', stats);
+    this.debugLog('🎭 MOCK GET STATS:', stats);
     return of(stats).pipe(delay(400));
   }
 
@@ -445,7 +448,13 @@ export class MockDataService {
 
   updatePatientParams(params: Partial<typeof this.patientParams>): Observable<boolean> {
     Object.assign(this.patientParams, params);
-    console.log('🎭 MOCK UPDATE PATIENT PARAMS:', this.patientParams);
+    this.debugLog('🎭 MOCK UPDATE PATIENT PARAMS:', this.patientParams);
     return of(true).pipe(delay(300));
+  }
+
+  private debugLog(message?: any, ...optionalParams: any[]): void {
+    if (this.isMockMode) {
+      console.log(message, ...optionalParams);
+    }
   }
 }

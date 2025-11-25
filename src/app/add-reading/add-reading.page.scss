@@ -62,6 +62,38 @@ ion-datetime-button {
   width: 100%;
 }
 
+// Dark mode overrides for add-reading
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
+  ion-content {
+    --background: #020617;
+  }
+
+  ion-datetime-button {
+    --background: #111827;
+    --color: #e5e7eb;
+  }
+
+  ion-modal {
+    --background: #020617;
+  }
+
+  ion-datetime {
+    --background: #020617;
+    --wheel-background: #020617;
+    --wheel-highlight-background: #111827;
+    --wheel-fade-background: transparent;
+    color: #e5e7eb;
+  }
+
+  .ion-select-full {
+    ion-select {
+      --placeholder-color: #9ca3af;
+      --color: #e5e7eb;
+    }
+  }
+}
+
 // =============================================
 // Status Preview Component (PRESERVE)
 // =============================================

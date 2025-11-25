@@ -39,13 +39,13 @@ npm run backend:health
 
 ### Services not running?
 ```bash
-cd extServices/container-managing
+cd extServicesCompose/extServices/container-managing
 make build
 ```
 
 ### Check logs
 ```bash
-cd extServices/container-managing
+cd extServicesCompose/extServices/container-managing
 make logs
 ```
 
@@ -73,7 +73,7 @@ curl http://localhost:8005/health
 
 ```bash
 # 1. Start backend
-cd extServices/container-managing && make build
+cd extServicesCompose/extServices/container-managing && make build
 
 # 2. Wait 30 seconds
 sleep 30

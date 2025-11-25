@@ -2,7 +2,7 @@
 
 ## 🎯 Overview
 
-This guide explains how to run the backend integration tests for Diabetify. These tests verify the Angular app works correctly with all external services running locally.
+This guide explains how to run the backend integration tests for Diabetactic. These tests verify the Angular app works correctly with all external services running locally.
 
 ## 📋 Prerequisites
 
@@ -15,13 +15,14 @@ This guide explains how to run the backend integration tests for Diabetify. Thes
 ### 1. Start Backend Services
 
 ```bash
-# Navigate to container-managing directory
-cd extServices/container-managing
+# Navigate to container-managing directory (from project root)
+cd extServicesCompose/extServices/container-managing
 
 # Start all services (api-gateway, login, appointments, glucoserver)
 make build
 
 # Or use npm script from project root
+cd -
 npm run backend:start
 ```
 
@@ -197,7 +198,7 @@ features: {
 
 ### Backend .env Configuration
 
-**File:** `extServices/container-managing/.env`
+**File:** `extServicesCompose/extServices/container-managing/.env`
 
 Created from `.env.example` with:
 - `SECRET_KEY` - JWT signing key (generated)
@@ -220,7 +221,7 @@ lsof -i :8003  # login
 lsof -i :8005  # appointments
 
 # View service logs
-cd extServices/container-managing
+cd extServicesCompose/extServices/container-managing
 docker compose logs -f
 ```
 
@@ -241,7 +242,7 @@ npm run backend:logs
 
 1. Verify services are running: `npm run backend:health`
 2. Check environment config: `src/environments/environment.test.ts`
-3. Verify .env file exists: `extServices/container-managing/.env`
+3. Verify .env file exists: `extServicesCompose/extServices/container-managing/.env`
 4. Check network connectivity: `curl http://localhost:8004/health`
 
 ### TypeScript compilation errors
@@ -330,7 +331,7 @@ jobs:
 
       - name: Start Backend Services
         run: |
-          cd extServices/container-managing
+          cd extServicesCompose/extServices/container-managing
           make build
           sleep 60
 

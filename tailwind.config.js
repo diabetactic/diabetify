@@ -9,7 +9,7 @@ module.exports = {
   daisyui: {
     themes: [
       {
-        diabetify: {
+        diabetactic: {
           primary: '#25aff4',
           'primary-content': '#ffffff',
           secondary: '#00c6ae',

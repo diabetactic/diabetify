@@ -19,9 +19,7 @@ import { AppIconComponent } from '../../shared/components/app-icon/app-icon.comp
   templateUrl: './advanced.page.html',
   styleUrls: ['./advanced.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, TranslateModule,
-    AppIconComponent
-  ],
+  imports: [CommonModule, IonicModule, FormsModule, TranslateModule, AppIconComponent],
 })
 export class AdvancedPage implements OnInit, OnDestroy {
   isDevMode = !environment.production;

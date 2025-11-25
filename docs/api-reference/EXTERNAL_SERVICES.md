@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Diabetify application implements a comprehensive external services integration layer that provides unified access to all external APIs, with built-in health monitoring, circuit breaker patterns, intelligent caching, and workflow orchestration.
+The Diabetactic application implements a comprehensive external services integration layer that provides unified access to all external APIs, with built-in health monitoring, circuit breaker patterns, intelligent caching, and workflow orchestration.
 
 ## Architecture Components
 

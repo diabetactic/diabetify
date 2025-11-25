@@ -4,7 +4,7 @@
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                        DIABETIFY MOBILE APP                       │
+│                       DIABETACTIC MOBILE APP                      │
 │                                                                    │
 │  ┌────────────────────┐        ┌──────────────────────┐         │
 │  │  Login Component   │        │  Profile Component   │         │

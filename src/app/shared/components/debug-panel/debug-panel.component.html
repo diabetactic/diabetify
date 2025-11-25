@@ -1,6 +1,6 @@
 <!-- Debug Panel Component -->
 <!-- Floating toggle button (bottom-right corner) -->
-<div class="fixed right-4 bottom-20 z-50 md:bottom-4">
+<div class="fixed bottom-20 right-4 z-50 md:bottom-4">
   <ion-fab-button
     size="small"
     (click)="togglePanel()"
@@ -14,7 +14,7 @@
 <!-- Debug Panel (sliding from bottom on mobile, sidebar on desktop) -->
 <div
   *ngIf="isOpen"
-  class="fixed inset-x-0 bottom-0 z-40 flex max-h-[80vh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl md:inset-y-0 md:right-0 md:left-auto md:max-h-full md:w-96 md:rounded-none md:rounded-l-2xl dark:bg-gray-900"
+  class="fixed inset-x-0 bottom-0 z-40 flex max-h-[80vh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl dark:bg-gray-900 md:inset-y-0 md:left-auto md:right-0 md:max-h-full md:w-96 md:rounded-none md:rounded-l-2xl"
   [@slideIn]
 >
   <!-- Header -->
@@ -22,12 +22,17 @@
     class="flex items-center justify-between border-b border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800"
   >
     <div class="flex items-center gap-2">
-      <app-icon  name="bug" class="text-primary text-xl"></app-icon>
+      <app-icon name="bug" class="text-primary text-xl"></app-icon>
       <h2 class="text-lg font-bold text-gray-900 dark:text-white">Debug Panel</h2>
     </div>
-    <ion-button fill="clear" size="small" (click)="togglePanel()" class="inline-flex items-center gap-2">
-    <app-icon  name="close" class="w-6 h-6"></app-icon>
-  </ion-button>
+    <ion-button
+      fill="clear"
+      size="small"
+      (click)="togglePanel()"
+      class="inline-flex items-center gap-2"
+    >
+      <app-icon name="close" class="h-6 w-6"></app-icon>
+    </ion-button>
   </div>
 
   <!-- Tabs -->
@@ -37,7 +42,7 @@
     <button
       *ngFor="let tab of ['info', 'services', 'mock', 'storage', 'actions']"
       (click)="selectedTab = tab"
-      class="flex-1 border-b-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors"
+      class="flex-1 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors"
       [ngClass]="{
         'border-primary text-primary': selectedTab === tab,
         'border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200':
@@ -95,7 +100,7 @@
           </div>
           <div class="flex justify-between">
             <span class="text-gray-600 dark:text-gray-400">API URL:</span>
-            <span class="font-mono text-xs break-all text-gray-900 dark:text-white">{{
+            <span class="break-all font-mono text-xs text-gray-900 dark:text-white">{{
               debugInfo.apiBaseUrl
             }}</span>
           </div>
@@ -135,8 +140,13 @@
         </div>
       </div>
 
-      <ion-button expand="block" size="small" (click)="copyDebugInfo()" class="inline-flex items-center gap-2">
-    <app-icon  name="copy-outline"></app-icon>
+      <ion-button
+        expand="block"
+        size="small"
+        (click)="copyDebugInfo()"
+        class="inline-flex items-center gap-2"
+      >
+        <app-icon name="copy-outline"></app-icon>
         Copy All Info
       </ion-button>
     </div>
@@ -226,7 +236,7 @@
     <div *ngIf="selectedTab === 'mock'" class="space-y-3">
       <div class="rounded-lg bg-yellow-50 p-3 dark:bg-yellow-900/20">
         <div class="flex gap-2">
-          <app-icon  name="warning" class="text-xl text-yellow-600 dark:text-yellow-400"></app-icon>
+          <app-icon name="warning" class="text-xl text-yellow-600 dark:text-yellow-400"></app-icon>
           <p class="text-xs text-yellow-800 dark:text-yellow-200">
             Mock mode allows testing without real backend services. Enable for development only.
           </p>
@@ -299,8 +309,9 @@
         fill="outline"
         size="small"
         (click)="clearMockData()"
-       class="inline-flex items-center gap-2">
-    <app-icon  name="trash-outline"></app-icon>
+        class="inline-flex items-center gap-2"
+      >
+        <app-icon name="trash-outline"></app-icon>
         Clear Mock Data
       </ion-button>
     </div>
@@ -350,8 +361,9 @@
         fill="outline"
         size="small"
         (click)="clearReadings()"
-       class="inline-flex items-center gap-2">
-    <app-icon  name="trash-outline"></app-icon>
+        class="inline-flex items-center gap-2"
+      >
+        <app-icon name="trash-outline"></app-icon>
         Clear Readings
       </ion-button>
 
@@ -361,8 +373,9 @@
         fill="outline"
         size="small"
         (click)="clearPreferences()"
-       class="inline-flex items-center gap-2">
-    <app-icon  name="trash-outline"></app-icon>
+        class="inline-flex items-center gap-2"
+      >
+        <app-icon name="trash-outline"></app-icon>
         Clear Preferences
       </ion-button>
     </div>
@@ -423,8 +436,13 @@
 
       <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
         <h3 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Sync Actions</h3>
-        <ion-button expand="block" size="small" (click)="forceSync()" class="inline-flex items-center gap-2">
-    <app-icon  name="sync-outline"></app-icon>
+        <ion-button
+          expand="block"
+          size="small"
+          (click)="forceSync()"
+          class="inline-flex items-center gap-2"
+        >
+          <app-icon name="sync-outline"></app-icon>
           Force Sync
         </ion-button>
       </div>
@@ -434,8 +452,14 @@
       >
         <h3 class="mb-2 text-sm font-semibold text-red-900 dark:text-red-200">Danger Zone</h3>
         <p class="mb-3 text-xs text-red-700 dark:text-red-300">These actions cannot be undone!</p>
-        <ion-button expand="block" color="danger" size="small" (click)="clearAllData()" class="inline-flex items-center gap-2">
-    <app-icon  name="nuclear-outline"></app-icon>
+        <ion-button
+          expand="block"
+          color="danger"
+          size="small"
+          (click)="clearAllData()"
+          class="inline-flex items-center gap-2"
+        >
+          <app-icon name="nuclear-outline"></app-icon>
           Clear All Data
         </ion-button>
       </div>

@@ -1,4 +1,4 @@
-# Claude Flow - Guía Completa para Diabetify
+# Claude Flow - Guía Completa para Diabetactic
 
 ## 🎯 Resumen Ejecutivo
 
@@ -20,7 +20,7 @@ Claude Flow es un sistema de orquestación multi-agente que **revoluciona el des
 3. [Metodología SPARC](#metodología-sparc)
 4. [Agentes Esenciales](#agentes-esenciales)
 5. [Coordinación de Swarms](#coordinación-de-swarms)
-6. [Ejemplos Prácticos Diabetify](#ejemplos-prácticos-diabetactic)
+6. [Ejemplos Prácticos Diabetactic](#ejemplos-prácticos-diabetactic)
 7. [AgentDB y Memoria](#agentdb-y-memoria)
 8. [GitHub Integration](#github-integration)
 9. [Mejores Prácticas](#mejores-prácticas)
@@ -44,7 +44,7 @@ npx claude-flow@alpha --version
 npx claude-flow@alpha sparc modes
 ```
 
-### Configuración para Diabetify
+### Configuración para Diabetactic
 
 Crear `.claude-flow.json`:
 
@@ -252,7 +252,7 @@ npx claude-flow@alpha sparc pipeline \
 
 ---
 
-## 👥 Agentes Esenciales para Diabetify
+## 👥 Agentes Esenciales para Diabetactic
 
 ### Tier 1: Uso Diario (10 agentes)
 
@@ -267,7 +267,7 @@ Task("Angular Developer", `
   - Integración con AppointmentService (Promises, NO Observables)
   - Standalone component pattern
 
-  Seguir convenciones Diabetify:
+  Seguir convenciones Diabetactic:
   - Property names: value/units/time (NO glucoseValue)
   - Service methods return Promises
   - Use test-builders.ts for test data
@@ -335,7 +335,7 @@ Task("Code Reviewer", `
   - Input validation
   - Auth token management
 
-  Diabetify Conventions:
+  Diabetactic Conventions:
   - Spanish-first translations
   - Promises (NO Observables in services)
   - offline-first patterns
@@ -470,7 +470,7 @@ Task("Code Quality Analyzer", `
 
 ## 🔄 Coordinación de Swarms
 
-### Topologías Recomendadas para Diabetify
+### Topologías Recomendadas para Diabetactic
 
 #### 1. Hierarchical (Features Complejas)
 
@@ -712,7 +712,7 @@ Benefits: Maximum parallelization, fault tolerance
 
 ---
 
-## 📚 Ejemplos Prácticos Diabetify
+## 📚 Ejemplos Prácticos Diabetactic
 
 ### Ejemplo 1: Implementar Appointment Creation (COMPLETO)
 
@@ -850,7 +850,7 @@ npx claude-flow@alpha github workflow-auto \
 - **164x faster** large queries (1M vectors)
 - **4-32x memory reduction** con quantization
 
-### Casos de Uso para Diabetify
+### Casos de Uso para Diabetactic
 
 #### 1. Development Context Management
 
@@ -1148,7 +1148,7 @@ npx claude-flow@alpha sparc tdd "feature description" \
   --coverage 90
 ```
 
-### 6. Convenciones Diabetify
+### 6. Convenciones Diabetactic
 
 ```typescript
 // ✅ CORRECTO
@@ -1350,7 +1350,7 @@ npx claude-flow@alpha trend analyze --metric "task_completion" --period 30d
 
 ## 🎉 Resumen
 
-Claude Flow revoluciona el desarrollo de Diabetify con:
+Claude Flow revoluciona el desarrollo de Diabetactic con:
 
 1. **84.8% SWE-Bench score** - Líder en AI orchestration
 2. **2.8-4.4x más rápido** - Parallel agent coordination
@@ -1365,4 +1365,4 @@ Claude Flow revoluciona el desarrollo de Diabetify con:
 **Versión**: 1.0.0
 **Fecha**: 2025-11-03
 **Autor**: Claude Flow Research Team
-**Proyecto**: Diabetify Healthcare Platform
+**Proyecto**: Diabetactic Healthcare Platform

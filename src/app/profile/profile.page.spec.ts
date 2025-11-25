@@ -11,6 +11,7 @@ import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
 import { TranslationService, Language, LanguageConfig } from '../core/services/translation.service';
 import { TidepoolSyncService } from '../core/services/tidepool-sync.service';
+import { ProfilePageModule } from './profile.module';
 
 class TidepoolAuthServiceStub {
   private stateSubject = new BehaviorSubject<AuthState>({
@@ -120,7 +121,12 @@ describe('ProfilePage', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot(), TranslateModule.forRoot(), RouterTestingModule, ProfilePage],
+      imports: [
+        IonicModule.forRoot(),
+        TranslateModule.forRoot(),
+        RouterTestingModule,
+        ProfilePageModule,
+      ],
       providers: [
         { provide: TidepoolAuthService, useClass: TidepoolAuthServiceStub },
         { provide: ProfileService, useClass: ProfileServiceStub },

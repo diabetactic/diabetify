@@ -1,6 +1,6 @@
 # Shared UI Components
 
-This directory contains reusable UI components for the Diabetify app. All components are standalone and follow the design patterns from the mockups.
+This directory contains reusable UI components for the Diabetactic app. All components are standalone and follow the design patterns from the mockups.
 
 ## Components
 

@@ -1,4 +1,4 @@
-# Diabetify Styling Guide - AI-Safe Architecture
+# Diabetactic Styling Guide - AI-Safe Architecture
 
 ## 🎯 Philosophy: AI-Proof Styling with Tailwind CSS
 

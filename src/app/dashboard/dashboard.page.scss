@@ -208,13 +208,15 @@ ion-content {
 // DARK MODE - IONIC COMPONENT OVERRIDES
 // ============================================
 
-:host-context(.dark-theme) {
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
   ion-content {
-    --background: #0f172a;
+    --background: #020617;
   }
 
   .appointment-card,
-  .quick-actions-card {
+  .quick-actions-card,
+  .card {
     background: var(--ion-color-step-150, #111827);
     box-shadow: 0 12px 24px rgb(0 0 0 / 35%);
 

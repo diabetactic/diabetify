@@ -1,6 +1,6 @@
-# Diabetify Documentation
+# Diabetactic Documentation
 
-Comprehensive documentation for the Diabetify mobile health application.
+Comprehensive documentation for the Diabetactic mobile health application.
 
 ## 📚 Documentation Index
 

@@ -1,24 +1,23 @@
 /**
  * TokenStorageService - Secure Token Storage Management
  *
- * Handles secure storage of OAuth tokens with encryption.
+ * Handles secure storage of OAuth tokens using Android Keystore.
  * - Access tokens: In-memory only (cleared on app restart)
- * - Refresh tokens: Encrypted storage in Capacitor Preferences
- * - ID tokens: Encrypted storage in Capacitor Preferences
+ * - Refresh tokens: Encrypted storage via @aparajita/capacitor-secure-storage
+ * - Auth data: Encrypted storage via Android Keystore
  *
  * Security principles:
  * 1. Access tokens should never be persisted to prevent theft
- * 2. Refresh tokens must be encrypted before storage
+ * 2. Refresh tokens are encrypted using Android Keystore (hardware-backed)
  * 3. Tokens should never appear in logs or error messages
  * 4. Clear all tokens on logout
  *
- * NOTE: This implementation uses a simple Base64 encoding as a placeholder.
- * For production, you should use @capacitor-community/secure-storage-plugin
- * or implement proper encryption using Web Crypto API with a secure key.
+ * Implementation: Uses @aparajita/capacitor-secure-storage v6.x for
+ * platform-specific secure storage (Android Keystore).
  */
 
 import { Injectable } from '@angular/core';
-import { Preferences } from '@capacitor/preferences';
+import { SecureStorage } from '@aparajita/capacitor-secure-storage';
 import { TidepoolAuth, TokenValidation } from '../models/tidepool-auth.model';
 import { OAUTH_CONSTANTS } from '../config/oauth.config';
 
@@ -61,21 +60,13 @@ export class TokenStorageService {
       this.accessToken = auth.accessToken;
       this.accessTokenExpiry = new Date(auth.expiresAt).getTime();
 
-      // Encrypt and store refresh token
+      // Store refresh token in Android Keystore (hardware-backed encryption)
       if (auth.refreshToken) {
-        const encryptedRefreshToken = await this.encrypt(auth.refreshToken);
-        await Preferences.set({
-          key: STORAGE_KEYS.REFRESH_TOKEN,
-          value: encryptedRefreshToken,
-        });
+        await SecureStorage.set(STORAGE_KEYS.REFRESH_TOKEN, auth.refreshToken);
       }
 
-      // Encrypt and store full auth data (for user info restoration)
-      const encryptedAuthData = await this.encrypt(JSON.stringify(auth));
-      await Preferences.set({
-        key: STORAGE_KEYS.AUTH_DATA,
-        value: encryptedAuthData,
-      });
+      // Store full auth data in Android Keystore
+      await SecureStorage.set(STORAGE_KEYS.AUTH_DATA, JSON.stringify(auth));
 
       // Store token metadata
       const metadata: TokenMetadata = {
@@ -84,10 +75,7 @@ export class TokenStorageService {
         lastRefresh: Date.now(),
       };
 
-      await Preferences.set({
-        key: STORAGE_KEYS.TOKEN_METADATA,
-        value: JSON.stringify(metadata),
-      });
+      await SecureStorage.set(STORAGE_KEYS.TOKEN_METADATA, JSON.stringify(metadata));
     } catch (error) {
       console.error('Failed to store authentication data');
       throw new Error('Token storage failed');
@@ -114,21 +102,14 @@ export class TokenStorageService {
   }
 
   /**
-   * Get refresh token from encrypted storage
+   * Get refresh token from secure storage
    *
-   * @returns Decrypted refresh token if available
+   * @returns Refresh token if available (automatically decrypted from Android Keystore)
    */
   async getRefreshToken(): Promise<string | null> {
     try {
-      const { value: encryptedToken } = await Preferences.get({
-        key: STORAGE_KEYS.REFRESH_TOKEN,
-      });
-
-      if (!encryptedToken) {
-        return null;
-      }
-
-      return await this.decrypt(encryptedToken);
+      const token = await SecureStorage.get(STORAGE_KEYS.REFRESH_TOKEN);
+      return (token as string) || null;
     } catch (error) {
       console.error('Failed to retrieve refresh token');
       return null;
@@ -136,22 +117,17 @@ export class TokenStorageService {
   }
 
   /**
-   * Get complete auth data from encrypted storage
+   * Get complete auth data from secure storage
    *
-   * @returns Decrypted auth data if available
+   * @returns Auth data if available (automatically decrypted from Android Keystore)
    */
   async getAuthData(): Promise<TidepoolAuth | null> {
     try {
-      const { value: encryptedData } = await Preferences.get({
-        key: STORAGE_KEYS.AUTH_DATA,
-      });
-
-      if (!encryptedData) {
+      const data = await SecureStorage.get(STORAGE_KEYS.AUTH_DATA);
+      if (!data) {
         return null;
       }
-
-      const decryptedData = await this.decrypt(encryptedData);
-      return JSON.parse(decryptedData);
+      return JSON.parse(data as string);
     } catch (error) {
       console.error('Failed to retrieve auth data');
       return null;
@@ -185,10 +161,10 @@ export class TokenStorageService {
       // Clear memory
       this.clearAccessToken();
 
-      // Clear storage
-      await Preferences.remove({ key: STORAGE_KEYS.REFRESH_TOKEN });
-      await Preferences.remove({ key: STORAGE_KEYS.AUTH_DATA });
-      await Preferences.remove({ key: STORAGE_KEYS.TOKEN_METADATA });
+      // Clear secure storage
+      await SecureStorage.remove(STORAGE_KEYS.REFRESH_TOKEN);
+      await SecureStorage.remove(STORAGE_KEYS.AUTH_DATA);
+      await SecureStorage.remove(STORAGE_KEYS.TOKEN_METADATA);
     } catch (error) {
       console.error('Failed to clear tokens');
       throw error;
@@ -259,15 +235,11 @@ export class TokenStorageService {
    */
   private async getMetadata(): Promise<TokenMetadata | null> {
     try {
-      const { value } = await Preferences.get({
-        key: STORAGE_KEYS.TOKEN_METADATA,
-      });
-
+      const value = await SecureStorage.get(STORAGE_KEYS.TOKEN_METADATA);
       if (!value) {
         return null;
       }
-
-      return JSON.parse(value);
+      return JSON.parse(value as string);
     } catch (error) {
       return null;
     }
@@ -281,54 +253,6 @@ export class TokenStorageService {
    */
   private isTokenExpired(expiryTimestamp: number): boolean {
     return Date.now() >= expiryTimestamp;
-  }
-
-  /**
-   * Encrypt sensitive data
-   *
-   * WARNING: This is a placeholder implementation using Base64 encoding.
-   * For production apps, use proper encryption:
-   *
-   * Option 1: @capacitor-community/secure-storage-plugin
-   * - Pros: Uses platform-specific secure storage (iOS Keychain, Android Keystore)
-   * - Installation: npm install @capacitor-community/secure-storage-plugin
-   *
-   * Option 2: Web Crypto API with AES-GCM
-   * - Requires secure key management
-   * - Example: crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data)
-   *
-   * @param data - Data to encrypt
-   * @returns Encrypted data (currently Base64-encoded)
-   */
-  private async encrypt(data: string): Promise<string> {
-    // TODO: Replace with actual encryption
-    // For now, use Base64 encoding as a placeholder
-    try {
-      return btoa(data);
-    } catch (error) {
-      console.error('Encryption failed');
-      throw error;
-    }
-  }
-
-  /**
-   * Decrypt sensitive data
-   *
-   * WARNING: This is a placeholder implementation.
-   * Must match the encryption method used.
-   *
-   * @param encryptedData - Encrypted data
-   * @returns Decrypted data
-   */
-  private async decrypt(encryptedData: string): Promise<string> {
-    // TODO: Replace with actual decryption
-    // For now, use Base64 decoding as a placeholder
-    try {
-      return atob(encryptedData);
-    } catch (error) {
-      console.error('Decryption failed');
-      throw error;
-    }
   }
 
   /**

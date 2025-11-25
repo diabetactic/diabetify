@@ -2,7 +2,7 @@
 
 **Analysis Date:** 2025-11-07
 **Analyst:** Claude Code Investigation Agent
-**Project:** Diabetify Mobile Health App
+**Project:** Diabetactic Mobile Health App
 
 ---
 
@@ -25,7 +25,7 @@
 
 ### What is extServices?
 
-ExtServices is a **microservices backend** for the Diabetify health app, consisting of **8 repositories** managed as Git submodules. The architecture separates mobile app backend (patient-facing) from administrative backend (doctor/admin-facing).
+ExtServices is a **microservices backend** for the Diabetactic health app, consisting of **8 repositories** managed as Git submodules. The architecture separates mobile app backend (patient-facing) from administrative backend (doctor/admin-facing).
 
 ### Key Findings
 
@@ -45,7 +45,7 @@ ExtServices is a **microservices backend** for the Diabetify health app, consist
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                   Diabetify Ecosystem                   │
+│                  Diabetactic Ecosystem                  │
 ├──────────────────────────┬──────────────────────────────┤
 │   MOBILE APP STACK       │   ADMIN/BACKOFFICE STACK     │
 ├──────────────────────────┼──────────────────────────────┤
@@ -875,9 +875,9 @@ git submodule init
 git submodule update
 ```
 
-**2. Start Backend Services:**
+**2. Start Backend Services (within this repo):**
 ```bash
-cd extServices/container-managing
+cd extServicesCompose/extServices/container-managing
 
 # Create .env file
 cp .env.example .env
@@ -953,9 +953,9 @@ npm run lint:fix
 npm run format
 ```
 
-**Backend Service Development:**
+**Backend Service Development (within this repo):**
 ```bash
-cd extServices/container-managing
+cd extServicesCompose/extServices/container-managing
 
 # Restart specific service after code changes
 docker compose restart api-gateway
@@ -979,22 +979,11 @@ make createmigrations
 - Guard tests
 - Location: `src/app/**/*.spec.ts`
 
-**Integration Tests (Backend):**
-- pytest
-- API endpoint tests
-- Service interaction tests
-- Location: `extServices/container-managing/tests/tests/`
+**Integration Tests (Backend, container-managing repo):**
+- pytest, Postman, etc. (see `extServicesCompose/extServices/container-managing/tests/`)
 
 **E2E Tests (Mobile):**
-- Playwright
-- Full user flows
-- Cross-browser testing
-- Location: `playwright/tests/`
-
-**Postman Tests (Backend):**
-- Newman runner
-- API contract tests
-- Collection: `extServices/container-managing/tests/postman/`
+- Playwright (see `playwright/tests/`)
 
 ---
 
@@ -1234,18 +1223,18 @@ export const usersDataProvider = {
 
 ```bash
 # Terminal 1: Backend services
-cd extServices/container-managing
+cd extServicesCompose/extServices/container-managing
 make up
 
 # Terminal 2: Mobile app
-cd ../../
+cd ../../../
 npm start
 
 # Terminal 3: Tests
 npm run test
 
 # Terminal 4: Monitoring
-cd extServices/container-managing
+cd extServicesCompose/extServices/container-managing
 make tui
 ```
 
@@ -1316,7 +1305,7 @@ export class ErrorHandlerService {
 - Authentication requirements
 
 **Location:**
-- `extServices/container-managing/docs/openapi/`
+- `extServicesCompose/extServices/container-managing/docs/openapi/`
 - Auto-generate from FastAPI docstrings
 
 #### 3. Monitoring

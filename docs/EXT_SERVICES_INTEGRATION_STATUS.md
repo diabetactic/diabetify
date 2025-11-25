@@ -1,4 +1,4 @@
-# ✅ DIABETIFY - INTEGRACIÓN CON SERVICIOS EXTERNOS (extServices)
+# ✅ DIABETACTIC - INTEGRACIÓN CON SERVICIOS EXTERNOS (extServices)
 
 ## Estado Actual
 
@@ -9,7 +9,7 @@
 
 ## 📋 Resumen
 
-Se ha completado la configuración de Angular para conectarse directamente con los microservicios Python/FastAPI corriendo en Docker (`extServices/`).
+Se ha completado la configuración de Angular para conectarse directamente con los microservicios Python/FastAPI corriendo en Docker (`extServicesCompose/extServices/` dentro de este repo).
 
 ---
 
@@ -93,7 +93,7 @@ $ curl http://localhost:8000/health
 
 ### API Gateway (Puerto 8000)
 
-Todos los endpoints documentados en `extServices/api-gateway/app/routes/*.py`
+Todos los endpoints documentados en `extServicesCompose/extServices/api-gateway/app/routes/*.py`
 
 #### **Authentication**
 

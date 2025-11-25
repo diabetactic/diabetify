@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This playbook provides comprehensive guidance for completing the Tailwind v4 + DaisyUI transition across the Diabetify mobile application. With Login (47% reduction) and Dashboard (52% reduction) already migrated, this document establishes patterns, quality standards, and automation strategies for migrating the remaining components.
+This playbook provides comprehensive guidance for completing the Tailwind v4 + DaisyUI transition across the Diabetactic mobile application. With Login (47% reduction) and Dashboard (52% reduction) already migrated, this document establishes patterns, quality standards, and automation strategies for migrating the remaining components.
 
 **Current State:**
 - **Migrated:** Login, Dashboard, StatCard (full Tailwind)
@@ -2245,7 +2245,7 @@ A: Use `.dark` class on HTML element. Add dark: variants to all color/shadow cla
 
 ## Conclusion
 
-This playbook provides everything needed to complete the Tailwind v4 + DaisyUI migration across the Diabetify application. Follow the patterns, respect the quality standards, use the automation tools, and test thoroughly. The goal is **85%+ SCSS reduction** while maintaining perfect visual fidelity, accessibility, and dark mode support.
+This playbook provides everything needed to complete the Tailwind v4 + DaisyUI migration across the Diabetactic application. Follow the patterns, respect the quality standards, use the automation tools, and test thoroughly. The goal is **85%+ SCSS reduction** while maintaining perfect visual fidelity, accessibility, and dark mode support.
 
 **Remember the golden rules:**
 1. Keep Ionic CSS properties in SCSS

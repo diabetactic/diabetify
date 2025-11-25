@@ -20,9 +20,7 @@ import { AppIconComponent } from '../shared/components/app-icon/app-icon.compone
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, DebugPanelComponent,
-    AppIconComponent
-  ],
+  imports: [CommonModule, FormsModule, IonicModule, DebugPanelComponent, AppIconComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class SettingsPage implements OnInit, OnDestroy {
@@ -58,30 +56,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     targetHigh: 180,
     hypoglycemiaThreshold: 70,
     hyperglycemiaThreshold: 180,
-  };
-
-  notificationSettings = {
-    appointments: true,
-    appointmentReminder: 24, // hours before
-    readings: true,
-    readingReminder: true,
-    readingTimes: ['08:00', '13:00', '19:00', '22:00'],
-    weeklyReport: true,
-    criticalAlerts: true,
-  };
-
-  privacySettings = {
-    shareDataWithDoctor: true,
-    anonymousStatistics: false,
-    dataRetentionDays: 365,
-    exportFormat: 'pdf' as 'pdf' | 'csv' | 'json',
-  };
-
-  syncSettings = {
-    autoSync: true,
-    syncInterval: 15, // minutes
-    wifiOnly: false,
-    backgroundSync: true,
   };
 
   // UI state
@@ -140,10 +114,6 @@ export class SettingsPage implements OnInit, OnDestroy {
             hypoglycemiaThreshold: this.preferences.targetRange.low,
             hyperglycemiaThreshold: this.preferences.targetRange.high,
           };
-
-          this.notificationSettings.appointments = this.preferences.notifications.appointments;
-          this.notificationSettings.readings = this.preferences.notifications.readings;
-          this.notificationSettings.readingReminder = this.preferences.notifications.reminders;
         }
       }
 
@@ -151,9 +121,6 @@ export class SettingsPage implements OnInit, OnDestroy {
       const savedSettings = localStorage.getItem('userSettings');
       if (savedSettings) {
         const settings = JSON.parse(savedSettings);
-        Object.assign(this.privacySettings, settings.privacy || {});
-        Object.assign(this.syncSettings, settings.sync || {});
-        Object.assign(this.notificationSettings, settings.notifications || {});
       }
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -226,57 +193,6 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Toggle notification setting
-   */
-  onNotificationToggle(type: string) {
-    this.hasChanges = true;
-  }
-
-  /**
-   * Add reading reminder time
-   */
-  async addReadingReminder() {
-    const alert = await this.alertController.create({
-      header: 'Agregar Recordatorio',
-      inputs: [
-        {
-          name: 'time',
-          type: 'time',
-          value: '12:00',
-        },
-      ],
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
-        {
-          text: 'Agregar',
-          handler: data => {
-            if (data.time && !this.notificationSettings.readingTimes.includes(data.time)) {
-              this.notificationSettings.readingTimes.push(data.time);
-              this.notificationSettings.readingTimes.sort();
-              this.hasChanges = true;
-            }
-          },
-        },
-      ],
-    });
-    await alert.present();
-  }
-
-  /**
-   * Remove reading reminder time
-   */
-  removeReadingReminder(time: string) {
-    const index = this.notificationSettings.readingTimes.indexOf(time);
-    if (index > -1) {
-      this.notificationSettings.readingTimes.splice(index, 1);
-      this.hasChanges = true;
-    }
-  }
-
-  /**
    * Save all settings
    */
   async saveSettings() {
@@ -295,9 +211,9 @@ export class SettingsPage implements OnInit, OnDestroy {
           high: this.glucoseSettings.targetHigh,
         },
         notifications: {
-          appointments: this.notificationSettings.appointments,
-          readings: this.notificationSettings.readings,
-          reminders: this.notificationSettings.readingReminder,
+          appointments: true,
+          readings: true,
+          reminders: true,
         },
       };
 
@@ -305,9 +221,6 @@ export class SettingsPage implements OnInit, OnDestroy {
       const settings = {
         profile: this.profileSettings,
         glucose: this.glucoseSettings,
-        notifications: this.notificationSettings,
-        privacy: this.privacySettings,
-        sync: this.syncSettings,
         preferences: this.preferences,
       };
       localStorage.setItem('userSettings', JSON.stringify(settings));
@@ -323,65 +236,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     } finally {
       await loading.dismiss();
     }
-  }
-
-  /**
-   * Export user data
-   */
-  async exportData() {
-    const loading = await this.loadingController.create({
-      message: 'Preparando exportación...',
-    });
-    await loading.present();
-
-    try {
-      // TODO: Implement data export
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate export
-
-      await this.showToast(
-        `Datos exportados en formato ${this.privacySettings.exportFormat.toUpperCase()}`,
-        'success'
-      );
-    } catch (error) {
-      console.error('Error exporting data:', error);
-      await this.showToast('Error al exportar los datos', 'danger');
-    } finally {
-      await loading.dismiss();
-    }
-  }
-
-  /**
-   * Delete account
-   */
-  async deleteAccount() {
-    const alert = await this.alertController.create({
-      header: 'Eliminar Cuenta',
-      message: 'Esta acción es irreversible. Se eliminarán todos tus datos permanentemente.',
-      inputs: [
-        {
-          name: 'password',
-          type: 'password',
-          placeholder: 'Contraseña',
-        },
-      ],
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
-        {
-          text: 'Eliminar',
-          cssClass: 'danger-button',
-          handler: async data => {
-            if (data.password) {
-              // TODO: Implement account deletion
-              await this.showToast('Función no disponible en modo demo', 'warning');
-            }
-          },
-        },
-      ],
-    });
-    await alert.present();
   }
 
   /**
