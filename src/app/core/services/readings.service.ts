@@ -4,7 +4,7 @@
  */
 
 import { Injectable, Optional, Inject, InjectionToken } from '@angular/core';
-import { BehaviorSubject, Observable, from, of } from 'rxjs';
+import { BehaviorSubject, Observable, from, of, firstValueFrom } from 'rxjs';
 import { map, catchError, tap, switchMap } from 'rxjs/operators';
 import { liveQuery } from 'dexie';
 import {
@@ -16,8 +16,29 @@ import {
   GlucoseUnit,
   GlucoseStatus,
 } from '../models';
-import { db, DiabetifyDatabase, SyncQueueItem } from './database.service';
+import { db, DiabetacticDatabase, SyncQueueItem } from './database.service';
 import { MockDataService, MockReading } from './mock-data.service';
+import { ApiGatewayService } from './api-gateway.service';
+import { LoggerService } from './logger.service';
+import { environment } from '../../../environments/environment';
+
+/**
+ * Backend glucose reading format from Heroku API
+ */
+interface BackendGlucoseReading {
+  id: number;
+  user_id: number;
+  glucose_level: number;
+  reading_type: string;
+  created_at: string; // Format: "DD/MM/YYYY HH:mm:ss"
+}
+
+/**
+ * Backend response for glucose readings (GET /glucose/mine)
+ */
+interface BackendGlucoseResponse {
+  readings: BackendGlucoseReading[];
+}
 
 export const LIVE_QUERY_FN = new InjectionToken<typeof liveQuery>('LIVE_QUERY_FN');
 
@@ -71,13 +92,43 @@ export class ReadingsService {
   private _pendingSyncCount$ = new BehaviorSubject<number>(0);
   public readonly pendingSyncCount$ = this._pendingSyncCount$.asObservable();
 
-  private readonly db: DiabetifyDatabase;
+  private readonly db: DiabetacticDatabase;
   private readonly liveQueryFn: typeof liveQuery;
+  private readonly isMockBackend = environment.backendMode === 'mock';
+
+  // Mapping from local meal context to backend reading_type
+  private readonly mealContextToBackend: Record<string, string> = {
+    'before-breakfast': 'DESAYUNO',
+    'after-breakfast': 'DESAYUNO',
+    'before-lunch': 'ALMUERZO',
+    'after-lunch': 'ALMUERZO',
+    'before-dinner': 'CENA',
+    'after-dinner': 'CENA',
+    'snack': 'MERIENDA',
+    'bedtime': 'NOCHE',
+    'fasting': 'AYUNO',
+    'exercise': 'EJERCICIO',
+    'other': 'OTRO',
+  };
+
+  // Mapping from backend reading_type to local meal context
+  private readonly backendToMealContext: Record<string, string> = {
+    'DESAYUNO': 'before-breakfast',
+    'ALMUERZO': 'before-lunch',
+    'CENA': 'before-dinner',
+    'MERIENDA': 'snack',
+    'NOCHE': 'bedtime',
+    'AYUNO': 'fasting',
+    'EJERCICIO': 'exercise',
+    'OTRO': 'other',
+  };
 
   constructor(
-    @Optional() database?: DiabetifyDatabase,
+    @Optional() database?: DiabetacticDatabase,
     @Optional() @Inject(LIVE_QUERY_FN) liveQueryFn?: typeof liveQuery,
-    @Optional() private mockData?: MockDataService
+    @Optional() private mockData?: MockDataService,
+    @Optional() private apiGateway?: ApiGatewayService,
+    @Optional() private logger?: LoggerService
   ) {
     this.db = database ?? db;
     this.liveQueryFn = liveQueryFn ?? liveQuery;
@@ -347,7 +398,7 @@ export class ReadingsService {
     targetMax: number = 180,
     unit: GlucoseUnit = 'mg/dL'
   ): Promise<GlucoseStatistics> {
-    if (this.mockData) {
+    if (this.isMockBackend && this.mockData) {
       // Use mock data stats
       const stats = await this.mockData.getStats().toPromise();
       if (stats) {
@@ -448,18 +499,36 @@ export class ReadingsService {
   }
 
   /**
-   * Process sync queue
+   * Process sync queue - pushes local readings to Heroku backend
    */
   async syncPendingReadings(): Promise<{ success: number; failed: number }> {
+    // Skip sync in mock mode
+    if (this.isMockBackend) {
+      this.logger?.debug('Sync', 'Skipping sync in mock mode');
+      return { success: 0, failed: 0 };
+    }
+
+    if (!this.apiGateway) {
+      this.logger?.warn('Sync', 'ApiGatewayService not available, skipping sync');
+      return { success: 0, failed: 0 };
+    }
+
     const queueItems = await this.db.syncQueue.toArray();
     let success = 0;
     let failed = 0;
 
+    this.logger?.info('Sync', `Processing ${queueItems.length} items in sync queue`);
+
     for (const item of queueItems) {
       try {
-        // TODO: Implement actual API sync logic here
-        // For now, we'll just simulate success
-        console.log(`Syncing ${item.operation} for reading ${item.readingId}`);
+        if (item.operation === 'create' && item.reading) {
+          // Push new reading to backend
+          await this.pushReadingToBackend(item.reading);
+          this.logger?.debug('Sync', `Created reading ${item.readingId} on backend`);
+        } else if (item.operation === 'delete') {
+          // Backend doesn't support delete for now, just remove from queue
+          this.logger?.debug('Sync', `Delete operation for ${item.readingId} - backend delete not supported`);
+        }
 
         // Remove from queue on success
         await this.db.syncQueue.delete(item.id!);
@@ -472,12 +541,14 @@ export class ReadingsService {
         success++;
       } catch (error) {
         failed++;
+        this.logger?.error('Sync', `Failed to sync ${item.operation} for ${item.readingId}`, error);
 
         // Increment retry count
         const retryCount = item.retryCount + 1;
 
         if (retryCount >= this.SYNC_RETRY_LIMIT) {
           // Remove from queue after max retries
+          this.logger?.warn('Sync', `Max retries reached for ${item.readingId}, removing from queue`);
           await this.db.syncQueue.delete(item.id!);
         } else {
           // Update retry count
@@ -489,7 +560,160 @@ export class ReadingsService {
       }
     }
 
+    this.logger?.info('Sync', `Sync complete: ${success} success, ${failed} failed`);
     return { success, failed };
+  }
+
+  /**
+   * Push a single reading to the Heroku backend
+   */
+  private async pushReadingToBackend(reading: LocalGlucoseReading): Promise<void> {
+    if (!this.apiGateway) {
+      throw new Error('ApiGatewayService not available');
+    }
+
+    // Map local reading to backend format
+    const readingType = this.mapMealContextToBackend(reading.mealContext);
+    const glucoseLevel = reading.value;
+
+    // The backend expects query params, not body
+    // Build URL with query params
+    const response = await firstValueFrom(
+      this.apiGateway.request<BackendGlucoseReading>('extservices.glucose.create', {
+        params: {
+          glucose_level: glucoseLevel.toString(),
+          reading_type: readingType,
+        },
+      })
+    );
+
+    if (!response.success) {
+      throw new Error(response.error?.message || 'Failed to create reading on backend');
+    }
+
+    // Save the backend ID to the local reading for deduplication
+    if (response.data?.id) {
+      await this.db.readings.update(reading.id, {
+        backendId: response.data.id,
+        synced: true,
+      });
+    }
+
+    this.logger?.debug('Sync', 'Reading pushed to backend', {
+      localId: reading.id,
+      backendId: response.data?.id
+    });
+  }
+
+  /**
+   * Fetch readings from Heroku backend and merge with local storage
+   */
+  async fetchFromBackend(): Promise<{ fetched: number; merged: number }> {
+    // Skip in mock mode
+    if (this.isMockBackend) {
+      this.logger?.debug('Sync', 'Skipping fetch in mock mode');
+      return { fetched: 0, merged: 0 };
+    }
+
+    if (!this.apiGateway) {
+      this.logger?.warn('Sync', 'ApiGatewayService not available, skipping fetch');
+      return { fetched: 0, merged: 0 };
+    }
+
+    try {
+      this.logger?.info('Sync', 'Fetching readings from backend');
+
+      const response = await firstValueFrom(
+        this.apiGateway.request<BackendGlucoseResponse>('extservices.glucose.mine')
+      );
+
+      if (!response.success || !response.data?.readings) {
+        this.logger?.warn('Sync', 'Failed to fetch readings from backend', response.error);
+        return { fetched: 0, merged: 0 };
+      }
+
+      const backendReadings = response.data.readings;
+      this.logger?.debug('Sync', `Fetched ${backendReadings.length} readings from backend`);
+
+      let merged = 0;
+
+      for (const backendReading of backendReadings) {
+        // Check if we already have this reading (by backend ID)
+        const existingReadings = await this.db.readings
+          .filter(r => r.backendId === backendReading.id)
+          .toArray();
+
+        if (existingReadings.length === 0) {
+          // New reading from backend - add to local storage
+          const localReading = this.mapBackendToLocal(backendReading);
+          await this.db.readings.add(localReading);
+          merged++;
+        }
+      }
+
+      this.logger?.info('Sync', `Fetch complete: ${backendReadings.length} fetched, ${merged} new merged`);
+      return { fetched: backendReadings.length, merged };
+    } catch (error) {
+      this.logger?.error('Sync', 'Error fetching from backend', error);
+      return { fetched: 0, merged: 0 };
+    }
+  }
+
+  /**
+   * Full sync: push pending local changes, then fetch from backend
+   */
+  async performFullSync(): Promise<{ pushed: number; fetched: number; failed: number }> {
+    this.logger?.info('Sync', 'Starting full sync');
+
+    // First, push any pending local changes
+    const pushResult = await this.syncPendingReadings();
+
+    // Then fetch from backend
+    const fetchResult = await this.fetchFromBackend();
+
+    return {
+      pushed: pushResult.success,
+      fetched: fetchResult.merged,
+      failed: pushResult.failed,
+    };
+  }
+
+  /**
+   * Map local meal context to backend reading_type
+   */
+  private mapMealContextToBackend(mealContext?: string): string {
+    if (!mealContext) return 'OTRO';
+    return this.mealContextToBackend[mealContext] || 'OTRO';
+  }
+
+  /**
+   * Map backend reading to local format
+   */
+  private mapBackendToLocal(backend: BackendGlucoseReading): LocalGlucoseReading {
+    // Parse backend date format "DD/MM/YYYY HH:mm:ss"
+    const [datePart, timePart] = backend.created_at.split(' ');
+    const [day, month, year] = datePart.split('/');
+    const isoDate = new Date(`${year}-${month}-${day}T${timePart}`).toISOString();
+
+    const localReading: LocalGlucoseReading = {
+      id: `backend_${backend.id}`,
+      localId: `backend_${backend.id}`,
+      backendId: backend.id,
+      time: isoDate,
+      value: backend.glucose_level,
+      units: 'mg/dL',
+      type: 'smbg' as const,
+      subType: 'manual',
+      deviceId: 'backend-sync',
+      userId: backend.user_id.toString(),
+      synced: true,
+      localStoredAt: new Date().toISOString(),
+      isLocalOnly: false,
+      status: this.calculateGlucoseStatus(backend.glucose_level, 'mg/dL'),
+      mealContext: this.backendToMealContext[backend.reading_type] || 'other',
+    };
+
+    return localReading;
   }
 
   /**

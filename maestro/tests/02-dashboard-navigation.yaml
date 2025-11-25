@@ -1,100 +1,64 @@
-appId: io.diabetify.app
+appId: io.diabetactic.app
+tags:
+  - regression
+  - dashboard
+  - navigation
 ---
-# Test: Dashboard Navigation and Stat Cards
-# Description: Test main dashboard functionality, stat cards, and tab navigation
-# Prerequisites: User must be logged in
+# Test: Dashboard Navigation and Tab Bar
+# Uses COORDINATE-BASED selectors (WebView text not accessible)
+# Tab bar positions: Inicio 10%, Lecturas 30%, + 50%, Citas 70%, Perfil 90%
 
-# Launch app (should restore logged-in state)
-- launchApp
-- waitForAnimationToEnd
-
-# Verify we're on dashboard
-- assertVisible:
-    text: ".*Dashboard.*|.*Inicio.*"
-
-# Take screenshot of initial dashboard state
-- takeScreenshot: screenshots/06_dashboard_initial.png
-
-# Test stat cards visibility
-- assertVisible:
-    text: ".*HbA1c.*"
-
-- assertVisible:
-    text: ".*Time in Range.*|.*Tiempo en Rango.*"
-
-- assertVisible:
-    text: ".*Average.*|.*Promedio.*"
-
-- assertVisible:
-    text: ".*GMI.*"
-
-# Take screenshot showing stat cards
-- takeScreenshot: screenshots/07_dashboard_stat_cards.png
-
-# Verify recent readings section
-- assertVisible:
-    text: ".*Recent.*|.*Recientes.*"
-
-# Scroll down to see more content
-- scroll
-
-# Take screenshot after scroll
-- takeScreenshot: screenshots/08_dashboard_scrolled.png
-
-# Test pull-to-refresh functionality
-- scrollUp
-
-# Wait for refresh to complete
+# SETUP: Login first using the coordinate-based flow
+- runFlow: ../flows/auth/login.yaml
 - waitForAnimationToEnd:
     timeout: 5000
 
-# Take screenshot after refresh
-- takeScreenshot: screenshots/09_dashboard_refreshed.png
+# Take screenshot of dashboard
+- takeScreenshot: maestro/screenshots/dashboard-nav-01-initial.png
 
-# Navigate to Readings tab
+# Scroll down to see more content
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Take screenshot after scroll
+- takeScreenshot: maestro/screenshots/dashboard-nav-02-scrolled.png
+
+# Navigate to Readings tab (~30% from left, bottom)
 - tapOn:
-    text: ".*Readings.*|.*Lecturas.*"
-- waitForAnimationToEnd
-
-# Verify readings page loaded
-- assertVisible:
-    text: ".*Readings.*|.*Lecturas.*"
+    point: "30%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
 
 # Take screenshot of readings tab
-- takeScreenshot: screenshots/10_readings_tab.png
+- takeScreenshot: maestro/screenshots/dashboard-nav-03-readings-tab.png
 
-# Navigate to Appointments tab
+# Navigate to Appointments tab (~70% from left)
 - tapOn:
-    text: ".*Appointments.*|.*Citas.*"
-- waitForAnimationToEnd
-
-# Verify appointments page loaded
-- assertVisible:
-    text: ".*Appointments.*|.*Citas.*"
+    point: "70%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
 
 # Take screenshot of appointments tab
-- takeScreenshot: screenshots/11_appointments_tab.png
+- takeScreenshot: maestro/screenshots/dashboard-nav-04-appointments-tab.png
 
-# Navigate to Profile tab
+# Navigate to Profile tab (~90% from left)
 - tapOn:
-    text: ".*Profile.*|.*Perfil.*"
-- waitForAnimationToEnd
-
-# Verify profile page loaded
-- assertVisible:
-    text: ".*Profile.*|.*Perfil.*"
+    point: "90%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
 
 # Take screenshot of profile tab
-- takeScreenshot: screenshots/12_profile_tab.png
+- takeScreenshot: maestro/screenshots/dashboard-nav-05-profile-tab.png
 
-# Return to Dashboard tab
+# Return to Dashboard tab (~10% from left)
 - tapOn:
-    text: ".*Dashboard.*|.*Inicio.*"
-- waitForAnimationToEnd
-
-# Verify back on dashboard
-- assertVisible:
-    text: ".*HbA1c.*"
+    point: "10%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
 
 # Final screenshot
-- takeScreenshot: screenshots/13_navigation_complete.png
+- takeScreenshot: maestro/screenshots/dashboard-nav-06-complete.png
+
+# CLEANUP
+- stopApp

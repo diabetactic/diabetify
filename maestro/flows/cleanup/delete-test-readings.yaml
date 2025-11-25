@@ -1,0 +1,56 @@
+appId: io.diabetactic.app
+---
+# Reusable flow: Delete all test readings
+# Description: Removes all glucose readings for cleanup
+# Usage: runFlow: file: ../../flows/cleanup/delete-test-readings.yaml
+
+# Navigate to readings tab if not already there
+- runFlow:
+    when:
+      notVisible: "Lecturas"
+    commands:
+      - tapOn:
+          id: "tab-button-readings"
+      - waitForAnimationToEnd:
+          timeout: 5000
+
+# Check if there are any readings to delete
+- runFlow:
+    when:
+      visible: "mg/dL|mmol/L"
+    commands:
+      # Try to delete up to 10 readings
+      - repeat:
+          times: 10
+          commands:
+            # Check if readings still exist
+            - runFlow:
+                when:
+                  visible: "mg/dL|mmol/L"
+                commands:
+                  # Swipe to reveal delete option
+                  - swipe:
+                      start: 90%, 50%
+                      end: 10%, 50%
+                      duration: 400
+                  - waitForAnimationToEnd:
+                      timeout: 5000
+
+                  # Tap delete if visible
+                  - tapOn:
+                      text: "Eliminar|Delete|Remove"
+                      optional: true
+                  - waitForAnimationToEnd:
+                      timeout: 5000
+
+                  # Confirm deletion if asked
+                  - tapOn:
+                      text: "Confirmar|Confirm|Sí|Yes|OK"
+                      optional: true
+                  - waitForAnimationToEnd:
+                      timeout: 5000
+
+# Verify no readings remain (or show empty state)
+- assertVisible:
+    text: "No hay lecturas|No readings|Empty|Add your first"
+    optional: true

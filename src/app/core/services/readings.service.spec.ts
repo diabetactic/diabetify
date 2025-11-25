@@ -1,12 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { ReadingsService, LIVE_QUERY_FN } from './readings.service';
-import { DiabetifyDatabase } from './database.service';
+import { DiabetacticDatabase } from './database.service';
 import {
   LocalGlucoseReading,
   GlucoseReading,
   GlucoseStatistics,
 } from '../models/glucose-reading.model';
 import { Observable } from 'rxjs';
+import { MockDataService } from './mock-data.service';
 
 // Mock Dexie database
 class MockDatabaseService {
@@ -63,7 +64,8 @@ describe('ReadingsService', () => {
     TestBed.configureTestingModule({
       providers: [
         ReadingsService,
-        { provide: DiabetifyDatabase, useValue: mockDb },
+        { provide: DiabetacticDatabase, useValue: mockDb },
+        { provide: MockDataService, useValue: null },
         {
           provide: LIVE_QUERY_FN,
           useValue: (factory: () => Promise<any> | any) =>

@@ -1,0 +1,51 @@
+# ═══════════════════════════════════════════════════
+# Maestro Environment Configuration - Mock Adapter
+# ═══════════════════════════════════════════════════
+# Use mock adapter with no backend required
+# Run tests: maestro test --env-file config/environments/mock.yaml
+# Or with tags: maestro test --include-tags mock
+
+# ───────────────────────────────────────────────────
+# Backend Configuration
+# ───────────────────────────────────────────────────
+ENV_MODE: mock
+BACKEND_URL: mock
+BACKEND_MODE: mock
+USE_MOCK_ADAPTER: "true"
+USE_HEROKU_API: "false"
+USE_LOCAL_BACKEND: "false"
+
+# ───────────────────────────────────────────────────
+# Mock-Specific Settings
+# ───────────────────────────────────────────────────
+MOCK_ENABLED: "true"
+MOCK_DELAY: "100"  # Simulate network delay (ms)
+MOCK_DATA_LOAD_TIME: "500"  # Simulate data loading time (ms)
+
+# ───────────────────────────────────────────────────
+# Test User Credentials
+# ───────────────────────────────────────────────────
+TEST_USER_EMAIL: "demo@diabetactic.com"
+TEST_USER_PASSWORD: "tuvieja"
+TEST_USER_DNI: "1000"
+TEST_USER_PASS: "tuvieja"
+
+# ───────────────────────────────────────────────────
+# Expected Mock Data Values
+# ───────────────────────────────────────────────────
+MOCK_GLUCOSE_VALUE: "120"
+MOCK_GLUCOSE_AVERAGE: "125"
+MOCK_APPOINTMENTS_COUNT: "5"
+MOCK_READINGS_COUNT: "10"
+
+# ───────────────────────────────────────────────────
+# Timeouts (shorter for mock mode)
+# ───────────────────────────────────────────────────
+DEFAULT_TIMEOUT: "5000"
+ANIMATION_TIMEOUT: "2000"
+DATA_LOAD_TIMEOUT: "5000"
+
+# ───────────────────────────────────────────────────
+# Description
+# ───────────────────────────────────────────────────
+DESCRIPTION: "Tests using mock adapter. Fast, offline testing with no backend required. Ideal for development and CI smoke tests."

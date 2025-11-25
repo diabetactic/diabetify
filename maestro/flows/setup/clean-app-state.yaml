@@ -1,0 +1,27 @@
+appId: io.diabetactic.app
+---
+# Reusable flow: Clean app state for test isolation
+# Description: Ensures app starts from a completely clean state
+# Usage: runFlow: file: ../../flows/setup/clean-app-state.yaml
+
+# Clear app data and restart
+- launchApp:
+    clearState: true       # Clears all app data
+    stopApp: true         # Ensures clean start
+
+# Wait for app to fully launch
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Handle welcome screen if it appears
+- runFlow:
+    when:
+      visible: "Empezar|Get Started|Welcome"
+    commands:
+      - tapOn:
+          text: "Empezar|Get Started"
+          optional: true
+      - waitForAnimationToEnd
+
+# Verify we're at login screen
+- assertVisible: "Iniciar Sesión|Login|Sign In"

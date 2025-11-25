@@ -1,0 +1,74 @@
+appId: io.diabetactic.app
+tags:
+  - readings
+  - crud
+---
+# Test: Filter readings list by type/date
+# Uses COORDINATE-BASED selectors
+
+# Login
+- runFlow:
+    file: ../../flows/auth/login.yaml
+
+# First add some test data
+# Navigate to readings
+- tapOn:
+    point: "30%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Add first reading (95)
+- tapOn:
+    point: "50%,90%"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    point: "50%,35%"
+- eraseText
+- inputText: "95"
+- hideKeyboard
+- tapOn:
+    point: "50%,85%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Add second reading (120)
+- tapOn:
+    point: "50%,90%"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    point: "50%,35%"
+- eraseText
+- inputText: "120"
+- hideKeyboard
+- tapOn:
+    point: "50%,85%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Capture full readings list
+- takeScreenshot: maestro/screenshots/filter-01-all.png
+
+# Test segment switching (tap left segment area)
+- tapOn:
+    point: "30%,20%"
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: maestro/screenshots/filter-02-segment1.png
+
+# Tap right segment area
+- tapOn:
+    point: "70%,20%"
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: maestro/screenshots/filter-03-segment2.png
+
+# Return to dashboard
+- tapOn:
+    point: "10%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# CLEANUP
+- stopApp

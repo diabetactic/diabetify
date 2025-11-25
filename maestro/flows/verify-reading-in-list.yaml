@@ -1,0 +1,20 @@
+appId: io.diabetactic.app
+---
+# Reusable flow: Verify a reading appears in the list
+# Description: Confirms a glucose reading with specific value is visible
+# Usage: runFlow: file: ../../flows/verify-reading-in-list.yaml
+#        env:
+#          GLUCOSE_VALUE: "120"
+
+# Verify the reading is visible
+- assertVisible:
+    text: "${GLUCOSE_VALUE:-120}"
+
+# Wait for list to stabilize
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Optional: Verify unit is shown
+- assertVisible:
+    text: "mg/dL"
+    optional: true

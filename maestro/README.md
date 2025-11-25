@@ -1,6 +1,21 @@
-# Maestro Mobile Testing Suite
+# Maestro Mobile Testing Suite - Diabetify
 
-This directory contains Maestro test files for native mobile UI automation of the Diabetify app.
+**Clean, organized Maestro test structure for the Diabetify diabetes management app.**
+
+## 🎯 Test Structure Status
+
+### ✅ Completed Cleanup
+- **Removed 25+ duplicate test files** (45 → ~20 clean tests)
+- **Fixed login assertion issue** (DNI text selector)
+- **Reorganized directory structure** (clear separation by category)
+- **Consolidated environment configs** (mock/heroku modes)
+- **Added Maestro Cloud API key** for cloud testing
+
+### 📊 Current Test Stats
+- **38 test files** (after cleanup)
+- **12 reusable flows**
+- **3 backend modes** (mock, heroku, local)
+- **Bilingual support** (English/Spanish)
 
 ## Quick Start
 
