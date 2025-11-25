@@ -390,7 +390,7 @@ describe('UnifiedAuthService', () => {
     });
 
     it('should get provider-specific token', done => {
-      localAuthSpy.getAccessToken.and.returnValue('local-token');
+      localAuthSpy.getAccessToken.and.returnValue(Promise.resolve('local-token'));
       tidepoolAuthSpy.getAccessToken.and.returnValue(Promise.resolve('tidepool-token'));
 
       service.getProviderToken('local').subscribe(token => {
@@ -492,7 +492,15 @@ describe('UnifiedAuthService', () => {
 
   describe('Account Linking', () => {
     it('should link Tidepool account to local account', () => {
-      localAuthSpy.isAuthenticated.and.returnValue(of(true));
+      // Mark local auth as authenticated so unified state reflects it
+      mockLocalAuthState.next({
+        isAuthenticated: true,
+        user: null,
+        accessToken: 'token',
+        refreshToken: 'refresh',
+        expiresAt: Date.now() + 3600000,
+      });
+
       tidepoolAuthSpy.login.and.returnValue(Promise.resolve());
 
       service.linkTidepoolAccount().subscribe(() => {
@@ -501,7 +509,14 @@ describe('UnifiedAuthService', () => {
     });
 
     it('should throw error if not logged in locally', () => {
-      localAuthSpy.isAuthenticated.and.returnValue(of(false));
+      // Ensure local auth is not authenticated in unified state
+      mockLocalAuthState.next({
+        isAuthenticated: false,
+        user: null,
+        accessToken: null,
+        refreshToken: null,
+        expiresAt: null,
+      });
 
       expect(() => service.linkTidepoolAccount()).toThrow(
         new Error('Must be logged in locally to link Tidepool account')

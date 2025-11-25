@@ -3,7 +3,7 @@ import { fakerES as faker } from '@faker-js/faker';
 import { Observable, of } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { LocalGlucoseReading, UserProfile } from '../models';
-import { Appointment, AppointmentType, AppointmentStatus } from '../models/appointment.model';
+import { Appointment } from '../models/appointment.model';
 
 /**
  * Demo Data Service for seeding test data
@@ -135,95 +135,61 @@ export class DemoDataService {
   }
 
   /**
-   * Create demo appointments
+   * Create demo appointments (clinical treatment records)
    */
   getDemoAppointments(): Observable<Appointment[]> {
     const appointments: Appointment[] = [
       {
-        id: 'apt-001',
-        userId: '1000',
-        provider: {
-          id: 'dr-001',
-          name: 'Dr. Ana García',
-          specialty: 'Endocrinología',
-        },
-        dateTime: this.combineDateAndTime(this.getFutureDate(5), '10:30'),
-        duration: 30,
-        type: AppointmentType.VIDEO,
-        status: AppointmentStatus.CONFIRMED,
-        location: 'Hospital General - Consultorio 203',
-        notes: 'Control trimestral de diabetes',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        appointment_id: 1,
+        user_id: 1000,
+        glucose_objective: 120,
+        insulin_type: 'rapid',
+        dose: 10,
+        fast_insulin: 'Humalog',
+        fixed_dose: 5,
+        ratio: 10,
+        sensitivity: 50,
+        pump_type: 'none',
+        control_data: 'Control trimestral - niveles estables',
+        motive: ['control_routine'],
+        other_motive: null,
+        another_treatment: null,
       },
       {
-        id: 'apt-002',
-        userId: '1000',
-        provider: {
-          id: 'dr-002',
-          name: 'Dr. Carlos Mendoza',
-          specialty: 'Diabetología',
-        },
-        dateTime: this.combineDateAndTime(this.getFutureDate(12), '15:00'),
-        duration: 30,
-        type: AppointmentType.VIDEO,
-        status: AppointmentStatus.PENDING,
-        location: 'Centro Médico San Lucas - Piso 3',
-        notes: 'Seguimiento de tratamiento con insulina',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        appointment_id: 2,
+        user_id: 1000,
+        glucose_objective: 110,
+        insulin_type: 'long',
+        dose: 20,
+        fast_insulin: 'Lantus',
+        fixed_dose: 20,
+        ratio: 12,
+        sensitivity: 40,
+        pump_type: 'none',
+        control_data: 'Ajuste de dosis necesario',
+        motive: ['adjustment', 'follow_up'],
+        other_motive: 'Revisar lecturas matutinas',
+        another_treatment: 'Metformina 500mg',
       },
       {
-        id: 'apt-003',
-        userId: '1000',
-        provider: {
-          id: 'dr-003',
-          name: 'Dra. Laura Martínez',
-          specialty: 'Medicina Interna',
-        },
-        dateTime: this.combineDateAndTime(this.getPastDate(7), '09:00'),
-        duration: 30,
-        type: AppointmentType.VIDEO,
-        status: AppointmentStatus.COMPLETED,
-        location: 'Clínica Universitaria - Consultorio 105',
-        notes: 'Revisión general y ajuste de medicación',
-        glucoseDataShared: true,
-        glucoseRecordCount: 45,
-        createdAt: this.getPastDate(14),
-        updatedAt: this.getPastDate(7),
-      },
-      {
-        id: 'apt-004',
-        userId: '1000',
-        provider: {
-          id: 'dr-001',
-          name: 'Dr. Ana García',
-          specialty: 'Endocrinología',
-        },
-        dateTime: this.combineDateAndTime(this.getPastDate(30), '11:00'),
-        duration: 45,
-        type: AppointmentType.VIDEO,
-        status: AppointmentStatus.COMPLETED,
-        location: 'Hospital General - Consultorio 203',
-        notes: 'Primera consulta - Diagnóstico diabetes tipo 2',
-        glucoseDataShared: true,
-        glucoseRecordCount: 28,
-        createdAt: this.getPastDate(37),
-        updatedAt: this.getPastDate(30),
+        appointment_id: 3,
+        user_id: 1000,
+        glucose_objective: 100,
+        insulin_type: 'mixed',
+        dose: 15,
+        fast_insulin: 'NovoRapid',
+        fixed_dose: 10,
+        ratio: 8,
+        sensitivity: 45,
+        pump_type: 'medtronic',
+        control_data: 'Transición a bomba de insulina',
+        motive: ['consultation'],
+        other_motive: null,
+        another_treatment: null,
       },
     ];
 
     return of(appointments).pipe(delay(500));
-  }
-
-  /**
-   * Combine date and time strings into ISO 8601 dateTime
-   */
-  private combineDateAndTime(date: string, time: string): string {
-    const [hours, minutes] = time.split(':');
-    const dateObj = new Date(date);
-    dateObj.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
-    return dateObj.toISOString();
   }
 
   /**

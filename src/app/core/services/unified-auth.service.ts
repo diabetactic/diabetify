@@ -249,7 +249,7 @@ export class UnifiedAuthService {
    */
   getProviderToken(provider: 'tidepool' | 'local'): Observable<string | null> {
     if (provider === 'local') {
-      return of(this.localAuth.getAccessToken());
+      return from(this.localAuth.getAccessToken());
     } else {
       return from(this.tidepoolAuth.getAccessToken());
     }
@@ -272,7 +272,10 @@ export class UnifiedAuthService {
    * Link Tidepool account to existing local account
    */
   linkTidepoolAccount(): Observable<void> {
-    if (!this.localAuth.isAuthenticated()) {
+    const isLocalAuthenticated =
+      this.unifiedAuthStateSubject.value.localAuth?.isAuthenticated ?? false;
+
+    if (!isLocalAuthenticated) {
       throw new Error('Must be logged in locally to link Tidepool account');
     }
 
@@ -280,7 +283,9 @@ export class UnifiedAuthService {
       tap(() => {
         // After successful Tidepool login, update the backend
         // to link the accounts (implementation depends on backend API)
-        console.log('Tidepool account linked successfully');
+        this.logger.info('Auth', 'Tidepool account linked successfully', {
+          provider: 'tidepool',
+        });
       })
     );
   }

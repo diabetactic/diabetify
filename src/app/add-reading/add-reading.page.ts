@@ -14,7 +14,6 @@ import {
   GlucoseUnit,
   GlucoseStatus,
 } from '../core/models/glucose-reading.model';
-import { AlertBannerComponent } from '../shared/components/alert-banner/alert-banner.component';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 
 interface MealContextOption {
@@ -33,8 +32,7 @@ interface MealContextOption {
     RouterModule,
     ReactiveFormsModule,
     TranslateModule,
-    AlertBannerComponent,
-    AppIconComponent
+    AppIconComponent,
   ],
 })
 export class AddReadingPage implements OnInit, OnDestroy {

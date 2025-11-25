@@ -1,5 +1,5 @@
 /**
- * Enhanced Theme Service for Diabetify
+ * Enhanced Theme Service for Diabetactic
  * Manages Material Design theming with child-friendly color palettes
  */
 
@@ -66,7 +66,7 @@ export class ThemeService {
   private readonly LEGACY_THEME_KEY = 'diabetactic-theme';
   private renderer: Renderer2;
 
-  // Theme state observables (default to 'light' theme)
+  // Theme state observables (default light mode)
   private _themeMode$ = new BehaviorSubject<ThemeMode>('light');
   private _colorPalette$ = new BehaviorSubject<ColorPalette>('default');
   private _highContrast$ = new BehaviorSubject<boolean>(false);
@@ -106,8 +106,7 @@ export class ThemeService {
     // Apply initial theme
     this.applyTheme();
 
-    // System theme listener disabled - using manual light/dark mode only
-    // this.setupSystemThemeListener();
+    this.setupSystemThemeListener();
   }
 
   /**
@@ -150,16 +149,21 @@ export class ThemeService {
   }
 
   /**
-   * Determine if dark theme should be applied
-   * Note: 'auto' mode disabled - only manual light/dark switching
+   * Determine if dark theme should be applied based on mode
    */
   private shouldUseDarkTheme(): boolean {
     const mode = this._themeMode$.value;
 
-    if (mode === 'dark') return true;
-    if (mode === 'light') return false;
-    // Auto mode disabled - default to light
-    return false;
+    switch (mode) {
+      case 'dark':
+        return true;
+      case 'light':
+        return false;
+      case 'auto':
+        return this.getSystemThemePreference();
+      default:
+        return false;
+    }
   }
 
   /**
@@ -185,7 +189,7 @@ export class ThemeService {
     this.renderer.addClass(html, themeClass);
 
     // Set DaisyUI data-theme attribute for DaisyUI components
-    const daisyTheme = isDark ? 'dark' : 'diabetify';
+    const daisyTheme = isDark ? 'dark' : 'diabetactic';
     document.documentElement.setAttribute('data-theme', daisyTheme);
 
     // Add 'ion-palette-dark' class for Ionic dark mode (required for Ionic components)

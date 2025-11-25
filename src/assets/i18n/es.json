@@ -59,7 +59,7 @@
     ]
   },
   "auth": {
-    "title": "Bienvenido a Diabetify",
+    "title": "Bienvenido a Diabetactic",
     "subtitle": "Por favor inicia sesión para continuar",
     "email": "Correo Electrónico",
     "password": "Contraseña",
@@ -133,6 +133,8 @@
     "noReadings": "Aún no hay lecturas",
     "noReadingsMessage": "Comienza a rastrear tus lecturas de glucosa para verlas aquí.",
     "shareReadings": "Compartir Últimas 30 Días de Lecturas",
+    "last30Days": "Últimos 30 días",
+    "recentReading": "Lectura más reciente",
     "syncError": "Error de sincronización",
     "defaultDoctorName": "tu médico",
     "kids": {
@@ -208,6 +210,10 @@
     "searchPlaceholder": "Buscar lecturas, notas...",
     "search": "Buscar",
     "clearAll": "Limpiar Todo",
+    "sync": "Sincronizar",
+    "syncing": "Sincronizando...",
+    "syncComplete": "Sincronización completa: {{pushed}} enviadas, {{fetched}} recibidas",
+    "syncFailed": "Error de sincronización. Intenta de nuevo.",
     "loadingReadings": "Cargando lecturas...",
     "noReadings": "Aún No Hay Lecturas",
     "noReadingsMessage": "Comienza a rastrear tus niveles de glucosa agregando tu primera lectura.",
@@ -417,17 +423,21 @@
   },
   "appointments": {
     "title": "Citas",
+    "current": "Actual",
     "upcoming": "Próximas",
-    "past": "Historial",
+    "past": "Citas Anteriores",
     "history": "Historial",
     "schedule": "Programar Cita",
     "loading": "Cargando citas...",
     "dataShared": "Datos Compartidos",
+    "record": "Cita",
     "tabs": {
       "upcoming": "Próximas",
       "past": "Pasadas"
     },
     "empty": {
+      "title": "Sin Citas",
+      "message": "Tus citas aparecerán aquí una vez enviadas.",
       "upcoming": {
         "title": "No Hay Citas Próximas",
         "message": "Agenda tu próxima cita con tu proveedor de salud"
@@ -435,12 +445,50 @@
       "past": {
         "title": "No Hay Citas Pasadas",
         "message": "Las citas completadas aparecerán aquí"
-      }
+      },
+      "backendDisabled": "Las citas están deshabilitadas temporalmente en esta versión. Tus citas clínicas siguen gestionadas por tu equipo médico."
     },
     "actions": {
       "schedule": "Agendar Cita",
       "edit": "Editar",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "create": "Agregar Nueva Cita"
+    },
+    "fields": {
+      "glucoseObjective": "Objetivo de Glucosa",
+      "insulinType": "Tipo de Insulina",
+      "dose": "Dosis",
+      "fixedDose": "Dosis Fija",
+      "ratio": "Relación Insulina-Carbohidratos",
+      "sensitivity": "Factor de Sensibilidad",
+      "fastInsulin": "Insulina de Acción Rápida",
+      "pumpType": "Método de Administración",
+      "controlData": "Datos de Control",
+      "otherMotive": "Notas Adicionales",
+      "otherTreatment": "Otros Tratamientos"
+    },
+    "motives": {
+      "control_routine": "Control de Rutina",
+      "follow_up": "Seguimiento",
+      "emergency": "Emergencia",
+      "consultation": "Consulta",
+      "adjustment": "Ajuste de Dosis",
+      "other": "Otro"
+    },
+    "insulinTypes": {
+      "rapid": "Acción Rápida",
+      "short": "Acción Corta",
+      "intermediate": "Acción Intermedia",
+      "long": "Acción Prolongada",
+      "mixed": "Mixta",
+      "none": "Ninguna"
+    },
+    "pumpTypes": {
+      "medtronic": "Bomba Medtronic",
+      "omnipod": "Omnipod",
+      "tandem": "Tandem t:slim",
+      "none": "Jeringa/Pluma",
+      "other": "Otro"
     },
     "cancel": {
       "title": "Cancelar cita",
@@ -526,8 +574,10 @@
       "phone": "Telefónica"
     },
     "detail": {
-      "title": "Detalle de Cita",
-      "loading": "Cargando detalles de la cita...",
+      "title": "Detalles de la Cita",
+      "loading": "Cargando cita...",
+      "treatmentParams": "Parámetros de Tratamiento",
+      "insulinDetails": "Detalles de Insulina",
       "physician": "Médico",
       "defaultDoctor": "Doctor",
       "specialty": "Especialidad",
@@ -554,44 +604,38 @@
     },
     "create": {
       "title": "Nueva Cita",
-      "steps": {
-        "doctor": "Doctor",
-        "date": "Fecha",
-        "details": "Detalles",
-        "confirm": "Confirmar"
-      },
-      "selectDoctor": "Selecciona tu doctor",
-      "selectDoctorSubtitle": "Elige el profesional con el que deseas agendar tu cita",
-      "searchPlaceholder": "Buscar por nombre, especialidad u hospital",
-      "nextAvailable": "Próximo disponible",
-      "noDoctorsFound": "No se encontraron doctores",
-      "selectDateTime": "Selecciona fecha y hora",
-      "appointmentDate": "Fecha de la cita",
-      "availableSlots": "Horarios disponibles",
-      "loadingSlots": "Cargando horarios...",
-      "noSlotsAvailable": "No hay horarios disponibles para esta fecha",
-      "appointmentDetails": "Detalles de la cita",
-      "additionalInfo": "Información adicional sobre tu cita",
-      "appointmentType": "Tipo de cita",
-      "additionalNotes": "Notas adicionales",
-      "optional": "Opcional",
-      "notesPlaceholder": "Describe tus síntomas, preguntas o cualquier información relevante...",
-      "shareGlucoseSubtitle": "Ayuda a tu doctor a tener una mejor visión de tu salud",
-      "shareReadings": "Compartir lecturas",
-      "shareReadingsSubtitle": "Resumen de tus lecturas manuales",
-      "lastDays": "Últimos días",
-      "days": "{{count}} días",
-      "statisticalSummaryOnly": "Solo se compartirá un resumen estadístico, no las lecturas individuales.",
-      "confirmAppointment": "Confirma tu cita",
-      "reviewDetails": "Revisa los detalles antes de confirmar",
-      "dateAndTime": "Fecha y Hora",
-      "duration": "Duración",
-      "minutes": "minutos",
-      "glucoseData": "Datos de Glucosa",
-      "shareSummaryDays": "Se compartirá resumen de {{days}} días",
-      "privacyNotice": "Tu información está protegida. Solo tu doctor podrá ver los datos compartidos. Puedes cancelar o modificar la cita en cualquier momento.",
-      "previous": "Anterior",
-      "confirmButton": "Confirmar Cita"
+      "glucose_objective": "Objetivo de Glucosa",
+      "insulin_type": "Tipo de Insulina",
+      "insulin_rapid": "Acción Rápida",
+      "insulin_slow": "Acción Lenta",
+      "insulin_mixed": "Mixta",
+      "dose": "Dosis",
+      "fast_insulin": "Marca de Insulina Rápida",
+      "fixed_dose": "Dosis Fija",
+      "ratio": "Relación Insulina-Carbohidratos",
+      "sensitivity": "Factor de Corrección (Sensibilidad)",
+      "pump_type": "Método de Administración",
+      "pump_none": "Jeringa/Pluma",
+      "pump_pump": "Bomba de Insulina",
+      "pump_pen": "Pluma de Insulina",
+      "control_data": "Datos de Control (URL del PDF)",
+      "motive": "Motivo de Visita",
+      "motive_control_routine": "Control de Rutina",
+      "motive_follow_up": "Seguimiento",
+      "motive_emergency": "Emergencia",
+      "motive_consultation": "Consulta",
+      "motive_other": "Otro",
+      "other_motive": "Especificar Otro Motivo",
+      "another_treatment": "Tratamientos Adicionales",
+      "submit": "Crear Cita"
+    },
+    "backend": {
+      "info": "Tus citas se registran desde el sistema clínico. Aquí puedes ver el detalle de las citas ya creadas por tu equipo médico.",
+      "titleWithId": "Detalles de la Cita #{{id}}",
+      "empty": {
+        "title": "Aún no hay citas registradas",
+        "message": "Cuando tu equipo médico programe una cita, aparecerá automáticamente en esta pantalla."
+      }
     }
   },
   "profile": {
@@ -663,6 +707,13 @@
     "lastSync": "Última Sincronización",
     "disconnect": "Desconectar",
     "connect": "Conectar a Tidepool",
+    "viewDashboard": "Ver Panel de Control",
+    "changePhoto": "Cambiar foto",
+    "avatar": {
+      "errorTitle": "Foto de perfil",
+      "tooLarge": "Selecciona una imagen menor a 3 MB.",
+      "updateFailed": "No pudimos actualizar tu foto. Inténtalo nuevamente."
+    },
     "about": "Acerca de",
     "appVersion": "Versión de la Aplicación",
     "termsOfService": "Términos de Servicio",
@@ -801,7 +852,7 @@
     "offline": "Estás sin conexión. Algunas funciones pueden no estar disponibles."
   },
   "messages": {
-    "welcome": "¡Bienvenido a Diabetify!",
+    "welcome": "¡Bienvenido a Diabetactic!",
     "saveSuccess": "Guardado exitosamente",
     "deleteSuccess": "Eliminado exitosamente",
     "updateSuccess": "Actualizado exitosamente",
@@ -994,8 +1045,8 @@
     }
   },
   "login": {
-    "logoAlt": "Logo de Diabetify",
-    "appName": "Diabetify",
+    "logoAlt": "Logo de Diabetactic",
+    "appName": "Diabetactic",
     "tagline": "Tu compañero de salud digital",
     "demoHint": {
       "testAccount": "Cuenta de Prueba:",
@@ -1013,13 +1064,13 @@
     "submitButton": "Iniciar Sesión",
     "forgotPassword": "¿Olvidaste tu contraseña?",
     "divider": "O",
-    "demoButton": "Explorar Modo Demo",
+    "demoButton": "",
     "register": {
       "prompt": "¿No tienes una cuenta?",
       "link": "Regístrate aquí"
     },
     "footer": {
-      "copyright": "© 2024 Diabetify • v1.0.0",
+      "copyright": "© 2025 Diabetactic • v1.0.0",
       "links": {
         "terms": "Términos",
         "privacy": "Privacidad",
@@ -1030,5 +1081,34 @@
   "explore": {
     "explorePrefix": "Explora",
     "uiComponents": "Componentes de UI"
+  },
+  "tips": {
+    "title": "Consejos y Recomendaciones",
+    "subtitle": "Consejos útiles para el manejo de tu diabetes",
+    "disclaimer": "Estos consejos son solo informativos. Siempre consulta con tu médico antes de hacer cambios en tu plan de manejo de diabetes.",
+    "hydration": {
+      "title": "Mantente Hidratado",
+      "description": "Bebe abundante agua durante el día. Una hidratación adecuada ayuda a tus riñones a eliminar el exceso de azúcar a través de la orina y previene la deshidratación."
+    },
+    "meals": {
+      "title": "Comidas Regulares",
+      "description": "Come comidas regulares y balanceadas a horas consistentes cada día. Esto ayuda a mantener niveles estables de azúcar en sangre y previene picos o bajones."
+    },
+    "exercise": {
+      "title": "Ejercicio Diario",
+      "description": "Realiza al menos 30 minutos de actividad física moderada la mayoría de los días. El ejercicio ayuda a tu cuerpo a usar la insulina de manera más efectiva y reduce el azúcar en sangre."
+    },
+    "monitoring": {
+      "title": "Monitorea Regularmente",
+      "description": "Revisa tus niveles de azúcar en sangre según lo recomendado por tu médico. El monitoreo regular te ayuda a entender cómo los alimentos, actividad y medicación afectan tus niveles."
+    },
+    "medication": {
+      "title": "Toma Medicación a Tiempo",
+      "description": "Siempre toma tus medicamentos para diabetes según lo prescrito. Configura recordatorios si es necesario y nunca omitas dosis sin consultar a tu médico."
+    },
+    "sleep": {
+      "title": "Duerme Bien",
+      "description": "Intenta dormir de 7 a 9 horas de calidad cada noche. El mal sueño puede afectar los niveles de azúcar en sangre y la sensibilidad a la insulina."
+    }
   }
 }

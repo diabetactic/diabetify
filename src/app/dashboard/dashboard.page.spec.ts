@@ -250,13 +250,9 @@ describe('DashboardPage', () => {
       syncStatus$: mockSyncStatusSubject.asObservable(),
     });
 
-    appointmentServiceSpy = jasmine.createSpyObj(
-      'AppointmentService',
-      ['getAppointments'],
-      {
-        appointments$: of([mockAppointment]),
-      }
-    );
+    appointmentServiceSpy = jasmine.createSpyObj('AppointmentService', ['getAppointments'], {
+      appointments$: of([mockAppointment]),
+    });
 
     toastControllerSpy = jasmine.createSpyObj('ToastController', ['create']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);

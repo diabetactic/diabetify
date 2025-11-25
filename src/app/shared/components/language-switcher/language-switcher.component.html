@@ -8,7 +8,7 @@
   (click)="toggleLanguage()"
   class="language-btn inline-flex items-center gap-2"
 >
-    <app-icon *ngIf="isLoading"  name="loader" class="h-[18px] w-[18px] animate-spin"></app-icon>
+  <app-icon *ngIf="isLoading" name="loader" class="h-[18px] w-[18px] animate-spin"></app-icon>
   <ng-container *ngIf="!isLoading">
     <span
       *ngIf="showIcon && currentLanguage"
@@ -16,7 +16,7 @@
     >
       {{ getFlagEmoji(currentLanguage.code) }}
     </span>
-    <span *ngIf="showText" class="hidden inline-flex items-center sm:inline">
+    <span *ngIf="showText" class="inline-flex hidden items-center sm:inline">
       {{ getDisplayText() }}
     </span>
   </ng-container>
@@ -48,7 +48,7 @@
   (click)="showLanguagePopover($event)"
   class="language-btn inline-flex items-center gap-2"
 >
-    <app-icon *ngIf="isLoading"  name="loader" class="h-[18px] w-[18px] animate-spin"></app-icon>
+  <app-icon *ngIf="isLoading" name="loader" class="h-[18px] w-[18px] animate-spin"></app-icon>
   <ng-container *ngIf="!isLoading">
     <span
       *ngIf="showIcon && currentLanguage"
@@ -56,9 +56,9 @@
     >
       {{ getFlagEmoji(currentLanguage.code) }}
     </span>
-    <span *ngIf="showText" class="hidden inline-flex items-center sm:inline">
+    <span *ngIf="showText" class="inline-flex hidden items-center sm:inline">
       {{ getDisplayText() }}
     </span>
-    <app-icon  name="chevron-down"></app-icon>
+    <app-icon name="chevron-down"></app-icon>
   </ng-container>
 </ion-button>

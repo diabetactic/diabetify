@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { fakerES as faker } from '@faker-js/faker';
 import { DemoDataService } from './demo-data.service';
 import { MockAdapterConfig } from '../config/mock-adapter-config';
-import { LocalGlucoseReading, Appointment, UserProfile } from '../models';
+import { LocalGlucoseReading, UserProfile } from '../models';
 import { PaginatedReadings } from './readings.service';
 import { environment } from '../../../environments/environment';
 
@@ -39,8 +39,11 @@ export class MockAdapterService {
     // In TEST mode, enable mocks by default
     this.config = this.loadConfig();
 
-    // Auto-enable mocks in TEST environment
-    if ((environment as any).TEST && !this.config.enabled) {
+    // Auto-enable mocks in TEST or explicit mock backend mode
+    if (
+      ((environment as any).TEST || (environment as any).backendMode === 'mock') &&
+      !this.config.enabled
+    ) {
       this.config.enabled = true;
       this.saveConfig();
     }
@@ -242,94 +245,6 @@ export class MockAdapterService {
         800
       )
     );
-  }
-
-  /**
-   * Mock: Get upcoming appointment
-   */
-  async mockGetUpcomingAppointment(): Promise<Appointment | null> {
-    const stored = localStorage.getItem(this.APPOINTMENTS_STORAGE_KEY);
-    const appointments: Appointment[] = stored ? JSON.parse(stored) : [];
-    const now = new Date();
-    const upcoming = appointments
-      .filter(apt => new Date(apt.dateTime) > now && apt.status !== 'cancelled')
-      .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())[0];
-
-    return this.delay(upcoming || null);
-  }
-
-  /**
-   * Mock: Get all appointments
-   */
-  async mockGetAllAppointments(): Promise<Appointment[]> {
-    const stored = localStorage.getItem(this.APPOINTMENTS_STORAGE_KEY);
-    const appointments: Appointment[] = stored ? JSON.parse(stored) : [];
-
-    return this.delay(
-      appointments.sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime())
-    );
-  }
-
-  /**
-   * Mock: Book an appointment
-   */
-  async mockBookAppointment(appointment: Omit<Appointment, 'id'>): Promise<Appointment> {
-    const stored = localStorage.getItem(this.APPOINTMENTS_STORAGE_KEY);
-    const appointments: Appointment[] = stored ? JSON.parse(stored) : [];
-
-    const newAppointment: Appointment = {
-      ...appointment,
-      id: `apt_mock_${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    appointments.push(newAppointment);
-    localStorage.setItem(this.APPOINTMENTS_STORAGE_KEY, JSON.stringify(appointments));
-
-    return this.delay(newAppointment);
-  }
-
-  /**
-   * Mock: Cancel an appointment
-   */
-  async mockCancelAppointment(id: string): Promise<void> {
-    const stored = localStorage.getItem(this.APPOINTMENTS_STORAGE_KEY);
-    const appointments: Appointment[] = stored ? JSON.parse(stored) : [];
-
-    const index = appointments.findIndex(a => a.id === id);
-    if (index !== -1) {
-      appointments[index] = {
-        ...appointments[index],
-        status: 'cancelled' as any,
-        updatedAt: new Date().toISOString(),
-      };
-      localStorage.setItem(this.APPOINTMENTS_STORAGE_KEY, JSON.stringify(appointments));
-    }
-
-    return this.delay(undefined);
-  }
-
-  /**
-   * Mock: Update appointment
-   */
-  async mockUpdateAppointment(id: string, updates: Partial<Appointment>): Promise<Appointment> {
-    const stored = localStorage.getItem(this.APPOINTMENTS_STORAGE_KEY);
-    const appointments: Appointment[] = stored ? JSON.parse(stored) : [];
-
-    const index = appointments.findIndex(a => a.id === id);
-    if (index === -1) {
-      throw new Error(`Appointment not found: ${id}`);
-    }
-
-    appointments[index] = {
-      ...appointments[index],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-    localStorage.setItem(this.APPOINTMENTS_STORAGE_KEY, JSON.stringify(appointments));
-
-    return this.delay(appointments[index]);
   }
 
   /**
@@ -581,16 +496,36 @@ export class MockAdapterService {
   // ==================== PRIVATE METHODS ====================
 
   private loadConfig(): MockAdapterConfig {
+    let config: MockAdapterConfig | null = null;
+
     try {
       const stored = localStorage.getItem(this.STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        return this.validateConfig(parsed);
+        config = this.validateConfig(parsed);
       }
     } catch (error) {
       console.warn('Failed to load mock adapter config:', error);
     }
-    return this.getDefaultConfig();
+
+    // Fall back to environment-aware defaults when no stored config
+    if (!config) {
+      config = this.getDefaultConfig();
+    }
+
+    // When talking to real backends (local Docker or production),
+    // force mocks off so the app uses real services.
+    const backendMode = (environment as any).backendMode as string | undefined;
+    const isProd = !!(environment as any).production;
+
+    if (isProd || backendMode === 'local') {
+      config.enabled = false;
+      config.services.appointments = false;
+      config.services.glucoserver = false;
+      config.services.auth = false;
+    }
+
+    return config;
   }
 
   private saveConfig(): void {
@@ -602,8 +537,24 @@ export class MockAdapterService {
   }
 
   private getDefaultConfig(): MockAdapterConfig {
+    const backendMode = (environment as any).backendMode as string | undefined;
+    const isProd = !!(environment as any).production;
+
+    // For production and local Docker environments we default to REAL backends.
+    if (isProd || backendMode === 'local') {
+      return {
+        enabled: false,
+        services: {
+          appointments: false,
+          glucoserver: false,
+          auth: false,
+        },
+      };
+    }
+
+    // For cloud/mock dev environments, keep mocks enabled by default.
     return {
-      enabled: true, // Default to mock mode
+      enabled: true,
       services: {
         appointments: true,
         glucoserver: true,

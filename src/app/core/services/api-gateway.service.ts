@@ -18,8 +18,10 @@ import { EnvironmentDetectorService } from './environment-detector.service';
 import { PlatformDetectorService } from './platform-detector.service';
 import { LoggerService } from './logger.service';
 import { MockAdapterService } from './mock-adapter.service';
+import { LRUCache } from 'lru-cache';
 import { CapacitorHttpService } from './capacitor-http.service';
 import { environment } from '../../../environments/environment';
+import { API_GATEWAY_BASE_URL } from '../../shared/config/api-base-url';
 
 /**
  * API endpoint configuration
@@ -375,6 +377,15 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       authenticated: false,
       timeout: 15000,
       retryAttempts: 1,
+      transform: {
+        request: (data: any) => {
+          // Transform to form-encoded format for /token endpoint
+          if (data.username && data.password) {
+            return `username=${encodeURIComponent(data.username)}&password=${encodeURIComponent(data.password)}`;
+          }
+          return data;
+        },
+      },
     },
   ],
   [
@@ -453,14 +464,136 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       timeout: 15000,
     },
   ],
+
+  // ExtServices-specific endpoints (Heroku backend)
+  [
+    'extservices.appointments.mine',
+    {
+      service: ExternalService.APPOINTMENTS,
+      path: '/appointments/mine',
+      method: 'GET',
+      authenticated: true,
+      timeout: 30000,
+      cache: {
+        duration: 120000, // 2 minutes
+      },
+    },
+  ],
+  [
+    'extservices.appointments.state',
+    {
+      service: ExternalService.APPOINTMENTS,
+      path: '/appointments/state',
+      method: 'GET',
+      authenticated: true,
+      timeout: 30000,
+      cache: {
+        duration: 60000, // 1 minute
+      },
+    },
+  ],
+  [
+    'extservices.appointments.create',
+    {
+      service: ExternalService.APPOINTMENTS,
+      path: '/appointments/create',
+      method: 'POST',
+      authenticated: true,
+      timeout: 30000,
+    },
+  ],
+  [
+    'extservices.appointments.submit',
+    {
+      service: ExternalService.APPOINTMENTS,
+      path: '/appointments/submit',
+      method: 'POST',
+      authenticated: true,
+      timeout: 30000,
+    },
+  ],
+  [
+    'extservices.appointments.resolution',
+    {
+      service: ExternalService.APPOINTMENTS,
+      path: '/appointments/{appointmentId}/resolution',
+      method: 'GET',
+      authenticated: true,
+      timeout: 30000,
+    },
+  ],
+  [
+    'extservices.glucose.mine',
+    {
+      service: ExternalService.GLUCOSERVER,
+      path: '/glucose/mine',
+      method: 'GET',
+      authenticated: true,
+      timeout: 30000,
+      cache: {
+        duration: 60000, // 1 minute
+      },
+    },
+  ],
+  [
+    'extservices.glucose.latest',
+    {
+      service: ExternalService.GLUCOSERVER,
+      path: '/glucose/mine/latest',
+      method: 'GET',
+      authenticated: true,
+      timeout: 30000,
+      cache: {
+        duration: 30000, // 30 seconds
+      },
+    },
+  ],
+  [
+    'extservices.glucose.create',
+    {
+      service: ExternalService.GLUCOSERVER,
+      path: '/glucose/create',
+      method: 'POST',
+      authenticated: true,
+      timeout: 30000,
+      transform: {
+        request: (data: any) => {
+          // This endpoint uses query params, not body
+          return null;
+        },
+      },
+    },
+  ],
+  [
+    'extservices.users.me',
+    {
+      service: ExternalService.LOCAL_AUTH,
+      path: '/users/me',
+      method: 'GET',
+      authenticated: true,
+      timeout: 15000,
+      cache: {
+        duration: 300000, // 5 minutes
+      },
+    },
+  ],
 ]);
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiGatewayService {
-  private requestCache = new Map<string, Observable<any>>();
-  private cacheData = new Map<string, { data: any; timestamp: number }>();
+  // LRU cache for response data with bounded size and TTL
+  private cacheData = new LRUCache<string, { data: any; timestamp: number }>({
+    max: 500, // Maximum 500 entries
+    maxSize: 10 * 1024 * 1024, // 10 MB maximum total size
+    ttl: 5 * 60 * 1000, // 5 minutes TTL
+    updateAgeOnGet: true, // Reset TTL on access (LRU behavior)
+    sizeCalculation: value => {
+      // Rough estimate of object size in bytes
+      return JSON.stringify(value).length;
+    },
+  });
 
   constructor(
     private http: HttpClient,
@@ -715,7 +848,10 @@ export class ApiGatewayService {
 
     // Add content type if not set
     if (!headers.has('Content-Type') && endpoint.method !== 'GET' && endpoint.method !== 'DELETE') {
-      headers = headers.set('Content-Type', 'application/json');
+      // Use form-encoded for /token endpoint, JSON for others
+      const contentType =
+        endpoint.path === '/token' ? 'application/x-www-form-urlencoded' : 'application/json';
+      headers = headers.set('Content-Type', contentType);
     }
 
     // Transform request body if needed
@@ -741,8 +877,7 @@ export class ApiGatewayService {
       case ExternalService.LOCAL_AUTH:
         // Route all backend services through the API Gateway
         // Use platform detector to get the correct URL for the current environment
-        const defaultUrl =
-          environment.backendServices.apiGateway.baseUrl || 'http://localhost:8000';
+        const defaultUrl = API_GATEWAY_BASE_URL;
         return this.platformDetector.getApiBaseUrl(defaultUrl);
       default:
         throw new Error(`Unknown service: ${service}`);
@@ -760,7 +895,7 @@ export class ApiGatewayService {
       case ExternalService.GLUCOSERVER:
       case ExternalService.APPOINTMENTS:
       case ExternalService.LOCAL_AUTH:
-        return this.localAuth.getAccessToken();
+        return await this.localAuth.getAccessToken();
       default:
         return null;
     }
@@ -874,6 +1009,7 @@ export class ApiGatewayService {
 
   /**
    * Get from cache
+   * LRUCache handles TTL automatically, but we keep endpoint-specific duration check
    */
   private getFromCache(key: string, duration: number): any | null {
     const cached = this.cacheData.get(key);
@@ -882,6 +1018,7 @@ export class ApiGatewayService {
       return null;
     }
 
+    // Check endpoint-specific duration (may be shorter than LRUCache TTL)
     const now = Date.now();
     if (now - cached.timestamp > duration) {
       this.cacheData.delete(key);
@@ -1044,28 +1181,16 @@ export class ApiGatewayService {
     const body = options?.body;
 
     switch (endpointKey) {
-      // Appointments endpoints
+      // Appointments endpoints - handled by AppointmentService directly
       case 'appointments.list':
-        return this.mockAdapter.mockGetAllAppointments() as Promise<T>;
-
       case 'appointments.detail':
-        const appointments = await this.mockAdapter.mockGetAllAppointments();
-        const aptId = pathParams?.['id'];
-        const appointment = appointments.find((a: any) => a.id === aptId);
-        if (!appointment) {
-          throw new Error('Appointment not found');
-        }
-        return appointment as T;
-
       case 'appointments.create':
-        return this.mockAdapter.mockBookAppointment(body) as Promise<T>;
-
       case 'appointments.update':
-        return this.mockAdapter.mockUpdateAppointment(pathParams?.['id'] || '', body) as Promise<T>;
-
       case 'appointments.cancel':
-        await this.mockAdapter.mockCancelAppointment(pathParams?.['id'] || '');
-        return { success: true } as T;
+        // Appointment mock data is handled directly by AppointmentService
+        throw new Error(
+          `Mock endpoint ${endpointKey} should be handled by AppointmentService directly`
+        );
 
       // Glucoserver endpoints
       case 'glucoserver.readings.list':

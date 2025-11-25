@@ -141,7 +141,7 @@ if [ "$CAN_RUN_TESTS" = true ] || [ "$1" = "--continue" ]; then
         print_success "Backend services already running"
     else
         print_info "Starting backend services with docker-compose..."
-        cd extServices/container-managing
+        cd extServicesCompose/extServices/container-managing
 
         # Start services
         if [ -f "Makefile" ]; then
@@ -192,7 +192,7 @@ if [ "$CAN_RUN_TESTS" = true ] || [ "$1" = "--continue" ]; then
         print_error "Some services are not healthy. Checking logs..."
         echo ""
         echo "View logs with: npm run backend:logs"
-        echo "Or: cd extServices/container-managing && docker compose logs -f"
+        echo "Or: cd extServicesCompose/extServices/container-managing && docker compose logs -f"
         exit 1
     fi
 

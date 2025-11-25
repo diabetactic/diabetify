@@ -75,17 +75,19 @@ export class TidepoolMockAdapter {
         valueMgDl = item.value * this.MMOL_TO_MGDL;
       }
 
-      return {
-        id: `tidepool-${item.uploadId || Date.now()}-${item.time}`,
+      const reading: LocalGlucoseReading = {
+        id: `tidepool-${item.uploadId || item.deviceId || 'local'}-${item.time}`,
+        type: item.type,
+        time: item.time,
         value: Math.round(valueMgDl), // Round to integer
-        time: new Date(item.time),
-        type: 'tidepool', // Mark as from Tidepool
-        notes: item.type === 'cbg' ? 'CGM reading' : 'Manual SMBG',
-        deleted: false,
-        localStoredAt: new Date(),
+        units: 'mg/dL',
+        notes: [item.type === 'cbg' ? 'CGM reading' : 'Manual SMBG'],
         synced: true,
         deviceId: item.deviceId,
-      };
+        localStoredAt: new Date().toISOString(),
+      } as LocalGlucoseReading;
+
+      return reading;
     });
   }
 

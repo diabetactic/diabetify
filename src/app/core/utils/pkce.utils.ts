@@ -10,18 +10,7 @@
  */
 
 import { OAUTH_CONSTANTS } from '../config/oauth.config';
-
-/**
- * PKCE Challenge Interface
- */
-export interface PKCEChallenge {
-  /** Code verifier (random string) */
-  codeVerifier: string;
-  /** Code challenge (base64url-encoded SHA-256 hash of verifier) */
-  codeChallenge: string;
-  /** Code challenge method (always 'S256' for SHA-256) */
-  codeChallengeMethod: string;
-}
+import type { PKCEChallenge } from '../models/tidepool-auth.model';
 
 /**
  * Generate a cryptographically secure random string for PKCE

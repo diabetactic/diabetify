@@ -11,7 +11,14 @@ import { AppointmentsPage } from './appointments.page';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, AppointmentsPageRoutingModule, TranslateModule, AppIconComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    AppointmentsPageRoutingModule,
+    TranslateModule,
+    AppIconComponent,
+  ],
   declarations: [AppointmentsPage],
 })
 export class AppointmentsPageModule {}

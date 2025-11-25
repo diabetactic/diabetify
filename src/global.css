@@ -16,16 +16,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* DaisyUI Component Library with Diabetify Themes
+/* DaisyUI Component Library with Diabetactic Themes
  * DaisyUI themes are configured in tailwind.config.js
- * Themes: diabetify (light), dark
+ * Themes: diabetactic (light), dark
  */
 
 /* ============================================
  * DAISYUI → IONIC CSS VARIABLE BRIDGES
  * Sync DaisyUI theme colors to Ionic variables
  * ============================================ */
-:root[data-theme='diabetify'] {
+:root[data-theme='diabetactic'] {
   /* Bridge DaisyUI primary to Ionic primary */
   --ion-color-primary: #25aff4;
   --ion-color-primary-rgb: 37, 175, 244;
@@ -229,6 +229,75 @@
     @apply transition-all hover:scale-105 active:scale-95;
   }
 
+  /* Enhanced button visibility in dark mode */
+  .dark ion-button,
+  .ion-palette-dark ion-button {
+    --background: var(--ion-color-primary);
+    --background-activated: var(--ion-color-primary-shade);
+    --background-focused: var(--ion-color-primary-tint);
+    --background-hover: var(--ion-color-primary-tint);
+    --color: var(--ion-color-primary-contrast);
+    --box-shadow: 0 2px 6px 0 rgb(0 0 0 / 40%);
+  }
+
+  /* Buttons with explicit color attributes keep their color */
+  .dark ion-button[color],
+  .ion-palette-dark ion-button[color] {
+    --box-shadow: 0 2px 6px 0 rgb(0 0 0 / 40%);
+  }
+
+  /* Outline buttons in dark mode */
+  .dark ion-button[fill='outline'],
+  .ion-palette-dark ion-button[fill='outline'] {
+    --border-color: var(--ion-color-primary);
+    --border-width: 2px;
+    --color: var(--ion-color-primary);
+    --background: transparent;
+    --background-hover: rgb(37 175 244 / 10%);
+    --background-focused: rgb(37 175 244 / 10%);
+  }
+
+  /* Clear/text buttons in dark mode */
+  .dark ion-button[fill='clear'],
+  .ion-palette-dark ion-button[fill='clear'] {
+    --color: var(--ion-color-primary);
+    --background: transparent;
+    --background-hover: rgb(37 175 244 / 10%);
+    --background-focused: rgb(37 175 244 / 10%);
+  }
+
+  /* ========== FORM CONTROLS (DARK MODE) ========== */
+  .dark ion-datetime,
+  .ion-palette-dark ion-datetime {
+    --background: #020617;
+    --wheel-background: #020617;
+    --wheel-highlight-background: #111827;
+    --wheel-fade-background: transparent;
+    color: #e5e7eb;
+  }
+
+  .dark ion-datetime-button,
+  .ion-palette-dark ion-datetime-button {
+    --background: #111827;
+    --color: #e5e7eb;
+  }
+
+  .dark ion-select,
+  .ion-palette-dark ion-select {
+    --background: #020617;
+    --color: #e5e7eb;
+    --placeholder-color: #9ca3af;
+  }
+
+  .dark ion-action-sheet,
+  .ion-palette-dark ion-action-sheet {
+    --background: #020617;
+    --backdrop-opacity: 0.7;
+    --button-background: #111827;
+    --button-background-selected: #1f2937;
+    --button-color: #e5e7eb;
+  }
+
   /* ========== SURFACES ========== */
   .glass-surface {
     background: var(--color-glass-light);
@@ -399,7 +468,7 @@
 @import '@ionic/angular/css/palettes/dark.system.css';
 
 /**
- * Global Diabetify Styles
+ * Global Diabetactic Styles
  * -----------------------------------------------------
  * Child-friendly global styles
  */
@@ -418,7 +487,7 @@ body {
   margin: 0;
 }
 
-/* Override Ionic variables with Diabetify Design System colors */
+/* Override Ionic variables with Diabetactic Design System colors */
 :root {
 /* Primary color (Blue - from mockups) */
   --ion-color-primary: #25aff4;
@@ -460,21 +529,21 @@ body {
   --ion-color-danger-shade: #d13c3c;
   --ion-color-danger-tint: #f05757;
 
-/* Custom Diabetify colors */
-  --diabetify-gold: #ffd700;
-  --diabetify-coral: #ff7f50;
-  --diabetify-light-blue: #add8e6;
+/* Custom Diabetactic colors */
+  --diabetactic-gold: #ffd700;
+  --diabetactic-coral: #ff7f50;
+  --diabetactic-light-blue: #add8e6;
 
 /* Background colors */
-  --diabetify-background-light: #f5f7f8;
-  --diabetify-background-dark: #101c22;
-  --diabetify-surface-light: #fff;
-  --diabetify-surface-dark: #1e293b;
+  --diabetactic-background-light: #f5f7f8;
+  --diabetactic-background-dark: #101c22;
+  --diabetactic-surface-light: #fff;
+  --diabetactic-surface-dark: #1e293b;
 
 /* Text colors */
-  --diabetify-text-primary: #0d171c;
-  --diabetify-text-secondary: #49819c;
-  --diabetify-text-tertiary: #94a3b8;
+  --diabetactic-text-primary: #0d171c;
+  --diabetactic-text-secondary: #49819c;
+  --diabetactic-text-tertiary: #94a3b8;
 
 /* Glucose status colors */
   --glucose-normal: #22c55e;
@@ -507,6 +576,30 @@ body {
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
+}
+
+/* ============================================
+ * TEXT COLOR UTILITIES (DARK MODE AWARE)
+ * ============================================ */
+.text-dark {
+  color: var(--ion-color-dark, #0d1b2a);
+}
+
+.text-medium {
+  color: var(--ion-color-medium, #6b7280);
+}
+
+/* Dark mode overrides for text utilities */
+.dark .text-dark,
+.ion-palette-dark .text-dark,
+:root[data-theme='dark'] .text-dark {
+  color: #ffffff;
+}
+
+.dark .text-medium,
+.ion-palette-dark .text-medium,
+:root[data-theme='dark'] .text-medium {
+  color: #9ca3af;
 }
 
 /* Typography System */
@@ -604,10 +697,10 @@ p,
 /* Dark mode adjustments */
 @media (prefers-color-scheme: dark) {
   :root {
-    --ion-background-color: var(--diabetify-background-dark);
+    --ion-background-color: var(--diabetactic-background-dark);
     --ion-background-color-rgb: 16, 28, 34;
     --ion-text-color: #fff;
     --ion-text-color-rgb: 255, 255, 255;
-    --ion-card-background: var(--diabetify-surface-dark);
+    --ion-card-background: var(--diabetactic-surface-dark);
   }
 }

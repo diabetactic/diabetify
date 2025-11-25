@@ -1,12 +1,12 @@
-# 🤖 Diabetify Agent Reference Guide
+# 🤖 Diabetactic Agent Reference Guide
 
 ## Comprehensive Guide to 65+ Claude-Flow Agents for Healthcare App Development
 
-This reference guide catalogs all available agents with a focus on Angular/TypeScript/Ionic development for the Diabetify healthcare application.
+This reference guide catalogs all available agents with a focus on Angular/TypeScript/Ionic development for the Diabetactic healthcare application.
 
 ---
 
-## 📊 Quick Reference: Agents by Diabetify Use Case
+## 📊 Quick Reference: Agents by Diabetactic Use Case
 
 | **Use Case** | **Primary Agents** | **Supporting Agents** |
 |--------------|-------------------|----------------------|
@@ -21,7 +21,7 @@ This reference guide catalogs all available agents with a focus on Angular/TypeS
 
 ---
 
-## 🎯 Priority Agents for Diabetify Development
+## 🎯 Priority Agents for Diabetactic Development
 
 ### Top 10 Most Useful Agents
 
@@ -52,7 +52,7 @@ This reference guide catalogs all available agents with a focus on Angular/TypeS
 - API integration with HttpClient
 - Dexie/IndexedDB operations
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Create new glucose reading component
 Task("Frontend Coder", "Create standalone Angular component for manual glucose entry with form validation. Use Ionic form components, reactive forms, and GlucoseReading model. Include unit tests.", "coder")
@@ -85,7 +85,7 @@ Task("Mobile Integration", "Integrate Capacitor Camera plugin for profile photo 
 - Performance optimization recommendations
 - Accessibility (a11y) review
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Review authentication flow
 Task("Security Reviewer", "Review UnifiedAuthService for security vulnerabilities. Check token storage, refresh logic, XSS prevention, and PKCE implementation. Verify HIPAA compliance patterns.", "reviewer")
@@ -118,7 +118,7 @@ Task("A11y Specialist", "Review appointments UI for WCAG 2.1 AA compliance. Chec
 - Integration test patterns
 - Coverage analysis (90%+ target)
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Create unit tests for new feature
 Task("Unit Test Engineer", "Write comprehensive Jasmine tests for AppointmentDetailPage. Mock AppointmentService, test async data loading, error states, and video call launch. Use fakeAsync + tick. Target 95% coverage.", "tester")
@@ -151,7 +151,7 @@ Task("Test Maintainer", "Refactor readings.page.spec.ts to use TestBuilders (Glu
 - Resource allocation
 - Dependency mapping
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Feature planning
 Task("Sprint Planner", "Plan implementation of tele-appointment video call feature. Break down into tasks: UI components, video SDK integration, backend API, testing, documentation. Estimate 2-week sprint.", "planner")
@@ -184,7 +184,7 @@ Task("Debt Analyzer", "Analyze technical debt in src/app/core/services/. Categor
 - Performance optimization techniques
 - Documentation research
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Library evaluation
 Task("Tech Researcher", "Research Tidepool API integration best practices. Compare OAuth flow implementations, analyze rate limits, evaluate sync strategies, recommend client library.", "researcher")
@@ -219,7 +219,7 @@ Task("Issue Investigator", "Research IndexedDB sync conflicts in Dexie. Analyze 
 - App store deployment preparation
 - Device API integration (Camera, Storage, Network)
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Capacitor plugin integration
 Task("Mobile Developer", "Integrate Capacitor Background Fetch for glucose sync. Add Android/iOS permissions, implement background task, handle network errors, test on device.", "mobile-dev")
@@ -252,7 +252,7 @@ Task("Offline Specialist", "Optimize offline-first patterns for mobile. Implemen
 - API gateway patterns
 - Service orchestration
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # API Gateway integration
 Task("Backend Engineer", "Implement ApiGatewayService request routing. Add service health checks, circuit breaker pattern, request caching with TTL, automatic retry with backoff.", "backend-dev")
@@ -285,13 +285,13 @@ Task("Auth Developer", "Refactor UnifiedAuthService to support multi-provider au
 - Performance architecture
 - Data flow modeling
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Service architecture
 Task("Solution Architect", "Design unified data sync architecture across Tidepool, Glucoserver, and local IndexedDB. Define sync strategy, conflict resolution, and error handling patterns.", "system-architect")
 
 # Scalability design
-Task("Scale Architect", "Architect multi-tenant backend for Diabetify enterprise. Design database sharding, API rate limiting, caching strategy, and monitoring infrastructure.", "system-architect")
+Task("Scale Architect", "Architect multi-tenant backend for Diabetactic enterprise. Design database sharding, API rate limiting, caching strategy, and monitoring infrastructure.", "system-architect")
 
 # Migration architecture
 Task("Migration Architect", "Design migration from monolithic services to event-driven microservices. Define service boundaries, event schema, communication patterns, and rollback strategy.", "system-architect")
@@ -318,7 +318,7 @@ Task("Migration Architect", "Design migration from monolithic services to event-
 - Postman collection creation
 - API versioning documentation
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # OpenAPI generation
 Task("API Documenter", "Generate OpenAPI 3.0 spec for ApiGatewayService endpoints. Document all services (Auth, Glucoserver, Appointments), request/response schemas, error codes, and examples.", "api-docs")
@@ -351,7 +351,7 @@ Task("Service Documenter", "Document ServiceOrchestrator saga patterns. Explain 
 - Model training/optimization
 - ML deployment (TensorFlow.js)
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Glucose prediction
 Task("ML Engineer", "Build glucose prediction model using historical readings. Train LSTM model, deploy with TensorFlow.js, integrate into dashboard, show confidence intervals.", "ml-developer")
@@ -384,10 +384,10 @@ Task("Data Scientist", "Analyze glucose patterns to identify meal impact, exerci
 - Security best practices enforcement
 - Secure coding review
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # HIPAA compliance audit
-Task("HIPAA Auditor", "Audit Diabetify for HIPAA compliance. Review PHI storage (IndexedDB encryption), API security (TLS, auth), audit logging, and access controls. Generate compliance report.", "security-analyzer")
+Task("HIPAA Auditor", "Audit Diabetactic for HIPAA compliance. Review PHI storage (IndexedDB encryption), API security (TLS, auth), audit logging, and access controls. Generate compliance report.", "security-analyzer")
 
 # Vulnerability assessment
 Task("Security Tester", "Perform security assessment: XSS testing, SQL injection, authentication bypass, token security, API rate limiting. Test in demo and production modes.", "security-analyzer")
@@ -417,7 +417,7 @@ Task("Encryption Specialist", "Review sensitive data storage. Audit: password ha
 - Deployment strategies (blue-green, canary)
 - Environment management
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # CI/CD pipeline
 Task("DevOps Engineer", "Create GitHub Actions workflow: lint → test → build → deploy. Add parallel jobs, caching (node_modules), E2E tests, and deployment to staging/production.", "cicd-engineer")
@@ -450,7 +450,7 @@ Task("Mobile CI/CD", "Create Capacitor Android build pipeline: sync → build �
 - Deployment verification
 - Rollback testing
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Production readiness
 Task("Release Validator", "Validate production readiness: smoke tests, performance benchmarks (<3s page load), security scan, backup verification, rollback test. Generate checklist.", "production-validator")
@@ -485,7 +485,7 @@ Task("Security Validator", "Run pre-release security checks: dependency audit, H
 - Mock creation (`jasmine.createSpyObj`)
 - Test performance optimization
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Comprehensive unit tests
 Task("Unit Test Expert", "Create exhaustive unit tests for ServiceOrchestrator. Test all saga patterns, compensating transactions, retry logic, error handling, and edge cases. Target 100% coverage.", "unit-test-specialist")
@@ -518,7 +518,7 @@ Task("Mock Engineer", "Create comprehensive service mocks for integration tests.
 - Multi-component testing
 - Contract testing
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Service integration tests
 Task("Integration Engineer", "Create integration tests for appointment booking flow: AuthService → AppointmentService → ApiGateway → backend. Test success, failure, retry, and rollback scenarios.", "integration-tester")
@@ -551,7 +551,7 @@ Task("DB Integration Tester", "Test Dexie database integration: schema migration
 - Visual regression testing
 - Performance testing
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # E2E test suite
 Task("E2E Engineer", "Create comprehensive Playwright E2E suite: login → dashboard → add reading → view statistics → book appointment → logout. Test desktop + mobile viewports.", "e2e-automation")
@@ -584,7 +584,7 @@ Task("Visual Tester", "Set up Playwright visual regression testing. Capture scre
 - Design emergence
 - Refactoring support
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # TDD feature development
 Task("TDD Coach", "Implement glucose export feature using London-style TDD. Start with acceptance test (E2E), work inward to component/service tests, drive design through tests.", "tdd-london-swarm")
@@ -617,7 +617,7 @@ Task("Mock-First Developer", "Implement appointment booking with mock-first TDD.
 - Code smell detection
 - Dependency analysis
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Code quality analysis
 Task("Code Analyzer", "Analyze src/app/core/services/ for code quality issues. Report: cyclomatic complexity (>10), method length (>50 lines), class size (>500 lines), duplicated code (>5%).", "code-analyzer")
@@ -650,10 +650,10 @@ Task("Dependency Auditor", "Audit npm dependencies: identify outdated packages (
 - Change detection optimization
 - Lighthouse audits
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Performance audit
-Task("Performance Engineer", "Audit Diabetify performance: bundle size analysis, lazy loading opportunities, change detection optimization, API request batching, IndexedDB query optimization.", "perf-analyzer")
+Task("Performance Engineer", "Audit Diabetactic performance: bundle size analysis, lazy loading opportunities, change detection optimization, API request batching, IndexedDB query optimization.", "perf-analyzer")
 
 # Mobile performance
 Task("Mobile Performance", "Optimize mobile performance: reduce initial load (<3s), optimize images, implement virtual scrolling for lists, lazy load Ionic components, cache API responses.", "perf-analyzer")
@@ -683,7 +683,7 @@ Task("Memory Profiler", "Detect and fix memory leaks: unsubscribed observables, 
 - Benchmark reporting
 - Baseline establishment
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Performance benchmarks
 Task("Benchmark Engineer", "Create performance benchmarks: API latency (p50/p95/p99), page load time, IndexedDB query time, sync duration, memory usage. Establish baselines and regression thresholds.", "performance-benchmarker")
@@ -718,7 +718,7 @@ Task("Mobile Benchmarker", "Benchmark mobile performance on real devices: startu
 - Merge strategy enforcement
 - PR template management
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Automated PR workflow
 Task("PR Manager", "Create PR for glucose export feature: generate title/description from commits, assign reviewers (code owner + 2 team members), apply labels (feature, backend), run CI checks.", "pr-manager")
@@ -751,7 +751,7 @@ Task("Merge Manager", "Automate PR merges: check all CI passed, 2+ approvals, no
 - Review consensus building
 - Automated code suggestions
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Comprehensive code review
 Task("Review Swarm", "Review appointment booking PR: Security agent checks auth, Performance agent analyzes queries, Quality agent reviews tests, Mobile agent checks Capacitor integration. Aggregate findings.", "code-review-swarm")
@@ -784,7 +784,7 @@ Task("Review Automation", "Generate automated review suggestions: ESLint fixes, 
 - Resolution coordination
 - Milestone tracking
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Issue triage
 Task("Issue Triager", "Triage new GitHub issues: classify by type (bug/feature/question), prioritize by severity, assign to team members based on expertise, apply labels, estimate effort.", "issue-tracker")
@@ -817,7 +817,7 @@ Task("Milestone Manager", "Manage v2.0 milestone: track progress (10/25 issues c
 - Version management (semantic versioning)
 - Release notes generation
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Release coordination
 Task("Release Coordinator", "Coordinate v2.1.0 release: generate changelog from commits, create release notes, tag version, deploy to staging, run smoke tests, deploy to production, notify team.", "release-manager")
@@ -850,7 +850,7 @@ Task("Hotfix Manager", "Coordinate emergency hotfix v2.0.1: cherry-pick fix to r
 - Workflow debugging
 - Scheduled workflow automation
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # CI/CD workflow
 Task("Workflow Engineer", "Create GitHub Actions CI/CD: lint → test (unit + E2E) → build → deploy. Add parallel jobs, caching, Playwright artifacts, coverage reports, deployment to Vercel.", "workflow-automation")
@@ -883,10 +883,10 @@ Task("Release Automation", "Automate release workflow: bump version on merge to 
 - Repository governance (CODEOWNERS, branch protection)
 - Documentation structure
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Repository structure
-Task("Repo Designer", "Design monorepo structure for Diabetify: web app, mobile app, backend services, shared libraries. Define workspace configuration, dependency management, build orchestration.", "repo-architect")
+Task("Repo Designer", "Design monorepo structure for Diabetactic: web app, mobile app, backend services, shared libraries. Define workspace configuration, dependency management, build orchestration.", "repo-architect")
 
 # Branching strategy
 Task("Branch Strategist", "Optimize branching strategy: main (production), develop (staging), feature branches, hotfix workflow. Define merge rules, PR templates, branch protection, auto-delete.", "repo-architect")
@@ -916,7 +916,7 @@ Task("Governance Manager", "Set up repository governance: CODEOWNERS (services �
 - Team coordination
 - Burndown charts
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Project board automation
 Task("Board Manager", "Automate GitHub Projects: move cards on PR status (draft → review → merged), auto-add issues to backlog, link PRs to cards, track milestone progress.", "project-board-sync")
@@ -949,13 +949,13 @@ Task("Roadmap Manager", "Track product roadmap: Q1 milestone (8/12 features comp
 - Repository relationship management
 - Dependency updates
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Monorepo coordination
-Task("Sync Manager", "Coordinate extServices submodule updates: track API changes, update Diabetify client, coordinate deployments, test integration, version compatibility.", "sync-coordinator")
+Task("Sync Manager", "Coordinate extServices submodule updates: track API changes, update Diabetactic client, coordinate deployments, test integration, version compatibility.", "sync-coordinator")
 
 # Cross-repo releases
-Task("Release Syncer", "Coordinate cross-repo release: backend v2.0 → update API client → update Diabetify → deploy staging → integration tests → production deployment.", "sync-coordinator")
+Task("Release Syncer", "Coordinate cross-repo release: backend v2.0 → update API client → update Diabetactic → deploy staging → integration tests → production deployment.", "sync-coordinator")
 
 # Dependency management
 Task("Dependency Coordinator", "Manage shared dependencies: Angular 20 upgrade across repos, coordinate breaking changes, update lockfiles, test integrations, coordinate releases.", "sync-coordinator")
@@ -982,7 +982,7 @@ Task("Dependency Coordinator", "Manage shared dependencies: Angular 20 upgrade a
 - Solution integration
 - Knowledge sharing
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Complex bug resolution
 Task("Issue Swarm", "Resolve complex sync bug: Research agent investigates root cause, Coder agent implements fix, Tester agent creates regression tests, Reviewer agent validates, documenter writes post-mortem.", "swarm-issue")
@@ -1015,7 +1015,7 @@ Task("Security Swarm", "Resolve security vulnerability: Security analyst assesse
 - Integration testing
 - Review consensus
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Large PR review
 Task("PR Swarm", "Review large refactoring PR (50 files): Code analyzer reviews structure, Security analyst checks vulnerabilities, Performance analyst benchmarks, Tester validates tests, Reviewer approves.", "swarm-pr")
@@ -1048,13 +1048,13 @@ Task("Conflict Resolver", "Resolve complex merge conflicts: Analyzer identifies 
 - Release synchronization
 - Monorepo management
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Monorepo coordination
-Task("Monorepo Swarm", "Coordinate Diabetify ecosystem: web app, mobile app, backend services (auth, appointments, glucoserver), API gateway. Manage dependencies, build order, releases.", "multi-repo-swarm")
+Task("Monorepo Swarm", "Coordinate Diabetactic ecosystem: web app, mobile app, backend services (auth, appointments, glucoserver), API gateway. Manage dependencies, build order, releases.", "multi-repo-swarm")
 
 # Distributed feature
-Task("Feature Swarm", "Implement cross-repo feature (glucose export): Backend adds export endpoint, API gateway routes request, Diabetify adds UI, coordinate testing and deployment.", "multi-repo-swarm")
+Task("Feature Swarm", "Implement cross-repo feature (glucose export): Backend adds export endpoint, API gateway routes request, Diabetactic adds UI, coordinate testing and deployment.", "multi-repo-swarm")
 
 # Architecture migration
 Task("Migration Swarm", "Migrate from submodules to monorepo: Plan migration, restructure repos, update CI/CD, test builds, coordinate team training, phased rollout.", "multi-repo-swarm")
@@ -1083,7 +1083,7 @@ Task("Migration Swarm", "Migrate from submodules to monorepo: Plan migration, re
 - Strategic direction setting
 - Priority management
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Large feature coordination
 Task("Queen Coordinator", "Coordinate tele-appointment feature: Assign architect for design, backend/frontend developers for implementation, testers for validation, reviewer for quality. Track progress and resolve blockers.", "hierarchical-coordinator")
@@ -1118,7 +1118,7 @@ Task("Crisis Coordinator", "Manage production incident: Assign security team to 
 - Adaptive task redistribution
 - Democratic consensus
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Collaborative development
 Task("Mesh Network", "Coordinate refactoring: All agents (coder, reviewer, tester, documenter) collaborate as peers. Share knowledge, make decisions collectively, balance workload dynamically.", "mesh-coordinator")
@@ -1153,13 +1153,13 @@ Task("Peer Review", "Distribute code review: Multiple reviewers (security, perfo
 - Context-aware coordination
 - Bottleneck detection and resolution
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Dynamic feature development
 Task("Adaptive Manager", "Coordinate glucose export feature: Start with mesh for research, switch to hierarchical for implementation, adapt based on complexity and team size. Auto-scale agents as needed.", "adaptive-coordinator")
 
 # Performance optimization
-Task("Adaptive Optimizer", "Optimize Diabetify performance: Dynamically assign performance analyzers to bottlenecks, scale analyzer team based on complexity, switch coordination strategy as problems are resolved.", "adaptive-coordinator")
+Task("Adaptive Optimizer", "Optimize Diabetactic performance: Dynamically assign performance analyzers to bottlenecks, scale analyzer team based on complexity, switch coordination strategy as problems are resolved.", "adaptive-coordinator")
 
 # Sprint execution
 Task("Sprint Adapter", "Manage sprint execution: Adapt coordination based on workload (50% completion → add agents, blocker detected → switch to hierarchical crisis mode, approaching deadline → optimize parallelization).", "adaptive-coordinator")
@@ -1188,7 +1188,7 @@ Task("Sprint Adapter", "Manage sprint execution: Adapt coordination based on wor
 - Emergent intelligence coordination
 - Pattern recognition across agents
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Knowledge sharing
 Task("Hive Mind", "Build shared knowledge base: All agents contribute learnings (patterns, anti-patterns, solutions) to collective memory. Enable emergent intelligence for problem-solving.", "collective-intelligence-coordinator")
@@ -1223,7 +1223,7 @@ Task("Learning Collective", "Implement continuous learning: Agents share success
 - Historical data management
 - Context preservation
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Knowledge persistence
 Task("Memory Manager", "Manage swarm memory: Store API contracts, design decisions, test patterns, refactoring strategies. Enable agents to retrieve relevant knowledge for tasks.", "swarm-memory-manager")
@@ -1258,7 +1258,7 @@ Task("History Keeper", "Maintain learning history: Record successful patterns (s
 - Security threat mitigation
 - Trust management
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Secure coordination
 Task("BFT Coordinator", "Coordinate security-critical tasks with BFT: Multiple agents validate auth implementation independently, detect malicious suggestions, reach secure consensus on approval.", "byzantine-coordinator")
@@ -1293,7 +1293,7 @@ Task("Trust Manager", "Manage untrusted agent environment: Detect malicious code
 - Cluster membership management
 - Strong consistency guarantees
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Leader-based coordination
 Task("Raft Manager", "Coordinate with Raft consensus: Elect leader for task coordination, replicate decisions to followers, maintain strong consistency, handle leader failures with re-election.", "raft-manager")
@@ -1328,7 +1328,7 @@ Task("Lock Coordinator", "Manage distributed locks: Leader grants exclusive acce
 - Consensus threshold management
 - Deadlock prevention
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Architecture decisions
 Task("Consensus Builder", "Build consensus on architecture: Multiple architects propose designs, vote on options (weighted by expertise), require 2/3 majority, resolve conflicts through discussion.", "consensus-builder")
@@ -1363,7 +1363,7 @@ Task("Release Consensus", "Build release consensus: QA, security, product teams 
 - Quorum recovery management
 - Timeout handling
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Quorum-based approvals
 Task("Quorum Manager", "Manage quorum approvals: Track agent availability (5/7 available), require quorum (3+ votes) for decisions, timeout if quorum not reached (24h), handle agent failures.", "quorum-manager")
@@ -1398,7 +1398,7 @@ Task("HA Coordinator", "Ensure high-availability decisions: Maintain agent pool 
 - Epidemic-style communication
 - Eventually consistent updates
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Information spreading
 Task("Gossip Manager", "Spread configuration changes: Agent receives update → gossips to random peers → peers gossip further → eventually all agents updated. Track propagation, detect missing agents.", "gossip-coordinator")
@@ -1433,7 +1433,7 @@ Task("Metrics Gossiper", "Aggregate metrics via gossip: Agents share performance
 - Distributed state reconciliation
 - Causal ordering
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Distributed state sync
 Task("CRDT Coordinator", "Synchronize agent state with CRDTs: Use G-Counter for metrics, LWW-Register for configuration, OR-Set for task lists. Enable conflict-free merges, eventual consistency.", "crdt-synchronizer")
@@ -1468,7 +1468,7 @@ Task("Config Synchronizer", "Sync configuration across agents: Use CRDT map for 
 - Audit trail maintenance
 - Compliance enforcement (HIPAA, GDPR)
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Access control
 Task("Security Coordinator", "Manage agent access control: Enforce RBAC (reviewer can approve, coder cannot merge), validate permissions before operations, audit all access, prevent privilege escalation.", "security-manager")
@@ -1505,7 +1505,7 @@ Task("Threat Detector", "Detect security threats: Monitor agent behavior for ano
 - Stakeholder communication
 - Domain modeling
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Feature specification
 Task("Specification Agent", "Specify glucose export feature: Define requirements (formats: PDF/CSV/Excel, date range, include statistics), acceptance criteria, user stories, data privacy requirements (HIPAA).", "specification")
@@ -1540,7 +1540,7 @@ Task("Domain Modeler", "Model glucose management domain: Define entities (Readin
 - Implementation planning
 - Edge case identification
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Algorithm design
 Task("Pseudocode Designer", "Design glucose statistics algorithm: Calculate average, median, standard deviation, coefficient of variation, time-in-range. Handle edge cases (empty data, single reading), optimize for performance (O(n)).", "pseudocode")
@@ -1575,7 +1575,7 @@ Task("Structure Designer", "Design IndexedDB sync queue: FIFO queue for offline 
 - Architecture documentation (C4 diagrams)
 - Pattern selection
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Service architecture
 Task("System Architect", "Design service orchestration architecture: ServiceOrchestrator coordinates ApiGatewayService, AuthService, ReadingsService. Define interfaces, error handling, transaction boundaries, monitoring.", "architecture")
@@ -1610,7 +1610,7 @@ Task("Integration Architect", "Design external API integration: ApiGatewayServic
 - Quality validation
 - Implementation preparation
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Performance refinement
 Task("Performance Refiner", "Refine glucose statistics calculation: Optimize algorithm (memoization, incremental calculation), reduce memory usage (streaming), batch IndexedDB queries, lazy load data.", "refinement")
@@ -1647,7 +1647,7 @@ Task("Scale Refiner", "Refine data sync for scale: Batch API requests (100 readi
 - Documentation templates
 - Generator automation
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Component template
 Task("Template Generator", "Generate Ionic page template: Create standalone component with routing, form, service injection, error handling, loading state, unit tests. Include TypeScript interfaces and SCSS.", "base-template-generator")
@@ -1680,7 +1680,7 @@ Task("Test Generator", "Generate test template: Create Jasmine test suite with s
 - Intelligent scheduling
 - Auto-remediation
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # CI/CD automation
 Task("Smart Automator", "Automate CI/CD workflow: Detect changes → run affected tests → auto-fix linting → build → deploy to staging → smoke test → notify team. Auto-rollback on failure.", "automation-smart-agent")
@@ -1713,7 +1713,7 @@ Task("Release Automator", "Automate release workflow: Detect merge to main → b
 - Initial task distribution
 - Health check setup
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Hierarchical swarm setup
 Task("Swarm Initializer", "Initialize hierarchical swarm for release: Queen coordinator, architect (design), backend/frontend developers (implementation), testers (validation), reviewer (quality). Setup communication, resource allocation.", "coordinator-swarm-init")
@@ -1746,7 +1746,7 @@ Task("Adaptive Initializer", "Initialize adaptive swarm for sprint: Start with 3
 - Quality assurance
 - Documentation generation
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # SPARC implementation
 Task("SPARC Implementer", "Implement glucose export feature using SPARC: Follow specification (S), implement algorithm (P), use architecture (A), apply refinements (R), code with TDD (C). Generate tests and docs.", "implementer-sparc-coder")
@@ -1781,7 +1781,7 @@ Task("Iterative Developer", "Implement service orchestrator iteratively: Iterati
 - Memory optimization
 - Cross-agent knowledge sharing
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Shared knowledge
 Task("Memory Manager", "Manage shared knowledge: Store API contracts, design decisions, refactoring patterns, test utilities. Enable agents to access relevant knowledge for tasks.", "memory-coordinator")
@@ -1814,7 +1814,7 @@ Task("Learning Manager", "Maintain learning history: Record successful implement
 - Result aggregation
 - Parallel execution
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Feature orchestration
 Task("Task Orchestrator", "Orchestrate tele-appointment feature: Break into tasks (UI, video integration, backend API, tests). Manage dependencies (UI depends on API), schedule agents, track progress, aggregate results.", "orchestrator-task")
@@ -1847,10 +1847,10 @@ Task("Dependency Manager", "Manage task dependencies: Backend API → Frontend c
 - Performance reporting
 - Trend analysis
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Performance profiling
-Task("Performance Profiler", "Profile Diabetify performance: Analyze page load time, bundle size, API latency, IndexedDB query time, rendering performance. Identify bottlenecks, recommend optimizations.", "performance-analyzer")
+Task("Performance Profiler", "Profile Diabetactic performance: Analyze page load time, bundle size, API latency, IndexedDB query time, rendering performance. Identify bottlenecks, recommend optimizations.", "performance-analyzer")
 
 # Resource analysis
 Task("Resource Analyzer", "Analyze resource usage: CPU usage (change detection), memory usage (observables), network usage (API calls), battery usage (mobile). Optimize high-usage areas.", "performance-analyzer")
@@ -1880,7 +1880,7 @@ Task("Trend Analyzer", "Analyze performance trends: Track performance metrics ov
 - Deliverable coordination
 - Phase transition management
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # SPARC workflow
 Task("SPARC Coordinator", "Coordinate SPARC workflow for glucose export: Phase S (specify requirements) → Phase P (design algorithm) → Phase A (architecture) → Phase R (refine) → Phase C (implement with TDD). Manage transitions.", "sparc-coordinator")
@@ -1913,7 +1913,7 @@ Task("Multi-Feature SPARC", "Coordinate SPARC for multiple features: Glucose exp
 - Rollback planning
 - Data migration planning
 
-**Diabetify Examples**:
+**Diabetactic Examples**:
 ```bash
 # Angular migration
 Task("Migration Planner", "Plan Angular 20 migration: Assess breaking changes, estimate effort, plan phased rollout (dev → staging → production), define rollback strategy, identify risks (deprecated APIs).", "migration-plan")
@@ -2122,7 +2122,7 @@ Message 3: Task("Agent 3")
 
 ---
 
-## 📊 Diabetify Agent Priority Matrix
+## 📊 Diabetactic Agent Priority Matrix
 
 ### Tier 1: Essential Agents (Use Daily)
 
@@ -2333,14 +2333,14 @@ Message 3: Task("Agent 3")
 - [Agent API Reference](/tmp/claude-flow-docs/docs/API_DOCUMENTATION.md)
 - [Swarm Coordination Guide](/tmp/claude-flow-docs/docs/SWARM_DOCUMENTATION.md)
 
-### Diabetify-Specific
+### Diabetactic-Specific
 - [CLAUDE.md](/home/julito/TPP/diabetactic-extServices-20251103-061913/diabetactic/CLAUDE.md) - Project configuration
 - [Architecture Guide](../ARCHITECTURE.md) - If exists
 - [Testing Guide](../docs/TESTING.md) - If exists
 
 ### Support
 - GitHub Issues: https://github.com/ruvnet/claude-flow/issues
-- Diabetify Team: Internal Slack
+- Diabetactic Team: Internal Slack
 
 ---
 

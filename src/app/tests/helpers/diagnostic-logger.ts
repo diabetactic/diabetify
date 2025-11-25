@@ -368,12 +368,12 @@ export class TestDiagnostics {
    * Install diagnostics for all tests (Jasmine integration)
    */
   static install(): void {
-    beforeEach(function () {
+    beforeEach(function (this: any) {
       const testName = this.description || 'Unknown Test';
       (window as any).currentTestDiagnostics = new TestDiagnostics(testName);
     });
 
-    afterEach(function () {
+    afterEach(function (this: any) {
       const diagnostics = (window as any).currentTestDiagnostics;
       if (diagnostics) {
         diagnostics.generateReport();

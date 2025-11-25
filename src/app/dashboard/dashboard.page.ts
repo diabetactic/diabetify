@@ -1,14 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject, firstValueFrom } from 'rxjs';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ReadingsService } from '../core/services/readings.service';
 import { TidepoolSyncService } from '../core/services/tidepool-sync.service';
-import { AppointmentService, Appointment } from '../core/services/appointment.service';
-import { MockDataService, MockAppointment } from '../core/services/mock-data.service';
 import { LoggerService } from '../core/services/logger.service';
 import {
   LocalGlucoseReading,
@@ -21,10 +19,10 @@ import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
 import { StatCardComponent } from '../shared/components/stat-card/stat-card.component';
 import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
-import { AlertBannerComponent } from '../shared/components/alert-banner/alert-banner.component';
 import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
 import { LanguageSwitcherComponentModule } from '../shared/components/language-switcher/language-switcher.module';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-dashboard',
@@ -36,16 +34,15 @@ import { AppIconComponent } from '../shared/components/app-icon/app-icon.compone
     IonicModule,
     RouterModule,
     TranslateModule,
-    DatePipe,
     StatCardComponent,
     ReadingItemComponent,
-    AlertBannerComponent,
     EmptyStateComponent,
     LanguageSwitcherComponentModule,
-    AppIconComponent
+    AppIconComponent,
   ],
 })
 export class DashboardPage implements OnInit, OnDestroy {
+  readonly isMockMode = environment.backendMode === 'mock';
   // Avoid Ionic dynamic imports in Karma by hiding spinners
   readonly isKarma = typeof window !== 'undefined' && (window as any).__karma__;
   // Statistics data
@@ -53,11 +50,6 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   // Recent readings (last 5)
   recentReadings: LocalGlucoseReading[] = [];
-
-  // Appointment data
-  upcomingAppointment: Appointment | null = null;
-  upcomingAppointments: MockAppointment[] = []; // For demo: show next 2-3 appointments
-  isSharingGlucose = false;
 
   // Sync status
   syncStatus: SyncStatus | null = null;
@@ -95,8 +87,6 @@ export class DashboardPage implements OnInit, OnDestroy {
   constructor(
     private readingsService: ReadingsService,
     private syncService: TidepoolSyncService,
-    private appointmentService: AppointmentService,
-    private mockData: MockDataService,
     private toastController: ToastController,
     private router: Router,
     private translationService: TranslationService,
@@ -113,7 +103,6 @@ export class DashboardPage implements OnInit, OnDestroy {
     this.loadDashboardData();
     this.subscribeToReadings();
     this.subscribeToSyncStatus();
-    this.subscribeToAppointments();
   }
 
   ngOnDestroy() {
@@ -183,27 +172,6 @@ export class DashboardPage implements OnInit, OnDestroy {
     this.syncService.syncStatus$.pipe(takeUntil(this.destroy$)).subscribe(status => {
       this.syncStatus = status;
       this.isSyncing = status.isRunning;
-    });
-  }
-
-  /**
-   * Subscribe to upcoming appointments
-   */
-  private subscribeToAppointments() {
-    // Keep original appointment service for compatibility
-    this.appointmentService.upcomingAppointment$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(appointment => {
-        this.upcomingAppointment = appointment;
-      });
-
-    // Load appointments initially
-    this.appointmentService.getAppointments('confirmed').subscribe();
-
-    // DEMO: Load mock appointments for dashboard preview
-    this.mockData.getAppointments('upcoming').subscribe(appointments => {
-      // Show next 2-3 upcoming appointments
-      this.upcomingAppointments = appointments.slice(0, 3);
     });
   }
 
@@ -278,59 +246,6 @@ export class DashboardPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Share glucose data with doctor for upcoming appointment
-   */
-  async shareGlucoseData() {
-    if (!this.upcomingAppointment) {
-      return;
-    }
-
-    this.isSharingGlucose = true;
-
-    try {
-      // Calculate date range (30 days before appointment)
-      const appointmentDate = new Date(
-        `${this.upcomingAppointment.date} ${this.upcomingAppointment.startTime}`
-      );
-      const startDate = new Date(appointmentDate);
-      startDate.setDate(startDate.getDate() - 30);
-
-      // Share glucose data via appointments service (backend will aggregate)
-      const result = await firstValueFrom(
-        this.appointmentService.shareGlucoseData(this.upcomingAppointment.id!, {
-          start: startDate,
-          end: appointmentDate,
-        })
-      );
-
-      // Show success message
-      const doctorName =
-        this.upcomingAppointment.doctorName ||
-        this.translationService.instant('dashboard.defaultDoctorName');
-      const successMessage = this.translationService.instant('dashboard.shareToast.success', {
-        count: result?.recordCount ?? 0,
-        doctor: doctorName,
-      });
-      await this.showToast(successMessage, 'success');
-    } catch (error) {
-      console.error('Error sharing glucose data:', error);
-      await this.showToast(this.translationService.instant('dashboard.shareToast.error'), 'danger');
-    } finally {
-      this.isSharingGlucose = false;
-    }
-  }
-
-  /**
-   * Navigate to appointment details
-   */
-  viewAppointmentDetails() {
-    if (this.upcomingAppointment) {
-      // TODO: Navigate to appointment details page when implemented
-      this.router.navigate(['/appointments', this.upcomingAppointment.id]);
-    }
-  }
-
-  /**
    * Navigate to add reading page
    */
   addReading() {
@@ -354,41 +269,6 @@ export class DashboardPage implements OnInit, OnDestroy {
       ],
     });
     await toast.present();
-  }
-
-  /**
-   * Get time until appointment
-   */
-  getTimeUntilAppointment(): string {
-    if (!this.upcomingAppointment) {
-      return '';
-    }
-
-    const appointmentDate = new Date(
-      `${this.upcomingAppointment.date} ${this.upcomingAppointment.startTime}`
-    );
-    const now = new Date();
-    const diffMs = appointmentDate.getTime() - now.getTime();
-
-    if (diffMs <= 0) {
-      return this.translationService.instant('dashboard.timeUntil.now');
-    }
-
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffDays > 0) {
-      const key = diffDays === 1 ? 'dashboard.timeUntil.oneDay' : 'dashboard.timeUntil.manyDays';
-      return this.translationService.instant(key, { count: diffDays });
-    } else if (diffHours > 0) {
-      const key = diffHours === 1 ? 'dashboard.timeUntil.oneHour' : 'dashboard.timeUntil.manyHours';
-      return this.translationService.instant(key, { count: diffHours });
-    } else {
-      const diffMinutes = Math.floor(diffMs / (1000 * 60));
-      const key =
-        diffMinutes === 1 ? 'dashboard.timeUntil.oneMinute' : 'dashboard.timeUntil.manyMinutes';
-      return this.translationService.instant(key, { count: diffMinutes });
-    }
   }
 
   /**
@@ -497,15 +377,5 @@ export class DashboardPage implements OnInit, OnDestroy {
       return this.translationService.instant('dashboard.kids.status.good');
     }
     return this.translationService.instant('dashboard.kids.status.needsWork');
-  }
-
-  /**
-   * Get days until appointment (for mock appointments)
-   */
-  getDaysUntil(date: Date): number {
-    const now = new Date();
-    const appointmentDate = new Date(date);
-    const diff = appointmentDate.getTime() - now.getTime();
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
   }
 }

@@ -2,38 +2,31 @@
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
 const fs = require('fs');
+const path = require('path');
 const { env } = process;
+const consoleLogLevel = env.KARMA_CONSOLE_LEVEL || 'warn';
+const captureConsole = env.KARMA_CAPTURE_CONSOLE !== 'false';
 
-function resolveChromeBinary() {
-  try {
-    const puppeteer = require('puppeteer');
-    const executable = puppeteer.executablePath();
-    if (executable && fs.existsSync(executable)) {
-      return executable;
-    }
-  } catch (error) {
-    // Ignore when puppeteer is not installed in the environment
-  }
+// Ensure a local, writable Chromium config directory to avoid ~/.config permission issues
+const localConfigDir = path.join(__dirname, '.chromium-config');
+if (!fs.existsSync(localConfigDir)) {
+  fs.mkdirSync(localConfigDir, { recursive: true });
+}
+env.XDG_CONFIG_HOME = localConfigDir;
 
-  if (env.CHROME_BIN && fs.existsSync(env.CHROME_BIN)) {
-    return env.CHROME_BIN;
-  }
-
-  if (env.CHROME_BIN) {
-    delete env.CHROME_BIN;
-  }
-
-  return null;
+// If CHROME_BIN is set but invalid, clear it.
+if (env.CHROME_BIN && !fs.existsSync(env.CHROME_BIN)) {
+  delete env.CHROME_BIN;
 }
 
-const resolvedChrome = resolveChromeBinary();
-if (resolvedChrome) {
-  env.CHROME_BIN = resolvedChrome;
+// If no CHROME_BIN is set, but Chromium exists at a common path, use it.
+if (!env.CHROME_BIN && fs.existsSync('/usr/bin/chromium')) {
+  env.CHROME_BIN = '/usr/bin/chromium';
 }
 
 module.exports = function (config) {
   const isCI = !!env.CI || !!env.GITHUB_ACTIONS || env.KARMA_HEADLESS === 'true';
-  const useHeadless = !!resolvedChrome || isCI;
+  const useHeadless = isCI || !!env.CHROME_BIN;
 
   config.set({
     basePath: '',
@@ -56,7 +49,10 @@ module.exports = function (config) {
         // Increased timeout for Ionic component initialization
         timeoutInterval: 10000,
       },
+      // Flag used by test.ts to avoid loading unit specs during integration runs
+      integration: env.KARMA_INTEGRATION === 'true',
       clearContext: false, // leave Jasmine Spec Runner output visible in browser
+      captureConsole,
     },
     jasmineHtmlReporter: {
       suppressAll: true, // removes the duplicated traces
@@ -81,6 +77,11 @@ module.exports = function (config) {
       },
     },
     reporters: ['spec', 'kjhtml'],
+    browserConsoleLogOptions: {
+      level: consoleLogLevel,
+      format: '%b %T: %m',
+      terminal: true,
+    },
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
@@ -95,6 +96,8 @@ module.exports = function (config) {
           '--disable-dev-shm-usage',
           '--disable-software-rasterizer',
           '--disable-extensions',
+          `--user-data-dir=${path.join(localConfigDir, 'karma-profile')}`,
+          '--disable-crash-reporter',
         ],
       },
     },

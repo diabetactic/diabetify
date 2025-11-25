@@ -5,8 +5,12 @@
     </ion-buttons>
     <ion-title>Configuración</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="saveSettings()" [disabled]="!hasChanges" class="inline-flex items-center gap-2">
-    <app-icon  name="save-outline"></app-icon>
+      <ion-button
+        (click)="saveSettings()"
+        [disabled]="!hasChanges"
+        class="inline-flex items-center gap-2"
+      >
+        <app-icon name="save-outline"></app-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -14,7 +18,7 @@
 
 <ion-content class="pb-20">
   <!-- Profile Section -->
-  <ion-list-header class="px-4 pt-5 pb-2.5 text-xs font-semibold tracking-wider uppercase">
+  <ion-list-header class="px-4 pb-2.5 pt-5 text-xs font-semibold uppercase tracking-wider">
     <ion-label>Perfil</ion-label>
   </ion-list-header>
   <ion-list class="mb-4">
@@ -26,12 +30,12 @@
         <h2 class="mb-1 font-medium">{{ profileSettings.name || 'Usuario' }}</h2>
         <p class="text-sm">{{ profileSettings.email }}</p>
       </ion-label>
-      <app-icon  name="chevron-forward"></app-icon>
+      <app-icon name="chevron-forward"></app-icon>
     </ion-item>
   </ion-list>
 
   <!-- Glucose Settings -->
-  <ion-list-header class="px-4 pt-5 pb-2.5 text-xs font-semibold tracking-wider uppercase">
+  <ion-list-header class="px-4 pb-2.5 pt-5 text-xs font-semibold uppercase tracking-wider">
     <ion-label>Configuración de Glucosa</ion-label>
   </ion-list-header>
   <ion-list class="mb-4">
@@ -99,92 +103,8 @@
     </ion-item>
   </ion-list>
 
-  <!-- Notification Settings -->
-  <ion-list-header class="px-4 pt-5 pb-2.5 text-xs font-semibold tracking-wider uppercase">
-    <ion-label>Notificaciones</ion-label>
-  </ion-list-header>
-  <ion-list class="mb-4">
-    <ion-item>
-      <ion-label>
-        <h3 class="mb-1 font-medium">Citas Médicas</h3>
-        <p class="text-sm">Recordatorios de próximas citas</p>
-      </ion-label>
-      <ion-toggle
-        [(ngModel)]="notificationSettings.appointments"
-        (ionChange)="onNotificationToggle('appointments')"
-      ></ion-toggle>
-    </ion-item>
-
-    <ion-item *ngIf="notificationSettings.appointments">
-      <ion-label>Recordar antes de</ion-label>
-      <ion-select
-        [(ngModel)]="notificationSettings.appointmentReminder"
-        (ionChange)="hasChanges = true"
-        interface="popover"
-        class="max-w-[50%]"
-      >
-        <ion-select-option [value]="1">1 hora</ion-select-option>
-        <ion-select-option [value]="2">2 horas</ion-select-option>
-        <ion-select-option [value]="6">6 horas</ion-select-option>
-        <ion-select-option [value]="12">12 horas</ion-select-option>
-        <ion-select-option [value]="24">1 día</ion-select-option>
-        <ion-select-option [value]="48">2 días</ion-select-option>
-      </ion-select>
-    </ion-item>
-
-    <ion-item>
-      <ion-label>
-        <h3 class="mb-1 font-medium">Lecturas de Glucosa</h3>
-        <p class="text-sm">Recordatorios para tomar lecturas</p>
-      </ion-label>
-      <ion-toggle
-        [(ngModel)]="notificationSettings.readings"
-        (ionChange)="onNotificationToggle('readings')"
-      ></ion-toggle>
-    </ion-item>
-
-    <ion-item *ngIf="notificationSettings.readings">
-      <ion-label>
-        <h3 class="mb-1 font-medium">Horarios de Recordatorio</h3>
-        <p class="text-sm">Toca para eliminar</p>
-      </ion-label>
-      <ion-button fill="clear" slot="end" (click)="addReadingReminder()" class="inline-flex items-center gap-2">
-    <app-icon  name="add" class="w-6 h-6"></app-icon>
-  </ion-button>
-    </ion-item>
-
-    <ion-item *ngFor="let time of notificationSettings.readingTimes">
-      <ion-label>{{ time }}</ion-label>
-      <ion-button fill="clear" slot="end" (click)="removeReadingReminder(time)" class="inline-flex items-center gap-2">
-    <app-icon  name="close-circle-outline" class="text-danger w-6 h-6"></app-icon>
-  </ion-button>
-    </ion-item>
-
-    <ion-item>
-      <ion-label>
-        <h3 class="mb-1 font-medium">Reporte Semanal</h3>
-        <p class="text-sm">Resumen de tu progreso semanal</p>
-      </ion-label>
-      <ion-toggle
-        [(ngModel)]="notificationSettings.weeklyReport"
-        (ionChange)="hasChanges = true"
-      ></ion-toggle>
-    </ion-item>
-
-    <ion-item>
-      <ion-label>
-        <h3 class="mb-1 font-medium">Alertas Críticas</h3>
-        <p class="text-sm">Valores fuera de rango</p>
-      </ion-label>
-      <ion-toggle
-        [(ngModel)]="notificationSettings.criticalAlerts"
-        (ionChange)="hasChanges = true"
-      ></ion-toggle>
-    </ion-item>
-  </ion-list>
-
   <!-- Appearance Settings -->
-  <ion-list-header class="px-4 pt-5 pb-2.5 text-xs font-semibold tracking-wider uppercase">
+  <ion-list-header class="px-4 pb-2.5 pt-5 text-xs font-semibold uppercase tracking-wider">
     <ion-label>Apariencia</ion-label>
   </ion-list-header>
   <ion-list class="mb-4">
@@ -216,126 +136,19 @@
     </ion-item>
   </ion-list>
 
-  <!-- Privacy Settings -->
-  <ion-list-header class="px-4 pt-5 pb-2.5 text-xs font-semibold tracking-wider uppercase">
-    <ion-label>Privacidad</ion-label>
-  </ion-list-header>
-  <ion-list class="mb-4">
-    <ion-item>
-      <ion-label>
-        <h3 class="mb-1 font-medium">Compartir con Doctor</h3>
-        <p class="text-sm">Permitir que tu doctor vea tus datos</p>
-      </ion-label>
-      <ion-toggle
-        [(ngModel)]="privacySettings.shareDataWithDoctor"
-        (ionChange)="hasChanges = true"
-      ></ion-toggle>
-    </ion-item>
-
-    <ion-item>
-      <ion-label>
-        <h3 class="mb-1 font-medium">Estadísticas Anónimas</h3>
-        <p class="text-sm">Ayuda a mejorar la app</p>
-      </ion-label>
-      <ion-toggle
-        [(ngModel)]="privacySettings.anonymousStatistics"
-        (ionChange)="hasChanges = true"
-      ></ion-toggle>
-    </ion-item>
-
-    <ion-item>
-      <ion-label>Retención de Datos</ion-label>
-      <ion-select
-        [(ngModel)]="privacySettings.dataRetentionDays"
-        (ionChange)="hasChanges = true"
-        interface="popover"
-        class="max-w-[50%]"
-      >
-        <ion-select-option [value]="30">30 días</ion-select-option>
-        <ion-select-option [value]="90">90 días</ion-select-option>
-        <ion-select-option [value]="180">6 meses</ion-select-option>
-        <ion-select-option [value]="365">1 año</ion-select-option>
-        <ion-select-option [value]="730">2 años</ion-select-option>
-        <ion-select-option [value]="-1">Indefinido</ion-select-option>
-      </ion-select>
-    </ion-item>
-
-    <ion-item>
-      <ion-label>Formato de Exportación</ion-label>
-      <ion-select
-        [(ngModel)]="privacySettings.exportFormat"
-        (ionChange)="hasChanges = true"
-        interface="popover"
-        class="max-w-[50%]"
-      >
-        <ion-select-option value="pdf">PDF</ion-select-option>
-        <ion-select-option value="csv">CSV</ion-select-option>
-        <ion-select-option value="json">JSON</ion-select-option>
-      </ion-select>
-    </ion-item>
-
-    <ion-item button (click)="exportData()" class="flex items-center gap-2">
-    <app-icon  name="download-outline"></app-icon>
-      <ion-label>Exportar Mis Datos</ion-label>
-    </ion-item>
-  </ion-list>
-
-  <!-- Sync Settings -->
-  <ion-list-header class="px-4 pt-5 pb-2.5 text-xs font-semibold tracking-wider uppercase">
-    <ion-label>Sincronización</ion-label>
-  </ion-list-header>
-  <ion-list class="mb-4">
-    <ion-item>
-      <ion-label>
-        <h3 class="mb-1 font-medium">Sincronización Automática</h3>
-        <p class="text-sm">Sincronizar datos automáticamente</p>
-      </ion-label>
-      <ion-toggle [(ngModel)]="syncSettings.autoSync" (ionChange)="hasChanges = true"></ion-toggle>
-    </ion-item>
-
-    <ion-item *ngIf="syncSettings.autoSync">
-      <ion-label>Intervalo de Sincronización</ion-label>
-      <ion-select
-        [(ngModel)]="syncSettings.syncInterval"
-        (ionChange)="hasChanges = true"
-        interface="popover"
-        class="max-w-[50%]"
-      >
-        <ion-select-option [value]="5">5 minutos</ion-select-option>
-        <ion-select-option [value]="15">15 minutos</ion-select-option>
-        <ion-select-option [value]="30">30 minutos</ion-select-option>
-        <ion-select-option [value]="60">1 hora</ion-select-option>
-      </ion-select>
-    </ion-item>
-
-    <ion-item *ngIf="syncSettings.autoSync">
-      <ion-label>
-        <h3 class="mb-1 font-medium">Solo Wi-Fi</h3>
-        <p class="text-sm">Sincronizar solo con conexión Wi-Fi</p>
-      </ion-label>
-      <ion-toggle [(ngModel)]="syncSettings.wifiOnly" (ionChange)="hasChanges = true"></ion-toggle>
-    </ion-item>
-
-    <ion-item *ngIf="syncSettings.autoSync">
-      <ion-label>
-        <h3 class="mb-1 font-medium">Sincronización en Segundo Plano</h3>
-        <p class="text-sm">Permite sincronización cuando la app está cerrada</p>
-      </ion-label>
-      <ion-toggle
-        [(ngModel)]="syncSettings.backgroundSync"
-        (ionChange)="hasChanges = true"
-      ></ion-toggle>
-    </ion-item>
-  </ion-list>
-
   <!-- Advanced Settings -->
-  <ion-list-header class="px-4 pt-5 pb-2.5 text-xs font-semibold tracking-wider uppercase">
+  <ion-list-header class="px-4 pb-2.5 pt-5 text-xs font-semibold uppercase tracking-wider">
     <ion-label>Avanzado</ion-label>
   </ion-list-header>
   <ion-list class="mb-4">
     <!-- Debug Panel Toggle (only in dev mode) -->
-    <ion-item button (click)="toggleDebugPanel()" *ngIf="isDevEnvironment" class="flex items-center gap-2">
-    <app-icon  name="bug-outline" class="text-warning"></app-icon>
+    <ion-item
+      button
+      (click)="toggleDebugPanel()"
+      *ngIf="isDevEnvironment"
+      class="flex items-center gap-2"
+    >
+      <app-icon name="bug-outline" class="text-warning"></app-icon>
       <ion-label>
         <h3 class="mb-1 font-medium">Panel de Depuración</h3>
         <p class="text-sm">Herramientas para desarrolladores</p>
@@ -344,19 +157,14 @@
     </ion-item>
 
     <ion-item button (click)="goToAdvancedSettings()" class="flex items-center gap-2">
-    <app-icon  name="settings-outline"></app-icon>
+      <app-icon name="settings-outline"></app-icon>
       <ion-label>Configuración Avanzada</ion-label>
-      <app-icon  name="chevron-forward"></app-icon>
+      <app-icon name="chevron-forward"></app-icon>
     </ion-item>
 
     <ion-item button (click)="signOut()" class="flex items-center gap-2">
-    <app-icon  name="log-out-outline" class="text-primary"></app-icon>
+      <app-icon name="log-out-outline" class="text-primary"></app-icon>
       <ion-label color="primary">Cerrar Sesión</ion-label>
-    </ion-item>
-
-    <ion-item button (click)="deleteAccount()" class="flex items-center gap-2">
-    <app-icon  name="trash-outline" class="text-danger"></app-icon>
-      <ion-label color="danger">Eliminar Cuenta</ion-label>
     </ion-item>
   </ion-list>
 
@@ -368,9 +176,7 @@
   <!-- Demo Mode Notice -->
   <ion-card *ngIf="isDemoMode" class="demo-notice">
     <ion-card-content class="flex items-center gap-3 p-3">
-      <app-icon
-         name="information-circle-outline"
-       class="shrink-0 text-2xl text-warning"></app-icon>
+      <app-icon name="information-circle-outline" class="text-warning shrink-0 text-2xl"></app-icon>
       <p class="m-0 text-sm">
         Estás en modo demo. Algunos cambios no se guardarán permanentemente.
       </p>
@@ -379,7 +185,7 @@
 
   <!-- Version Info -->
   <div class="p-5 text-center">
-    <p class="my-1 text-sm text-gray-500 dark:text-gray-400">Diabetify v1.0.0</p>
-    <p class="my-1 text-sm text-gray-500 dark:text-gray-400">© 2024 Diabetify</p>
+    <p class="my-1 text-sm text-gray-500 dark:text-gray-400">Diabetactic v1.0.0</p>
+    <p class="my-1 text-sm text-gray-500 dark:text-gray-400">© 2024 Diabetactic</p>
   </div>
 </ion-content>

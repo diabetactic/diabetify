@@ -1,62 +1,47 @@
 /**
- * Appointment-related models for tele-appointments feature
+ * Appointment models - aligned with ExtServices backend
+ *
+ * The backend provides CLINICAL treatment data, not scheduling data.
+ * These models match the actual API response from the appointments service.
  */
 
 /**
- * Appointment status enum
- */
-export enum AppointmentStatus {
-  PENDING = 'pending',
-  CONFIRMED = 'confirmed',
-  CANCELLED = 'cancelled',
-  COMPLETED = 'completed',
-  NO_SHOW = 'no_show',
-  RESCHEDULED = 'rescheduled',
-}
-
-/**
- * Appointment type enum
- */
-export enum AppointmentType {
-  VIDEO = 'video',
-  IN_PERSON = 'in_person',
-  PHONE = 'phone',
-}
-
-/**
- * Healthcare provider model
- */
-export interface Provider {
-  id: string;
-  name: string;
-  specialty?: string;
-  email?: string;
-  phone?: string;
-  profileImage?: string;
-}
-
-/**
- * Appointment model
+ * Appointment (clinical treatment record) from ExtServices API
+ * This is what the backend actually returns and accepts
  */
 export interface Appointment {
-  id: string;
-  userId: string;
-  provider: Provider;
-  dateTime: string; // ISO 8601 format
-  duration: number; // Duration in minutes
-  type: AppointmentType;
-  status: AppointmentStatus;
-  reason?: string;
-  notes?: string;
-  location?: string; // Physical location for in-person appointments
-  videoCallUrl?: string; // Video call URL for video appointments
-  phoneNumber?: string; // Phone number for phone appointments
-  glucoseDataShared?: boolean;
-  glucoseShareDate?: string; // ISO 8601 format
-  glucoseRecordCount?: number;
-  cancellationReason?: string;
-  createdAt: string; // ISO 8601 format
-  updatedAt: string; // ISO 8601 format
+  appointment_id: number;
+  user_id: number;
+  glucose_objective: number;
+  insulin_type: string;
+  dose: number;
+  fast_insulin: string;
+  fixed_dose: number;
+  ratio: number;
+  sensitivity: number;
+  pump_type: string;
+  another_treatment?: string | null;
+  control_data: string;
+  motive: string[];
+  other_motive?: string | null;
+}
+
+/**
+ * Request to create a new appointment (clinical form)
+ */
+export interface CreateAppointmentRequest {
+  glucose_objective: number;
+  insulin_type: string;
+  dose: number;
+  fast_insulin: string;
+  fixed_dose: number;
+  ratio: number;
+  sensitivity: number;
+  pump_type: string;
+  control_data: string;
+  motive: string[];
+  other_motive?: string;
+  another_treatment?: string;
 }
 
 /**
@@ -64,46 +49,33 @@ export interface Appointment {
  */
 export interface AppointmentListResponse {
   appointments: Appointment[];
-  total: number;
-  page: number;
-  pageSize: number;
+  total?: number;
 }
 
 /**
- * Create appointment request
+ * Common appointment motives (for UI dropdowns)
  */
-export interface CreateAppointmentRequest {
-  providerId: string;
-  dateTime: string;
-  duration: number;
-  type: AppointmentType;
-  reason?: string;
-  notes?: string;
-}
+export const APPOINTMENT_MOTIVES = [
+  'control_routine',
+  'follow_up',
+  'emergency',
+  'consultation',
+  'adjustment',
+  'other',
+] as const;
+
+export type AppointmentMotive = (typeof APPOINTMENT_MOTIVES)[number];
 
 /**
- * Update appointment request
+ * Common insulin types (for UI dropdowns)
  */
-export interface UpdateAppointmentRequest {
-  dateTime?: string;
-  duration?: number;
-  type?: AppointmentType;
-  reason?: string;
-  notes?: string;
-  status?: AppointmentStatus;
-}
+export const INSULIN_TYPES = ['rapid', 'short', 'intermediate', 'long', 'mixed', 'none'] as const;
+
+export type InsulinType = (typeof INSULIN_TYPES)[number];
 
 /**
- * Cancel appointment request
+ * Common pump types (for UI dropdowns)
  */
-export interface CancelAppointmentRequest {
-  reason?: string;
-}
+export const PUMP_TYPES = ['medtronic', 'omnipod', 'tandem', 'none', 'other'] as const;
 
-/**
- * Reschedule appointment request
- */
-export interface RescheduleAppointmentRequest {
-  newDateTime: string;
-  reason?: string;
-}
+export type PumpType = (typeof PUMP_TYPES)[number];

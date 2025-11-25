@@ -7,7 +7,7 @@
 import { TestBed, TestModuleMetadata } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { TranslateModule, TranslateLoader, TranslateFakeLoader } from '@ngx-translate/core';
+import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Routes } from '@angular/router';
 
@@ -16,6 +16,18 @@ import { setupCapacitorMocks } from './capacitor-mocks';
 import { createAllIonicMocks } from './ionic-mocks';
 import { createMockPlatformDetectorService } from './platform-mocks';
 import { PlatformDetectorService } from '../../core/services/platform-detector.service';
+
+import { Observable, of } from 'rxjs';
+
+/**
+ * Simple fake translate loader that returns empty dictionaries.
+ * This avoids HTTP calls during unit/integration tests.
+ */
+export class FakeTranslateLoader implements TranslateLoader {
+  getTranslation(_: string): Observable<any> {
+    return of({});
+  }
+}
 
 /**
  * Test setup options
@@ -162,7 +174,7 @@ export async function setupTestBed(options: TestSetupOptions = {}): Promise<Test
   if (includeTranslate) {
     config.imports!.push(
       TranslateModule.forRoot({
-        loader: { provide: TranslateLoader, useClass: TranslateFakeLoader },
+        loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
       })
     );
   }
@@ -208,7 +220,7 @@ export async function setupTestBed(options: TestSetupOptions = {}): Promise<Test
  */
 export function getTranslateModuleForTesting() {
   return TranslateModule.forRoot({
-    loader: { provide: TranslateLoader, useClass: TranslateFakeLoader },
+    loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
   });
 }
 

@@ -1,265 +1,269 @@
-/**
- * Capacitor HTTP Service
- *
- * Wrapper around CapacitorHttp to provide native HTTP requests that bypass CORS.
- * Falls back to Angular HttpClient for web platform.
- *
- * @see https://capacitorjs.com/docs/apis/http
- */
-
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Capacitor } from '@capacitor/core';
-import { CapacitorHttp, HttpOptions, HttpResponse } from '@capacitor/core';
-import { Observable, from, firstValueFrom } from 'rxjs';
-import { map } from 'rxjs/operators';
-
-/**
- * HTTP request options compatible with both CapacitorHttp and HttpClient
- */
-export interface CapacitorHttpRequestOptions {
-  url: string;
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-  params?: HttpParams | { [param: string]: string | string[] };
-  headers?: HttpHeaders | { [header: string]: string | string[] };
-  data?: any;
-  responseType?: 'json' | 'text' | 'blob' | 'arraybuffer';
-}
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { CapacitorHttp, HttpResponse } from '@capacitor/core';
+import { Platform } from '@ionic/angular';
+import { Observable, from, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CapacitorHttpService {
-  private readonly isNative = Capacitor.isNativePlatform();
-
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private platform: Platform
+  ) {}
 
   /**
-   * Perform GET request
+   * Detecta si debe usar HTTP nativo (mobile) o Angular HTTP (web)
    */
-  get<T = any>(
-    url: string,
-    options?: Omit<CapacitorHttpRequestOptions, 'url' | 'method'>
-  ): Observable<T> {
-    return this.request<T>({ ...options, url, method: 'GET' });
+  private shouldUseNativeHttp(): boolean {
+    return this.platform.is('capacitor') && !this.platform.is('mobileweb');
   }
 
   /**
-   * Perform POST request
+   * GET request híbrido
    */
-  post<T = any>(
-    url: string,
-    data?: any,
-    options?: Omit<CapacitorHttpRequestOptions, 'url' | 'method' | 'data'>
-  ): Observable<T> {
-    return this.request<T>({ ...options, url, method: 'POST', data });
+  get<T>(url: string, options?: { headers?: any }): Observable<T> {
+    if (this.shouldUseNativeHttp()) {
+      return this.nativeGet<T>(url, options);
+    }
+    return this.http.get<T>(url, options);
   }
 
   /**
-   * Perform PUT request
+   * POST request híbrido
    */
-  put<T = any>(
-    url: string,
-    data?: any,
-    options?: Omit<CapacitorHttpRequestOptions, 'url' | 'method' | 'data'>
-  ): Observable<T> {
-    return this.request<T>({ ...options, url, method: 'PUT', data });
+  post<T>(url: string, data: any, options?: { headers?: any }): Observable<T> {
+    if (this.shouldUseNativeHttp()) {
+      return this.nativePost<T>(url, data, options);
+    }
+    return this.http.post<T>(url, data, options);
   }
 
   /**
-   * Perform DELETE request
+   * PUT request híbrido
    */
-  delete<T = any>(
-    url: string,
-    options?: Omit<CapacitorHttpRequestOptions, 'url' | 'method'>
-  ): Observable<T> {
-    return this.request<T>({ ...options, url, method: 'DELETE' });
+  put<T>(url: string, data: any, options?: { headers?: any }): Observable<T> {
+    if (this.shouldUseNativeHttp()) {
+      return this.nativePut<T>(url, data, options);
+    }
+    return this.http.put<T>(url, data, options);
   }
 
   /**
-   * Perform PATCH request
+   * DELETE request híbrido
    */
-  patch<T = any>(
-    url: string,
-    data?: any,
-    options?: Omit<CapacitorHttpRequestOptions, 'url' | 'method' | 'data'>
-  ): Observable<T> {
-    return this.request<T>({ ...options, url, method: 'PATCH', data });
+  delete<T>(url: string, options?: { headers?: any }): Observable<T> {
+    if (this.shouldUseNativeHttp()) {
+      return this.nativeDelete<T>(url, options);
+    }
+    return this.http.delete<T>(url, options);
   }
 
   /**
-   * Perform HTTP request
-   *
-   * Uses native CapacitorHttp on native platforms (bypasses CORS)
-   * Falls back to Angular HttpClient on web platform
+   * PATCH request híbrido
    */
-  request<T = any>(options: CapacitorHttpRequestOptions): Observable<T> {
-    if (this.isNative) {
-      // Use native HTTP (no CORS restrictions)
-      return from(this.nativeRequest<T>(options));
+  patch<T>(url: string, data: any, options?: { headers?: any }): Observable<T> {
+    if (this.shouldUseNativeHttp()) {
+      return this.nativePatch<T>(url, data, options);
+    }
+    return this.http.patch<T>(url, data, options);
+  }
+
+  /**
+   * Native GET usando CapacitorHttp
+   */
+  private nativeGet<T>(url: string, options?: { headers?: any }): Observable<T> {
+    console.log('🔵 [Native HTTP] GET', url);
+
+    const headers = this.convertHeaders(options?.headers);
+
+    return from(
+      CapacitorHttp.get({
+        url,
+        headers,
+      })
+    ).pipe(
+      map((response: HttpResponse) => {
+        console.log('✅ [Native HTTP] Response', response.status, response.data);
+
+        if (response.status >= 200 && response.status < 300) {
+          return response.data as T;
+        }
+
+        throw {
+          status: response.status,
+          error: response.data,
+          message: `HTTP ${response.status}`,
+        };
+      }),
+      catchError(error => {
+        console.error('❌ [Native HTTP] Error', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Native POST usando CapacitorHttp
+   */
+  private nativePost<T>(url: string, data: any, options?: { headers?: any }): Observable<T> {
+    console.log('🔵 [Native HTTP] POST', url, data);
+
+    const headers = this.convertHeaders(options?.headers);
+
+    // Si es form data (como login), convertir a x-www-form-urlencoded
+    let bodyData: any;
+    let finalHeaders = { ...headers };
+
+    if (headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+      // data ya viene como URLSearchParams string
+      bodyData = data;
     } else {
-      // Use Angular HttpClient for web
-      return this.webRequest<T>(options);
+      // JSON data
+      bodyData = data;
+      finalHeaders['Content-Type'] = 'application/json';
     }
+
+    return from(
+      CapacitorHttp.post({
+        url,
+        headers: finalHeaders,
+        data: bodyData,
+      })
+    ).pipe(
+      map((response: HttpResponse) => {
+        console.log('✅ [Native HTTP] Response', response.status, response.data);
+
+        if (response.status >= 200 && response.status < 300) {
+          return response.data as T;
+        }
+
+        throw {
+          status: response.status,
+          error: response.data,
+          message: `HTTP ${response.status}`,
+        };
+      }),
+      catchError(error => {
+        console.error('❌ [Native HTTP] Error', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   /**
-   * Native HTTP request using CapacitorHttp
+   * Native PUT usando CapacitorHttp
    */
-  private async nativeRequest<T>(options: CapacitorHttpRequestOptions): Promise<T> {
-    // Convert Angular HttpHeaders/HttpParams to plain objects
-    const headers = this.convertHeaders(options.headers);
-    const params = this.convertParams(options.params);
+  private nativePut<T>(url: string, data: any, options?: { headers?: any }): Observable<T> {
+    console.log('🔵 [Native HTTP] PUT', url, data);
 
-    // Build URL with query parameters
-    let url = options.url;
-    if (params && Object.keys(params).length > 0) {
-      const queryString = Object.entries(params)
-        .map(([key, value]) => {
-          if (Array.isArray(value)) {
-            return value.map(v => `${encodeURIComponent(key)}=${encodeURIComponent(v)}`).join('&');
-          }
-          return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
-        })
-        .join('&');
-      url = `${url}?${queryString}`;
-    }
-
-    // Prepare CapacitorHttp options
-    const httpOptions: HttpOptions = {
-      url,
-      method: options.method || 'GET',
-      headers,
+    const headers = this.convertHeaders(options?.headers);
+    const finalHeaders = {
+      ...headers,
+      'Content-Type': headers['Content-Type'] || 'application/json',
     };
 
-    // Add request body for POST/PUT/PATCH
-    if (
-      options.data &&
-      (options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH')
-    ) {
-      // Check if data is already a string (e.g., URL-encoded form data)
-      if (typeof options.data === 'string') {
-        httpOptions.data = options.data;
-      } else {
-        // Otherwise, send as JSON
-        httpOptions.data = options.data;
-      }
-    }
-
-    try {
-      const response: HttpResponse = await CapacitorHttp.request(httpOptions);
-
-      // Handle response based on type
-      if (options.responseType === 'text') {
-        return response.data as T;
-      } else if (options.responseType === 'blob' || options.responseType === 'arraybuffer') {
-        // For blob/arraybuffer, return the data as-is
-        return response.data as T;
-      } else {
-        // Default: JSON response
-        // CapacitorHttp automatically parses JSON
-        return response.data as T;
-      }
-    } catch (error: any) {
-      // Convert CapacitorHttp error to match HttpClient error format
-      throw {
-        status: error.status || 0,
-        statusText: error.message || 'Unknown Error',
-        message: error.message || 'HTTP request failed',
-        error: error,
-      };
-    }
+    return from(
+      CapacitorHttp.put({
+        url,
+        headers: finalHeaders,
+        data: data,
+      })
+    ).pipe(
+      map((response: HttpResponse) => {
+        console.log('✅ [Native HTTP] Response', response.status, response.data);
+        if (response.status >= 200 && response.status < 300) {
+          return response.data as T;
+        }
+        throw { status: response.status, error: response.data, message: `HTTP ${response.status}` };
+      }),
+      catchError(error => {
+        console.error('❌ [Native HTTP] Error', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   /**
-   * Web HTTP request using Angular HttpClient
+   * Native DELETE usando CapacitorHttp
    */
-  private webRequest<T>(options: CapacitorHttpRequestOptions): Observable<T> {
-    const method = options.method || 'GET';
-    const httpOptions = {
-      headers: options.headers,
-      params: options.params,
-      responseType: (options.responseType || 'json') as 'json',
-      observe: 'body' as const,
+  private nativeDelete<T>(url: string, options?: { headers?: any }): Observable<T> {
+    console.log('🔵 [Native HTTP] DELETE', url);
+
+    const headers = this.convertHeaders(options?.headers);
+
+    return from(
+      CapacitorHttp.delete({
+        url,
+        headers,
+      })
+    ).pipe(
+      map((response: HttpResponse) => {
+        console.log('✅ [Native HTTP] Response', response.status, response.data);
+        if (response.status >= 200 && response.status < 300) {
+          return response.data as T;
+        }
+        throw { status: response.status, error: response.data, message: `HTTP ${response.status}` };
+      }),
+      catchError(error => {
+        console.error('❌ [Native HTTP] Error', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Native PATCH usando CapacitorHttp
+   */
+  private nativePatch<T>(url: string, data: any, options?: { headers?: any }): Observable<T> {
+    console.log('🔵 [Native HTTP] PATCH', url, data);
+
+    const headers = this.convertHeaders(options?.headers);
+    const finalHeaders = {
+      ...headers,
+      'Content-Type': headers['Content-Type'] || 'application/json',
     };
 
-    switch (method) {
-      case 'GET':
-        return this.http.get<T>(options.url, httpOptions) as Observable<T>;
-      case 'POST':
-        return this.http.post<T>(options.url, options.data, httpOptions) as Observable<T>;
-      case 'PUT':
-        return this.http.put<T>(options.url, options.data, httpOptions) as Observable<T>;
-      case 'DELETE':
-        return this.http.delete<T>(options.url, httpOptions) as Observable<T>;
-      case 'PATCH':
-        return this.http.patch<T>(options.url, options.data, httpOptions) as Observable<T>;
-      default:
-        throw new Error(`Unsupported method: ${method}`);
-    }
+    return from(
+      CapacitorHttp.patch({
+        url,
+        headers: finalHeaders,
+        data: data,
+      })
+    ).pipe(
+      map((response: HttpResponse) => {
+        console.log('✅ [Native HTTP] Response', response.status, response.data);
+        if (response.status >= 200 && response.status < 300) {
+          return response.data as T;
+        }
+        throw { status: response.status, error: response.data, message: `HTTP ${response.status}` };
+      }),
+      catchError(error => {
+        console.error('❌ [Native HTTP] Error', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   /**
-   * Convert Angular HttpHeaders to plain object
+   * Convierte Angular HttpHeaders a objeto simple
    */
-  private convertHeaders(headers?: HttpHeaders | { [header: string]: string | string[] }): {
-    [key: string]: string;
-  } {
-    if (!headers) {
-      return {};
-    }
+  private convertHeaders(headers?: HttpHeaders | any): { [key: string]: string } {
+    if (!headers) return {};
 
     if (headers instanceof HttpHeaders) {
       const result: { [key: string]: string } = {};
       headers.keys().forEach(key => {
-        const values = headers.getAll(key);
-        if (values && values.length > 0) {
-          result[key] = values.join(', ');
+        const value = headers.get(key);
+        if (value) {
+          result[key] = value;
         }
       });
       return result;
     }
 
-    // Convert string[] to comma-separated string
-    const result: { [key: string]: string } = {};
-    Object.entries(headers).forEach(([key, value]) => {
-      if (Array.isArray(value)) {
-        result[key] = value.join(', ');
-      } else {
-        result[key] = value;
-      }
-    });
-    return result;
-  }
-
-  /**
-   * Convert Angular HttpParams to plain object
-   */
-  private convertParams(params?: HttpParams | { [param: string]: string | string[] }): {
-    [key: string]: string | string[];
-  } {
-    if (!params) {
-      return {};
-    }
-
-    if (params instanceof HttpParams) {
-      const result: { [key: string]: string | string[] } = {};
-      params.keys().forEach(key => {
-        const values = params.getAll(key);
-        if (values) {
-          result[key] = values.length === 1 ? values[0] : values;
-        }
-      });
-      return result;
-    }
-
-    return params;
-  }
-
-  /**
-   * Check if running on native platform
-   */
-  isNativePlatform(): boolean {
-    return this.isNative;
+    return headers;
   }
 }

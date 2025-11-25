@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
+import { API_GATEWAY_BASE_URL, getApiGatewayOverride } from '../../shared/config/api-base-url';
 
 @Injectable({
   providedIn: 'root',
@@ -13,19 +14,37 @@ export class PlatformDetectorService {
    * @param defaultUrl The default URL to use (usually localhost:8000)
    * @returns The appropriate base URL for the current platform
    */
-  getApiBaseUrl(defaultUrl: string = 'http://localhost:8000'): string {
+  getApiBaseUrl(defaultUrl: string = API_GATEWAY_BASE_URL): string {
+    const override = getApiGatewayOverride();
+    if (override) {
+      return override;
+    }
+
     // Check if running in Capacitor
     if (Capacitor.isNativePlatform()) {
       const platform = Capacitor.getPlatform();
 
-      // Android emulator needs special URL to access host machine
+      // Android emulator/device configuration
       if (platform === 'android') {
-        // Check if it's an emulator by looking at the device info
-        // Android emulator should use 10.0.2.2 to access host machine
+        // If defaultUrl is a cloud URL (HTTPS), use it directly
+        // This handles cases where we want to use Heroku/cloud backend
+        if (
+          defaultUrl.startsWith('https://') ||
+          (defaultUrl.startsWith('http') && !defaultUrl.includes('localhost'))
+        ) {
+          console.log('🌐 [PLATFORM] Using cloud backend for Android:', defaultUrl);
+          return defaultUrl;
+        }
+
+        // For local development: Check if it's an emulator
+        // Android emulator needs 10.0.2.2 to access host machine
         if (this.isAndroidEmulator()) {
+          console.log('🔧 [PLATFORM] Android emulator detected, using localhost redirect');
           return 'http://10.0.2.2:8000';
         }
-        // Real Android device - use actual server URL
+
+        // Real Android device with local backend - can't access localhost
+        console.warn('⚠️ [PLATFORM] Real Android device cannot access localhost backend');
         return this.getProductionUrl() || defaultUrl;
       }
 

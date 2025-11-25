@@ -10,7 +10,7 @@
  * This ensures robust authentication flow across all API requests.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import {
   HttpRequest,
   HttpHandler,
@@ -19,18 +19,9 @@ import {
   HttpErrorResponse,
 } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError, timer } from 'rxjs';
-import { catchError, filter, take, switchMap, retryWhen, mergeMap, finalize } from 'rxjs/operators';
+import { catchError, filter, take, switchMap, retryWhen, mergeMap, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
-
-/**
- * Interface for auth service to avoid circular dependency
- * The actual auth service should implement this
- */
-export interface AuthServiceInterface {
-  getAccessToken(): Observable<string | null>;
-  refreshToken(): Observable<{ accessToken: string }>;
-  logout(): Promise<void>;
-}
+import { LocalAuthService } from '../services/local-auth.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -44,7 +35,10 @@ export class AuthInterceptor implements HttpInterceptor {
   private readonly maxRetries = 3;
   private readonly maxDelay = 30000; // 30 second max delay
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: LocalAuthService
+  ) {}
 
   /**
    * Intercept HTTP requests to add authentication and handle errors
@@ -92,23 +86,19 @@ export class AuthInterceptor implements HttpInterceptor {
       this.isRefreshing = true;
       this.refreshTokenSubject.next(null);
 
-      // TODO: Inject auth service when available
-      // For now, redirect to login
-      this.isRefreshing = false;
-      this.router.navigate(['/welcome']);
-      return throwError(() => new Error('Authentication required'));
-
-      /*
-      // Full implementation when auth service is ready:
-      return this.authService.refreshToken().pipe(
-        switchMap((tokens: { accessToken: string }) => {
+      return this.authService.refreshAccessToken().pipe(
+        switchMap(authState => {
           this.isRefreshing = false;
-          this.refreshTokenSubject.next(tokens.accessToken);
+          if (!authState.accessToken) {
+            return throwError(() => new Error('No access token after refresh'));
+          }
+
+          this.refreshTokenSubject.next(authState.accessToken);
 
           // Retry the original request with new token
-          return next.handle(this.addTokenToRequest(request, tokens.accessToken));
+          return next.handle(this.addTokenToRequest(request, authState.accessToken));
         }),
-        catchError((err) => {
+        catchError(err => {
           this.isRefreshing = false;
           this.refreshTokenSubject.next(null);
 
@@ -120,7 +110,6 @@ export class AuthInterceptor implements HttpInterceptor {
           return throwError(() => err);
         })
       );
-      */
     } else {
       // Refresh already in progress, queue this request
       return this.refreshTokenSubject.pipe(

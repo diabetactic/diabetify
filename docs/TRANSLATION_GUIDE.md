@@ -1,10 +1,10 @@
-# Translation Guide - Diabetify
+# Translation Guide - Diabetactic
 
-Multi-language support implementation and workflow for the Diabetify application.
+Multi-language support implementation and workflow for the Diabetactic application.
 
 ## Overview
 
-Diabetify supports multiple languages with automatic device language detection:
+Diabetactic supports multiple languages with automatic device language detection:
 - **English (en)** - Default language
 - **Spanish (es)** - Full translation
 
