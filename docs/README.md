@@ -1,108 +1,52 @@
-# Diabetactic Documentation
+# Documentación - Diabetactic
 
-Comprehensive documentation for the Diabetactic mobile health application.
+Documentación del proyecto Diabetactic, aplicación móvil para gestión de diabetes.
 
-## 📚 Documentation Index
+## Índice de Documentación
 
-### Getting Started
-- **[Main README](../README.md)** - Project overview, quick start, and basic commands
-- **[CLAUDE.md](../CLAUDE.md)** - AI agent development guide and MCP server reference
-- **[Demo Credentials](./DEMO_CREDENTIALS.md)** - Test accounts and API credentials
+### Guías Principales
 
-### Architecture
-- **[Architecture Overview](./architecture/ARCHITECTURE.md)** - System architecture, patterns, and design decisions
-- **[External Services](./api-reference/EXTERNAL_SERVICES.md)** - Backend microservices architecture
+| Documento | Descripción |
+|-----------|-------------|
+| [README Principal](../README.md) | Visión general del proyecto e instalación |
+| [Arquitectura](./ARCHITECTURE.md) | Arquitectura del sistema y patrones de diseño |
+| [Guía de Estilos](./STYLING_GUIDE.md) | Convenciones de CSS y componentes UI |
+| [Guía de Testing](./TESTING_GUIDE.md) | Estrategias de testing (unitarios, E2E) |
+| [Guía de Traducciones](./TRANSLATION_GUIDE.md) | Implementación de i18n |
 
-### Development Guides
-- **[Testing Guide](./testing/TESTING_GUIDE.md)** - Comprehensive testing strategies (unit, E2E, mobile)
-- **[Translation Guide](./development/TRANSLATION_GUIDE.md)** - i18n implementation and workflow
-
-### API Reference
-- **[Tidepool API](./api-reference/TIDEPOOL_API_REFERENCE.md)** - Tidepool integration documentation
-- **[Readings Reference](./api-reference/READINGS_REFERENCE.md)** - Glucose readings data model
-- **[External Services](./api-reference/EXTERNAL_SERVICES.md)** - Backend microservices API
-
-### Agent Development (Advanced)
-- **[Agent Reference](./agent-reference/DIABETIFY_AGENT_REFERENCE.md)** - Claude agent types and workflows
-- **[Claude-Flow Guide](./agent-reference/CLAUDE_FLOW_DIABETIFY_GUIDE.md)** - Multi-agent orchestration
-- **[SPARC Methodology](./agent-reference/SPARC_ANALYSIS_HEALTHCARE.md)** - Healthcare-focused development methodology
-
-## 🚀 Quick Links
-
-### For Developers
-- [Quick Start](../README.md#quick-start)
-- [Available Commands](../README.md#available-scripts)
-- [Testing Strategy](./testing/TESTING_GUIDE.md)
-- [Code Quality](../README.md#code-quality)
-
-### For AI Agents
-- [CLAUDE.md Development Rules](../CLAUDE.md)
-- [MCP Server Reference](../CLAUDE.md#development-mcp-servers)
-- [Agent Orchestration](./agent-reference/CLAUDE_FLOW_DIABETIFY_GUIDE.md)
-- [SPARC Workflow](./agent-reference/SPARC_ANALYSIS_HEALTHCARE.md)
-
-### API Integration
-- [Tidepool OAuth Integration](./api-reference/TIDEPOOL_API_REFERENCE.md)
-- [Backend Services](./api-reference/EXTERNAL_SERVICES.md)
-- [Data Models](./api-reference/READINGS_REFERENCE.md)
-
-## 📱 Project Structure
+## Estructura del Proyecto
 
 ```
 diabetactic/
 ├── src/app/
-│   ├── core/          # Services, guards, interceptors
-│   ├── shared/        # Reusable components
-│   ├── dashboard/     # Main dashboard
-│   ├── readings/      # Glucose readings
-│   ├── appointments/  # Tele-appointments
-│   └── profile/       # User profile
-├── docs/              # This documentation
-├── playwright/tests/  # E2E tests
-├── specs/            # Feature specifications
-└── CLAUDE.md         # AI development guide
+│   ├── core/          # Servicios, guards, interceptores
+│   ├── shared/        # Componentes reutilizables
+│   ├── dashboard/     # Panel principal
+│   ├── readings/      # Lecturas de glucosa
+│   ├── appointments/  # Citas médicas
+│   └── profile/       # Perfil de usuario
+├── docs/              # Esta documentación
+├── playwright/tests/  # Tests E2E
+└── maestro/           # Tests móviles
 ```
 
-## 🧪 Testing Documentation
+## Enlaces Rápidos
 
-- **[Testing Guide](./testing/TESTING_GUIDE.md)** - Complete testing reference
-  - Unit testing with Jasmine/Karma
-  - E2E testing with Playwright
-  - Mobile testing strategies
-  - Test isolation and performance
+### Desarrollo
+- [Instalación](../README.md#instalación)
+- [Scripts Disponibles](../README.md#scripts-disponibles)
+- [Estructura del Proyecto](../README.md#estructura-del-proyecto)
 
-## 🌐 Translation & i18n
+### Testing
+- [Tests Unitarios](./TESTING_GUIDE.md#tests-unitarios)
+- [Tests E2E](./TESTING_GUIDE.md#tests-e2e)
+- [Testing Móvil](./TESTING_GUIDE.md#testing-móvil)
 
-- **[Translation Guide](./development/TRANSLATION_GUIDE.md)** - Multi-language support
-  - Adding new translations
-  - Language detection
-  - Testing translations
-  - Missing translation detection
+### Estilos
+- [Tailwind CSS](./STYLING_GUIDE.md#stack-de-estilos)
+- [Modo Oscuro](./STYLING_GUIDE.md#modo-oscuro)
+- [Patrones Comunes](./STYLING_GUIDE.md#patrones-comunes)
 
-## 🏗️ Architecture & Design
+## Soporte
 
-- **[Architecture Overview](./architecture/ARCHITECTURE.md)** - System design
-  - API Gateway pattern
-  - Service architecture
-  - Data flow
-  - Offline-first strategy
-
-## 🤖 AI Agent Development
-
-For AI-powered development workflows:
-
-1. **Start here**: [CLAUDE.md](../CLAUDE.md)
-2. **Agent types**: [Agent Reference](./agent-reference/DIABETIFY_AGENT_REFERENCE.md)
-3. **Orchestration**: [Claude-Flow Guide](./agent-reference/CLAUDE_FLOW_DIABETIFY_GUIDE.md)
-4. **Methodology**: [SPARC Analysis](./agent-reference/SPARC_ANALYSIS_HEALTHCARE.md)
-
-## 📞 Support
-
-For issues and questions:
-- Check the [Testing Guide](./testing/TESTING_GUIDE.md) for test failures
-- Review [CLAUDE.md](../CLAUDE.md) troubleshooting section
-- See [Architecture docs](./architecture/ARCHITECTURE.md) for design decisions
-
-## 📄 License
-
-This project is proprietary software for healthcare use.
+Para dudas sobre el proyecto, consultar la documentación correspondiente o contactar al equipo de desarrollo.
