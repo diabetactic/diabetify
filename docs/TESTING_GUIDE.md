@@ -1,85 +1,43 @@
-# Testing Guide - Diabetactic
+# Guía de Testing - Diabetactic
 
-Comprehensive testing strategy for the Diabetactic mobile health application.
+## Stack de Testing
 
-## Testing Stack
+- **Tests Unitarios**: Jasmine + Karma
+- **Tests E2E**: Playwright
+- **Testing Móvil**: Capacitor + ADB
 
-- **Unit Tests**: Jasmine + Karma
-- **E2E Tests**: Playwright
-- **Mobile Testing**: Capacitor + ADB
-- **CI/CD**: GitHub Actions
-
-## Quick Reference
+## Comandos Rápidos
 
 ```bash
-# Unit Testing
-npm test                        # Watch mode
-npm run test:ci                 # CI mode (headless)
-npm run test:coverage           # With coverage report
+# Tests Unitarios
+npm test                        # Modo watch
+npm run test:ci                 # Modo CI (headless)
+npm run test:coverage           # Con reporte de cobertura
 
-# Targeted Test Runs (Faster)
-karma start karma-auth-only.conf.js         # Auth services only
-karma start karma-appointments-only.conf.js  # Appointments only
-
-# E2E Testing
+# Tests E2E
 npm run test:e2e                # Headless
-npm run test:e2e:headed         # With visible browser
+npm run test:e2e:headed         # Con navegador visible
 
-# Mobile Testing
-npm run cap:run:android         # Run on device
-# Use android-adb MCP for screenshots/debugging
-# Use BrowserStack MCP for cross-device testing
-
-# Backend Integration (optional)
-npm run test:integration                 # Requires backend services (local or remote)
-npm run test:integration:coverage        # Same, with coverage enabled
+# Testing Móvil
+npm run cap:run:android         # Ejecutar en dispositivo
 ```
 
-## Backend Integration Tests
+## Tests Unitarios
 
-The suites under `src/app/tests/integration` hit the real Dockerized services (api-gateway, appointments, etc.). They are **excluded from the default Karma target** so `npm run test` and `npm run test:ci` stay fast and do not require Docker.
-
-To run them:
-
-1. Start the backend stack (from another terminal):
-   ```bash
-   npm run backend:start   # or use the extServicesCompose scripts you prefer
-   ```
-2. Run the dedicated integration target (optionally overriding the API gateway URL):
-   ```bash
-   npm run test:integration
-   # or target a remote stack
-   API_GATEWAY_URL=https://your-heroku-app.herokuapp.com npm run test:integration
-   # or, if you need coverage
-   npm run test:integration:coverage
-   ```
-
-Those suites are never compiled during the default `npm run test`, so there is nothing else to toggle.
-
-### Test Console Noise
-
-Console output from hundreds of specs can drown the summary. By default we now reduce Karma’s browser console logs to `warn` level. Set `KARMA_CONSOLE_LEVEL=log` (and optionally `KARMA_CAPTURE_CONSOLE=true`) if you need the old verbose output for debugging:
-
-```bash
-KARMA_CONSOLE_LEVEL=log KARMA_CAPTURE_CONSOLE=true npm run test
-```
-
-## Unit Testing
-
-### Test Structure
+### Estructura de Test
 
 ```typescript
-describe('ServiceName', () => {
-  let service: ServiceName;
+describe('NombreServicio', () => {
+  let service: NombreServicio;
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [ServiceName]
+      providers: [NombreServicio]
     });
 
-    service = TestBed.inject(ServiceName);
+    service = TestBed.inject(NombreServicio);
     httpMock = TestBed.inject(HttpTestingController);
   });
 
@@ -87,52 +45,51 @@ describe('ServiceName', () => {
     httpMock.verify();
   });
 
-  it('should be created', () => {
+  it('debería ser creado', () => {
     expect(service).toBeTruthy();
   });
 });
 ```
 
-### Best Practices
+### Buenas Prácticas
 
-1. **Isolation**: Each test should be independent
-2. **Mocking**: Mock external dependencies
-3. **Coverage**: Aim for 80%+ coverage
-4. **Fast**: Keep tests under 5s total runtime
-5. **Descriptive**: Clear test names
+1. **Aislamiento**: Cada test debe ser independiente
+2. **Mocking**: Simular dependencias externas
+3. **Cobertura**: Apuntar a 80%+ de cobertura
+4. **Velocidad**: Tests en menos de 5s total
+5. **Descriptivo**: Nombres de tests claros
 
-### Common Patterns
+### Patrones Comunes
 
 ```typescript
-// Mock HTTP responses
+// Mock de respuestas HTTP
 httpMock.expectOne('/api/endpoint').flush(mockData);
 
-// Test async operations
+// Test de operaciones async
 await expectAsync(service.method()).toBeResolved();
 
-// Test error handling
+// Test de manejo de errores
 httpMock.expectOne('/api/endpoint').error(
-  new ErrorEvent('Network error')
+  new ErrorEvent('Error de red')
 );
 ```
 
-## E2E Testing
+## Tests E2E
 
-### Playwright Configuration
+### Configuración Playwright
 
-Located in `playwright.config.ts`:
-- Base URL: `http://localhost:4200`
-- Test directory: `playwright/tests/`
-- Timeout: 30s per test
-- Screenshots on failure
-- Video on retry
+- URL Base: `http://localhost:4200`
+- Directorio: `playwright/tests/`
+- Timeout: 30s por test
+- Screenshots en falla
+- Video en reintento
 
-### Writing E2E Tests
+### Escribiendo Tests E2E
 
 ```typescript
 import { test, expect } from '@playwright/test';
 
-test('user can login', async ({ page }) => {
+test('usuario puede iniciar sesión', async ({ page }) => {
   await page.goto('/');
 
   await page.fill('input[name="email"]', 'test@example.com');
@@ -140,11 +97,11 @@ test('user can login', async ({ page }) => {
   await page.click('button[type="submit"]');
 
   await expect(page).toHaveURL('/dashboard');
-  await expect(page.locator('h1')).toContainText('Welcome');
+  await expect(page.locator('h1')).toContainText('Bienvenido');
 });
 ```
 
-### Page Object Pattern
+### Patrón Page Object
 
 ```typescript
 // playwright/pages/login.page.ts
@@ -159,152 +116,94 @@ export class LoginPage {
 }
 ```
 
-## Mobile Testing
+## Testing Móvil
 
-### Android Testing with ADB
+### Android con ADB
 
 ```bash
-# List connected devices
+# Listar dispositivos
 adb devices
 
-# Install APK
+# Instalar APK
 adb install android/app/build/outputs/apk/debug/app-debug.apk
 
-# Take screenshot
+# Capturar screenshot
 adb exec-out screencap -p > screenshot.png
 
-# View logs
+# Ver logs
 adb logcat | grep diabetactic
 ```
 
-### Cross-Device Testing
-
-Use BrowserStack MCP for testing on real devices:
-- Multiple Android versions
-- Multiple iOS versions
-- Different screen sizes
-- Various device manufacturers
-
-See [CLAUDE.md](../CLAUDE.md#5-browserstack---cross-device-testing) for BrowserStack integration.
-
-## Test Data
+## Datos de Test
 
 ### Mock Data
 
-Located in `src/assets/mocks/`:
+Ubicación: `src/assets/mocks/`
 - `glucose-readings.json`
 - `user-profiles.json`
 - `appointments.json`
 
-### Test Environments
+### Entornos de Test
 
 ```typescript
 // src/environments/environment.test.ts
 export const environment = {
   production: false,
   useMockData: true,
-  apiUrl: 'http://localhost:3000/api',
-  ...
+  apiUrl: 'http://localhost:3000/api'
 };
 ```
 
-## Continuous Integration
+## Debugging
 
-Tests run automatically on:
-- Pull requests
-- Commits to main branch
-- Nightly builds
-
-### GitHub Actions Workflow
-
-```yaml
-- name: Run tests
-  run: npm run test:ci
-
-- name: E2E tests
-  run: npm run test:e2e
-
-- name: Upload coverage
-  uses: codecov/codecov-action@v3
-```
-
-## Debugging Tests
-
-### Unit Test Debugging
+### Tests Unitarios
 
 ```bash
-# Run specific test file
+# Ejecutar archivo específico
 npm test -- --include='**/auth.service.spec.ts'
 
-# Debug mode
+# Modo debug
 npm test -- --browsers=Chrome --watch
 ```
 
-### E2E Test Debugging
+### Tests E2E
 
 ```bash
-# Run with browser visible
+# Con navegador visible
 npm run test:e2e:headed
 
-# Run specific test
+# Test específico
 npx playwright test tests/login.spec.ts
 
-# Debug mode
+# Modo debug
 npx playwright test --debug
 ```
 
-## Coverage Requirements
+## Requisitos de Cobertura
 
-- **Services**: 90% coverage minimum
-- **Components**: 80% coverage minimum
-- **Overall**: 85% coverage target
+- **Servicios**: 90% mínimo
+- **Componentes**: 80% mínimo
+- **General**: 85% objetivo
 
-Check coverage:
+Verificar cobertura:
 ```bash
 npm run test:coverage
 open coverage/index.html
 ```
 
-## Common Issues
+## Problemas Comunes
 
-### Timeout Errors
-- Increase timeout in test: `jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000`
-- Check for unresolved promises
-- Mock slow HTTP calls
+### Errores de Timeout
+- Aumentar timeout: `jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000`
+- Verificar promises sin resolver
+- Mockear llamadas HTTP lentas
 
-### Flaky Tests
-- Avoid hard-coded waits
-- Use `waitForAsync()` for async operations
-- Ensure proper test isolation
+### Tests Inestables
+- Evitar waits hardcodeados
+- Usar `waitForAsync()` para operaciones async
+- Asegurar aislamiento de tests
 
 ### Memory Leaks
-- Clean up subscriptions in `afterEach()`
-- Destroy components properly
-- Clear timers and intervals
-
-## MCP Testing Tools
-
-### Playwright MCP
-For browser automation and E2E testing:
-```javascript
-mcp__playwright__browser_navigate { url: "http://localhost:4200" }
-mcp__playwright__browser_snapshot {}
-mcp__playwright__browser_click { element: "Login", ref: "#login-btn" }
-```
-
-### Android-ADB MCP
-For mobile testing:
-```javascript
-mcp__android-adb__adb_devices {}
-mcp__android-adb__launch_app { package_name: "com.diabetactic.app" }
-mcp__android-adb__take_screenshot_and_save { output_path: "test.png" }
-```
-
-See [CLAUDE.md](../CLAUDE.md#development-mcp-servers) for complete MCP reference.
-
-## Resources
-
-- [Jasmine Documentation](https://jasmine.github.io/)
-- [Playwright Documentation](https://playwright.dev/)
-- [Angular Testing Guide](https://angular.dev/guide/testing)
-- [Ionic Testing Best Practices](https://ionicframework.com/docs/angular/testing)
+- Limpiar suscripciones en `afterEach()`
+- Destruir componentes correctamente
+- Limpiar timers e intervals

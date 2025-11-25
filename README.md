@@ -161,8 +161,4 @@ El proyecto soporta múltiples entornos:
 
 ## Autores
 
-Trabajo Profesional - Facultad de Ingeniería
-
-## Licencia
-
-Este proyecto es parte de un trabajo académico.
+Trabajo Profesional - FIUBA
