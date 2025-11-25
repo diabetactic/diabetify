@@ -1,18 +1,14 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Mobile MCP Appointment Creation Flow Test
+ * Appointment Creation Flow Test
  *
  * Tests the complete appointment creation flow:
- * 1. Launch app on Android device
- * 2. Login with test credentials (DNI: 1000, Password: tuvieja)
- * 3. Navigate to appointments tab
- * 4. Create appointment via API
- * 5. Verify appointment appears in app
- * 6. Submit to queue
- * 7. Verify queue status
- *
- * Uses: mobile-mcp tools for device interaction
+ * 1. Authenticate with test credentials
+ * 2. Create appointment via API
+ * 3. Verify appointment appears in list
+ * 4. Submit to queue
+ * 5. Verify queue status
  */
 
 const API_GATEWAY_BASE_URL = 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
@@ -20,7 +16,7 @@ const API_GATEWAY_BASE_URL = 'https://diabetactic-api-gateway-37949d6f182f.herok
 const LOGIN_DNI = '1002';
 const LOGIN_PASSWORD = 'tuvieja';
 
-test.describe('Appointment Creation Flow - Mobile MCP', () => {
+test.describe('Appointment Creation Flow', () => {
   let accessToken: string | null = null;
   let userId: string | null = null;
   let appointmentId: string | null = null;
