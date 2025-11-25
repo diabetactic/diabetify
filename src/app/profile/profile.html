@@ -5,7 +5,7 @@
 </ion-header>
 
 <ion-content class="profile-content" [fullscreen]="true">
-  <div class="flex flex-col gap-4 px-4 pt-6 pb-8">
+  <div class="flex flex-col gap-4 px-4 pb-8 pt-6">
     <section class="profile-hero">
       <div class="avatar-wrapper">
         <ion-avatar class="hero-avatar">
@@ -13,6 +13,24 @@
           </ion-icon>
           <img *ngIf="avatarUrl" [src]="avatarUrl" alt="User avatar" />
         </ion-avatar>
+        <input
+          #avatarInput
+          type="file"
+          accept="image/*"
+          hidden
+          (change)="onAvatarSelected($event)"
+        />
+        <ion-button
+          fill="outline"
+          size="small"
+          color="light"
+          class="change-photo-btn"
+          (click)="triggerAvatarUpload()"
+          data-testid="avatar-upload-btn"
+        >
+          <ion-icon name="camera-outline" slot="start"></ion-icon>
+          {{ 'profile.changePhoto' | translate }}
+        </ion-button>
       </div>
       <h2 class="m-0 text-2xl font-bold text-white">{{ greeting }}</h2>
       <p class="m-0 text-sm text-white opacity-85">{{ emailText }}</p>
@@ -22,35 +40,38 @@
     <section class="overview-grid">
       <button type="button" class="overview-card" (click)="editAge()">
         <app-icon
-           name="accessibility-outline"
+          name="accessibility-outline"
           aria-hidden="true"
-         class="text-primary text-[28px]"></app-icon>
+          class="text-primary text-[28px]"
+        ></app-icon>
         <div class="min-w-0 flex-1">
           <p class="m-0 text-base font-semibold">{{ 'profile.age' | translate }}</p>
-          <p class="text-medium mt-1 mb-0 text-sm">{{ ageDescription }}</p>
+          <p class="text-medium mb-0 mt-1 text-sm">{{ ageDescription }}</p>
         </div>
-        <app-icon  name="chevron-forward-outline" aria-hidden="true" class="text-medium"></app-icon>
+        <app-icon name="chevron-forward-outline" aria-hidden="true" class="text-medium"></app-icon>
       </button>
 
       <div class="overview-card">
         <app-icon
-           name="medkit-outline"
+          name="medkit-outline"
           aria-hidden="true"
-         class="text-primary text-[28px]"></app-icon>
+          class="text-primary text-[28px]"
+        ></app-icon>
         <div class="min-w-0 flex-1">
           <p class="m-0 text-base font-semibold">{{ 'profile.diabetesInfo' | translate }}</p>
-          <p class="text-medium mt-1 mb-0 text-sm">{{ diabetesSummary }}</p>
+          <p class="text-medium mb-0 mt-1 text-sm">{{ diabetesSummary }}</p>
         </div>
       </div>
 
       <div class="overview-card" [class.overview-card--placeholder]="!hasEmergencyContact">
         <app-icon
-           name="warning-outline"
+          name="warning-outline"
           aria-hidden="true"
-         class="text-primary text-[28px]"></app-icon>
+          class="text-primary text-[28px]"
+        ></app-icon>
         <div class="min-w-0 flex-1">
           <p class="m-0 text-base font-semibold">{{ 'profile.emergencyContact' | translate }}</p>
-          <p class="text-medium mt-1 mb-0 text-sm">{{ emergencySummary }}</p>
+          <p class="text-medium mb-0 mt-1 text-sm">{{ emergencySummary }}</p>
         </div>
       </div>
     </section>
@@ -61,9 +82,10 @@
       <div class="preference-row">
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <app-icon
-             name="contrast-outline"
+            name="contrast-outline"
             aria-hidden="true"
-           class="text-primary text-[26px]"></app-icon>
+            class="text-primary text-[26px]"
+          ></app-icon>
           <div>
             <p class="text-dark m-0 text-base font-semibold">
               {{ 'profile.theme.title' | translate }}
@@ -75,6 +97,7 @@
           [value]="currentTheme"
           (ionChange)="onThemeChange($event)"
           aria-label="{{ 'profile.theme.title' | translate }}"
+          data-testid="theme-selector"
         >
           <ion-select-option value="light">{{
             'profile.theme.light' | translate
@@ -87,9 +110,10 @@
       <div class="preference-row">
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <app-icon
-             name="language-outline"
+            name="language-outline"
             aria-hidden="true"
-           class="text-primary text-[26px]"></app-icon>
+            class="text-primary text-[26px]"
+          ></app-icon>
           <div>
             <p class="text-dark m-0 text-base font-semibold">
               {{ 'profile.language.title' | translate }}
@@ -101,6 +125,7 @@
           [value]="currentLanguage"
           (ionChange)="onLanguageChange($event)"
           aria-label="{{ 'profile.language.title' | translate }}"
+          data-testid="language-selector"
         >
           <ion-select-option value="en">{{ 'profile.language.en' | translate }}</ion-select-option>
           <ion-select-option value="es">{{ 'profile.language.es' | translate }}</ion-select-option>
@@ -110,9 +135,10 @@
       <div class="preference-row">
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <app-icon
-             name="water-outline"
+            name="water-outline"
             aria-hidden="true"
-           class="text-primary text-[26px]"></app-icon>
+            class="text-primary text-[26px]"
+          ></app-icon>
           <div>
             <p class="text-dark m-0 text-base font-semibold">
               {{ 'profile.glucoseUnits' | translate }}
@@ -124,6 +150,7 @@
           [value]="currentGlucoseUnit"
           (ionChange)="onGlucoseUnitChange($event)"
           aria-label="{{ 'profile.glucoseUnits' | translate }}"
+          data-testid="glucose-units-selector"
         >
           <ion-select-option *ngFor="let option of unitOptions" [value]="option.value">
             {{ option.label }}
@@ -135,12 +162,13 @@
     <section class="card tidepool-card">
       <div class="flex items-center gap-3">
         <app-icon
-           name="cloud-outline"
+          name="cloud-outline"
           aria-hidden="true"
-         class="text-primary text-[28px]"></app-icon>
+          class="text-primary text-[28px]"
+        ></app-icon>
         <div>
           <p class="m-0 text-base font-semibold">{{ 'profile.tidepoolIntegration' | translate }}</p>
-          <p class="text-medium mt-1 mb-0 text-sm">
+          <p class="text-medium mb-0 mt-1 text-sm">
             {{
               isConnected ? ('profile.connected' | translate) : ('profile.notConnected' | translate)
             }}
@@ -151,9 +179,21 @@
         {{ 'profile.lastSync' | translate }}: {{ formatLastSyncTime() }}
       </p>
       <ion-button
+        *ngIf="isConnected"
+        expand="block"
+        fill="outline"
+        color="primary"
+        (click)="openTidepoolDashboard()"
+        data-testid="tidepool-dashboard-btn"
+      >
+        <ion-icon slot="start" name="open-outline"></ion-icon>
+        {{ 'profile.viewDashboard' | translate }}
+      </ion-button>
+      <ion-button
         expand="block"
         [color]="isConnected ? 'danger' : 'primary'"
         (click)="onToggleTidepoolConnection()"
+        data-testid="tidepool-connect-btn"
       >
         <ion-icon
           slot="start"
@@ -168,42 +208,52 @@
 
       <div class="text-dark flex items-center gap-3 py-3">
         <app-icon
-           name="information-circle-outline"
+          name="information-circle-outline"
           aria-hidden="true"
-         class="text-primary text-[26px]"></app-icon>
+          class="text-primary text-[26px]"
+        ></app-icon>
         <div>
           <p class="m-0 text-base font-semibold">{{ 'profile.appVersion' | translate }}</p>
-          <p class="text-medium mt-1 mb-0 text-sm">{{ appVersion }}</p>
+          <p class="text-medium mb-0 mt-1 text-sm">{{ appVersion }}</p>
         </div>
       </div>
 
       <button type="button" class="about-row link" (click)="openTermsOfService()">
         <app-icon
-           name="document-text-outline"
+          name="document-text-outline"
           aria-hidden="true"
-         class="text-primary text-[26px]"></app-icon>
+          class="text-primary text-[26px]"
+        ></app-icon>
         <div>
           <p class="m-0 text-base font-semibold">{{ 'profile.termsOfService' | translate }}</p>
-          <p class="text-medium mt-1 mb-0 text-sm">{{ 'profile.viewTerms' | translate }}</p>
+          <p class="text-medium mb-0 mt-1 text-sm">{{ 'profile.viewTerms' | translate }}</p>
         </div>
-        <app-icon  name="chevron-forward-outline" aria-hidden="true" class="text-medium"></app-icon>
+        <app-icon name="chevron-forward-outline" aria-hidden="true" class="text-medium"></app-icon>
       </button>
 
       <button type="button" class="about-row link" (click)="openPrivacyPolicy()">
         <app-icon
-           name="shield-checkmark-outline"
+          name="shield-checkmark-outline"
           aria-hidden="true"
-         class="text-primary text-[26px]"></app-icon>
+          class="text-primary text-[26px]"
+        ></app-icon>
         <div>
           <p class="m-0 text-base font-semibold">{{ 'profile.privacyPolicy' | translate }}</p>
-          <p class="text-medium mt-1 mb-0 text-sm">{{ 'profile.viewPolicy' | translate }}</p>
+          <p class="text-medium mb-0 mt-1 text-sm">{{ 'profile.viewPolicy' | translate }}</p>
         </div>
-        <app-icon  name="chevron-forward-outline" aria-hidden="true" class="text-medium"></app-icon>
+        <app-icon name="chevron-forward-outline" aria-hidden="true" class="text-medium"></app-icon>
       </button>
     </section>
 
-    <ion-button expand="block" fill="outline" color="danger" class="sign-out inline-flex items-center gap-2" (click)="onSignOut()">
-    <app-icon  name="log-out-outline"></app-icon>
+    <ion-button
+      expand="block"
+      fill="outline"
+      color="danger"
+      class="sign-out inline-flex items-center gap-2"
+      (click)="onSignOut()"
+      data-testid="sign-out-btn"
+    >
+      <app-icon name="log-out-outline"></app-icon>
       {{ 'profile.signOut' | translate }}
     </ion-button>
   </div>

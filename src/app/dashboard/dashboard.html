@@ -1,25 +1,27 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-title>{{ 'dashboard.title' | translate }}</ion-title>
-    <ion-buttons slot="end">
+  <ion-toolbar class="bg-base-100 shadow-sm">
+    <ion-title class="text-lg font-semibold text-gray-900 dark:text-white">
+      {{ 'dashboard.title' | translate }}
+    </ion-title>
+    <ion-buttons slot="end" class="flex items-center gap-1">
       <app-language-switcher displayMode="button" [showText]="false"></app-language-switcher>
-      <ion-button (click)="onSync()" [disabled]="isSyncing">
+      <ion-button (click)="onSync()" [disabled]="isSyncing" class="btn btn-ghost btn-circle">
         <ion-icon slot="icon-only" name="sync-outline" [class.spinning]="isSyncing"> </ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content class="ion-padding dashboard-content">
   <!-- Pull to Refresh -->
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <div class="mx-auto max-w-7xl px-4 py-6 md:px-6">
+  <div class="mx-auto max-w-5xl px-4 py-4 md:px-6">
     <!-- Loading State -->
     <div *ngIf="isLoading" class="flex min-h-[400px] flex-col items-center justify-center gap-4">
-      <app-icon  name="loader" *ngIf="!isKarma" class="animate-spin"></app-icon>
+      <app-icon name="loader" *ngIf="!isKarma" class="animate-spin"></app-icon>
       <p class="m-0 text-base text-gray-600 dark:text-gray-300">{{ 'app.loading' | translate }}</p>
     </div>
 
@@ -59,181 +61,91 @@
         </button>
       </div>
 
-      <!-- Stats Grid (2x2) - Simplified, removed GMI -->
-      <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <!-- HbA1c Card -->
-        <app-stat-card
-          [title]="'readings.statistics.hba1c' | translate"
-          [value]="formatPercentage(statistics?.estimatedA1C)"
-          unit=""
-          [icon]="icons.hba1c"
-          [gradientColors]="gradients.hba1c"
-        >
-        </app-stat-card>
-
-        <!-- Time in Range Card -->
+      <!-- Stats Grid - Gradient DaisyUI stat cards -->
+      <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <app-stat-card
           [title]="'dashboard.timeInRange' | translate"
-          [value]="formatPercentage(statistics?.timeInRange)"
-          unit=""
+          [value]="statistics?.timeInRange ?? 0"
+          unit="%"
           [icon]="icons.timeInRange"
+          color="info"
           [gradientColors]="gradients.timeInRange"
         >
         </app-stat-card>
 
-        <!-- Average Glucose Card -->
         <app-stat-card
           [title]="'dashboard.averageGlucose' | translate"
-          [value]="formatGlucose(statistics?.average)"
+          [value]="statistics?.average ?? 0"
           [unit]="getCurrentGlucoseUnit()"
           [icon]="icons.avgGlucose"
+          color="success"
           [gradientColors]="gradients.avgGlucose"
         >
         </app-stat-card>
       </div>
 
-      <!-- Upcoming Appointment Card -->
-      <ion-card *ngIf="upcomingAppointment" class="appointment-card mb-6">
-        <ion-card-header class="pb-2">
-          <ion-card-subtitle class="text-sm font-medium text-gray-600 dark:text-gray-300">{{
-            'dashboard.upcomingAppointments' | translate
-          }}</ion-card-subtitle>
-          <ion-card-title class="text-xl font-bold text-gray-900 dark:text-white">{{
-            upcomingAppointment.doctorName || ('appointments.doctor' | translate)
-          }}</ion-card-title>
-        </ion-card-header>
-        <ion-card-content class="pt-2">
-          <ion-item lines="none" class="flex items-center gap-2">
-    <app-icon  name="calendar-outline" class="text-primary"></app-icon>
-            <ion-label>
-              <p>{{ upcomingAppointment.date | date: 'fullDate' }}</p>
-              <h3>{{ upcomingAppointment.startTime }} - {{ upcomingAppointment.endTime }}</h3>
-            </ion-label>
-            <ion-badge slot="end" color="primary">{{ getTimeUntilAppointment() }}</ion-badge>
-          </ion-item>
-
-          <ion-item lines="none" *ngIf="upcomingAppointment.reason" class="flex items-center gap-2">
-    <app-icon  name="medical-outline" class="text-medium"></app-icon>
-            <ion-label>
-              <p>{{ 'appointments.reason' | translate }}</p>
-              <h3>{{ upcomingAppointment.reason }}</h3>
-            </ion-label>
-          </ion-item>
-
-          <div class="mt-4 flex flex-col gap-2">
-            <ion-button
-              expand="block"
-              (click)="shareGlucoseData()"
-              [disabled]="isSharingGlucose || !upcomingAppointment.glucoseDataShared"
-             class="inline-flex items-center gap-2">
-    <app-icon  name="loader" *ngIf="isSharingGlucose && !isKarma" class="animate-spin"></app-icon>
-              <span *ngIf="!isSharingGlucose">
-                <app-icon  name="share-outline"></app-icon>
-                {{ 'dashboard.shareReadings' | translate }}
-              </span>
-            </ion-button>
-            <ion-button expand="block" fill="outline" (click)="viewAppointmentDetails()">
-              {{ 'common.viewDetails' | translate }}
-            </ion-button>
+      <!-- Quick Actions Card (daisyUI card with gradient header) -->
+      <div class="card bg-base-100 quick-actions-card mb-6 overflow-hidden shadow-lg">
+        <div class="card-body gap-4 p-0">
+          <!-- Gradient header -->
+          <div
+            class="from-primary to-primary/80 text-primary-content flex items-center justify-between bg-gradient-to-r px-5 py-4"
+          >
+            <div>
+              <h2 class="card-title m-0 text-lg font-bold">
+                {{ 'dashboard.quickActions' | translate }}
+              </h2>
+              <p class="m-0 mt-1 text-xs opacity-90">
+                {{ 'dashboard.todaysSummary' | translate }}
+              </p>
+            </div>
+            <span class="material-symbols-outlined text-3xl drop-shadow-sm"> bolt </span>
           </div>
-        </ion-card-content>
-      </ion-card>
 
-      <!-- Quick Actions Card -->
-      <ion-card class="quick-actions-card mb-6">
-        <ion-card-header class="pb-2">
-          <ion-card-title class="text-xl font-bold text-gray-900 dark:text-white">{{
-            'dashboard.quickActions' | translate
-          }}</ion-card-title>
-        </ion-card-header>
-        <ion-card-content class="pt-2">
-          <ion-grid>
-            <ion-row>
-              <ion-col size="6">
-                <ion-button
-                  expand="block"
-                  fill="outline"
-                  (click)="addReading()"
-                  class="quick-action-btn inline-flex items-center gap-2"
+          <!-- Actions -->
+          <div class="px-5 pb-4 pt-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                (click)="addReading()"
+                class="btn btn-primary btn-lg inline-flex w-full items-center justify-center gap-2 rounded-2xl shadow-md"
+              >
+                <app-icon name="add-circle-outline"></app-icon>
+                {{ 'dashboard.addReading' | translate }}
+              </button>
+
+              <button
+                type="button"
+                (click)="onSync()"
+                [disabled]="isSyncing"
+                class="btn btn-secondary btn-lg inline-flex w-full items-center justify-center gap-2 rounded-2xl shadow-md"
+              >
+                <app-icon name="sync-outline" [class.spinning]="isSyncing"></app-icon>
+                {{ 'dashboard.syncNow' | translate }}
+              </button>
+            </div>
+
+            <!-- Sync status footer -->
+            <div
+              class="bg-base-200/70 mt-4 flex items-center justify-between rounded-xl px-3 py-2 text-xs text-gray-700 dark:text-gray-300"
+            >
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base"> sync </span>
+                <span>
+                  {{ 'dashboard.lastSync' | translate }}:
+                  <strong>{{ getLastSyncDisplay() }}</strong>
+                </span>
+              </div>
+              <div *ngIf="syncStatus" class="text-right">
+                <span class="font-semibold">
+                  {{ syncStatus.itemsSynced }} {{ 'sync.items' | translate }}
+                </span>
+                <span
+                  *ngIf="syncStatus.itemsFailed > 0"
+                  class="sync-error text-error ml-1 font-semibold"
                 >
-    <app-icon  name="add-circle-outline"></app-icon>
-                  {{ 'dashboard.addReading' | translate }}
-                </ion-button>
-              </ion-col>
-              <ion-col size="6">
-                <ion-button
-                  expand="block"
-                  fill="outline"
-                  (click)="onSync()"
-                  [disabled]="isSyncing"
-                  class="quick-action-btn inline-flex items-center gap-2"
-                >
-    <app-icon
-                     name="sync-outline"
-                    [class.spinning]="isSyncing"
-                  ></app-icon>
-                  {{ 'dashboard.syncNow' | translate }}
-                </ion-button>
-              </ion-col>
-            </ion-row>
-          </ion-grid>
-          <ion-item lines="none" class="sync-status">
-            <ion-label>
-              <p>{{ 'dashboard.lastSync' | translate }}: {{ getLastSyncDisplay() }}</p>
-              <h4 *ngIf="syncStatus">
-                {{ syncStatus.itemsSynced }} {{ 'sync.items' | translate }}
-                <span *ngIf="syncStatus.itemsFailed > 0" class="sync-error">
                   ({{ syncStatus.itemsFailed }} {{ 'sync.failed' | translate }})
                 </span>
-              </h4>
-            </ion-label>
-          </ion-item>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- DEMO: Próximas Citas (Mock Appointments Preview) -->
-      <div *ngIf="upcomingAppointments.length > 0" class="card bg-base-100 mb-6 shadow-xl">
-        <div class="card-body">
-          <div class="mb-3 flex items-center justify-between">
-            <h2 class="card-title text-xl">📅 Próximas Citas Médicas</h2>
-            <button class="btn btn-sm btn-ghost" routerLink="/appointments">Ver Todas</button>
-          </div>
-
-          <!-- Show next 2-3 appointments -->
-          <div class="space-y-3">
-            <div
-              *ngFor="let appointment of upcomingAppointments"
-              class="card bg-base-200 shadow-sm"
-            >
-              <div class="card-body p-4">
-                <div class="mb-2 flex items-start justify-between">
-                  <div class="flex-1">
-                    <div class="mb-1 flex items-center gap-2">
-                      <span class="text-lg">👨‍⚕️</span>
-                      <h3 class="text-base font-bold">{{ appointment.doctor }}</h3>
-                    </div>
-                    <p class="text-base-content/70 text-sm">{{ appointment.specialty }}</p>
-                  </div>
-                  <span class="badge badge-primary badge-sm">{{ appointment.type }}</span>
-                </div>
-
-                <div class="flex items-center gap-2 text-sm">
-                  <span>📅</span>
-                  <span>{{ appointment.date | date: 'mediumDate' : '' : 'es' }}</span>
-                  <span class="text-base-content/50">•</span>
-                  <span>🕐 {{ appointment.time }}</span>
-                </div>
-
-                <div class="mt-2 flex items-center gap-2 text-sm">
-                  <span>📍</span>
-                  <span class="text-base-content/70 text-sm">{{ appointment.hospital }}</span>
-                </div>
-
-                <div class="alert alert-info mt-2 py-2">
-                  <span class="text-sm">
-                    ⏰ Faltan <strong>{{ getDaysUntil(appointment.date) }} días</strong>
-                  </span>
-                </div>
               </div>
             </div>
           </div>
@@ -253,7 +165,7 @@
             class="m-0 h-auto text-sm font-medium"
           >
             {{ 'common.viewAll' | translate }}
-            <app-icon  name="chevron-forward-outline" class="text-base"></app-icon>
+            <app-icon name="chevron-forward-outline" class="text-base"></app-icon>
           </ion-button>
         </div>
 

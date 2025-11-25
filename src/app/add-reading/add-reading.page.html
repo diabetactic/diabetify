@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-button (click)="onCancel()" class="inline-flex items-center gap-2">
-    <app-icon  name="close"></app-icon>
+        <app-icon name="close"></app-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>{{ 'addReading.title' | translate }}</ion-title>
@@ -12,12 +12,12 @@
 <ion-content [fullscreen]="true">
   <div class="mx-auto max-w-[600px] p-4">
     <!-- Info Banner with Tip -->
-    <div class="alert alert-info shadow-lg mb-6" role="status">
+    <div class="alert alert-info mb-6 shadow-lg" role="status">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
-        class="stroke-current shrink-0 h-6 w-6"
+        class="h-6 w-6 shrink-0 stroke-current"
       >
         <path
           stroke-linecap="round"
@@ -51,7 +51,7 @@
                   readingForm.get('value')?.invalid && readingForm.get('value')?.touched
                 "
               ></ion-input>
-              <span class="text-medium text-lg font-medium whitespace-nowrap">{{
+              <span class="text-medium whitespace-nowrap text-lg font-medium">{{
                 getUnitLabel()
               }}</span>
             </div>
@@ -161,6 +161,7 @@
           (click)="onCancel()"
           [disabled]="isSubmitting"
           class="cancel-button"
+          data-testid="add-reading-cancel-btn"
         >
           {{ 'common.cancel' | translate }}
         </ion-button>
@@ -169,8 +170,9 @@
           type="submit"
           [disabled]="readingForm.invalid || isSubmitting"
           class="save-button inline-flex items-center gap-2"
+          data-testid="add-reading-save-btn"
         >
-    <app-icon  name="loader" *ngIf="isSubmitting" class="animate-spin"></app-icon>
+          <app-icon name="loader" *ngIf="isSubmitting" class="animate-spin"></app-icon>
           <span *ngIf="!isSubmitting">{{ 'addReading.actions.save' | translate }}</span>
         </ion-button>
       </div>

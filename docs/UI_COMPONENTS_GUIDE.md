@@ -420,4 +420,4 @@ All components are:
 - **Fully accessible** with proper ARIA attributes
 - **Easily extensible** following the established pattern
 
-Use these as templates for future component development in Diabetify!
+Use these as templates for future component development in Diabetactic!

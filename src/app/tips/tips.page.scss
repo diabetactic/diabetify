@@ -1,0 +1,54 @@
+app-tips {
+  .space-y-4 > * + * {
+    margin-top: 1rem;
+  }
+
+  ion-card {
+    --background: var(--ion-color-light);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .dark ion-card {
+    --background: var(--ion-color-step-50);
+  }
+
+  .bg-primary-100 {
+    background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+  }
+
+  .bg-success-100 {
+    background-color: rgba(var(--ion-color-success-rgb), 0.1);
+  }
+
+  .bg-warning-100 {
+    background-color: rgba(var(--ion-color-warning-rgb), 0.1);
+  }
+
+  .bg-danger-100 {
+    background-color: rgba(var(--ion-color-danger-rgb), 0.1);
+  }
+
+  .dark .bg-primary-900 {
+    background-color: rgba(var(--ion-color-primary-rgb), 0.2);
+  }
+
+  .dark .bg-success-900 {
+    background-color: rgba(var(--ion-color-success-rgb), 0.2);
+  }
+
+  .dark .bg-warning-900 {
+    background-color: rgba(var(--ion-color-warning-rgb), 0.2);
+  }
+
+  .dark .bg-danger-900 {
+    background-color: rgba(var(--ion-color-danger-rgb), 0.2);
+  }
+
+  .bg-warning-50 {
+    background-color: rgba(var(--ion-color-warning-rgb), 0.05);
+  }
+
+  .dark .bg-warning-900\/20 {
+    background-color: rgba(var(--ion-color-warning-rgb), 0.15);
+  }
+}

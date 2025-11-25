@@ -46,9 +46,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `/scripts` - Utility scripts
 - `/specs` - Feature specifications
 
-## 📱 Project Overview: Diabetify Mobile Health App
+## 📱 Project Overview: Diabetactic Mobile Health App
 
-**Diabetify** is an Angular/Ionic mobile application for diabetes management with Tidepool API integration.
+**Diabetactic** is an Angular/Ionic mobile application for diabetes management with Tidepool API integration.
 
 ### Tech Stack
 - **Frontend**: Angular 20 + Ionic 8 + Angular Material 20
@@ -69,63 +69,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Development Methodology
 This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Completion) methodology with Claude-Flow orchestration for systematic Test-Driven Development.
 
-## 🚀 Claude-Flow: Multi-Agent Orchestration
 
-Claude-Flow is the primary orchestration framework for coordinating agents, memory, and workflows.
 
-### Core Commands
 
-```bash
-# SPARC Development Workflow
-npx claude-flow sparc modes                    # List available modes
-npx claude-flow sparc run <mode> "<task>"      # Execute specific mode
-npx claude-flow sparc tdd "<feature>"          # Run complete TDD workflow
-npx claude-flow sparc info <mode>              # Get mode details
-
-# Batch Processing
-npx claude-flow sparc batch <modes> "<task>"   # Parallel execution
-npx claude-flow sparc pipeline "<task>"        # Full pipeline processing
-npx claude-flow sparc concurrent <mode> "<tasks-file>"  # Multi-task
-
-# Hooks (for agent coordination)
-npx claude-flow hooks pre-task --description "[task]"
-npx claude-flow hooks post-edit --file "[file]"
-npx claude-flow hooks post-task --task-id "[task]"
-npx claude-flow hooks session-restore --session-id "[id]"
-npx claude-flow hooks session-end --export-metrics true
-```
-
-### MCP Tools
-
-Claude-flow MCP tools coordinate multi-agent workflows. Use with Claude Code's Task tool:
-
-```javascript
-// Step 1: Initialize swarm topology (optional)
-mcp__claude-flow__swarm_init { topology: "mesh", maxAgents: 6 }
-
-// Step 2: Define agent types for coordination
-mcp__claude-flow__agent_spawn { type: "researcher", name: "Research Agent" }
-mcp__claude-flow__agent_spawn { type: "coder", name: "Implementation Agent" }
-
-// Step 3: Claude Code Task tool spawns ACTUAL agents
-Task("Research agent", "Analyze API patterns. Store findings in memory.", "researcher")
-Task("Coder agent", "Implement endpoints. Check memory for decisions.", "coder")
-Task("Tester agent", "Write comprehensive tests. Coordinate via hooks.", "tester")
-
-// Monitoring
-mcp__claude-flow__swarm_status { swarmId: "swarm-123" }
-mcp__claude-flow__agent_metrics { agentId: "agent-456" }
-mcp__claude-flow__task_status { taskId: "task-789" }
-
-// Memory Management
-mcp__claude-flow__memory_usage {
-  action: "store",
-  key: "api-design",
-  value: "REST endpoints specification",
-  namespace: "project"
-}
-mcp__claude-flow__memory_search { pattern: "api-*", limit: 10 }
-```
 
 ### Available Agents (54 Total)
 
@@ -382,7 +328,7 @@ mcp__browserstack__runAppLiveSession {
 
 // Automated testing setup
 mcp__browserstack__setupBrowserStackAutomateTests {
-  projectName: "Diabetify Web Tests",
+  projectName: "Diabetactic Web Tests",
   detectedLanguage: "nodejs",
   detectedBrowserAutomationFramework: "playwright",
   detectedTestingFramework: "playwright",
@@ -394,7 +340,7 @@ mcp__browserstack__setupBrowserStackAutomateTests {
 
 // App automation setup
 mcp__browserstack__setupBrowserStackAppAutomateTests {
-  project: "Diabetify Mobile",
+  project: "Diabetactic Mobile",
   detectedFramework: "appium",
   detectedLanguage: "nodejs",
   detectedTestingFramework: "mocha",
@@ -422,9 +368,9 @@ mcp__browserstack__takeAppScreenshot {
 - Visual testing on real devices
 - Performance testing on actual hardware
 
-### 6. 🎬 Maestro - Mobile UI Testing (Requires Installation)
+### 6. 🎬 Maestro - Mobile UI Testing (FREE)
 
-Simple, effective mobile UI testing framework.
+Simple, effective mobile UI testing framework with MCP integration.
 
 **Installation Required:**
 ```bash
@@ -434,10 +380,31 @@ export PATH="$PATH:$HOME/.maestro/bin"
 maestro --version
 ```
 
-**Configuration**: Maestro MCP requires maestro CLI to be installed and in PATH. The MCP server will work once maestro is installed.
+**MCP Tools Available:**
 
+```javascript
+// Run Maestro flow files
+mcp__maestro__run_flow_files {
+  flowFiles: ["maestro/tests/auth/01-login-flow.yaml"]
+}
+
+// Run inline flow
+mcp__maestro__run_flow {
+  flow: "- launchApp\n- tapOn: 'Login'\n- inputText: 'test@example.com'"
+}
+
+// Take screenshot
+mcp__maestro__take_screenshot {
+  outputPath: "screenshots/current-state.png"
+}
+
+// Inspect view hierarchy (for finding elements)
+mcp__maestro__inspect_view_hierarchy {}
+```
+
+**YAML Flow Example:**
 ```yaml
-# Example: maestro/tests/login-flow.yaml
+# maestro/tests/login-flow.yaml
 appId: com.diabetactic.app
 ---
 - launchApp
@@ -449,95 +416,22 @@ appId: com.diabetactic.app
 - assertVisible: "Welcome"
 ```
 
-**When to use Maestro:**
-- Simple, readable UI tests
+**When to use Maestro MCP:**
+- Automated mobile UI testing via MCP
+- Run test flows programmatically
+- Capture screenshots for debugging
+- Inspect UI hierarchy to find selectors
 - Quick mobile test automation
-- Integration with CI/CD
+- Integration with Claude Code workflows
 - Cross-platform iOS/Android tests
-- Visual flow documentation
 
-### 7. 🧠 Zen - Multi-Model AI CLI with Agent Delegation
 
-Zen is an AI-powered CLI that complements claude-flow by providing multi-model comparisons and agent delegation.
-
-**Key Differences from Claude-Flow:**
-- **Claude-Flow**: Coordinates Claude agents with memory/hooks for code implementation
-- **Zen**: Delegates tasks to external AI CLIs, compares results across models, manages workflows
-
-```bash
-# Zen uses Gemini by default (configured in .mcp.json)
-# Can delegate to other CLI tools via "clink" feature
-
-# Use Cases (Non-overlapping with claude-flow):
-
-# 1. Compare AI Model Results
-# Use zen to get Gemini's perspective, compare with claude-flow's Claude agents
-Task("Zen Researcher", "Research Angular patterns using Gemini", "researcher")
-Task("Claude Researcher", "Research Angular patterns using Claude", "researcher")
-# Then compare approaches
-
-# 2. Delegate to External CLI Tools via Clink
-# Zen can invoke other CLI tools and process their output
-# Example: Use aider for code refactoring, compare with claude-flow
-zen clink --tool aider --task "Refactor auth service"
-zen clink --tool cursor --task "Generate component boilerplate"
-
-# 3. Workflow Orchestration Across Tools
-# Zen can chain multiple CLI tools in a workflow
-zen workflow --steps "aider:refactor,cursor:test,claude:review"
-
-# 4. Model Benchmarking
-# Compare performance/quality across different AI models
-zen benchmark --task "Generate test cases" --models "gemini,claude,gpt4"
-```
-
-**Zen MCP Usage:**
-
-```javascript
-// Note: Zen MCP tools are not directly exposed
-// Zen works as a CLI tool that can be called via Bash
-
-// Example workflow: Compare solutions
-Bash("zen ask 'Best approach for Ionic navigation guards' --model gemini")
-// Then use claude-flow agents to implement the chosen approach
-Task("Coder", "Implement navigation guards based on research", "coder")
-
-// Example: Delegate to external tools
-Bash("zen clink --tool aider --task 'Refactor database.service.ts'")
-// Review the changes with claude-flow
-Task("Reviewer", "Review refactored database service", "reviewer")
-```
-
-**When to use Zen:**
-- Get alternative perspectives (Gemini vs Claude)
-- Delegate to specialized CLI tools (aider, cursor, etc.)
-- Compare implementation approaches across models
-- Workflow orchestration with multiple tools
-- Benchmark AI model performance
-- Chain CLI tools together via clink
-
-**Zen + Claude-Flow Pattern:**
-```javascript
-// 1. Use Zen for multi-model research
-Bash("zen ask 'Compare Tidepool OAuth implementations' --verbose")
-
-// 2. Use claude-flow agents for implementation
-Task("Architect", "Design auth based on Zen research", "system-architect")
-Task("Coder", "Implement OAuth flow", "coder")
-Task("Tester", "Write auth tests", "tester")
-
-// 3. Use Zen clink to delegate specialized tasks
-Bash("zen clink --tool aider --task 'Optimize auth performance'")
-
-// 4. Use claude-flow for review and integration
-Task("Reviewer", "Review all auth changes", "reviewer")
-```
 
 ## 🎨 UI Components
 
 ### Two-Library Approach
 
-Diabetify uses a **complementary two-library UI system**:
+Diabetactic uses a **complementary two-library UI system**:
 
 **DaisyUI v5.4.7** - Content Components
 - Semantic HTML components with Tailwind utility classes
@@ -823,6 +717,353 @@ npm run i18n:missing
 | `capacitor.config.ts` | Native platform config |
 | `.mcp.json` | MCP server configuration |
 
+## 📱 Mobile Testing & Debugging
+
+### Maestro Mobile Testing
+
+**Maestro** is our primary mobile UI testing framework. Tests are located in `maestro/` directory.
+
+#### Test Structure
+
+```
+maestro/
+├── flows/              # Reusable test components
+├── tests/              # Actual test files
+│   ├── smoke/         # Quick validation tests
+│   ├── auth/          # Authentication flows
+│   ├── readings/      # Glucose readings tests
+│   ├── dashboard/     # Dashboard tests
+│   ├── appointments/  # Appointments tests
+│   ├── profile/       # Settings/profile tests
+│   └── integration/   # End-to-end workflows
+└── config/            # Maestro configuration
+```
+
+#### Core Maestro Patterns
+
+**Pattern 1: Form Input (Ionic Components)**
+```yaml
+# Use coordinates for Ionic inputs (often lack stable IDs)
+- tapOn:
+    point: "50%,45%"  # Percentage-based coordinates
+- eraseText           # ALWAYS clear before input
+- inputText: "value"
+- hideKeyboard        # Prevent keyboard interference
+```
+
+**Pattern 2: Bilingual Assertions**
+```yaml
+# Support both English and Spanish
+- assertVisible: "Inicio|Home|Dashboard"
+- tapOn: "Guardar|Save"
+```
+
+**Pattern 3: Wait Strategies**
+```yaml
+# After every action/navigation
+- waitForAnimationToEnd
+
+# For slow operations
+- waitForAnimationToEnd:
+    timeout: 5000
+```
+
+**Pattern 4: Reusable Flows**
+```yaml
+# Login flow
+- runFlow:
+    file: flows/auth-login.yaml
+    env:
+      USERNAME: "demo@example.com"
+      PASSWORD: "demo123"
+```
+
+**Pattern 5: Screenshot Documentation**
+```yaml
+# Capture at key milestones
+- takeScreenshot: maestro/screenshots/step-01-initial.png
+```
+
+#### Running Maestro Tests
+
+```bash
+# Single test
+maestro test maestro/tests/auth/01-login-flow.yaml
+
+# All tests in directory
+maestro test maestro/tests/
+
+# Specific device
+maestro test --device emulator-5554 maestro/tests/smoke-test.yaml
+```
+
+### ADB Mobile Debugging
+
+**Common ADB workflows for Ionic/Capacitor apps:**
+
+#### Device Management
+```bash
+# List connected devices
+adb devices
+
+# Target specific device
+adb -s emulator-5554 shell
+
+# Install APK
+adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+
+# Clear app data and restart
+adb shell pm clear io.diabetify.app
+adb shell am start -n io.diabetify.app/.MainActivity
+```
+
+#### Log Analysis
+```bash
+# Clear and monitor logs
+adb logcat -c
+adb logcat | grep -E "Capacitor|Ionic|chromium"
+
+# Filter for specific patterns
+adb logcat | grep -E "Native HTTP|CORS|401|403|500"
+
+# Errors only
+adb logcat *:E
+
+# Save logs to file
+adb logcat -d > app-logs.txt
+```
+
+#### Screenshots & UI Inspection
+```bash
+# Capture screenshot
+adb shell screencap /sdcard/screenshot.png
+adb pull /sdcard/screenshot.png ./screenshots/
+
+# Get current activity
+adb shell dumpsys activity top | grep ACTIVITY
+
+# View hierarchy (UI elements)
+adb shell dumpsys activity top
+```
+
+#### Network Debugging
+```bash
+# Monitor HTTP requests (native)
+adb logcat | grep HttpURLConnection
+
+# Check active connections
+adb shell netstat | grep ESTABLISHED
+
+# View network state
+adb shell dumpsys connectivity
+```
+
+### Native HTTP vs Web HTTP
+
+**Critical Difference for Mobile Apps:**
+
+| Aspect | Web (Browser) | Native (Capacitor) |
+|--------|---------------|-------------------|
+| **HTTP Client** | Angular HttpClient → fetch | CapacitorHttp → OkHttp |
+| **CORS** | ❌ Subject to CORS | ✅ No CORS restrictions |
+| **Debugging** | Browser DevTools | ADB logcat |
+| **Proxy** | Needs proxy.conf.json | Direct URL access |
+
+**Implementation Pattern:**
+
+```typescript
+// CapacitorHttpService - Hybrid approach
+export class CapacitorHttpService {
+  constructor(private http: HttpClient, private platform: Platform) {}
+
+  private shouldUseNativeHttp(): boolean {
+    return this.platform.is('capacitor') && !this.platform.is('mobileweb');
+  }
+
+  get<T>(url: string, options?: { headers?: any }): Observable<T> {
+    if (this.shouldUseNativeHttp()) {
+      return this.nativeGet<T>(url, options);  // Uses CapacitorHttp
+    }
+    return this.http.get<T>(url, options);      // Uses Angular HttpClient
+  }
+}
+```
+
+**Debugging Pattern:**
+
+1. **Check logs:** `adb logcat | grep -E "HTTP|Native HTTP"`
+2. **Verify headers:** Look for `Authorization: Bearer` in logs
+3. **Test backend directly:** `curl -H "Authorization: Bearer TOKEN" URL`
+4. **Compare web vs mobile:** Same endpoint, different results = CORS or native issue
+
+### CORS Solutions
+
+**For Web Development (CORS issues):**
+
+```json
+// proxy.conf.json
+{
+  "/api": {
+    "target": "https://your-api.herokuapp.com",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": { "^/api": "" }
+  }
+}
+```
+
+```bash
+# Start with proxy
+npm start  # Uses proxy.conf.json automatically
+```
+
+**For Mobile (Capacitor):**
+
+```typescript
+// environment.ts - Use direct URLs on mobile
+function getBaseUrl(mode: BackendMode): string {
+  if (Capacitor.isNativePlatform()) {
+    return 'https://your-api.herokuapp.com';  // Direct URL, no proxy
+  }
+  return '/api';  // Proxy for web
+}
+```
+
+**No proxy needed for mobile** - Native HTTP bypasses CORS completely.
+
+### Common Debugging Workflows
+
+**Workflow 1: Login Debugging**
+```bash
+# 1. Clear app state
+adb shell pm clear io.diabetify.app
+
+# 2. Start with logs
+adb logcat -c
+adb shell am start -n io.diabetify.app/.MainActivity
+adb logcat | grep -E "Capacitor|Auth|HTTP"
+
+# 3. Run Maestro test
+maestro test maestro/tests/auth/01-login-flow.yaml
+
+# 4. Check for errors
+adb logcat -d | grep -E "401|403|CORS"
+
+# 5. Capture failure state
+adb shell screencap /sdcard/login-fail.png
+adb pull /sdcard/login-fail.png
+```
+
+**Workflow 2: API Call Verification**
+```bash
+# Monitor all HTTP activity
+adb logcat | grep -E "Native HTTP|HttpURLConnection" > api-activity.log
+
+# Check specific endpoint
+adb logcat | grep "/appointments/mine"
+
+# Verify request/response
+adb logcat | grep -E "POST|GET|Response.*200|Response.*4"
+```
+
+**Workflow 3: UI State Inspection**
+```bash
+# Capture current screen
+adb shell screencap /sdcard/current.png
+adb pull /sdcard/current.png
+
+# Get UI hierarchy
+adb shell dumpsys activity top > ui-hierarchy.txt
+
+# Find text/elements
+adb shell dumpsys activity top | grep "mText="
+```
+
+### Mobile Testing Best Practices
+
+1. **Always Clear State** - `adb shell pm clear` before critical tests
+2. **Use Screenshots** - Visual verification is crucial for UI tests
+3. **Bilingual Testing** - All assertions support English/Spanish
+4. **Coordinate-based Taps** - Ionic components often need `point: "X%,Y%"`
+5. **Keyboard Management** - Always `hideKeyboard` after text input
+6. **Wait for Animations** - `waitForAnimationToEnd` prevents flaky tests
+7. **Native HTTP Logging** - Look for `🔵 [Native HTTP]` in logs
+8. **CORS = Web Issue** - If CORS error on mobile, HTTP client misconfigured
+
+### Maestro Test Examples
+
+**Simple Navigation Test:**
+```yaml
+appId: io.diabetify.app
+---
+- launchApp
+- waitForAnimationToEnd
+- tapOn: "Lecturas|Readings"
+- assertVisible: "mg/dL"
+```
+
+**Complete User Flow:**
+```yaml
+appId: io.diabetify.app
+---
+- launchApp
+- runFlow: flows/auth/login.yaml  # CORRECT path
+- runFlow:
+    file: flows/add-glucose-reading.yaml
+    env:
+      GLUCOSE_VALUE: "120"
+- tapOn: "Inicio|Home"
+- assertVisible: "120"
+- takeScreenshot: maestro/screenshots/success.png
+```
+
+## 🧪 Maestro Test Suite Management
+
+### CRITICAL: Always Clear State Before Tests
+
+**Run single test with clean state:**
+```bash
+./scripts/run-maestro-clean.sh maestro/tests/auth/01-login-flow.yaml
+```
+
+### Test Execution Scripts
+
+```bash
+# Run all 41 tests
+./scripts/test-maestro-all.sh
+
+# Run only working tests (5 confirmed)
+./scripts/test-maestro-working.sh
+
+# Run mock mode tests only
+./scripts/test-maestro-mock.sh
+
+# Run with test-all-modes.sh options
+./scripts/test-all-modes.sh --smoke   # Just smoke test
+./scripts/test-all-modes.sh --quick   # 5 working tests
+./scripts/test-all-modes.sh --full    # All 41 tests × 3 modes
+```
+
+### Maestro Golden Rules
+
+1. **ALWAYS** clear state with `adb shell pm clear io.diabetify.app`
+2. **ALWAYS** use correct flow paths: `flows/auth/login.yaml` NOT `auth-login.yaml`
+3. **ALWAYS** add `waitForAnimationToEnd` after actions
+4. **ALWAYS** use `hideKeyboard` after text input
+5. **ALWAYS** use bilingual: `"Text|Texto"`
+6. **ALWAYS** use coordinates for Ionic: `point: "50%,45%"`
+7. **ALWAYS** `eraseText` before `inputText`
+8. **NEVER** assume clean state - clear explicitly
+
+### Test Status (41 Total)
+
+- ✅ **5 Working**: smoke-test, dashboard-nav, theme, language, login-mock
+- ✅ **22 Fixed**: Path references corrected
+- 🔧 **7 Need Fixes**: Complex tests, clean state issues
+- ⚠️ **7 Need Review**: May work with adjustments
+
+See `docs/MAESTRO_TEST_STATUS.md` for complete matrix.
+
 ## 🐛 Troubleshooting
 
 ```bash
@@ -839,8 +1080,7 @@ npx cap sync
 npx cap doctor
 
 # MCP connection issues
-claude mcp list                     # Check MCP status
-claude mcp restart <server-name>    # Restart specific server
+
 
 # Maestro MCP not working?
 # Install maestro first:
@@ -894,20 +1134,15 @@ npm run test:ci && npm run lint && npm run format:check
 
 **When to use each MCP:**
 
-- **claude-flow**: Multi-agent coordination, memory, workflows, code implementation
 - **tavily**: Web research, find solutions, extract documentation
 - **context7**: Look up library APIs, framework documentation
 - **playwright**: E2E testing, browser automation, UI testing
 - **android-adb**: Android device management, APK installation, debugging
+- **maestro**: Automated mobile UI testing, run test flows, capture screenshots, inspect UI hierarchy
 - **browserstack**: Cross-device testing, real device testing (requires account)
-- **maestro**: Simple mobile UI tests (requires installation)
 - **zen**: Multi-model comparison, delegate to other CLIs, workflow orchestration
 
-**Complementary Usage:**
-- Use **zen** for research/comparison, **claude-flow** for implementation
-- Use **tavily** for general research, **context7** for API docs
-- Use **playwright** for web E2E, **android-adb** for mobile debugging
-- Use **browserstack** for cross-device, **maestro** for quick mobile tests
+
 
 ## 📝 Environment Configuration
 
@@ -929,6 +1164,146 @@ export const environment = {
 
 ---
 
+## 🔧 Environment & Build Setup
+
+### Java/Gradle/Android Environment (CRITICAL)
+
+**Environment is pre-configured in user's `.zshrc` and project's `mise.toml`:**
+- ✅ `JAVA_HOME` - Auto-set to Java 21 for this project (via mise)
+- ✅ `ANDROID_HOME` - `/home/julito/Android/Sdk`
+- ✅ `JAVA_TOOL_OPTIONS` - Suppresses Maestro/Gradle warnings
+- ✅ Android SDK tools in PATH
+- ✅ Maestro in PATH
+
+**NEVER manually set these in commands** - they're automatic:
+```bash
+# ❌ WRONG (unnecessary)
+JAVA_HOME=$(mise where java) ANDROID_HOME=/path/to/sdk ./gradlew installDebug
+
+# ✅ CORRECT (environment is already set)
+cd android && ./gradlew installDebug
+
+# ✅ BETTER (use mise tasks)
+mise run android:install
+```
+
+### Gradle Wrapper Location
+
+**CRITICAL:** Gradle wrapper is in `android/gradlew`, NOT root `./gradlew`
+
+```bash
+# ✅ CORRECT
+cd android && ./gradlew installDebug
+./android/gradlew installDebug
+mise run android:install
+
+# ❌ WRONG (doesn't exist)
+./gradlew installDebug
+```
+
+### Java Version Requirements
+
+- **Gradle 8.x requires Java 21** (not 17, 11, or 8)
+- Project uses `mise` to manage Java 21 automatically
+- `mise.toml` specifies `java = "21"`
+- User's shell auto-switches to Java 21 when in this directory
+
+### Common Build Commands
+
+```bash
+# Install APK on device
+cd android && ./gradlew installDebug
+# OR: mise run android:install
+
+# Full clean rebuild
+mise run android:rebuild
+# Equivalent to: clean + build:mock + cap:sync + gradle install
+
+# Clean build artifacts
+mise run android:clean
+rm -rf .angular www android/app/build
+```
+
+### Android Package Name
+
+**IMPORTANT:** Package name mismatch
+- `capacitor.config.ts` shows: `io.diabetactic.app`
+- **Actual installed package:** `io.diabetify.app`
+
+Always use `io.diabetify.app` in ADB commands:
+```bash
+adb shell pm clear io.diabetify.app
+adb shell am start -n io.diabetify.app/.MainActivity
+```
+
+### Maestro Java Warnings (Safe to Ignore)
+
+Maestro shows Java deprecation warnings - these are **harmless**:
+```
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called
+WARNING: Restricted methods will be blocked in a future release
+```
+
+These are from Maestro's dependencies (jansi, netty) using deprecated Java APIs. Tests work fine despite warnings. The `JAVA_TOOL_OPTIONS` in the environment suppresses most of these.
+
+### Build Mode Configurations
+
+Three build modes available:
+```bash
+npm run build:mock     # In-memory mock data (no backend)
+npm run build:heroku   # Heroku cloud backend
+npm run build:local    # Local Docker backend (requires setup)
+```
+
+After building, sync to Capacitor:
+```bash
+npm run cap:sync
+```
+
+### Quick Reference Commands
+
+```bash
+# Verify environment
+mise env | grep -E "JAVA_HOME|ANDROID_HOME"
+java -version  # Should show 21.x in this project
+
+# Build and test workflow
+npm run build:mock       # Build for mock mode
+npm run cap:sync         # Sync to Capacitor
+mise run android:install # Install APK
+maestro test maestro/tests/smoke-test.yaml
+
+# Full test suite
+npm run test:everything  # Quality + Unit + E2E + All modes
+
+# Clean restart
+adb shell pm clear io.diabetify.app
+mise run android:rebuild
+```
+
+### Troubleshooting
+
+**If Java version is wrong:**
+```bash
+mise use java@21
+mise where java  # Verify Java 21 path
+```
+
+**If Gradle fails with "Unsupported class file":**
+- Means Java version is not 21
+- Open new terminal (to reload .zshrc)
+- Or run: `mise trust` in project directory
+
+**If gradlew not found:**
+- Check you're using `android/gradlew`, not `./gradlew`
+- Use helper: `./scripts/android-build.sh installDebug`
+
+**Full documentation:**
+- `/tmp/JAVA_GRADLE_ANDROID_MAESTRO_LEARNINGS.md` - Comprehensive guide
+- `docs/ENVIRONMENT_SETUP_MEMORY.md` - Quick reference
+
+---
+
 ## Important Reminders
 
 - Do what has been asked; nothing more, nothing less
@@ -938,3 +1313,6 @@ export const environment = {
 - Never save working files to root folder
 - Use TodoWrite for task tracking (5-10+ todos batched)
 - Batch all operations in single messages
+- **NEVER manually set JAVA_HOME or ANDROID_HOME** - they're pre-configured
+- **ALWAYS use `android/gradlew`**, not root `./gradlew`
+- **Package name is `io.diabetify.app`**, not `io.diabetactic.app`

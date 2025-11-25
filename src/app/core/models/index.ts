@@ -1,5 +1,5 @@
 /**
- * Barrel export for all Diabetify data models
+ * Barrel export for all Diabetactic data models
  * Centralizes model imports for cleaner imports throughout the app
  *
  * Usage:

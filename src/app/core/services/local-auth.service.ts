@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError, from, of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
 import { PlatformDetectorService } from './platform-detector.service';
 import { LoggerService } from './logger.service';
 import { MockDataService } from './mock-data.service';
+import { CapacitorHttpService } from './capacitor-http.service';
 import { environment } from '../../../environments/environment';
+import { API_GATEWAY_BASE_URL } from '../../shared/config/api-base-url';
 
 /**
  * Local authentication state
@@ -140,7 +142,7 @@ const STORAGE_KEYS = {
 })
 export class LocalAuthService {
   // Authentication state
-  private authStateSubject = new BehaviorSubject<LocalAuthState>({
+  protected authStateSubject = new BehaviorSubject<LocalAuthState>({
     isAuthenticated: false,
     user: null,
     accessToken: null,
@@ -152,16 +154,31 @@ export class LocalAuthService {
 
   private baseUrl: string;
 
+  // Promise that resolves when initialization is complete
+  private initializationPromise: Promise<void>;
+  private initializationResolve!: () => void;
+
   constructor(
     private http: HttpClient,
     private platformDetector: PlatformDetectorService,
     private logger: LoggerService,
-    private mockData: MockDataService
+    private mockData: MockDataService,
+    private capacitorHttp: CapacitorHttpService
   ) {
     this.logger.info('Init', 'LocalAuthService initialized (USING MOCK DATA)');
     // Set base URL for API calls
-    const defaultUrl = environment.backendServices?.apiGateway?.baseUrl || 'http://localhost:8000';
+    const defaultUrl = API_GATEWAY_BASE_URL;
     this.baseUrl = this.platformDetector.getApiBaseUrl(defaultUrl);
+
+    this.logger.debug('Auth', 'LocalAuthService baseUrl resolved', {
+      defaultUrl,
+      resolvedBaseUrl: this.baseUrl,
+    });
+
+    // Create initialization promise
+    this.initializationPromise = new Promise<void>(resolve => {
+      this.initializationResolve = resolve;
+    });
 
     // Initialize auth state from storage
     this.initializeAuthState();
@@ -169,48 +186,54 @@ export class LocalAuthService {
 
   /**
    * Initialize authentication state from storage
+   * Resolves initializationPromise when complete
    */
   private async initializeAuthState(): Promise<void> {
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const [accessToken, refreshToken, userStr, expiresAtStr] = await Promise.all([
-          Preferences.get({ key: STORAGE_KEYS.ACCESS_TOKEN }),
-          Preferences.get({ key: STORAGE_KEYS.REFRESH_TOKEN }),
-          Preferences.get({ key: STORAGE_KEYS.USER }),
-          Preferences.get({ key: STORAGE_KEYS.EXPIRES_AT }),
-        ]);
+    try {
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const [accessToken, refreshToken, userStr, expiresAtStr] = await Promise.all([
+            Preferences.get({ key: STORAGE_KEYS.ACCESS_TOKEN }),
+            Preferences.get({ key: STORAGE_KEYS.REFRESH_TOKEN }),
+            Preferences.get({ key: STORAGE_KEYS.USER }),
+            Preferences.get({ key: STORAGE_KEYS.EXPIRES_AT }),
+          ]);
 
-        const hasAccessToken = !!accessToken.value;
-        const hasRefreshToken = !!refreshToken.value;
-        const hasUser = !!userStr.value;
+          const hasAccessToken = !!accessToken.value;
+          const hasRefreshToken = !!refreshToken.value;
+          const hasUser = !!userStr.value;
 
-        if (hasAccessToken && hasUser && userStr.value) {
-          const user = JSON.parse(userStr.value) as LocalUser;
-          const expiresAt = expiresAtStr.value ? parseInt(expiresAtStr.value, 10) : null;
+          if (hasAccessToken && hasUser && userStr.value) {
+            const user = JSON.parse(userStr.value) as LocalUser;
+            const expiresAt = expiresAtStr.value ? parseInt(expiresAtStr.value, 10) : null;
 
-          // Check if token is expired
-          if (!expiresAt || Date.now() < expiresAt) {
-            this.logger.info('Auth', 'Auth state restored from storage', { userId: user.id });
-            this.authStateSubject.next({
-              isAuthenticated: true,
-              user,
-              accessToken: accessToken.value,
-              refreshToken: hasRefreshToken ? refreshToken.value : null,
-              expiresAt,
-            });
+            // Check if token is expired
+            if (!expiresAt || Date.now() < expiresAt) {
+              this.logger.info('Auth', 'Auth state restored from storage', { userId: user.id });
+              this.authStateSubject.next({
+                isAuthenticated: true,
+                user,
+                accessToken: accessToken.value,
+                refreshToken: hasRefreshToken ? refreshToken.value : null,
+                expiresAt,
+              });
+            } else if (hasRefreshToken) {
+              this.logger.info('Auth', 'Token expired, attempting refresh');
+              // Try to refresh the token
+              this.refreshAccessToken().subscribe();
+            }
           } else if (hasRefreshToken) {
-            this.logger.info('Auth', 'Token expired, attempting refresh');
+            this.logger.info('Auth', 'No access token, attempting refresh');
             // Try to refresh the token
             this.refreshAccessToken().subscribe();
           }
-        } else if (hasRefreshToken) {
-          this.logger.info('Auth', 'No access token, attempting refresh');
-          // Try to refresh the token
-          this.refreshAccessToken().subscribe();
+        } catch (error) {
+          this.logger.error('Auth', 'Failed to initialize auth state', error);
         }
-      } catch (error) {
-        this.logger.error('Auth', 'Failed to initialize auth state', error);
       }
+    } finally {
+      // Resolve initialization promise when complete (success or error)
+      this.initializationResolve();
     }
   }
 
@@ -219,9 +242,37 @@ export class LocalAuthService {
    * Updated to be simpler and match the UI requirements
    */
   login(username: string, password: string, rememberMe: boolean = false): Observable<LoginResult> {
-    this.logger.info('Auth', 'Login attempt - trying REAL backend', { username, rememberMe });
+    console.log('🔐 [AUTH] Login attempt started');
+    console.log('🔐 [AUTH] Username:', username);
+    console.log('🔐 [AUTH] Password length:', password?.length ?? 0);
+    console.log('🔐 [AUTH] Remember me:', rememberMe);
+    console.log('🔐 [AUTH] Backend mode:', environment.backendMode);
+    console.log('🔐 [AUTH] Use mock:', environment.features.useTidepoolMock);
 
-    // Try REAL backend first
+    // MOCK MODE: Return mock data immediately without HTTP calls
+    if (environment.features.useTidepoolMock) {
+      console.log('🎭 [AUTH] MOCK MODE - Bypassing backend, returning mock data');
+      this.logger.info('Auth', 'Mock mode login - bypassing HTTP calls', {
+        username,
+        backendMode: environment.backendMode,
+      });
+      return from(this.handleDemoLogin(rememberMe));
+    }
+
+    // REAL BACKEND MODE (cloud or local)
+    console.log('🔐 [AUTH] Base URL:', this.baseUrl);
+    console.log('🔐 [AUTH] Token endpoint:', `${this.baseUrl}/token`);
+
+    this.logger.info('Auth', 'Login attempt - trying REAL backend', {
+      username,
+      passwordLength: password?.length ?? 0,
+      rememberMe,
+      baseUrl: this.baseUrl,
+      tokenEndpoint: `${this.baseUrl}/token`,
+      backendMode: environment.backendMode,
+    });
+
+    // Try REAL backend
     const body = new HttpParams()
       .set('username', username) // Can be DNI or email
       .set('password', password);
@@ -230,10 +281,20 @@ export class LocalAuthService {
       'Content-Type': 'application/x-www-form-urlencoded',
     });
 
-    // Call token endpoint directly
-    return this.http
-      .post<GatewayTokenResponse>(`${this.baseUrl}/token`, body.toString(), { headers })
+    console.log('🔐 [AUTH] Request body:', body.toString());
+    console.log('🔐 [AUTH] Request headers:', headers);
+    console.log('🔐 [AUTH] Making HTTP POST request...');
+
+    // Call token endpoint directly (use Capacitor HTTP to bypass CORS)
+    return this.capacitorHttp
+      .post<GatewayTokenResponse>(`${this.baseUrl}/token`, body.toString(), {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      })
       .pipe(
+        tap(response => {
+          console.log('✅ [AUTH] HTTP POST successful, response received');
+          console.log('✅ [AUTH] Response:', JSON.stringify(response));
+        }),
         switchMap(token => {
           if (!token?.access_token) {
             return throwError(
@@ -277,8 +338,26 @@ export class LocalAuthService {
           );
         }),
         catchError(error => {
+          console.error('❌ [AUTH] HTTP request failed');
+          console.error('❌ [AUTH] Error object:', error);
+          console.error('❌ [AUTH] Error status:', error?.status);
+          console.error('❌ [AUTH] Error statusText:', error?.statusText);
+          console.error('❌ [AUTH] Error message:', error?.message);
+          console.error('❌ [AUTH] Error error:', error?.error);
+          console.error(
+            '❌ [AUTH] Full error JSON:',
+            JSON.stringify(error, Object.getOwnPropertyNames(error))
+          );
+
           const errorMessage = this.extractErrorMessage(error);
-          this.logger.error('Auth', 'Login failed', error, { username });
+          console.error('❌ [AUTH] Extracted error message:', errorMessage);
+
+          this.logger.error('Auth', 'Login failed', error, {
+            username,
+            baseUrl: this.baseUrl,
+            status: (error && error.status) || null,
+            backendPayload: error && error.error,
+          });
           return of({
             success: false,
             error: errorMessage,
@@ -384,19 +463,101 @@ export class LocalAuthService {
   }
 
   /**
-   * Refresh the access token
-   * Note: Current backend doesn't support refresh tokens, so this returns an error
+   * Refresh the access token using stored refresh token
+   * Calls /token endpoint with grant_type=refresh_token
    */
   refreshAccessToken(): Observable<LocalAuthState> {
-    this.logger.warn('Auth', 'Token refresh not supported');
-    // When 401 is received, user must re-login as per the requirements
-    return throwError(() => new Error('Token refresh is not supported. Please login again.'));
+    this.logger.info('Auth', 'Attempting token refresh');
+
+    return from(Preferences.get({ key: STORAGE_KEYS.REFRESH_TOKEN })).pipe(
+      switchMap(({ value: refreshToken }) => {
+        if (!refreshToken) {
+          this.logger.warn('Auth', 'No refresh token available');
+          return throwError(() => new Error('No refresh token available. Please login again.'));
+        }
+
+        // Call refresh endpoint with refresh_token grant
+        const body = new HttpParams()
+          .set('grant_type', 'refresh_token')
+          .set('refresh_token', refreshToken);
+
+        const headers = new HttpHeaders({
+          'Content-Type': 'application/x-www-form-urlencoded',
+        });
+
+        this.logger.info('Auth', 'Calling refresh endpoint', { endpoint: `${this.baseUrl}/token` });
+
+        return this.capacitorHttp
+          .post<GatewayTokenResponse>(`${this.baseUrl}/token`, body.toString(), {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          })
+          .pipe(
+            switchMap(token => {
+              if (!token?.access_token) {
+                return throwError(
+                  () => new Error('Token refresh failed: no access token in response')
+                );
+              }
+
+              this.logger.info('Auth', 'Token refresh successful');
+
+              // Update access token in state and storage
+              const currentUser = this.authStateSubject.value.user;
+              if (!currentUser) {
+                return throwError(() => new Error('No user in auth state'));
+              }
+
+              const expiresAt = Date.now() + (token.expires_in ?? 1800) * 1000;
+
+              // Update state
+              const newState: LocalAuthState = {
+                isAuthenticated: true,
+                user: currentUser,
+                accessToken: token.access_token,
+                refreshToken: token.refresh_token || refreshToken, // Use new refresh token or keep old one
+                expiresAt,
+              };
+
+              this.authStateSubject.next(newState);
+
+              // Persist new tokens
+              return from(
+                Promise.all([
+                  Preferences.set({
+                    key: STORAGE_KEYS.ACCESS_TOKEN,
+                    value: token.access_token,
+                  }),
+                  token.refresh_token
+                    ? Preferences.set({
+                        key: STORAGE_KEYS.REFRESH_TOKEN,
+                        value: token.refresh_token,
+                      })
+                    : Promise.resolve(),
+                  Preferences.set({
+                    key: STORAGE_KEYS.EXPIRES_AT,
+                    value: expiresAt.toString(),
+                  }),
+                ])
+              ).pipe(map(() => newState));
+            }),
+            catchError(error => {
+              this.logger.error('Auth', 'Token refresh failed', error);
+              // Clear invalid refresh token
+              from(Preferences.remove({ key: STORAGE_KEYS.REFRESH_TOKEN })).subscribe();
+              return throwError(() => new Error('Token refresh failed. Please login again.'));
+            })
+          );
+      })
+    );
   }
 
   /**
    * Get current access token
+   * Waits for initialization to complete before returning
    */
-  getAccessToken(): string | null {
+  async getAccessToken(): Promise<string | null> {
+    // Wait for initialization to complete
+    await this.initializationPromise;
     return this.authStateSubject.value.accessToken;
   }
 
@@ -534,16 +695,18 @@ export class LocalAuthService {
    * Fetch user profile information from the API Gateway after successful login
    */
   private fetchUserProfile(accessToken: string): Observable<GatewayUserResponse> {
-    const headers = new HttpHeaders({
+    const headers = {
       Authorization: `Bearer ${accessToken}`,
-    });
+    };
 
-    // Call user profile endpoint directly
-    return this.http.get<GatewayUserResponse>(`${this.baseUrl}/users/me`, { headers }).pipe(
-      catchError(error => {
-        return throwError(() => new Error('Failed to fetch user profile'));
-      })
-    );
+    // Call user profile endpoint directly (use Capacitor HTTP to bypass CORS)
+    return this.capacitorHttp
+      .get<GatewayUserResponse>(`${this.baseUrl}/users/me`, { headers })
+      .pipe(
+        catchError(error => {
+          return throwError(() => new Error('Failed to fetch user profile'));
+        })
+      );
   }
 
   /**
@@ -644,6 +807,7 @@ interface GatewayTokenResponse {
   access_token: string;
   token_type: string;
   expires_in?: number;
+  refresh_token?: string;
 }
 
 /**

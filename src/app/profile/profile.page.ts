@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { take, takeUntil } from 'rxjs/operators';
 
 import { TidepoolAuthService, AuthState } from '../core/services/tidepool-auth.service';
 import { ProfileService } from '../core/services/profile.service';
@@ -25,6 +25,7 @@ interface ProfileDisplayData {
   standalone: false,
 })
 export class ProfilePage implements OnInit, OnDestroy {
+  @ViewChild('avatarInput') avatarInput?: ElementRef<HTMLInputElement>;
   // User data
   profileData: ProfileDisplayData | null = null;
   profile: UserProfile | null = null;
@@ -113,12 +114,7 @@ export class ProfilePage implements OnInit, OnDestroy {
       this.isConnected = state.isAuthenticated;
 
       if (state.isAuthenticated) {
-        this.profileData = {
-          name: state.userId || this.translationService.instant('profile.defaultName'),
-          email: state.email || this.translationService.instant('profile.noEmail'),
-          memberSince: this.formatMemberSince(),
-          avatarUrl: this.profile?.avatar?.imagePath,
-        };
+        this.refreshProfileDisplay();
       }
     });
   }
@@ -134,6 +130,7 @@ export class ProfilePage implements OnInit, OnDestroy {
         this.lastSyncTime = profile.tidepoolConnection.lastSyncTime || null;
         this.currentTheme = profile.preferences.themeMode;
         this.currentGlucoseUnit = profile.preferences.glucoseUnit;
+        this.refreshProfileDisplay();
       }
     });
   }
@@ -398,6 +395,18 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   /**
+   * Open Tidepool Dashboard
+   */
+  openTidepoolDashboard(): void {
+    this.authService.authState.pipe(take(1)).subscribe(state => {
+      if (state.userId) {
+        const dashboardUrl = `https://app.tidepool.org/patients/${state.userId}/data`;
+        window.open(dashboardUrl, '_blank');
+      }
+    });
+  }
+
+  /**
    * Open Terms of Service
    */
   openTermsOfService(): void {
@@ -524,6 +533,81 @@ export class ProfilePage implements OnInit, OnDestroy {
     } catch (error) {
       console.warn('Failed to format date value', error);
       return null;
+    }
+  }
+
+  triggerAvatarUpload(): void {
+    this.avatarInput?.nativeElement.click();
+  }
+
+  async onAvatarSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+    if (!file) {
+      return;
+    }
+
+    // Reset the input so selecting the same file again still triggers change event
+    input.value = '';
+
+    if (file.size > 3 * 1024 * 1024) {
+      await this.presentAvatarError('profile.avatar.tooLarge');
+      return;
+    }
+
+    try {
+      const imagePath = await this.readFileAsDataURL(file);
+      const updatedProfile = await this.profileService.updateProfile({
+        avatar: {
+          id: 'custom-avatar',
+          name: file.name || 'Custom',
+          imagePath,
+          category: 'custom',
+        },
+      });
+      this.profile = updatedProfile;
+      this.refreshProfileDisplay();
+    } catch (error) {
+      console.error('Failed to update avatar', error);
+      await this.presentAvatarError('profile.avatar.updateFailed');
+    }
+  }
+
+  private async readFileAsDataURL(file: File): Promise<string> {
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  private async presentAvatarError(messageKey: string): Promise<void> {
+    const alert = await this.alertController.create({
+      header: this.translationService.instant('profile.avatar.errorTitle'),
+      message: this.translationService.instant(messageKey),
+      buttons: [this.translationService.instant('common.ok')],
+    });
+    await alert.present();
+  }
+
+  private refreshProfileDisplay(): void {
+    if (this.profile) {
+      this.profileData = {
+        name: this.profile.name || this.translationService.instant('profile.defaultName'),
+        email:
+          this.profile.tidepoolConnection.email ||
+          this.translationService.instant('profile.noEmail'),
+        memberSince: this.formatMemberSince(),
+        avatarUrl: this.profile.avatar?.imagePath,
+      };
+    } else if (this.authState?.isAuthenticated) {
+      this.profileData = {
+        name: this.authState.userId || this.translationService.instant('profile.defaultName'),
+        email: this.authState.email || this.translationService.instant('profile.noEmail'),
+        memberSince: this.translationService.instant('profile.memberSince.recent'),
+        avatarUrl: undefined,
+      };
     }
   }
 }

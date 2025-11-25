@@ -14,6 +14,12 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [CommonModule, ReactiveFormsModule, IonicModule, RouterModule.forChild(routes), AppointmentCreatePage],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    IonicModule,
+    RouterModule.forChild(routes),
+    AppointmentCreatePage,
+  ],
 })
 export class AppointmentCreatePageModule {}

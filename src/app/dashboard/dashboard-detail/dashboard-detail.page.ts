@@ -19,8 +19,13 @@ import { AppIconComponent } from '../../shared/components/app-icon/app-icon.comp
   templateUrl: './dashboard-detail.page.html',
   styleUrls: ['./dashboard-detail.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, TranslateModule, StatCardComponent,
-    AppIconComponent
+  imports: [
+    CommonModule,
+    IonicModule,
+    RouterModule,
+    TranslateModule,
+    StatCardComponent,
+    AppIconComponent,
   ],
 })
 export class DashboardDetailPage implements OnInit, OnDestroy {

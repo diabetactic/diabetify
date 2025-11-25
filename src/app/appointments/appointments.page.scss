@@ -143,18 +143,21 @@ ion-segment {
 }
 
 // Dark mode adjustments
-:host-context(.dark-theme) {
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
   .appointments-content {
     --background: #0f172a;
   }
 
   .empty-state,
-  .appointment-item {
+  .appointment-item,
+  .appointment-card {
     background: var(--ion-color-step-150, #111827);
     box-shadow: 0 8px 16px rgb(0 0 0 / 25%);
   }
 
-  .appointment-item {
+  .appointment-item,
+  .appointment-card ion-item {
     ion-label {
       h2,
       h3 {

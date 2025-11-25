@@ -38,6 +38,9 @@ ion-content {
   align-items: center;
   justify-content: center;
   padding: 8px;
+  position: relative;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .hero-avatar {
@@ -54,6 +57,17 @@ ion-content {
 .avatar-fallback {
   font-size: 72px;
   color: rgb(255 255 255 / 85%);
+}
+
+.change-photo-btn {
+  --border-radius: 9999px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --border-color: rgb(255 255 255 / 60%);
+  --color: #fff;
+  --background: transparent;
+  --background-activated: rgb(255 255 255 / 12%);
+  margin-top: 12px;
 }
 
 // Overview grid responsive layout
@@ -180,8 +194,9 @@ button.overview-card {
   }
 }
 
-// Dark theme overrides
-:host-context(.dark-theme) {
+// Dark theme overrides (match global 'dark' / ion-palette-dark classes)
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
   ion-content {
     --background: #0f172a;
   }
@@ -195,6 +210,10 @@ button.overview-card {
     background: var(--ion-color-step-150, #111827);
     box-shadow: 0 12px 24px rgb(0 0 0 / 35%);
     color: #fff;
+  }
+
+  .change-photo-btn {
+    --border-color: rgb(255 255 255 / 40%);
   }
 
   .overview-card--placeholder .card-subtitle {

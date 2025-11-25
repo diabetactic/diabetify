@@ -1,5 +1,59 @@
 {
   "mcpServers": {
+    "maestro": {
+      "command": "maestro",
+      "args": [
+        "mcp",
+        "--working-dir=/home/julito/TPP/diabetify-extServices-20251103-061913/diabetify/maestro"
+      ],
+      "type": "stdio",
+      "description": "Maestro mobile UI testing framework - PRIMARY MOBILE TESTING"
+    },
+    "mobile-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mobilenext/mobile-mcp"
+      ],
+      "type": "stdio",
+      "description": "AI-native mobile automation with accessibility tree inspection"
+    },
+    "android-adb": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@landicefu/android-adb-mcp-server@latest"
+      ],
+      "type": "stdio",
+      "description": "Android device control via ADB (APK install, debugging)"
+    },
+    "awesome-ionic-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "awesome-ionic-mcp"
+      ],
+      "type": "stdio",
+      "description": "Ionic/Capacitor/Angular development assistant - Shadow DOM expert"
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "type": "stdio",
+      "description": "Structured problem-solving for complex debugging tasks"
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem"
+      ],
+      "type": "stdio",
+      "description": "Advanced file operations - batch add data-testid attributes"
+    },
     "tavily": {
       "command": "env",
       "args": [
@@ -9,7 +63,7 @@
         "tavily-mcp@latest"
       ],
       "type": "stdio",
-      "description": "Web search and content extraction (FREE)"
+      "description": "Web search and content extraction"
     },
     "context7": {
       "command": "npx",
@@ -18,45 +72,7 @@
         "@upstash/context7-mcp"
       ],
       "type": "stdio",
-      "description": "Library documentation lookup (FREE)"
-    },
-    "chrome-devtools": {
-      "command": "npx",
-      "args": [
-        "chrome-devtools-mcp@latest"
-      ],
-      "type": "stdio",
-      "description": "Browser testing and UI interaction (FREE)"
-    },
-    "playwright": {
-      "command": "npx",
-      "args": [
-        "@playwright/mcp@latest"
-      ],
-      "type": "stdio",
-      "description": "Web automation and E2E testing (FREE)"
-    },
-    "zen": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "git+https://github.com/BeehiveInnovations/zen-mcp-server.git",
-        "zen-mcp-server"
-      ],
-      "type": "stdio",
-      "env": {
-        "GEMINI_API_KEY": "AIzaSyAe0_rCmmACMeEZ9mKovqFcDGI-FcG8W8E"
-      },
-      "description": "AI-powered MCP server with multiple language models"
-    },
-    "android-adb": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@landicefu/android-adb-mcp-server@latest"
-      ],
-      "type": "stdio",
-      "description": "Interactuar con dispositivos Android via ADB (instalar APKs, etc.)"
+      "description": "General library documentation lookup"
     }
   }
 }

@@ -99,6 +99,6 @@ From `backend-services.helper.ts`:
 
 - If tests timeout, check backend services are running
 - Verify TEST_USER credentials match backend database
-- Check SERVICE_PORTS match actual service configuration
+- Ensure `SERVICE_PORTS.apiGateway` matches the gateway port exposed by Docker
 - Review backend logs for authentication issues
 - Ensure JSONB field supports nested structures

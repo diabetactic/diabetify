@@ -36,17 +36,12 @@ export function createMockPlatformDetectorService(
     'getApiBaseUrl',
     'getPlatformConfig',
     'logPlatformInfo',
-    'isNativePlatform',
-    'isWebPlatform',
   ]);
 
   // Configure API base URL based on platform
   mock.getApiBaseUrl.and.returnValue(PLATFORM_BASE_URLS[platform]);
 
   // Configure platform detection
-  mock.isNativePlatform.and.returnValue(platform !== 'web');
-  mock.isWebPlatform.and.returnValue(platform === 'web');
-
   // Configure platform config
   mock.getPlatformConfig.and.returnValue({
     platform,
@@ -54,14 +49,7 @@ export function createMockPlatformDetectorService(
     isWeb: platform === 'web',
     isMobile: platform !== 'web',
     isDesktop: platform === 'web',
-    isAndroid: platform === 'android',
-    isIOS: platform === 'ios',
     baseUrl: PLATFORM_BASE_URLS[platform],
-    apiUrl: `${PLATFORM_BASE_URLS[platform]}/api`,
-    requiresAuth: true,
-    supportsCookies: platform === 'web',
-    supportsLocalStorage: true,
-    supportsCapacitor: platform !== 'web',
   });
 
   // Stub logging method
@@ -93,28 +81,16 @@ export function createDynamicPlatformDetectorMock() {
     'getApiBaseUrl',
     'getPlatformConfig',
     'logPlatformInfo',
-    'isNativePlatform',
-    'isWebPlatform',
   ]);
 
   mock.getApiBaseUrl.and.callFake(() => PLATFORM_BASE_URLS[currentPlatform]);
-  mock.isNativePlatform.and.callFake(() => currentPlatform !== 'web');
-  mock.isWebPlatform.and.callFake(() => currentPlatform === 'web');
-
   mock.getPlatformConfig.and.callFake(() => ({
     platform: currentPlatform,
     isNative: currentPlatform !== 'web',
     isWeb: currentPlatform === 'web',
     isMobile: currentPlatform !== 'web',
     isDesktop: currentPlatform === 'web',
-    isAndroid: currentPlatform === 'android',
-    isIOS: currentPlatform === 'ios',
     baseUrl: PLATFORM_BASE_URLS[currentPlatform],
-    apiUrl: `${PLATFORM_BASE_URLS[currentPlatform]}/api`,
-    requiresAuth: true,
-    supportsCookies: currentPlatform === 'web',
-    supportsLocalStorage: true,
-    supportsCapacitor: currentPlatform !== 'web',
   }));
 
   mock.logPlatformInfo.and.stub();

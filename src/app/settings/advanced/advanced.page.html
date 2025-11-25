@@ -17,8 +17,13 @@
   <ion-list>
     <!-- Sign Out Button -->
     <ion-item>
-      <ion-button expand="block" color="danger" (click)="signOut()" class="sign-out-button inline-flex items-center gap-2">
-    <app-icon  name="log-out-outline"></app-icon>
+      <ion-button
+        expand="block"
+        color="danger"
+        (click)="signOut()"
+        class="sign-out-button inline-flex items-center gap-2"
+      >
+        <app-icon name="log-out-outline"></app-icon>
         {{ 'settings.advanced.signOut' | translate }}
       </ion-button>
     </ion-item>
@@ -31,7 +36,7 @@
         (click)="clearLocalData()"
         class="clear-data-button inline-flex items-center gap-2"
       >
-    <app-icon  name="trash-outline"></app-icon>
+        <app-icon name="trash-outline"></app-icon>
         {{ 'settings.advanced.clearData' | translate }}
       </ion-button>
     </ion-item>

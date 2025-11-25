@@ -1,5 +1,5 @@
 /**
- * User profile models for Diabetify mobile app
+ * User profile models for Diabetactic mobile app
  * Manages user preferences, Tidepool connection, and app settings
  */
 
