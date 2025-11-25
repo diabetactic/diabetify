@@ -6,23 +6,21 @@ import { TranslateModule } from '@ngx-translate/core';
 /**
  * Devices Page - BLE Integration Placeholder
  *
- * STATUS: NOT IMPLEMENTED (0% complete)
+ * STATUS: NOT IMPLEMENTED
  *
- * This component is a placeholder for future Bluetooth Low Energy (BLE) functionality.
- * According to CLAUDE.md, BLE integration is documented but not yet implemented.
+ * Placeholder para funcionalidad futura de Bluetooth Low Energy (BLE).
  *
- * Planned features:
- * - Scan for BLE glucose meters
- * - Connect to devices using Glucose Service UUID (00001808-...)
- * - Read glucose measurements from connected devices
- * - Parse SFLOAT16 format readings
- * - Sync device data to local storage and Tidepool
+ * Funcionalidades planificadas:
+ * - Escaneo de medidores de glucosa BLE
+ * - Conexión mediante Glucose Service UUID (00001808-...)
+ * - Lectura de mediciones de dispositivos conectados
+ * - Parseo de formato SFLOAT16
+ * - Sincronización con almacenamiento local y Tidepool
  *
- * Dependencies (installed but unused):
+ * Dependencias (instaladas pero no utilizadas):
  * - @capacitor-community/bluetooth-le
  *
- * TODO: Implement BLE functionality
- * See CLAUDE.md section "BLE Integration (Not Implemented)" for full specifications
+ * TODO: Implementar funcionalidad BLE
  */
 @Component({
   selector: 'app-devices',

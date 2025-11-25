@@ -255,3 +255,9 @@ src/assets/images/*tt.png
 
 # Internal development notes
 MAESTRO_TESTING_LESSONS_LEARNED.md
+
+# AI/Agent instructions
+.github/instructions/
+
+# npm cache in wrong locations
+**/.npm-cache/
