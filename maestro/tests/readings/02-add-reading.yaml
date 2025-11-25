@@ -1,0 +1,50 @@
+appId: io.diabetactic.app
+tags:
+  - regression
+  - readings
+  - add-reading
+---
+# Test: Add glucose reading
+# Uses COORDINATE-BASED selectors (WebView text not accessible)
+
+# Login first
+- runFlow:
+    file: ../../flows/auth/login.yaml
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Navigate to Readings tab (30% from left)
+- tapOn:
+    point: "30%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/add-reading-01-before.png
+
+# Tap FAB button to add reading (center bottom, above tab bar)
+- tapOn:
+    point: "50%,90%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Fill glucose value
+- tapOn:
+    point: "50%,35%"
+- eraseText
+- inputText: "125"
+- hideKeyboard
+
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Tap save button (usually at bottom of form)
+- tapOn:
+    point: "50%,85%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/add-reading-02-after.png
+
+# CLEANUP
+- stopApp

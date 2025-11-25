@@ -1,0 +1,109 @@
+appId: io.diabetactic.app
+env:
+  GLUCOSE_OBJECTIVE: "120"
+  INSULIN_TYPE: "rapid"
+  INSULIN_DOSE: "4"
+---
+# Simplified appointment creation flow
+# Expects to be on appointments page
+
+# Tap create appointment button
+- tapOn:
+    text: "Nueva Cita|New Appointment|+"
+    optional: true
+- tapOn:
+    id: ".*fab.*|.*add.*"
+    optional: true
+- waitForAnimationToEnd
+
+# Fill basic required fields only
+
+# Doctor selection (if visible)
+- runFlow:
+    when:
+      visible: "Doctor|Médico"
+    commands:
+      - tapOn: "Seleccionar|Select"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: ".*Dr.*|.*Dra.*"
+          index: 0  # Select first doctor
+      - waitForAnimationToEnd
+
+# Date (usually defaults to today)
+- runFlow:
+    when:
+      visible: "Fecha|Date"
+    commands:
+      - tapOn:
+          text: "Hoy|Today|Seleccionar fecha|Select date"
+          optional: true
+
+# Time (select first available)
+- runFlow:
+    when:
+      visible: "Hora|Time"
+    commands:
+      - tapOn: "Hora|Time"
+      - waitForAnimationToEnd
+      - tapOn:
+          text: "[0-9]+:[0-9]+"
+          index: 0  # First available time
+      - waitForAnimationToEnd
+
+# Glucose objective (using coordinate for Ionic input)
+- tapOn:
+    point: "50%,30%"  # Approximate location of glucose field
+- eraseText
+- inputText: ${GLUCOSE_OBJECTIVE}
+- hideKeyboard
+
+# Insulin type (if visible)
+- runFlow:
+    when:
+      visible: "Tipo de insulina|Insulin type"
+    commands:
+      - tapOn:
+          point: "50%,45%"
+      - eraseText
+      - inputText: ${INSULIN_TYPE}
+      - hideKeyboard
+
+# Insulin dose (if visible)
+- runFlow:
+    when:
+      visible: "Dosis|Dose"
+    commands:
+      - tapOn:
+          point: "50%,55%"
+      - eraseText
+      - inputText: ${INSULIN_DOSE}
+      - hideKeyboard
+
+# Reason/Motive - select first checkbox
+- runFlow:
+    when:
+      visible: "Motivo|Reason|Motive"
+    commands:
+      - tapOn:
+          text: "Control|Checkup|Routine"
+          optional: true
+      - tapOn:
+          id: ".*checkbox.*"
+          index: 0
+          optional: true
+
+# Submit form
+- scrollUntilVisible:
+    element:
+      text: "Guardar|Save|Crear|Create"
+    direction: DOWN
+    timeout: 5000
+- tapOn: "Guardar|Save|Crear|Create"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Verify success (should return to appointments list)
+- assertVisible:
+    text: "Citas"
+    optional: true

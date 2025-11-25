@@ -29,7 +29,7 @@ print_check() {
     fi
 }
 
-print_header "Diabetify - Theme Interference Checker"
+print_header "Diabetactic - Theme Interference Checker"
 
 # 1. Verificar meta tag en index.html
 print_header "1. Verificando meta tag color-scheme"

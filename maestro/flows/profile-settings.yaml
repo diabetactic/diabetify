@@ -2,9 +2,9 @@
 # Usage: - runFlow: flows/profile-settings.yaml
 ---
 # Navigate to Profile tab
-- tapOn: "Profile"
+- tapOn: "Perfil"
 - waitForAnimationToEnd
-- assertVisible: "Profile"
+- assertVisible: "Perfil"
 
 # Scroll to access all settings
 - scroll

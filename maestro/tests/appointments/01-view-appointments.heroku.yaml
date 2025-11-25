@@ -1,0 +1,44 @@
+appId: io.diabetactic.app
+tags:
+  - appointments
+  - heroku
+  - backend
+  - integration
+---
+# Test: View Appointments from Heroku Backend
+# Uses COORDINATE-BASED selectors
+
+# Login
+- runFlow:
+    file: ../../flows/auth/login.yaml
+
+# Navigate to Appointments tab (70% from left)
+- tapOn:
+    point: "70%,97%"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Wait for API response (Heroku cold start can take longer)
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- takeScreenshot: maestro/screenshots/heroku/appointments/01-list-loaded.png
+
+# Tap on first appointment if exists (middle of list area)
+- tapOn:
+    point: "50%,40%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/heroku/appointments/02-detail-view.png
+
+# Go back (tap top left back area)
+- tapOn:
+    point: "10%,8%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/heroku/appointments/03-back-to-list.png
+
+# CLEANUP
+- stopApp

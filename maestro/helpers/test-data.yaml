@@ -1,0 +1,16 @@
+# Test data values for consistent testing
+test_user:
+  email: "1000"
+  password: "tuvieja"
+  name: "Test User"
+
+test_readings:
+  normal: "120"
+  high: "250"
+  low: "70"
+  invalid: "999"
+
+test_appointment:
+  title: "Doctor Visit"
+  date: "Tomorrow"
+  time: "10:00 AM"

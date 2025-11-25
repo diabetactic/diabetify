@@ -1,24 +1,63 @@
-appId: io.diabetify.app
+appId: io.diabetactic.app
+tags:
+  - settings
+  - language
 ---
 # Test 4: Language switching
-- launchApp
-- assertVisible: "Diabetactic"
+# Uses COORDINATE-BASED selectors
 
-# Navigate to Profile
-- tapOn: "Profile"
-- assertVisible: "Profile"
+# Login first
+- runFlow:
+    file: ../flows/auth/login.yaml
 
-# Screenshot in English
-- takeScreenshot: maestro/screenshots/04-english.png
+- takeScreenshot: maestro/screenshots/04-language/01-initial-logged-in.png
 
-# Scroll to find language selector
-- scroll
-
-# Tap language selector (look for EN/ES or flag icons)
+# Navigate to Profile tab (90% from left)
 - tapOn:
-    text: ".*EN.*|.*English.*"
-    index: 0
-    optional: true
+    point: "90%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
 
-# Take screenshot after potential language change
-- takeScreenshot: maestro/screenshots/04-language-changed.png
+- takeScreenshot: maestro/screenshots/04-language/02-profile-page.png
+
+# Scroll to language section
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: maestro/screenshots/04-language/03-scrolled.png
+
+# Tap language selector area (usually middle of screen after scroll)
+- tapOn:
+    point: "50%,45%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/04-language/04-language-options.png
+
+# Select first option (toggle language)
+- tapOn:
+    point: "50%,40%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/04-language/05-language-selected.png
+
+# Navigate to dashboard to verify language changed globally
+- tapOn:
+    point: "10%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/04-language/06-dashboard-after-change.png
+
+# Navigate back to profile
+- tapOn:
+    point: "90%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/04-language/07-profile-final.png
+
+# CLEANUP
+- stopApp

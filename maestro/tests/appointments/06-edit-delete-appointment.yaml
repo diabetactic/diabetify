@@ -1,0 +1,104 @@
+appId: io.diabetactic.app
+tags:
+  - appointments
+  - crud
+---
+# Test: Edit and delete appointment
+# Uses COORDINATE-BASED selectors
+
+# Login
+- runFlow:
+    file: ../../flows/auth/login.yaml
+
+# Navigate to Appointments
+- tapOn:
+    point: "70%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/appt-crud-01-list.png
+
+# Step 1: Create new appointment
+- tapOn:
+    point: "50%,90%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Fill appointment form
+- tapOn:
+    point: "50%,30%"
+- eraseText
+- inputText: "Consulta cardiologia"
+- hideKeyboard
+
+# Add description if field exists
+- tapOn:
+    point: "50%,45%"
+- inputText: "Revision anual del corazon"
+- hideKeyboard
+
+# Save appointment
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn:
+    point: "50%,85%"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- takeScreenshot: maestro/screenshots/appt-crud-02-created.png
+
+# Step 2: Tap on the appointment to view details
+- tapOn:
+    point: "50%,35%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/appt-crud-03-details.png
+
+# Step 3: Look for edit button (top right menu icon)
+- tapOn:
+    point: "90%,8%"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: maestro/screenshots/appt-crud-04-menu.png
+
+# Tap edit option (usually first in menu)
+- tapOn:
+    point: "50%,40%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/appt-crud-05-edit-mode.png
+
+# Modify the appointment
+- tapOn:
+    point: "50%,30%"
+- eraseText
+- inputText: "Consulta cardiologia ACTUALIZADA"
+- hideKeyboard
+
+# Save changes
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn:
+    point: "50%,85%"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- takeScreenshot: maestro/screenshots/appt-crud-06-edited.png
+
+# Step 4: Navigate back to list
+- tapOn:
+    point: "70%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/appt-crud-07-final-list.png
+
+# CLEANUP
+- stopApp

@@ -1,0 +1,58 @@
+# ═══════════════════════════════════════════════════
+# Maestro Environment Configuration - Heroku API Gateway
+# ═══════════════════════════════════════════════════
+# Tests against live Heroku API Gateway (cloud backend)
+# Run tests: maestro test --env-file config/environments/heroku.yaml
+# Or with tags: maestro test --include-tags heroku
+
+# ───────────────────────────────────────────────────
+# Backend Configuration
+# ───────────────────────────────────────────────────
+ENV_MODE: cloud
+BACKEND_URL: https://diabetactic-api-gateway-37949d6f182f.herokuapp.com
+BACKEND_MODE: cloud
+USE_MOCK_ADAPTER: "false"
+USE_HEROKU_API: "true"
+USE_LOCAL_BACKEND: "false"
+
+# ───────────────────────────────────────────────────
+# Heroku API Settings
+# ───────────────────────────────────────────────────
+HEROKU_GATEWAY_URL: "https://diabetactic-api-gateway-37949d6f182f.herokuapp.com"
+API_GATEWAY_TIMEOUT: "30000"  # 30 seconds (cloud API needs more time)
+MAX_RETRIES: "3"
+RETRY_DELAY: "1000"  # 1 second between retries
+
+# ───────────────────────────────────────────────────
+# Test User Credentials (Heroku-specific test user)
+# ───────────────────────────────────────────────────
+TEST_USER_EMAIL: "test@example.com"
+TEST_USER_PASSWORD: "Test123!"
+TEST_USER_DNI: "1000"
+TEST_USER_PASS: "tuvieja"
+
+# ───────────────────────────────────────────────────
+# Health Check & Monitoring
+# ───────────────────────────────────────────────────
+HEROKU_HEALTH_CHECK_ENDPOINT: "/health"
+HEROKU_HEALTH_CHECK_TIMEOUT: "5000"
+
+# ───────────────────────────────────────────────────
+# Timeouts (longer for cloud API)
+# ───────────────────────────────────────────────────
+DEFAULT_TIMEOUT: "15000"
+ANIMATION_TIMEOUT: "3000"
+DATA_LOAD_TIMEOUT: "20000"
+LOGIN_TIMEOUT: "15000"
+HEROKU_TIMEOUT_BUFFER: "5000"  # Extra buffer for cloud API latency
+
+# ───────────────────────────────────────────────────
+# Network Settings
+# ───────────────────────────────────────────────────
+EXPECT_NETWORK_DELAYS: "true"
+ALLOW_SLOW_RESPONSES: "true"
+
+# ───────────────────────────────────────────────────
+# Description
+# ───────────────────────────────────────────────────
+DESCRIPTION: "Tests using Heroku API Gateway. Full integration testing against cloud backend with real API endpoints. Use for production-like testing and PR validation."

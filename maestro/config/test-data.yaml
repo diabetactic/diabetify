@@ -10,7 +10,7 @@
 
 # Demo User Credentials
 DEMO_USER_EMAIL: "demo@diabetactic.com"
-DEMO_USER_PASSWORD: "demo123"
+DEMO_USER_PASSWORD: "tuvieja"
 
 # Additional Test Users
 TEST_USER_1_EMAIL: "patient1@test.com"

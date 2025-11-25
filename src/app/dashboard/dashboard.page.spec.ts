@@ -6,7 +6,8 @@ import { map } from 'rxjs/operators';
 import { DashboardPage } from './dashboard.page';
 import { ReadingsService } from '../core/services/readings.service';
 import { TidepoolSyncService } from '../core/services/tidepool-sync.service';
-import { AppointmentService, Appointment } from '../core/services/appointment.service';
+import { AppointmentService } from '../core/services/appointment.service';
+import { Appointment } from '../core/models/appointment.model';
 import { LocalGlucoseReading, GlucoseStatistics } from '../core/models/glucose-reading.model';
 import { SyncStatus } from '../core/models/tidepool-sync.model';
 import { SharedModule } from '../shared/shared.module';
@@ -135,6 +136,7 @@ class ProfileServiceStub {
   });
 
   profile$ = this.profileSubject.asObservable();
+  getProfile = jasmine.createSpy('getProfile').and.callFake(async () => this.profileSubject.value);
   updatePreferences = jasmine.createSpy('updatePreferences').and.returnValue(Promise.resolve({}));
 }
 
@@ -157,7 +159,6 @@ describe('DashboardPage', () => {
 
   let mockReadingsSubject: BehaviorSubject<LocalGlucoseReading[]>;
   let mockSyncStatusSubject: BehaviorSubject<SyncStatus>;
-  let mockUpcomingAppointmentSubject: BehaviorSubject<Appointment | null>;
 
   const mockStatistics: GlucoseStatistics = {
     average: 120,
@@ -218,25 +219,26 @@ describe('DashboardPage', () => {
   };
 
   const mockAppointment: Appointment = {
-    id: 'apt-1',
-    patientId: 'patient-1',
-    patientName: 'John Doe',
-    doctorId: 'doc-1',
-    doctorName: 'Dr. Smith',
-    date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
-    startTime: '10:00',
-    endTime: '10:30',
-    status: 'confirmed',
-    urgency: 'routine',
-    reason: 'Regular checkup',
-    glucoseDataShared: true,
+    appointment_id: 1,
+    user_id: 1000,
+    glucose_objective: 120,
+    insulin_type: 'rapid',
+    dose: 10,
+    fast_insulin: 'Humalog',
+    fixed_dose: 5,
+    ratio: 10,
+    sensitivity: 50,
+    pump_type: 'none',
+    control_data: 'Regular checkup - stable control',
+    motive: ['control_routine'],
+    other_motive: null,
+    another_treatment: null,
   };
 
   beforeEach(async () => {
     // Create spies
     mockReadingsSubject = new BehaviorSubject<LocalGlucoseReading[]>(mockRecentReadings);
     mockSyncStatusSubject = new BehaviorSubject<SyncStatus>(mockSyncStatus);
-    mockUpcomingAppointmentSubject = new BehaviorSubject<Appointment | null>(mockAppointment);
 
     readingsServiceSpy = jasmine.createSpyObj(
       'ReadingsService',
@@ -250,10 +252,9 @@ describe('DashboardPage', () => {
 
     appointmentServiceSpy = jasmine.createSpyObj(
       'AppointmentService',
-      ['getAppointments', 'shareGlucoseData'],
+      ['getAppointments'],
       {
         appointments$: of([mockAppointment]),
-        upcomingAppointment$: mockUpcomingAppointmentSubject.asObservable(),
       }
     );
 
@@ -273,7 +274,6 @@ describe('DashboardPage', () => {
     );
     syncServiceSpy.performManualSync.and.returnValue(Promise.resolve(mockSyncStatus));
     appointmentServiceSpy.getAppointments.and.returnValue(of([mockAppointment]));
-    appointmentServiceSpy.shareGlucoseData.and.returnValue(of({ shared: true, recordCount: 450 }));
 
     const mockToast = {
       present: jasmine.createSpy('present'),
@@ -401,22 +401,6 @@ describe('DashboardPage', () => {
       expect(component.formatGlucose(undefined)).toBe('0');
     });
 
-    it('should format time until appointment correctly', () => {
-      component.upcomingAppointment = {
-        ...mockAppointment,
-        date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // 1 day
-        startTime: new Date(Date.now() + 86400000).toISOString().split('T')[1].slice(0, 5),
-      };
-      expect(component.getTimeUntilAppointment()).toContain('day');
-
-      component.upcomingAppointment = {
-        ...mockAppointment,
-        date: new Date(Date.now() + 3600000).toISOString().split('T')[0], // 1 hour
-        startTime: new Date(Date.now() + 3600000).toISOString().split('T')[1].slice(0, 5),
-      };
-      expect(component.getTimeUntilAppointment()).toContain('hour');
-    });
-
     it('should format last sync display correctly', () => {
       component.syncStatus = {
         ...mockSyncStatus,
@@ -432,33 +416,10 @@ describe('DashboardPage', () => {
     });
   });
 
-  describe('Appointment Integration', () => {
-    it('should load appointments on init', fakeAsync(() => {
-      fixture.detectChanges();
-      tick();
-
-      expect(component.upcomingAppointment).toEqual(mockAppointment);
-    }));
-
-    it('should share glucose data with doctor', fakeAsync(() => {
-      component.upcomingAppointment = mockAppointment;
-
-      component.shareGlucoseData();
-      tick();
-
-      expect(appointmentServiceSpy.shareGlucoseData).toHaveBeenCalled();
-      expect(toastControllerSpy.create).toHaveBeenCalled();
-    }));
-
+  describe('Navigation', () => {
     it('should navigate to add reading page', () => {
       component.addReading();
       expect(routerSpy.navigate).toHaveBeenCalledWith(['/add-reading']);
-    });
-
-    it('should navigate to appointment details', () => {
-      component.upcomingAppointment = mockAppointment;
-      component.viewAppointmentDetails();
-      expect(routerSpy.navigate).toHaveBeenCalledWith(['/appointments', 'apt-1']);
     });
   });
 });

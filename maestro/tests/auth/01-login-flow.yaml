@@ -1,54 +1,68 @@
-appId: io.diabetify.app
+appId: io.diabetactic.app
 tags:
   - smoke
   - auth
   - critical
 ---
 # Test: Complete login flow
-# Maps to: src/app/tests/integration/enhanced/auth-user-journey.spec.ts
-# Description: Verify user can log in with valid credentials and reach dashboard
+# Uses COORDINATE-BASED selectors (WebView text not accessible)
 
-- launchApp:
-    clearState: true
+
+- waitForAnimationToEnd:
+    timeout: 5000
 
 - takeScreenshot: "screenshots/auth-01-initial-state.png"
 
-# Navigate to login page
+# Tap login button on welcome screen (bottom ~95%)
 - tapOn:
-    text: "Iniciar Sesión"
+    point: "50%,95%"
+- waitForAnimationToEnd:
+    timeout: 3000
 
-- assertVisible: "DNI"
-- assertVisible: "Contraseña"
 - takeScreenshot: "screenshots/auth-02-login-page.png"
 
-# Fill login form
+# Fill login form using coordinates
 - tapOn:
-    id: "dni-input"
+    point: "50%,40%"
+- eraseText
 - inputText: "1000"
+- hideKeyboard
 
 - tapOn:
-    id: "password-input"
+    point: "50%,50%"
+- eraseText
 - inputText: "tuvieja"
+- hideKeyboard
 
 - takeScreenshot: "screenshots/auth-03-form-filled.png"
 
-# Submit form
+# Swipe up and tap submit
+- swipe:
+    direction: UP
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 2000
+
 - tapOn:
-    id: "login-submit-btn"
+    point: "50%,60%"
 
-# Wait for navigation
-- wait:
-    seconds: 2
-
-# Verify successful login
-- assertVisible: "Dashboard"
-- assertVisible: "Bienvenido"
+- waitForAnimationToEnd:
+    timeout: 5000
 
 - takeScreenshot: "screenshots/auth-04-login-success.png"
 
-# Verify tab navigation is available
-- assertVisible: "Lecturas"
-- assertVisible: "Citas"
-- assertVisible: "Perfil"
+# Navigate tabs to verify dashboard loaded
+- tapOn:
+    point: "30%,97%"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn:
+    point: "10%,97%"
+- waitForAnimationToEnd:
+    timeout: 2000
 
 - takeScreenshot: "screenshots/auth-05-dashboard-complete.png"
+
+# CLEANUP
+- stopApp

@@ -1,0 +1,102 @@
+appId: io.diabetactic.app
+tags:
+  - integration
+  - offline
+  - sync
+---
+# Test: Offline indicators and local caching
+# Uses COORDINATE-BASED selectors
+
+# Login
+- runFlow:
+    file: ../../flows/auth/login.yaml
+
+- takeScreenshot: maestro/screenshots/offline-01-online.png
+
+# Step 1: Create reading while online
+- tapOn:
+    point: "30%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    point: "50%,90%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    point: "50%,35%"
+- eraseText
+- inputText: "125"
+- hideKeyboard
+
+- tapOn:
+    point: "50%,85%"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- takeScreenshot: maestro/screenshots/offline-02-online-reading.png
+
+# Step 2: Check profile for offline mode indicator
+- tapOn:
+    point: "90%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/offline-03-sync-status.png
+
+# Step 3: Return to dashboard
+- tapOn:
+    point: "10%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Step 4: Add another reading
+- tapOn:
+    point: "30%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    point: "50%,90%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    point: "50%,35%"
+- eraseText
+- inputText: "130"
+- hideKeyboard
+
+- tapOn:
+    point: "50%,85%"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- takeScreenshot: maestro/screenshots/offline-04-second-reading.png
+
+# Step 5: Verify readings list shows both
+- takeScreenshot: maestro/screenshots/offline-05-local-data.png
+
+# Step 6: Check sync status in profile
+- tapOn:
+    point: "90%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: maestro/screenshots/offline-06-sync-info.png
+
+# Step 7: Return to dashboard
+- tapOn:
+    point: "10%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/offline-07-final.png
+
+# CLEANUP
+- stopApp

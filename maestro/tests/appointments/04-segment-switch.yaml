@@ -1,0 +1,47 @@
+appId: io.diabetactic.app
+tags:
+  - regression
+  - appointments
+  - segment-navigation
+---
+# Test: Switch between upcoming and past appointments
+# Uses COORDINATE-BASED selectors
+
+# Login
+- runFlow:
+    file: ../../flows/auth/login.yaml
+
+# Navigate to Appointments tab
+- tapOn:
+    point: "70%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/appointment-segment-01-initial.png
+
+# Tap first segment (Próximas/Upcoming) - usually left side of segment control
+- tapOn:
+    point: "30%,15%"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: maestro/screenshots/appointment-segment-02-upcoming.png
+
+# Tap second segment (Pasadas/Past) - right side of segment control
+- tapOn:
+    point: "70%,15%"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: maestro/screenshots/appointment-segment-03-past.png
+
+# Back to first segment
+- tapOn:
+    point: "30%,15%"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: maestro/screenshots/appointment-segment-04-complete.png
+
+# CLEANUP
+- stopApp

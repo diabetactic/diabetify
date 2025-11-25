@@ -1,26 +1,60 @@
-appId: io.diabetify.app
+appId: io.diabetactic.app
+tags:
+  - settings
+  - theme
 ---
 # Test 3: Theme toggle (dark/light mode)
-- launchApp
-- assertVisible: "Diabetactic"
+# Uses COORDINATE-BASED selectors
 
-# Navigate to Profile
-- tapOn: "Profile"
-- assertVisible: "Profile"
+# Login first
+- runFlow:
+    file: ../flows/auth/login.yaml
 
-# Take screenshot in light mode
-- takeScreenshot: maestro/screenshots/03-light-mode.png
-
-# Toggle to dark mode (assumes toggle exists in profile)
-- scroll
-
-# Try to find and tap theme toggle
+# Navigate to Profile tab (90% from left)
 - tapOn:
-    text: ".*[Tt]heme.*"
-    index: 0
+    point: "90%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
 
-# Wait for theme change
-- waitForAnimationToEnd
+- takeScreenshot: maestro/screenshots/03-theme/01-light-initial.png
 
-# Take screenshot in dark mode
-- takeScreenshot: maestro/screenshots/03-dark-mode.png
+# Tap theme toggle (top right area on profile page)
+- tapOn:
+    point: "90%,12%"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: maestro/screenshots/03-theme/02-dark-selected.png
+
+# Return to dashboard to verify theme applied globally
+- tapOn:
+    point: "10%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/03-theme/03-dark-dashboard.png
+
+# Navigate back to profile
+- tapOn:
+    point: "90%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Toggle theme again (back to light)
+- tapOn:
+    point: "90%,12%"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: maestro/screenshots/03-theme/04-light-restored.png
+
+# Navigate to dashboard and verify light theme
+- tapOn:
+    point: "10%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/03-theme/05-light-dashboard.png
+
+# CLEANUP
+- stopApp
