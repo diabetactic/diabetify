@@ -1,0 +1,26 @@
+appId: io.diabetactic.app
+---
+# Ensures app starts in clean state
+# Use at beginning of tests that require fresh data
+
+# Note: External script handles pm clear better
+# This flow ensures UI is in expected initial state
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Check if we're at login or welcome screen
+- runFlow:
+    when:
+      visible: "Empezar|Get Started"
+    commands:
+      - tapOn: "Empezar|Get Started"
+      - waitForAnimationToEnd
+
+# If already at login screen, we're ready
+- assertVisible:
+    text: "Iniciar Sesión|Login|Sign In"
+    optional: true
+
+# Take screenshot for debugging
+- takeScreenshot: maestro/screenshots/setup/clean-state.png

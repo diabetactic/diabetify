@@ -24,17 +24,17 @@ export interface SyncQueueItem {
 }
 
 /**
- * Diabetify IndexedDB database
+ * Diabetactic IndexedDB database
  * Uses Dexie for type-safe IndexedDB operations
  */
-export class DiabetifyDatabase extends Dexie {
+export class DiabetacticDatabase extends Dexie {
   // Tables
   readings!: Table<LocalGlucoseReading, string>;
   syncQueue!: Table<SyncQueueItem, number>;
   appointments!: Table<Appointment, string>;
 
   constructor() {
-    super('DiabetifyDB');
+    super('DiabetacticDB');
 
     // Define database schema
     // Version 1: Initial schema
@@ -95,4 +95,4 @@ export class DiabetifyDatabase extends Dexie {
 }
 
 // Singleton instance
-export const db = new DiabetifyDatabase();
+export const db = new DiabetacticDatabase();

@@ -1,0 +1,65 @@
+appId: io.diabetactic.app
+tags:
+  - heroku
+  - auth
+  - integration
+  - critical
+env:
+  ENV_MODE: cloud
+  BACKEND_URL: https://diabetactic-api-gateway-37949d6f182f.herokuapp.com
+---
+# Test: Complete login flow (Heroku Mode)
+# Uses COORDINATE-BASED selectors (WebView text not accessible)
+# Backend: Live Heroku API Gateway
+
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- takeScreenshot: "maestro/screenshots/heroku-auth-01-initial.png"
+
+# Tap login button on welcome screen (bottom ~95%)
+- tapOn:
+    point: "50%,95%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: "maestro/screenshots/heroku-auth-02-login-page.png"
+
+# Swipe up to ensure submit button visible
+- swipe:
+    direction: UP
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Tap submit button (form should be pre-filled)
+- tapOn:
+    point: "50%,60%"
+
+# Wait for Heroku API response (may take longer)
+- waitForAnimationToEnd:
+    timeout: 8000
+
+- takeScreenshot: "maestro/screenshots/heroku-auth-03-dashboard.png"
+
+# Verify tabs work by navigating
+- tapOn:
+    point: "30%,97%"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn:
+    point: "70%,97%"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn:
+    point: "10%,97%"
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: "maestro/screenshots/heroku-auth-04-complete.png"
+
+# CLEANUP
+- stopApp

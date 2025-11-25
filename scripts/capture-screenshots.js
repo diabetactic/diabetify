@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer-core');
+const { chromium } = require('@playwright/test');
 const path = require('path');
 const fs = require('fs');
 
@@ -9,16 +9,15 @@ if (!fs.existsSync(screenshotsDir)) {
 }
 
 async function captureScreenshots() {
-  console.log('🚀 Launching browser...');
+  console.log('🚀 Launching Playwright (Chromium)...');
 
-  const browser = await puppeteer.launch({
-    executablePath: '/usr/bin/chromium',
+  const browser = await chromium.launch({
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
   });
 
   const page = await browser.newPage();
-  await page.setViewport({ width: 375, height: 667 }); // iPhone SE size
+  await page.setViewportSize({ width: 375, height: 667 }); // iPhone SE size
 
   const baseUrl = 'http://localhost:4200';
 
@@ -45,10 +44,7 @@ async function captureScreenshots() {
   for (const screenshot of screenshots) {
     try {
       console.log(`   → ${screenshot.name}: ${baseUrl}${screenshot.path}`);
-      await page.goto(`${baseUrl}${screenshot.path}`, {
-        waitUntil: 'networkidle2',
-        timeout: 15000,
-      });
+      await page.goto(`${baseUrl}${screenshot.path}`, { waitUntil: 'networkidle' });
 
       if (screenshot.wait) {
         await wait(screenshot.wait);
@@ -69,7 +65,7 @@ async function captureScreenshots() {
   // Capture dark mode profile
   try {
     console.log(`   → 13-profile-dark: Dark mode`);
-    await page.goto(`${baseUrl}/tabs/profile`, { waitUntil: 'networkidle2' });
+    await page.goto(`${baseUrl}/tabs/profile`, { waitUntil: 'networkidle' });
     await page.evaluate(() => {
       document.documentElement.setAttribute('data-theme', 'dark');
     });
@@ -86,7 +82,7 @@ async function captureScreenshots() {
   // Capture profile in edit mode
   try {
     console.log(`   → 14-profile-edit: Edit mode`);
-    await page.goto(`${baseUrl}/tabs/profile`, { waitUntil: 'networkidle2' });
+    await page.goto(`${baseUrl}/tabs/profile`, { waitUntil: 'networkidle' });
     await wait(1000);
 
     // Try to click edit button
@@ -109,9 +105,7 @@ async function captureScreenshots() {
   // Capture dashboard with success alert
   try {
     console.log(`   → 15-dashboard-alert: With alert`);
-    await page.goto(`${baseUrl}/tabs/dashboard?alert=success`, {
-      waitUntil: 'networkidle2',
-    });
+    await page.goto(`${baseUrl}/tabs/dashboard?alert=success`, { waitUntil: 'networkidle' });
     await wait(1000);
     await page.screenshot({
       path: path.join(screenshotsDir, '15-dashboard-alert.png'),
@@ -125,8 +119,8 @@ async function captureScreenshots() {
   // Capture tablet view (dashboard)
   try {
     console.log(`   → 16-dashboard-tablet: Tablet view`);
-    await page.setViewport({ width: 768, height: 1024 });
-    await page.goto(`${baseUrl}/tabs/dashboard`, { waitUntil: 'networkidle2' });
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.goto(`${baseUrl}/tabs/dashboard`, { waitUntil: 'networkidle' });
     await wait(1500);
     await page.screenshot({
       path: path.join(screenshotsDir, '16-dashboard-tablet.png'),
@@ -140,8 +134,8 @@ async function captureScreenshots() {
   // Capture desktop view (dashboard)
   try {
     console.log(`   → 17-dashboard-desktop: Desktop view`);
-    await page.setViewport({ width: 1920, height: 1080 });
-    await page.goto(`${baseUrl}/tabs/dashboard`, { waitUntil: 'networkidle2' });
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto(`${baseUrl}/tabs/dashboard`, { waitUntil: 'networkidle' });
     await wait(1500);
     await page.screenshot({
       path: path.join(screenshotsDir, '17-dashboard-desktop.png'),

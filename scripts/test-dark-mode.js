@@ -1,39 +1,41 @@
-// Script to test dark mode rendering in real browser
-const puppeteer = require('puppeteer');
+// Script to test dark mode rendering using Playwright
+const { chromium } = require('@playwright/test');
+const fs = require('fs');
+const path = require('path');
 
 (async () => {
-  const browser = await puppeteer.launch({
+  const browser = await chromium.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 
   const page = await browser.newPage();
-  await page.setViewport({ width: 800, height: 900 });
+  await page.setViewportSize({ width: 800, height: 900 });
 
   // Navigate to dashboard
   await page.goto('http://localhost:4200/tabs/dashboard', {
-    waitUntil: 'networkidle2'
+    waitUntil: 'networkidle',
   });
 
-  // Enable dark mode
+  // Enable dark mode (match ThemeService logic)
   await page.evaluate(() => {
-    document.body.classList.add('dark-theme');
-    document.documentElement.classList.add('dark-theme');
+    document.documentElement.setAttribute('data-theme', 'dark');
   });
 
-  // Wait a moment for styles to apply
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await page.waitForTimeout(1000);
 
-  // Check computed styles
+  // Check computed styles for stat cards
   const gradients = await page.evaluate(() => {
     const cards = document.querySelectorAll('app-stat-card');
     return Array.from(cards).map(card => {
-      const ionCard = card.shadowRoot?.querySelector('.stat-card') || card.querySelector('.stat-card');
+      const ionCard =
+        (card.shadowRoot && card.shadowRoot.querySelector('.stat-card')) ||
+        card.querySelector('.stat-card');
       if (ionCard) {
         const styles = window.getComputedStyle(ionCard);
         return {
           background: styles.backgroundImage,
-          backgroundColor: styles.backgroundColor
+          backgroundColor: styles.backgroundColor,
         };
       }
       return null;
@@ -42,13 +44,23 @@ const puppeteer = require('puppeteer');
 
   console.log('Computed gradients:', JSON.stringify(gradients, null, 2));
 
+  // Ensure screenshots directory exists
+  const screenshotsDir = path.join(__dirname, '..', 'screenshots');
+  if (!fs.existsSync(screenshotsDir)) {
+    fs.mkdirSync(screenshotsDir, { recursive: true });
+  }
+
   // Take screenshot
+  const screenshotPath = path.join(screenshotsDir, 'dashboard-dark-mode.png');
   await page.screenshot({
-    path: 'screenshots/dashboard-puppeteer-dark.png',
-    fullPage: false
+    path: screenshotPath,
+    fullPage: false,
   });
 
-  console.log('Screenshot saved to screenshots/dashboard-puppeteer-dark.png');
+  console.log(`Screenshot saved to ${screenshotPath}`);
 
   await browser.close();
-})();
+})().catch(err => {
+  console.error('Dark mode test failed:', err);
+  process.exit(1);
+});
