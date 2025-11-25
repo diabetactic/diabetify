@@ -1,348 +1,168 @@
 # Diabetactic
 
-An Ionic Angular mobile application for managing diabetes glucose readings with Tidepool integration.
+Aplicación móvil desarrollada con Ionic/Angular para la gestión de lecturas de glucosa en pacientes diabéticos, con integración a la API de Tidepool.
 
-## 🚀 Quick Start
+## Descripción del Proyecto
+
+Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar el seguimiento y control de niveles de glucosa en sangre. El sistema permite a los usuarios registrar sus lecturas, visualizar tendencias históricas y sincronizar datos con servicios externos como Tidepool.
+
+### Características Principales
+
+- Registro y visualización de lecturas de glucosa
+- Dashboard con estadísticas y tendencias
+- Gestión de citas médicas
+- Soporte offline con sincronización automática
+- Interfaz bilingüe (Español/Inglés)
+- Temas claro y oscuro
+
+## Stack Tecnológico
+
+| Componente | Tecnología |
+|------------|------------|
+| Framework Frontend | Angular 18 + Ionic 8 |
+| Plataforma Móvil | Capacitor 6.1 |
+| Lenguaje | TypeScript 5.4 |
+| Estilos | Tailwind CSS + DaisyUI |
+| Base de Datos Local | Dexie (IndexedDB) |
+| Testing | Jasmine/Karma (unitarios), Playwright (E2E) |
+
+## Requisitos Previos
+
+- Node.js 20+
+- npm 10+
+- Android Studio (para compilación Android)
+- Java 21
+
+## Instalación
 
 ```bash
-# Install dependencies
+# Clonar el repositorio
+git clone https://github.com/diabetactic/diabetify.git
+cd diabetify
+
+# Instalar dependencias
 npm install
 
-# Run development server
+# Iniciar servidor de desarrollo
 npm start
-
-# Open in browser at http://localhost:4200
 ```
 
-## 📋 Table of Contents
+La aplicación estará disponible en `http://localhost:4200`
 
-- [Technology Stack](#technology-stack)
-- [Available Scripts](#available-scripts)
-- [Development Workflow](#development-workflow)
-- [Testing](#testing)
-- [Code Quality](#code-quality)
-- [Capacitor Commands](#capacitor-commands)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
+## Scripts Disponibles
 
-## 🛠 Technology Stack
-
-- **Framework**: Ionic 8 + Angular 18
-- **Mobile Platform**: Capacitor 6.1.0
-- **Language**: TypeScript 5.4
-- **Testing**: Jasmine + Karma (unit), Playwright (end-to-end)
-- **Code Quality**: ESLint + Prettier + Husky
-
-## 📜 Available Scripts
-
-### Development
+### Desarrollo
 
 ```bash
-npm start              # Start dev server (alias: npm run dev)
-npm run dev            # Start dev server with hot reload
-npm run watch          # Build with watch mode
-```
-
-### Building
-
-```bash
-npm run build          # Development build
-npm run build:prod     # Production build (optimized)
+npm start              # Servidor de desarrollo
+npm run build          # Compilación desarrollo
+npm run build:prod     # Compilación producción
 ```
 
 ### Testing
 
 ```bash
-npm test               # Run tests in watch mode
-npm run test:ci        # Run tests once with coverage (for CI)
-npm run test:coverage  # Run tests with coverage report
-npm run test:e2e       # Run Playwright end-to-end suite (headless)
-npm run test:e2e:headed # Run Playwright suite in headed mode
+npm run test:unit      # Tests unitarios
+npm run test:ci        # Tests para CI (headless)
+npm run test:coverage  # Tests con reporte de cobertura
+npm run test:e2e       # Tests E2E con Playwright
 ```
 
-### Code Quality
+### Calidad de Código
 
 ```bash
-npm run lint           # Run ESLint
-npm run lint:fix       # Run ESLint with auto-fix
-npm run format         # Format code with Prettier
-npm run format:check   # Check code formatting
+npm run lint           # Análisis estático (ESLint)
+npm run lint:fix       # Corrección automática
+npm run format         # Formateo (Prettier)
+npm run format:check   # Verificar formato
 ```
 
-### Capacitor (Mobile)
+### Compilación Móvil
 
 ```bash
-npm run cap:sync       # Sync web assets with native platforms
-npm run cap:android    # Open Android project in Android Studio
-npm run cap:run:android # Build and run on Android device/emulator
-npm run cap:copy       # Copy web assets to platforms
-npm run cap:update     # Update Capacitor dependencies
+npm run cap:sync       # Sincronizar assets con plataformas nativas
+npm run cap:android    # Abrir proyecto en Android Studio
+npm run cap:run:android # Compilar y ejecutar en dispositivo
 ```
 
-### Maintenance
+## Estructura del Proyecto
 
-```bash
-npm run clean          # Clean and reinstall dependencies
-npm run update:deps    # Update all dependencies
+```
+src/
+├── app/
+│   ├── core/              # Servicios singleton e interceptores
+│   │   ├── services/      # Lógica de negocio
+│   │   ├── models/        # Interfaces y tipos
+│   │   └── guards/        # Guards de navegación
+│   ├── shared/            # Componentes reutilizables
+│   ├── dashboard/         # Módulo principal
+│   ├── readings/          # Gestión de lecturas
+│   ├── appointments/      # Gestión de citas
+│   ├── profile/           # Perfil de usuario
+│   └── login/             # Autenticación
+├── assets/
+│   └── i18n/              # Archivos de traducción
+├── environments/          # Configuración por entorno
+└── theme/                 # Estilos globales
 ```
 
-## 🔄 Development Workflow
+## Arquitectura
 
-### 1. Setup
+La aplicación sigue una arquitectura modular con los siguientes principios:
+
+- **Componentes Standalone**: Angular 18 sin NgModules
+- **Servicios Singleton**: Inyección de dependencias en root
+- **Offline-First**: Almacenamiento local con sincronización diferida
+- **Lazy Loading**: Carga bajo demanda de módulos
+
+### Flujo de Datos
+
+1. Los datos se almacenan localmente en IndexedDB (Dexie)
+2. Se sincronizan con el backend cuando hay conexión
+3. Los servicios exponen Observables para reactividad
+
+## Testing
+
+### Tests Unitarios
+
+Ejecutados con Jasmine/Karma:
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd diabetactic
-
-# Install dependencies
-npm install
-
-# Start development server
-npm start
+npm run test:unit
 ```
 
-### 2. Making Changes
+Cobertura mínima requerida: 50%
 
-- Code is automatically formatted on commit via Husky pre-commit hooks
-- ESLint runs automatically to catch errors
-- Make sure tests pass before committing
+### Tests E2E
 
-### 3. Pre-commit Hooks
-
-The project uses Husky + lint-staged to automatically:
-
-- Format code with Prettier
-- Fix linting issues with ESLint
-- Run on staged files only (fast!)
+Ejecutados con Playwright:
 
 ```bash
-# Pre-commit hook runs automatically on git commit
-git add .
-git commit -m "Your message"  # Formatting & linting happen here
-```
-
-### 4. Claude Code Integration
-
-This project is optimized for Claude Code with:
-
-- **Allowed Tools**: Pre-approved npm, git, ionic, ng, and cap commands
-- **Tool Permissions**: Configured in `.claude/settings.local.json`
-- **Task Management**: Integrated with Task Master AI
-
-## 🧪 Testing
-
-### Running Tests
-
-```bash
-# Watch mode (development)
-npm test
-
-# Single run (CI)
-npm run test:ci
-
-# With coverage report
-npm run test:coverage
-
-# End-to-end UI suite (Playwright)
 npm run test:e2e
-
-# Debug mode with visible browser
-npm run test:e2e:headed
 ```
 
-### Test Configuration
+Los tests se encuentran en `playwright/tests/`
 
-- **Unit Tests**: Jasmine + Karma (launched via Angular CLI)
-- **Browsers**: Chrome (dev), ChromeHeadless (CI)
-- **Coverage**: HTML + Text + LCOV reports
-- **Thresholds**: 50% coverage for statements, branches, functions, lines
+## Configuración de Entornos
 
-### Playwright E2E Notes
+El proyecto soporta múltiples entornos:
 
-- One-time setup: `npx playwright install` (and optionally `npx playwright install --with-deps` in CI environments).
-- Tests live under `playwright/tests/` with shared seed helpers in `playwright/config/`.
-- The suite boots the Angular dev server automatically (override with `E2E_SKIP_SERVER=1` if you want to start it manually).
-- Storage is pre-seeded so routes gated by onboarding guards load without manual setup.
-- Default reporter emits HTML (`playwright-report/`) and list output; adjust via `playwright.config.ts`.
+- `environment.ts` - Desarrollo
+- `environment.prod.ts` - Producción
+- `environment.mock.ts` - Datos simulados
+- `environment.heroku.ts` - Backend en Heroku
 
-### Coverage Reports
+## Documentación Adicional
 
-After running tests with coverage, open:
+- [Arquitectura](docs/ARCHITECTURE.md)
+- [Guía de Estilos](docs/STYLING_GUIDE.md)
+- [Guía de Testing](docs/TESTING_GUIDE.md)
+- [Guía de Traducciones](docs/TRANSLATION_GUIDE.md)
 
-```
-coverage/diabetactic/index.html
-```
+## Autores
 
-## ✨ Code Quality
+Trabajo Profesional - Facultad de Ingeniería
 
-### ESLint
+## Licencia
 
-Configuration: `.eslintrc.json`
-
-```bash
-# Check for issues
-npm run lint
-
-# Auto-fix issues
-npm run lint:fix
-```
-
-### Prettier
-
-Configuration: `.prettierrc.json`
-
-```bash
-# Format all files
-npm run format
-
-# Check formatting
-npm run format:check
-```
-
-### Pre-commit Hooks (Husky)
-
-Automatically runs on `git commit`:
-
-1. **TypeScript/JavaScript files**: Prettier → ESLint
-2. **HTML files**: Prettier
-3. **JSON/SCSS/Markdown**: Prettier
-
-Configuration: `.husky/pre-commit` + `package.json` (lint-staged section)
-
-## 📱 Capacitor Commands
-
-### Android Development
-
-```bash
-# Sync assets and open Android Studio
-npm run cap:sync
-npm run cap:android
-
-# Or run directly
-npm run cap:run:android
-```
-
-### Requirements
-
-- **Android Studio**: For Android development
-- **Java 17**: Required for Android builds
-- **Node.js 20+**: For Capacitor
-
-### Platform Setup
-
-```bash
-# Add Android platform
-npx cap add android
-
-# Sync after making changes
-npm run cap:sync
-```
-
-## 📁 Project Structure
-
-```
-diabetactic/
-├── .claude/                 # Claude Code configuration
-│   └── settings.local.json  # Tool permissions & hooks
-├── .husky/                  # Git hooks
-│   └── pre-commit          # Pre-commit hook script
-├── .taskmaster/            # Task Master AI configuration
-├── src/
-│   ├── app/
-│   │   ├── dashboard/      # Dashboard feature
-│   │   ├── devices/        # Device management
-│   │   ├── readings/       # Glucose readings history
-│   │   ├── profile/        # User profile
-│   │   └── tabs/          # Tab navigation
-│   ├── assets/            # Static assets
-│   ├── environments/      # Environment configs
-│   └── theme/            # Global styles
-├── android/              # Android native project
-├── www/                  # Build output
-├── .prettierrc.json     # Prettier configuration
-├── .prettierignore      # Prettier ignore patterns
-├── karma.conf.js        # Karma test configuration
-├── package.json         # Dependencies & scripts
-└── tsconfig.json        # TypeScript configuration
-```
-
-## 🎯 Application Architecture
-
-### Tab-Based Navigation
-
-- **Dashboard** (`/tabs/dashboard`): Home view
-- **Readings** (`/tabs/readings`): Glucose history
-- **Devices** (`/tabs/devices`): Device management (future Tidepool integration)
-- **Profile** (`/tabs/profile`): User settings
-
-### Lazy Loading
-
-All feature modules are lazy-loaded for optimal performance.
-
-## 🤝 Contributing
-
-### Workflow
-
-1. Create a feature branch
-2. Make your changes
-3. Run tests: `npm test`
-4. Commit (pre-commit hooks will run automatically)
-5. Push and create a Pull Request
-
-### Code Style
-
-- **TypeScript**: Follow Angular style guide
-- **Formatting**: Prettier (runs on commit)
-- **Linting**: ESLint (runs on commit)
-- **Commits**: Conventional Commits format recommended
-
-### Testing
-
-- Write tests for new features
-- Maintain coverage above 50%
-- Ensure all tests pass before PR
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**Tests failing in CI but passing locally?**
-
-```bash
-npm run test:ci
-```
-
-**Formatting issues?**
-
-```bash
-npm run format
-```
-
-**Build errors after pulling?**
-
-```bash
-npm run clean
-npm install
-```
-
-**Android build issues?**
-
-```bash
-npm run cap:sync
-npm run cap:update
-```
-
-### Getting Help
-
-- Check CLAUDE.md for project-specific documentation
-- Check `.taskmaster/` for task management details
-- Review test logs in `coverage/` directory
-
-## 📝 License
-
-[Add your license here]
-
-## 👥 Team
-
-[Add team information here]
+Este proyecto es parte de un trabajo académico.
