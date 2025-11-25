@@ -1,3 +1,70 @@
 [tools]
 node = "20"
-java = "17"
+java = "21"
+
+[env]
+_.path = [
+  "{{config_root}}/android",
+  "{{env.ANDROID_HOME}}/platform-tools",
+  "{{env.ANDROID_HOME}}/cmdline-tools/latest/bin",
+  "$HOME/.maestro/bin"
+]
+JAVA_HOME = "{{exec(command='mise where java')}}"
+ANDROID_HOME = "/home/julito/Android/Sdk"
+JAVA_TOOL_OPTIONS = "-XX:+IgnoreUnrecognizedVMOptions --add-opens java.base/sun.misc=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED"
+
+[tasks]
+# Android build tasks
+"android:install" = '''
+cd android
+JAVA_HOME=$(mise where java) ANDROID_HOME=$ANDROID_HOME ./gradlew installDebug
+'''
+
+"android:clean" = "rm -rf .angular www android/app/build"
+
+"android:rebuild" = '''
+rm -rf .angular www android/app/build
+npm run build:mock
+npx cap sync
+cd android && JAVA_HOME=$(mise where java) ANDROID_HOME=$ANDROID_HOME ./gradlew installDebug
+'''
+# Quick testing commands
+"check-app" = "make check-app"
+"rebuild" = "make rebuild"
+"deploy" = "make deploy"
+"rebuild-deploy" = "make rebuild-deploy"
+"test-ui" = "make test-ui"
+"test-ui-fast" = "make test-ui-fast"
+"restart" = "make restart"
+"launch" = "make launch"
+"stop" = "make stop"
+"logs" = "make logs"
+"logs-tail" = "make logs-tail"
+"screenshot" = "make screenshot-home"
+
+# Test commands - Quality checks
+"test:quality" = "npm run test:quality"
+"test:quality:fix" = "npm run test:quality:fix"
+
+# Test commands - Unit tests
+"test:unit" = "npm run test:ci"
+"test:e2e" = "npm run test:e2e"
+"test:maestro" = "npm run test:maestro:smoke"
+
+# Test commands - Full tests (all types)
+"test:full" = "npm run test:full"
+
+# Test commands - Mode-specific (build + test)
+"test:mock" = "npm run test:mode:mock"
+"test:heroku" = "npm run test:mode:heroku"
+"test:local" = "npm run test:mode:local"
+
+# Test commands - All modes
+"test:all-modes" = "npm run test:modes:all"
+
+# Test commands - Full comprehensive (mode + all test types)
+"test:full:mock" = "npm run test:full:mock"
+"test:full:heroku" = "npm run test:full:heroku"
+
+# Test EVERYTHING (all modes, all tests, all quality checks)
+"test:everything" = "npm run test:everything"

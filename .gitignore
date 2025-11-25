@@ -188,3 +188,70 @@ android/app/build/
 android/.gradle/
 android/.npm-cache/
 .npm-cache/
+
+# Additional cleanup (2025-11-23)
+# Angular build cache
+/.angular
+/.angular/
+
+# npm and build caches
+.npm-cache/
+.chromium-config/
+.maestro-cache/
+.docker-test-config/
+
+# IDE configurations
+.cursor/
+.crush/
+.gemini/
+
+# Generated content
+/output/
+/skills/
+
+# Temporary debugging files
+*.xml
+!android/**/*.xml
+!capacitor.config.xml
+!angular.json
+
+# Build logs
+build.log
+gradle-build.log
+
+# Test artifacts
+/integration/
+testresult.txt
+test-infrastructure-report.txt
+
+# MCP generated configs
+/configs/*.json
+!capacitor.config.json
+!package.json
+!tsconfig*.json
+
+# Local environment and development artifacts
+.envrc
+.npmrc
+bin/
+mcp-android-server/
+extServicesCompose/
+android/android/
+diabetify-memory-backup.json
+maestro-results.txt
+.maestro/
+
+# Generated screenshots (keep in maestro/screenshots only)
+screenshots/
+playwright/screenshots/
+
+# Duplicate/temporary images
+src/assets/images/nanobanana-output/
+src/assets/images/*copyyy*
+src/assets/images/*tt.png
+
+# Git submodules config (if not using)
+.gitmodules
+
+# Internal development notes
+MAESTRO_TESTING_LESSONS_LEARNED.md

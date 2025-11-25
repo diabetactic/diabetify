@@ -1,13 +1,21 @@
 <ion-tabs>
   <ion-tab-bar slot="bottom" class="border-t border-gray-200 dark:border-gray-800">
     <!-- Dashboard Tab -->
-    <ion-tab-button tab="dashboard" class="transition-colors duration-200">
+    <ion-tab-button
+      tab="dashboard"
+      class="transition-colors duration-200"
+      data-testid="tab-dashboard"
+    >
       <span class="material-symbols-outlined text-2xl"> home </span>
       <ion-label class="mt-1 text-xs font-medium">{{ 'tabs.home' | translate }}</ion-label>
     </ion-tab-button>
 
     <!-- Readings Tab -->
-    <ion-tab-button tab="readings" class="transition-colors duration-200">
+    <ion-tab-button
+      tab="readings"
+      class="transition-colors duration-200"
+      data-testid="tab-readings"
+    >
       <span class="material-symbols-outlined text-2xl"> menu_book </span>
       <ion-label class="mt-1 text-xs font-medium">{{ 'tabs.readings' | translate }}</ion-label>
     </ion-tab-button>
@@ -16,13 +24,17 @@
     <div class="fab-spacer w-1/5 min-w-16"></div>
 
     <!-- Appointments Tab -->
-    <ion-tab-button tab="appointments" class="transition-colors duration-200">
+    <ion-tab-button
+      tab="appointments"
+      class="transition-colors duration-200"
+      data-testid="tab-appointments"
+    >
       <span class="material-symbols-outlined text-2xl"> calendar_today </span>
       <ion-label class="mt-1 text-xs font-medium">{{ 'appointments.title' | translate }}</ion-label>
     </ion-tab-button>
 
     <!-- Profile Tab -->
-    <ion-tab-button tab="profile" class="transition-colors duration-200">
+    <ion-tab-button tab="profile" class="transition-colors duration-200" data-testid="tab-profile">
       <span class="material-symbols-outlined text-2xl"> person </span>
       <ion-label class="mt-1 text-xs font-medium">{{ 'tabs.profile' | translate }}</ion-label>
     </ion-tab-button>
@@ -33,10 +45,9 @@
     <ion-fab-button
       (click)="navigateToAddReading()"
       class="shadow-lg transition-shadow duration-200 hover:shadow-xl"
+      data-testid="fab-add-reading"
     >
       <span class="material-symbols-outlined text-3xl"> add </span>
     </ion-fab-button>
   </ion-fab>
 </ion-tabs>
-
-<ion-router-outlet></ion-router-outlet>

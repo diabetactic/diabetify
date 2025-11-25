@@ -1,0 +1,66 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'tips.title' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="mx-auto max-w-3xl">
+    <!-- Page header -->
+    <div class="mb-6 text-center">
+      <app-icon name="bulb-outline" class="text-primary mb-2 text-5xl"></app-icon>
+      <p class="text-gray-600 dark:text-gray-300">
+        {{ 'tips.subtitle' | translate }}
+      </p>
+    </div>
+
+    <!-- Tips list -->
+    <div class="space-y-4">
+      <ion-card *ngFor="let tip of tips" class="m-0">
+        <ion-card-content>
+          <div class="flex items-start gap-3">
+            <div
+              class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full"
+              [ngClass]="{
+                'bg-primary-100 dark:bg-primary-900': tip.category === 'glucose',
+                'bg-success-100 dark:bg-success-900': tip.category === 'nutrition',
+                'bg-warning-100 dark:bg-warning-900': tip.category === 'exercise',
+                'bg-danger-100 dark:bg-danger-900': tip.category === 'medication',
+              }"
+            >
+              <app-icon
+                [name]="tip.icon"
+                class="text-2xl"
+                [color]="getCategoryColor(tip.category)"
+              ></app-icon>
+            </div>
+            <div class="flex-1">
+              <h3 class="mb-1 text-lg font-semibold">{{ tip.title | translate }}</h3>
+              <p class="mb-0 text-sm text-gray-600 dark:text-gray-300">
+                {{ tip.description | translate }}
+              </p>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Disclaimer -->
+    <ion-card class="bg-warning-50 dark:bg-warning-900/20 mt-6">
+      <ion-card-content>
+        <div class="flex items-start gap-2">
+          <app-icon
+            name="alert-circle-outline"
+            class="text-warning flex-shrink-0 text-xl"
+          ></app-icon>
+          <p class="mb-0 text-sm text-gray-700 dark:text-gray-300">
+            {{ 'tips.disclaimer' | translate }}
+          </p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

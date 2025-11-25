@@ -4,6 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { provideIonicAngular } from '@ionic/angular/standalone';
+import { setAssetPath } from '@ionic/core/components';
 import {
   RouteReuseStrategy,
   PreloadAllModules,
@@ -31,6 +32,9 @@ import { APP_CONFIG, defaultAppConfig } from './app/core/config/app-config';
 import { APP_ROUTES } from './app/app-routing.module';
 import { LucideAngularModule } from 'lucide-angular';
 import { appIcons } from './app/shared/icons/lucide-icons';
+
+// Ensure Ionic web components can resolve their asset path (icons, etc.)
+setAssetPath(document.baseURI ?? '/');
 
 const httpLoaderConfig: TranslateHttpLoaderConfig = {
   prefix: './assets/i18n/',

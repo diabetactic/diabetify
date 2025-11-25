@@ -2,7 +2,7 @@
 
 ## Overview
 
-This checklist guides you through integrating the API Gateway Adapter Service into your Diabetify mobile app.
+This checklist guides you through integrating the API Gateway Adapter Service into your Diabetactic mobile app.
 
 ## Files Created
 
@@ -80,7 +80,7 @@ npx tsc --noEmit
 
 ```bash
 # Navigate to API Gateway
-cd extServices/api-gateway
+cd extServicesCompose/extServices/api-gateway
 
 # Start the service
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -639,7 +639,7 @@ npm test
 
 **Solution**:
 ```bash
-cd extServices/api-gateway
+cd extServicesCompose/extServices/api-gateway
 python -m uvicorn app.main:app --reload
 ```
 

@@ -25,7 +25,7 @@ const mockStorage = new Map<string, string>();
 export function mockCapacitorPreferences() {
   mockStorage.clear();
 
-  const preferencesMock = {
+  const preferencesMock: any = {
     get: jasmine.createSpy('Preferences.get').and.callFake(async (opts: { key: string }) => {
       const value = mockStorage.get(opts.key) || null;
       return { value };
@@ -58,9 +58,9 @@ export function mockCapacitorPreferences() {
   };
 
   // Override the actual Preferences API
-  Object.keys(preferencesMock).forEach(key => {
-    if (Preferences && Preferences[key]) {
-      spyOn(Preferences, key).and.callFake(preferencesMock[key]);
+  (Object.keys(preferencesMock) as Array<keyof typeof preferencesMock>).forEach(key => {
+    if (Preferences && (Preferences as any)[key]) {
+      spyOn(Preferences as any, key as any).and.callFake((preferencesMock as any)[key] as any);
     }
   });
 
@@ -78,17 +78,17 @@ export function mockCapacitorPlatform(platform: 'android' | 'ios' | 'web') {
   const isNative = platform !== 'web';
 
   // Mock isNativePlatform - this is the critical fix
-  if (Capacitor.isNativePlatform) {
+  if (typeof Capacitor.isNativePlatform === 'function') {
     spyOn(Capacitor, 'isNativePlatform').and.returnValue(isNative);
   }
 
   // Mock getPlatform
-  if (Capacitor.getPlatform) {
+  if (typeof Capacitor.getPlatform === 'function') {
     spyOn(Capacitor, 'getPlatform').and.returnValue(platform);
   }
 
   // Mock isPluginAvailable
-  if (Capacitor.isPluginAvailable) {
+  if (typeof Capacitor.isPluginAvailable === 'function') {
     spyOn(Capacitor, 'isPluginAvailable').and.returnValue(isNative);
   }
 
@@ -102,8 +102,8 @@ export function mockCapacitorPlatform(platform: 'android' | 'ios' | 'web') {
   if (!Capacitor.Plugins) {
     (Capacitor as any).Plugins = {};
   }
-  if (isNative && !Capacitor.Plugins.Preferences) {
-    Capacitor.Plugins.Preferences = Preferences;
+  if (isNative && !(Capacitor.Plugins as any)['Preferences']) {
+    (Capacitor.Plugins as any)['Preferences'] = Preferences;
   }
 }
 
@@ -181,8 +181,12 @@ export function getMockPreference(key: string): string | null {
  * @example
  * expectPreferenceCall('set', 'auth_token', 'test-token-123');
  */
-export function expectPreferenceCall(method: string, key?: string, value?: string) {
-  const spy = Preferences[method] as jasmine.Spy;
+export function expectPreferenceCall(
+  method: keyof typeof Preferences,
+  key?: string,
+  value?: string
+) {
+  const spy = (Preferences as any)[method] as jasmine.Spy;
   expect(spy).toHaveBeenCalled();
 
   if (key) {

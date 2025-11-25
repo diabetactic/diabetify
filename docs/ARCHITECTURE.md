@@ -1,4 +1,4 @@
-# Diabetify Architecture Documentation
+# Diabetactic Architecture Documentation
 
 See the detailed architecture documentation in subdirectories:
 

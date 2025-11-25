@@ -11,7 +11,7 @@
       <div class="flex flex-col gap-1">
         <!-- Glucose Value -->
         <div class="flex items-baseline gap-1">
-          <span class="text-2xl leading-none font-bold text-gray-900 dark:text-white">
+          <span class="text-2xl font-bold leading-none text-gray-900 dark:text-white">
             {{ reading.value }}
           </span>
           <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -31,7 +31,7 @@
     <!-- Right Section: Status Badge -->
     <div class="flex items-center">
       <span
-        class="rounded-xl px-3 py-1.5 text-[11px] font-semibold tracking-wide uppercase"
+        class="rounded-xl px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide"
         [ngClass]="{
           'bg-green-500/10 text-green-600 dark:text-green-400': getStatusClass() === 'normal',
           'bg-orange-500/10 text-orange-600 dark:text-orange-400': getStatusClass() === 'low',

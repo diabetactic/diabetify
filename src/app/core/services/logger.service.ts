@@ -8,6 +8,17 @@ import { Injectable } from '@angular/core';
 })
 export class LoggerService {
   private requestId: string | null = null;
+  private readonly phiPatterns = [
+    'bloodglucose',
+    'glucose',
+    'timestamp',
+    'firstname',
+    'lastname',
+    'email',
+    'reading',
+    'readings',
+    'value',
+  ];
 
   /**
    * Set current request ID for tracking
@@ -27,43 +38,135 @@ export class LoggerService {
    * Log info message
    */
   info(context: string, message: string, data?: any): void {
-    const prefix = this.requestId ? `[${this.requestId}] ` : '';
-    console.log(`[INFO] ${prefix}[${context}] ${message}`, data || '');
+    this.writeLog('INFO', context, message, data);
   }
 
   /**
    * Log warning message
    */
   warn(context: string, message: string, metadata?: any): void {
-    const prefix = this.requestId ? `[${this.requestId}] ` : '';
-    if (metadata) {
-      console.warn(`[WARN] ${prefix}[${context}] ${message}`, metadata);
-    } else {
-      console.warn(`[WARN] ${prefix}[${context}] ${message}`);
-    }
+    this.writeLog('WARN', context, message, metadata, console.warn);
   }
 
   /**
    * Log error message
    */
   error(context: string, message: string, error?: any, metadata?: any): void {
-    const prefix = this.requestId ? `[${this.requestId}] ` : '';
-    if (metadata) {
-      console.error(`[ERROR] ${prefix}[${context}] ${message}`, error, metadata);
-    } else {
-      console.error(`[ERROR] ${prefix}[${context}] ${message}`, error);
-    }
+    const serializedError = this.serializeError(error);
+    this.writeLog('ERROR', context, message, metadata, console.error, serializedError);
   }
 
   /**
    * Log debug message
    */
   debug(context: string, message: string, metadata?: any): void {
-    const prefix = this.requestId ? `[${this.requestId}] ` : '';
-    if (metadata) {
-      console.debug(`[DEBUG] ${prefix}[${context}] ${message}`, metadata);
-    } else {
-      console.debug(`[DEBUG] ${prefix}[${context}] ${message}`);
+    this.writeLog('DEBUG', context, message, metadata, console.debug);
+  }
+
+  /**
+   * Build and emit a log entry
+   */
+  private writeLog(
+    level: 'INFO' | 'WARN' | 'ERROR' | 'DEBUG',
+    context: string,
+    message: string,
+    metadata?: any,
+    logger: (...args: any[]) => void = console.log,
+    errorDetails?: string | null
+  ): void {
+    const timestamp = new Date().toISOString();
+    const requestPrefix = this.requestId ? `[${this.requestId}] ` : '';
+    const sanitizedMetadata = this.formatMetadata(metadata);
+
+    let formattedMessage = `${timestamp} [${level}] ${requestPrefix}[${context}] ${message}`;
+
+    if (errorDetails) {
+      formattedMessage += ` | ${errorDetails}`;
+    }
+
+    if (sanitizedMetadata) {
+      formattedMessage += ` ${sanitizedMetadata}`;
+    }
+
+    logger(formattedMessage);
+  }
+
+  /**
+   * Prepare metadata for safe logging
+   */
+  private formatMetadata(metadata?: any): string | null {
+    if (metadata === undefined || metadata === null) {
+      return null;
+    }
+
+    const sanitized = this.sanitizeValue(metadata);
+    if (sanitized === undefined || sanitized === null) {
+      return null;
+    }
+
+    if (typeof sanitized === 'string') {
+      return sanitized;
+    }
+
+    try {
+      return JSON.stringify(sanitized);
+    } catch {
+      return String(sanitized);
+    }
+  }
+
+  /**
+   * Recursively sanitize metadata, redacting PHI fields.
+   */
+  private sanitizeValue(value: any, key?: string): any {
+    if (value === null || value === undefined) {
+      return value;
+    }
+
+    if (Array.isArray(value)) {
+      if (key && this.isPhiKey(key)) {
+        return '[REDACTED]';
+      }
+      return value.map(item => this.sanitizeValue(item));
+    }
+
+    if (typeof value === 'object') {
+      const sanitized: Record<string, any> = {};
+      Object.entries(value).forEach(([childKey, childValue]) => {
+        sanitized[childKey] = this.sanitizeValue(childValue, childKey);
+      });
+      return sanitized;
+    }
+
+    if (key && this.isPhiKey(key)) {
+      return '[REDACTED]';
+    }
+
+    return value;
+  }
+
+  private isPhiKey(key: string): boolean {
+    const normalized = key.toLowerCase();
+    return this.phiPatterns.some(pattern => normalized.includes(pattern));
+  }
+
+  private serializeError(error: any): string | null {
+    if (!error) {
+      return null;
+    }
+
+    if (error instanceof Error) {
+      return error.stack ? `${error.name}: ${error.message}` : error.message;
+    }
+
+    if (typeof error === 'string') {
+      return error;
+    }
+
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return String(error);
     }
   }
 }

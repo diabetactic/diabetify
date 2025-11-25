@@ -418,6 +418,11 @@ export class ExternalServicesManager {
 
   /**
    * Check if a service is available
+   *
+   * Service is available if:
+   * 1. Online: Either network is online, OR service supports offline mode
+   * 2. Circuit breaker is not OPEN
+   * 3. Health status is HEALTHY, DEGRADED, or UNKNOWN (no health check performed yet)
    */
   public isServiceAvailable(service: ExternalService): boolean {
     if (!this.state$.value.isOnline) {
@@ -431,7 +436,14 @@ export class ExternalServicesManager {
     }
 
     const health = this.state$.value.services.get(service);
-    return health?.status === HealthStatus.HEALTHY || health?.status === HealthStatus.DEGRADED;
+    // Service is available if health check passed OR if no health check has been performed yet
+    // This allows services to work when health checks are disabled (to avoid CORS issues)
+    return (
+      !health ||
+      health.status === HealthStatus.HEALTHY ||
+      health.status === HealthStatus.DEGRADED ||
+      health.status === HealthStatus.UNKNOWN
+    );
   }
 
   /**

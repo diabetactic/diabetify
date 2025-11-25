@@ -12,6 +12,7 @@
 
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { API_GATEWAY_BASE_URL } from '../../shared/config/api-base-url';
 
 /**
  * Test user credentials for integration tests
@@ -35,35 +36,34 @@ export const TEST_USERS = {
 };
 
 /**
- * Service ports configuration
- * Retrieved from memory: integration-tests/service-ports
- */
-export const SERVICE_PORTS = {
-  apiGateway: 8004,
-  glucoserver: 8002,
-  login: 8003,
-  appointments: 8005,
-  dozzle: 9999,
-};
-
-/**
- * Base URLs for backend services
+ * Service base URLs.
+ *
+ * The apiGateway URL comes from the front-end configuration, while the
+ * individual service URLs are aligned with the Docker compose ports used in
+ * scripts/backend-health.sh.
  */
 export const SERVICE_URLS = {
-  apiGateway: `http://localhost:${SERVICE_PORTS.apiGateway}`,
-  glucoserver: `http://localhost:${SERVICE_PORTS.glucoserver}`,
-  login: `http://localhost:${SERVICE_PORTS.login}`,
-  appointments: `http://localhost:${SERVICE_PORTS.appointments}`,
-};
+  apiGateway: API_GATEWAY_BASE_URL,
+  glucoserver: 'http://localhost:8002',
+  login: 'http://localhost:8003',
+  appointments: 'http://localhost:8005',
+} as const;
+
+const HEALTH_PATHS = {
+  apiGateway: '/health',
+  glucoserver: '/health',
+  login: '/health',
+  appointments: '/health',
+} as const;
 
 /**
  * Health check endpoints for each service
  */
 export const HEALTH_ENDPOINTS = {
-  apiGateway: `${SERVICE_URLS.apiGateway}/health`,
-  glucoserver: `${SERVICE_URLS.glucoserver}/health`,
-  login: `${SERVICE_URLS.login}/health`,
-  appointments: `${SERVICE_URLS.appointments}/health`,
+  apiGateway: `${SERVICE_URLS.apiGateway}${HEALTH_PATHS.apiGateway}`,
+  glucoserver: `${SERVICE_URLS.glucoserver}${HEALTH_PATHS.glucoserver}`,
+  login: `${SERVICE_URLS.login}${HEALTH_PATHS.login}`,
+  appointments: `${SERVICE_URLS.appointments}${HEALTH_PATHS.appointments}`,
 };
 
 /**
@@ -252,6 +252,7 @@ export async function waitForBackendServices(
 export async function loginTestUser(credentials = TEST_USER): Promise<string> {
   try {
     const tokenUrl = `${SERVICE_URLS.apiGateway}/token`;
+    console.log('[integration] loginTestUser tokenUrl:', tokenUrl);
 
     // OAuth2 requires form data, not JSON
     const formData = new URLSearchParams();
@@ -471,14 +472,16 @@ export async function authenticatedPut(url: string, data: any, token?: string): 
 export async function authenticatedDelete(url: string, token?: string): Promise<any> {
   const headers = await getAuthHeadersForFetch(token);
 
-  const response = await fetch(url, {
+  const fullUrl = url.startsWith('http') ? url : `${SERVICE_URLS.apiGateway}${url}`;
+
+  const response = await fetch(fullUrl, {
     method: 'DELETE',
     headers,
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`DELETE ${url} failed (${response.status}): ${errorText}`);
+    throw new Error(`DELETE ${fullUrl} failed (${response.status}): ${errorText}`);
   }
 
   // Some DELETE requests may return 204 No Content
@@ -519,6 +522,22 @@ export function teardownBackendIntegrationTests(): void {
 }
 
 /**
+ * Clear the appointments queue via the API Gateway
+ */
+export async function clearAppointmentQueue(): Promise<void> {
+  // Clear queue directly against the appointments service to avoid tight coupling
+  // to any API Gateway path mapping.
+  const response = await fetch(`${SERVICE_URLS.appointments}/queue`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to clear appointment queue (${response.status}): ${errorText}`);
+  }
+}
+
+/**
  * Submit user to appointment queue and get them accepted
  * This is required before creating appointments
  *
@@ -537,8 +556,7 @@ export async function setupAppointmentQueue(
     const queuePosition = await authenticatedPost('/appointments/submit', {}, token);
     console.log(`✅ User ${credentials.dni} submitted to queue at position ${queuePosition}`);
 
-    // Step 3: Accept the appointment (direct to appointments service, needs admin)
-    // Since test user doesn't have admin privileges, we'll call appointments service directly
+    // Step 3: Accept the appointment directly via the appointments service
     const acceptUrl = `${SERVICE_URLS.appointments}/queue/accept/${queuePosition}`;
     const acceptResponse = await fetch(acceptUrl, {
       method: 'PUT',

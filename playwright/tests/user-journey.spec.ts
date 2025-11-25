@@ -60,7 +60,7 @@ test.describe('Complete User Journey', () => {
     await expect(page).toHaveURL(/\/onboarding/);
 
     // Welcome screen
-    await expect(page.locator('h1')).toContainText('Welcome to Diabetify');
+    await expect(page.locator('h1')).toContainText('Welcome to Diabetactic');
     await page.getByRole('button', { name: 'Get Started' }).click();
 
     // Registration form

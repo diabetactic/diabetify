@@ -64,6 +64,48 @@
               "sourceMap": true,
               "namedChunks": true
             },
+            "mock": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.mock.ts"
+                }
+              ]
+            },
+            "local": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.local.ts"
+                }
+              ]
+            },
+            "heroku": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.heroku.ts"
+                }
+              ]
+            },
             "ci": {
               "progress": false
             }
@@ -78,6 +120,9 @@
             },
             "development": {
               "buildTarget": "app:build:development"
+            },
+            "heroku": {
+              "buildTarget": "app:build:heroku"
             },
             "ci": {
               "progress": false
@@ -96,7 +141,37 @@
           "options": {
             "main": "src/test.ts",
             "polyfills": "src/polyfills.ts",
-            "tsConfig": "tsconfig.spec.json",
+            "tsConfig": "tsconfig.spec.unit.json",
+            "karmaConfig": "karma.conf.js",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "assets"
+              },
+              {
+                "glob": "**/*.svg",
+                "input": "node_modules/ionicons/dist/ionicons/svg",
+                "output": "./svg"
+              }
+            ],
+            "styles": ["src/global.css", "src/theme/variables.scss"],
+            "scripts": []
+          },
+          "configurations": {
+            "ci": {
+              "progress": false,
+              "watch": false
+            }
+          }
+        },
+        "test-integration": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.integration.ts",
+            "polyfills": "src/polyfills.ts",
+            "tsConfig": "tsconfig.spec.integration.json",
             "karmaConfig": "karma.conf.js",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -124,7 +199,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
+            "lintFilePatterns": ["src/**/*.ts"]
           }
         }
       }

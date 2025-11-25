@@ -1,15 +1,24 @@
 import { Capacitor } from '@capacitor/core';
 
-/**
- * Get the appropriate base URL for backend services based on platform
- *
- * Platform-specific URLs:
- * - All platforms: Use Heroku production API
- *
- * Note: In production, all platforms use HTTPS API endpoint
- */
-function getBaseUrl(): string {
-  // Use Heroku production API for all platforms
+export type BackendMode = 'mock' | 'local' | 'cloud';
+
+// Production default: talk to cloud gateway.
+// For staging/local builds you can temporarily set this to 'local' or 'mock'.
+const PROD_BACKEND_MODE: BackendMode = 'cloud';
+
+function getBaseUrl(mode: BackendMode): string {
+  if (mode === 'local') {
+    if (Capacitor.isNativePlatform()) {
+      const platform = Capacitor.getPlatform();
+      if (platform === 'android') {
+        return 'http://10.0.2.2:8000';
+      }
+      return 'http://localhost:8000';
+    }
+    return 'http://localhost:8000';
+  }
+
+  // cloud or mock → use Heroku production API
   return 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
 }
 
@@ -18,6 +27,7 @@ function getBaseUrl(): string {
  */
 export const environment = {
   production: true,
+  backendMode: PROD_BACKEND_MODE as BackendMode,
 
   // Tidepool API Configuration
   tidepool: {
@@ -62,21 +72,21 @@ export const environment = {
 
     // Appointment management service
     appointments: {
-      baseUrl: getBaseUrl(),
+      baseUrl: getBaseUrl(PROD_BACKEND_MODE),
       apiPath: '/appointments',
       requestTimeout: 30000,
     },
 
     // Authentication service
     auth: {
-      baseUrl: getBaseUrl(),
+      baseUrl: getBaseUrl(PROD_BACKEND_MODE),
       apiPath: '',
       requestTimeout: 30000,
     },
 
     // API Gateway
     apiGateway: {
-      baseUrl: getBaseUrl(),
+      baseUrl: getBaseUrl(PROD_BACKEND_MODE),
       apiPath: '',
       requestTimeout: 30000,
     },
@@ -87,9 +97,9 @@ export const environment = {
     offlineMode: true,
     analyticsEnabled: true,
     crashReporting: true,
-    useLocalBackend: false, // Use production backend services
-    useTidepoolIntegration: true, // Enable Tidepool integration in production
-    useTidepoolMock: false, // Use real Tidepool API in production
+    useLocalBackend: (PROD_BACKEND_MODE as BackendMode) === 'local',
+    useTidepoolIntegration: (PROD_BACKEND_MODE as BackendMode) === 'cloud',
+    useTidepoolMock: (PROD_BACKEND_MODE as BackendMode) === 'mock',
     devTools: false, // Disable developer tools in production
   },
 };

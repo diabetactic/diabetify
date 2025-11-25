@@ -59,7 +59,7 @@
     ]
   },
   "auth": {
-    "title": "Welcome to Diabetify",
+    "title": "Welcome to Diabetactic",
     "subtitle": "Please sign in to continue",
     "email": "Email",
     "password": "Password",
@@ -133,6 +133,8 @@
     "noReadings": "No readings yet",
     "noReadingsMessage": "Start tracking your glucose readings to see them here.",
     "shareReadings": "Share Last 30 Days of Readings",
+    "last30Days": "Last 30 Days",
+    "recentReading": "Most recent reading",
     "syncError": "Sync error",
     "defaultDoctorName": "your doctor",
     "kids": {
@@ -209,6 +211,10 @@
     "searchPlaceholder": "Search readings, notes...",
     "search": "Search",
     "clearAll": "Clear All",
+    "sync": "Sync",
+    "syncing": "Syncing...",
+    "syncComplete": "Sync complete: {{pushed}} pushed, {{fetched}} fetched",
+    "syncFailed": "Sync failed. Please try again.",
     "loadingReadings": "Loading readings...",
     "noReadings": "No Readings Yet",
     "noReadingsMessage": "Start tracking your glucose levels by adding your first reading.",
@@ -417,17 +423,21 @@
   },
   "appointments": {
     "title": "Appointments",
+    "current": "Current",
     "upcoming": "Upcoming",
-    "past": "History",
+    "past": "Past Appointments",
     "history": "History",
     "schedule": "Schedule Appointment",
     "loading": "Loading appointments...",
     "dataShared": "Data Shared",
+    "record": "Appointment",
     "tabs": {
       "upcoming": "Upcoming",
       "past": "Past"
     },
     "empty": {
+      "title": "No Appointments",
+      "message": "Your appointments will appear here once submitted.",
       "upcoming": {
         "title": "No Upcoming Appointments",
         "message": "Schedule your next appointment with your healthcare provider"
@@ -435,12 +445,50 @@
       "past": {
         "title": "No Past Appointments",
         "message": "Completed appointments will appear here"
-      }
+      },
+      "backendDisabled": "Appointments are temporarily disabled in this build. Your clinical appointments are still managed by your care team."
     },
     "actions": {
       "schedule": "Schedule Appointment",
       "edit": "Edit",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "create": "Add New Appointment"
+    },
+    "fields": {
+      "glucoseObjective": "Glucose Objective",
+      "insulinType": "Insulin Type",
+      "dose": "Dose",
+      "fixedDose": "Fixed Dose",
+      "ratio": "Insulin-to-Carb Ratio",
+      "sensitivity": "Sensitivity Factor",
+      "fastInsulin": "Fast-Acting Insulin",
+      "pumpType": "Administration Method",
+      "controlData": "Control Data",
+      "otherMotive": "Additional Notes",
+      "otherTreatment": "Other Treatments"
+    },
+    "motives": {
+      "control_routine": "Routine Control",
+      "follow_up": "Follow-up",
+      "emergency": "Emergency",
+      "consultation": "Consultation",
+      "adjustment": "Dose Adjustment",
+      "other": "Other"
+    },
+    "insulinTypes": {
+      "rapid": "Rapid-Acting",
+      "short": "Short-Acting",
+      "intermediate": "Intermediate-Acting",
+      "long": "Long-Acting",
+      "mixed": "Mixed",
+      "none": "None"
+    },
+    "pumpTypes": {
+      "medtronic": "Medtronic Pump",
+      "omnipod": "Omnipod",
+      "tandem": "Tandem t:slim",
+      "none": "Syringe/Pen",
+      "other": "Other"
     },
     "cancel": {
       "title": "Cancel appointment",
@@ -526,8 +574,10 @@
       "phone": "Phone"
     },
     "detail": {
-      "title": "Appointment Detail",
-      "loading": "Loading appointment details...",
+      "title": "Appointment Details",
+      "loading": "Loading appointment...",
+      "treatmentParams": "Treatment Parameters",
+      "insulinDetails": "Insulin Details",
       "physician": "Physician",
       "defaultDoctor": "Doctor",
       "specialty": "Specialty",
@@ -554,44 +604,30 @@
     },
     "create": {
       "title": "New Appointment",
-      "steps": {
-        "doctor": "Doctor",
-        "date": "Date",
-        "details": "Details",
-        "confirm": "Confirm"
-      },
-      "selectDoctor": "Select your doctor",
-      "selectDoctorSubtitle": "Choose the professional you want to schedule your appointment with",
-      "searchPlaceholder": "Search by name, specialty or hospital",
-      "nextAvailable": "Next available",
-      "noDoctorsFound": "No doctors found",
-      "selectDateTime": "Select date and time",
-      "appointmentDate": "Appointment date",
-      "availableSlots": "Available slots",
-      "loadingSlots": "Loading slots...",
-      "noSlotsAvailable": "No slots available for this date",
-      "appointmentDetails": "Appointment details",
-      "additionalInfo": "Additional information about your appointment",
-      "appointmentType": "Appointment type",
-      "additionalNotes": "Additional notes",
-      "optional": "Optional",
-      "notesPlaceholder": "Describe your symptoms, questions or any relevant information...",
-      "shareGlucoseSubtitle": "Help your doctor get a better view of your health",
-      "shareReadings": "Share readings",
-      "shareReadingsSubtitle": "Summary of your manual readings",
-      "lastDays": "Last days",
-      "days": "{{count}} days",
-      "statisticalSummaryOnly": "Only a statistical summary will be shared, not individual readings.",
-      "confirmAppointment": "Confirm your appointment",
-      "reviewDetails": "Review details before confirming",
-      "dateAndTime": "Date & Time",
-      "duration": "Duration",
-      "minutes": "minutes",
-      "glucoseData": "Glucose Data",
-      "shareSummaryDays": "Summary of {{days}} days will be shared",
-      "privacyNotice": "Your information is protected. Only your doctor will be able to see the shared data. You can cancel or modify the appointment at any time.",
-      "previous": "Previous",
-      "confirmButton": "Confirm Appointment"
+      "glucose_objective": "Glucose Objective",
+      "insulin_type": "Insulin Type",
+      "insulin_rapid": "Rapid Acting",
+      "insulin_slow": "Slow Acting",
+      "insulin_mixed": "Mixed",
+      "dose": "Dose",
+      "fast_insulin": "Fast Insulin Brand",
+      "fixed_dose": "Fixed Dose",
+      "ratio": "Insulin-to-Carb Ratio",
+      "sensitivity": "Correction Factor (Sensitivity)",
+      "pump_type": "Administration Method",
+      "pump_none": "Syringe/Pen",
+      "pump_pump": "Insulin Pump",
+      "pump_pen": "Insulin Pen",
+      "control_data": "Control Data (PDF URL)",
+      "motive": "Visit Reason",
+      "motive_control_routine": "Routine Control",
+      "motive_follow_up": "Follow-up",
+      "motive_emergency": "Emergency",
+      "motive_consultation": "Consultation",
+      "motive_other": "Other",
+      "other_motive": "Specify Other Reason",
+      "another_treatment": "Additional Treatments",
+      "submit": "Create Appointment"
     }
   },
   "profile": {
@@ -663,6 +699,13 @@
     "lastSync": "Last Sync",
     "disconnect": "Disconnect",
     "connect": "Connect to Tidepool",
+    "viewDashboard": "View Dashboard",
+    "changePhoto": "Change photo",
+    "avatar": {
+      "errorTitle": "Profile photo",
+      "tooLarge": "Please choose an image smaller than 3 MB.",
+      "updateFailed": "We couldn't update your photo. Please try again."
+    },
     "about": "About",
     "appVersion": "App Version",
     "termsOfService": "Terms of Service",
@@ -798,7 +841,7 @@
     "offline": "You are offline. Some features may not be available."
   },
   "messages": {
-    "welcome": "Welcome to Diabetify!",
+    "welcome": "Welcome to Diabetactic!",
     "saveSuccess": "Saved successfully",
     "deleteSuccess": "Deleted successfully",
     "updateSuccess": "Updated successfully",
@@ -1009,8 +1052,8 @@
     }
   },
   "login": {
-    "logoAlt": "Diabetify Logo",
-    "appName": "Diabetify",
+    "logoAlt": "Diabetactic Logo",
+    "appName": "Diabetactic",
     "tagline": "Your digital health companion",
     "demoHint": {
       "testAccount": "Test Account:",
@@ -1028,13 +1071,13 @@
     "submitButton": "Sign In",
     "forgotPassword": "Forgot your password?",
     "divider": "Or",
-    "demoButton": "Explore Demo",
+    "demoButton": "",
     "register": {
       "prompt": "Don't have an account?",
       "link": "Sign up here"
     },
     "footer": {
-      "copyright": "© 2024 Diabetify • v1.0.0",
+      "copyright": "© 2025 Diabetactic • v1.0.0",
       "links": {
         "terms": "Terms",
         "privacy": "Privacy",
@@ -1045,5 +1088,34 @@
   "explore": {
     "explorePrefix": "Explore",
     "uiComponents": "UI Components"
+  },
+  "tips": {
+    "title": "Tips & Advice",
+    "subtitle": "Helpful tips for managing your diabetes",
+    "disclaimer": "These tips are for informational purposes only. Always consult with your healthcare provider before making any changes to your diabetes management plan.",
+    "hydration": {
+      "title": "Stay Hydrated",
+      "description": "Drink plenty of water throughout the day. Proper hydration helps your kidneys flush out excess sugar through urine and prevents dehydration."
+    },
+    "meals": {
+      "title": "Regular Meals",
+      "description": "Eat regular, balanced meals at consistent times each day. This helps maintain stable blood sugar levels and prevents spikes or crashes."
+    },
+    "exercise": {
+      "title": "Daily Exercise",
+      "description": "Engage in at least 30 minutes of moderate physical activity most days. Exercise helps your body use insulin more effectively and lowers blood sugar."
+    },
+    "monitoring": {
+      "title": "Monitor Regularly",
+      "description": "Check your blood sugar levels as recommended by your doctor. Regular monitoring helps you understand how food, activity, and medication affect your levels."
+    },
+    "medication": {
+      "title": "Take Medication on Time",
+      "description": "Always take your diabetes medications as prescribed. Set reminders if needed and never skip doses without consulting your healthcare provider."
+    },
+    "sleep": {
+      "title": "Get Quality Sleep",
+      "description": "Aim for 7-9 hours of quality sleep each night. Poor sleep can affect blood sugar levels and insulin sensitivity."
+    }
   }
 }

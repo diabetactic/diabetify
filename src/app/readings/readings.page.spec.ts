@@ -8,6 +8,7 @@ import { ReadingsPage } from './readings.page';
 import { ReadingsService } from '../core/services/readings.service';
 import { ProfileService } from '../core/services/profile.service';
 import { TranslationService } from '../core/services/translation.service';
+import { ReadingsPageModule } from './readings.module';
 
 class ReadingsServiceStub {
   private readingsSubject = new BehaviorSubject<any[]>([]);
@@ -57,7 +58,7 @@ describe('ReadingsPage', () => {
         IonicModule.forRoot(),
         TranslateModule.forRoot(),
         RouterTestingModule,
-        ReadingsPage,
+        ReadingsPageModule,
       ],
       providers: [
         { provide: ReadingsService, useClass: ReadingsServiceStub },

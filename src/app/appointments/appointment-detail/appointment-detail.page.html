@@ -1,200 +1,172 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-button (click)="goBack()" class="inline-flex items-center gap-2">
-    <app-icon name="arrow_back"></app-icon>
+        <app-icon name="arrow-left"></app-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Detalle de Cita</ion-title>
+    <ion-title>{{ 'appointments.detail.title' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <!-- Loading state -->
-  <div *ngIf="loading" class="ion-padding ion-text-center">
-    <app-icon  name="loader-circle" class="animate-spin"></app-icon>
-    <p>Cargando detalles de la cita...</p>
-  </div>
-
-  <!-- Appointment details -->
-  <div *ngIf="!loading && appointment" class="appointment-details">
-    <!-- Doctor information card -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-subtitle>Médico</ion-card-subtitle>
-        <ion-card-title>{{ appointment.doctorName || 'Doctor' }}</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-item lines="none">
-          <ion-avatar slot="start">
-            <div class="doctor-avatar">
-              <app-icon name="person"></app-icon>
-            </div>
-          </ion-avatar>
-          <ion-label>
-            <p>Especialidad: General</p>
-            <p *ngIf="appointment.videoCallUrl">
-              <app-icon  name="videocam-outline"></app-icon>
-              Cita virtual disponible
-            </p>
-          </ion-label>
-        </ion-item>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Appointment info card -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-subtitle>Información de la Cita</ion-card-subtitle>
-        <ion-card-title>{{ formatDate(appointment.date) }}</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list lines="none">
-          <ion-item class="flex items-center gap-2">
-    <app-icon name="schedule"></app-icon>
-            <ion-label>
-              <p>Horario</p>
-              <h3>
-                {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}
-              </h3>
-            </ion-label>
-          </ion-item>
-
-          <ion-item class="flex items-center gap-2">
-    <app-icon name="event_available"></app-icon>
-            <ion-label>
-              <p>Estado</p>
-              <ion-badge [color]="getStatusColor(appointment.status)">
-                {{ appointment.status }}
-              </ion-badge>
-            </ion-label>
-          </ion-item>
-
-          <ion-item *ngIf="appointment.urgency" class="flex items-center gap-2">
-    <app-icon name="priority_high"></app-icon>
-            <ion-label>
-              <p>Urgencia</p>
-              <ion-badge [color]="getUrgencyColor(appointment.urgency)">
-                {{ appointment.urgency }}
-              </ion-badge>
-            </ion-label>
-          </ion-item>
-
-          <ion-item *ngIf="appointment.reason" class="flex items-center gap-2">
-    <app-icon name="medical_information"></app-icon>
-            <ion-label>
-              <p>Motivo</p>
-              <h3>{{ appointment.reason }}</h3>
-            </ion-label>
-          </ion-item>
-
-          <ion-item *ngIf="appointment.notes" class="flex items-center gap-2">
-    <app-icon name="notes"></app-icon>
-            <ion-label>
-              <p>Notas</p>
-              <h3>{{ appointment.notes }}</h3>
-            </ion-label>
-          </ion-item>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Data sharing card -->
-    <ion-card class="share-card">
-      <ion-card-header>
-        <ion-card-subtitle>Compartir Datos de Glucosa</ion-card-subtitle>
-        <ion-card-title>Últimos 30 días</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <!-- Success message after sharing -->
-        <div *ngIf="shareSuccess" class="share-success">
-          <app-icon  name="checkmark-circle" class="text-success"></app-icon>
-          <h3>{{ shareMessage }}</h3>
-          <p>{{ recordCount }} lecturas compartidas</p>
-          <small>Compartido el {{ getCurrentDate() | date: 'short' }}</small>
-        </div>
-
-        <!-- Share button -->
-        <div *ngIf="!shareSuccess && !appointment.glucoseDataShared">
-          <p>
-            Comparte tus lecturas de glucosa de los últimos 30 días con tu médico para un mejor
-            seguimiento.
-          </p>
-          <ion-button
-            expand="block"
-            color="primary"
-            (click)="shareGlucoseData()"
-            [disabled]="
-              sharingData ||
-              appointment.status === 'cancelled' ||
-              appointment.status === 'completed'
-            "
-           class="inline-flex items-center gap-2">
-    <app-icon name="share"></app-icon>
-            Compartir últimos 30 días
-          </ion-button>
-        </div>
-
-        <!-- Already shared indicator -->
-        <div *ngIf="appointment.glucoseDataShared && !shareSuccess" class="already-shared">
-          <app-icon  name="checkmark-circle" class="text-success"></app-icon>
-          <p>Los datos ya fueron compartidos anteriormente</p>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Action buttons -->
-    <div
-      class="action-buttons"
-      *ngIf="appointment.status === 'confirmed' || appointment.status === 'pending'"
-    >
-      <!-- Video call button -->
-      <ion-button
-        *ngIf="appointment.videoCallUrl"
-        expand="block"
-        fill="outline"
-        (click)="joinVideoCall()"
-       class="inline-flex items-center gap-2">
-    <app-icon name="videocam"></app-icon>
-        Unirse a videollamada
-      </ion-button>
-
-      <!-- Reschedule button -->
-      <ion-button expand="block" fill="outline" color="warning" (click)="rescheduleAppointment()" class="inline-flex items-center gap-2">
-    <app-icon name="update"></app-icon>
-        Reprogramar cita
-      </ion-button>
-
-      <!-- Cancel button -->
-      <ion-button expand="block" fill="outline" color="danger" (click)="cancelAppointment()" class="inline-flex items-center gap-2">
-    <app-icon name="cancel"></app-icon>
-        Cancelar cita
-      </ion-button>
+<ion-content [fullscreen]="true" class="appointment-detail-content">
+  <div class="px-4 py-6">
+    <!-- Loading state -->
+    <div *ngIf="loading" class="flex flex-col items-center justify-center gap-4 py-12">
+      <app-icon name="loader-circle" class="text-primary animate-spin text-4xl"></app-icon>
+      <p class="m-0 text-base text-gray-600 dark:text-gray-300">
+        {{ 'appointments.detail.loading' | translate }}
+      </p>
     </div>
 
-    <!-- Follow-up info -->
-    <ion-card *ngIf="appointment.followUpDate">
-      <ion-card-header>
-        <ion-card-subtitle>Cita de seguimiento</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <p>{{ formatDate(appointment.followUpDate) }}</p>
-      </ion-card-content>
-    </ion-card>
+    <!-- Appointment details -->
+    <div *ngIf="!loading && appointment" class="flex flex-col gap-4">
+      <!-- Header card with ID and motive -->
+      <ion-card class="!m-0">
+        <ion-card-header>
+          <ion-card-subtitle class="flex items-center gap-2">
+            <app-icon name="clipboard-list" class="text-primary"></app-icon>
+            {{ 'appointments.record' | translate }} #{{ appointment.appointment_id }}
+          </ion-card-subtitle>
+          <ion-card-title class="text-xl">
+            {{ formatMotive(appointment.motive) }}
+          </ion-card-title>
+        </ion-card-header>
+      </ion-card>
 
-    <!-- Prescriptions -->
-    <ion-card *ngIf="appointment.prescriptions && appointment.prescriptions.length > 0">
-      <ion-card-header>
-        <ion-card-subtitle>Prescripciones</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list lines="none">
-          <ion-item *ngFor="let prescription of appointment.prescriptions" class="flex items-center gap-2">
-    <app-icon name="medication"></app-icon>
-            <ion-label>{{ prescription }}</ion-label>
-          </ion-item>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
+      <!-- Treatment parameters card -->
+      <ion-card class="!m-0">
+        <ion-card-header>
+          <ion-card-title class="flex items-center gap-2 text-lg">
+            <app-icon name="activity" class="text-primary"></app-icon>
+            {{ 'appointments.detail.treatmentParams' | translate }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Glucose Objective -->
+            <div class="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+              <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                {{ 'appointments.fields.glucoseObjective' | translate }}
+              </span>
+              <span class="text-primary text-lg font-bold">
+                {{ appointment.glucose_objective }} mg/dL
+              </span>
+            </div>
+
+            <!-- Insulin Type -->
+            <div class="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+              <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                {{ 'appointments.fields.insulinType' | translate }}
+              </span>
+              <span class="text-lg font-semibold">
+                {{ formatInsulinType(appointment.insulin_type) }}
+              </span>
+            </div>
+
+            <!-- Dose -->
+            <div class="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+              <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                {{ 'appointments.fields.dose' | translate }}
+              </span>
+              <span class="text-lg font-semibold">{{ appointment.dose }} U</span>
+            </div>
+
+            <!-- Fixed Dose -->
+            <div class="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+              <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                {{ 'appointments.fields.fixedDose' | translate }}
+              </span>
+              <span class="text-lg font-semibold">{{ appointment.fixed_dose }} U</span>
+            </div>
+
+            <!-- Ratio -->
+            <div class="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+              <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                {{ 'appointments.fields.ratio' | translate }}
+              </span>
+              <span class="text-lg font-semibold">1:{{ appointment.ratio }}</span>
+            </div>
+
+            <!-- Sensitivity -->
+            <div class="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+              <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                {{ 'appointments.fields.sensitivity' | translate }}
+              </span>
+              <span class="text-lg font-semibold">{{ appointment.sensitivity }}</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Insulin details card -->
+      <ion-card class="!m-0">
+        <ion-card-header>
+          <ion-card-title class="flex items-center gap-2 text-lg">
+            <app-icon name="syringe" class="text-primary"></app-icon>
+            {{ 'appointments.detail.insulinDetails' | translate }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list lines="none" class="ion-no-padding">
+            <ion-item>
+              <ion-label>
+                <p class="text-gray-500 dark:text-gray-400">
+                  {{ 'appointments.fields.fastInsulin' | translate }}
+                </p>
+                <h3 class="font-semibold">{{ appointment.fast_insulin }}</h3>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>
+                <p class="text-gray-500 dark:text-gray-400">
+                  {{ 'appointments.fields.pumpType' | translate }}
+                </p>
+                <h3 class="font-semibold">{{ formatPumpType(appointment.pump_type) }}</h3>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Control data card -->
+      <ion-card *ngIf="appointment.control_data" class="!m-0">
+        <ion-card-header>
+          <ion-card-title class="flex items-center gap-2 text-lg">
+            <app-icon name="file-text" class="text-primary"></app-icon>
+            {{ 'appointments.fields.controlData' | translate }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p class="text-gray-700 dark:text-gray-300">{{ appointment.control_data }}</p>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Other motive card -->
+      <ion-card *ngIf="appointment.other_motive" class="!m-0">
+        <ion-card-header>
+          <ion-card-title class="flex items-center gap-2 text-lg">
+            <app-icon name="message-square" class="text-primary"></app-icon>
+            {{ 'appointments.fields.otherMotive' | translate }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p class="text-gray-700 dark:text-gray-300">{{ appointment.other_motive }}</p>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Another treatment card -->
+      <ion-card *ngIf="appointment.another_treatment" class="!m-0">
+        <ion-card-header>
+          <ion-card-title class="flex items-center gap-2 text-lg">
+            <app-icon name="pill" class="text-primary"></app-icon>
+            {{ 'appointments.fields.otherTreatment' | translate }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p class="text-gray-700 dark:text-gray-300">{{ appointment.another_treatment }}</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
   </div>
 </ion-content>

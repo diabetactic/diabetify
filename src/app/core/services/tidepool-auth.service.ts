@@ -13,17 +13,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Browser } from '@capacitor/browser';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { BehaviorSubject, Observable, throwError, from, timer, of, firstValueFrom } from 'rxjs';
 import { catchError, map, switchMap, tap, retryWhen, delay, take, concatMap } from 'rxjs/operators';
 
 import { TidepoolAuth, TidepoolTokenResponse } from '../models/tidepool-auth.model';
 import { getOAuthConfig, OAuthConfig, OAUTH_CONSTANTS } from '../config/oauth.config';
-import {
-  generatePKCEChallenge,
-  generateState,
-  buildAuthorizationUrl,
-  PKCEChallenge,
-} from '../utils/pkce.utils';
+import { generatePKCEChallenge, generateState, buildAuthorizationUrl } from '../utils/pkce.utils';
 import { TokenStorageService } from './token-storage.service';
 import { CapacitorHttpService } from './capacitor-http.service';
 import { environment } from '../../../environments/environment';
@@ -162,6 +158,23 @@ export class TidepoolAuthService {
     try {
       // Update loading state
       this.updateAuthState({ isLoading: true, error: null });
+
+      // In web/browser builds the mobile OAuth redirect (diabetactic://)
+      // cannot complete correctly. Instead of trying the PKCE flow here,
+      // open the Tidepool web app directly and short-circuit.
+      if (!Capacitor.isNativePlatform()) {
+        await Browser.open({
+          url: 'https://app.tidepool.org',
+          presentationStyle: 'popover',
+        });
+
+        this.updateAuthState({
+          isLoading: false,
+          error:
+            'La conexión directa con Tidepool solo funciona en la app móvil. Puedes ver tus datos en app.tidepool.org.',
+        });
+        return;
+      }
 
       // Generate PKCE challenge and state
       const pkceChallenge = await generatePKCEChallenge();

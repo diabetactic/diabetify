@@ -3,20 +3,9 @@
     <ion-title>{{ 'appointments.title' | translate }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="createAppointment()" class="inline-flex items-center gap-2">
-    <app-icon name="add"></app-icon>
+        <app-icon name="add"></app-icon>
       </ion-button>
     </ion-buttons>
-  </ion-toolbar>
-
-  <ion-toolbar color="primary">
-    <ion-segment [(ngModel)]="selectedSegment" (ionChange)="onSegmentChange($event)">
-      <ion-segment-button value="upcoming">
-        <ion-label>{{ 'appointments.tabs.upcoming' | translate }}</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="past">
-        <ion-label>{{ 'appointments.tabs.past' | translate }}</ion-label>
-      </ion-segment-button>
-    </ion-segment>
   </ion-toolbar>
 </ion-header>
 
@@ -29,8 +18,10 @@
   <div class="px-4 py-6">
     <!-- Loading spinner -->
     <div *ngIf="loading" class="flex flex-col items-center justify-center gap-4 py-12">
-      <app-icon  name="loader-circle" class="animate-spin text-4xl text-primary"></app-icon>
-      <p class="m-0 text-base text-gray-600 dark:text-gray-300">{{ 'appointments.loading' | translate }}</p>
+      <app-icon name="loader-circle" class="text-primary animate-spin text-4xl"></app-icon>
+      <p class="m-0 text-base text-gray-600 dark:text-gray-300">
+        {{ 'appointments.loading' | translate }}
+      </p>
     </div>
 
     <!-- Error message -->
@@ -42,126 +33,148 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Upcoming appointments -->
-    <div *ngIf="selectedSegment === 'upcoming' && !loading">
-      <!-- Empty state -->
-      <ion-card *ngIf="upcomingAppointments.length === 0" class="empty-state mb-4">
-        <ion-card-content class="flex flex-col items-center py-8 text-center">
-          <span class="material-symbols-outlined large-icon">event_busy</span>
-          <h2 class="mt-4 mb-2 text-xl font-semibold">{{ 'appointments.empty.upcoming.title' | translate }}</h2>
-          <p class="mb-6 text-sm text-gray-600 dark:text-gray-400">{{ 'appointments.empty.upcoming.message' | translate }}</p>
-          <ion-button (click)="createAppointment()" expand="block" class="w-full">
-            {{ 'appointments.actions.schedule' | translate }}
-          </ion-button>
+    <!-- Empty state -->
+    <ion-card *ngIf="!loading && !error && appointments.length === 0" class="empty-state mb-4">
+      <ion-card-content class="flex flex-col items-center py-8 text-center">
+        <span class="material-symbols-outlined text-6xl text-gray-400">medical_information</span>
+        <h2 class="mb-2 mt-4 text-xl font-semibold">
+          {{ 'appointments.empty.title' | translate }}
+        </h2>
+        <p class="mb-6 text-sm text-gray-600 dark:text-gray-400">
+          {{ 'appointments.empty.message' | translate }}
+        </p>
+        <ion-button (click)="createAppointment()" expand="block" class="w-full">
+          {{ 'appointments.actions.create' | translate }}
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Current Appointment -->
+    <div *ngIf="!loading && !error && currentAppointment" class="flex flex-col gap-4">
+      <!-- Section header -->
+      <div class="flex items-center gap-2">
+        <span class="badge badge-primary">{{ 'appointments.current' | translate }}</span>
+      </div>
+
+      <ion-card
+        class="appointment-card border-primary !m-0 cursor-pointer border-l-4 shadow-lg"
+        (click)="viewAppointment(currentAppointment)"
+      >
+        <ion-card-header>
+          <ion-card-subtitle class="flex items-center gap-2">
+            <app-icon name="clipboard-list" class="text-primary"></app-icon>
+            {{ 'appointments.record' | translate }} #{{ currentAppointment.appointment_id }}
+          </ion-card-subtitle>
+          <ion-card-title class="text-lg">
+            {{ formatMotive(currentAppointment.motive) }}
+          </ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+          <!-- Glucose objective -->
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="flex flex-col">
+              <span class="text-gray-500 dark:text-gray-400">
+                {{ 'appointments.fields.glucoseObjective' | translate }}
+              </span>
+              <span class="font-semibold">{{ currentAppointment.glucose_objective }} mg/dL</span>
+            </div>
+
+            <div class="flex flex-col">
+              <span class="text-gray-500 dark:text-gray-400">
+                {{ 'appointments.fields.insulinType' | translate }}
+              </span>
+              <span class="font-semibold">{{
+                formatInsulinType(currentAppointment.insulin_type)
+              }}</span>
+            </div>
+
+            <div class="flex flex-col">
+              <span class="text-gray-500 dark:text-gray-400">
+                {{ 'appointments.fields.dose' | translate }}
+              </span>
+              <span class="font-semibold">{{ currentAppointment.dose }} U</span>
+            </div>
+
+            <div class="flex flex-col">
+              <span class="text-gray-500 dark:text-gray-400">
+                {{ 'appointments.fields.ratio' | translate }}
+              </span>
+              <span class="font-semibold">1:{{ currentAppointment.ratio }}</span>
+            </div>
+          </div>
+
+          <!-- Control data -->
+          <div
+            *ngIf="currentAppointment.control_data"
+            class="mt-3 border-t border-gray-200 pt-3 dark:border-gray-700"
+          >
+            <span class="text-sm text-gray-500 dark:text-gray-400">
+              {{ 'appointments.fields.controlData' | translate }}
+            </span>
+            <p class="mt-1 text-sm">{{ currentAppointment.control_data }}</p>
+          </div>
+
+          <!-- Other treatment -->
+          <div *ngIf="currentAppointment.another_treatment" class="mt-2">
+            <span class="text-sm text-gray-500 dark:text-gray-400">
+              {{ 'appointments.fields.otherTreatment' | translate }}
+            </span>
+            <p class="mt-1 text-sm">{{ currentAppointment.another_treatment }}</p>
+          </div>
         </ion-card-content>
       </ion-card>
-
-      <!-- Appointments list -->
-      <ion-list *ngIf="upcomingAppointments.length > 0" class="mb-4">
-        <ion-item-sliding *ngFor="let appointment of upcomingAppointments" class="appointment-item-sliding">
-          <ion-item button (click)="viewAppointment(appointment)" class="appointment-item">
-            <ion-avatar slot="start">
-              <div class="appointment-avatar">
-                <app-icon name="person"></app-icon>
-              </div>
-            </ion-avatar>
-
-            <ion-label>
-              <h2>{{ appointment.doctorName || 'Doctor' }}</h2>
-              <h3>{{ formatDate(appointment.date) }}</h3>
-              <p>
-                <app-icon  name="time-outline"></app-icon>
-                {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}
-              </p>
-              <p *ngIf="appointment.reason">
-                <app-icon  name="medical-outline"></app-icon>
-                {{ appointment.reason }}
-              </p>
-            </ion-label>
-
-            <ion-note slot="end" class="flex flex-col items-end gap-1">
-              <ion-badge [color]="getStatusColor(appointment.status)">
-                <span class="material-symbols-outlined badge-icon">{{
-                  getStatusIcon(appointment.status)
-                }}</span>
-                {{ appointment.status }}
-              </ion-badge>
-              <ion-badge
-                *ngIf="appointment.urgency !== 'routine'"
-                [color]="getUrgencyColor(appointment.urgency)"
-                class="urgency-badge"
-              >
-                {{ appointment.urgency }}
-              </ion-badge>
-            </ion-note>
-          </ion-item>
-
-          <ion-item-options side="end">
-            <ion-item-option color="warning" class="flex items-center gap-2">
-      <app-icon name="edit"></app-icon>
-              {{ 'appointments.actions.edit' | translate }}
-            </ion-item-option>
-            <ion-item-option color="danger" class="flex items-center gap-2">
-      <app-icon name="cancel"></app-icon>
-              {{ 'appointments.actions.cancel' | translate }}
-            </ion-item-option>
-          </ion-item-options>
-        </ion-item-sliding>
-      </ion-list>
     </div>
 
-    <!-- Past appointments -->
-    <div *ngIf="selectedSegment === 'past' && !loading">
-      <!-- Empty state -->
-      <ion-card *ngIf="pastAppointments.length === 0" class="empty-state mb-4">
-        <ion-card-content class="flex flex-col items-center py-8 text-center">
-          <span class="material-symbols-outlined large-icon">history</span>
-          <h2 class="mt-4 mb-2 text-xl font-semibold">{{ 'appointments.empty.past.title' | translate }}</h2>
-          <p class="mb-0 text-sm text-gray-600 dark:text-gray-400">{{ 'appointments.empty.past.message' | translate }}</p>
-        </ion-card-content>
-      </ion-card>
+    <!-- Past Appointments (Collapsible) -->
+    <div *ngIf="!loading && !error && pastAppointments.length > 0" class="mt-6">
+      <div
+        class="bg-base-200 flex cursor-pointer items-center justify-between rounded-lg px-4 py-3"
+        (click)="pastAppointmentsExpanded = !pastAppointmentsExpanded"
+      >
+        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">
+          {{ 'appointments.past' | translate }} ({{ pastAppointments.length }})
+        </span>
+        <app-icon
+          [name]="pastAppointmentsExpanded ? 'chevron-up' : 'chevron-down'"
+          class="text-gray-500"
+        ></app-icon>
+      </div>
 
-      <!-- Appointments list -->
-      <ion-list *ngIf="pastAppointments.length > 0" class="mb-4">
-        <ion-item
+      <div *ngIf="pastAppointmentsExpanded" class="mt-3 flex flex-col gap-3">
+        <ion-card
           *ngFor="let appointment of pastAppointments"
-          button
+          class="appointment-card !m-0 cursor-pointer opacity-60 transition-opacity hover:opacity-80"
           (click)="viewAppointment(appointment)"
-          class="appointment-item mb-2"
         >
-          <ion-avatar slot="start">
-            <div class="appointment-avatar past">
-              <app-icon name="person"></app-icon>
-            </div>
-          </ion-avatar>
+          <ion-card-header class="pb-2">
+            <ion-card-subtitle class="flex items-center gap-2 text-xs">
+              <app-icon name="clipboard-list" class="text-gray-400"></app-icon>
+              {{ 'appointments.record' | translate }} #{{ appointment.appointment_id }}
+            </ion-card-subtitle>
+            <ion-card-title class="text-base">
+              {{ formatMotive(appointment.motive) }}
+            </ion-card-title>
+          </ion-card-header>
 
-          <ion-label>
-            <h2>{{ appointment.doctorName || 'Doctor' }}</h2>
-            <h3>{{ formatDate(appointment.date) }}</h3>
-            <p>
-              <app-icon  name="time-outline"></app-icon>
-              {{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}
-            </p>
-            <p *ngIf="appointment.reason">
-              <app-icon  name="medical-outline"></app-icon>
-              {{ appointment.reason }}
-            </p>
-          </ion-label>
-
-          <ion-note slot="end" class="flex flex-col items-end gap-1">
-            <ion-badge [color]="getStatusColor(appointment.status)">
-              <span class="material-symbols-outlined badge-icon">{{
-                getStatusIcon(appointment.status)
-              }}</span>
-              {{ appointment.status }}
-            </ion-badge>
-            <div *ngIf="appointment.glucoseDataShared" class="shared-indicator">
-              <app-icon  name="share-outline" class="text-success"></app-icon>
-              <small>{{ 'appointments.dataShared' | translate }}</small>
+          <ion-card-content class="pt-0">
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="flex flex-col">
+                <span class="text-gray-500 dark:text-gray-400">
+                  {{ 'appointments.fields.glucoseObjective' | translate }}
+                </span>
+                <span class="font-medium">{{ appointment.glucose_objective }} mg/dL</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-gray-500 dark:text-gray-400">
+                  {{ 'appointments.fields.dose' | translate }}
+                </span>
+                <span class="font-medium">{{ appointment.dose }} U</span>
+              </div>
             </div>
-          </ion-note>
-        </ion-item>
-      </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </div>
     </div>
   </div>
 </ion-content>

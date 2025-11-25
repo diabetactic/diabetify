@@ -1,6 +1,6 @@
-# Testing Guide - Diabetify
+# Testing Guide - Diabetactic
 
-Comprehensive testing strategy for the Diabetify mobile health application.
+Comprehensive testing strategy for the Diabetactic mobile health application.
 
 ## Testing Stack
 
@@ -29,6 +29,39 @@ npm run test:e2e:headed         # With visible browser
 npm run cap:run:android         # Run on device
 # Use android-adb MCP for screenshots/debugging
 # Use BrowserStack MCP for cross-device testing
+
+# Backend Integration (optional)
+npm run test:integration                 # Requires backend services (local or remote)
+npm run test:integration:coverage        # Same, with coverage enabled
+```
+
+## Backend Integration Tests
+
+The suites under `src/app/tests/integration` hit the real Dockerized services (api-gateway, appointments, etc.). They are **excluded from the default Karma target** so `npm run test` and `npm run test:ci` stay fast and do not require Docker.
+
+To run them:
+
+1. Start the backend stack (from another terminal):
+   ```bash
+   npm run backend:start   # or use the extServicesCompose scripts you prefer
+   ```
+2. Run the dedicated integration target (optionally overriding the API gateway URL):
+   ```bash
+   npm run test:integration
+   # or target a remote stack
+   API_GATEWAY_URL=https://your-heroku-app.herokuapp.com npm run test:integration
+   # or, if you need coverage
+   npm run test:integration:coverage
+   ```
+
+Those suites are never compiled during the default `npm run test`, so there is nothing else to toggle.
+
+### Test Console Noise
+
+Console output from hundreds of specs can drown the summary. By default we now reduce Karma’s browser console logs to `warn` level. Set `KARMA_CONSOLE_LEVEL=log` (and optionally `KARMA_CAPTURE_CONSOLE=true`) if you need the old verbose output for debugging:
+
+```bash
+KARMA_CONSOLE_LEVEL=log KARMA_CAPTURE_CONSOLE=true npm run test
 ```
 
 ## Unit Testing

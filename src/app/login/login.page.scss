@@ -1,13 +1,12 @@
-// ============================================
-// LOGIN PAGE - HYBRID TAILWIND V4 + SCSS
-// ============================================
-// Tailwind: Layout, spacing, typography, colors handled in HTML
-// SCSS: Gradients, Ionic variables, pseudo-elements, interactive states
-// Reduction: 215 → 78 lines (64% reduction)
-// ============================================
-
 .login-content {
-  --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  // Use the same neutral background as the rest of the app
+  --background: var(--ion-background-color, #f3f4f6);
+
+  // Extra padding for inputs with leading icons
+  ion-input.login-input,
+  input.login-input {
+    --padding-start: 2.75rem;
+  }
 
   // Form item with focus states (SCSS required for :focus-within)
   .form-item {
@@ -24,7 +23,8 @@
       border-color: var(--ion-color-danger) !important;
     }
 
-    ion-input {
+    ion-input,
+    input {
       --padding-start: 40px;
     }
 
@@ -37,6 +37,9 @@
   // Checkbox styling
   .checkbox-item {
     --background: transparent;
+
+    display: flex;
+    align-items: center;
 
     ion-checkbox {
       --size: 20px;
@@ -98,6 +101,19 @@
     &:active {
       transform: scale(0.98);
     }
+  }
+}
+
+// Better contrast in global dark mode
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
+  .login-content {
+    --background: #020617;
+  }
+
+  ion-card,
+  .card {
+    background: #020617;
   }
 }
 

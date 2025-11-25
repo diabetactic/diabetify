@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { IonContent } from '@ionic/angular';
+import { IonContent, ToastController } from '@ionic/angular';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {
@@ -47,6 +47,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
   groupedReadings: GroupedReading[] = [];
   filteredReadings: LocalGlucoseReading[] = [];
   isLoading: boolean = true;
+  isSyncing: boolean = false;
   totalCount: number = 0;
 
   // Filters
@@ -71,7 +72,8 @@ export class ReadingsPage implements OnInit, OnDestroy {
     private router: Router,
     private profileService: ProfileService,
     private translationService: TranslationService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private toastController: ToastController
   ) {
     this.logger.info('Init', 'ReadingsPage initialized');
   }
@@ -356,6 +358,51 @@ export class ReadingsPage implements OnInit, OnDestroy {
       this.logger.error('Error', 'Error refreshing readings', error);
       event.target.complete();
     }
+  }
+
+  /**
+   * Sync readings with Heroku backend
+   */
+  async syncWithBackend(): Promise<void> {
+    if (this.isSyncing) return;
+
+    this.isSyncing = true;
+    this.logger.info('Sync', 'Starting sync with backend');
+
+    try {
+      const result = await this.readingsService.performFullSync();
+      this.logger.info('Sync', 'Sync completed', {
+        pushed: result.pushed,
+        fetched: result.fetched,
+        failed: result.failed,
+      });
+
+      // Show success feedback to user
+      const message = this.translationService.instant('readings.syncComplete', {
+        pushed: result.pushed,
+        fetched: result.fetched,
+      });
+      await this.showToast(message, 'success');
+    } catch (error) {
+      this.logger.error('Sync', 'Sync failed', error);
+      const errorMessage = this.translationService.instant('readings.syncFailed');
+      await this.showToast(errorMessage, 'danger');
+    } finally {
+      this.isSyncing = false;
+    }
+  }
+
+  /**
+   * Show toast notification
+   */
+  private async showToast(message: string, color: 'success' | 'warning' | 'danger'): Promise<void> {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color,
+      position: 'bottom',
+    });
+    await toast.present();
   }
 
   /**

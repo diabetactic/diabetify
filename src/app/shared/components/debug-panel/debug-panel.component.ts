@@ -40,9 +40,7 @@ interface DebugInfo {
   templateUrl: './debug-panel.component.html',
   styleUrls: ['./debug-panel.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, TranslateModule,
-    AppIconComponent
-  ],
+  imports: [CommonModule, FormsModule, IonicModule, TranslateModule, AppIconComponent],
   animations: [
     trigger('slideIn', [
       transition(':enter', [

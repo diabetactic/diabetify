@@ -86,48 +86,10 @@ export class WelcomePage implements OnInit, OnDestroy {
   }
 
   /**
-   * Handle "Get Started" button click
-   */
-  async onGetStarted(): Promise<void> {
-    // For now, just mark onboarding as complete and navigate to tabs
-    await this.mockLogin();
-  }
-
-  /**
    * Handle "Login" button click
    */
   async onLogin(): Promise<void> {
-    // For now, use the same mock login
-    await this.mockLogin();
-  }
-
-  /**
-   * Mock login - creates a basic profile and navigates to dashboard
-   */
-  private async mockLogin(): Promise<void> {
-    try {
-      // Create or update profile to mark onboarding as complete
-      const existingProfile = await this.profileService.getProfile();
-
-      if (!existingProfile) {
-        // Create a new profile with basic info and default preferences (Spanish language, light theme)
-        await this.profileService.createProfile({
-          name: 'User',
-          age: 10,
-          hasCompletedOnboarding: true,
-          preferences: DEFAULT_USER_PREFERENCES,
-        });
-      } else {
-        // Update existing profile to mark onboarding as complete
-        await this.profileService.updateProfile({
-          hasCompletedOnboarding: true,
-        });
-      }
-
-      // Navigate to dashboard
-      this.router.navigate(['/tabs/dashboard'], { replaceUrl: true });
-    } catch (error) {
-      console.error('Error during mock login:', error);
-    }
+    // Go to real login screen
+    await this.router.navigate(['/login']);
   }
 }

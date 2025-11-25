@@ -83,42 +83,7 @@ Each test:
 }
 ```
 
-## Usage
-
-### Quick Test
-```bash
-# Run health check tests (headless)
-npm run test:health
-
-# Run with watch mode (for development)
-npm run test:health:watch
-
-# Run bash script (fastest)
-npm run test:health:script
-```
-
-### Full Integration Workflow
-```bash
-# 1. Start backend services
-cd extServices/container-managing
-make build
-
-# 2. Wait for services to start
-sleep 30
-
-# 3. Run health checks
-cd ../..
-npm run test:health
-
-# 4. If healthy, run integration tests
-npm run test:backend-integration
-```
-
-### CI/CD Integration
-```bash
-# Single command for CI
-npm run test:health && npm run test:backend-integration
-```
+## Usage (see `INTEGRATION_TESTS_GUIDE.md` for the canonical workflow)
 
 ## Service Configuration
 
@@ -220,7 +185,7 @@ mcp__claude-flow__memory_usage {
 
 ```bash
 # Check docker-compose status
-cd extServices/container-managing
+cd extServicesCompose/extServices/container-managing
 make logs
 
 # Restart services
@@ -282,7 +247,7 @@ jobs:
 
       - name: Start backend
         run: |
-          cd extServices/container-managing
+          cd extServicesCompose/extServices/container-managing
           make build
 
       - name: Wait for services
@@ -298,7 +263,7 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          cd extServices/container-managing
+          cd extServicesCompose/extServices/container-managing
           make down
 ```
 

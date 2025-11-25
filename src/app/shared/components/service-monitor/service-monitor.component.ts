@@ -29,9 +29,7 @@ import {
   templateUrl: './service-monitor.component.html',
   styleUrls: ['./service-monitor.component.scss'],
   standalone: true,
-  imports: [TranslateModule,
-    AppIconComponent
-  ],
+  imports: [TranslateModule, AppIconComponent],
 })
 export class ServiceMonitorComponent implements OnInit, OnDestroy {
   // Service states
@@ -46,7 +44,7 @@ export class ServiceMonitorComponent implements OnInit, OnDestroy {
   // UI state
   selectedService: ExternalService | null = null;
   showDetails = false;
-  autoRefresh = true;
+  autoRefresh = false; // DISABLED: Health checks cause CORS errors - use CapacitorHttpService instead
   refreshInterval = 10000; // 10 seconds
 
   // Subscriptions
@@ -99,8 +97,10 @@ export class ServiceMonitorComponent implements OnInit, OnDestroy {
       this.startAutoRefresh();
     }
 
-    // Perform initial health check
-    this.checkAllServices();
+    // DISABLED: Health checks cause CORS errors on native platforms
+    // when using HttpClient instead of CapacitorHttpService.
+    // To fix this, external-services-manager should use CapacitorHttpService.
+    // this.checkAllServices();
   }
 
   ngOnDestroy() {

@@ -4,23 +4,59 @@
 
 import { Capacitor } from '@capacitor/core';
 
+export type BackendMode = 'mock' | 'local' | 'cloud';
+
 /**
- * Get the appropriate base URL for backend services based on platform
+ * BACKEND MODE SELECTION
  *
- * Platform-specific URLs:
- * - All platforms: Use Heroku production API
+ * Change DEV_BACKEND_MODE to switch between:
  *
- * Note: For local development, temporarily change this to 'http://localhost:8000'
+ *   'mock'  → Mock adapter (in-memory, instant, no backend required)
+ *             Use for: Development, fast testing, offline mode
+ *             Maestro tag: --tags mock
+ *             Config: maestro/config/env-mock.yaml
+ *
+ *   'local' → Local Docker backend (http://localhost:8000)
+ *             Use for: Full-stack development, Docker Compose testing
+ *             Config: Docker Compose with extServices
+ *
+ *   'cloud' → Heroku API Gateway (https://diabetactic-api-gateway-37949d6f182f.herokuapp.com)
+ *             Use for: Integration testing, production validation
+ *             Maestro tag: --tags heroku
+ *             Config: maestro/config/env-heroku.yaml
+ *
+ * For Maestro tests, both mock and heroku variants are available:
+ *   - maestro/tests/auth/01-login-flow.mock.yaml
+ *   - maestro/tests/auth/01-login-flow.heroku.yaml
+ *
+ * See maestro/BACKEND_TESTING.md for complete testing guide.
  */
-function getBaseUrl(): string {
-  // IMPORTANT: Using proxy for development to bypass CORS
-  // The proxy.conf.json redirects /api -> Heroku API Gateway
+const DEV_BACKEND_MODE: BackendMode = 'mock';
+
+/**
+ * Get the appropriate base URL for backend services based on platform and mode.
+ */
+function getBaseUrl(mode: BackendMode): string {
+  if (mode === 'local') {
+    // Local Docker env (container-managing, port 8000 / 8004)
+    if (Capacitor.isNativePlatform()) {
+      const platform = Capacitor.getPlatform();
+      if (platform === 'android') {
+        return 'http://10.0.2.2:8000';
+      }
+      // iOS simulator / device
+      return 'http://localhost:8000';
+    }
+    // Web dev hitting local gateway directly
+    return 'http://localhost:8000';
+  }
+
+  // cloud or mock → use Heroku API Gateway
   if (Capacitor.isNativePlatform()) {
-    // Native platforms: direct connection to Heroku (CORS not a problem)
     return 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
   }
 
-  // Web development: use proxy to bypass CORS
+  // Web development: use proxy to bypass CORS (proxy.conf.json → Heroku)
   return '/api';
 }
 
@@ -29,6 +65,7 @@ function getBaseUrl(): string {
  */
 export const environment = {
   production: false,
+  backendMode: DEV_BACKEND_MODE as BackendMode,
 
   // Tidepool API Configuration
   tidepool: {
@@ -74,7 +111,7 @@ export const environment = {
   backendServices: {
     // API Gateway - main entry point for all backend services
     apiGateway: {
-      baseUrl: getBaseUrl(), // http://localhost:8000 (web/iOS) or http://10.0.2.2:8000 (Android)
+      baseUrl: getBaseUrl(DEV_BACKEND_MODE),
       apiPath: '',
       requestTimeout: 30000,
     },
@@ -104,9 +141,10 @@ export const environment = {
     offlineMode: true,
     analyticsEnabled: false, // Disable analytics in development
     crashReporting: false,
-    useLocalBackend: true, // Use local backend services
-    useTidepoolIntegration: false, // Disable Tidepool integration for MVP
-    useTidepoolMock: true, // Use mock Tidepool adapter for testing
+    // Single-source backend mode flags
+    useLocalBackend: (DEV_BACKEND_MODE as BackendMode) === 'local',
+    useTidepoolIntegration: (DEV_BACKEND_MODE as BackendMode) === 'cloud',
+    useTidepoolMock: (DEV_BACKEND_MODE as BackendMode) === 'mock',
     devTools: true, // Enable developer tools (account state toggle, etc.)
   },
 };

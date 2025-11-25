@@ -6,6 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { AppointmentDetailPage } from './appointment-detail.page';
 import { AppointmentService } from '../../core/services/appointment.service';
+import { AppointmentDetailPageModule } from './appointment-detail.module';
 
 describe('AppointmentDetailPage', () => {
   let component: AppointmentDetailPage;
@@ -16,7 +17,7 @@ describe('AppointmentDetailPage', () => {
     const spy = jasmine.createSpyObj('AppointmentService', ['getAppointment']);
 
     TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot()],
+      imports: [AppointmentDetailPageModule, TranslateModule.forRoot()],
       providers: [
         provideHttpClient(),
         provideRouter([]),

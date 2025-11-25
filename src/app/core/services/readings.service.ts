@@ -104,23 +104,23 @@ export class ReadingsService {
     'after-lunch': 'ALMUERZO',
     'before-dinner': 'CENA',
     'after-dinner': 'CENA',
-    'snack': 'MERIENDA',
-    'bedtime': 'NOCHE',
-    'fasting': 'AYUNO',
-    'exercise': 'EJERCICIO',
-    'other': 'OTRO',
+    snack: 'MERIENDA',
+    bedtime: 'NOCHE',
+    fasting: 'AYUNO',
+    exercise: 'EJERCICIO',
+    other: 'OTRO',
   };
 
   // Mapping from backend reading_type to local meal context
   private readonly backendToMealContext: Record<string, string> = {
-    'DESAYUNO': 'before-breakfast',
-    'ALMUERZO': 'before-lunch',
-    'CENA': 'before-dinner',
-    'MERIENDA': 'snack',
-    'NOCHE': 'bedtime',
-    'AYUNO': 'fasting',
-    'EJERCICIO': 'exercise',
-    'OTRO': 'other',
+    DESAYUNO: 'before-breakfast',
+    ALMUERZO: 'before-lunch',
+    CENA: 'before-dinner',
+    MERIENDA: 'snack',
+    NOCHE: 'bedtime',
+    AYUNO: 'fasting',
+    EJERCICIO: 'exercise',
+    OTRO: 'other',
   };
 
   constructor(
@@ -527,7 +527,10 @@ export class ReadingsService {
           this.logger?.debug('Sync', `Created reading ${item.readingId} on backend`);
         } else if (item.operation === 'delete') {
           // Backend doesn't support delete for now, just remove from queue
-          this.logger?.debug('Sync', `Delete operation for ${item.readingId} - backend delete not supported`);
+          this.logger?.debug(
+            'Sync',
+            `Delete operation for ${item.readingId} - backend delete not supported`
+          );
         }
 
         // Remove from queue on success
@@ -548,7 +551,10 @@ export class ReadingsService {
 
         if (retryCount >= this.SYNC_RETRY_LIMIT) {
           // Remove from queue after max retries
-          this.logger?.warn('Sync', `Max retries reached for ${item.readingId}, removing from queue`);
+          this.logger?.warn(
+            'Sync',
+            `Max retries reached for ${item.readingId}, removing from queue`
+          );
           await this.db.syncQueue.delete(item.id!);
         } else {
           // Update retry count
@@ -601,7 +607,7 @@ export class ReadingsService {
 
     this.logger?.debug('Sync', 'Reading pushed to backend', {
       localId: reading.id,
-      backendId: response.data?.id
+      backendId: response.data?.id,
     });
   }
 
@@ -651,7 +657,10 @@ export class ReadingsService {
         }
       }
 
-      this.logger?.info('Sync', `Fetch complete: ${backendReadings.length} fetched, ${merged} new merged`);
+      this.logger?.info(
+        'Sync',
+        `Fetch complete: ${backendReadings.length} fetched, ${merged} new merged`
+      );
       return { fetched: backendReadings.length, merged };
     } catch (error) {
       this.logger?.error('Sync', 'Error fetching from backend', error);

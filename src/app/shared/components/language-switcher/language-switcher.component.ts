@@ -24,9 +24,7 @@ import {
   templateUrl: './language-switcher.component.html',
   styleUrls: ['./language-switcher.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, TranslateModule,
-    AppIconComponent
-  ],
+  imports: [CommonModule, IonicModule, FormsModule, TranslateModule, AppIconComponent],
 })
 export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   @Input() displayMode: 'button' | 'select' | 'popover' = 'button';

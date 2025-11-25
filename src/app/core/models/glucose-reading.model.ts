@@ -143,7 +143,7 @@ export interface LocalGlucoseFields {
   /** Local database identifier (separate from Tidepool id) */
   localId?: string;
 
-  /** Indicates if this reading has been synced with Tidepool */
+  /** Indicates if this reading has been synced with Tidepool/backend */
   synced: boolean;
 
   /** Derived status based on value and target ranges */
@@ -157,6 +157,12 @@ export interface LocalGlucoseFields {
 
   /** Indicates if this is a local-only reading not yet uploaded */
   isLocalOnly?: boolean;
+
+  /** Backend ID from Heroku API (for deduplication during sync) */
+  backendId?: number;
+
+  /** Meal context for the reading (e.g., 'before-breakfast', 'after-lunch') */
+  mealContext?: string;
 }
 
 /**

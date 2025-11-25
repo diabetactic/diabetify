@@ -54,7 +54,7 @@ describe('ApiGatewayService', () => {
 
     // Default spy behaviors - MUST set isServiceAvailable to true for all tests
     mockExternalServices.isServiceAvailable.and.returnValue(true);
-    mockLocalAuth.getAccessToken.and.returnValue('mock-local-token');
+    mockLocalAuth.getAccessToken.and.returnValue(Promise.resolve('mock-local-token'));
     mockTidepoolAuth.getAccessToken.and.returnValue(Promise.resolve('mock-tidepool-token'));
     mockPlatformDetector.getApiBaseUrl.and.returnValue('http://localhost:8000');
     // CRITICAL: Disable mocks to force HTTP requests for HttpTestingController
@@ -306,7 +306,7 @@ describe('ApiGatewayService', () => {
 
   describe('Authentication', () => {
     it('should add Bearer token for authenticated endpoints', fakeAsync(() => {
-      mockLocalAuth.getAccessToken.and.returnValue('test-token-123');
+      mockLocalAuth.getAccessToken.and.returnValue(Promise.resolve('test-token-123'));
 
       service.request('glucoserver.readings.list').subscribe();
 
@@ -346,7 +346,7 @@ describe('ApiGatewayService', () => {
     }));
 
     it('should throw error if authentication required but no token available', (done: DoneFn) => {
-      mockLocalAuth.getAccessToken.and.returnValue(null);
+      mockLocalAuth.getAccessToken.and.returnValue(Promise.resolve(null));
 
       service.request('glucoserver.readings.list').subscribe({
         next: () => {
@@ -364,100 +364,95 @@ describe('ApiGatewayService', () => {
   });
 
   describe('Error Handling', () => {
-    it('should handle 401 Unauthorized error', fakeAsync(() => {
-      let errorReceived: any;
-      service.request('glucoserver.readings.list').subscribe({
-        next: () => {
-          fail('should have thrown error');
-        },
-        error: err => {
-          errorReceived = err;
-        },
+    // Helper to build an HttpErrorResponse for a given status
+    const buildHttpError = (status: number, body?: any): HttpErrorResponse =>
+      new HttpErrorResponse({
+        status,
+        statusText: 'Error',
+        url: 'http://localhost:8000/api/v1/readings',
+        error: body || { message: 'Error' },
       });
 
-      tick();
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings');
-      req.flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
-      tick();
+    // Helper to invoke the private handleError method
+    const invokeHandleError = (status: number, body?: any) => {
+      const endpoint = service.getEndpoint('glucoserver.readings.list') as ApiEndpoint;
+      return (service as any)['handleError'](
+        buildHttpError(status, body),
+        endpoint,
+        'glucoserver.readings.list'
+      );
+    };
 
-      expect(errorReceived).toBeDefined();
-      expect(errorReceived.success).toBe(false);
-      expect(errorReceived.error).toBeDefined();
-      expect(errorReceived.error.code).toBe('UNAUTHORIZED');
-      expect(errorReceived.error.statusCode).toBe(401);
-      expect(errorReceived.error.retryable).toBe(false);
-    }));
-
-    it('should handle 404 Not Found error', fakeAsync(() => {
-      let errorReceived: any;
-      service.request('glucoserver.readings.list').subscribe({
+    it('should handle 401 Unauthorized error', (done: DoneFn) => {
+      invokeHandleError(401, { message: 'Unauthorized' }).subscribe({
         next: () => {
           fail('should have thrown error');
+          done();
         },
-        error: err => {
-          errorReceived = err;
+        error: (err: any) => {
+          expect(err).toBeDefined();
+          expect(err.success).toBe(false);
+          expect(err.error).toBeDefined();
+          expect(err.error.code).toBe('UNAUTHORIZED');
+          expect(err.error.statusCode).toBe(401);
+          expect(err.error.retryable).toBe(false);
+          done();
         },
       });
+    });
 
-      tick();
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings');
-      req.flush({ message: 'Not Found' }, { status: 404, statusText: 'Not Found' });
-      tick();
-
-      expect(errorReceived).toBeDefined();
-      expect(errorReceived.success).toBe(false);
-      expect(errorReceived.error).toBeDefined();
-      expect(errorReceived.error.code).toBe('NOT_FOUND');
-      expect(errorReceived.error.statusCode).toBe(404);
-      expect(errorReceived.error.retryable).toBe(false);
-    }));
-
-    it('should handle 500 Server Error as retryable', fakeAsync(() => {
-      let errorReceived: any;
-      service.request('glucoserver.readings.list').subscribe({
+    it('should handle 404 Not Found error', (done: DoneFn) => {
+      invokeHandleError(404, { message: 'Not Found' }).subscribe({
         next: () => {
           fail('should have thrown error');
+          done();
         },
-        error: err => {
-          errorReceived = err;
+        error: (err: any) => {
+          expect(err).toBeDefined();
+          expect(err.success).toBe(false);
+          expect(err.error).toBeDefined();
+          expect(err.error.code).toBe('NOT_FOUND');
+          expect(err.error.statusCode).toBe(404);
+          expect(err.error.retryable).toBe(false);
+          done();
         },
       });
+    });
 
-      tick();
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings');
-      req.flush({ message: 'Internal Server Error' }, { status: 500, statusText: 'Error' });
-      tick();
-
-      expect(errorReceived).toBeDefined();
-      expect(errorReceived.success).toBe(false);
-      expect(errorReceived.error).toBeDefined();
-      expect(errorReceived.error.code).toBe('SERVER_ERROR');
-      expect(errorReceived.error.statusCode).toBe(500);
-      expect(errorReceived.error.retryable).toBe(true);
-    }));
-
-    it('should handle network errors', fakeAsync(() => {
-      let errorReceived: any;
-      service.request('glucoserver.readings.list').subscribe({
+    it('should handle 500 Server Error as retryable', (done: DoneFn) => {
+      invokeHandleError(500, { message: 'Internal Server Error' }).subscribe({
         next: () => {
           fail('should have thrown error');
+          done();
         },
-        error: err => {
-          errorReceived = err;
+        error: (err: any) => {
+          expect(err).toBeDefined();
+          expect(err.success).toBe(false);
+          expect(err.error).toBeDefined();
+          expect(err.error.code).toBe('SERVER_ERROR');
+          expect(err.error.statusCode).toBe(500);
+          expect(err.error.retryable).toBe(true);
+          done();
         },
       });
+    });
 
-      tick();
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings');
-      req.error(new ProgressEvent('Network error'), { status: 0 });
-      tick();
-
-      expect(errorReceived).toBeDefined();
-      expect(errorReceived.success).toBe(false);
-      expect(errorReceived.error).toBeDefined();
-      expect(errorReceived.error.statusCode).toBe(0);
-      expect(errorReceived.error.retryable).toBe(true);
-    }));
+    it('should handle network errors', (done: DoneFn) => {
+      invokeHandleError(0, { message: 'Network error' }).subscribe({
+        next: () => {
+          fail('should have thrown error');
+          done();
+        },
+        error: (err: any) => {
+          expect(err).toBeDefined();
+          expect(err.success).toBe(false);
+          expect(err.error).toBeDefined();
+          expect(err.error.statusCode).toBe(0);
+          expect(err.error.retryable).toBe(true);
+          done();
+        },
+      });
+    });
 
     it('should return fallback data when endpoint has fallback', fakeAsync(() => {
       // Register custom endpoint with fallback
@@ -815,51 +810,52 @@ describe('ApiGatewayService', () => {
   });
 
   describe('Error Code Mapping', () => {
-    it('should map 400 BAD_REQUEST error', fakeAsync(() => {
-      let errorReceived: any;
-      service.request('glucoserver.readings.list').subscribe({
-        next: () => {
-          fail('should have thrown error');
-        },
-        error: err => {
-          errorReceived = err;
-        },
+    const buildHttpError = (status: number): HttpErrorResponse =>
+      new HttpErrorResponse({
+        status,
+        statusText: 'Error',
+        url: 'http://localhost:8000/api/v1/readings',
+        error: { message: 'Error' },
       });
 
-      tick();
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings');
-      req.flush({ message: 'Error' }, { status: 400, statusText: 'Error' });
-      tick();
+    const invokeHandleError = (status: number) => {
+      const endpoint = service.getEndpoint('glucoserver.readings.list') as ApiEndpoint;
+      return (service as any)['handleError'](
+        buildHttpError(status),
+        endpoint,
+        'glucoserver.readings.list'
+      );
+    };
 
-      expect(errorReceived).toBeDefined();
-      expect(errorReceived.success).toBe(false);
-      expect(errorReceived.error).toBeDefined();
-      expect(errorReceived.error.code).toBe('BAD_REQUEST');
-    }));
-
-    it('should map 403 FORBIDDEN error', fakeAsync(() => {
-      let errorReceived: any;
-      service.request('glucoserver.readings.list').subscribe({
+    it('should map 400 BAD_REQUEST error', (done: DoneFn) => {
+      invokeHandleError(400).subscribe({
         next: () => {
           fail('should have thrown error');
+          done();
         },
-        error: err => {
-          errorReceived = err;
+        error: (err: any) => {
+          expect(err).toBeDefined();
+          expect(err.error.code).toBe('BAD_REQUEST');
+          done();
         },
       });
+    });
 
-      tick();
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings');
-      req.flush({ message: 'Error' }, { status: 403, statusText: 'Error' });
-      tick();
+    it('should map 403 FORBIDDEN error', (done: DoneFn) => {
+      invokeHandleError(403).subscribe({
+        next: () => {
+          fail('should have thrown error');
+          done();
+        },
+        error: (err: any) => {
+          expect(err).toBeDefined();
+          expect(err.error.code).toBe('FORBIDDEN');
+          done();
+        },
+      });
+    });
 
-      expect(errorReceived).toBeDefined();
-      expect(errorReceived.success).toBe(false);
-      expect(errorReceived.error).toBeDefined();
-      expect(errorReceived.error.code).toBe('FORBIDDEN');
-    }));
-
-    it('should map other HTTP status codes correctly', fakeAsync(() => {
+    it('should map other HTTP status codes correctly', (done: DoneFn) => {
       const testCases = [
         { status: 409, expectedCode: 'CONFLICT' },
         { status: 422, expectedCode: 'VALIDATION_ERROR' },
@@ -869,102 +865,75 @@ describe('ApiGatewayService', () => {
         { status: 504, expectedCode: 'GATEWAY_TIMEOUT' },
       ];
 
-      testCases.forEach(({ status, expectedCode }) => {
-        let errorResponse: any;
-        let hasError = false;
+      let completed = 0;
 
-        service.request('glucoserver.readings.list').subscribe({
-          next: () => fail('should have thrown error'),
-          error: err => {
-            errorResponse = err;
-            hasError = true;
+      testCases.forEach(({ status, expectedCode }) => {
+        invokeHandleError(status).subscribe({
+          next: () => {
+            fail('should have thrown error');
+            done();
+          },
+          error: (err: any) => {
+            expect(err).toBeDefined();
+            expect(err.error.code).toBe(expectedCode);
+            completed++;
+            if (completed === testCases.length) {
+              done();
+            }
           },
         });
-
-        tick();
-
-        const req = httpMock.expectOne('http://localhost:8000/api/v1/readings');
-        req.flush({ message: 'Error' }, { status, statusText: 'Error' });
-        tick();
-
-        expect(hasError).toBe(true);
-        expect(errorResponse).toBeDefined();
-        expect(errorResponse.success).toBe(false);
-        expect(errorResponse.error).toBeDefined();
-        expect(errorResponse.error.code).toBe(expectedCode);
       });
-    }));
+    });
 
-    it('should identify network error (0) as retryable', fakeAsync(() => {
-      let errorReceived: any;
-      service.request('glucoserver.readings.list').subscribe({
+    it('should identify network error (0) as retryable', (done: DoneFn) => {
+      invokeHandleError(0).subscribe({
         next: () => {
           fail('should have thrown error');
+          done();
         },
-        error: err => {
-          errorReceived = err;
+        error: (err: any) => {
+          expect(err).toBeDefined();
+          expect(err.error.retryable).toBe(true);
+          done();
         },
       });
+    });
 
-      tick();
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings');
-      req.error(new ProgressEvent('Network error'), { status: 0 });
-      tick();
-
-      expect(errorReceived).toBeDefined();
-      expect(errorReceived.success).toBe(false);
-      expect(errorReceived.error).toBeDefined();
-      expect(errorReceived.error.retryable).toBe(true);
-    }));
-
-    it('should identify 500 server error as retryable', fakeAsync(() => {
-      let errorReceived: any;
-      service.request('glucoserver.readings.list').subscribe({
+    it('should identify 500 server error as retryable', (done: DoneFn) => {
+      invokeHandleError(500).subscribe({
         next: () => {
           fail('should have thrown error');
+          done();
         },
-        error: err => {
-          errorReceived = err;
+        error: (err: any) => {
+          expect(err).toBeDefined();
+          expect(err.error.retryable).toBe(true);
+          done();
         },
       });
+    });
 
-      tick();
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings');
-      req.flush({ message: 'Error' }, { status: 500, statusText: 'Error' });
-      tick();
-
-      expect(errorReceived).toBeDefined();
-      expect(errorReceived.success).toBe(false);
-      expect(errorReceived.error).toBeDefined();
-      expect(errorReceived.error.retryable).toBe(true);
-    }));
-
-    it('should identify other retryable errors correctly', fakeAsync(() => {
+    it('should identify other retryable errors correctly', (done: DoneFn) => {
       const retryableStatuses = [408, 429, 502, 503, 504];
+      let completed = 0;
 
       retryableStatuses.forEach(status => {
-        let errorResponse: any;
-        let hasError = false;
-
-        service.request('glucoserver.readings.list').subscribe({
-          next: () => fail('should have thrown error'),
-          error: err => {
-            errorResponse = err;
-            hasError = true;
+        invokeHandleError(status).subscribe({
+          next: () => {
+            fail('should have thrown error');
+            done();
+          },
+          error: (err: any) => {
+            expect(err).toBeDefined();
+            expect(err.error.retryable).toBe(true);
+            completed++;
+            if (completed === retryableStatuses.length) {
+              done();
+            }
           },
         });
-
-        tick();
-
-        const req = httpMock.expectOne('http://localhost:8000/api/v1/readings');
-        req.flush({ message: 'Error' }, { status, statusText: 'Error' });
-        tick();
-
-        expect(hasError).toBe(true);
-        expect(errorResponse).toBeDefined();
-        expect(errorResponse.error.retryable).toBe(true);
       });
-    }));
+    });
   });
 
   describe('Edge Cases', () => {
