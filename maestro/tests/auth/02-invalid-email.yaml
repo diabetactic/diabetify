@@ -1,0 +1,49 @@
+appId: io.diabetactic.app
+tags:
+  - auth
+  - validation
+---
+# Test: Login with invalid email format
+# Uses COORDINATE-BASED selectors (WebView text not accessible)
+
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Tap login button on welcome screen
+- tapOn:
+    point: "50%,95%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Fill with invalid email format
+- tapOn:
+    point: "50%,40%"
+- eraseText
+- inputText: "notanemail"
+- hideKeyboard
+
+# Fill password
+- tapOn:
+    point: "50%,50%"
+- eraseText
+- inputText: "password123"
+- hideKeyboard
+
+# Swipe up and try to submit
+- swipe:
+    direction: UP
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn:
+    point: "50%,60%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Take screenshot - should show validation error or stay on login
+- takeScreenshot: "maestro/screenshots/auth-invalid-email-result.png"
+
+# CLEANUP
+- stopApp

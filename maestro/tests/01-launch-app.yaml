@@ -1,6 +1,0 @@
-appId: io.diabetify.app
----
-# Test 1: Launch app and verify home screen loads
-- launchApp
-- assertVisible: "Diabetactic"
-- takeScreenshot: maestro/screenshots/01-home-screen.png

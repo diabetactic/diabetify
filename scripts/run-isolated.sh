@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script para ejecutar Diabetify sin interferencias del sistema o navegador
+# Script para ejecutar Diabetactic sin interferencias del sistema o navegador
 # Uso: ./scripts/run-isolated.sh [chrome|chromium]
 
 # Colores para output
@@ -18,7 +18,7 @@ print_color() {
 
 # Banner
 print_color $BLUE "═══════════════════════════════════════════════════"
-print_color $BLUE "  Diabetify - Isolated Browser Mode"
+print_color $BLUE "  Diabetactic - Isolated Browser Mode"
 print_color $BLUE "═══════════════════════════════════════════════════"
 echo ""
 
@@ -101,7 +101,7 @@ echo "  • --user-data-dir=/tmp/...        (Perfil temporal limpio)"
 echo ""
 
 # Crear directorio temporal para perfil
-TEMP_PROFILE="/tmp/diabetify-chrome-profile-$$"
+TEMP_PROFILE="/tmp/diabetactic-chrome-profile-$$"
 print_color $YELLOW "→ Creando perfil temporal: $TEMP_PROFILE"
 
 # Lanzar navegador con configuración aislada

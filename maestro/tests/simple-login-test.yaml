@@ -1,0 +1,35 @@
+appId: io.diabetactic.app
+tags:
+  - smoke
+  - login
+---
+# Simple login test
+# Uses COORDINATE-BASED selectors
+
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Tap login button
+- tapOn:
+    point: "50%,95%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Swipe up
+- swipe:
+    direction: UP
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Submit
+- tapOn:
+    point: "50%,60%"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- takeScreenshot: maestro/screenshots/simple-login-success.png
+
+# CLEANUP
+- stopApp

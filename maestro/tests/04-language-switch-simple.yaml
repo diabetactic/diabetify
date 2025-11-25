@@ -1,0 +1,29 @@
+appId: io.diabetactic.app
+tags:
+  - settings
+  - language
+---
+# Simplified language switch test
+# Uses COORDINATE-BASED selectors
+
+# Login first
+- runFlow:
+    file: ../flows/auth/login.yaml
+
+# Navigate to Profile tab (90% from left)
+- tapOn:
+    point: "90%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/04-language/profile-with-language.png
+
+# Scroll to find language selector
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: maestro/screenshots/04-language/profile-scrolled.png
+
+# CLEANUP
+- stopApp

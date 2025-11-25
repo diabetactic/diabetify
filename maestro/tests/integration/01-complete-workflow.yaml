@@ -1,0 +1,82 @@
+appId: io.diabetactic.app
+tags:
+  - integration
+  - critical
+  - complete-workflow
+---
+# Integration Test: Complete user workflow
+# Uses COORDINATE-BASED selectors
+
+# Step 1: Login
+- runFlow:
+    file: ../../flows/auth/login.yaml
+
+- takeScreenshot: maestro/screenshots/complete-workflow-01-logged-in.png
+
+# Step 2: Verify Dashboard
+- tapOn:
+    point: "10%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/complete-workflow-02-dashboard.png
+
+# Step 3: Add Glucose Reading
+- tapOn:
+    point: "30%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    point: "50%,90%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    point: "50%,35%"
+- eraseText
+- inputText: "115"
+- hideKeyboard
+
+- tapOn:
+    point: "50%,85%"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- takeScreenshot: maestro/screenshots/complete-workflow-03-reading-added.png
+
+# Step 4: Verify Reading in List (already on readings after save)
+- takeScreenshot: maestro/screenshots/complete-workflow-04-readings-list.png
+
+# Step 5: Check Dashboard Stats Updated
+- tapOn:
+    point: "10%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/complete-workflow-05-stats-updated.png
+
+# Step 6: View Appointments
+- tapOn:
+    point: "70%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/complete-workflow-06-appointments.png
+
+# Step 7: Check Profile
+- tapOn:
+    point: "90%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/complete-workflow-07-profile.png
+
+# Step 8: Logout
+- runFlow:
+    file: ../../flows/logout.yaml
+
+- takeScreenshot: maestro/screenshots/complete-workflow-08-logged-out.png
+
+# CLEANUP
+- stopApp

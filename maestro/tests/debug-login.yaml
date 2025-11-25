@@ -1,0 +1,45 @@
+appId: io.diabetactic.app
+tags:
+  - debug
+  - login
+---
+# Debug test - login by coordinates
+# Uses COORDINATE-BASED selectors
+
+
+# Wait for app to load
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Take screenshot to verify welcome screen
+- takeScreenshot: maestro/screenshots/debug-login-01-welcome.png
+
+# Tap login button by coordinates (bottom center)
+- tapOn:
+    point: "50%,95%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Take screenshot after tap
+- takeScreenshot: maestro/screenshots/debug-login-02-after-tap.png
+
+# Swipe up to show submit
+- swipe:
+    direction: UP
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: maestro/screenshots/debug-login-03-form.png
+
+# Submit by coordinates (form pre-filled in mock mode)
+- tapOn:
+    point: "50%,60%"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Take final screenshot
+- takeScreenshot: maestro/screenshots/debug-login-04-result.png
+
+# CLEANUP
+- stopApp

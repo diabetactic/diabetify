@@ -1,0 +1,46 @@
+appId: io.diabetactic.app
+---
+# Cleanup flow to remove test data
+# Use after tests that create data
+
+# Check if we're logged in (if not, nothing to clean)
+- runFlow:
+    when:
+      notVisible: "Inicio|Home|Dashboard"
+    commands:
+      - stopApp  # Nothing to clean if not logged in
+
+# Navigate to readings if we have any
+- runFlow:
+    when:
+      visible: "Lecturas"
+    commands:
+      - tapOn: "Lecturas"
+      - waitForAnimationToEnd
+
+      # Delete readings if there are any
+      # Note: This is a simple approach - for production,
+      # consider implementing a "delete all test data" endpoint
+      - runFlow:
+          when:
+            visible: "mg/dL|mmol/L"  # Indicates readings exist
+          commands:
+            # Try to delete first visible reading
+            - longPressOn:
+                text: ".*mg/dL.*|.*mmol/L.*"
+                optional: true
+            - tapOn:
+                text: "Eliminar|Delete"
+                optional: true
+            - tapOn:
+                text: "Confirmar|Confirm"
+                optional: true
+
+# Navigate back to home
+- tapOn:
+    text: "Inicio|Home|Dashboard"
+    optional: true
+- waitForAnimationToEnd
+
+# Logout to ensure clean state for next test
+- runFlow: logout.yaml

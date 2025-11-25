@@ -1,0 +1,56 @@
+appId: io.diabetactic.app
+tags:
+  - debug
+---
+# Simple debug test - step by step with screenshots
+# Uses COORDINATE-BASED selectors
+
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# STEP 1: Verify welcome screen
+- takeScreenshot: maestro/screenshots/debug-simple-01-welcome.png
+
+# STEP 2: Click login button by coordinate
+- tapOn:
+    point: "50%,95%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/debug-simple-02-after-welcome.png
+
+# STEP 3: Swipe up to show submit button
+- swipe:
+    direction: UP
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: maestro/screenshots/debug-simple-03-login-form.png
+
+# STEP 4: Submit (form pre-filled)
+- tapOn:
+    point: "50%,60%"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- takeScreenshot: maestro/screenshots/debug-simple-04-after-submit.png
+
+# STEP 5: Navigate tabs
+- tapOn:
+    point: "30%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/debug-simple-05-readings.png
+
+- tapOn:
+    point: "10%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/debug-simple-06-dashboard.png
+
+# CLEANUP
+- stopApp

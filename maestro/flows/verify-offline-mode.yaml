@@ -18,11 +18,11 @@ appId: io.diabetactic.app
       - takeScreenshot: maestro/screenshots/offline-indicator.png
 
 # Test navigation still works offline
-- tapOn: "Dashboard"
-- assertVisible: "Dashboard"
+- tapOn: "Inicio|Dashboard|Home"
+- assertVisible: "Panel de Control|Mi Salud|Dashboard|My Health"
 
-- tapOn: "Readings"
-- assertVisible: "Readings"
+- tapOn: "Lecturas"
+- assertVisible: "Lecturas"
 
 # Verify cached data is accessible
 - assertVisible:

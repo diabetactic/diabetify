@@ -1,10 +1,16 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "io.diabetify.app"
+    namespace "io.diabetactic.app"
     compileSdk rootProject.ext.compileSdkVersion
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
     defaultConfig {
-        applicationId "io.diabetify.app"
+        applicationId "io.diabetactic.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

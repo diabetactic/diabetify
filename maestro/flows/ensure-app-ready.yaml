@@ -1,0 +1,27 @@
+appId: io.diabetactic.app
+---
+# Reliable App Launch Flow
+# Works around Maestro launchApp device configuration issues
+# Use this at the start of every test for consistent app state
+
+# Method 1: Try standard launchApp first
+- launchApp:
+    clearState: false
+    stopApp: true
+  continueOnFailure: true
+
+# Method 2: Fallback to ADB launch if launchApp fails
+- runScript:
+    when:
+      notVisible: ".*"  # If nothing is visible, app didn't launch
+    command: |
+      adb shell am start -n io.diabetactic.app/.MainActivity
+
+# Wait for app to fully load
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Verify app is running
+- assertVisible:
+    text: "Empezar|Get Started|Panel de Control|Dashboard|Perfil|Profile"
+    timeout: 5000

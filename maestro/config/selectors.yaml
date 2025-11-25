@@ -1,97 +1,258 @@
 # UI Element Selectors Configuration
 # Centralized selectors for common UI elements
 #
+# NAMING CONVENTION: UPPER_SNAKE_CASE with semantic suffix
+# PATTERN: Spanish|English (support both languages with pipe separator)
+# REGEX: Use .* for flexible matching, escape special chars
+#
 # Usage in tests:
+#   env:
+#     LOGIN_BUTTON: ${LOGIN_BUTTON}
+#   ---
 #   - tapOn: ${LOGIN_BUTTON}
 #   - assertVisible: ${DASHBOARD_TITLE}
+#
+# See references/selector_patterns.md for detailed guidelines
 
+# ═══════════════════════════════════════════════════
 # Authentication Screens
-LOGIN_BUTTON: "Login"
-SIGNUP_BUTTON: "Sign Up"
-LOGOUT_BUTTON: ".*[Ll]ogout.*"
-EMAIL_INPUT: "Email"
-PASSWORD_INPUT: "Password"
-SIGNIN_BUTTON: "Sign In"
+# ═══════════════════════════════════════════════════
 
+# i18n: auth.login.button
+LOGIN_BUTTON: "Iniciar Sesión|Login|Sign In"
+
+# i18n: auth.signup.button
+SIGNUP_BUTTON: "Regístrate|Registrarse|Sign Up|Register"
+
+# i18n: auth.logout.button
+LOGOUT_BUTTON: ".*[Cc]errar [Ss]esión.*|.*[Ll]og[Oo]ut.*"
+
+# i18n: auth.email.label
+EMAIL_INPUT: "DNI o Email|Email|E-mail"
+
+# i18n: auth.password.label
+PASSWORD_INPUT: "Contraseña|Password"
+
+# i18n: auth.signin.button (same as LOGIN_BUTTON)
+SIGNIN_BUTTON: "Iniciar Sesión"
+
+# ═══════════════════════════════════════════════════
 # Welcome Screen
-WELCOME_TITLE: "Welcome"
-GET_STARTED_BUTTON: "Get Started"
+# ═══════════════════════════════════════════════════
 
+# i18n: welcome.title
+WELCOME_TITLE: "Bienvenido|Welcome"
+
+# i18n: welcome.getStarted.button
+GET_STARTED_BUTTON: "Empezar|Get Started|Start"
+
+# ═══════════════════════════════════════════════════
 # Main Navigation Tabs
-TAB_DASHBOARD: "Dashboard"
-TAB_READINGS: "Readings"
-TAB_APPOINTMENTS: "Appointments"
-TAB_PROFILE: "Profile"
+# ═══════════════════════════════════════════════════
 
-# Dashboard Elements
-DASHBOARD_TITLE: "Dashboard"
-DASHBOARD_GLUCOSE_CARD: ".*[Gg]lucose.*"
-DASHBOARD_APPOINTMENTS_CARD: ".*[Aa]ppointments.*"
-DASHBOARD_STATS_CARD: ".*[Ss]tats.*"
+# i18n: nav.dashboard.label
+TAB_DASHBOARD: "Inicio|Panel de Control|Dashboard|Home"
 
+# i18n: nav.readings.label
+TAB_READINGS: "Lecturas"
+
+# i18n: nav.appointments.label
+TAB_APPOINTMENTS: "Citas"
+
+# i18n: nav.profile.label
+TAB_PROFILE: "Perfil"
+
+# ═══════════════════════════════════════════════════
+# Dashboard Screen
+# ═══════════════════════════════════════════════════
+
+# i18n: dashboard.title
+DASHBOARD_TITLE: "Panel de Control|Mi Salud|Dashboard|My Health"
+
+# i18n: dashboard.glucose.card
+DASHBOARD_GLUCOSE_CARD: ".*(Glucosa|Azúcar|Glucose|Sugar).*"
+
+# i18n: dashboard.appointments.card
+DASHBOARD_APPOINTMENTS_CARD: ".*(Citas|Appointments).*"
+
+# i18n: dashboard.stats.card
+DASHBOARD_STATS_CARD: ".*(Estadísticas|Stats|Statistics).*"
+
+# ═══════════════════════════════════════════════════
 # Readings Screen
-READINGS_TITLE: "Readings"
-READINGS_LIST: ".*[Rr]eadings.*"
-READINGS_EMPTY_STATE: "No readings available"
-READINGS_ADD_BUTTON: "Add Reading"
-READINGS_FILTER_BUTTON: "Filter"
+# ═══════════════════════════════════════════════════
 
+# i18n: readings.title
+READINGS_TITLE: "Lecturas"
+
+# i18n: readings.list.label
+READINGS_LIST: ".*(Lecturas|Readings).*"
+
+# i18n: readings.empty.message
+READINGS_EMPTY_STATE: "No hay lecturas.*|No readings.*available.*"
+
+# i18n: readings.add.button
+READINGS_ADD_BUTTON: "Agregar Lectura|Add Reading|Nueva Lectura|New Reading"
+
+# i18n: readings.filter.button
+READINGS_FILTER_BUTTON: "Filtrar|Filter"
+
+# ═══════════════════════════════════════════════════
 # Appointments Screen
-APPOINTMENTS_TITLE: "Appointments"
-APPOINTMENTS_LIST: ".*[Aa]ppointments.*"
-APPOINTMENTS_EMPTY_STATE: "No appointments"
-APPOINTMENTS_ADD_BUTTON: "Add Appointment"
-APPOINTMENTS_CALENDAR_BUTTON: "Calendar"
+# ═══════════════════════════════════════════════════
 
-# Profile Screen
-PROFILE_TITLE: "Profile"
-PROFILE_SETTINGS: "Settings"
-PROFILE_LANGUAGE: "Language"
-PROFILE_THEME: "Theme"
-PROFILE_SYNC_STATUS: "Sync Status"
+# i18n: appointments.title
+APPOINTMENTS_TITLE: "Citas"
 
+# i18n: appointments.list.label
+APPOINTMENTS_LIST: ".*(Citas|Appointments).*"
+
+# i18n: appointments.empty.message
+APPOINTMENTS_EMPTY_STATE: "No hay citas.*|No appointments.*"
+
+# i18n: appointments.add.button
+APPOINTMENTS_ADD_BUTTON: "Agregar Cita|Add Appointment|Nueva Cita|New Appointment"
+
+# i18n: appointments.calendar.button
+APPOINTMENTS_CALENDAR_BUTTON: "Calendario|Calendar"
+
+# ═══════════════════════════════════════════════════
+# Profile & Settings Screen
+# ═══════════════════════════════════════════════════
+
+# i18n: profile.title
+PROFILE_TITLE: "Perfil"
+
+# i18n: profile.settings.label
+PROFILE_SETTINGS: "Configuración|Settings"
+
+# i18n: profile.language.label
+PROFILE_LANGUAGE: "Idioma|Language"
+
+# i18n: profile.theme.label
+PROFILE_THEME: "Tema|Theme"
+
+# i18n: profile.sync.status
+PROFILE_SYNC_STATUS: "Estado de Sincronización|Sync Status"
+
+# ═══════════════════════════════════════════════════
 # Common UI Elements
-LOADING_INDICATOR: "Loading"
+# ═══════════════════════════════════════════════════
+
+# i18n: common.loading
+LOADING_INDICATOR: "Cargando|Loading"
+
+# i18n: common.error
 ERROR_MESSAGE: "Error"
-SUCCESS_MESSAGE: "Success"
-OFFLINE_INDICATOR: "Offline"
-BACK_BUTTON: "Back"
-CLOSE_BUTTON: "Close"
-SAVE_BUTTON: "Save"
-CANCEL_BUTTON: "Cancel"
 
+# i18n: common.success
+SUCCESS_MESSAGE: "Éxito|Success"
+
+# i18n: common.offline
+OFFLINE_INDICATOR: "Offline|Sin conexión|Fuera de línea"
+
+# i18n: common.back
+BACK_BUTTON: "Atrás|Volver|Back"
+
+# i18n: common.close
+CLOSE_BUTTON: "Cerrar|Close"
+
+# i18n: common.save
+SAVE_BUTTON: "Guardar"
+
+# i18n: common.cancel
+CANCEL_BUTTON: "Cancelar"
+
+# i18n: common.delete
+DELETE_BUTTON: "Eliminar|Borrar|Delete"
+
+# i18n: common.edit
+EDIT_BUTTON: "Editar|Edit"
+
+# i18n: common.confirm
+CONFIRM_BUTTON: "Confirmar|Confirm"
+
+# ═══════════════════════════════════════════════════
 # Theme Toggle
-THEME_TOGGLE: ".*[Tt]heme.*"
-DARK_MODE_TOGGLE: "Dark Mode"
-LIGHT_MODE_TOGGLE: "Light Mode"
+# ═══════════════════════════════════════════════════
 
+# i18n: theme.toggle
+THEME_TOGGLE: ".*[Tt]ema.*|.*[Tt]heme.*"
+
+# i18n: theme.dark
+DARK_MODE_TOGGLE: "Modo [Oo]scuro|Dark [Mm]ode"
+
+# i18n: theme.light
+LIGHT_MODE_TOGGLE: "Modo [Cc]laro|Light [Mm]ode"
+
+# ═══════════════════════════════════════════════════
 # Language Switcher
-LANGUAGE_SWITCHER: "Language"
-ENGLISH_OPTION: "English"
-SPANISH_OPTION: "Español"
+# ═══════════════════════════════════════════════════
 
-# Tidepool Integration
+# i18n: language.switcher
+LANGUAGE_SWITCHER: "Idioma|Language"
+
+# i18n: language.english
+ENGLISH_OPTION: "English|Inglés"
+
+# i18n: language.spanish
+SPANISH_OPTION: "Español|Spanish"
+
+# ═══════════════════════════════════════════════════
+# Tidepool Integration (English only - external service)
+# ═══════════════════════════════════════════════════
+
+# i18n: tidepool.connect.button
 TIDEPOOL_CONNECT_BUTTON: "Connect to Tidepool"
+
+# i18n: tidepool.disconnect.button
 TIDEPOOL_DISCONNECT_BUTTON: "Disconnect"
+
+# i18n: tidepool.sync.button
 TIDEPOOL_SYNC_BUTTON: "Sync"
+
+# i18n: tidepool.status.label
 TIDEPOOL_STATUS: "Tidepool Status"
 
+# ═══════════════════════════════════════════════════
+# State Messages
+# ═══════════════════════════════════════════════════
+
 # Empty States
-EMPTY_STATE_TITLE: "No data available"
-EMPTY_STATE_ACTION: "Get Started"
+# i18n: common.empty.title
+EMPTY_STATE_TITLE: "No hay datos.*|No data.*available.*"
+
+# i18n: common.empty.action
+EMPTY_STATE_ACTION: "Empezar|Comenzar|Get Started"
 
 # Loading States
-SKELETON_LOADER: "Loading..."
-SPINNER: ".*[Ll]oading.*"
+# i18n: common.loading
+SKELETON_LOADER: "Cargando|Loading"
+
+# i18n: common.loading.spinner
+SPINNER: ".*[Cc]argando.*|.*[Ll]oading.*"
 
 # Error States
+# i18n: common.error.title
 ERROR_TITLE: "Error"
-ERROR_RETRY_BUTTON: "Retry"
-ERROR_DISMISS_BUTTON: "Dismiss"
+
+# i18n: common.error.retry
+ERROR_RETRY_BUTTON: "Reintentar|Retry|Try Again"
+
+# i18n: common.error.dismiss
+ERROR_DISMISS_BUTTON: "Cerrar|Descartar|Dismiss"
 
 # Success States
-SUCCESS_TITLE: "Success"
-SUCCESS_OK_BUTTON: "OK"
+# i18n: common.success.title
+SUCCESS_TITLE: "Éxito|Success"
+
+# i18n: common.success.ok
+SUCCESS_OK_BUTTON: "OK|Aceptar"
+
+# ═══════════════════════════════════════════════════
+# Generic Component Selectors
+# Note: Use specific selectors above when possible
+# ═══════════════════════════════════════════════════
 
 # Form Elements
 INPUT_TEXT: ".*[Ii]nput.*"
@@ -100,17 +261,17 @@ SELECT_DROPDOWN: ".*[Ss]elect.*"
 CHECKBOX: ".*[Cc]heckbox.*"
 RADIO_BUTTON: ".*[Rr]adio.*"
 
-# Buttons
+# Buttons (generic - prefer specific button selectors)
 PRIMARY_BUTTON: ".*[Bb]utton.*"
 SECONDARY_BUTTON: ".*[Bb]utton.*"
 FAB_BUTTON: ".*[Ff]ab.*"
 
-# Cards
+# Cards (generic - prefer specific card selectors)
 CARD_TITLE: ".*[Cc]ard.*"
 CARD_CONTENT: ".*[Cc]ontent.*"
 CARD_ACTION: ".*[Aa]ction.*"
 
-# Lists
+# Lists (generic - prefer specific list selectors)
 LIST_ITEM: ".*[Ii]tem.*"
-LIST_EMPTY: "No items"
-LIST_LOADING: "Loading items"
+LIST_EMPTY: "No hay elementos|No items"
+LIST_LOADING: "Cargando elementos|Loading items"

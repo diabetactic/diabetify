@@ -1,0 +1,65 @@
+appId: io.diabetactic.app
+tags:
+  - dashboard
+  - stats
+  - mock
+---
+# Test: Verify Dashboard Statistics Display
+# Uses COORDINATE-BASED selectors
+
+# Login
+- runFlow:
+    file: ../../flows/auth/login.yaml
+
+# Navigate to dashboard
+- tapOn:
+    point: "10%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/stats-display-01-dashboard.png
+
+# Add a single test reading to verify update
+- tapOn:
+    point: "30%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Add reading using coordinates
+- tapOn:
+    point: "50%,90%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Enter glucose value
+- tapOn:
+    point: "50%,35%"
+- eraseText
+- inputText: "120"
+- hideKeyboard
+
+# Save reading
+- tapOn:
+    point: "50%,85%"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- takeScreenshot: maestro/screenshots/stats-display-02-reading-saved.png
+
+# Return to dashboard
+- tapOn:
+    point: "10%,97%"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: maestro/screenshots/stats-display-03-stats-updated.png
+
+# Scroll to see more stats
+- scroll
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- takeScreenshot: maestro/screenshots/stats-display-04-scrolled.png
+
+# CLEANUP
+- stopApp
