@@ -1,107 +1,90 @@
-# Diabetactic Architecture Documentation
+# Arquitectura - Diabetactic
 
-See the detailed architecture documentation in subdirectories:
+## Patrón API Gateway
 
-- **[API Reference](./api-reference/)** - API documentation and data models
-- **[Agent Reference](./agent-reference/)** - AI agent development guides
-- **[Development](./development/)** - Development guides (testing, i18n, etc.)
+Toda la comunicación con el backend se realiza a través del servicio API Gateway.
 
-For the main architecture overview, see the consolidated documentation in this folder.
+### Servicio Gateway
 
-## API Gateway Pattern (Gateway-Only Policy)
+- **Ubicación**: `src/app/core/services/api-gateway.service.ts`
+- **URL Base**: `environment.backendServices.apiGateway.baseUrl`
 
-### Principle
-**ALL** backend API communication MUST be routed through the API Gateway service. Direct HTTP calls to microservices from the frontend are prohibited except for explicitly documented exceptions.
+**Responsabilidades**:
+- Enrutamiento centralizado de requests
+- Inyección automática de tokens de autenticación
+- Transformación de respuestas
+- Estandarización de errores
+- Estrategia de caché
+- Reintentos con backoff exponencial
 
-### Gateway Service
-- **Location**: `src/app/core/services/api-gateway.service.ts`
-- **Base URL**: `environment.backendServices.apiGateway.baseUrl` (default: `http://localhost:8000`)
-- **Responsibilities**:
-  - Centralized request routing
-  - Automatic authentication token injection
-  - Response transformation
-  - Error standardization
-  - Caching strategy
-  - Retry logic with exponential backoff
+### Excepciones Aprobadas
 
-### Approved Exceptions
+Los siguientes servicios pueden hacer llamadas HTTP directas:
 
-The following services are **explicitly allowed** to make direct HTTP calls:
+1. **TidepoolAuthService** - Proveedor OAuth externo
+2. **ExternalServicesManagerService** - Solo para health checks
 
-1. **TidepoolAuthService & TidepoolSyncService**
-   - **Reason**: External OAuth provider, not part of our backend
-   - **Target**: `https://api.tidepool.org`
-   - **Status**: ✅ Approved
+## Arquitectura de Servicios
 
-2. **ExternalServicesManagerService (Health Checks Only)**
-   - **Reason**: Monitoring service health requires direct access
-   - **Usage**: Health endpoint pings only (HEAD/GET `/health`)
-   - **Target**: Individual microservice endpoints
-   - **Status**: ✅ Approved (limited scope)
+### Capa de Autenticación
 
-## Service Architecture
+- **UnifiedAuthService**: Coordina todos los flujos de autenticación
+- **TidepoolAuthService**: Maneja OAuth2/PKCE de Tidepool
+- **LocalAuthService**: Gestiona autenticación con backend local
 
-### Core Services
+### Capa de Datos
 
-#### Authentication Layer
-- **UnifiedAuthService**: Coordinates all authentication flows
-- **TidepoolAuthService**: Handles Tidepool OAuth2/PKCE
-- **LocalAuthService**: Manages local backend authentication
+- **DatabaseService**: Gestión de Dexie/IndexedDB
+- **ReadingsService**: Lecturas de glucosa con caché
+- **AppointmentService**: Citas médicas
+- **ProfileService**: Gestión de perfil de usuario
 
-#### Data Layer
-- **DatabaseService**: Dexie/IndexedDB management
-- **ReadingsService**: Glucose readings with caching
-- **AppointmentService**: Tele-appointments
-- **ProfileService**: User profile management
+### Capa de Integración
 
-#### Integration Layer
-- **ApiGatewayService**: Centralized backend communication
-- **ExternalServicesManagerService**: Service health monitoring
-- **TidepoolSyncService**: Tidepool data synchronization
+- **ApiGatewayService**: Comunicación centralizada con backend
+- **ExternalServicesManagerService**: Monitoreo de salud de servicios
+- **TidepoolSyncService**: Sincronización con Tidepool
 
-## Data Flow
+## Flujo de Datos
 
 ```
-User Action
+Acción del Usuario
   ↓
-Component
+Componente
   ↓
-Service (Business Logic)
+Servicio (Lógica de Negocio)
   ↓
-ApiGatewayService → Backend Microservices
-  ↓              ↓
-DatabaseService  TidepoolAuthService → Tidepool API
+ApiGatewayService → Microservicios Backend
+  ↓                    ↓
+DatabaseService    TidepoolAuthService → API Tidepool
   ↓
 IndexedDB
 ```
 
-## Offline-First Strategy
+## Estrategia Offline-First
 
-1. **Read**: Check IndexedDB cache first
-2. **Network**: Fetch from API if cache miss or stale
-3. **Update**: Store response in cache
-4. **Sync**: Background sync when online
+1. **Lectura**: Verificar caché en IndexedDB primero
+2. **Red**: Obtener de API si no hay caché o está obsoleto
+3. **Actualización**: Almacenar respuesta en caché
+4. **Sincronización**: Sync en background cuando hay conexión
 
-## Testing Architecture
+## Testing
 
-- **Unit Tests**: Jasmine/Karma for services and components
-- **E2E Tests**: Playwright for user flows
-- **Integration Tests**: Test service interactions
-- **Mobile Tests**: Capacitor device testing
+- **Tests Unitarios**: Jasmine/Karma para servicios y componentes
+- **Tests E2E**: Playwright para flujos de usuario
+- **Tests de Integración**: Verificar interacciones entre servicios
 
-See [Testing Guide](./testing/TESTING_GUIDE.md) for details.
+## Seguridad
 
-## Security
+- OAuth2/PKCE para Tidepool
+- Tokens JWT para servicios backend
+- Manejo de refresh de tokens
+- Almacenamiento seguro con Capacitor Preferences
 
-- OAuth2/PKCE for Tidepool
-- JWT tokens for backend services
-- Token refresh handling
-- Secure storage with Capacitor Preferences
+## Rendimiento
 
-## Performance
-
-- IndexedDB caching
-- Request debouncing
-- Lazy loading routes
-- Image optimization
-- Bundle size optimization (target: <2MB initial)
+- Caché en IndexedDB
+- Debouncing de requests
+- Lazy loading de rutas
+- Optimización de imágenes
+- Objetivo de bundle: <2MB inicial
