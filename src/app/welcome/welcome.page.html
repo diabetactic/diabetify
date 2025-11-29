@@ -1,44 +1,23 @@
-<ion-content [fullscreen]="true" class="ion-padding">
-  <div class="flex h-full min-h-screen flex-col items-center justify-between p-0">
-    <!-- Hero Image -->
-    <div
-      class="mx-auto flex w-full max-w-[500px] flex-1 items-center justify-center px-4 pb-4 pt-8"
-    >
-      <div
-        class="max-h-[280px]:max-w-[280px] flex aspect-square w-full max-w-[350px] items-center justify-center md:max-w-[400px]"
-      >
-        <img
-          src="assets/images/diabetacticwelcomescreen.png"
-          alt="{{ 'welcome.heroAlt' | translate }}"
-          class="h-full w-full object-contain"
-        />
-      </div>
+<ion-content [fullscreen]="true" class="welcome-content">
+  <div class="welcome-shell">
+    <!-- Illustration -->
+    <div class="hero-illustration">
+      <img src="assets/images/preview-Photoroom.png" alt="{{ 'welcome.heroAlt' | translate }}" />
     </div>
 
-    <!-- Content Section -->
-    <div class="max-h-[700px]:py-2 mx-auto max-w-[500px] px-6 py-4 text-center">
-      <h1
-        class="max-h-[700px]:text-2xl mb-3 text-3xl font-bold leading-tight text-gray-900 dark:font-extrabold dark:text-white dark:drop-shadow-lg md:text-4xl"
-      >
-        {{ 'welcome.title' | translate }}
-      </h1>
-      <p
-        class="m-0 text-base font-normal leading-normal text-gray-600 dark:text-gray-200 dark:drop-shadow-md md:text-lg"
-      >
-        {{ 'welcome.subtitle' | translate }}
-      </p>
+    <!-- Text -->
+    <div class="text-content prose">
+      <h1>{{ 'welcome.title' | translate }}</h1>
+      <p>{{ 'welcome.subtitle' | translate }}</p>
     </div>
 
-    <!-- Action Buttons -->
-    <div class="mx-auto flex w-full max-w-[500px] flex-col gap-3 px-6 pb-8 pt-4">
-      <button
-        type="button"
-        data-testid="welcome-login-btn"
-        (click)="onLogin()"
-        class="btn btn-lg from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 w-full rounded-2xl bg-gradient-to-r text-base font-semibold text-white shadow-xl transition-all duration-200 active:scale-[0.98]"
-      >
-        {{ 'welcome.login' | translate }}
+    <!-- CTAs -->
+    <div class="actions">
+      <button class="cta-primary" (click)="onLogin()" data-testid="welcome-login-btn">
+        <app-icon name="rocket" class="cta-icon"></app-icon>
+        <span>{{ 'welcome.loginCta' | translate }}</span>
       </button>
+      <!-- Registration is handled outside the app; no in-app link -->
     </div>
   </div>
 </ion-content>

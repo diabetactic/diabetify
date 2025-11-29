@@ -1,7 +1,18 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { IonicModule, ToastController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonRefresher,
+  IonRefresherContent,
+} from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -31,9 +42,19 @@ import { environment } from '../../environments/environment';
   standalone: true,
   imports: [
     CommonModule,
-    IonicModule,
     RouterModule,
     TranslateModule,
+    // Ionic standalone components
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonContent,
+    IonRefresher,
+    IonRefresherContent,
+    // App components
     StatCardComponent,
     ReadingItemComponent,
     EmptyStateComponent,
@@ -43,8 +64,6 @@ import { environment } from '../../environments/environment';
 })
 export class DashboardPage implements OnInit, OnDestroy {
   readonly isMockMode = environment.backendMode === 'mock';
-  // Avoid Ionic dynamic imports in Karma by hiding spinners
-  readonly isKarma = typeof window !== 'undefined' && (window as any).__karma__;
   // Statistics data
   statistics: GlucoseStatistics | null = null;
 
@@ -180,7 +199,8 @@ export class DashboardPage implements OnInit, OnDestroy {
    */
   async handleRefresh(event: any) {
     try {
-      await this.syncService.performManualSync();
+      // Sync with backend (not Tidepool)
+      await this.readingsService.performFullSync();
       await this.loadDashboardData();
     } catch (error) {
       console.error('Error refreshing data:', error);
@@ -193,14 +213,15 @@ export class DashboardPage implements OnInit, OnDestroy {
    * Handle sync button click
    */
   async onSync() {
-    this.logger.info('UI', 'Manual sync button clicked');
+    this.logger.info('UI', 'Manual sync button clicked (backend)');
     try {
       this.isSyncing = true;
-      await this.syncService.performManualSync();
+      // Sync with backend (not Tidepool)
+      await this.readingsService.performFullSync();
       await this.loadDashboardData();
-      this.logger.info('UI', 'Manual sync completed successfully');
+      this.logger.info('UI', 'Backend sync completed successfully');
     } catch (error) {
-      this.logger.error('Error', 'Error syncing data', error);
+      this.logger.error('Error', 'Error syncing data from backend', error);
     } finally {
       this.isSyncing = false;
     }

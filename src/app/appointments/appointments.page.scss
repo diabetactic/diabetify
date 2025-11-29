@@ -1,13 +1,79 @@
 // ============================================
-// APPOINTMENTS PAGE - HYBRID TAILWIND V4 + SCSS
+// APPOINTMENTS PAGE - HYBRID TAILWIND V3 + SCSS
 // ============================================
 // Tailwind: Layout, spacing, typography, colors handled in HTML
 // SCSS: Ionic CSS variables, nested selectors, pseudo-elements
 // ============================================
 
-// Ion content background
+// Ion content background - uses DaisyUI semantic colors
 .appointments-content {
-  --background: #f5f7f8;
+  --background: oklch(var(--b2));
+}
+
+.queue-card ion-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+/* Queue status card - state-specific accent colors */
+.queue-card {
+  border-left: 4px solid transparent;
+}
+
+.queue-card[data-queue-state='PENDING'] {
+  --background: rgba(var(--ion-color-warning-rgb), 0.06);
+
+  border-left-color: var(--ion-color-warning);
+}
+
+.queue-card[data-queue-state='ACCEPTED'] {
+  --background: rgba(var(--ion-color-success-rgb), 0.06);
+
+  border-left-color: var(--ion-color-success);
+}
+
+.queue-card[data-queue-state='DENIED'] {
+  --background: rgba(var(--ion-color-danger-rgb), 0.06);
+
+  border-left-color: var(--ion-color-danger);
+}
+
+.queue-card[data-queue-state='CREATED'] {
+  --background: rgba(var(--ion-color-primary-rgb), 0.06);
+
+  border-left-color: var(--ion-color-primary);
+}
+
+// Section headers (e.g., "Actual")
+h2.section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.section-title .section-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--ion-color-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// All ion-cards in this page - consistent styling
+ion-card {
+  --background: #fff;
+
+  border-radius: 1rem;
+  box-shadow: var(--shadow-25);
+  margin: 0;
 }
 
 // Avatar styling (requires Ionic variables)
@@ -19,7 +85,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  color: white;
+  color: var(--ion-color-primary-contrast);
 
   &.past {
     background: var(--ion-color-medium);
@@ -33,7 +99,7 @@
 
 // Empty state icon sizing
 .empty-state {
-  box-shadow: 0 8px 16px rgb(10 31 68 / 8%);
+  box-shadow: var(--shadow-03);
 
   .large-icon {
     font-size: 64px;
@@ -54,7 +120,7 @@
   display: block;
   margin-top: 4px;
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: 12px; /* mejora legibilidad mínima */
 }
 
 // Shared data indicator
@@ -71,8 +137,58 @@
   }
 
   small {
-    font-size: 11px;
+    font-size: 12px;
   }
+}
+
+// Appointment card styling
+.appointment-card {
+  --background: var(--ion-color-light, #fff);
+
+  border-radius: 1.25rem; // 20px - smoother corners
+  overflow: hidden;
+  border: 1px solid rgb(15 23 42 / 6%);
+  background: #fff;
+  box-shadow: var(--shadow-25);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-26);
+  }
+
+  ion-card-header {
+    padding-bottom: 8px;
+  }
+
+  ion-card-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+
+    app-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+  }
+}
+
+/* State-specific colors for the current appointment card */
+.appointment-card[data-queue-state='PENDING'] {
+  border-left-color: var(--ion-color-warning);
+}
+
+.appointment-card[data-queue-state='ACCEPTED'],
+.appointment-card[data-queue-state='CREATED'] {
+  border-left-color: var(--ion-color-success);
+}
+
+.appointment-card[data-queue-state='DENIED'] {
+  border-left-color: var(--ion-color-danger);
 }
 
 // Item sliding and list items (Ionic CSS variables)
@@ -87,14 +203,14 @@
 
   border-radius: 12px;
   margin-bottom: 8px;
-  box-shadow: 0 4px 8px rgb(10 31 68 / 6%);
+  box-shadow: var(--shadow-27);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgb(10 31 68 / 10%);
+    box-shadow: var(--shadow-28);
   }
 
   ion-label {
@@ -142,18 +258,48 @@ ion-segment {
   }
 }
 
-// Dark mode adjustments
+// Dark mode adjustments - uses DaisyUI semantic colors
 :host-context(.dark),
-:host-context(.ion-palette-dark) {
+:host-context(.ion-palette-dark),
+:host-context([data-theme='dark']) {
   .appointments-content {
-    --background: #0f172a;
+    --background: oklch(var(--b1));
+  }
+
+  // All cards - elevated with border for distinction
+  ion-card {
+    --background: oklch(var(--b2));
+    --color: oklch(var(--bc));
+
+    background: oklch(var(--b2));
+    border: 1px solid oklch(var(--bc) / 12%);
+    box-shadow: var(--shadow-29);
+
+    &:hover {
+      box-shadow: var(--shadow-30);
+    }
+
+    ion-card-header {
+      ion-card-title {
+        color: oklch(var(--bc));
+      }
+
+      ion-card-subtitle {
+        color: oklch(var(--bc) / 75%);
+      }
+    }
+
+    ion-card-content {
+      color: oklch(var(--bc) / 90%);
+    }
   }
 
   .empty-state,
   .appointment-item,
   .appointment-card {
-    background: var(--ion-color-step-150, #111827);
-    box-shadow: 0 8px 16px rgb(0 0 0 / 25%);
+    background: oklch(var(--b3));
+    border: 1px solid oklch(var(--bc) / 16%);
+    box-shadow: var(--shadow-31);
   }
 
   .appointment-item,
@@ -161,11 +307,11 @@ ion-segment {
     ion-label {
       h2,
       h3 {
-        color: #fff;
+        color: oklch(var(--bc));
       }
 
       p {
-        color: rgb(255 255 255 / 70%);
+        color: oklch(var(--bc) / 70%);
       }
     }
   }

@@ -11,7 +11,14 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { ApiGatewayService } from './api-gateway.service';
 import { TranslationService } from './translation.service';
 import { environment } from '../../../environments/environment';
-import { Appointment, CreateAppointmentRequest } from '../models/appointment.model';
+import {
+  Appointment,
+  CreateAppointmentRequest,
+  AppointmentQueueState,
+  AppointmentQueueStateResponse,
+  AppointmentSubmitResponse,
+  AppointmentResolutionResponse,
+} from '../models/appointment.model';
 
 /**
  * Mock appointment for development/testing
@@ -138,6 +145,116 @@ export class AppointmentService {
   }
 
   /**
+   * Get current queue state for the user
+   * Note: Backend returns just a string like "ACCEPTED", "PENDING", etc.
+   */
+  getQueueState(): Observable<AppointmentQueueStateResponse> {
+    if (this.isMockMode) {
+      return of({ state: 'NONE' as AppointmentQueueState });
+    }
+
+    return this.apiGateway
+      .request<string | AppointmentQueueStateResponse>('extservices.appointments.state')
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            // Backend returns just a string like "ACCEPTED", not an object
+            if (typeof response.data === 'string') {
+              return { state: response.data as AppointmentQueueState };
+            }
+            // If it's already an object with state property, use it
+            return response.data as AppointmentQueueStateResponse;
+          }
+          // If no data, assume no queue state
+          return { state: 'NONE' as AppointmentQueueState };
+        }),
+        catchError(error => {
+          // If 404 or "does not exist" error, return NONE (no queue state exists)
+          // Note: ApiGatewayService returns { success: false, error: ApiError }
+          // ApiError has 'statusCode' and 'details', not 'status' or 'detail'
+          const apiError = error?.error;
+          const is404 = error?.status === 404 || apiError?.statusCode === 404;
+
+          const errorDetails = apiError?.details;
+          const detailMsg = errorDetails?.detail || errorDetails?.message || '';
+
+          const isNotFound =
+            detailMsg.includes('does not exist') ||
+            apiError?.message?.includes('does not exist') ||
+            apiError?.message?.includes('404');
+
+          if (is404 || isNotFound) {
+            return of({ state: 'NONE' as AppointmentQueueState });
+          }
+          return this.handleError(error);
+        })
+      );
+  }
+
+  /**
+   * Request an appointment (submit to queue)
+   * Note: Backend returns a number (queue position), not an object
+   */
+  requestAppointment(): Observable<AppointmentSubmitResponse> {
+    if (this.isMockMode) {
+      return of({
+        success: true,
+        state: 'PENDING' as AppointmentQueueState,
+        position: 1,
+        message: 'Mock: Added to queue',
+      });
+    }
+
+    // Backend returns just a number (queue position), not an AppointmentSubmitResponse object
+    return this.apiGateway
+      .request<number>('extservices.appointments.submit')
+      .pipe(
+        map(response => {
+          if (response.success) {
+            // Transform the number response into AppointmentSubmitResponse
+            const position = typeof response.data === 'number' ? response.data : 1;
+            return {
+              success: true,
+              state: 'PENDING' as AppointmentQueueState,
+              position: position,
+              message: `Added to queue at position ${position}`,
+            };
+          }
+          throw new Error(response.error?.message || 'Failed to submit appointment request');
+        }),
+        catchError(this.handleError.bind(this))
+      );
+  }
+
+  /**
+   * Get resolution for a specific appointment
+   */
+  getResolution(appointmentId: number): Observable<AppointmentResolutionResponse> {
+    if (this.isMockMode) {
+      return of({
+        appointment_id: appointmentId,
+        state: 'ACCEPTED' as AppointmentQueueState,
+      });
+    }
+
+    return this.apiGateway
+      .request<AppointmentResolutionResponse>(
+        'extservices.appointments.resolution',
+        {},
+        { appointmentId: appointmentId.toString() }
+      )
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          }
+          throw new Error(response.error?.message || 'Failed to get appointment resolution');
+        }),
+        catchError(this.handleError.bind(this))
+      );
+  }
+
+  /**
    * Refresh appointments list
    */
   private refreshAppointments(): void {
@@ -151,18 +268,52 @@ export class AppointmentService {
    */
   private handleError(error: any): Observable<never> {
     let errorMessage = 'An error occurred';
+    let errorDetail = '';
 
-    if (error?.error?.message) {
-      errorMessage = error.error.message;
+    // Extract error detail from response
+    // Handle ApiError structure from ApiGatewayService
+    const apiError = error?.error;
+
+    if (apiError?.details?.detail) {
+      errorDetail = apiError.details.detail;
+    } else if (apiError?.details?.message) {
+      errorDetail = apiError.details.message;
+    } else if (apiError?.message) {
+      errorDetail = apiError.message;
+    } else if (error?.error?.detail) {
+      // Fallback for raw HttpErrorResponse or other structures
+      errorDetail = error.error.detail;
+    } else if (error?.error?.message) {
+      errorDetail = error.error.message;
     } else if (error?.message) {
-      errorMessage = error.message;
+      errorDetail = error.message;
     } else if (typeof error === 'string') {
-      errorMessage = error;
+      errorDetail = error;
+    }
+
+    // Map backend error messages to user-friendly translations
+    const backendErrorMappings: Record<string, string> = {
+      'Appointment Queue Full': 'appointments.errors.queueFull',
+      'Appointment does not exist in queue': 'appointments.errors.notInQueue',
+      "Appointment wasn't accepted yet": 'appointments.errors.notAccepted',
+      'Appointment already exists in queue': 'appointments.errors.alreadyInQueue',
+      'Appointment does not exist': 'appointments.errors.notFound',
+    };
+
+    // Check for backend error message match
+    for (const [backendMsg, translationKey] of Object.entries(backendErrorMappings)) {
+      if (errorDetail.includes(backendMsg)) {
+        errorMessage = this.translationService.instant(translationKey);
+        console.error('AppointmentService Error:', errorMessage, error);
+        return throwError(() => new Error(errorMessage));
+      }
     }
 
     // Check for specific error codes
-    if (error?.error?.code) {
-      switch (error.error.code) {
+    const errorCode = apiError?.code || error?.error?.code;
+
+    if (errorCode) {
+      switch (errorCode) {
         case 'UNAUTHORIZED':
           errorMessage = this.translationService.instant('appointments.errors.unauthorized');
           break;
@@ -175,7 +326,11 @@ export class AppointmentService {
         case 'NETWORK_ERROR':
           errorMessage = this.translationService.instant('appointments.errors.networkError');
           break;
+        default:
+          errorMessage = errorDetail || errorMessage;
       }
+    } else {
+      errorMessage = errorDetail || errorMessage;
     }
 
     console.error('AppointmentService Error:', errorMessage, error);

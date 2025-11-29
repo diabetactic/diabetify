@@ -2,7 +2,24 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { IonicModule, ToastController, NavController } from '@ionic/angular';
+import { ToastController, NavController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonTitle,
+  IonContent,
+  IonItem,
+  IonInput,
+  IonIcon,
+  IonDatetimeButton,
+  IonModal,
+  IonDatetime,
+  IonSelect,
+  IonSelectOption,
+  IonTextarea,
+} from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -28,10 +45,26 @@ interface MealContextOption {
   standalone: true,
   imports: [
     CommonModule,
-    IonicModule,
     RouterModule,
     ReactiveFormsModule,
     TranslateModule,
+    // Ionic standalone components
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonTitle,
+    IonContent,
+    IonItem,
+    IonInput,
+    IonIcon,
+    IonDatetimeButton,
+    IonModal,
+    IonDatetime,
+    IonSelect,
+    IonSelectOption,
+    IonTextarea,
+    // App components
     AppIconComponent,
   ],
 })

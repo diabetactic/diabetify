@@ -11,7 +11,7 @@
   --padding-start: 8px;
   --padding-end: 8px;
 
-  @media (max-width: 576px) {
+  @media (width <= 576px) {
     --padding-start: 4px;
     --padding-end: 4px;
   }
@@ -30,7 +30,7 @@
     font-weight: 500;
   }
 
-  @media (max-width: 576px) {
+  @media (width <= 576px) {
     --padding-start: 8px;
     --padding-end: 8px;
   }
@@ -74,15 +74,17 @@
 // Animation for language change (keep as-is - cannot migrate to Tailwind)
 @keyframes languageChange {
   0% {
-    opacity: 1;
+    opacity: 100%;
     transform: scale(1);
   }
+
   50% {
-    opacity: 0.5;
+    opacity: 50%;
     transform: scale(0.95);
   }
+
   100% {
-    opacity: 1;
+    opacity: 100%;
     transform: scale(1);
   }
 }

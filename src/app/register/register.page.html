@@ -1,5 +1,5 @@
 <ion-content class="login-content">
-  <div class="glass-surface flex min-h-screen flex-col items-center justify-center p-5">
+  <div class="glass-surface page-shell flex min-h-screen flex-col items-center justify-center">
     <!-- Logo and Title -->
     <div class="animate-fade-in-down mb-8 text-center">
       <img
@@ -22,14 +22,14 @@
         <ion-item lines="none" class="mb-4">
           <div class="form-control w-full">
             <label class="label">
-              <span class="label-text font-medium text-gray-600 dark:text-gray-400">
+              <span class="label-text text-base-content/60 dark:text-base-content/80 font-medium">
                 Nombre Completo
               </span>
             </label>
             <div class="relative">
               <ion-icon
                 name="person-outline"
-                class="absolute left-4 top-1/2 z-10 -translate-y-1/2 text-xl text-gray-400"
+                class="text-base-content/50 dark:text-base-content/70 absolute left-4 top-1/2 z-10 -translate-y-1/2 text-xl"
               ></ion-icon>
               <ion-input
                 type="text"
@@ -37,7 +37,7 @@
                 placeholder="Ingresa tu nombre completo"
                 [disabled]="isLoading"
                 autocomplete="name"
-                class="w-full rounded-xl border border-gray-200 pl-12 text-base transition-all duration-300 dark:border-gray-700"
+                class="border-base-300 w-full rounded-2xl border pl-12 text-base transition-all duration-300"
                 [class.border-danger]="isFieldInvalid('name')"
               ></ion-input>
             </div>
@@ -54,12 +54,14 @@
         <ion-item lines="none" class="mb-4">
           <div class="form-control w-full">
             <label class="label">
-              <span class="label-text font-medium text-gray-600 dark:text-gray-400"> Email </span>
+              <span class="label-text text-base-content/60 dark:text-base-content/80 font-medium">
+                Email
+              </span>
             </label>
             <div class="relative">
               <ion-icon
                 name="mail-outline"
-                class="absolute left-4 top-1/2 z-10 -translate-y-1/2 text-xl text-gray-400"
+                class="text-base-content/50 dark:text-base-content/70 absolute left-4 top-1/2 z-10 -translate-y-1/2 text-xl"
               ></ion-icon>
               <ion-input
                 type="email"
@@ -68,7 +70,7 @@
                 [disabled]="isLoading"
                 autocomplete="email"
                 inputmode="email"
-                class="w-full rounded-xl border border-gray-200 pl-12 text-base transition-all duration-300 dark:border-gray-700"
+                class="border-base-300 w-full rounded-2xl border pl-12 text-base transition-all duration-300"
                 [class.border-danger]="isFieldInvalid('email')"
               ></ion-input>
             </div>
@@ -85,14 +87,14 @@
         <ion-item lines="none" class="mb-4">
           <div class="form-control w-full">
             <label class="label">
-              <span class="label-text font-medium text-gray-600 dark:text-gray-400">
+              <span class="label-text text-base-content/60 dark:text-base-content/80 font-medium">
                 Contraseña
               </span>
             </label>
             <div class="relative">
               <ion-icon
                 name="lock-closed-outline"
-                class="absolute left-4 top-1/2 z-10 -translate-y-1/2 text-xl text-gray-400"
+                class="text-base-content/50 dark:text-base-content/70 absolute left-4 top-1/2 z-10 -translate-y-1/2 text-xl"
               ></ion-icon>
               <ion-input
                 [type]="showPassword ? 'text' : 'password'"
@@ -100,7 +102,7 @@
                 placeholder="Mínimo 6 caracteres"
                 [disabled]="isLoading"
                 autocomplete="new-password"
-                class="w-full rounded-xl border border-gray-200 pl-12 pr-12 text-base transition-all duration-300 dark:border-gray-700"
+                class="border-base-300 w-full rounded-2xl border pl-12 pr-12 text-base transition-all duration-300"
                 [class.border-danger]="isFieldInvalid('password')"
               ></ion-input>
               <ion-button
@@ -112,7 +114,7 @@
                 <ion-icon
                   slot="icon-only"
                   [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
-                  class="text-xl text-gray-600"
+                  class="text-base-content/60 dark:text-base-content/80 text-xl"
                 ></ion-icon>
               </ion-button>
             </div>
@@ -129,14 +131,14 @@
         <ion-item lines="none" class="mb-4">
           <div class="form-control w-full">
             <label class="label">
-              <span class="label-text font-medium text-gray-600 dark:text-gray-400">
+              <span class="label-text text-base-content/60 dark:text-base-content/80 font-medium">
                 Confirmar Contraseña
               </span>
             </label>
             <div class="relative">
               <ion-icon
                 name="lock-closed-outline"
-                class="absolute left-4 top-1/2 z-10 -translate-y-1/2 text-xl text-gray-400"
+                class="text-base-content/50 dark:text-base-content/70 absolute left-4 top-1/2 z-10 -translate-y-1/2 text-xl"
               ></ion-icon>
               <ion-input
                 [type]="showConfirmPassword ? 'text' : 'password'"
@@ -144,7 +146,7 @@
                 placeholder="Repite tu contraseña"
                 [disabled]="isLoading"
                 autocomplete="new-password"
-                class="w-full rounded-xl border border-gray-200 pl-12 pr-12 text-base transition-all duration-300 dark:border-gray-700"
+                class="border-base-300 w-full rounded-2xl border pl-12 pr-12 text-base transition-all duration-300"
                 [class.border-danger]="isFieldInvalid('confirmPassword')"
               ></ion-input>
               <ion-button
@@ -156,7 +158,7 @@
                 <ion-icon
                   slot="icon-only"
                   [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'"
-                  class="text-xl text-gray-600"
+                  class="text-base-content/60 dark:text-base-content/80 text-xl"
                 ></ion-icon>
               </ion-button>
             </div>
@@ -173,12 +175,14 @@
         <ion-item lines="none" class="mb-4">
           <div class="form-control w-full">
             <label class="label">
-              <span class="label-text font-medium text-gray-600 dark:text-gray-400"> Edad </span>
+              <span class="label-text text-base-content/60 dark:text-base-content/80 font-medium">
+                Edad
+              </span>
             </label>
             <div class="relative">
               <ion-icon
                 name="calendar-outline"
-                class="absolute left-4 top-1/2 z-10 -translate-y-1/2 text-xl text-gray-400"
+                class="text-base-content/50 dark:text-base-content/70 absolute left-4 top-1/2 z-10 -translate-y-1/2 text-xl"
               ></ion-icon>
               <ion-input
                 type="number"
@@ -186,7 +190,7 @@
                 placeholder="Tu edad"
                 [disabled]="isLoading"
                 inputmode="numeric"
-                class="w-full rounded-xl border border-gray-200 pl-12 text-base transition-all duration-300 dark:border-gray-700"
+                class="border-base-300 w-full rounded-2xl border pl-12 text-base transition-all duration-300"
                 [class.border-danger]="isFieldInvalid('age')"
               ></ion-input>
             </div>
@@ -206,7 +210,7 @@
             [disabled]="isLoading"
             class="mr-2.5"
           ></ion-checkbox>
-          <ion-label class="ml-2 text-sm text-gray-600 dark:text-gray-400">
+          <ion-label class="text-base-content/60 dark:text-base-content/80 ml-2 text-sm">
             Acepto los <a href="#" class="text-primary hover:underline">términos y condiciones</a>
           </ion-label>
         </ion-item>

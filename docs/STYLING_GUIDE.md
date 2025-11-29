@@ -26,42 +26,44 @@ Los tokens de diseño están definidos en `src/global.scss`:
 
 ```html
 <!-- Correcto -->
-<div class="bg-primary-500 text-white p-4 rounded-lg">
-
-<!-- Evitar -->
-<div style="background: #25aff4">
+<div class="bg-primary-500 rounded-lg p-4 text-white">
+  <!-- Evitar -->
+  <div style="background: #25aff4"></div>
+</div>
 ```
 
 ### Modo Oscuro
 
 ```html
-<div class="bg-white dark:bg-gray-800 text-black dark:text-white">
+<div class="bg-white text-black dark:bg-gray-800 dark:text-white"></div>
 ```
 
 ### Diseño Responsivo
 
 ```html
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
 ```
 
 ## Sistema de Espaciado
 
-| Clase | Valor | Uso |
-|-------|-------|-----|
-| `gap-1` / `p-1` | 4px | Espaciado mínimo |
-| `gap-2` / `p-2` | 8px | Espaciado ajustado |
-| `gap-4` / `p-4` | 16px | Espaciado estándar |
-| `gap-6` / `p-6` | 24px | Espaciado cómodo |
-| `gap-8` / `p-8` | 32px | Espaciado amplio |
+| Clase           | Valor | Uso                |
+| --------------- | ----- | ------------------ |
+| `gap-1` / `p-1` | 4px   | Espaciado mínimo   |
+| `gap-2` / `p-2` | 8px   | Espaciado ajustado |
+| `gap-4` / `p-4` | 16px  | Espaciado estándar |
+| `gap-6` / `p-6` | 24px  | Espaciado cómodo   |
+| `gap-8` / `p-8` | 32px  | Espaciado amplio   |
 
 ## CSS Personalizado
 
 Solo usar para:
+
 1. Animaciones complejas
 2. Interacciones CSS-only
 3. Fixes específicos de navegador
 
 Reglas:
+
 - Archivo SCSS < 50 líneas
 - Sin `!important`
 - Máximo 2 niveles de anidamiento
@@ -71,8 +73,8 @@ Reglas:
 ### Tarjeta
 
 ```html
-<ion-card class="m-0 rounded-2xl shadow-lg p-4 bg-white dark:bg-gray-800">
-  <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Título</h3>
+<ion-card class="m-0 rounded-2xl bg-white p-4 shadow-lg dark:bg-gray-800">
+  <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Título</h3>
   <p class="text-sm text-gray-600 dark:text-gray-300">Contenido</p>
 </ion-card>
 ```
@@ -80,9 +82,9 @@ Reglas:
 ### Botón
 
 ```html
-<button class="px-6 py-3 rounded-lg font-medium transition-all
-               bg-primary hover:bg-primary-600 text-white
-               disabled:opacity-50 disabled:cursor-not-allowed">
+<button
+  class="bg-primary hover:bg-primary-600 rounded-lg px-6 py-3 font-medium text-white transition-all disabled:cursor-not-allowed disabled:opacity-50"
+>
   Guardar
 </button>
 ```
@@ -90,9 +92,9 @@ Reglas:
 ### Grid
 
 ```html
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
-  <div class="bg-white dark:bg-gray-800 rounded-lg p-6">Item 1</div>
-  <div class="bg-white dark:bg-gray-800 rounded-lg p-6">Item 2</div>
+<div class="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 lg:grid-cols-4">
+  <div class="rounded-lg bg-white p-6 dark:bg-gray-800">Item 1</div>
+  <div class="rounded-lg bg-white p-6 dark:bg-gray-800">Item 2</div>
 </div>
 ```
 
@@ -106,6 +108,7 @@ npm start            # Sin warnings de CSS en consola
 ```
 
 Checklist:
+
 - [ ] Sin mensajes de error en consola
 - [ ] Modo oscuro funciona correctamente
 - [ ] Layouts responsivos verificados

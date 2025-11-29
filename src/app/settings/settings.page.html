@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/dashboard"></ion-back-button>
     </ion-buttons>
-    <ion-title>Configuración</ion-title>
+    <ion-title>{{ 'settings.title' | translate }}</ion-title>
     <ion-buttons slot="end">
       <ion-button
         (click)="saveSettings()"
@@ -17,175 +17,210 @@
 </ion-header>
 
 <ion-content class="pb-20">
-  <!-- Profile Section -->
-  <ion-list-header class="px-4 pb-2.5 pt-5 text-xs font-semibold uppercase tracking-wider">
-    <ion-label>Perfil</ion-label>
-  </ion-list-header>
-  <ion-list class="mb-4">
-    <ion-item button (click)="goToProfile()">
-      <ion-avatar slot="start" class="h-12 w-12">
-        <img src="assets/icon/favicon.png" alt="Profile" />
-      </ion-avatar>
-      <ion-label>
-        <h2 class="mb-1 font-medium">{{ profileSettings.name || 'Usuario' }}</h2>
-        <p class="text-sm">{{ profileSettings.email }}</p>
-      </ion-label>
-      <app-icon name="chevron-forward"></app-icon>
-    </ion-item>
-  </ion-list>
+  <div class="page-shell">
+    <!-- Profile Section -->
+    <ion-list-header class="px-4 pb-2.5 pt-5 text-xs font-semibold uppercase tracking-wider">
+      <ion-label>{{ 'settings.sections.profile' | translate }}</ion-label>
+    </ion-list-header>
+    <ion-list class="mb-4">
+      <ion-item button (click)="goToProfile()">
+        <ion-avatar slot="start" class="h-12 w-12">
+          <img src="assets/icon/favicon.png" [alt]="'settings.profile.avatarAlt' | translate" />
+        </ion-avatar>
+        <ion-label>
+          <h2 class="mb-1 font-medium">{{ profileSettings.name || 'Usuario' }}</h2>
+          <p class="text-sm">{{ profileSettings.email }}</p>
+        </ion-label>
+        <app-icon name="chevron-forward"></app-icon>
+      </ion-item>
+    </ion-list>
 
-  <!-- Glucose Settings -->
-  <ion-list-header class="px-4 pb-2.5 pt-5 text-xs font-semibold uppercase tracking-wider">
-    <ion-label>Configuración de Glucosa</ion-label>
-  </ion-list-header>
-  <ion-list class="mb-4">
-    <ion-item>
-      <ion-label>Unidad de Glucosa</ion-label>
-      <ion-select
-        [(ngModel)]="glucoseSettings.unit"
-        (ionChange)="onGlucoseUnitChange($event)"
-        interface="popover"
-        class="max-w-[50%]"
+    <!-- Glucose Settings -->
+    <ion-list-header class="px-4 pb-2.5 pt-5 text-xs font-semibold uppercase tracking-wider">
+      <ion-label>{{ 'settings.sections.glucose' | translate }}</ion-label>
+    </ion-list-header>
+    <ion-list class="mb-4">
+      <ion-item>
+        <ion-label>{{ 'settings.glucose.unitLabel' | translate }}</ion-label>
+        <ion-select
+          [(ngModel)]="glucoseSettings.unit"
+          (ionChange)="onGlucoseUnitChange($event)"
+          interface="popover"
+          class="max-w-[50%]"
+        >
+          <ion-select-option value="mg/dL">
+            {{ 'settings.glucose.mgdl' | translate }}
+          </ion-select-option>
+          <ion-select-option value="mmol/L">
+            {{ 'settings.glucose.mmol' | translate }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>
+          <h3 class="mb-1 font-medium">
+            {{ 'settings.glucose.targetRange' | translate }}
+          </h3>
+          <p class="text-sm">
+            {{ glucoseSettings.targetLow }} - {{ glucoseSettings.targetHigh }}
+            {{ glucoseSettings.unit }}
+          </p>
+        </ion-label>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">
+          {{ 'settings.glucose.minLabel' | translate }} ({{ glucoseSettings.unit }})
+        </ion-label>
+        <ion-range
+          [(ngModel)]="glucoseSettings.targetLow"
+          [min]="glucoseSettings.unit === 'mg/dL' ? 50 : 2.8"
+          [max]="glucoseSettings.unit === 'mg/dL' ? 100 : 5.6"
+          [step]="glucoseSettings.unit === 'mg/dL' ? 5 : 0.1"
+          pin="true"
+          (ionChange)="hasChanges = true"
+          class="py-2"
+        >
+          <ion-label slot="start" class="text-xs">{{
+            glucoseSettings.unit === 'mg/dL' ? 50 : 2.8
+          }}</ion-label>
+          <ion-label slot="end" class="text-xs">{{
+            glucoseSettings.unit === 'mg/dL' ? 100 : 5.6
+          }}</ion-label>
+        </ion-range>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">
+          {{ 'settings.glucose.maxLabel' | translate }} ({{ glucoseSettings.unit }})
+        </ion-label>
+        <ion-range
+          [(ngModel)]="glucoseSettings.targetHigh"
+          [min]="glucoseSettings.unit === 'mg/dL' ? 140 : 7.8"
+          [max]="glucoseSettings.unit === 'mg/dL' ? 250 : 13.9"
+          [step]="glucoseSettings.unit === 'mg/dL' ? 10 : 0.5"
+          pin="true"
+          (ionChange)="hasChanges = true"
+          class="py-2"
+        >
+          <ion-label slot="start" class="text-xs">{{
+            glucoseSettings.unit === 'mg/dL' ? 140 : 7.8
+          }}</ion-label>
+          <ion-label slot="end" class="text-xs">{{
+            glucoseSettings.unit === 'mg/dL' ? 250 : 13.9
+          }}</ion-label>
+        </ion-range>
+      </ion-item>
+    </ion-list>
+
+    <!-- Appearance Settings -->
+    <ion-list-header class="px-4 pb-2.5 pt-5 text-xs font-semibold uppercase tracking-wider">
+      <ion-label>{{ 'settings.sections.appearance' | translate }}</ion-label>
+    </ion-list-header>
+    <ion-list class="mb-4">
+      <ion-item>
+        <ion-label>{{ 'settings.appearance.themeLabel' | translate }}</ion-label>
+        <ion-select
+          [(ngModel)]="preferences.theme"
+          (ionChange)="onThemeChange($event)"
+          interface="popover"
+          class="max-w-[50%]"
+        >
+          <ion-select-option value="light">
+            {{ 'settings.appearance.themeLight' | translate }}
+          </ion-select-option>
+          <ion-select-option value="dark">
+            {{ 'settings.appearance.themeDark' | translate }}
+          </ion-select-option>
+          <ion-select-option value="auto">
+            {{ 'settings.appearance.themeAuto' | translate }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>{{ 'settings.sections.language' | translate }}</ion-label>
+        <ion-select
+          [(ngModel)]="preferences.language"
+          (ionChange)="onLanguageChange($event)"
+          interface="popover"
+          class="max-w-[50%]"
+        >
+          <ion-select-option value="es">
+            {{ 'settings.language.es' | translate }}
+          </ion-select-option>
+          <ion-select-option value="en">
+            {{ 'settings.language.en' | translate }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-list>
+
+    <!-- Advanced Settings -->
+    <ion-list-header class="px-4 pb-2.5 pt-5 text-xs font-semibold uppercase tracking-wider">
+      <ion-label>{{ 'settings.sections.advanced' | translate }}</ion-label>
+    </ion-list-header>
+    <ion-list class="mb-4">
+      <!-- Debug Panel Toggle (only in dev mode) -->
+      <ion-item
+        button
+        (click)="toggleDebugPanel()"
+        *ngIf="isDevEnvironment"
+        class="flex items-center gap-2"
       >
-        <ion-select-option value="mg/dL">mg/dL</ion-select-option>
-        <ion-select-option value="mmol/L">mmol/L</ion-select-option>
-      </ion-select>
-    </ion-item>
+        <app-icon name="bug-outline" class="text-warning"></app-icon>
+        <ion-label>
+          <h3 class="mb-1 font-medium">
+            {{ 'settings.debug.title' | translate }}
+          </h3>
+          <p class="text-sm">
+            {{ 'settings.debug.subtitle' | translate }}
+          </p>
+        </ion-label>
+        <ion-icon [name]="showDebugPanel ? 'chevron-up' : 'chevron-down'" slot="end"></ion-icon>
+      </ion-item>
 
-    <ion-item>
-      <ion-label>
-        <h3 class="mb-1 font-medium">Rango Objetivo</h3>
-        <p class="text-sm">
-          {{ glucoseSettings.targetLow }} - {{ glucoseSettings.targetHigh }}
-          {{ glucoseSettings.unit }}
+      <ion-item button (click)="goToAdvancedSettings()" class="flex items-center gap-2">
+        <app-icon name="settings-outline"></app-icon>
+        <ion-label>{{ 'settings.debug.advancedConfig' | translate }}</ion-label>
+        <app-icon name="chevron-forward"></app-icon>
+      </ion-item>
+
+      <ion-item button (click)="signOut()" class="flex items-center gap-2">
+        <app-icon name="log-out-outline" class="text-primary"></app-icon>
+        <ion-label color="primary">
+          {{ 'settings.signOut' | translate }}
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <!-- Debug Panel (integrated into settings, only in dev mode) -->
+    <div *ngIf="showDebugPanel && isDevEnvironment" class="debug-panel-container">
+      <app-debug-panel></app-debug-panel>
+    </div>
+
+    <!-- Demo Mode Notice -->
+    <ion-card *ngIf="isDemoMode" class="demo-notice">
+      <ion-card-content class="flex items-center gap-3 p-3">
+        <app-icon
+          name="information-circle-outline"
+          class="text-warning shrink-0 text-2xl"
+        ></app-icon>
+        <p class="m-0 text-sm">
+          {{ 'settings.demoMode' | translate }}
         </p>
-      </ion-label>
-    </ion-item>
+      </ion-card-content>
+    </ion-card>
 
-    <ion-item>
-      <ion-label position="stacked">Valor Mínimo ({{ glucoseSettings.unit }})</ion-label>
-      <ion-range
-        [(ngModel)]="glucoseSettings.targetLow"
-        [min]="glucoseSettings.unit === 'mg/dL' ? 50 : 2.8"
-        [max]="glucoseSettings.unit === 'mg/dL' ? 100 : 5.6"
-        [step]="glucoseSettings.unit === 'mg/dL' ? 5 : 0.1"
-        pin="true"
-        (ionChange)="hasChanges = true"
-        class="py-2"
-      >
-        <ion-label slot="start" class="text-xs">{{
-          glucoseSettings.unit === 'mg/dL' ? 50 : 2.8
-        }}</ion-label>
-        <ion-label slot="end" class="text-xs">{{
-          glucoseSettings.unit === 'mg/dL' ? 100 : 5.6
-        }}</ion-label>
-      </ion-range>
-    </ion-item>
-
-    <ion-item>
-      <ion-label position="stacked">Valor Máximo ({{ glucoseSettings.unit }})</ion-label>
-      <ion-range
-        [(ngModel)]="glucoseSettings.targetHigh"
-        [min]="glucoseSettings.unit === 'mg/dL' ? 140 : 7.8"
-        [max]="glucoseSettings.unit === 'mg/dL' ? 250 : 13.9"
-        [step]="glucoseSettings.unit === 'mg/dL' ? 10 : 0.5"
-        pin="true"
-        (ionChange)="hasChanges = true"
-        class="py-2"
-      >
-        <ion-label slot="start" class="text-xs">{{
-          glucoseSettings.unit === 'mg/dL' ? 140 : 7.8
-        }}</ion-label>
-        <ion-label slot="end" class="text-xs">{{
-          glucoseSettings.unit === 'mg/dL' ? 250 : 13.9
-        }}</ion-label>
-      </ion-range>
-    </ion-item>
-  </ion-list>
-
-  <!-- Appearance Settings -->
-  <ion-list-header class="px-4 pb-2.5 pt-5 text-xs font-semibold uppercase tracking-wider">
-    <ion-label>Apariencia</ion-label>
-  </ion-list-header>
-  <ion-list class="mb-4">
-    <ion-item>
-      <ion-label>Tema</ion-label>
-      <ion-select
-        [(ngModel)]="preferences.theme"
-        (ionChange)="onThemeChange($event)"
-        interface="popover"
-        class="max-w-[50%]"
-      >
-        <ion-select-option value="light">Claro</ion-select-option>
-        <ion-select-option value="dark">Oscuro</ion-select-option>
-        <ion-select-option value="auto">Automático</ion-select-option>
-      </ion-select>
-    </ion-item>
-
-    <ion-item>
-      <ion-label>Idioma</ion-label>
-      <ion-select
-        [(ngModel)]="preferences.language"
-        (ionChange)="onLanguageChange($event)"
-        interface="popover"
-        class="max-w-[50%]"
-      >
-        <ion-select-option value="es">Español</ion-select-option>
-        <ion-select-option value="en">English</ion-select-option>
-      </ion-select>
-    </ion-item>
-  </ion-list>
-
-  <!-- Advanced Settings -->
-  <ion-list-header class="px-4 pb-2.5 pt-5 text-xs font-semibold uppercase tracking-wider">
-    <ion-label>Avanzado</ion-label>
-  </ion-list-header>
-  <ion-list class="mb-4">
-    <!-- Debug Panel Toggle (only in dev mode) -->
-    <ion-item
-      button
-      (click)="toggleDebugPanel()"
-      *ngIf="isDevEnvironment"
-      class="flex items-center gap-2"
-    >
-      <app-icon name="bug-outline" class="text-warning"></app-icon>
-      <ion-label>
-        <h3 class="mb-1 font-medium">Panel de Depuración</h3>
-        <p class="text-sm">Herramientas para desarrolladores</p>
-      </ion-label>
-      <ion-icon [name]="showDebugPanel ? 'chevron-up' : 'chevron-down'" slot="end"></ion-icon>
-    </ion-item>
-
-    <ion-item button (click)="goToAdvancedSettings()" class="flex items-center gap-2">
-      <app-icon name="settings-outline"></app-icon>
-      <ion-label>Configuración Avanzada</ion-label>
-      <app-icon name="chevron-forward"></app-icon>
-    </ion-item>
-
-    <ion-item button (click)="signOut()" class="flex items-center gap-2">
-      <app-icon name="log-out-outline" class="text-primary"></app-icon>
-      <ion-label color="primary">Cerrar Sesión</ion-label>
-    </ion-item>
-  </ion-list>
-
-  <!-- Debug Panel (integrated into settings, only in dev mode) -->
-  <div *ngIf="showDebugPanel && isDevEnvironment" class="debug-panel-container">
-    <app-debug-panel></app-debug-panel>
-  </div>
-
-  <!-- Demo Mode Notice -->
-  <ion-card *ngIf="isDemoMode" class="demo-notice">
-    <ion-card-content class="flex items-center gap-3 p-3">
-      <app-icon name="information-circle-outline" class="text-warning shrink-0 text-2xl"></app-icon>
-      <p class="m-0 text-sm">
-        Estás en modo demo. Algunos cambios no se guardarán permanentemente.
+    <!-- Version Info -->
+    <div class="p-5 text-center">
+      <p class="text-base-content/60 dark:text-base-content/80 my-1 text-sm">
+        {{ 'app.name' | translate }} v1.0.0
       </p>
-    </ion-card-content>
-  </ion-card>
-
-  <!-- Version Info -->
-  <div class="p-5 text-center">
-    <p class="my-1 text-sm text-gray-500 dark:text-gray-400">Diabetactic v1.0.0</p>
-    <p class="my-1 text-sm text-gray-500 dark:text-gray-400">© 2024 Diabetactic</p>
+      <p class="text-base-content/60 dark:text-base-content/80 my-1 text-sm">
+        © 2024 {{ 'app.name' | translate }}
+      </p>
+    </div>
   </div>
 </ion-content>

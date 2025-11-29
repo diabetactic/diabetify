@@ -10,19 +10,25 @@ export default defineConfig({
   expect: {
     timeout: 5_000,
   },
-  fullyParallel: false,
+  fullyParallel: true,
+  workers: process.env.CI ? 4 : 8,
   retries: process.env.CI ? 1 : 0,
   reporter: [['html', { outputFolder: 'playwright-report', open: 'never' }], ['list']],
   use: {
     baseURL: BASE_URL,
-    trace: 'on-first-retry',
-    video: 'retain-on-failure',
+    trace: 'off',
+    video: 'off',
     screenshot: 'only-on-failure',
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: {
+          executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || '/usr/bin/chromium',
+        },
+      },
     },
   ],
   webServer: process.env.E2E_SKIP_SERVER

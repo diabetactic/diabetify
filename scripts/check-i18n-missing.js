@@ -19,7 +19,7 @@ const TEMPLATE_PATTERNS = [
   '!src/**/*.spec.html', // Exclude test templates
   '!node_modules/**',
   '!www/**',
-  '!dist/**'
+  '!dist/**',
 ];
 
 // Regex patterns for detecting hardcoded strings
@@ -98,7 +98,11 @@ function checkFile(filePath) {
         }
 
         // Skip if it's part of a TypeScript expression
-        if (hardcodedText.includes('?.') || hardcodedText.includes('||') || hardcodedText.includes('&&')) {
+        if (
+          hardcodedText.includes('?.') ||
+          hardcodedText.includes('||') ||
+          hardcodedText.includes('&&')
+        ) {
           continue;
         }
 
@@ -106,7 +110,7 @@ function checkFile(filePath) {
           file: path.relative(ROOT_DIR, filePath),
           line: lineIndex + 1,
           text: hardcodedText,
-          context: line.trim()
+          context: line.trim(),
         });
       }
     });
@@ -120,7 +124,7 @@ function main() {
 
   const files = glob.sync(TEMPLATE_PATTERNS[0], {
     ignore: TEMPLATE_PATTERNS.filter(p => p.startsWith('!')).map(p => p.substring(1)),
-    cwd: ROOT_DIR
+    cwd: ROOT_DIR,
   });
 
   let totalIssues = 0;
@@ -146,7 +150,9 @@ function main() {
       console.log(`\n📄 ${file}:`);
       issues.forEach(issue => {
         console.log(`  Line ${issue.line}: "${issue.text}"`);
-        console.log(`    Context: ${issue.context.substring(0, 80)}${issue.context.length > 80 ? '...' : ''}`);
+        console.log(
+          `    Context: ${issue.context.substring(0, 80)}${issue.context.length > 80 ? '...' : ''}`
+        );
       });
     });
 

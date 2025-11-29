@@ -12,11 +12,11 @@ function getLocalBaseUrl(): string {
   if (Capacitor.isNativePlatform()) {
     const platform = Capacitor.getPlatform();
     if (platform === 'android') {
-      return 'http://10.0.2.2:8004'; // Android emulator
+      return 'http://10.0.2.2:8000'; // Android emulator
     }
-    return 'http://localhost:8004'; // iOS
+    return 'http://localhost:8000'; // iOS
   }
-  return 'http://localhost:8004'; // Web
+  return 'http://localhost:8000'; // Web
 }
 
 export const environment = {

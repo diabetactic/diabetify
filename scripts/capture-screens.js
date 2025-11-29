@@ -1,34 +1,78 @@
+// Simple Playwright-driven screenshot runner
+// Starts the dev server on port 4301, then captures key routes.
 const { chromium } = require('playwright');
+const { spawn } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
+const PORT = 4301;
+const BASE = `http://localhost:${PORT}`;
+const OUTPUT_DIR = path.join(__dirname, '..', 'screenshots', 'ui-captures');
+
+const routes = [
+  { name: 'welcome', url: '/welcome' },
+  { name: 'login', url: '/login' },
+  { name: 'register', url: '/register' },
+  { name: 'appointments', url: '/appointments' },
+  { name: 'account-pending', url: '/account-pending' },
+];
+
+async function waitForServer(timeoutMs = 120000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const res = await fetch(BASE, { method: 'GET' });
+      if (res.ok) return;
+    } catch (e) {
+      // ignore and retry
+    }
+    await new Promise(r => setTimeout(r, 500));
+  }
+  throw new Error('Dev server did not become ready in time');
+}
 
 (async () => {
-  const browser = await chromium.launch();
-  const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
-  const page = await context.newPage();
-
-  const screens = [
-    { name: '01-welcome', url: 'http://localhost:4200/welcome', selector: 'ion-content' },
-    { name: '02-dashboard', url: 'http://localhost:4200/tabs/dashboard', selector: 'ion-content' },
-    { name: '03-readings', url: 'http://localhost:4200/tabs/readings', selector: 'ion-content' },
-    { name: '04-appointments', url: 'http://localhost:4200/tabs/appointments', selector: 'ion-content' },
-    { name: '05-trends', url: 'http://localhost:4200/tabs/trends', selector: 'ion-content' },
-    { name: '06-profile', url: 'http://localhost:4200/tabs/profile', selector: 'ion-content' },
-  ];
-
-  for (const screen of screens) {
-    console.log(`Capturing ${screen.name}...`);
-    await page.goto(screen.url, { waitUntil: 'networkidle' });
-    try {
-      await page.waitForSelector(screen.selector, { timeout: 5000 });
-    } catch (e) {
-      console.log(`  Warning: ${screen.selector} not found, continuing...`);
-    }
-    await page.waitForTimeout(1000); // Additional wait for animations
-    await page.screenshot({
-      path: `playwright/screenshots/fresh-${screen.name}.png`,
-      fullPage: false
-    });
+  if (!fs.existsSync(OUTPUT_DIR)) {
+    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
 
-  await browser.close();
-  console.log('All screenshots captured!');
+  // Start dev server
+  const server = spawn(
+    'npm',
+    ['run', 'start', '--', `--port=${PORT}`, '--configuration', 'development'],
+    {
+      stdio: 'pipe',
+      env: { ...process.env, BROWSER: 'none' },
+    }
+  );
+
+  let serverOutput = '';
+  server.stdout.on('data', chunk => (serverOutput += chunk.toString()));
+  server.stderr.on('data', chunk => (serverOutput += chunk.toString()));
+
+  try {
+    await waitForServer();
+    const browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    const page = await context.newPage();
+
+    for (const route of routes) {
+      const url = `${BASE}${route.url}`;
+      console.log('Capturing', url);
+      await page.goto(url, { waitUntil: 'networkidle' });
+      // wait for content to paint
+      await page.waitForTimeout(1000);
+      const outPath = path.join(OUTPUT_DIR, `${route.name}.png`);
+      await page.screenshot({ path: outPath, fullPage: true });
+    }
+
+    await browser.close();
+    console.log('Screenshots saved to', OUTPUT_DIR);
+  } catch (err) {
+    console.error('Capture failed:', err);
+    console.error(serverOutput);
+    process.exitCode = 1;
+  } finally {
+    server.kill('SIGTERM');
+  }
 })();

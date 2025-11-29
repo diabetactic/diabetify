@@ -6,7 +6,7 @@
   (click)="onItemClick()"
 >
   <div
-    class="flex w-full items-center justify-between rounded-xl bg-white p-4 shadow-md transition-colors duration-200 dark:bg-gray-800 dark:shadow-black/30"
+    class="bg-base-100 dark:border-base-content/10 flex w-full items-center justify-between rounded-2xl p-4 shadow-md transition-colors duration-200 dark:border dark:shadow-black/30"
   >
     <!-- Left Section: Icon + Text -->
     <div class="flex min-w-0 flex-1 items-center gap-4">
@@ -22,13 +22,13 @@
       <!-- Text Content -->
       <div class="min-w-0 flex-1">
         <h3
-          class="m-0 mb-1 overflow-hidden text-ellipsis whitespace-nowrap text-base font-semibold leading-snug text-gray-900 dark:text-white"
+          class="text-base-content m-0 mb-1 overflow-hidden text-ellipsis whitespace-nowrap text-base font-semibold leading-snug"
         >
           {{ title }}
         </h3>
         <p
           *ngIf="subtitle"
-          class="m-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-normal leading-snug text-gray-400 dark:text-gray-500"
+          class="text-base-content/40 m-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-normal leading-snug"
         >
           {{ subtitle }}
         </p>
@@ -58,7 +58,7 @@
       <!-- Chevron action -->
       <span
         *ngIf="actionType === 'chevron'"
-        class="material-symbols-outlined text-2xl text-gray-400 dark:text-gray-500"
+        class="material-symbols-outlined text-base-content/40 text-2xl"
       >
         chevron_right
       </span>

@@ -1,74 +1,184 @@
-/**
- * Welcome Page Styles
- * All layout and typography migrated to Tailwind utilities in HTML
- * Ionic button CSS variables preserved below
- */
+// Welcome screen styling inspired by the provided mockups
 
-// Ionic CSS variables for buttons (cannot be migrated to Tailwind)
-.primary-button {
-  --border-radius: 2rem;
-  --box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.3);
-  --background: var(--ion-color-primary);
-  --background-activated: var(--ion-color-primary-shade);
-  --background-hover: var(--ion-color-primary-tint);
-  --color: var(--ion-color-primary-contrast);
+.welcome-content {
+  --background: linear-gradient(180deg, #dff2ff 0%, #f1f7ff 45%, #fff 100%);
+  --layer-content: 1;
+  --layer-cloud: 0;
 
-  height: 54px;
-  font-size: 18px;
-  font-weight: 700;
-  text-transform: none;
-  letter-spacing: 0.5px;
-}
-
-.secondary-button {
-  --border-radius: 2rem;
-  --border-width: 2px;
-  --border-style: solid;
-  --border-color: var(--ion-color-primary);
-  --color: var(--ion-color-primary);
-  --background: transparent;
-  --background-hover: rgba(var(--ion-color-primary-rgb), 0.1);
-  --background-activated: rgba(var(--ion-color-primary-rgb), 0.15);
-
-  height: 54px;
-  font-size: 18px;
-  font-weight: 700;
-  text-transform: none;
-  letter-spacing: 0.5px;
-}
-
-// Ionic content background - ensure proper positioning and visibility
-ion-content {
-  --background: var(--ion-background-color);
   position: relative;
-  z-index: 1;
-  display: block;
-  height: 100%;
-
-  // Make sure inner scroll element is visible
-  &::part(scroll) {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
+  overflow: hidden;
 }
 
-// Ensure welcome page doesn't persist after navigation
-:host {
-  display: block;
+.welcome-shell {
+  min-height: 100vh;
+  padding: 32px 18px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
   position: relative;
-  z-index: 1;
-  height: 100vh;
+  z-index: var(--layer-content);
+}
+
+// Soft cloud shapes in the background
+.welcome-content::before,
+.welcome-content::after {
+  content: '';
+  position: absolute;
+  background: #fff;
+  border-radius: 999px;
+  opacity: 55%;
+  filter: blur(10px);
+  pointer-events: none;
+  z-index: var(--layer-cloud);
+}
+
+.welcome-content::before {
+  width: 260px;
+  height: 120px;
+  top: 8%;
+  left: -80px;
+}
+
+.welcome-content::after {
+  width: 320px;
+  height: 160px;
+  top: 35%;
+  right: -120px;
+}
+
+.hero-illustration {
   width: 100%;
+  max-width: 460px;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 24px;
+  box-shadow: var(--shadow-13);
 }
 
-// Dark mode button enhancements
-.dark-theme {
-  .primary-button {
-    --box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.4);
+.hero-illustration img {
+  width: 135%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center top;
+  transform: translateY(-4%);
+}
+
+.text-content h1 {
+  margin: 8px 0 6px;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--dt-color-text-primary);
+}
+
+.text-content p {
+  margin: 0;
+  color: var(--dt-color-text-secondary);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.actions {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cta-primary {
+  width: 100%;
+  border: none;
+  border-radius: 18px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #ff9f0f 0%, #ff770f 100%);
+  color: var(--dt-color-text-primary); /* mejora contraste sobre el gradiente */
+  font-size: 17px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: var(--shadow-20);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.cta-primary:focus-visible {
+  outline: 3px solid var(--ion-color-primary);
+  outline-offset: 2px;
+}
+
+.cta-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-21);
+}
+
+.cta-primary:active {
+  transform: translateY(0);
+}
+
+.cta-primary .cta-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.cta-secondary {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--dt-color-link);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 8px;
+}
+
+.bottom-bar {
+  display: none;
+}
+
+.bottom-item {
+  display: none;
+}
+
+.bottom-item:hover {
+  background: none;
+}
+
+// Dark mode adjustments
+:host-context(.dark),
+:host-context(.ion-palette-dark),
+:host-context([data-theme='dark']) {
+  .welcome-content {
+    --background: linear-gradient(180deg, #0f172a 0%, #020617 45%, #020617 100%);
   }
 
-  .secondary-button {
-    --color: #f5f5f5;
+  .text-content h1 {
+    color: var(--dt-color-text-primary);
+  }
+
+  .text-content p {
+    color: var(--dt-color-text-secondary);
+  }
+
+  .bottom-bar {
+    display: none;
+  }
+
+  .bottom-item {
+    display: none;
+  }
+
+  .bottom-item:hover {
+    background: none;
+  }
+
+  .cta-primary {
+    box-shadow: var(--shadow-24);
   }
 }

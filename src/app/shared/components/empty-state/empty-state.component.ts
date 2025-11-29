@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonButton } from '@ionic/angular/standalone';
 import { Subscription } from 'rxjs';
 import { ThemeService } from '../../../core/services/theme.service';
 
@@ -9,7 +9,7 @@ import { ThemeService } from '../../../core/services/theme.service';
   templateUrl: './empty-state.component.html',
   styleUrls: ['./empty-state.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonButton],
   host: {
     '[class.dark-theme]': 'isDarkMode',
   },

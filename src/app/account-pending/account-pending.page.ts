@@ -1,7 +1,18 @@
 import { Component, Inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonLabel,
+  IonButton,
+} from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { LocalAuthService } from '../core/services/local-auth.service';
 import { APP_CONFIG, AppConfig } from '../core/config/app-config';
@@ -11,7 +22,21 @@ import { APP_CONFIG, AppConfig } from '../core/config/app-config';
   templateUrl: './account-pending.page.html',
   styleUrls: ['./account-pending.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, TranslateModule],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    // Ionic standalone components
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
+    IonLabel,
+    IonButton,
+  ],
 })
 export class AccountPendingPage {
   constructor(

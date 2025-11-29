@@ -1,4 +1,4 @@
-<!-- Debug Panel Component -->
+<!-- Dev Tools Panel -->
 <!-- Floating toggle button (bottom-right corner) -->
 <div class="fixed bottom-20 right-4 z-50 md:bottom-4">
   <ion-fab-button
@@ -11,19 +11,20 @@
   </ion-fab-button>
 </div>
 
-<!-- Debug Panel (sliding from bottom on mobile, sidebar on desktop) -->
+<!-- Dev Tools Panel (sliding from bottom on mobile, sidebar on desktop) -->
 <div
   *ngIf="isOpen"
-  class="fixed inset-x-0 bottom-0 z-40 flex max-h-[80vh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl dark:bg-gray-900 md:inset-y-0 md:left-auto md:right-0 md:max-h-full md:w-96 md:rounded-none md:rounded-l-2xl"
+  class="bg-base-100 fixed inset-x-0 bottom-0 z-40 flex max-h-[80vh] flex-col overflow-hidden rounded-t-2xl shadow-2xl md:inset-y-0 md:left-auto md:right-0 md:max-h-full md:w-96 md:rounded-none md:rounded-l-2xl"
   [@slideIn]
 >
   <!-- Header -->
-  <div
-    class="flex items-center justify-between border-b border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800"
-  >
+  <div class="border-base-300 bg-base-200 flex items-center justify-between border-b p-4">
     <div class="flex items-center gap-2">
       <app-icon name="bug" class="text-primary text-xl"></app-icon>
-      <h2 class="text-lg font-bold text-gray-900 dark:text-white">Debug Panel</h2>
+      <div class="flex flex-col">
+        <h2 class="text-base-content text-lg font-bold">Dev Tools</h2>
+        <p class="text-base-content/60 m-0 text-xs">Minimal helpers for Heroku/local testing</p>
+      </div>
     </div>
     <ion-button
       fill="clear"
@@ -35,423 +36,101 @@
     </ion-button>
   </div>
 
-  <!-- Tabs -->
-  <div
-    class="flex overflow-x-auto border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900"
-  >
-    <button
-      *ngFor="let tab of ['info', 'services', 'mock', 'storage', 'actions']"
-      (click)="selectedTab = tab"
-      class="flex-1 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors"
-      [ngClass]="{
-        'border-primary text-primary': selectedTab === tab,
-        'border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200':
-          selectedTab !== tab,
-      }"
-    >
-      {{ tab | titlecase }}
-    </button>
-  </div>
-
-  <!-- Content (scrollable) -->
-  <div class="flex-1 overflow-y-auto p-4">
-    <!-- Info Tab -->
-    <div *ngIf="selectedTab === 'info' && debugInfo" class="space-y-3">
-      <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-        <h3 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Device Info</h3>
-        <div class="space-y-2 text-xs">
-          <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Platform:</span>
-            <span class="font-mono text-gray-900 dark:text-white">{{ debugInfo.platform }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Version:</span>
-            <span class="font-mono text-gray-900 dark:text-white">{{ debugInfo.version }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Device:</span>
-            <span class="font-mono text-gray-900 dark:text-white">{{ debugInfo.deviceModel }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">OS:</span>
-            <span class="font-mono text-gray-900 dark:text-white">{{ debugInfo.osVersion }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Network:</span>
-            <span
-              class="font-mono font-semibold"
-              [ngClass]="{
-                'text-green-600 dark:text-green-400': debugInfo.networkStatus === 'Online',
-                'text-red-600 dark:text-red-400': debugInfo.networkStatus === 'Offline',
-              }"
-            >
-              {{ debugInfo.networkStatus }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-        <h3 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Environment</h3>
-        <div class="space-y-2 text-xs">
-          <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Mode:</span>
-            <span class="font-mono text-gray-900 dark:text-white">{{ debugInfo.environment }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">API URL:</span>
-            <span class="break-all font-mono text-xs text-gray-900 dark:text-white">{{
-              debugInfo.apiBaseUrl
-            }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-        <h3 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Feature Flags</h3>
-        <div class="space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-600 dark:text-gray-400">Tidepool Integration</span>
-            <ion-icon
-              [name]="debugInfo.tidepoolEnabled ? 'checkmark-circle' : 'close-circle'"
-              [color]="debugInfo.tidepoolEnabled ? 'success' : 'danger'"
-              class="text-lg"
-            >
-            </ion-icon>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-600 dark:text-gray-400">Tidepool Mock</span>
-            <ion-icon
-              [name]="debugInfo.tidepoolMockEnabled ? 'checkmark-circle' : 'close-circle'"
-              [color]="debugInfo.tidepoolMockEnabled ? 'success' : 'danger'"
-              class="text-lg"
-            >
-            </ion-icon>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-600 dark:text-gray-400">Local Backend</span>
-            <ion-icon
-              [name]="debugInfo.localBackendEnabled ? 'checkmark-circle' : 'close-circle'"
-              [color]="debugInfo.localBackendEnabled ? 'success' : 'danger'"
-              class="text-lg"
-            >
-            </ion-icon>
-          </div>
-        </div>
-      </div>
-
-      <ion-button
-        expand="block"
-        size="small"
-        (click)="copyDebugInfo()"
-        class="inline-flex items-center gap-2"
-      >
-        <app-icon name="copy-outline"></app-icon>
-        Copy All Info
-      </ion-button>
+  <!-- Minimal content (scrollable) -->
+  <div class="flex-1 space-y-3 overflow-y-auto p-4">
+    <!-- Environment summary -->
+    <div *ngIf="debugInfo" class="bg-base-200 rounded-lg p-3">
+      <h3 class="text-base-content/60 mb-2 text-sm font-semibold">Environment</h3>
+      <p class="text-base-content/70 m-0 text-xs">
+        Mode:
+        <span class="text-base-content font-mono">{{ debugInfo.environment }}</span>
+      </p>
+      <p class="text-base-content/70 mt-1 text-xs">
+        API:
+        <span class="text-base-content break-all font-mono text-[10px]">{{
+          debugInfo.apiBaseUrl
+        }}</span>
+      </p>
     </div>
 
-    <!-- Services Tab -->
-    <div *ngIf="selectedTab === 'services' && servicesHealth" class="space-y-3">
-      <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-        <div class="mb-3 flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Overall Health</h3>
-          <span
-            class="rounded-full px-2 py-1 text-xs font-semibold uppercase"
-            [ngClass]="{
-              'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400':
-                servicesHealth.overallHealth === 'HEALTHY',
-              'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400':
-                servicesHealth.overallHealth === 'DEGRADED',
-              'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400':
-                servicesHealth.overallHealth === 'UNHEALTHY',
-            }"
-          >
-            {{ servicesHealth.overallHealth }}
-          </span>
-        </div>
-
-        <!-- Services list -->
-        <div class="space-y-2">
-          <div
-            *ngFor="let service of servicesHealth.services | keyvalue"
-            class="flex items-center justify-between"
-          >
-            <span class="text-xs text-gray-600 dark:text-gray-400">{{ service.key }}</span>
-            <div class="flex items-center gap-2">
-              <div
-                class="h-2 w-2 rounded-full"
-                [ngClass]="{
-                  'bg-green-500': getHealthColor(service.value.status) === 'success',
-                  'bg-yellow-500': getHealthColor(service.value.status) === 'warning',
-                  'bg-red-500': getHealthColor(service.value.status) === 'danger',
-                }"
-              ></div>
-              <span
-                class="text-xs font-medium"
-                [ngClass]="{
-                  'text-green-600 dark:text-green-400':
-                    getHealthColor(service.value.status) === 'success',
-                  'text-yellow-600 dark:text-yellow-400':
-                    getHealthColor(service.value.status) === 'warning',
-                  'text-red-600 dark:text-red-400':
-                    getHealthColor(service.value.status) === 'danger',
-                }"
-              >
-                {{ service.value.status }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sync Status -->
-      <div *ngIf="syncStatus" class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-        <h3 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Sync Status</h3>
-        <div class="space-y-2 text-xs">
-          <div class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Status:</span>
-            <span
-              class="font-medium"
-              [ngClass]="{
-                'text-blue-600 dark:text-blue-400': syncStatus.status === 'syncing',
-                'text-green-600 dark:text-green-400': syncStatus.status === 'success',
-                'text-red-600 dark:text-red-400': syncStatus.status === 'error',
-              }"
-            >
-              {{ syncStatus.status }}
-            </span>
-          </div>
-          <div *ngIf="syncStatus.lastSync" class="flex justify-between">
-            <span class="text-gray-600 dark:text-gray-400">Last Sync:</span>
-            <span class="font-mono text-gray-900 dark:text-white">{{
-              syncStatus.lastSync | date: 'short'
-            }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mock Tab -->
-    <div *ngIf="selectedTab === 'mock'" class="space-y-3">
-      <div class="rounded-lg bg-yellow-50 p-3 dark:bg-yellow-900/20">
-        <div class="flex gap-2">
-          <app-icon name="warning" class="text-xl text-yellow-600 dark:text-yellow-400"></app-icon>
-          <p class="text-xs text-yellow-800 dark:text-yellow-200">
-            Mock mode allows testing without real backend services. Enable for development only.
-          </p>
-        </div>
-      </div>
-
-      <!-- Global mock toggle -->
-      <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-semibold text-gray-900 dark:text-white">Mock Mode</p>
-            <p class="text-xs text-gray-600 dark:text-gray-400">Use mock data for all services</p>
-          </div>
-          <ion-toggle
-            [(ngModel)]="mockConfig.enabled"
-            (ionChange)="toggleMockMode($event.detail.checked)"
-          ></ion-toggle>
-        </div>
-      </div>
-
-      <!-- Individual service mocks -->
-      <div class="space-y-2">
-        <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-900 dark:text-white">Appointments</span>
-            <ion-toggle
-              [(ngModel)]="mockConfig.services.appointments"
-              (ionChange)="toggleServiceMock('appointments', $event.detail.checked)"
-            >
-            </ion-toggle>
-          </div>
-        </div>
-
-        <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-900 dark:text-white">Glucose Readings</span>
-            <ion-toggle
-              [(ngModel)]="mockConfig.services.glucoserver"
-              (ionChange)="toggleServiceMock('glucoserver', $event.detail.checked)"
-            >
-            </ion-toggle>
-          </div>
-        </div>
-
-        <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-900 dark:text-white">Authentication</span>
-            <ion-toggle
-              [(ngModel)]="mockConfig.services.auth"
-              (ionChange)="toggleServiceMock('auth', $event.detail.checked)"
-            >
-            </ion-toggle>
-          </div>
-        </div>
-      </div>
-
-      <!-- Mock actions -->
-      <div class="flex gap-2">
-        <ion-button expand="block" fill="outline" size="small" (click)="enableAllMocks()">
-          Enable All
+    <!-- Appointments queue tools -->
+    <div class="bg-base-200 space-y-2 rounded-lg p-3">
+      <h3 class="text-base-content/60 mb-1 text-sm font-semibold">
+        Appointments Queue (Backoffice)
+      </h3>
+      <p class="text-base-content/60 m-0 text-[11px]">
+        Uses admin credentials against the Heroku backoffice API. Intended for dev/testing only.
+      </p>
+      <div class="mt-2 flex flex-col gap-2">
+        <ion-button size="small" expand="block" (click)="devAcceptNextAppointment()">
+          <app-icon name="check" class="mr-1"></app-icon>
+          Accept next pending
         </ion-button>
-        <ion-button expand="block" fill="outline" size="small" (click)="disableAllMocks()">
-          Disable All
+        <ion-button size="small" expand="block" color="warning" (click)="devDenyNextAppointment()">
+          <app-icon name="x" class="mr-1"></app-icon>
+          Deny next pending
         </ion-button>
-      </div>
-
-      <ion-button
-        expand="block"
-        color="danger"
-        fill="outline"
-        size="small"
-        (click)="clearMockData()"
-        class="inline-flex items-center gap-2"
-      >
-        <app-icon name="trash-outline"></app-icon>
-        Clear Mock Data
-      </ion-button>
-    </div>
-
-    <!-- Storage Tab -->
-    <div *ngIf="selectedTab === 'storage' && storageStats" class="space-y-3">
-      <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-        <h3 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-          Storage Statistics
-        </h3>
-        <div class="space-y-3">
-          <div>
-            <div class="mb-1 flex justify-between text-xs">
-              <span class="text-gray-600 dark:text-gray-400">Readings</span>
-              <span class="font-mono font-semibold text-gray-900 dark:text-white">{{
-                storageStats.readings
-              }}</span>
-            </div>
-            <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-              <div
-                class="bg-primary h-full rounded-full"
-                [style.width.%]="(storageStats.readings / 1000) * 100"
-              ></div>
-            </div>
-          </div>
-
-          <div>
-            <div class="mb-1 flex justify-between text-xs">
-              <span class="text-gray-600 dark:text-gray-400">Sync Queue</span>
-              <span class="font-mono font-semibold text-gray-900 dark:text-white">{{
-                storageStats.syncQueue
-              }}</span>
-            </div>
-            <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-              <div
-                class="h-full rounded-full bg-yellow-500"
-                [style.width.%]="(storageStats.syncQueue / 50) * 100"
-              ></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <ion-button
-        expand="block"
-        color="warning"
-        fill="outline"
-        size="small"
-        (click)="clearReadings()"
-        class="inline-flex items-center gap-2"
-      >
-        <app-icon name="trash-outline"></app-icon>
-        Clear Readings
-      </ion-button>
-
-      <ion-button
-        expand="block"
-        color="warning"
-        fill="outline"
-        size="small"
-        (click)="clearPreferences()"
-        class="inline-flex items-center gap-2"
-      >
-        <app-icon name="trash-outline"></app-icon>
-        Clear Preferences
-      </ion-button>
-    </div>
-
-    <!-- Actions Tab -->
-    <div *ngIf="selectedTab === 'actions'" class="space-y-3">
-      <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-        <h3 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-          Backend URL Override
-        </h3>
-        <ion-input
-          [(ngModel)]="customBackendUrl"
-          placeholder="https://api.example.com"
-          class="mb-2 rounded border border-gray-200 dark:border-gray-700"
+        <ion-button
+          size="small"
+          expand="block"
+          color="danger"
+          fill="outline"
+          (click)="devClearAppointmentQueue()"
         >
-        </ion-input>
-        <div class="flex gap-2">
-          <ion-button expand="block" size="small" (click)="saveCustomBackendUrl()">
-            Save URL
-          </ion-button>
-          <ion-button expand="block" fill="outline" size="small" (click)="clearCustomBackendUrl()">
-            Clear
-          </ion-button>
-        </div>
+          <app-icon name="trash-2" class="mr-1"></app-icon>
+          Clear entire queue
+        </ion-button>
       </div>
+    </div>
 
-      <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-        <h3 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-          Account State Simulation
-        </h3>
-        <div class="flex gap-2">
-          <ion-button
-            expand="block"
-            size="small"
-            color="success"
-            (click)="simulateAccountState('active')"
-          >
-            Active
-          </ion-button>
-          <ion-button
-            expand="block"
-            size="small"
-            color="warning"
-            (click)="simulateAccountState('pending')"
-          >
-            Pending
-          </ion-button>
-          <ion-button
-            expand="block"
-            size="small"
-            color="danger"
-            (click)="simulateAccountState('disabled')"
-          >
-            Disabled
-          </ion-button>
-        </div>
-      </div>
+    <!-- User tools -->
+    <div class="bg-base-200 space-y-2 rounded-lg p-3">
+      <h3 class="text-base-content/60 mb-1 text-sm font-semibold">Users & Resolutions</h3>
+      <p class="text-base-content/60 m-0 text-[11px]">
+        Create a test patient user via the main API gateway, or a sample resolution in the
+        backoffice for a specific appointment.
+      </p>
+      <ion-button size="small" expand="block" (click)="devCreateTestUser()">
+        <app-icon name="user-plus" class="mr-1"></app-icon>
+        Create test user
+      </ion-button>
+      <ion-button size="small" expand="block" fill="outline" (click)="devCreateResolution()">
+        <app-icon name="file-plus" class="mr-1"></app-icon>
+        Create resolution for appointment
+      </ion-button>
+    </div>
 
-      <div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-        <h3 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Sync Actions</h3>
+    <!-- Local data tools -->
+    <div
+      class="rounded-lg border-2 border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20"
+    >
+      <h3 class="mb-2 text-sm font-semibold text-red-900 dark:text-red-200">Local Danger Zone</h3>
+      <p class="mb-3 text-xs text-red-700 dark:text-red-300">
+        These actions only affect local data on this device (IndexedDB + Preferences).
+      </p>
+      <div class="flex flex-col gap-2">
         <ion-button
           expand="block"
+          color="warning"
           size="small"
-          (click)="forceSync()"
+          fill="outline"
+          (click)="clearReadings()"
           class="inline-flex items-center gap-2"
         >
-          <app-icon name="sync-outline"></app-icon>
-          Force Sync
+          <app-icon name="trash-outline"></app-icon>
+          Clear local readings
         </ion-button>
-      </div>
-
-      <div
-        class="rounded-lg border-2 border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20"
-      >
-        <h3 class="mb-2 text-sm font-semibold text-red-900 dark:text-red-200">Danger Zone</h3>
-        <p class="mb-3 text-xs text-red-700 dark:text-red-300">These actions cannot be undone!</p>
+        <ion-button
+          expand="block"
+          color="warning"
+          size="small"
+          fill="outline"
+          (click)="clearPreferences()"
+          class="inline-flex items-center gap-2"
+        >
+          <app-icon name="trash-outline"></app-icon>
+          Clear preferences
+        </ion-button>
         <ion-button
           expand="block"
           color="danger"
@@ -460,7 +139,7 @@
           class="inline-flex items-center gap-2"
         >
           <app-icon name="nuclear-outline"></app-icon>
-          Clear All Data
+          Clear ALL local data
         </ion-button>
       </div>
     </div>

@@ -1,41 +1,120 @@
 {
   "extends": [
     "stylelint-config-standard-scss",
-    "stylelint-config-tailwindcss"
+    "stylelint-config-tailwindcss",
+    "stylelint-config-clean-order"
+  ],
+  "plugins": [
+    "stylelint-order",
+    "stylelint-declaration-strict-value",
+    "stylelint-no-unsupported-browser-features"
   ],
   "rules": {
     "declaration-no-important": true,
     "color-no-hex": null,
-    "function-no-unknown": [true, {
-      "ignoreFunctions": ["theme", "var"]
-    }],
-    "scss/at-rule-no-unknown": [true, {
-      "ignoreAtRules": ["tailwind", "theme", "import", "keyframes", "plugin", "custom-variant", "layer"]
-    }],
+    "function-no-unknown": [
+      true,
+      {
+        "ignoreFunctions": ["theme", "var"]
+      }
+    ],
+    "scss/at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": [
+          "tailwind",
+          "theme",
+          "import",
+          "keyframes",
+          "plugin",
+          "custom-variant",
+          "layer",
+          "use"
+        ]
+      }
+    ],
     "selector-class-pattern": null,
     "custom-property-pattern": null,
-    "at-rule-no-unknown": [true, {
-      "ignoreAtRules": ["tailwind", "theme", "import", "keyframes", "plugin", "custom-variant", "layer"]
-    }],
+    "at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": [
+          "tailwind",
+          "theme",
+          "import",
+          "keyframes",
+          "plugin",
+          "custom-variant",
+          "layer",
+          "use"
+        ]
+      }
+    ],
     "no-invalid-position-at-import-rule": null,
-    "max-nesting-depth": [2, {
-      "message": "CSS Pro: Keep nesting ≤2 levels to prevent specificity conflicts",
-      "ignore": ["blockless-at-rules", "pseudo-classes"]
-    }],
+    "max-nesting-depth": [
+      3,
+      {
+        "ignore": ["blockless-at-rules", "pseudo-classes"],
+        "message": "CSS Pro: Keep nesting \u22643 levels to prevent specificity conflicts"
+      }
+    ],
     "selector-max-specificity": null,
     "color-function-notation": "modern",
     "alpha-value-notation": "percentage",
     "font-family-name-quotes": "always-unless-keyword",
-    "comment-empty-line-before": ["always", {
-      "except": ["first-nested"],
-      "ignore": ["stylelint-commands"]
-    }]
+    "comment-empty-line-before": [
+      "always",
+      {
+        "except": ["first-nested"],
+        "ignore": ["stylelint-commands"]
+      }
+    ],
+    "order/properties-order": null,
+    "scale-unlimited/declaration-strict-value": [
+      ["/^color$/", "background-color", "border-color", "outline-color", "box-shadow", "z-index"],
+      {
+        "ignoreKeywords": [
+          "auto",
+          "inherit",
+          "initial",
+          "unset",
+          "transparent",
+          "currentColor",
+          "none"
+        ],
+        "message": "Use design tokens or CSS variables instead of raw values for {{property}}."
+      }
+    ],
+    "plugin/no-unsupported-browser-features": [
+      true,
+      {
+        "severity": "warning",
+        "ignorePartialSupport": true
+      }
+    ],
+    "selector-pseudo-element-no-unknown": [
+      true,
+      {
+        "ignorePseudoElements": ["ng-deep"]
+      }
+    ],
+    "no-descending-specificity": null,
+    "keyframes-name-pattern": "[a-z0-9-]+"
   },
   "ignoreFiles": [
     "node_modules/**/*",
     "dist/**/*",
     "coverage/**/*",
     "www/**/*",
-    ".angular/**/*"
+    ".angular/**/*",
+    "src/assets/**/*"
+  ],
+  "overrides": [
+    {
+      "files": ["src/global.css"],
+      "rules": {
+        "scale-unlimited/declaration-strict-value": null
+      }
+    }
   ]
 }

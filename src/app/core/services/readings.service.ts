@@ -193,7 +193,7 @@ export class ReadingsService {
     const startTime = startDate.toISOString();
     const endTime = endDate.toISOString();
 
-    let query = this.db.readings.where('time').between(startTime, endTime, true, true);
+    const query = this.db.readings.where('time').between(startTime, endTime, true, true);
 
     const readings = await query.toArray();
 

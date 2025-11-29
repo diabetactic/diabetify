@@ -23,6 +23,27 @@ import { environment } from '../../../environments/environment';
 @Injectable({
   providedIn: 'root',
 })
+/**
+ * Mock Adapter Service
+ *
+ * Provides a reversible toggle between real and mock backend services.
+ * This layer allows easy switching between production APIs and demo data
+ * for testing, development, and offline scenarios.
+ *
+ * Pattern: Adapter / Interceptor
+ * Behavior:
+ * - Intercepts calls from ApiGatewayService when mock mode is enabled.
+ * - Simulates network latency via `delay()`.
+ * - Persists state in `localStorage` to simulate a persistent database across reloads.
+ * - Generates initial seed data using `DemoDataService` (Faker).
+ *
+ * REVERSION INSTRUCTIONS:
+ * To remove this adapter and restore original behavior:
+ * 1. Delete this file: src/app/core/services/mock-adapter.service.ts
+ * 2. Delete config: src/app/core/config/mock-adapter-config.ts
+ * 3. Remove any service imports of MockAdapterService
+ * 4. Restore original service implementations
+ */
 export class MockAdapterService {
   private readonly STORAGE_KEY = 'diabetactic_use_mock_backend';
   private readonly READINGS_STORAGE_KEY = 'diabetactic_mock_readings';
@@ -53,7 +74,8 @@ export class MockAdapterService {
   }
 
   /**
-   * Initialize mock data in localStorage if not present
+   * Initialize mock data in localStorage if not present.
+   * Generates random readings, appointments, and a user profile using Faker.
    */
   private async initializeMockData(): Promise<void> {
     if (!localStorage.getItem(this.READINGS_STORAGE_KEY)) {
@@ -73,14 +95,18 @@ export class MockAdapterService {
   }
 
   /**
-   * Simulate network delay
+   * Simulate network delay for mock operations.
+   * @param value - The value to resolve after the delay.
+   * @returns Promise resolving to the value.
    */
   private delay<T>(value: T): Promise<T> {
     return new Promise(resolve => setTimeout(() => resolve(value), this.NETWORK_DELAY));
   }
 
   /**
-   * Enable or disable mock backend globally
+   * Enable or disable mock backend globally.
+   * Persists the preference.
+   * @param enabled - True to enable mocks.
    */
   useMockBackend(enabled: boolean): void {
     this.config.enabled = enabled;
@@ -88,14 +114,16 @@ export class MockAdapterService {
   }
 
   /**
-   * Check if mock backend is currently enabled
+   * Check if mock backend is currently enabled globally.
    */
   isMockEnabled(): boolean {
     return this.config.enabled;
   }
 
   /**
-   * Enable/disable mock for a specific service
+   * Enable/disable mock for a specific service family.
+   * @param service - Service identifier ('appointments' | 'glucoserver' | 'auth').
+   * @param enabled - True to enable.
    */
   setServiceMockEnabled(service: 'appointments' | 'glucoserver' | 'auth', enabled: boolean): void {
     this.config.services[service] = enabled;
@@ -103,21 +131,22 @@ export class MockAdapterService {
   }
 
   /**
-   * Check if mock is enabled for a specific service
+   * Check if mock is enabled for a specific service.
+   * Returns true only if BOTH global mocks are enabled AND the specific service is enabled.
    */
   isServiceMockEnabled(service: 'appointments' | 'glucoserver' | 'auth'): boolean {
     return this.config.enabled && this.config.services[service];
   }
 
   /**
-   * Get current configuration
+   * Get current configuration object.
    */
   getConfig(): MockAdapterConfig {
     return { ...this.config };
   }
 
   /**
-   * Reset to default configuration
+   * Reset to default configuration based on environment.
    */
   resetConfig(): void {
     this.config = this.getDefaultConfig();
@@ -127,7 +156,12 @@ export class MockAdapterService {
   // ==================== MOCK IMPLEMENTATIONS ====================
 
   /**
-   * Mock: Get all glucose readings (paginated)
+   * Mock: Get all glucose readings (paginated).
+   * Reads from localStorage, sorts by date descending, and applies pagination.
+   *
+   * @param offset - Pagination offset.
+   * @param limit - Max items to return.
+   * @returns Promise<PaginatedReadings>
    */
   async mockGetAllReadings(offset = 0, limit = 100): Promise<PaginatedReadings> {
     const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
@@ -146,7 +180,11 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Add a glucose reading
+   * Mock: Add a glucose reading.
+   * Generates a local ID, marks as unsynced, saves to localStorage.
+   *
+   * @param reading - Reading data without ID.
+   * @returns Promise<LocalGlucoseReading> - The created reading with ID.
    */
   async mockAddReading(reading: Omit<LocalGlucoseReading, 'id'>): Promise<LocalGlucoseReading> {
     const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
@@ -167,7 +205,8 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Update a glucose reading
+   * Mock: Update a glucose reading.
+   * Finds reading by ID in localStorage and updates it.
    */
   async mockUpdateReading(
     id: string,
@@ -188,7 +227,8 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Delete a glucose reading
+   * Mock: Delete a glucose reading.
+   * Removes reading from localStorage.
    */
   async mockDeleteReading(id: string): Promise<void> {
     const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
@@ -201,7 +241,7 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Get reading by ID
+   * Mock: Get reading by ID.
    */
   async mockGetReadingById(id: string): Promise<LocalGlucoseReading> {
     const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
@@ -216,7 +256,9 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Sync readings to server
+   * Mock: Sync readings to server.
+   * Simulates a sync process by marking all unsynced items in localStorage as synced.
+   * Adds artificial delay.
    */
   async mockSyncReadings(): Promise<{ synced: number; failed: number }> {
     const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
@@ -248,7 +290,9 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Authenticate user
+   * Mock: Authenticate user.
+   * Validates against hardcoded demo credentials.
+   * Returns a mock JWT token and user profile.
    */
   async mockLogin(
     emailOrDni: string,
@@ -279,7 +323,8 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Register user
+   * Mock: Register user.
+   * Creates a new profile in localStorage with default preferences.
    */
   async mockRegister(userData: {
     dni: string;
@@ -327,7 +372,8 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Logout user
+   * Mock: Logout user.
+   * Removes mock token.
    */
   async mockLogout(): Promise<void> {
     localStorage.removeItem('diabetactic_mock_token');
@@ -335,7 +381,8 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Get current user profile (using faker)
+   * Mock: Get current user profile.
+   * Uses stored profile or generates a new one via Faker if missing.
    */
   async mockGetProfile(): Promise<UserProfile> {
     const stored = localStorage.getItem(this.PROFILE_STORAGE_KEY);
@@ -402,7 +449,8 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Update user profile
+   * Mock: Update user profile.
+   * Merges updates into stored profile.
    */
   async mockUpdateProfile(updates: Partial<UserProfile>): Promise<UserProfile> {
     const stored = localStorage.getItem(this.PROFILE_STORAGE_KEY);
@@ -422,7 +470,8 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Verify token
+   * Mock: Verify token.
+   * Simply checks for 'mock_token_' prefix.
    */
   async mockVerifyToken(token: string): Promise<boolean> {
     // In mock mode, always accept tokens starting with 'mock_token_'
@@ -430,7 +479,8 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Refresh auth token
+   * Mock: Refresh auth token.
+   * Issues a new token if old one is valid.
    */
   async mockRefreshToken(oldToken: string): Promise<string> {
     if (await this.mockVerifyToken(oldToken)) {
@@ -442,7 +492,9 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Get glucose statistics
+   * Mock: Get glucose statistics.
+   * Calculates simple stats (average, in-range) from local storage readings.
+   * @param days - Lookback window in days.
    */
   async mockGetStatistics(days: number = 30): Promise<any> {
     const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
@@ -482,7 +534,8 @@ export class MockAdapterService {
   }
 
   /**
-   * Clear all mock data (useful for testing/reset)
+   * Clear all mock data (useful for testing/reset).
+   * Removes all app-specific keys from localStorage.
    */
   clearAllMockData(): void {
     localStorage.removeItem(this.READINGS_STORAGE_KEY);
@@ -513,12 +566,12 @@ export class MockAdapterService {
       config = this.getDefaultConfig();
     }
 
-    // When talking to real backends (local Docker or production),
+    // When talking to real backends (local Docker, cloud/Heroku, or production),
     // force mocks off so the app uses real services.
     const backendMode = (environment as any).backendMode as string | undefined;
     const isProd = !!(environment as any).production;
 
-    if (isProd || backendMode === 'local') {
+    if (isProd || backendMode === 'local' || backendMode === 'cloud') {
       config.enabled = false;
       config.services.appointments = false;
       config.services.glucoserver = false;
@@ -540,8 +593,8 @@ export class MockAdapterService {
     const backendMode = (environment as any).backendMode as string | undefined;
     const isProd = !!(environment as any).production;
 
-    // For production and local Docker environments we default to REAL backends.
-    if (isProd || backendMode === 'local') {
+    // For production, cloud/Heroku, and local Docker environments we default to REAL backends.
+    if (isProd || backendMode === 'local' || backendMode === 'cloud') {
       return {
         enabled: false,
         services: {
@@ -552,7 +605,7 @@ export class MockAdapterService {
       };
     }
 
-    // For cloud/mock dev environments, keep mocks enabled by default.
+    // For explicit mock dev environments only, keep mocks enabled by default.
     return {
       enabled: true,
       services: {

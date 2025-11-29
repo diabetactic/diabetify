@@ -79,3 +79,41 @@ export type InsulinType = (typeof INSULIN_TYPES)[number];
 export const PUMP_TYPES = ['medtronic', 'omnipod', 'tandem', 'none', 'other'] as const;
 
 export type PumpType = (typeof PUMP_TYPES)[number];
+
+/**
+ * Appointment queue states
+ * CREATED: User has created an appointment (after being ACCEPTED)
+ */
+export const QUEUE_STATES = ['PENDING', 'ACCEPTED', 'DENIED', 'CREATED', 'NONE'] as const;
+
+export type AppointmentQueueState = (typeof QUEUE_STATES)[number];
+
+/**
+ * Response from GET /appointments/state
+ */
+export interface AppointmentQueueStateResponse {
+  state: AppointmentQueueState;
+  position?: number;
+  message?: string;
+}
+
+/**
+ * Response from POST /appointments/submit
+ */
+export interface AppointmentSubmitResponse {
+  success: boolean;
+  state: AppointmentQueueState;
+  position?: number;
+  message?: string;
+}
+
+/**
+ * Response from GET /appointments/{id}/resolution
+ */
+export interface AppointmentResolutionResponse {
+  appointment_id: number;
+  state: AppointmentQueueState;
+  resolved_at?: string;
+  resolved_by?: string;
+  notes?: string;
+}
