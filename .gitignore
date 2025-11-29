@@ -231,6 +231,19 @@ src/assets/images/*tt.png
 # AI/Agent instructions
 .github/instructions/
 
+# Jest cache
+.jest-cache/
+
+# AI tool directories
+.maestro-tests/
+configs/
+skills/
+
+# Temp files
+*.apk
+server.pid
+prpm.lock
+
 # npm cache in wrong locations
 **/.npm-cache/
 .vercel
