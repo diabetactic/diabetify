@@ -1,7 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { LoadingController, ToastController, AlertController, IonicModule } from '@ionic/angular';
+import { LoadingController, ToastController, AlertController } from '@ionic/angular';
+import {
+  IonContent,
+  IonItem,
+  IonIcon,
+  IonInput,
+  IonButton,
+  IonCheckbox,
+  IonLabel,
+  IonSpinner,
+} from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -15,9 +25,17 @@ import { TranslateModule } from '@ngx-translate/core';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    IonicModule,
     RouterModule,
     TranslateModule,
+    // Ionic standalone components
+    IonContent,
+    IonItem,
+    IonIcon,
+    IonInput,
+    IonButton,
+    IonCheckbox,
+    IonLabel,
+    IonSpinner,
   ],
 })
 export class RegisterPage implements OnInit {

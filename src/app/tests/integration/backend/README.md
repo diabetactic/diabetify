@@ -9,6 +9,7 @@ This directory contains integration tests for backend services.
 Comprehensive integration tests for the Appointments backend service.
 
 **Test Coverage:**
+
 - ✅ Create new appointment via API (POST /appointments/enqueue)
 - ✅ Fetch user appointments (GET /appointments/me)
 - ✅ Include clinical form data with JSONB field
@@ -19,6 +20,7 @@ Comprehensive integration tests for the Appointments backend service.
 - ✅ Large clinical form data handling
 
 **Requirements:**
+
 - Backend services must be running (appointments on port 8005, login on port 8003)
 - Test user credentials configured in backend-services.helper.ts
 - Authentication token obtained before tests
@@ -37,22 +39,22 @@ npm run test -- --include='**/appointments-backend.spec.ts'
 
 ```typescript
 interface TestAppointment {
-  date: string;                    // ISO date format
-  time: string;                    // HH:MM format
-  patientId: string;               // User DNI
+  date: string; // ISO date format
+  time: string; // HH:MM format
+  patientId: string; // User DNI
   patientName: string;
   doctorId: string;
   doctorName: string;
   specialty: string;
-  type: string;                    // 'consultation', 'follow-up'
-  location: string;                // 'Virtual', 'Clinic', 'Hospital'
-  status: string;                  // 'pending', 'accepted', 'rejected'
+  type: string; // 'consultation', 'follow-up'
+  location: string; // 'Virtual', 'Clinic', 'Hospital'
+  status: string; // 'pending', 'accepted', 'rejected'
   reason: string;
   notes?: string;
   clinical_form?: {
     symptoms: string[];
     glucose_avg?: number;
-    [key: string]: any;            // JSONB field - flexible structure
+    [key: string]: any; // JSONB field - flexible structure
   };
 }
 ```
@@ -60,12 +62,14 @@ interface TestAppointment {
 **Memory Context:**
 
 Tests use memory storage from backend-services.helper.ts:
+
 - Namespace: "integration-tests"
 - Keys: "test-user-credentials", "service-ports"
 
 **Helper Functions:**
 
 From `backend-services.helper.ts`:
+
 - `waitForBackendServices()` - Wait for services to be healthy
 - `loginTestUser()` - Authenticate test user
 - `authenticatedPost()` - Make authenticated POST request

@@ -67,11 +67,7 @@ describe('Diabetactic App E2E Tests', () => {
       const initialLocation = await content.getLocation();
 
       // Perform pull gesture
-      await browser.actions()
-        .mouseDown(content)
-        .mouseMove({ x: 0, y: 150 })
-        .mouseUp()
-        .perform();
+      await browser.actions().mouseDown(content).mouseMove({ x: 0, y: 150 }).mouseUp().perform();
 
       // Wait for refresh to complete
       await browser.sleep(1000);
@@ -292,7 +288,7 @@ describe('Diabetactic App E2E Tests', () => {
 
     it('should support infinite scroll', async () => {
       // Get initial count
-      let initialReadings = await element.all(by.css('app-reading-item'));
+      const initialReadings = await element.all(by.css('app-reading-item'));
       const initialCount = initialReadings.length;
 
       if (initialCount > 0) {
@@ -392,7 +388,7 @@ describe('Diabetactic App E2E Tests', () => {
     it('should have proper ARIA labels', async () => {
       const buttons = await element.all(by.css('ion-button'));
 
-      for (let button of buttons) {
+      for (const button of buttons) {
         const ariaLabel = await button.getAttribute('aria-label');
         const text = await button.getText();
         expect(ariaLabel || text).toBeTruthy();
@@ -416,7 +412,7 @@ describe('Diabetactic App E2E Tests', () => {
       // For now, we just check that important text elements exist
       const headings = await element.all(by.css('h1, h2, h3, ion-title'));
 
-      for (let heading of headings) {
+      for (const heading of headings) {
         const color = await heading.getCssValue('color');
         expect(color).toBeTruthy();
       }

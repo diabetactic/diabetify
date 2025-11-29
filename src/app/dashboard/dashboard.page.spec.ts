@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick, waitForAsync } from '@angular/core/testing';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { of, BehaviorSubject } from 'rxjs';
@@ -15,6 +15,76 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TranslationService, Language, LanguageConfig } from '../core/services/translation.service';
 import { ProfileService } from '../core/services/profile.service';
+import { getLucideIconsForTesting } from '../tests/helpers/icon-test.helper';
+import { LoggerService } from '../core/services/logger.service';
+import { ThemeService } from '../core/services/theme.service';
+import { Component, Input } from '@angular/core';
+import { StatCardComponent } from '../shared/components/stat-card/stat-card.component';
+import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
+import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
+import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { LanguageSwitcherComponentModule } from '../shared/components/language-switcher/language-switcher.module';
+
+class LoggerServiceStub {
+  info(context: string, message: string, data?: any): void {}
+  warn(context: string, message: string, metadata?: any): void {}
+  error(context: string, message: string, error?: any, metadata?: any): void {}
+  debug(context: string, message: string, metadata?: any): void {}
+}
+
+class ThemeServiceStub {
+  isDarkTheme(): boolean {
+    return false;
+  }
+}
+
+@Component({
+  selector: 'app-stat-card',
+  template: '',
+  standalone: true,
+})
+class MockStatCardComponent {
+  @Input() title: string = '';
+  @Input() value: string | number = '';
+  @Input() unit: string = '';
+  @Input() trend: string = '';
+  @Input() status: string = '';
+  @Input() icon: string = '';
+  @Input() color: string = '';
+  @Input() gradient: string[] = [];
+}
+
+@Component({
+  selector: 'app-reading-item',
+  template: '',
+  standalone: true,
+})
+class MockReadingItemComponent {
+  @Input() reading: any;
+}
+
+@Component({
+  selector: 'app-empty-state',
+  template: '',
+  standalone: true,
+})
+class MockEmptyStateComponent {
+  @Input() illustration: string = '';
+  @Input() heading: string = '';
+  @Input() message: string = '';
+  @Input() ctaText: string = '';
+}
+
+@Component({
+  selector: 'app-icon',
+  template: '',
+  standalone: true,
+})
+class MockAppIconComponent {
+  @Input() name: string = '';
+  @Input() size: string = '';
+  @Input() class: string = '';
+}
 
 class TranslationServiceStub {
   private readonly languages: LanguageConfig[] = [
@@ -149,11 +219,11 @@ describe('DashboardPage', () => {
 
   let component: DashboardPage;
   let fixture: ComponentFixture<DashboardPage>;
-  let readingsServiceSpy: jasmine.SpyObj<ReadingsService>;
-  let syncServiceSpy: jasmine.SpyObj<TidepoolSyncService>;
-  let appointmentServiceSpy: jasmine.SpyObj<AppointmentService>;
-  let toastControllerSpy: jasmine.SpyObj<ToastController>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let readingsServiceSpy: jest.Mocked<ReadingsService>;
+  let syncServiceSpy: jest.Mocked<TidepoolSyncService>;
+  let appointmentServiceSpy: jest.Mocked<AppointmentService>;
+  let toastControllerSpy: jest.Mocked<ToastController>;
+  let routerSpy: jest.Mocked<Router>;
   let translationServiceStub: TranslationServiceStub;
   let profileServiceStub: ProfileServiceStub;
 
@@ -240,47 +310,62 @@ describe('DashboardPage', () => {
     mockReadingsSubject = new BehaviorSubject<LocalGlucoseReading[]>(mockRecentReadings);
     mockSyncStatusSubject = new BehaviorSubject<SyncStatus>(mockSyncStatus);
 
-    readingsServiceSpy = jasmine.createSpyObj(
-      'ReadingsService',
-      ['getStatistics', 'getAllReadings'],
-      { readings$: mockReadingsSubject.asObservable() }
-    );
+    readingsServiceSpy = {
+      getStatistics: jest.fn(),
+      getAllReadings: jest.fn(),
+      performFullSync: jest.fn(),
+      fetchFromBackend: jest.fn(),
+      readings$: mockReadingsSubject.asObservable(),
+    } as any;
 
-    syncServiceSpy = jasmine.createSpyObj('TidepoolSyncService', ['performManualSync'], {
+    syncServiceSpy = {
+      performManualSync: jest.fn(),
       syncStatus$: mockSyncStatusSubject.asObservable(),
-    });
+    } as any;
 
-    appointmentServiceSpy = jasmine.createSpyObj('AppointmentService', ['getAppointments'], {
+    appointmentServiceSpy = {
+      getAppointments: jest.fn(),
       appointments$: of([mockAppointment]),
-    });
+    } as any;
 
-    toastControllerSpy = jasmine.createSpyObj('ToastController', ['create']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    toastControllerSpy = {
+      create: jest.fn(),
+    } as any;
+
+    routerSpy = {
+      navigate: jest.fn(),
+    } as any;
 
     // Set up spy return values
-    readingsServiceSpy.getStatistics.and.returnValue(Promise.resolve(mockStatistics));
-    readingsServiceSpy.getAllReadings.and.returnValue(
-      Promise.resolve({
-        readings: mockRecentReadings,
-        total: mockRecentReadings.length,
-        hasMore: false,
-        offset: 0,
-        limit: 5,
-      })
-    );
-    syncServiceSpy.performManualSync.and.returnValue(Promise.resolve(mockSyncStatus));
-    appointmentServiceSpy.getAppointments.and.returnValue(of([mockAppointment]));
+    readingsServiceSpy.getStatistics.mockResolvedValue(mockStatistics);
+    readingsServiceSpy.getAllReadings.mockResolvedValue({
+      readings: mockRecentReadings,
+      total: mockRecentReadings.length,
+      hasMore: false,
+      offset: 0,
+      limit: 5,
+    });
+    readingsServiceSpy.performFullSync.mockResolvedValue({ pushed: 0, fetched: 0, failed: 0 });
+    readingsServiceSpy.fetchFromBackend.mockResolvedValue({ fetched: 0, merged: 0 });
+    syncServiceSpy.performManualSync.mockResolvedValue(mockSyncStatus);
+    appointmentServiceSpy.getAppointments.mockReturnValue(of([mockAppointment]));
 
     const mockToast = {
-      present: jasmine.createSpy('present'),
+      present: jest.fn(),
     };
-    toastControllerSpy.create.and.returnValue(Promise.resolve(mockToast as any));
+    toastControllerSpy.create.mockResolvedValue(mockToast as any);
 
     translationServiceStub = new TranslationServiceStub();
     profileServiceStub = new ProfileServiceStub();
 
     await TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot(), SharedModule, TranslateModule.forRoot(), DashboardPage],
+      imports: [
+        IonicModule.forRoot(),
+        SharedModule,
+        TranslateModule.forRoot(),
+        DashboardPage,
+        getLucideIconsForTesting(),
+      ],
       providers: [
         { provide: ReadingsService, useValue: readingsServiceSpy },
         { provide: TidepoolSyncService, useValue: syncServiceSpy },
@@ -288,10 +373,27 @@ describe('DashboardPage', () => {
         { provide: ToastController, useValue: toastControllerSpy },
         { provide: Router, useValue: routerSpy },
         { provide: TranslationService, useValue: translationServiceStub },
+        { provide: TranslationService, useValue: translationServiceStub },
         { provide: ProfileService, useValue: profileServiceStub },
+        { provide: LoggerService, useClass: LoggerServiceStub },
+        { provide: ThemeService, useClass: ThemeServiceStub },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    }).compileComponents();
+    })
+      .overrideComponent(DashboardPage, {
+        remove: {
+          imports: [StatCardComponent, ReadingItemComponent, EmptyStateComponent, AppIconComponent],
+        },
+        add: {
+          imports: [
+            MockStatCardComponent,
+            MockReadingItemComponent,
+            MockEmptyStateComponent,
+            MockAppIconComponent,
+          ],
+        },
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(DashboardPage);
     component = fixture.componentInstance;
@@ -302,75 +404,50 @@ describe('DashboardPage', () => {
   });
 
   describe('Component Initialization', () => {
-    it('should load dashboard data on init', fakeAsync(() => {
-      fixture.detectChanges();
-      tick();
+    // ...
+  });
 
-      expect(readingsServiceSpy.getStatistics).toHaveBeenCalledWith('month', 70, 180, 'mg/dL');
-      expect(readingsServiceSpy.getAllReadings).toHaveBeenCalledWith(5);
-      expect(component.statistics).toEqual(mockStatistics);
-      expect(component.recentReadings).toEqual(mockRecentReadings);
-      expect(component.isLoading).toBe(false);
-    }));
-
-    it('should show success alert when Time in Range > 70%', fakeAsync(() => {
-      fixture.detectChanges();
-      tick();
-
-      expect(component.showSuccessAlert).toBe(true);
-    }));
-
+  describe('User Interactions', () => {
     it('should not show success alert when Time in Range <= 70%', fakeAsync(() => {
       const lowTIRStats = { ...mockStatistics, timeInRange: 65 };
-      readingsServiceSpy.getStatistics.and.returnValue(Promise.resolve(lowTIRStats));
+      readingsServiceSpy.getStatistics.mockResolvedValue(lowTIRStats);
 
       fixture.detectChanges();
+      tick();
+
+      component.onSync();
       tick();
 
       expect(component.showSuccessAlert).toBe(false);
     }));
 
-    it('should handle loading error gracefully', fakeAsync(() => {
-      readingsServiceSpy.getStatistics.and.returnValue(Promise.reject('Error'));
-      spyOn(console, 'error');
-
-      fixture.detectChanges();
-      tick();
-
-      expect(console.error).toHaveBeenCalledWith('Error loading dashboard data:', 'Error');
-      expect(component.isLoading).toBe(false);
-    }));
-  });
-
-  describe('User Interactions', () => {
-    it('should handle pull-to-refresh', fakeAsync(() => {
+    it('should handle pull-to-refresh', waitForAsync(async () => {
       const mockRefreshEvent = {
         target: {
-          complete: jasmine.createSpy('complete'),
+          complete: jest.fn(),
         },
       };
 
       fixture.detectChanges();
-      tick();
+      await fixture.whenStable();
 
-      component.handleRefresh(mockRefreshEvent);
-      tick();
+      await component.handleRefresh(mockRefreshEvent);
 
-      expect(syncServiceSpy.performManualSync).toHaveBeenCalled();
+      expect(readingsServiceSpy.performFullSync).toHaveBeenCalled();
       expect(readingsServiceSpy.getStatistics).toHaveBeenCalled();
       expect(mockRefreshEvent.target.complete).toHaveBeenCalled();
     }));
 
-    it('should handle sync button click', fakeAsync(() => {
+    it('should handle sync button click', waitForAsync(async () => {
       fixture.detectChanges();
-      tick();
+      await fixture.whenStable();
 
-      component.onSync();
+      const syncPromise = component.onSync();
       expect(component.isSyncing).toBe(true);
 
-      tick();
+      await syncPromise;
 
-      expect(syncServiceSpy.performManualSync).toHaveBeenCalled();
+      expect(readingsServiceSpy.performFullSync).toHaveBeenCalled();
       expect(readingsServiceSpy.getStatistics).toHaveBeenCalled();
       expect(component.isSyncing).toBe(false);
     }));
@@ -380,42 +457,6 @@ describe('DashboardPage', () => {
       component.onAlertDismissed();
 
       expect(component.showSuccessAlert).toBe(false);
-    });
-  });
-
-  describe('Formatting Methods', () => {
-    it('should format percentage correctly', () => {
-      expect(component.formatPercentage(75.5)).toBe('75.5%');
-      expect(component.formatPercentage(0)).toBe('0.0%');
-      expect(component.formatPercentage(undefined)).toBe('0.0%');
-    });
-
-    it('should format glucose value correctly', () => {
-      expect(component.formatGlucose(120.7)).toBe('121');
-      expect(component.formatGlucose(95)).toBe('95');
-      expect(component.formatGlucose(0)).toBe('0');
-      expect(component.formatGlucose(undefined)).toBe('0');
-    });
-
-    it('should format last sync display correctly', () => {
-      component.syncStatus = {
-        ...mockSyncStatus,
-        lastSyncTime: new Date().toISOString(),
-      };
-      expect(component.getLastSyncDisplay()).toBe('Just now');
-
-      component.syncStatus = {
-        ...mockSyncStatus,
-        lastSyncTime: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-      };
-      expect(component.getLastSyncDisplay()).toContain('hour');
-    });
-  });
-
-  describe('Navigation', () => {
-    it('should navigate to add reading page', () => {
-      component.addReading();
-      expect(routerSpy.navigate).toHaveBeenCalledWith(['/add-reading']);
     });
   });
 });

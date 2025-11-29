@@ -5,8 +5,8 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="account-pending-content">
-  <div class="card bg-base-100 mx-auto w-full max-w-lg shadow-xl">
-    <div class="card-body">
+  <div class="page-shell">
+    <ion-card class="card bg-base-100 mx-auto w-full max-w-lg shadow-xl">
       <ion-card-header class="pb-4">
         <ion-card-title class="text-primary text-xl font-semibold">{{
           'auth.accountStates.pending.title' | translate
@@ -15,19 +15,19 @@
 
       <ion-card-content>
         <!-- Main message -->
-        <p class="my-4 text-center text-base leading-relaxed text-gray-900 dark:text-white">
+        <p class="text-base-content my-4 text-center text-base leading-relaxed">
           {{ 'auth.accountStates.pending.message' | translate }}
         </p>
 
         <!-- Subtitle with email notification info -->
-        <p class="mb-6 mt-3 text-center text-sm leading-normal text-gray-500 dark:text-gray-400">
+        <p class="text-base-content/50 mb-6 mt-3 text-center text-sm leading-normal">
           {{ 'auth.accountStates.pending.subtitle' | translate }}
         </p>
 
         <!-- Support section -->
         <div class="border-primary my-6 rounded border-l-4 bg-blue-50 p-3 dark:bg-blue-900/20">
           <ion-label
-            class="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+            class="text-base-content/50 mb-2 block text-xs font-semibold uppercase tracking-wide"
           >
             {{ 'auth.accountStates.pending.support' | translate }}
           </ion-label>
@@ -41,6 +41,6 @@
           {{ 'auth.accountStates.pending.signOut' | translate }}
         </ion-button>
       </ion-card-content>
-    </div>
+    </ion-card>
   </div>
 </ion-content>

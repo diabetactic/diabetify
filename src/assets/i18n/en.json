@@ -43,7 +43,6 @@
   "tabs": {
     "home": "Home",
     "readings": "Readings",
-    "devices": "Devices",
     "profile": "Profile"
   },
   "welcome": {
@@ -350,36 +349,6 @@
       "afterMeal": "After Meal Target"
     }
   },
-  "devices": {
-    "title": "Devices",
-    "management": "Device Management",
-    "connectedDevices": "Connected Devices",
-    "availableDevices": "Available Devices",
-    "addDevice": "Add Device",
-    "removeDevice": "Remove Device",
-    "syncDevice": "Sync Device",
-    "deviceName": "Device Name",
-    "manufacturer": "Manufacturer",
-    "model": "Model",
-    "serialNumber": "Serial Number",
-    "batteryLevel": "Battery Level",
-    "lastSync": "Last Sync",
-    "status": "Status",
-    "connected": "Connected",
-    "disconnected": "Disconnected",
-    "scanning": "Scanning...",
-    "pairing": "Pairing...",
-    "paired": "Paired",
-    "notPaired": "Not Paired",
-    "bluetooth": {
-      "title": "Bluetooth",
-      "enable": "Enable Bluetooth",
-      "disable": "Disable Bluetooth",
-      "notAvailable": "Bluetooth not available",
-      "permission": "Bluetooth permission required",
-      "turnOn": "Please turn on Bluetooth"
-    }
-  },
   "trends": {
     "title": "Trends",
     "analysisTitle": "Trend Analysis",
@@ -454,6 +423,15 @@
       "cancel": "Cancel",
       "create": "Add New Appointment"
     },
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "noShow": "No Show",
+      "rescheduled": "Rescheduled"
+    },
     "fields": {
       "glucoseObjective": "Glucose Objective",
       "insulinType": "Insulin Type",
@@ -473,6 +451,10 @@
       "emergency": "Emergency",
       "consultation": "Consultation",
       "adjustment": "Dose Adjustment",
+      "hypoglycemia": "Hypoglycemia",
+      "hyperglycemia": "Hyperglycemia",
+      "ketosis": "Ketosis",
+      "questions": "Questions/Doubts",
       "other": "Other"
     },
     "insulinTypes": {
@@ -506,7 +488,40 @@
       "notFound": "Appointment not found.",
       "slotUnavailable": "The time slot is no longer available.",
       "serviceUnavailable": "Service unavailable. Please try again later.",
-      "networkError": "Connection error. Please check your internet connection."
+      "networkError": "Connection error. Please check your internet connection.",
+      "queueFull": "No more appointments can be taken today.",
+      "notInQueue": "You need to request an appointment before filling the form.",
+      "notAccepted": "Your request hasn't been accepted yet.",
+      "alreadyInQueue": "You already have a pending appointment request."
+    },
+    "queue": {
+      "title": "Appointment Request",
+      "request": "Request Appointment",
+      "requesting": "Requesting...",
+      "status": "Queue Status",
+      "position": "Position in queue: {{position}}",
+      "labels": {
+        "none": "No queue entry",
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "denied": "Denied",
+        "created": "Completed"
+      },
+      "states": {
+        "NONE": "No pending request",
+        "PENDING": "Your request is waiting to be reviewed",
+        "ACCEPTED": "Your request was accepted, you can now fill the form",
+        "DENIED": "Your request was not accepted",
+        "CREATED": "You already have a registered appointment"
+      },
+      "messages": {
+        "submitSuccess": "Your appointment request has been submitted",
+        "submitError": "Failed to submit appointment request",
+        "mustRequestFirst": "You must request an appointment first",
+        "waitingReview": "Your request is still waiting to be accepted",
+        "requestDenied": "Your request was not accepted. Please contact the clinic.",
+        "canProceed": "You can now proceed to fill the appointment form"
+      }
     },
     "reason": "Reason",
     "doctor": "Doctor",
@@ -545,14 +560,6 @@
     },
     "shareReadings": "Share Last 30 Days of Readings",
     "confirmCancel": "Are you sure you want to cancel this appointment?",
-    "status": {
-      "pending": "Pending",
-      "confirmed": "Confirmed",
-      "cancelled": "Cancelled",
-      "completed": "Completed",
-      "noShow": "No Show",
-      "rescheduled": "Rescheduled"
-    },
     "reminders": {
       "title": "Appointment Reminders",
       "enable": "Enable Reminders",
@@ -620,11 +627,12 @@
       "pump_pen": "Insulin Pen",
       "control_data": "Control Data (PDF URL)",
       "motive": "Visit Reason",
-      "motive_control_routine": "Routine Control",
-      "motive_follow_up": "Follow-up",
-      "motive_emergency": "Emergency",
-      "motive_consultation": "Consultation",
-      "motive_other": "Other",
+      "motive_ajuste": "Treatment Adjustment",
+      "motive_hipoglucemia": "Hypoglycemia",
+      "motive_hiperglucemia": "Hyperglycemia",
+      "motive_cetosis": "Ketosis",
+      "motive_dudas": "Questions",
+      "motive_otro": "Other",
       "other_motive": "Specify Other Reason",
       "another_treatment": "Additional Treatments",
       "submit": "Create Appointment"
@@ -1083,6 +1091,24 @@
         "privacy": "Privacy",
         "support": "Support"
       }
+    },
+    "messages": {
+      "loggingIn": "Signing in...",
+      "welcomeBack": "Welcome back!",
+      "loginError": "Login Error",
+      "genericError": "Login failed. Please try again.",
+      "invalidCredentials": "Invalid credentials. Please check your DNI/email and password.",
+      "invalidData": "Invalid data. Please check the format of your DNI or email.",
+      "connectionError": "Connection error. Please check your internet connection."
+    },
+    "validation": {
+      "usernameRequired": "DNI or email is required",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 6 characters"
+    },
+    "forgotPasswordDialog": {
+      "title": "Recover Password",
+      "message": "Password recovery will be available soon. Please contact support for assistance."
     }
   },
   "explore": {

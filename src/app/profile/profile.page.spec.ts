@@ -12,6 +12,7 @@ import { ThemeService } from '../core/services/theme.service';
 import { TranslationService, Language, LanguageConfig } from '../core/services/translation.service';
 import { TidepoolSyncService } from '../core/services/tidepool-sync.service';
 import { ProfilePageModule } from './profile.module';
+import { getLucideIconsForTesting } from '../tests/helpers/icon-test.helper';
 
 class TidepoolAuthServiceStub {
   private stateSubject = new BehaviorSubject<AuthState>({
@@ -126,6 +127,7 @@ describe('ProfilePage', () => {
         TranslateModule.forRoot(),
         RouterTestingModule,
         ProfilePageModule,
+        getLucideIconsForTesting(),
       ],
       providers: [
         { provide: TidepoolAuthService, useClass: TidepoolAuthServiceStub },

@@ -43,7 +43,6 @@
   "tabs": {
     "home": "Inicio",
     "readings": "Lecturas",
-    "devices": "Dispositivos",
     "profile": "Perfil"
   },
   "welcome": {
@@ -249,6 +248,7 @@
     "sortBy": "Ordenar Por",
     "loading": "Cargando lecturas...",
     "emptyTitle": "Aún no hay lecturas de glucosa",
+    "tip": "Para lecturas más precisas, lávate las manos antes de medir y utiliza el lateral de la yema del dedo.",
     "emptyMessage": "Comienza a rastrear tus niveles de glucosa",
     "addFirst": "Agregar Primera Lectura",
     "filter": {
@@ -350,36 +350,6 @@
       "afterMeal": "Objetivo Después de Comer"
     }
   },
-  "devices": {
-    "title": "Dispositivos",
-    "management": "Gestión de Dispositivos",
-    "connectedDevices": "Dispositivos Conectados",
-    "availableDevices": "Dispositivos Disponibles",
-    "addDevice": "Agregar Dispositivo",
-    "removeDevice": "Eliminar Dispositivo",
-    "syncDevice": "Sincronizar Dispositivo",
-    "deviceName": "Nombre del Dispositivo",
-    "manufacturer": "Fabricante",
-    "model": "Modelo",
-    "serialNumber": "Número de Serie",
-    "batteryLevel": "Nivel de Batería",
-    "lastSync": "Última Sincronización",
-    "status": "Estado",
-    "connected": "Conectado",
-    "disconnected": "Desconectado",
-    "scanning": "Escaneando...",
-    "pairing": "Emparejando...",
-    "paired": "Emparejado",
-    "notPaired": "No Emparejado",
-    "bluetooth": {
-      "title": "Bluetooth",
-      "enable": "Habilitar Bluetooth",
-      "disable": "Deshabilitar Bluetooth",
-      "notAvailable": "Bluetooth no disponible",
-      "permission": "Se requiere permiso de Bluetooth",
-      "turnOn": "Por favor enciende el Bluetooth"
-    }
-  },
   "trends": {
     "title": "Tendencias",
     "analysisTitle": "Análisis de Tendencias",
@@ -454,6 +424,15 @@
       "cancel": "Cancelar",
       "create": "Agregar Nueva Cita"
     },
+    "status": {
+      "active": "Activa",
+      "completed": "Completada",
+      "cancelled": "Cancelada",
+      "pending": "Pendiente",
+      "confirmed": "Confirmada",
+      "noShow": "No Asistió",
+      "rescheduled": "Reprogramada"
+    },
     "fields": {
       "glucoseObjective": "Objetivo de Glucosa",
       "insulinType": "Tipo de Insulina",
@@ -473,6 +452,10 @@
       "emergency": "Emergencia",
       "consultation": "Consulta",
       "adjustment": "Ajuste de Dosis",
+      "hypoglycemia": "Hipoglucemia",
+      "hyperglycemia": "Hiperglucemia",
+      "ketosis": "Cetosis",
+      "questions": "Dudas/Preguntas",
       "other": "Otro"
     },
     "insulinTypes": {
@@ -506,7 +489,40 @@
       "notFound": "Cita no encontrada.",
       "slotUnavailable": "El horario ya no está disponible.",
       "serviceUnavailable": "Servicio no disponible. Por favor, intente más tarde.",
-      "networkError": "Error de conexión. Verifique su conexión a internet."
+      "networkError": "Error de conexión. Verifique su conexión a internet.",
+      "queueFull": "No se pueden tomar más citas hoy.",
+      "notInQueue": "Debe solicitar una cita antes de completar el formulario.",
+      "notAccepted": "Su solicitud aún no ha sido aceptada.",
+      "alreadyInQueue": "Ya tiene una solicitud de cita pendiente."
+    },
+    "queue": {
+      "title": "Solicitud de Cita",
+      "request": "Solicitar Cita",
+      "requesting": "Solicitando...",
+      "status": "Estado de la Cola",
+      "position": "Posición en la cola: {{position}}",
+      "labels": {
+        "none": "Sin estado de cola",
+        "pending": "Pendiente",
+        "accepted": "Aceptada",
+        "denied": "Rechazada",
+        "created": "Completada"
+      },
+      "states": {
+        "NONE": "Sin solicitud pendiente",
+        "PENDING": "Su solicitud está esperando revisión",
+        "ACCEPTED": "Su solicitud fue aceptada, puede completar el formulario",
+        "DENIED": "Su solicitud no fue aceptada",
+        "CREATED": "Ya tiene una cita registrada"
+      },
+      "messages": {
+        "submitSuccess": "Su solicitud de cita ha sido enviada",
+        "submitError": "Error al enviar la solicitud de cita",
+        "mustRequestFirst": "Debe solicitar una cita primero",
+        "waitingReview": "Su solicitud aún está esperando ser aceptada",
+        "requestDenied": "Su solicitud no fue aceptada. Por favor contacte a la clínica.",
+        "canProceed": "Puede proceder a completar el formulario de cita"
+      }
     },
     "reason": "Motivo",
     "doctor": "Doctor",
@@ -545,14 +561,6 @@
     },
     "shareReadings": "Compartir Últimos 30 Días de Lecturas",
     "confirmCancel": "¿Estás seguro de que quieres cancelar esta cita?",
-    "status": {
-      "pending": "Pendiente",
-      "confirmed": "Confirmada",
-      "cancelled": "Cancelada",
-      "completed": "Completada",
-      "noShow": "No Asistió",
-      "rescheduled": "Reprogramada"
-    },
     "reminders": {
       "title": "Recordatorios de Citas",
       "enable": "Habilitar Recordatorios",
@@ -620,11 +628,12 @@
       "pump_pen": "Pluma de Insulina",
       "control_data": "Datos de Control (URL del PDF)",
       "motive": "Motivo de Visita",
-      "motive_control_routine": "Control de Rutina",
-      "motive_follow_up": "Seguimiento",
-      "motive_emergency": "Emergencia",
-      "motive_consultation": "Consulta",
-      "motive_other": "Otro",
+      "motive_ajuste": "Ajuste de Tratamiento",
+      "motive_hipoglucemia": "Hipoglucemia",
+      "motive_hiperglucemia": "Hiperglucemia",
+      "motive_cetosis": "Cetosis",
+      "motive_dudas": "Dudas",
+      "motive_otro": "Otro",
       "other_motive": "Especificar Otro Motivo",
       "another_treatment": "Tratamientos Adicionales",
       "submit": "Crear Cita"
@@ -1076,6 +1085,24 @@
         "privacy": "Privacidad",
         "support": "Soporte"
       }
+    },
+    "messages": {
+      "loggingIn": "Iniciando sesión...",
+      "welcomeBack": "¡Bienvenido de nuevo!",
+      "loginError": "Error de inicio de sesión",
+      "genericError": "Error al iniciar sesión. Por favor, intenta de nuevo.",
+      "invalidCredentials": "Credenciales incorrectas. Verifica tu DNI/email y contraseña.",
+      "invalidData": "Datos inválidos. Verifica el formato de tu DNI o email.",
+      "connectionError": "Error de conexión. Verifica tu conexión a internet."
+    },
+    "validation": {
+      "usernameRequired": "DNI o email es requerido",
+      "passwordRequired": "La contraseña es requerida",
+      "passwordMinLength": "La contraseña debe tener al menos 6 caracteres"
+    },
+    "forgotPasswordDialog": {
+      "title": "Recuperar Contraseña",
+      "message": "La función de recuperación de contraseña estará disponible próximamente. Por favor, contacta a soporte para asistencia."
     }
   },
   "explore": {

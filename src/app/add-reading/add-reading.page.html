@@ -1,16 +1,16 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="onCancel()" class="inline-flex items-center gap-2">
-        <app-icon name="close"></app-icon>
+      <ion-button (click)="onCancel()">
+        <app-icon slot="icon-only" name="close"></app-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>{{ 'addReading.title' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <div class="mx-auto max-w-[600px] p-4">
+<ion-content [fullscreen]="true" class="add-reading-content">
+  <div class="add-reading-shell mx-auto max-w-[640px] p-4">
     <!-- Info Banner with Tip -->
     <div class="alert alert-info mb-6 shadow-lg" role="status">
       <svg

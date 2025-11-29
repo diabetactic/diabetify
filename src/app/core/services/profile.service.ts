@@ -1,11 +1,14 @@
 /**
  * ProfileService - Manages user profile and preferences
- * Uses Capacitor Preferences API for persistent storage across app sessions
+ * Uses Capacitor Preferences API for persistent profile storage
+ * Uses @aparajita/capacitor-secure-storage for sensitive credentials
+ * (iOS Keychain, Android KeyStore with native encryption)
  */
 
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
+import { SecureStorage } from '@aparajita/capacitor-secure-storage';
 import {
   UserProfile,
   CreateUserProfileInput,
@@ -104,6 +107,7 @@ export class ProfileService {
     const profile: UserProfile = {
       id: this.generateUserId(),
       name: input.name,
+      email: input.email,
       age: input.age,
       accountState: input.accountState || AccountState.PENDING,
       dateOfBirth: input.dateOfBirth,
@@ -181,17 +185,17 @@ export class ProfileService {
 
   /**
    * Set Tidepool authentication credentials
-   * Stores credentials securely
+   * Stores credentials securely using native platform encryption
+   * (iOS Keychain, Android KeyStore)
    */
   async setTidepoolCredentials(auth: TidepoolAuth): Promise<void> {
     try {
-      // Encrypt credentials before storing (basic encoding for now)
-      const encrypted = this.encryptData(JSON.stringify(auth));
-
-      await Preferences.set({
-        key: STORAGE_KEYS.TIDEPOOL_AUTH,
-        value: encrypted,
-      });
+      // Store credentials using SecureStorage (native encryption)
+      // Cast to Record to satisfy SecureStorage's DataType requirement
+      await SecureStorage.set(
+        STORAGE_KEYS.TIDEPOOL_AUTH,
+        auth as unknown as Record<string, unknown>
+      );
 
       // Update profile connection status
       const profile = await this.getProfile();
@@ -215,18 +219,16 @@ export class ProfileService {
 
   /**
    * Get Tidepool authentication credentials
+   * Retrieves from native secure storage (iOS Keychain, Android KeyStore)
    */
   async getTidepoolCredentials(): Promise<TidepoolAuth | null> {
     try {
-      const { value } = await Preferences.get({ key: STORAGE_KEYS.TIDEPOOL_AUTH });
+      // Retrieve credentials from SecureStorage (native encryption)
+      const auth = (await SecureStorage.get(STORAGE_KEYS.TIDEPOOL_AUTH)) as TidepoolAuth | null;
 
-      if (!value) {
+      if (!auth) {
         return null;
       }
-
-      // Decrypt credentials
-      const decrypted = this.decryptData(value);
-      const auth: TidepoolAuth = JSON.parse(decrypted);
 
       // Check if token is expired
       if (auth.expiresAt && auth.expiresAt < Date.now()) {
@@ -243,9 +245,10 @@ export class ProfileService {
 
   /**
    * Clear Tidepool authentication credentials
+   * Removes from native secure storage
    */
   async clearTidepoolCredentials(): Promise<void> {
-    await Preferences.remove({ key: STORAGE_KEYS.TIDEPOOL_AUTH });
+    await SecureStorage.remove(STORAGE_KEYS.TIDEPOOL_AUTH);
 
     // Update profile connection status
     const profile = await this.getProfile();
@@ -318,25 +321,6 @@ export class ProfileService {
     }
     // Add 5 minute buffer
     return auth.expiresAt - 5 * 60 * 1000 < Date.now();
-  }
-
-  /**
-   * Encrypt data (basic implementation)
-   * In production, use a proper encryption library like @capacitor-community/secure-storage-plugin
-   */
-  private encryptData(data: string): string {
-    // For now, use base64 encoding as a placeholder
-    // TODO: Implement proper encryption with a secure key
-    return btoa(data);
-  }
-
-  /**
-   * Decrypt data (basic implementation)
-   */
-  private decryptData(encrypted: string): string {
-    // For now, use base64 decoding as a placeholder
-    // TODO: Implement proper decryption
-    return atob(encrypted);
   }
 
   /**

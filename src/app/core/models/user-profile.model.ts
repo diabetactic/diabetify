@@ -54,7 +54,7 @@ export interface UserPreferences {
   /** Theme mode (light/dark/auto) */
   themeMode: ThemeMode;
 
-  /** Enable high contrast mode for accessibility */
+  /** Enable high contrast mode */
   highContrastMode: boolean;
 
   /** Target glucose range for normal times */
@@ -163,6 +163,9 @@ export interface UserProfile {
 
   /** Display name */
   name: string;
+
+  /** User's email from backend (Backoffice configured) */
+  email?: string;
 
   /** User's age (for age-appropriate UI adjustments) */
   age: number;

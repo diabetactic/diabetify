@@ -13,24 +13,24 @@
   }
 }
 
-// Info Banner - Gradient backgrounds
+// Info Banner - Uses gradient tokens from global.css
 .info-banner {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  background: var(--gradient-info-light);
 }
 
 // Dark mode adjustments (class-based for manual theme toggle)
 .dark .info-banner {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  background: var(--gradient-info-dark);
   border-color: rgb(59 130 246 / 30%);
 
   p {
-    color: rgb(255 255 255 / 80%) !important;
+    color: rgb(255 255 255 / 80%);
   }
 }
 
 .dark .sync-item,
 .dark .metric-explanation {
-  background: rgb(255 255 255 / 5%) !important;
+  background: rgb(255 255 255 / 5%);
 }
 
 // Responsive adjustments for larger screens

@@ -1,14 +1,14 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-button (click)="goBack()" class="inline-flex items-center gap-2">
-        <app-icon name="arrow-back"></app-icon>
+      <ion-button (click)="goBack()">
+        <app-icon slot="icon-only" name="arrow-back"></app-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>{{ 'dashboard.detail.title' | translate }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="onSync()" [disabled]="isSyncing" class="inline-flex items-center gap-2">
-        <app-icon name="sync-outline" [class.spinning]="isSyncing"></app-icon>
+      <ion-button (click)="onSync()" [disabled]="isSyncing">
+        <app-icon slot="icon-only" name="sync-outline" [class.spinning]="isSyncing"></app-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -18,7 +18,7 @@
   <div class="p-4 pb-6">
     <!-- Loading State -->
     <div *ngIf="isLoading" class="flex min-h-[300px] flex-col items-center justify-center gap-4">
-      <app-icon name="loader" *ngIf="!isKarma" class="h-12 w-12 animate-spin"></app-icon>
+      <app-icon name="loader" class="h-12 w-12 animate-spin"></app-icon>
       <p class="text-base" style="color: var(--ion-color-medium)">
         {{ 'app.loading' | translate }}
       </p>
@@ -27,19 +27,21 @@
     <!-- Detail Content -->
     <ng-container *ngIf="!isLoading">
       <!-- Info Banner -->
-      <ion-card class="info-banner mb-5 rounded-2xl border border-blue-400/20">
-        <ion-card-content>
+      <div
+        class="card info-banner bg-base-100 mb-5 rounded-2xl border border-blue-400/20 shadow-sm"
+      >
+        <div class="card-body p-4">
           <div class="flex items-center gap-3">
             <app-icon
               name="information-circle-outline"
               class="text-primary shrink-0 text-[32px]"
             ></app-icon>
-            <p class="m-0 text-sm leading-[1.5]" style="color: var(--ion-color-medium)">
+            <p class="text-base-content/80 m-0 text-sm leading-[1.5]">
               {{ 'dashboard.detail.description' | translate }}
             </p>
           </div>
-        </ion-card-content>
-      </ion-card>
+        </div>
+      </div>
 
       <!-- All Statistics Grid -->
       <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-1 sm:gap-3">
@@ -192,7 +194,7 @@
             [disabled]="isSyncing"
             class="mt-4 inline-flex items-center gap-2"
           >
-            <app-icon name="loader" *ngIf="isSyncing && !isKarma" class="animate-spin"></app-icon>
+            <app-icon name="loader" *ngIf="isSyncing" class="animate-spin"></app-icon>
             <span *ngIf="!isSyncing">
               <app-icon name="sync-outline"></app-icon>
               {{ 'dashboard.syncNow' | translate }}

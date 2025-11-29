@@ -22,6 +22,7 @@ i18n/
 ### 1. Agregar Claves
 
 **Inglés** (`assets/i18n/en.json`):
+
 ```json
 {
   "COMMON": {
@@ -36,6 +37,7 @@ i18n/
 ```
 
 **Español** (`assets/i18n/es.json`):
+
 ```json
 {
   "COMMON": {
@@ -59,9 +61,7 @@ i18n/
 <p>{{ 'DASHBOARD.WELCOME' | translate: {name: userName} }}</p>
 
 <!-- En atributos -->
-<button [attr.aria-label]="'COMMON.SAVE' | translate">
-  {{ 'COMMON.SAVE' | translate }}
-</button>
+<button [attr.aria-label]="'COMMON.SAVE' | translate">{{ 'COMMON.SAVE' | translate }}</button>
 ```
 
 ### 3. Usar en TypeScript
@@ -87,6 +87,7 @@ SECCION.SUBSECCION.CLAVE
 ```
 
 Ejemplos:
+
 - `AUTH.LOGIN.TITLE`
 - `ERRORS.NETWORK.MESSAGE`
 - `VALIDATION.REQUIRED.FIELD`
@@ -98,6 +99,7 @@ npm run i18n:missing
 ```
 
 Este script verifica:
+
 - Claves en templates que no están en archivos JSON
 - Diferencias entre en.json y es.json
 

@@ -7,7 +7,6 @@
 #
 # Available commands:
 #   check-app          - Check app state (device, APK, running status, etc)
-#   test-ui            - Run full UI test (capture all screens)
 #   rebuild-apk        - Rebuild Android APK
 #   deploy-apk         - Install APK to device
 #   launch-app         - Launch the app
@@ -113,45 +112,7 @@ screenshot() {
     echo "$path"
 }
 
-test-ui() {
-    check-app
-    echo ""
-    $SCRIPTS_DIR/quick-ui-test.sh
-}
 
-test-ui-fast() {
-    echo -e "${BLUE}=== QUICK UI TEST ===${NC}\n"
-
-    # Just restart and capture current screens
-    restart-app
-
-    mkdir -p /tmp/ui-test-fast
-
-    screenshot "01-home.png"
-
-    # Navigate through tabs
-    cat > /tmp/quick-nav.yaml << 'YAML'
-appId: io.diabetactic.app
----
-- tapOn:
-    text: "Lecturas|Readings"
-- waitForAnimationToEnd
-YAML
-    maestro test /tmp/quick-nav.yaml 2>/dev/null || true
-    screenshot "02-readings.png"
-
-    cat > /tmp/quick-nav2.yaml << 'YAML'
-appId: io.diabetactic.app
----
-- tapOn:
-    text: "Citas|Appointments"
-- waitForAnimationToEnd
-YAML
-    maestro test /tmp/quick-nav2.yaml 2>/dev/null || true
-    screenshot "03-appointments.png"
-
-    echo -e "\n${GREEN}✓ Screenshots saved to /tmp/screenshot-*.png${NC}"
-}
 
 # ============================================================================
 # LOGGING & DEBUGGING
@@ -228,13 +189,12 @@ BUILD & DEPLOY:
 
 SCREENSHOTS & TESTING:
   screenshot <name>      Take a named screenshot
-  test-ui-fast           Quick tab navigation with screenshots
-  test-ui                Full UI test with state verification
+
   tail-logs              Follow app logs in real-time
 
 WORKFLOW EXAMPLES:
   ┌─ Before fixing code:
-  └─ check-app && rebuild-and-deploy && test-ui-fast
+  └─ check-app && rebuild-and-deploy
 
   ┌─ After CSS changes:
   └─ rebuild-apk && deploy-apk && screenshot "my-feature"

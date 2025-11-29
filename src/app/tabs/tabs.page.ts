@@ -1,6 +1,14 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import {
+  IonTabs,
+  IonTabBar,
+  IonTabButton,
+  IonIcon,
+  IonLabel,
+  IonFab,
+  IonFabButton,
+} from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
@@ -8,12 +16,26 @@ import { TranslateModule } from '@ngx-translate/core';
   templateUrl: 'tabs.page.html',
   styleUrls: ['tabs.page.scss'],
   standalone: true,
-  imports: [IonicModule, TranslateModule],
+  imports: [
+    IonTabs,
+    IonTabBar,
+    IonTabButton,
+    IonIcon,
+    IonLabel,
+    IonFab,
+    IonFabButton,
+    TranslateModule,
+  ],
 })
 export class TabsPage {
   constructor(private router: Router) {}
 
   navigateToAddReading(): void {
-    this.router.navigate(['/add-reading']);
+    const currentUrl = this.router.url;
+    if (currentUrl.includes('appointments')) {
+      this.router.navigate(['/tabs', 'appointments', 'create']);
+    } else {
+      this.router.navigate(['/add-reading']);
+    }
   }
 }

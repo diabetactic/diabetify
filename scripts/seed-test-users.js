@@ -11,14 +11,70 @@ const SERVICE_URLS = {
 };
 
 const TEST_USERS = [
-  { dni: '1000', password: 'tuvieja', email: 'test1@test.com', name: 'Test', surname: 'User1', hospital_account: 'test_account_1' },
-  { dni: '1001', password: 'tuvieja', email: 'test2@test.com', name: 'Test', surname: 'User2', hospital_account: 'test_account_2' },
-  { dni: '1002', password: 'tuvieja', email: 'test3@test.com', name: 'Test', surname: 'User3', hospital_account: 'test_account_3' },
-  { dni: '1003', password: 'tuvieja', email: 'test4@test.com', name: 'Test', surname: 'User4', hospital_account: 'test_account_4' },
-  { dni: '1004', password: 'tuvieja', email: 'test5@test.com', name: 'Test', surname: 'User5', hospital_account: 'test_account_5' },
-  { dni: '1005', password: 'tuvieja', email: 'test6@test.com', name: 'Test', surname: 'User6', hospital_account: 'test_account_6' },
-  { dni: '1006', password: 'tuvieja', email: 'test7@test.com', name: 'Test', surname: 'User7', hospital_account: 'test_account_7' },
-  { dni: '1007', password: 'tuvieja', email: 'test8@test.com', name: 'Test', surname: 'User8', hospital_account: 'test_account_8' },
+  {
+    dni: '1000',
+    password: 'tuvieja',
+    email: 'test1@test.com',
+    name: 'Test',
+    surname: 'User1',
+    hospital_account: 'test_account_1',
+  },
+  {
+    dni: '1001',
+    password: 'tuvieja',
+    email: 'test2@test.com',
+    name: 'Test',
+    surname: 'User2',
+    hospital_account: 'test_account_2',
+  },
+  {
+    dni: '1002',
+    password: 'tuvieja',
+    email: 'test3@test.com',
+    name: 'Test',
+    surname: 'User3',
+    hospital_account: 'test_account_3',
+  },
+  {
+    dni: '1003',
+    password: 'tuvieja',
+    email: 'test4@test.com',
+    name: 'Test',
+    surname: 'User4',
+    hospital_account: 'test_account_4',
+  },
+  {
+    dni: '1004',
+    password: 'tuvieja',
+    email: 'test5@test.com',
+    name: 'Test',
+    surname: 'User5',
+    hospital_account: 'test_account_5',
+  },
+  {
+    dni: '1005',
+    password: 'tuvieja',
+    email: 'test6@test.com',
+    name: 'Test',
+    surname: 'User6',
+    hospital_account: 'test_account_6',
+  },
+  {
+    dni: '1006',
+    password: 'tuvieja',
+    email: 'test7@test.com',
+    name: 'Test',
+    surname: 'User7',
+    hospital_account: 'test_account_7',
+  },
+  {
+    dni: '1007',
+    password: 'tuvieja',
+    email: 'test8@test.com',
+    name: 'Test',
+    surname: 'User8',
+    hospital_account: 'test_account_8',
+  },
 ];
 
 async function createUser(user) {
@@ -27,7 +83,7 @@ async function createUser(user) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
       body: JSON.stringify({
         ...user,
@@ -42,7 +98,11 @@ async function createUser(user) {
     if (!response.ok) {
       const errorText = await response.text();
       // If user already exists, that's fine
-      if (response.status === 400 || errorText.includes('already exists') || errorText.includes('already has an account')) {
+      if (
+        response.status === 400 ||
+        errorText.includes('already exists') ||
+        errorText.includes('already has an account')
+      ) {
         console.log(`✓ User ${user.dni} already exists`);
         return { success: true, existed: true };
       }

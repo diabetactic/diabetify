@@ -70,22 +70,22 @@ modifiedFiles.forEach(htmlFile => {
   }
 
   // Add AppIconComponent import
-  const appIconImport = "import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';";
-  const appIconImportAlt = "import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';";
-  const appIconImportAlt2 = "import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';";
-
   // Determine the correct import path based on the file location
   let importPath;
   if (tsFilePath.includes('shared/components')) {
     importPath = "import { AppIconComponent } from '../app-icon/app-icon.component';";
   } else if (tsFilePath.includes('settings/advanced')) {
-    importPath = "import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';";
+    importPath =
+      "import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';";
   } else if (tsFilePath.includes('dashboard/dashboard-detail')) {
-    importPath = "import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';";
+    importPath =
+      "import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';";
   } else if (tsFilePath.includes('appointments/appointment-')) {
-    importPath = "import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';";
+    importPath =
+      "import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';";
   } else {
-    importPath = "import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';";
+    importPath =
+      "import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';";
   }
 
   // Add the import at the top of the imports section
@@ -100,7 +100,8 @@ modifiedFiles.forEach(htmlFile => {
 
     if (lastImportMatch) {
       const insertPosition = lastImportMatch.index + lastImportMatch[0].length;
-      content = content.slice(0, insertPosition) + '\n' + importPath + content.slice(insertPosition);
+      content =
+        content.slice(0, insertPosition) + '\n' + importPath + content.slice(insertPosition);
     }
   } else {
     // No imports found, add at the beginning of the file
@@ -135,7 +136,10 @@ modifiedFiles.forEach(htmlFile => {
       const templateUrlMatch = componentConfig.match(/templateUrl\s*:\s*['"][^'"]+['"]/);
       if (templateUrlMatch) {
         const insertPos = templateUrlMatch.index + templateUrlMatch[0].length;
-        componentConfig = componentConfig.slice(0, insertPos) + ',\n  imports: [AppIconComponent]' + componentConfig.slice(insertPos);
+        componentConfig =
+          componentConfig.slice(0, insertPos) +
+          ',\n  imports: [AppIconComponent]' +
+          componentConfig.slice(insertPos);
       }
     }
 

@@ -124,12 +124,10 @@ export class TranslationService {
     this.translate.addLangs(Array.from(this.LANGUAGES.keys()));
 
     // Set default language
-    const isKarma = typeof window !== 'undefined' && (window as any).__karma__;
-    const initialDefault = isKarma ? Language.EN : this.DEFAULT_LANGUAGE;
-    this.translate.setDefaultLang(initialDefault);
+    this.translate.setDefaultLang(this.DEFAULT_LANGUAGE);
 
     // Detect and set initial language
-    const language = isKarma ? initialDefault : await this.detectInitialLanguage();
+    const language = await this.detectInitialLanguage();
     await this.setLanguage(language);
   }
 

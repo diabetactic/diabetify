@@ -55,12 +55,88 @@ export class AppointmentDetailPage implements OnInit {
   }
 
   /**
+   * Mapping from backend motive values to translation keys
+   */
+  private readonly motiveMapping: Record<string, string> = {
+    // Spanish uppercase (backend format from MotivesEnum)
+    AJUSTE: 'adjustment',
+    HIPOGLUCEMIA: 'hypoglycemia',
+    HIPERGLUCEMIA: 'hyperglycemia',
+    CETOSIS: 'ketosis',
+    DUDAS: 'questions',
+    OTRO: 'other',
+    // Legacy Spanish mappings
+    CONTROL: 'control_routine',
+    CONTROL_RUTINA: 'control_routine',
+    SEGUIMIENTO: 'follow_up',
+    EMERGENCIA: 'emergency',
+    CONSULTA: 'consultation',
+    // English lowercase (already correct)
+    adjustment: 'adjustment',
+    control_routine: 'control_routine',
+    follow_up: 'follow_up',
+    emergency: 'emergency',
+    consultation: 'consultation',
+    hypoglycemia: 'hypoglycemia',
+    hyperglycemia: 'hyperglycemia',
+    ketosis: 'ketosis',
+    questions: 'questions',
+    other: 'other',
+  };
+
+  /**
+   * Mapping from backend insulin type values to translation keys
+   */
+  private readonly insulinTypeMapping: Record<string, string> = {
+    rapida: 'rapid',
+    RAPIDA: 'rapid',
+    lenta: 'long',
+    LENTA: 'long',
+    corta: 'short',
+    CORTA: 'short',
+    intermedia: 'intermediate',
+    INTERMEDIA: 'intermediate',
+    mixta: 'mixed',
+    MIXTA: 'mixed',
+    ninguna: 'none',
+    NINGUNA: 'none',
+    rapid: 'rapid',
+    short: 'short',
+    intermediate: 'intermediate',
+    long: 'long',
+    mixed: 'mixed',
+    none: 'none',
+  };
+
+  /**
+   * Mapping from backend pump type values to translation keys
+   */
+  private readonly pumpTypeMapping: Record<string, string> = {
+    jeringa: 'none',
+    JERINGA: 'none',
+    pluma: 'none',
+    PLUMA: 'none',
+    bomba: 'other',
+    BOMBA: 'other',
+    medtronic: 'medtronic',
+    omnipod: 'omnipod',
+    tandem: 'tandem',
+    none: 'none',
+    other: 'other',
+  };
+
+  /**
    * Format motive array to string
    */
   formatMotive(motive: string[]): string {
     if (!motive || motive.length === 0) return '-';
     return motive
-      .map(m => this.translationService.instant(`appointments.motives.${m}`) || m)
+      .map(m => {
+        const mappedKey =
+          this.motiveMapping[m] || this.motiveMapping[m.toUpperCase()] || m.toLowerCase();
+        const translated = this.translationService.instant(`appointments.motives.${mappedKey}`);
+        return translated && !translated.startsWith('appointments.motives.') ? translated : m;
+      })
       .join(', ');
   }
 
@@ -68,14 +144,54 @@ export class AppointmentDetailPage implements OnInit {
    * Format insulin type
    */
   formatInsulinType(type: string): string {
-    return this.translationService.instant(`appointments.insulinTypes.${type}`) || type;
+    if (!type || this.isPlaceholderValue(type)) return '-';
+    const mappedKey =
+      this.insulinTypeMapping[type] ||
+      this.insulinTypeMapping[type.toUpperCase()] ||
+      type.toLowerCase();
+    const translated = this.translationService.instant(`appointments.insulinTypes.${mappedKey}`);
+    return translated && !translated.startsWith('appointments.insulinTypes.') ? translated : type;
   }
 
   /**
    * Format pump type
    */
   formatPumpType(type: string): string {
-    return this.translationService.instant(`appointments.pumpTypes.${type}`) || type;
+    if (!type || this.isPlaceholderValue(type)) return '-';
+    const mappedKey =
+      this.pumpTypeMapping[type] || this.pumpTypeMapping[type.toUpperCase()] || type.toLowerCase();
+    const translated = this.translationService.instant(`appointments.pumpTypes.${mappedKey}`);
+    return translated && !translated.startsWith('appointments.pumpTypes.') ? translated : type;
+  }
+
+  /**
+   * Check if value is a placeholder (like "string" from OpenAPI defaults)
+   */
+  isPlaceholderValue(value: unknown): boolean {
+    if (value === null || value === undefined) return true;
+    if (typeof value === 'string') {
+      const trimmed = value.trim().toLowerCase();
+      return (
+        trimmed === '' || trimmed === 'string' || trimmed === 'null' || trimmed === 'undefined'
+      );
+    }
+    return false;
+  }
+
+  /**
+   * Format text field, handling placeholders
+   */
+  formatTextField(value: string | null | undefined): string {
+    if (!value || this.isPlaceholderValue(value)) return '-';
+    return value;
+  }
+
+  /**
+   * Format number field, handling placeholders
+   */
+  formatNumberField(value: number | null | undefined, suffix: string = ''): string {
+    if (value === null || value === undefined) return '-';
+    return `${value}${suffix}`;
   }
 
   /**

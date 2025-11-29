@@ -8,11 +8,11 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div class="mx-auto max-w-3xl">
+  <div class="page-shell max-w-3xl">
     <!-- Page header -->
     <div class="mb-6 text-center">
       <app-icon name="bulb-outline" class="text-primary mb-2 text-5xl"></app-icon>
-      <p class="text-gray-600 dark:text-gray-300">
+      <p class="text-base-content/60 dark:text-base-content/80 prose">
         {{ 'tips.subtitle' | translate }}
       </p>
     </div>
@@ -37,9 +37,9 @@
                 [color]="getCategoryColor(tip.category)"
               ></app-icon>
             </div>
-            <div class="flex-1">
+            <div class="prose flex-1">
               <h3 class="mb-1 text-lg font-semibold">{{ tip.title | translate }}</h3>
-              <p class="mb-0 text-sm text-gray-600 dark:text-gray-300">
+              <p class="text-base-content/60 dark:text-base-content/80 mb-0 text-sm">
                 {{ tip.description | translate }}
               </p>
             </div>
@@ -49,18 +49,18 @@
     </div>
 
     <!-- Disclaimer -->
-    <ion-card class="bg-warning-50 dark:bg-warning-900/20 mt-6">
-      <ion-card-content>
+    <div class="card bg-warning/10 dark:bg-warning/20 mt-6 shadow-sm">
+      <div class="card-body p-4">
         <div class="flex items-start gap-2">
           <app-icon
             name="alert-circle-outline"
             class="text-warning flex-shrink-0 text-xl"
           ></app-icon>
-          <p class="mb-0 text-sm text-gray-700 dark:text-gray-300">
+          <p class="text-base-content/70 dark:text-base-content/90 mb-0 text-sm">
             {{ 'tips.disclaimer' | translate }}
           </p>
         </div>
-      </ion-card-content>
-    </ion-card>
+      </div>
+    </div>
   </div>
 </ion-content>

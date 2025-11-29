@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonItem } from '@ionic/angular/standalone';
 import { LocalGlucoseReading } from '../../../core/models/glucose-reading.model';
 import { TranslationService } from '../../../core/services/translation.service';
 
@@ -9,7 +9,7 @@ import { TranslationService } from '../../../core/services/translation.service';
   templateUrl: './reading-item.component.html',
   styleUrls: ['./reading-item.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonItem],
 })
 export class ReadingItemComponent {
   @Input() reading!: LocalGlucoseReading;

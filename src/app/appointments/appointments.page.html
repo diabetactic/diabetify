@@ -2,8 +2,8 @@
   <ion-toolbar color="primary">
     <ion-title>{{ 'appointments.title' | translate }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="createAppointment()" class="inline-flex items-center gap-2">
-        <app-icon name="add"></app-icon>
+      <ion-button (click)="createAppointment()" [disabled]="!canCreateAppointment">
+        <app-icon slot="icon-only" name="add"></app-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -15,73 +15,230 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <div class="px-4 py-6">
-    <!-- Loading spinner -->
+  <div class="page-shell">
+    <!-- Loading spinner - using DaisyUI loading component -->
     <div *ngIf="loading" class="flex flex-col items-center justify-center gap-4 py-12">
-      <app-icon name="loader-circle" class="text-primary animate-spin text-4xl"></app-icon>
-      <p class="m-0 text-base text-gray-600 dark:text-gray-300">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+      <p class="text-base-content/60 dark:text-base-content/80 m-0 text-base">
         {{ 'appointments.loading' | translate }}
       </p>
     </div>
 
-    <!-- Error message -->
-    <ion-card *ngIf="error && !loading" color="danger" class="mb-4">
+    <!-- Error message - using DaisyUI alert -->
+    <div *ngIf="error && !loading" role="alert" class="alert alert-error mb-4">
+      <app-icon name="alert-circle" class="h-5 w-5"></app-icon>
+      <span>{{ error }}</span>
+    </div>
+
+    <!-- Queue Status Panel -->
+    <ion-card
+      *ngIf="!queueLoading && queueState && queueState.state !== 'NONE'"
+      class="queue-card mb-4"
+      [attr.data-queue-state]="queueState.state"
+    >
+      <ion-card-header class="pb-2">
+        <ion-card-title class="flex items-center gap-2 text-base font-semibold">
+          <app-icon name="clock" class="text-primary h-5 w-5 flex-shrink-0"></app-icon>
+          <span>{{ 'appointments.queue.status' | translate }}</span>
+        </ion-card-title>
+      </ion-card-header>
       <ion-card-content>
-        <ion-text>
-          <p>{{ error }}</p>
-        </ion-text>
+        <!-- PENDING state -->
+        <div *ngIf="queueState.state === 'PENDING'" class="flex items-center gap-3">
+          <span class="badge badge-warning gap-1">
+            <span class="loading loading-spinner loading-xs"></span>
+            {{ 'appointments.queue.labels.pending' | translate }}
+          </span>
+          <p class="text-base-content/70 dark:text-base-content/90 m-0 text-sm">
+            {{ 'appointments.queue.states.PENDING' | translate }}
+          </p>
+        </div>
+        <!-- ACCEPTED state -->
+        <div *ngIf="queueState.state === 'ACCEPTED'" class="flex flex-col gap-3">
+          <div class="flex items-center gap-3">
+            <span class="badge badge-success gap-1">
+              <app-icon name="check" class="h-3 w-3"></app-icon>
+              {{ 'appointments.queue.labels.accepted' | translate }}
+            </span>
+            <p class="text-base-content/70 dark:text-base-content/90 m-0 text-sm">
+              {{ 'appointments.queue.states.ACCEPTED' | translate }}
+            </p>
+          </div>
+          <ion-button expand="block" (click)="createAppointment()">
+            <app-icon name="plus" slot="start"></app-icon>
+            {{ 'appointments.actions.create' | translate }}
+          </ion-button>
+        </div>
+        <!-- DENIED state -->
+        <div *ngIf="queueState.state === 'DENIED'" class="flex flex-col gap-3">
+          <div class="flex items-center gap-3">
+            <span class="badge badge-error gap-1">
+              <app-icon name="x" class="h-3 w-3"></app-icon>
+              {{ 'appointments.queue.labels.denied' | translate }}
+            </span>
+            <p class="text-base-content/70 dark:text-base-content/90 m-0 text-sm">
+              {{ 'appointments.queue.states.DENIED' | translate }}
+            </p>
+          </div>
+          <ion-button
+            expand="block"
+            fill="outline"
+            (click)="onRequestAppointment()"
+            [disabled]="requestingAppointment"
+          >
+            <app-icon name="refresh-cw" slot="start" *ngIf="!requestingAppointment"></app-icon>
+            <span
+              class="loading loading-spinner loading-sm"
+              slot="start"
+              *ngIf="requestingAppointment"
+            ></span>
+            {{
+              requestingAppointment
+                ? ('appointments.queue.requesting' | translate)
+                : ('appointments.queue.request' | translate)
+            }}
+          </ion-button>
+        </div>
+        <!-- CREATED state -->
+        <div *ngIf="queueState.state === 'CREATED'" class="flex items-center gap-3">
+          <span class="badge badge-info gap-1">
+            <app-icon name="calendar-check" class="h-3 w-3"></app-icon>
+            {{ 'appointments.queue.labels.created' | translate }}
+          </span>
+          <p class="text-base-content/70 dark:text-base-content/90 m-0 text-sm">
+            {{ 'appointments.queue.states.CREATED' | translate }}
+          </p>
+        </div>
+        <!-- Queue position if available -->
+        <p
+          *ngIf="queueState.position"
+          class="text-base-content/60 dark:text-base-content/80 mt-2 text-xs"
+        >
+          {{ 'appointments.queue.position' | translate: { position: queueState.position } }}
+        </p>
       </ion-card-content>
     </ion-card>
 
-    <!-- Empty state -->
-    <ion-card *ngIf="!loading && !error && appointments.length === 0" class="empty-state mb-4">
+    <!-- Queue Error - using DaisyUI alert -->
+    <div *ngIf="queueError && !queueLoading" role="alert" class="alert alert-warning mb-4">
+      <app-icon name="alert-triangle" class="h-5 w-5"></app-icon>
+      <span>{{ queueError }}</span>
+    </div>
+
+    <!-- Request Appointment Button (when no queue state) -->
+    <ion-card *ngIf="!queueLoading && canRequestAppointment && !loading" class="queue-card mb-4">
+      <ion-card-content class="flex flex-col items-center py-6 text-center">
+        <app-icon name="calendar-plus" class="text-primary mb-3 text-4xl"></app-icon>
+        <h3 class="mb-2 text-lg font-semibold">{{ 'appointments.queue.title' | translate }}</h3>
+        <p class="text-base-content/70 dark:text-base-content/85 mb-4 text-sm">
+          {{ 'appointments.queue.states.NONE' | translate }}
+        </p>
+        <ion-button
+          expand="block"
+          (click)="onRequestAppointment()"
+          [disabled]="requestingAppointment"
+          class="w-full"
+        >
+          <app-icon name="send" slot="start" *ngIf="!requestingAppointment"></app-icon>
+          <span
+            class="loading loading-spinner loading-sm"
+            slot="start"
+            *ngIf="requestingAppointment"
+          ></span>
+          {{
+            requestingAppointment
+              ? ('appointments.queue.requesting' | translate)
+              : ('appointments.queue.request' | translate)
+          }}
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Empty state (only show when no request card is visible) -->
+    <ion-card
+      *ngIf="
+        !loading &&
+        !error &&
+        appointments.length === 0 &&
+        !canRequestAppointment &&
+        queueState?.state !== 'PENDING'
+      "
+      class="empty-state mb-4"
+    >
       <ion-card-content class="flex flex-col items-center py-8 text-center">
-        <span class="material-symbols-outlined text-6xl text-gray-400">medical_information</span>
+        <span
+          class="material-symbols-outlined text-base-content/50 dark:text-base-content/60 text-6xl"
+          >medical_information</span
+        >
         <h2 class="mb-2 mt-4 text-xl font-semibold">
           {{ 'appointments.empty.title' | translate }}
         </h2>
-        <p class="mb-6 text-sm text-gray-600 dark:text-gray-400">
+        <p class="text-base-content/70 dark:text-base-content/85 mb-4 text-sm">
           {{ 'appointments.empty.message' | translate }}
         </p>
-        <ion-button (click)="createAppointment()" expand="block" class="w-full">
+        <!-- Show create button only if ACCEPTED -->
+        <ion-button
+          *ngIf="canCreateAppointment"
+          (click)="createAppointment()"
+          expand="block"
+          class="w-full"
+        >
           {{ 'appointments.actions.create' | translate }}
         </ion-button>
       </ion-card-content>
     </ion-card>
 
-    <!-- Current Appointment -->
+    <!-- Current Appointment (only when queue has an active entry) -->
     <div *ngIf="!loading && !error && currentAppointment" class="flex flex-col gap-4">
       <!-- Section header -->
-      <div class="flex items-center gap-2">
-        <span class="badge badge-primary">{{ 'appointments.current' | translate }}</span>
-      </div>
+      <h2 class="section-title text-base-content/70 dark:text-base-content/90">
+        <span class="section-icon">
+          <app-icon name="calendar"></app-icon>
+        </span>
+        <span>{{ 'appointments.current' | translate }}</span>
+      </h2>
 
       <ion-card
         class="appointment-card border-primary !m-0 cursor-pointer border-l-4 shadow-lg"
+        [attr.data-queue-state]="queueState?.state"
         (click)="viewAppointment(currentAppointment)"
+        style="--background: var(--ion-card-background-elevated, var(--ion-card-background))"
       >
         <ion-card-header>
-          <ion-card-subtitle class="flex items-center gap-2">
-            <app-icon name="clipboard-list" class="text-primary"></app-icon>
-            {{ 'appointments.record' | translate }} #{{ currentAppointment.appointment_id }}
-          </ion-card-subtitle>
-          <ion-card-title class="text-lg">
+          <div class="flex items-center justify-between gap-2">
+            <ion-card-subtitle class="flex items-center gap-2 text-xs">
+              <app-icon name="clipboard-list" class="text-primary h-4 w-4 flex-shrink-0"></app-icon>
+              <span
+                >{{ 'appointments.record' | translate }} #{{
+                  currentAppointment.appointment_id
+                }}</span
+              >
+            </ion-card-subtitle>
+            <span [ngClass]="getQueueBadge(queueState?.state).classes" class="flex-shrink-0">
+              <app-icon
+                [name]="getQueueBadge(queueState?.state).icon"
+                class="h-3 w-3 flex-shrink-0"
+              ></app-icon>
+              {{ getQueueBadge(queueState?.state).label }}
+            </span>
+          </div>
+          <ion-card-title class="mt-2 text-lg font-semibold">
             {{ formatMotive(currentAppointment.motive) }}
           </ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
-          <!-- Glucose objective -->
+          <!-- Glucose objective & core fields -->
           <div class="grid grid-cols-2 gap-3 text-sm">
             <div class="flex flex-col">
-              <span class="text-gray-500 dark:text-gray-400">
+              <span class="text-base-content/60 dark:text-base-content/80">
                 {{ 'appointments.fields.glucoseObjective' | translate }}
               </span>
               <span class="font-semibold">{{ currentAppointment.glucose_objective }} mg/dL</span>
             </div>
 
-            <div class="flex flex-col">
-              <span class="text-gray-500 dark:text-gray-400">
+            <div *ngIf="isValidField(currentAppointment.insulin_type)" class="flex flex-col">
+              <span class="text-base-content/60 dark:text-base-content/80">
                 {{ 'appointments.fields.insulinType' | translate }}
               </span>
               <span class="font-semibold">{{
@@ -90,34 +247,34 @@
             </div>
 
             <div class="flex flex-col">
-              <span class="text-gray-500 dark:text-gray-400">
+              <span class="text-base-content/60 dark:text-base-content/80">
                 {{ 'appointments.fields.dose' | translate }}
               </span>
               <span class="font-semibold">{{ currentAppointment.dose }} U</span>
             </div>
 
             <div class="flex flex-col">
-              <span class="text-gray-500 dark:text-gray-400">
+              <span class="text-base-content/60 dark:text-base-content/80">
                 {{ 'appointments.fields.ratio' | translate }}
               </span>
               <span class="font-semibold">1:{{ currentAppointment.ratio }}</span>
             </div>
           </div>
 
-          <!-- Control data -->
+          <!-- Control data - hide if garbage -->
           <div
-            *ngIf="currentAppointment.control_data"
-            class="mt-3 border-t border-gray-200 pt-3 dark:border-gray-700"
+            *ngIf="isValidField(currentAppointment.control_data)"
+            class="border-base-300 mt-3 border-t pt-3"
           >
-            <span class="text-sm text-gray-500 dark:text-gray-400">
+            <span class="text-base-content/60 dark:text-base-content/80 text-sm">
               {{ 'appointments.fields.controlData' | translate }}
             </span>
             <p class="mt-1 text-sm">{{ currentAppointment.control_data }}</p>
           </div>
 
-          <!-- Other treatment -->
-          <div *ngIf="currentAppointment.another_treatment" class="mt-2">
-            <span class="text-sm text-gray-500 dark:text-gray-400">
+          <!-- Other treatment - hide if garbage -->
+          <div *ngIf="isValidField(currentAppointment.another_treatment)" class="mt-2">
+            <span class="text-base-content/60 dark:text-base-content/80 text-sm">
               {{ 'appointments.fields.otherTreatment' | translate }}
             </span>
             <p class="mt-1 text-sm">{{ currentAppointment.another_treatment }}</p>
@@ -129,15 +286,15 @@
     <!-- Past Appointments (Collapsible) -->
     <div *ngIf="!loading && !error && pastAppointments.length > 0" class="mt-6">
       <div
-        class="bg-base-200 flex cursor-pointer items-center justify-between rounded-lg px-4 py-3"
+        class="bg-base-200 flex cursor-pointer items-center justify-between rounded-xl px-4 py-3"
         (click)="pastAppointmentsExpanded = !pastAppointmentsExpanded"
       >
-        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">
+        <span class="text-base-content/70 dark:text-base-content/90 text-sm font-medium">
           {{ 'appointments.past' | translate }} ({{ pastAppointments.length }})
         </span>
         <app-icon
           [name]="pastAppointmentsExpanded ? 'chevron-up' : 'chevron-down'"
-          class="text-gray-500"
+          class="text-base-content/60 dark:text-base-content/80"
         ></app-icon>
       </div>
 
@@ -149,7 +306,10 @@
         >
           <ion-card-header class="pb-2">
             <ion-card-subtitle class="flex items-center gap-2 text-xs">
-              <app-icon name="clipboard-list" class="text-gray-400"></app-icon>
+              <app-icon
+                name="clipboard-list"
+                class="text-base-content/50 dark:text-base-content/70"
+              ></app-icon>
               {{ 'appointments.record' | translate }} #{{ appointment.appointment_id }}
             </ion-card-subtitle>
             <ion-card-title class="text-base">
@@ -160,13 +320,13 @@
           <ion-card-content class="pt-0">
             <div class="grid grid-cols-2 gap-2 text-xs">
               <div class="flex flex-col">
-                <span class="text-gray-500 dark:text-gray-400">
+                <span class="text-base-content/60 dark:text-base-content/80">
                   {{ 'appointments.fields.glucoseObjective' | translate }}
                 </span>
                 <span class="font-medium">{{ appointment.glucose_objective }} mg/dL</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-gray-500 dark:text-gray-400">
+                <span class="text-base-content/60 dark:text-base-content/80">
                   {{ 'appointments.fields.dose' | translate }}
                 </span>
                 <span class="font-medium">{{ appointment.dose }} U</span>

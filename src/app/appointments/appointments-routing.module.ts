@@ -16,7 +16,7 @@ const routes: Routes = [
       ),
   },
   {
-    path: 'appointment-detail',
+    path: 'appointment-detail/:id',
     loadChildren: () =>
       import('./appointment-detail/appointment-detail.module').then(
         m => m.AppointmentDetailPageModule

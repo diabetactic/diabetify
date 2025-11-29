@@ -56,6 +56,10 @@ export class ReadingsPage implements OnInit, OnDestroy {
   };
   isFilterModalOpen: boolean = false;
 
+  // Reading detail modal
+  isDetailModalOpen: boolean = false;
+  selectedReading: LocalGlucoseReading | null = null;
+
   // User preferences
   preferredUnit: GlucoseUnit = 'mg/dL';
 
@@ -82,6 +86,24 @@ export class ReadingsPage implements OnInit, OnDestroy {
     this.subscribeToUserPreferences();
     this.loadReadings();
     this.setupSearchDebounce();
+    // Auto-fetch from backend when page loads (background sync)
+    this.autoFetchFromBackend();
+  }
+
+  /**
+   * Auto-fetch readings from backend on page load
+   * Runs in background without blocking the UI
+   */
+  private async autoFetchFromBackend(): Promise<void> {
+    try {
+      const result = await this.readingsService.fetchFromBackend();
+      if (result.merged > 0) {
+        this.logger.info('Sync', `Auto-fetched ${result.merged} new readings from backend`);
+      }
+    } catch (error) {
+      // Silent fail - don't show error for background sync
+      this.logger.warn('Sync', 'Auto-fetch from backend failed', error);
+    }
   }
 
   ngOnDestroy(): void {
@@ -331,17 +353,59 @@ export class ReadingsPage implements OnInit, OnDestroy {
    */
   addReading(): void {
     this.logger.info('UI', 'Add reading button clicked');
-    // TODO: Navigate to add reading form
     this.router.navigate(['/add-reading']);
   }
 
   /**
-   * Handle reading item click
+   * Handle reading item click - opens detail modal
    */
   onReadingClick(reading: LocalGlucoseReading): void {
     this.logger.info('UI', 'Reading clicked', { readingId: reading.id });
-    // TODO: Navigate to reading details or edit page
-    console.log('Reading clicked:', reading);
+    this.selectedReading = reading;
+    this.isDetailModalOpen = true;
+  }
+
+  /**
+   * Close the reading detail modal
+   */
+  closeDetailModal(): void {
+    this.isDetailModalOpen = false;
+    this.selectedReading = null;
+  }
+
+  /**
+   * Format time for display in modal
+   */
+  formatReadingTime(time: string): string {
+    const date = new Date(time);
+    const locale = this.translationService.getCurrentLanguage() === 'es' ? 'es-ES' : 'en-US';
+    return date.toLocaleTimeString(locale, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  /**
+   * Format full date for display in modal
+   */
+  formatReadingDate(time: string): string {
+    const date = new Date(time);
+    const locale = this.translationService.getCurrentLanguage() === 'es' ? 'es-ES' : 'en-US';
+    return date.toLocaleDateString(locale, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
+
+  /**
+   * Get meal context label
+   */
+  getMealLabel(mealContext?: string): string {
+    if (!mealContext) return '';
+    const key = `glucose.meal.${mealContext}`;
+    return this.translationService.instant(key);
   }
 
   /**

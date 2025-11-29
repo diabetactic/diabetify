@@ -3,34 +3,39 @@
 // Keeping only Ionic-specific CSS variables that can't be replaced
 
 ion-tab-bar {
+  // Solid background - hex value for Android WebView compatibility
+  --background: #ffffff;
+  background: #ffffff;
+
+  // Border with subtle separation
+  --border: 1px solid #e5e7eb;
+
   // Safe area inset for devices with notches
-  padding-bottom: env(safe-area-inset-bottom);
-  height: calc(56px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
 
-  // Border is now handled by Tailwind classes in HTML
-  // but keeping this as fallback for Ionic-specific scenarios
-  --border: 1px solid rgba(0, 0, 0, 0.08);
-
-  @media (prefers-color-scheme: dark) {
-    --border: 1px solid rgba(255, 255, 255, 0.1);
+// Dark mode - class-based - hex fallback for Android WebView
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
+  ion-tab-bar {
+    background: #1a1a2e !important;
+    --background: #1a1a2e;
+    border-top: 1px solid #374151;
   }
 }
 
 ion-tab-button {
-  // Tab colors (Ionic CSS variables - required)
-  --color: #94a3b8; // Inactive tab color (gray-400)
-  --color-selected: var(--ion-color-primary); // Active tab color (primary blue)
-  max-width: none;
+  // Tab colors - hex fallback for Android WebView
+  --color: #6b7280;
+  --color-selected: #8b5cf6;
 
-  // Active tab state - Material symbols filled variant
-  &.tab-selected {
-    .material-symbols-outlined {
-      font-variation-settings:
-        'FILL' 1,
-        'wght' 500,
-        'GRAD' 0,
-        'opsz' 24;
-    }
+  ion-icon {
+    font-size: 24px;
+  }
+
+  ion-label {
+    font-size: 12px;
+    margin-top: 2px;
   }
 }
 
@@ -45,7 +50,7 @@ ion-fab.center-fab {
     --background-activated: var(--ion-color-primary-shade);
     --background-hover: var(--ion-color-primary-tint);
     --color: white;
-    --box-shadow: 0 4px 12px rgba(37, 175, 244, 0.3);
+    --box-shadow: var(--shadow-11);
     --border-radius: 50%;
 
     // Material symbol sizing
@@ -59,7 +64,7 @@ ion-fab.center-fab {
 
     // Hover effect for web (enhanced by Tailwind class in HTML)
     &:hover {
-      --box-shadow: 0 6px 16px rgba(37, 175, 244, 0.4);
+      --box-shadow: var(--shadow-12);
     }
 
     // Active press effect
