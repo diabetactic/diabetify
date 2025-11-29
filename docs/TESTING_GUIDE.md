@@ -2,17 +2,19 @@
 
 ## Stack de Testing
 
-- **Tests Unitarios**: Jasmine + Karma
+- **Tests Unitarios e Integración**: Jest + jest-preset-angular (TestBed sobre jsdom)
 - **Tests E2E**: Playwright
 - **Testing Móvil**: Capacitor + ADB
 
 ## Comandos Rápidos
 
 ```bash
-# Tests Unitarios
+# Tests Unitarios (Jest)
 npm test                        # Modo watch
-npm run test:ci                 # Modo CI (headless)
 npm run test:coverage           # Con reporte de cobertura
+
+# Tests de Integración (Jest)
+npm run test:integration        # Suite de integración (src/app/tests/integration)
 
 # Tests E2E
 npm run test:e2e                # Headless
@@ -22,7 +24,7 @@ npm run test:e2e:headed         # Con navegador visible
 npm run cap:run:android         # Ejecutar en dispositivo
 ```
 
-## Tests Unitarios
+## Tests Unitarios (Jest)
 
 ### Estructura de Test
 
@@ -34,7 +36,7 @@ describe('NombreServicio', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [NombreServicio]
+      providers: [NombreServicio],
     });
 
     service = TestBed.inject(NombreServicio);
@@ -69,9 +71,7 @@ httpMock.expectOne('/api/endpoint').flush(mockData);
 await expectAsync(service.method()).toBeResolved();
 
 // Test de manejo de errores
-httpMock.expectOne('/api/endpoint').error(
-  new ErrorEvent('Error de red')
-);
+httpMock.expectOne('/api/endpoint').error(new ErrorEvent('Error de red'));
 ```
 
 ## Tests E2E
@@ -139,6 +139,7 @@ adb logcat | grep diabetactic
 ### Mock Data
 
 Ubicación: `src/assets/mocks/`
+
 - `glucose-readings.json`
 - `user-profiles.json`
 - `appointments.json`
@@ -150,20 +151,20 @@ Ubicación: `src/assets/mocks/`
 export const environment = {
   production: false,
   useMockData: true,
-  apiUrl: 'http://localhost:3000/api'
+  apiUrl: 'http://localhost:3000/api',
 };
 ```
 
 ## Debugging
 
-### Tests Unitarios
+### Tests Unitarios (Jest)
 
 ```bash
 # Ejecutar archivo específico
-npm test -- --include='**/auth.service.spec.ts'
+npm test -- --runInBand --testPathPattern='auth.service.spec.ts'
 
-# Modo debug
-npm test -- --browsers=Chrome --watch
+# Modo watch interactivo
+npm test -- --watch
 ```
 
 ### Tests E2E
@@ -186,6 +187,7 @@ npx playwright test --debug
 - **General**: 85% objetivo
 
 Verificar cobertura:
+
 ```bash
 npm run test:coverage
 open coverage/index.html
@@ -194,16 +196,19 @@ open coverage/index.html
 ## Problemas Comunes
 
 ### Errores de Timeout
+
 - Aumentar timeout: `jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000`
 - Verificar promises sin resolver
 - Mockear llamadas HTTP lentas
 
 ### Tests Inestables
+
 - Evitar waits hardcodeados
 - Usar `waitForAsync()` para operaciones async
 - Asegurar aislamiento de tests
 
 ### Memory Leaks
+
 - Limpiar suscripciones en `afterEach()`
 - Destruir componentes correctamente
 - Limpiar timers e intervals

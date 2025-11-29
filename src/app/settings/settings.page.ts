@@ -1,8 +1,28 @@
 import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { Router } from '@angular/router';
-import { IonicModule, AlertController, LoadingController, ToastController } from '@ionic/angular';
+import { AlertController, LoadingController, ToastController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonBackButton,
+  IonTitle,
+  IonButton,
+  IonContent,
+  IonListHeader,
+  IonLabel,
+  IonList,
+  IonItem,
+  IonAvatar,
+  IonSelect,
+  IonSelectOption,
+  IonToggle,
+  IonIcon,
+  IonNote,
+} from '@ionic/angular/standalone';
 import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -20,7 +40,32 @@ import { AppIconComponent } from '../shared/components/app-icon/app-icon.compone
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, DebugPanelComponent, AppIconComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    // Ionic standalone components
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonBackButton,
+    IonTitle,
+    IonButton,
+    IonContent,
+    IonListHeader,
+    IonLabel,
+    IonList,
+    IonItem,
+    IonAvatar,
+    IonSelect,
+    IonSelectOption,
+    IonToggle,
+    IonIcon,
+    IonNote,
+    // App components
+    DebugPanelComponent,
+    AppIconComponent,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class SettingsPage implements OnInit, OnDestroy {

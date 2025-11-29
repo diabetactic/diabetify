@@ -1,13 +1,36 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonButton,
+  IonIcon,
+} from '@ionic/angular/standalone';
 import { AutoTestService, TestResult } from './auto-test.service';
 
 @Component({
   selector: 'app-integration-test',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    // Ionic standalone components
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonItem,
+    IonLabel,
+    IonInput,
+    IonButton,
+    IonIcon,
+  ],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
@@ -16,7 +39,7 @@ import { AutoTestService, TestResult } from './auto-test.service';
     </ion-header>
 
     <ion-content class="ion-padding">
-      <div class="test-container">
+      <div class="test-container prose prose-sm">
         <!-- Credentials Section -->
         <div class="credentials-section">
           <h2>🔑 Heroku API Gateway</h2>

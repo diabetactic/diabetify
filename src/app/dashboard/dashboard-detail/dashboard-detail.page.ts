@@ -1,7 +1,19 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonTitle,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonIcon,
+} from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -21,16 +33,26 @@ import { AppIconComponent } from '../../shared/components/app-icon/app-icon.comp
   standalone: true,
   imports: [
     CommonModule,
-    IonicModule,
     RouterModule,
     TranslateModule,
+    // Ionic standalone components
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonTitle,
+    IonContent,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
+    IonIcon,
+    // App components
     StatCardComponent,
     AppIconComponent,
   ],
 })
 export class DashboardDetailPage implements OnInit, OnDestroy {
-  readonly isKarma = typeof window !== 'undefined' && (window as any).__karma__;
-
   // Statistics data
   statistics: GlucoseStatistics | null = null;
 

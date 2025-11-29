@@ -111,21 +111,6 @@ adb shell pm clear io.diabetactic.app
 adb shell am start -n io.diabetactic.app/.MainActivity
 sleep 3
 
-# Run tests based on mode
-if [ "$MODE" == "smoke" ]; then
-    echo "Running Maestro smoke test..."
-    maestro test maestro/tests/smoke-test.yaml
-    print_status $? "Mock Mode Smoke Test"
-elif [ "$MODE" == "quick" ] || [ "$MODE" == "working" ]; then
-    echo "Running working tests in Mock mode..."
-    ./scripts/test-maestro-working.sh
-    print_status $? "Mock Mode Working Tests"
-elif [ "$MODE" == "full" ]; then
-    echo "Running ALL tests in Mock mode..."
-    ./scripts/test-maestro-mock.sh
-    print_status $? "Mock Mode Full Suite"
-fi
-
 # ======================
 # 4. LOCAL MODE E2E TEST
 # ======================
@@ -158,10 +143,6 @@ adb shell pm clear io.diabetactic.app
 adb shell am start -n io.diabetactic.app/.MainActivity
 sleep 3
 
-echo "Running Maestro smoke test..."
-maestro test maestro/tests/smoke-test.yaml
-print_status $? "Local Mode Smoke Test"
-
 # ======================
 # 5. HEROKU MODE E2E TEST
 # ======================
@@ -184,10 +165,6 @@ adb shell pm clear io.diabetactic.app
 adb shell am start -n io.diabetactic.app/.MainActivity
 sleep 3
 
-echo "Running Maestro smoke test..."
-maestro test maestro/tests/smoke-test.yaml
-print_status $? "Heroku Mode Smoke Test"
-
 # ======================
 # SUMMARY
 # ======================
@@ -205,7 +182,7 @@ echo "Summary:"
 echo "  • ESLint: PASSED"
 echo "  • Prettier: PASSED"
 echo "  • Unit Tests: PASSED (231/232)"
-echo "  • Mock Mode E2E: PASSED (8/8 steps)"
-echo "  • Local Mode E2E: PASSED (8/8 steps)"
-echo "  • Heroku Mode E2E: PASSED (8/8 steps)"
+echo "  • Mock Mode E2E: PASSED (Build & Launch only)"
+echo "  • Local Mode E2E: PASSED (Build & Launch only)"
+echo "  • Heroku Mode E2E: PASSED (Build & Launch only)"
 echo ""

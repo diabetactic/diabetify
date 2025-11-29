@@ -7,7 +7,7 @@ async function captureUIState() {
 
   const browser = await chromium.launch({ headless: false });
   const context = await browser.newContext({
-    viewport: { width: 375, height: 812 } // iPhone 12 Pro dimensions
+    viewport: { width: 375, height: 812 }, // iPhone 12 Pro dimensions
   });
   const page = await context.newPage();
 
@@ -18,7 +18,7 @@ async function captureUIState() {
     screenshots: [],
     consoleErrors: [],
     visualIssues: [],
-    accessibility: {}
+    accessibility: {},
   };
 
   // Capture console errors
@@ -26,7 +26,7 @@ async function captureUIState() {
     if (msg.type() === 'error') {
       findings.consoleErrors.push({
         text: msg.text(),
-        location: msg.location()
+        location: msg.location(),
       });
     }
   });
@@ -97,7 +97,11 @@ async function captureUIState() {
 
         const appointmentsPath = path.join(screenshotDir, 'broken-ui-appointments.png');
         await page.screenshot({ path: appointmentsPath, fullPage: true });
-        findings.screenshots.push({ name: 'appointments', path: appointmentsPath, accessible: true });
+        findings.screenshots.push({
+          name: 'appointments',
+          path: appointmentsPath,
+          accessible: true,
+        });
         console.log('✅ Captured: Appointments tab');
         findings.accessibility.appointments = await page.accessibility.snapshot();
       }
@@ -166,9 +170,8 @@ async function captureUIState() {
     findings.visualIssues.push({
       analysis: 'Screenshots captured for manual inspection',
       totalScreenshots: findings.screenshots.length,
-      consoleErrorCount: findings.consoleErrors.length
+      consoleErrorCount: findings.consoleErrors.length,
     });
-
   } catch (error) {
     console.error('❌ Fatal error:', error);
     findings.visualIssues.push({ fatal: error.message });
@@ -185,12 +188,14 @@ async function captureUIState() {
   return findings;
 }
 
-captureUIState().then(findings => {
-  console.log('\n📊 Summary:');
-  console.log(`  Screenshots: ${findings.screenshots.length}`);
-  console.log(`  Console Errors: ${findings.consoleErrors.length}`);
-  console.log(`  Visual Issues: ${findings.visualIssues.length}`);
-}).catch(err => {
-  console.error('Script failed:', err);
-  process.exit(1);
-});
+captureUIState()
+  .then(findings => {
+    console.log('\n📊 Summary:');
+    console.log(`  Screenshots: ${findings.screenshots.length}`);
+    console.log(`  Console Errors: ${findings.consoleErrors.length}`);
+    console.log(`  Visual Issues: ${findings.visualIssues.length}`);
+  })
+  .catch(err => {
+    console.error('Script failed:', err);
+    process.exit(1);
+  });

@@ -28,9 +28,8 @@ if ! npm run backend:health; then
 fi
 
 echo ""
-echo "🧪 Running Karma integration tests..."
-# KARMA_INTEGRATION flag lets test.ts know to skip unit specs
-KARMA_INTEGRATION=true API_GATEWAY_URL="${API_GATEWAY_URL:-http://localhost:8004}" ng run app:test-integration:ci
+echo "🧪 Running Jest integration tests..."
+API_GATEWAY_URL="${API_GATEWAY_URL:-http://localhost:8004}" npm run test:integration
 
 echo ""
 echo "✅ Integration suite completed."

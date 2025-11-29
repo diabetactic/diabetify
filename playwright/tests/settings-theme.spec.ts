@@ -1,9 +1,5 @@
 import { test, expect } from '@playwright/test';
-import {
-  createProfileSeed,
-  PROFILE_STORAGE_KEY,
-  SCHEMA_STORAGE_KEY,
-} from '../config/profileSeed';
+import { createProfileSeed, PROFILE_STORAGE_KEY, SCHEMA_STORAGE_KEY } from '../config/profileSeed';
 
 test.describe('Profile Theme Preferences', () => {
   test.beforeEach(async ({ page }) => {
@@ -54,7 +50,10 @@ test.describe('Profile Theme Preferences', () => {
       }
     }, PROFILE_STORAGE_KEY);
 
-    const storedProfileRaw = await page.evaluate(key => localStorage.getItem(key), PROFILE_STORAGE_KEY);
+    const storedProfileRaw = await page.evaluate(
+      key => localStorage.getItem(key),
+      PROFILE_STORAGE_KEY
+    );
     const storedProfile = storedProfileRaw ? JSON.parse(storedProfileRaw) : null;
     expect(storedProfile?.preferences?.themeMode).toBe('dark');
   });

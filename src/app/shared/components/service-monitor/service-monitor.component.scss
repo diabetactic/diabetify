@@ -4,8 +4,11 @@
 
 // Ionic card variables (required for proper Ionic styling)
 ion-card {
-  --background: var(--ion-card-background, var(--ion-background-color, #fff));
-  --color: var(--ion-card-color, var(--ion-text-color, #000));
+  --background: oklch(var(--b1));
+  --color: oklch(var(--bc));
+
+  border: 1px solid oklch(var(--bc) / 6%);
+  border-radius: 1rem;
 }
 
 // Modal card overrides (prevent hover effects in modal)
@@ -14,26 +17,38 @@ ion-modal {
     cursor: default;
 
     &:hover {
-      transform: none !important;
-      box-shadow: none !important;
+      transform: none;
+      box-shadow: var(--shadow-17);
     }
   }
 }
 
-// Dark mode card background override
-@media (prefers-color-scheme: dark) {
+// Dark mode - class-based
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
   ion-card {
-    --background: var(--ion-color-step-50, #1e1e1e);
+    --background: oklch(var(--b2));
+
+    border: 1px solid oklch(var(--bc) / 10%);
+    box-shadow: var(--shadow-32);
+  }
+
+  ion-card-header ion-card-title {
+    color: oklch(var(--bc));
+  }
+
+  ion-card-content {
+    color: oklch(var(--bc) / 85%);
   }
 }
 
 // Responsive adjustments for very small screens
-@media (max-width: 360px) {
+@media (width <= 360px) {
   ion-grid {
-    padding: 4px !important;
+    padding: 4px;
   }
 
   ion-col {
-    padding: 2px !important;
+    padding: 2px;
   }
 }

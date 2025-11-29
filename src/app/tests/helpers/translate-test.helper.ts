@@ -59,7 +59,7 @@ export function createTranslateServiceMock(): jasmine.SpyObj<TranslateService> {
   );
 
   // Setup default behaviors
-  mock.instant.and.callFake((key: string | string[], interpolateParams?: Object) => {
+  mock.instant.and.callFake((key: string | string[], interpolateParams?: object) => {
     if (Array.isArray(key)) {
       const result: any = {};
       key.forEach(k => {
@@ -70,7 +70,7 @@ export function createTranslateServiceMock(): jasmine.SpyObj<TranslateService> {
     return key;
   });
 
-  mock.get.and.callFake((key: string | string[], interpolateParams?: Object) => {
+  mock.get.and.callFake((key: string | string[], interpolateParams?: object) => {
     if (Array.isArray(key)) {
       const result: any = {};
       key.forEach(k => {

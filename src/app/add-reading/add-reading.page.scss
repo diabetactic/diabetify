@@ -2,6 +2,17 @@
 // Ionic Component CSS Variables (PRESERVE)
 // =============================================
 
+.add-reading-content {
+  --background: oklch(var(--b1));
+}
+
+.add-reading-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
 // Form Items
 .form-item {
   --background: var(--ion-color-light);
@@ -28,11 +39,12 @@
   gap: 8px;
 
   .glucose-input {
+    --padding-start: 0;
+    --padding-end: 0;
+
     flex: 1;
     font-size: 24px;
     font-weight: 600;
-    --padding-start: 0;
-    --padding-end: 0;
 
     &.invalid {
       --color: var(--ion-color-danger);
@@ -45,13 +57,12 @@
   --background: transparent;
   --padding-start: 0;
   --padding-end: 0;
+
   font-size: 14px;
 }
 
-// Date Time Button
+// Date Time Button - uses DaisyUI theme variables from global.css
 ion-datetime-button {
-  --background: var(--ion-color-light);
-  --color: var(--ion-color-dark);
   width: 100%;
 }
 
@@ -59,38 +70,31 @@ ion-datetime-button {
 .ion-select-full {
   --padding-start: 0;
   --padding-end: 0;
+
   width: 100%;
 }
 
 // Dark mode overrides for add-reading
+// Note: ion-datetime and ion-datetime-button styling is handled globally
+// using DaisyUI theme variables in global.css
 :host-context(.dark),
 :host-context(.ion-palette-dark) {
   ion-content {
-    --background: #020617;
-  }
-
-  ion-datetime-button {
-    --background: #111827;
-    --color: #e5e7eb;
+    --background: oklch(var(--b1));
   }
 
   ion-modal {
-    --background: #020617;
+    --background: oklch(var(--b1));
   }
 
-  ion-datetime {
-    --background: #020617;
-    --wheel-background: #020617;
-    --wheel-highlight-background: #111827;
-    --wheel-fade-background: transparent;
-    color: #e5e7eb;
+  .alert-info {
+    background: oklch(var(--b3));
+    border: 1px solid oklch(var(--bc) / 18%);
+    color: oklch(var(--bc));
   }
 
-  .ion-select-full {
-    ion-select {
-      --placeholder-color: #9ca3af;
-      --color: #e5e7eb;
-    }
+  ion-item {
+    --background: transparent;
   }
 }
 
@@ -110,35 +114,37 @@ ion-datetime-button {
     gap: 8px;
     padding: 8px 20px;
     border-radius: 20px;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 14px;
+    color: var(--dt-color-text-primary);
     transition: all 0.3s ease;
 
     &[data-status='success'] {
-      background-color: rgba(var(--ion-color-success-rgb), 0.15);
-      color: var(--ion-color-success);
+      background-color: rgba(var(--ion-color-success-rgb), 0.14);
       border: 2px solid var(--ion-color-success);
     }
 
     &[data-status='warning'] {
-      background-color: rgba(var(--ion-color-warning-rgb), 0.15);
-      color: var(--ion-color-warning);
+      background-color: rgba(var(--ion-color-warning-rgb), 0.14);
       border: 2px solid var(--ion-color-warning);
     }
 
     &[data-status='danger'] {
-      background-color: rgba(var(--ion-color-danger-rgb), 0.15);
-      color: var(--ion-color-danger);
+      background-color: rgba(var(--ion-color-danger-rgb), 0.14);
       border: 2px solid var(--ion-color-danger);
     }
   }
 }
 
+// Component-specific fadeIn: slides from ABOVE with subtle 10px distance
+// Different from global.css fadeIn (opacity only) and fadeInDown (30px from above)
+// This creates a gentler entrance effect for form elements
 @keyframes fadeIn {
   from {
     opacity: 0%;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 100%;
     transform: translateY(0);

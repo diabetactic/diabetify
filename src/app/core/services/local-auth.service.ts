@@ -7,6 +7,7 @@ import { Preferences } from '@capacitor/preferences';
 import { PlatformDetectorService } from './platform-detector.service';
 import { LoggerService } from './logger.service';
 import { MockDataService } from './mock-data.service';
+import { MockAdapterService } from './mock-adapter.service';
 import { CapacitorHttpService } from './capacitor-http.service';
 import { environment } from '../../../environments/environment';
 import { API_GATEWAY_BASE_URL } from '../../shared/config/api-base-url';
@@ -163,9 +164,10 @@ export class LocalAuthService {
     private platformDetector: PlatformDetectorService,
     private logger: LoggerService,
     private mockData: MockDataService,
+    private mockAdapter: MockAdapterService,
     private capacitorHttp: CapacitorHttpService
   ) {
-    this.logger.info('Init', 'LocalAuthService initialized (USING MOCK DATA)');
+    this.logger.info('Init', 'LocalAuthService initialized');
     // Set base URL for API calls
     const defaultUrl = API_GATEWAY_BASE_URL;
     this.baseUrl = this.platformDetector.getApiBaseUrl(defaultUrl);
@@ -187,49 +189,50 @@ export class LocalAuthService {
   /**
    * Initialize authentication state from storage
    * Resolves initializationPromise when complete
+   * NOTE: Capacitor Preferences uses localStorage on web, so we always use it
    */
   private async initializeAuthState(): Promise<void> {
     try {
-      if (Capacitor.isNativePlatform()) {
-        try {
-          const [accessToken, refreshToken, userStr, expiresAtStr] = await Promise.all([
-            Preferences.get({ key: STORAGE_KEYS.ACCESS_TOKEN }),
-            Preferences.get({ key: STORAGE_KEYS.REFRESH_TOKEN }),
-            Preferences.get({ key: STORAGE_KEYS.USER }),
-            Preferences.get({ key: STORAGE_KEYS.EXPIRES_AT }),
-          ]);
+      // Always try to restore from storage (works on both native and web)
+      // Capacitor Preferences uses localStorage on web platforms
+      try {
+        const [accessToken, refreshToken, userStr, expiresAtStr] = await Promise.all([
+          Preferences.get({ key: STORAGE_KEYS.ACCESS_TOKEN }),
+          Preferences.get({ key: STORAGE_KEYS.REFRESH_TOKEN }),
+          Preferences.get({ key: STORAGE_KEYS.USER }),
+          Preferences.get({ key: STORAGE_KEYS.EXPIRES_AT }),
+        ]);
 
-          const hasAccessToken = !!accessToken.value;
-          const hasRefreshToken = !!refreshToken.value;
-          const hasUser = !!userStr.value;
+        const hasAccessToken = !!accessToken.value;
+        const hasRefreshToken = !!refreshToken.value;
+        const hasUser = !!userStr.value;
 
-          if (hasAccessToken && hasUser && userStr.value) {
-            const user = JSON.parse(userStr.value) as LocalUser;
-            const expiresAt = expiresAtStr.value ? parseInt(expiresAtStr.value, 10) : null;
+        if (hasAccessToken && hasUser && userStr.value) {
+          const user = JSON.parse(userStr.value) as LocalUser;
+          const expiresAt = expiresAtStr.value ? parseInt(expiresAtStr.value, 10) : null;
 
-            // Check if token is expired
-            if (!expiresAt || Date.now() < expiresAt) {
-              this.logger.info('Auth', 'Auth state restored from storage', { userId: user.id });
-              this.authStateSubject.next({
-                isAuthenticated: true,
-                user,
-                accessToken: accessToken.value,
-                refreshToken: hasRefreshToken ? refreshToken.value : null,
-                expiresAt,
-              });
-            } else if (hasRefreshToken) {
-              this.logger.info('Auth', 'Token expired, attempting refresh');
-              // Try to refresh the token
-              this.refreshAccessToken().subscribe();
-            }
+          // Check if token is expired
+          if (!expiresAt || Date.now() < expiresAt) {
+            this.logger.info('Auth', 'Auth state restored from storage', { userId: user.id });
+            this.authStateSubject.next({
+              isAuthenticated: true,
+              user,
+              accessToken: accessToken.value,
+              refreshToken: hasRefreshToken ? refreshToken.value : null,
+              expiresAt,
+            });
           } else if (hasRefreshToken) {
-            this.logger.info('Auth', 'No access token, attempting refresh');
+            this.logger.info('Auth', 'Token expired, attempting refresh');
             // Try to refresh the token
             this.refreshAccessToken().subscribe();
           }
-        } catch (error) {
-          this.logger.error('Auth', 'Failed to initialize auth state', error);
+        } else if (hasRefreshToken) {
+          this.logger.info('Auth', 'No access token, attempting refresh');
+          // Try to refresh the token
+          this.refreshAccessToken().subscribe();
         }
+      } catch (error) {
+        this.logger.error('Auth', 'Failed to initialize auth state', error);
       }
     } finally {
       // Resolve initialization promise when complete (success or error)
@@ -242,19 +245,20 @@ export class LocalAuthService {
    * Updated to be simpler and match the UI requirements
    */
   login(username: string, password: string, rememberMe: boolean = false): Observable<LoginResult> {
+    const isAuthMockEnabled = this.mockAdapter.isServiceMockEnabled('auth');
     console.log('🔐 [AUTH] Login attempt started');
     console.log('🔐 [AUTH] Username:', username);
     console.log('🔐 [AUTH] Password length:', password?.length ?? 0);
     console.log('🔐 [AUTH] Remember me:', rememberMe);
-    console.log('🔐 [AUTH] Backend mode:', environment.backendMode);
-    console.log('🔐 [AUTH] Use mock:', environment.features.useTidepoolMock);
+    console.log('🔐 [AUTH] Backend mode:', (environment as any).backendMode);
+    console.log('🔐 [AUTH] Auth mock enabled:', isAuthMockEnabled);
 
     // MOCK MODE: Return mock data immediately without HTTP calls
-    if (environment.features.useTidepoolMock) {
+    if (isAuthMockEnabled) {
       console.log('🎭 [AUTH] MOCK MODE - Bypassing backend, returning mock data');
       this.logger.info('Auth', 'Mock mode login - bypassing HTTP calls', {
         username,
-        backendMode: environment.backendMode,
+        backendMode: (environment as any).backendMode,
       });
       return from(this.handleDemoLogin(rememberMe));
     }
@@ -435,6 +439,7 @@ export class LocalAuthService {
 
   /**
    * Logout the user
+   * NOTE: Always clears storage (Capacitor Preferences uses localStorage on web)
    */
   async logout(): Promise<void> {
     const user = this.authStateSubject.value.user;
@@ -449,15 +454,14 @@ export class LocalAuthService {
       expiresAt: null,
     });
 
-    // Clear storage
-    if (Capacitor.isNativePlatform()) {
-      await Promise.all([
-        Preferences.remove({ key: STORAGE_KEYS.ACCESS_TOKEN }),
-        Preferences.remove({ key: STORAGE_KEYS.REFRESH_TOKEN }),
-        Preferences.remove({ key: STORAGE_KEYS.USER }),
-        Preferences.remove({ key: STORAGE_KEYS.EXPIRES_AT }),
-      ]);
-    }
+    // Always clear storage (works on both native and web)
+    // Capacitor Preferences uses localStorage on web platforms
+    await Promise.all([
+      Preferences.remove({ key: STORAGE_KEYS.ACCESS_TOKEN }),
+      Preferences.remove({ key: STORAGE_KEYS.REFRESH_TOKEN }),
+      Preferences.remove({ key: STORAGE_KEYS.USER }),
+      Preferences.remove({ key: STORAGE_KEYS.EXPIRES_AT }),
+    ]);
 
     this.logger.info('Auth', 'Logout completed', { userId: user?.id });
   }
@@ -643,6 +647,7 @@ export class LocalAuthService {
 
   /**
    * Handle authentication response
+   * NOTE: Always persists to storage (Capacitor Preferences uses localStorage on web)
    */
   private async handleAuthResponse(response: TokenResponse, rememberMe: boolean): Promise<void> {
     const expiresInSeconds = response.expires_in ?? 1800; // Default 30 minutes
@@ -657,29 +662,28 @@ export class LocalAuthService {
       expiresAt,
     });
 
-    // Store tokens and user info if remember me is checked or on native platforms
-    if (Capacitor.isNativePlatform() || rememberMe) {
-      await Promise.all([
-        Preferences.set({
-          key: STORAGE_KEYS.ACCESS_TOKEN,
-          value: response.access_token,
-        }),
-        response.refresh_token
-          ? Preferences.set({
-              key: STORAGE_KEYS.REFRESH_TOKEN,
-              value: response.refresh_token,
-            })
-          : Promise.resolve(),
-        Preferences.set({
-          key: STORAGE_KEYS.USER,
-          value: JSON.stringify(response.user),
-        }),
-        Preferences.set({
-          key: STORAGE_KEYS.EXPIRES_AT,
-          value: expiresAt.toString(),
-        }),
-      ]);
-    }
+    // Always store tokens and user info (works on both native and web)
+    // Capacitor Preferences uses localStorage on web platforms
+    await Promise.all([
+      Preferences.set({
+        key: STORAGE_KEYS.ACCESS_TOKEN,
+        value: response.access_token,
+      }),
+      response.refresh_token
+        ? Preferences.set({
+            key: STORAGE_KEYS.REFRESH_TOKEN,
+            value: response.refresh_token,
+          })
+        : Promise.resolve(),
+      Preferences.set({
+        key: STORAGE_KEYS.USER,
+        value: JSON.stringify(response.user),
+      }),
+      Preferences.set({
+        key: STORAGE_KEYS.EXPIRES_AT,
+        value: expiresAt.toString(),
+      }),
+    ]);
 
     // Schedule token expiration reminder (5 minutes before expiry)
     const reminderTime = (expiresInSeconds - 300) * 1000;

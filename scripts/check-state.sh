@@ -41,13 +41,7 @@ else
     echo -e "${RED}✗ NOT CONFIGURED${NC}"
 fi
 
-# Check Maestro
-echo -n "Maestro: "
-if command -v maestro &> /dev/null; then
-    echo -e "${GREEN}✓ $(maestro --version 2>&1 | head -1)${NC}"
-else
-    echo -e "${RED}✗ NOT INSTALLED${NC}"
-fi
+
 
 # Check APK
 echo -n "APK (debug): "

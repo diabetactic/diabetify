@@ -1,8 +1,8 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-button (click)="goBack()" class="inline-flex items-center gap-2">
-        <app-icon name="arrow-left"></app-icon>
+      <ion-button (click)="goBack()">
+        <app-icon slot="icon-only" name="arrow-left"></app-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>{{ 'appointments.detail.title' | translate }}</ion-title>
@@ -14,7 +14,7 @@
     <!-- Loading state -->
     <div *ngIf="loading" class="flex flex-col items-center justify-center gap-4 py-12">
       <app-icon name="loader-circle" class="text-primary animate-spin text-4xl"></app-icon>
-      <p class="m-0 text-base text-gray-600 dark:text-gray-300">
+      <p class="text-base-content/60 dark:text-base-content/80 m-0 text-base">
         {{ 'appointments.detail.loading' | translate }}
       </p>
     </div>
@@ -45,8 +45,10 @@
         <ion-card-content>
           <div class="grid grid-cols-2 gap-4">
             <!-- Glucose Objective -->
-            <div class="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-              <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div class="bg-base-200 flex flex-col rounded-xl p-3">
+              <span
+                class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+              >
                 {{ 'appointments.fields.glucoseObjective' | translate }}
               </span>
               <span class="text-primary text-lg font-bold">
@@ -55,8 +57,10 @@
             </div>
 
             <!-- Insulin Type -->
-            <div class="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-              <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div class="bg-base-200 flex flex-col rounded-xl p-3">
+              <span
+                class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+              >
                 {{ 'appointments.fields.insulinType' | translate }}
               </span>
               <span class="text-lg font-semibold">
@@ -65,32 +69,40 @@
             </div>
 
             <!-- Dose -->
-            <div class="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-              <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div class="bg-base-200 flex flex-col rounded-xl p-3">
+              <span
+                class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+              >
                 {{ 'appointments.fields.dose' | translate }}
               </span>
               <span class="text-lg font-semibold">{{ appointment.dose }} U</span>
             </div>
 
             <!-- Fixed Dose -->
-            <div class="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-              <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div class="bg-base-200 flex flex-col rounded-xl p-3">
+              <span
+                class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+              >
                 {{ 'appointments.fields.fixedDose' | translate }}
               </span>
               <span class="text-lg font-semibold">{{ appointment.fixed_dose }} U</span>
             </div>
 
             <!-- Ratio -->
-            <div class="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-              <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div class="bg-base-200 flex flex-col rounded-xl p-3">
+              <span
+                class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+              >
                 {{ 'appointments.fields.ratio' | translate }}
               </span>
               <span class="text-lg font-semibold">1:{{ appointment.ratio }}</span>
             </div>
 
             <!-- Sensitivity -->
-            <div class="flex flex-col rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
-              <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div class="bg-base-200 flex flex-col rounded-xl p-3">
+              <span
+                class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+              >
                 {{ 'appointments.fields.sensitivity' | translate }}
               </span>
               <span class="text-lg font-semibold">{{ appointment.sensitivity }}</span>
@@ -111,15 +123,15 @@
           <ion-list lines="none" class="ion-no-padding">
             <ion-item>
               <ion-label>
-                <p class="text-gray-500 dark:text-gray-400">
+                <p class="text-base-content/60 dark:text-base-content/80">
                   {{ 'appointments.fields.fastInsulin' | translate }}
                 </p>
-                <h3 class="font-semibold">{{ appointment.fast_insulin }}</h3>
+                <h3 class="font-semibold">{{ formatTextField(appointment.fast_insulin) }}</h3>
               </ion-label>
             </ion-item>
             <ion-item>
               <ion-label>
-                <p class="text-gray-500 dark:text-gray-400">
+                <p class="text-base-content/60 dark:text-base-content/80">
                   {{ 'appointments.fields.pumpType' | translate }}
                 </p>
                 <h3 class="font-semibold">{{ formatPumpType(appointment.pump_type) }}</h3>
@@ -130,7 +142,10 @@
       </ion-card>
 
       <!-- Control data card -->
-      <ion-card *ngIf="appointment.control_data" class="!m-0">
+      <ion-card
+        *ngIf="appointment.control_data && !isPlaceholderValue(appointment.control_data)"
+        class="!m-0"
+      >
         <ion-card-header>
           <ion-card-title class="flex items-center gap-2 text-lg">
             <app-icon name="file-text" class="text-primary"></app-icon>
@@ -138,12 +153,17 @@
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <p class="text-gray-700 dark:text-gray-300">{{ appointment.control_data }}</p>
+          <p class="text-base-content/70 dark:text-base-content/90">
+            {{ appointment.control_data }}
+          </p>
         </ion-card-content>
       </ion-card>
 
       <!-- Other motive card -->
-      <ion-card *ngIf="appointment.other_motive" class="!m-0">
+      <ion-card
+        *ngIf="appointment.other_motive && !isPlaceholderValue(appointment.other_motive)"
+        class="!m-0"
+      >
         <ion-card-header>
           <ion-card-title class="flex items-center gap-2 text-lg">
             <app-icon name="message-square" class="text-primary"></app-icon>
@@ -151,12 +171,17 @@
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <p class="text-gray-700 dark:text-gray-300">{{ appointment.other_motive }}</p>
+          <p class="text-base-content/70 dark:text-base-content/90">
+            {{ appointment.other_motive }}
+          </p>
         </ion-card-content>
       </ion-card>
 
       <!-- Another treatment card -->
-      <ion-card *ngIf="appointment.another_treatment" class="!m-0">
+      <ion-card
+        *ngIf="appointment.another_treatment && !isPlaceholderValue(appointment.another_treatment)"
+        class="!m-0"
+      >
         <ion-card-header>
           <ion-card-title class="flex items-center gap-2 text-lg">
             <app-icon name="pill" class="text-primary"></app-icon>
@@ -164,7 +189,9 @@
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <p class="text-gray-700 dark:text-gray-300">{{ appointment.another_treatment }}</p>
+          <p class="text-base-content/70 dark:text-base-content/90">
+            {{ appointment.another_treatment }}
+          </p>
         </ion-card-content>
       </ion-card>
     </div>

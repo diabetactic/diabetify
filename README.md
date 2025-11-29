@@ -17,14 +17,14 @@ Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar e
 
 ## Stack Tecnológico
 
-| Componente | Tecnología |
-|------------|------------|
-| Framework Frontend | Angular 18 + Ionic 8 |
-| Plataforma Móvil | Capacitor 6.1 |
-| Lenguaje | TypeScript 5.4 |
-| Estilos | Tailwind CSS + DaisyUI |
-| Base de Datos Local | Dexie (IndexedDB) |
-| Testing | Jasmine/Karma (unitarios), Playwright (E2E) |
+| Componente          | Tecnología                                  |
+| ------------------- | ------------------------------------------- |
+| Framework Frontend  | Angular 18 + Ionic 8                        |
+| Plataforma Móvil    | Capacitor 6.1                               |
+| Lenguaje            | TypeScript 5.4                              |
+| Estilos             | Tailwind CSS + DaisyUI                      |
+| Base de Datos Local | Dexie (IndexedDB)                           |
+| Testing             | Jasmine/Karma (unitarios), Playwright (E2E) |
 
 ## Requisitos Previos
 

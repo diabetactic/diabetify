@@ -8,14 +8,14 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonRippleEffect, IonSpinner, IonSkeletonText } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-stat-card',
   templateUrl: './stat-card.component.html',
   styleUrls: ['./stat-card.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonRippleEffect, IonSpinner, IonSkeletonText],
   providers: [DecimalPipe],
 })
 export class StatCardComponent implements OnChanges {
@@ -32,9 +32,6 @@ export class StatCardComponent implements OnChanges {
   @Input() clickable: boolean = false;
 
   @Output() cardClick = new EventEmitter<void>();
-
-  // Feature flag for DaisyUI stats
-  useDaisyUI = true;
 
   valueUpdating = false;
   private previousValue: number | string = 0;

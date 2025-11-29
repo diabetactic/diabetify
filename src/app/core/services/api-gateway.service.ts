@@ -89,6 +89,23 @@ export interface ApiError {
 /**
  * Predefined API endpoints
  */
+/**
+ * API Endpoint Configuration Map
+ *
+ * Defines the registry of all external service endpoints.
+ * Keys are used in `request()` calls (e.g., 'auth.login') to decouple logical operations from physical paths.
+ *
+ * Structure:
+ * - Key: Logical name (dot-notation recommended, e.g. 'service.resource.action')
+ * - Value: ApiEndpoint configuration object containing:
+ *   - service: Target service enum (e.g. LOCAL_AUTH, APPOINTMENTS)
+ *   - path: URL path (can include {param} placeholders)
+ *   - method: HTTP method (GET, POST, PUT, DELETE, PATCH)
+ *   - authenticated: boolean flag to trigger token injection
+ *   - timeout: optional override for request timeout
+ *   - cache: optional caching configuration
+ *   - transform: optional request/response transformation functions
+ */
 const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
   // Tidepool endpoints
   [
@@ -487,9 +504,6 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       method: 'GET',
       authenticated: true,
       timeout: 30000,
-      cache: {
-        duration: 60000, // 1 minute
-      },
     },
   ],
   [
@@ -582,6 +596,24 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
 @Injectable({
   providedIn: 'root',
 })
+/**
+ * ApiGatewayService - Centralized API Request Handler
+ *
+ * Implements the API Gateway pattern for the frontend application.
+ * Acts as the single point of entry for all backend service communication (except Tidepool direct auth).
+ *
+ * Key Responsibilities:
+ * 1. **Routing:** Maps logical endpoint keys (e.g., 'extservices.glucose.mine') to physical URLs based on environment.
+ * 2. **Authentication:** Automatically injects JWT tokens for authenticated endpoints.
+ * 3. **Caching:** Implements an LRU (Least Recently Used) caching strategy to reduce network load.
+ * 4. **Error Handling:** Standardizes error responses into a common `ApiResponse` format.
+ * 5. **Resilience:** Handles timeouts, retries, and circuit breaking (via service availability checks).
+ * 6. **Mocking:** transparently switches to mock implementations if configured.
+ *
+ * Complexity:
+ * - Space: O(N) where N is the cache size (bounded).
+ * - Time: O(1) for cache lookups, network time for requests.
+ */
 export class ApiGatewayService {
   // LRU cache for response data with bounded size and TTL
   private cacheData = new LRUCache<string, { data: any; timestamp: number }>({
@@ -610,7 +642,21 @@ export class ApiGatewayService {
   }
 
   /**
-   * Make an API request through the gateway
+   * Make an API request through the gateway.
+   * This is the primary public API for consuming services.
+   *
+   * @template T - The expected response data type.
+   * @param endpointKey - The unique key identifying the endpoint (e.g., 'auth.login').
+   * @param options - Optional request configuration (body, headers, params, forceRefresh).
+   * @param pathParams - Key-value pairs to replace placeholders in the URL path (e.g., { id: '123' }).
+   * @returns Observable<ApiResponse<T>> - The standardized API response.
+   *
+   * Flow:
+   * 1. Resolve endpoint configuration.
+   * 2. Check service availability (Circuit Breaker).
+   * 3. Check Cache (if enabled and not forced refresh).
+   * 4. Check Mock Mode (if enabled).
+   * 5. Execute Real Request (`executeRequest`).
    */
   public request<T = any>(
     endpointKey: string,
@@ -713,7 +759,16 @@ export class ApiGatewayService {
   }
 
   /**
-   * Execute the actual HTTP request
+   * Execute the actual HTTP request using CapacitorHttp (native) or HttpClient (web fallback).
+   * Handles timeouts, retries, response transformation, and caching of successful responses.
+   *
+   * @param endpointKey - The endpoint identifier.
+   * @param endpoint - The endpoint configuration object.
+   * @param options - Request options.
+   * @param pathParams - URL path parameters.
+   * @returns Observable<ApiResponse<T>>
+   *
+   * Complexity: Network I/O bound.
    */
   private executeRequest<T>(
     endpointKey: string,
@@ -794,13 +849,29 @@ export class ApiGatewayService {
           }),
           catchError(error => {
             const responseTime = Date.now() - startTime;
-            this.logger.error('API', 'Request failed', error, {
-              endpoint: endpointKey,
-              method: endpoint.method,
-              responseTime: `${responseTime}ms`,
-              statusCode: error?.status,
-              requestId: this.logger.getRequestId(),
-            });
+
+            const statusCode = error?.status;
+            const isQueueStateNotFound =
+              endpointKey === 'extservices.appointments.state' && statusCode === 404;
+
+            if (!isQueueStateNotFound) {
+              this.logger.error('API', 'Request failed', error, {
+                endpoint: endpointKey,
+                method: endpoint.method,
+                responseTime: `${responseTime}ms`,
+                statusCode,
+                requestId: this.logger.getRequestId(),
+              });
+            } else {
+              this.logger.info('API', 'Queue state not found (treated as none)', {
+                endpoint: endpointKey,
+                method: endpoint.method,
+                responseTime: `${responseTime}ms`,
+                statusCode,
+                requestId: this.logger.getRequestId(),
+              });
+            }
+
             return this.handleError(error, endpoint, endpointKey);
           })
         );
@@ -810,7 +881,13 @@ export class ApiGatewayService {
   }
 
   /**
-   * Prepare request with authentication and URL building
+   * Prepare request by building the full URL, headers, and body.
+   * Handles async token retrieval for authenticated endpoints.
+   *
+   * @param endpoint - Endpoint config.
+   * @param options - Request options.
+   * @param pathParams - Path parameters for URL substitution.
+   * @returns Promise resolving to URL, Headers, and Body.
    */
   private async prepareRequest(
     endpoint: ApiEndpoint,
@@ -864,8 +941,8 @@ export class ApiGatewayService {
   }
 
   /**
-   * Get base URL for a service
-   * IMPORTANT: All non-Tidepool services should route through the API Gateway
+   * Get base URL for a service based on environment.
+   * Resolves via `PlatformDetectorService` to handle localhost vs Android emulator (10.0.2.2).
    */
   private getBaseUrl(service: ExternalService): string {
     switch (service) {
@@ -885,8 +962,8 @@ export class ApiGatewayService {
   }
 
   /**
-   * Get authentication token for a service
-   * Uses direct service injection to avoid circular dependencies
+   * Get authentication token for a service.
+   * Maps the service type to the appropriate auth provider (Local vs Tidepool).
    */
   private async getAuthToken(service: ExternalService): Promise<string | null> {
     switch (service) {
@@ -902,7 +979,9 @@ export class ApiGatewayService {
   }
 
   /**
-   * Handle HTTP errors
+   * Handle and normalize HTTP errors.
+   * Converts raw `HttpErrorResponse` into a standardized `ApiError` object.
+   * Checks for retryable conditions.
    */
   private handleError(
     error: HttpErrorResponse,
@@ -957,7 +1036,7 @@ export class ApiGatewayService {
   }
 
   /**
-   * Get error code based on HTTP status
+   * Map HTTP status codes to internal error strings.
    */
   private getErrorCode(status: number): string {
     switch (status) {
@@ -991,14 +1070,14 @@ export class ApiGatewayService {
   }
 
   /**
-   * Check if error is retryable
+   * Check if an error is transient and safe to retry.
    */
   private isRetryable(status: number): boolean {
     return status === 0 || status === 408 || status === 429 || status >= 500;
   }
 
   /**
-   * Get cache key
+   * Generate a unique cache key based on endpoint and params.
    */
   private getCacheKey(endpointKey: string, endpoint: ApiEndpoint, params?: any): string {
     if (endpoint.cache?.key) {
@@ -1008,8 +1087,8 @@ export class ApiGatewayService {
   }
 
   /**
-   * Get from cache
-   * LRUCache handles TTL automatically, but we keep endpoint-specific duration check
+   * Retrieve data from cache if valid.
+   * Enforces the specific endpoint's TTL duration (which may be shorter than the global LRU TTL).
    */
   private getFromCache(key: string, duration: number): any | null {
     const cached = this.cacheData.get(key);
@@ -1029,7 +1108,7 @@ export class ApiGatewayService {
   }
 
   /**
-   * Add to cache
+   * Add data to the LRU cache.
    */
   private addToCache(key: string, data: any): void {
     this.cacheData.set(key, {
@@ -1039,7 +1118,8 @@ export class ApiGatewayService {
   }
 
   /**
-   * Clear cache
+   * Clear cache entries.
+   * @param endpointKey - Optional prefix to clear specific endpoint family. If omitted, clears entire cache.
    */
   public clearCache(endpointKey?: string): void {
     if (endpointKey) {
@@ -1058,28 +1138,29 @@ export class ApiGatewayService {
   }
 
   /**
-   * Register custom endpoint
+   * Dynamically register a new endpoint configuration at runtime.
    */
   public registerEndpoint(key: string, endpoint: ApiEndpoint): void {
     API_ENDPOINTS.set(key, endpoint);
   }
 
   /**
-   * Get registered endpoint
+   * Retrieve a registered endpoint configuration.
    */
   public getEndpoint(key: string): ApiEndpoint | undefined {
     return API_ENDPOINTS.get(key);
   }
 
   /**
-   * List all registered endpoints
+   * List all available endpoint keys.
    */
   public listEndpoints(): string[] {
     return Array.from(API_ENDPOINTS.keys());
   }
 
   /**
-   * Check if mock should be used for a service
+   * Determine if a request should be routed to the Mock Adapter.
+   * @param service - The target external service.
    */
   private shouldUseMock(service: ExternalService): boolean {
     // Tidepool always uses real API (not routed through mock system)
@@ -1093,7 +1174,7 @@ export class ApiGatewayService {
   }
 
   /**
-   * Map ExternalService to MockAdapter service key
+   * Helper to map service enum to mock config key.
    */
   private getServiceMockKey(
     service: ExternalService
@@ -1111,7 +1192,7 @@ export class ApiGatewayService {
   }
 
   /**
-   * Get mock response for an endpoint
+   * Route a request to the Mock Adapter implementation.
    */
   private getMockResponse<T>(
     endpointKey: string,
@@ -1169,7 +1250,7 @@ export class ApiGatewayService {
   }
 
   /**
-   * Execute mock request based on endpoint
+   * Dispatch the mock request to the specific mock method in MockAdapter.
    */
   private async executeMockRequest<T>(
     endpointKey: string,

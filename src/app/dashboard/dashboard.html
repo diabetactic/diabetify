@@ -1,12 +1,12 @@
 <ion-header>
-  <ion-toolbar class="bg-base-100 shadow-sm">
-    <ion-title class="text-lg font-semibold text-gray-900 dark:text-white">
+  <ion-toolbar class="shadow-sm [--background:var(--color-base-100)]">
+    <ion-title class="text-base-content text-lg font-semibold">
       {{ 'dashboard.title' | translate }}
     </ion-title>
-    <ion-buttons slot="end" class="flex items-center gap-1">
+    <ion-buttons slot="end">
       <app-language-switcher displayMode="button" [showText]="false"></app-language-switcher>
-      <ion-button (click)="onSync()" [disabled]="isSyncing" class="btn btn-ghost btn-circle">
-        <ion-icon slot="icon-only" name="sync-outline" [class.spinning]="isSyncing"> </ion-icon>
+      <ion-button (click)="onSync()" [disabled]="isSyncing" class="dashboard-toolbar-btn">
+        <ion-icon slot="icon-only" name="sync-outline" [class.spinning]="isSyncing"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -18,11 +18,13 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <div class="mx-auto max-w-5xl px-4 py-4 md:px-6">
+  <div class="page-shell">
     <!-- Loading State -->
     <div *ngIf="isLoading" class="flex min-h-[400px] flex-col items-center justify-center gap-4">
-      <app-icon name="loader" *ngIf="!isKarma" class="animate-spin"></app-icon>
-      <p class="m-0 text-base text-gray-600 dark:text-gray-300">{{ 'app.loading' | translate }}</p>
+      <app-icon name="loader" class="animate-spin"></app-icon>
+      <p class="text-base-content/60 dark:text-base-content/80 m-0 text-base">
+        {{ 'app.loading' | translate }}
+      </p>
     </div>
 
     <!-- Dashboard Content -->
@@ -127,7 +129,7 @@
 
             <!-- Sync status footer -->
             <div
-              class="bg-base-200/70 mt-4 flex items-center justify-between rounded-xl px-3 py-2 text-xs text-gray-700 dark:text-gray-300"
+              class="bg-base-200/70 text-base-content/70 dark:text-base-content/90 mt-4 flex items-center justify-between rounded-xl px-3 py-2 text-xs"
             >
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-base"> sync </span>
@@ -155,7 +157,7 @@
       <!-- Recent Readings Section -->
       <div class="recent-readings-section mt-6">
         <div class="mb-4 flex items-center justify-between">
-          <h2 class="m-0 text-xl font-bold text-gray-900 dark:text-white">
+          <h2 class="text-base-content m-0 text-xl font-bold">
             {{ 'dashboard.recentReadings' | translate }}
           </h2>
           <ion-button

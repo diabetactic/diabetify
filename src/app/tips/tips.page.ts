@@ -1,6 +1,15 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonBackButton,
+  IonTitle,
+  IonContent,
+  IonCard,
+  IonCardContent,
+} from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 
@@ -16,7 +25,21 @@ interface Tip {
   templateUrl: './tips.page.html',
   styleUrls: ['./tips.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, TranslateModule, AppIconComponent],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    // Ionic standalone components
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonBackButton,
+    IonTitle,
+    IonContent,
+    IonCard,
+    IonCardContent,
+    // App components
+    AppIconComponent,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class TipsPage {

@@ -2,21 +2,62 @@ import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonicModule, AlertController, LoadingController, ToastController } from '@ionic/angular';
+import { AlertController, LoadingController, ToastController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonTitle,
+  IonContent,
+  IonItem,
+  IonInput,
+  IonSelect,
+  IonSelectOption,
+  IonLabel,
+  IonList,
+  IonCheckbox,
+  IonTextarea,
+} from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { AppointmentService } from '../../core/services/appointment.service';
-import { CreateAppointmentRequest } from '../../core/models/appointment.model';
+import {
+  CreateAppointmentRequest,
+  AppointmentQueueState,
+} from '../../core/models/appointment.model';
 import { LocalAuthService } from '../../core/services/local-auth.service';
+import { TranslationService } from '../../core/services/translation.service';
 
 @Component({
   selector: 'app-appointment-create',
   templateUrl: './appointment-create.page.html',
   styleUrls: ['./appointment-create.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, TranslateModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    // Ionic standalone components
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonTitle,
+    IonContent,
+    IonItem,
+    IonInput,
+    IonSelect,
+    IonSelectOption,
+    IonLabel,
+    IonList,
+    IonCheckbox,
+    IonTextarea,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppointmentCreatePage implements OnInit, OnDestroy {
@@ -51,17 +92,25 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
     { value: 'pen', label: 'appointments.create.pump_pen' },
   ];
 
+  // Backend expects: 'AJUSTE', 'HIPOGLUCEMIA', 'HIPERGLUCEMIA', 'CETOSIS', 'DUDAS', 'OTRO'
   motiveOptions = [
-    { value: 'control_routine', label: 'appointments.create.motive_control_routine' },
-    { value: 'follow_up', label: 'appointments.create.motive_follow_up' },
-    { value: 'emergency', label: 'appointments.create.motive_emergency' },
-    { value: 'consultation', label: 'appointments.create.motive_consultation' },
-    { value: 'other', label: 'appointments.create.motive_other' },
+    { value: 'AJUSTE', label: 'appointments.create.motive_ajuste' },
+    { value: 'HIPOGLUCEMIA', label: 'appointments.create.motive_hipoglucemia' },
+    { value: 'HIPERGLUCEMIA', label: 'appointments.create.motive_hiperglucemia' },
+    { value: 'CETOSIS', label: 'appointments.create.motive_cetosis' },
+    { value: 'DUDAS', label: 'appointments.create.motive_dudas' },
+    { value: 'OTRO', label: 'appointments.create.motive_otro' },
   ];
 
   // UI state
   isLoading = false;
   showOtherMotive = false;
+
+  // Queue guard state
+  queueState: AppointmentQueueState | null = null;
+  checkingQueueState = true;
+  canSubmit = false;
+  queueBlockMessage: string | null = null;
 
   constructor(
     private router: Router,
@@ -69,11 +118,85 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
     private loadingController: LoadingController,
     private toastController: ToastController,
     private appointmentService: AppointmentService,
-    private authService: LocalAuthService
+    private authService: LocalAuthService,
+    private translationService: TranslationService
   ) {}
 
   ngOnInit() {
-    // Initialize form
+    this.checkQueueStateAndGuard();
+  }
+
+  /**
+   * Check queue state and block if not ACCEPTED
+   */
+  private async checkQueueStateAndGuard(): Promise<void> {
+    this.checkingQueueState = true;
+
+    try {
+      const response = await firstValueFrom(this.appointmentService.getQueueState());
+      this.queueState = response.state;
+
+      switch (response.state) {
+        case 'ACCEPTED':
+          // User can proceed
+          this.canSubmit = true;
+          this.queueBlockMessage = null;
+          break;
+
+        case 'NONE':
+          // User hasn't requested yet
+          this.canSubmit = false;
+          this.queueBlockMessage = this.translationService.instant(
+            'appointments.queue.messages.mustRequestFirst'
+          );
+          await this.showBlockAlert(this.queueBlockMessage);
+          break;
+
+        case 'PENDING':
+          // User's request is still pending
+          this.canSubmit = false;
+          this.queueBlockMessage = this.translationService.instant(
+            'appointments.queue.messages.waitingReview'
+          );
+          await this.showBlockAlert(this.queueBlockMessage);
+          break;
+
+        case 'DENIED':
+          // User's request was denied
+          this.canSubmit = false;
+          this.queueBlockMessage = this.translationService.instant(
+            'appointments.queue.messages.requestDenied'
+          );
+          await this.showBlockAlert(this.queueBlockMessage);
+          break;
+      }
+    } catch (error) {
+      console.error('Error checking queue state:', error);
+      // On error, allow submission (fallback to backend validation)
+      this.canSubmit = true;
+    } finally {
+      this.checkingQueueState = false;
+    }
+  }
+
+  /**
+   * Show alert and redirect back
+   */
+  private async showBlockAlert(message: string): Promise<void> {
+    const alert = await this.alertController.create({
+      header: this.translationService.instant('appointments.queue.title'),
+      message,
+      buttons: [
+        {
+          text: 'OK',
+          handler: () => {
+            this.router.navigate(['/tabs/appointments']);
+          },
+        },
+      ],
+      backdropDismiss: false,
+    });
+    await alert.present();
   }
 
   ngOnDestroy() {
@@ -87,7 +210,7 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
   onMotiveChange(motive: string, event: any) {
     if (event.detail.checked) {
       this.formData.motive.push(motive);
-      if (motive === 'other') {
+      if (motive === 'OTRO') {
         this.showOtherMotive = true;
       }
     } else {
@@ -95,7 +218,7 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
       if (index > -1) {
         this.formData.motive.splice(index, 1);
       }
-      if (motive === 'other') {
+      if (motive === 'OTRO') {
         this.showOtherMotive = false;
         this.formData.other_motive = '';
       }
@@ -176,6 +299,16 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
    * Submit appointment request
    */
   async submitAppointment() {
+    // Check queue state first
+    if (!this.canSubmit) {
+      await this.showToast(
+        this.queueBlockMessage ||
+          this.translationService.instant('appointments.errors.notAccepted'),
+        'warning'
+      );
+      return;
+    }
+
     // Validate
     if (!this.validateForm()) {
       return;

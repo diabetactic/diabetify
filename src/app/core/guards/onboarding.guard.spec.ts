@@ -82,7 +82,10 @@ describe('OnboardingGuard', () => {
 
   it('omits returnUrl when navigating to the welcome route', async () => {
     profileService.getProfile.and.resolveTo(null);
-    router.createUrlTree.calls.reset();
+    // Note: calls.reset() in Jest compatibility layer also resets return value,
+    // so we need to set it again after reset
+    router.createUrlTree.mockClear();
+    router.createUrlTree.and.returnValue(urlTree);
 
     const result = await guard.canMatch({ path: 'welcome' } as Route, [makeSegment('welcome')]);
 

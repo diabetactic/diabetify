@@ -7,6 +7,7 @@ import { of, throwError } from 'rxjs';
 import { AppointmentDetailPage } from './appointment-detail.page';
 import { AppointmentService } from '../../core/services/appointment.service';
 import { AppointmentDetailPageModule } from './appointment-detail.module';
+import { getLucideIconsForTesting } from '../../tests/helpers/icon-test.helper';
 
 describe('AppointmentDetailPage', () => {
   let component: AppointmentDetailPage;
@@ -17,7 +18,7 @@ describe('AppointmentDetailPage', () => {
     const spy = jasmine.createSpyObj('AppointmentService', ['getAppointment']);
 
     TestBed.configureTestingModule({
-      imports: [AppointmentDetailPageModule, TranslateModule.forRoot()],
+      imports: [AppointmentDetailPageModule, TranslateModule.forRoot(), getLucideIconsForTesting()],
       providers: [
         provideHttpClient(),
         provideRouter([]),

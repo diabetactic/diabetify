@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController } from '@ionic/angular';
+import { AlertController, ToastController } from '@ionic/angular';
 import { Subject } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 
@@ -70,7 +70,8 @@ export class ProfilePage implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private syncService: TidepoolSyncService,
     private router: Router,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private toastController: ToastController
   ) {
     this.currentLanguage = this.translationService.getCurrentLanguage();
   }
@@ -194,9 +195,14 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   /**
    * Email text for the header section.
+   * Priority: 1) Backend email (from profile) 2) Tidepool email 3) Display data email
    */
   get emailText(): string {
-    const email = this.profileData?.email ?? this.profile?.tidepoolConnection?.email ?? '';
+    const email =
+      this.profile?.email ??
+      this.profile?.tidepoolConnection?.email ??
+      this.profileData?.email ??
+      '';
     if (email.trim()) {
       return email;
     }
@@ -409,17 +415,27 @@ export class ProfilePage implements OnInit, OnDestroy {
   /**
    * Open Terms of Service
    */
-  openTermsOfService(): void {
-    // TODO: Implement navigation to terms page or open in browser
-    console.log('Opening Terms of Service...');
+  async openTermsOfService(): Promise<void> {
+    const toast = await this.toastController.create({
+      message: this.translationService.instant('common.comingSoon'),
+      duration: 2000,
+      position: 'bottom',
+      color: 'medium',
+    });
+    await toast.present();
   }
 
   /**
    * Open Privacy Policy
    */
-  openPrivacyPolicy(): void {
-    // TODO: Implement navigation to privacy page or open in browser
-    console.log('Opening Privacy Policy...');
+  async openPrivacyPolicy(): Promise<void> {
+    const toast = await this.toastController.create({
+      message: this.translationService.instant('common.comingSoon'),
+      duration: 2000,
+      position: 'bottom',
+      color: 'medium',
+    });
+    await toast.present();
   }
 
   /**
@@ -466,8 +482,39 @@ export class ProfilePage implements OnInit, OnDestroy {
    * Edit username
    */
   async editUsername(): Promise<void> {
-    // TODO: Implement username edit dialog
-    console.log('Edit username...');
+    const alert = await this.alertController.create({
+      header: this.translationService.instant('profile.username'),
+      inputs: [
+        {
+          name: 'name',
+          type: 'text',
+          placeholder: this.translationService.instant('profile.firstName'),
+          value: this.profile?.name || '',
+        },
+      ],
+      buttons: [
+        {
+          text: this.translationService.instant('common.cancel'),
+          role: 'cancel',
+        },
+        {
+          text: this.translationService.instant('common.save'),
+          handler: async data => {
+            const name = data.name?.trim();
+            if (name) {
+              try {
+                await this.profileService.updateProfile({ name });
+                this.refreshProfileDisplay();
+              } catch (error) {
+                console.error('Failed to update name:', error);
+              }
+            }
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 
   /**

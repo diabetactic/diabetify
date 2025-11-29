@@ -2,7 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { IonicModule, NavController } from '@ionic/angular';
+import { NavController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonTitle,
+  IonContent,
+  IonItem,
+  IonInput,
+} from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
 import { MockDataService, BolusCalculation } from '../core/services/mock-data.service';
 
@@ -11,7 +22,22 @@ import { MockDataService, BolusCalculation } from '../core/services/mock-data.se
   templateUrl: './bolus-calculator.page.html',
   styleUrls: ['./bolus-calculator.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    // Ionic standalone components
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonTitle,
+    IonContent,
+    IonItem,
+    IonInput,
+  ],
 })
 export class BolusCalculatorPage implements OnInit {
   calculatorForm: FormGroup;

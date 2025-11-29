@@ -1,4 +1,6 @@
 // Bolus Calculator Styles
+// Component-specific slide animation with 20px distance
+// Similar to global slideUp but scoped to this component for isolation
 .animate-slide-in-up {
   animation: slide-in-up 0.3s ease-out;
 }

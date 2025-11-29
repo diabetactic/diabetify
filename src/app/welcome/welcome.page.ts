@@ -1,20 +1,21 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationStart } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { IonContent } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
 import { DEFAULT_USER_PREFERENCES } from '../core/models/user-profile.model';
+import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-welcome',
   templateUrl: './welcome.page.html',
   styleUrls: ['./welcome.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, TranslateModule],
+  imports: [CommonModule, RouterModule, TranslateModule, IonContent, AppIconComponent],
   host: {
     '[class.dark-theme]': 'isDarkMode',
   },
@@ -89,6 +90,10 @@ export class WelcomePage implements OnInit, OnDestroy {
    * Handle "Login" button click
    */
   async onLogin(): Promise<void> {
+    // Remove focus from button before navigation to prevent aria-hidden accessibility warning
+    // Ionic adds aria-hidden to hidden pages, which conflicts with focused elements
+    (document.activeElement as HTMLElement)?.blur();
+
     // Go to real login screen
     await this.router.navigate(['/login']);
   }
