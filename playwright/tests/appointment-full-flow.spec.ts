@@ -92,12 +92,9 @@ async function acceptNextAppointment(token: string): Promise<boolean> {
   const queuePlacement = pending[0].queue_placement;
   console.log(`Accepting appointment with queue_placement: ${queuePlacement}`);
 
-  const response = await apiContext.put(
-    `${BACKOFFICE_URL}/appointments/accept/${queuePlacement}`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
+  const response = await apiContext.put(`${BACKOFFICE_URL}/appointments/accept/${queuePlacement}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
   await apiContext.dispose();
   return response.ok();
@@ -130,7 +127,9 @@ test.describe('Full Appointment Flow', () => {
     );
 
     // Fill login form using placeholders
-    const emailInput = page.locator('input[placeholder*="DNI"], input[placeholder*="email"]').first();
+    const emailInput = page
+      .locator('input[placeholder*="DNI"], input[placeholder*="email"]')
+      .first();
     const passwordInput = page
       .locator('input[placeholder*="contraseña"], input[type="password"]')
       .first();

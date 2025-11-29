@@ -206,24 +206,22 @@ export class AppointmentService {
     }
 
     // Backend returns just a number (queue position), not an AppointmentSubmitResponse object
-    return this.apiGateway
-      .request<number>('extservices.appointments.submit')
-      .pipe(
-        map(response => {
-          if (response.success) {
-            // Transform the number response into AppointmentSubmitResponse
-            const position = typeof response.data === 'number' ? response.data : 1;
-            return {
-              success: true,
-              state: 'PENDING' as AppointmentQueueState,
-              position: position,
-              message: `Added to queue at position ${position}`,
-            };
-          }
-          throw new Error(response.error?.message || 'Failed to submit appointment request');
-        }),
-        catchError(this.handleError.bind(this))
-      );
+    return this.apiGateway.request<number>('extservices.appointments.submit').pipe(
+      map(response => {
+        if (response.success) {
+          // Transform the number response into AppointmentSubmitResponse
+          const position = typeof response.data === 'number' ? response.data : 1;
+          return {
+            success: true,
+            state: 'PENDING' as AppointmentQueueState,
+            position: position,
+            message: `Added to queue at position ${position}`,
+          };
+        }
+        throw new Error(response.error?.message || 'Failed to submit appointment request');
+      }),
+      catchError(this.handleError.bind(this))
+    );
   }
 
   /**
