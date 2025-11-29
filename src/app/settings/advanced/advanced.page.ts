@@ -2,7 +2,22 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonicModule, AlertController, ToastController } from '@ionic/angular';
+import { AlertController, ToastController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonBackButton,
+  IonTitle,
+  IonContent,
+  IonList,
+  IonItem,
+  IonButton,
+  IonItemDivider,
+  IonLabel,
+  IonSelect,
+  IonSelectOption,
+} from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -19,7 +34,27 @@ import { AppIconComponent } from '../../shared/components/app-icon/app-icon.comp
   templateUrl: './advanced.page.html',
   styleUrls: ['./advanced.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, TranslateModule, AppIconComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    // Ionic standalone components
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonBackButton,
+    IonTitle,
+    IonContent,
+    IonList,
+    IonItem,
+    IonButton,
+    IonItemDivider,
+    IonLabel,
+    IonSelect,
+    IonSelectOption,
+    // App components
+    AppIconComponent,
+  ],
 })
 export class AdvancedPage implements OnInit, OnDestroy {
   isDevMode = !environment.production;

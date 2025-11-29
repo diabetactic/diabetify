@@ -18,7 +18,7 @@ const LOGIN_PASSWORD = 'tuvieja';
 
 test.describe('Appointment Creation Flow', () => {
   let accessToken: string | null = null;
-  let userId: string | null = null;
+  const userId: string | null = null;
   let appointmentId: string | null = null;
 
   test.beforeAll(async () => {
@@ -55,7 +55,7 @@ test.describe('Appointment Creation Flow', () => {
 
     const baselineResponse = await request.get(`${API_GATEWAY_BASE_URL}/appointments/mine`, {
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
 
@@ -72,25 +72,22 @@ test.describe('Appointment Creation Flow', () => {
       glucose_objective: 120,
       insulin_type: 'Lantus',
       dose: 20,
-      fast_insulin: '4',  // Must be string
+      fast_insulin: '4', // Must be string
       ratio: 8,
       sensitivity: 40,
-      fixed_dose: '10',   // Required field
-      pump_type: 'MDI',   // Required field
+      fixed_dose: '10', // Required field
+      pump_type: 'MDI', // Required field
       control_data: 'test', // Required field
       motive: ['AJUSTE'],
     };
 
-    const createResponse = await request.post(
-      `${API_GATEWAY_BASE_URL}/appointments/create`,
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        data: appointmentPayload,
-      }
-    );
+    const createResponse = await request.post(`${API_GATEWAY_BASE_URL}/appointments/create`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      data: appointmentPayload,
+    });
 
     console.log(`✓ Create appointment response status: ${createResponse.status()}`);
 
@@ -134,7 +131,7 @@ test.describe('Appointment Creation Flow', () => {
 
     const listResponse = await request.get(`${API_GATEWAY_BASE_URL}/appointments/mine`, {
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
 
@@ -155,14 +152,11 @@ test.describe('Appointment Creation Flow', () => {
     // ============================================
     console.log('\nStep 5: Checking queue state...');
 
-    const stateBeforeResponse = await request.get(
-      `${API_GATEWAY_BASE_URL}/appointments/state`,
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const stateBeforeResponse = await request.get(`${API_GATEWAY_BASE_URL}/appointments/state`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     if (stateBeforeResponse.ok()) {
       const stateData = await stateBeforeResponse.json();
@@ -174,14 +168,11 @@ test.describe('Appointment Creation Flow', () => {
     // ============================================
     console.log('\nStep 6: Submitting to queue...');
 
-    const submitResponse = await request.post(
-      `${API_GATEWAY_BASE_URL}/appointments/submit`,
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const submitResponse = await request.post(`${API_GATEWAY_BASE_URL}/appointments/submit`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     // Note: submit might return 200 or other success codes
     expect([200, 201, 202, 204].includes(submitResponse.status())).toBeTruthy();
@@ -192,14 +183,11 @@ test.describe('Appointment Creation Flow', () => {
     // ============================================
     console.log('\nStep 7: Verifying queue state after submit...');
 
-    const stateAfterResponse = await request.get(
-      `${API_GATEWAY_BASE_URL}/appointments/state`,
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const stateAfterResponse = await request.get(`${API_GATEWAY_BASE_URL}/appointments/state`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     expect(stateAfterResponse.ok()).toBeTruthy();
     const stateAfterData = await stateAfterResponse.json();
@@ -213,14 +201,11 @@ test.describe('Appointment Creation Flow', () => {
     // ============================================
     console.log('\nStep 8: Getting queue placement...');
 
-    const placementResponse = await request.get(
-      `${API_GATEWAY_BASE_URL}/appointments/placement`,
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const placementResponse = await request.get(`${API_GATEWAY_BASE_URL}/appointments/placement`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     if (placementResponse.ok()) {
       const placementData = await placementResponse.json();
@@ -238,7 +223,7 @@ test.describe('Appointment Creation Flow', () => {
         `${API_GATEWAY_BASE_URL}/appointments/${appointmentId}`,
         {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
@@ -312,16 +297,13 @@ test.describe('Appointment Creation Flow', () => {
       // Missing other required fields
     };
 
-    const createResponse = await request.post(
-      `${API_GATEWAY_BASE_URL}/appointments/create`,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        data: invalidPayload,
-      }
-    );
+    const createResponse = await request.post(`${API_GATEWAY_BASE_URL}/appointments/create`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      data: invalidPayload,
+    });
 
     // Should either return 400 (bad request) or 422 (unprocessable entity)
     expect([400, 422].includes(createResponse.status())).toBeTruthy();

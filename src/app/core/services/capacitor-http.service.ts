@@ -115,7 +115,7 @@ export class CapacitorHttpService {
 
     // Si es form data (como login), convertir a x-www-form-urlencoded
     let bodyData: any;
-    let finalHeaders = { ...headers };
+    const finalHeaders = { ...headers };
 
     if (headers['Content-Type'] === 'application/x-www-form-urlencoded') {
       // data ya viene como URLSearchParams string

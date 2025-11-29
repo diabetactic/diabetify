@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import { IonFabButton, IonIcon, IonButton, IonContent, IonLabel } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { trigger, style, transition, animate } from '@angular/animations';
 import { Capacitor } from '@capacitor/core';
@@ -21,6 +21,9 @@ import { db } from '../../../core/services/database.service';
 import { MockAdapterService } from '../../../core/services/mock-adapter.service';
 import { ToastController } from '@ionic/angular';
 import { AppIconComponent } from '../app-icon/app-icon.component';
+import { CapacitorHttpService } from '../../../core/services/capacitor-http.service';
+import { API_GATEWAY_BASE_URL } from '../../config/api-base-url';
+import { firstValueFrom } from 'rxjs';
 
 interface DebugInfo {
   platform: string;
@@ -35,12 +38,50 @@ interface DebugInfo {
   localBackendEnabled: boolean;
 }
 
+interface BackofficeTokenResponse {
+  access_token: string;
+}
+
+interface BackofficeQueueEntry {
+  queue_placement?: string | number;
+  user_id?: string | number;
+  [key: string]: any;
+}
+
+interface BackofficeResolutionPayload {
+  appointment_id: number;
+  change_basal_type: string;
+  change_basal_dose: number;
+  change_basal_time: string;
+  change_fast_type: string;
+  change_ratio: number;
+  change_sensitivity: number;
+  emergency_care: boolean;
+  needed_physical_appointment: boolean;
+  glucose_scale: [string, number][];
+}
+
+const BACKOFFICE_BASE_URL = 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com';
+const BACKOFFICE_ADMIN_USER = 'admin';
+const BACKOFFICE_ADMIN_PASSWORD = 'admin';
+
 @Component({
   selector: 'app-debug-panel',
   templateUrl: './debug-panel.component.html',
   styleUrls: ['./debug-panel.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, TranslateModule, AppIconComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    AppIconComponent,
+    // Ionic standalone components
+    IonFabButton,
+    IonIcon,
+    IonButton,
+    IonContent,
+    IonLabel,
+  ],
   animations: [
     trigger('slideIn', [
       transition(':enter', [
@@ -90,13 +131,17 @@ export class DebugPanelComponent implements OnInit {
   // Custom backend URL override
   customBackendUrl = '';
 
+  // Cached admin token for backoffice actions
+  private backofficeToken: string | null = null;
+
   constructor(
     private tidepoolAuth: TidepoolAuthService,
     private localAuth: LocalAuthService,
     private tidepoolSync: TidepoolSyncService,
     private servicesManager: ExternalServicesManager,
     private mockAdapter: MockAdapterService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private capacitorHttp: CapacitorHttpService
   ) {}
 
   async ngOnInit() {
@@ -361,5 +406,256 @@ export class DebugPanelComponent implements OnInit {
       color,
     });
     await toast.present();
+  }
+
+  // =========================================================
+  // Dev helper actions (backoffice + gateway)
+  // =========================================================
+
+  /**
+   * Acquire an admin JWT from the backoffice API (Heroku).
+   * Token is cached for the session.
+   */
+  private async getBackofficeToken(): Promise<string> {
+    if (this.backofficeToken) {
+      return this.backofficeToken;
+    }
+
+    const body = `username=${encodeURIComponent(BACKOFFICE_ADMIN_USER)}&password=${encodeURIComponent(
+      BACKOFFICE_ADMIN_PASSWORD
+    )}`;
+
+    const response = await firstValueFrom(
+      this.capacitorHttp.post<BackofficeTokenResponse>(`${BACKOFFICE_BASE_URL}/token`, body, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      })
+    );
+
+    if (!response?.access_token) {
+      throw new Error('No access token returned from backoffice');
+    }
+
+    this.backofficeToken = response.access_token;
+    return this.backofficeToken;
+  }
+
+  /**
+   * Accept the next pending appointment in the queue.
+   */
+  async devAcceptNextAppointment(): Promise<void> {
+    try {
+      const token = await this.getBackofficeToken();
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const pending = await firstValueFrom(
+        this.capacitorHttp.get<BackofficeQueueEntry[]>(
+          `${BACKOFFICE_BASE_URL}/appointments/pending`,
+          {
+            headers,
+          }
+        )
+      );
+
+      if (!pending || pending.length === 0) {
+        await this.showToast('No pending appointments in queue', 'medium');
+        return;
+      }
+
+      const entry = pending[0];
+      const placement = entry.queue_placement ?? '(unknown)';
+
+      await firstValueFrom(
+        this.capacitorHttp.put(
+          `${BACKOFFICE_BASE_URL}/appointments/accept/${placement}`,
+          {},
+          { headers }
+        )
+      );
+
+      await this.showToast(`Accepted appointment in queue position ${placement}`, 'success');
+    } catch (error: any) {
+      await this.showToast(this.formatError(error, 'Failed to accept next appointment'), 'danger');
+    }
+  }
+
+  /**
+   * Deny the next pending appointment in the queue.
+   */
+  async devDenyNextAppointment(): Promise<void> {
+    try {
+      const token = await this.getBackofficeToken();
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const pending = await firstValueFrom(
+        this.capacitorHttp.get<BackofficeQueueEntry[]>(
+          `${BACKOFFICE_BASE_URL}/appointments/pending`,
+          {
+            headers,
+          }
+        )
+      );
+
+      if (!pending || pending.length === 0) {
+        await this.showToast('No pending appointments in queue', 'medium');
+        return;
+      }
+
+      const entry = pending[0];
+      const placement = entry.queue_placement ?? '(unknown)';
+
+      await firstValueFrom(
+        this.capacitorHttp.put(
+          `${BACKOFFICE_BASE_URL}/appointments/deny/${placement}`,
+          {},
+          { headers }
+        )
+      );
+
+      await this.showToast(`Denied appointment in queue position ${placement}`, 'warning');
+    } catch (error: any) {
+      await this.showToast(this.formatError(error, 'Failed to deny next appointment'), 'danger');
+    }
+  }
+
+  /**
+   * Clear the entire appointments queue in backoffice.
+   */
+  async devClearAppointmentQueue(): Promise<void> {
+    const confirmed = confirm(
+      '⚠️ This will clear the ENTIRE appointment queue in the Heroku backoffice.\n\nAre you sure?'
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const token = await this.getBackofficeToken();
+      const headers = { Authorization: `Bearer ${token}` };
+
+      await firstValueFrom(
+        this.capacitorHttp.delete(`${BACKOFFICE_BASE_URL}/appointments`, {
+          headers,
+        })
+      );
+
+      await this.showToast('Appointment queue cleared', 'success');
+    } catch (error: any) {
+      await this.showToast(this.formatError(error, 'Failed to clear appointment queue'), 'danger');
+    }
+  }
+
+  /**
+   * Create a sample resolution for a given appointment ID (backoffice).
+   * Mirrors scripts/appointments/create-resolution.sh with safe defaults.
+   */
+  async devCreateResolution(): Promise<void> {
+    const input = prompt(
+      'Enter appointment_id to create a resolution for (you can get IDs from the backoffice or API logs):'
+    );
+    if (!input) {
+      return;
+    }
+
+    const appointmentId = Number(input);
+    if (!Number.isFinite(appointmentId) || appointmentId <= 0) {
+      await this.showToast('Invalid appointment_id', 'warning');
+      return;
+    }
+
+    const confirmed = confirm(
+      `Create a sample resolution for appointment ${appointmentId} in the backoffice?`
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const token = await this.getBackofficeToken();
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      };
+
+      const payload: BackofficeResolutionPayload = {
+        appointment_id: appointmentId,
+        change_basal_type: 'Lantus',
+        change_basal_dose: 18.0,
+        change_basal_time: '22:00:00',
+        change_fast_type: 'Humalog',
+        change_ratio: 10.0,
+        change_sensitivity: 45.0,
+        emergency_care: false,
+        needed_physical_appointment: false,
+        glucose_scale: [
+          ['<70', 0],
+          ['70-120', 0],
+          ['120-180', 1],
+          ['180-250', 2],
+          ['>250', 3],
+        ],
+      };
+
+      await firstValueFrom(
+        this.capacitorHttp.post(
+          `${BACKOFFICE_BASE_URL}/appointments/${appointmentId}/resolution`,
+          payload,
+          { headers }
+        )
+      );
+
+      await this.showToast(`Resolution created for appointment ${appointmentId}`, 'success');
+    } catch (error: any) {
+      await this.showToast(this.formatError(error, 'Failed to create resolution'), 'danger');
+    }
+  }
+
+  /**
+   * Create a new test user via the main API gateway.
+   * Uses the same endpoint as scripts/appointments/create-user.sh.
+   */
+  async devCreateTestUser(): Promise<void> {
+    const email = `devuser+${Date.now()}@example.com`;
+    const password = 'Test123!';
+
+    const payload = {
+      email,
+      password,
+      firstName: 'Dev',
+      lastName: 'User',
+      role: 'patient',
+    };
+
+    try {
+      await firstValueFrom(
+        this.capacitorHttp.post(`${API_GATEWAY_BASE_URL}/api/auth/register`, payload, {
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
+
+      await this.showToast(`User created:\n${email}\nPassword: ${password}`, 'success');
+    } catch (error: any) {
+      await this.showToast(this.formatError(error, 'Failed to create user'), 'danger');
+    }
+  }
+
+  /**
+   * Compact error formatter for dev tools.
+   */
+  private formatError(error: any, fallback: string): string {
+    if (!error) {
+      return fallback;
+    }
+
+    if (typeof error === 'string') {
+      return `${fallback}: ${error}`;
+    }
+
+    const detail =
+      error.error?.detail ||
+      error.error?.message ||
+      error.message ||
+      (typeof error.error === 'string' ? error.error : '');
+
+    return detail ? `${fallback}: ${detail}` : fallback;
   }
 }

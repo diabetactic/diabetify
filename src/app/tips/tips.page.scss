@@ -1,15 +1,24 @@
+// Dark mode - triple-trigger pattern
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
+  app-tips ion-card {
+    --background: oklch(var(--b2));
+
+    border: 1px solid oklch(var(--bc) / 10%);
+    box-shadow: var(--shadow-32);
+  }
+}
+
 app-tips {
   .space-y-4 > * + * {
     margin-top: 1rem;
   }
 
   ion-card {
-    --background: var(--ion-color-light);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
+    --background: oklch(var(--b1));
 
-  .dark ion-card {
-    --background: var(--ion-color-step-50);
+    border: 1px solid oklch(var(--bc) / 6%);
+    box-shadow: var(--shadow-33);
   }
 
   .bg-primary-100 {

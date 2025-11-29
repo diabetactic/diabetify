@@ -8,20 +8,20 @@ import { environment } from '../../../environments/environment';
 
 describe('LoggerService', () => {
   let service: LoggerService;
-  let consoleDebugSpy: jasmine.Spy;
-  let consoleLogSpy: jasmine.Spy;
-  let consoleWarnSpy: jasmine.Spy;
-  let consoleErrorSpy: jasmine.Spy;
+  let consoleDebugSpy: jest.SpyInstance;
+  let consoleLogSpy: jest.SpyInstance;
+  let consoleWarnSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(LoggerService);
 
     // Spy on console methods with return values
-    consoleDebugSpy = spyOn(console, 'debug').and.returnValue(undefined);
-    consoleLogSpy = spyOn(console, 'log').and.returnValue(undefined);
-    consoleWarnSpy = spyOn(console, 'warn').and.returnValue(undefined);
-    consoleErrorSpy = spyOn(console, 'error').and.returnValue(undefined);
+    consoleDebugSpy = jest.spyOn(console, 'debug').mockReturnValue(undefined);
+    consoleLogSpy = jest.spyOn(console, 'log').mockReturnValue(undefined);
+    consoleWarnSpy = jest.spyOn(console, 'warn').mockReturnValue(undefined);
+    consoleErrorSpy = jest.spyOn(console, 'error').mockReturnValue(undefined);
   });
 
   it('should be created', () => {
@@ -33,7 +33,7 @@ describe('LoggerService', () => {
       service.debug('Init', 'Debug message', { detail: 'test' });
 
       expect(consoleDebugSpy).toHaveBeenCalled();
-      const args = consoleDebugSpy.calls.mostRecent().args;
+      const args = consoleDebugSpy.mock.calls.slice(-1)[0];
       expect(args[0]).toContain('[DEBUG]');
       expect(args[0]).toContain('[Init]');
       expect(args[0]).toContain('Debug message');
@@ -43,7 +43,7 @@ describe('LoggerService', () => {
       service.info('API', 'Info message', { endpoint: '/api/test' });
 
       expect(consoleLogSpy).toHaveBeenCalled();
-      const args = consoleLogSpy.calls.mostRecent().args;
+      const args = consoleLogSpy.mock.calls.slice(-1)[0];
       expect(args[0]).toContain('[INFO]');
       expect(args[0]).toContain('[API]');
       expect(args[0]).toContain('Info message');
@@ -53,7 +53,7 @@ describe('LoggerService', () => {
       service.warn('Sync', 'Warning message', { issue: 'slow network' });
 
       expect(consoleWarnSpy).toHaveBeenCalled();
-      const args = consoleWarnSpy.calls.mostRecent().args;
+      const args = consoleWarnSpy.mock.calls.slice(-1)[0];
       expect(args[0]).toContain('[WARN]');
       expect(args[0]).toContain('[Sync]');
       expect(args[0]).toContain('Warning message');
@@ -64,7 +64,7 @@ describe('LoggerService', () => {
       service.error('Error', 'Error message', error, { endpoint: '/api/fail' });
 
       expect(consoleErrorSpy).toHaveBeenCalled();
-      const args = consoleErrorSpy.calls.mostRecent().args;
+      const args = consoleErrorSpy.mock.calls.slice(-1)[0];
       expect(args[0]).toContain('[ERROR]');
       expect(args[0]).toContain('[Error]');
       expect(args[0]).toContain('Error message');
@@ -85,7 +85,7 @@ describe('LoggerService', () => {
       service.info('API', 'Test message');
 
       expect(consoleLogSpy).toHaveBeenCalled();
-      const args = consoleLogSpy.calls.mostRecent().args;
+      const args = consoleLogSpy.mock.calls.slice(-1)[0];
       expect(args[0]).toContain(`[${requestId}]`);
     });
 
@@ -94,7 +94,7 @@ describe('LoggerService', () => {
       service.info('API', 'Test message');
 
       expect(consoleLogSpy).toHaveBeenCalled();
-      const args = consoleLogSpy.calls.mostRecent().args;
+      const args = consoleLogSpy.mock.calls.slice(-1)[0];
       // When no request ID is set, the log should not have a request ID prefix
       expect(args[0]).not.toContain('[req-');
       expect(args[0]).toContain('[INFO]');
@@ -110,7 +110,7 @@ describe('LoggerService', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalled();
-      const args = consoleLogSpy.calls.mostRecent().args;
+      const args = consoleLogSpy.mock.calls.slice(-1)[0];
       const output = args[0] + (args[2] || '');
       expect(output).toContain('[REDACTED]');
       expect(output).not.toContain('120');
@@ -126,7 +126,7 @@ describe('LoggerService', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalled();
-      const args = consoleLogSpy.calls.mostRecent().args;
+      const args = consoleLogSpy.mock.calls.slice(-1)[0];
       const output = args[0] + (args[2] || '');
       expect(output).toContain('[REDACTED]');
       expect(output).not.toContain('John');
@@ -148,7 +148,7 @@ describe('LoggerService', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalled();
-      const args = consoleLogSpy.calls.mostRecent().args;
+      const args = consoleLogSpy.mock.calls.slice(-1)[0];
       const output = args[0] + (args[2] || '');
       expect(output).toContain('[REDACTED]');
       expect(output).not.toContain('180');
@@ -163,7 +163,7 @@ describe('LoggerService', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalled();
-      const args = consoleLogSpy.calls.mostRecent().args;
+      const args = consoleLogSpy.mock.calls.slice(-1)[0];
       const output = args[0] + (args[2] || '');
       expect(output).toContain('[REDACTED]');
       expect(output).not.toContain('120');
@@ -178,7 +178,7 @@ describe('LoggerService', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalled();
-      const args = consoleLogSpy.calls.mostRecent().args;
+      const args = consoleLogSpy.mock.calls.slice(-1)[0];
       const output = args[0] + (args[2] || '');
       expect(output).toContain('user-789');
       expect(output).toContain('200');
@@ -193,7 +193,7 @@ describe('LoggerService', () => {
       service.error('Error', 'Operation failed', error);
 
       expect(consoleErrorSpy).toHaveBeenCalled();
-      const args = consoleErrorSpy.calls.mostRecent().args;
+      const args = consoleErrorSpy.mock.calls.slice(-1)[0];
       const output = args[0] + (args[2] || '');
       expect(output).toContain('Test error');
     });
@@ -206,7 +206,7 @@ describe('LoggerService', () => {
       service.error('API', 'Request failed', customError);
 
       expect(consoleErrorSpy).toHaveBeenCalled();
-      const args = consoleErrorSpy.calls.mostRecent().args;
+      const args = consoleErrorSpy.mock.calls.slice(-1)[0];
       const output = args[0] + (args[2] || '');
       expect(output).toContain('NETWORK_ERROR');
     });
@@ -215,7 +215,7 @@ describe('LoggerService', () => {
       service.error('Error', 'Operation failed', 'Simple error message');
 
       expect(consoleErrorSpy).toHaveBeenCalled();
-      const args = consoleErrorSpy.calls.mostRecent().args;
+      const args = consoleErrorSpy.mock.calls.slice(-1)[0];
       const output = args[0] + (args[2] || '');
       expect(output).toContain('Simple error message');
     });
@@ -235,7 +235,7 @@ describe('LoggerService', () => {
       categories.forEach(category => {
         service.info(category, `Testing ${category} category`);
         expect(consoleLogSpy).toHaveBeenCalled();
-        const args = consoleLogSpy.calls.mostRecent().args;
+        const args = consoleLogSpy.mock.calls.slice(-1)[0];
         expect(args[0]).toContain(`[${category}]`);
       });
     });
@@ -247,7 +247,7 @@ describe('LoggerService', () => {
       service.info('API', 'Test message');
 
       expect(consoleLogSpy).toHaveBeenCalled();
-      const args = consoleLogSpy.calls.mostRecent().args;
+      const args = consoleLogSpy.mock.calls.slice(-1)[0];
       expect(args[0]).toContain(beforeLog); // Should contain today's date
     });
   });
@@ -257,7 +257,7 @@ describe('LoggerService', () => {
       service.info('API', 'Simple message');
 
       expect(consoleLogSpy).toHaveBeenCalled();
-      const args = consoleLogSpy.calls.mostRecent().args;
+      const args = consoleLogSpy.mock.calls.slice(-1)[0];
       expect(args[0]).toContain('Simple message');
     });
 
@@ -268,7 +268,7 @@ describe('LoggerService', () => {
       });
 
       expect(consoleLogSpy).toHaveBeenCalled();
-      const args = consoleLogSpy.calls.mostRecent().args;
+      const args = consoleLogSpy.mock.calls.slice(-1)[0];
       const output = args[0] + (args[2] || '');
       expect(output).toContain('endpoint');
       expect(output).toContain('/api/test');

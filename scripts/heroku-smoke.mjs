@@ -17,11 +17,8 @@
  * from the local Docker-based integration tests.
  */
 
-/* global fetch */
-
 const BASE_URL =
-  process.env.HEROKU_API_BASE_URL ||
-  'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
+  process.env.HEROKU_API_BASE_URL || 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
 
 async function checkBaseConnectivity() {
   // Try a lightweight request to /health if present; tolerate 404 since

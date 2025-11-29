@@ -129,8 +129,6 @@ export class AppIconComponent {
     home: 'home',
     'refresh-outline': 'refresh-cw',
     refresh: 'refresh-cw',
-    'bluetooth-outline': 'bluetooth',
-    bluetooth: 'bluetooth',
     'call-outline': 'phone',
     call: 'phone',
     'mail-outline': 'mail',

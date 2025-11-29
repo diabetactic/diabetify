@@ -19,11 +19,11 @@
 @keyframes pulse-shadow {
   0%,
   100% {
-    box-shadow: 0 8px 16px rgb(0 0 0 / 15%);
+    box-shadow: var(--shadow-02);
   }
 
   50% {
-    box-shadow: 0 8px 24px rgb(235 68 90 / 40%);
+    box-shadow: var(--shadow-38);
   }
 }
 
@@ -53,21 +53,4 @@
   }
 }
 
-// Legacy styles kept for reference (commented out)
-// These were the old ion-card based styles before DaisyUI migration
-/*
-.stat-card-clickable {
-  cursor: pointer;
-}
-
-.stat-card-error-state {
-  border: 2px solid var(--ion-color-danger);
-}
-
-.stat-card-pulse {
-  animation: pulse-shadow 2s ease-in-out infinite;
-}
-*/
-
-// That's it! No more custom CSS, no more !important, no more specificity wars!
-// AI agents can now safely modify the Tailwind classes in the HTML without creating conflicts
+// Lean and clean! Tailwind classes in HTML handle everything else.

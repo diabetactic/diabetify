@@ -10,6 +10,7 @@ Toda la comunicación con el backend se realiza a través del servicio API Gatew
 - **URL Base**: `environment.backendServices.apiGateway.baseUrl`
 
 **Responsabilidades**:
+
 - Enrutamiento centralizado de requests
 - Inyección automática de tokens de autenticación
 - Transformación de respuestas

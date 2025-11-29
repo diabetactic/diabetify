@@ -16,10 +16,125 @@
 @tailwind components;
 @tailwind utilities;
 
-/* DaisyUI Component Library with Diabetactic Themes
- * DaisyUI themes are configured in tailwind.config.js
- * Themes: diabetactic (light), dark
- */
+/* ============================================
+ * THEME CONFIGURATION (Tailwind v4)
+ * ============================================ */
+:root,
+:root[data-theme='diabetactic'] {
+  /* Diabetactic Theme (Light) */
+  --color-primary: #3b82f6;
+  --color-primary-content: #0f172a; /* contraste 4.8:1 sobre primary */
+  --color-secondary: #00c6ae;
+  --color-secondary-content: #0f172a; /* contraste 8.3:1 sobre secondary */
+  --color-accent: #667eea;
+  --color-accent-content: #fff;
+  --color-neutral: #0d171c;
+  --color-neutral-content: #fff;
+  --color-base-100: #fff;
+  --color-base-200: #f5f7f8;
+  --color-base-300: #e5e7eb;
+  --color-base-content: #0d171c;
+  --color-info: #3b82f6;
+  --color-info-content: #fff;
+  --color-success: #22c55e;
+  --color-success-content: #0f172a; /* contraste 8.8:1 sobre success */
+  --color-warning: #f59e0b;
+  --color-warning-content: #000;
+  --color-error: #ef4444;
+  --color-error-content: #0f172a; /* contraste 5.3:1 sobre error */
+
+  /* Semantic app colors (light) */
+  --dt-color-text-primary: #1f2937; /* slate-800 */
+  --dt-color-text-secondary: #4b5563; /* slate-600 */
+  --dt-color-text-muted: #6b7280; /* slate-500 */
+  --dt-color-border-subtle: #e5e7eb;
+  --dt-color-border-input: #d1d5db;
+  --dt-color-link: #1d4ed8;
+  --dt-color-link-soft: #93c5fd;
+  --dt-color-surface: #fff;
+  --dt-color-surface-soft: #f8fbff;
+
+  /* Glucose status colors (light) */
+  --glucose-normal: #22c55e;
+  --glucose-low: #f59e0b;
+  --glucose-high: #ef4444;
+  --glucose-critical: #dc2626;
+
+  /* Shadow tokens (auto-generated) */
+  --shadow-01: 0 12px 24px rgb(37 175 244 / 20%);
+  --shadow-02: 0 8px 16px rgb(0 0 0 / 15%);
+  --shadow-03: 0 8px 16px rgb(10 31 68 / 8%);
+  --shadow-04: 0 16px 32px rgb(10 31 68 / 12%);
+  --shadow-05: 0 12px 24px rgb(10 31 68 / 9%);
+  --shadow-06: 0 12px 24px oklch(var(--p) / 35%);
+  --shadow-07: 0 12px 24px oklch(0% 0 0deg / 35%);
+  --shadow-08: 0 4px 12px rgb(0 0 0 / 15%);
+  --shadow-09: 0 12px 24px rgb(10 31 68 / 12%);
+  --shadow-10: 0 4px 8px rgb(10 31 68 / 10%);
+  --shadow-11: 0 4px 12px rgb(37 175 244 / 30%);
+  --shadow-12: 0 6px 16px rgb(37 175 244 / 40%);
+  --shadow-13: 0 8px 20px rgb(0 0 0 / 8%);
+  --shadow-14: 0 12px 30px rgb(0 0 0 / 8%);
+  --shadow-15: 0 0 0 3px rgb(59 130 246 / 15%);
+  --shadow-16: 0 10px 18px rgb(79 139 255 / 28%);
+  --shadow-17: none;
+  --shadow-18: 0 12px 20px rgb(79 139 255 / 32%);
+  --shadow-19: 0 14px 30px rgb(0 0 0 / 70%), 0 0 0 1px rgb(30 64 175 / 45%);
+  --shadow-20: 0 8px 18px rgb(255 119 15 / 28%), 0 3px 8px rgb(0 0 0 / 8%);
+  --shadow-21: 0 10px 20px rgb(255 119 15 / 32%), 0 4px 10px rgb(0 0 0 / 10%);
+  --shadow-22: 0 8px 20px rgb(0 0 0 / 6%);
+  --shadow-23: 0 12px 30px rgb(0 0 0 / 60%), 0 0 0 1px rgb(148 163 184 / 45%);
+  --shadow-24: 0 14px 26px rgb(248 113 113 / 35%), 0 4px 10px rgb(0 0 0 / 40%);
+  --shadow-25: 0 4px 12px rgb(10 31 68 / 8%);
+  --shadow-26: 0 8px 20px rgb(10 31 68 / 12%);
+  --shadow-27: 0 4px 8px rgb(10 31 68 / 6%);
+  --shadow-28: 0 8px 16px rgb(10 31 68 / 10%);
+  --shadow-29: 0 4px 16px oklch(0% 0 0deg / 30%), 0 0 0 1px oklch(var(--bc) / 5%);
+  --shadow-30: 0 8px 24px oklch(0% 0 0deg / 40%), 0 0 0 1px oklch(var(--bc) / 8%);
+  --shadow-31: 0 6px 18px oklch(0% 0 0deg / 32%), 0 0 0 1px oklch(var(--bc) / 8%);
+  --shadow-32: 0 4px 12px oklch(0% 0 0deg / 30%);
+  --shadow-33: 0 2px 8px oklch(0% 0 0deg / 8%);
+  --shadow-34: 0 2px 8px oklch(0% 0 0deg / 6%);
+  --shadow-35: 0 2px 8px oklch(0% 0 0deg / 30%);
+  --shadow-36: 0 4px 12px oklch(var(--p) / 30%);
+  --shadow-37: 0 8px 24px oklch(0% 0 0deg / 40%);
+  --shadow-38: 0 8px 24px rgb(235 68 90 / 40%);
+  --shadow-39: 0 6px 16px rgb(0 0 0 / 20%);
+}
+
+.dark,
+.ion-palette-dark {
+  --color-neutral: #1e293b;
+  --color-base-100: #101c22;
+  --color-base-200: #1e293b;
+  --color-base-300: #334155;
+  --color-base-content: #fff;
+}
+
+/* ============================================
+ * DARK MODE STRATEGY
+ * ============================================
+ * The application uses THREE dark mode triggers set simultaneously by ThemeService:
+ *
+ * 1. [data-theme='dark'] on <html> - Primary trigger for DaisyUI components
+ *    This is the CANONICAL trigger for custom CSS.
+ *
+ * 2. .ion-palette-dark on <html> - Required for Ionic components
+ *    Ionic's dark.class.css targets this class.
+ *
+ * 3. .dark on <body> and <html> - Tailwind/utility class
+ *    Used by some Tailwind dark: utilities.
+ *
+ * USAGE IN SCSS FILES:
+ * - For global selectors: Use grouped selector for robustness:
+ *     :root[data-theme='dark'], .dark, .ion-palette-dark { ... }
+ *
+ * - For Angular component scoped styles: Use :host-context():
+ *     :host-context(.dark),
+ *     :host-context(.ion-palette-dark) { ... }
+ *
+ * - For simple cases, .dark alone works since all triggers are set.
+ * ============================================ */
 
 /* ============================================
  * DAISYUI → IONIC CSS VARIABLE BRIDGES
@@ -27,33 +142,33 @@
  * ============================================ */
 :root[data-theme='diabetactic'] {
   /* Bridge DaisyUI primary to Ionic primary */
-  --ion-color-primary: #25aff4;
-  --ion-color-primary-rgb: 37, 175, 244;
-  --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #2099d7;
-  --ion-color-primary-tint: #3bb7f5;
+  --ion-color-primary: #3b82f6;
+  --ion-color-primary-rgb: 59, 130, 246;
+  --ion-color-primary-contrast: #0f172a;
+  --ion-color-primary-contrast-rgb: 15, 23, 42;
+  --ion-color-primary-shade: #2563eb;
+  --ion-color-primary-tint: #60a5fa;
 
   /* Bridge DaisyUI secondary to Ionic secondary */
   --ion-color-secondary: #00c6ae;
   --ion-color-secondary-rgb: 0, 198, 174;
-  --ion-color-secondary-contrast: #ffffff;
-  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-contrast: #0f172a;
+  --ion-color-secondary-contrast-rgb: 15, 23, 42;
   --ion-color-secondary-shade: #00ae99;
   --ion-color-secondary-tint: #1accb6;
 
   /* Bridge DaisyUI success to Ionic success */
   --ion-color-success: #22c55e;
   --ion-color-success-rgb: 34, 197, 94;
-  --ion-color-success-contrast: #ffffff;
-  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-contrast: #0f172a;
+  --ion-color-success-contrast-rgb: 15, 23, 42;
   --ion-color-success-shade: #1ead53;
   --ion-color-success-tint: #38cb6e;
 
   /* Bridge DaisyUI warning to Ionic warning */
   --ion-color-warning: #f59e0b;
   --ion-color-warning-rgb: 245, 158, 11;
-  --ion-color-warning-contrast: #000000;
+  --ion-color-warning-contrast: #000;
   --ion-color-warning-contrast-rgb: 0, 0, 0;
   --ion-color-warning-shade: #d88b0a;
   --ion-color-warning-tint: #f6a823;
@@ -61,40 +176,40 @@
   /* Bridge DaisyUI error to Ionic danger */
   --ion-color-danger: #ef4444;
   --ion-color-danger-rgb: 239, 68, 68;
-  --ion-color-danger-contrast: #ffffff;
-  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-contrast: #0f172a;
+  --ion-color-danger-contrast-rgb: 15, 23, 42;
   --ion-color-danger-shade: #d13c3c;
   --ion-color-danger-tint: #f05757;
 
   /* Background and surface colors */
-  --ion-background-color: #ffffff;
+  --ion-background-color: #fff;
   --ion-background-color-rgb: 255, 255, 255;
   --ion-text-color: #0d171c;
   --ion-text-color-rgb: 13, 23, 28;
-  --ion-card-background: #ffffff;
+  --ion-card-background: #fff;
 }
 
 :root[data-theme='dark'] {
-  /* Bridge DaisyUI primary to Ionic primary (same colors) */
-  --ion-color-primary: #25aff4;
-  --ion-color-primary-rgb: 37, 175, 244;
-  --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #2099d7;
-  --ion-color-primary-tint: #3bb7f5;
+  /* Bridge DaisyUI primary to Ionic primary (Desaturated/Lighter for Dark Mode - Blue-400) */
+  --ion-color-primary: #60a5fa;
+  --ion-color-primary-rgb: 96, 165, 250;
+  --ion-color-primary-contrast: #000;
+  --ion-color-primary-contrast-rgb: 0, 0, 0;
+  --ion-color-primary-shade: #3b82f6;
+  --ion-color-primary-tint: #93c5fd;
 
-  /* Bridge DaisyUI secondary to Ionic secondary */
-  --ion-color-secondary: #00c6ae;
-  --ion-color-secondary-rgb: 0, 198, 174;
-  --ion-color-secondary-contrast: #ffffff;
-  --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #00ae99;
-  --ion-color-secondary-tint: #1accb6;
+  /* Bridge DaisyUI secondary to Ionic secondary (Desaturated/Lighter - Teal-400) */
+  --ion-color-secondary: #2dd4bf;
+  --ion-color-secondary-rgb: 45, 212, 191;
+  --ion-color-secondary-contrast: #000;
+  --ion-color-secondary-contrast-rgb: 0, 0, 0;
+  --ion-color-secondary-shade: #14b8a6;
+  --ion-color-secondary-tint: #5eead4;
 
   /* Bridge DaisyUI success to Ionic success */
   --ion-color-success: #22c55e;
   --ion-color-success-rgb: 34, 197, 94;
-  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast: #fff;
   --ion-color-success-contrast-rgb: 255, 255, 255;
   --ion-color-success-shade: #1ead53;
   --ion-color-success-tint: #38cb6e;
@@ -102,7 +217,7 @@
   /* Bridge DaisyUI warning to Ionic warning */
   --ion-color-warning: #f59e0b;
   --ion-color-warning-rgb: 245, 158, 11;
-  --ion-color-warning-contrast: #000000;
+  --ion-color-warning-contrast: #000;
   --ion-color-warning-contrast-rgb: 0, 0, 0;
   --ion-color-warning-shade: #d88b0a;
   --ion-color-warning-tint: #f6a823;
@@ -110,7 +225,7 @@
   /* Bridge DaisyUI error to Ionic danger */
   --ion-color-danger: #ef4444;
   --ion-color-danger-rgb: 239, 68, 68;
-  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast: #fff;
   --ion-color-danger-contrast-rgb: 255, 255, 255;
   --ion-color-danger-shade: #d13c3c;
   --ion-color-danger-tint: #f05757;
@@ -118,82 +233,33 @@
   /* Dark theme background and surface colors */
   --ion-background-color: #101c22;
   --ion-background-color-rgb: 16, 28, 34;
-  --ion-text-color: #ffffff;
+  --ion-text-color: #fff;
   --ion-text-color-rgb: 255, 255, 255;
   --ion-card-background: #1e293b;
+  --ion-card-background-elevated: #334155; /* Slate-700 for elevation */
+
+  /* Semantic app colors (dark) */
+  --dt-color-text-primary: #e5e7eb;
+  --dt-color-text-secondary: #cbd5f5;
+  --dt-color-text-muted: #9ca3af;
+  --dt-color-border-subtle: #334155;
+  --dt-color-border-input: #475569;
+  --dt-color-link: #bfdbfe;
+  --dt-color-link-soft: #93c5fd;
+  --dt-color-surface: rgb(15 23 42 / 96%);
+  --dt-color-surface-soft: rgb(15 23 42 / 92%);
+
+  /* Glucose status colors (dark - same as light for now) */
+  --glucose-normal: #22c55e;
+  --glucose-low: #f59e0b;
+  --glucose-high: #ef4444;
+  --glucose-critical: #dc2626;
 }
 
 /* ============================================
- * DESIGN TOKEN SYSTEM
+ * DESIGN TOKEN SYSTEM (Tailwind v3 compatible)
  * Beautiful gradients, shadows, and semantic colors
- * ============================================ */
-@theme {
-  /* ========== GRADIENTS ========== */
-
-  /* Login gradient (purple-blue) */
-  --gradient-login: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-
-  /* Semantic gradients */
-  --gradient-primary: linear-gradient(135deg, #3b82f6, #60a5fa);
-  --gradient-secondary: linear-gradient(135deg, #00c6ae, #1accb6);
-  --gradient-success: linear-gradient(135deg, #22c55e, #10b981);
-  --gradient-warning: linear-gradient(135deg, #f59e0b, #fb923c);
-  --gradient-danger: linear-gradient(135deg, #ef4444, #f87171);
-
-  /* Cool gradients */
-  --gradient-ocean: linear-gradient(135deg, #667eea, #25aff4);
-  --gradient-sunset: linear-gradient(135deg, #f59e0b, #ef4444);
-  --gradient-forest: linear-gradient(135deg, #10b981, #22c55e);
-
-  /* ========== SHADOWS ========== */
-
-  /* Elevation shadows */
-  --shadow-card: 0 20px 40px rgb(0 0 0 / 10%);
-  --shadow-card-dark: 0 20px 40px rgb(0 0 0 / 50%);
-  --shadow-elevated: 0 10px 30px rgb(0 0 0 / 15%);
-  --shadow-floating: 0 25px 50px rgb(0 0 0 / 25%);
-
-  /* Colored glow shadows */
-  --shadow-glow-primary: 0 10px 30px rgb(37 175 244 / 30%);
-  --shadow-glow-success: 0 10px 30px rgb(34 197 94 / 30%);
-  --shadow-glow-danger: 0 10px 30px rgb(239 68 68 / 30%);
-
-  /* ========== SEMANTIC COLORS ========== */
-
-  /* Surface colors */
-  --color-surface-light: #fff;
-  --color-surface-dark: #1e1e1e;
-  --color-on-surface-light: #0d171c;
-  --color-on-surface-dark: #fff;
-
-  /* Glass morphism */
-  --color-glass-light: rgb(255 255 255 / 95%);
-  --color-glass-dark: rgb(30 30 30 / 95%);
-
-  /* ========== SPACING & SIZING ========== */
-
-  /* Spacing scale (4px base) */
-  --spacing-xs: 0.5rem; /* 8px */
-  --spacing-sm: 1rem; /* 16px */
-  --spacing-md: 1.5rem; /* 24px */
-  --spacing-lg: 2rem; /* 32px */
-  --spacing-xl: 3rem; /* 48px */
-  --spacing-2xl: 4rem; /* 64px */
-
-  /* Border radius */
-  --radius-sm: 0.75rem; /* 12px */
-  --radius-md: 1rem; /* 16px */
-  --radius-lg: 1.25rem; /* 20px */
-  --radius-xl: 1.5rem; /* 24px */
-  --radius-2xl: 2rem; /* 32px */
-
-  /* ========== TRANSITIONS ========== */
-  --duration-fast: 150ms;
-  --duration-normal: 300ms;
-  --duration-slow: 500ms;
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
+ * Note: Converted from @theme to :root for v3 compatibility
 
 /* ============================================
  * CUSTOM COMPONENT UTILITIES
@@ -201,20 +267,8 @@
  * ============================================ */
 @layer components {
   /* ========== CARDS ========== */
-  /* Migrated to DaisyUI card component - use class="card bg-base-100 shadow-xl" instead */
-  /*
-  .card-elevated {
-    @apply shadow-card rounded-2xl bg-white p-6 backdrop-blur-xl dark:bg-gray-900;
-  }
 
-  .card-glass {
-    background: var(--color-glass-light);
-
-    @apply rounded-2xl p-6 backdrop-blur-xl dark:bg-gray-900/95;
-
-    border: 1px solid rgb(255 255 255 / 18%);
-  }
-  */
+  /* Use DaisyUI card component: class="card bg-base-100 shadow-xl" */
 
   .card-gradient {
     background: var(--gradient-primary);
@@ -266,36 +320,245 @@
     --background-focused: rgb(37 175 244 / 10%);
   }
 
-  /* ========== FORM CONTROLS (DARK MODE) ========== */
+  /* ========== FORM CONTROLS (THEME-AWARE) ========== */
+
+  /* Light theme - datetime components (hex fallbacks for Android WebView) */
+  ion-datetime {
+    --background: var(--color-base-100, #fff);
+    --wheel-background: var(--color-base-100, #fff);
+    --wheel-highlight-background: var(--color-base-200, #f5f7f8);
+    --wheel-highlight-border-radius: 14px;
+    --wheel-fade-background: linear-gradient(to bottom, transparent, rgb(0 0 0 / 6%), transparent);
+    --title-color: var(--color-base-content, #0d171c);
+    --subtitle-color: rgb(13 23 28 / 70%);
+    --header-background: var(--color-base-100, #fff);
+    --header-color: var(--color-base-content, #0d171c);
+    --backdrop-opacity: 0.35;
+
+    border-radius: 16px;
+    box-shadow: var(--shadow-10, 0 12px 30px -10px rgb(0 0 0 / 20%));
+    color: var(--color-base-content, #0d171c);
+  }
+
+  ion-datetime::part(calendar-day)[today] {
+    color: var(--ion-color-primary);
+    font-weight: 700;
+  }
+
+  ion-datetime::part(wheel-item) {
+    font-weight: 600;
+  }
+
+  ion-datetime-button {
+    --background: var(--color-base-200, #f5f7f8);
+    --color: var(--color-base-content, #0d171c);
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --padding-top: 10px;
+    --padding-bottom: 10px;
+    --border-color: rgb(13 23 28 / 12%);
+
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-06, 0 8px 18px -14px rgb(0 0 0 / 35%));
+  }
+
+  ion-datetime-button::part(native) {
+    border-radius: 12px;
+    padding: 0.35rem 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    gap: 0.35rem;
+  }
+
+  ion-select {
+    --background: var(--color-base-100, #fff);
+    --color: var(--color-base-content, #0d171c);
+    --placeholder-color: rgb(13 23 28 / 60%);
+  }
+
+  ion-action-sheet {
+    --background: var(--color-base-100, #fff);
+    --backdrop-opacity: 0.7;
+    --button-background: var(--color-base-200, #f5f7f8);
+    --button-background-selected: var(--color-base-300, #e5e7eb);
+    --button-color: var(--color-base-content, #0d171c);
+  }
+
+  /* Dark theme overrides - hex fallbacks for Android WebView */
+  :root[data-theme='dark'] ion-datetime,
   .dark ion-datetime,
   .ion-palette-dark ion-datetime {
-    --background: #020617;
-    --wheel-background: #020617;
-    --wheel-highlight-background: #111827;
-    --wheel-fade-background: transparent;
-    color: #e5e7eb;
+    --background: var(--color-base-200, #252540);
+    --wheel-background: var(--color-base-200, #252540);
+    --wheel-highlight-background: var(--color-base-300, #3a3a55);
+    --wheel-fade-background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(255 255 255 / 8%),
+      transparent
+    );
+    --title-color: var(--color-base-content, #e5e7eb);
+    --subtitle-color: rgb(229 231 235 / 70%);
+    --header-background: var(--color-base-200, #252540);
+    --header-color: var(--color-base-content, #e5e7eb);
+
+    border-radius: 16px;
+    box-shadow: var(--shadow-11, 0 14px 30px -12px rgb(0 0 0 / 40%));
+    color: var(--color-base-content, #e5e7eb);
   }
 
+  :root[data-theme='dark'] ion-datetime-button,
   .dark ion-datetime-button,
   .ion-palette-dark ion-datetime-button {
-    --background: #111827;
-    --color: #e5e7eb;
+    --background: var(--color-base-200, #252540);
+    --color: var(--color-base-content, #e5e7eb);
+    --border-color: rgb(229 231 235 / 14%);
+
+    box-shadow: var(--shadow-08, 0 10px 24px -14px rgb(0 0 0 / 55%));
   }
 
+  :root[data-theme='dark'] ion-select,
   .dark ion-select,
   .ion-palette-dark ion-select {
-    --background: #020617;
-    --color: #e5e7eb;
-    --placeholder-color: #9ca3af;
+    --background: var(--color-base-100, #1a1a2e);
+    --color: var(--color-base-content, #e5e7eb);
+    --placeholder-color: rgb(229 231 235 / 60%);
   }
 
+  :root[data-theme='dark'] ion-action-sheet,
   .dark ion-action-sheet,
   .ion-palette-dark ion-action-sheet {
-    --background: #020617;
+    --background: var(--color-base-100, #1a1a2e);
     --backdrop-opacity: 0.7;
-    --button-background: #111827;
-    --button-background-selected: #1f2937;
-    --button-color: #e5e7eb;
+    --button-background: var(--color-base-200, #252540);
+    --button-background-selected: var(--color-base-300, #3a3a55);
+    --button-color: var(--color-base-content, #e5e7eb);
+  }
+
+  /* ========== PROSE / TYPOGRAPHY (Tailwind @typography) - hex fallbacks ========== */
+  .prose {
+    color: var(--color-base-content, #0d171c);
+    max-width: 70ch;
+  }
+
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4 {
+    color: var(--color-base-content, #0d171c);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .prose a {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .prose a:hover {
+    text-decoration: underline;
+  }
+
+  .prose code {
+    color: var(--color-base-content, #0d171c);
+    background: var(--color-base-200, #f5f7f8);
+    padding: 0.15rem 0.3rem;
+    border-radius: 0.35rem;
+  }
+
+  .prose blockquote {
+    border-left: 3px solid var(--ion-color-primary);
+    padding-left: 1rem;
+    color: rgb(13 23 28 / 80%);
+  }
+
+  /* ========== LAYOUT HELPERS ========== */
+  .page-shell {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 16px 16px 32px;
+  }
+
+  :root[data-theme='dark'] .prose,
+  .dark .prose,
+  .ion-palette-dark .prose {
+    color: var(--color-base-content, #e5e7eb);
+  }
+
+  :root[data-theme='dark'] .prose code,
+  .dark .prose code,
+  .ion-palette-dark .prose code {
+    background: var(--color-base-300, #3a3a55);
+  }
+
+  /* ========== TOOLBAR BUTTONS ========== */
+
+  /* Make toolbar icon buttons circular and polished */
+  ion-toolbar ion-button {
+    --border-radius: 50%;
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+
+    min-height: 40px;
+    min-width: 40px;
+  }
+
+  ion-toolbar ion-buttons ion-button {
+    --border-radius: 50%;
+    --padding-start: 6px;
+    --padding-end: 6px;
+
+    margin: 0 2px;
+  }
+
+  /* Icon-only buttons in toolbar - circular with hover effect */
+  ion-toolbar ion-button ion-icon[slot='icon-only'],
+  ion-toolbar ion-button app-icon {
+    font-size: 22px;
+  }
+
+  /* Hover/active states for toolbar buttons */
+  ion-toolbar ion-button::part(native) {
+    border-radius: 50%;
+    transition:
+      background-color 0.2s ease,
+      transform 0.15s ease;
+  }
+
+  ion-toolbar ion-button:hover::part(native) {
+    background: rgb(0 0 0 / 8%);
+  }
+
+  ion-toolbar ion-button:active::part(native) {
+    transform: scale(0.92);
+  }
+
+  /* Dark mode toolbar buttons */
+  .dark ion-toolbar ion-button:hover::part(native),
+  .ion-palette-dark ion-toolbar ion-button:hover::part(native) {
+    background: rgb(255 255 255 / 12%);
+  }
+
+  /* Primary colored toolbar - use contrast token for accessibility */
+  ion-toolbar[color='primary'] {
+    --color: var(--ion-color-primary-contrast);
+  }
+
+  ion-toolbar[color='primary'] ion-button {
+    --color: var(--ion-color-primary-contrast);
+  }
+
+  ion-toolbar[color='primary'] ion-button:hover::part(native) {
+    background: rgb(255 255 255 / 12%);
+  }
+
+  ion-toolbar[color='primary'] ion-button:active::part(native) {
+    background: rgb(255 255 255 / 20%);
   }
 
   /* ========== SURFACES ========== */
@@ -312,10 +575,37 @@
 
     @apply text-white;
   }
+
+  @media (width >= 640px) {
+    .page-shell {
+      padding: 20px 24px 36px;
+    }
+  }
+
+  @media (width >= 1024px) {
+    .page-shell {
+      padding: 24px 28px 40px;
+    }
+  }
 }
 
 /* ============================================
- * ANIMATION UTILITIES
+ * ANIMATION UTILITIES (CENTRALIZED)
+ * ============================================
+ * All shared keyframes are defined here to avoid duplication.
+ * Component SCSS files should use these central definitions via the utility classes.
+ *
+ * Available animations:
+ * - .animate-fade-in        → fadeIn (0.6s)
+ * - .animate-fade-in-down   → fadeInDown (0.8s)
+ * - .animate-fade-in-up     → fadeInUp (0.8s)
+ * - .animate-slide-up       → slideUp (0.5s)
+ * - .animate-slide-in-up    → slideInUp (0.8s)
+ * - .animate-pulse-glow     → pulseGlow (2s infinite)
+ * - .animate-shake          → shake (0.3s)
+ *
+ * Note: Some component SCSS files have local keyframe definitions for component-specific
+ * animations (e.g., spin, bounce, pulse). These are intentionally local for scoping.
  * ============================================ */
 @layer utilities {
   /* Fade animations */
@@ -437,7 +727,10 @@
 }
 
 /* Material Design Theme - Import after Tailwind for proper cascade */
-/* @import './theme/material-theme'; */ /* Removed - file doesn't exist */
+
+/* @import './theme/material-theme'; */
+
+/* Removed - file doesn't exist */
 
 /* Core CSS required for Ionic components to work properly */
 @import '@ionic/angular/css/core.css';
@@ -464,8 +757,10 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+/* Use class-based dark mode for proper theme control */
+@import '@ionic/angular/css/palettes/dark.class.css';
+
+/* @import '@ionic/angular/css/palettes/dark.system.css'; */
 
 /**
  * Global Diabetactic Styles
@@ -487,95 +782,120 @@ body {
   margin: 0;
 }
 
-/* Override Ionic variables with Diabetactic Design System colors */
-:root {
-/* Primary color (Blue - from mockups) */
-  --ion-color-primary: #25aff4;
-  --ion-color-primary-rgb: 37, 175, 244;
-  --ion-color-primary-contrast: #fff;
-  --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #2099d7;
-  --ion-color-primary-tint: #3bb7f5;
+/* Dark mode cards - clear differentiation from background */
+.dark ion-card,
+.ion-palette-dark ion-card,
+:root[data-theme='dark'] ion-card {
+  --background: var(--ion-card-background);
 
-/* Secondary color (Teal variant) */
-  --ion-color-secondary: #00c6ae;
-  --ion-color-secondary-rgb: 0, 198, 174;
-  --ion-color-secondary-contrast: #fff;
-  --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #00ae99;
-  --ion-color-secondary-tint: #1accb6;
-
-/* Success color (Green - for normal glucose) */
-  --ion-color-success: #22c55e;
-  --ion-color-success-rgb: 34, 197, 94;
-  --ion-color-success-contrast: #fff;
-  --ion-color-success-contrast-rgb: 255, 255, 255;
-  --ion-color-success-shade: #1ead53;
-  --ion-color-success-tint: #38cb6e;
-
-/* Warning color (Orange - for low glucose) */
-  --ion-color-warning: #f59e0b;
-  --ion-color-warning-rgb: 245, 158, 11;
-  --ion-color-warning-contrast: #000;
-  --ion-color-warning-contrast-rgb: 0, 0, 0;
-  --ion-color-warning-shade: #d88b0a;
-  --ion-color-warning-tint: #f6a823;
-
-/* Danger color (Red - for high glucose) */
-  --ion-color-danger: #ef4444;
-  --ion-color-danger-rgb: 239, 68, 68;
-  --ion-color-danger-contrast: #fff;
-  --ion-color-danger-contrast-rgb: 255, 255, 255;
-  --ion-color-danger-shade: #d13c3c;
-  --ion-color-danger-tint: #f05757;
-
-/* Custom Diabetactic colors */
-  --diabetactic-gold: #ffd700;
-  --diabetactic-coral: #ff7f50;
-  --diabetactic-light-blue: #add8e6;
-
-/* Background colors */
-  --diabetactic-background-light: #f5f7f8;
-  --diabetactic-background-dark: #101c22;
-  --diabetactic-surface-light: #fff;
-  --diabetactic-surface-dark: #1e293b;
-
-/* Text colors */
-  --diabetactic-text-primary: #0d171c;
-  --diabetactic-text-secondary: #49819c;
-  --diabetactic-text-tertiary: #94a3b8;
-
-/* Glucose status colors */
-  --glucose-normal: #22c55e;
-  --glucose-low: #f59e0b;
-  --glucose-high: #ef4444;
-  --glucose-critical: #dc2626;
-
-/* Gradient colors for stat cards */
-  --gradient-blue-start: #3b82f6;
-  --gradient-blue-end: #60a5fa;
-  --gradient-purple-start: #8b5cf6;
-  --gradient-purple-end: #a78bfa;
-  --gradient-green-start: #10b981;
-  --gradient-green-end: #34d399;
-  --gradient-yellow-start: #f59e0b;
-  --gradient-yellow-end: #fbbf24;
+  background: var(--ion-card-background);
+  border: 1px solid var(--dt-color-border-subtle);
+  box-shadow: var(--shadow-08);
 }
 
-/* Enhanced touch targets for accessibility */
-.touch-target {
-  min-width: 44px;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+/* ============================================
+ * VISUAL DIFFERENTIATION UTILITIES
+ * Clear element separation without harsh borders
+ * ============================================ */
+
+/* Card with subtle border and soft shadow - light mode optimized */
+.card-subtle {
+  background: oklch(var(--b1));
+  border: 1px solid oklch(var(--bc) / 8%);
+  border-radius: var(--radius-md, 1rem);
+  box-shadow: 0 1px 3px oklch(var(--bc) / 6%);
 }
 
-/* Smooth transitions for theme changes */
-* {
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
+.dark .card-subtle,
+.ion-palette-dark .card-subtle,
+:root[data-theme='dark'] .card-subtle {
+  background: oklch(var(--b2));
+  border: 1px solid oklch(var(--bc) / 12%);
+  box-shadow: 0 4px 16px oklch(0% 0 0deg / 30%);
+}
+
+/* Elevated card with enhanced shadow - for floating elements */
+.card-elevated {
+  background: oklch(var(--b1));
+  border: 1px solid oklch(var(--bc) / 6%);
+  border-radius: var(--radius-lg, 1.25rem);
+  box-shadow:
+    0 4px 6px oklch(var(--bc) / 5%),
+    0 10px 20px oklch(var(--bc) / 8%);
+}
+
+.dark .card-elevated,
+.ion-palette-dark .card-elevated,
+:root[data-theme='dark'] .card-elevated {
+  background: oklch(var(--b2));
+  border: 1px solid oklch(var(--bc) / 15%);
+  box-shadow:
+    0 4px 8px oklch(0% 0 0deg / 20%),
+    0 12px 28px oklch(0% 0 0deg / 35%);
+}
+
+/* Separator/Divider - consistent line between sections */
+.separator {
+  height: 1px;
+  background: oklch(var(--bc) / 10%);
+  margin: 1rem 0;
+}
+
+.dark .separator,
+.ion-palette-dark .separator,
+:root[data-theme='dark'] .separator {
+  background: oklch(var(--bc) / 15%);
+}
+
+/* Section divider with more spacing */
+.section-divider {
+  height: 1px;
+  background: oklch(var(--bc) / 8%);
+  margin: 1.5rem 0;
+}
+
+.dark .section-divider,
+.ion-palette-dark .section-divider,
+:root[data-theme='dark'] .section-divider {
+  background: oklch(var(--bc) / 12%);
+}
+
+/* List item hover state - subtle highlight */
+.list-item-hover {
+  transition: background-color 0.15s ease;
+}
+
+.list-item-hover:hover {
+  background: oklch(var(--bc) / 4%);
+}
+
+.dark .list-item-hover:hover,
+.ion-palette-dark .list-item-hover:hover,
+:root[data-theme='dark'] .list-item-hover:hover {
+  background: oklch(var(--bc) / 8%);
+}
+
+/* Reset ion-item to transparent with zero padding */
+.ion-item-reset {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-start: 0;
+  --inner-padding-end: 0;
+  --background: transparent;
+}
+
+/* Elevated card style with consistent shadow */
+.ion-card-elevated {
+  border-radius: var(--radius-lg, 1.25rem);
+  box-shadow: var(--shadow-card);
+}
+
+/* Card with no shadow/border for flat layouts */
+.ion-card-flat {
+  --background: transparent;
+
+  box-shadow: none;
+  border: none;
 }
 
 /* ============================================
@@ -593,7 +913,7 @@ body {
 .dark .text-dark,
 .ion-palette-dark .text-dark,
 :root[data-theme='dark'] .text-dark {
-  color: #ffffff;
+  color: #fff;
 }
 
 .dark .text-medium,
@@ -646,6 +966,74 @@ p,
     'opsz' 24;
 }
 
+/* ============================================
+ * ICON UTILITIES
+ * Consistent sizing and styling for icons
+ * ============================================ */
+
+/* Icon sizes */
+.icon-xs {
+  width: 14px;
+  height: 14px;
+  font-size: 14px;
+}
+
+.icon-sm {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
+
+.icon-md {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+
+.icon-lg {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+}
+
+.icon-xl {
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+}
+
+/* Icon color states */
+.icon-primary {
+  color: oklch(var(--p));
+}
+
+.icon-secondary {
+  color: oklch(var(--s));
+}
+
+.icon-muted {
+  color: oklch(var(--bc) / 50%);
+}
+
+.icon-success {
+  color: oklch(var(--su));
+}
+
+.icon-warning {
+  color: oklch(var(--wa));
+}
+
+.icon-error {
+  color: oklch(var(--er));
+}
+
+/* Dark mode icon adjustments for better visibility */
+.dark .icon-muted,
+.ion-palette-dark .icon-muted,
+:root[data-theme='dark'] .icon-muted {
+  color: oklch(var(--bc) / 60%);
+}
+
 /* Common component styles */
 .stat-card-gradient {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
@@ -660,22 +1048,24 @@ p,
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
+  color: var(--dt-color-text-primary); /* texto neutro para máximo contraste */
+  border: 1px solid transparent;
 
   &.normal {
-    background-color: rgb(34 197 94 / 10%);
-    color: var(--glucose-normal);
+    background-color: rgba(var(--ion-color-success-rgb), 0.12);
+    border-color: var(--glucose-normal);
   }
 
   &.low {
-    background-color: rgb(245 158 11 / 10%);
-    color: var(--glucose-low);
+    background-color: rgba(var(--ion-color-warning-rgb), 0.12);
+    border-color: var(--glucose-low);
   }
 
   &.high {
-    background-color: rgb(239 68 68 / 10%);
-    color: var(--glucose-high);
+    background-color: rgba(var(--ion-color-danger-rgb), 0.12);
+    border-color: var(--glucose-high);
   }
 }
 
@@ -686,21 +1076,124 @@ p,
   margin-bottom: -8px;
 
   ion-fab-button {
+    --background: var(--ion-color-primary);
+    --background-activated: var(--ion-color-primary-shade);
+    --background-focused: var(--ion-color-primary-shade);
+    --background-hover: var(--ion-color-primary-tint);
+    --border-radius: 50%;
+    --box-shadow: 0 4px 12px rgb(37 175 244 / 30%);
+
     width: 64px;
     height: 64px;
 
-    --background: var(--ion-color-primary);
-    --box-shadow: 0 4px 12px rgb(37 175 244 / 30%);
+    /* Ensure perfectly round with no square artifacts */
+    border-radius: 50%;
+    overflow: hidden;
+
+    &::part(native) {
+      border-radius: 50%;
+      overflow: hidden;
+    }
   }
 }
 
-/* Dark mode adjustments */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ion-background-color: var(--diabetactic-background-dark);
-    --ion-background-color-rgb: 16, 28, 34;
-    --ion-text-color: #fff;
-    --ion-text-color-rgb: 255, 255, 255;
-    --ion-card-background: var(--diabetactic-surface-dark);
-  }
+/* Dark mode adjustments - class-based (not media query) */
+
+/* These styles are applied via .ion-palette-dark from dark.class.css */
+
+.dark ion-card-header,
+:root[data-theme='dark'] ion-card-header {
+  color: #fff;
+}
+
+.ion-palette-dark ion-card-title,
+.dark ion-card-title,
+:root[data-theme='dark'] ion-card-title {
+  --color: #fff;
+
+  color: #fff;
+}
+
+.ion-palette-dark ion-card-subtitle,
+.dark ion-card-subtitle,
+:root[data-theme='dark'] ion-card-subtitle {
+  --color: rgb(255 255 255 / 80%);
+
+  color: rgb(255 255 255 / 80%);
+}
+
+.ion-palette-dark ion-card-content,
+.dark ion-card-content,
+:root[data-theme='dark'] ion-card-content {
+  --color: #fff;
+
+  color: #fff;
+}
+
+/* Ion Item - Dark Mode */
+.ion-palette-dark ion-item,
+.dark ion-item,
+:root[data-theme='dark'] ion-item {
+  --background: var(--diabetactic-surface-dark, #1e293b);
+  --color: #fff;
+  --border-color: rgb(255 255 255 / 10%);
+}
+
+.ion-palette-dark ion-label,
+.dark ion-label,
+:root[data-theme='dark'] ion-label {
+  --color: #fff;
+
+  color: #fff;
+}
+
+/* Ion List - Dark Mode */
+.ion-palette-dark ion-list,
+.dark ion-list,
+:root[data-theme='dark'] ion-list {
+  --background: transparent;
+
+  background: transparent;
+}
+
+/* Ion Content - Dark Mode */
+.ion-palette-dark ion-content,
+.dark ion-content,
+:root[data-theme='dark'] ion-content {
+  --background: var(--diabetactic-background-dark, #101c22);
+}
+
+/* Ion Toolbar - Dark Mode */
+.ion-palette-dark ion-toolbar,
+.dark ion-toolbar,
+:root[data-theme='dark'] ion-toolbar {
+  --background: var(--ion-color-primary);
+  --color: #fff;
+}
+
+/* Ion Input/Textarea - Dark Mode */
+.ion-palette-dark ion-input,
+.ion-palette-dark ion-textarea,
+.dark ion-input,
+.dark ion-textarea,
+:root[data-theme='dark'] ion-input,
+:root[data-theme='dark'] ion-textarea {
+  --color: #fff;
+  --placeholder-color: oklch(var(--bc) / 60%);
+  --background: var(--diabetactic-surface-dark, #1e293b);
+}
+
+/* Ion Segment - Dark Mode */
+.ion-palette-dark ion-segment,
+.dark ion-segment,
+:root[data-theme='dark'] ion-segment {
+  --background: var(--diabetactic-surface-dark, #1e293b);
+}
+
+.ion-palette-dark ion-segment-button,
+.dark ion-segment-button,
+:root[data-theme='dark'] ion-segment-button {
+  --color: rgb(255 255 255 / 70%);
+  --color-checked: #fff;
+  --indicator-color: var(--ion-color-primary);
 }

@@ -10,7 +10,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  color: white;
+  color: var(--ion-color-primary-contrast);
 
   .material-symbols-outlined {
     font-size: 28px;
@@ -18,7 +18,10 @@
 }
 
 ion-card {
+  --border-radius: 1.25rem;
+
   margin: 16px;
+  border-radius: 1.25rem;
 
   ion-card-header {
     padding-bottom: 8px;
@@ -43,18 +46,19 @@ ion-card {
 }
 
 .share-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  // Uses the login gradient token from global.css
+  background: var(--gradient-login);
+  color: var(--ion-color-primary-contrast);
 
   ion-card-header {
     ion-card-subtitle,
     ion-card-title {
-      color: white;
+      color: inherit;
     }
   }
 
   ion-card-content {
-    color: white;
+    color: inherit;
 
     p {
       margin-bottom: 16px;
@@ -81,7 +85,7 @@ ion-card {
 
   ion-icon {
     font-size: 48px;
-    color: white;
+    color: var(--ion-color-primary-contrast);
     display: block;
     margin-bottom: 12px;
   }
@@ -150,7 +154,7 @@ ion-item {
 
     h3 {
       font-size: 16px;
-      color: var(--ion-color-dark);
+      color: oklch(var(--bc));
       margin: 0;
     }
   }
@@ -159,5 +163,73 @@ ion-item {
     font-weight: 600;
     padding: 6px 12px;
     border-radius: 16px;
+  }
+}
+
+// ============================================
+// DARK MODE SUPPORT
+// ============================================
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
+  ion-card {
+    --background: oklch(var(--b2));
+
+    border: 1px solid oklch(var(--bc) / 10%);
+
+    ion-card-header {
+      ion-card-subtitle {
+        color: oklch(var(--bc) / 60%);
+      }
+
+      ion-card-title {
+        color: oklch(var(--bc));
+      }
+    }
+
+    ion-card-content {
+      color: oklch(var(--bc) / 90%);
+    }
+  }
+
+  ion-item {
+    --background: transparent;
+
+    .material-symbols-outlined[slot='start'] {
+      color: oklch(var(--p));
+    }
+
+    ion-label {
+      p {
+        color: oklch(var(--bc) / 50%);
+      }
+
+      h3 {
+        color: oklch(var(--bc));
+      }
+    }
+  }
+
+  .doctor-avatar {
+    background: oklch(var(--p));
+    box-shadow: var(--shadow-36);
+  }
+
+  .share-card {
+    border: 1px solid oklch(var(--bc) / 15%);
+    box-shadow: var(--shadow-37);
+  }
+
+  .already-shared {
+    ion-icon {
+      color: oklch(var(--su));
+    }
+
+    p {
+      color: oklch(var(--su) / 80%);
+    }
+  }
+
+  .action-buttons ion-button {
+    --box-shadow: var(--shadow-35);
   }
 }

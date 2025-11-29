@@ -1,13 +1,13 @@
 // ============================================
-// PROFILE PAGE - HYBRID TAILWIND V4 + SCSS
+// PROFILE PAGE - HYBRID TAILWIND V3 + SCSS
 // ============================================
 // Tailwind: Layout, spacing, typography handled in HTML
 // SCSS: Gradients, Ionic variables, pseudo-elements, animations
 // ============================================
 
-// Ion content background
+// Ion content background - uses DaisyUI semantic colors
 ion-content {
-  --background: #f5f7f8;
+  --background: oklch(var(--b2));
 }
 
 // Profile hero gradient background (SCSS required for gradient)
@@ -24,11 +24,19 @@ ion-content {
   align-items: center;
   text-align: center;
   gap: 12px;
-  color: #fff;
-  box-shadow: 0 12px 24px rgb(37 175 244 / 20%);
+  color: var(--ion-color-primary-contrast);
+  box-shadow: var(--shadow-01);
 }
 
-// Avatar wrapper and styling
+// Avatar container - holds avatar and button vertically
+.avatar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+// Avatar wrapper - just the circular avatar area
 .avatar-wrapper {
   width: 112px;
   height: 112px;
@@ -38,16 +46,13 @@ ion-content {
   align-items: center;
   justify-content: center;
   padding: 8px;
-  position: relative;
-  flex-direction: column;
-  gap: 12px;
 }
 
 .hero-avatar {
   width: 100%;
   height: 100%;
   border: 3px solid rgb(255 255 255 / 50%);
-  box-shadow: 0 8px 16px rgb(0 0 0 / 15%);
+  box-shadow: var(--shadow-02);
 
   img {
     object-fit: cover;
@@ -56,7 +61,7 @@ ion-content {
 
 .avatar-fallback {
   font-size: 72px;
-  color: rgb(255 255 255 / 85%);
+  color: rgba(var(--ion-color-primary-contrast-rgb, 255, 255, 255), 0.85);
 }
 
 .change-photo-btn {
@@ -64,10 +69,9 @@ ion-content {
   --padding-start: 16px;
   --padding-end: 16px;
   --border-color: rgb(255 255 255 / 60%);
-  --color: #fff;
+  --color: var(--ion-color-primary-contrast);
   --background: transparent;
   --background-activated: rgb(255 255 255 / 12%);
-  margin-top: 12px;
 }
 
 // Overview grid responsive layout
@@ -85,7 +89,7 @@ ion-content {
   padding: 16px;
   background: var(--ion-color-light, #fff);
   border-radius: 16px;
-  box-shadow: 0 8px 16px rgb(10 31 68 / 8%);
+  box-shadow: var(--shadow-03);
   color: var(--ion-color-dark, #0d1b2a);
   transition:
     transform 0.2s ease,
@@ -108,7 +112,7 @@ button.overview-card {
 .overview-card:hover,
 .overview-card:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 16px 32px rgb(10 31 68 / 12%);
+  box-shadow: var(--shadow-04);
 }
 
 .overview-card:active {
@@ -120,7 +124,7 @@ button.overview-card {
   background: var(--ion-color-light, #fff);
   border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 12px 24px rgb(10 31 68 / 9%);
+  box-shadow: var(--shadow-05);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -180,9 +184,9 @@ button.overview-card {
 
 // Sign out button custom styling
 .sign-out {
-  margin-top: 8px;
-
   --border-radius: 14px;
+
+  margin-top: 8px;
 
   font-weight: 600;
 }
@@ -194,29 +198,29 @@ button.overview-card {
   }
 }
 
-// Dark theme overrides (match global 'dark' / ion-palette-dark classes)
+// Dark theme overrides - uses DaisyUI semantic colors
 :host-context(.dark),
 :host-context(.ion-palette-dark) {
   ion-content {
-    --background: #0f172a;
+    --background: oklch(var(--b1));
   }
 
   .profile-hero {
-    box-shadow: 0 12px 24px rgb(37 175 244 / 35%);
+    box-shadow: var(--shadow-06);
   }
 
   .overview-card,
   .card {
-    background: var(--ion-color-step-150, #111827);
-    box-shadow: 0 12px 24px rgb(0 0 0 / 35%);
-    color: #fff;
+    background: oklch(var(--b2));
+    box-shadow: var(--shadow-07);
+    color: oklch(var(--bc));
   }
 
   .change-photo-btn {
-    --border-color: rgb(255 255 255 / 40%);
+    --border-color: oklch(var(--bc) / 40%);
   }
 
   .overview-card--placeholder .card-subtitle {
-    color: #c8c8c8;
+    color: oklch(var(--bc) / 60%);
   }
 }

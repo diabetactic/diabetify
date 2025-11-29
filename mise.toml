@@ -6,8 +6,7 @@ java = "21"
 _.path = [
   "{{config_root}}/android",
   "{{env.ANDROID_HOME}}/platform-tools",
-  "{{env.ANDROID_HOME}}/cmdline-tools/latest/bin",
-  "$HOME/.maestro/bin"
+  "{{env.ANDROID_HOME}}/cmdline-tools/latest/bin"
 ]
 JAVA_HOME = "{{exec(command='mise where java')}}"
 ANDROID_HOME = "/home/julito/Android/Sdk"
@@ -49,7 +48,7 @@ cd android && JAVA_HOME=$(mise where java) ANDROID_HOME=$ANDROID_HOME ./gradlew 
 # Test commands - Unit tests
 "test:unit" = "npm run test:ci"
 "test:e2e" = "npm run test:e2e"
-"test:maestro" = "npm run test:maestro:smoke"
+
 
 # Test commands - Full tests (all types)
 "test:full" = "npm run test:full"

@@ -1,0 +1,4 @@
+# Local Maestro configuration for Codex/CI
+# Redirect test output into the workspace so no writes happen under ~/.maestro/tests
+
+testOutputDir: .maestro-tests

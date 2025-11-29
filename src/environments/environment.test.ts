@@ -1,5 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 
+export type BackendMode = 'mock' | 'local' | 'cloud';
+
 /**
  * Get the appropriate base URL for backend services based on platform
  * In test mode with useLocalBackend, points to api-gateway
@@ -9,12 +11,12 @@ function getBaseUrl(): string {
   if (Capacitor.isNativePlatform()) {
     const platform = Capacitor.getPlatform();
     if (platform === 'android') {
-      return 'http://10.0.2.2:8004';
+      return 'http://10.0.2.2:8000';
     } else if (platform === 'ios') {
-      return 'http://localhost:8004';
+      return 'http://localhost:8000';
     }
   }
-  return 'http://localhost:8004';
+  return 'http://localhost:8000';
 }
 
 /**
@@ -29,6 +31,7 @@ function getBaseUrl(): string {
 export const environment = {
   production: false,
   TEST: true, // ⭐ Single flag that controls all test features
+  backendMode: 'local' as BackendMode, // Backend mode for consistency with other environments
 
   // Tidepool API Configuration
   tidepool: {

@@ -5,27 +5,33 @@
 // Ionic input custom styling
 ion-input {
   --background: transparent;
-  --color: var(--ion-text-color, #000);
+  --color: oklch(var(--bc));
   --padding-start: 8px;
   --padding-end: 8px;
   --padding-top: 8px;
   --padding-bottom: 8px;
-
-  @media (prefers-color-scheme: dark) {
-    --color: var(--ion-color-step-850, #e0e0e0);
-  }
 }
 
 // Ionic toggle custom styling
 ion-toggle {
-  --background: rgba(0, 0, 0, 0.1);
+  --background: oklch(var(--bc) / 10%);
   --background-checked: var(--ion-color-primary);
-  --handle-background: #fff;
-  --handle-background-checked: #fff;
+  --handle-background: oklch(var(--b1));
+  --handle-background-checked: oklch(var(--b1));
+}
 
-  @media (prefers-color-scheme: dark) {
-    --background: rgba(255, 255, 255, 0.1);
-    --handle-background: #e0e0e0;
+// Dark mode - class-based
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
+  ion-input {
+    --color: oklch(var(--bc));
+    --placeholder-color: oklch(var(--bc) / 50%);
+  }
+
+  ion-toggle {
+    --background: oklch(var(--bc) / 15%);
+    --handle-background: oklch(var(--b3));
+    --handle-background-checked: oklch(var(--b1));
   }
 }
 
@@ -35,6 +41,7 @@ ion-button {
   --padding-end: 12px;
   --padding-top: 8px;
   --padding-bottom: 8px;
+
   font-size: 13px;
   height: auto;
 
@@ -45,10 +52,10 @@ ion-button {
 
 // FAB button positioning
 ion-fab-button {
-  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --box-shadow: var(--shadow-08);
 
   &:hover {
-    --box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    --box-shadow: var(--shadow-39);
   }
 }
 
@@ -63,61 +70,48 @@ ion-fab-button {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
+  background: oklch(var(--bc) / 20%);
   border-radius: 3px;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.3);
+    background: oklch(var(--bc) / 30%);
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-  }
-}
-
-// Animation keyframes (used in TypeScript)
+// Component-specific animations (different from global.css)
+// slideIn: Uses translateX for desktop, translateY for mobile (panel slides from edge)
+// These are intentionally different from global fadeInUp/slideUp animations
 @keyframes slideIn {
   from {
     transform: translateX(100%);
-    opacity: 0;
+    opacity: 0%;
   }
+
   to {
     transform: translateX(0);
-    opacity: 1;
+    opacity: 100%;
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+// Note: fadeIn is available globally via .animate-fade-in class in global.css
 
 // Mobile slide-up animation
-@media (max-width: 768px) {
+@media (width <= 768px) {
   @keyframes slideIn {
     from {
       transform: translateY(100%);
-      opacity: 0;
+      opacity: 0%;
     }
+
     to {
       transform: translateY(0);
-      opacity: 1;
+      opacity: 100%;
     }
   }
 }
 
 // Responsive adjustments
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .debug-panel-content {
     padding: 12px;
   }

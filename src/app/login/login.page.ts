@@ -1,17 +1,26 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { LoadingController, ToastController, AlertController, IonicModule } from '@ionic/angular';
+import { LoadingController, ToastController, AlertController } from '@ionic/angular';
+import {
+  IonContent,
+  IonIcon,
+  IonButton,
+  IonCheckbox,
+  IonFooter,
+  IonToolbar,
+  IonText,
+} from '@ionic/angular/standalone';
 import { firstValueFrom } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { LocalAuthService, LocalUser } from '../core/services/local-auth.service';
 import { ProfileService } from '../core/services/profile.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 import { AccountState, DEFAULT_USER_PREFERENCES } from '../core/models/user-profile.model';
-import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -22,9 +31,17 @@ import { environment } from '../../environments/environment';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    IonicModule,
     RouterModule,
     TranslateModule,
+    // Ionic standalone components
+    IonContent,
+    IonIcon,
+    IonButton,
+    IonCheckbox,
+    IonFooter,
+    IonToolbar,
+    IonText,
+    // App components
     AppIconComponent,
   ],
 })
@@ -32,8 +49,6 @@ export class LoginPage implements OnInit {
   loginForm: FormGroup;
   showPassword = false;
   isLoading = false;
-  statusMessage = '';
-  statusLevel: 'info' | 'error' | 'success' = 'info';
 
   constructor(
     private fb: FormBuilder,
@@ -42,35 +57,30 @@ export class LoginPage implements OnInit {
     private profileService: ProfileService,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private translate: TranslateService,
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required]], // Can be DNI or email
       password: ['', [Validators.required, Validators.minLength(6)]],
       rememberMe: [false],
     });
-
-    this.loginForm.valueChanges.subscribe(value => {
-      console.log('[LoginForm]', value?.username, value?.password, value?.rememberMe);
-    });
   }
 
   ngOnInit() {
-    // Check if user is already logged in
-    this.authService.isAuthenticated().subscribe(isAuth => {
-      if (isAuth) {
-        this.router.navigate(['/tabs/dashboard']);
-      }
-    });
-
-    // In non-production builds, prefill demo credentials to speed up testing
-    if (!environment.production) {
-      this.loginForm.patchValue({
-        username: '1000',
-        password: 'tuvieja',
-        rememberMe: true,
+    // Check if user is already logged in (single, deferred check to avoid double-activation)
+    this.authService
+      .isAuthenticated()
+      .pipe(take(1))
+      .subscribe(isAuth => {
+        if (isAuth && !this.router.url.startsWith('/tabs')) {
+          setTimeout(() => {
+            this.router.navigate(['/tabs/dashboard'], { replaceUrl: true });
+          }, 0);
+        }
       });
-    }
   }
 
   togglePasswordVisibility() {
@@ -78,119 +88,141 @@ export class LoginPage implements OnInit {
   }
 
   async onSubmit() {
-    console.log('📱 [LOGIN PAGE] ========== LOGIN FORM SUBMITTED ==========');
-    console.log('📱 [LOGIN PAGE] Form value:', this.loginForm.value);
-    console.log('📱 [LOGIN PAGE] Form valid:', this.loginForm.valid);
-
-    if (!this.loginForm.valid) {
-      console.warn('⚠️ [LOGIN PAGE] Form is invalid');
-      this.markFormGroupTouched(this.loginForm);
-      this.statusLevel = 'error';
-      this.statusMessage = 'Completa usuario y contraseña antes de continuar.';
+    // Prevent duplicate submissions if a login is already in progress
+    if (this.isLoading) {
+      console.log('[LOGIN] onSubmit ignored (already loading)');
       return;
     }
 
-    console.log('📱 [LOGIN PAGE] Form is valid, proceeding with login');
-    this.statusLevel = 'info';
-    this.statusMessage = 'Enviando credenciales...';
-    this.loginForm.disable({ emitEvent: false });
+    console.log('[LOGIN] onSubmit invoked', this.loginForm.value);
 
-    const loading = await this.loadingCtrl.create({
-      message: 'Iniciando sesión...',
-      spinner: 'circular',
+    if (!this.loginForm.valid) {
+      this.markFormGroupTouched(this.loginForm);
+      return;
+    }
+
+    // Use NgZone to ensure change detection fires on Android WebView
+    this.ngZone.run(() => {
+      this.isLoading = true;
+      this.loginForm.disable({ emitEvent: false });
+      this.cdr.detectChanges();
     });
-
-    await loading.present();
-    this.isLoading = true;
+    console.log('[LOGIN] Form valid, starting auth flow');
 
     const { username, password, rememberMe } = this.loginForm.value;
-    console.log('📱 [LOGIN PAGE] Username:', username);
-    console.log('📱 [LOGIN PAGE] Password length:', password?.length);
-    console.log('📱 [LOGIN PAGE] Remember me:', rememberMe);
-    console.log('📱 [LOGIN PAGE] Calling authService.login()...');
 
     try {
-      // Call auth service with credentials (returns Observable)
-      console.log('📱 [LOGIN PAGE] Waiting for auth service response...');
       const result = await firstValueFrom(this.authService.login(username, password, rememberMe));
-      console.log('📱 [LOGIN PAGE] Auth service returned result:', result);
 
       if (result && result.success) {
-        console.log('✅ [LOGIN PAGE] Login successful!');
-        console.log('✅ [LOGIN PAGE] User data:', result.user);
+        console.log('[LOGIN] Login successful, starting post-login flow');
 
         if (result.user) {
-          console.log('✅ [LOGIN PAGE] Ensuring onboarding profile...');
-          await this.ensureOnboardingProfile(result.user);
+          // Best-effort onboarding profile; don't block login if it hangs
+          try {
+            console.log('[LOGIN] Starting ensureOnboardingProfile');
+            const onboardingPromise = this.ensureOnboardingProfile(result.user);
+            await Promise.race([
+              onboardingPromise,
+              new Promise<void>(resolve => setTimeout(resolve, 3000)),
+            ]);
+            console.log('[LOGIN] ensureOnboardingProfile completed');
+          } catch (e) {
+            console.error('[LOGIN] ensureOnboardingProfile failed', e);
+          }
         }
 
-        this.statusLevel = 'success';
-        this.statusMessage = 'Sesión iniciada correctamente.';
+        // Toast with timeout fallback for Android WebView
+        console.log('[LOGIN] Creating toast...');
+        try {
+          const toastPromise = this.toastCtrl.create({
+            message: this.translate.instant('login.messages.welcomeBack'),
+            duration: 2000,
+            color: 'success',
+            position: 'top',
+          });
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Toast create timeout')), 2000)
+          );
+          const toast = await Promise.race([toastPromise, timeoutPromise]);
+          console.log('[LOGIN] Toast created, presenting...');
+          await toast.present();
+          console.log('[LOGIN] Toast presented');
+        } catch (toastError) {
+          console.warn('[LOGIN] Toast failed, skipping:', toastError);
+        }
 
-        // Show success message
-        console.log('✅ [LOGIN PAGE] Showing success toast...');
-        const toast = await this.toastCtrl.create({
-          message: '¡Bienvenido de nuevo!',
-          duration: 2000,
-          color: 'success',
-          position: 'top',
-        });
-        await toast.present();
-
-        // Navigate to dashboard
-        console.log('✅ [LOGIN PAGE] Navigating to /tabs/dashboard...');
-        await this.router.navigate(['/tabs/dashboard'], { replaceUrl: true });
-        console.log('✅ [LOGIN PAGE] Navigation completed');
+        // Navigate to dashboard - try multiple approaches for Android
+        console.log('[LOGIN] Navigating to dashboard...');
+        try {
+          await this.router.navigate(['/tabs/dashboard'], { replaceUrl: true });
+          console.log('[LOGIN] Navigation complete');
+        } catch (navError) {
+          console.error('[LOGIN] Router navigate failed:', navError);
+          // Fallback: direct location change
+          window.location.href = '/tabs/dashboard';
+        }
       } else {
-        console.error('❌ [LOGIN PAGE] Login failed - result.success is false');
-        console.error('❌ [LOGIN PAGE] Error from result:', result?.error);
-        this.statusLevel = 'error';
-        this.statusMessage = result?.error || 'Error desconocido al iniciar sesión.';
-        throw new Error(result?.error || 'Error al iniciar sesión');
+        throw new Error(result?.error || this.translate.instant('login.messages.genericError'));
       }
     } catch (error: any) {
-      console.error('❌ [LOGIN PAGE] Exception caught in onSubmit');
-      console.error('❌ [LOGIN PAGE] Error:', error);
-      console.error('❌ [LOGIN PAGE] Error message:', error?.message);
-      console.error('❌ [LOGIN PAGE] Error status:', error?.status);
-      this.statusLevel = 'error';
-
-      // Handle specific error codes
-      let errorMessage = 'Error al iniciar sesión. Por favor, intenta de nuevo.';
+      console.error('[LOGIN] Error during login', error);
+      let errorMessage = this.translate.instant('login.messages.genericError');
 
       if (error.status === 401) {
-        errorMessage = 'Credenciales incorrectas. Verifica tu DNI/email y contraseña.';
+        errorMessage = this.translate.instant('login.messages.invalidCredentials');
       } else if (error.status === 422) {
-        errorMessage = 'Datos inválidos. Verifica el formato de tu DNI o email.';
+        errorMessage = this.translate.instant('login.messages.invalidData');
       } else if (error.status === 0) {
-        errorMessage = 'Error de conexión. Verifica tu conexión a internet.';
+        errorMessage = this.translate.instant('login.messages.connectionError');
       } else if (error.message) {
         errorMessage = error.message;
       }
 
-      this.statusMessage = errorMessage;
-      const alert = await this.alertCtrl.create({
-        header: 'Error de inicio de sesión',
-        message: errorMessage,
-        buttons: ['OK'],
+      // Reset loading state BEFORE showing alert (ensures UI updates)
+      this.ngZone.run(() => {
+        this.isLoading = false;
+        this.loginForm.enable({ emitEvent: false });
+        this.loginForm.patchValue({ password: '' });
+        this.cdr.detectChanges();
       });
-      await alert.present();
 
-      // Clear password field on error
-      this.loginForm.patchValue({ password: '' });
+      // Show error alert - with timeout fallback for Android WebView issues
+      console.log('[LOGIN] Creating error alert with message:', errorMessage);
+      try {
+        const alertPromise = this.alertCtrl.create({
+          header: this.translate.instant('login.messages.loginError'),
+          message: errorMessage,
+          buttons: ['OK'],
+        });
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Alert create timeout')), 2000)
+        );
+        const alert = await Promise.race([alertPromise, timeoutPromise]);
+        console.log('[LOGIN] Alert created, calling present()...');
+        await alert.present();
+        console.log('[LOGIN] Alert present() completed');
+      } catch (alertError) {
+        console.error('[LOGIN] Alert failed:', alertError);
+        // Fallback: use native alert for Android WebView
+        window.alert(errorMessage);
+      }
     } finally {
-      await loading.dismiss();
-      this.isLoading = false;
-      this.loginForm.enable({ emitEvent: false });
-      console.log('[LoginPage] final status', this.statusLevel, this.statusMessage);
+      // Ensure loading state is reset even if alert fails
+      if (this.isLoading) {
+        this.ngZone.run(() => {
+          this.isLoading = false;
+          this.loginForm.enable({ emitEvent: false });
+          this.cdr.detectChanges();
+        });
+      }
     }
   }
 
   async forgotPassword() {
     const alert = await this.alertCtrl.create({
-      header: 'Recuperar Contraseña',
-      message:
-        'La función de recuperación de contraseña estará disponible próximamente. Por favor, contacta a soporte para asistencia.',
+      header: this.translate.instant('login.forgotPasswordDialog.title'),
+      message: this.translate.instant('login.forgotPasswordDialog.message'),
       buttons: ['OK'],
     });
     await alert.present();
@@ -217,7 +249,7 @@ export class LoginPage implements OnInit {
     const control = this.loginForm.get('username');
     if (control?.touched && control?.errors) {
       if (control.errors['required']) {
-        return 'DNI o email es requerido';
+        return this.translate.instant('login.validation.usernameRequired');
       }
     }
     return '';
@@ -227,10 +259,10 @@ export class LoginPage implements OnInit {
     const control = this.loginForm.get('password');
     if (control?.touched && control?.errors) {
       if (control.errors['required']) {
-        return 'La contraseña es requerida';
+        return this.translate.instant('login.validation.passwordRequired');
       }
       if (control.errors['minlength']) {
-        return 'La contraseña debe tener al menos 6 caracteres';
+        return this.translate.instant('login.validation.passwordMinLength');
       }
     }
     return '';
@@ -247,6 +279,7 @@ export class LoginPage implements OnInit {
     if (!existingProfile) {
       await this.profileService.createProfile({
         name: `${localUser.firstName} ${localUser.lastName}`.trim() || localUser.email,
+        email: localUser.email,
         age: 12,
         accountState: AccountState.ACTIVE,
         preferences: DEFAULT_USER_PREFERENCES,
@@ -255,8 +288,10 @@ export class LoginPage implements OnInit {
       return;
     }
 
-    if (!existingProfile.hasCompletedOnboarding) {
+    // Always update email from backend in case it changed
+    if (!existingProfile.hasCompletedOnboarding || existingProfile.email !== localUser.email) {
       await this.profileService.updateProfile({
+        email: localUser.email,
         hasCompletedOnboarding: true,
       });
     }

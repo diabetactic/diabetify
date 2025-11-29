@@ -9,14 +9,14 @@ const config: CapacitorConfig = {
     cleartext: true,
     androidScheme: 'https',
     // Allow all origins for API requests
-    allowNavigation: ['*']
+    allowNavigation: ['*'],
   },
   plugins: {
     SecureStorage: {
       // Android Keystore configuration
-      sharedPreferencesName: 'io.diabetactic.secure.prefs'
-    }
-  }
+      sharedPreferencesName: 'io.diabetactic.secure.prefs',
+    },
+  },
 };
 
 export default config;

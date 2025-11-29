@@ -14,25 +14,39 @@
 
 import { spawn } from 'node:child_process';
 
-const envMode = process.env.ENV || 'local';
+const envMode = (process.env.ENV || 'mock').toLowerCase();
 
 let apiGatewayUrl;
-if (envMode === 'heroku') {
-  apiGatewayUrl =
-    process.env.HEROKU_API_BASE_URL ||
-    'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
-} else {
-  // default: local Docker gateway (container-managing/api-gateway on host port 8004)
-  apiGatewayUrl = process.env.LOCAL_API_GATEWAY_URL || 'http://localhost:8004';
+let configName;
+
+switch (envMode) {
+  case 'heroku':
+    apiGatewayUrl =
+      process.env.HEROKU_API_BASE_URL ||
+      'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
+    configName = 'heroku';
+    break;
+  case 'local':
+    // Local Docker / backend
+    apiGatewayUrl = process.env.LOCAL_API_GATEWAY_URL || 'http://localhost:8000';
+    configName = 'local';
+    break;
+  case 'mock':
+    // Pure front-end / mock data
+    apiGatewayUrl = process.env.MOCK_API_GATEWAY_URL || '';
+    configName = 'mock';
+    break;
+  default:
+    apiGatewayUrl = process.env.LOCAL_API_GATEWAY_URL || 'http://localhost:8000';
+    configName = 'development';
+    break;
 }
 
 // Exposed for API base-url resolution in the Angular app (via API_GATEWAY_BASE_URL)
 process.env.API_GATEWAY_URL = apiGatewayUrl;
 
-const configName = envMode === 'heroku' ? 'heroku' : 'development';
-
 console.log(
-  `[dev] ENV=${envMode} → API_GATEWAY_URL=${apiGatewayUrl} (ng serve --configuration ${configName} --proxy-config proxy.conf.json)`
+  `[dev] ENV=${envMode} → API_GATEWAY_URL=${apiGatewayUrl || '(mock mode)'} (ng serve --configuration ${configName} --proxy-config proxy.conf.json)`
 );
 
 const ngCommand = process.platform === 'win32' ? 'ng.cmd' : 'ng';

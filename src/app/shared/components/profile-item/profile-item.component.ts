@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonItem, IonToggle } from '@ionic/angular/standalone';
 
 export type ActionType = 'none' | 'toggle' | 'chevron' | 'badge';
 
@@ -9,7 +9,7 @@ export type ActionType = 'none' | 'toggle' | 'chevron' | 'badge';
   templateUrl: './profile-item.component.html',
   styleUrls: ['./profile-item.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonItem, IonToggle],
 })
 export class ProfileItemComponent {
   @Input() icon: string = 'person';

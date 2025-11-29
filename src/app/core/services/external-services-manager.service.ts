@@ -6,7 +6,7 @@
  * and coordinated error handling across all external services.
  */
 
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
   BehaviorSubject,
@@ -95,7 +95,7 @@ export interface ExternalServicesState {
 @Injectable({
   providedIn: 'root',
 })
-export class ExternalServicesManager {
+export class ExternalServicesManager implements OnDestroy {
   private readonly SERVICE_CONFIGS: Map<ExternalService, ServiceConfig> =
     this.buildServiceConfigs();
 
@@ -394,6 +394,14 @@ export class ExternalServicesManager {
   private recordServiceError(service: ExternalService, error: string): void {
     console.error(`[${service}] Error:`, error);
 
+    // If the service does not expose a real health endpoint, don't track
+    // health status or circuit breaker state. This avoids showing
+    // "UNHEALTHY" for backends that don't implement health checks.
+    const config = this.SERVICE_CONFIGS.get(service);
+    if (!config?.healthEndpoint) {
+      return;
+    }
+
     // Update service health status
     const services = new Map(this.state$.value.services);
     const current = services.get(service) || {
@@ -654,7 +662,6 @@ export class ExternalServicesManager {
         configs.set(ExternalService.GLUCOSERVER, {
           name: 'Glucoserver',
           baseUrl: glucoserverBase,
-          healthEndpoint: '/health',
           timeout: backend.glucoserver.requestTimeout ?? 30000,
           retryAttempts: 2,
           circuitBreakerThreshold: 3,
@@ -674,7 +681,6 @@ export class ExternalServicesManager {
         configs.set(ExternalService.APPOINTMENTS, {
           name: 'Appointments Service',
           baseUrl: appointmentsBase,
-          healthEndpoint: '/health',
           timeout: backend.appointments.requestTimeout ?? 30000,
           retryAttempts: 2,
           circuitBreakerThreshold: 3,
@@ -693,7 +699,6 @@ export class ExternalServicesManager {
         configs.set(ExternalService.LOCAL_AUTH, {
           name: 'Authentication Service',
           baseUrl: authBase,
-          healthEndpoint: '/health',
           timeout: backend.auth.requestTimeout ?? 15000,
           retryAttempts: 1,
           circuitBreakerThreshold: 3,

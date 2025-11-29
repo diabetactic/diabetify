@@ -6,6 +6,7 @@ import { AlertController, IonicModule, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { getTranslateModuleForTesting } from '../../tests/helpers/translate-test.helper';
+import { getLucideIconsForTesting } from '../../tests/helpers/icon-test.helper';
 
 describe('AdvancedPage', () => {
   let component: AdvancedPage;
@@ -40,7 +41,12 @@ describe('AdvancedPage', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [AdvancedPage, IonicModule, getTranslateModuleForTesting()],
+      imports: [
+        AdvancedPage,
+        IonicModule,
+        getTranslateModuleForTesting(),
+        getLucideIconsForTesting(),
+      ],
       providers: [
         { provide: UnifiedAuthService, useValue: mockAuthService },
         { provide: AlertController, useValue: mockAlertController },

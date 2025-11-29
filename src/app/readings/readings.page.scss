@@ -17,25 +17,33 @@
 }
 
 // === Dark Mode Support (class-based for manual theme toggle) ===
-// Filters container
-.dark {
+// Filters container - triple-trigger pattern
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
   .flex.items-center.gap-2.px-4.py-3 {
-    background: var(--ion-color-step-50);
-    border-bottom-color: var(--ion-color-step-100);
+    background: oklch(var(--b2));
+    border-bottom-color: oklch(var(--bc) / 10%);
   }
 
   // Date header
   .sticky.top-0.z-10 {
-    background: var(--ion-background-color);
+    background: oklch(var(--b1));
+  }
+
+  // Reading cards
+  ion-card {
+    --background: oklch(var(--b2));
+
+    border: 1px solid oklch(var(--bc) / 10%);
   }
 }
 
 // === Accessibility ===
 @media (prefers-reduced-motion: reduce) {
   * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
   }
 }
 
@@ -53,14 +61,29 @@
 }
 
 // === Ionic Component Overrides ===
-// Fix for ion-searchbar in toolbar
-ion-toolbar ion-searchbar {
-  --background: transparent;
+// Fix for ion-searchbar in primary toolbar - white input background
+ion-toolbar[color='primary'] ion-searchbar {
+  --background: #fff;
+  --color: var(--ion-color-dark, #0d1b2a);
+  --placeholder-color: var(--ion-color-medium, #6b7280);
+  --icon-color: var(--ion-color-medium, #6b7280);
+  --clear-button-color: var(--ion-color-medium, #6b7280);
+  --border-radius: 12px;
+}
+
+// Dark mode searchbar
+.dark ion-toolbar[color='primary'] ion-searchbar,
+.ion-palette-dark ion-toolbar[color='primary'] ion-searchbar {
+  --background: oklch(var(--b2, 0.2 0 0));
+  --color: oklch(var(--bc, 1 0 0));
+  --placeholder-color: oklch(var(--bc, 1 0 0) / 50%);
+  --icon-color: oklch(var(--bc, 1 0 0) / 60%);
+  --clear-button-color: oklch(var(--bc, 1 0 0) / 60%);
 }
 
 // Ensure proper FAB shadow rendering
 ion-fab-button {
-  --box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
+  --box-shadow: var(--shadow-08);
 }
 
 // Fix modal content padding

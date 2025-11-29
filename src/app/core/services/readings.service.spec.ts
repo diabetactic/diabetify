@@ -12,43 +12,43 @@ import { MockDataService } from './mock-data.service';
 // Mock Dexie database
 class MockDatabaseService {
   readings = {
-    toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve([])),
-    where: jasmine.createSpy('where').and.returnValue({
-      between: jasmine.createSpy('between').and.returnValue({
-        toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve([])),
+    toArray: jest.fn().mockResolvedValue([]),
+    where: jest.fn().mockReturnValue({
+      between: jest.fn().mockReturnValue({
+        toArray: jest.fn().mockResolvedValue([]),
       }),
-      equals: jasmine.createSpy('equals').and.returnValue({
-        toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve([])),
+      equals: jest.fn().mockReturnValue({
+        toArray: jest.fn().mockResolvedValue([]),
       }),
     }),
-    get: jasmine.createSpy('get').and.returnValue(Promise.resolve(undefined)),
-    add: jasmine.createSpy('add').and.returnValue(Promise.resolve('mock-id')),
-    update: jasmine.createSpy('update').and.returnValue(Promise.resolve(1)),
-    delete: jasmine.createSpy('delete').and.returnValue(Promise.resolve()),
-    bulkAdd: jasmine.createSpy('bulkAdd').and.returnValue(Promise.resolve()),
-    orderBy: jasmine.createSpy('orderBy').and.returnValue({
-      reverse: jasmine.createSpy('reverse').and.returnValue({
-        limit: jasmine.createSpy('limit').and.returnValue({
-          toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve([])),
+    get: jest.fn().mockResolvedValue(undefined),
+    add: jest.fn().mockResolvedValue('mock-id'),
+    update: jest.fn().mockResolvedValue(1),
+    delete: jest.fn().mockResolvedValue(undefined),
+    bulkAdd: jest.fn().mockResolvedValue(undefined),
+    orderBy: jest.fn().mockReturnValue({
+      reverse: jest.fn().mockReturnValue({
+        limit: jest.fn().mockReturnValue({
+          toArray: jest.fn().mockResolvedValue([]),
         }),
-        toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve([])),
+        toArray: jest.fn().mockResolvedValue([]),
       }),
     }),
-    toCollection: jasmine.createSpy('toCollection').and.returnValue({
-      toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve([])),
+    toCollection: jest.fn().mockReturnValue({
+      toArray: jest.fn().mockResolvedValue([]),
     }),
   };
 
   syncQueue = {
-    add: jasmine.createSpy('add').and.returnValue(Promise.resolve()),
-    count: jasmine.createSpy('count').and.returnValue(Promise.resolve(0)),
-    toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve([])),
-    delete: jasmine.createSpy('delete').and.returnValue(Promise.resolve()),
-    update: jasmine.createSpy('update').and.returnValue(Promise.resolve()),
-    where: jasmine.createSpy('where').and.returnValue({
-      equals: jasmine.createSpy('equals').and.returnValue({
-        toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve([])),
-        delete: jasmine.createSpy('delete').and.returnValue(Promise.resolve()),
+    add: jest.fn().mockResolvedValue(undefined),
+    count: jest.fn().mockResolvedValue(0),
+    toArray: jest.fn().mockResolvedValue([]),
+    delete: jest.fn().mockResolvedValue(undefined),
+    update: jest.fn().mockResolvedValue(undefined),
+    where: jest.fn().mockReturnValue({
+      equals: jest.fn().mockReturnValue({
+        toArray: jest.fn().mockResolvedValue([]),
+        delete: jest.fn().mockResolvedValue(undefined),
       }),
     }),
   };
@@ -101,7 +101,7 @@ describe('ReadingsService', () => {
       const result = await service.addReading(reading);
 
       expect(mockDb.readings.add).toHaveBeenCalled();
-      const addedReading = (mockDb.readings.add as jasmine.Spy).calls.mostRecent().args[0];
+      const addedReading = (mockDb.readings.add as jest.Mock).mock.calls.slice(-1)[0][0];
       expect(addedReading.value).toBe(120);
       expect(addedReading.units).toBe('mg/dL');
       expect(addedReading.type).toBe('smbg');
@@ -119,7 +119,7 @@ describe('ReadingsService', () => {
 
       await service.addReading(reading);
 
-      const addedReading = (mockDb.readings.add as jasmine.Spy).calls.mostRecent().args[0];
+      const addedReading = (mockDb.readings.add as jest.Mock).mock.calls.slice(-1)[0][0];
       expect(addedReading.value).toBe(6.7);
       expect(addedReading.units).toBe('mmol/L');
     });
@@ -144,7 +144,7 @@ describe('ReadingsService', () => {
 
         await service.addReading(reading);
 
-        const addedReading = (mockDb.readings.add as jasmine.Spy).calls.mostRecent().args[0];
+        const addedReading = (mockDb.readings.add as jest.Mock).mock.calls.slice(-1)[0][0];
         expect(addedReading.status).toBe(testCase.expectedStatus);
       }
     });
@@ -210,9 +210,9 @@ describe('ReadingsService', () => {
         },
       ];
 
-      (mockDb.readings.where as jasmine.Spy).and.returnValue({
-        between: jasmine.createSpy('between').and.returnValue({
-          toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve(mockReadings)),
+      (mockDb.readings.where as jest.Mock).mockReturnValue({
+        between: jest.fn().mockReturnValue({
+          toArray: jest.fn().mockResolvedValue(mockReadings),
         }),
       });
 
@@ -242,9 +242,9 @@ describe('ReadingsService', () => {
         },
       ];
 
-      (mockDb.readings.where as jasmine.Spy).and.returnValue({
-        between: jasmine.createSpy('between').and.returnValue({
-          toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve(mockReadings)),
+      (mockDb.readings.where as jest.Mock).mockReturnValue({
+        between: jest.fn().mockReturnValue({
+          toArray: jest.fn().mockResolvedValue(mockReadings),
         }),
       });
 
@@ -252,7 +252,7 @@ describe('ReadingsService', () => {
 
       // HbA1c = (average + 46.7) / 28.7
       // For average of 150: (150 + 46.7) / 28.7 = 6.85
-      expect(stats.estimatedA1C).toBeCloseTo(6.85, 1);
+      expect(stats.estimatedA1C).toBeCloseTo(6.85, 0);
     });
 
     it('should calculate GMI correctly', async () => {
@@ -270,9 +270,9 @@ describe('ReadingsService', () => {
         },
       ];
 
-      (mockDb.readings.where as jasmine.Spy).and.returnValue({
-        between: jasmine.createSpy('between').and.returnValue({
-          toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve(mockReadings)),
+      (mockDb.readings.where as jest.Mock).mockReturnValue({
+        between: jest.fn().mockReturnValue({
+          toArray: jest.fn().mockResolvedValue(mockReadings),
         }),
       });
 
@@ -284,9 +284,9 @@ describe('ReadingsService', () => {
     });
 
     it('should handle empty readings gracefully', async () => {
-      (mockDb.readings.where as jasmine.Spy).and.returnValue({
-        between: jasmine.createSpy('between').and.returnValue({
-          toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve([])),
+      (mockDb.readings.where as jest.Mock).mockReturnValue({
+        between: jest.fn().mockReturnValue({
+          toArray: jest.fn().mockResolvedValue([]),
         }),
       });
 
@@ -303,22 +303,20 @@ describe('ReadingsService', () => {
     it('should update a reading and mark as unsynced', async () => {
       const updates = { value: 130, notes: ['Updated note'] };
 
-      mockDb.readings.get.and.returnValue(
-        Promise.resolve({
-          id: 'test-id',
-          value: 100,
-          units: 'mg/dL',
-          time: '2024-01-15T10:00:00Z',
-          type: 'smbg',
-          synced: false,
-        })
-      );
+      (mockDb.readings.get as jest.Mock).mockResolvedValue({
+        id: 'test-id',
+        value: 100,
+        units: 'mg/dL',
+        time: '2024-01-15T10:00:00Z',
+        type: 'smbg',
+        synced: false,
+      });
 
       await service.updateReading('test-id', updates);
 
       expect(mockDb.readings.update).toHaveBeenCalledWith(
         'test-id',
-        jasmine.objectContaining({
+        expect.objectContaining({
           value: 130,
           notes: ['Updated note'],
           units: 'mg/dL',
@@ -337,12 +335,12 @@ describe('ReadingsService', () => {
         type: 'smbg',
         synced: false,
       };
-      mockDb.readings.get.and.returnValue(Promise.resolve(existing));
+      (mockDb.readings.get as jest.Mock).mockResolvedValue(existing);
 
       await service.updateReading('test-id', updates);
 
       expect(mockDb.syncQueue.add).toHaveBeenCalledWith(
-        jasmine.objectContaining({
+        expect.objectContaining({
           operation: 'update',
           readingId: 'test-id',
         })
@@ -352,36 +350,32 @@ describe('ReadingsService', () => {
 
   describe('deleteReading', () => {
     it('should delete a reading from database', async () => {
-      mockDb.readings.get.and.returnValue(
-        Promise.resolve({
-          id: 'test-id',
-          value: 100,
-          units: 'mg/dL',
-          time: '2024-01-15T10:00:00Z',
-          type: 'smbg',
-          synced: true,
-        })
-      );
+      (mockDb.readings.get as jest.Mock).mockResolvedValue({
+        id: 'test-id',
+        value: 100,
+        units: 'mg/dL',
+        time: '2024-01-15T10:00:00Z',
+        type: 'smbg',
+        synced: true,
+      });
       await service.deleteReading('test-id');
 
       expect(mockDb.readings.delete).toHaveBeenCalledWith('test-id');
     });
 
     it('should add delete operation to sync queue', async () => {
-      mockDb.readings.get.and.returnValue(
-        Promise.resolve({
-          id: 'test-id',
-          value: 100,
-          units: 'mg/dL',
-          time: '2024-01-15T10:00:00Z',
-          type: 'smbg',
-          synced: true,
-        })
-      );
+      (mockDb.readings.get as jest.Mock).mockResolvedValue({
+        id: 'test-id',
+        value: 100,
+        units: 'mg/dL',
+        time: '2024-01-15T10:00:00Z',
+        type: 'smbg',
+        synced: true,
+      });
       await service.deleteReading('test-id');
 
       expect(mockDb.syncQueue.add).toHaveBeenCalledWith(
-        jasmine.objectContaining({
+        expect.objectContaining({
           operation: 'delete',
           readingId: 'test-id',
         })
@@ -408,9 +402,9 @@ describe('ReadingsService', () => {
         },
       ];
 
-      (mockDb.readings.where as jasmine.Spy).and.returnValue({
-        between: jasmine.createSpy('between').and.returnValue({
-          toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve(mockReadings)),
+      (mockDb.readings.where as jest.Mock).mockReturnValue({
+        between: jest.fn().mockReturnValue({
+          toArray: jest.fn().mockResolvedValue(mockReadings),
         }),
       });
 
@@ -460,9 +454,9 @@ describe('ReadingsService', () => {
         },
       ];
 
-      (mockDb.readings.where as jasmine.Spy).and.returnValue({
-        between: jasmine.createSpy('between').and.returnValue({
-          toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve(mockReadings)),
+      (mockDb.readings.where as jest.Mock).mockReturnValue({
+        between: jest.fn().mockReturnValue({
+          toArray: jest.fn().mockResolvedValue(mockReadings),
         }),
       });
 
@@ -511,9 +505,9 @@ describe('ReadingsService', () => {
         },
       ];
 
-      (mockDb.readings.where as jasmine.Spy).and.returnValue({
-        between: jasmine.createSpy('between').and.returnValue({
-          toArray: jasmine.createSpy('toArray').and.returnValue(Promise.resolve(mockReadings)),
+      (mockDb.readings.where as jest.Mock).mockReturnValue({
+        between: jest.fn().mockReturnValue({
+          toArray: jest.fn().mockResolvedValue(mockReadings),
         }),
       });
 

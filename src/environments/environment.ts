@@ -13,8 +13,6 @@ export type BackendMode = 'mock' | 'local' | 'cloud';
  *
  *   'mock'  → Mock adapter (in-memory, instant, no backend required)
  *             Use for: Development, fast testing, offline mode
- *             Maestro tag: --tags mock
- *             Config: maestro/config/env-mock.yaml
  *
  *   'local' → Local Docker backend (http://localhost:8000)
  *             Use for: Full-stack development, Docker Compose testing
@@ -22,16 +20,8 @@ export type BackendMode = 'mock' | 'local' | 'cloud';
  *
  *   'cloud' → Heroku API Gateway (https://diabetactic-api-gateway-37949d6f182f.herokuapp.com)
  *             Use for: Integration testing, production validation
- *             Maestro tag: --tags heroku
- *             Config: maestro/config/env-heroku.yaml
- *
- * For Maestro tests, both mock and heroku variants are available:
- *   - maestro/tests/auth/01-login-flow.mock.yaml
- *   - maestro/tests/auth/01-login-flow.heroku.yaml
- *
- * See maestro/BACKEND_TESTING.md for complete testing guide.
  */
-const DEV_BACKEND_MODE: BackendMode = 'mock';
+const DEV_BACKEND_MODE: BackendMode = 'cloud';
 
 /**
  * Get the appropriate base URL for backend services based on platform and mode.

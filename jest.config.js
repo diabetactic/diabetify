@@ -1,0 +1,68 @@
+/** @type {import('jest').Config} */
+module.exports = {
+  preset: 'jest-preset-angular',
+  setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
+  testPathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    '<rootDir>/dist/',
+    '<rootDir>/www/',
+    '<rootDir>/playwright/',
+
+    // Skip integration tests (those run separately)
+    '<rootDir>/src/app/tests/integration/',
+    // Exclude environment files (not tests)
+    '<rootDir>/src/environments/',
+  ],
+  collectCoverageFrom: [
+    'src/app/**/*.ts',
+    '!src/app/**/*.module.ts',
+    '!src/app/**/*.routes.ts',
+    '!src/main.ts',
+    '!src/polyfills.ts',
+  ],
+  coverageDirectory: 'coverage/diabetactic',
+  coverageReporters: ['html', 'text-summary', 'lcov'],
+  coverageThreshold: {
+    global: {
+      statements: 50,
+      branches: 50,
+      functions: 50,
+      lines: 50,
+    },
+  },
+  moduleNameMapper: {
+    '^src/(.*)$': '<rootDir>/src/$1',
+    '^@app/(.*)$': '<rootDir>/src/app/$1',
+    '^@core/(.*)$': '<rootDir>/src/app/core/$1',
+    '^@shared/(.*)$': '<rootDir>/src/app/shared/$1',
+    '^@environments/(.*)$': '<rootDir>/src/environments/$1',
+    // Mock ionicons to avoid ESM issues
+    'ionicons/components/ion-icon.js': '<rootDir>/src/app/tests/mocks/ionicons.mock.ts',
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(@ionic|@stencil|@capacitor|@angular|rxjs|@ngx-translate|lucide-angular|dexie|tslib|@faker-js|ionicons)/)',
+  ],
+  testEnvironmentOptions: {
+    customExportConditions: ['node', 'node-addons'],
+  },
+  // Memory-optimized parallel execution
+  // Use only 2 workers to prevent memory exhaustion
+  maxWorkers: 2,
+  // Run tests sequentially within each worker to reduce memory spikes
+  workerIdleMemoryLimit: '512MB',
+  // Cache for faster subsequent runs
+  cache: true,
+  cacheDirectory: '<rootDir>/.jest-cache',
+  // Faster test execution
+  testEnvironment: 'jsdom',
+  // Clear mocks between tests
+  clearMocks: true,
+  // Timeout for slow tests
+  testTimeout: 10000,
+  // Less verbose to reduce output overhead
+  verbose: false,
+  // Detect memory leaks
+  detectOpenHandles: false,
+  // Force garbage collection between tests
+  logHeapUsage: false,
+};

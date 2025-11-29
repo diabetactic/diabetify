@@ -8,7 +8,17 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, PopoverController } from '@ionic/angular';
+import { PopoverController } from '@ionic/angular';
+import {
+  IonButton,
+  IonSelect,
+  IonSelectOption,
+  IonList,
+  IonListHeader,
+  IonLabel,
+  IonItem,
+  IonIcon,
+} from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { AppIconComponent } from '../app-icon/app-icon.component';
@@ -24,7 +34,16 @@ import {
   templateUrl: './language-switcher.component.html',
   styleUrls: ['./language-switcher.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, TranslateModule, AppIconComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    AppIconComponent,
+    // Ionic standalone components
+    IonButton,
+    IonSelect,
+    IonSelectOption,
+  ],
 })
 export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   @Input() displayMode: 'button' | 'select' | 'popover' = 'button';
@@ -182,7 +201,17 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
 @Component({
   selector: 'app-language-popover',
   standalone: true,
-  imports: [CommonModule, IonicModule, TranslateModule],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    // Ionic standalone components
+    IonList,
+    IonListHeader,
+    IonLabel,
+    IonItem,
+    IonIcon,
+    IonButton,
+  ],
   template: `
     <ion-list class="m-0">
       <ion-list-header class="text-xs font-semibold uppercase">
