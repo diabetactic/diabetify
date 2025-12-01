@@ -51,8 +51,8 @@ The app supports three backend modes:
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/diabetactic/diabetify.git
-cd diabetify
+git clone https://github.com/diabetactic/diabetactic-app.git
+cd diabetactic-app
 
 # 2. Install dependencies
 npm install
