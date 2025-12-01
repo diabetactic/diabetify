@@ -51,6 +51,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
+      - node/install-packages:
+          pkg-manager: npm
       - run:
           name: Deploy to Netlify
           command: |
@@ -67,11 +69,12 @@ jobs:
       - run:
           name: Setup Node.js 20 via NVM
           command: |
-            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
-            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
-            source $BASH_ENV
+            export NVM_DIR="/opt/circleci/.nvm"
+            source "$NVM_DIR/nvm.sh"
             nvm install 20
             nvm alias default 20
+            NODE_DIR=$(dirname $(which node))
+            echo "export PATH=$NODE_DIR:\$PATH" >> $BASH_ENV
             node --version
       - run:
           name: Install dependencies
@@ -112,11 +115,12 @@ jobs:
       - run:
           name: Setup Node.js 20 via NVM
           command: |
-            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
-            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
-            source $BASH_ENV
+            export NVM_DIR="/opt/circleci/.nvm"
+            source "$NVM_DIR/nvm.sh"
             nvm install 20
             nvm alias default 20
+            NODE_DIR=$(dirname $(which node))
+            echo "export PATH=$NODE_DIR:\$PATH" >> $BASH_ENV
             node --version
       - run:
           name: Install dependencies
@@ -157,11 +161,12 @@ jobs:
       - run:
           name: Setup Node.js 20 via NVM
           command: |
-            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
-            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
-            source $BASH_ENV
+            export NVM_DIR="/opt/circleci/.nvm"
+            source "$NVM_DIR/nvm.sh"
             nvm install 20
             nvm alias default 20
+            NODE_DIR=$(dirname $(which node))
+            echo "export PATH=$NODE_DIR:\$PATH" >> $BASH_ENV
             node --version
       - run:
           name: Install dependencies
