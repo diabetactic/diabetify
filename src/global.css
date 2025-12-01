@@ -1258,31 +1258,68 @@ html {
  * MOBILE PREVIEW FRAME (Desktop Web Only)
  * Shows app in phone-sized container on Vercel/web
  * ============================================ */
-@media (min-width: 768px) {
+/* stylelint-disable declaration-no-important */
+@media (width >= 768px) {
+  html,
   body {
-    background: #e5e7eb;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%) !important;
     min-height: 100vh;
-    padding: 32px;
+    margin: 0;
+    padding: 0;
   }
 
   ion-app {
-    width: 375px;
-    height: calc(100vh - 64px);
-    max-height: 812px;
-    border-radius: 20px;
-    overflow: hidden;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 375px !important;
+    max-width: 375px !important;
+    height: calc(100vh - 80px) !important;
+    max-height: 812px !important;
+    min-height: 600px !important;
+    border-radius: 40px !important;
+    overflow: hidden !important;
     box-shadow:
-      0 4px 20px rgb(0 0 0 / 15%),
-      0 0 0 1px rgb(0 0 0 / 8%);
+      0 25px 50px -12px rgb(0 0 0 / 25%),
+      0 0 0 1px rgb(0 0 0 / 5%) !important;
+    border: 8px solid #1f2937 !important;
+  }
+
+  /* Notch simulation */
+  ion-app::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 28px;
+    background: #1f2937;
+    border-radius: 0 0 20px 20px;
+    z-index: 9999;
   }
 
   /* Dark mode background */
+  :root[data-theme='dark'] html,
+  :root[data-theme='dark'] body,
+  .dark html,
   .dark body,
-  .ion-palette-dark body,
-  :root[data-theme='dark'] body {
-    background: #1e293b;
+  .ion-palette-dark html,
+  .ion-palette-dark body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  }
+
+  :root[data-theme='dark'] ion-app,
+  .dark ion-app,
+  .ion-palette-dark ion-app {
+    border-color: #374151 !important;
+  }
+
+  :root[data-theme='dark'] ion-app::before,
+  .dark ion-app::before,
+  .ion-palette-dark ion-app::before {
+    background: #374151;
   }
 }
+/* stylelint-enable declaration-no-important */
