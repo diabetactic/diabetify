@@ -308,7 +308,7 @@ export class AddReadingPage implements OnInit, OnDestroy {
   }
 
   async onCancel(): Promise<void> {
-    this.navCtrl.back();
+    this.navCtrl.navigateBack('/tabs/readings');
   }
 
   private async showSuccessToast(): Promise<void> {

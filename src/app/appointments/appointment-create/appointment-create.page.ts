@@ -16,7 +16,6 @@ import {
   IonSelect,
   IonSelectOption,
   IonLabel,
-  IonList,
   IonCheckbox,
   IonTextarea,
 } from '@ionic/angular/standalone';
