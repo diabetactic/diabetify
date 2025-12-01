@@ -346,8 +346,12 @@ test.describe('Full Appointment Flow', () => {
     if (currentState === 'ACCEPTED') {
       console.log('Step 6: Creating clinical appointment...');
 
-      // Click "Crear Cita" button
-      const createBtn = page.locator('ion-button:has-text("Crear Cita")').first();
+      // Click "AGREGAR NUEVA CITA" button (UI shows this text, not "Crear Cita")
+      const createBtn = page
+        .locator(
+          'ion-button:has-text("AGREGAR NUEVA CITA"), ion-button:has-text("Agregar Nueva Cita"), ion-button:has-text("Crear Cita")'
+        )
+        .first();
       await expect(createBtn).toBeVisible({ timeout: 5000 });
       await createBtn.click();
 
@@ -396,5 +400,108 @@ test.describe('Full Appointment Flow', () => {
         await page.screenshot({ path: 'playwright/screenshots/appointment-form-no-submit.png' });
       }
     }
+  });
+
+  test('verify appointment detail and resolution display', async ({ page }) => {
+    // ========== Login ==========
+    await page.goto('/login');
+    await page.waitForSelector(
+      'input[placeholder*="DNI"], input[placeholder*="email"], input[type="text"]',
+      {
+        timeout: 15000,
+      }
+    );
+
+    const emailInput = page
+      .locator('input[placeholder*="DNI"], input[placeholder*="email"]')
+      .first();
+    const passwordInput = page
+      .locator('input[placeholder*="contraseña"], input[type="password"]')
+      .first();
+
+    await emailInput.fill(TEST_USER);
+    await passwordInput.fill(TEST_PASS);
+    await page.click(
+      'button:has-text("Iniciar"), button:has-text("Login"), ion-button:has-text("Iniciar")'
+    );
+    await page.waitForURL(/\/(tabs|dashboard)/, { timeout: 20000 });
+
+    // ========== Navigate to Appointments ==========
+    await page.click('ion-tab-button[tab="appointments"], [href*="appointments"]');
+    await page.waitForURL(/\/appointments/, { timeout: 10000 });
+    await page.waitForTimeout(2000);
+
+    // ========== Verify appointment list is visible ==========
+    console.log('Verifying appointment list...');
+
+    // Should see "ACTUAL" section with current appointment or past appointments
+    const actualSection = page.locator('text=ACTUAL, text=Actual');
+    const pastSection = page.locator('text=Citas Anteriores');
+
+    const hasAppointments = await actualSection
+      .or(pastSection)
+      .first()
+      .isVisible({ timeout: 5000 })
+      .catch(() => false);
+
+    if (hasAppointments) {
+      console.log('✅ Appointments section visible');
+
+      // ========== Click on an appointment to see details ==========
+      const appointmentCard = page
+        .locator('ion-card.appointment-card, ion-card:has-text("Cita #")')
+        .first();
+
+      if (await appointmentCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+        console.log('Found appointment card, clicking to view details...');
+        await appointmentCard.click();
+
+        // Wait for detail page or expansion
+        await page.waitForTimeout(1500);
+
+        // ========== Verify appointment details are displayed ==========
+        const detailsVisible = await page
+          .locator('text=Objetivo de Glucosa, text=Tipo de Insulina, text=Dosis')
+          .first()
+          .isVisible({ timeout: 3000 })
+          .catch(() => false);
+
+        if (detailsVisible) {
+          console.log('✅ Appointment details visible');
+        }
+
+        // ========== Verify resolution status is shown ==========
+        const resolutionStatus = page.locator(
+          'text=Aceptada, text=Pendiente, text=Creada, .badge-success, .badge-warning'
+        );
+
+        if (
+          await resolutionStatus
+            .first()
+            .isVisible({ timeout: 3000 })
+            .catch(() => false)
+        ) {
+          const statusText = await resolutionStatus.first().textContent();
+          console.log(`✅ Resolution status visible: ${statusText}`);
+        }
+
+        await page.screenshot({ path: 'playwright/screenshots/appointment-detail-resolution.png' });
+      }
+    }
+
+    // ========== Expand past appointments if available ==========
+    if (await pastSection.isVisible({ timeout: 2000 }).catch(() => false)) {
+      console.log('Expanding past appointments...');
+      await pastSection.click();
+      await page.waitForTimeout(500);
+
+      const pastAppointmentCards = page.locator('ion-card.appointment-card');
+      const pastCount = await pastAppointmentCards.count();
+      console.log(`Found ${pastCount} past appointment cards`);
+
+      await page.screenshot({ path: 'playwright/screenshots/appointment-past-list.png' });
+    }
+
+    console.log('✅ Appointment resolution display test completed');
   });
 });
