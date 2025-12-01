@@ -20,7 +20,7 @@ Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar e
 | Componente          | Tecnología                         |
 | ------------------- | ---------------------------------- |
 | Framework Frontend  | Angular 20 + Ionic 8               |
-| Plataforma Móvil    | Capacitor 6.1                      |
+| Plataforma Móvil    | Capacitor 6.2                      |
 | Lenguaje            | TypeScript 5.8                     |
 | Estilos             | Tailwind CSS v3 + DaisyUI          |
 | Base de Datos Local | Dexie (IndexedDB)                  |
@@ -32,6 +32,15 @@ Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar e
 - npm 10+
 - Android Studio (para compilación Android)
 - Java 21
+
+### Compatibilidad Android
+
+| Versión                | SDK | Soporte            |
+| ---------------------- | --- | ------------------ |
+| Android 5.1 (Lollipop) | 22  | Mínimo             |
+| Android 14             | 34  | Target/Compilación |
+
+Cubre aproximadamente 98% de dispositivos activos.
 
 ## Instalación
 
@@ -80,9 +89,10 @@ npm run format:check   # Verificar formato
 ### Compilación Móvil
 
 ```bash
-npm run cap:sync       # Sincronizar assets con plataformas nativas
-npm run cap:android    # Abrir proyecto en Android Studio
-npm run cap:run:android # Compilar y ejecutar en dispositivo
+npm run mobile:sync    # Build producción + sincronizar con Capacitor
+npm run android:open   # Abrir proyecto en Android Studio
+npm run mobile:run     # Compilar e instalar en dispositivo conectado
+npm run deploy:device  # Build + reinstalar APK en dispositivo
 ```
 
 ## Estructura del Proyecto
@@ -152,12 +162,14 @@ El proyecto soporta múltiples entornos:
 - `environment.mock.ts` - Datos simulados
 - `environment.heroku.ts` - Backend en Heroku
 
-## Documentación Adicional
+## Documentación
 
-- [Arquitectura](docs/ARCHITECTURE.md)
-- [Guía de Estilos](docs/STYLING_GUIDE.md)
-- [Guía de Testing](docs/TESTING_GUIDE.md)
-- [Guía de Traducciones](docs/TRANSLATION_GUIDE.md)
+- [Guía Rápida Android](docs/ANDROID_QUICK_START.md) - Compilar e instalar
+- [Modos de Backend](docs/BACKEND_MODE_GUIDE.md) - mock/local/cloud
+- [Testing](docs/TESTING_GUIDE.md) - Jest y Playwright
+- [Arquitectura](docs/ARCHITECTURE.md) - Estructura del proyecto
+
+> La configuración de Android Studio ya está incluida en el repositorio (carpeta `android/.idea/`)
 
 ## Autores
 
