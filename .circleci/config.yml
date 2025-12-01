@@ -127,36 +127,6 @@ jobs:
       - store_artifacts:
           path: android/app/build/outputs/apk/debug
 
-  # Release APK (signed)
-  release-apk:
-    executor:
-      name: android/android-machine
-      tag: 2024.01.1
-    steps:
-      - checkout
-      - node/install-packages:
-          pkg-manager: npm
-      - run:
-          name: Build Production Web
-          command: npm run build:prod
-      - run:
-          name: Sync Capacitor
-          command: npx cap sync android
-      - run:
-          name: Decode Keystore
-          command: echo $ANDROID_KEYSTORE_BASE64 | base64 -d > android/app/release.keystore
-      - run:
-          name: Build Release APK
-          command: |
-            cd android && ./gradlew assembleRelease \
-              -Pandroid.injected.signing.store.file=$PWD/app/release.keystore \
-              -Pandroid.injected.signing.store.password=$ANDROID_KEYSTORE_PASSWORD \
-              -Pandroid.injected.signing.key.alias=$ANDROID_KEY_ALIAS \
-              -Pandroid.injected.signing.key.password=$ANDROID_KEY_PASSWORD
-      - store_artifacts:
-          path: android/app/build/outputs/apk/release
-          destination: release-apk
-
 workflows:
   # Main CI workflow - runs on all pushes
   ci:
@@ -177,21 +147,3 @@ workflows:
           filters:
             branches:
               only: master
-
-  # Release workflow - manual trigger or tags
-  release:
-    jobs:
-      - test:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-      - release-apk:
-          requires:
-            - test
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
