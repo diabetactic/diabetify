@@ -1,7 +1,7 @@
 // IMPORTANT: Set API base URL override BEFORE any other imports
 // This ensures the api-base-url.ts module picks up the test URL
 // when it's first imported by any test or service
-(globalThis as any).__DIABETIFY_API_BASE_URL = 'http://localhost:8000';
+(globalThis as any).__DIABETACTIC_API_BASE_URL = 'http://localhost:8000';
 
 import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
 import { TextEncoder, TextDecoder } from 'util';

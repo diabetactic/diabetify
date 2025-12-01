@@ -120,7 +120,7 @@ screenshot() {
 
 tail-logs() {
     echo -e "${BLUE}Following app logs (Ctrl+C to stop)...${NC}"
-    adb logcat | grep -E "Capacitor|Native HTTP|Angular|Ionic|diabetify|error|Exception" --line-buffered
+    adb logcat | grep -E "Capacitor|Native HTTP|Angular|Ionic|diabetactic|error|Exception" --line-buffered
 }
 
 check-logs() {
@@ -163,7 +163,7 @@ device-info() {
 # PRINT HELP
 # ============================================================================
 
-diabetify-help() {
+diabetactic-help() {
     cat << 'HELP'
 
 ╔════════════════════════════════════════════════════════════════════════╗
@@ -207,4 +207,4 @@ HELP
 
 # Print help on sourcing
 echo -e "${GREEN}✓ Diabetactic testing commands loaded${NC}"
-echo -e "  Type ${BLUE}diabetify-help${NC} for command reference"
+echo -e "  Type ${BLUE}diabetactic-help${NC} for command reference"

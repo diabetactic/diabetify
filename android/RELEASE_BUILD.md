@@ -1,6 +1,6 @@
 # Android Production Release Configuration
 
-This document describes the Android production release configuration for Diabetify.
+This document describes the Android production release configuration for Diabetactic.
 
 ## Configuration Files
 
@@ -51,7 +51,7 @@ Generate a new release keystore (one-time setup):
 keytool -genkeypair -v \
   -storetype PKCS12 \
   -keystore android/release-keystore.jks \
-  -alias diabetify-release \
+  -alias diabetactic-release \
   -keyalg RSA \
   -keysize 2048 \
   -validity 10000
@@ -78,7 +78,7 @@ Edit `keystore.properties` with your actual values:
 ```properties
 storeFile=../android/release-keystore.jks
 storePassword=your_actual_keystore_password
-keyAlias=diabetify-release
+keyAlias=diabetactic-release
 keyPassword=your_actual_key_password
 ```
 

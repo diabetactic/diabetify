@@ -47,7 +47,7 @@ When opening for the first time:
 
 **Name**: `app (Debug)`
 **Type**: Android App
-**Module**: diabetify.app.main
+**Module**: diabetactic.app.main
 **Installation Option**: Default APK
 **Launch**: Default Activity
 
