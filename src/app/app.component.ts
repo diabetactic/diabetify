@@ -31,9 +31,35 @@ export class AppComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    // Log backend configuration for visibility
+    this.logBackendConfiguration();
+
     // Translation service initializes automatically in constructor/service
     this.translationService.currentLanguage$.subscribe(lang => {
       this.logger.info('UI', 'Language changed', { language: lang });
+    });
+  }
+
+  private logBackendConfiguration(): void {
+    const mode = environment.backendMode;
+    const url = environment.backendServices.apiGateway.baseUrl;
+    const isProduction = environment.production;
+
+    console.group('🚀 App Configuration');
+    console.log('%c Backend Mode:', 'font-weight: bold', mode.toUpperCase());
+    console.log('%c API Gateway:', 'font-weight: bold', url);
+    console.log('%c Production:', 'font-weight: bold', isProduction);
+    console.groupEnd();
+
+    // Warn if using cloud backend in development
+    if (!isProduction && mode === 'cloud') {
+      console.warn('⚠️  Using CLOUD backend in development mode!');
+    }
+
+    this.logger.info('Config', 'Backend configuration', {
+      mode,
+      url,
+      production: isProduction,
     });
   }
 

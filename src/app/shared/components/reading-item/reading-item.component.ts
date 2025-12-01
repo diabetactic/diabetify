@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonItem } from '@ionic/angular/standalone';
 import { LocalGlucoseReading } from '../../../core/models/glucose-reading.model';
@@ -10,6 +10,7 @@ import { TranslationService } from '../../../core/services/translation.service';
   styleUrls: ['./reading-item.component.scss'],
   standalone: true,
   imports: [CommonModule, IonItem],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReadingItemComponent {
   @Input() reading!: LocalGlucoseReading;

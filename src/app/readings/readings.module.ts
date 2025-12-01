@@ -22,8 +22,8 @@ import { AppIconComponent } from '../shared/components/app-icon/app-icon.compone
     ReadingItemComponent,
     EmptyStateComponent,
     AppIconComponent,
+    ReadingsPage,
   ],
-  declarations: [ReadingsPage],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ReadingsPageModule {}

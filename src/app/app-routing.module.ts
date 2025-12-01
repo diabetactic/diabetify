@@ -13,10 +13,6 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./login/login.page').then(m => m.LoginPage),
   },
   {
-    path: 'register',
-    loadComponent: () => import('./register/register.page').then(m => m.RegisterPage),
-  },
-  {
     path: 'welcome',
     loadComponent: () => import('./welcome/welcome.page').then(m => m.WelcomePage),
   },
@@ -59,6 +55,12 @@ export const APP_ROUTES: Routes = [
   {
     path: 'integration-test',
     loadComponent: () => import('./testing/integration-test.page').then(m => m.IntegrationTestPage),
+  },
+  {
+    path: 'bolus-calculator',
+    canMatch: [OnboardingGuard],
+    loadComponent: () =>
+      import('./bolus-calculator/bolus-calculator.page').then(m => m.BolusCalculatorPage),
   },
 ];
 

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController, ToastController } from '@ionic/angular';
-import { Subject } from 'rxjs';
+import { AlertController, ToastController, LoadingController } from '@ionic/angular';
+import { Subject, firstValueFrom } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 
 import { TidepoolAuthService, AuthState } from '../core/services/tidepool-auth.service';
@@ -9,13 +9,47 @@ import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
 import { TranslationService, Language } from '../core/services/translation.service';
 import { TidepoolSyncService } from '../core/services/tidepool-sync.service';
+import { CapacitorHttpService } from '../core/services/capacitor-http.service';
 import { UserProfile, ThemeMode } from '../core/models/user-profile.model';
-import { SyncStatus } from '../core/models/tidepool-sync.model';
+import { SyncStatus, SyncMetadata } from '../core/models/tidepool-sync.model';
+import { environment } from '../../environments/environment';
 interface ProfileDisplayData {
   name: string;
   email: string;
   memberSince: string;
   avatarUrl?: string;
+}
+
+/** Tidepool profile data from /metadata/{userId}/profile */
+interface TidepoolProfile {
+  fullName?: string;
+  patient?: {
+    birthday?: string;
+    diagnosisDate?: string;
+    targetTimezone?: string;
+    targetDevices?: string[];
+    isOtherPerson?: boolean;
+    about?: string;
+  };
+  emails?: string[];
+}
+
+/** Tidepool data source from /v1/users/{userId}/data_sources */
+interface TidepoolDataSource {
+  id?: string;
+  providerType?: string;
+  providerName?: string;
+  providerSessionId?: string;
+  state?: string;
+  createdTime?: string;
+  modifiedTime?: string;
+}
+
+/** Combined Tidepool user data */
+interface TidepoolUserData {
+  profile: TidepoolProfile | null;
+  dataSources: TidepoolDataSource[];
+  dataSourcesCount: number;
 }
 
 @Component({
@@ -69,9 +103,11 @@ export class ProfilePage implements OnInit, OnDestroy {
     private themeService: ThemeService,
     private translationService: TranslationService,
     private syncService: TidepoolSyncService,
+    private capacitorHttp: CapacitorHttpService,
     private router: Router,
     private alertController: AlertController,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private loadingController: LoadingController
   ) {
     this.currentLanguage = this.translationService.getCurrentLanguage();
   }
@@ -328,7 +364,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   /**
    * Handle theme change
    */
-  async onThemeChange(event: any): Promise<void> {
+  async onThemeChange(event: CustomEvent<{ value: ThemeMode }>): Promise<void> {
     const theme = event.detail.value as ThemeMode;
     await this.themeService.setThemeMode(theme);
     this.currentTheme = theme;
@@ -337,7 +373,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   /**
    * Handle language change
    */
-  async onLanguageChange(event: any): Promise<void> {
+  async onLanguageChange(event: CustomEvent<{ value: Language }>): Promise<void> {
     const language = event.detail.value as Language;
     // Update translation service (this will also save to preferences)
     await this.translationService.setLanguage(language);
@@ -347,8 +383,8 @@ export class ProfilePage implements OnInit, OnDestroy {
   /**
    * Handle glucose unit change
    */
-  async onGlucoseUnitChange(event: any): Promise<void> {
-    const unit = event.detail.value;
+  async onGlucoseUnitChange(event: CustomEvent<{ value: string }>): Promise<void> {
+    const unit = event.detail.value as 'mg/dL' | 'mmol/L';
     await this.profileService.updatePreferences({ glucoseUnit: unit });
     this.currentGlucoseUnit = unit;
   }
@@ -365,13 +401,114 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   /**
-   * Connect to Tidepool
+   * Connect to Tidepool - Shows login dialog for email/password auth
    */
   private async connectToTidepool(): Promise<void> {
+    const alert = await this.alertController.create({
+      header:
+        this.translationService.instant('profile.tidepoolLogin.title') || 'Connect to Tidepool',
+      message:
+        this.translationService.instant('profile.tidepoolLogin.message') ||
+        'Enter your Tidepool credentials',
+      cssClass: 'tidepool-login-alert',
+      inputs: [
+        {
+          name: 'email',
+          type: 'email',
+          placeholder: this.translationService.instant('profile.tidepoolLogin.email') || 'Email',
+        },
+        {
+          name: 'password',
+          type: 'password',
+          placeholder:
+            this.translationService.instant('profile.tidepoolLogin.password') || 'Password',
+        },
+      ],
+      buttons: [
+        {
+          text: this.translationService.instant('common.cancel') || 'Cancel',
+          role: 'cancel',
+        },
+        {
+          text: this.translationService.instant('profile.tidepoolLogin.connect') || 'Connect',
+          handler: data => {
+            console.log('🔵 [TidepoolLogin] CONNECT clicked, data:', data);
+            if (!data.email || !data.password) {
+              console.log('🔴 [TidepoolLogin] Missing email or password');
+              return false; // Don't close the dialog
+            }
+            console.log('🔵 [TidepoolLogin] Scheduling login...');
+            // Close dialog first, then perform login
+            // Using setTimeout to let dialog close before showing loading
+            const email = data.email;
+            const password = data.password;
+            setTimeout(() => {
+              console.log('🔵 [TidepoolLogin] setTimeout fired, calling performTidepoolLogin');
+              this.performTidepoolLogin(email, password).catch(err => {
+                console.error('🔴 [TidepoolLogin] performTidepoolLogin error:', err);
+              });
+            }, 100);
+            return true;
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Perform Tidepool login with credentials
+   */
+  private async performTidepoolLogin(email: string, password: string): Promise<void> {
+    console.log('🔵 [TidepoolLogin] performTidepoolLogin started with email:', email);
+
     try {
-      await this.authService.login();
-    } catch (error) {
-      console.error('Failed to connect to Tidepool:', error);
+      // Skip loading indicator - it was causing issues
+      console.log('🔵 [TidepoolLogin] Calling authService.loginWithCredentials...');
+      await this.authService.loginWithCredentials(email, password);
+      console.log('🟢 [TidepoolLogin] loginWithCredentials completed successfully!');
+
+      // Update local profile with Tidepool connection status
+      if (this.profile) {
+        console.log('🔵 [TidepoolLogin] Updating profile...');
+        await this.profileService.updateProfile({
+          tidepoolConnection: {
+            connected: true,
+            userId: this.authState?.userId || '',
+          },
+        });
+        this.isConnected = true;
+        console.log('🟢 [TidepoolLogin] Profile updated');
+      }
+
+      // Show success toast
+      console.log('🟢 [TidepoolLogin] Showing success toast');
+      const toast = await this.toastController.create({
+        message:
+          this.translationService.instant('profile.tidepoolLogin.success') ||
+          'Connected to Tidepool!',
+        duration: 3000,
+        position: 'top',
+        color: 'success',
+      });
+      await toast.present();
+    } catch (error: unknown) {
+      console.error('🔴 [TidepoolLogin] Error caught:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Login failed. Please check your credentials.';
+      console.error('🔴 [TidepoolLogin] Error message:', errorMessage);
+      if (error instanceof Error && error.stack) {
+        console.error('🔴 [TidepoolLogin] Error stack:', error.stack);
+      }
+
+      // Show error alert
+      const errorAlert = await this.alertController.create({
+        header: this.translationService.instant('common.error') || 'Error',
+        message: errorMessage,
+        buttons: ['OK'],
+      });
+      await errorAlert.present();
     }
   }
 
@@ -410,6 +547,230 @@ export class ProfilePage implements OnInit, OnDestroy {
         window.open(dashboardUrl, '_blank');
       }
     });
+  }
+
+  /**
+   * Show Tidepool info popup with REAL data from Tidepool API
+   */
+  async showTidepoolInfo(): Promise<void> {
+    console.log('🔵 [TidepoolInfo] Button clicked!');
+    console.log('🔵 [TidepoolInfo] isConnected:', this.isConnected);
+    console.log('🔵 [TidepoolInfo] authState:', JSON.stringify(this.authState, null, 2));
+
+    if (!this.isConnected || !this.authState) {
+      console.log('🔴 [TidepoolInfo] Not connected, showing not connected message');
+      const alert = await this.alertController.create({
+        header: this.translationService.instant('profile.tidepoolInfo.title'),
+        message: this.translationService.instant('profile.tidepoolInfo.notConnectedMessage'),
+        cssClass: 'tidepool-info-alert',
+        buttons: ['OK'],
+      });
+      await alert.present();
+      return;
+    }
+
+    // Check token validity and try to refresh if needed
+    let accessToken = await this.authService.getAccessToken();
+    console.log('🔵 [TidepoolInfo] Initial access token available:', !!accessToken);
+
+    // If no token, try to refresh it
+    if (!accessToken) {
+      console.log('🔵 [TidepoolInfo] No token, attempting refresh...');
+      try {
+        accessToken = await this.authService.refreshAccessToken();
+        console.log('🔵 [TidepoolInfo] Token refreshed successfully:', !!accessToken);
+      } catch (refreshError) {
+        console.error('🔴 [TidepoolInfo] Token refresh failed:', refreshError);
+        // Token refresh failed - user needs to re-authenticate
+        const alert = await this.alertController.create({
+          header: this.translationService.instant('profile.tidepoolInfo.title'),
+          message:
+            this.translationService.instant('profile.tidepoolInfo.sessionExpired') ||
+            'Session expired. Please disconnect and reconnect to Tidepool.',
+          cssClass: 'tidepool-info-alert',
+          buttons: ['OK'],
+        });
+        await alert.present();
+        return;
+      }
+    }
+
+    console.log('🔵 [TidepoolInfo] Token (first 20 chars):', accessToken?.substring(0, 20) + '...');
+
+    // Show loading while fetching real data from Tidepool
+    console.log('🔵 [TidepoolInfo] Showing loading...');
+    const loading = await this.loadingController.create({
+      message: this.translationService.instant('common.loading'),
+      spinner: 'crescent',
+    });
+    await loading.present();
+
+    try {
+      // Fetch real data from Tidepool API
+      console.log('🔵 [TidepoolInfo] Fetching Tidepool user data...');
+      const tidepoolData = await this.fetchTidepoolUserData();
+      console.log(
+        '🔵 [TidepoolInfo] Tidepool data received:',
+        JSON.stringify(tidepoolData, null, 2)
+      );
+      const syncMetadata = await this.syncService.getSyncMetadata();
+      console.log('🔵 [TidepoolInfo] Sync metadata:', JSON.stringify(syncMetadata, null, 2));
+
+      await loading.dismiss();
+
+      // Build message with REAL Tidepool data
+      const details = this.buildTidepoolInfoMessage(tidepoolData, syncMetadata);
+
+      const alert = await this.alertController.create({
+        header: this.translationService.instant('profile.tidepoolInfo.title'),
+        message: details,
+        cssClass: 'tidepool-info-alert',
+        buttons: [
+          {
+            text: this.translationService.instant('profile.tidepoolInfo.learnMore'),
+            handler: () => {
+              window.open('https://www.tidepool.org/', '_blank');
+            },
+          },
+          {
+            text: 'OK',
+            role: 'cancel',
+          },
+        ],
+      });
+      await alert.present();
+    } catch (error) {
+      await loading.dismiss();
+      console.error('Failed to fetch Tidepool data:', error);
+
+      // Show error message
+      const alert = await this.alertController.create({
+        header: this.translationService.instant('profile.tidepoolInfo.title'),
+        message: this.translationService.instant('profile.tidepoolInfo.fetchError'),
+        cssClass: 'tidepool-info-alert',
+        buttons: ['OK'],
+      });
+      await alert.present();
+    }
+  }
+
+  /**
+   * Fetch real user data from Tidepool API
+   */
+  private async fetchTidepoolUserData(): Promise<TidepoolUserData> {
+    const accessToken = await this.authService.getAccessToken();
+    if (!accessToken) {
+      throw new Error('No access token available');
+    }
+
+    const userId = this.authState?.userId;
+    const baseUrl = environment.tidepool.baseUrl;
+    const headers = { Authorization: `Bearer ${accessToken}` };
+
+    const result: TidepoolUserData = {
+      profile: null,
+      dataSources: [],
+      dataSourcesCount: 0,
+    };
+
+    // Fetch user profile from /metadata/{userId}/profile
+    try {
+      if (userId) {
+        const profileUrl = `${baseUrl}/metadata/${userId}/profile`;
+        result.profile = await firstValueFrom(
+          this.capacitorHttp.get<TidepoolProfile>(profileUrl, { headers })
+        );
+      }
+    } catch (err) {
+      console.warn('Could not fetch Tidepool profile:', err);
+    }
+
+    // Fetch data sources from /v1/users/{userId}/data_sources
+    try {
+      if (userId) {
+        const dataSourcesUrl = `${baseUrl}/data/v1/users/${userId}/data_sources`;
+        const sources = await firstValueFrom(
+          this.capacitorHttp.get<TidepoolDataSource[]>(dataSourcesUrl, { headers })
+        );
+        result.dataSources = sources || [];
+        result.dataSourcesCount = result.dataSources.length;
+      }
+    } catch (err) {
+      console.warn('Could not fetch Tidepool data sources:', err);
+    }
+
+    return result;
+  }
+
+  /**
+   * Build info message with real Tidepool data
+   */
+  private buildTidepoolInfoMessage(
+    tidepoolData: TidepoolUserData,
+    syncMetadata: SyncMetadata
+  ): string {
+    const lines: string[] = [];
+
+    // Status
+    lines.push(
+      `${this.translationService.instant('profile.tidepoolInfo.status')}: ${this.translationService.instant('profile.connected')}`
+    );
+
+    // Profile info from Tidepool
+    if (tidepoolData.profile) {
+      if (tidepoolData.profile.fullName) {
+        lines.push(
+          `${this.translationService.instant('profile.tidepoolInfo.fullName')}: ${tidepoolData.profile.fullName}`
+        );
+      }
+      if (tidepoolData.profile.patient?.birthday) {
+        lines.push(
+          `${this.translationService.instant('profile.tidepoolInfo.birthday')}: ${tidepoolData.profile.patient.birthday}`
+        );
+      }
+      if (tidepoolData.profile.patient?.diagnosisDate) {
+        lines.push(
+          `${this.translationService.instant('profile.tidepoolInfo.diagnosisDate')}: ${tidepoolData.profile.patient.diagnosisDate}`
+        );
+      }
+      if (tidepoolData.profile.patient?.targetTimezone) {
+        lines.push(
+          `${this.translationService.instant('profile.tidepoolInfo.timezone')}: ${tidepoolData.profile.patient.targetTimezone}`
+        );
+      }
+    }
+
+    // Data sources from Tidepool
+    lines.push(
+      `${this.translationService.instant('profile.tidepoolInfo.dataSources')}: ${tidepoolData.dataSourcesCount}`
+    );
+    if (tidepoolData.dataSources.length > 0) {
+      const sourceNames = tidepoolData.dataSources
+        .map(s => s.providerName || s.providerType || 'Unknown')
+        .slice(0, 3)
+        .join(', ');
+      lines.push(
+        `${this.translationService.instant('profile.tidepoolInfo.providers')}: ${sourceNames}`
+      );
+    }
+
+    // Sync metadata (local stats from synced data)
+    lines.push(
+      `${this.translationService.instant('profile.tidepoolInfo.totalReadings')}: ${syncMetadata.totalReadingsSynced}`
+    );
+    lines.push(
+      `${this.translationService.instant('profile.lastSync')}: ${this.formatLastSyncTime()}`
+    );
+
+    // Sync history
+    if (syncMetadata.syncHistory.length > 0) {
+      const successfulSyncs = syncMetadata.syncHistory.filter(h => h.success).length;
+      lines.push(
+        `${this.translationService.instant('profile.tidepoolInfo.syncHistory')}: ${successfulSyncs}/${syncMetadata.syncHistory.length}`
+      );
+    }
+
+    return lines.join('\n\n');
   }
 
   /**

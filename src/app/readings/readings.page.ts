@@ -1,7 +1,34 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { Component, OnInit, OnDestroy, ViewChild, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonContent, ToastController } from '@ionic/angular';
+import {
+  IonContent,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonBadge,
+  IonSearchbar,
+  IonRefresher,
+  IonRefresherContent,
+  IonChip,
+  IonLabel,
+  IonText,
+  IonFab,
+  IonFabButton,
+  IonModal,
+  IonList,
+  IonListHeader,
+  IonItem,
+  IonSelect,
+  IonSelectOption,
+  IonDatetime,
+  IonDatetimeButton,
+} from '@ionic/angular/standalone';
+import { ToastController } from '@ionic/angular';
+import { TranslateModule } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {
@@ -13,6 +40,9 @@ import { ReadingsService } from '../core/services/readings.service';
 import { ProfileService } from '../core/services/profile.service';
 import { TranslationService } from '../core/services/translation.service';
 import { LoggerService } from '../core/services/logger.service';
+import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
+import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
 
 /**
  * Interface for grouped readings by date
@@ -37,7 +67,39 @@ interface ReadingFilters {
   selector: 'app-readings',
   templateUrl: './readings.html',
   styleUrls: ['./readings.page.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    IonContent,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonBadge,
+    IonSearchbar,
+    IonRefresher,
+    IonRefresherContent,
+    IonChip,
+    IonLabel,
+    IonText,
+    IonFab,
+    IonFabButton,
+    IonModal,
+    IonList,
+    IonListHeader,
+    IonItem,
+    IonSelect,
+    IonSelectOption,
+    IonDatetime,
+    IonDatetimeButton,
+    AppIconComponent,
+    EmptyStateComponent,
+    ReadingItemComponent,
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ReadingsPage implements OnInit, OnDestroy {
   @ViewChild(IonContent) content?: IonContent;
@@ -151,8 +213,8 @@ export class ReadingsPage implements OnInit, OnDestroy {
   /**
    * Handle search input
    */
-  onSearchChange(event: any): void {
-    const value = event.detail.value || '';
+  onSearchChange(event: CustomEvent): void {
+    const value = (event.detail?.value as string) || '';
     this.searchTerm = value;
     this.searchSubject.next(value);
   }
@@ -411,16 +473,16 @@ export class ReadingsPage implements OnInit, OnDestroy {
   /**
    * Refresh readings (pull-to-refresh)
    */
-  async doRefresh(event: any): Promise<void> {
+  async doRefresh(event: CustomEvent): Promise<void> {
     this.logger.info('UI', 'Readings refresh initiated');
     try {
       // Reload readings - the observable will automatically update
       await this.readingsService.getAllReadings();
       this.logger.info('UI', 'Readings refreshed successfully');
-      event.target.complete();
+      (event.target as HTMLIonRefresherElement).complete();
     } catch (error) {
       this.logger.error('Error', 'Error refreshing readings', error);
-      event.target.complete();
+      (event.target as HTMLIonRefresherElement).complete();
     }
   }
 

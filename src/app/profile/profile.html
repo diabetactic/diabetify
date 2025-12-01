@@ -162,20 +162,46 @@
     </section>
 
     <section class="card tidepool-card">
-      <div class="flex items-center gap-3">
-        <app-icon
-          name="cloud-outline"
-          aria-hidden="true"
-          class="text-primary text-[28px]"
-        ></app-icon>
-        <div>
-          <p class="m-0 text-base font-semibold">{{ 'profile.tidepoolIntegration' | translate }}</p>
-          <p class="text-medium mb-0 mt-1 text-sm">
-            {{
-              isConnected ? ('profile.connected' | translate) : ('profile.notConnected' | translate)
-            }}
-          </p>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <app-icon
+            name="cloud-outline"
+            aria-hidden="true"
+            class="text-primary text-[28px]"
+          ></app-icon>
+          <div>
+            <p class="m-0 text-base font-semibold">
+              {{ 'profile.tidepoolIntegration' | translate }}
+            </p>
+            <p class="text-medium mb-0 mt-1 text-sm">
+              {{
+                isConnected
+                  ? ('profile.connected' | translate)
+                  : ('profile.notConnected' | translate)
+              }}
+            </p>
+          </div>
         </div>
+        <ion-button
+          fill="clear"
+          size="default"
+          (click)="showTidepoolInfo()"
+          data-testid="tidepool-info-btn"
+          class="text-primary min-h-[44px] min-w-[44px]"
+        >
+          <ion-icon slot="icon-only" name="information-circle-outline" size="large"></ion-icon>
+        </ion-button>
+      </div>
+      <div
+        class="bg-base-200/60 mt-3 rounded-lg px-3 py-2"
+        *ngIf="isConnected && (authState?.userId || profile?.tidepoolConnection?.userId)"
+      >
+        <p class="text-base-content/60 m-0 text-xs font-medium">
+          {{ 'profile.tidepoolUserId' | translate }}
+        </p>
+        <p class="text-base-content m-0 font-mono text-sm font-semibold">
+          {{ authState?.userId || profile?.tidepoolConnection?.userId }}
+        </p>
       </div>
       <p class="text-medium m-0 text-sm" *ngIf="isConnected">
         {{ 'profile.lastSync' | translate }}: {{ formatLastSyncTime() }}
