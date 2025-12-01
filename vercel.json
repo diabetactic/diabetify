@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "name": "diabetactic",
   "framework": "angular",
   "outputDirectory": "www",
   "buildCommand": "npm run build:prod",
