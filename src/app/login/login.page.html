@@ -1,7 +1,8 @@
 <ion-content class="login-content">
+  <div class="pattern-overlay"></div>
   <div class="login-shell page-shell">
     <div class="login-illustration">
-      <img src="assets/images/preview-Photoroom.png" alt="{{ 'welcome.heroAlt' | translate }}" />
+      <img src="assets/images/welcome-kids.png" alt="{{ 'welcome.heroAlt' | translate }}" />
     </div>
     <h1 class="login-title">{{ 'app.name' | translate }}</h1>
     <p class="login-subtitle">
@@ -14,7 +15,7 @@
           {{ 'login.username.label' | translate }}
         </label>
         <div class="input-wrapper">
-          <ion-icon name="person-outline" class="input-icon"></ion-icon>
+          <ion-icon name="person-outline" class="input-icon" aria-hidden="true"></ion-icon>
           <input
             id="username"
             type="text"
@@ -31,7 +32,7 @@
           {{ 'login.password.label' | translate }}
         </label>
         <div class="input-wrapper">
-          <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
+          <ion-icon name="lock-closed-outline" class="input-icon" aria-hidden="true"></ion-icon>
           <input
             id="password"
             [type]="showPassword ? 'text' : 'password'"
@@ -47,10 +48,15 @@
             (click)="togglePasswordVisibility()"
             class="password-toggle-btn"
             data-testid="toggle-password-visibility-btn"
+            [attr.aria-label]="
+              showPassword ? ('login.hidePassword' | translate) : ('login.showPassword' | translate)
+            "
+            type="button"
           >
             <ion-icon
               slot="icon-only"
               [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+              aria-hidden="true"
             ></ion-icon>
           </ion-button>
         </div>
@@ -59,8 +65,10 @@
           <ion-checkbox
             formControlName="rememberMe"
             data-testid="remember-me-checkbox"
-          ></ion-checkbox>
-          <span>{{ 'login.rememberMe' | translate }}</span>
+            labelPlacement="end"
+            [attr.aria-label]="'login.rememberMe' | translate"
+            >{{ 'login.rememberMe' | translate }}</ion-checkbox
+          >
         </div>
 
         <button

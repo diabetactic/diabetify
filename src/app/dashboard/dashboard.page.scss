@@ -1,16 +1,11 @@
 // ============================================
 // DASHBOARD PAGE - HYBRID TAILWIND V3 + SCSS
 // ============================================
-// Tailwind: Layout, spacing, typography, colors handled in HTML
-// SCSS: Animations, Ionic CSS variables, nested selectors, shadows
-// ============================================
 
-// Ion content styling - hex fallback for Android WebView compatibility
 ion-content {
   --background: var(--color-base-200, #f5f7f8);
 }
 
-/* Toolbar sync button - pill with subtle background */
 .dashboard-toolbar-btn {
   --border-radius: 999px;
   --padding-start: 6px;
@@ -20,18 +15,7 @@ ion-content {
   --background-activated: rgb(15 23 42 / 18%);
 }
 
-// ============================================
-// CUSTOM ANIMATIONS
-// Dashboard-specific animations for loading states and emphasis
-// These are intentionally scoped here for component isolation
-// ============================================
-
-// Spin: continuous rotation for loading indicators
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
   to {
     transform: rotate(360deg);
   }
@@ -41,7 +25,6 @@ ion-content {
   animation: spin 1s linear infinite;
 }
 
-// Bounce: gentle vertical movement for status icons (kid-friendly)
 @keyframes bounce {
   0%,
   100% {
@@ -57,7 +40,6 @@ ion-content {
   animation: bounce 2s ease-in-out infinite;
 }
 
-// Pulse: subtle scale for call-to-action emphasis
 @keyframes pulse {
   0%,
   100% {
@@ -73,11 +55,6 @@ ion-content {
   animation: pulse 2s ease-in-out infinite;
 }
 
-// ============================================
-// IONIC COMPONENT VARIABLES & CARD SHADOWS
-// ============================================
-
-// Appointment card with shadows
 .appointment-card {
   box-shadow: var(--shadow-03);
   border-radius: 16px;
@@ -116,28 +93,39 @@ ion-content {
   }
 }
 
-// Quick actions card with shadows
 .quick-actions-card {
   box-shadow: var(--shadow-03);
   border-radius: 16px;
 
-  .quick-action-btn {
-    --border-radius: 12px;
+  // Override DaisyUI btn-lg for more prominent buttons
+  .btn-lg {
+    height: 56px;
+    min-height: 56px;
+    padding: 0 24px;
+    font-size: 16px;
+    font-weight: 700;
+    gap: 10px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-08);
+  }
 
-    height: 48px;
-    font-weight: 600;
-    transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease;
+  .btn-primary {
+    background: linear-gradient(
+      135deg,
+      var(--color-primary, #3b82f6) 0%,
+      var(--color-primary-focus, #2563eb) 100%
+    );
+    border: none;
+  }
 
-    &:not([disabled]):hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-10);
-    }
-
-    &:not([disabled]):active {
-      transform: translateY(0);
-    }
+  .btn-secondary {
+    background: linear-gradient(
+      135deg,
+      var(--color-secondary, #10b981) 0%,
+      var(--color-secondary-focus, #059669) 100%
+    );
+    border: none;
+    color: var(--color-base-100);
   }
 
   .sync-status {
@@ -192,7 +180,6 @@ ion-content {
     --color: var(--ion-color-primary);
   }
 
-  // Kid-friendly version enhancements
   &.kids-view {
     .section-header {
       h2 {
@@ -212,7 +199,6 @@ ion-content {
       gap: 16px;
 
       app-reading-item {
-        transform: scale(1);
         transition: transform 0.2s ease;
 
         &:active {
@@ -223,11 +209,6 @@ ion-content {
   }
 }
 
-// ============================================
-// DARK MODE - IONIC COMPONENT OVERRIDES
-// ============================================
-
-// Dark mode - hex fallbacks for Android WebView compatibility
 :host-context(.dark),
 :host-context(.ion-palette-dark) {
   ion-content {
@@ -245,43 +226,29 @@ ion-content {
   .card {
     background: var(--color-base-200, #252540);
     box-shadow: var(--shadow-07);
-  }
 
-  .appointment-card ion-item,
-  .quick-actions-card ion-item,
-  .card ion-item {
-    color: var(--color-base-content, #e5e7eb);
-  }
+    ion-item {
+      color: var(--color-base-content, #e5e7eb);
+    }
 
-  .appointment-card ion-item ion-icon,
-  .appointment-card ion-item .material-symbols-outlined,
-  .appointment-card ion-item app-icon,
-  .quick-actions-card ion-item ion-icon,
-  .quick-actions-card ion-item .material-symbols-outlined,
-  .quick-actions-card ion-item app-icon,
-  .card ion-item ion-icon,
-  .card ion-item .material-symbols-outlined,
-  .card ion-item app-icon {
-    color: var(--color-primary, #3b82f6);
-  }
+    ion-item ion-icon,
+    ion-item .material-symbols-outlined,
+    ion-item app-icon {
+      color: var(--color-primary, #3b82f6);
+    }
 
-  .appointment-card ion-item ion-label p,
-  .quick-actions-card ion-item ion-label p,
-  .card ion-item ion-label p {
-    color: rgb(229 231 235 / 60%);
-  }
+    ion-item ion-label p {
+      color: rgb(229 231 235 / 60%);
+    }
 
-  .appointment-card ion-item ion-label h3,
-  .quick-actions-card ion-item ion-label h3,
-  .card ion-item ion-label h3 {
-    color: var(--color-base-content, #e5e7eb);
-  }
+    ion-item ion-label h3 {
+      color: var(--color-base-content, #e5e7eb);
+    }
 
-  .appointment-card ion-item ion-badge,
-  .quick-actions-card ion-item ion-badge,
-  .card ion-item ion-badge {
-    --background: rgb(59 130 246 / 20%);
-    --color: var(--color-base-content, #e5e7eb);
+    ion-item ion-badge {
+      --background: rgb(59 130 246 / 20%);
+      --color: var(--color-base-content, #e5e7eb);
+    }
   }
 
   .status-indicator {

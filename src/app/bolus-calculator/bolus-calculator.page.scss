@@ -1,6 +1,164 @@
 // Bolus Calculator Styles
-// Component-specific slide animation with 20px distance
-// Similar to global slideUp but scoped to this component for isolation
+
+.bolus-content {
+  --background: var(--ion-color-light);
+}
+
+.info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: oklch(var(--p) / 10%);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--ion-color-primary);
+
+  ion-icon {
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+  }
+}
+
+.card {
+  background: var(--ion-card-background, var(--ion-background-color));
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-06);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--ion-text-color);
+
+  app-icon {
+    font-size: 1.25rem;
+  }
+}
+
+.form-input {
+  --background: var(--ion-item-background, var(--ion-background-color));
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+  --padding-top: 0.75rem;
+  --padding-bottom: 0.75rem;
+
+  border: 1px solid var(--ion-color-step-300, #c8c7cc);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+
+  &.input-error {
+    border-color: var(--ion-color-danger);
+  }
+}
+
+.error-text {
+  color: var(--ion-color-danger);
+  font-size: 0.875rem;
+}
+
+.result-card {
+  background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+  color: var(--ion-color-primary-contrast);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-07);
+}
+
+.result-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+
+  app-icon {
+    font-size: 1.5rem;
+  }
+}
+
+.result-value-container {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.result-value {
+  font-size: 4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.result-units {
+  font-size: 1.125rem;
+  opacity: 90%;
+  margin-top: 0.5rem;
+}
+
+.divider {
+  height: 1px;
+  background: rgb(255 255 255 / 20%);
+  margin: 1rem 0;
+}
+
+.details-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+
+  app-icon {
+    font-size: 1.25rem;
+  }
+}
+
+.details-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.detail-label {
+  opacity: 85%;
+}
+
+.detail-value {
+  font-weight: 600;
+}
+
+.warning-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgb(255 255 255 / 15%);
+  border-radius: var(--radius-md);
+
+  .warning-icon {
+    flex-shrink: 0;
+    font-size: 1.25rem;
+    color: var(--ion-color-warning);
+  }
+}
+
+// Animation
 .animate-slide-in-up {
   animation: slide-in-up 0.3s ease-out;
 }
@@ -14,5 +172,150 @@
   to {
     opacity: 100%;
     transform: translateY(0);
+  }
+}
+
+// Food Picker Button
+.food-picker-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: var(--dt-color-surface-soft, oklch(var(--b3) / 50%));
+  border: 1.5px dashed var(--ion-color-primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
+
+  &:hover {
+    background: oklch(var(--p) / 10%);
+  }
+
+  &:disabled {
+    opacity: 50%;
+    cursor: not-allowed;
+  }
+}
+
+.food-picker-icon {
+  font-size: 1.5rem;
+}
+
+.food-picker-text {
+  flex: 1;
+  text-align: left;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--ion-color-primary);
+}
+
+.food-picker-arrow {
+  color: var(--ion-color-primary);
+  opacity: 70%;
+}
+
+// Selected Foods Display
+.selected-foods-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: oklch(var(--p) / 8%);
+  border-radius: var(--radius-md);
+  align-items: center;
+}
+
+.selected-food-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  background: var(--ion-background-color);
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  box-shadow: var(--shadow-02);
+}
+
+.selected-food-emoji {
+  font-size: 1rem;
+}
+
+.selected-food-name {
+  color: var(--ion-text-color);
+  font-weight: 500;
+}
+
+.selected-food-carbs {
+  color: var(--ion-color-primary);
+  font-weight: 600;
+}
+
+.clear-foods-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
+  background: rgb(0 0 0 / 10%);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--dt-color-text-muted);
+  transition: background 150ms ease;
+
+  &:hover {
+    background: rgb(0 0 0 / 20%);
+  }
+}
+
+// Carbs input row
+.carbs-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.carbs-unit-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--dt-color-text-muted);
+}
+
+// Dark mode adjustments
+:host-context(.dark) {
+  .info-banner {
+    background-color: oklch(var(--p) / 15%);
+  }
+
+  .form-input {
+    --background: var(--ion-color-step-100);
+
+    border-color: var(--ion-color-step-500);
+  }
+
+  .food-picker-btn {
+    background: var(--dt-color-surface-soft);
+  }
+
+  .selected-foods-list {
+    background: oklch(var(--p) / 12%);
+  }
+
+  .selected-food-chip {
+    background: var(--dt-color-surface);
+  }
+
+  .clear-foods-btn {
+    background: rgb(255 255 255 / 10%);
+
+    &:hover {
+      background: rgb(255 255 255 / 20%);
+    }
   }
 }

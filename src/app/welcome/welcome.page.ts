@@ -7,7 +7,6 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
-import { DEFAULT_USER_PREFERENCES } from '../core/models/user-profile.model';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 
 @Component({

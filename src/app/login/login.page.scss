@@ -8,8 +8,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
+  /* Use dvh (dynamic viewport height) for mobile browsers with address bar */
+
+  /* Fallback to vh for older browsers */
   min-height: 100vh;
+  min-height: 100dvh;
   padding: 32px 20px;
+
+  /* Add safe area padding for notched devices */
+  padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  padding-top: calc(32px + env(safe-area-inset-top, 0px));
   position: relative;
   overflow: hidden;
 }
@@ -26,31 +35,16 @@
   z-index: var(--layer-content);
 }
 
-// Cloud shapes similar to welcome screen
-.login-content::before,
-.login-content::after {
-  content: '';
+// Subtle pattern overlay in the background
+.pattern-overlay {
   position: absolute;
-  background: #fff;
-  border-radius: 999px;
-  opacity: 55%;
-  filter: blur(10px);
+  inset: 0;
+  background-image: url('/assets/images/pattern-light.png');
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  opacity: 25%; // Reduced for better text visibility
   pointer-events: none;
   z-index: var(--layer-cloud);
-}
-
-.login-content::before {
-  width: 220px;
-  height: 110px;
-  top: 6%;
-  left: -70px;
-}
-
-.login-content::after {
-  width: 260px;
-  height: 130px;
-  bottom: 10%;
-  right: -90px;
 }
 
 .login-illustration {
@@ -58,27 +52,34 @@
   height: 220px;
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: var(--shadow-13);
+  background: linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 3px solid rgb(59 130 246 / 20%);
+  box-shadow: var(--shadow-illustration-light);
 }
 
 .login-illustration img {
-  width: 100%;
+  width: 135%;
   height: 100%;
   object-fit: contain;
-  transform: scale(1.22) translateY(-4%);
+  object-position: center top;
+  transform: translateY(-4%);
 }
 
 .login-title {
   margin: 8px 0 4px;
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 800;
   color: var(--dt-color-text-primary);
+  text-shadow:
+    0 1px 2px rgb(255 255 255 / 80%),
+    0 0 20px rgb(255 255 255 / 60%);
 }
 
 .login-subtitle {
   margin: 0;
   font-size: 15px;
   color: var(--dt-color-text-secondary);
+  text-shadow: 0 1px 2px rgb(255 255 255 / 70%);
 }
 
 .login-card {
@@ -216,12 +217,27 @@
     --background: linear-gradient(180deg, #0f172a 0%, #020617 45%, #020617 100%);
   }
 
+  .pattern-overlay {
+    background-image: url('/assets/images/pattern-dark.png');
+    opacity: 35%;
+  }
+
+  .login-illustration {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    border-color: rgb(148 163 184 / 20%);
+    box-shadow: var(--shadow-illustration-dark);
+  }
+
   .login-title {
     color: var(--dt-color-text-primary);
+    text-shadow:
+      0 1px 3px rgb(0 0 0 / 50%),
+      0 0 15px rgb(0 0 0 / 30%);
   }
 
   .login-subtitle {
     color: var(--dt-color-text-secondary);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 40%);
   }
 
   .login-card {

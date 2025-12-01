@@ -1,20 +1,21 @@
 <!-- Dev Tools Panel -->
 <!-- Floating toggle button (bottom-right corner) -->
-<div class="fixed bottom-20 right-4 z-50 md:bottom-4">
+<div class="fixed bottom-20 right-4 z-50 md:bottom-4" role="group">
   <ion-fab-button
     size="small"
     (click)="togglePanel()"
     class="shadow-lg"
     [color]="isOpen ? 'danger' : 'medium'"
+    aria-label="{{ isOpen ? ('debug.closePanel' | translate) : ('debug.openPanel' | translate) }}"
   >
-    <ion-icon [name]="isOpen ? 'close' : 'bug'"></ion-icon>
+    <ion-icon [name]="isOpen ? 'close' : 'bug'" aria-hidden="true"></ion-icon>
   </ion-fab-button>
 </div>
 
 <!-- Dev Tools Panel (sliding from bottom on mobile, sidebar on desktop) -->
 <div
   *ngIf="isOpen"
-  class="bg-base-100 fixed inset-x-0 bottom-0 z-40 flex max-h-[80vh] flex-col overflow-hidden rounded-t-2xl shadow-2xl md:inset-y-0 md:left-auto md:right-0 md:max-h-full md:w-96 md:rounded-none md:rounded-l-2xl"
+  class="bg-base-100 border-base-300 fixed inset-x-0 bottom-0 z-40 flex max-h-[80vh] flex-col overflow-hidden rounded-t-2xl border-t shadow-2xl backdrop-blur-none md:inset-y-0 md:left-auto md:right-0 md:max-h-full md:w-96 md:rounded-none md:rounded-l-2xl md:border-l md:border-t-0"
   [@slideIn]
 >
   <!-- Header -->
@@ -31,6 +32,7 @@
       size="small"
       (click)="togglePanel()"
       class="inline-flex items-center gap-2"
+      [attr.aria-label]="'debug.closePanel' | translate"
     >
       <app-icon name="close" class="h-6 w-6"></app-icon>
     </ion-button>
@@ -150,6 +152,10 @@
 <div
   *ngIf="isOpen"
   (click)="togglePanel()"
+  (keydown.enter)="togglePanel()"
+  tabindex="0"
+  role="button"
+  [attr.aria-label]="'debug.closePanel' | translate"
   class="fixed inset-0 z-30 bg-black/50 md:hidden"
   [@fadeIn]
 ></div>

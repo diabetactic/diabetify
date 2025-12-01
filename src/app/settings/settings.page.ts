@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import {
@@ -21,15 +21,18 @@ import {
   IonSelectOption,
   IonToggle,
   IonIcon,
-  IonNote,
+  IonCard,
+  IonCardContent,
+  IonDatetime,
+  IonRange,
 } from '@ionic/angular/standalone';
-import { Subject, firstValueFrom } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
 import { LocalAuthService } from '../core/services/local-auth.service';
 import { DemoDataService } from '../core/services/demo-data.service';
+import { NotificationService, ReadingReminder } from '../core/services/notification.service';
 import { LocalUser, UserPreferences } from '../core/services/local-auth.service';
 import { DebugPanelComponent } from '../shared/components/debug-panel/debug-panel.component';
 import { environment } from '../../environments/environment';
@@ -61,7 +64,10 @@ import { AppIconComponent } from '../shared/components/app-icon/app-icon.compone
     IonSelectOption,
     IonToggle,
     IonIcon,
-    IonNote,
+    IonCard,
+    IonCardContent,
+    IonDatetime,
+    IonRange,
     // App components
     DebugPanelComponent,
     AppIconComponent,
@@ -110,6 +116,11 @@ export class SettingsPage implements OnInit, OnDestroy {
   showDebugPanel = false;
   isDevEnvironment = !environment.production;
 
+  // Notification settings
+  notificationsEnabled = false;
+  notificationPermissionGranted = false;
+  readingReminders: ReadingReminder[] = [];
+
   constructor(
     private router: Router,
     private alertController: AlertController,
@@ -118,17 +129,48 @@ export class SettingsPage implements OnInit, OnDestroy {
     private profileService: ProfileService,
     private themeService: ThemeService,
     private authService: LocalAuthService,
-    private demoDataService: DemoDataService
+    private demoDataService: DemoDataService,
+    private notificationService: NotificationService,
+    private translate: TranslateService
   ) {}
 
   ngOnInit() {
+    this.initializeReadingReminders();
     this.loadUserData();
     this.isDemoMode = this.demoDataService.isDemoMode();
+    this.checkNotificationPermission();
+    this.loadNotificationSettings();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Initialize reading reminders with translated labels
+   */
+  private initializeReadingReminders() {
+    this.readingReminders = [
+      {
+        id: 1,
+        time: '08:00',
+        enabled: false,
+        label: this.translate.instant('settings.notifications.morningCheck'),
+      },
+      {
+        id: 2,
+        time: '12:00',
+        enabled: false,
+        label: this.translate.instant('settings.notifications.lunchCheck'),
+      },
+      {
+        id: 3,
+        time: '18:00',
+        enabled: false,
+        label: this.translate.instant('settings.notifications.dinnerCheck'),
+      },
+    ];
   }
 
   /**
@@ -165,7 +207,8 @@ export class SettingsPage implements OnInit, OnDestroy {
       // Load additional settings from local storage or profile service
       const savedSettings = localStorage.getItem('userSettings');
       if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
+        // Settings are loaded from user preferences above
+        // This code is kept for future use when additional settings need to be loaded
       }
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -176,7 +219,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   /**
    * Handle theme change
    */
-  async onThemeChange(event: any) {
+  async onThemeChange(event: CustomEvent<{ value: string }>) {
     const theme = event.detail.value as 'light' | 'dark' | 'auto';
     this.preferences.theme = theme;
     await this.themeService.setThemeMode(theme);
@@ -186,7 +229,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   /**
    * Handle glucose unit change
    */
-  onGlucoseUnitChange(event: any) {
+  onGlucoseUnitChange(event: CustomEvent<{ value: string }>) {
     const unit = event.detail.value as 'mg/dL' | 'mmol/L';
     this.glucoseSettings.unit = unit;
 
@@ -207,7 +250,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   /**
    * Handle language change
    */
-  async onLanguageChange(event: any) {
+  async onLanguageChange(event: CustomEvent<{ value: string }>) {
     const language = event.detail.value as 'en' | 'es';
     this.preferences.language = language;
     this.hasChanges = true;
@@ -369,5 +412,113 @@ export class SettingsPage implements OnInit, OnDestroy {
     await alert.present();
     const result = await alert.onDidDismiss();
     return result.role !== 'cancel';
+  }
+
+  /**
+   * Check notification permission status
+   */
+  private async checkNotificationPermission() {
+    this.notificationPermissionGranted = await this.notificationService.checkPermissions();
+    this.notificationsEnabled = this.notificationPermissionGranted;
+  }
+
+  /**
+   * Load notification settings from storage
+   */
+  private loadNotificationSettings() {
+    const saved = localStorage.getItem('notificationSettings');
+    if (saved) {
+      const settings = JSON.parse(saved);
+      this.readingReminders = settings.readingReminders || this.readingReminders;
+      this.notificationsEnabled = settings.enabled ?? false;
+    }
+  }
+
+  /**
+   * Save notification settings
+   */
+  private saveNotificationSettings() {
+    const settings = {
+      enabled: this.notificationsEnabled,
+      readingReminders: this.readingReminders,
+    };
+    localStorage.setItem('notificationSettings', JSON.stringify(settings));
+  }
+
+  /**
+   * Toggle notifications master switch
+   */
+  async onNotificationsToggle(event: CustomEvent<{ checked: boolean }>) {
+    const enabled = event.detail.checked;
+
+    if (enabled && !this.notificationPermissionGranted) {
+      const granted = await this.notificationService.requestPermissions();
+      if (!granted) {
+        const toggle = event.target as HTMLIonToggleElement | null;
+        if (toggle) {
+          toggle.checked = false;
+        }
+        await this.showToast('Notification permission denied', 'warning');
+        return;
+      }
+      this.notificationPermissionGranted = true;
+    }
+
+    this.notificationsEnabled = enabled;
+    this.hasChanges = true;
+
+    // Enable/disable all reminders based on master switch
+    if (!enabled) {
+      for (const reminder of this.readingReminders) {
+        if (reminder.enabled) {
+          reminder.enabled = false;
+          await this.notificationService.cancelReadingReminder(reminder.id);
+        }
+      }
+    }
+
+    this.saveNotificationSettings();
+  }
+
+  /**
+   * Toggle individual reading reminder
+   */
+  async onReminderToggle(reminder: ReadingReminder, event: CustomEvent<{ checked: boolean }>) {
+    reminder.enabled = event.detail.checked;
+    this.hasChanges = true;
+
+    if (reminder.enabled) {
+      await this.notificationService.scheduleReadingReminder(reminder);
+    } else {
+      await this.notificationService.cancelReadingReminder(reminder.id);
+    }
+
+    this.saveNotificationSettings();
+  }
+
+  /**
+   * Update reminder time
+   */
+  async onReminderTimeChange(reminder: ReadingReminder, event: CustomEvent) {
+    reminder.time = event.detail.value as string;
+    this.hasChanges = true;
+
+    if (reminder.enabled) {
+      // Reschedule with new time
+      await this.notificationService.scheduleReadingReminder(reminder);
+    }
+
+    this.saveNotificationSettings();
+  }
+
+  /**
+   * Test notification (for debugging)
+   */
+  async testNotification() {
+    await this.notificationService.showImmediateNotification(
+      'Test Notification',
+      'Notifications are working correctly!'
+    );
+    await this.showToast('Test notification sent', 'success');
   }
 }

@@ -110,10 +110,11 @@ export class AppointmentsPage implements OnInit, OnDestroy {
 
     try {
       await firstValueFrom(this.appointmentService.getAppointments());
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading appointments:', error);
       this.error =
-        error?.message || this.translationService.instant('appointments.errors.loadListFailed');
+        (error as Error)?.message ||
+        this.translationService.instant('appointments.errors.loadListFailed');
     } finally {
       this.loading = false;
     }
@@ -138,10 +139,10 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   /**
    * Handle pull to refresh
    */
-  async doRefresh(event: any): Promise<void> {
+  async doRefresh(event: CustomEvent): Promise<void> {
     this.logger.info('UI', 'Appointments refresh initiated');
     await this.loadAppointments();
-    event.target.complete();
+    (event.target as HTMLIonRefresherElement).complete();
   }
 
   /**
@@ -294,9 +295,9 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     try {
       this.queueState = await firstValueFrom(this.appointmentService.getQueueState());
       this.logger.info('Queue', 'Queue state loaded', { state: this.queueState?.state });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Don't show error for "not found" - this is normal when no queue state exists
-      const errorMsg = error?.message?.toLowerCase() || '';
+      const errorMsg = (error as Error)?.message?.toLowerCase() || '';
       const isNotFoundError =
         errorMsg.includes('not found') ||
         errorMsg.includes('no encontrada') ||
@@ -304,7 +305,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
 
       if (!isNotFoundError) {
         console.error('Error loading queue state:', error);
-        this.queueError = error?.message || 'Failed to load queue state';
+        this.queueError = (error as Error)?.message || 'Failed to load queue state';
       } else {
         // Treat "not found" as NONE state (no queue entry)
         this.queueState = { state: 'NONE' as AppointmentQueueState };
@@ -340,10 +341,10 @@ export class AppointmentsPage implements OnInit, OnDestroy {
 
       // Reload actual queue state from server (in background)
       this.loadQueueState();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error requesting appointment:', error);
       this.queueError =
-        error?.message ||
+        (error as Error)?.message ||
         this.translationService.instant('appointments.queue.messages.submitError');
       this.requestingAppointment = false;
     }

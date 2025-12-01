@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AppointmentService } from '../../core/services/appointment.service';
-import { Appointment } from '../../core/models/appointment.model';
+import { Appointment, AppointmentResolutionResponse } from '../../core/models/appointment.model';
 import { TranslationService } from '../../core/services/translation.service';
 import { LoggerService } from '../../core/services/logger.service';
 
@@ -15,7 +15,9 @@ import { LoggerService } from '../../core/services/logger.service';
 })
 export class AppointmentDetailPage implements OnInit {
   appointment: Appointment | null = null;
+  resolution: AppointmentResolutionResponse | null = null;
   loading = false;
+  loadingResolution = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -43,14 +45,60 @@ export class AppointmentDetailPage implements OnInit {
     try {
       this.appointment = await firstValueFrom(this.appointmentService.getAppointment(id));
       this.logger.info('UI', 'Appointment loaded', { appointmentId: id });
-    } catch (error: any) {
+
+      // Also load resolution data
+      this.loadResolution(id);
+    } catch (error: unknown) {
       console.error('Error loading appointment:', error);
       await this.showError(
-        error?.message || this.translationService.instant('appointments.errors.loadFailed')
+        (error as Error)?.message ||
+          this.translationService.instant('appointments.errors.loadFailed')
       );
       this.router.navigate(['/tabs/appointments']);
     } finally {
       this.loading = false;
+    }
+  }
+
+  /**
+   * Load appointment resolution data
+   */
+  async loadResolution(id: number): Promise<void> {
+    this.loadingResolution = true;
+    try {
+      this.resolution = await firstValueFrom(this.appointmentService.getResolution(id));
+      this.logger.info('UI', 'Resolution loaded', {
+        appointmentId: id,
+        resolution: this.resolution,
+      });
+    } catch (error: unknown) {
+      // Resolution may not exist for pending appointments, which is expected
+      this.logger.info('UI', 'Resolution not available', {
+        appointmentId: id,
+        error: (error as Error)?.message,
+      });
+      this.resolution = null;
+    } finally {
+      this.loadingResolution = false;
+    }
+  }
+
+  /**
+   * Format resolution date
+   */
+  formatResolutionDate(dateString: string | undefined): string {
+    if (!dateString) return '-';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return dateString;
     }
   }
 

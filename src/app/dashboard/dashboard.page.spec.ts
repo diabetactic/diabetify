@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, tick, waitForAsync } from '@angular/core/testing';
 import { IonicModule, ToastController } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { of, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DashboardPage } from './dashboard.page';
@@ -26,10 +26,10 @@ import { AppIconComponent } from '../shared/components/app-icon/app-icon.compone
 import { LanguageSwitcherComponentModule } from '../shared/components/language-switcher/language-switcher.module';
 
 class LoggerServiceStub {
-  info(context: string, message: string, data?: any): void {}
-  warn(context: string, message: string, metadata?: any): void {}
-  error(context: string, message: string, error?: any, metadata?: any): void {}
-  debug(context: string, message: string, metadata?: any): void {}
+  info(_context: string, _message: string, _data?: any): void {}
+  warn(_context: string, _message: string, _metadata?: any): void {}
+  error(_context: string, _message: string, _error?: any, _metadata?: any): void {}
+  debug(_context: string, _message: string, _metadata?: any): void {}
 }
 
 class ThemeServiceStub {
@@ -223,7 +223,6 @@ describe('DashboardPage', () => {
   let syncServiceSpy: jest.Mocked<TidepoolSyncService>;
   let appointmentServiceSpy: jest.Mocked<AppointmentService>;
   let toastControllerSpy: jest.Mocked<ToastController>;
-  let routerSpy: jest.Mocked<Router>;
   let translationServiceStub: TranslationServiceStub;
   let profileServiceStub: ProfileServiceStub;
 
@@ -332,10 +331,6 @@ describe('DashboardPage', () => {
       create: jest.fn(),
     } as any;
 
-    routerSpy = {
-      navigate: jest.fn(),
-    } as any;
-
     // Set up spy return values
     readingsServiceSpy.getStatistics.mockResolvedValue(mockStatistics);
     readingsServiceSpy.getAllReadings.mockResolvedValue({
@@ -367,12 +362,11 @@ describe('DashboardPage', () => {
         getLucideIconsForTesting(),
       ],
       providers: [
+        provideRouter([]),
         { provide: ReadingsService, useValue: readingsServiceSpy },
         { provide: TidepoolSyncService, useValue: syncServiceSpy },
         { provide: AppointmentService, useValue: appointmentServiceSpy },
         { provide: ToastController, useValue: toastControllerSpy },
-        { provide: Router, useValue: routerSpy },
-        { provide: TranslationService, useValue: translationServiceStub },
         { provide: TranslationService, useValue: translationServiceStub },
         { provide: ProfileService, useValue: profileServiceStub },
         { provide: LoggerService, useClass: LoggerServiceStub },
@@ -422,11 +416,12 @@ describe('DashboardPage', () => {
     }));
 
     it('should handle pull-to-refresh', waitForAsync(async () => {
+      const completeSpy = jest.fn();
       const mockRefreshEvent = {
         target: {
-          complete: jest.fn(),
+          complete: completeSpy,
         },
-      };
+      } as unknown as CustomEvent;
 
       fixture.detectChanges();
       await fixture.whenStable();
@@ -435,7 +430,7 @@ describe('DashboardPage', () => {
 
       expect(readingsServiceSpy.performFullSync).toHaveBeenCalled();
       expect(readingsServiceSpy.getStatistics).toHaveBeenCalled();
-      expect(mockRefreshEvent.target.complete).toHaveBeenCalled();
+      expect(completeSpy).toHaveBeenCalled();
     }));
 
     it('should handle sync button click', waitForAsync(async () => {

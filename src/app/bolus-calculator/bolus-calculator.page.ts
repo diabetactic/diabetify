@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -11,11 +11,16 @@ import {
   IonIcon,
   IonTitle,
   IonContent,
-  IonItem,
   IonInput,
+  IonSpinner,
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MockDataService, BolusCalculation } from '../core/services/mock-data.service';
+import { FoodService } from '../core/services/food.service';
+import { FoodPickerResult, SelectedFood } from '../core/models/food.model';
+import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { FoodPickerComponent } from '../shared/components/food-picker/food-picker.component';
 
 @Component({
   selector: 'app-bolus-calculator',
@@ -27,6 +32,9 @@ import { MockDataService, BolusCalculation } from '../core/services/mock-data.se
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
+    TranslateModule,
+    AppIconComponent,
+    FoodPickerComponent,
     // Ionic standalone components
     IonHeader,
     IonToolbar,
@@ -35,14 +43,23 @@ import { MockDataService, BolusCalculation } from '../core/services/mock-data.se
     IonIcon,
     IonTitle,
     IonContent,
-    IonItem,
     IonInput,
+    IonSpinner,
   ],
 })
-export class BolusCalculatorPage implements OnInit {
+export class BolusCalculatorPage {
+  private translate = inject(TranslateService);
+  private foodService = inject(FoodService);
+
   calculatorForm: FormGroup;
   calculating = false;
   result: BolusCalculation | null = null;
+
+  /** Food picker modal state */
+  showFoodPicker = signal(false);
+
+  /** Selected foods from food picker */
+  selectedFoods = signal<SelectedFood[]>([]);
 
   constructor(
     private fb: FormBuilder,
@@ -55,7 +72,36 @@ export class BolusCalculatorPage implements OnInit {
     });
   }
 
-  ngOnInit() {}
+  /** Open the food picker modal */
+  openFoodPicker(): void {
+    this.foodService.clearSelection();
+    this.showFoodPicker.set(true);
+  }
+
+  /** Close food picker without applying */
+  onFoodPickerClosed(): void {
+    this.showFoodPicker.set(false);
+  }
+
+  /** Apply selected foods from picker */
+  onFoodPickerConfirmed(result: FoodPickerResult): void {
+    this.showFoodPicker.set(false);
+    this.selectedFoods.set(result.selectedFoods);
+
+    // Update the carbs field with total from food picker
+    if (result.totalCarbs > 0) {
+      this.calculatorForm.patchValue({
+        carbGrams: Math.round(result.totalCarbs),
+      });
+      this.calculatorForm.get('carbGrams')?.markAsTouched();
+    }
+  }
+
+  /** Clear selected foods */
+  clearSelectedFoods(): void {
+    this.selectedFoods.set([]);
+    this.calculatorForm.patchValue({ carbGrams: '' });
+  }
 
   async calculateBolus() {
     if (!this.calculatorForm.valid) {
@@ -90,6 +136,7 @@ export class BolusCalculatorPage implements OnInit {
   resetCalculator() {
     this.calculatorForm.reset();
     this.result = null;
+    this.selectedFoods.set([]);
   }
 
   goBack() {
@@ -99,9 +146,12 @@ export class BolusCalculatorPage implements OnInit {
   get glucoseError(): string {
     const control = this.calculatorForm.get('currentGlucose');
     if (control?.touched && control?.errors) {
-      if (control.errors['required']) return 'La glucosa actual es requerida';
-      if (control.errors['min'] || control.errors['max'])
-        return 'Ingresa un valor entre 40 y 600 mg/dL';
+      if (control.errors['required']) {
+        return this.translate.instant('bolusCalculator.errors.glucoseRequired');
+      }
+      if (control.errors['min'] || control.errors['max']) {
+        return this.translate.instant('bolusCalculator.errors.glucoseRange');
+      }
     }
     return '';
   }
@@ -109,9 +159,12 @@ export class BolusCalculatorPage implements OnInit {
   get carbsError(): string {
     const control = this.calculatorForm.get('carbGrams');
     if (control?.touched && control?.errors) {
-      if (control.errors['required']) return 'Los carbohidratos son requeridos';
-      if (control.errors['min'] || control.errors['max'])
-        return 'Ingresa un valor entre 0 y 300 gramos';
+      if (control.errors['required']) {
+        return this.translate.instant('bolusCalculator.errors.carbsRequired');
+      }
+      if (control.errors['min'] || control.errors['max']) {
+        return this.translate.instant('bolusCalculator.errors.carbsRange');
+      }
     }
     return '';
   }

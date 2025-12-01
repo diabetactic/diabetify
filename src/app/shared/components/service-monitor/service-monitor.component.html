@@ -74,6 +74,10 @@
         >
           <div
             (click)="showServiceDetails(service.service)"
+            (keydown.enter)="showServiceDetails(service.service)"
+            tabindex="0"
+            role="button"
+            [attr.aria-label]="'Show details for ' + getServiceName(service.service)"
             class="card bg-base-100 mb-0 cursor-pointer shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl active:translate-y-0"
           >
             <div class="card-body">

@@ -148,7 +148,7 @@ Displays profile settings items with icons and various action types.
 - `subtitle: string` - Optional subtitle text
 - `actionType: 'none' | 'toggle' | 'chevron' | 'badge'` - Type of right-side action (default: "chevron")
 - `actionValue: any` - Value for the action (e.g., boolean for toggle, string for badge)
-- `iconColor: string` - Hex color for icon container (default: "#25aff4")
+- `iconColor: string` - Hex color for icon container (default: "#3b82f6")
 
 **Outputs:**
 
@@ -246,7 +246,7 @@ All components use design tokens defined in `/src/global.scss`:
 
 ### Colors
 
-- Primary: `--ion-color-primary` (#25aff4)
+- Primary: `--ion-color-primary` (#3b82f6)
 - Success: `--ion-color-success` (#22c55e)
 - Warning: `--ion-color-warning` (#f59e0b)
 - Danger: `--ion-color-danger` (#ef4444)

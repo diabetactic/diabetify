@@ -117,7 +117,7 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
       if (popover) {
         await popover.dismiss();
       }
-    } catch (error) {
+    } catch {
       // No popover present
     }
   }
@@ -125,8 +125,8 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   /**
    * Handle select change event
    */
-  async onLanguageSelect(event: any) {
-    const language = event.detail.value as Language;
+  async onLanguageSelect(event: CustomEvent<{ value: Language }>) {
+    const language = event.detail.value;
     await this.changeLanguage(language);
   }
 

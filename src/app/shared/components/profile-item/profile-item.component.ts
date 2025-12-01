@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonItem, IonToggle } from '@ionic/angular/standalone';
 
@@ -10,14 +10,15 @@ export type ActionType = 'none' | 'toggle' | 'chevron' | 'badge';
   styleUrls: ['./profile-item.component.scss'],
   standalone: true,
   imports: [CommonModule, IonItem, IonToggle],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileItemComponent {
   @Input() icon: string = 'person';
   @Input() title: string = '';
   @Input() subtitle: string = '';
   @Input() actionType: ActionType = 'chevron';
-  @Input() actionValue: any = null;
-  @Input() iconColor: string = '#25aff4';
+  @Input() actionValue: string | number | boolean | null = null;
+  @Input() iconColor: string = '#3b82f6';
   @Output() itemClick = new EventEmitter<void>();
   @Output() toggleChange = new EventEmitter<boolean>();
 
@@ -27,7 +28,7 @@ export class ProfileItemComponent {
     }
   }
 
-  onToggleChange(event: any): void {
+  onToggleChange(event: CustomEvent<{ checked: boolean }>): void {
     this.toggleChange.emit(event.detail.checked);
   }
 }

@@ -25,12 +25,7 @@ import { Subject, takeUntil } from 'rxjs';
 
 import { ReadingsService } from '../core/services/readings.service';
 import { ProfileService } from '../core/services/profile.service';
-import {
-  GlucoseReading,
-  SMBGReading,
-  GlucoseUnit,
-  GlucoseStatus,
-} from '../core/models/glucose-reading.model';
+import { SMBGReading, GlucoseUnit, GlucoseStatus } from '../core/models/glucose-reading.model';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 
 interface MealContextOption {
@@ -301,7 +296,7 @@ export class AddReadingPage implements OnInit, OnDestroy {
     await toast.present();
   }
 
-  private async showErrorToast(error: any): Promise<void> {
+  private async showErrorToast(error: unknown): Promise<void> {
     const errorMessage = error instanceof Error ? error.message : 'Failed to save reading';
     const toast = await this.toastController.create({
       message: this.translate.instant('addReading.toast.error', { message: errorMessage }),
