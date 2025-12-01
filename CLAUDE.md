@@ -279,7 +279,6 @@ npx cap run android           # Build and run on device/emulator
 - `src/app/bolus-calculator/` - Insulin dose calculator
 - `src/app/trends/` - Glucose trends and analytics
 - `playwright/tests/` - E2E tests with Playwright
-- `e2e/` - Legacy E2E tests (Protractor-style)
 - `docs/` - Documentation files
 - `scripts/` - Build and development scripts
 - `postman/` - API collection and environment files for testing
@@ -300,6 +299,28 @@ App uses lazy-loaded routes with `OnboardingGuard` protecting authenticated page
 - `/tips` - Diabetes management tips
 - `/trends` - Glucose trends analysis
 - `/bolus-calculator` - Insulin dose calculator
+
+## CI/CD (CircleCI)
+
+Configuration in `.circleci/config.yml`. Two workflows:
+
+### CI Workflow (on all pushes)
+
+- **test** - Lint + Unit tests
+- **build-web** - Production build
+- **build-android-api30/33** - Android smoke tests (master only)
+- **deploy-netlify** - Deploy to Netlify (master only)
+
+### Release Workflow (manual)
+
+- Requires approval in CircleCI UI
+- Builds versioned APK: `diabetactic-v{version}.apk`
+- APK downloadable from CircleCI artifacts
+
+### Environment Variables (in CircleCI)
+
+- `NETLIFY_SITE_ID` - Netlify site ID
+- `NETLIFY_AUTH_TOKEN` - Netlify deploy token
 
 ## Current Status
 
