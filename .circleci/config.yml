@@ -93,6 +93,11 @@ jobs:
           avd-name: test-avd-30
           post-emulator-launch-assemble-command: ''
       - run:
+          name: Create Debug Keystore
+          command: |
+            mkdir -p ~/.android
+            keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+      - run:
           name: Build Debug APK
           command: cd android && chmod +x gradlew && ./gradlew assembleDebug
       - run:
@@ -139,6 +144,11 @@ jobs:
           avd-name: test-avd-33
           post-emulator-launch-assemble-command: ''
       - run:
+          name: Create Debug Keystore
+          command: |
+            mkdir -p ~/.android
+            keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+      - run:
           name: Build Debug APK
           command: cd android && chmod +x gradlew && ./gradlew assembleDebug
       - run:
@@ -182,6 +192,11 @@ jobs:
       - run:
           name: Sync Capacitor
           command: npx cap sync android
+      - run:
+          name: Create Debug Keystore
+          command: |
+            mkdir -p ~/.android
+            keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
       - run:
           name: Build Debug APK
           command: cd android && chmod +x gradlew && ./gradlew assembleDebug
