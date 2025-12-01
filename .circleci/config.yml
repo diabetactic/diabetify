@@ -1,0 +1,197 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.2.0
+  android: circleci/android@2.5.0
+
+executors:
+  node-executor:
+    docker:
+      - image: cimg/node:22.11
+    working_directory: ~/project
+
+jobs:
+  # Lint and unit tests
+  test:
+    executor: node-executor
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          name: Lint
+          command: npm run lint
+      - run:
+          name: Unit Tests
+          command: npm test -- --ci --coverage
+      - store_test_results:
+          path: coverage
+      - store_artifacts:
+          path: coverage
+
+  # Build production web
+  build-web:
+    executor: node-executor
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          name: Build Production
+          command: npm run build:prod
+      - persist_to_workspace:
+          root: .
+          paths:
+            - www
+
+  # Deploy to Netlify
+  deploy-netlify:
+    executor: node-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Deploy to Netlify
+          command: |
+            npm install -g netlify-cli
+            netlify deploy --prod --dir=www --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
+
+  # Android build - API 30 (Android 11)
+  build-android-api30:
+    executor:
+      name: android/android-machine
+      tag: 2024.01.1
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          name: Build Web
+          command: npm run build:prod
+      - run:
+          name: Sync Capacitor
+          command: npx cap sync android
+      - android/create-avd:
+          avd-name: test-avd-30
+          install: true
+          system-image: system-images;android-30;google_apis;x86_64
+      - android/start-emulator:
+          avd-name: test-avd-30
+          post-emulator-launch-assemble-command: ""
+      - run:
+          name: Build Debug APK
+          command: cd android && ./gradlew assembleDebug
+      - run:
+          name: Smoke Test on API 30
+          command: |
+            adb install android/app/build/outputs/apk/debug/app-debug.apk
+            adb shell am start -n io.ionic.starter/.MainActivity
+            sleep 10
+            adb shell dumpsys activity activities | grep -i diabetify || true
+      - store_artifacts:
+          path: android/app/build/outputs/apk/debug
+
+  # Android build - API 33 (Android 13)
+  build-android-api33:
+    executor:
+      name: android/android-machine
+      tag: 2024.01.1
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          name: Build Web
+          command: npm run build:prod
+      - run:
+          name: Sync Capacitor
+          command: npx cap sync android
+      - android/create-avd:
+          avd-name: test-avd-33
+          install: true
+          system-image: system-images;android-33;google_apis;x86_64
+      - android/start-emulator:
+          avd-name: test-avd-33
+          post-emulator-launch-assemble-command: ""
+      - run:
+          name: Build Debug APK
+          command: cd android && ./gradlew assembleDebug
+      - run:
+          name: Smoke Test on API 33
+          command: |
+            adb install android/app/build/outputs/apk/debug/app-debug.apk
+            adb shell am start -n io.ionic.starter/.MainActivity
+            sleep 10
+            adb shell dumpsys activity activities | grep -i diabetify || true
+      - store_artifacts:
+          path: android/app/build/outputs/apk/debug
+
+  # Release APK (signed)
+  release-apk:
+    executor:
+      name: android/android-machine
+      tag: 2024.01.1
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          name: Build Production Web
+          command: npm run build:prod
+      - run:
+          name: Sync Capacitor
+          command: npx cap sync android
+      - run:
+          name: Decode Keystore
+          command: echo $ANDROID_KEYSTORE_BASE64 | base64 -d > android/app/release.keystore
+      - run:
+          name: Build Release APK
+          command: |
+            cd android && ./gradlew assembleRelease \
+              -Pandroid.injected.signing.store.file=$PWD/app/release.keystore \
+              -Pandroid.injected.signing.store.password=$ANDROID_KEYSTORE_PASSWORD \
+              -Pandroid.injected.signing.key.alias=$ANDROID_KEY_ALIAS \
+              -Pandroid.injected.signing.key.password=$ANDROID_KEY_PASSWORD
+      - store_artifacts:
+          path: android/app/build/outputs/apk/release
+          destination: release-apk
+
+workflows:
+  # Main CI workflow - runs on all pushes
+  ci:
+    jobs:
+      - test
+      - build-web:
+          requires:
+            - test
+      - build-android-api30:
+          requires:
+            - test
+      - build-android-api33:
+          requires:
+            - test
+      - deploy-netlify:
+          requires:
+            - build-web
+          filters:
+            branches:
+              only: master
+
+  # Release workflow - manual trigger or tags
+  release:
+    jobs:
+      - test:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - release-apk:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
