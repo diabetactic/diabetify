@@ -4,12 +4,21 @@ import { of, throwError } from 'rxjs';
 import { AppointmentService } from './appointment.service';
 import { ApiGatewayService, ApiResponse } from './api-gateway.service';
 import { TranslationService } from './translation.service';
+import { NotificationService } from './notification.service';
 import {
   Appointment,
   CreateAppointmentRequest,
   AppointmentQueueState,
   AppointmentQueueStateResponse,
 } from '../models/appointment.model';
+
+/**
+ * Mock NotificationService for testing
+ */
+class MockNotificationService {
+  scheduleAppointmentReminder = jest.fn().mockResolvedValue(undefined);
+  cancelNotification = jest.fn().mockResolvedValue(undefined);
+}
 
 /**
  * Comprehensive test suite for AppointmentService
@@ -68,6 +77,7 @@ describe('AppointmentService', () => {
         AppointmentService,
         { provide: ApiGatewayService, useValue: apiGatewaySpy },
         { provide: TranslationService, useValue: translationSpy },
+        { provide: NotificationService, useClass: MockNotificationService },
       ],
     });
 
@@ -492,6 +502,8 @@ describe('AppointmentService', () => {
       user_id: 1000,
       other_motive: null,
       another_treatment: null,
+      scheduled_date: undefined,
+      reminder_minutes_before: 30,
     };
 
     describe('Success Cases', () => {
@@ -535,6 +547,8 @@ describe('AppointmentService', () => {
           ...fullRequest,
           appointment_id: 4,
           user_id: 1000,
+          scheduled_date: undefined,
+          reminder_minutes_before: 30,
         };
 
         const response: ApiResponse<Appointment> = {
@@ -565,6 +579,8 @@ describe('AppointmentService', () => {
           user_id: 1000,
           other_motive: null,
           another_treatment: null,
+          scheduled_date: undefined,
+          reminder_minutes_before: 30,
         };
 
         const response: ApiResponse<Appointment> = {

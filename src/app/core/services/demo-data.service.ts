@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { LocalGlucoseReading, UserProfile } from '../models';
 import { Appointment } from '../models/appointment.model';
+import { AccountState } from '../models/user-profile.model';
 
 /**
  * Demo Data Service for seeding test data
@@ -98,7 +99,7 @@ export class DemoDataService {
   /**
    * Get demo doctors list
    */
-  getDoctors(): Observable<any[]> {
+  getDoctors(): Observable<Array<Record<string, unknown>>> {
     return of(this.DEMO_DOCTORS).pipe(
       delay(500), // Simulate network delay
       map(doctors =>
@@ -113,7 +114,7 @@ export class DemoDataService {
   /**
    * Get available time slots for a doctor on a specific date
    */
-  getTimeSlots(doctorId: string, date: string): Observable<any[]> {
+  getTimeSlots(doctorId: string, date: string): Observable<Array<Record<string, unknown>>> {
     const baseSlots = [...this.DEMO_TIME_SLOTS];
     const randomUnavailable = this.getRandomSlots(baseSlots, 3 + Math.floor(Math.random() * 4));
 
@@ -130,7 +131,7 @@ export class DemoDataService {
   /**
    * Get appointment types
    */
-  getAppointmentTypes(): Observable<any[]> {
+  getAppointmentTypes(): Observable<Array<Record<string, unknown>>> {
     return of(this.APPOINTMENT_TYPES).pipe(delay(200));
   }
 
@@ -245,12 +246,16 @@ export class DemoDataService {
   /**
    * Get demo manual readings summary for appointment sharing
    */
-  getDemoManualReadingsSummary(days: number = 30): Observable<any> {
+  getDemoManualReadingsSummary(days: number = 30): Observable<Record<string, unknown>> {
     return this.getDemoReadings(days).pipe(
       map(readings => {
         const validReadings = readings.filter(r => r.value > 0);
-        const beforeMealReadings = validReadings.filter((r: any) => r.context === 'beforeMeal');
-        const afterMealReadings = validReadings.filter((r: any) => r.context === 'afterMeal');
+        const beforeMealReadings = validReadings.filter(
+          (r: LocalGlucoseReading) => r.mealContext === 'beforeMeal'
+        );
+        const afterMealReadings = validReadings.filter(
+          (r: LocalGlucoseReading) => r.mealContext === 'afterMeal'
+        );
 
         return {
           period: {
@@ -334,7 +339,7 @@ export class DemoDataService {
   /**
    * Get demo clinical form data
    */
-  getDemoClinicalForm(): Observable<any> {
+  getDemoClinicalForm(): Observable<Record<string, unknown>> {
     return of({
       patientInfo: {
         name: 'Usuario Demo',
@@ -402,7 +407,7 @@ export class DemoDataService {
       id: faker.string.uuid(),
       name: faker.person.fullName(),
       age: faker.number.int({ min: 25, max: 70 }),
-      accountState: 'active' as any,
+      accountState: AccountState.ACTIVE,
       dateOfBirth: faker.date
         .birthdate({ min: 25, max: 70, mode: 'age' })
         .toISOString()
@@ -462,8 +467,8 @@ export class DemoDataService {
   /**
    * Generate appointments
    */
-  async generateAppointments(count: number = 5): Promise<any[]> {
-    return this.getDemoAppointments().toPromise() as Promise<any[]>;
+  async generateAppointments(count: number = 5): Promise<Appointment[]> {
+    return this.getDemoAppointments().toPromise() as Promise<Appointment[]>;
   }
 
   /**
@@ -557,7 +562,7 @@ export class DemoDataService {
       value: Math.round(glucoseValue),
       units: 'mg/dL' as const,
       time: timestamp.toISOString(),
-      context: context as any,
+      context: context as 'beforeMeal' | 'afterMeal' | 'bedtime' | 'exercise' | 'other',
       notes: this.getRandomNote(glucoseValue, context)
         ? [this.getRandomNote(glucoseValue, context)!]
         : [],

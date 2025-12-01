@@ -24,7 +24,7 @@ export class CapacitorHttpService {
   /**
    * GET request híbrido
    */
-  get<T>(url: string, options?: { headers?: any }): Observable<T> {
+  get<T>(url: string, options?: { headers?: HttpHeaders | Record<string, string> }): Observable<T> {
     if (this.shouldUseNativeHttp()) {
       return this.nativeGet<T>(url, options);
     }
@@ -34,7 +34,11 @@ export class CapacitorHttpService {
   /**
    * POST request híbrido
    */
-  post<T>(url: string, data: any, options?: { headers?: any }): Observable<T> {
+  post<T>(
+    url: string,
+    data: unknown,
+    options?: { headers?: HttpHeaders | Record<string, string> }
+  ): Observable<T> {
     if (this.shouldUseNativeHttp()) {
       return this.nativePost<T>(url, data, options);
     }
@@ -44,7 +48,11 @@ export class CapacitorHttpService {
   /**
    * PUT request híbrido
    */
-  put<T>(url: string, data: any, options?: { headers?: any }): Observable<T> {
+  put<T>(
+    url: string,
+    data: unknown,
+    options?: { headers?: HttpHeaders | Record<string, string> }
+  ): Observable<T> {
     if (this.shouldUseNativeHttp()) {
       return this.nativePut<T>(url, data, options);
     }
@@ -54,7 +62,10 @@ export class CapacitorHttpService {
   /**
    * DELETE request híbrido
    */
-  delete<T>(url: string, options?: { headers?: any }): Observable<T> {
+  delete<T>(
+    url: string,
+    options?: { headers?: HttpHeaders | Record<string, string> }
+  ): Observable<T> {
     if (this.shouldUseNativeHttp()) {
       return this.nativeDelete<T>(url, options);
     }
@@ -64,7 +75,11 @@ export class CapacitorHttpService {
   /**
    * PATCH request híbrido
    */
-  patch<T>(url: string, data: any, options?: { headers?: any }): Observable<T> {
+  patch<T>(
+    url: string,
+    data: unknown,
+    options?: { headers?: HttpHeaders | Record<string, string> }
+  ): Observable<T> {
     if (this.shouldUseNativeHttp()) {
       return this.nativePatch<T>(url, data, options);
     }
@@ -72,9 +87,53 @@ export class CapacitorHttpService {
   }
 
   /**
+   * Raw request that returns full response including headers
+   * Useful for Tidepool auth where we need the x-tidepool-session-token header
+   */
+  async request<T>(config: {
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+    url: string;
+    headers?: Record<string, string>;
+    data?: unknown;
+  }): Promise<{ data: T; headers: Record<string, string>; status: number }> {
+    console.log(`🔵 [Native HTTP] ${config.method}`, config.url);
+
+    const response = await CapacitorHttp.request({
+      method: config.method,
+      url: config.url,
+      headers: config.headers || {},
+      data: config.data,
+    });
+
+    console.log('✅ [Native HTTP] Full Response:', {
+      status: response.status,
+      headers: response.headers,
+      data: response.data,
+    });
+
+    if (response.status >= 200 && response.status < 300) {
+      return {
+        data: response.data as T,
+        headers: response.headers || {},
+        status: response.status,
+      };
+    }
+
+    throw {
+      status: response.status,
+      error: response.data,
+      headers: response.headers,
+      message: `HTTP ${response.status}`,
+    };
+  }
+
+  /**
    * Native GET usando CapacitorHttp
    */
-  private nativeGet<T>(url: string, options?: { headers?: any }): Observable<T> {
+  private nativeGet<T>(
+    url: string,
+    options?: { headers?: HttpHeaders | Record<string, string> }
+  ): Observable<T> {
     console.log('🔵 [Native HTTP] GET', url);
 
     const headers = this.convertHeaders(options?.headers);
@@ -108,13 +167,17 @@ export class CapacitorHttpService {
   /**
    * Native POST usando CapacitorHttp
    */
-  private nativePost<T>(url: string, data: any, options?: { headers?: any }): Observable<T> {
+  private nativePost<T>(
+    url: string,
+    data: unknown,
+    options?: { headers?: HttpHeaders | Record<string, string> }
+  ): Observable<T> {
     console.log('🔵 [Native HTTP] POST', url, data);
 
     const headers = this.convertHeaders(options?.headers);
 
     // Si es form data (como login), convertir a x-www-form-urlencoded
-    let bodyData: any;
+    let bodyData: unknown;
     const finalHeaders = { ...headers };
 
     if (headers['Content-Type'] === 'application/x-www-form-urlencoded') {
@@ -156,7 +219,11 @@ export class CapacitorHttpService {
   /**
    * Native PUT usando CapacitorHttp
    */
-  private nativePut<T>(url: string, data: any, options?: { headers?: any }): Observable<T> {
+  private nativePut<T>(
+    url: string,
+    data: unknown,
+    options?: { headers?: HttpHeaders | Record<string, string> }
+  ): Observable<T> {
     console.log('🔵 [Native HTTP] PUT', url, data);
 
     const headers = this.convertHeaders(options?.headers);
@@ -189,7 +256,10 @@ export class CapacitorHttpService {
   /**
    * Native DELETE usando CapacitorHttp
    */
-  private nativeDelete<T>(url: string, options?: { headers?: any }): Observable<T> {
+  private nativeDelete<T>(
+    url: string,
+    options?: { headers?: HttpHeaders | Record<string, string> }
+  ): Observable<T> {
     console.log('🔵 [Native HTTP] DELETE', url);
 
     const headers = this.convertHeaders(options?.headers);
@@ -217,7 +287,11 @@ export class CapacitorHttpService {
   /**
    * Native PATCH usando CapacitorHttp
    */
-  private nativePatch<T>(url: string, data: any, options?: { headers?: any }): Observable<T> {
+  private nativePatch<T>(
+    url: string,
+    data: unknown,
+    options?: { headers?: HttpHeaders | Record<string, string> }
+  ): Observable<T> {
     console.log('🔵 [Native HTTP] PATCH', url, data);
 
     const headers = this.convertHeaders(options?.headers);
@@ -250,7 +324,9 @@ export class CapacitorHttpService {
   /**
    * Convierte Angular HttpHeaders a objeto simple
    */
-  private convertHeaders(headers?: HttpHeaders | any): { [key: string]: string } {
+  private convertHeaders(headers?: HttpHeaders | Record<string, string>): {
+    [key: string]: string;
+  } {
     if (!headers) return {};
 
     if (headers instanceof HttpHeaders) {

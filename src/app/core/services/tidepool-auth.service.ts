@@ -83,7 +83,7 @@ export class AuthenticationError extends Error {
   constructor(
     public code: AuthErrorCode,
     message: string,
-    public details?: any
+    public details?: unknown
   ) {
     super(message);
     this.name = 'AuthenticationError';
@@ -103,7 +103,7 @@ export class TidepoolAuthService {
   private pendingState: string | null = null;
 
   // Deep link listener reference for cleanup
-  private deepLinkListener: any = null;
+  private deepLinkListener: unknown = null;
 
   // Authentication state observable
   private authState$ = new BehaviorSubject<AuthState>({
@@ -144,6 +144,99 @@ export class TidepoolAuthService {
 
     // Check if we have a stored refresh token and restore session
     await this.restoreSession();
+  }
+
+  /**
+   * Login with email/password using Tidepool's basic auth endpoint
+   * This bypasses OAuth and uses direct authentication.
+   *
+   * @param email - User email
+   * @param password - User password
+   * @returns Promise that resolves when login succeeds
+   */
+  async loginWithCredentials(email: string, password: string): Promise<void> {
+    try {
+      this.updateAuthState({ isLoading: true, error: null, flowStep: 'authorizing' });
+
+      // Create Basic auth header
+      const credentials = btoa(`${email}:${password}`);
+
+      // Call Tidepool's login endpoint (https://api.tidepool.org/auth/login)
+      const response = await this.capacitorHttp.request<Record<string, unknown>>({
+        method: 'POST',
+        url: `https://api.tidepool.org/auth/login`,
+        headers: {
+          Authorization: `Basic ${credentials}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('🔵 [TidepoolAuth] Login response:', JSON.stringify(response, null, 2));
+
+      // Extract session token from response headers
+      const sessionToken =
+        response['headers']?.['x-tidepool-session-token'] ||
+        response['headers']?.['X-Tidepool-Session-Token'];
+
+      if (!sessionToken) {
+        throw new Error('No session token received from Tidepool');
+      }
+
+      // Get user ID from response body
+      const userId = (response['data']?.['userid'] || response['data']?.['userId']) as string;
+      const userEmail = (response['data']?.['username'] as string | undefined) || email;
+
+      if (!userId) {
+        throw new Error('No user ID received from Tidepool');
+      }
+
+      // Store the session token as our access token
+      const authData: TidepoolAuth = {
+        accessToken: sessionToken as string,
+        refreshToken: sessionToken as string, // Tidepool session tokens don't have separate refresh tokens
+        tokenType: 'Bearer',
+        issuedAt: Date.now(),
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+        userId: userId,
+        email: userEmail,
+        scope: 'data:read data:write profile:read',
+      };
+
+      await this.tokenStorage.storeAuth(authData);
+
+      // Update auth state
+      this.updateAuthState({
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        userId: userId,
+        email: userEmail,
+        flowStep: 'idle',
+        lastAuthenticated: Date.now(),
+      });
+
+      console.log('🟢 [TidepoolAuth] Login successful! User:', userId);
+    } catch (error: unknown) {
+      console.error('🔴 [TidepoolAuth] Login failed:', error);
+
+      const errorObj = error as Record<string, unknown>;
+      let errorMessage = 'Login failed';
+      if (
+        errorObj?.['status'] === 401 ||
+        (errorObj?.['message'] as string | undefined)?.includes('401')
+      ) {
+        errorMessage = 'Invalid email or password';
+      } else if (errorObj?.['message']) {
+        errorMessage = errorObj['message'] as string;
+      }
+
+      this.updateAuthState({
+        isLoading: false,
+        error: errorMessage,
+        flowStep: 'idle',
+      });
+      throw new Error(errorMessage);
+    }
   }
 
   /**
@@ -312,7 +405,9 @@ export class TidepoolAuthService {
       }
 
       // Decode ID token to get user info (if available)
-      const userInfo = tokenResponse.id_token ? this.decodeIdToken(tokenResponse.id_token) : null;
+      const userInfo = tokenResponse['id_token']
+        ? this.decodeIdToken(tokenResponse['id_token'])
+        : null;
 
       // Store tokens with user info
       await this.storeTokens(tokenResponse, userInfo);
@@ -322,8 +417,8 @@ export class TidepoolAuthService {
         isAuthenticated: true,
         isLoading: false,
         error: null,
-        userId: userInfo.sub,
-        email: userInfo.email,
+        userId: userInfo?.['sub'] as string,
+        email: userInfo?.['email'] as string,
       });
     } catch (error) {
       console.error('Token exchange failed:', error);
@@ -337,7 +432,10 @@ export class TidepoolAuthService {
    * @param tokenResponse - Token response from Tidepool
    * @param userInfo - User information from decoded ID token
    */
-  private async storeTokens(tokenResponse: TidepoolTokenResponse, userInfo?: any): Promise<void> {
+  private async storeTokens(
+    tokenResponse: TidepoolTokenResponse,
+    userInfo?: Record<string, unknown> | null
+  ): Promise<void> {
     const expiryMs = Date.now() + tokenResponse.expires_in * 1000;
 
     const authData: TidepoolAuth = {
@@ -346,8 +444,8 @@ export class TidepoolAuthService {
       tokenType: 'Bearer',
       issuedAt: Date.now(),
       expiresAt: expiryMs,
-      userId: userInfo?.sub || '',
-      email: userInfo?.email || '',
+      userId: (userInfo?.['sub'] as string | undefined) || '',
+      email: (userInfo?.['email'] as string | undefined) || '',
       scope: tokenResponse.scope,
     };
 
@@ -360,7 +458,7 @@ export class TidepoolAuthService {
    * @param idToken - JWT ID token
    * @returns Decoded token payload
    */
-  private decodeIdToken(idToken: string): any {
+  private decodeIdToken(idToken: string): Record<string, unknown> {
     try {
       // JWT structure: header.payload.signature
       const parts = idToken.split('.');
@@ -418,12 +516,14 @@ export class TidepoolAuthService {
       }
 
       // Decode ID token to get user info (if available)
-      const userInfo = tokenResponse.id_token ? this.decodeIdToken(tokenResponse.id_token) : null;
+      const userInfo = tokenResponse['id_token']
+        ? this.decodeIdToken(tokenResponse['id_token'])
+        : null;
 
       // Store new tokens
       await this.storeTokens(tokenResponse, userInfo);
 
-      return tokenResponse.access_token;
+      return tokenResponse['access_token'];
     } catch (error) {
       console.error('Token refresh failed:', error);
       // Clear auth state if refresh fails

@@ -298,21 +298,24 @@ export class TranslationService {
   /**
    * Get translation for a key
    */
-  public instant(key: string, params?: any): string {
+  public instant(key: string, params?: Record<string, unknown>): string {
     return this.translate.instant(key, params);
   }
 
   /**
    * Get translation observable for a key
    */
-  public get(key: string, params?: any): Observable<string> {
+  public get(key: string, params?: Record<string, unknown>): Observable<string> {
     return this.translate.get(key, params);
   }
 
   /**
    * Get multiple translations
    */
-  public getMultiple(keys: string[], params?: any): Observable<{ [key: string]: string }> {
+  public getMultiple(
+    keys: string[],
+    params?: Record<string, unknown>
+  ): Observable<{ [key: string]: string }> {
     return this.translate.get(keys, params);
   }
 

@@ -220,10 +220,9 @@ export class ReadingsService {
     userId?: string
   ): Promise<LocalGlucoseReading> {
     // Generate unique ID if not provided or if it's empty
+    const readingWithId = reading as { id?: string };
     const uniqueId =
-      (reading as any).id && (reading as any).id !== ''
-        ? (reading as any).id
-        : this.generateLocalId();
+      readingWithId.id && readingWithId.id !== '' ? readingWithId.id : this.generateLocalId();
 
     const localReading: LocalGlucoseReading = {
       ...reading,
@@ -261,20 +260,30 @@ export class ReadingsService {
       throw new Error(`Reading with id ${id} not found`);
     }
 
-    const updated: LocalGlucoseReading = {
-      ...existing,
+    // Calculate new status if value or unit changed
+    const newStatus =
+      updates.value !== undefined || updates.units !== undefined
+        ? this.calculateGlucoseStatus(
+            updates.value !== undefined ? updates.value : existing.value,
+            updates.units !== undefined ? updates.units : existing.units
+          )
+        : existing.status;
+
+    // Create the update object with only the changed fields
+    const updateFields: Partial<LocalGlucoseReading> = {
       ...updates,
-      // Recalculate status if value or unit changed
-      status:
-        updates.value || updates.units
-          ? this.calculateGlucoseStatus(
-              updates.value || existing.value,
-              updates.units || existing.units
-            )
-          : existing.status,
+      status: newStatus,
     };
 
-    await this.db.readings.update(id, updated as any);
+    // Update using Dexie's update method (pass only changed fields)
+    await this.db.readings.update(id, updateFields);
+
+    // Get the updated reading for return and sync queue
+    const updated = await this.db.readings.get(id);
+
+    if (!updated) {
+      throw new Error(`Failed to retrieve updated reading ${id}`);
+    }
 
     // Add to sync queue
     if (!updated.synced) {
@@ -746,7 +755,7 @@ export class ReadingsService {
     const allManual = all
       .filter(r => r.type === 'smbg')
       .filter(r => {
-        const subType = (r as any).subType;
+        const subType = (r as { subType?: string }).subType;
         return !subType || subType === 'manual';
       })
       .filter(r => Number.isFinite(r.value))

@@ -81,7 +81,7 @@ export class AuthGuard implements CanActivate {
 
             // User is authenticated locally, check account state
             const accountState = localAuthState.user?.preferences
-              ? (localAuthState.user as any).accountState
+              ? (localAuthState.user as { accountState?: AccountState }).accountState
               : null;
 
             if (accountState === AccountState.PENDING) {

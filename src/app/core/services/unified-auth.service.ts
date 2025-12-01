@@ -308,7 +308,7 @@ export class UnifiedAuthService {
   refreshTokens(): Observable<UnifiedAuthState> {
     this.logger.info('Auth', 'Token refresh initiated');
     const state = this.unifiedAuthStateSubject.value;
-    const refreshObservables: Observable<any>[] = [];
+    const refreshObservables: Observable<unknown>[] = [];
 
     if (state.localAuth?.refreshToken) {
       refreshObservables.push(

@@ -37,21 +37,21 @@ export class LoggerService {
   /**
    * Log info message
    */
-  info(context: string, message: string, data?: any): void {
+  info(context: string, message: string, data?: unknown): void {
     this.writeLog('INFO', context, message, data);
   }
 
   /**
    * Log warning message
    */
-  warn(context: string, message: string, metadata?: any): void {
+  warn(context: string, message: string, metadata?: unknown): void {
     this.writeLog('WARN', context, message, metadata, console.warn);
   }
 
   /**
    * Log error message
    */
-  error(context: string, message: string, error?: any, metadata?: any): void {
+  error(context: string, message: string, error?: unknown, metadata?: unknown): void {
     const serializedError = this.serializeError(error);
     this.writeLog('ERROR', context, message, metadata, console.error, serializedError);
   }
@@ -59,7 +59,7 @@ export class LoggerService {
   /**
    * Log debug message
    */
-  debug(context: string, message: string, metadata?: any): void {
+  debug(context: string, message: string, metadata?: unknown): void {
     this.writeLog('DEBUG', context, message, metadata, console.debug);
   }
 
@@ -70,8 +70,8 @@ export class LoggerService {
     level: 'INFO' | 'WARN' | 'ERROR' | 'DEBUG',
     context: string,
     message: string,
-    metadata?: any,
-    logger: (...args: any[]) => void = console.log,
+    metadata?: unknown,
+    logger: (...args: unknown[]) => void = console.log,
     errorDetails?: string | null
   ): void {
     const timestamp = new Date().toISOString();
@@ -94,7 +94,7 @@ export class LoggerService {
   /**
    * Prepare metadata for safe logging
    */
-  private formatMetadata(metadata?: any): string | null {
+  private formatMetadata(metadata?: unknown): string | null {
     if (metadata === undefined || metadata === null) {
       return null;
     }
@@ -118,7 +118,7 @@ export class LoggerService {
   /**
    * Recursively sanitize metadata, redacting PHI fields.
    */
-  private sanitizeValue(value: any, key?: string): any {
+  private sanitizeValue(value: unknown, key?: string): unknown {
     if (value === null || value === undefined) {
       return value;
     }
@@ -131,7 +131,7 @@ export class LoggerService {
     }
 
     if (typeof value === 'object') {
-      const sanitized: Record<string, any> = {};
+      const sanitized: Record<string, unknown> = {};
       Object.entries(value).forEach(([childKey, childValue]) => {
         sanitized[childKey] = this.sanitizeValue(childValue, childKey);
       });
@@ -150,7 +150,7 @@ export class LoggerService {
     return this.phiPatterns.some(pattern => normalized.includes(pattern));
   }
 
-  private serializeError(error: any): string | null {
+  private serializeError(error: unknown): string | null {
     if (!error) {
       return null;
     }

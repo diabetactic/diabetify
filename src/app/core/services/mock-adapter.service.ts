@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { fakerES as faker } from '@faker-js/faker';
 import { DemoDataService } from './demo-data.service';
 import { MockAdapterConfig } from '../config/mock-adapter-config';
-import { LocalGlucoseReading, UserProfile } from '../models';
+import { LocalGlucoseReading, UserProfile, GlucoseStatistics } from '../models';
+import { AccountState } from '../models/user-profile.model';
 import { PaginatedReadings } from './readings.service';
 import { environment } from '../../../environments/environment';
 
@@ -62,7 +63,8 @@ export class MockAdapterService {
 
     // Auto-enable mocks in TEST or explicit mock backend mode
     if (
-      ((environment as any).TEST || (environment as any).backendMode === 'mock') &&
+      ((environment as { TEST?: boolean }).TEST ||
+        (environment as { backendMode?: string }).backendMode === 'mock') &&
       !this.config.enabled
     ) {
       this.config.enabled = true;
@@ -336,7 +338,7 @@ export class MockAdapterService {
       id: Date.now().toString(),
       name: userData.name,
       age: 25,
-      accountState: 'active' as any,
+      accountState: 'active' as AccountState,
       diabetesType: 'type1',
       diagnosisDate: new Date().toISOString().split('T')[0],
       tidepoolConnection: {
@@ -359,7 +361,7 @@ export class MockAdapterService {
         autoSync: true,
         syncInterval: 15,
         language: 'en',
-        dateFormat: '12h' as any,
+        dateFormat: '12h' as '12h' | '24h',
       },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -395,7 +397,7 @@ export class MockAdapterService {
       id: faker.string.uuid(),
       name: faker.person.fullName(),
       age: faker.number.int({ min: 18, max: 80 }),
-      accountState: 'active' as any,
+      accountState: 'active' as AccountState,
       dateOfBirth: faker.date
         .birthdate({ min: 18, max: 80, mode: 'age' })
         .toISOString()
@@ -496,7 +498,7 @@ export class MockAdapterService {
    * Calculates simple stats (average, in-range) from local storage readings.
    * @param days - Lookback window in days.
    */
-  async mockGetStatistics(days: number = 30): Promise<any> {
+  async mockGetStatistics(days: number = 30): Promise<GlucoseStatistics> {
     const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
     const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
 
@@ -508,10 +510,13 @@ export class MockAdapterService {
     if (recentReadings.length === 0) {
       return this.delay({
         average: 0,
+        median: 0,
+        standardDeviation: 0,
+        coefficientOfVariation: 0,
+        timeInRange: 0,
+        timeAboveRange: 0,
+        timeBelowRange: 0,
         totalReadings: 0,
-        inRange: 0,
-        above: 0,
-        below: 0,
       });
     }
 
@@ -519,17 +524,37 @@ export class MockAdapterService {
     const sum = values.reduce((acc, val) => acc + val, 0);
     const average = Math.round(sum / values.length);
 
+    // Calculate median
+    const sortedValues = [...values].sort((a, b) => a - b);
+    const median =
+      sortedValues.length % 2 === 0
+        ? Math.round(
+            (sortedValues[sortedValues.length / 2 - 1] + sortedValues[sortedValues.length / 2]) / 2
+          )
+        : sortedValues[Math.floor(sortedValues.length / 2)];
+
+    // Calculate standard deviation
+    const squaredDiffs = values.map(v => Math.pow(v - average, 2));
+    const avgSquaredDiff = squaredDiffs.reduce((a, b) => a + b, 0) / values.length;
+    const standardDeviation = Math.round(Math.sqrt(avgSquaredDiff));
+
+    // Coefficient of variation
+    const coefficientOfVariation =
+      average > 0 ? Math.round((standardDeviation / average) * 100) : 0;
+
     const inRange = recentReadings.filter(r => r.value >= 70 && r.value <= 180).length;
     const above = recentReadings.filter(r => r.value > 180).length;
     const below = recentReadings.filter(r => r.value < 70).length;
 
     return this.delay({
       average,
+      median,
+      standardDeviation,
+      coefficientOfVariation,
+      timeInRange: Math.round((inRange / recentReadings.length) * 100),
+      timeAboveRange: Math.round((above / recentReadings.length) * 100),
+      timeBelowRange: Math.round((below / recentReadings.length) * 100),
       totalReadings: recentReadings.length,
-      inRange: Math.round((inRange / recentReadings.length) * 100),
-      above: Math.round((above / recentReadings.length) * 100),
-      below: Math.round((below / recentReadings.length) * 100),
-      lastReading: recentReadings.length > 0 ? recentReadings[0] : null,
     });
   }
 
@@ -568,8 +593,8 @@ export class MockAdapterService {
 
     // When talking to real backends (local Docker, cloud/Heroku, or production),
     // force mocks off so the app uses real services.
-    const backendMode = (environment as any).backendMode as string | undefined;
-    const isProd = !!(environment as any).production;
+    const backendMode = (environment as { backendMode?: string }).backendMode;
+    const isProd = !!(environment as { production?: boolean }).production;
 
     if (isProd || backendMode === 'local' || backendMode === 'cloud') {
       config.enabled = false;
@@ -590,8 +615,8 @@ export class MockAdapterService {
   }
 
   private getDefaultConfig(): MockAdapterConfig {
-    const backendMode = (environment as any).backendMode as string | undefined;
-    const isProd = !!(environment as any).production;
+    const backendMode = (environment as { backendMode?: string }).backendMode;
+    const isProd = !!(environment as { production?: boolean }).production;
 
     // For production, cloud/Heroku, and local Docker environments we default to REAL backends.
     if (isProd || backendMode === 'local' || backendMode === 'cloud') {

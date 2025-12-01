@@ -123,7 +123,7 @@ describe('TidepoolSyncModel', () => {
         details: { retryAfter: 60 },
       };
       expect(error.errorType).toBe('RATE_LIMIT');
-      expect(error.details.retryAfter).toBe(60);
+      expect(error.details && (error.details as any)['retryAfter']).toBe(60);
     });
 
     it('should accept error with reading ID', () => {
