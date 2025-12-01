@@ -4,260 +4,404 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Diabetactic is an Ionic/Angular mobile application for glucose reading management in diabetic patients with Tidepool API integration. Built as an offline-first, cross-platform app using Angular 20, Ionic 8, and Capacitor 6.
+Diabetactic is an Ionic/Angular mobile app for diabetes glucose management with Tidepool integration. Built with Angular 20.3.14, Ionic 8.7.11, Capacitor 6.2.1, and Tailwind CSS v3.4.13 + DaisyUI 5.5.5.
 
-**Tech Stack**: Angular 20 + Ionic 8 + Capacitor 6 + TypeScript 5.8 + Tailwind CSS + DaisyUI + Dexie (IndexedDB)
-
-## Development Commands
-
-### Development Server
+## Essential Commands
 
 ```bash
-npm start                    # Start dev server (includes env loading)
+# Development (three backend modes controlled by scripts/start-with-env.mjs)
+npm start                     # Default - auto-detects ENV variable
+npm run start:mock            # In-memory mock data, no backend needed
+npm run start:local           # Local Docker backend (localhost:8000)
+npm run start:cloud           # Heroku production API (cloud)
+
+# Build (Web)
+npm run build                 # Development build (outputs to www/)
+npm run build:dev             # Development build (same as build)
+npm run build:prod            # Production build with AOT and optimization
+npm run build:mock            # Build with mock environment
+npm run build:heroku          # Build with Heroku environment
+npm run build:analyze         # Build with bundle analysis stats
+
+# Mobile Build & Deploy
+npm run mobile:sync           # Build prod + sync to Capacitor
+npm run mobile:build          # Sync + Android debug build
+npm run mobile:build:release  # Sync + Android release build
+npm run mobile:install        # Build + install on connected device
+npm run mobile:run            # Install + show filtered logcat output
+npm run mobile:clean          # Clean Android build cache
+npm run mobile:rebuild        # Full clean rebuild
+
+# Android Specific
+npm run android:open          # Open in Android Studio
+npm run android:build         # Gradle debug build only
+npm run android:build:release # Gradle release build only
+npm run android:install       # Install debug APK
+npm run android:uninstall     # Uninstall from device
+npm run android:logs          # Show filtered logcat
+npm run android:clear-logs    # Clear logcat buffer
+npm run android:devices       # List connected devices
+npm run android:emulator      # Start emulator
+
+# Deploy
+npm run deploy:local          # Same as mobile:install
+npm run deploy:device         # Build and force reinstall APK
+npm run deploy:apk            # Build and show APK path
+
+# Testing (Jest + Playwright)
+npm test                      # Run all unit tests (Jest)
+npm run test:unit             # Run unit tests (same as test)
+npm run test:watch            # Watch mode for unit tests
+npm run test:coverage         # Unit tests with coverage report
+npm run test:integration      # Integration tests (separate config)
+npm test -- --testPathPattern="profile"  # Run specific test file
+npm run test:e2e              # Playwright E2E tests (headless)
+npm run test:e2e:headed       # E2E with browser visible
+npm run test:a11y             # Accessibility audit tests
+npm run test:a11y:headed      # Accessibility tests with browser
+npm run test:ui-quality       # UI quality subset of a11y tests
+npm run test:mobile           # Build mobile + run E2E
+
+# Quality & Linting
+npm run lint                  # ESLint for TypeScript/JavaScript
+npm run lint:styles           # Stylelint for SCSS/CSS
+npm run lint:fix              # ESLint with auto-fix
+npm run format                # Prettier format all files
+npm run quality               # Lint + test combined
+
+# Utilities
+npm run clean                 # Remove node_modules, www, .angular, reinstall
+npm run clean:all             # Clean all (node + Android builds)
+npm run i18n:check            # Check for missing translation keys
+npm run cap:sync              # Sync Capacitor without building
+npm run cap:update            # Update Capacitor plugins
 ```
 
-### Building
+## Technology Stack
 
-```bash
-npm run build                # Development build
-npm run build:prod           # Production build (AOT + optimization)
-npm run build:mock           # Build with mock data
-npm run build:heroku         # Build for Heroku backend
-npm run build:mobile         # Production build + capacitor sync
-```
+### Core Framework
 
-### Testing
+- **Angular**: 20.3.14 (standalone components, signals, provideRouter)
+- **Ionic**: 8.7.11 (UI components, web components)
+- **Capacitor**: 6.2.1 (native bridge, plugins)
+- **TypeScript**: 5.8.0
+- **RxJS**: 7.8.0 (reactive state management)
 
-```bash
-# Unit & Integration (Jest)
-npm run test:unit            # Run Jest unit tests
-npm run test:watch           # Watch mode
-npm run test:coverage        # Coverage report
-npm run test:integration     # Integration suite in src/app/tests/integration (serial)
+### Styling & UI
 
-# E2E (Playwright)
-npm run test:e2e             # Headless
-npm run test:e2e:headed      # Visible browser
-```
+- **Tailwind CSS**: 3.4.13 (utility-first CSS)
+- **DaisyUI**: 5.5.5 (component library)
+- **Lucide Angular**: 0.553.0 (icon system)
+- **PostCSS**: 8.5.6 + Autoprefixer 10.4.22
 
-### Code Quality
+### Data & Storage
 
-```bash
-npm run quality              # Run lint + format check
-npm run quality:fix          # Fix lint + format issues
-npm run lint                 # ESLint check
-npm run lint:fix             # Auto-fix ESLint issues
-npm run format               # Format with Prettier
-npm run format:check         # Check format without changes
-```
+- **Dexie**: 4.2.1 (IndexedDB wrapper)
+- **@aparajita/capacitor-secure-storage**: 6.0.1 (encrypted storage)
+- **@capacitor/preferences**: 6.0.3 (key-value storage)
 
-### Mobile Development
+### Testing & Quality
 
-```bash
-npm run build:mobile         # Production build + capacitor sync
-```
+- **Jest**: 29.7.0 (unit tests)
+- **Playwright**: 1.48.0 (E2E tests)
+- **@axe-core/playwright**: 4.11.0 (accessibility)
+- **ESLint**: 9.0.0 + TypeScript ESLint 8.0.0
+- **Stylelint**: 16.12.0 (CSS linting)
+- **Prettier**: 3.6.2 (code formatting)
 
 ### Internationalization
 
+- **@ngx-translate/core**: 17.0.0 (i18n framework)
+- **@angular/localize**: 20.3.7
+
+### Development Tools
+
+- **Husky**: 9.1.7 (git hooks)
+- **lint-staged**: 16.2.3 (pre-commit linting)
+- **@faker-js/faker**: 10.1.0 (test data)
+
+## Architecture
+
+### Backend Modes (src/environments/environment.ts)
+
+The app supports three backend modes controlled by `DEV_BACKEND_MODE`:
+
+- `mock` - In-memory mock adapter, no backend required
+- `local` - Local Docker backend at localhost:8000
+- `cloud` - Heroku API Gateway (production)
+
+### Core Services (src/app/core/services/)
+
+Key services to understand:
+
+- `api-gateway.service.ts` - All backend HTTP calls route through here (endpoint registry pattern)
+- `local-auth.service.ts` - Local authentication and user management
+- `profile.service.ts` - User profile with Capacitor Preferences + SecureStorage
+- `database.service.ts` - Dexie/IndexedDB for offline storage (readings, appointments)
+- `notification.service.ts` - Push notifications via @capacitor/local-notifications
+- `readings.service.ts` - Glucose readings CRUD with offline-first sync
+- `appointment.service.ts` - Medical appointments with auto-reminders
+- `tidepool-auth.service.ts` - Tidepool OAuth integration
+- `tips.service.ts` - Diabetes management tips and recommendations
+- `bolus-calculator.service.ts` - Insulin dosage calculation helper
+
+### API Gateway Pattern
+
+All backend calls route through `ApiGatewayService` with endpoint registry pattern:
+
+```typescript
+// Request using endpoint key (not raw URL)
+this.apiGateway.request('auth.login', { body: credentials });
+this.apiGateway.request('readings.list', { params: { userId } });
+this.apiGateway.request('appointments.create', { body: appointmentData });
+```
+
+**Key features:**
+
+- Centralized endpoint management (no hardcoded URLs in services)
+- Automatic platform detection (web proxy vs native direct)
+- Built-in retry logic and error handling
+- Request/response logging in dev mode
+- TypeScript endpoint key validation
+- Support for all HTTP methods (GET, POST, PUT, DELETE, PATCH)
+
+**Endpoint Registry** (in `api-gateway.service.ts`):
+
+- `auth.login` - POST /token
+- `auth.register` - POST /users/register
+- `users.me` - GET /users/me
+- `readings.list` - GET /glucose/mine
+- `readings.create` - POST /glucose/create
+- `appointments.list` - GET /appointments/mine
+- `appointments.create` - POST /appointments/create
+
+### Component Structure
+
+All pages use Angular standalone components with Ionic standalone imports:
+
+```typescript
+@Component({
+  standalone: true,
+  imports: [
+    CommonModule,
+    IonHeader, IonToolbar, IonTitle, // etc - import each Ionic component
+    TranslateModule,
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA], // Required for Ionic web components
+})
+```
+
+### Testing Setup
+
+#### Unit Tests (Jest 29.7.0)
+
+- **Framework**: Jest with Jasmine compatibility layer via `jest-preset-angular`
+- **Configuration**: `setup-jest.ts` with comprehensive Capacitor mocks
+- **Patterns**: Use Jest (`jest.fn()`, `jest.spyOn()`) or Jasmine (`jasmine.createSpyObj()`)
+- **Capacitor mocks**: Pre-configured for all plugins (Preferences, SecureStorage, Network, etc.)
+- **Test location**: Spec files alongside source (`*.spec.ts`)
+- **Coverage**: Run `npm run test:coverage` for HTML reports in `coverage/`
+- **Fake IndexedDB**: `fake-indexeddb` package for Dexie testing
+
+#### E2E Tests (Playwright 1.48.0)
+
+- **Location**: `playwright/tests/`
+- **Features**: Visual regression, accessibility audits with @axe-core/playwright
+- **Reporters**: HTML, JSON, and axe-html-reporter for a11y issues
+- **Browsers**: Chromium, Firefox, WebKit (configured in playwright.config.ts)
+- **Screenshots**: Auto-captured on failure in `playwright/screenshots/`
+- **Accessibility**: Dedicated `test:a11y` command for WCAG compliance checks
+
+#### Test Commands Summary
+
+- `npm test` - Unit tests only
+- `npm run test:watch` - Watch mode for TDD
+- `npm run test:coverage` - Unit tests with coverage
+- `npm run test:integration` - Integration tests (separate config)
+- `npm run test:e2e` - All E2E tests headless
+- `npm run test:a11y` - Accessibility audit suite
+- `npm run test:mobile` - Build mobile + run E2E
+
+### i18n
+
+- Translations: `src/assets/i18n/en.json` and `es.json`
+- Service: `@ngx-translate/core`
+- Check for missing keys: `npm run i18n:check`
+
+### Styling
+
+- **Tailwind CSS v3.4.13** + **DaisyUI 5.5.5** for utility-first styling
+- Global styles: `src/global.css` (design tokens, themes, animations)
+- Theme variables: `src/theme/variables.scss` (Ionic CSS custom properties)
+- DaisyUI themes: `diabetactic` (light) and `dark` in `tailwind.config.js`
+- Dark mode: Set via `[data-theme='dark']` attribute on root element
+- Tailwind plugins: `@tailwindcss/forms`, `@tailwindcss/typography`, `@aparajita/tailwind-ionic`
+- Icon system: Lucide Angular (v0.553.0) for consistent icon design
+
+## Mobile Development
+
 ```bash
-npm run i18n:check           # Check for missing translations
+# Android Development Workflow
+npm run mobile:sync           # Build prod + sync to Capacitor
+npm run android:open          # Open in Android Studio
+npm run android:build         # Build debug APK via Gradle
+npm run android:install       # Install on connected device
+npm run android:logs          # View filtered logcat output
+
+# Quick Deploy
+npm run deploy:device         # Build + force reinstall on device
+npm run android:emulator      # Start Android emulator
+
+# Capacitor Commands
+npx cap sync                  # Sync without building
+npx cap open android          # Open in Android Studio
+npx cap run android           # Build and run on device/emulator
+
+# Requirements
+# - Android Studio (latest)
+# - Java 21 (configured in gradle)
+# - Android SDK 34+
+# - Gradle 8.x (wrapper included)
 ```
 
-## Critical Architecture Patterns
+## File Organization
 
-### API Gateway Pattern - MANDATORY
-
-**All backend communication MUST go through ApiGatewayService** (`src/app/core/services/api-gateway.service.ts`)
-
-The gateway provides:
-
-- Centralized request routing
-- Automatic token injection
-- Response transformation
-- Error standardization
-- Cache strategy with LRU
-- Exponential backoff retry
-
-**Exceptions (only two services allowed direct HTTP):**
-
-1. `TidepoolAuthService` - External OAuth provider
-2. `ExternalServicesManagerService` - Health checks only
-
-### Authentication Architecture
-
-Three-layer authentication system:
-
-1. **UnifiedAuthService**: Coordinates all auth flows
-2. **TidepoolAuthService**: OAuth2/PKCE for Tidepool integration
-3. **LocalAuthService**: Backend authentication with JWT
-
-### Offline-First Data Flow
-
-```
-User Action → Component → Service (Business Logic) → ApiGatewayService
-                                                      ↓
-                                        DatabaseService (Dexie/IndexedDB)
-                                                      ↓
-                                        Backend Microservices / Tidepool API
-```
-
-**Data Strategy:**
-
-1. Check IndexedDB cache first
-2. Fetch from network if cache miss/stale
-3. Update cache on network response
-4. Background sync when connection available
-
-### Service Layer Organization
-
-**Core Services** (`src/app/core/services/`):
-
-- `api-gateway.service.ts` - Central HTTP communication
-- `unified-auth.service.ts` - Authentication coordinator
-- `database.service.ts` - IndexedDB management (Dexie)
-- `readings.service.ts` - Glucose readings with cache
-- `appointment.service.ts` - Medical appointments
-- `profile.service.ts` - User profile management
-- `tidepool-sync.service.ts` - Tidepool synchronization
-
-**Models** (`src/app/core/models/`): TypeScript interfaces and types
-
-**Guards** (`src/app/core/guards/`): Route protection
-
-**Interceptors** (`src/app/core/interceptors/`): HTTP interceptors
-
-## Environment Configuration
-
-Multiple environment files in `src/environments/`:
-
-- `environment.ts` - Development (default)
-- `environment.prod.ts` - Production
-- `environment.mock.ts` - Mock data for testing
-- `environment.heroku.ts` - Heroku backend
-- `environment.local.ts` - Local development
-- `environment.test.ts` - Test configuration
-
-**Backend URL**: `environment.backendServices.apiGateway.baseUrl`
-
-## Component Structure
-
-The app uses **standalone components** (Angular 18+ pattern - no NgModules):
-
-**Main Modules:**
-
-- `dashboard/` - Main dashboard with statistics
-- `readings/` - Glucose reading management
-- `appointments/` - Medical appointments
-- `profile/` - User profile
-- `login/` - Authentication
-- `register/` - User registration
-- `settings/` - App settings
-- `trends/` - Historical trends visualization
-- `tips/` - Health tips
-- `bolus-calculator/` - Insulin dose calculator
-
-**Shared** (`src/app/shared/`): Reusable components across modules
+- `src/app/core/` - Singleton services, guards, interceptors, models
+- `src/app/shared/` - Reusable components
+- `src/app/dashboard/` - Main dashboard with glucose stats and charts
+- `src/app/readings/` - Glucose readings list and management
+- `src/app/add-reading/` - Modal for adding new glucose readings
+- `src/app/appointments/` - Medical appointments management
+- `src/app/profile/` - User profile and settings
+- `src/app/settings/` - App configuration and preferences
+- `src/app/welcome/` - Onboarding and login flow
+- `src/app/tips/` - Diabetes management tips
+- `src/app/bolus-calculator/` - Insulin dose calculator
+- `src/app/trends/` - Glucose trends and analytics
+- `playwright/tests/` - E2E tests with Playwright
+- `e2e/` - Legacy E2E tests (Protractor-style)
+- `docs/` - Documentation files
+- `scripts/` - Build and development scripts
+- `postman/` - API collection and environment files for testing
 
 ## Routing
 
-Routes defined in `src/app/app.routes.ts` and `src/app/app-routing.module.ts`
+App uses lazy-loaded routes with `OnboardingGuard` protecting authenticated pages:
 
-Uses lazy loading for optimal bundle size (target: <2MB initial)
+- `/welcome` - Entry point, unauthenticated
+- `/account-pending` - Account verification pending page
+- `/tabs/*` - Main app (dashboard, readings, appointments, profile)
+  - `/tabs/dashboard` - Main dashboard with stats
+  - `/tabs/readings` - Glucose readings list
+  - `/tabs/appointments` - Appointments list
+  - `/tabs/profile` - User profile
+- `/add-reading` - Add glucose reading modal
+- `/settings/*` - User settings pages
+- `/tips` - Diabetes management tips
+- `/trends` - Glucose trends analysis
+- `/bolus-calculator` - Insulin dose calculator
 
-## Testing Requirements
+## Current Status
 
-### Unit Tests (Jest)
+### Package Versions (as of 2025-12-01)
 
-- **Services**: 90% minimum coverage
-- **Components**: 80% minimum coverage
-- **Overall**: 85% target
-- **Parallelization**: Tests run in parallel (50% of CPU cores by default)
+- **Angular**: 20.3.14
+- **Ionic**: 8.7.11
+- **Capacitor**: 6.2.1
+- **TypeScript**: 5.8.0
+- **Tailwind CSS**: 3.4.13
+- **DaisyUI**: 5.5.5
+- **Jest**: 29.7.0
+- **Playwright**: 1.48.0
 
-Run specific test: `npm test -- --testPathPattern='service-name'`
+### Lint Status
 
-### Integration Tests (Jest)
+Current lint warnings (125 total, non-blocking):
 
-- Location: `src/app/tests/integration/`
-- Command: `npm run test:integration`
-- Runs in-band to avoid resource contention; no coverage collection
+- `@typescript-eslint/no-unused-vars` - Unused imports/variables across services and tests
+- `@angular-eslint/prefer-standalone` - 3 legacy non-standalone components
+- `@angular-eslint/template/click-events-have-key-events` - 4 accessibility warnings
+- Stylelint: 4 browser compatibility warnings for experimental CSS features
+- Run `npm run lint:fix` to auto-fix most issues
 
-### E2E Tests (Playwright)
+### Test Coverage
 
-- Location: `playwright/tests/`
-- Base URL: `http://localhost:4200`
-- Screenshots on failure; video on retry
-- Debug: `npx playwright test --debug`
+- Unit tests: Jest with Jasmine compatibility layer
+- Integration tests: Separate Jest config (passWithNoTests)
+- E2E tests: Playwright with accessibility audits
+- UI quality tests: Subset of accessibility tests
 
-## Styling
+## Important Notes
 
-**Framework**: Tailwind CSS + DaisyUI components
+- All API requests go through ApiGatewayService, not direct HTTP calls
+- Offline-first: Data stored in IndexedDB (Dexie), synced when online
+- Use `CUSTOM_ELEMENTS_SCHEMA` in all standalone components for Ionic
+- When testing services, mock Capacitor plugins are already configured in setup-jest.ts
+- Prefer editing existing files over creating new ones
+- Never save working files to root folder - use appropriate subdirectories
+- Translations required in both `en.json` and `es.json` for any user-facing text
+- Backend mode controlled by `DEV_BACKEND_MODE` in environment.ts (default: 'cloud')
+- Use `npm run start:mock` for offline development without backend
+- Husky git hooks configured with lint-staged for pre-commit quality checks
 
-**Theme Support**: Light/dark themes with CSS variables
+## Quick Reference
 
-**Global Styles**: `src/global.css`
+### Common Development Tasks
 
-## Internationalization (i18n)
+**Start development server:**
 
-- English and Spanish support
-- Translation files: `src/assets/i18n/en.json` and `src/assets/i18n/es.json`
-- Uses `@ngx-translate/core`
+```bash
+npm run start:mock      # Offline development (recommended)
+npm run start:cloud     # Test against Heroku backend
+```
 
-## Mobile-Specific
+**Run tests:**
 
-**Capacitor Plugins:**
+```bash
+npm test                # Quick unit test run
+npm run test:watch      # TDD mode
+npm run test:e2e        # Full E2E suite
+```
 
-- Secure Storage
-- Device Info
-- Keyboard
-- Network Status
-- Preferences
-- Haptics
-- Status Bar
-- Splash Screen
+**Code quality:**
 
-## Database (IndexedDB via Dexie)
+```bash
+npm run quality         # Lint + test
+npm run lint:fix        # Auto-fix lint issues
+npm run format          # Format all files
+```
 
-All local data persistence uses Dexie for IndexedDB access. Service: `DatabaseService`
+**Build and deploy to Android:**
 
-**Tables:**
+```bash
+npm run mobile:sync     # Build + sync
+npm run android:open    # Open Android Studio
+npm run deploy:device   # Full build + install
+```
 
-- Glucose readings
-- Appointments
-- User profiles
-- Sync queue
+**Debugging:**
 
-## Security
+```bash
+npm run android:logs    # View app logs
+npm run build:analyze   # Analyze bundle size
+```
 
-- OAuth2/PKCE for Tidepool
-- JWT tokens for backend services
-- Automatic token refresh
-- Secure storage via Capacitor Secure Storage
-- No direct HTTP calls outside ApiGateway (except approved exceptions)
+### Environment Variables
 
-## Performance Targets
+Control backend mode via ENV variable:
 
-- Initial bundle: <2MB
-- IndexedDB caching for offline support
-- Request debouncing
-- Lazy loading routes
-- Image optimization
+```bash
+ENV=mock npm start      # Mock backend (offline)
+ENV=local npm start     # Local Docker (localhost:8000)
+ENV=cloud npm start     # Heroku production (default)
+```
 
-## Git Hooks (Husky)
+### Key Files
 
-Pre-commit hooks run:
-
-- Prettier formatting
-- ESLint fixing
-- Stylelint for SCSS
-
-Configuration in `package.json` under `lint-staged`
-
-## External Documentation
-
-For detailed information, see:
-
-- `docs/ARCHITECTURE.md` - Detailed architecture patterns
-- `docs/TESTING_GUIDE.md` - Comprehensive testing guide
-- `docs/STYLING_GUIDE.md` - Styling conventions
-- `docs/TRANSLATION_GUIDE.md` - i18n guidelines
-- `docs/TIDEPOOL_SETUP.md` - Tidepool integration setup
+- `src/environments/environment.ts` - Environment config and backend modes
+- `src/app/core/services/api-gateway.service.ts` - API endpoint registry
+- `setup-jest.ts` - Jest config with Capacitor mocks
+- `tailwind.config.js` - Tailwind and DaisyUI theme config
+- `angular.json` - Angular build configurations
+- `capacitor.config.ts` - Capacitor native bridge config
+- `playwright.config.ts` - E2E test configuration
