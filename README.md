@@ -37,8 +37,8 @@ Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar e
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/diabetactic/diabetify.git
-cd diabetify
+git clone https://github.com/diabetactic/diabetactic-app.git
+cd diabetactic-app
 
 # Instalar dependencias
 npm install

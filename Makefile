@@ -11,7 +11,7 @@
 PROJECT_DIR := /home/julito/TPP/diabetify-extServices-20251103-061913/diabetify
 SCRIPTS_DIR := $(PROJECT_DIR)/scripts
 ANDROID_DIR := $(PROJECT_DIR)/android
-APP_ID := io.diabetify.app
+APP_ID := io.diabetactic.app
 JAVA_HOME := /home/julito/.local/share/mise/installs/java/25.0.1
 ANDROID_HOME := $(HOME)/Android/Sdk
 
@@ -156,7 +156,7 @@ logs:
 
 logs-tail:
 	@echo "$(BLUE)Following app logs (Ctrl+C to stop)...$(NC)"
-	@adb logcat | grep -E "Capacitor|Native HTTP|Angular|Ionic|diabetify|error|Exception" --line-buffered
+	@adb logcat | grep -E "Capacitor|Native HTTP|Angular|Ionic|diabetactic|error|Exception" --line-buffered
 
 # ============================================================================
 # DEFAULT

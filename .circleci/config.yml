@@ -88,7 +88,7 @@ jobs:
             adb install android/app/build/outputs/apk/debug/app-debug.apk
             adb shell am start -n io.ionic.starter/.MainActivity
             sleep 10
-            adb shell dumpsys activity activities | grep -i diabetify || true
+            adb shell dumpsys activity activities | grep -i diabetactic || true
       - store_artifacts:
           path: android/app/build/outputs/apk/debug
 
@@ -123,9 +123,42 @@ jobs:
             adb install android/app/build/outputs/apk/debug/app-debug.apk
             adb shell am start -n io.ionic.starter/.MainActivity
             sleep 10
-            adb shell dumpsys activity activities | grep -i diabetify || true
+            adb shell dumpsys activity activities | grep -i diabetactic || true
       - store_artifacts:
           path: android/app/build/outputs/apk/debug
+
+  # Release APK - downloadable with nice name
+  release-apk:
+    executor:
+      name: android/android-machine
+      tag: 2024.01.1
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          name: Get version from package.json
+          command: |
+            VERSION=$(node -p "require('./package.json').version")
+            echo "export VERSION=$VERSION" >> $BASH_ENV
+      - run:
+          name: Build Production Web
+          command: npm run build:prod
+      - run:
+          name: Sync Capacitor
+          command: npx cap sync android
+      - run:
+          name: Build Debug APK
+          command: cd android && ./gradlew assembleDebug
+      - run:
+          name: Rename APK with nice name
+          command: |
+            mkdir -p release
+            cp android/app/build/outputs/apk/debug/app-debug.apk "release/diabetactic-v${VERSION}.apk"
+            echo "📦 APK listo: diabetactic-v${VERSION}.apk"
+      - store_artifacts:
+          path: release
+          destination: apk-release
 
 workflows:
   # Main CI workflow - runs on all pushes
@@ -147,3 +180,15 @@ workflows:
           filters:
             branches:
               only: master
+
+  # Release workflow - manual trigger para generar APK descargable
+  release:
+    jobs:
+      - hold-for-approval:
+          type: approval
+          filters:
+            branches:
+              only: master
+      - release-apk:
+          requires:
+            - hold-for-approval

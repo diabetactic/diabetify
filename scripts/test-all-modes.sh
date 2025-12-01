@@ -35,7 +35,7 @@ elif [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
 fi
 
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}  Diabetify Test Suite (Mode: $MODE)${NC}"
+echo -e "${BLUE}  Diabetactic Test Suite (Mode: $MODE)${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 
@@ -117,7 +117,7 @@ sleep 3
 print_section "4. Local Mode E2E Test"
 
 echo "Checking Local backend status..."
-CONTAINERS_RUNNING=$(docker ps --filter "name=diabetify" --format "{{.Names}}" | wc -l)
+CONTAINERS_RUNNING=$(docker ps --filter "name=diabetactic" --format "{{.Names}}" | wc -l)
 if [[ "$CONTAINERS_RUNNING" -lt 8 ]]; then
     echo "Starting Local backend Docker containers..."
     cd extServicesCompose/extServices/container-managing && docker compose up -d && cd ../../..

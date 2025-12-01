@@ -97,7 +97,7 @@ SERVICES = {
 TIDEPOOL_API = {
     "info": {
         "name": "Tidepool API (Curated)",
-        "description": "Endpoints used by Diabetify app + common Tidepool operations.",
+        "description": "Endpoints used by Diabetactic app + common Tidepool operations.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
