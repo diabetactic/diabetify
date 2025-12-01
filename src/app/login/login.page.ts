@@ -109,6 +109,14 @@ export class LoginPage implements OnInit {
     });
     console.log('[LOGIN] Form valid, starting auth flow');
 
+    // Show loading spinner
+    const loading = await this.loadingCtrl.create({
+      message: this.translate.instant('login.messages.loggingIn'),
+      spinner: 'crescent',
+      cssClass: 'custom-loading',
+    });
+    await loading.present();
+
     const { username, password, rememberMe } = this.loginForm.value;
 
     try {
@@ -132,26 +140,6 @@ export class LoginPage implements OnInit {
           }
         }
 
-        // Toast with timeout fallback for Android WebView
-        console.log('[LOGIN] Creating toast...');
-        try {
-          const toastPromise = this.toastCtrl.create({
-            message: this.translate.instant('login.messages.welcomeBack'),
-            duration: 2000,
-            color: 'success',
-            position: 'top',
-          });
-          const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('Toast create timeout')), 2000)
-          );
-          const toast = await Promise.race([toastPromise, timeoutPromise]);
-          console.log('[LOGIN] Toast created, presenting...');
-          await toast.present();
-          console.log('[LOGIN] Toast presented');
-        } catch (toastError) {
-          console.warn('[LOGIN] Toast failed, skipping:', toastError);
-        }
-
         // Navigate to dashboard - try multiple approaches for Android
         console.log('[LOGIN] Navigating to dashboard...');
         try {
@@ -162,10 +150,14 @@ export class LoginPage implements OnInit {
           // Fallback: direct location change
           window.location.href = '/tabs/dashboard';
         }
+
+        // Dismiss loading after navigation starts (small delay to cover transition)
+        setTimeout(() => loading.dismiss(), 500);
       } else {
         throw new Error(result?.error || this.translate.instant('login.messages.genericError'));
       }
     } catch (error: unknown) {
+      await loading.dismiss();
       console.error('[LOGIN] Error during login', error);
       let errorMessage = this.translate.instant('login.messages.genericError');
 

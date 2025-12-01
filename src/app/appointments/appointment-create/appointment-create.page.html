@@ -11,169 +11,215 @@
 
 <ion-content class="ion-padding">
   <div class="mx-auto max-w-3xl">
-    <form>
+    <form class="flex flex-col gap-4">
       <!-- Glucose Objective -->
-      <ion-item>
-        <ion-input
-          type="number"
-          label-placement="stacked"
-          [(ngModel)]="formData.glucose_objective"
-          name="glucose_objective"
-          placeholder="100"
-          min="0"
-          required
-        >
-          <div slot="label">
-            {{ 'appointments.create.glucose_objective' | translate }}
-            <span class="text-red-500">*</span>
-          </div>
-          <div slot="end" class="text-base-content/60 dark:text-base-content/80 text-sm">mg/dL</div>
-        </ion-input>
+      <ion-item
+        lines="none"
+        class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      >
+        <div class="w-full py-2">
+          <ion-input
+            type="number"
+            label-placement="stacked"
+            [(ngModel)]="formData.glucose_objective"
+            name="glucose_objective"
+            placeholder="100"
+            min="0"
+            required
+            class="text-lg"
+          >
+            <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
+              {{ 'appointments.create.glucose_objective' | translate }}
+              <span class="text-red-500">*</span>
+            </div>
+            <div slot="end" class="text-base-content/60 dark:text-base-content/80 text-sm">
+              mg/dL
+            </div>
+          </ion-input>
+        </div>
       </ion-item>
 
       <!-- Insulin Type -->
-      <ion-item>
-        <ion-select
-          label-placement="stacked"
-          [(ngModel)]="formData.insulin_type"
-          name="insulin_type"
-          interface="popover"
-          [placeholder]="'appointments.create.insulin_type' | translate"
-          data-testid="insulin-type-selector"
-        >
-          <div slot="label">
-            {{ 'appointments.create.insulin_type' | translate }}
-            <span class="text-red-500">*</span>
-          </div>
-          <ion-select-option *ngFor="let type of insulinTypes" [value]="type.value">
-            {{ type.label | translate }}
-          </ion-select-option>
-        </ion-select>
+      <ion-item
+        lines="none"
+        class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      >
+        <div class="w-full py-2">
+          <ion-select
+            label-placement="stacked"
+            [(ngModel)]="formData.insulin_type"
+            name="insulin_type"
+            interface="popover"
+            [placeholder]="'appointments.create.insulin_type' | translate"
+            data-testid="insulin-type-selector"
+          >
+            <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
+              {{ 'appointments.create.insulin_type' | translate }}
+              <span class="text-red-500">*</span>
+            </div>
+            <ion-select-option *ngFor="let type of insulinTypes" [value]="type.value">
+              {{ type.label | translate }}
+            </ion-select-option>
+          </ion-select>
+        </div>
       </ion-item>
 
       <!-- Dose -->
-      <ion-item>
-        <ion-input
-          type="number"
-          label-placement="stacked"
-          [(ngModel)]="formData.dose"
-          name="dose"
-          placeholder="0"
-          min="0"
-          step="0.1"
-          required
-        >
-          <div slot="label">
-            {{ 'appointments.create.dose' | translate }}
-            <span class="text-red-500">*</span>
-          </div>
-          <div slot="end" class="text-base-content/60 dark:text-base-content/80 text-sm">U</div>
-        </ion-input>
+      <ion-item
+        lines="none"
+        class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      >
+        <div class="w-full py-2">
+          <ion-input
+            type="number"
+            label-placement="stacked"
+            [(ngModel)]="formData.dose"
+            name="dose"
+            placeholder="0"
+            min="0"
+            step="0.1"
+            required
+            class="text-lg"
+          >
+            <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
+              {{ 'appointments.create.dose' | translate }}
+              <span class="text-red-500">*</span>
+            </div>
+            <div slot="end" class="text-base-content/60 dark:text-base-content/80 text-sm">U</div>
+          </ion-input>
+        </div>
       </ion-item>
 
       <!-- Fast Insulin -->
-      <ion-item>
-        <ion-input
-          type="text"
-          label-placement="stacked"
-          [(ngModel)]="formData.fast_insulin"
-          name="fast_insulin"
-          [placeholder]="'appointments.create.fast_insulin' | translate"
-          required
-        >
-          <div slot="label">
-            {{ 'appointments.create.fast_insulin' | translate }}
-            <span class="text-red-500">*</span>
-          </div>
-        </ion-input>
+      <ion-item
+        lines="none"
+        class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      >
+        <div class="w-full py-2">
+          <ion-input
+            type="text"
+            label-placement="stacked"
+            [(ngModel)]="formData.fast_insulin"
+            name="fast_insulin"
+            [placeholder]="'appointments.create.fast_insulin' | translate"
+            required
+          >
+            <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
+              {{ 'appointments.create.fast_insulin' | translate }}
+              <span class="text-red-500">*</span>
+            </div>
+          </ion-input>
+        </div>
       </ion-item>
 
       <!-- Fixed Dose -->
-      <ion-item>
-        <ion-input
-          type="number"
-          label-placement="stacked"
-          [(ngModel)]="formData.fixed_dose"
-          name="fixed_dose"
-          placeholder="0"
-          min="0"
-          step="0.1"
-          required
-        >
-          <div slot="label">
-            {{ 'appointments.create.fixed_dose' | translate }}
-            <span class="text-red-500">*</span>
-          </div>
-          <div slot="end" class="text-base-content/60 dark:text-base-content/80 text-sm">U</div>
-        </ion-input>
+      <ion-item
+        lines="none"
+        class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      >
+        <div class="w-full py-2">
+          <ion-input
+            type="number"
+            label-placement="stacked"
+            [(ngModel)]="formData.fixed_dose"
+            name="fixed_dose"
+            placeholder="0"
+            min="0"
+            step="0.1"
+            required
+          >
+            <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
+              {{ 'appointments.create.fixed_dose' | translate }}
+              <span class="text-red-500">*</span>
+            </div>
+            <div slot="end" class="text-base-content/60 dark:text-base-content/80 text-sm">U</div>
+          </ion-input>
+        </div>
       </ion-item>
 
       <!-- Ratio -->
-      <ion-item>
-        <ion-input
-          type="number"
-          label-placement="stacked"
-          [(ngModel)]="formData.ratio"
-          name="ratio"
-          placeholder="0"
-          min="0"
-          step="0.1"
-          required
-        >
-          <div slot="label">
-            {{ 'appointments.create.ratio' | translate }}
-            <span class="text-red-500">*</span>
-          </div>
-        </ion-input>
+      <ion-item
+        lines="none"
+        class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      >
+        <div class="w-full py-2">
+          <ion-input
+            type="number"
+            label-placement="stacked"
+            [(ngModel)]="formData.ratio"
+            name="ratio"
+            placeholder="0"
+            min="0"
+            step="0.1"
+            required
+          >
+            <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
+              {{ 'appointments.create.ratio' | translate }}
+              <span class="text-red-500">*</span>
+            </div>
+          </ion-input>
+        </div>
       </ion-item>
 
       <!-- Sensitivity -->
-      <ion-item>
-        <ion-input
-          type="number"
-          label-placement="stacked"
-          [(ngModel)]="formData.sensitivity"
-          name="sensitivity"
-          placeholder="0"
-          min="0"
-          step="0.1"
-          required
-        >
-          <div slot="label">
-            {{ 'appointments.create.sensitivity' | translate }}
-            <span class="text-red-500">*</span>
-          </div>
-        </ion-input>
+      <ion-item
+        lines="none"
+        class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      >
+        <div class="w-full py-2">
+          <ion-input
+            type="number"
+            label-placement="stacked"
+            [(ngModel)]="formData.sensitivity"
+            name="sensitivity"
+            placeholder="0"
+            min="0"
+            step="0.1"
+            required
+          >
+            <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
+              {{ 'appointments.create.sensitivity' | translate }}
+              <span class="text-red-500">*</span>
+            </div>
+          </ion-input>
+        </div>
       </ion-item>
 
       <!-- Pump Type -->
-      <ion-item>
-        <ion-select
-          label-placement="stacked"
-          [(ngModel)]="formData.pump_type"
-          name="pump_type"
-          interface="popover"
-          [placeholder]="'appointments.create.pump_type' | translate"
-          data-testid="pump-type-selector"
-        >
-          <div slot="label">
-            {{ 'appointments.create.pump_type' | translate }}
-            <span class="text-red-500">*</span>
-          </div>
-          <ion-select-option *ngFor="let type of pumpTypes" [value]="type.value">
-            {{ type.label | translate }}
-          </ion-select-option>
-        </ion-select>
+      <ion-item
+        lines="none"
+        class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      >
+        <div class="w-full py-2">
+          <ion-select
+            label-placement="stacked"
+            [(ngModel)]="formData.pump_type"
+            name="pump_type"
+            interface="popover"
+            [placeholder]="'appointments.create.pump_type' | translate"
+            data-testid="pump-type-selector"
+          >
+            <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
+              {{ 'appointments.create.pump_type' | translate }}
+              <span class="text-red-500">*</span>
+            </div>
+            <ion-select-option *ngFor="let type of pumpTypes" [value]="type.value">
+              {{ type.label | translate }}
+            </ion-select-option>
+          </ion-select>
+        </div>
       </ion-item>
 
       <!-- Motive (Checkboxes) -->
       <div class="ion-padding-vertical">
-        <ion-label class="ion-padding-start">
+        <ion-label class="ion-padding-start font-medium">
           {{ 'appointments.create.motive' | translate }}
           <span class="text-red-500">*</span>
         </ion-label>
-        <ion-list class="ion-margin-top">
-          <ion-item *ngFor="let motive of motiveOptions">
+        <div
+          class="mt-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+        >
+          <ion-item *ngFor="let motive of motiveOptions" lines="full" class="last:border-b-0">
             <ion-checkbox
               [checked]="isMotiveSelected(motive.value)"
               (ionChange)="onMotiveChange(motive.value, $event)"
@@ -181,38 +227,49 @@
             ></ion-checkbox>
             <ion-label>{{ motive.label | translate }}</ion-label>
           </ion-item>
-        </ion-list>
+        </div>
       </div>
 
       <!-- Other Motive (conditional) -->
-      <ion-item *ngIf="showOtherMotive">
-        <ion-input
-          type="text"
-          label-placement="stacked"
-          [(ngModel)]="formData.other_motive"
-          name="other_motive"
-          [placeholder]="'appointments.create.other_motive' | translate"
-        >
-          <div slot="label">
-            {{ 'appointments.create.other_motive' | translate }}
-            <span class="text-red-500">*</span>
-          </div>
-        </ion-input>
+      <ion-item
+        *ngIf="showOtherMotive"
+        lines="none"
+        class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      >
+        <div class="w-full py-2">
+          <ion-input
+            type="text"
+            label-placement="stacked"
+            [(ngModel)]="formData.other_motive"
+            name="other_motive"
+            [placeholder]="'appointments.create.other_motive' | translate"
+          >
+            <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
+              {{ 'appointments.create.other_motive' | translate }}
+              <span class="text-red-500">*</span>
+            </div>
+          </ion-input>
+        </div>
       </ion-item>
 
       <!-- Another Treatment (optional) -->
-      <ion-item>
-        <ion-textarea
-          label-placement="stacked"
-          [(ngModel)]="formData.another_treatment"
-          name="another_treatment"
-          [placeholder]="'appointments.create.another_treatment' | translate"
-          rows="3"
-        >
-          <div slot="label">
-            {{ 'appointments.create.another_treatment' | translate }}
-          </div>
-        </ion-textarea>
+      <ion-item
+        lines="none"
+        class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+      >
+        <div class="w-full py-2">
+          <ion-textarea
+            label-placement="stacked"
+            [(ngModel)]="formData.another_treatment"
+            name="another_treatment"
+            [placeholder]="'appointments.create.another_treatment' | translate"
+            rows="3"
+          >
+            <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
+              {{ 'appointments.create.another_treatment' | translate }}
+            </div>
+          </ion-textarea>
+        </div>
       </ion-item>
 
       <!-- Buttons -->
