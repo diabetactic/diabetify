@@ -10,15 +10,15 @@ NC='\033[0m' # No Color
 
 # Parse command line arguments
 MODE="smoke"  # Default to smoke test
-if [ "$1" == "--quick" ]; then
+if [[ "$1" == "--quick" ]]; then
     MODE="quick"
-elif [ "$1" == "--smoke" ]; then
+elif [[ "$1" == "--smoke" ]]; then
     MODE="smoke"
-elif [ "$1" == "--full" ]; then
+elif [[ "$1" == "--full" ]]; then
     MODE="full"
-elif [ "$1" == "--working" ]; then
+elif [[ "$1" == "--working" ]]; then
     MODE="working"
-elif [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
+elif [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
@@ -41,7 +41,7 @@ echo ""
 
 # Function to print status
 print_status() {
-    if [ $1 -eq 0 ]; then
+    if [[ $1 -eq 0 ]]; then
         echo -e "${GREEN}✅ $2 PASSED${NC}"
     else
         echo -e "${RED}❌ $2 FAILED${NC}"
@@ -83,7 +83,7 @@ echo "Running Karma unit tests (CI mode)..."
 # Note: Allow coverage threshold failures (tests still pass)
 timeout 300 npm run test:ci || true
 TESTS_PASSED=$(grep -o "SUCCESS" test-results.txt 2>/dev/null || echo "PASSED")
-if [ -n "$TESTS_PASSED" ]; then
+if [[ -n "$TESTS_PASSED" ]]; then
     print_status 0 "Unit Tests (Coverage threshold warnings ignored)"
 else
     print_status 1 "Unit Tests"
@@ -118,7 +118,7 @@ print_section "4. Local Mode E2E Test"
 
 echo "Checking Local backend status..."
 CONTAINERS_RUNNING=$(docker ps --filter "name=diabetify" --format "{{.Names}}" | wc -l)
-if [ "$CONTAINERS_RUNNING" -lt 8 ]; then
+if [[ "$CONTAINERS_RUNNING" -lt 8 ]]; then
     echo "Starting Local backend Docker containers..."
     cd extServicesCompose/extServices/container-managing && docker compose up -d && cd ../../..
     echo "Waiting for services to be healthy..."

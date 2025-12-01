@@ -8,7 +8,8 @@ set -e  # Exit on error
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # Set environment
-export JAVA_HOME=$(mise where java)
+JAVA_HOME=$(mise where java)
+export JAVA_HOME
 export ANDROID_HOME=/home/julito/Android/Sdk
 
 # Run gradle command

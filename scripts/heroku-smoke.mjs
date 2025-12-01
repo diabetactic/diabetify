@@ -115,7 +115,10 @@ async function main() {
     process.exit(0);
   } catch (error) {
     console.error('');
-    console.error('❌ Heroku smoke tests failed:', error?.message || error);
+    console.error(
+      '❌ Heroku smoke tests failed:',
+      error instanceof Error ? error.message : String(error)
+    );
     process.exit(1);
   }
 }

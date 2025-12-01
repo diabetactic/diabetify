@@ -1,0 +1,11 @@
+{
+  "/api": {
+    "target": "https://diabetactic-api-gateway-37949d6f182f.herokuapp.com",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api": ""
+    },
+    "logLevel": "debug"
+  }
+}

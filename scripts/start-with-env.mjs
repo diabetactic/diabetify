@@ -4,12 +4,15 @@
  * Dev server launcher with backend ENV switch.
  *
  * Usage:
- *   ENV=local  npm start   # use local Docker gateway (http://localhost:8000)
- *   ENV=heroku npm start   # use Heroku gateway (via API_GATEWAY_URL)
+ *   npm run start:mock   # or ENV=mock npm start   - In-memory mock data, no backend
+ *   npm run start:local  # or ENV=local npm start  - Local Docker (http://localhost:8000)
+ *   npm run start:cloud  # or ENV=cloud npm start  - Heroku production API
  *
- * You can also override the exact URLs via:
- *   LOCAL_API_GATEWAY_URL
- *   HEROKU_API_BASE_URL
+ * ENV values: mock | local | cloud (alias: heroku)
+ *
+ * Override URLs via environment variables:
+ *   LOCAL_API_GATEWAY_URL   - for local mode
+ *   HEROKU_API_BASE_URL     - for cloud/heroku mode
  */
 
 import { spawn } from 'node:child_process';
@@ -20,6 +23,7 @@ let apiGatewayUrl;
 let configName;
 
 switch (envMode) {
+  case 'cloud':
   case 'heroku':
     apiGatewayUrl =
       process.env.HEROKU_API_BASE_URL ||
