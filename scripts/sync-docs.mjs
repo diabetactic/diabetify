@@ -21,13 +21,9 @@ const CONFIG = {
   // Docs técnicos generados (pueden estar en inglés)
   technicalDocsDir: 'docs/technical',
   // Archivos que necesitan traducción
-  filesToTranslate: [
-    'README.md',
-    'CONTRIBUTING.md',
-    'CHANGELOG.md'
-  ],
+  filesToTranslate: ['README.md', 'CONTRIBUTING.md', 'CHANGELOG.md'],
   // Claude CLI disponible?
-  useClaudeCli: false // cambiar a true si tenés Claude CLI instalado
+  useClaudeCli: false, // cambiar a true si tenés Claude CLI instalado
 };
 
 function checkClaudeCli() {
@@ -66,7 +62,7 @@ ${text}`;
 
     const result = execSync(`echo "${prompt.replace(/"/g, '\\"')}" | claude --print`, {
       encoding: 'utf-8',
-      maxBuffer: 10 * 1024 * 1024
+      maxBuffer: 10 * 1024 * 1024,
     });
     return result;
   } catch (error) {
@@ -83,14 +79,17 @@ function checkDocsNeedUpdate() {
   if (existsSync(readmePath)) {
     const content = readFileSync(readmePath, 'utf-8');
     // Detectar si está mayormente en inglés
-    const englishWords = (content.match(/\b(the|and|is|are|this|that|with|for|you|your)\b/gi) || []).length;
-    const spanishWords = (content.match(/\b(el|la|los|las|que|con|para|este|esta|son|una|uno)\b/gi) || []).length;
+    const englishWords = (content.match(/\b(the|and|is|are|this|that|with|for|you|your)\b/gi) || [])
+      .length;
+    const spanishWords = (
+      content.match(/\b(el|la|los|las|que|con|para|este|esta|son|una|uno)\b/gi) || []
+    ).length;
 
     if (englishWords > spanishWords * 2) {
       issues.push({
         file: 'README.md',
         issue: 'Parece estar en inglés - considerar traducir al español',
-        severity: 'warning'
+        severity: 'warning',
       });
     }
   }
@@ -107,7 +106,7 @@ function checkDocsNeedUpdate() {
         issues.push({
           file: 'CHANGELOG.md',
           issue: `Última actualización hace ${Math.floor(daysSince)} días`,
-          severity: 'info'
+          severity: 'info',
         });
       }
     }
