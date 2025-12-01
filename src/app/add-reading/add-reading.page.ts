@@ -25,6 +25,7 @@ import { Subject, takeUntil } from 'rxjs';
 
 import { ReadingsService } from '../core/services/readings.service';
 import { ProfileService } from '../core/services/profile.service';
+import { LoggerService } from '../core/services/logger.service';
 import { SMBGReading, GlucoseUnit, GlucoseStatus } from '../core/models/glucose-reading.model';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 
@@ -92,13 +93,15 @@ export class AddReadingPage implements OnInit, OnDestroy {
     private router: Router,
     private navCtrl: NavController,
     private toastController: ToastController,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private logger: LoggerService
   ) {}
 
   ngOnInit() {
     this.initializeForm();
     this.loadUserPreferences();
     this.subscribeToGlucoseValueChanges();
+    this.logger.info('Init', 'AddReadingPage initialized');
   }
 
   ngOnDestroy() {
@@ -242,6 +245,7 @@ export class AddReadingPage implements OnInit, OnDestroy {
 
   async onSubmit(): Promise<void> {
     if (this.readingForm.invalid) {
+      this.logger.warn('UI', 'AddReading form invalid', this.readingForm.errors);
       // Mark all fields as touched to show validation errors
       Object.keys(this.readingForm.controls).forEach(key => {
         this.readingForm.get(key)?.markAsTouched();
@@ -250,6 +254,7 @@ export class AddReadingPage implements OnInit, OnDestroy {
     }
 
     this.isSubmitting = true;
+    this.logger.info('UI', 'Submitting reading form');
 
     try {
       const formValue = this.readingForm.value;
@@ -265,16 +270,26 @@ export class AddReadingPage implements OnInit, OnDestroy {
         tags: formValue.mealContext ? [formValue.mealContext] : undefined,
       };
 
-      // Save to IndexedDB via ReadingsService
-      await this.readingsService.addReading(reading);
+      this.logger.debug('UI', 'Calling addReading service');
+
+      // Add timeout safeguard (10s)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Operation timed out')), 10000)
+      );
+
+      // Save to IndexedDB via ReadingsService with race condition
+      await Promise.race([this.readingsService.addReading(reading), timeoutPromise]);
+
+      this.logger.info('UI', 'Reading saved successfully');
 
       // Show success message
       await this.showSuccessToast();
 
       // Navigate back to readings list
+      this.logger.debug('UI', 'Navigating back to readings');
       this.navCtrl.navigateBack('/tabs/readings');
     } catch (error) {
-      console.error('Error saving reading:', error);
+      this.logger.error('UI', 'Error saving reading', error);
       await this.showErrorToast(error);
     } finally {
       this.isSubmitting = false;
