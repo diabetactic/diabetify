@@ -12,7 +12,7 @@ Los tokens de diseño están definidos en `src/global.scss`:
 
 ```css
 @theme {
-  --color-primary-500: #25aff4;
+  --color-primary-500: #3b82f6;
   --color-primary: var(--color-primary-500);
   --color-success: #22c55e;
   --color-warning: #f59e0b;
@@ -28,7 +28,7 @@ Los tokens de diseño están definidos en `src/global.scss`:
 <!-- Correcto -->
 <div class="bg-primary-500 rounded-lg p-4 text-white">
   <!-- Evitar -->
-  <div style="background: #25aff4"></div>
+  <div style="background: #3b82f6"></div>
 </div>
 ```
 

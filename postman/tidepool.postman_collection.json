@@ -1,0 +1,137 @@
+{
+  "info": {
+    "name": "Tidepool API (Curated)",
+    "description": "Endpoints used by Diabetify app + common Tidepool operations.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (Legacy)",
+          "request": {
+            "method": "POST",
+            "url": "https://api.tidepool.org/auth/login",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{basic_auth_header}}"
+              }
+            ],
+            "description": "Legacy Basic Auth login. Returns x-tidepool-session-token header."
+          }
+        },
+        {
+          "name": "Refresh Token (OAuth)",
+          "request": {
+            "method": "POST",
+            "url": "https://api.tidepool.org/auth/oauth/token",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "refresh_token"
+                },
+                {
+                  "key": "refresh_token",
+                  "value": "{{refresh_token}}"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Data",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": "https://api.tidepool.org/metadata/{{userId}}/profile",
+            "header": [
+              {
+                "key": "X-Tidepool-Session-Token",
+                "value": "{{session_token}}"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Get Data Sources",
+          "request": {
+            "method": "GET",
+            "url": "https://api.tidepool.org/v1/users/{{userId}}/data_sources",
+            "header": [
+              {
+                "key": "X-Tidepool-Session-Token",
+                "value": "{{session_token}}"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clinical Data",
+      "item": [
+        {
+          "name": "Get All Data",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://api.tidepool.org/data/{{userId}}?startDate=2024-01-01&endDate=2025-12-31",
+              "host": ["api", "tidepool", "org"],
+              "path": ["data", "{{userId}}"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-12-31"
+                },
+                {
+                  "key": "type",
+                  "value": "cbg,smbg,bolus,wizard",
+                  "description": "Optional type filter"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "X-Tidepool-Session-Token",
+                "value": "{{session_token}}"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "userId",
+      "value": "YOUR_USER_ID",
+      "type": "string"
+    },
+    {
+      "key": "session_token",
+      "value": "YOUR_SESSION_TOKEN",
+      "type": "string"
+    },
+    {
+      "key": "client_id",
+      "value": "YOUR_CLIENT_ID",
+      "type": "string"
+    }
+  ]
+}

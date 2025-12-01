@@ -1,0 +1,839 @@
+{
+  "info": {
+    "name": "Diabetactic API Collection",
+    "description": "Auto-generated collection. Import 'diabetactic.postman_environment.json' for Local/Prod switching.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "API Gateway",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Get Token",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8004}}/token",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8004}}",
+                  "path": ["token"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"12345678A\",\n  \"password\": \"password\"\n}"
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Glucose",
+          "item": [
+            {
+              "name": "My Readings",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8004}}/glucose/mine",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8004}}",
+                  "path": ["glucose", "mine"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "My Latest Reading",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8004}}/glucose/mine/latest",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8004}}",
+                  "path": ["glucose", "mine", "latest"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Reading",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8004}}/glucose/create",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8004}}",
+                  "path": ["glucose", "create"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"value\": 120,\n  \"date\": \"2025-11-30T10:00:00\"\n}"
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Appointments",
+          "item": [
+            {
+              "name": "My Appointments",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8004}}/appointments/mine",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8004}}",
+                  "path": ["appointments", "mine"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "My Queue State",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8004}}/appointments/state",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8004}}",
+                  "path": ["appointments", "state"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "My Queue Placement",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8004}}/appointments/placement",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8004}}",
+                  "path": ["appointments", "placement"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Appointment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8004}}/appointments/create",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8004}}",
+                  "path": ["appointments", "create"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"date\": \"2025-12-01T09:00:00\",\n  \"reason\": \"Checkup\"\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Submit to Queue",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8004}}/appointments/submit",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8004}}",
+                  "path": ["appointments", "submit"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Resolution",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8004}}/appointments/{id}/resolution",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8004}}",
+                  "path": ["appointments", "{id}", "resolution"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Users",
+          "item": []
+        }
+      ],
+      "description": "Main Public API for Mobile App"
+    },
+    {
+      "name": "API Gateway Backoffice",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Get Token",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8006}}/token",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8006}}",
+                  "path": ["token"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password\"\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Recover Password",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8006}}/recover",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8006}}",
+                  "path": ["recover"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"admin@example.com\"\n}"
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Admin",
+          "item": [
+            {
+              "name": "Create Admin",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8006}}/admin/",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8006}}",
+                  "path": ["admin"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"newadmin\",\n  \"password\": \"password\"\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Grant Access",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8006}}/admin/grantaccess",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8006}}",
+                  "path": ["admin", "grantaccess"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password\"\n}"
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Check Password",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8006}}/admin/password/check",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8006}}",
+                  "path": ["admin", "password", "check"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"password\": \"password\"\n}"
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Users",
+          "item": [
+            {
+              "name": "List Users",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8006}}/users/",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8006}}",
+                  "path": ["users"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get User by ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8006}}/users/{id}",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8006}}",
+                  "path": ["users", "{id}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Block User",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8006}}/users/block/{id}",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8006}}",
+                  "path": ["users", "block", "{id}"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Appointments",
+          "item": [
+            {
+              "name": "Pending Queue",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8006}}/appointments/pending",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8006}}",
+                  "path": ["appointments", "pending"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Accepted Queue",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8006}}/appointments/accepted",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8006}}",
+                  "path": ["appointments", "accepted"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Queue Size",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8006}}/appointments/queue/size",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8006}}",
+                  "path": ["appointments", "queue", "size"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Accept Request",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8006}}/appointments/accept/{placement}",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8006}}",
+                  "path": ["appointments", "accept", "{placement}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Deny Request",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8006}}/appointments/deny/{placement}",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8006}}",
+                  "path": ["appointments", "deny", "{placement}"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Glucose",
+          "item": [
+            {
+              "name": "User Readings",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8006}}/glucose/user/{id}",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8006}}",
+                  "path": ["glucose", "user", "{id}"]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": "API for Admin Panel"
+    },
+    {
+      "name": "Internal - Glucose Service",
+      "item": [
+        {
+          "name": "Readings",
+          "item": [
+            {
+              "name": "Get All",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8002}}/readings/",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8002}}",
+                  "path": ["readings"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get User Readings",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8002}}/readings/user",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8002}}",
+                  "path": ["readings", "user"],
+                  "query": [
+                    {
+                      "key": "user_id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Reading",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8002}}/readings/",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8002}}",
+                  "path": ["readings"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": 1,\n  \"glucose\": 110,\n  \"measured_at\": \"2025-11-30T12:00:00\"\n}"
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "Internal - Login Service",
+      "item": [
+        {
+          "name": "Users",
+          "item": [
+            {
+              "name": "Grant Access",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8003}}/users/grantaccess",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8003}}",
+                  "path": ["users", "grantaccess"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dni\": \"12345678A\",\n  \"password\": \"pass\"\n}"
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Admin",
+          "item": [
+            {
+              "name": "Grant Access",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8003}}/admin/grantaccess",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8003}}",
+                  "path": ["admin", "grantaccess"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"pass\"\n}"
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "Internal - Appointments Service",
+      "item": [
+        {
+          "name": "Appointments",
+          "item": [
+            {
+              "name": "Get All",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8005}}/appointments",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8005}}",
+                  "path": ["appointments"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8005}}/appointments/create",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8005}}",
+                  "path": ["appointments", "create"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": 1,\n  \"date\": \"...\"\n}"
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Queue",
+          "item": [
+            {
+              "name": "Get Queue",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{protocol}}://{{host}}:{{port_8005}}/queue",
+                  "protocol": "{{protocol}}",
+                  "host": ["{{host}}"],
+                  "port": "{{port_8005}}",
+                  "path": ["queue"]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": ""
+    }
+  ],
+  "variable": [
+    {
+      "key": "protocol",
+      "value": "http",
+      "type": "string"
+    },
+    {
+      "key": "host",
+      "value": "localhost",
+      "type": "string"
+    },
+    {
+      "key": "port_8004",
+      "value": "8004",
+      "type": "string"
+    },
+    {
+      "key": "port_8006",
+      "value": "8006",
+      "type": "string"
+    },
+    {
+      "key": "port_8002",
+      "value": "8002",
+      "type": "string"
+    },
+    {
+      "key": "port_8003",
+      "value": "8003",
+      "type": "string"
+    },
+    {
+      "key": "port_8005",
+      "value": "8005",
+      "type": "string"
+    }
+  ]
+}
