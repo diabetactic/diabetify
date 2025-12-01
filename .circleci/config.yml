@@ -94,7 +94,7 @@ jobs:
           post-emulator-launch-assemble-command: ''
       - run:
           name: Build Debug APK
-          command: cd android && ./gradlew assembleDebug
+          command: cd android && chmod +x gradlew && ./gradlew assembleDebug
       - run:
           name: Smoke Test on API 30
           command: |
@@ -140,7 +140,7 @@ jobs:
           post-emulator-launch-assemble-command: ''
       - run:
           name: Build Debug APK
-          command: cd android && ./gradlew assembleDebug
+          command: cd android && chmod +x gradlew && ./gradlew assembleDebug
       - run:
           name: Smoke Test on API 33
           command: |
@@ -184,7 +184,7 @@ jobs:
           command: npx cap sync android
       - run:
           name: Build Debug APK
-          command: cd android && ./gradlew assembleDebug
+          command: cd android && chmod +x gradlew && ./gradlew assembleDebug
       - run:
           name: Rename APK with nice name
           command: |
