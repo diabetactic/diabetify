@@ -212,7 +212,7 @@ export class VisualVerification {
   static verifyBackgroundColor(
     element: Element,
     expectedColor: string,
-    tolerance: number = 5
+    _tolerance: number = 5
   ): boolean {
     const computed = this.getComputedStyle(element);
     const actual = computed.backgroundColor;

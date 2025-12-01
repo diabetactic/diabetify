@@ -25,8 +25,8 @@ export interface TestResult {
   status: 'pending' | 'success' | 'error';
   message: string;
   duration?: number;
-  data?: any;
-  error?: any;
+  data?: Record<string, unknown>;
+  error?: unknown;
 }
 
 @Injectable({
@@ -88,7 +88,7 @@ export class AutoTestService {
     // Test 3: Get Appointments
     await this.test('3. GET /appointments/mine', async () => {
       const response = await firstValueFrom(
-        this.apiGateway.request<any[]>('extservices.appointments.mine')
+        this.apiGateway.request<unknown[]>('extservices.appointments.mine')
       );
       if (!response.success) {
         throw new Error(response.error?.message || 'Failed to fetch appointments');
@@ -155,7 +155,7 @@ export class AutoTestService {
     // Test 7: Get Glucose Readings
     await this.test('7. GET /glucose/mine', async () => {
       const response = await firstValueFrom(
-        this.apiGateway.request<{ readings: any[] }>('extservices.glucose.mine')
+        this.apiGateway.request<{ readings: unknown[] }>('extservices.glucose.mine')
       );
       if (!response.success) {
         throw new Error(response.error?.message || 'Failed to fetch glucose readings');
@@ -170,7 +170,7 @@ export class AutoTestService {
     // Test 8: Get Latest Glucose Readings
     await this.test('8. GET /glucose/mine/latest', async () => {
       const response = await firstValueFrom(
-        this.apiGateway.request<{ readings: any[] }>('extservices.glucose.latest')
+        this.apiGateway.request<{ readings: unknown[] }>('extservices.glucose.latest')
       );
       if (!response.success) {
         throw new Error(response.error?.message || 'Failed to fetch latest glucose readings');
@@ -209,7 +209,7 @@ export class AutoTestService {
     return this.results;
   }
 
-  private async test(name: string, fn: () => Promise<any>): Promise<void> {
+  private async test(name: string, fn: () => Promise<Record<string, unknown>>): Promise<void> {
     const result: TestResult = {
       name,
       status: 'pending',
@@ -226,9 +226,9 @@ export class AutoTestService {
       result.data = data;
       result.duration = Date.now() - start;
       console.log(`✅ ${name} (${result.duration}ms)`, data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       result.status = 'error';
-      result.message = `❌ ${error.message || 'Unknown error'}`;
+      result.message = `❌ ${error instanceof Error ? error.message : 'Unknown error'}`;
       result.error = error;
       result.duration = Date.now() - start;
       console.error(`❌ ${name} (${result.duration}ms)`, error);

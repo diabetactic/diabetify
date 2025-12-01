@@ -350,7 +350,7 @@ export class IntegrationTestPage implements OnInit {
       this.results = await this.autoTest.runAllTests(this.username, this.password);
     } catch (error) {
       console.error('Test suite error:', error);
-      alert('Error running tests: ' + (error as any).message);
+      alert('Error running tests: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       this.running = false;
     }
