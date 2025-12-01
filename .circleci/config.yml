@@ -7,7 +7,7 @@ orbs:
 executors:
   node-executor:
     docker:
-      - image: cimg/node:22.11
+      - image: cimg/node:20.19
     working_directory: ~/project
 
 jobs:
@@ -86,7 +86,7 @@ jobs:
           name: Smoke Test on API 30
           command: |
             adb install android/app/build/outputs/apk/debug/app-debug.apk
-            adb shell am start -n io.ionic.starter/.MainActivity
+            adb shell am start -n io.diabetactic.app/.MainActivity
             sleep 10
             adb shell dumpsys activity activities | grep -i diabetactic || true
       - store_artifacts:
@@ -121,7 +121,7 @@ jobs:
           name: Smoke Test on API 33
           command: |
             adb install android/app/build/outputs/apk/debug/app-debug.apk
-            adb shell am start -n io.ionic.starter/.MainActivity
+            adb shell am start -n io.diabetactic.app/.MainActivity
             sleep 10
             adb shell dumpsys activity activities | grep -i diabetactic || true
       - store_artifacts:
@@ -168,12 +168,19 @@ workflows:
       - build-web:
           requires:
             - test
+      # Android builds only on master to save credits
       - build-android-api30:
           requires:
             - test
+          filters:
+            branches:
+              only: master
       - build-android-api33:
           requires:
             - test
+          filters:
+            branches:
+              only: master
       - deploy-netlify:
           requires:
             - build-web
