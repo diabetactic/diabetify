@@ -140,7 +140,7 @@ export class BolusCalculatorPage {
   }
 
   goBack() {
-    this.navCtrl.back();
+    this.navCtrl.navigateBack('/tabs/dashboard');
   }
 
   get glucoseError(): string {
