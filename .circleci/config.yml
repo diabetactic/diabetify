@@ -52,10 +52,9 @@ jobs:
             - android
 
   # Deploy preview to Netlify (branches != master)
+  # Requires NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID in CircleCI project settings
   deploy-preview:
     executor: node-executor
-    environment:
-      NETLIFY_AUTH_TOKEN: ${NETLIFY_AUTH_TOKEN}
     steps:
       - attach_workspace:
           at: .
@@ -63,20 +62,29 @@ jobs:
           name: Deploy Preview to Netlify
           command: |
             BRANCH_ALIAS="${CIRCLE_BRANCH//\//-}"
-            npx netlify-cli deploy --dir=www --site="$NETLIFY_SITE_ID" --alias="$BRANCH_ALIAS" --message="Preview: $CIRCLE_BRANCH ($CIRCLE_SHA1)"
+            npx netlify-cli deploy \
+              --auth="$NETLIFY_AUTH_TOKEN" \
+              --site="$NETLIFY_SITE_ID" \
+              --dir=www \
+              --alias="$BRANCH_ALIAS" \
+              --message="Preview: $CIRCLE_BRANCH"
 
   # Deploy production to Netlify (master only)
+  # Requires NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID in CircleCI project settings
   deploy-prod:
     executor: node-executor
-    environment:
-      NETLIFY_AUTH_TOKEN: ${NETLIFY_AUTH_TOKEN}
     steps:
       - attach_workspace:
           at: .
       - run:
           name: Deploy Production to Netlify
           command: |
-            npx netlify-cli deploy --prod --dir=www --site="$NETLIFY_SITE_ID" --message="Production: $CIRCLE_SHA1"
+            npx netlify-cli deploy \
+              --auth="$NETLIFY_AUTH_TOKEN" \
+              --site="$NETLIFY_SITE_ID" \
+              --dir=www \
+              --prod \
+              --message="Production deploy"
 
   # Android build - API 34 (target)
   build-android:
