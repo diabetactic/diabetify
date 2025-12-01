@@ -241,6 +241,10 @@ export class ReadingsService {
     // Add to sync queue if not synced
     if (!localReading.synced) {
       await this.addToSyncQueue('create', localReading);
+      // Trigger background sync
+      this.syncPendingReadings().catch(err =>
+        this.logger?.error('Sync', 'Background sync failed', err)
+      );
     }
 
     return localReading;

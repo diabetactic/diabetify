@@ -153,18 +153,21 @@ export class ReadingsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Auto-fetch readings from backend on page load
+   * Auto-sync readings with backend on page load
    * Runs in background without blocking the UI
    */
   private async autoFetchFromBackend(): Promise<void> {
     try {
-      const result = await this.readingsService.fetchFromBackend();
-      if (result.merged > 0) {
-        this.logger.info('Sync', `Auto-fetched ${result.merged} new readings from backend`);
+      const result = await this.readingsService.performFullSync();
+      if (result.fetched > 0 || result.pushed > 0) {
+        this.logger.info(
+          'Sync',
+          `Auto-sync complete: ${result.fetched} fetched, ${result.pushed} pushed`
+        );
       }
     } catch (error) {
       // Silent fail - don't show error for background sync
-      this.logger.warn('Sync', 'Auto-fetch from backend failed', error);
+      this.logger.warn('Sync', 'Auto-sync failed', error);
     }
   }
 
@@ -476,9 +479,9 @@ export class ReadingsPage implements OnInit, OnDestroy {
   async doRefresh(event: CustomEvent): Promise<void> {
     this.logger.info('UI', 'Readings refresh initiated');
     try {
-      // Reload readings - the observable will automatically update
-      await this.readingsService.getAllReadings();
-      this.logger.info('UI', 'Readings refreshed successfully');
+      // Sync with backend to get latest data
+      await this.readingsService.performFullSync();
+      this.logger.info('UI', 'Readings synced and refreshed successfully');
       (event.target as HTMLIonRefresherElement).complete();
     } catch (error) {
       this.logger.error('Error', 'Error refreshing readings', error);
