@@ -9,22 +9,23 @@ executors:
     docker:
       - image: cimg/node:20.19
     working_directory: ~/project
+    resource_class: medium
 
 jobs:
-  # Lint and unit tests
+  # Lint and unit tests - runs on all branches
   test:
     executor: node-executor
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: npm
-          cache-version: v1
+          cache-version: v2
       - run:
           name: Lint
           command: npm run lint
       - run:
           name: Unit Tests
-          command: npm test -- --ci --coverage
+          command: npm test -- --ci --coverage --maxWorkers=2
       - store_test_results:
           path: coverage
       - store_artifacts:
@@ -37,7 +38,7 @@ jobs:
       - checkout
       - node/install-packages:
           pkg-manager: npm
-          cache-version: v1
+          cache-version: v2
       - run:
           name: Build Production
           command: npm run build:prod
@@ -50,19 +51,31 @@ jobs:
             - capacitor.config.ts
             - android
 
-  # Deploy to Netlify
-  deploy-netlify:
+  # Deploy preview to Netlify (branches != master)
+  deploy-preview:
     executor: node-executor
     steps:
       - attach_workspace:
           at: .
       - run:
-          name: Deploy to Netlify
+          name: Deploy Preview to Netlify
+          command: |
+            npm install -g netlify-cli
+            netlify deploy --dir=www --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN --alias=${CIRCLE_BRANCH//\//-}
+
+  # Deploy production to Netlify (master only)
+  deploy-prod:
+    executor: node-executor
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Deploy Production to Netlify
           command: |
             npm install -g netlify-cli
             netlify deploy --prod --dir=www --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
 
-  # Android smoke test - API 33
+  # Android build - API 34 (target)
   build-android:
     executor:
       name: android/android-machine
@@ -72,23 +85,25 @@ jobs:
           at: .
       - restore_cache:
           keys:
-            - gradle-v1-{{ checksum "android/build.gradle" }}
-            - gradle-v1-
+            - gradle-v2-{{ checksum "android/build.gradle" }}-{{ checksum "android/app/build.gradle" }}
+            - gradle-v2-{{ checksum "android/build.gradle" }}
+            - gradle-v2-
       - run:
           name: Sync Capacitor
           command: npx cap sync android
       - run:
           name: Build Debug APK
-          command: cd android && ./gradlew assembleDebug --no-daemon
+          command: cd android && ./gradlew assembleDebug --no-daemon --parallel --build-cache
       - save_cache:
-          key: gradle-v1-{{ checksum "android/build.gradle" }}
+          key: gradle-v2-{{ checksum "android/build.gradle" }}-{{ checksum "android/app/build.gradle" }}
           paths:
             - ~/.gradle/caches
             - ~/.gradle/wrapper
+            - android/.gradle
       - store_artifacts:
           path: android/app/build/outputs/apk/debug
 
-  # Release APK - requires tests to pass
+  # Release APK with version
   release-apk:
     executor:
       name: android/android-machine
@@ -98,8 +113,8 @@ jobs:
           at: .
       - restore_cache:
           keys:
-            - gradle-v1-{{ checksum "android/build.gradle" }}
-            - gradle-v1-
+            - gradle-v2-{{ checksum "android/build.gradle" }}-{{ checksum "android/app/build.gradle" }}
+            - gradle-v2-
       - run:
           name: Get version
           command: |
@@ -109,10 +124,10 @@ jobs:
           name: Sync Capacitor
           command: npx cap sync android
       - run:
-          name: Build Debug APK
-          command: cd android && ./gradlew assembleDebug --no-daemon
+          name: Build Release APK
+          command: cd android && ./gradlew assembleDebug --no-daemon --parallel --build-cache
       - run:
-          name: Rename APK
+          name: Package Release
           command: |
             mkdir -p release
             cp android/app/build/outputs/apk/debug/app-debug.apk "release/diabetactic-v${VERSION}.apk"
@@ -121,27 +136,36 @@ jobs:
           destination: apk-release
 
 workflows:
-  # Main CI workflow
+  # CI workflow - runs on all branches
   ci:
     jobs:
       - test
       - build-web:
           requires:
             - test
+      # Preview deploy for feature branches
+      - deploy-preview:
+          requires:
+            - build-web
+          filters:
+            branches:
+              ignore: master
+      # Production deploy for master
+      - deploy-prod:
+          requires:
+            - build-web
+          filters:
+            branches:
+              only: master
+      # Android build only on master (save resources)
       - build-android:
           requires:
             - build-web
           filters:
             branches:
               only: master
-      - deploy-netlify:
-          requires:
-            - build-web
-          filters:
-            branches:
-              only: master
 
-  # Release workflow - REQUIRES CI to pass first
+  # Release workflow - manual approval required
   release:
     jobs:
       - test:

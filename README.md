@@ -35,12 +35,12 @@ Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar e
 
 ### Compatibilidad Android
 
-| Versión                | SDK | Soporte            |
-| ---------------------- | --- | ------------------ |
-| Android 5.1 (Lollipop) | 22  | Mínimo             |
-| Android 14             | 34  | Target/Compilación |
+| Versión              | SDK | Soporte            |
+| -------------------- | --- | ------------------ |
+| Android 7.0 (Nougat) | 24  | Mínimo             |
+| Android 15           | 35  | Target/Compilación |
 
-Cubre aproximadamente 98% de dispositivos activos.
+Cubre ~99% de dispositivos activos.
 
 ## Instalación
 
