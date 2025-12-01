@@ -35,13 +35,14 @@
       <div class="mb-1">
         <ion-item lines="none">
           <div class="form-control w-full">
-            <label class="label">
+            <label class="label" for="glucose-value-input">
               <span class="label-text font-medium">
                 {{ 'addReading.glucoseLabel' | translate }} <span class="text-danger">*</span>
               </span>
             </label>
             <div class="input-with-unit flex items-center gap-2">
               <ion-input
+                id="glucose-value-input"
                 formControlName="value"
                 type="number"
                 inputmode="decimal"
@@ -55,12 +56,12 @@
                 getUnitLabel()
               }}</span>
             </div>
-            <label class="label" *ngIf="getValidationMessage('value')">
+            <div class="label" *ngIf="getValidationMessage('value')">
               <span class="label-text-alt text-error flex items-center gap-1.5">
                 <ion-icon name="alert-circle" class="text-base"></ion-icon>
                 {{ getValidationMessage('value') }}
               </span>
-            </label>
+            </div>
           </div>
         </ion-item>
       </div>
@@ -77,7 +78,7 @@
       <div class="mb-1">
         <ion-item lines="none">
           <div class="form-control w-full">
-            <label class="label">
+            <label class="label" for="reading-datetime">
               <span class="label-text font-medium">
                 {{ 'addReading.dateTimeLabel' | translate }} <span class="text-danger">*</span>
               </span>
@@ -103,12 +104,13 @@
       <div class="mb-1">
         <ion-item lines="none">
           <div class="form-control w-full">
-            <label class="label">
+            <label class="label" for="meal-context-select">
               <span class="label-text font-medium">
                 {{ 'addReading.mealContext.label' | translate }}
               </span>
             </label>
             <ion-select
+              id="meal-context-select"
               formControlName="mealContext"
               [placeholder]="'addReading.mealContext.placeholder' | translate"
               interface="action-sheet"
@@ -128,26 +130,27 @@
       <div class="mb-1">
         <ion-item lines="none">
           <div class="form-control w-full">
-            <label class="label">
+            <label class="label" for="notes-textarea">
               <span class="label-text font-medium">
                 {{ 'addReading.notes.label' | translate }}
               </span>
             </label>
             <ion-textarea
+              id="notes-textarea"
               formControlName="notes"
               [placeholder]="'addReading.notes.placeholder' | translate"
               rows="4"
               maxlength="500"
               class="notes-textarea w-full"
             ></ion-textarea>
-            <label class="label">
+            <div class="label">
               <span class="label-text-alt">
                 {{
                   'addReading.notes.counter'
                     | translate: { count: readingForm.get('notes')?.value?.length || 0, max: 500 }
                 }}
               </span>
-            </label>
+            </div>
           </div>
         </ion-item>
       </div>

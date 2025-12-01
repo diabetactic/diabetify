@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -20,7 +20,6 @@ import {
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { Preferences } from '@capacitor/preferences';
 
 import { environment } from '../../../environments/environment';
@@ -56,7 +55,7 @@ import { AppIconComponent } from '../../shared/components/app-icon/app-icon.comp
     AppIconComponent,
   ],
 })
-export class AdvancedPage implements OnInit, OnDestroy {
+export class AdvancedPage implements OnDestroy {
   isDevMode = !environment.production;
   accountState: string = 'active';
   private destroy$ = new Subject<void>();
@@ -68,8 +67,6 @@ export class AdvancedPage implements OnInit, OnDestroy {
     private router: Router,
     private translationService: TranslationService
   ) {}
-
-  ngOnInit(): void {}
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -169,7 +166,7 @@ export class AdvancedPage implements OnInit, OnDestroy {
   /**
    * Handle account state change (dev mode only)
    */
-  onAccountStateChange(event: any): void {
+  onAccountStateChange(event: CustomEvent): void {
     this.accountState = event.detail.value;
     console.log('Account state changed to:', this.accountState);
   }

@@ -66,8 +66,8 @@
   --shadow-03: 0 8px 16px rgb(10 31 68 / 8%);
   --shadow-04: 0 16px 32px rgb(10 31 68 / 12%);
   --shadow-05: 0 12px 24px rgb(10 31 68 / 9%);
-  --shadow-06: 0 12px 24px oklch(var(--p) / 35%);
-  --shadow-07: 0 12px 24px oklch(0% 0 0deg / 35%);
+  --shadow-06: 0 8px 16px oklch(var(--p) / 15%);
+  --shadow-07: 0 6px 12px oklch(0% 0 0deg / 15%);
   --shadow-08: 0 4px 12px rgb(0 0 0 / 15%);
   --shadow-09: 0 12px 24px rgb(10 31 68 / 12%);
   --shadow-10: 0 4px 8px rgb(10 31 68 / 10%);
@@ -100,6 +100,10 @@
   --shadow-37: 0 8px 24px oklch(0% 0 0deg / 40%);
   --shadow-38: 0 8px 24px rgb(235 68 90 / 40%);
   --shadow-39: 0 6px 16px rgb(0 0 0 / 20%);
+
+  /* Illustration shadows */
+  --shadow-illustration-light: 0 8px 32px rgb(59 130 246 / 15%), 0 4px 12px rgb(0 0 0 / 8%);
+  --shadow-illustration-dark: 0 8px 32px rgb(0 0 0 / 40%), 0 0 20px rgb(148 163 184 / 10%);
 }
 
 .dark,
@@ -497,6 +501,8 @@
   /* ========== TOOLBAR BUTTONS ========== */
 
   /* Make toolbar icon buttons circular and polished */
+
+  /* Minimum touch target size: 44px (iOS) / 48px (Android) for accessibility */
   ion-toolbar ion-button {
     --border-radius: 50%;
     --padding-start: 8px;
@@ -504,8 +510,8 @@
     --padding-top: 8px;
     --padding-bottom: 8px;
 
-    min-height: 40px;
-    min-width: 40px;
+    min-height: 44px;
+    min-width: 44px;
   }
 
   ion-toolbar ion-buttons ion-button {
@@ -773,6 +779,9 @@ body {
   font-family: 'Be Vietnam Pro', 'Roboto', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Prevent iOS font scaling */
+  text-size-adjust: 100%;
 }
 
 /* Apply Material Design background and text colors */
@@ -922,7 +931,7 @@ body {
   color: #9ca3af;
 }
 
-/* Typography System */
+/* Typography System with Responsive Sizing */
 h1 {
   font-size: 32px;
   font-weight: 700;
@@ -956,6 +965,53 @@ p,
   font-size: 14px;
   font-weight: 400;
 }
+
+/* Responsive Typography for Mobile */
+@media (width <= 480px) {
+  h1 {
+    font-size: 26px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  h3 {
+    font-size: 18px;
+  }
+
+  h4 {
+    font-size: 16px;
+  }
+
+  p,
+  .body-text {
+    font-size: 15px;
+  }
+
+  .small-text {
+    font-size: 13px;
+  }
+}
+
+/* Prevent iOS font scaling on landscape rotation */
+html {
+  text-size-adjust: 100%;
+}
+
+/* Accessibility: Respect reduced motion preferences globally */
+/* stylelint-disable declaration-no-important -- Required for a11y override */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* stylelint-enable declaration-no-important */
 
 /* Material Symbols Outlined configuration */
 .material-symbols-outlined {

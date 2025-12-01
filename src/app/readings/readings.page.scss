@@ -16,22 +16,26 @@
   }
 }
 
-// === Dark Mode Support (class-based for manual theme toggle) ===
-// Filters container - triple-trigger pattern
+/* Dark Mode Support (class-based for manual theme toggle) */
+
+/* Filters container - triple-trigger pattern with hex fallbacks for Android WebView */
 :host-context(.dark),
 :host-context(.ion-palette-dark) {
   .flex.items-center.gap-2.px-4.py-3 {
+    /* Hex fallback for Android WebView compatibility */
     background: oklch(var(--b2));
     border-bottom-color: oklch(var(--bc) / 10%);
   }
 
-  // Date header
+  /* Date header */
   .sticky.top-0.z-10 {
+    /* Hex fallback for Android WebView compatibility */
     background: oklch(var(--b1));
   }
 
-  // Reading cards
+  /* Reading cards */
   ion-card {
+    /* Hex fallback for Android WebView compatibility */
     --background: oklch(var(--b2));
 
     border: 1px solid oklch(var(--bc) / 10%);
@@ -71,9 +75,10 @@ ion-toolbar[color='primary'] ion-searchbar {
   --border-radius: 12px;
 }
 
-// Dark mode searchbar
+/* Dark mode searchbar with hex fallbacks for Android WebView */
 .dark ion-toolbar[color='primary'] ion-searchbar,
 .ion-palette-dark ion-toolbar[color='primary'] ion-searchbar {
+  /* Hex fallbacks for Android WebView compatibility */
   --background: oklch(var(--b2, 0.2 0 0));
   --color: oklch(var(--bc, 1 0 0));
   --placeholder-color: oklch(var(--bc, 1 0 0) / 50%);

@@ -5,7 +5,12 @@
     </ion-title>
     <ion-buttons slot="end">
       <app-language-switcher displayMode="button" [showText]="false"></app-language-switcher>
-      <ion-button (click)="onSync()" [disabled]="isSyncing" class="dashboard-toolbar-btn">
+      <ion-button
+        (click)="onSync()"
+        [disabled]="isSyncing"
+        class="dashboard-toolbar-btn"
+        [attr.aria-label]="'dashboard.syncNow' | translate"
+      >
         <ion-icon slot="icon-only" name="sync-outline" [class.spinning]="isSyncing"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -17,6 +22,22 @@
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
+
+  <!-- Bolus Calculator FAB -->
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="mb-14 mr-2">
+    <ion-fab-button
+      routerLink="/bolus-calculator"
+      color="primary"
+      class="shadow-xl"
+      [attr.aria-label]="'bolusCalculator.title' | translate"
+    >
+      <img
+        src="assets/images/bolus-calculator-icon.png"
+        alt=""
+        class="h-10 w-10 rounded-full object-cover"
+      />
+    </ion-fab-button>
+  </ion-fab>
 
   <div class="page-shell">
     <!-- Loading State -->
@@ -138,15 +159,15 @@
                   <strong>{{ getLastSyncDisplay() }}</strong>
                 </span>
               </div>
-              <div *ngIf="syncStatus" class="text-right">
+              <div class="text-right">
                 <span class="font-semibold">
-                  {{ syncStatus.itemsSynced }} {{ 'sync.items' | translate }}
+                  {{ getSyncItemsCount() }} {{ 'sync.items' | translate }}
                 </span>
                 <span
-                  *ngIf="syncStatus.itemsFailed > 0"
+                  *ngIf="getSyncFailedCount() > 0"
                   class="sync-error text-error ml-1 font-semibold"
                 >
-                  ({{ syncStatus.itemsFailed }} {{ 'sync.failed' | translate }})
+                  ({{ getSyncFailedCount() }} {{ 'sync.failed' | translate }})
                 </span>
               </div>
             </div>

@@ -7,7 +7,14 @@ import { LucideAngularModule } from 'lucide-angular';
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   template: `
-    <lucide-icon [name]="mappedName" [ngClass]="computedClasses" [size]="computedSize">
+    <lucide-icon
+      [name]="mappedName"
+      [ngClass]="computedClasses"
+      [size]="computedSize"
+      [attr.aria-hidden]="ariaLabel ? null : 'true'"
+      [attr.aria-label]="ariaLabel || null"
+      [attr.role]="ariaLabel ? 'img' : null"
+    >
     </lucide-icon>
   `,
   styles: [],
@@ -16,6 +23,7 @@ export class AppIconComponent {
   @Input() name: string = '';
   @Input() size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' = 'md';
   @Input() class: string = '';
+  @Input() ariaLabel: string = ''; // For accessible icons that need labels
 
   // Icon name mappings from Ionicons to Lucide
   private iconMappings: Record<string, string> = {

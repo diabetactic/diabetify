@@ -6,6 +6,7 @@ import {
   EventEmitter,
   OnChanges,
   SimpleChanges,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { IonRippleEffect, IonSpinner, IonSkeletonText } from '@ionic/angular/standalone';
@@ -17,6 +18,7 @@ import { IonRippleEffect, IonSpinner, IonSkeletonText } from '@ionic/angular/sta
   standalone: true,
   imports: [CommonModule, IonRippleEffect, IonSpinner, IonSkeletonText],
   providers: [DecimalPipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StatCardComponent implements OnChanges {
   @Input() title: string = '';

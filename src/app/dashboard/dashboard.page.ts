@@ -12,6 +12,8 @@ import {
   IonContent,
   IonRefresher,
   IonRefresherContent,
+  IonFab,
+  IonFabButton,
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
@@ -54,6 +56,8 @@ import { environment } from '../../environments/environment';
     IonContent,
     IonRefresher,
     IonRefresherContent,
+    IonFab,
+    IonFabButton,
     // App components
     StatCardComponent,
     ReadingItemComponent,
@@ -72,6 +76,9 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   // Sync status
   syncStatus: SyncStatus | null = null;
+
+  // Backend sync results (for cloud mode counter)
+  backendSyncResult: { pushed: number; fetched: number; failed: number } | null = null;
 
   // Loading states
   isLoading = true;
@@ -131,10 +138,22 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   /**
    * Load initial dashboard data
+   * In cloud mode, syncs with backend first to get latest readings
    */
   private async loadDashboardData() {
     try {
       this.isLoading = true;
+
+      // In cloud mode, fetch from backend first (auto-load after login)
+      if (!this.isMockMode) {
+        this.logger.info('Dashboard', 'Auto-syncing with backend on load');
+        try {
+          this.backendSyncResult = await this.readingsService.performFullSync();
+          this.logger.info('Dashboard', 'Backend sync completed', this.backendSyncResult);
+        } catch (syncError) {
+          this.logger.error('Dashboard', 'Backend sync failed on load', syncError);
+        }
+      }
 
       // Get statistics for the last month
       this.statistics = await this.readingsService.getStatistics(
@@ -148,10 +167,7 @@ export class DashboardPage implements OnInit, OnDestroy {
       const result = await this.readingsService.getAllReadings(5);
       this.recentReadings = result.readings;
 
-      // Show success alert if Time in Range > 70%
-      if (this.statistics && this.statistics.timeInRange > 70) {
-        this.showSuccessAlert = true;
-      }
+      // Removed: auto-showing success alert was misleading (message said "Saved" but nothing was saved)
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
@@ -176,10 +192,7 @@ export class DashboardPage implements OnInit, OnDestroy {
           this.preferredGlucoseUnit
         );
 
-        // Update success alert
-        if (this.statistics && this.statistics.timeInRange > 70) {
-          this.showSuccessAlert = true;
-        }
+        // Removed: auto-showing success alert was misleading
       }
     });
   }
@@ -197,7 +210,7 @@ export class DashboardPage implements OnInit, OnDestroy {
   /**
    * Handle pull-to-refresh
    */
-  async handleRefresh(event: any) {
+  async handleRefresh(event: CustomEvent) {
     try {
       // Sync with backend (not Tidepool)
       await this.readingsService.performFullSync();
@@ -205,7 +218,7 @@ export class DashboardPage implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error refreshing data:', error);
     } finally {
-      event.target.complete();
+      (event.target as HTMLIonRefresherElement).complete();
     }
   }
 
@@ -217,9 +230,18 @@ export class DashboardPage implements OnInit, OnDestroy {
     try {
       this.isSyncing = true;
       // Sync with backend (not Tidepool)
-      await this.readingsService.performFullSync();
-      await this.loadDashboardData();
-      this.logger.info('UI', 'Backend sync completed successfully');
+      this.backendSyncResult = await this.readingsService.performFullSync();
+      this.logger.info('UI', 'Backend sync completed successfully', this.backendSyncResult);
+
+      // Reload dashboard data (but skip another sync since we just did one)
+      this.statistics = await this.readingsService.getStatistics(
+        'month',
+        70,
+        180,
+        this.preferredGlucoseUnit
+      );
+      const result = await this.readingsService.getAllReadings(5);
+      this.recentReadings = result.readings;
     } catch (error) {
       this.logger.error('Error', 'Error syncing data from backend', error);
     } finally {
@@ -348,6 +370,27 @@ export class DashboardPage implements OnInit, OnDestroy {
    */
   toggleDetails(): void {
     this.showDetails = !this.showDetails;
+  }
+
+  /**
+   * Get sync items count for display
+   * In cloud mode, uses backend sync result; in mock mode uses Tidepool sync status
+   */
+  getSyncItemsCount(): number {
+    if (!this.isMockMode && this.backendSyncResult) {
+      return this.backendSyncResult.fetched + this.backendSyncResult.pushed;
+    }
+    return this.syncStatus?.itemsSynced ?? 0;
+  }
+
+  /**
+   * Get sync failed count for display
+   */
+  getSyncFailedCount(): number {
+    if (!this.isMockMode && this.backendSyncResult) {
+      return this.backendSyncResult.failed;
+    }
+    return this.syncStatus?.itemsFailed ?? 0;
   }
 
   /**

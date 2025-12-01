@@ -3,23 +3,19 @@
 // Keeping only Ionic-specific CSS variables that can't be replaced
 
 ion-tab-bar {
-  // Solid background - hex value for Android WebView compatibility
-  --background: #ffffff;
-  background: #ffffff;
-
-  // Border with subtle separation
+  --background: #fff;
   --border: 1px solid #e5e7eb;
 
-  // Safe area inset for devices with notches
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* Safe area inset for devices with notches */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
-// Dark mode - class-based - hex fallback for Android WebView
+/* Dark mode - class-based - hex fallback for Android WebView */
 :host-context(.dark),
 :host-context(.ion-palette-dark) {
   ion-tab-bar {
-    background: #1a1a2e !important;
     --background: #1a1a2e;
+
     border-top: 1px solid #374151;
   }
 }
@@ -42,7 +38,8 @@ ion-tab-button {
 // Center FAB styling (Ionic-specific positioning)
 ion-fab.center-fab {
   // Position FAB above tab bar with safe area consideration
-  bottom: calc(56px - 32px + env(safe-area-inset-bottom));
+  // Simplified calculation: tab bar height (56px) + safe area
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px));
 
   ion-fab-button {
     // Ionic CSS variables for FAB button

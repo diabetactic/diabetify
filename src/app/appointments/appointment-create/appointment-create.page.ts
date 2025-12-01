@@ -207,7 +207,7 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
   /**
    * Handle motive selection
    */
-  onMotiveChange(motive: string, event: any) {
+  onMotiveChange(motive: string, event: CustomEvent) {
     if (event.detail.checked) {
       this.formData.motive.push(motive);
       if (motive === 'OTRO') {
@@ -333,13 +333,14 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
 
       // Navigate back to appointments list
       this.router.navigate(['/tabs/appointments']);
-    } catch (error: any) {
+    } catch (error: unknown) {
       await loading.dismiss();
       console.error('Error creating appointment:', error);
-      await this.showToast(
-        error.message || 'Error al crear la cita. Por favor, intenta de nuevo.',
-        'danger'
-      );
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Error al crear la cita. Por favor, intenta de nuevo.';
+      await this.showToast(errorMessage, 'danger');
     } finally {
       this.isLoading = false;
     }

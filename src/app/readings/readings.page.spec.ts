@@ -18,10 +18,10 @@ import { getLucideIconsForTesting } from '../tests/helpers/icon-test.helper';
 import { LoggerService } from '../core/services/logger.service';
 
 class LoggerServiceStub {
-  info(context: string, message: string, data?: any): void {}
-  warn(context: string, message: string, metadata?: any): void {}
-  error(context: string, message: string, error?: any, metadata?: any): void {}
-  debug(context: string, message: string, metadata?: any): void {}
+  info(_context: string, _message: string, _data?: any): void {}
+  warn(_context: string, _message: string, _metadata?: any): void {}
+  error(_context: string, _message: string, _error?: any, _metadata?: any): void {}
+  debug(_context: string, _message: string, _metadata?: any): void {}
 }
 
 class ReadingsServiceStub {
@@ -54,6 +54,9 @@ class ReadingsServiceStub {
 
 class ProfileServiceStub {
   profile$ = of(null);
+  getProfile() {
+    return Promise.resolve(null);
+  }
 }
 
 class TranslationServiceStub {
