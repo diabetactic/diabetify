@@ -64,8 +64,18 @@ jobs:
       tag: 2024.01.1
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: npm
+      - run:
+          name: Setup Node.js 20 via NVM
+          command: |
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+            source $BASH_ENV
+            nvm install 20
+            nvm alias default 20
+            node --version
+      - run:
+          name: Install dependencies
+          command: npm ci
       - run:
           name: Build Web
           command: npm run build:prod
@@ -99,8 +109,18 @@ jobs:
       tag: 2024.01.1
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: npm
+      - run:
+          name: Setup Node.js 20 via NVM
+          command: |
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+            source $BASH_ENV
+            nvm install 20
+            nvm alias default 20
+            node --version
+      - run:
+          name: Install dependencies
+          command: npm ci
       - run:
           name: Build Web
           command: npm run build:prod
@@ -134,8 +154,18 @@ jobs:
       tag: 2024.01.1
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: npm
+      - run:
+          name: Setup Node.js 20 via NVM
+          command: |
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+            source $BASH_ENV
+            nvm install 20
+            nvm alias default 20
+            node --version
+      - run:
+          name: Install dependencies
+          command: npm ci
       - run:
           name: Get version from package.json
           command: |
@@ -191,8 +221,14 @@ workflows:
   # Release workflow - manual trigger para generar APK descargable
   release:
     jobs:
+      - test:
+          filters:
+            branches:
+              only: master
       - hold-for-approval:
           type: approval
+          requires:
+            - test
           filters:
             branches:
               only: master
