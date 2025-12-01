@@ -437,6 +437,17 @@ jest.mock('@aparajita/capacitor-secure-storage', () => ({
   },
 }));
 
+jest.mock('@capacitor/local-notifications', () => ({
+  LocalNotifications: {
+    requestPermissions: jest.fn().mockResolvedValue({ display: 'granted' }),
+    checkPermissions: jest.fn().mockResolvedValue({ display: 'granted' }),
+    schedule: jest.fn().mockResolvedValue({ notifications: [] }),
+    cancel: jest.fn().mockResolvedValue(undefined),
+    getPending: jest.fn().mockResolvedValue({ notifications: [] }),
+    addListener: jest.fn().mockResolvedValue({ remove: jest.fn() }),
+  },
+}));
+
 // Mock @ionic/core/components to avoid Stencil ESM issues
 jest.mock('@ionic/core/components', () => ({
   setAssetPath: jest.fn(),

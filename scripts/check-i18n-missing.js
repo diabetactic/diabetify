@@ -82,9 +82,11 @@ function checkFile(filePath) {
     }
 
     HARDCODED_PATTERNS.forEach(pattern => {
+      // Use the pattern directly instead of creating a new RegExp
+      // This preserves the global flag and avoids potential ReDoS
+      pattern.lastIndex = 0; // Reset regex state for each line
       let match;
-      const regex = new RegExp(pattern);
-      while ((match = regex.exec(line)) !== null) {
+      while ((match = pattern.exec(line)) !== null) {
         const hardcodedText = match[1];
 
         // Skip if whitelisted

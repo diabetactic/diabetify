@@ -38,7 +38,7 @@ for service in "${!SERVICES[@]}"; do
   echo -n "Checking $service (port $port)... "
 
   if response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "$url" 2>/dev/null); then
-    if [ "$response" = "200" ]; then
+    if [[ "$response" = "200" ]]; then
       echo -e "${GREEN}✓ HEALTHY${NC} (HTTP $response)"
     else
       echo -e "${RED}✗ UNHEALTHY${NC} (HTTP $response)"
@@ -52,7 +52,7 @@ done
 
 echo ""
 
-if [ "$all_healthy" = true ]; then
+if [[ "$all_healthy" = true ]]; then
   echo -e "${GREEN}================================================${NC}"
   echo -e "${GREEN}All services are healthy!${NC}"
   echo -e "${GREEN}================================================${NC}"
