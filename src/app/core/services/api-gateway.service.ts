@@ -22,6 +22,7 @@ import { LRUCache } from 'lru-cache';
 import { CapacitorHttpService } from './capacitor-http.service';
 import { environment } from '../../../environments/environment';
 import { API_GATEWAY_BASE_URL } from '../../shared/config/api-base-url';
+import { LocalGlucoseReading } from '../models/glucose-reading.model';
 
 /**
  * API endpoint configuration
@@ -35,13 +36,13 @@ export interface ApiEndpoint {
   retryAttempts?: number;
   cache?: {
     duration: number;
-    key?: (params: any) => string;
+    key?: (params: Record<string, unknown>) => string;
   };
   transform?: {
-    request?: (data: any) => any;
-    response?: (data: any) => any;
+    request?: (data: unknown) => unknown;
+    response?: (data: unknown) => unknown;
   };
-  fallback?: () => any;
+  fallback?: () => unknown;
 }
 
 /**
@@ -50,7 +51,7 @@ export interface ApiEndpoint {
 export interface ApiRequestOptions {
   params?: HttpParams | { [param: string]: string | string[] };
   headers?: HttpHeaders | { [header: string]: string | string[] };
-  body?: any;
+  body?: unknown;
   responseType?: 'json' | 'text' | 'blob' | 'arraybuffer';
   reportProgress?: boolean;
   withCredentials?: boolean;
@@ -60,7 +61,7 @@ export interface ApiRequestOptions {
 /**
  * API response wrapper
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: ApiError;
@@ -79,7 +80,7 @@ export interface ApiResponse<T = any> {
 export interface ApiError {
   code: string;
   message: string;
-  details?: any;
+  details?: unknown;
   statusCode?: number;
   service?: ExternalService;
   endpoint?: string;
@@ -119,11 +120,11 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       retryAttempts: 3,
       cache: {
         duration: 300000, // 5 minutes
-        key: (params: any) =>
-          `glucose_${params?.userId ?? 'user'}_${params?.startDate ?? ''}_${params?.endDate ?? ''}`,
+        key: (params: Record<string, unknown>) =>
+          `glucose_${(params?.['userId'] as string | undefined) ?? 'user'}_${(params?.['startDate'] as string | undefined) ?? ''}_${(params?.['endDate'] as string | undefined) ?? ''}`,
       },
       transform: {
-        response: (data: any) => data.data || [],
+        response: (data: unknown) => (data as Record<string, unknown>)['data'] || [],
       },
     },
   ],
@@ -152,7 +153,8 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       retryAttempts: 2,
       cache: {
         duration: 60000, // 1 minute
-        key: (params: any) => `readings_${params?.limit ?? 'all'}_${params?.offset ?? 0}`,
+        key: (params: Record<string, unknown>) =>
+          `readings_${(params?.['limit'] as string | undefined) ?? 'all'}_${(params?.['offset'] as number | undefined) ?? 0}`,
       },
     },
   ],
@@ -166,22 +168,23 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       timeout: 30000,
       retryAttempts: 1,
       transform: {
-        request: (data: any) => {
-          if (!data.timestamp) {
+        request: (data: unknown) => {
+          const dataObj = data as Record<string, unknown>;
+          if (!dataObj['timestamp']) {
             return data;
           }
           // Handle both Date objects and ISO strings
           // Remove milliseconds to match expected format (2024-01-15T10:00:00Z instead of 2024-01-15T10:00:00.000Z)
           let timestamp: string;
-          if (data.timestamp instanceof Date) {
-            timestamp = data.timestamp.toISOString().replace(/\.\d{3}Z$/, 'Z');
-          } else if (typeof data.timestamp === 'string') {
-            timestamp = new Date(data.timestamp).toISOString().replace(/\.\d{3}Z$/, 'Z');
+          if (dataObj['timestamp'] instanceof Date) {
+            timestamp = dataObj['timestamp'].toISOString().replace(/\.\d{3}Z$/, 'Z');
+          } else if (typeof dataObj['timestamp'] === 'string') {
+            timestamp = new Date(dataObj['timestamp']).toISOString().replace(/\.\d{3}Z$/, 'Z');
           } else {
-            timestamp = data.timestamp;
+            timestamp = dataObj['timestamp'] as string;
           }
           return {
-            ...data,
+            ...dataObj,
             timestamp,
           };
         },
@@ -301,21 +304,22 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       authenticated: true,
       timeout: 60000,
       transform: {
-        request: (data: any) => {
+        request: (data: unknown) => {
           // Privacy-first: Strip raw readings unless explicitly enabled with consent
           // Default to summary-only data (manual readings summary)
-          const transformed: any = {
-            days: data.days || 30,
+          const dataObj = data as Record<string, unknown>;
+          const transformed: Record<string, unknown> = {
+            days: dataObj['days'] || 30,
           };
 
           // Only include manualReadingsSummary if present (privacy-compliant)
-          if (data.manualReadingsSummary) {
-            transformed.manualReadingsSummary = data.manualReadingsSummary;
+          if (dataObj['manualReadingsSummary']) {
+            transformed['manualReadingsSummary'] = dataObj['manualReadingsSummary'];
           }
 
           // Only include raw readings if explicitly enabled with user consent
-          if (data.includeRawReadings === true && data.userConsent === true) {
-            transformed.readings = data.readings;
+          if (dataObj['includeRawReadings'] === true && dataObj['userConsent'] === true) {
+            transformed['readings'] = dataObj['readings'];
           }
 
           return transformed;
@@ -344,7 +348,8 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       authenticated: false,
       cache: {
         duration: 300000, // 5 minutes
-        key: (params: any) => `slots_${params?.doctorId ?? 'doctor'}_${params?.date ?? ''}`,
+        key: (params: Record<string, unknown>) =>
+          `slots_${(params?.['doctorId'] as string | undefined) ?? 'doctor'}_${(params?.['date'] as string | undefined) ?? ''}`,
       },
     },
   ],
@@ -395,10 +400,11 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       timeout: 15000,
       retryAttempts: 1,
       transform: {
-        request: (data: any) => {
+        request: (data: unknown) => {
           // Transform to form-encoded format for /token endpoint
-          if (data.username && data.password) {
-            return `username=${encodeURIComponent(data.username)}&password=${encodeURIComponent(data.password)}`;
+          const dataObj = data as Record<string, unknown>;
+          if (dataObj['username'] && dataObj['password']) {
+            return `username=${encodeURIComponent(dataObj['username'] as string)}&password=${encodeURIComponent(dataObj['password'] as string)}`;
           }
           return data;
         },
@@ -481,6 +487,9 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       timeout: 15000,
     },
   ],
+  // TODO: Add 'auth.tidepool.link' endpoint when backend implements PATCH /users/tidepool
+  // The User model already has the 'tidepool' field (login/app/models/user_model.py:14)
+  // but no API endpoint exists yet to update it
 
   // ExtServices-specific endpoints (Heroku backend)
   [
@@ -571,7 +580,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       authenticated: true,
       timeout: 30000,
       transform: {
-        request: (data: any) => {
+        request: (data: unknown) => {
           // This endpoint uses query params, not body
           return null;
         },
@@ -616,7 +625,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
  */
 export class ApiGatewayService {
   // LRU cache for response data with bounded size and TTL
-  private cacheData = new LRUCache<string, { data: any; timestamp: number }>({
+  private cacheData = new LRUCache<string, { data: unknown; timestamp: number }>({
     max: 500, // Maximum 500 entries
     maxSize: 10 * 1024 * 1024, // 10 MB maximum total size
     ttl: 5 * 60 * 1000, // 5 minutes TTL
@@ -658,7 +667,7 @@ export class ApiGatewayService {
    * 4. Check Mock Mode (if enabled).
    * 5. Execute Real Request (`executeRequest`).
    */
-  public request<T = any>(
+  public request<T = unknown>(
     endpointKey: string,
     options?: ApiRequestOptions,
     pathParams?: { [key: string]: string }
@@ -698,7 +707,7 @@ export class ApiGatewayService {
         this.logger.info('API', 'Using fallback data', { endpoint: endpointKey });
         return of({
           success: true,
-          data: endpoint.fallback(),
+          data: endpoint.fallback() as T,
           metadata: {
             service: endpoint.service,
             endpoint: endpointKey,
@@ -706,7 +715,7 @@ export class ApiGatewayService {
             cached: false,
             timestamp: new Date(),
           },
-        });
+        } as ApiResponse<T>);
       }
 
       return throwError(() => ({
@@ -723,14 +732,18 @@ export class ApiGatewayService {
 
     // Check cache
     if (endpoint.cache && !options?.forceRefresh) {
-      const cacheKey = this.getCacheKey(endpointKey, endpoint, options?.params);
+      const cacheKey = this.getCacheKey(
+        endpointKey,
+        endpoint,
+        options?.params as Record<string, unknown>
+      );
       const cached = this.getFromCache(cacheKey, endpoint.cache.duration);
 
       if (cached) {
         this.logger.debug('API', 'Cache hit', { endpoint: endpointKey, cacheKey });
         return of({
           success: true,
-          data: cached,
+          data: cached as T,
           metadata: {
             service: endpoint.service,
             endpoint: endpointKey,
@@ -738,7 +751,7 @@ export class ApiGatewayService {
             cached: true,
             timestamp: new Date(),
           },
-        });
+        } as ApiResponse<T>);
       } else {
         this.logger.debug('API', 'Cache miss', { endpoint: endpointKey, cacheKey });
       }
@@ -779,103 +792,109 @@ export class ApiGatewayService {
     const startTime = Date.now();
 
     return from(this.prepareRequest(endpoint, options, pathParams)).pipe(
-      switchMap(({ url, headers, body }) => {
-        let request$: Observable<any>;
+      switchMap<{ url: string; headers: HttpHeaders; body: unknown }, Observable<ApiResponse<T>>>(
+        ({ url, headers, body }) => {
+          let request$: Observable<unknown>;
 
-        // Use CapacitorHttp service (bypasses CORS on native platforms)
-        const requestOptions = {
-          headers,
-          params: options?.params,
-          responseType: (options?.responseType as any) || 'json',
-        };
+          // Use CapacitorHttp service (bypasses CORS on native platforms)
+          const requestOptions = {
+            headers,
+            params: options?.params,
+            responseType: options?.responseType || 'json',
+          };
 
-        switch (endpoint.method) {
-          case 'GET':
-            request$ = this.capacitorHttp.get(url, requestOptions);
-            break;
-          case 'POST':
-            request$ = this.capacitorHttp.post(url, body, requestOptions);
-            break;
-          case 'PUT':
-            request$ = this.capacitorHttp.put(url, body, requestOptions);
-            break;
-          case 'DELETE':
-            request$ = this.capacitorHttp.delete(url, requestOptions);
-            break;
-          case 'PATCH':
-            request$ = this.capacitorHttp.patch(url, body, requestOptions);
-            break;
-          default:
-            return throwError(() => new Error('Unsupported method'));
+          switch (endpoint.method) {
+            case 'GET':
+              request$ = this.capacitorHttp.get(url, requestOptions);
+              break;
+            case 'POST':
+              request$ = this.capacitorHttp.post(url, body, requestOptions);
+              break;
+            case 'PUT':
+              request$ = this.capacitorHttp.put(url, body, requestOptions);
+              break;
+            case 'DELETE':
+              request$ = this.capacitorHttp.delete(url, requestOptions);
+              break;
+            case 'PATCH':
+              request$ = this.capacitorHttp.patch(url, body, requestOptions);
+              break;
+            default:
+              return throwError(() => new Error('Unsupported method'));
+          }
+
+          return request$.pipe(
+            timeout(endpoint.timeout || 30000),
+            retry(endpoint.retryAttempts || 0),
+            map(response => {
+              const responseTime = Date.now() - startTime;
+
+              // Transform response if needed
+              const data = endpoint.transform?.response
+                ? endpoint.transform.response(response)
+                : response;
+
+              // Cache if applicable
+              if (endpoint.cache) {
+                const cacheKey = this.getCacheKey(
+                  endpointKey,
+                  endpoint,
+                  options?.params as Record<string, unknown>
+                );
+                this.addToCache(cacheKey, data);
+              }
+
+              this.logger.info('API', 'Request completed successfully', {
+                endpoint: endpointKey,
+                method: endpoint.method,
+                responseTime: `${responseTime}ms`,
+                dataSize: JSON.stringify(data).length,
+                requestId: this.logger.getRequestId(),
+                status: 200,
+              });
+
+              return {
+                success: true,
+                data: data as T,
+                metadata: {
+                  service: endpoint.service,
+                  endpoint: endpointKey,
+                  responseTime,
+                  cached: false,
+                  timestamp: new Date(),
+                },
+              };
+            }),
+            catchError((error): Observable<ApiResponse<T>> => {
+              const responseTime = Date.now() - startTime;
+
+              const statusCode = error?.status;
+              const isQueueStateNotFound =
+                endpointKey === 'extservices.appointments.state' && statusCode === 404;
+
+              if (!isQueueStateNotFound) {
+                this.logger.error('API', 'Request failed', error, {
+                  endpoint: endpointKey,
+                  method: endpoint.method,
+                  responseTime: `${responseTime}ms`,
+                  statusCode,
+                  requestId: this.logger.getRequestId(),
+                });
+              } else {
+                this.logger.info('API', 'Queue state not found (treated as none)', {
+                  endpoint: endpointKey,
+                  method: endpoint.method,
+                  responseTime: `${responseTime}ms`,
+                  statusCode,
+                  requestId: this.logger.getRequestId(),
+                });
+              }
+
+              return this.handleError<T>(error, endpoint, endpointKey);
+            })
+          );
         }
-
-        return request$.pipe(
-          timeout(endpoint.timeout || 30000),
-          retry(endpoint.retryAttempts || 0),
-          map(response => {
-            const responseTime = Date.now() - startTime;
-
-            // Transform response if needed
-            const data = endpoint.transform?.response
-              ? endpoint.transform.response(response)
-              : response;
-
-            // Cache if applicable
-            if (endpoint.cache) {
-              const cacheKey = this.getCacheKey(endpointKey, endpoint, options?.params);
-              this.addToCache(cacheKey, data);
-            }
-
-            this.logger.info('API', 'Request completed successfully', {
-              endpoint: endpointKey,
-              method: endpoint.method,
-              responseTime: `${responseTime}ms`,
-              dataSize: JSON.stringify(data).length,
-              requestId: this.logger.getRequestId(),
-              status: 200,
-            });
-
-            return {
-              success: true,
-              data: data as T,
-              metadata: {
-                service: endpoint.service,
-                endpoint: endpointKey,
-                responseTime,
-                cached: false,
-                timestamp: new Date(),
-              },
-            };
-          }),
-          catchError(error => {
-            const responseTime = Date.now() - startTime;
-
-            const statusCode = error?.status;
-            const isQueueStateNotFound =
-              endpointKey === 'extservices.appointments.state' && statusCode === 404;
-
-            if (!isQueueStateNotFound) {
-              this.logger.error('API', 'Request failed', error, {
-                endpoint: endpointKey,
-                method: endpoint.method,
-                responseTime: `${responseTime}ms`,
-                statusCode,
-                requestId: this.logger.getRequestId(),
-              });
-            } else {
-              this.logger.info('API', 'Queue state not found (treated as none)', {
-                endpoint: endpointKey,
-                method: endpoint.method,
-                responseTime: `${responseTime}ms`,
-                statusCode,
-                requestId: this.logger.getRequestId(),
-              });
-            }
-
-            return this.handleError(error, endpoint, endpointKey);
-          })
-        );
-      }),
+      ),
       shareReplay(1) // Share the observable for multiple subscribers
     );
   }
@@ -893,7 +912,7 @@ export class ApiGatewayService {
     endpoint: ApiEndpoint,
     options?: ApiRequestOptions,
     pathParams?: { [key: string]: string }
-  ): Promise<{ url: string; headers: HttpHeaders; body: any }> {
+  ): Promise<{ url: string; headers: HttpHeaders; body: unknown }> {
     // Build URL
     const baseUrl = this.getBaseUrl(endpoint.service);
     let path = endpoint.path;
@@ -983,11 +1002,11 @@ export class ApiGatewayService {
    * Converts raw `HttpErrorResponse` into a standardized `ApiError` object.
    * Checks for retryable conditions.
    */
-  private handleError(
+  private handleError<T = unknown>(
     error: HttpErrorResponse,
     endpoint: ApiEndpoint,
     endpointKey: string
-  ): Observable<ApiResponse> {
+  ): Observable<ApiResponse<T>> {
     let apiError: ApiError;
 
     if (error.error instanceof ErrorEvent) {
@@ -1017,7 +1036,7 @@ export class ApiGatewayService {
     if (endpoint.fallback) {
       return of({
         success: true,
-        data: endpoint.fallback(),
+        data: endpoint.fallback() as T,
         error: apiError,
         metadata: {
           service: endpoint.service,
@@ -1026,13 +1045,16 @@ export class ApiGatewayService {
           cached: false,
           timestamp: new Date(),
         },
-      });
+      } as ApiResponse<T>);
     }
 
-    return throwError(() => ({
-      success: false,
-      error: apiError,
-    }));
+    return throwError(
+      () =>
+        ({
+          success: false,
+          error: apiError,
+        }) as ApiResponse<T>
+    );
   }
 
   /**
@@ -1079,9 +1101,13 @@ export class ApiGatewayService {
   /**
    * Generate a unique cache key based on endpoint and params.
    */
-  private getCacheKey(endpointKey: string, endpoint: ApiEndpoint, params?: any): string {
+  private getCacheKey(
+    endpointKey: string,
+    endpoint: ApiEndpoint,
+    params?: Record<string, unknown>
+  ): string {
     if (endpoint.cache?.key) {
-      return `${endpointKey}_${endpoint.cache.key(params)}`;
+      return `${endpointKey}_${endpoint.cache.key(params as Record<string, unknown>)}`;
     }
     return `${endpointKey}_${JSON.stringify(params || {})}`;
   }
@@ -1090,7 +1116,7 @@ export class ApiGatewayService {
    * Retrieve data from cache if valid.
    * Enforces the specific endpoint's TTL duration (which may be shorter than the global LRU TTL).
    */
-  private getFromCache(key: string, duration: number): any | null {
+  private getFromCache(key: string, duration: number): unknown | null {
     const cached = this.cacheData.get(key);
 
     if (!cached) {
@@ -1110,7 +1136,7 @@ export class ApiGatewayService {
   /**
    * Add data to the LRU cache.
    */
-  private addToCache(key: string, data: any): void {
+  private addToCache(key: string, data: unknown): void {
     this.cacheData.set(key, {
       data,
       timestamp: Date.now(),
@@ -1258,7 +1284,7 @@ export class ApiGatewayService {
     options?: ApiRequestOptions,
     pathParams?: { [key: string]: string }
   ): Promise<T> {
-    const params = options?.params as any;
+    const params = options?.params as Record<string, unknown> | undefined;
     const body = options?.body;
 
     switch (endpointKey) {
@@ -1276,29 +1302,42 @@ export class ApiGatewayService {
       // Glucoserver endpoints
       case 'glucoserver.readings.list':
         return this.mockAdapter.mockGetAllReadings(
-          params?.offset || 0,
-          params?.limit || 100
+          (params?.['offset'] as number | undefined) || 0,
+          (params?.['limit'] as number | undefined) || 100
         ) as Promise<T>;
 
       case 'glucoserver.readings.create':
-        return this.mockAdapter.mockAddReading(body) as Promise<T>;
+        return this.mockAdapter.mockAddReading(body as LocalGlucoseReading) as Promise<T>;
 
       case 'glucoserver.readings.update':
-        return this.mockAdapter.mockUpdateReading(pathParams?.['id'] || '', body) as Promise<T>;
+        return this.mockAdapter.mockUpdateReading(
+          pathParams?.['id'] || '',
+          body as Partial<LocalGlucoseReading>
+        ) as Promise<T>;
 
       case 'glucoserver.readings.delete':
         await this.mockAdapter.mockDeleteReading(pathParams?.['id'] || '');
         return { success: true } as T;
 
       case 'glucoserver.statistics':
-        return this.mockAdapter.mockGetStatistics(params?.days || 30) as Promise<T>;
+        return this.mockAdapter.mockGetStatistics(
+          (params?.['days'] as number | undefined) || 30
+        ) as Promise<T>;
 
       // Auth endpoints
-      case 'auth.login':
-        return this.mockAdapter.mockLogin(body.email || body.dni, body.password) as Promise<T>;
+      case 'auth.login': {
+        const bodyObj = body as Record<string, unknown>;
+        return this.mockAdapter.mockLogin(
+          ((bodyObj['email'] as string | undefined) ||
+            (bodyObj['dni'] as string | undefined)) as string,
+          bodyObj['password'] as string
+        ) as Promise<T>;
+      }
 
       case 'auth.register':
-        return this.mockAdapter.mockRegister(body) as Promise<T>;
+        return this.mockAdapter.mockRegister(
+          body as { dni: string; password: string; name: string; email: string }
+        ) as Promise<T>;
 
       case 'auth.logout':
         await this.mockAdapter.mockLogout();
@@ -1310,12 +1349,16 @@ export class ApiGatewayService {
         if (endpoint.method === 'GET') {
           return this.mockAdapter.mockGetProfile() as Promise<T>;
         } else {
-          return this.mockAdapter.mockUpdateProfile(body) as Promise<T>;
+          return this.mockAdapter.mockUpdateProfile(body as Record<string, unknown>) as Promise<T>;
         }
 
-      case 'auth.refresh':
-        const newToken = await this.mockAdapter.mockRefreshToken(body.token || '');
+      case 'auth.refresh': {
+        const bodyObj = body as Record<string, unknown>;
+        const newToken = await this.mockAdapter.mockRefreshToken(
+          (bodyObj['token'] as string | undefined) || ''
+        );
         return { token: newToken } as T;
+      }
 
       default:
         console.warn(`🟡 No mock implementation for endpoint: ${endpointKey}`);

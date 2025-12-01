@@ -1,7 +1,20 @@
 import { environment } from '../../../environments/environment';
 
-const globalScope: any = typeof globalThis !== 'undefined' ? globalThis : {};
-const windowScope: any = typeof window !== 'undefined' ? window : {};
+interface GlobalWithOverride {
+  __DIABETIFY_API_BASE_URL?: string;
+  process?: {
+    env?: {
+      API_GATEWAY_URL?: string;
+    };
+  };
+}
+
+const globalScope: GlobalWithOverride = (
+  typeof globalThis !== 'undefined' ? globalThis : {}
+) as GlobalWithOverride;
+const windowScope: GlobalWithOverride = (
+  typeof window !== 'undefined' ? window : {}
+) as GlobalWithOverride;
 
 const runtimeOverride: string | undefined =
   windowScope.__DIABETIFY_API_BASE_URL || globalScope.__DIABETIFY_API_BASE_URL;

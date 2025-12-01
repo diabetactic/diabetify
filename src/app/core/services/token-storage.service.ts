@@ -263,7 +263,7 @@ export class TokenStorageService {
    * @param data - Data that may contain sensitive info
    * @returns Sanitized data safe for logging
    */
-  static sanitizeForLogging(data: any): any {
+  static sanitizeForLogging(data: unknown): unknown {
     if (typeof data === 'string') {
       // If it looks like a JWT or long token, mask it
       if (data.length > 50 && (data.includes('.') || data.match(/^[A-Za-z0-9_-]+$/))) {
@@ -273,7 +273,7 @@ export class TokenStorageService {
     }
 
     if (typeof data === 'object' && data !== null) {
-      const sanitized: any = {};
+      const sanitized: Record<string, unknown> = {};
       for (const key in data) {
         if (
           key.toLowerCase().includes('token') ||
@@ -282,7 +282,9 @@ export class TokenStorageService {
         ) {
           sanitized[key] = '***';
         } else {
-          sanitized[key] = TokenStorageService.sanitizeForLogging(data[key]);
+          sanitized[key] = TokenStorageService.sanitizeForLogging(
+            (data as Record<string, unknown>)[key]
+          );
         }
       }
       return sanitized;

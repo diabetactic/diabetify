@@ -221,7 +221,7 @@ export class TidepoolInterceptor implements HttpInterceptor {
   /**
    * Calculate retry delay with exponential backoff
    */
-  private calculateRetryDelay(error: any, retryCount: number): Observable<number> {
+  private calculateRetryDelay(error: unknown, retryCount: number): Observable<number> {
     // Don't retry certain status codes
     if (
       error instanceof HttpErrorResponse &&
@@ -253,15 +253,18 @@ export class TidepoolInterceptor implements HttpInterceptor {
     console.group(`[HTTP Request] ${request.method} ${request.url}`);
     console.log(
       'Headers:',
-      request.headers.keys().reduce((acc, key) => {
-        // Don't log sensitive headers
-        if (key.toLowerCase() === 'authorization') {
-          acc[key] = '***';
-        } else {
-          acc[key] = request.headers.get(key);
-        }
-        return acc;
-      }, {} as any)
+      request.headers.keys().reduce(
+        (acc, key) => {
+          // Don't log sensitive headers
+          if (key.toLowerCase() === 'authorization') {
+            acc[key] = '***';
+          } else {
+            acc[key] = request.headers.get(key);
+          }
+          return acc;
+        },
+        {} as Record<string, string | null>
+      )
     );
 
     if (request.body) {
@@ -274,16 +277,19 @@ export class TidepoolInterceptor implements HttpInterceptor {
   /**
    * Log HTTP response
    */
-  private logResponse(response: HttpResponse<any>, startTime: number): void {
+  private logResponse(response: HttpResponse<unknown>, startTime: number): void {
     const duration = Date.now() - startTime;
 
     console.group(`[HTTP Response] ${response.status} ${response.url} (${duration}ms)`);
     console.log(
       'Headers:',
-      response.headers.keys().reduce((acc, key) => {
-        acc[key] = response.headers.get(key);
-        return acc;
-      }, {} as any)
+      response.headers.keys().reduce(
+        (acc, key) => {
+          acc[key] = response.headers.get(key);
+          return acc;
+        },
+        {} as Record<string, string | null>
+      )
     );
 
     if (response.body) {

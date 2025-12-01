@@ -146,7 +146,10 @@ export class GlucoserverService {
   /**
    * Get glucose trends data for charting
    */
-  getTrends(period: 'day' | 'week' | 'month' | 'year', date?: Date): Observable<any> {
+  getTrends(
+    period: 'day' | 'week' | 'month' | 'year',
+    date?: Date
+  ): Observable<Record<string, unknown>> {
     const params = new HttpParams()
       .set('period', period)
       .set('date', (date || new Date()).toISOString());
@@ -181,21 +184,31 @@ export class GlucoserverService {
     failed: number;
     conflicts: GlucoseReading[];
   }> {
-    return this.http.post<any>(`${this.fullUrl}/sync`, { readings: localReadings }).pipe(
-      retry(1),
-      map(response => ({
-        synced: response.synced || 0,
-        failed: response.failed || 0,
-        conflicts: response.conflicts || [],
-      })),
-      catchError(this.handleError)
-    );
+    return this.http
+      .post<{
+        synced?: number;
+        failed?: number;
+        conflicts?: GlucoseReading[];
+      }>(`${this.fullUrl}/sync`, { readings: localReadings })
+      .pipe(
+        retry(1),
+        map(response => ({
+          synced: response.synced || 0,
+          failed: response.failed || 0,
+          conflicts: response.conflicts || [],
+        })),
+        catchError(this.handleError)
+      );
   }
 
   /**
    * Handle HTTP errors
    */
-  private handleError(error: any): Observable<never> {
+  private handleError(error: {
+    error?: { message?: string };
+    status?: number;
+    message?: string;
+  }): Observable<never> {
     let errorMessage = 'An error occurred';
 
     if (error.error instanceof ErrorEvent) {

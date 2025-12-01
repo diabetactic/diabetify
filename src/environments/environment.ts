@@ -20,6 +20,10 @@ export type BackendMode = 'mock' | 'local' | 'cloud';
  *
  *   'cloud' → Heroku API Gateway (https://diabetactic-api-gateway-37949d6f182f.herokuapp.com)
  *             Use for: Integration testing, production validation
+ *
+ * Default is 'cloud' for Heroku API. Override with ENV variable:
+ *   ENV=local npm start    # Local Docker backend
+ *   ENV=mock npm start     # In-memory mock (offline dev)
  */
 const DEV_BACKEND_MODE: BackendMode = 'cloud';
 

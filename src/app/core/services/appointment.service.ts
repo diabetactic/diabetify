@@ -10,6 +10,7 @@ import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { ApiGatewayService } from './api-gateway.service';
 import { TranslationService } from './translation.service';
+import { NotificationService } from './notification.service';
 import { environment } from '../../../environments/environment';
 import {
   Appointment,
@@ -75,7 +76,8 @@ export class AppointmentService {
 
   constructor(
     private apiGateway: ApiGatewayService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private notificationService: NotificationService
   ) {}
 
   /**
@@ -118,15 +120,27 @@ export class AppointmentService {
   /**
    * Create a new appointment with clinical data
    */
-  createAppointment(formData: CreateAppointmentRequest): Observable<Appointment> {
+  createAppointment(
+    formData: CreateAppointmentRequest,
+    scheduledDate?: Date,
+    reminderMinutesBefore: number = 30
+  ): Observable<Appointment> {
     if (this.isMockMode) {
       const newAppointment: MockAppointment = {
         ...formData,
         appointment_id: Date.now(),
         user_id: 1000,
+        scheduled_date: scheduledDate,
+        reminder_minutes_before: reminderMinutesBefore,
       };
       this.mockAppointments.push(newAppointment);
       this.appointmentsSubject.next([...this.mockAppointments]);
+
+      // Schedule reminder if scheduled_date is provided
+      if (scheduledDate) {
+        this.scheduleReminder(newAppointment);
+      }
+
       return of(newAppointment);
     }
 
@@ -135,11 +149,23 @@ export class AppointmentService {
       .pipe(
         map(response => {
           if (response.success && response.data) {
-            return response.data;
+            // Add client-side scheduling fields
+            const appointment: Appointment = {
+              ...response.data,
+              scheduled_date: scheduledDate,
+              reminder_minutes_before: reminderMinutesBefore,
+            };
+            return appointment;
           }
           throw new Error(response.error?.message || 'Failed to create appointment');
         }),
-        tap(() => this.refreshAppointments()),
+        tap(appointment => {
+          this.refreshAppointments();
+          // Schedule reminder if scheduled_date is provided
+          if (appointment.scheduled_date) {
+            this.scheduleReminder(appointment);
+          }
+        }),
         catchError(this.handleError.bind(this))
       );
   }
@@ -253,6 +279,83 @@ export class AppointmentService {
   }
 
   /**
+   * Delete/cancel an appointment
+   */
+  deleteAppointment(appointmentId: number): Observable<void> {
+    // Cancel notification first
+    this.cancelAppointmentReminder(appointmentId);
+
+    if (this.isMockMode) {
+      const index = this.mockAppointments.findIndex(apt => apt.appointment_id === appointmentId);
+      if (index !== -1) {
+        this.mockAppointments.splice(index, 1);
+        this.appointmentsSubject.next([...this.mockAppointments]);
+      }
+      return of(void 0);
+    }
+
+    // If backend has delete endpoint, implement here
+    // For now, just cancel the notification
+    return of(void 0);
+  }
+
+  /**
+   * Update appointment scheduling information
+   */
+  updateAppointmentSchedule(
+    appointmentId: number,
+    scheduledDate: Date,
+    reminderMinutesBefore: number = 30
+  ): Observable<Appointment> {
+    return this.getAppointment(appointmentId).pipe(
+      tap(appointment => {
+        // Update scheduling fields
+        appointment.scheduled_date = scheduledDate;
+        appointment.reminder_minutes_before = reminderMinutesBefore;
+
+        // Reschedule reminder
+        this.cancelAppointmentReminder(appointmentId);
+        this.scheduleReminder(appointment);
+      })
+    );
+  }
+
+  /**
+   * Schedule a notification reminder for an appointment
+   */
+  private scheduleReminder(appointment: Appointment): void {
+    if (!appointment.scheduled_date) {
+      return;
+    }
+
+    const reminderMinutes = appointment.reminder_minutes_before ?? 30;
+
+    this.notificationService
+      .scheduleAppointmentReminder({
+        appointmentId: appointment.appointment_id.toString(),
+        appointmentDate: appointment.scheduled_date,
+        reminderMinutesBefore: reminderMinutes,
+      })
+      .catch(error => {
+        console.error('Failed to schedule appointment reminder:', error);
+      });
+  }
+
+  /**
+   * Cancel notification reminder for an appointment
+   */
+  private cancelAppointmentReminder(appointmentId: number): void {
+    // Calculate notification ID using same logic as NotificationService
+    const APPOINTMENT_REMINDER_BASE_ID = 2000;
+    const notificationId =
+      APPOINTMENT_REMINDER_BASE_ID + parseInt(appointmentId.toString().slice(-4), 16);
+
+    this.notificationService.cancelNotification(notificationId).catch(error => {
+      console.error('Failed to cancel appointment reminder:', error);
+    });
+  }
+
+  /**
    * Refresh appointments list
    */
   private refreshAppointments(): void {
@@ -264,27 +367,30 @@ export class AppointmentService {
   /**
    * Handle errors
    */
-  private handleError(error: any): Observable<never> {
+  private handleError(error: unknown): Observable<never> {
     let errorMessage = 'An error occurred';
     let errorDetail = '';
 
     // Extract error detail from response
     // Handle ApiError structure from ApiGatewayService
-    const apiError = error?.error;
+    const errorObj = error as Record<string, unknown>;
+    const apiError = errorObj?.['error'] as Record<string, unknown> | undefined;
+    const apiDetails = apiError?.['details'] as Record<string, unknown> | undefined;
+    const errorNested = errorObj?.['error'] as Record<string, unknown> | undefined;
 
-    if (apiError?.details?.detail) {
-      errorDetail = apiError.details.detail;
-    } else if (apiError?.details?.message) {
-      errorDetail = apiError.details.message;
-    } else if (apiError?.message) {
-      errorDetail = apiError.message;
-    } else if (error?.error?.detail) {
+    if (apiDetails?.['detail']) {
+      errorDetail = apiDetails['detail'] as string;
+    } else if (apiDetails?.['message']) {
+      errorDetail = apiDetails['message'] as string;
+    } else if (apiError?.['message']) {
+      errorDetail = apiError['message'] as string;
+    } else if (errorNested?.['detail']) {
       // Fallback for raw HttpErrorResponse or other structures
-      errorDetail = error.error.detail;
-    } else if (error?.error?.message) {
-      errorDetail = error.error.message;
-    } else if (error?.message) {
-      errorDetail = error.message;
+      errorDetail = errorNested['detail'] as string;
+    } else if (errorNested?.['message']) {
+      errorDetail = errorNested['message'] as string;
+    } else if (errorObj?.['message']) {
+      errorDetail = errorObj['message'] as string;
     } else if (typeof error === 'string') {
       errorDetail = error;
     }
@@ -308,7 +414,8 @@ export class AppointmentService {
     }
 
     // Check for specific error codes
-    const errorCode = apiError?.code || error?.error?.code;
+    const errorCode =
+      (apiError?.['code'] as string | undefined) || (errorNested?.['code'] as string | undefined);
 
     if (errorCode) {
       switch (errorCode) {

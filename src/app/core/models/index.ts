@@ -26,3 +26,6 @@ export * from './glucose-share.model';
 
 // Clinical form models
 export * from './clinical-form.model';
+
+// Food models for carbohydrate counting
+export * from './food.model';

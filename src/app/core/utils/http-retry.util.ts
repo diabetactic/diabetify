@@ -248,7 +248,7 @@ export function isRetryableError(error: HttpErrorResponse): boolean {
 /**
  * Internal helper to check if error is retryable with custom status codes
  */
-function isRetryableErrorWithConfig(error: any, retryableStatuses: number[]): boolean {
+function isRetryableErrorWithConfig(error: unknown, retryableStatuses: number[]): boolean {
   if (!(error instanceof HttpErrorResponse)) {
     return false;
   }
@@ -323,12 +323,13 @@ export function getRateLimitDelay(response: HttpErrorResponse): number | null {
  * }
  * ```
  */
-export function createSyncError(error: any, readingId?: string): SyncError {
+export function createSyncError(error: unknown, readingId?: string): SyncError {
   // If it's already a SyncError, just add readingId if provided
   if (error && typeof error === 'object' && 'errorType' in error) {
+    const existingError = error as SyncError;
     return {
-      ...error,
-      readingId: readingId || error.readingId,
+      ...existingError,
+      readingId: readingId || existingError.readingId,
     };
   }
 
@@ -418,7 +419,7 @@ export function retryWithRateLimit<T>(config?: RetryConfig): MonoTypeOperatorFun
                 error,
               };
             },
-            { retryCount: 0, error: null as any }
+            { retryCount: 0, error: null as HttpErrorResponse | null }
           ),
           mergeMap(({ retryCount, error }) => {
             let delay: number;
