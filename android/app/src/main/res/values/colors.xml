@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Brand Colors -->
+    <color name="colorPrimary">#3B82F6</color>
+    <color name="colorPrimaryDark">#2563EB</color>
+    <color name="colorPrimaryLight">#60A5FA</color>
+    <color name="colorAccent">#00C6AE</color>
+
+    <!-- Secondary Colors -->
+    <color name="colorSecondary">#00C6AE</color>
+    <color name="colorSecondaryDark">#00AE99</color>
+    <color name="colorSecondaryLight">#1ACCB6</color>
+
+    <!-- Status Colors -->
+    <color name="colorSuccess">#22C55E</color>
+    <color name="colorWarning">#F59E0B</color>
+    <color name="colorError">#EF4444</color>
+    <color name="colorInfo">#3B82F6</color>
+
+    <!-- Glucose Status Colors -->
+    <color name="glucoseNormal">#22C55E</color>
+    <color name="glucoseLow">#F59E0B</color>
+    <color name="glucoseHigh">#EF4444</color>
+    <color name="glucoseCritical">#DC2626</color>
+
+    <!-- Background Colors (Light Theme) -->
+    <color name="colorBackground">#FFFFFF</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorSurfaceVariant">#F5F7F8</color>
+
+    <!-- Text Colors (Light Theme) -->
+    <color name="colorOnPrimary">#0F172A</color>
+    <color name="colorOnSecondary">#0F172A</color>
+    <color name="colorOnBackground">#0D171C</color>
+    <color name="colorOnSurface">#0D171C</color>
+    <color name="colorTextPrimary">#1F2937</color>
+    <color name="colorTextSecondary">#4B5563</color>
+    <color name="colorTextMuted">#6B7280</color>
+
+    <!-- Border Colors -->
+    <color name="colorBorderSubtle">#E5E7EB</color>
+    <color name="colorBorderInput">#D1D5DB</color>
+
+    <!-- Dark Theme Colors -->
+    <color name="colorBackgroundDark">#101C22</color>
+    <color name="colorSurfaceDark">#1E293B</color>
+    <color name="colorSurfaceVariantDark">#334155</color>
+    <color name="colorOnBackgroundDark">#FFFFFF</color>
+    <color name="colorOnSurfaceDark">#FFFFFF</color>
+    <color name="colorTextPrimaryDark">#E5E7EB</color>
+    <color name="colorTextSecondaryDark">#CBD5F5</color>
+    <color name="colorTextMutedDark">#9CA3AF</color>
+    <color name="colorBorderSubtleDark">#334155</color>
+    <color name="colorBorderInputDark">#475569</color>
+
+    <!-- Splash Screen -->
+    <color name="splash_background">#3B82F6</color>
+</resources>
