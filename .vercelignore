@@ -1,52 +1,24 @@
-# Dependencies (771MB)
-node_modules/
+# Allowlist mode - ignore everything first, then allow only what's needed
+/*
 
-# Build outputs (1.2GB + 56MB)
-www/
-dist/
-out-tsc/
-bazel-out/
-.angular/
+# Allow essential config files
+!package.json
+!package-lock.json
+!angular.json
+!tsconfig.json
+!tsconfig.app.json
+!vercel.json
+!tailwind.config.js
+!postcss.config.js
 
-# Mobile platforms (121MB)
-android/
-ios/
+# Allow source code
+!src
+!src/**
 
-# IDE
-.idea/
-.vscode/
-*.sublime-*
+# Allow public assets (if any)
+!public
+!public/**
 
-# Test outputs
-coverage/
-playwright-report/
-test-results/
-.playwright-mcp/
-playwright/
-
-# Git
-.git/
-.github/
-
-# Misc
-*.log
-.tmp
-*.tmp
-.sourcemaps/
-.versions/
-.ionic/
-
-# Documentation
-docs/
-
-# Large files
-*.apk
-*.aab
-*.ipa
-*.zip
-*.tar.gz
-
-# Cache
-.cache/
-.npm/
-.husky/
+# Still exclude build artifacts inside src if any
+src/**/*.map
+src/**/*.d.ts
