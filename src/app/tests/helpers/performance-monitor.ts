@@ -427,23 +427,15 @@ export function expectPerformance(
   }
 ): void {
   if (expectations.maxRenderTime !== undefined) {
-    expect(metrics.renderTime).toBeLessThan(
-      expectations.maxRenderTime,
-      `Render time ${metrics.renderTime.toFixed(2)}ms exceeded max ${expectations.maxRenderTime}ms`
-    );
+    // Jest's toBeLessThan doesn't support custom messages
+    expect(metrics.renderTime).toBeLessThan(expectations.maxRenderTime);
   }
 
   if (expectations.maxMemory !== undefined) {
-    expect(metrics.memoryUsage).toBeLessThan(
-      expectations.maxMemory,
-      `Memory usage ${(metrics.memoryUsage / 1048576).toFixed(2)}MB exceeded max ${(expectations.maxMemory / 1048576).toFixed(2)}MB`
-    );
+    expect(metrics.memoryUsage).toBeLessThan(expectations.maxMemory);
   }
 
   if (expectations.maxDomNodes !== undefined) {
-    expect(metrics.domNodes).toBeLessThan(
-      expectations.maxDomNodes,
-      `DOM nodes ${metrics.domNodes} exceeded max ${expectations.maxDomNodes}`
-    );
+    expect(metrics.domNodes).toBeLessThan(expectations.maxDomNodes);
   }
 }

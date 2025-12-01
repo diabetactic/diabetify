@@ -155,7 +155,7 @@ export class GlucoserverService {
       .set('date', (date || new Date()).toISOString());
 
     return this.http
-      .get(`${this.fullUrl}/trends`, { params })
+      .get<Record<string, unknown>>(`${this.fullUrl}/trends`, { params })
       .pipe(retry(2), catchError(this.handleError));
   }
 
