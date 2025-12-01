@@ -271,8 +271,8 @@ export class AddReadingPage implements OnInit, OnDestroy {
       // Show success message
       await this.showSuccessToast();
 
-      // Navigate back to previous page
-      this.navCtrl.back();
+      // Navigate back to readings list
+      this.navCtrl.navigateBack('/tabs/readings');
     } catch (error) {
       console.error('Error saving reading:', error);
       await this.showErrorToast(error);
