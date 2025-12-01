@@ -54,26 +54,29 @@ jobs:
   # Deploy preview to Netlify (branches != master)
   deploy-preview:
     executor: node-executor
+    environment:
+      NETLIFY_AUTH_TOKEN: ${NETLIFY_AUTH_TOKEN}
     steps:
       - attach_workspace:
           at: .
       - run:
           name: Deploy Preview to Netlify
           command: |
-            npm install -g netlify-cli
-            netlify deploy --dir=www --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN --alias=${CIRCLE_BRANCH//\//-}
+            BRANCH_ALIAS="${CIRCLE_BRANCH//\//-}"
+            npx netlify-cli deploy --dir=www --site="$NETLIFY_SITE_ID" --alias="$BRANCH_ALIAS" --message="Preview: $CIRCLE_BRANCH ($CIRCLE_SHA1)"
 
   # Deploy production to Netlify (master only)
   deploy-prod:
     executor: node-executor
+    environment:
+      NETLIFY_AUTH_TOKEN: ${NETLIFY_AUTH_TOKEN}
     steps:
       - attach_workspace:
           at: .
       - run:
           name: Deploy Production to Netlify
           command: |
-            npm install -g netlify-cli
-            netlify deploy --prod --dir=www --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
+            npx netlify-cli deploy --prod --dir=www --site="$NETLIFY_SITE_ID" --message="Production: $CIRCLE_SHA1"
 
   # Android build - API 34 (target)
   build-android:
