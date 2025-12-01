@@ -1253,3 +1253,53 @@ html {
   --color-checked: #fff;
   --indicator-color: var(--ion-color-primary);
 }
+
+/* ============================================
+ * MOBILE PREVIEW FRAME (Desktop Web Only)
+ * Shows app in phone-sized container on Vercel/web
+ * ============================================ */
+@media (min-width: 768px) {
+  body {
+    background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  ion-app {
+    width: 390px;
+    max-width: 390px;
+    height: 844px;
+    max-height: 90vh;
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow:
+      0 25px 50px -12px rgb(0 0 0 / 25%),
+      0 0 0 12px #1f2937,
+      0 0 0 14px #374151;
+    position: relative;
+  }
+
+  /* Notch simulation */
+  ion-app::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 30px;
+    background: #1f2937;
+    border-radius: 0 0 20px 20px;
+    z-index: 9999;
+  }
+
+  /* Dark mode background */
+  .dark body,
+  .ion-palette-dark body,
+  :root[data-theme='dark'] body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  }
+}
