@@ -14,8 +14,8 @@ ion-content {
 .profile-hero {
   background: linear-gradient(
     135deg,
-    var(--ion-color-primary, #25aff4) 0%,
-    var(--ion-color-primary-tint, #4dc2f8) 100%
+    var(--ion-color-primary, #3b82f6) 0%,
+    var(--ion-color-primary-tint, #60a5fa) 100%
   );
   border-radius: 20px;
   padding: 32px 24px;
@@ -177,7 +177,7 @@ button.overview-card {
 }
 
 .about-row.link:focus-visible {
-  outline: 2px solid var(--ion-color-primary, #25aff4);
+  outline: 2px solid var(--ion-color-primary, #3b82f6);
   outline-offset: 2px;
   border-radius: 12px;
 }

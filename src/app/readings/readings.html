@@ -2,14 +2,22 @@
   <ion-toolbar color="primary">
     <ion-title>{{ 'tabs.readings' | translate }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="syncWithBackend()" [disabled]="isSyncing">
+      <ion-button
+        (click)="syncWithBackend()"
+        [disabled]="isSyncing"
+        [attr.aria-label]="'common.sync' | translate"
+      >
         <app-icon
           slot="icon-only"
           [name]="isSyncing ? 'loader-circle' : 'refresh-cw'"
           [class.animate-spin]="isSyncing"
         ></app-icon>
       </ion-button>
-      <ion-button (click)="openFilterModal()" class="relative">
+      <ion-button
+        (click)="openFilterModal()"
+        class="relative"
+        [attr.aria-label]="'readings.filterReadings' | translate"
+      >
         <app-icon slot="icon-only" name="filter-outline"></app-icon>
         <ion-badge
           *ngIf="getFilterCount() > 0"
@@ -152,7 +160,11 @@
   </div>
 
   <!-- Grouped Readings List with Virtual Scrolling -->
-  <div class="page-shell pb-20" *ngIf="!isLoading && groupedReadings.length > 0">
+  <div
+    class="page-shell pb-20"
+    style="padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px))"
+    *ngIf="!isLoading && groupedReadings.length > 0"
+  >
     <!-- Group by Date -->
     <div *ngFor="let group of groupedReadings; trackBy: trackByGroup" class="mb-6 last:mb-0">
       <!-- Date Header -->
@@ -195,6 +207,7 @@
     horizontal="end"
     slot="fixed"
     class="!bottom-20"
+    style="bottom: calc(5rem + env(safe-area-inset-bottom, 0px)) !important"
     *ngIf="groupedReadings.length > 2"
   >
     <ion-fab-button
@@ -202,17 +215,24 @@
       (click)="scrollToTop()"
       color="light"
       class="shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
+      aria-label="Scroll to top"
     >
       <app-icon name="arrow-up"></app-icon>
     </ion-fab-button>
   </ion-fab>
 
   <!-- Add Reading FAB -->
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab
+    vertical="bottom"
+    horizontal="end"
+    slot="fixed"
+    style="bottom: calc(1rem + env(safe-area-inset-bottom, 0px))"
+  >
     <ion-fab-button
       (click)="addReading()"
       color="primary"
       class="shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
+      [attr.aria-label]="'readings.addReading' | translate"
     >
       <app-icon name="add"></app-icon>
     </ion-fab-button>
@@ -226,7 +246,7 @@
       <ion-toolbar>
         <ion-title>{{ 'readings.filterReadings' | translate }}</ion-title>
         <ion-buttons slot="end">
-          <ion-button (click)="closeFilterModal()">
+          <ion-button (click)="closeFilterModal()" aria-label="Close">
             <app-icon slot="icon-only" name="close"></app-icon>
           </ion-button>
         </ion-buttons>
@@ -379,7 +399,7 @@
       <ion-toolbar>
         <ion-title>{{ 'readings.reading' | translate }}</ion-title>
         <ion-buttons slot="end">
-          <ion-button (click)="closeDetailModal()">
+          <ion-button (click)="closeDetailModal()" aria-label="Close">
             <app-icon name="close"></app-icon>
           </ion-button>
         </ion-buttons>

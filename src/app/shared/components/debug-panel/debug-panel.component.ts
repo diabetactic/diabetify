@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonFabButton, IonIcon, IonButton, IonContent, IonLabel } from '@ionic/angular/standalone';
+import { IonFabButton, IonIcon, IonButton } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { trigger, style, transition, animate } from '@angular/animations';
 import { Capacitor } from '@capacitor/core';
@@ -24,6 +24,7 @@ import { AppIconComponent } from '../app-icon/app-icon.component';
 import { CapacitorHttpService } from '../../../core/services/capacitor-http.service';
 import { API_GATEWAY_BASE_URL } from '../../config/api-base-url';
 import { firstValueFrom } from 'rxjs';
+import { SyncStatus } from '../../../core/models/tidepool-sync.model';
 
 interface DebugInfo {
   platform: string;
@@ -45,7 +46,7 @@ interface BackofficeTokenResponse {
 interface BackofficeQueueEntry {
   queue_placement?: string | number;
   user_id?: string | number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface BackofficeResolutionPayload {
@@ -59,6 +60,18 @@ interface BackofficeResolutionPayload {
   emergency_care: boolean;
   needed_physical_appointment: boolean;
   glucose_scale: [string, number][];
+}
+
+interface AuthStatus {
+  tidepool?: {
+    isAuthenticated: boolean;
+    userId: string;
+  };
+}
+
+interface StorageStats {
+  readings: number;
+  syncQueue: number;
 }
 
 const BACKOFFICE_BASE_URL = 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com';
@@ -79,8 +92,6 @@ const BACKOFFICE_ADMIN_PASSWORD = 'admin';
     IonFabButton,
     IonIcon,
     IonButton,
-    IonContent,
-    IonLabel,
   ],
   animations: [
     trigger('slideIn', [
@@ -105,10 +116,10 @@ export class DebugPanelComponent implements OnInit {
   isOpen = false;
   selectedTab = 'info';
   debugInfo: DebugInfo | null = null;
-  authStatus: any = null;
-  syncStatus: any = null;
+  authStatus: AuthStatus | null = null;
+  syncStatus: SyncStatus | null = null;
   servicesHealth: ExternalServicesState | null = null;
-  storageStats: any = null;
+  storageStats: StorageStats | null = null;
 
   // Feature flags (editable)
   features = {
@@ -243,8 +254,9 @@ export class DebugPanelComponent implements OnInit {
     try {
       // Trigger sync (implementation depends on your sync service)
       alert('✅ Sync completed');
-    } catch (error: any) {
-      alert('❌ Sync failed: ' + error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      alert('❌ Sync failed: ' + message);
     }
   }
 
@@ -473,7 +485,7 @@ export class DebugPanelComponent implements OnInit {
       );
 
       await this.showToast(`Accepted appointment in queue position ${placement}`, 'success');
-    } catch (error: any) {
+    } catch (error: unknown) {
       await this.showToast(this.formatError(error, 'Failed to accept next appointment'), 'danger');
     }
   }
@@ -512,7 +524,7 @@ export class DebugPanelComponent implements OnInit {
       );
 
       await this.showToast(`Denied appointment in queue position ${placement}`, 'warning');
-    } catch (error: any) {
+    } catch (error: unknown) {
       await this.showToast(this.formatError(error, 'Failed to deny next appointment'), 'danger');
     }
   }
@@ -539,7 +551,7 @@ export class DebugPanelComponent implements OnInit {
       );
 
       await this.showToast('Appointment queue cleared', 'success');
-    } catch (error: any) {
+    } catch (error: unknown) {
       await this.showToast(this.formatError(error, 'Failed to clear appointment queue'), 'danger');
     }
   }
@@ -604,7 +616,7 @@ export class DebugPanelComponent implements OnInit {
       );
 
       await this.showToast(`Resolution created for appointment ${appointmentId}`, 'success');
-    } catch (error: any) {
+    } catch (error: unknown) {
       await this.showToast(this.formatError(error, 'Failed to create resolution'), 'danger');
     }
   }
@@ -633,7 +645,7 @@ export class DebugPanelComponent implements OnInit {
       );
 
       await this.showToast(`User created:\n${email}\nPassword: ${password}`, 'success');
-    } catch (error: any) {
+    } catch (error: unknown) {
       await this.showToast(this.formatError(error, 'Failed to create user'), 'danger');
     }
   }
@@ -641,7 +653,7 @@ export class DebugPanelComponent implements OnInit {
   /**
    * Compact error formatter for dev tools.
    */
-  private formatError(error: any, fallback: string): string {
+  private formatError(error: unknown, fallback: string): string {
     if (!error) {
       return fallback;
     }
@@ -650,12 +662,24 @@ export class DebugPanelComponent implements OnInit {
       return `${fallback}: ${error}`;
     }
 
-    const detail =
-      error.error?.detail ||
-      error.error?.message ||
-      error.message ||
-      (typeof error.error === 'string' ? error.error : '');
+    if (error instanceof Error) {
+      return `${fallback}: ${error.message}`;
+    }
 
-    return detail ? `${fallback}: ${detail}` : fallback;
+    // Handle HTTP error responses
+    if (typeof error === 'object' && error !== null) {
+      const err = error as Record<string, unknown>;
+      const errorObj = err['error'] as Record<string, unknown> | undefined;
+
+      const detail =
+        errorObj?.['detail'] ||
+        errorObj?.['message'] ||
+        err['message'] ||
+        (typeof err['error'] === 'string' ? err['error'] : '');
+
+      return detail ? `${fallback}: ${detail}` : fallback;
+    }
+
+    return fallback;
   }
 }

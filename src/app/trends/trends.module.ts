@@ -15,8 +15,14 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, TranslateModule, RouterModule.forChild(routes)],
-  declarations: [TrendsPage],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    TranslateModule,
+    RouterModule.forChild(routes),
+    TrendsPage,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class TrendsPageModule {}

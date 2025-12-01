@@ -94,7 +94,7 @@ export class LoginPage implements OnInit {
       return;
     }
 
-    console.log('[LOGIN] onSubmit invoked', this.loginForm.value);
+    // SECURITY: Removed form value logging (contains password) - HIPAA/COPPA compliance
 
     if (!this.loginForm.valid) {
       this.markFormGroupTouched(this.loginForm);
@@ -165,18 +165,19 @@ export class LoginPage implements OnInit {
       } else {
         throw new Error(result?.error || this.translate.instant('login.messages.genericError'));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[LOGIN] Error during login', error);
       let errorMessage = this.translate.instant('login.messages.genericError');
 
-      if (error.status === 401) {
+      const httpError = error as { status?: number; message?: string };
+      if (httpError.status === 401) {
         errorMessage = this.translate.instant('login.messages.invalidCredentials');
-      } else if (error.status === 422) {
+      } else if (httpError.status === 422) {
         errorMessage = this.translate.instant('login.messages.invalidData');
-      } else if (error.status === 0) {
+      } else if (httpError.status === 0) {
         errorMessage = this.translate.instant('login.messages.connectionError');
-      } else if (error.message) {
-        errorMessage = error.message;
+      } else if (httpError.message) {
+        errorMessage = httpError.message;
       }
 
       // Reset loading state BEFORE showing alert (ensures UI updates)
@@ -226,11 +227,6 @@ export class LoginPage implements OnInit {
       buttons: ['OK'],
     });
     await alert.present();
-  }
-
-  navigateToRegister() {
-    // Navigate to register page
-    this.router.navigate(['/register']);
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {

@@ -261,7 +261,7 @@ export class ProfilePage {
         title="Personal Information"
         subtitle="Name, email, date of birth"
         actionType="chevron"
-        iconColor="#25aff4"
+        iconColor="#3b82f6"
         (itemClick)="navigateToPersonalInfo()"
       >
       </app-profile-item>
