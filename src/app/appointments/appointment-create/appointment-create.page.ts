@@ -53,7 +53,6 @@ import { TranslationService } from '../../core/services/translation.service';
     IonSelect,
     IonSelectOption,
     IonLabel,
-    IonList,
     IonCheckbox,
     IonTextarea,
   ],
