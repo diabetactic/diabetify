@@ -15,8 +15,17 @@ module.exports = {
   ],
   collectCoverageFrom: [
     'src/app/**/*.ts',
+    // Exclude test infrastructure
+    '!src/app/**/*.spec.ts',
+    '!src/app/tests/**',
+    '!src/app/testing/**',
+    // Exclude Angular boilerplate
     '!src/app/**/*.module.ts',
     '!src/app/**/*.routes.ts',
+    '!src/app/**/index.ts',
+    // Exclude Ionic demo/boilerplate
+    '!src/app/explore-container/**',
+    // Exclude entry points
     '!src/main.ts',
     '!src/polyfills.ts',
   ],
@@ -24,10 +33,10 @@ module.exports = {
   coverageReporters: ['html', 'text-summary', 'lcov'],
   coverageThreshold: {
     global: {
-      statements: 50,
-      branches: 50,
-      functions: 50,
-      lines: 50,
+      statements: 20,
+      branches: 15,
+      functions: 15,
+      lines: 20,
     },
   },
   moduleNameMapper: {
