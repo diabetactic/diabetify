@@ -15,7 +15,7 @@ export interface AppError {
   message: string;
   code?: string;
   statusCode?: number;
-  details?: any;
+  details?: Record<string, unknown>;
   timestamp: string;
 }
 
@@ -62,7 +62,7 @@ export class ErrorHandlerService {
         message: 'Network error occurred. Please check your connection.',
         code: 'NETWORK_ERROR',
         statusCode: 0,
-        details: error.error.message,
+        details: { message: error.error.message } as Record<string, unknown>,
         timestamp,
       };
     }
@@ -280,7 +280,7 @@ export class ErrorHandlerService {
 
     return {
       ...error,
-      details: redactedDetails,
+      details: redactedDetails as Record<string, unknown> | undefined,
     };
   }
 
@@ -291,7 +291,7 @@ export class ErrorHandlerService {
    * @param sensitiveFields - Array of field names to redact
    * @returns Object with sensitive fields redacted
    */
-  private redactObject(obj: any, sensitiveFields: string[]): any {
+  private redactObject(obj: unknown, sensitiveFields: string[]): unknown {
     if (!obj || typeof obj !== 'object') {
       return obj;
     }
@@ -300,15 +300,16 @@ export class ErrorHandlerService {
       return obj.map(item => this.redactObject(item, sensitiveFields));
     }
 
-    const redacted: any = {};
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    const redacted: Record<string, unknown> = {};
+    const objRecord = obj as Record<string, unknown>;
+    for (const key in objRecord) {
+      if (Object.prototype.hasOwnProperty.call(objRecord, key)) {
         if (sensitiveFields.some(field => key.toLowerCase().includes(field.toLowerCase()))) {
           redacted[key] = '[REDACTED]';
-        } else if (typeof obj[key] === 'object') {
-          redacted[key] = this.redactObject(obj[key], sensitiveFields);
+        } else if (typeof objRecord[key] === 'object') {
+          redacted[key] = this.redactObject(objRecord[key], sensitiveFields);
         } else {
-          redacted[key] = obj[key];
+          redacted[key] = objRecord[key];
         }
       }
     }

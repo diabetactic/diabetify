@@ -24,6 +24,9 @@ export interface Appointment {
   control_data: string;
   motive: string[];
   other_motive?: string | null;
+  // Client-side scheduling fields (not from backend)
+  scheduled_date?: Date;
+  reminder_minutes_before?: number; // Default: 30 minutes
 }
 
 /**

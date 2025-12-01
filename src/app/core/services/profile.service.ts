@@ -210,6 +210,11 @@ export class ProfileService {
         await this.saveProfile(profile);
       }
 
+      // TODO: Patch backend with Tidepool dashboard link when endpoint is implemented
+      // The backend User model has 'tidepool' field (login/app/models/user_model.py:14)
+      // but needs PATCH /users/tidepool endpoint to be created
+      // Dashboard link format: https://app.tidepool.org/patients/${auth.userId}/data
+
       this._tidepoolConnected$.next(true);
     } catch (error) {
       console.error('Failed to set Tidepool credentials:', error);

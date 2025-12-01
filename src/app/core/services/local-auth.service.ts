@@ -246,19 +246,18 @@ export class LocalAuthService {
    */
   login(username: string, password: string, rememberMe: boolean = false): Observable<LoginResult> {
     const isAuthMockEnabled = this.mockAdapter.isServiceMockEnabled('auth');
-    console.log('🔐 [AUTH] Login attempt started');
-    console.log('🔐 [AUTH] Username:', username);
-    console.log('🔐 [AUTH] Password length:', password?.length ?? 0);
-    console.log('🔐 [AUTH] Remember me:', rememberMe);
-    console.log('🔐 [AUTH] Backend mode:', (environment as any).backendMode);
-    console.log('🔐 [AUTH] Auth mock enabled:', isAuthMockEnabled);
+    // SECURITY: Removed credential logging - HIPAA/COPPA compliance
+    this.logger.debug('Auth', 'Login attempt', {
+      backendMode: (environment as { backendMode?: string }).backendMode,
+      mockEnabled: isAuthMockEnabled,
+    });
 
     // MOCK MODE: Return mock data immediately without HTTP calls
     if (isAuthMockEnabled) {
       console.log('🎭 [AUTH] MOCK MODE - Bypassing backend, returning mock data');
       this.logger.info('Auth', 'Mock mode login - bypassing HTTP calls', {
         username,
-        backendMode: (environment as any).backendMode,
+        backendMode: (environment as { backendMode?: string }).backendMode,
       });
       return from(this.handleDemoLogin(rememberMe));
     }
@@ -717,7 +716,9 @@ export class LocalAuthService {
    * Map API Gateway user payload into the local user format used by the app
    */
   private mapGatewayUser(user: GatewayUserResponse): LocalUser {
-    const accountState = user.state ? (user.state as AccountState) : AccountState.ACTIVE;
+    const accountState: AccountState = user.state
+      ? (user.state as AccountState)
+      : AccountState.ACTIVE;
 
     return {
       id: user.dni,
@@ -748,7 +749,7 @@ export class LocalAuthService {
   /**
    * Extract error message from various error formats
    */
-  private extractErrorMessage(error: any): string {
+  private extractErrorMessage(error: unknown): string {
     if (!error) {
       return 'An error occurred';
     }
@@ -757,32 +758,46 @@ export class LocalAuthService {
       return error;
     }
 
-    if (error.message) {
+    const errorObj = error as Record<string, unknown>;
+
+    if (errorObj['message']) {
+      const message = errorObj['message'] as string;
       // Check for specific error codes
-      if (error.message.includes('accountPending')) {
+      if (message.includes('accountPending')) {
         return 'Tu cuenta está pendiente de activación. Por favor, contacta al administrador.';
       }
-      if (error.message.includes('accountDisabled')) {
+      if (message.includes('accountDisabled')) {
         return 'Tu cuenta ha sido deshabilitada. Por favor, contacta al administrador.';
       }
-      return error.message;
+      return message;
     }
 
-    if (error.error) {
-      if (error.error.detail) {
-        if (Array.isArray(error.error.detail)) {
-          return error.error.detail.map((d: any) => d.msg || d.detail || d).join(', ');
+    const errorNested = errorObj['error'] as Record<string, unknown> | undefined;
+    if (errorNested) {
+      if (errorNested['detail']) {
+        if (Array.isArray(errorNested['detail'])) {
+          return (errorNested['detail'] as unknown[])
+            .map((d: unknown) => {
+              const detailObj = d as Record<string, unknown>;
+              return (
+                (detailObj['msg'] as string | undefined) ||
+                (detailObj['detail'] as string | undefined) ||
+                d
+              );
+            })
+            .join(', ');
         }
-        return error.error.detail;
+        return errorNested['detail'] as string;
       }
-      if (error.error.message) {
-        return error.error.message;
+      if (errorNested['message']) {
+        return errorNested['message'] as string;
       }
     }
 
     // HTTP status code specific messages
-    if (error.status) {
-      switch (error.status) {
+    if (errorObj['status']) {
+      const status = errorObj['status'] as number;
+      switch (status) {
         case 401:
           return 'Credenciales incorrectas. Verifica tu DNI/email y contraseña.';
         case 403:
@@ -796,7 +811,7 @@ export class LocalAuthService {
         case 0:
           return 'Error de conexión. Verifica tu conexión a internet.';
         default:
-          return `Error ${error.status}: ${error.message || 'Algo salió mal'}`;
+          return `Error ${status}: ${(errorObj['message'] as string | undefined) || 'Algo salió mal'}`;
       }
     }
 
