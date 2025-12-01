@@ -1,10 +1,19 @@
 # Arquitectura - Diabetactic
 
+## Visión General
+
+Diabetactic es un sistema distribuido compuesto por:
+
+- **diabetify** (este repositorio): App móvil Ionic/Angular
+- **Backend microservicios**: api-gateway, glucoserver, appointments, login
+
+Ver [README del monorepo](../../README.md) para la estructura completa.
+
 ## Patrón API Gateway
 
 Toda la comunicación con el backend se realiza a través del servicio API Gateway.
 
-### Servicio Gateway
+### Servicio Gateway (Frontend)
 
 - **Ubicación**: `src/app/core/services/api-gateway.service.ts`
 - **URL Base**: `environment.backendServices.apiGateway.baseUrl`
@@ -17,6 +26,15 @@ Toda la comunicación con el backend se realiza a través del servicio API Gatew
 - Estandarización de errores
 - Estrategia de caché
 - Reintentos con backoff exponencial
+
+### Backend Microservicios
+
+| Servicio         | Puerto | Endpoints                   |
+| ---------------- | ------ | --------------------------- |
+| **api-gateway**  | 8000   | Punto de entrada único      |
+| **glucoserver**  | -      | `/glucose/*` - lecturas     |
+| **appointments** | -      | `/appointments/*` - citas   |
+| **login**        | -      | `/users/*`, `/token` - auth |
 
 ### Excepciones Aprobadas
 

@@ -1,11 +1,28 @@
 # Netlify configuration for Diabetactic Angular/Ionic app
+# Note: This is an Ionic/Capacitor app, NOT a standard Angular app
+# The angular-runtime plugin is incompatible - we use a simple static build
 
 [build]
   # Build command - uses production config with Heroku backend
   command = "npm run build:prod"
 
-  # Output directory (Angular outputs to www/)
+  # Output directory - Ionic/Capacitor outputs to www/ (not dist/)
   publish = "www"
+
+  # Ignore the angular-runtime plugin - it expects dist/{project}/browser structure
+  # which doesn't match Ionic/Capacitor's www/ output
+  ignore = "false"
+
+# Disable the automatic Angular runtime detection
+[build.environment]
+  # Disable angular-runtime plugin - incompatible with Ionic/Capacitor output structure
+  NETLIFY_ANGULAR_RUNTIME_DISABLED = "true"
+  # Skip framework detection
+  FRAMEWORK_DETECTION = "false"
+
+# Explicitly define plugins (exclude angular-runtime)
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
 
 # SPA routing - redirect all routes to index.html
 [[redirects]]
