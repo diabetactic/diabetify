@@ -166,23 +166,6 @@
         </ion-select>
       </ion-item>
 
-      <!-- Control Data (PDF URL) -->
-      <ion-item>
-        <ion-input
-          type="url"
-          label-placement="stacked"
-          [(ngModel)]="formData.control_data"
-          name="control_data"
-          placeholder="https://example.com/glucose-data.pdf"
-          required
-        >
-          <div slot="label">
-            {{ 'appointments.create.control_data' | translate }}
-            <span class="text-red-500">*</span>
-          </div>
-        </ion-input>
-      </ion-item>
-
       <!-- Motive (Checkboxes) -->
       <div class="ion-padding-vertical">
         <ion-label class="ion-padding-start">
