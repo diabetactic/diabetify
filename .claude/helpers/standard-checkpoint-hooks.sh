@@ -55,14 +55,7 @@ post_edit_checkpoint() {
             
             # Create commit
             git add "$file"
-            if git commit -m "🔖 Checkpoint: Edit $file
-
-Automatic checkpoint created by Claude
-- File: $file
-- Branch: $current_branch
-- Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)
-
-[Auto-checkpoint]" --quiet; then
+            if git commit -m "wip: save changes to ${file##*/}" --quiet; then
                 # Create tag only if commit succeeded
                 git tag -a "$tag_name" -m "Checkpoint after editing $file"
                 
@@ -98,7 +91,7 @@ task_checkpoint() {
         
         # Commit current state
         git add -A
-        git commit -m "🔖 Task checkpoint: $task..." --quiet || true
+        git commit -m "wip: work in progress" --quiet || true
         
         # Store metadata
         mkdir -p .claude/checkpoints
@@ -151,8 +144,8 @@ EOF
     
     # Create final checkpoint
     git add -A
-    git commit -m "🏁 Session end checkpoint: $session_id" --quiet || true
-    git tag -a "session-end-$session_id" -m "End of Claude session"
+    git commit -m "wip: session save" --quiet || true
+    git tag -a "session-end-$session_id" -m "Session backup point"
     
     echo "✅ Session summary saved to: $summary_file"
     echo "📌 Final checkpoint: session-end-$session_id"
