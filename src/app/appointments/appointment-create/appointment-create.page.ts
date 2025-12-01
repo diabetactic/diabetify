@@ -277,10 +277,7 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
       return false;
     }
 
-    if (!this.formData.control_data || this.formData.control_data.trim() === '') {
-      this.showToast('Por favor, ingresa la URL del PDF de control', 'warning');
-      return false;
-    }
+    // Removed control_data validation as the field was removed
 
     if (this.formData.motive.length === 0) {
       this.showToast('Por favor, selecciona al menos un motivo de visita', 'warning');
@@ -323,10 +320,16 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
     this.isLoading = true;
 
     try {
-      // Call backend API
-      const appointment = await firstValueFrom(
-        this.appointmentService.createAppointment(this.formData)
+      // Create a timeout promise (15 seconds)
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Tiempo de espera agotado')), 15000)
       );
+
+      // Call backend API with race condition
+      const appointment = await Promise.race([
+        firstValueFrom(this.appointmentService.createAppointment(this.formData)),
+        timeoutPromise,
+      ]);
 
       await loading.dismiss();
       await this.showToast('Cita creada exitosamente', 'success');
