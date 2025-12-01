@@ -36,9 +36,13 @@
     "no": "No",
     "pullToRefresh": "Desliza para actualizar",
     "refreshing": "Actualizando...",
+    "loading": "Cargando...",
     "none": "Ninguno",
     "today": "Hoy",
-    "yesterday": "Ayer"
+    "yesterday": "Ayer",
+    "terms": "Términos",
+    "privacy": "Privacidad",
+    "support": "Soporte"
   },
   "tabs": {
     "home": "Inicio",
@@ -50,6 +54,7 @@
     "subtitle": "Tu compañero amigable para controlar la diabetes con una sonrisa.",
     "getStarted": "Empezar",
     "login": "Iniciar Sesión",
+    "loginCta": "¡Vamos!",
     "heroAlt": "Una alegre ilustración de un niño superhéroe manejando con confianza su diabetes",
     "quotes": [
       "¡Eres más fuerte que la diabetes!",
@@ -608,7 +613,14 @@
       "reschedule": "Reprogramar cita",
       "cancel": "Cancelar cita",
       "followUp": "Cita de seguimiento",
-      "prescriptions": "Prescripciones"
+      "prescriptions": "Prescripciones",
+      "resolution": "Resolución"
+    },
+    "resolution": {
+      "resolvedAt": "Resuelto el",
+      "resolvedBy": "Resuelto por",
+      "notes": "Notas de Resolución",
+      "loading": "Cargando resolución..."
     },
     "create": {
       "title": "Nueva Cita",
@@ -717,6 +729,25 @@
     "disconnect": "Desconectar",
     "connect": "Conectar a Tidepool",
     "viewDashboard": "Ver Panel de Control",
+    "tidepoolUserId": "ID de Usuario Tidepool",
+    "tidepoolInfo": {
+      "title": "Conexión Tidepool",
+      "status": "Estado",
+      "userId": "ID de Usuario",
+      "email": "Correo",
+      "lastAuth": "Última Autenticación",
+      "notConnectedMessage": "No estás conectado a Tidepool. Conecta tu cuenta para sincronizar datos de glucosa y compartir con tu equipo médico.",
+      "learnMore": "Más Información",
+      "fetchError": "No se pudieron obtener datos de Tidepool. Intenta de nuevo más tarde.",
+      "fullName": "Nombre",
+      "birthday": "Fecha de Nacimiento",
+      "diagnosisDate": "Fecha de Diagnóstico",
+      "timezone": "Zona Horaria",
+      "dataSources": "Fuentes de Datos",
+      "providers": "Dispositivos Conectados",
+      "totalReadings": "Lecturas Sincronizadas",
+      "syncHistory": "Sincronizaciones Exitosas"
+    },
     "changePhoto": "Cambiar foto",
     "avatar": {
       "errorTitle": "Foto de perfil",
@@ -752,7 +783,55 @@
     "title": "Configuración",
     "general": "General",
     "appearance": "Apariencia",
-    "notifications": "Notificaciones",
+    "notifications": {
+      "enable": "Activar Notificaciones",
+      "enableDesc": "Recibir recordatorios de lecturas de glucosa y citas",
+      "disable": "Desactivar Notificaciones",
+      "readings": "Recordatorios de Lecturas",
+      "readingReminders": "Recordatorios de Control de Glucosa",
+      "appointments": "Recordatorios de Citas",
+      "medications": "Recordatorios de Medicamentos",
+      "sync": "Notificaciones de Sincronización",
+      "sound": "Sonido",
+      "vibration": "Vibración",
+      "test": "Probar Notificación",
+      "testDesc": "Enviar notificación de prueba para verificar configuración",
+      "morningCheck": "Control matutino",
+      "lunchCheck": "Control del almuerzo",
+      "dinnerCheck": "Control de la cena"
+    },
+    "sections": {
+      "profile": "Perfil",
+      "glucose": "Configuración de Glucosa",
+      "appearance": "Apariencia",
+      "notifications": "Notificaciones",
+      "language": "Idioma",
+      "advanced": "Avanzado"
+    },
+    "glucose": {
+      "unitLabel": "Unidad de Glucosa",
+      "mgdl": "mg/dL",
+      "mmol": "mmol/L",
+      "targetRange": "Rango Objetivo",
+      "minLabel": "Objetivo Bajo",
+      "maxLabel": "Objetivo Alto"
+    },
+    "appearanceSettings": {
+      "themeLabel": "Tema",
+      "themeLight": "Claro",
+      "themeDark": "Oscuro",
+      "themeAuto": "Automático del Sistema"
+    },
+    "profile": {
+      "avatarAlt": "Foto de perfil"
+    },
+    "debug": {
+      "title": "Panel de Depuración",
+      "subtitle": "Herramientas de desarrollo y diagnóstico",
+      "advancedConfig": "Configuración Avanzada"
+    },
+    "signOut": "Cerrar Sesión",
+    "demoMode": "Estás en modo demo. Los cambios no se guardarán.",
     "privacy": "Privacidad",
     "security": "Seguridad",
     "about": "Acerca de",
@@ -789,6 +868,12 @@
       }
     },
     "language": {
+      "title": "Idioma",
+      "auto": "Automático (Idioma del Dispositivo)",
+      "english": "English",
+      "spanish": "Español",
+      "en": "English",
+      "es": "Español",
       "now": "Ahora",
       "today": "Hoy",
       "yesterday": "Ayer",
@@ -925,6 +1010,8 @@
   },
   "debug": {
     "title": "Panel de Depuración",
+    "openPanel": "Abrir panel de depuración",
+    "closePanel": "Cerrar panel de depuración",
     "tabs": {
       "info": "Info",
       "status": "Estado",
@@ -1070,6 +1157,8 @@
       "placeholder": "Ingresa tu contraseña"
     },
     "rememberMe": "Recordar mis datos",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
     "submitButton": "Iniciar Sesión",
     "forgotPassword": "¿Olvidaste tu contraseña?",
     "divider": "O",
@@ -1136,6 +1225,130 @@
     "sleep": {
       "title": "Duerme Bien",
       "description": "Intenta dormir de 7 a 9 horas de calidad cada noche. El mal sueño puede afectar los niveles de azúcar en sangre y la sensibilidad a la insulina."
+    }
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "readingReminders": "Recordatorios de Lecturas",
+    "readingRemindersDescription": "Recibe recordatorios diarios para revisar tu glucosa",
+    "appointmentReminders": "Recordatorios de Citas",
+    "appointmentRemindersDescription": "Recibe alertas antes de tus citas",
+    "permissionRequired": "Permiso Requerido",
+    "permissionMessage": "Para recibir notificaciones, por favor otorga permiso en la configuración de tu dispositivo.",
+    "enableNotifications": "Activar Notificaciones",
+    "disableNotifications": "Desactivar Notificaciones",
+    "reminderTime": "Hora del Recordatorio",
+    "addReminder": "Agregar Recordatorio",
+    "deleteReminder": "Eliminar Recordatorio",
+    "testNotification": "Enviar Notificación de Prueba",
+    "testNotificationSent": "Notificación de prueba enviada!",
+    "beforeAppointment": "{{minutes}} minutos antes",
+    "morningReminder": "Revisión Matutina",
+    "afternoonReminder": "Revisión de la Tarde",
+    "eveningReminder": "Revisión Nocturna"
+  },
+  "bolusCalculator": {
+    "title": "Calculadora de Bolos",
+    "infoBanner": "Esta calculadora te ayuda a determinar la dosis de insulina basada en tu glucosa actual y los carbohidratos que vas a consumir.",
+    "enterData": "Ingresa tus datos",
+    "currentGlucose": "Glucosa Actual (mg/dL)",
+    "glucosePlaceholder": "Ej: 180",
+    "carbGrams": "Carbohidratos a Consumir (gramos)",
+    "carbsPlaceholder": "Ej: 60",
+    "calculate": "Calcular Dosis",
+    "recommended": "Dosis Recomendada",
+    "units": "unidades de insulina",
+    "details": "Detalles del cálculo",
+    "targetGlucose": "Glucosa objetivo",
+    "carbohydrates": "Carbohidratos",
+    "carbRatio": "Ratio carbohidratos",
+    "correctionFactor": "Factor de corrección",
+    "warning": "Importante: Esta es solo una recomendación. Siempre consulta con tu médico antes de ajustar tu dosis.",
+    "newCalculation": "Nueva Calculación",
+    "selectFoods": "Selecciona alimentos para contar carbos",
+    "errors": {
+      "glucoseRequired": "La glucosa actual es requerida",
+      "glucoseRange": "Ingresa un valor entre 40 y 600 mg/dL",
+      "carbsRequired": "Los carbohidratos son requeridos",
+      "carbsRange": "Ingresa un valor entre 0 y 300 gramos"
+    }
+  },
+  "foodPicker": {
+    "title": "Selector de Alimentos",
+    "searchPlaceholder": "Buscar alimentos...",
+    "categories": {
+      "fruits": "Frutas",
+      "vegetables": "Vegetales",
+      "grains": "Granos",
+      "dairy": "Lácteos",
+      "proteins": "Proteínas",
+      "snacks": "Snacks",
+      "drinks": "Bebidas",
+      "meals": "Comidas",
+      "desserts": "Postres"
+    },
+    "units": {
+      "g": "g",
+      "ml": "ml",
+      "cup": "taza",
+      "piece": "unidad",
+      "slice": "rebanada",
+      "tablespoon": "cda",
+      "teaspoon": "cdta",
+      "serving": "porción"
+    },
+    "carbsUnit": "carbos",
+    "itemsSelected": "items seleccionados",
+    "totalCarbs": "Total Carbohidratos",
+    "clearAll": "Limpiar todo",
+    "confirm": "Agregar al cálculo",
+    "noResults": "No se encontraron alimentos. Intenta otra búsqueda.",
+    "decrease": "Reducir porción",
+    "increase": "Aumentar porción",
+    "foods": {
+      "apple": "Manzana",
+      "banana": "Banana",
+      "orange": "Naranja",
+      "grapes": "Uvas",
+      "strawberries": "Fresas",
+      "watermelon": "Sandía",
+      "whiteBread": "Pan Blanco",
+      "rice": "Arroz (cocido)",
+      "pasta": "Pasta (cocida)",
+      "cereal": "Cereal",
+      "tortilla": "Tortilla",
+      "crackers": "Galletas saladas",
+      "milk": "Leche",
+      "yogurt": "Yogur",
+      "chocolateMilk": "Leche chocolatada",
+      "cheese": "Queso",
+      "cookies": "Galleta",
+      "chips": "Papas fritas",
+      "popcorn": "Palomitas",
+      "granolaBar": "Barra de granola",
+      "fruitSnacks": "Gomitas de fruta",
+      "juiceBox": "Jugo en caja",
+      "soda": "Gaseosa",
+      "sportsDrink": "Bebida deportiva",
+      "smoothie": "Licuado",
+      "pizzaSlice": "Porción de pizza",
+      "hamburger": "Hamburguesa",
+      "hotDog": "Pancho",
+      "tacos": "Taco",
+      "sandwich": "Sándwich",
+      "chickenNuggets": "Nuggets de pollo (6)",
+      "frenchFries": "Papas fritas",
+      "macCheese": "Mac & Cheese",
+      "iceCream": "Helado",
+      "cake": "Porción de torta",
+      "cupcake": "Cupcake",
+      "chocolate": "Barra de chocolate",
+      "donut": "Dona",
+      "carrot": "Zanahoria",
+      "corn": "Maíz",
+      "potato": "Papa",
+      "egg": "Huevo",
+      "chicken": "Pollo"
     }
   }
 }

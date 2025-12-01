@@ -36,9 +36,13 @@
     "no": "No",
     "pullToRefresh": "Pull to refresh",
     "refreshing": "Refreshing...",
+    "loading": "Loading...",
     "none": "None",
     "today": "Today",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "support": "Support"
   },
   "tabs": {
     "home": "Home",
@@ -50,6 +54,7 @@
     "subtitle": "Your friendly companion to manage diabetes with a smile.",
     "getStarted": "Get Started",
     "login": "Login",
+    "loginCta": "Let's Go!",
     "heroAlt": "A cheerful illustration of a child superhero confidently managing their diabetes",
     "quotes": [
       "You are stronger than diabetes!",
@@ -607,7 +612,14 @@
       "reschedule": "Reschedule appointment",
       "cancel": "Cancel appointment",
       "followUp": "Follow-up appointment",
-      "prescriptions": "Prescriptions"
+      "prescriptions": "Prescriptions",
+      "resolution": "Resolution"
+    },
+    "resolution": {
+      "resolvedAt": "Resolved on",
+      "resolvedBy": "Resolved by",
+      "notes": "Resolution Notes",
+      "loading": "Loading resolution..."
     },
     "create": {
       "title": "New Appointment",
@@ -708,6 +720,37 @@
     "disconnect": "Disconnect",
     "connect": "Connect to Tidepool",
     "viewDashboard": "View Dashboard",
+    "tidepoolUserId": "Tidepool User ID",
+    "tidepoolInfo": {
+      "title": "Tidepool Connection",
+      "status": "Status",
+      "userId": "User ID",
+      "email": "Email",
+      "lastAuth": "Last Authenticated",
+      "notConnectedMessage": "You are not connected to Tidepool. Connect your account to sync glucose data and share with your healthcare team.",
+      "learnMore": "Learn More",
+      "fetchError": "Could not fetch data from Tidepool. Please try again later.",
+      "sessionExpired": "Your Tidepool session has expired. Please disconnect and reconnect to Tidepool.",
+      "fullName": "Name",
+      "birthday": "Birthday",
+      "diagnosisDate": "Diagnosis Date",
+      "timezone": "Timezone",
+      "dataSources": "Data Sources",
+      "providers": "Connected Devices",
+      "totalReadings": "Total Readings Synced",
+      "syncHistory": "Successful Syncs"
+    },
+    "tidepoolLogin": {
+      "title": "Connect to Tidepool",
+      "message": "Enter your Tidepool account credentials",
+      "email": "Email",
+      "password": "Password",
+      "connect": "Connect",
+      "connecting": "Connecting to Tidepool...",
+      "success": "Connected to Tidepool!",
+      "invalidCredentials": "Invalid email or password",
+      "networkError": "Network error. Please check your connection."
+    },
     "changePhoto": "Change photo",
     "avatar": {
       "errorTitle": "Profile photo",
@@ -745,14 +788,53 @@
     "appearance": "Appearance",
     "notifications": {
       "enable": "Enable Notifications",
+      "enableDesc": "Receive reminders for glucose readings and appointments",
       "disable": "Disable Notifications",
       "readings": "Reading Reminders",
+      "readingReminders": "Glucose Check Reminders",
       "appointments": "Appointment Reminders",
       "medications": "Medication Reminders",
       "sync": "Sync Notifications",
       "sound": "Sound",
-      "vibration": "Vibration"
+      "vibration": "Vibration",
+      "test": "Test Notification",
+      "testDesc": "Send a test notification to verify setup",
+      "morningCheck": "Morning check",
+      "lunchCheck": "Lunch check",
+      "dinnerCheck": "Dinner check"
     },
+    "sections": {
+      "profile": "Profile",
+      "glucose": "Glucose Settings",
+      "appearance": "Appearance",
+      "notifications": "Notifications",
+      "language": "Language",
+      "advanced": "Advanced"
+    },
+    "glucose": {
+      "unitLabel": "Glucose Unit",
+      "mgdl": "mg/dL",
+      "mmol": "mmol/L",
+      "targetRange": "Target Range",
+      "minLabel": "Low Target",
+      "maxLabel": "High Target"
+    },
+    "appearance": {
+      "themeLabel": "Theme",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "themeAuto": "System Default"
+    },
+    "profile": {
+      "avatarAlt": "Profile picture"
+    },
+    "debug": {
+      "title": "Debug Panel",
+      "subtitle": "Developer tools and diagnostics",
+      "advancedConfig": "Advanced Configuration"
+    },
+    "signOut": "Sign Out",
+    "demoMode": "You are in demo mode. Changes won't be saved.",
     "privacy": "Privacy",
     "security": "Security",
     "about": "About",
@@ -776,7 +858,9 @@
       "title": "Language",
       "auto": "Auto (Device Language)",
       "english": "English",
-      "spanish": "Español"
+      "spanish": "Español",
+      "en": "English",
+      "es": "Español"
     },
     "advanced": {
       "title": "Advanced Settings",
@@ -931,6 +1015,8 @@
   },
   "debug": {
     "title": "Debug Panel",
+    "openPanel": "Open debug panel",
+    "closePanel": "Close debug panel",
     "tabs": {
       "info": "Info",
       "status": "Status",
@@ -1076,6 +1162,8 @@
       "placeholder": "Enter your password"
     },
     "rememberMe": "Remember me",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "submitButton": "Sign In",
     "forgotPassword": "Forgot your password?",
     "divider": "Or",
@@ -1142,6 +1230,130 @@
     "sleep": {
       "title": "Get Quality Sleep",
       "description": "Aim for 7-9 hours of quality sleep each night. Poor sleep can affect blood sugar levels and insulin sensitivity."
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "readingReminders": "Reading Reminders",
+    "readingRemindersDescription": "Get daily reminders to check your glucose",
+    "appointmentReminders": "Appointment Reminders",
+    "appointmentRemindersDescription": "Receive alerts before your appointments",
+    "permissionRequired": "Permission Required",
+    "permissionMessage": "To receive notifications, please grant permission in your device settings.",
+    "enableNotifications": "Enable Notifications",
+    "disableNotifications": "Disable Notifications",
+    "reminderTime": "Reminder Time",
+    "addReminder": "Add Reminder",
+    "deleteReminder": "Delete Reminder",
+    "testNotification": "Send Test Notification",
+    "testNotificationSent": "Test notification sent!",
+    "beforeAppointment": "{{minutes}} minutes before",
+    "morningReminder": "Morning Check",
+    "afternoonReminder": "Afternoon Check",
+    "eveningReminder": "Evening Check"
+  },
+  "bolusCalculator": {
+    "title": "Bolus Calculator",
+    "infoBanner": "This calculator helps you determine insulin dose based on your current glucose and carbohydrates you will consume.",
+    "enterData": "Enter your data",
+    "currentGlucose": "Current Glucose (mg/dL)",
+    "glucosePlaceholder": "e.g., 180",
+    "carbGrams": "Carbohydrates to Consume (grams)",
+    "carbsPlaceholder": "e.g., 60",
+    "calculate": "Calculate Dose",
+    "recommended": "Recommended Dose",
+    "units": "insulin units",
+    "details": "Calculation Details",
+    "targetGlucose": "Target glucose",
+    "carbohydrates": "Carbohydrates",
+    "carbRatio": "Carb ratio",
+    "correctionFactor": "Correction factor",
+    "warning": "Important: This is only a recommendation. Always consult with your doctor before adjusting your dose.",
+    "newCalculation": "New Calculation",
+    "selectFoods": "Select foods to count carbs",
+    "errors": {
+      "glucoseRequired": "Current glucose is required",
+      "glucoseRange": "Enter a value between 40 and 600 mg/dL",
+      "carbsRequired": "Carbohydrates are required",
+      "carbsRange": "Enter a value between 0 and 300 grams"
+    }
+  },
+  "foodPicker": {
+    "title": "Food Picker",
+    "searchPlaceholder": "Search foods...",
+    "categories": {
+      "fruits": "Fruits",
+      "vegetables": "Vegetables",
+      "grains": "Grains",
+      "dairy": "Dairy",
+      "proteins": "Proteins",
+      "snacks": "Snacks",
+      "drinks": "Drinks",
+      "meals": "Meals",
+      "desserts": "Desserts"
+    },
+    "units": {
+      "g": "g",
+      "ml": "ml",
+      "cup": "cup",
+      "piece": "piece",
+      "slice": "slice",
+      "tablespoon": "tbsp",
+      "teaspoon": "tsp",
+      "serving": "serving"
+    },
+    "carbsUnit": "carbs",
+    "itemsSelected": "items selected",
+    "totalCarbs": "Total Carbs",
+    "clearAll": "Clear all",
+    "confirm": "Add to calculation",
+    "noResults": "No foods found. Try a different search.",
+    "decrease": "Decrease serving",
+    "increase": "Increase serving",
+    "foods": {
+      "apple": "Apple",
+      "banana": "Banana",
+      "orange": "Orange",
+      "grapes": "Grapes",
+      "strawberries": "Strawberries",
+      "watermelon": "Watermelon",
+      "whiteBread": "White Bread",
+      "rice": "Rice (cooked)",
+      "pasta": "Pasta (cooked)",
+      "cereal": "Cereal",
+      "tortilla": "Tortilla",
+      "crackers": "Crackers",
+      "milk": "Milk",
+      "yogurt": "Yogurt",
+      "chocolateMilk": "Chocolate Milk",
+      "cheese": "Cheese",
+      "cookies": "Cookie",
+      "chips": "Chips",
+      "popcorn": "Popcorn",
+      "granolaBar": "Granola Bar",
+      "fruitSnacks": "Fruit Snacks",
+      "juiceBox": "Juice Box",
+      "soda": "Soda",
+      "sportsDrink": "Sports Drink",
+      "smoothie": "Smoothie",
+      "pizzaSlice": "Pizza Slice",
+      "hamburger": "Hamburger",
+      "hotDog": "Hot Dog",
+      "tacos": "Taco",
+      "sandwich": "Sandwich",
+      "chickenNuggets": "Chicken Nuggets (6pc)",
+      "frenchFries": "French Fries",
+      "macCheese": "Mac & Cheese",
+      "iceCream": "Ice Cream",
+      "cake": "Cake Slice",
+      "cupcake": "Cupcake",
+      "chocolate": "Chocolate Bar",
+      "donut": "Donut",
+      "carrot": "Carrot",
+      "corn": "Corn",
+      "potato": "Potato",
+      "egg": "Egg",
+      "chicken": "Chicken"
     }
   }
 }
