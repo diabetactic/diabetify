@@ -24,6 +24,13 @@
 [[plugins]]
   package = "@netlify/plugin-lighthouse"
 
+# API proxy to bypass CORS - proxy /api/* to Heroku backend
+[[redirects]]
+  from = "/api/*"
+  to = "https://diabetactic-api-gateway-37949d6f182f.herokuapp.com/:splat"
+  status = 200
+  force = true
+
 # SPA routing - redirect all routes to index.html
 [[redirects]]
   from = "/*"
