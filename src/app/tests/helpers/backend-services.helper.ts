@@ -81,6 +81,11 @@ export const HEALTH_CHECK_CONFIG = {
 let cachedAuthToken: string | null = null;
 
 /**
+ * Cached backend availability status
+ */
+let backendAvailable: boolean | null = null;
+
+/**
  * Service health check response interface
  */
 export interface HealthCheckResponse {
@@ -139,7 +144,7 @@ async function checkServiceHealth(
 
     const data = await response.json();
     return data.status === 'healthy' || response.status === 200;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -576,5 +581,48 @@ export async function setupAppointmentQueue(
   } catch (error) {
     console.error(`❌ Failed to setup appointment queue for user ${credentials.dni}:`, error);
     throw error;
+  }
+}
+
+/**
+ * Quick check if backend services are available (single attempt, no retries)
+ * Used to determine if integration tests should run or be skipped
+ *
+ * @returns Promise<boolean> - true if backend is available
+ */
+export async function isBackendAvailable(): Promise<boolean> {
+  if (backendAvailable !== null) {
+    return backendAvailable;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+    const response = await fetch(HEALTH_ENDPOINTS.apiGateway, {
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+    backendAvailable = response.ok;
+    return backendAvailable;
+  } catch {
+    backendAvailable = false;
+    return false;
+  }
+}
+
+/**
+ * Skip integration tests if backend is not available
+ * Use in beforeAll to conditionally skip tests
+ *
+ * @returns Promise<void>
+ * @throws Error with special skip marker if backend is unavailable
+ */
+export async function skipIfNoBackend(): Promise<void> {
+  const available = await isBackendAvailable();
+  if (!available) {
+    console.log('⏭️  Skipping integration tests - backend not available');
+    throw new Error('SKIP_TESTS: Backend services not available');
   }
 }

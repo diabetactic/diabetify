@@ -11,7 +11,7 @@ import { Observable, of } from 'rxjs';
  * Mock Translate Loader for tests
  */
 export class MockTranslateLoader implements TranslateLoader {
-  getTranslation(lang: string): Observable<any> {
+  getTranslation(_lang: string): Observable<any> {
     return of({});
   }
 }
@@ -59,7 +59,7 @@ export function createTranslateServiceMock(): jasmine.SpyObj<TranslateService> {
   );
 
   // Setup default behaviors
-  mock.instant.and.callFake((key: string | string[], interpolateParams?: object) => {
+  mock.instant.and.callFake((key: string | string[], _interpolateParams?: object) => {
     if (Array.isArray(key)) {
       const result: any = {};
       key.forEach(k => {
@@ -70,7 +70,7 @@ export function createTranslateServiceMock(): jasmine.SpyObj<TranslateService> {
     return key;
   });
 
-  mock.get.and.callFake((key: string | string[], interpolateParams?: object) => {
+  mock.get.and.callFake((key: string | string[], _interpolateParams?: object) => {
     if (Array.isArray(key)) {
       const result: any = {};
       key.forEach(k => {

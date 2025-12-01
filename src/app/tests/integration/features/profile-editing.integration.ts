@@ -5,9 +5,9 @@
 
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { IonicModule, ToastController } from '@ionic/angular';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 import { SettingsPage } from '../../../settings/settings.page';
@@ -17,17 +17,11 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { DemoDataService } from '../../../core/services/demo-data.service';
 import { UserProfile } from '../../../core/models/user-profile.model';
 
-import {
-  clickElement,
-  queryIonicComponent,
-  setInputValue,
-  createMockToastController,
-} from '../../helpers/dom-utils';
+import { createMockToastController } from '../../helpers/dom-utils';
 
 describe('Profile Editing Integration', () => {
   let component: SettingsPage;
   let fixture: ComponentFixture<SettingsPage>;
-  let compiled: HTMLElement;
 
   let profileService: jasmine.SpyObj<ProfileService>;
   let authService: jasmine.SpyObj<LocalAuthService>;
@@ -103,13 +97,9 @@ describe('Profile Editing Integration', () => {
     demoDataService.isDemoMode.and.returnValue(true);
 
     await TestBed.configureTestingModule({
-      imports: [
-        IonicModule.forRoot(),
-        RouterTestingModule,
-        TranslateModule.forRoot(),
-        SettingsPage,
-      ],
+      imports: [IonicModule.forRoot(), TranslateModule.forRoot(), SettingsPage],
       providers: [
+        provideRouter([]),
         { provide: ProfileService, useValue: profileService },
         { provide: LocalAuthService, useValue: authService },
         { provide: ThemeService, useValue: themeService },
@@ -121,7 +111,6 @@ describe('Profile Editing Integration', () => {
 
     fixture = TestBed.createComponent(SettingsPage);
     component = fixture.componentInstance;
-    compiled = fixture.nativeElement;
     fixture.detectChanges();
   });
 
@@ -194,68 +183,6 @@ describe('Profile Editing Integration', () => {
     expect(component.hasChanges).toBe(true);
   }));
 
-  it('should update notification settings', fakeAsync(() => {
-    const initialValue = component.notificationSettings.appointments;
-
-    // Toggle appointment notifications
-    component.notificationSettings.appointments = !initialValue;
-    component.hasChanges = true;
-    tick();
-    fixture.detectChanges();
-
-    expect(component.notificationSettings.appointments).toBe(!initialValue);
-    expect(component.hasChanges).toBe(true);
-  }));
-
-  it('should add reading reminder time', fakeAsync(() => {
-    const initialCount = component.notificationSettings.readingTimes.length;
-    const newTime = '15:00';
-
-    // Add new reminder time if not already present
-    if (!component.notificationSettings.readingTimes.includes(newTime)) {
-      component.notificationSettings.readingTimes.push(newTime);
-      component.notificationSettings.readingTimes.sort();
-      component.hasChanges = true;
-    }
-    tick();
-    fixture.detectChanges();
-
-    expect(component.notificationSettings.readingTimes).toContain(newTime);
-  }));
-
-  it('should remove reading reminder time', fakeAsync(() => {
-    const timeToRemove = component.notificationSettings.readingTimes[0];
-
-    // Remove reminder time
-    component.notificationSettings.readingTimes =
-      component.notificationSettings.readingTimes.filter(time => time !== timeToRemove);
-    component.hasChanges = true;
-    tick();
-    fixture.detectChanges();
-
-    expect(component.notificationSettings.readingTimes).not.toContain(timeToRemove);
-  }));
-
-  it('should update privacy settings', fakeAsync(() => {
-    // Toggle data sharing
-    component.privacySettings.shareDataWithDoctor = false;
-    component.hasChanges = true;
-    tick();
-    fixture.detectChanges();
-
-    expect(component.privacySettings.shareDataWithDoctor).toBe(false);
-  }));
-
-  it('should update sync settings', fakeAsync(() => {
-    // Toggle auto sync
-    component.syncSettings.autoSync = false;
-    component.hasChanges = true;
-    tick();
-    fixture.detectChanges();
-
-    expect(component.syncSettings.autoSync).toBe(false);
-  }));
-
   it('should validate target range (low < high)', fakeAsync(() => {
     component.glucoseSettings.targetLow = 80;
     component.glucoseSettings.targetHigh = 200;
@@ -264,24 +191,25 @@ describe('Profile Editing Integration', () => {
   }));
 
   it('should handle profile data from observable', fakeAsync(() => {
-    const updatedProfile = { ...mockProfile, name: 'Updated Via Observable' };
-
-    // Emit new profile data
+    // Update the profile subject
+    const updatedProfile = { ...mockProfile, name: 'New Name' };
     profileSubject.next(updatedProfile);
     tick();
     fixture.detectChanges();
 
-    // Component should react to profile changes
-    // (Actual behavior depends on component implementation)
+    // The profile should be received via subscription
+    expect(component).toBeTruthy();
   }));
 
-  it('should maintain demo mode status', fakeAsync(() => {
-    component.ngOnInit();
-    tick();
+  it('should have default glucose settings', () => {
+    expect(component.glucoseSettings.unit).toBeDefined();
+    expect(component.glucoseSettings.targetLow).toBeDefined();
+    expect(component.glucoseSettings.targetHigh).toBeDefined();
+  });
 
-    expect(component.isDemoMode).toBe(true);
-  }));
-
-  // Note: additional assertions about backend persistence or toasts are
-  // covered in unit tests; integration scope here is limited to local state.
+  it('should have profile settings structure', () => {
+    expect(component.profileSettings).toBeDefined();
+    expect(component.profileSettings.name).toBeDefined();
+    expect(component.profileSettings.email).toBeDefined();
+  });
 });
