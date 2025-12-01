@@ -23,8 +23,8 @@ async function waitForServer(timeoutMs = 120000) {
     try {
       const res = await fetch(BASE, { method: 'GET' });
       if (res.ok) return;
-    } catch (e) {
-      // ignore and retry
+    } catch {
+      // Server not ready yet, retry
     }
     await new Promise(r => setTimeout(r, 500));
   }

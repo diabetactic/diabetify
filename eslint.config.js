@@ -127,5 +127,26 @@ module.exports = tseslint.config(
       'no-unused-vars': 'off',
       'no-redeclare': 'warn', // Handle fetch redeclaration issues
     },
+  },
+
+  // 8. Test Files Overrides - more lenient for mocks and test utilities
+  {
+    files: [
+      '**/*.spec.ts',
+      '**/*.test.ts',
+      '**/setup-jest.ts',
+      '**/test-setup.ts',
+      'e2e/**/*.ts',
+      'playwright/**/*.ts',
+      'src/app/tests/**/*.ts',
+    ],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off', // Mocks often need flexible types
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      '@angular-eslint/prefer-standalone': 'off', // Test modules often use NgModule
+    },
   }
 );
