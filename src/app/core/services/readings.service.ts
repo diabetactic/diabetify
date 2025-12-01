@@ -4,8 +4,7 @@
  */
 
 import { Injectable, Optional, Inject, InjectionToken } from '@angular/core';
-import { BehaviorSubject, Observable, from, of, firstValueFrom } from 'rxjs';
-import { map, catchError, tap, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, from, firstValueFrom } from 'rxjs';
 import { liveQuery } from 'dexie';
 import {
   LocalGlucoseReading,
