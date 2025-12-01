@@ -1,5 +1,5 @@
 /**
- * Visual Regression Tests for Diabetify
+ * Visual Regression Tests for Diabetactic
  *
  * These tests capture screenshots of key pages and compare them against baseline images.
  * Run with: npx playwright test visual-regression --update-snapshots (to create baselines)

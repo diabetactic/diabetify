@@ -1,7 +1,7 @@
 import { environment } from '../../../environments/environment';
 
 interface GlobalWithOverride {
-  __DIABETIFY_API_BASE_URL?: string;
+  __DIABETACTIC_API_BASE_URL?: string;
   process?: {
     env?: {
       API_GATEWAY_URL?: string;
@@ -17,7 +17,7 @@ const windowScope: GlobalWithOverride = (
 ) as GlobalWithOverride;
 
 const runtimeOverride: string | undefined =
-  windowScope.__DIABETIFY_API_BASE_URL || globalScope.__DIABETIFY_API_BASE_URL;
+  windowScope.__DIABETACTIC_API_BASE_URL || globalScope.__DIABETACTIC_API_BASE_URL;
 
 const processOverride: string | undefined =
   globalScope.process && globalScope.process.env

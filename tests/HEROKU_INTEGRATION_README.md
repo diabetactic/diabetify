@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `playwright/tests/heroku-integration.spec.ts` file contains end-to-end tests that verify the Diabetify app works correctly with the real Heroku backend API Gateway.
+The `playwright/tests/heroku-integration.spec.ts` file contains end-to-end tests that verify the Diabetactic app works correctly with the real Heroku backend API Gateway.
 
 **API Endpoint:** https://diabetactic-api-gateway-37949d6f182f.herokuapp.com
 
@@ -270,4 +270,4 @@ playwright/
 
 - Playwright Testing Guide: https://playwright.dev/docs/intro
 - Heroku API Gateway: https://diabetactic-api-gateway-37949d6f182f.herokuapp.com
-- Diabetify Project: See parent CLAUDE.md for project guidelines
+- Diabetactic Project: See parent CLAUDE.md for project guidelines

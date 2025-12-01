@@ -2,7 +2,7 @@
 
 **A comprehensive guide for parents, guardians, and caregivers** helping children manage diabetes with Diabetactic.
 
-**Note**: This app is also known as "Diabetify" in some contexts. Both names refer to the same application.
+**Note**: The official name of this app is "Diabetactic".
 
 ---
 

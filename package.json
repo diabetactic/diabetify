@@ -62,6 +62,7 @@
     "clean": "rm -rf node_modules package-lock.json www .angular && npm install",
     "clean:all": "npm run clean && npm run mobile:clean",
     "i18n:check": "node scripts/check-i18n-missing.js",
+    "docs:sync": "node scripts/sync-docs.mjs",
     "cap:sync": "npx cap sync",
     "cap:update": "npx cap update",
     "// === SETUP ===": "",

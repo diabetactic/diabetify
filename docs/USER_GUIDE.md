@@ -2,7 +2,7 @@
 
 **Welcome to Diabetactic!** Your friendly companion for managing diabetes. This guide will help you get started with the app and make the most of its features.
 
-**Note**: This app is also known as "Diabetify" in some contexts. Both names refer to the same application.
+**Note**: The official name of this app is "Diabetactic".
 
 ---
 
