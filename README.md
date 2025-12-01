@@ -1,4 +1,6 @@
-# Diabetactic
+# Diabetify (Frontend)
+
+> **Parte del monorepo [Diabetactic](../README.md)** - Ver estructura completa del proyecto
 
 Aplicación móvil desarrollada con Ionic/Angular para la gestión de lecturas de glucosa en pacientes diabéticos, con integración a la API de Tidepool.
 
@@ -36,15 +38,18 @@ Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar e
 ## Instalación
 
 ```bash
-# Clonar el repositorio
-git clone https://github.com/diabetactic/diabetactic-app.git
-cd diabetactic-app
+# Clonar el monorepo completo (recomendado)
+# Ver instrucciones en ../README.md
+
+# O solo el frontend:
+git clone https://github.com/diabetactic/diabetify.git
+cd diabetify
 
 # Instalar dependencias
 npm install
 
-# Iniciar servidor de desarrollo
-npm start
+# Iniciar servidor de desarrollo (modo mock - sin backend)
+npm run start:mock
 ```
 
 La aplicación estará disponible en `http://localhost:4200`
