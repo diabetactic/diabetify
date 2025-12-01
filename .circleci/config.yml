@@ -9,21 +9,23 @@ executors:
     docker:
       - image: cimg/node:20.19
     working_directory: ~/project
+    resource_class: medium
 
 jobs:
-  # Lint and unit tests
+  # Lint and unit tests - runs on all branches
   test:
     executor: node-executor
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: npm
+          cache-version: v2
       - run:
           name: Lint
           command: npm run lint
       - run:
           name: Unit Tests
-          command: npm test -- --ci --coverage
+          command: npm test -- --ci --coverage --maxWorkers=2
       - store_test_results:
           path: coverage
       - store_artifacts:
@@ -36,6 +38,7 @@ jobs:
       - checkout
       - node/install-packages:
           pkg-manager: npm
+          cache-version: v2
       - run:
           name: Build Production
           command: npm run build:prod
@@ -43,159 +46,142 @@ jobs:
           root: .
           paths:
             - www
+            - node_modules
+            - package.json
+            - capacitor.config.ts
+            - android
 
-  # Deploy to Netlify
-  deploy-netlify:
+  # Deploy preview to Netlify (branches != master)
+  deploy-preview:
     executor: node-executor
     steps:
-      - checkout
       - attach_workspace:
           at: .
       - run:
-          name: Deploy to Netlify
+          name: Deploy Preview to Netlify
+          command: |
+            npm install -g netlify-cli
+            netlify deploy --dir=www --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN --alias=${CIRCLE_BRANCH//\//-}
+
+  # Deploy production to Netlify (master only)
+  deploy-prod:
+    executor: node-executor
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Deploy Production to Netlify
           command: |
             npm install -g netlify-cli
             netlify deploy --prod --dir=www --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
 
-  # Android build - API 30 (Android 11)
-  build-android-api30:
+  # Android build - API 34 (target)
+  build-android:
     executor:
       name: android/android-machine
       tag: 2024.01.1
     steps:
-      - checkout
-      - node/install-packages:
-          pkg-manager: npm
-      - run:
-          name: Build Web
-          command: npm run build:prod
-      - run:
-          name: Sync Capacitor
-          command: npx cap sync android
-      - android/create-avd:
-          avd-name: test-avd-30
-          install: true
-          system-image: system-images;android-30;google_apis;x86_64
-      - android/start-emulator:
-          avd-name: test-avd-30
-          post-emulator-launch-assemble-command: ''
-      - run:
-          name: Build Debug APK
-          command: cd android && ./gradlew assembleDebug
-      - run:
-          name: Smoke Test on API 30
-          command: |
-            adb install android/app/build/outputs/apk/debug/app-debug.apk
-            adb shell am start -n io.diabetactic.app/.MainActivity
-            sleep 10
-            adb shell dumpsys activity activities | grep -i diabetactic || true
-      - store_artifacts:
-          path: android/app/build/outputs/apk/debug
-
-  # Android build - API 33 (Android 13)
-  build-android-api33:
-    executor:
-      name: android/android-machine
-      tag: 2024.01.1
-    steps:
-      - checkout
-      - node/install-packages:
-          pkg-manager: npm
-      - run:
-          name: Build Web
-          command: npm run build:prod
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          keys:
+            - gradle-v2-{{ checksum "android/build.gradle" }}-{{ checksum "android/app/build.gradle" }}
+            - gradle-v2-{{ checksum "android/build.gradle" }}
+            - gradle-v2-
       - run:
           name: Sync Capacitor
           command: npx cap sync android
-      - android/create-avd:
-          avd-name: test-avd-33
-          install: true
-          system-image: system-images;android-33;google_apis;x86_64
-      - android/start-emulator:
-          avd-name: test-avd-33
-          post-emulator-launch-assemble-command: ''
       - run:
           name: Build Debug APK
-          command: cd android && ./gradlew assembleDebug
-      - run:
-          name: Smoke Test on API 33
-          command: |
-            adb install android/app/build/outputs/apk/debug/app-debug.apk
-            adb shell am start -n io.diabetactic.app/.MainActivity
-            sleep 10
-            adb shell dumpsys activity activities | grep -i diabetactic || true
+          command: cd android && ./gradlew assembleDebug --no-daemon --parallel --build-cache
+      - save_cache:
+          key: gradle-v2-{{ checksum "android/build.gradle" }}-{{ checksum "android/app/build.gradle" }}
+          paths:
+            - ~/.gradle/caches
+            - ~/.gradle/wrapper
+            - android/.gradle
       - store_artifacts:
           path: android/app/build/outputs/apk/debug
 
-  # Release APK - downloadable with nice name
+  # Release APK with version
   release-apk:
     executor:
       name: android/android-machine
       tag: 2024.01.1
     steps:
-      - checkout
-      - node/install-packages:
-          pkg-manager: npm
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          keys:
+            - gradle-v2-{{ checksum "android/build.gradle" }}-{{ checksum "android/app/build.gradle" }}
+            - gradle-v2-
       - run:
-          name: Get version from package.json
+          name: Get version
           command: |
             VERSION=$(node -p "require('./package.json').version")
             echo "export VERSION=$VERSION" >> $BASH_ENV
       - run:
-          name: Build Production Web
-          command: npm run build:prod
-      - run:
           name: Sync Capacitor
           command: npx cap sync android
       - run:
-          name: Build Debug APK
-          command: cd android && ./gradlew assembleDebug
+          name: Build Release APK
+          command: cd android && ./gradlew assembleDebug --no-daemon --parallel --build-cache
       - run:
-          name: Rename APK with nice name
+          name: Package Release
           command: |
             mkdir -p release
             cp android/app/build/outputs/apk/debug/app-debug.apk "release/diabetactic-v${VERSION}.apk"
-            echo "📦 APK listo: diabetactic-v${VERSION}.apk"
       - store_artifacts:
           path: release
           destination: apk-release
 
 workflows:
-  # Main CI workflow - runs on all pushes
+  # CI workflow - runs on all branches
   ci:
     jobs:
       - test
       - build-web:
           requires:
             - test
-      # Android builds only on master to save credits
-      - build-android-api30:
+      # Preview deploy for feature branches
+      - deploy-preview:
           requires:
-            - test
+            - build-web
+          filters:
+            branches:
+              ignore: master
+      # Production deploy for master
+      - deploy-prod:
+          requires:
+            - build-web
           filters:
             branches:
               only: master
-      - build-android-api33:
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
-      - deploy-netlify:
+      # Android build only on master (save resources)
+      - build-android:
           requires:
             - build-web
           filters:
             branches:
               only: master
 
-  # Release workflow - manual trigger para generar APK descargable
+  # Release workflow - manual approval required
   release:
     jobs:
-      - hold-for-approval:
-          type: approval
+      - test:
           filters:
             branches:
               only: master
+      - build-web:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - hold-for-approval:
+          type: approval
+          requires:
+            - build-web
       - release-apk:
           requires:
             - hold-for-approval

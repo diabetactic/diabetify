@@ -1,41 +1,76 @@
-# Specifies intentionally untracked files to ignore when using Git
-# http://git-scm.com/docs/gitignore
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-error.log*
+yarn-debug.log*
+pnpm-lock.yaml
+yarn.lock
 
-*~
-*.sw[mnpcod]
-.tmp
-*.tmp
-*.tmp.*
-UserInterfaceState.xcuserstate
-$RECYCLE.BIN/
-
-*.log
-log.txt
-
-
+# Build outputs
+/dist
+/tmp
+/www
+/out-tsc
+/bazel-out
+/coverage
 /.sourcemaps
 /.versions
-/coverage
 
-# Ionic
+# Ionic/Capacitor
 /.ionic
-/www
 /platforms
 /plugins
 
-# Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
+# Angular
+/.angular
+/.angular/cache
+.sass-cache/
+/.nx
+/.nx/cache
 
-# Node
-/node_modules
-npm-debug.log
-yarn-error.log
+# Android
+android/app/build/
+android/.gradle/
+android/android/
+*.apk
+
+# Test artifacts
+test-results/
+playwright-report/
+playwright/screenshots/
+/integration/
+testresult.txt
+.jest-cache/
+
+# Logs
+*.log
+logs/
+build.log
+gradle-build.log
+dev-debug.log
+
+# Environment
+.env
+.envrc
+.npmrc
 
 # IDEs and editors
 .idea/
+!android/.idea/
+android/.idea/workspace.xml
+android/.idea/caches/
+android/.idea/shelf/
+android/.idea/usage.statistics.xml
+android/.idea/libraries/
+android/.idea/*.iml
+android/.idea/deploymentTargetSelector.xml
+android/.idea/deviceManager.xml
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
 .project
 .classpath
 .c9/
@@ -43,85 +78,36 @@ yarn-error.log
 .settings/
 *.sublime-project
 *.sublime-workspace
-
-# Visual Studio Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.history/*
-
-
-# Miscellaneous
-/.angular
-/.angular/cache
-.sass-cache/
-/.nx
-/.nx/cache
-/connect.lock
-/coverage
-/libpeerconnection.log
-testem.log
-/typings
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.cursor/
 
 # System files
 .DS_Store
 Thumbs.db
 Zone.Identifier
 *:Zone.Identifier
+$RECYCLE.BIN/
 
-# Backup and temporary files
+# Temporary files
+*~
+*.sw[mnpcod]
+*.swp
+*.swo
+.tmp
+*.tmp
+*.tmp.*
 *.backup
 *.bak
 *.orig
-*.swp
-*.swo
-*~
+/tmp/*.yaml
+/tmp/*.png
+/tmp/*.md
+/tmp/*.json
 
-# Logs
-logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-dev-debug.log
-
-# Dependency directories
-node_modules/
-
-# Environment variables
-.env
-
-# Editor directories and files
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# OS specific
-
-# Task files
-# tasks.json
-# tasks/
-
-
-# Removed Windows wrapper files per user request
-hive-mind-prompt-*.txt
-
-
-# Large files and temporary scripts
-*.pdf
-**/chat*.pdf
-clonee.sh
-setupmyenv.sh
-karma-api-gateway-only.conf.js
-
-# Submodule directories (use git submodule instead)
-TidepoolApi/
-
-# Temporary and backup documentation
+# Documentation temp
 *_BACKUP.md
 *_OLD.md
 CLEANUP_*.md
@@ -129,165 +115,71 @@ CLEANUP_*.md
 *_COMPLETE.md
 *_PROGRESS.md
 *_REPORT.md
-
-# Windows-specific files
-*.ps1
-nul
-
-# Alternative package managers
-pnpm-lock.yaml
-yarn.lock
-
-# Old task management
-.taskmaster/
-
-# Documentation temp directories
 docs/logs/
 docs/archive/
-
-# Test results and reports
-test-results/
-playwright-report/
-# test-results/
-# playwright-report/
-
-# Temporary test files
-/tmp/*.yaml
-/tmp/*.png
-/tmp/*.md
-/tmp/*.json
-
-# Android build artifacts
-android/app/build/
-android/.gradle/
-android/.npm-cache/
-.npm-cache/
-
-# Additional cleanup (2025-11-23)
-# Angular build cache
-/.angular
-/.angular/
-
-# npm and build caches
-.npm-cache/
-.chromium-config/
-
-.docker-test-config/
-
-# IDE configurations
-.cursor/
-.crush/
-.gemini/
 
 # Generated content
 /output/
 /skills/
-
-# Temporary debugging files
-*.xml
-!android/**/*.xml
-!capacitor.config.xml
-!angular.json
-
-# Build logs
-build.log
-gradle-build.log
-
-# Test artifacts
-/integration/
-testresult.txt
-test-infrastructure-report.txt
-
-# MCP generated configs
 /configs/*.json
 !capacitor.config.json
 !package.json
 !tsconfig*.json
 
-# Local environment and development artifacts
-.envrc
-.npmrc
-bin/
-mcp-android-server/
+# External services
+TidepoolApi/
 extServicesCompose/
-android/android/
-diabetactic-memory-backup.json
+tidepool.personal.postman_environment.json
 
-
-
-playwright/screenshots/
-
-# Duplicate/temporary images
-src/assets/images/nanobanana-output/
-src/assets/images/*copyyy*
-src/assets/images/*tt.png
-
-# Git submodules config (if not using)
-.gitmodules
-
-# Internal development notes
-
-
-# AI/Agent instructions
-.github/instructions/
-
-# Jest cache
-.jest-cache/
-
-# AI tool directories
-.maestro-tests/
-configs/
-skills/
-
-# Temp files
-*.apk
-server.pid
-prpm.lock
-
-# npm cache in wrong locations
+# Build caches
+.npm-cache/
 **/.npm-cache/
+.chromium-config/
+
+# Deployment
 .vercel
 .netlify
 
-# Claude Flow generated files
-.claude/settings.local.json
-.mcp.json
-claude-flow.config.json
-.swarm/
-.hive-mind/
+# Developer tools config (keep local)
+.claude/
 .claude-flow/
-memory/
-coordination/
-memory/claude-flow-data.json
-memory/sessions/*
-!memory/sessions/README.md
-memory/agents/*
-!memory/agents/README.md
-coordination/memory_bank/*
-coordination/subtasks/*
-coordination/orchestration/*
+.gemini/
+.mcp.json
+.playwright-mcp/
+
+# Local scripts
+clonee.sh
+setupmyenv.sh
+bin/
+server.pid
+
+# Temporary images
+src/assets/images/nanobanana-output/
+src/assets/images/*copyyy*
+src/assets/images/*tt.png
+nanobanana-output/
+screenshots/
+
+# Misc
+*.pdf
+**/chat*.pdf
+*.xml
+!android/**/*.xml
+!capacitor.config.xml
+!angular.json
 *.db
 *.db-journal
 *.db-wal
 *.sqlite
 *.sqlite-journal
 *.sqlite-wal
-claude-flow
-# Removed Windows wrapper files per user request
-hive-mind-prompt-*.txt
-tidepool.personal.postman_environment.json
-
-# Playwright MCP generated files
-.playwright-mcp/
-
-# Claude Code session checkpoints (auto-generated by hooks)
-.claude/checkpoints/
-
-# Claude Code backups (auto-generated)
-.claude/backups/
-
-# AI-generated image output
-nanobanana-output/
-
-# Screenshot directories (auto-generated during testing)
-screenshots/
+karma-api-gateway-only.conf.js
+UserInterfaceState.xcuserstate
+/connect.lock
+/libpeerconnection.log
+testem.log
+/typings
+.gitmodules
+.docker-test-config/
+*.ps1
+nul

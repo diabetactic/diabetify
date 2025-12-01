@@ -1,5 +1,10 @@
 {
   "recommendations": [
-    "Webnative.webnative"
+    "angular.ng-template",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "ionic.ionic",
+    "bradlc.vscode-tailwindcss",
+    "editorconfig.editorconfig"
   ]
 }

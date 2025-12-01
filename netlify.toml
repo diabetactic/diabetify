@@ -3,9 +3,22 @@
 [build]
   # Build command - uses production config with Heroku backend
   command = "npm run build:prod"
-
   # Output directory (Angular outputs to www/)
   publish = "www"
+
+# Branch deploys - preview antes de mergear a master
+[context.branch-deploy]
+  command = "npm run build:prod"
+
+[context.deploy-preview]
+  command = "npm run build:prod"
+
+# Staging branch - deploy automático para testing
+[context.staging]
+  command = "npm run build:prod"
+
+[context.develop]
+  command = "npm run build:prod"
 
 # SPA routing - redirect all routes to index.html
 [[redirects]]
