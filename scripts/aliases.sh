@@ -79,7 +79,7 @@ deploy-apk() {
     echo -e "${BLUE}=== INSTALLING APK ===${NC}"
     APK_PATH="$PROJECT_DIR/android/app/build/outputs/apk/debug/app-debug.apk"
 
-    if [ ! -f "$APK_PATH" ]; then
+    if [[ ! -f "$APK_PATH" ]]; then
         echo -e "${RED}✗ APK not found. Run rebuild-apk first${NC}"
         return 1
     fi
@@ -143,10 +143,10 @@ apk-info() {
     echo -e "${BLUE}=== APK INFORMATION ===${NC}"
     APK_PATH="$PROJECT_DIR/android/app/build/outputs/apk/debug/app-debug.apk"
 
-    if [ -f "$APK_PATH" ]; then
+    if [[ -f "$APK_PATH" ]]; then
         echo "Size: $(du -h "$APK_PATH" | cut -f1)"
         echo "Built: $(stat -c %y "$APK_PATH" | cut -d' ' -f1-2)"
-        echo "Installed: $(adb shell pm dump $APP_ID 2>/dev/null | grep codePath || echo 'not found')"
+        echo "Installed: $(adb shell pm dump "$APP_ID" 2>/dev/null | grep codePath || echo 'not found')"
     else
         echo "APK not built yet"
     fi

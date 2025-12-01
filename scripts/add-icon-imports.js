@@ -41,8 +41,6 @@ const htmlToTs = {
   'ui-badge.component.html': 'ui-badge.component.ts',
 };
 
-let updatedCount = 0;
-
 modifiedFiles.forEach(htmlFile => {
   const htmlFileName = path.basename(htmlFile);
   const tsFileName = htmlToTs[htmlFileName];
@@ -150,10 +148,9 @@ modifiedFiles.forEach(htmlFile => {
   if (content !== originalContent) {
     fs.writeFileSync(fullTsPath, content, 'utf8');
     console.log(`✓ ${tsFilePath}: Added AppIconComponent import`);
-    updatedCount++;
   } else {
     console.log(`⚠️  ${tsFilePath}: No changes made (might need manual review)`);
   }
 });
 
-console.log(`\n✅ Updated ${updatedCount} TypeScript files with AppIconComponent imports`);
+console.log('\n✅ AppIconComponent import processing complete');
