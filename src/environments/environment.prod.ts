@@ -19,7 +19,12 @@ function getBaseUrl(mode: BackendMode): string {
   }
 
   // cloud or mock → use Heroku production API
-  return 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
+  if (Capacitor.isNativePlatform()) {
+    return 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
+  }
+
+  // Web: use proxy to bypass CORS (Netlify redirects /api/* to Heroku)
+  return '/api';
 }
 
 /**
