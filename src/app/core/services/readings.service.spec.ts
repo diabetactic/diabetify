@@ -319,7 +319,7 @@ describe('ReadingsService', () => {
         expect.objectContaining({
           value: 130,
           notes: ['Updated note'],
-          units: 'mg/dL',
+          status: 'normal',
         })
       );
     });

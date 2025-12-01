@@ -135,7 +135,9 @@ export class TidepoolStorageService {
           // Handle bulk add errors (could be partial failure)
           if (error instanceof Error && error.name === 'BulkError') {
             // Dexie BulkError provides details about which items failed
-            const bulkError: any = error;
+            const bulkError = error as Error & {
+              failures?: Array<{ key?: string; message?: string }>;
+            };
             const failureCount = bulkError.failures?.length || 0;
             const successCount = newReadings.length - failureCount;
 

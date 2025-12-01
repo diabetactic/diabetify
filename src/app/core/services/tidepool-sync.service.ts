@@ -600,16 +600,23 @@ export class TidepoolSyncService {
       });
 
       return this.syncStatusSubject.value;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Sync', 'Sync failed', error);
 
+      const err = error as {
+        message?: string;
+        errorType?: string;
+        retryable?: boolean;
+        statusCode?: number;
+        details?: Record<string, unknown>;
+      };
       const syncError: SyncError = {
         timestamp: new Date().toISOString(),
-        message: error.message || 'Sync operation failed',
-        errorType: error.errorType || 'UNKNOWN_ERROR',
-        retryable: error.retryable ?? true,
-        statusCode: error.statusCode,
-        details: error.details,
+        message: err.message || 'Sync operation failed',
+        errorType: err.errorType || 'UNKNOWN_ERROR',
+        retryable: err.retryable ?? true,
+        statusCode: err.statusCode,
+        details: err.details,
       };
 
       this.updateSyncStatus({

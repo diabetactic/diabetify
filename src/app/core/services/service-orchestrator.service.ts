@@ -58,7 +58,7 @@ export enum WorkflowType {
 export interface WorkflowStep {
   name: string;
   service: ExternalService;
-  action: () => Promise<any> | Observable<any>;
+  action: () => Promise<unknown> | Observable<unknown>;
   compensate?: () => Promise<void>; // Rollback action
   retryable: boolean;
   critical: boolean; // If true, failure stops workflow
@@ -76,7 +76,7 @@ export interface WorkflowState {
   startTime?: Date;
   endTime?: Date;
   error?: string;
-  result?: any;
+  result?: unknown;
 }
 
 /**
@@ -87,7 +87,7 @@ export interface WorkflowStepState {
   status: 'pending' | 'running' | 'completed' | 'failed' | 'skipped';
   startTime?: Date;
   endTime?: Date;
-  result?: any;
+  result?: unknown;
   error?: string;
   retryCount: number;
 }
@@ -95,7 +95,7 @@ export interface WorkflowStepState {
 /**
  * Orchestration result
  */
-export interface OrchestrationResult<T = any> {
+export interface OrchestrationResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -401,7 +401,7 @@ export class ServiceOrchestrator {
     }));
     subject.next(workflow);
 
-    const executedSteps: { step: WorkflowStep; result: any }[] = [];
+    const executedSteps: { step: WorkflowStep; result: unknown }[] = [];
 
     try {
       // Execute steps sequentially
@@ -482,7 +482,7 @@ export class ServiceOrchestrator {
   /**
    * Execute a single workflow step
    */
-  private async executeStep(step: WorkflowStep, stepState: WorkflowStepState): Promise<any> {
+  private async executeStep(step: WorkflowStep, stepState: WorkflowStepState): Promise<unknown> {
     const maxRetries = step.retryable ? 3 : 1;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -510,7 +510,7 @@ export class ServiceOrchestrator {
    * Execute compensating transactions
    */
   private async compensateWorkflow(
-    executedSteps: { step: WorkflowStep; result: any }[]
+    executedSteps: { step: WorkflowStep; result: unknown }[]
   ): Promise<void> {
     // Execute compensating transactions in reverse order
     for (const { step } of executedSteps.reverse()) {
@@ -593,7 +593,7 @@ export class ServiceOrchestrator {
     throw new Error('Local authentication requires credentials');
   }
 
-  private async syncTidepoolData(): Promise<any> {
+  private async syncTidepoolData(): Promise<unknown> {
     return await this.tidepoolSync.performManualSync();
   }
 
@@ -611,10 +611,10 @@ export class ServiceOrchestrator {
     await db.readings.bulkPut(recentData.map(r => ({ ...r, synced: false })));
   }
 
-  private async syncLocalServerData(): Promise<any> {
+  private async syncLocalServerData(): Promise<unknown> {
     const user = await this.unifiedAuth.getCurrentUser();
     const readings = await this.readings.getUnsyncedReadings();
-    return await firstValueFrom(this.glucoserver.syncReadings(readings as any));
+    return await firstValueFrom(this.glucoserver.syncReadings(readings as GlucoseReading[]));
   }
 
   private async rollbackLocalServerSync(): Promise<void> {
@@ -622,7 +622,7 @@ export class ServiceOrchestrator {
     console.log('Rolling back local server sync');
   }
 
-  private async updateStatistics(): Promise<any> {
+  private async updateStatistics(): Promise<unknown> {
     const stats = await this.readings.getStatistics('all');
     return stats;
   }
@@ -630,7 +630,7 @@ export class ServiceOrchestrator {
   private async cleanDuplicateData(): Promise<void> {
     // Implementation for cleaning duplicate data
     const readings = await db.readings.toArray();
-    const uniqueReadings = new Map<string, any>();
+    const uniqueReadings = new Map<string, LocalGlucoseReading>();
 
     for (const reading of readings) {
       const key = `${reading.time}-${reading.value}`;
@@ -645,19 +645,19 @@ export class ServiceOrchestrator {
     }
   }
 
-  private async performInitialSync(): Promise<any> {
+  private async performInitialSync(): Promise<unknown> {
     return await this.tidepoolSync.performManualSync();
   }
 
-  private async loadUserPreferences(): Promise<any> {
+  private async loadUserPreferences(): Promise<unknown> {
     return this.unifiedAuth.getCurrentUser();
   }
 
-  private async fetchAppointmentDetails(appointmentId: string): Promise<any> {
+  private async fetchAppointmentDetails(appointmentId: string): Promise<unknown> {
     return await firstValueFrom(this.appointments.getAppointment(appointmentId));
   }
 
-  private async prepareGlucoseDataForSharing(appointmentId: string): Promise<any> {
+  private async prepareGlucoseDataForSharing(appointmentId: string): Promise<unknown> {
     const appointment = await firstValueFrom(this.appointments.getAppointment(appointmentId));
     const dateRange = {
       start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
@@ -667,7 +667,7 @@ export class ServiceOrchestrator {
     return await this.readings.getReadingsByDateRange(dateRange.start, dateRange.end);
   }
 
-  private async shareDataWithDoctor(appointmentId: string): Promise<any> {
+  private async shareDataWithDoctor(appointmentId: string): Promise<unknown> {
     const data = await this.prepareGlucoseDataForSharing(appointmentId);
     return await firstValueFrom(this.appointments.shareGlucoseData(appointmentId, data));
   }
@@ -682,22 +682,25 @@ export class ServiceOrchestrator {
     console.log(`Sending share confirmation for appointment ${appointmentId}`);
   }
 
-  private async syncLatestData(): Promise<any> {
+  private async syncLatestData(): Promise<unknown> {
     return await this.tidepoolSync.performManualSync();
   }
 
-  private async fetchReadingsForExport(dateRange?: { start: Date; end: Date }): Promise<any> {
+  private async fetchReadingsForExport(dateRange?: { start: Date; end: Date }): Promise<unknown> {
     if (dateRange) {
       return await this.readings.getReadingsByDateRange(dateRange.start, dateRange.end);
     }
     return await this.readings.getAllReadings();
   }
 
-  private async calculateExportStatistics(dateRange?: { start: Date; end: Date }): Promise<any> {
+  private async calculateExportStatistics(dateRange?: {
+    start: Date;
+    end: Date;
+  }): Promise<unknown> {
     return await this.readings.getStatistics('all');
   }
 
-  private async generateExport(format: 'csv' | 'pdf'): Promise<any> {
+  private async generateExport(format: 'csv' | 'pdf'): Promise<unknown> {
     // Generate export using readings service
     const readings = await this.readings.getAllReadings();
     return { format, count: readings.total };
@@ -711,7 +714,7 @@ export class ServiceOrchestrator {
     await this.unifiedAuth.unlinkTidepoolAccount();
   }
 
-  private async mergeAccountData(): Promise<any> {
+  private async mergeAccountData(): Promise<unknown> {
     // Implementation for merging data from both accounts
     console.log('Merging account data');
   }
@@ -721,7 +724,7 @@ export class ServiceOrchestrator {
     console.log('Rolling back data merge');
   }
 
-  private async updateMergedPreferences(): Promise<any> {
+  private async updateMergedPreferences(): Promise<unknown> {
     // Implementation for updating preferences after merge
     console.log('Updating merged preferences');
   }

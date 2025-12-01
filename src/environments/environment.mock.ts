@@ -4,8 +4,6 @@
  * Perfect for: Development, testing, demos without backend
  */
 
-import { Capacitor } from '@capacitor/core';
-
 export type BackendMode = 'mock' | 'local' | 'cloud';
 
 export const environment = {

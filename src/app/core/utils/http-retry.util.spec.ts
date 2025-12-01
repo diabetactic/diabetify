@@ -260,8 +260,8 @@ describe('HttpRetryUtil', () => {
       const error = new Error('Test error');
       const syncError = createSyncError(error);
 
-      expect(syncError.details?.stack).toBeDefined();
-      expect(syncError.details?.name).toBe('Error');
+      expect(syncError.details && (syncError.details as any)['stack']).toBeDefined();
+      expect(syncError.details && (syncError.details as any)['name']).toBe('Error');
     });
   });
 

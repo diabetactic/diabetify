@@ -452,7 +452,7 @@ export class MockDataService {
     return of(true).pipe(delay(300));
   }
 
-  private debugLog(message?: any, ...optionalParams: any[]): void {
+  private debugLog(message?: unknown, ...optionalParams: unknown[]): void {
     if (this.isMockMode) {
       console.log(message, ...optionalParams);
     }

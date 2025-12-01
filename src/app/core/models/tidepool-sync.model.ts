@@ -56,7 +56,7 @@ export interface SyncError {
   retryable: boolean;
 
   /** Additional error details and context */
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 /**

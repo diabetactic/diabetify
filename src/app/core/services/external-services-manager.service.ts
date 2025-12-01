@@ -11,6 +11,7 @@ import { HttpClient } from '@angular/common/http';
 import {
   BehaviorSubject,
   Observable,
+  Subscription,
   timer,
   of,
   combineLatest,
@@ -52,7 +53,7 @@ export interface ServiceHealthCheck {
   responseTime?: number;
   lastChecked: Date;
   message?: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 /**
@@ -108,12 +109,12 @@ export class ExternalServicesManager implements OnDestroy {
 
   public readonly state: Observable<ExternalServicesState> = this.state$.asObservable();
 
-  private healthCheckInterval?: any;
+  private healthCheckInterval?: Subscription;
   private readonly HEALTH_CHECK_INTERVAL = 60000; // 1 minute
   private readonly QUICK_CHECK_INTERVAL = 10000; // 10 seconds for degraded services
 
   // Service response cache
-  private responseCache = new Map<string, { data: any; timestamp: number }>();
+  private responseCache = new Map<string, { data: unknown; timestamp: number }>();
 
   constructor(
     private http: HttpClient,
@@ -478,7 +479,7 @@ export class ExternalServicesManager implements OnDestroy {
     if (options?.cacheKey && !options.forceRefresh) {
       const cached = this.getFromCache(options.cacheKey, service);
       if (cached !== null) {
-        return cached;
+        return cached as T;
       }
     }
 
@@ -514,7 +515,7 @@ export class ExternalServicesManager implements OnDestroy {
   /**
    * Get data from cache
    */
-  private getFromCache(key: string, service: ExternalService): any | null {
+  private getFromCache(key: string, service: ExternalService): unknown {
     const cached = this.responseCache.get(`${service}:${key}`);
 
     if (!cached) {
@@ -541,7 +542,7 @@ export class ExternalServicesManager implements OnDestroy {
   /**
    * Add data to cache
    */
-  private addToCache(key: string, data: any, service: ExternalService): void {
+  private addToCache(key: string, data: unknown, service: ExternalService): void {
     const config = this.SERVICE_CONFIGS.get(service);
     const cacheDuration = config?.cacheDuration || 0;
 
