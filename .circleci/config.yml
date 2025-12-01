@@ -78,7 +78,7 @@ jobs:
           system-image: system-images;android-30;google_apis;x86_64
       - android/start-emulator:
           avd-name: test-avd-30
-          post-emulator-launch-assemble-command: ""
+          post-emulator-launch-assemble-command: ''
       - run:
           name: Build Debug APK
           command: cd android && ./gradlew assembleDebug
@@ -113,7 +113,7 @@ jobs:
           system-image: system-images;android-33;google_apis;x86_64
       - android/start-emulator:
           avd-name: test-avd-33
-          post-emulator-launch-assemble-command: ""
+          post-emulator-launch-assemble-command: ''
       - run:
           name: Build Debug APK
           command: cd android && ./gradlew assembleDebug

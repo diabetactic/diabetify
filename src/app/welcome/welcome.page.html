@@ -1,9 +1,14 @@
 <ion-content [fullscreen]="true" class="welcome-content">
-  <div class="pattern-overlay"></div>
+  <div class="cloud-bg-overlay"></div>
   <div class="welcome-shell">
-    <!-- Illustration -->
+    <!-- Illustration with magical aura -->
     <div class="hero-illustration">
-      <img src="assets/images/welcome-kids.png" alt="{{ 'welcome.heroAlt' | translate }}" />
+      <img src="assets/images/hero-aura-ring.png" alt="" class="hero-aura" aria-hidden="true" />
+      <img
+        src="assets/images/welcome-kids.png"
+        alt="{{ 'welcome.heroAlt' | translate }}"
+        class="hero-kids"
+      />
     </div>
 
     <!-- Text -->
