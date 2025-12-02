@@ -748,6 +748,17 @@
       "totalReadings": "Lecturas Sincronizadas",
       "syncHistory": "Sincronizaciones Exitosas"
     },
+    "tidepoolLoginDialog": {
+      "title": "Conectar a Tidepool",
+      "message": "Ingresa tus credenciales de Tidepool",
+      "email": "Correo",
+      "password": "Contraseña",
+      "connect": "Conectar",
+      "connecting": "Conectando...",
+      "success": "¡Conectado a Tidepool!",
+      "invalidCredentials": "Correo o contraseña inválidos",
+      "networkError": "Error de red. Por favor verifica tu conexión"
+    },
     "changePhoto": "Cambiar foto",
     "avatar": {
       "errorTitle": "Foto de perfil",
