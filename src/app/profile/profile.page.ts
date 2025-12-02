@@ -406,22 +406,24 @@ export class ProfilePage implements OnInit, OnDestroy {
   private async connectToTidepool(): Promise<void> {
     const alert = await this.alertController.create({
       header:
-        this.translationService.instant('profile.tidepoolLogin.title') || 'Connect to Tidepool',
+        this.translationService.instant('profile.tidepoolLoginDialog.title') ||
+        'Connect to Tidepool',
       message:
-        this.translationService.instant('profile.tidepoolLogin.message') ||
+        this.translationService.instant('profile.tidepoolLoginDialog.message') ||
         'Enter your Tidepool credentials',
       cssClass: 'tidepool-login-alert',
       inputs: [
         {
           name: 'email',
           type: 'email',
-          placeholder: this.translationService.instant('profile.tidepoolLogin.email') || 'Email',
+          placeholder:
+            this.translationService.instant('profile.tidepoolLoginDialog.email') || 'Email',
         },
         {
           name: 'password',
           type: 'password',
           placeholder:
-            this.translationService.instant('profile.tidepoolLogin.password') || 'Password',
+            this.translationService.instant('profile.tidepoolLoginDialog.password') || 'Password',
         },
       ],
       buttons: [
@@ -430,7 +432,7 @@ export class ProfilePage implements OnInit, OnDestroy {
           role: 'cancel',
         },
         {
-          text: this.translationService.instant('profile.tidepoolLogin.connect') || 'Connect',
+          text: this.translationService.instant('profile.tidepoolLoginDialog.connect') || 'Connect',
           handler: data => {
             console.log('🔵 [TidepoolLogin] CONNECT clicked, data:', data);
             if (!data.email || !data.password) {
@@ -486,7 +488,7 @@ export class ProfilePage implements OnInit, OnDestroy {
       console.log('🟢 [TidepoolLogin] Showing success toast');
       const toast = await this.toastController.create({
         message:
-          this.translationService.instant('profile.tidepoolLogin.success') ||
+          this.translationService.instant('profile.tidepoolLoginDialog.success') ||
           'Connected to Tidepool!',
         duration: 3000,
         position: 'top',

@@ -54,7 +54,8 @@
     "subtitle": "Your friendly companion to manage diabetes with a smile.",
     "getStarted": "Get Started",
     "login": "Login",
-    "loginCta": "Let's Go!",
+    "loginCta": "Sign In",
+    "registerLink": "Register here",
     "heroAlt": "A cheerful illustration of a child superhero confidently managing their diabetes",
     "quotes": [
       "You are stronger than diabetes!",
@@ -740,7 +741,7 @@
       "totalReadings": "Total Readings Synced",
       "syncHistory": "Successful Syncs"
     },
-    "tidepoolLogin": {
+    "tidepoolLoginDialog": {
       "title": "Connect to Tidepool",
       "message": "Enter your Tidepool account credentials",
       "email": "Email",
