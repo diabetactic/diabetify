@@ -1,0 +1,57 @@
+# ==========================================
+# Flow: Login WITHOUT Clearing State
+# Description: Used for persistence tests where stored preferences must survive.
+#              Does NOT call clearState. Handles both "already logged in" and
+#              "needs to log in" scenarios.
+# Env vars defined here (config.yaml inheritance unreliable in flows)
+# ==========================================
+
+appId: io.diabetactic.app
+
+env:
+  TEST_USER_ID: '1000'
+  TEST_USER_PASSWORD: 'tuvieja'
+
+---
+# 1. LAUNCH APP (do NOT clear state)
+- launchApp
+
+# 2. HYDRATION WAIT
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 3. WAIT FOR APP TO SHOW SOMETHING
+# Could be welcome screen (need to login) or dashboard (already logged in)
+- extendedWaitUntil:
+    visible:
+      text: '.*Diabetactic.*|.*Inicio.*|.*Dashboard.*|.*Home.*|.*Perfil.*|.*Profile.*'
+    timeout: 8000
+
+# 4. CHECK IF ALREADY ON DASHBOARD (skip login if so)
+# Try to find a dashboard element first - if found, we're logged in
+- runFlow:
+    when:
+      visible: 'Lecturas|Readings|Citas|Appointments|Inicio|Home'
+    file: skip-login.yaml
+
+# 5. IF ON WELCOME SCREEN, TAP TO GO TO LOGIN
+- tapOn:
+    text: '.*Vamos.*|.*Let.*Go.*'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 6. CONDITIONAL LOGIN - only if login form is visible
+- runFlow:
+    when:
+      visible: 'DNI o Email|DNI or Email'
+    file: login-form-steps.yaml
+
+# 7. VERIFY DASHBOARD LOADED
+- extendedWaitUntil:
+    visible:
+      text: '.*(Inicio|Home|Dashboard|Tablero|Citas|Appointments|Lecturas|Readings|Perfil|Profile).*'
+    timeout: 12000
+- waitForAnimationToEnd:
+    timeout: 1000
+

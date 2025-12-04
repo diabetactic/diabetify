@@ -1,6 +1,7 @@
 # ==========================================
 # Test: Invalid Login Error Handling
 # Description: Verify app shows error for invalid credentials
+# Does NOT use shared login flow - tests login error specifically
 # ==========================================
 
 appId: io.diabetactic.app
@@ -14,48 +15,67 @@ env:
 - clearState: io.diabetactic.app
 - launchApp
 
-# 2. WAIT FOR WELCOME SCREEN
+# 2. WAIT FOR APP TO LOAD
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 3. WAIT FOR WELCOME SCREEN
 - extendedWaitUntil:
     visible:
       text: '.*Diabetactic.*'
-    timeout: 5000
+    timeout: 8000
 
-# 3. TAP SIGN IN
+# 4. TAP "VAMOS/LET'S GO" TO PROCEED TO LOGIN
 - tapOn:
-    text: 'Iniciar Sesión|Sign In'
+    text: '.*Vamos.*|.*Let.*Go.*'
     optional: true
-- waitForAnimationToEnd
+- waitForAnimationToEnd:
+    timeout: 1500
 
-# 4. WAIT FOR LOGIN FORM
+# 5. WAIT FOR LOGIN FORM
 - extendedWaitUntil:
     visible:
       text: 'DNI o Email|DNI or Email'
     timeout: 5000
 
-# 5. ENTER INVALID CREDENTIALS
+# 6. ENTER INVALID USERNAME
 - tapOn:
     text: 'DNI o Email|DNI or Email'
 - eraseText
 - inputText: '${INVALID_USER}'
 - hideKeyboard
 
+# 7. ENTER INVALID PASSWORD
 - tapOn:
     text: 'Contraseña|Password'
 - eraseText
 - inputText: '${INVALID_PASSWORD}'
 - hideKeyboard
 
-# 6. SUBMIT LOGIN
+# 8. SUBMIT LOGIN
 - tapOn:
     text: 'Iniciar Sesión|Sign In'
-- waitForAnimationToEnd
+- waitForAnimationToEnd:
+    timeout: 3000
 
-# 7. VERIFY ERROR MESSAGE APPEARS
+# 9. WAIT FOR ERROR ALERT TO APPEAR
 - extendedWaitUntil:
     visible:
-      text: 'Error|Inválido|Invalid|Incorrecto|Incorrect|credenciales|credentials'
+      text: 'HTTP 403|Error de inicio'
+    timeout: 8000
+
+# 10. DISMISS ERROR ALERT
+- tapOn:
+    text: 'OK|Aceptar'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 11. VERIFY STILL ON LOGIN PAGE (didn't navigate to dashboard)
+- extendedWaitUntil:
+    visible:
+      text: 'DNI o Email|DNI or Email'
     timeout: 5000
 
-# 8. VERIFY STILL ON LOGIN PAGE (didn't navigate)
+# 12. VERIFY LOGIN BUTTON IS STILL PRESENT
 - assertVisible:
-    text: 'DNI o Email|DNI or Email'
+    text: 'Iniciar Sesión|Sign In'

@@ -1,0 +1,12 @@
+# ==========================================
+# Flow: Skip Login (placeholder for conditional)
+# Description: Empty flow used when already logged in.
+#              Maestro requires a valid flow file for conditional runFlow.
+# ==========================================
+
+appId: io.diabetactic.app
+
+---
+# Already logged in - just wait a moment for UI stability
+- waitForAnimationToEnd:
+    timeout: 500

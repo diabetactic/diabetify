@@ -1,6 +1,7 @@
 # ==========================================
 # Test: Form Validation Error Handling
 # Description: Verify form validation shows appropriate errors
+# Uses text selectors (data-testid not accessible in Capacitor WebView)
 # ==========================================
 
 appId: io.diabetactic.app
@@ -9,47 +10,80 @@ appId: io.diabetactic.app
 # 1. LOGIN
 - runFlow: ../../flows/login.yaml
 
-# 2. NAVIGATE TO ADD READING
-- tapOn:
-    text: 'Lecturas|Readings'
-- waitForAnimationToEnd
+# 2. NAVIGATE TO READINGS
+- runFlow: ../../flows/navigate-readings.yaml
 
+# 3. OPEN ADD READING FORM (using text selector)
 - tapOn:
-    text: 'Agregar|Add'
-- waitForAnimationToEnd
+    text: 'Agregar Lectura|Add Reading|Agregar Nueva Lectura|Add New Reading'
+- waitForAnimationToEnd:
+    timeout: 2000
 
-# 3. VERIFY ADD READING FORM
+# 4. VERIFY ADD READING FORM LOADED
 - extendedWaitUntil:
     visible:
       text: 'Agregar Lectura|Add Reading'
     timeout: 5000
 
-# 4. TRY TO SUBMIT EMPTY FORM
+# 5. TRY TO SUBMIT EMPTY FORM (button at bottom - ~90% y)
 - tapOn:
-    text: 'Guardar|Save'
-- waitForAnimationToEnd
+    point: '50%,90%'
+- waitForAnimationToEnd:
+    timeout: 1000
 
-# 5. VERIFY VALIDATION ERROR APPEARS
-- assertVisible:
-    text: 'requerido|required|obligatorio|necesario'
-    optional: true
-
-# 6. ENTER INVALID VALUE (negative or too high)
-- tapOn:
-    text: 'Lectura de glucosa|Glucose Reading'
-- inputText: '-50'
-- hideKeyboard
-
-# 7. TRY TO SUBMIT
-- tapOn:
-    text: 'Guardar|Save'
-- waitForAnimationToEnd
-
-# 8. VERIFY ERROR FOR INVALID VALUE
-- assertVisible:
-    text: 'inválido|invalid|error|rango|range'
-    optional: true
-
-# 9. VERIFY STILL ON FORM (didn't save)
+# 6. VERIFY VALIDATION - form should not close (still on form)
 - assertVisible:
     text: 'Agregar Lectura|Add Reading'
+
+# 7. CHECK FOR VALIDATION MESSAGE (optional - depends on form state)
+- assertVisible:
+    text: 'requerido|required|obligatorio|necesario|ingresa|enter'
+    optional: true
+
+# 8. ENTER INVALID VALUE (tap input field at ~35% y)
+- tapOn:
+    point: '50%,35%'
+- inputText: '-50'
+- hideKeyboard
+- waitForAnimationToEnd
+
+# 9. TRY TO SUBMIT WITH INVALID VALUE
+- swipe:
+    start: '50%,80%'
+    end: '50%,40%'
+- waitForAnimationToEnd:
+    timeout: 500
+- tapOn:
+    point: '50%,90%'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 10. VERIFY VALIDATION ERROR OR DISABLED STATE
+# Form should either show error message or remain on form
+- assertVisible:
+    text: 'Agregar Lectura|Add Reading'
+
+# 11. CLEAR INVALID VALUE AND ENTER VALID ONE
+- tapOn:
+    point: '50%,35%'
+- eraseText
+- inputText: '100'
+- hideKeyboard
+- waitForAnimationToEnd
+
+# 12. NOW SUBMIT SHOULD WORK
+- swipe:
+    start: '50%,80%'
+    end: '50%,40%'
+- waitForAnimationToEnd:
+    timeout: 500
+- tapOn:
+    point: '50%,90%'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 13. VERIFY WE RETURNED TO READINGS LIST (success)
+- extendedWaitUntil:
+    visible:
+      text: 'Mostrando.*lecturas|Showing.*readings'
+    timeout: 8000
