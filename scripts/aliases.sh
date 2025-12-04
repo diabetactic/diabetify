@@ -15,7 +15,8 @@
 #   tail-logs          - Follow app logs in real-time
 ################################################################################
 
-PROJECT_DIR="/home/julito/TPP/diabetify-extServices-20251103-061913/diabetify"
+# Derive PROJECT_DIR from script location (portable)
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SCRIPTS_DIR="$PROJECT_DIR/scripts"
 APP_ID="io.diabetactic.app"
 
@@ -64,8 +65,9 @@ restart-app() {
 rebuild-apk() {
     echo -e "${BLUE}=== REBUILDING APK ===${NC}"
     cd "$PROJECT_DIR/android"
-    export JAVA_HOME=/home/julito/.local/share/mise/installs/java/25.0.1
-    export ANDROID_HOME=/home/julito/Android/Sdk
+    # Use mise to resolve Java dynamically (falls back to existing JAVA_HOME)
+    export JAVA_HOME="${JAVA_HOME:-$(mise where java 2>/dev/null)}"
+    export ANDROID_HOME="${ANDROID_HOME:-$HOME/Android/Sdk}"
 
     if ./gradlew assembleDebug --no-daemon; then
         echo -e "${GREEN}✓ Build successful${NC}"

@@ -1,9 +1,11 @@
 {
   "name": "diabetactic",
   "version": "0.0.1",
-  "author": "Ionic Framework",
-  "homepage": "https://ionicframework.com/",
+  "author": "Diabetactic Team - FIUBA",
+  "homepage": "https://github.com/diabetactic/diabetify",
   "scripts": {
+    "ng:help": "ng -h",
+    "ng:mcp": "ng mcp",
     "// === DEV SERVER ===": "",
     "start": "node scripts/start-with-env.mjs",
     "start:mock": "ENV=mock npm start",
@@ -11,7 +13,6 @@
     "start:cloud": "ENV=cloud npm start",
     "// === WEB BUILD ===": "",
     "build": "ng build",
-    "build:dev": "ng build",
     "build:prod": "ng build --configuration=production --aot --optimization",
     "build:mock": "ng build --configuration=mock",
     "build:heroku": "ng build --configuration=heroku",
@@ -35,12 +36,10 @@
     "android:devices": "adb devices",
     "android:emulator": "emulator -avd Medium_Phone_API_36.1 -no-snapshot-load &",
     "// === DEPLOY ===": "",
-    "deploy:local": "npm run mobile:install",
     "deploy:device": "npm run mobile:build && adb install -r android/app/build/outputs/apk/debug/app-debug.apk",
     "deploy:apk": "npm run mobile:build && echo 'APK at: android/app/build/outputs/apk/debug/app-debug.apk'",
     "// === TESTING ===": "",
     "test": "jest",
-    "test:unit": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
@@ -140,6 +139,7 @@
     "fake-indexeddb": "^6.2.5",
     "husky": "^9.1.7",
     "jest": "^29.7.0",
+    "jest-junit": "^16.0.0",
     "jest-preset-angular": "^14.6.2",
     "lint-staged": "^16.2.3",
     "pixelmatch": "^7.1.0",
@@ -159,7 +159,7 @@
     "typescript": "~5.8.0",
     "typescript-eslint": "^8.48.0"
   },
-  "description": "An Ionic project",
+  "description": "Diabetactic - Mobile app for diabetes glucose management built with Ionic/Angular",
   "lint-staged": {
     "*.{ts,js}": [
       "prettier --write",

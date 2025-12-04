@@ -96,6 +96,7 @@ export class ReadingsService {
   private readonly isMockBackend = environment.backendMode === 'mock';
 
   // Mapping from local meal context to backend reading_type
+  // Backend enum: DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO
   private readonly mealContextToBackend: Record<string, string> = {
     'before-breakfast': 'DESAYUNO',
     'after-breakfast': 'DESAYUNO',
@@ -104,20 +105,20 @@ export class ReadingsService {
     'before-dinner': 'CENA',
     'after-dinner': 'CENA',
     snack: 'MERIENDA',
-    bedtime: 'NOCHE',
-    fasting: 'AYUNO',
+    bedtime: 'OTRAS_COMIDAS', // Backend doesn't have NOCHE
+    fasting: 'OTRAS_COMIDAS', // Backend doesn't have AYUNO
     exercise: 'EJERCICIO',
     other: 'OTRO',
   };
 
   // Mapping from backend reading_type to local meal context
+  // Backend enum: DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO
   private readonly backendToMealContext: Record<string, string> = {
     DESAYUNO: 'before-breakfast',
     ALMUERZO: 'before-lunch',
     CENA: 'before-dinner',
     MERIENDA: 'snack',
-    NOCHE: 'bedtime',
-    AYUNO: 'fasting',
+    OTRAS_COMIDAS: 'other', // Maps to other since we lost bedtime/fasting distinction
     EJERCICIO: 'exercise',
     OTRO: 'other',
   };

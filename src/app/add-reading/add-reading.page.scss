@@ -40,12 +40,17 @@
   gap: 8px;
 
   .glucose-input {
-    --padding-start: 0;
-    --padding-end: 0;
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+    --border-radius: 12px;
+    --background: oklch(var(--b2) / 50%);
 
     flex: 1;
     font-size: 24px;
     font-weight: 600;
+    border-radius: 12px;
 
     &.invalid {
       --color: var(--ion-color-danger);
@@ -96,6 +101,10 @@ ion-datetime-button {
 
   ion-item {
     --background: transparent;
+  }
+
+  .glucose-input {
+    --background: oklch(var(--b3) / 60%);
   }
 }
 

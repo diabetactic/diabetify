@@ -6,7 +6,6 @@ import { NotificationService, ReadingReminder, AppointmentReminder } from './not
 import { LoggerService } from './logger.service';
 import {
   LocalNotifications,
-  ScheduleOptions,
   PendingLocalNotificationSchema,
   ActionPerformed,
   LocalNotificationSchema,
@@ -1101,7 +1100,9 @@ describe('NotificationService', () => {
         { appointmentId: 'appt-123' }
       );
       expect(mockNgZone.run).toHaveBeenCalled();
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/appointments', 'appt-123']);
+      expect(mockRouter.navigate).toHaveBeenCalledWith([
+        '/tabs/appointments/appointment-detail/appt-123',
+      ]);
     });
 
     it('should handle unknown notification type', async () => {

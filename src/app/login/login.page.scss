@@ -1,9 +1,7 @@
 // Login screen styling inspired by the provided mockup
 
 .login-content {
-  --background: linear-gradient(180deg, #d9edff 0%, #eef5ff 45%, #fff 100%);
-  --layer-content: 1;
-  --layer-cloud: 0;
+  --background: url('/assets/images/sky-background.webp');
 
   display: flex;
   align-items: center;
@@ -21,6 +19,13 @@
   padding-top: calc(32px + env(safe-area-inset-top, 0px));
   position: relative;
   overflow: hidden;
+
+  // Full-screen sky background
+  &::part(background) {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
 }
 
 .login-shell {
@@ -32,37 +37,44 @@
   gap: 18px;
   text-align: center;
   position: relative;
-  z-index: var(--layer-content);
 }
 
-// Subtle pattern overlay in the background
-.pattern-overlay {
-  position: absolute;
-  inset: 0;
-  background-image: url('/assets/images/pattern-light.png');
-  background-repeat: repeat;
-  background-size: 200px 200px;
-  opacity: 25%; // Reduced for better text visibility
-  pointer-events: none;
-  z-index: var(--layer-cloud);
-}
-
+// Mascot illustration - layered cloud frame behind kids
 .login-illustration {
-  width: 220px;
-  height: 220px;
-  border-radius: 24px;
-  overflow: hidden;
-  background: linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 100%);
-  border: 3px solid rgb(59 130 246 / 20%);
-  box-shadow: var(--shadow-illustration-light);
+  width: 260px;
+  height: 260px;
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.login-illustration img {
-  width: 135%;
-  height: 100%;
+// Cloud frame behind kids
+.login-illustration .cloud-frame {
+  position: absolute;
+  width: 115%;
+  height: 115%;
   object-fit: contain;
-  object-position: center top;
-  transform: translateY(-4%);
+
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- local stacking context */
+  z-index: 0;
+}
+
+// Kids image on top
+.login-illustration .kids-image {
+  position: relative;
+  width: 85%;
+  height: auto;
+  object-fit: contain;
+
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- local stacking context */
+  z-index: 1;
+  filter: drop-shadow(0 4px 12px rgb(0 0 0 / 10%));
 }
 
 .login-title {
@@ -214,18 +226,11 @@
 :host-context(.ion-palette-dark),
 :host-context([data-theme='dark']) {
   .login-content {
-    --background: linear-gradient(180deg, #0f172a 0%, #020617 45%, #020617 100%);
-  }
-
-  .pattern-overlay {
-    background-image: url('/assets/images/pattern-dark.png');
-    opacity: 35%;
+    --background: url('/assets/images/sky-background-night.webp');
   }
 
   .login-illustration {
-    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
-    border-color: rgb(148 163 184 / 20%);
-    box-shadow: var(--shadow-illustration-dark);
+    background: transparent;
   }
 
   .login-title {

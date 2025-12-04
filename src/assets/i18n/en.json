@@ -202,6 +202,10 @@
       "manyHours": "{{count}} hours ago",
       "oneDay": "{{count}} day ago",
       "manyDays": "{{count}} days ago"
+    },
+    "errors": {
+      "refreshFailed": "Failed to refresh data. Please try again.",
+      "syncFailed": "Failed to sync data. Please check your connection."
     }
   },
   "readings": {
@@ -220,6 +224,10 @@
     "syncing": "Syncing...",
     "syncComplete": "Sync complete: {{pushed}} pushed, {{fetched}} fetched",
     "syncFailed": "Sync failed. Please try again.",
+    "errors": {
+      "refreshFailed": "Failed to refresh readings. Please try again.",
+      "syncFailed": "Failed to sync readings. Please check your connection."
+    },
     "loadingReadings": "Loading readings...",
     "noReadings": "No Readings Yet",
     "noReadingsMessage": "Start tracking your glucose levels by adding your first reading.",
@@ -696,7 +704,13 @@
       "en": "English",
       "es": "Español"
     },
-    "notifications": "Notifications",
+    "notifications": {
+      "title": "Notifications",
+      "desc": "Get reminders for glucose checks",
+      "enabled": "Notifications enabled",
+      "disabled": "Notifications disabled",
+      "permissionDenied": "Permission denied. Please enable notifications in settings."
+    },
     "theme": {
       "title": "Theme",
       "light": "Light",

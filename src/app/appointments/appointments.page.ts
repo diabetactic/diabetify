@@ -1,5 +1,9 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
+import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, firstValueFrom } from 'rxjs';
 import { AppointmentService } from '../core/services/appointment.service';
 import {
@@ -10,12 +14,16 @@ import {
 import { TranslationService } from '../core/services/translation.service';
 import { LoggerService } from '../core/services/logger.service';
 import { environment } from '../../environments/environment';
+import { ROUTES, appointmentDetailRoute } from '../core/constants';
+import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-appointments',
   templateUrl: './appointments.page.html',
   styleUrls: ['./appointments.page.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [CommonModule, FormsModule, IonicModule, TranslateModule, AppIconComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppointmentsPage implements OnInit, OnDestroy {
   appointments: Appointment[] = [];
@@ -111,7 +119,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     try {
       await firstValueFrom(this.appointmentService.getAppointments());
     } catch (error: unknown) {
-      console.error('Error loading appointments:', error);
+      this.logger.error('Appointments', 'Error loading appointments', error);
       this.error =
         (error as Error)?.message ||
         this.translationService.instant('appointments.errors.loadListFailed');
@@ -125,7 +133,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    */
   viewAppointment(appointment: Appointment): void {
     this.logger.info('UI', 'Appointment clicked', { appointmentId: appointment.appointment_id });
-    this.router.navigate(['/tabs/appointments/appointment-detail', appointment.appointment_id]);
+    this.router.navigate([appointmentDetailRoute(appointment.appointment_id)]);
   }
 
   /**
@@ -133,7 +141,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    */
   createAppointment(): void {
     this.logger.info('UI', 'Create appointment button clicked');
-    this.router.navigate(['/tabs/appointments/create']);
+    this.router.navigate([ROUTES.APPOINTMENTS_CREATE]);
   }
 
   /**
@@ -141,7 +149,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    */
   async doRefresh(event: CustomEvent): Promise<void> {
     this.logger.info('UI', 'Appointments refresh initiated');
-    await this.loadAppointments();
+    await Promise.all([this.loadAppointments(), this.loadQueueState()]);
     (event.target as HTMLIonRefresherElement).complete();
   }
 
@@ -268,6 +276,12 @@ export class AppointmentsPage implements OnInit, OnDestroy {
           icon: 'calendar-check',
           label: this.translationService.instant('appointments.queue.labels.created'),
         };
+      case 'BLOCKED':
+        return {
+          classes: ['badge', 'badge-error', 'gap-1', 'text-xs'],
+          icon: 'ban',
+          label: this.translationService.instant('appointments.queue.labels.blocked'),
+        };
       case 'NONE':
       default:
         return {
@@ -295,6 +309,33 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     try {
       this.queueState = await firstValueFrom(this.appointmentService.getQueueState());
       this.logger.info('Queue', 'Queue state loaded', { state: this.queueState?.state });
+
+      // If state is NONE, check if queue is actually open
+      if (this.queueState?.state === 'NONE') {
+        try {
+          const isOpen = await firstValueFrom(this.appointmentService.checkQueueOpen());
+          if (!isOpen) {
+            this.queueState = { state: 'BLOCKED' as AppointmentQueueState };
+            this.logger.info('Queue', 'Queue is closed, setting state to BLOCKED');
+          }
+        } catch (openError) {
+          this.logger.warn('Queue', 'Failed to check queue open status', openError);
+        }
+      }
+
+      // If user is in PENDING state, fetch queue position
+      if (this.queueState?.state === 'PENDING') {
+        try {
+          const position = await firstValueFrom(this.appointmentService.getQueuePosition());
+          if (position >= 0) {
+            this.queueState = { ...this.queueState, position };
+            this.logger.info('Queue', 'Queue position loaded', { position });
+          }
+        } catch (positionError) {
+          this.logger.warn('Queue', 'Failed to load queue position', positionError);
+          // Don't fail the entire state load if position fetch fails
+        }
+      }
     } catch (error: unknown) {
       // Don't show error for "not found" - this is normal when no queue state exists
       const errorMsg = (error as Error)?.message?.toLowerCase() || '';
@@ -304,7 +345,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
         errorMsg.includes('does not exist');
 
       if (!isNotFoundError) {
-        console.error('Error loading queue state:', error);
+        this.logger.error('Appointments', 'Error loading queue state', error);
         this.queueError = (error as Error)?.message || 'Failed to load queue state';
       } else {
         // Treat "not found" as NONE state (no queue entry)
@@ -342,7 +383,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
       // Reload actual queue state from server (in background)
       this.loadQueueState();
     } catch (error: unknown) {
-      console.error('Error requesting appointment:', error);
+      this.logger.error('Appointments', 'Error requesting appointment', error);
       this.queueError =
         (error as Error)?.message ||
         this.translationService.instant('appointments.queue.messages.submitError');

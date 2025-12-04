@@ -8,12 +8,14 @@
 #   make restart            - Restart the app
 #   etc...
 
-PROJECT_DIR := /home/julito/TPP/diabetify-extServices-20251103-061913/diabetify
+# Derive PROJECT_DIR from Makefile location (portable)
+PROJECT_DIR := $(shell cd "$(dir $(lastword $(MAKEFILE_LIST)))" && pwd)
 SCRIPTS_DIR := $(PROJECT_DIR)/scripts
 ANDROID_DIR := $(PROJECT_DIR)/android
 APP_ID := io.diabetactic.app
-JAVA_HOME := /home/julito/.local/share/mise/installs/java/25.0.1
-ANDROID_HOME := $(HOME)/Android/Sdk
+# Use mise to dynamically resolve Java (falls back to system Java if mise not available)
+JAVA_HOME := $(shell mise where java 2>/dev/null || echo "$$JAVA_HOME")
+ANDROID_HOME := $(or $(ANDROID_HOME),$(HOME)/Android/Sdk)
 
 # Color codes
 GREEN := \033[0;32m

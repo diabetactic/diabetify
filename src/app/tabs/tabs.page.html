@@ -27,8 +27,12 @@
 
   <!-- Centered FAB Button -->
   <ion-fab class="center-fab" vertical="bottom" slot="fixed">
-    <ion-fab-button (click)="navigateToAddReading()" data-testid="fab-add-reading">
-      <ion-icon name="add"></ion-icon>
+    <ion-fab-button
+      (click)="navigateToAddReading()"
+      data-testid="fab-add-reading"
+      [attr.aria-label]="fabLabel"
+    >
+      <ion-icon [name]="fabIcon"></ion-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-tabs>

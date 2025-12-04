@@ -2,12 +2,17 @@
 // stylelint-disable scale-unlimited/declaration-strict-value
 
 .welcome-content {
-  --background: linear-gradient(180deg, #dff2ff 0%, #f1f7ff 45%, #fff 100%);
-  --layer-content: 1;
-  --layer-cloud: 0;
+  --background: url('/assets/images/sky-background.webp');
 
   position: relative;
   overflow: hidden;
+
+  // Full-screen sky background
+  &::part(background) {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
 }
 
 .welcome-shell {
@@ -23,52 +28,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; // Center vertically
+  justify-content: center;
   gap: 16px;
   text-align: center;
   position: relative;
-  z-index: var(--layer-content);
-}
-
-// Pure CSS cloud decorations - no image artifacts
-.cloud-bg-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: var(--layer-cloud);
-  overflow: hidden;
-
-  // CSS-only clouds using pseudo-elements and radial gradients
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    background: rgb(255 255 255 / 60%);
-    filter: blur(30px);
-  }
-
-  // Top-left cloud cluster
-  &::before {
-    width: 200px;
-    height: 120px;
-    top: 5%;
-    left: -30px;
-    box-shadow:
-      60px 20px 0 20px rgb(255 255 255 / 50%),
-      120px 10px 0 10px rgb(255 255 255 / 40%);
-  }
-
-  // Top-right cloud cluster
-  &::after {
-    width: 180px;
-    height: 100px;
-    top: 8%;
-    right: -20px;
-    box-shadow:
-      -50px 30px 0 15px rgb(255 255 255 / 45%),
-      -100px 15px 0 25px rgb(255 255 255 / 35%);
-  }
 }
 
 // Hero illustration - no border, seamless integration with background
@@ -87,16 +50,13 @@
   position: relative;
 }
 
-// Magical aura ring behind kids
-.hero-illustration .hero-aura {
+// Cloud frame behind kids
+.hero-illustration .cloud-frame {
   position: absolute;
-  width: 110%;
-  height: 110%;
+  width: 115%;
+  height: 115%;
   object-fit: contain;
-  opacity: 60%; // Subtle magical glow
   z-index: 0;
-  filter: blur(2px); // Soft glow effect
-  animation: pulse-glow 4s ease-in-out infinite;
 }
 
 // Kids image on top
@@ -108,20 +68,6 @@
   object-position: center;
   z-index: 1;
   filter: drop-shadow(0 8px 24px rgb(0 0 0 / 12%)); // Subtle drop shadow
-}
-
-// Gentle pulsing animation for the aura
-@keyframes pulse-glow {
-  0%,
-  100% {
-    opacity: 50%;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 70%;
-    transform: scale(1.02);
-  }
 }
 
 .text-content h1 {
@@ -147,38 +93,28 @@
   gap: 12px;
 }
 
-// Cartoonish CTA button - shorter width, playful style
+// Vibrant orange CTA button - matches ideaa.png design
 .cta-primary {
-  width: 75%; // Shorter width like the mockup
+  width: 75%;
   max-width: 280px;
-  border: none;
-  border-radius: 50px; // More pill-shaped
-  padding: 16px 32px;
-  background: linear-gradient(
-    180deg,
-    #ffb347 0%,
-    // Lighter orange at top
-    #ff8c00 50%,
-    // Deeper orange middle
-    #ff6b0a 100% // Darkest at bottom
-  );
+  border: 3px solid #e68600; // Darker orange border for 3D effect
+  border-radius: 50px; // Pill-shaped
+  padding: 14px 32px;
+  background: #ff9500; // Solid vibrant orange
   color: #fff;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
-  font-style: italic; // Playful italic like mockup
   letter-spacing: 0.5px;
-  text-shadow: 0 2px 4px rgb(0 0 0 / 15%); // Text depth
+  text-shadow: 0 1px 2px rgb(0 0 0 / 20%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
 
-  // Cartoonish 3D effect
+  // 3D border effect
   box-shadow:
-    0 6px 0 #c50,
-    // Bottom "3D" edge
-    0 8px 16px rgb(255 107 10 / 40%),
-    inset 0 2px 4px rgb(255 255 255 / 30%); // Inner highlight
+    0 4px 0 #c70,
+    0 6px 12px rgb(255 149 0 / 35%);
 
   transition:
     transform 0.1s ease,
@@ -215,6 +151,28 @@
   padding: 8px;
 }
 
+// Register link - styled like the design
+.register-link {
+  color: #0e7490; // Cyan-700 (was #0891b2 cyan-600 - insufficient contrast 3.68:1)
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 8px 16px;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Dark mode - ensure link is visible
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
+  .register-link {
+    color: #06b6d4; // Cyan-500 - brighter for dark mode
+  }
+}
+
 .bottom-bar {
   display: none;
 }
@@ -232,21 +190,11 @@
 :host-context(.ion-palette-dark),
 :host-context([data-theme='dark']) {
   .welcome-content {
-    --background: linear-gradient(180deg, #0f172a 0%, #020617 45%, #020617 100%);
-  }
-
-  .cloud-bg-overlay {
-    opacity: 20%; // More subtle in dark mode
-    filter: brightness(0.3) saturate(0.5); // Darker clouds for dark mode
+    --background: url('/assets/images/sky-background-night.webp');
   }
 
   .hero-illustration {
-    background: transparent; // Keep transparent in dark mode too
-  }
-
-  .hero-illustration .hero-aura {
-    filter: blur(3px) brightness(0.8); // Dimmer aura in dark mode
-    opacity: 50%;
+    background: transparent;
   }
 
   .text-content h1 {
@@ -255,18 +203,6 @@
 
   .text-content p {
     color: var(--dt-color-text-secondary);
-  }
-
-  .bottom-bar {
-    display: none;
-  }
-
-  .bottom-item {
-    display: none;
-  }
-
-  .bottom-item:hover {
-    background: none;
   }
 
   .cta-primary {

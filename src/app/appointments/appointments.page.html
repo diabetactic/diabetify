@@ -202,6 +202,9 @@
         class="appointment-card border-primary !m-0 cursor-pointer border-l-4 shadow-lg"
         [attr.data-queue-state]="queueState?.state"
         (click)="viewAppointment(currentAppointment)"
+        (keyup.enter)="viewAppointment(currentAppointment)"
+        role="button"
+        tabindex="0"
         style="--background: var(--ion-card-background-elevated, var(--ion-card-background))"
       >
         <ion-card-header>
@@ -287,7 +290,13 @@
     <div *ngIf="!loading && !error && pastAppointments.length > 0" class="mt-6">
       <div
         class="bg-base-200 flex cursor-pointer items-center justify-between rounded-xl px-4 py-3"
+        role="button"
+        tabindex="0"
         (click)="pastAppointmentsExpanded = !pastAppointmentsExpanded"
+        (keydown.enter)="pastAppointmentsExpanded = !pastAppointmentsExpanded"
+        (keydown.space)="
+          pastAppointmentsExpanded = !pastAppointmentsExpanded; $event.preventDefault()
+        "
       >
         <span class="text-base-content/70 dark:text-base-content/90 text-sm font-medium">
           {{ 'appointments.past' | translate }} ({{ pastAppointments.length }})

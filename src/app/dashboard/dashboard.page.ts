@@ -19,14 +19,12 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ReadingsService } from '../core/services/readings.service';
-import { TidepoolSyncService } from '../core/services/tidepool-sync.service';
 import { LoggerService } from '../core/services/logger.service';
 import {
   LocalGlucoseReading,
   GlucoseStatistics,
   GlucoseUnit,
 } from '../core/models/glucose-reading.model';
-import { SyncStatus } from '../core/models/tidepool-sync.model';
 import { TranslationService } from '../core/services/translation.service';
 import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
@@ -36,6 +34,7 @@ import { EmptyStateComponent } from '../shared/components/empty-state/empty-stat
 import { LanguageSwitcherComponentModule } from '../shared/components/language-switcher/language-switcher.module';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 import { environment } from '../../environments/environment';
+import { ROUTES } from '../core/constants';
 
 @Component({
   selector: 'app-dashboard',
@@ -68,17 +67,19 @@ import { environment } from '../../environments/environment';
 })
 export class DashboardPage implements OnInit, OnDestroy {
   readonly isMockMode = environment.backendMode === 'mock';
+  readonly routes = ROUTES;
+
   // Statistics data
   statistics: GlucoseStatistics | null = null;
 
   // Recent readings (last 5)
   recentReadings: LocalGlucoseReading[] = [];
 
-  // Sync status
-  syncStatus: SyncStatus | null = null;
-
   // Backend sync results (for cloud mode counter)
   backendSyncResult: { pushed: number; fetched: number; failed: number } | null = null;
+
+  // Last sync time for display
+  lastSyncTime: string | null = null;
 
   // Loading states
   isLoading = true;
@@ -112,7 +113,6 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   constructor(
     private readingsService: ReadingsService,
-    private syncService: TidepoolSyncService,
     private toastController: ToastController,
     private router: Router,
     private translationService: TranslationService,
@@ -128,7 +128,6 @@ export class DashboardPage implements OnInit, OnDestroy {
     this.subscribeToPreferences();
     this.loadDashboardData();
     this.subscribeToReadings();
-    this.subscribeToSyncStatus();
   }
 
   ngOnDestroy() {
@@ -166,10 +165,8 @@ export class DashboardPage implements OnInit, OnDestroy {
       // Get recent readings (last 5)
       const result = await this.readingsService.getAllReadings(5);
       this.recentReadings = result.readings;
-
-      // Removed: auto-showing success alert was misleading (message said "Saved" but nothing was saved)
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
+      this.logger.error('Dashboard', 'Error loading dashboard data', error);
     } finally {
       this.isLoading = false;
     }
@@ -179,31 +176,24 @@ export class DashboardPage implements OnInit, OnDestroy {
    * Subscribe to readings changes
    */
   private subscribeToReadings() {
-    this.readingsService.readings$.pipe(takeUntil(this.destroy$)).subscribe(async readings => {
-      // Update recent readings
-      this.recentReadings = readings.slice(0, 5);
+    this.readingsService.readings$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: async readings => {
+        // Update recent readings
+        this.recentReadings = readings.slice(0, 5);
 
-      // Recalculate statistics when readings change
-      if (!this.isLoading) {
-        this.statistics = await this.readingsService.getStatistics(
-          'month',
-          70,
-          180,
-          this.preferredGlucoseUnit
-        );
-
-        // Removed: auto-showing success alert was misleading
-      }
-    });
-  }
-
-  /**
-   * Subscribe to sync status changes
-   */
-  private subscribeToSyncStatus() {
-    this.syncService.syncStatus$.pipe(takeUntil(this.destroy$)).subscribe(status => {
-      this.syncStatus = status;
-      this.isSyncing = status.isRunning;
+        // Recalculate statistics when readings change
+        if (!this.isLoading) {
+          this.statistics = await this.readingsService.getStatistics(
+            'month',
+            70,
+            180,
+            this.preferredGlucoseUnit
+          );
+        }
+      },
+      error: error => {
+        this.logger.error('Dashboard', 'Error subscribing to readings', error);
+      },
     });
   }
 
@@ -216,7 +206,11 @@ export class DashboardPage implements OnInit, OnDestroy {
       await this.readingsService.performFullSync();
       await this.loadDashboardData();
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      this.logger.error('Dashboard', 'Error refreshing data', error);
+      await this.showToast(
+        this.translationService.instant('dashboard.errors.refreshFailed'),
+        'danger'
+      );
     } finally {
       (event.target as HTMLIonRefresherElement).complete();
     }
@@ -243,7 +237,11 @@ export class DashboardPage implements OnInit, OnDestroy {
       const result = await this.readingsService.getAllReadings(5);
       this.recentReadings = result.readings;
     } catch (error) {
-      this.logger.error('Error', 'Error syncing data from backend', error);
+      this.logger.error('Dashboard', 'Error syncing data from backend', error);
+      await this.showToast(
+        this.translationService.instant('dashboard.errors.syncFailed'),
+        'danger'
+      );
     } finally {
       this.isSyncing = false;
     }
@@ -292,7 +290,7 @@ export class DashboardPage implements OnInit, OnDestroy {
    * Navigate to add reading page
    */
   addReading() {
-    this.router.navigate(['/add-reading']);
+    this.router.navigate([ROUTES.ADD_READING]);
   }
 
   /**
@@ -318,11 +316,11 @@ export class DashboardPage implements OnInit, OnDestroy {
    * Get last sync time display
    */
   getLastSyncDisplay(): string {
-    if (!this.syncStatus?.lastSyncTime) {
+    if (!this.lastSyncTime) {
       return this.translationService.instant('dashboard.lastSyncStatus.never');
     }
 
-    const syncDate = new Date(this.syncStatus.lastSyncTime);
+    const syncDate = new Date(this.lastSyncTime);
     const now = new Date();
     const diffMs = now.getTime() - syncDate.getTime();
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
@@ -374,23 +372,22 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   /**
    * Get sync items count for display
-   * In cloud mode, uses backend sync result; in mock mode uses Tidepool sync status
    */
   getSyncItemsCount(): number {
-    if (!this.isMockMode && this.backendSyncResult) {
+    if (this.backendSyncResult) {
       return this.backendSyncResult.fetched + this.backendSyncResult.pushed;
     }
-    return this.syncStatus?.itemsSynced ?? 0;
+    return 0;
   }
 
   /**
    * Get sync failed count for display
    */
   getSyncFailedCount(): number {
-    if (!this.isMockMode && this.backendSyncResult) {
+    if (this.backendSyncResult) {
       return this.backendSyncResult.failed;
     }
-    return this.syncStatus?.itemsFailed ?? 0;
+    return 0;
   }
 
   /**

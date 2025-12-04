@@ -1,0 +1,68 @@
+# ==========================================
+# Flow: Robust Login
+# Optimization: EraseText -> Input, Dynamic Waits, Specific Assertions
+# ==========================================
+
+appId: io.diabetactic.app
+
+---
+# 1. SETUP - Clear state and launch fresh
+- clearState: io.diabetactic.app
+- launchApp
+
+# 2. HYDRATION WAIT
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# 3. HANDLE WELCOME SCREEN (If present)
+# We use a wildcard matcher because the text might contain special chars like "¡"
+- extendedWaitUntil:
+    visible:
+      text: '.*Diabetactic.*'
+    timeout: 5000
+
+# 4. NAVIGATE TO LOGIN FORM
+# Tap the welcome login button - try multiple strategies
+- tapOn:
+    text: '.*Vamos.*'
+    optional: true
+- tapOn:
+    point: '50%,80%'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# 5. WAIT FOR FORM READY
+# Instead of hardcoded sleep, we wait for the specific input label to appear.
+- extendedWaitUntil:
+    visible:
+      text: 'DNI o Email|DNI or Email'
+    timeout: 5000
+
+# 6. INPUT USERNAME (Robust Pattern)
+# Strategy: Tap Label -> Erase (Clean slate) -> Type -> Hide Keyboard
+- tapOn:
+    text: 'DNI o Email|DNI or Email'
+- eraseText
+- inputText: '${TEST_USER_ID}'
+- hideKeyboard
+
+# 7. INPUT PASSWORD
+- tapOn:
+    text: 'Contraseña|Password'
+- eraseText
+- inputText: '${TEST_USER_PASSWORD}'
+- hideKeyboard
+
+# 8. SUBMIT
+- tapOn:
+    text: 'Iniciar Sesión'
+- waitForAnimationToEnd
+
+# 9. VERIFY DASHBOARD LOAD (more tolerant)
+- extendedWaitUntil:
+    visible:
+      text: '.*(Inicio|Home|Dashboard|Tablero|Citas|Appointments|Lecturas|Readings).*'
+    timeout: 12000
+- waitForAnimationToEnd:
+    timeout: 1000

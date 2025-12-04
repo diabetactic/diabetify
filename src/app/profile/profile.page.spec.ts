@@ -11,8 +11,6 @@ import { TidepoolAuthService, AuthState } from '../core/services/tidepool-auth.s
 import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
 import { TranslationService, Language, LanguageConfig } from '../core/services/translation.service';
-import { TidepoolSyncService } from '../core/services/tidepool-sync.service';
-import { ProfilePageModule } from './profile.module';
 import { getLucideIconsForTesting } from '../tests/helpers/icon-test.helper';
 
 class TidepoolAuthServiceStub {
@@ -112,11 +110,6 @@ class TranslationServiceStub {
   }
 }
 
-class TidepoolSyncServiceStub {
-  private statusSubject = new BehaviorSubject<any>({ isRunning: false });
-  syncStatus$ = this.statusSubject.asObservable();
-}
-
 describe('ProfilePage', () => {
   let component: ProfilePage;
   let fixture: ComponentFixture<ProfilePage>;
@@ -128,7 +121,7 @@ describe('ProfilePage', () => {
         TranslateModule.forRoot(),
         RouterTestingModule,
         HttpClientTestingModule,
-        ProfilePageModule,
+        ProfilePage,
         getLucideIconsForTesting(),
       ],
       providers: [
@@ -136,7 +129,6 @@ describe('ProfilePage', () => {
         { provide: ProfileService, useClass: ProfileServiceStub },
         { provide: ThemeService, useClass: ThemeServiceStub },
         { provide: TranslationService, useClass: TranslationServiceStub },
-        { provide: TidepoolSyncService, useClass: TidepoolSyncServiceStub },
       ],
     }).compileComponents();
 

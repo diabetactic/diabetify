@@ -1,8 +1,12 @@
 <ion-content class="login-content">
-  <div class="pattern-overlay"></div>
   <div class="login-shell page-shell">
     <div class="login-illustration">
-      <img src="assets/images/welcome-kids.png" alt="{{ 'welcome.heroAlt' | translate }}" />
+      <img src="assets/images/cloud-frame.webp" alt="" class="cloud-frame" aria-hidden="true" />
+      <img
+        src="assets/images/welcome-kids.webp"
+        alt="{{ 'welcome.heroAlt' | translate }}"
+        class="kids-image"
+      />
     </div>
     <h1 class="login-title">{{ 'app.name' | translate }}</h1>
     <p class="login-subtitle">
@@ -85,7 +89,7 @@
         </button>
 
         <div class="link-row mt-3">
-          <a (click)="forgotPassword()">
+          <a (click)="forgotPassword()" role="button" tabindex="0" (keyup.enter)="forgotPassword()">
             {{ 'login.forgotPassword' | translate }}
           </a>
         </div>

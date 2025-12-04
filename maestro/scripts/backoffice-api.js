@@ -1,0 +1,205 @@
+/**
+ * Backoffice API Helper for Maestro Tests
+ *
+ * Handles admin operations for appointment queue management:
+ * - accept: Accept the next pending appointment
+ * - deny: Deny the next pending appointment
+ * - clear: Clear all pending appointments from queue
+ */
+
+const https = require('https');
+
+const BACKOFFICE_URL =
+  process.env.BACKOFFICE_API_URL || 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com';
+const ACTION = process.env.ACTION; // 'accept', 'deny', or 'clear'
+const USER_ID = process.env.USER_ID || '1000';
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+
+/**
+ * Make HTTPS request
+ */
+function request(options, postData = null) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, res => {
+      let data = '';
+      res.on('data', chunk => (data += chunk));
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          try {
+            resolve(data ? JSON.parse(data) : {});
+          } catch {
+            resolve(data);
+          }
+        } else if (res.statusCode === 404) {
+          resolve(null); // Not found is ok for some operations
+        } else {
+          reject(new Error(`HTTP ${res.statusCode}: ${data}`));
+        }
+      });
+    });
+    req.on('error', reject);
+    if (postData) req.write(postData);
+    req.end();
+  });
+}
+
+/**
+ * Get admin authentication token
+ */
+async function getAdminToken() {
+  const url = new URL(BACKOFFICE_URL);
+  const postData = `username=${ADMIN_USERNAME}&password=${ADMIN_PASSWORD}`;
+
+  const data = await request(
+    {
+      hostname: url.hostname,
+      port: 443,
+      path: '/token',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(postData),
+      },
+    },
+    postData
+  );
+
+  return data.access_token;
+}
+
+/**
+ * Get pending appointments from queue
+ */
+async function getPendingAppointments(token) {
+  const url = new URL(BACKOFFICE_URL);
+
+  const data = await request({
+    hostname: url.hostname,
+    port: 443,
+    path: '/appointments/pending',
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  return Array.isArray(data) ? data : [];
+}
+
+/**
+ * Accept or deny an appointment by queue placement
+ */
+async function updateAppointment(token, queuePlacement, action) {
+  const url = new URL(BACKOFFICE_URL);
+
+  return await request({
+    hostname: url.hostname,
+    port: 443,
+    path: `/appointments/${action}/${queuePlacement}`,
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+/**
+ * Clear all pending appointments
+ */
+async function clearQueue(token) {
+  const url = new URL(BACKOFFICE_URL);
+
+  try {
+    await request({
+      hostname: url.hostname,
+      port: 443,
+      path: '/appointments',
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return true;
+  } catch (e) {
+    // 404 means already empty, which is fine
+    if (e.message.includes('404')) return true;
+    throw e;
+  }
+}
+
+/**
+ * Open queue (and clear it)
+ */
+async function openQueue(token) {
+  const url = new URL(BACKOFFICE_URL);
+  await request({
+    hostname: url.hostname,
+    port: 443,
+    path: '/appointments/queue/open',
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+/**
+ * Close queue
+ */
+async function closeQueue(token) {
+  const url = new URL(BACKOFFICE_URL);
+  await request({
+    hostname: url.hostname,
+    port: 443,
+    path: '/appointments/queue/close',
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+/**
+ * Main execution
+ */
+async function main() {
+  try {
+    console.log(`Executing action: ${ACTION} for user: ${USER_ID}`);
+
+    const token = await getAdminToken();
+    console.log('Admin token obtained');
+
+    if (ACTION === 'clear') {
+      await clearQueue(token);
+      console.log('Queue cleared');
+      return;
+    }
+
+    if (ACTION === 'open') {
+      await openQueue(token);
+      console.log('Queue opened (and cleared)');
+      return;
+    }
+
+    if (ACTION === 'close') {
+      await closeQueue(token);
+      console.log('Queue closed');
+      return;
+    }
+
+    const pending = await getPendingAppointments(token);
+    console.log(`Found ${pending.length} pending appointments`);
+
+    // Find appointment for the specific user
+    const userAppointment = pending.find(
+      apt => apt.user_id === parseInt(USER_ID) || apt.user_id === USER_ID
+    );
+
+    if (!userAppointment) {
+      console.log(`No pending appointment found for user ${USER_ID}`);
+      return;
+    }
+
+    const queuePlacement = userAppointment.queue_placement;
+    console.log(`Processing appointment with queue_placement: ${queuePlacement}`);
+
+    await updateAppointment(token, queuePlacement, ACTION);
+    console.log(`${ACTION} successful for user ${USER_ID}`);
+  } catch (error) {
+    console.error('Error:', error.message);
+    process.exit(1);
+  }
+}
+
+main();

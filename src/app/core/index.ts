@@ -19,9 +19,6 @@ export * from './guards';
 // Models
 export * from './models';
 
-// Interceptors
-export * from './interceptors/tidepool.interceptor';
-
 // Config
 export * from './config/oauth.config';
 

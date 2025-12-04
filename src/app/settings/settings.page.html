@@ -220,25 +220,6 @@
       <ion-label>{{ 'settings.sections.advanced' | translate }}</ion-label>
     </ion-list-header>
     <ion-list class="mb-4">
-      <!-- Debug Panel Toggle (only in dev mode) -->
-      <ion-item
-        button
-        (click)="toggleDebugPanel()"
-        *ngIf="isDevEnvironment"
-        class="flex items-center gap-2"
-      >
-        <app-icon name="bug-outline" class="text-warning"></app-icon>
-        <ion-label>
-          <h3 class="mb-1 font-medium">
-            {{ 'settings.debug.title' | translate }}
-          </h3>
-          <p class="text-sm">
-            {{ 'settings.debug.subtitle' | translate }}
-          </p>
-        </ion-label>
-        <ion-icon [name]="showDebugPanel ? 'chevron-up' : 'chevron-down'" slot="end"></ion-icon>
-      </ion-item>
-
       <ion-item button (click)="goToAdvancedSettings()" class="flex items-center gap-2">
         <app-icon name="settings-outline"></app-icon>
         <ion-label>{{ 'settings.debug.advancedConfig' | translate }}</ion-label>
@@ -252,11 +233,6 @@
         </ion-label>
       </ion-item>
     </ion-list>
-
-    <!-- Debug Panel (integrated into settings, only in dev mode) -->
-    <div *ngIf="showDebugPanel && isDevEnvironment" class="debug-panel-container">
-      <app-debug-panel></app-debug-panel>
-    </div>
 
     <!-- Demo Mode Notice -->
     <ion-card *ngIf="isDemoMode" class="demo-notice">

@@ -41,29 +41,23 @@ cd android && JAVA_HOME=$(mise where java) ANDROID_HOME=$ANDROID_HOME ./gradlew 
 "logs-tail" = "make logs-tail"
 "screenshot" = "make screenshot-home"
 
-# Test commands - Quality checks
-"test:quality" = "npm run test:quality"
-"test:quality:fix" = "npm run test:quality:fix"
+# Test commands - Quality checks (uses existing npm scripts)
+"test:quality" = "npm run quality"
+"test:lint" = "npm run lint"
+"test:lint:fix" = "npm run lint:fix"
 
-# Test commands - Unit tests
+# Test commands - Unit tests (uses existing npm scripts)
 "test:unit" = "npm run test:ci"
 "test:e2e" = "npm run test:e2e"
+"test:a11y" = "npm run test:a11y"
 
+# Test commands - Full tests (combined)
+"test:full" = "npm run quality && npm run test:e2e"
 
-# Test commands - Full tests (all types)
-"test:full" = "npm run test:full"
+# Test commands - Mode-specific (build + test with specific env)
+"test:mock" = "ENV=mock npm test"
+"test:heroku" = "ENV=cloud npm test"
+"test:local" = "ENV=local npm test"
 
-# Test commands - Mode-specific (build + test)
-"test:mock" = "npm run test:mode:mock"
-"test:heroku" = "npm run test:mode:heroku"
-"test:local" = "npm run test:mode:local"
-
-# Test commands - All modes
-"test:all-modes" = "npm run test:modes:all"
-
-# Test commands - Full comprehensive (mode + all test types)
-"test:full:mock" = "npm run test:full:mock"
-"test:full:heroku" = "npm run test:full:heroku"
-
-# Test EVERYTHING (all modes, all tests, all quality checks)
-"test:everything" = "npm run test:everything"
+# Test commands - Comprehensive (all test types)
+"test:all" = "npm run quality && npm run test:e2e && npm run test:a11y"

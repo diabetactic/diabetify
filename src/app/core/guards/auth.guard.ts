@@ -32,6 +32,7 @@ import { map, take, switchMap } from 'rxjs/operators';
 import { TidepoolAuthService } from '../services/tidepool-auth.service';
 import { LocalAuthService } from '../services/local-auth.service';
 import { AccountState } from '../models/user-profile.model';
+import { ROUTES } from '../constants';
 
 @Injectable({
   providedIn: 'root',
@@ -72,27 +73,23 @@ export class AuthGuard implements CanActivate {
           take(1),
           map(localAuthState => {
             if (!localAuthState.isAuthenticated) {
-              // User is not authenticated at all, redirect to login
               const returnUrl = state.url;
-              return this.router.createUrlTree(['/tabs'], {
+              return this.router.createUrlTree([ROUTES.TABS], {
                 queryParams: { returnUrl },
               });
             }
 
-            // User is authenticated locally, check account state
             const accountState = localAuthState.user?.preferences
               ? (localAuthState.user as { accountState?: AccountState }).accountState
               : null;
 
             if (accountState === AccountState.PENDING) {
-              // Account is pending activation, redirect to pending page
-              return this.router.createUrlTree(['/account-pending']);
+              return this.router.createUrlTree([ROUTES.ACCOUNT_PENDING]);
             }
 
             if (accountState === AccountState.DISABLED) {
-              // Account is disabled, logout and deny access
               this.localAuthService.logout();
-              return this.router.createUrlTree(['/welcome']);
+              return this.router.createUrlTree([ROUTES.WELCOME]);
             }
 
             // Account is ACTIVE, allow access

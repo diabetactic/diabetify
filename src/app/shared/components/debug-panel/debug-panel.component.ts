@@ -11,7 +11,6 @@ import { Preferences } from '@capacitor/preferences';
 import { environment } from '../../../../environments/environment';
 import { TidepoolAuthService } from '../../../core/services/tidepool-auth.service';
 import { LocalAuthService } from '../../../core/services/local-auth.service';
-import { TidepoolSyncService } from '../../../core/services/tidepool-sync.service';
 import {
   ExternalServicesManager,
   ExternalServicesState,
@@ -24,7 +23,6 @@ import { AppIconComponent } from '../app-icon/app-icon.component';
 import { CapacitorHttpService } from '../../../core/services/capacitor-http.service';
 import { API_GATEWAY_BASE_URL } from '../../config/api-base-url';
 import { firstValueFrom } from 'rxjs';
-import { SyncStatus } from '../../../core/models/tidepool-sync.model';
 
 interface DebugInfo {
   platform: string;
@@ -117,7 +115,6 @@ export class DebugPanelComponent implements OnInit {
   selectedTab = 'info';
   debugInfo: DebugInfo | null = null;
   authStatus: AuthStatus | null = null;
-  syncStatus: SyncStatus | null = null;
   servicesHealth: ExternalServicesState | null = null;
   storageStats: StorageStats | null = null;
 
@@ -148,7 +145,6 @@ export class DebugPanelComponent implements OnInit {
   constructor(
     private tidepoolAuth: TidepoolAuthService,
     private localAuth: LocalAuthService,
-    private tidepoolSync: TidepoolSyncService,
     private servicesManager: ExternalServicesManager,
     private mockAdapter: MockAdapterService,
     private toastController: ToastController,
@@ -188,11 +184,6 @@ export class DebugPanelComponent implements OnInit {
     //     },
     //   };
     // });
-
-    // Subscribe to sync status
-    this.tidepoolSync.syncStatus$.subscribe(status => {
-      this.syncStatus = status;
-    });
 
     // Subscribe to services health
     this.servicesManager.state.subscribe((state: ExternalServicesState) => {
@@ -288,7 +279,6 @@ export class DebugPanelComponent implements OnInit {
       {
         debugInfo: this.debugInfo,
         authStatus: this.authStatus,
-        syncStatus: this.syncStatus,
         servicesHealth: this.servicesHealth,
         storageStats: this.storageStats,
       },

@@ -34,9 +34,9 @@ import { LocalAuthService } from '../core/services/local-auth.service';
 import { DemoDataService } from '../core/services/demo-data.service';
 import { NotificationService, ReadingReminder } from '../core/services/notification.service';
 import { LocalUser, UserPreferences } from '../core/services/local-auth.service';
-import { DebugPanelComponent } from '../shared/components/debug-panel/debug-panel.component';
 import { environment } from '../../environments/environment';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { ROUTES, STORAGE_KEYS, TIMEOUTS } from '../core/constants';
 
 @Component({
   selector: 'app-settings',
@@ -69,7 +69,6 @@ import { AppIconComponent } from '../shared/components/app-icon/app-icon.compone
     IonDatetime,
     IonRange,
     // App components
-    DebugPanelComponent,
     AppIconComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -113,7 +112,6 @@ export class SettingsPage implements OnInit, OnDestroy {
   isLoading = false;
   hasChanges = false;
   isDemoMode = false;
-  showDebugPanel = false;
   isDevEnvironment = !environment.production;
 
   // Notification settings
@@ -202,13 +200,6 @@ export class SettingsPage implements OnInit, OnDestroy {
             hyperglycemiaThreshold: this.preferences.targetRange.high,
           };
         }
-      }
-
-      // Load additional settings from local storage or profile service
-      const savedSettings = localStorage.getItem('userSettings');
-      if (savedSettings) {
-        // Settings are loaded from user preferences above
-        // This code is kept for future use when additional settings need to be loaded
       }
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -311,7 +302,7 @@ export class SettingsPage implements OnInit, OnDestroy {
         glucose: this.glucoseSettings,
         preferences: this.preferences,
       };
-      localStorage.setItem('userSettings', JSON.stringify(settings));
+      localStorage.setItem(STORAGE_KEYS.USER_SETTINGS, JSON.stringify(settings));
 
       // TODO: Save to backend when API is available
       // await this.profileService.updatePreferences(this.preferences).toPromise();
@@ -330,23 +321,14 @@ export class SettingsPage implements OnInit, OnDestroy {
    * Navigate to advanced settings
    */
   goToAdvancedSettings() {
-    this.router.navigate(['/settings/advanced']);
-  }
-
-  /**
-   * Toggle debug panel (only in non-production environments)
-   */
-  toggleDebugPanel() {
-    if (this.isDevEnvironment) {
-      this.showDebugPanel = !this.showDebugPanel;
-    }
+    this.router.navigate([ROUTES.SETTINGS_ADVANCED]);
   }
 
   /**
    * Navigate to profile page
    */
   goToProfile() {
-    this.router.navigate(['/profile']);
+    this.router.navigate([ROUTES.TABS_PROFILE]);
   }
 
   /**
@@ -365,7 +347,7 @@ export class SettingsPage implements OnInit, OnDestroy {
           text: 'Cerrar Sesión',
           handler: async () => {
             await this.authService.logout();
-            await this.router.navigate(['/login'], { replaceUrl: true });
+            await this.router.navigate([ROUTES.LOGIN], { replaceUrl: true });
           },
         },
       ],
@@ -379,7 +361,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   private async showToast(message: string, color: 'success' | 'warning' | 'danger') {
     const toast = await this.toastController.create({
       message,
-      duration: 2000,
+      duration: TIMEOUTS.TOAST_SHORT,
       color,
       position: 'bottom',
     });
@@ -426,7 +408,7 @@ export class SettingsPage implements OnInit, OnDestroy {
    * Load notification settings from storage
    */
   private loadNotificationSettings() {
-    const saved = localStorage.getItem('notificationSettings');
+    const saved = localStorage.getItem(STORAGE_KEYS.NOTIFICATION_SETTINGS);
     if (saved) {
       const settings = JSON.parse(saved);
       this.readingReminders = settings.readingReminders || this.readingReminders;
@@ -442,7 +424,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       enabled: this.notificationsEnabled,
       readingReminders: this.readingReminders,
     };
-    localStorage.setItem('notificationSettings', JSON.stringify(settings));
+    localStorage.setItem(STORAGE_KEYS.NOTIFICATION_SETTINGS, JSON.stringify(settings));
   }
 
   /**

@@ -159,6 +159,30 @@
           </ion-select-option>
         </ion-select>
       </div>
+
+      <div class="preference-row">
+        <div class="flex min-w-0 flex-1 items-center gap-3">
+          <app-icon
+            name="notifications-outline"
+            aria-hidden="true"
+            class="text-primary text-[26px]"
+          ></app-icon>
+          <div>
+            <p class="text-dark m-0 text-base font-semibold">
+              {{ 'profile.notifications.title' | translate }}
+            </p>
+            <p class="text-medium mb-0 mt-1 text-xs">
+              {{ 'profile.notifications.desc' | translate }}
+            </p>
+          </div>
+        </div>
+        <ion-toggle
+          [checked]="notificationsEnabled"
+          (ionChange)="onNotificationsToggle($event)"
+          aria-label="{{ 'profile.notifications.title' | translate }}"
+          data-testid="notifications-toggle"
+        ></ion-toggle>
+      </div>
     </section>
 
     <section class="card tidepool-card">

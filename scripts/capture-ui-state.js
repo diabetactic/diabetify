@@ -11,7 +11,8 @@ async function captureUIState() {
   });
   const page = await context.newPage();
 
-  const screenshotDir = path.join(__dirname, '../playwright/screenshots');
+  // Align with Playwright outputDir to keep artifacts in one place
+  const screenshotDir = path.join(__dirname, '../playwright/artifacts/manual-capture');
   await fs.mkdir(screenshotDir, { recursive: true });
 
   const findings = {
