@@ -239,6 +239,7 @@ src/assets/images/*tt.png
 
 # AI tool directories
 .maestro-tests/
+maestro/debug-output/
 configs/
 skills/
 
