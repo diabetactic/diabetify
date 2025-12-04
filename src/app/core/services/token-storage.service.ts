@@ -76,7 +76,7 @@ export class TokenStorageService {
       };
 
       await SecureStorage.set(STORAGE_KEYS.TOKEN_METADATA, JSON.stringify(metadata));
-    } catch (error) {
+    } catch {
       console.error('Failed to store authentication data');
       throw new Error('Token storage failed');
     }
@@ -110,7 +110,7 @@ export class TokenStorageService {
     try {
       const token = await SecureStorage.get(STORAGE_KEYS.REFRESH_TOKEN);
       return (token as string) || null;
-    } catch (error) {
+    } catch {
       console.error('Failed to retrieve refresh token');
       return null;
     }
@@ -128,7 +128,7 @@ export class TokenStorageService {
         return null;
       }
       return JSON.parse(data as string);
-    } catch (error) {
+    } catch {
       console.error('Failed to retrieve auth data');
       return null;
     }
@@ -210,12 +210,10 @@ export class TokenStorageService {
     const hasRefresh = await this.hasRefreshToken();
 
     let expiresIn: number | undefined;
-    let expiresAt: string | undefined;
 
     if (this.accessTokenExpiry) {
       const now = Date.now();
       expiresIn = Math.max(0, Math.floor((this.accessTokenExpiry - now) / 1000));
-      expiresAt = new Date(this.accessTokenExpiry).toISOString();
     }
 
     return {
@@ -240,7 +238,7 @@ export class TokenStorageService {
         return null;
       }
       return JSON.parse(value as string);
-    } catch (error) {
+    } catch {
       return null;
     }
   }

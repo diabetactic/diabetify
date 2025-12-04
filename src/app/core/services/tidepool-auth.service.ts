@@ -10,15 +10,14 @@
  */
 
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Browser } from '@capacitor/browser';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
-import { BehaviorSubject, Observable, throwError, from, timer, of, firstValueFrom } from 'rxjs';
-import { catchError, map, switchMap, tap, retryWhen, delay, take, concatMap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 
 import { TidepoolAuth, TidepoolTokenResponse } from '../models/tidepool-auth.model';
-import { getOAuthConfig, OAuthConfig, OAUTH_CONSTANTS } from '../config/oauth.config';
+import { getOAuthConfig, OAuthConfig } from '../config/oauth.config';
 import { generatePKCEChallenge, generateState, buildAuthorizationUrl } from '../utils/pkce.utils';
 import { TokenStorageService } from './token-storage.service';
 import { CapacitorHttpService } from './capacitor-http.service';

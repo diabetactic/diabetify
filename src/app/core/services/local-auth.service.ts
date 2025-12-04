@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError, from, of } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
-import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
 import { PlatformDetectorService } from './platform-detector.service';
 import { LoggerService } from './logger.service';
@@ -224,12 +223,16 @@ export class LocalAuthService {
           } else if (hasRefreshToken) {
             this.logger.info('Auth', 'Token expired, attempting refresh');
             // Try to refresh the token
-            this.refreshAccessToken().subscribe();
+            this.refreshAccessToken().subscribe({
+              error: err => this.logger.error('Auth', 'Token refresh failed', err),
+            });
           }
         } else if (hasRefreshToken) {
           this.logger.info('Auth', 'No access token, attempting refresh');
           // Try to refresh the token
-          this.refreshAccessToken().subscribe();
+          this.refreshAccessToken().subscribe({
+            error: err => this.logger.error('Auth', 'Token refresh failed', err),
+          });
         }
       } catch (error) {
         this.logger.error('Auth', 'Failed to initialize auth state', error);
@@ -248,6 +251,7 @@ export class LocalAuthService {
     const isAuthMockEnabled = this.mockAdapter.isServiceMockEnabled('auth');
     // SECURITY: Removed credential logging - HIPAA/COPPA compliance
     this.logger.debug('Auth', 'Login attempt', {
+      stage: 'start',
       backendMode: (environment as { backendMode?: string }).backendMode,
       mockEnabled: isAuthMockEnabled,
     });
@@ -256,6 +260,7 @@ export class LocalAuthService {
     if (isAuthMockEnabled) {
       console.log('🎭 [AUTH] MOCK MODE - Bypassing backend, returning mock data');
       this.logger.info('Auth', 'Mock mode login - bypassing HTTP calls', {
+        stage: 'mock-login',
         username,
         backendMode: (environment as { backendMode?: string }).backendMode,
       });
@@ -267,6 +272,7 @@ export class LocalAuthService {
     console.log('🔐 [AUTH] Token endpoint:', `${this.baseUrl}/token`);
 
     this.logger.info('Auth', 'Login attempt - trying REAL backend', {
+      stage: 'real-backend-start',
       username,
       passwordLength: password?.length ?? 0,
       rememberMe,
@@ -288,6 +294,11 @@ export class LocalAuthService {
     console.log('🔐 [AUTH] Request headers:', headers);
     console.log('🔐 [AUTH] Making HTTP POST request...');
 
+    this.logger.debug('Auth', 'Backend stage: sending token request', {
+      stage: 'http-send',
+      endpoint: `${this.baseUrl}/token`,
+    });
+
     // Call token endpoint directly (use Capacitor HTTP to bypass CORS)
     return this.capacitorHttp
       .post<GatewayTokenResponse>(`${this.baseUrl}/token`, body.toString(), {
@@ -297,8 +308,16 @@ export class LocalAuthService {
         tap(response => {
           console.log('✅ [AUTH] HTTP POST successful, response received');
           console.log('✅ [AUTH] Response:', JSON.stringify(response));
+          this.logger.debug('Auth', 'Backend stage: HTTP response received', {
+            stage: 'http-response',
+            hasAccessToken: !!(response as any)?.access_token,
+          });
         }),
         switchMap(token => {
+          this.logger.debug('Auth', 'Backend stage: processing token response', {
+            stage: 'process-token',
+            hasAccessToken: !!token?.access_token,
+          });
           if (!token?.access_token) {
             return throwError(
               () => new Error('Authentication service did not return an access token.')
@@ -308,6 +327,11 @@ export class LocalAuthService {
           // After getting token, fetch user profile
           return this.fetchUserProfile(token.access_token).pipe(
             switchMap(profile => {
+              this.logger.debug('Auth', 'Backend stage: user profile fetched', {
+                stage: 'profile-fetched',
+                userId: profile?.dni,
+                state: profile?.state,
+              });
               // Check account state
               if (profile.state === 'pending') {
                 this.logger.warn('Auth', 'Account pending activation', { username });
@@ -341,6 +365,11 @@ export class LocalAuthService {
           );
         }),
         catchError(error => {
+          this.logger.error('Auth', 'Backend stage: catchError from HTTP', {
+            stage: 'http-error',
+            status: (error && error.status) || null,
+            message: error?.message,
+          });
           console.error('❌ [AUTH] HTTP request failed');
           console.error('❌ [AUTH] Error object:', error);
           console.error('❌ [AUTH] Error status:', error?.status);
@@ -429,7 +458,7 @@ export class LocalAuthService {
   /**
    * Register a new user
    */
-  register(request: RegisterRequest): Observable<LoginResult> {
+  register(_request: RegisterRequest): Observable<LoginResult> {
     return of({
       success: false,
       error: 'User registration is not yet supported by the local auth service.',
@@ -483,10 +512,6 @@ export class LocalAuthService {
         const body = new HttpParams()
           .set('grant_type', 'refresh_token')
           .set('refresh_token', refreshToken);
-
-        const headers = new HttpHeaders({
-          'Content-Type': 'application/x-www-form-urlencoded',
-        });
 
         this.logger.info('Auth', 'Calling refresh endpoint', { endpoint: `${this.baseUrl}/token` });
 
@@ -581,7 +606,7 @@ export class LocalAuthService {
   /**
    * Update user profile
    */
-  updateProfile(updates: Partial<LocalUser>): Observable<LocalUser> {
+  updateProfile(_updates: Partial<LocalUser>): Observable<LocalUser> {
     return throwError(
       () => new Error('Updating profiles through the authentication service is not supported yet.')
     );
@@ -590,7 +615,7 @@ export class LocalAuthService {
   /**
    * Update user preferences
    */
-  updatePreferences(preferences: Partial<UserPreferences>): Observable<LocalUser> {
+  updatePreferences(_preferences: Partial<UserPreferences>): Observable<LocalUser> {
     return throwError(
       () =>
         new Error(
@@ -602,7 +627,7 @@ export class LocalAuthService {
   /**
    * Request password reset
    */
-  requestPasswordReset(email: string): Observable<{ message: string }> {
+  requestPasswordReset(_email: string): Observable<{ message: string }> {
     return throwError(
       () => new Error('Password reset is not supported by the current authentication backend.')
     );
@@ -611,7 +636,7 @@ export class LocalAuthService {
   /**
    * Reset password with token
    */
-  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
+  resetPassword(_token: string, _newPassword: string): Observable<{ message: string }> {
     return throwError(
       () => new Error('Password reset is not supported by the current authentication backend.')
     );
@@ -620,7 +645,7 @@ export class LocalAuthService {
   /**
    * Change password (requires current password)
    */
-  changePassword(currentPassword: string, newPassword: string): Observable<{ message: string }> {
+  changePassword(_currentPassword: string, _newPassword: string): Observable<{ message: string }> {
     return throwError(
       () => new Error('Password changes are not supported by the current authentication backend.')
     );
@@ -629,7 +654,7 @@ export class LocalAuthService {
   /**
    * Verify email with token
    */
-  verifyEmail(token: string): Observable<{ message: string }> {
+  verifyEmail(_token: string): Observable<{ message: string }> {
     return throwError(
       () => new Error('Email verification is not supported by the current authentication backend.')
     );
@@ -648,7 +673,7 @@ export class LocalAuthService {
    * Handle authentication response
    * NOTE: Always persists to storage (Capacitor Preferences uses localStorage on web)
    */
-  private async handleAuthResponse(response: TokenResponse, rememberMe: boolean): Promise<void> {
+  private async handleAuthResponse(response: TokenResponse, _rememberMe: boolean): Promise<void> {
     const expiresInSeconds = response.expires_in ?? 1800; // Default 30 minutes
     const expiresAt = Date.now() + expiresInSeconds * 1000;
 
@@ -706,7 +731,7 @@ export class LocalAuthService {
     return this.capacitorHttp
       .get<GatewayUserResponse>(`${this.baseUrl}/users/me`, { headers })
       .pipe(
-        catchError(error => {
+        catchError(() => {
           return throwError(() => new Error('Failed to fetch user profile'));
         })
       );

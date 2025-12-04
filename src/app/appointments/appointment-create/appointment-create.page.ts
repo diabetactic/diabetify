@@ -21,7 +21,6 @@ import {
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, firstValueFrom } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
 import { AppointmentService } from '../../core/services/appointment.service';
 import {
@@ -30,6 +29,7 @@ import {
 } from '../../core/models/appointment.model';
 import { LocalAuthService } from '../../core/services/local-auth.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { ROUTES } from '../../core/constants';
 
 @Component({
   selector: 'app-appointment-create',
@@ -188,7 +188,7 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
         {
           text: 'OK',
           handler: () => {
-            this.router.navigate(['/tabs/appointments']);
+            this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
           },
         },
       ],
@@ -282,7 +282,7 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
       return false;
     }
 
-    if (this.formData.motive.includes('other') && !this.formData.other_motive) {
+    if (this.formData.motive.includes('OTRO') && !this.formData.other_motive) {
       this.showToast('Por favor, especifica el otro motivo', 'warning');
       return false;
     }
@@ -324,7 +324,7 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
       );
 
       // Call backend API with race condition
-      const appointment = await Promise.race([
+      await Promise.race([
         firstValueFrom(this.appointmentService.createAppointment(this.formData)),
         timeoutPromise,
       ]);
@@ -333,7 +333,7 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
       await this.showToast('Cita creada exitosamente', 'success');
 
       // Navigate back to appointments list
-      this.router.navigate(['/tabs/appointments']);
+      this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
     } catch (error: unknown) {
       await loading.dismiss();
       console.error('Error creating appointment:', error);
@@ -363,7 +363,7 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
           text: 'Sí, cancelar',
           role: 'destructive',
           handler: () => {
-            this.router.navigate(['/tabs/appointments']);
+            this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
           },
         },
       ],

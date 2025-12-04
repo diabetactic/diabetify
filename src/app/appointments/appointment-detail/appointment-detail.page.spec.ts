@@ -29,7 +29,7 @@ describe('AppointmentDetailPage', () => {
           useValue: {
             snapshot: {
               paramMap: {
-                get: (key: string) => 'test-id',
+                get: (_key: string) => 'test-id',
               },
             },
             params: of({ id: 'test-id' }),

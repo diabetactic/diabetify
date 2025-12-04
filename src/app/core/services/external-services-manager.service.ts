@@ -8,17 +8,8 @@
 
 import { Injectable, Injector, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {
-  BehaviorSubject,
-  Observable,
-  Subscription,
-  timer,
-  of,
-  combineLatest,
-  throwError,
-  firstValueFrom,
-} from 'rxjs';
-import { map, switchMap, catchError, timeout, retry, tap, filter } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subscription, timer, firstValueFrom } from 'rxjs';
+import { timeout, retry } from 'rxjs/operators';
 import { Network } from '@capacitor/network';
 
 import { environment } from '../../../environments/environment';

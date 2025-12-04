@@ -1,12 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
-import { TidepoolAuthService, AuthErrorCode } from './tidepool-auth.service';
+import { TidepoolAuthService } from './tidepool-auth.service';
 import { TokenStorageService } from './token-storage.service';
 import { CapacitorHttpService } from './capacitor-http.service';
 import { TidepoolAuth } from '../models/tidepool-auth.model';
 import { Browser } from '@capacitor/browser';
-import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 
 // Mock Capacitor modules

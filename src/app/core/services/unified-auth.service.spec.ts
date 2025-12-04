@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { of, BehaviorSubject, throwError } from 'rxjs';
-import { UnifiedAuthService, UnifiedAuthState, UnifiedUser } from './unified-auth.service';
+import { UnifiedAuthService } from './unified-auth.service';
 import { TidepoolAuthService, AuthState as TidepoolAuthState } from './tidepool-auth.service';
 import {
   LocalAuthService,
@@ -435,7 +435,7 @@ describe('UnifiedAuthService', () => {
       localAuthSpy.refreshAccessToken.and.returnValue(of(newLocalState));
       tidepoolAuthSpy.refreshAccessToken.and.returnValue(Promise.resolve('new-tidepool-token'));
 
-      service.refreshTokens().subscribe(state => {
+      service.refreshTokens().subscribe(() => {
         expect(localAuthSpy.refreshAccessToken).toHaveBeenCalled();
         expect(tidepoolAuthSpy.refreshAccessToken).toHaveBeenCalled();
         done();

@@ -199,7 +199,7 @@ export class DemoDataService {
   getDemoReadings(days: number = 30): Observable<LocalGlucoseReading[]> {
     const readings: LocalGlucoseReading[] = [];
     const now = new Date();
-    const readingsPerDay = 4; // Before breakfast, lunch, dinner, bedtime
+    // Typically 4 readings per day: Before breakfast, lunch, dinner, bedtime
 
     for (let day = 0; day < days; day++) {
       const date = new Date(now);
@@ -467,7 +467,7 @@ export class DemoDataService {
   /**
    * Generate appointments
    */
-  async generateAppointments(count: number = 5): Promise<Appointment[]> {
+  async generateAppointments(_count: number = 5): Promise<Appointment[]> {
     return this.getDemoAppointments().toPromise() as Promise<Appointment[]>;
   }
 
@@ -600,7 +600,6 @@ export class DemoDataService {
     };
 
     const today = new Date();
-    const todayDay = today.getDay();
 
     for (let i = 1; i <= 7; i++) {
       const checkDate = new Date(today);

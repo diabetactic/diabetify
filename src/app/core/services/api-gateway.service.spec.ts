@@ -4,19 +4,12 @@
  * Comprehensive test suite for ApiGatewayService with 95%+ coverage
  */
 
-import {
-  TestBed,
-  fakeAsync,
-  tick,
-  flush,
-  flushMicrotasks,
-  waitForAsync,
-} from '@angular/core/testing';
+import { TestBed, waitForAsync } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Observable, of, throwError, firstValueFrom } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
-import { ApiGatewayService, ApiEndpoint, ApiResponse } from './api-gateway.service';
+import { ApiGatewayService, ApiEndpoint } from './api-gateway.service';
 import { ExternalServicesManager, ExternalService } from './external-services-manager.service';
 import { LocalAuthService } from './local-auth.service';
 import { TidepoolAuthService } from './tidepool-auth.service';
@@ -146,7 +139,7 @@ describe('ApiGatewayService', () => {
 
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings');
+      const req = httpMock.expectOne('http://localhost:8000/v1/readings');
       expect(req.request.method).toBe('GET');
       expect(req.request.headers.get('Authorization')).toBe('Bearer mock-local-token');
 
@@ -169,7 +162,7 @@ describe('ApiGatewayService', () => {
 
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings?limit=10&offset=0');
+      const req = httpMock.expectOne('http://localhost:8000/v1/readings?limit=10&offset=0');
       expect(req.request.method).toBe('GET');
 
       req.flush({ readings: [] });
@@ -182,7 +175,7 @@ describe('ApiGatewayService', () => {
       service.request('glucoserver.statistics').subscribe();
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      const req1 = httpMock.expectOne('http://localhost:8000/api/v1/statistics');
+      const req1 = httpMock.expectOne('http://localhost:8000/v1/statistics');
       req1.flush(mockData);
 
       // Second request - should use cache
@@ -193,7 +186,7 @@ describe('ApiGatewayService', () => {
       await new Promise(resolve => setTimeout(resolve, 0));
 
       // No HTTP request should be made
-      httpMock.expectNone('http://localhost:8000/api/v1/statistics');
+      httpMock.expectNone('http://localhost:8000/v1/statistics');
 
       expect(cachedResponse.success).toBe(true);
       expect(cachedResponse.data).toEqual(mockData);
@@ -210,7 +203,7 @@ describe('ApiGatewayService', () => {
 
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings');
+      const req = httpMock.expectOne('http://localhost:8000/v1/readings');
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({
         value: 120,
@@ -232,7 +225,7 @@ describe('ApiGatewayService', () => {
 
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings');
+      const req = httpMock.expectOne('http://localhost:8000/v1/readings');
       expect(req.request.body.timestamp).toBe('2024-01-15T10:00:00Z');
 
       req.flush({ id: '123' });
@@ -253,9 +246,7 @@ describe('ApiGatewayService', () => {
 
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      const req = httpMock.expectOne(
-        'http://localhost:8000/api/appointments/appt123/share-glucose'
-      );
+      const req = httpMock.expectOne('http://localhost:8000/appointments/appt123/share-glucose');
       expect(req.request.body.days).toBe(30);
       expect(req.request.body.manualReadingsSummary).toBeDefined();
       expect(req.request.body.readings).toBeDefined();
@@ -278,9 +269,7 @@ describe('ApiGatewayService', () => {
 
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      const req = httpMock.expectOne(
-        'http://localhost:8000/api/appointments/appt123/share-glucose'
-      );
+      const req = httpMock.expectOne('http://localhost:8000/appointments/appt123/share-glucose');
       expect(req.request.body.readings).toBeUndefined();
 
       req.flush({ success: true });
@@ -297,7 +286,7 @@ describe('ApiGatewayService', () => {
 
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings/reading123');
+      const req = httpMock.expectOne('http://localhost:8000/v1/readings/reading123');
       expect(req.request.method).toBe('PUT');
       expect(req.request.body).toEqual(updateData);
 
@@ -311,7 +300,7 @@ describe('ApiGatewayService', () => {
 
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings/reading123');
+      const req = httpMock.expectOne('http://localhost:8000/v1/readings/reading123');
       expect(req.request.method).toBe('DELETE');
 
       req.flush({ success: true });
@@ -326,7 +315,7 @@ describe('ApiGatewayService', () => {
 
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      const req = httpMock.expectOne('http://localhost:8000/api/v1/readings');
+      const req = httpMock.expectOne('http://localhost:8000/v1/readings');
       expect(req.request.headers.get('Authorization')).toBe('Bearer test-token-123');
 
       req.flush([]);
@@ -350,7 +339,7 @@ describe('ApiGatewayService', () => {
 
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      const req = httpMock.expectOne('http://localhost:8000/api/doctors');
+      const req = httpMock.expectOne('http://localhost:8000/doctors');
       expect(req.request.headers.has('Authorization')).toBe(false);
 
       req.flush([]);
@@ -382,7 +371,7 @@ describe('ApiGatewayService', () => {
 
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      const req = httpMock.expectOne('http://10.0.2.2:8000/api/v1/readings');
+      const req = httpMock.expectOne('http://10.0.2.2:8000/v1/readings');
       expect(req.request.method).toBe('GET');
 
       req.flush([]);
@@ -435,7 +424,7 @@ describe('ApiGatewayService', () => {
       new HttpErrorResponse({
         status,
         statusText: 'Error',
-        url: 'http://localhost:8000/api/v1/readings',
+        url: 'http://localhost:8000/v1/readings',
         error: { message: 'Error' },
       });
 

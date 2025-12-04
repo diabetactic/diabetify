@@ -6,7 +6,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
 import { SecureStorage } from '@aparajita/capacitor-secure-storage';
 import {

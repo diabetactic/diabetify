@@ -1,6 +1,9 @@
 /**
  * Unit tests for appointment models
  * Tests interfaces, constants, and type definitions
+ *
+ * IMPORTANT: These tests verify alignment with backend enum values.
+ * Backend source: appointments/app/schemas/appointment_schema.py
  */
 
 import {
@@ -14,6 +17,11 @@ import {
   PUMP_TYPES,
   PumpType,
 } from './appointment.model';
+
+import {
+  BACKEND_APPOINTMENT_MOTIVES,
+  isValidBackendMotive,
+} from '../contracts/backend-enums.contract';
 
 describe('AppointmentModel', () => {
   describe('Appointment interface', () => {
@@ -30,7 +38,7 @@ describe('AppointmentModel', () => {
         sensitivity: 50,
         pump_type: 'medtronic',
         control_data: '2024-01-01',
-        motive: ['control_routine'],
+        motive: ['AJUSTE'],
       };
       expect(appointment.appointment_id).toBe(1);
       expect(appointment.user_id).toBe(123);
@@ -51,7 +59,7 @@ describe('AppointmentModel', () => {
         sensitivity: 50,
         pump_type: 'medtronic',
         control_data: '2024-01-01',
-        motive: ['control_routine', 'adjustment'],
+        motive: ['AJUSTE', 'HIPOGLUCEMIA'],
         another_treatment: 'metformin',
         other_motive: 'Custom motive text',
       };
@@ -72,7 +80,7 @@ describe('AppointmentModel', () => {
         sensitivity: 50,
         pump_type: 'medtronic',
         control_data: '2024-01-01',
-        motive: ['control_routine'],
+        motive: ['AJUSTE'],
         another_treatment: null,
         other_motive: null,
       };
@@ -93,12 +101,12 @@ describe('AppointmentModel', () => {
         sensitivity: 50,
         pump_type: 'medtronic',
         control_data: '2024-01-01',
-        motive: ['control_routine', 'follow_up', 'adjustment'],
+        motive: ['AJUSTE', 'HIPOGLUCEMIA', 'HIPERGLUCEMIA'],
       };
       expect(appointment.motive.length).toBe(3);
-      expect(appointment.motive).toContain('control_routine');
-      expect(appointment.motive).toContain('follow_up');
-      expect(appointment.motive).toContain('adjustment');
+      expect(appointment.motive).toContain('AJUSTE');
+      expect(appointment.motive).toContain('HIPOGLUCEMIA');
+      expect(appointment.motive).toContain('HIPERGLUCEMIA');
     });
 
     it('should accept various numeric values', () => {
@@ -114,7 +122,7 @@ describe('AppointmentModel', () => {
         sensitivity: 40,
         pump_type: 'none',
         control_data: '2024-06-15',
-        motive: ['consultation'],
+        motive: ['DUDAS'],
       };
       expect(appointment.dose).toBe(25.5);
       expect(appointment.ratio).toBe(2.0);
@@ -134,10 +142,10 @@ describe('AppointmentModel', () => {
         sensitivity: 50,
         pump_type: 'medtronic',
         control_data: '2024-01-01',
-        motive: ['control_routine'],
+        motive: ['AJUSTE'],
       };
       expect(request.glucose_objective).toBe(120);
-      expect(request.motive).toEqual(['control_routine']);
+      expect(request.motive).toEqual(['AJUSTE']);
     });
 
     it('should accept request with all optional fields', () => {
@@ -151,7 +159,7 @@ describe('AppointmentModel', () => {
         sensitivity: 50,
         pump_type: 'medtronic',
         control_data: '2024-01-01',
-        motive: ['control_routine'],
+        motive: ['AJUSTE'],
         other_motive: 'Custom reason',
         another_treatment: 'metformin',
       };
@@ -170,7 +178,7 @@ describe('AppointmentModel', () => {
         sensitivity: 50,
         pump_type: 'medtronic',
         control_data: '2024-01-01',
-        motive: ['control_routine'],
+        motive: ['AJUSTE'],
       };
       expect('appointment_id' in request).toBe(false);
       expect('user_id' in request).toBe(false);
@@ -200,7 +208,7 @@ describe('AppointmentModel', () => {
             sensitivity: 50,
             pump_type: 'medtronic',
             control_data: '2024-01-01',
-            motive: ['control_routine'],
+            motive: ['AJUSTE'],
           },
         ],
       };
@@ -223,7 +231,7 @@ describe('AppointmentModel', () => {
             sensitivity: 50,
             pump_type: 'medtronic',
             control_data: '2024-01-01',
-            motive: ['control_routine'],
+            motive: ['AJUSTE'],
           },
         ],
         total: 10,
@@ -247,7 +255,7 @@ describe('AppointmentModel', () => {
             sensitivity: 50,
             pump_type: 'medtronic',
             control_data: '2024-01-01',
-            motive: ['control_routine'],
+            motive: ['AJUSTE'],
           },
           {
             appointment_id: 2,
@@ -261,7 +269,7 @@ describe('AppointmentModel', () => {
             sensitivity: 45,
             pump_type: 'omnipod',
             control_data: '2024-02-01',
-            motive: ['follow_up', 'adjustment'],
+            motive: ['HIPOGLUCEMIA', 'CETOSIS'],
           },
         ],
         total: 2,
@@ -272,19 +280,29 @@ describe('AppointmentModel', () => {
   });
 
   describe('APPOINTMENT_MOTIVES constant', () => {
-    it('should have all expected motives', () => {
+    it('should have all expected motives (backend-aligned)', () => {
       expect(APPOINTMENT_MOTIVES).toEqual([
-        'control_routine',
-        'follow_up',
-        'emergency',
-        'consultation',
-        'adjustment',
-        'other',
+        'AJUSTE',
+        'HIPOGLUCEMIA',
+        'HIPERGLUCEMIA',
+        'CETOSIS',
+        'DUDAS',
+        'OTRO',
       ]);
     });
 
     it('should have 6 motives', () => {
       expect(APPOINTMENT_MOTIVES.length).toBe(6);
+    });
+
+    it('should match BACKEND_APPOINTMENT_MOTIVES exactly', () => {
+      expect([...APPOINTMENT_MOTIVES]).toEqual([...BACKEND_APPOINTMENT_MOTIVES]);
+    });
+
+    it('should all be valid backend motives', () => {
+      APPOINTMENT_MOTIVES.forEach(motive => {
+        expect(isValidBackendMotive(motive)).toBe(true);
+      });
     });
 
     it('should be readonly array', () => {
@@ -298,8 +316,23 @@ describe('AppointmentModel', () => {
   });
 
   describe('AppointmentMotive type', () => {
-    it('should accept all defined motives', () => {
+    it('should accept all backend-aligned motives', () => {
       const motives: AppointmentMotive[] = [
+        'AJUSTE',
+        'HIPOGLUCEMIA',
+        'HIPERGLUCEMIA',
+        'CETOSIS',
+        'DUDAS',
+        'OTRO',
+      ];
+      motives.forEach(motive => {
+        expect(APPOINTMENT_MOTIVES).toContain(motive);
+        expect(isValidBackendMotive(motive)).toBe(true);
+      });
+    });
+
+    it('should NOT accept old invalid English values', () => {
+      const invalidOldValues = [
         'control_routine',
         'follow_up',
         'emergency',
@@ -307,8 +340,9 @@ describe('AppointmentModel', () => {
         'adjustment',
         'other',
       ];
-      motives.forEach(motive => {
-        expect(APPOINTMENT_MOTIVES).toContain(motive);
+      invalidOldValues.forEach(value => {
+        expect(isValidBackendMotive(value)).toBe(false);
+        expect(APPOINTMENT_MOTIVES).not.toContain(value);
       });
     });
   });
@@ -381,7 +415,7 @@ describe('AppointmentModel', () => {
         sensitivity: 50,
         pump_type: 'medtronic',
         control_data: '2024-01-01',
-        motive: ['control_routine'],
+        motive: ['AJUSTE'],
       };
 
       const appointment: Appointment = {
@@ -407,7 +441,7 @@ describe('AppointmentModel', () => {
         sensitivity: 45,
         pump_type: 'none',
         control_data: '2024-03-01',
-        motive: ['consultation', 'adjustment'],
+        motive: ['DUDAS', 'AJUSTE'],
         another_treatment: 'metformin',
       };
 

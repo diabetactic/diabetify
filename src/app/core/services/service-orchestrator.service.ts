@@ -7,34 +7,11 @@
  */
 
 import { Injectable } from '@angular/core';
-import {
-  BehaviorSubject,
-  Observable,
-  from,
-  of,
-  forkJoin,
-  combineLatest,
-  firstValueFrom,
-} from 'rxjs';
-import {
-  switchMap,
-  catchError,
-  map,
-  timeout,
-  retry,
-  tap,
-  concatMap,
-  mergeMap,
-  take,
-} from 'rxjs/operators';
+import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
+import { timeout, take } from 'rxjs/operators';
 
-import {
-  ExternalServicesManager,
-  ExternalService,
-  HealthStatus,
-} from './external-services-manager.service';
+import { ExternalServicesManager, ExternalService } from './external-services-manager.service';
 import { UnifiedAuthService } from './unified-auth.service';
-import { TidepoolSyncService } from './tidepool-sync.service';
 import { GlucoserverService, GlucoseReading as GlucoserverReading } from './glucoserver.service';
 import { AppointmentService } from './appointment.service';
 import { ReadingsService } from './readings.service';
@@ -114,7 +91,6 @@ export class ServiceOrchestrator {
   constructor(
     private externalServices: ExternalServicesManager,
     private unifiedAuth: UnifiedAuthService,
-    private tidepoolSync: TidepoolSyncService,
     private glucoserver: GlucoserverService,
     private appointments: AppointmentService,
     private readings: ReadingsService
@@ -597,7 +573,9 @@ export class ServiceOrchestrator {
   }
 
   private async syncTidepoolData(): Promise<unknown> {
-    return await this.tidepoolSync.performManualSync();
+    // Tidepool is auth-only now, no data sync needed
+    // Backend sync is handled by syncLocalServerData
+    return Promise.resolve({ skipped: true, reason: 'auth-only' });
   }
 
   private async rollbackTidepoolSync(): Promise<void> {
@@ -658,7 +636,8 @@ export class ServiceOrchestrator {
   }
 
   private async performInitialSync(): Promise<unknown> {
-    return await this.tidepoolSync.performManualSync();
+    // Tidepool is auth-only now, use backend sync
+    return await this.readings.performFullSync();
   }
 
   private async loadUserPreferences(): Promise<unknown> {
@@ -669,10 +648,7 @@ export class ServiceOrchestrator {
     return await firstValueFrom(this.appointments.getAppointment(parseInt(appointmentId, 10)));
   }
 
-  private async prepareGlucoseDataForSharing(appointmentId: string): Promise<unknown> {
-    const _appointment = await firstValueFrom(
-      this.appointments.getAppointment(parseInt(appointmentId, 10))
-    );
+  private async prepareGlucoseDataForSharing(_appointmentId: string): Promise<unknown> {
     const dateRange = {
       start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
       end: new Date(),
@@ -700,7 +676,8 @@ export class ServiceOrchestrator {
   }
 
   private async syncLatestData(): Promise<unknown> {
-    return await this.tidepoolSync.performManualSync();
+    // Tidepool is auth-only now, use backend sync
+    return await this.readings.performFullSync();
   }
 
   private async fetchReadingsForExport(dateRange?: { start: Date; end: Date }): Promise<unknown> {
@@ -710,7 +687,7 @@ export class ServiceOrchestrator {
     return await this.readings.getAllReadings();
   }
 
-  private async calculateExportStatistics(dateRange?: {
+  private async calculateExportStatistics(_dateRange?: {
     start: Date;
     end: Date;
   }): Promise<unknown> {
