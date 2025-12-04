@@ -1,8 +1,8 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { HTTP_INTERCEPTORS, HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, throwError, BehaviorSubject, timer } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
 import { AuthInterceptor } from './auth.interceptor';
@@ -16,7 +16,6 @@ describe('AuthInterceptor', () => {
   let interceptor: AuthInterceptor;
 
   const testUrl = '/api/test-endpoint';
-  const mockAccessToken = 'mock-access-token-12345';
   const mockRefreshToken = 'mock-refresh-token-67890';
 
   beforeEach(() => {
@@ -35,7 +34,7 @@ describe('AuthInterceptor', () => {
         { provide: Router, useValue: routerSpy },
         {
           provide: HTTP_INTERCEPTORS,
-          useClass: AuthInterceptor,
+          useExisting: AuthInterceptor,
           multi: true,
         },
       ],
@@ -49,10 +48,16 @@ describe('AuthInterceptor', () => {
 
     // Default logout behavior
     authService.logout.and.returnValue(Promise.resolve());
+
+    // Reset interceptor state to prevent pollution
+    (interceptor as any).isRefreshing = false;
+    (interceptor as any).refreshTokenSubject = new BehaviorSubject<string | null>(null);
   });
 
   afterEach(() => {
     httpMock.verify();
+    // Reset TestBed to force new interceptor instance
+    TestBed.resetTestingModule();
   });
 
   describe('Basic Request Handling', () => {
@@ -299,107 +304,131 @@ describe('AuthInterceptor', () => {
     });
   });
 
-  // Skip 5xx retry tests - they use setTimeout with real delays causing flaky results
-  xdescribe('5xx Server Error Retry with Exponential Backoff', () => {
-    it('should retry on 500 Internal Server Error', done => {
-      const mockResponse = { data: 'success after retry' };
+  // No retry for 4xx errors - can use fakeAsync since no timer is created
+  describe('No Retry on Client Errors', () => {
+    it('should not retry on 4xx client errors', fakeAsync(() => {
+      let capturedError: HttpErrorResponse | null = null;
 
-      httpClient.get(testUrl).subscribe(response => {
-        expect(response).toEqual(mockResponse);
-        done();
+      httpClient.get(testUrl).subscribe({
+        next: () => fail('should have failed with 404'),
+        error: (error: HttpErrorResponse) => {
+          capturedError = error;
+        },
+      });
+
+      const req = httpMock.expectOne(testUrl);
+      req.flush(null, { status: 404, statusText: 'Not Found' });
+      flushMicrotasks();
+
+      expect(capturedError).not.toBeNull();
+      expect(capturedError!.status).toBe(404);
+    }));
+  });
+
+  describe('5xx Server Error Retry with Exponential Backoff', () => {
+    // Spy on calculateBackoffDelay to return timer(0) for instant retries in tests
+    beforeEach(() => {
+      spyOn(interceptor as any, 'calculateBackoffDelay').and.returnValue(timer(0));
+    });
+
+    it('should retry on 500 Internal Server Error', fakeAsync(() => {
+      const mockResponse = { data: 'success after retry' };
+      let response: any = null;
+
+      httpClient.get(testUrl).subscribe(res => {
+        response = res;
       });
 
       // First attempt - 500 error
       const req1 = httpMock.expectOne(testUrl);
       req1.flush(null, { status: 500, statusText: 'Internal Server Error' });
 
-      // After backoff delay, retry succeeds
-      setTimeout(() => {
-        const req2 = httpMock.expectOne(testUrl);
-        req2.flush(mockResponse);
-      }, 1500); // Wait for backoff
-    }, 5000);
+      // Advance timer(0) to trigger retry
+      tick(0);
 
-    it('should retry on 502 Bad Gateway', done => {
+      // Retry succeeds
+      const req2 = httpMock.expectOne(testUrl);
+      req2.flush(mockResponse);
+
+      tick(0);
+      expect(response).toEqual(mockResponse);
+    }));
+
+    it('should retry on 502 Bad Gateway', fakeAsync(() => {
+      let success = false;
+
       httpClient.get(testUrl).subscribe({
-        next: () => done(),
+        next: () => {
+          success = true;
+        },
       });
 
       const req1 = httpMock.expectOne(testUrl);
       req1.flush(null, { status: 502, statusText: 'Bad Gateway' });
 
-      setTimeout(() => {
-        const req2 = httpMock.expectOne(testUrl);
-        req2.flush({ data: 'success' });
-      }, 1500);
-    }, 5000);
+      tick(0);
 
-    it('should retry on 503 Service Unavailable', done => {
+      const req2 = httpMock.expectOne(testUrl);
+      req2.flush({ data: 'success' });
+
+      tick(0);
+      expect(success).toBe(true);
+    }));
+
+    it('should retry on 503 Service Unavailable', fakeAsync(() => {
+      let success = false;
+
       httpClient.get(testUrl).subscribe({
-        next: () => done(),
+        next: () => {
+          success = true;
+        },
       });
 
       const req1 = httpMock.expectOne(testUrl);
       req1.flush(null, { status: 503, statusText: 'Service Unavailable' });
 
-      setTimeout(() => {
-        const req2 = httpMock.expectOne(testUrl);
-        req2.flush({ data: 'success' });
-      }, 1500);
-    }, 5000);
+      tick(0);
 
-    // Skip this test - timing-dependent retry logic is flaky with real timers.
-    // The retry behavior is already covered by the other retry tests.
-    xit('should give up after max retries (3 attempts)', done => {
+      const req2 = httpMock.expectOne(testUrl);
+      req2.flush({ data: 'success' });
+
+      tick(0);
+      expect(success).toBe(true);
+    }));
+
+    it('should give up after max retries (3 attempts)', fakeAsync(() => {
+      let capturedError: HttpErrorResponse | null = null;
+
       httpClient.get(testUrl).subscribe({
         next: () => fail('should have failed after max retries'),
         error: (error: HttpErrorResponse) => {
-          expect(error.status).toBe(500);
-          done();
+          capturedError = error;
         },
       });
 
       // Initial attempt
       const req1 = httpMock.expectOne(testUrl);
       req1.flush(null, { status: 500, statusText: 'Internal Server Error' });
+      tick(0);
 
       // Retry 1
-      setTimeout(() => {
-        const req2 = httpMock.expectOne(testUrl);
-        req2.flush(null, { status: 500, statusText: 'Internal Server Error' });
-      }, 1500);
+      const req2 = httpMock.expectOne(testUrl);
+      req2.flush(null, { status: 500, statusText: 'Internal Server Error' });
+      tick(0);
 
       // Retry 2
-      setTimeout(() => {
-        const req3 = httpMock.expectOne(testUrl);
-        req3.flush(null, { status: 500, statusText: 'Internal Server Error' });
-      }, 3500);
+      const req3 = httpMock.expectOne(testUrl);
+      req3.flush(null, { status: 500, statusText: 'Internal Server Error' });
+      tick(0);
 
-      // Retry 3
-      setTimeout(() => {
-        const req4 = httpMock.expectOne(testUrl);
-        req4.flush(null, { status: 500, statusText: 'Internal Server Error' });
-      }, 7500);
-    }, 10000);
+      // Retry 3 (final - maxRetries=3 means 3 retries after the first attempt)
+      const req4 = httpMock.expectOne(testUrl);
+      req4.flush(null, { status: 500, statusText: 'Internal Server Error' });
+      tick(0);
 
-    it('should not retry on 4xx client errors', done => {
-      httpClient.get(testUrl).subscribe({
-        next: () => fail('should have failed with 404'),
-        error: (error: HttpErrorResponse) => {
-          expect(error.status).toBe(404);
-          done();
-        },
-      });
-
-      const req = httpMock.expectOne(testUrl);
-      req.flush(null, { status: 404, statusText: 'Not Found' });
-
-      // Should not retry - verify no additional requests
-      setTimeout(() => {
-        httpMock.expectNone(testUrl);
-        done();
-      }, 2000);
-    }, 5000);
+      expect(capturedError).not.toBeNull();
+      expect(capturedError!.status).toBe(500);
+    }));
   });
 
   describe('POST/PUT/DELETE Requests', () => {
