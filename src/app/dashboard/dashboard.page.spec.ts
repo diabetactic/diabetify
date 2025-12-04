@@ -5,12 +5,9 @@ import { of, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DashboardPage } from './dashboard.page';
 import { ReadingsService } from '../core/services/readings.service';
-import { TidepoolSyncService } from '../core/services/tidepool-sync.service';
 import { AppointmentService } from '../core/services/appointment.service';
 import { Appointment } from '../core/models/appointment.model';
 import { LocalGlucoseReading, GlucoseStatistics } from '../core/models/glucose-reading.model';
-import { SyncStatus } from '../core/models/tidepool-sync.model';
-import { SharedModule } from '../shared/shared.module';
 import { TranslateModule } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TranslationService, Language, LanguageConfig } from '../core/services/translation.service';
@@ -23,7 +20,6 @@ import { StatCardComponent } from '../shared/components/stat-card/stat-card.comp
 import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
 import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
-import { LanguageSwitcherComponentModule } from '../shared/components/language-switcher/language-switcher.module';
 
 class LoggerServiceStub {
   info(_context: string, _message: string, _data?: any): void {}
@@ -220,14 +216,12 @@ describe('DashboardPage', () => {
   let component: DashboardPage;
   let fixture: ComponentFixture<DashboardPage>;
   let readingsServiceSpy: jest.Mocked<ReadingsService>;
-  let syncServiceSpy: jest.Mocked<TidepoolSyncService>;
   let appointmentServiceSpy: jest.Mocked<AppointmentService>;
   let toastControllerSpy: jest.Mocked<ToastController>;
   let translationServiceStub: TranslationServiceStub;
   let profileServiceStub: ProfileServiceStub;
 
   let mockReadingsSubject: BehaviorSubject<LocalGlucoseReading[]>;
-  let mockSyncStatusSubject: BehaviorSubject<SyncStatus>;
 
   const mockStatistics: GlucoseStatistics = {
     average: 120,
@@ -278,15 +272,6 @@ describe('DashboardPage', () => {
     },
   ];
 
-  const mockSyncStatus: SyncStatus = {
-    isRunning: false,
-    lastSyncTime: new Date().toISOString(),
-    itemsSynced: 10,
-    itemsFailed: 0,
-    errors: [],
-    progress: 0,
-  };
-
   const mockAppointment: Appointment = {
     appointment_id: 1,
     user_id: 1000,
@@ -307,7 +292,6 @@ describe('DashboardPage', () => {
   beforeEach(async () => {
     // Create spies
     mockReadingsSubject = new BehaviorSubject<LocalGlucoseReading[]>(mockRecentReadings);
-    mockSyncStatusSubject = new BehaviorSubject<SyncStatus>(mockSyncStatus);
 
     readingsServiceSpy = {
       getStatistics: jest.fn(),
@@ -315,11 +299,6 @@ describe('DashboardPage', () => {
       performFullSync: jest.fn(),
       fetchFromBackend: jest.fn(),
       readings$: mockReadingsSubject.asObservable(),
-    } as any;
-
-    syncServiceSpy = {
-      performManualSync: jest.fn(),
-      syncStatus$: mockSyncStatusSubject.asObservable(),
     } as any;
 
     appointmentServiceSpy = {
@@ -342,7 +321,6 @@ describe('DashboardPage', () => {
     });
     readingsServiceSpy.performFullSync.mockResolvedValue({ pushed: 0, fetched: 0, failed: 0 });
     readingsServiceSpy.fetchFromBackend.mockResolvedValue({ fetched: 0, merged: 0 });
-    syncServiceSpy.performManualSync.mockResolvedValue(mockSyncStatus);
     appointmentServiceSpy.getAppointments.mockReturnValue(of([mockAppointment]));
 
     const mockToast = {
@@ -356,7 +334,6 @@ describe('DashboardPage', () => {
     await TestBed.configureTestingModule({
       imports: [
         IonicModule.forRoot(),
-        SharedModule,
         TranslateModule.forRoot(),
         DashboardPage,
         getLucideIconsForTesting(),
@@ -364,7 +341,6 @@ describe('DashboardPage', () => {
       providers: [
         provideRouter([]),
         { provide: ReadingsService, useValue: readingsServiceSpy },
-        { provide: TidepoolSyncService, useValue: syncServiceSpy },
         { provide: AppointmentService, useValue: appointmentServiceSpy },
         { provide: ToastController, useValue: toastControllerSpy },
         { provide: TranslationService, useValue: translationServiceStub },

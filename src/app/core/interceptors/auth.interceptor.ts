@@ -10,7 +10,7 @@
  * This ensures robust authentication flow across all API requests.
  */
 
-import { Injectable, Inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   HttpRequest,
   HttpHandler,
@@ -19,9 +19,10 @@ import {
   HttpErrorResponse,
 } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError, timer } from 'rxjs';
-import { catchError, filter, take, switchMap, retryWhen, mergeMap, map } from 'rxjs/operators';
+import { catchError, filter, take, switchMap, retryWhen, mergeMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { LocalAuthService } from '../services/local-auth.service';
+import { ROUTES } from '../constants';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -102,9 +103,8 @@ export class AuthInterceptor implements HttpInterceptor {
           this.isRefreshing = false;
           this.refreshTokenSubject.next(null);
 
-          // Refresh failed, logout user
           this.authService.logout().then(() => {
-            this.router.navigate(['/welcome']);
+            this.router.navigate([ROUTES.WELCOME]);
           });
 
           return throwError(() => err);

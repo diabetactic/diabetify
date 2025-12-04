@@ -4,14 +4,87 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Diabetactic is an Ionic/Angular mobile app for diabetes glucose management with Tidepool integration. Built with Angular 20.3.14, Ionic 8.7.11, Capacitor 6.2.1, and Tailwind CSS v3.4.13 + DaisyUI 5.5.5.
+Diabetactic is an Ionic/Angular mobile app for diabetes glucose management. Built with Angular 20.3.14, Ionic 8.7.11, Capacitor 6.2.1, and Tailwind CSS v3.4.13 + DaisyUI 5.5.5.
+
+**Architecture Note**: Tidepool integration is "auth-only" - used only for user authentication/ID, not for glucose data sync. Glucose data comes from Diabetactic backend.
+
+---
+
+## IMPORTANT: Key Rules
+
+**YOU MUST follow these rules:**
+
+1. **All API requests go through `ApiGatewayService`** - Never make direct HTTP calls
+2. **Use `CUSTOM_ELEMENTS_SCHEMA`** in all standalone components for Ionic web components
+3. **Translations required in both `en.json` AND `es.json`** for any user-facing text
+4. **Prefer editing existing files** over creating new ones
+5. **Never save files to root folder** - use appropriate subdirectories
+6. **Run `npm test` before committing** - ensure tests pass
+7. **Offline-first**: Data stored in IndexedDB (Dexie), synced when online
+8. **Husky git hooks** are configured with lint-staged for pre-commit quality checks
+
+---
+
+## Available AI Tools & Agents
+
+### MCP Servers Available
+
+The following MCP servers are configured and can be used for enhanced capabilities:
+
+| Server       | Purpose                           | Key Tools                                                          |
+| ------------ | --------------------------------- | ------------------------------------------------------------------ |
+| **zen**      | Multi-model AI collaboration      | `chat`, `thinkdeep`, `codereview`, `debug`, `analyze`, `consensus` |
+| **context7** | Library documentation lookup      | `resolve-library-id`, `get-library-docs`                           |
+| **tavily**   | Web search and content extraction | `tavily-search`, `tavily-extract`, `tavily-crawl`                  |
+| **circleci** | CI/CD pipeline management         | `get_build_failure_logs`, `run_pipeline`, `config_helper`          |
+
+**Zen MCP Models Available:**
+
+- OpenAI: `gpt-5.1`, `gpt-5.1-codex`, `gpt-5-pro`, `o3`, `o3-mini`, `o4-mini`
+- Google: `gemini-2.5-pro`, `gemini-3-pro-preview`, `gemini-2.5-flash`
+- Use aliases like `pro`, `flash`, `codex`, `gpt5` for convenience
+
+### Subagents (Task Tool)
+
+Use these specialized agents for complex tasks:
+
+| Agent                | When to Use                                                            |
+| -------------------- | ---------------------------------------------------------------------- |
+| `Explore`            | Codebase exploration, finding files, answering architectural questions |
+| `Plan`               | Designing implementation plans, architectural decisions                |
+| `general-purpose`    | Complex multi-step research tasks                                      |
+| `debugger`           | Errors, test failures, unexpected behavior                             |
+| `code-reviewer`      | Review implementation against plan and standards                       |
+| `test-automator`     | Test automation and quality engineering                                |
+| `frontend-developer` | React/Angular components, UI implementation                            |
+| `mobile-developer`   | React Native, Flutter, native mobile apps                              |
+
+### Skills Available
+
+| Skill                           | When to Use                               |
+| ------------------------------- | ----------------------------------------- |
+| `document-skills:xlsx`          | Working with spreadsheets                 |
+| `document-skills:pdf`           | PDF manipulation                          |
+| `example-skills:webapp-testing` | Testing web apps with Playwright          |
+| `python-development:*`          | Python testing, packaging, async patterns |
+| `superpowers:brainstorming`     | Before coding - refine ideas into designs |
+| `superpowers:defense-in-depth`  | Validation at multiple system layers      |
+
+### Slash Commands
+
+- `/superpowers:brainstorm` - Interactive design refinement
+- `/superpowers:execute-plan` - Execute plan with review checkpoints
+- `/superpowers:write-plan` - Create detailed implementation plan
+- `/episodic-memory:search-conversations` - Search previous conversations
+
+---
 
 ## Essential Commands
 
 ```bash
 # Development (three backend modes controlled by scripts/start-with-env.mjs)
 npm start                     # Default - auto-detects ENV variable
-npm run start:mock            # In-memory mock data, no backend needed
+npm run start:mock            # In-memory mock data, no backend needed (RECOMMENDED)
 npm run start:local           # Local Docker backend (localhost:8000)
 npm run start:cloud           # Heroku production API (cloud)
 
@@ -49,7 +122,7 @@ npm run deploy:device         # Build and force reinstall APK
 npm run deploy:apk            # Build and show APK path
 
 # Testing (Jest + Playwright)
-npm test                      # Run all unit tests (Jest)
+npm test                      # Run all unit tests (Jest) - 1012 passed, 0 skipped
 npm run test:unit             # Run unit tests (same as test)
 npm run test:watch            # Watch mode for unit tests
 npm run test:coverage         # Unit tests with coverage report
@@ -77,6 +150,8 @@ npm run cap:sync              # Sync Capacitor without building
 npm run cap:update            # Update Capacitor plugins
 ```
 
+---
+
 ## Technology Stack
 
 ### Core Framework
@@ -103,6 +178,7 @@ npm run cap:update            # Update Capacitor plugins
 ### Testing & Quality
 
 - **Jest**: 29.7.0 (unit tests)
+- **jest-junit**: For CI test results (visible in CircleCI UI)
 - **Playwright**: 1.48.0 (E2E tests)
 - **@axe-core/playwright**: 4.11.0 (accessibility)
 - **ESLint**: 9.0.0 + TypeScript ESLint 8.0.0
@@ -120,6 +196,8 @@ npm run cap:update            # Update Capacitor plugins
 - **lint-staged**: 16.2.3 (pre-commit linting)
 - **@faker-js/faker**: 10.1.0 (test data)
 
+---
+
 ## Architecture
 
 ### Backend Modes (src/environments/environment.ts)
@@ -130,30 +208,58 @@ The app supports three backend modes controlled by `DEV_BACKEND_MODE`:
 - `local` - Local Docker backend at localhost:8000
 - `cloud` - Heroku API Gateway (production)
 
+Control via ENV variable:
+
+```bash
+ENV=mock npm start      # Mock backend (offline) - RECOMMENDED for development
+ENV=local npm start     # Local Docker (localhost:8000)
+ENV=cloud npm start     # Heroku production (default)
+```
+
 ### Core Services (src/app/core/services/)
 
-Key services to understand:
+| Service                       | Purpose                                                      | Test Coverage |
+| ----------------------------- | ------------------------------------------------------------ | ------------- |
+| `api-gateway.service.ts`      | All backend HTTP calls (endpoint registry pattern)           | ✅            |
+| `local-auth.service.ts`       | Local authentication and user management                     | ✅ 22 tests   |
+| `capacitor-http.service.ts`   | Hybrid HTTP (Angular on web, CapacitorHttp on native)        | ✅ 33 tests   |
+| `profile.service.ts`          | User profile with Capacitor Preferences + SecureStorage      | ✅            |
+| `database.service.ts`         | Dexie/IndexedDB for offline storage (readings, appointments) | ✅            |
+| `notification.service.ts`     | Push notifications via @capacitor/local-notifications        | ✅            |
+| `readings.service.ts`         | Glucose readings CRUD with offline-first sync                | ✅            |
+| `appointment.service.ts`      | Medical appointments with auto-reminders                     | ✅            |
+| `tidepool-auth.service.ts`    | Tidepool OAuth integration (auth-only, not data sync)        | ✅            |
+| `tips.service.ts`             | Diabetes management tips and recommendations                 | ✅            |
+| `bolus-calculator.service.ts` | Insulin dosage calculation helper                            | ✅            |
 
-- `api-gateway.service.ts` - All backend HTTP calls route through here (endpoint registry pattern)
-- `local-auth.service.ts` - Local authentication and user management
-- `profile.service.ts` - User profile with Capacitor Preferences + SecureStorage
-- `database.service.ts` - Dexie/IndexedDB for offline storage (readings, appointments)
-- `notification.service.ts` - Push notifications via @capacitor/local-notifications
-- `readings.service.ts` - Glucose readings CRUD with offline-first sync
-- `appointment.service.ts` - Medical appointments with auto-reminders
-- `tidepool-auth.service.ts` - Tidepool OAuth integration
-- `tips.service.ts` - Diabetes management tips and recommendations
-- `bolus-calculator.service.ts` - Insulin dosage calculation helper
+### CapacitorHttpService (Hybrid HTTP)
+
+This service provides a critical abstraction for cross-platform HTTP:
+
+- **Web**: Uses Angular HttpClient (works with dev proxy)
+- **Native**: Uses CapacitorHttp (bypasses CORS, direct API access)
+
+```typescript
+// The service auto-detects platform
+this.capacitorHttp.get<T>(url, { headers, params });
+this.capacitorHttp.post<T>(url, data, { headers });
+
+// For raw requests with full response (headers, status)
+await this.capacitorHttp.request({ method, url, headers, data });
+```
 
 ### API Gateway Pattern
 
 All backend calls route through `ApiGatewayService` with endpoint registry pattern:
 
 ```typescript
-// Request using endpoint key (not raw URL)
+// CORRECT: Request using endpoint key (not raw URL)
 this.apiGateway.request('auth.login', { body: credentials });
 this.apiGateway.request('readings.list', { params: { userId } });
 this.apiGateway.request('appointments.create', { body: appointmentData });
+
+// WRONG: Direct HTTP calls
+this.http.get('/api/readings'); // DON'T DO THIS
 ```
 
 **Key features:**
@@ -184,16 +290,23 @@ All pages use Angular standalone components with Ionic standalone imports:
   standalone: true,
   imports: [
     CommonModule,
-    IonHeader, IonToolbar, IonTitle, // etc - import each Ionic component
+    IonHeader, IonToolbar, IonTitle, // Import each Ionic component individually
     TranslateModule,
   ],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA], // Required for Ionic web components
+  schemas: [CUSTOM_ELEMENTS_SCHEMA], // REQUIRED for Ionic web components
 })
 ```
 
-### Testing Setup
+---
 
-#### Unit Tests (Jest 29.7.0)
+## Testing
+
+### Test Suite Status (as of 2025-12-04)
+
+- **1012 tests passed**, 0 skipped, 0 failed
+- **45 test suites**
+
+### Unit Tests (Jest 29.7.0)
 
 - **Framework**: Jest with Jasmine compatibility layer via `jest-preset-angular`
 - **Configuration**: `setup-jest.ts` with comprehensive Capacitor mocks
@@ -202,33 +315,205 @@ All pages use Angular standalone components with Ionic standalone imports:
 - **Test location**: Spec files alongside source (`*.spec.ts`)
 - **Coverage**: Run `npm run test:coverage` for HTML reports in `coverage/`
 - **Fake IndexedDB**: `fake-indexeddb` package for Dexie testing
+- **CI Results**: jest-junit configured for CircleCI test visibility
 
-#### E2E Tests (Playwright 1.48.0)
+### E2E Tests (Playwright 1.48.0)
 
-- **Location**: `playwright/tests/`
-- **Features**: Visual regression, accessibility audits with @axe-core/playwright
-- **Reporters**: HTML, JSON, and axe-html-reporter for a11y issues
-- **Browsers**: Chromium, Firefox, WebKit (configured in playwright.config.ts)
-- **Screenshots**: Auto-captured on failure in `playwright/screenshots/`
-- **Accessibility**: Dedicated `test:a11y` command for WCAG compliance checks
+**Location**: `playwright/tests/`
 
-#### Test Commands Summary
+| Test File                          | Purpose                |
+| ---------------------------------- | ---------------------- |
+| `accessibility-audit.spec.ts`      | WCAG compliance checks |
+| `heroku-integration.spec.ts`       | Backend integration    |
+| `heroku-appointments-flow.spec.ts` | Appointments E2E       |
+| `heroku-readings-crud.spec.ts`     | Readings CRUD          |
+| `heroku-profile-sync.spec.ts`      | Profile sync           |
+| `error-handling.spec.ts`           | Error scenarios        |
+| `visual-regression.spec.ts`        | Visual diff testing    |
 
-- `npm test` - Unit tests only
-- `npm run test:watch` - Watch mode for TDD
-- `npm run test:coverage` - Unit tests with coverage
-- `npm run test:integration` - Integration tests (separate config)
-- `npm run test:e2e` - All E2E tests headless
-- `npm run test:a11y` - Accessibility audit suite
-- `npm run test:mobile` - Build mobile + run E2E
+**Features**: Visual regression, accessibility audits with @axe-core/playwright
+**Reporters**: HTML, JSON, and axe-html-reporter for a11y issues
+**Browsers**: Chromium only (WebKit removed)
+**Screenshots**: Auto-captured on failure in `playwright/artifacts/`
 
-### i18n
+### Maestro Integration Tests
+
+Mobile E2E tests using Maestro framework against real Heroku backend.
+
+**Location**: `maestro/`
+
+```
+maestro/
+├── config.yaml              # Global config (appId: io.diabetactic.app)
+├── flows/                   # Reusable flows
+│   ├── login.yaml           # Login with clearState
+│   └── navigate-appointments.yaml
+├── scripts/
+│   └── backoffice-api.js    # Admin operations (accept/deny/clear)
+└── tests/
+    ├── readings/
+    │   ├── 01-list-loads.yaml
+    │   └── 02-add-reading.yaml
+    ├── appointments/
+    │   ├── 01-request-appointment.yaml   # NONE → PENDING
+    │   ├── 02-accept-appointment.yaml    # PENDING → ACCEPTED (via API)
+    │   ├── 03-create-appointment.yaml    # ACCEPTED → CREATED
+    │   ├── 04-deny-appointment.yaml      # PENDING → DENIED (via API)
+    │   └── 05-full-flow.yaml             # Complete E2E flow
+    ├── profile/
+    │   └── 01-edit-profile.yaml
+    ├── settings/
+    │   ├── 01-theme-persistence.yaml
+    │   └── 02-language-persistence.yaml
+    ├── errors/
+    │   ├── 01-network-error.yaml
+    │   ├── 02-invalid-login.yaml
+    │   └── 03-form-validation.yaml
+    └── resolution/
+        └── 01-verify-resolution.yaml
+```
+
+**Running locally**:
+
+```bash
+# Install Maestro CLI
+curl -Ls "https://get.maestro.mobile.dev" | bash
+
+# Run all tests (requires running emulator + installed APK)
+cd maestro && maestro test tests/
+
+# Run specific test
+maestro test tests/appointments/05-full-flow.yaml
+
+# Run with env vars
+maestro test tests/ \
+  --env TEST_USER_ID=1000 \
+  --env TEST_USER_PASSWORD=tuvieja \
+  --env BACKOFFICE_API_URL=https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com \
+  --env BACKOFFICE_ADMIN_USERNAME=admin \
+  --env BACKOFFICE_ADMIN_PASSWORD=admin
+```
+
+**Key patterns**:
+
+- **Bilingual regex**: `"Citas|Appointments"` matches Spanish or English
+- **Shadow DOM bypass**: tap label → inputText → hideKeyboard
+- **Hydration waits**: `extendedWaitUntil` with 10-15s timeouts
+- **Determinism**: `clearState` at test start, backoffice API for queue clearing
+
+**Appointment State Machine**:
+
+```
+NONE → PENDING → ACCEPTED → CREATED
+              ↘ DENIED
+```
+
+**Backoffice API helper** (`scripts/backoffice-api.js`):
+
+```bash
+# Actions: accept, deny, clear
+ACTION=accept USER_ID=1000 node scripts/backoffice-api.js
+ACTION=clear node scripts/backoffice-api.js
+```
+
+### Skipped Tests (intentional)
+
+| File                           | Count | Reason                                                           |
+| ------------------------------ | ----- | ---------------------------------------------------------------- |
+| `tidepool.interceptor.spec.ts` | 7     | LEGACY - Will be removed with auth-only refactor                 |
+| `auth.interceptor.spec.ts`     | 4     | 5xx retry uses timer() with jitter (incompatible with fakeAsync) |
+
+---
+
+## DO NOT TOUCH
+
+These files are stable and should not be modified without good reason:
+
+- `src/app/core/services/database.service.spec.ts` - Complex Dexie setup with fresh DB per test
+- `src/app/core/services/profile.service.spec.ts` - State pollution fixes carefully applied
+- `setup-jest.ts` - Carefully configured Capacitor mocks for all plugins
+
+---
+
+## Common Gotchas
+
+### 1. Ionic Component Imports
+
+```typescript
+// WRONG - importing IonicModule (legacy)
+import { IonicModule } from '@ionic/angular';
+
+// CORRECT - import each component individually (standalone)
+import { IonHeader, IonToolbar, IonTitle } from '@ionic/angular/standalone';
+```
+
+### 2. BehaviorSubject State Pollution
+
+When testing services with BehaviorSubject, always reset state in `beforeEach`:
+
+```typescript
+beforeEach(() => {
+  (service as any).stateSubject.next(initialState);
+});
+```
+
+### 3. HTTP Interceptor Testing
+
+Use `useExisting` instead of `useClass` to avoid dual instance issues:
+
+```typescript
+// CORRECT - same instance used everywhere
+{ provide: HTTP_INTERCEPTORS, useExisting: MyInterceptor, multi: true }
+
+// WRONG - creates two instances (one in DI, one in interceptors)
+{ provide: HTTP_INTERCEPTORS, useClass: MyInterceptor, multi: true }
+```
+
+### 4. fakeAsync with Promises
+
+When testing code with nested Promises, use multiple `flushMicrotasks()`:
+
+```typescript
+it('should handle nested promises', fakeAsync(() => {
+  service.doAsyncThing();
+  flushMicrotasks(); // First Promise
+  flushMicrotasks(); // Nested Promise
+  expect(result).toBe(expected);
+}));
+```
+
+### 5. Timer-based Retry Logic
+
+Tests using `timer()` with random jitter are incompatible with fakeAsync. Options:
+
+- Mock the delay function to return `timer(0)`
+- Use `done()` callback style with real timeouts
+- Skip and document as known limitation
+
+### 6. Capacitor Plugin Mocks
+
+All Capacitor plugins are mocked in `setup-jest.ts`. If you need to control mock behavior per test:
+
+```typescript
+import { Preferences } from '@capacitor/preferences';
+
+beforeEach(() => {
+  (Preferences.get as jest.Mock).mockResolvedValue({ value: 'test' });
+});
+```
+
+---
+
+## i18n
 
 - Translations: `src/assets/i18n/en.json` and `es.json`
 - Service: `@ngx-translate/core`
 - Check for missing keys: `npm run i18n:check`
+- **IMPORTANT**: All user-facing text must be in both language files
 
-### Styling
+---
+
+## Styling
 
 - **Tailwind CSS v3.4.13** + **DaisyUI 5.5.5** for utility-first styling
 - Global styles: `src/global.css` (design tokens, themes, animations)
@@ -237,6 +522,106 @@ All pages use Angular standalone components with Ionic standalone imports:
 - Dark mode: Set via `[data-theme='dark']` attribute on root element
 - Tailwind plugins: `@tailwindcss/forms`, `@tailwindcss/typography`, `@aparajita/tailwind-ionic`
 - Icon system: Lucide Angular (v0.553.0) for consistent icon design
+
+---
+
+## File Organization
+
+```
+src/app/
+├── core/                 # Singleton services, guards, interceptors, models
+│   ├── services/         # All services (auth, api, database, etc.)
+│   ├── guards/           # Route guards (auth, onboarding)
+│   ├── interceptors/     # HTTP interceptors
+│   ├── models/           # TypeScript interfaces and types
+│   ├── constants/        # App-wide constants
+│   └── contracts/        # API contracts and enums
+├── shared/               # Reusable components
+├── dashboard/            # Main dashboard with glucose stats and charts
+├── readings/             # Glucose readings list and management
+├── add-reading/          # Modal for adding new glucose readings
+├── appointments/         # Medical appointments management
+├── profile/              # User profile and settings
+├── settings/             # App configuration and preferences
+├── welcome/              # Onboarding and login flow
+├── tips/                 # Diabetes management tips
+├── bolus-calculator/     # Insulin dose calculator
+└── trends/               # Glucose trends and analytics
+```
+
+Other directories:
+
+- `playwright/tests/` - E2E tests with Playwright
+- `maestro/` - Mobile E2E tests with Maestro
+- `docs/` - Documentation files
+- `scripts/` - Build and development scripts
+- `postman/` - API collection and environment files for testing
+
+---
+
+## Routing
+
+App uses lazy-loaded routes with `OnboardingGuard` protecting authenticated pages:
+
+- `/welcome` - Entry point, unauthenticated
+- `/account-pending` - Account verification pending page
+- `/tabs/*` - Main app (dashboard, readings, appointments, profile)
+  - `/tabs/dashboard` - Main dashboard with stats
+  - `/tabs/readings` - Glucose readings list
+  - `/tabs/appointments` - Appointments list
+  - `/tabs/profile` - User profile
+- `/add-reading` - Add glucose reading modal
+- `/settings/*` - User settings pages
+- `/tips` - Diabetes management tips
+- `/trends` - Glucose trends analysis
+- `/bolus-calculator` - Insulin dose calculator
+
+---
+
+## CI/CD (CircleCI)
+
+Configuration in `.circleci/config.yml`. Two workflows:
+
+### CI Workflow (on all pushes)
+
+- **test** - Lint + Unit tests (with jest-junit for CircleCI test visibility)
+- **build-web** - Production build (persists www/ to workspace)
+- **build-android-api30/33** - Android smoke tests (master only, uses workspace from build-web)
+- **maestro-tests** - E2E integration tests with real Heroku backend (master only)
+- **deploy-netlify** - Deploy to Netlify (master only, uses workspace)
+
+### Release Workflow (manual)
+
+- Requires approval in CircleCI UI
+- Builds versioned APK: `diabetactic-v{version}.apk`
+- APK downloadable from CircleCI artifacts
+
+### Optimizations Applied
+
+- **jest-junit**: Test results visible in CircleCI UI
+- **Gradle caching**: Faster Android builds
+- **Workspace reuse**: Android jobs don't rebuild www/
+- **Simplified deploy-netlify**: No redundant checkout/install
+
+### Environment Variables (in CircleCI)
+
+- `NETLIFY_SITE_ID` - Netlify site ID
+- `NETLIFY_AUTH_TOKEN` - Netlify deploy token
+
+### Using CircleCI MCP
+
+```typescript
+// Get build failure logs
+mcp__circleci__get_build_failure_logs({ projectSlug: 'gh/org/repo', branch: 'master' });
+
+// Validate config
+mcp__circleci__config_helper({ configFile: '...' });
+
+// Trigger pipeline
+mcp__circleci__run_pipeline({ projectSlug: 'gh/org/repo', branch: 'feature' });
+```
+
+---
 
 ## Mobile Development
 
@@ -264,80 +649,13 @@ npx cap run android           # Build and run on device/emulator
 # - Gradle 8.x (wrapper included)
 ```
 
-## File Organization
-
-- `src/app/core/` - Singleton services, guards, interceptors, models
-- `src/app/shared/` - Reusable components
-- `src/app/dashboard/` - Main dashboard with glucose stats and charts
-- `src/app/readings/` - Glucose readings list and management
-- `src/app/add-reading/` - Modal for adding new glucose readings
-- `src/app/appointments/` - Medical appointments management
-- `src/app/profile/` - User profile and settings
-- `src/app/settings/` - App configuration and preferences
-- `src/app/welcome/` - Onboarding and login flow
-- `src/app/tips/` - Diabetes management tips
-- `src/app/bolus-calculator/` - Insulin dose calculator
-- `src/app/trends/` - Glucose trends and analytics
-- `playwright/tests/` - E2E tests with Playwright
-- `docs/` - Documentation files
-- `scripts/` - Build and development scripts
-- `postman/` - API collection and environment files for testing
-
-## Routing
-
-App uses lazy-loaded routes with `OnboardingGuard` protecting authenticated pages:
-
-- `/welcome` - Entry point, unauthenticated
-- `/account-pending` - Account verification pending page
-- `/tabs/*` - Main app (dashboard, readings, appointments, profile)
-  - `/tabs/dashboard` - Main dashboard with stats
-  - `/tabs/readings` - Glucose readings list
-  - `/tabs/appointments` - Appointments list
-  - `/tabs/profile` - User profile
-- `/add-reading` - Add glucose reading modal
-- `/settings/*` - User settings pages
-- `/tips` - Diabetes management tips
-- `/trends` - Glucose trends analysis
-- `/bolus-calculator` - Insulin dose calculator
-
-## CI/CD (CircleCI)
-
-Configuration in `.circleci/config.yml`. Two workflows:
-
-### CI Workflow (on all pushes)
-
-- **test** - Lint + Unit tests
-- **build-web** - Production build
-- **build-android-api30/33** - Android smoke tests (master only)
-- **deploy-netlify** - Deploy to Netlify (master only)
-
-### Release Workflow (manual)
-
-- Requires approval in CircleCI UI
-- Builds versioned APK: `diabetactic-v{version}.apk`
-- APK downloadable from CircleCI artifacts
-
-### Environment Variables (in CircleCI)
-
-- `NETLIFY_SITE_ID` - Netlify site ID
-- `NETLIFY_AUTH_TOKEN` - Netlify deploy token
+---
 
 ## Current Status
 
-### Package Versions (as of 2025-12-01)
-
-- **Angular**: 20.3.14
-- **Ionic**: 8.7.11
-- **Capacitor**: 6.2.1
-- **TypeScript**: 5.8.0
-- **Tailwind CSS**: 3.4.13
-- **DaisyUI**: 5.5.5
-- **Jest**: 29.7.0
-- **Playwright**: 1.48.0
-
 ### Lint Status
 
-Current lint warnings (125 total, non-blocking):
+Current lint warnings (non-blocking):
 
 - `@typescript-eslint/no-unused-vars` - Unused imports/variables across services and tests
 - `@angular-eslint/prefer-standalone` - 3 legacy non-standalone components
@@ -345,38 +663,42 @@ Current lint warnings (125 total, non-blocking):
 - Stylelint: 4 browser compatibility warnings for experimental CSS features
 - Run `npm run lint:fix` to auto-fix most issues
 
-### Test Coverage
+### Tidepool "Auth-Only" Architecture
 
-- Unit tests: Jest with Jasmine compatibility layer
-- Integration tests: Separate Jest config (passWithNoTests)
-- E2E tests: Playwright with accessibility audits
-- UI quality tests: Subset of accessibility tests
+Tidepool integration has been simplified to auth-only (completed 2025-12-04):
 
-## Important Notes
+**Removed** (sync functionality no longer needed):
 
-- All API requests go through ApiGatewayService, not direct HTTP calls
-- Offline-first: Data stored in IndexedDB (Dexie), synced when online
-- Use `CUSTOM_ELEMENTS_SCHEMA` in all standalone components for Ionic
-- When testing services, mock Capacitor plugins are already configured in setup-jest.ts
-- Prefer editing existing files over creating new ones
-- Never save working files to root folder - use appropriate subdirectories
-- Translations required in both `en.json` and `es.json` for any user-facing text
-- Backend mode controlled by `DEV_BACKEND_MODE` in environment.ts (default: 'cloud')
-- Use `npm run start:mock` for offline development without backend
-- Husky git hooks configured with lint-staged for pre-commit quality checks
+- `tidepool-sync.service.ts` - Data fetching removed
+- `tidepool-storage.service.ts` - Tidepool storage removed
+- `tidepool-transform.util.ts` - Data transforms removed
+- `tidepool-mock.adapter.ts` - Mock adapter removed
+- `tidepool.interceptor.ts` - HTTP interceptor removed
+
+**Remaining** (auth-only):
+
+- `tidepool-auth.service.ts` - Login + getUserId only
+- `tidepool-auth.model.ts` - Auth state models
+
+---
 
 ## Quick Reference
 
-### Common Development Tasks
-
-**Start development server:**
+### Start Development
 
 ```bash
-npm run start:mock      # Offline development (recommended)
+npm run start:mock      # Best for offline development
 npm run start:cloud     # Test against Heroku backend
 ```
 
-**Run tests:**
+### Before Committing
+
+```bash
+npm run quality         # Lint + test
+npm run format          # Format all files
+```
+
+### Run Tests
 
 ```bash
 npm test                # Quick unit test run
@@ -384,15 +706,7 @@ npm run test:watch      # TDD mode
 npm run test:e2e        # Full E2E suite
 ```
 
-**Code quality:**
-
-```bash
-npm run quality         # Lint + test
-npm run lint:fix        # Auto-fix lint issues
-npm run format          # Format all files
-```
-
-**Build and deploy to Android:**
+### Deploy to Android
 
 ```bash
 npm run mobile:sync     # Build + sync
@@ -400,29 +714,31 @@ npm run android:open    # Open Android Studio
 npm run deploy:device   # Full build + install
 ```
 
-**Debugging:**
+### Debugging
 
 ```bash
 npm run android:logs    # View app logs
 npm run build:analyze   # Analyze bundle size
 ```
 
-### Environment Variables
+---
 
-Control backend mode via ENV variable:
+## Key Files
 
-```bash
-ENV=mock npm start      # Mock backend (offline)
-ENV=local npm start     # Local Docker (localhost:8000)
-ENV=cloud npm start     # Heroku production (default)
-```
+| File                                              | Purpose                              |
+| ------------------------------------------------- | ------------------------------------ |
+| `src/environments/environment.ts`                 | Environment config and backend modes |
+| `src/app/core/services/api-gateway.service.ts`    | API endpoint registry                |
+| `src/app/core/services/capacitor-http.service.ts` | Hybrid HTTP abstraction              |
+| `src/app/core/services/local-auth.service.ts`     | Authentication service               |
+| `setup-jest.ts`                                   | Jest config with Capacitor mocks     |
+| `jest.config.js`                                  | Jest configuration with jest-junit   |
+| `tailwind.config.js`                              | Tailwind and DaisyUI theme config    |
+| `angular.json`                                    | Angular build configurations         |
+| `capacitor.config.ts`                             | Capacitor native bridge config       |
+| `playwright.config.ts`                            | E2E test configuration               |
+| `.circleci/config.yml`                            | CI/CD pipeline configuration         |
 
-### Key Files
+---
 
-- `src/environments/environment.ts` - Environment config and backend modes
-- `src/app/core/services/api-gateway.service.ts` - API endpoint registry
-- `setup-jest.ts` - Jest config with Capacitor mocks
-- `tailwind.config.js` - Tailwind and DaisyUI theme config
-- `angular.json` - Angular build configurations
-- `capacitor.config.ts` - Capacitor native bridge config
-- `playwright.config.ts` - E2E test configuration
+_Last updated: 2025-12-04_
