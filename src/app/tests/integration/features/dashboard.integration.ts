@@ -15,11 +15,9 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 import { DashboardPage } from '../../../dashboard/dashboard.page';
 import { ReadingsService } from '../../../core/services/readings.service';
-import { TidepoolSyncService } from '../../../core/services/tidepool-sync.service';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { Appointment } from '../../../core/models/appointment.model';
 import { LocalGlucoseReading, GlucoseStatistics } from '../../../core/models/glucose-reading.model';
-import { SyncStatus } from '../../../core/models/tidepool-sync.model';
 import {
   TranslationService,
   Language,
@@ -135,7 +133,6 @@ describe('DashboardPage Integration – core flows', () => {
   let fixture: ComponentFixture<DashboardPage>;
 
   let readingsServiceSpy: jasmine.SpyObj<ReadingsService>;
-  let syncServiceSpy: jasmine.SpyObj<TidepoolSyncService>;
   let appointmentServiceSpy: jasmine.SpyObj<AppointmentService>;
   let toastControllerSpy: jasmine.SpyObj<ToastController>;
   let router: Router;
@@ -143,7 +140,6 @@ describe('DashboardPage Integration – core flows', () => {
   let profileServiceStub: ProfileServiceStub;
 
   let mockReadingsSubject: BehaviorSubject<LocalGlucoseReading[]>;
-  let mockSyncStatusSubject: BehaviorSubject<SyncStatus>;
   let mockUpcomingAppointmentSubject: BehaviorSubject<Appointment | null>;
 
   const mockStatistics: GlucoseStatistics = {
@@ -173,15 +169,6 @@ describe('DashboardPage Integration – core flows', () => {
     },
   ];
 
-  const mockSyncStatus: SyncStatus = {
-    isRunning: false,
-    lastSyncTime: new Date().toISOString(),
-    itemsSynced: 10,
-    itemsFailed: 0,
-    errors: [],
-    progress: 0,
-  };
-
   const mockAppointment: Appointment = {
     appointment_id: 1,
     user_id: 1,
@@ -201,18 +188,13 @@ describe('DashboardPage Integration – core flows', () => {
 
   beforeEach(async () => {
     mockReadingsSubject = new BehaviorSubject<LocalGlucoseReading[]>(mockRecentReadings);
-    mockSyncStatusSubject = new BehaviorSubject<SyncStatus>(mockSyncStatus);
     mockUpcomingAppointmentSubject = new BehaviorSubject<Appointment | null>(mockAppointment);
 
     readingsServiceSpy = jasmine.createSpyObj(
       'ReadingsService',
-      ['getStatistics', 'getAllReadings'],
+      ['getStatistics', 'getAllReadings', 'performFullSync'],
       { readings$: mockReadingsSubject.asObservable() }
     );
-
-    syncServiceSpy = jasmine.createSpyObj('TidepoolSyncService', ['performManualSync'], {
-      syncStatus$: mockSyncStatusSubject.asObservable(),
-    });
 
     appointmentServiceSpy = jasmine.createSpyObj(
       'AppointmentService',
@@ -237,7 +219,9 @@ describe('DashboardPage Integration – core flows', () => {
         limit: 5,
       })
     );
-    syncServiceSpy.performManualSync.and.returnValue(Promise.resolve(mockSyncStatus));
+    readingsServiceSpy.performFullSync.and.returnValue(
+      Promise.resolve({ pushed: 0, fetched: 0, failed: 0 })
+    );
     appointmentServiceSpy.getAppointments.and.returnValue(of([mockAppointment]));
     appointmentServiceSpy.shareGlucoseData.and.returnValue(
       of({ shared: true, recordCount: 10 }) as any
@@ -253,7 +237,6 @@ describe('DashboardPage Integration – core flows', () => {
       providers: [
         provideRouter([]),
         { provide: ReadingsService, useValue: readingsServiceSpy },
-        { provide: TidepoolSyncService, useValue: syncServiceSpy },
         { provide: AppointmentService, useValue: appointmentServiceSpy },
         { provide: ToastController, useValue: toastControllerSpy },
         { provide: TranslationService, useValue: translationServiceStub },
@@ -293,7 +276,7 @@ describe('DashboardPage Integration – core flows', () => {
     } as any);
     tick();
 
-    expect(syncServiceSpy.performManualSync).toHaveBeenCalled();
+    expect(readingsServiceSpy.performFullSync).toHaveBeenCalled();
     expect(readingsServiceSpy.getStatistics).toHaveBeenCalledTimes(2);
   }));
 

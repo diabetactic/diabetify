@@ -1,11 +1,10 @@
 <ion-content [fullscreen]="true" class="welcome-content">
-  <div class="cloud-bg-overlay"></div>
   <div class="welcome-shell">
-    <!-- Illustration with magical aura -->
+    <!-- Hero: cloud bubble behind kids -->
     <div class="hero-illustration">
-      <img src="assets/images/hero-aura-ring.png" alt="" class="hero-aura" aria-hidden="true" />
+      <img src="assets/images/cloud-frame.webp" alt="" class="cloud-frame" aria-hidden="true" />
       <img
-        src="assets/images/welcome-kids.png"
+        src="assets/images/welcome-kids.webp"
         alt="{{ 'welcome.heroAlt' | translate }}"
         class="hero-kids"
       />
@@ -20,10 +19,8 @@
     <!-- CTAs -->
     <div class="actions">
       <button class="cta-primary" (click)="onLogin()" data-testid="welcome-login-btn">
-        <app-icon name="rocket" class="cta-icon"></app-icon>
         <span>{{ 'welcome.loginCta' | translate }}</span>
       </button>
-      <!-- Registration is handled outside the app; no in-app link -->
     </div>
   </div>
 </ion-content>

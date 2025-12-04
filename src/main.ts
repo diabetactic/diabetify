@@ -237,7 +237,6 @@ registerLocaleData(localeEs, 'es');
 import { AppComponent } from './app/app.component';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RequestIdInterceptor } from './app/core/interceptors/request-id.interceptor';
-import { TidepoolInterceptor } from './app/core/interceptors/tidepool.interceptor';
 import { AuthInterceptor } from './app/core/interceptors/auth.interceptor';
 import {
   TRANSLATE_HTTP_LOADER_CONFIG,
@@ -271,7 +270,6 @@ bootstrapApplication(AppComponent, {
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: LOCALE_ID, useValue: 'es' }, // Set default locale to Spanish
     { provide: HTTP_INTERCEPTORS, useClass: RequestIdInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: TidepoolInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: TRANSLATE_HTTP_LOADER_CONFIG, useValue: httpLoaderConfig },
     { provide: APP_CONFIG, useValue: defaultAppConfig },

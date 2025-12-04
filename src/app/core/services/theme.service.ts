@@ -4,7 +4,7 @@
  */
 
 import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { ColorPalette, ThemeMode } from '../models';
 import { ProfileService } from './profile.service';
 import { LoggerService } from './logger.service';

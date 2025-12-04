@@ -7,7 +7,6 @@ import { SplashScreen } from '@capacitor/splash-screen';
 import { environment } from '../environments/environment';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { DebugPanelComponent } from './shared/components/debug-panel/debug-panel.component';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 
 @Component({
@@ -15,12 +14,10 @@ import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [CommonModule, TranslateModule, DebugPanelComponent, IonApp, IonRouterOutlet],
+  imports: [CommonModule, TranslateModule, IonApp, IonRouterOutlet],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppComponent implements OnInit {
-  showDebugPanel = !environment.production && environment.features.devTools;
-
   constructor(
     private translationService: TranslationService,
     private platform: Platform,

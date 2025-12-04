@@ -43,6 +43,7 @@ import { LoggerService } from '../core/services/logger.service';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
 import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
+import { ROUTES } from '../core/constants';
 
 /**
  * Interface for grouped readings by date
@@ -195,7 +196,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
           this.isLoading = false;
         },
         error: error => {
-          console.error('Error loading readings:', error);
+          this.logger.error('Readings', 'Error loading readings', error);
           this.isLoading = false;
         },
       });
@@ -418,7 +419,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
    */
   addReading(): void {
     this.logger.info('UI', 'Add reading button clicked');
-    this.router.navigate(['/add-reading']);
+    this.router.navigate([ROUTES.ADD_READING]);
   }
 
   /**
@@ -484,7 +485,11 @@ export class ReadingsPage implements OnInit, OnDestroy {
       this.logger.info('UI', 'Readings synced and refreshed successfully');
       (event.target as HTMLIonRefresherElement).complete();
     } catch (error) {
-      this.logger.error('Error', 'Error refreshing readings', error);
+      this.logger.error('Readings', 'Error refreshing readings', error);
+      await this.showToast(
+        this.translationService.instant('readings.errors.refreshFailed'),
+        'danger'
+      );
       (event.target as HTMLIonRefresherElement).complete();
     }
   }
@@ -514,7 +519,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
       await this.showToast(message, 'success');
     } catch (error) {
       this.logger.error('Sync', 'Sync failed', error);
-      const errorMessage = this.translationService.instant('readings.syncFailed');
+      const errorMessage = this.translationService.instant('readings.errors.syncFailed');
       await this.showToast(errorMessage, 'danger');
     } finally {
       this.isSyncing = false;

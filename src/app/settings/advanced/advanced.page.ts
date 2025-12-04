@@ -27,6 +27,7 @@ import { UnifiedAuthService } from '../../core/services/unified-auth.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { db } from '../../core/services/database.service';
 import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
+import { ROUTES, TIMEOUTS } from '../../core/constants';
 
 @Component({
   selector: 'app-advanced',
@@ -91,12 +92,12 @@ export class AdvancedPage implements OnDestroy {
           handler: async () => {
             try {
               await this.authService.logout();
-              this.router.navigate(['/welcome']);
+              this.router.navigate([ROUTES.WELCOME]);
             } catch (error) {
               console.error('Sign out error:', error);
               const toast = await this.toastController.create({
                 message: this.translationService.instant('errors.generic'),
-                duration: 2000,
+                duration: TIMEOUTS.TOAST_SHORT,
                 color: 'danger',
               });
               await toast.present();
@@ -137,7 +138,7 @@ export class AdvancedPage implements OnDestroy {
               // Show success toast
               const toast = await this.toastController.create({
                 message: this.translationService.instant('settings.advanced.clearDataSuccess'),
-                duration: 2000,
+                duration: TIMEOUTS.TOAST_SHORT,
                 color: 'success',
               });
               await toast.present();
@@ -150,7 +151,7 @@ export class AdvancedPage implements OnDestroy {
               console.error('Clear data error:', error);
               const toast = await this.toastController.create({
                 message: this.translationService.instant('settings.advanced.clearDataError'),
-                duration: 2000,
+                duration: TIMEOUTS.TOAST_SHORT,
                 color: 'danger',
               });
               await toast.present();

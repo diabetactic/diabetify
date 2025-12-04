@@ -31,6 +31,17 @@ module.exports = {
   ],
   coverageDirectory: 'coverage/diabetactic',
   coverageReporters: ['html', 'text-summary', 'lcov'],
+  // JUnit reporter for CI test results
+  reporters: [
+    'default',
+    [
+      'jest-junit',
+      {
+        outputDirectory: 'test-results/jest',
+        outputName: 'junit.xml',
+      },
+    ],
+  ],
   coverageThreshold: {
     global: {
       statements: 20,
@@ -66,6 +77,8 @@ module.exports = {
   testEnvironment: 'jsdom',
   // Clear mocks between tests
   clearMocks: true,
+  // Restore original implementations after each test
+  restoreMocks: true,
   // Timeout for slow tests
   testTimeout: 10000,
   // Less verbose to reduce output overhead

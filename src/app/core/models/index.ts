@@ -15,9 +15,6 @@ export * from './user-profile.model';
 // Tidepool authentication models
 export * from './tidepool-auth.model';
 
-// Tidepool sync models
-export * from './tidepool-sync.model';
-
 // Appointment models
 export * from './appointment.model';
 

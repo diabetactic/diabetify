@@ -15,12 +15,14 @@ import { firstValueFrom } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { LocalAuthService, LocalUser } from '../core/services/local-auth.service';
 import { ProfileService } from '../core/services/profile.service';
+import { LoggerService } from '../core/services/logger.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 import { AccountState, DEFAULT_USER_PREFERENCES } from '../core/models/user-profile.model';
+import { ROUTES } from '../core/constants';
 
 @Component({
   selector: 'app-login',
@@ -60,7 +62,8 @@ export class LoginPage implements OnInit {
     private alertCtrl: AlertController,
     private translate: TranslateService,
     private ngZone: NgZone,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private logger: LoggerService // Inject LoggerService
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required]], // Can be DNI or email
@@ -70,14 +73,16 @@ export class LoginPage implements OnInit {
   }
 
   ngOnInit() {
+    this.logger.info('Init', 'LoginPage initialized');
     // Check if user is already logged in (single, deferred check to avoid double-activation)
     this.authService
       .isAuthenticated()
       .pipe(take(1))
       .subscribe(isAuth => {
-        if (isAuth && !this.router.url.startsWith('/tabs')) {
+        if (isAuth && !this.router.url.startsWith(ROUTES.TABS)) {
+          this.logger.info('Auth', 'User already authenticated, navigating to dashboard.');
           setTimeout(() => {
-            this.router.navigate(['/tabs/dashboard'], { replaceUrl: true });
+            this.router.navigate([ROUTES.TABS_DASHBOARD], { replaceUrl: true });
           }, 0);
         }
       });
@@ -90,89 +95,126 @@ export class LoginPage implements OnInit {
   async onSubmit() {
     // Prevent duplicate submissions if a login is already in progress
     if (this.isLoading) {
-      console.log('[LOGIN] onSubmit ignored (already loading)');
+      this.logger.debug('Auth', 'onSubmit ignored (already loading)');
       return;
     }
-
-    // SECURITY: Removed form value logging (contains password) - HIPAA/COPPA compliance
 
     if (!this.loginForm.valid) {
       this.markFormGroupTouched(this.loginForm);
+      this.logger.warn('Auth', 'Login form invalid', this.loginForm.errors);
       return;
     }
 
-    // Use NgZone to ensure change detection fires on Android WebView
     this.ngZone.run(() => {
       this.isLoading = true;
       this.loginForm.disable({ emitEvent: false });
       this.cdr.detectChanges();
     });
-    console.log('[LOGIN] Form valid, starting auth flow');
+    this.logger.info('Auth', 'Form valid, starting authentication flow', {
+      stage: 'ui-before-loading',
+    });
 
-    // Show loading spinner
     const loading = await this.loadingCtrl.create({
       message: this.translate.instant('login.messages.loggingIn'),
       spinner: 'crescent',
       cssClass: 'custom-loading',
     });
     await loading.present();
+    this.logger.debug('Auth', 'Loading spinner presented', { stage: 'ui-loading-presented' });
 
     const { username, password, rememberMe } = this.loginForm.value;
 
     try {
-      const result = await firstValueFrom(this.authService.login(username, password, rememberMe));
+      // Add a 10-second timeout for the core login API call
+      this.logger.debug('Auth', 'Creating loginPromise and timeoutPromise', {
+        stage: 'before-promise-race',
+      });
+      const loginPromise = firstValueFrom(this.authService.login(username, password, rememberMe));
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Login API call timed out')), 10000)
+      );
+      const result = await Promise.race([loginPromise, timeoutPromise]);
+      this.logger.debug('Auth', 'Login Promise.race resolved', {
+        stage: 'after-promise-race',
+        success: result?.success ?? null,
+      });
 
       if (result && result.success) {
-        console.log('[LOGIN] Login successful, starting post-login flow');
+        this.logger.info('Auth', 'Login successful, starting post-login flow', {
+          stage: 'login-success',
+        });
 
         if (result.user) {
-          // Best-effort onboarding profile; don't block login if it hangs
           try {
-            console.log('[LOGIN] Starting ensureOnboardingProfile');
+            this.logger.debug('Auth', 'Starting ensureOnboardingProfile', {
+              stage: 'ensure-onboarding-start',
+            });
             const onboardingPromise = this.ensureOnboardingProfile(result.user);
-            await Promise.race([
-              onboardingPromise,
-              new Promise<void>(resolve => setTimeout(resolve, 3000)),
-            ]);
-            console.log('[LOGIN] ensureOnboardingProfile completed');
+            const onboardingTimeout = new Promise<void>(resolve => setTimeout(resolve, 3000));
+            await Promise.race([onboardingPromise, onboardingTimeout]);
+            this.logger.debug('Auth', 'ensureOnboardingProfile completed', {
+              stage: 'ensure-onboarding-complete',
+            });
           } catch (e) {
-            console.error('[LOGIN] ensureOnboardingProfile failed', e);
+            this.logger.error('Auth', 'ensureOnboardingProfile failed', e);
           }
         }
 
-        // Navigate to dashboard - try multiple approaches for Android
-        console.log('[LOGIN] Navigating to dashboard...');
-        try {
-          await this.router.navigate(['/tabs/dashboard'], { replaceUrl: true });
-          console.log('[LOGIN] Navigation complete');
-        } catch (navError) {
-          console.error('[LOGIN] Router navigate failed:', navError);
-          // Fallback: direct location change
-          window.location.href = '/tabs/dashboard';
-        }
+        this.logger.debug('Auth', 'Showing welcome toast', { stage: 'toast-before' });
+        const toast = await this.toastCtrl.create({
+          message: this.translate.instant('login.messages.welcomeBack'),
+          duration: 2000,
+          color: 'success',
+          position: 'top',
+        });
+        await toast.present();
 
-        // Dismiss loading after navigation starts (small delay to cover transition)
-        setTimeout(() => loading.dismiss(), 500);
+        this.logger.info('Auth', 'Navigating to dashboard...', { stage: 'navigate-dashboard' });
+        await this.router.navigate([ROUTES.TABS_DASHBOARD], { replaceUrl: true });
+        this.logger.debug('Auth', 'Navigation complete', { stage: 'navigate-complete' });
       } else {
         throw new Error(result?.error || this.translate.instant('login.messages.genericError'));
       }
     } catch (error: unknown) {
-      await loading.dismiss();
-      console.error('[LOGIN] Error during login', error);
-      let errorMessage = this.translate.instant('login.messages.genericError');
-
-      const httpError = error as { status?: number; message?: string };
-      if (httpError.status === 401) {
-        errorMessage = this.translate.instant('login.messages.invalidCredentials');
-      } else if (httpError.status === 422) {
-        errorMessage = this.translate.instant('login.messages.invalidData');
-      } else if (httpError.status === 0) {
-        errorMessage = this.translate.instant('login.messages.connectionError');
-      } else if (httpError.message) {
-        errorMessage = httpError.message;
+      if (error instanceof Error && error.message.includes('Login API call timed out')) {
+        this.logger.error('Auth', 'Login Promise.race timeout triggered', {
+          stage: 'timeout',
+          message: error.message,
+        });
+      } else {
+        this.logger.error('Auth', 'Error during login process', error);
       }
 
-      // Reset loading state BEFORE showing alert (ensures UI updates)
+      this.logger.debug('Auth', 'Handling error in onSubmit', {
+        stage: 'catch',
+        isErrorInstance: error instanceof Error,
+        errorName: error instanceof Error ? error.name : undefined,
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+
+      let errorMessage = this.translate.instant('login.messages.genericError');
+
+      if (error instanceof Error) {
+        if (error.message.includes('Login API call timed out')) {
+          errorMessage = this.translate.instant('errors.timeout');
+        } else {
+          const httpError = error as { status?: number; message?: string };
+          if (httpError.status === 401) {
+            errorMessage = this.translate.instant('login.messages.invalidCredentials');
+          } else if (httpError.status === 422) {
+            errorMessage = this.translate.instant('login.messages.invalidData');
+          } else if (httpError.status === 0) {
+            errorMessage = this.translate.instant('login.messages.connectionError');
+          } else if (httpError.message) {
+            errorMessage = httpError.message;
+          }
+        }
+      } else if (typeof error === 'object' && error !== null) {
+        // Handle other non-Error objects if necessary
+        errorMessage = JSON.stringify(error);
+      }
+
+      this.logger.debug('Auth', 'Resetting UI state due to error');
       this.ngZone.run(() => {
         this.isLoading = false;
         this.loginForm.enable({ emitEvent: false });
@@ -180,35 +222,17 @@ export class LoginPage implements OnInit {
         this.cdr.detectChanges();
       });
 
-      // Show error alert - with timeout fallback for Android WebView issues
-      console.log('[LOGIN] Creating error alert with message:', errorMessage);
-      try {
-        const alertPromise = this.alertCtrl.create({
-          header: this.translate.instant('login.messages.loginError'),
-          message: errorMessage,
-          buttons: ['OK'],
-        });
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Alert create timeout')), 2000)
-        );
-        const alert = await Promise.race([alertPromise, timeoutPromise]);
-        console.log('[LOGIN] Alert created, calling present()...');
-        await alert.present();
-        console.log('[LOGIN] Alert present() completed');
-      } catch (alertError) {
-        console.error('[LOGIN] Alert failed:', alertError);
-        // Fallback: use native alert for Android WebView
-        window.alert(errorMessage);
-      }
+      this.logger.debug('Auth', 'Showing error alert');
+      const alert = await this.alertCtrl.create({
+        header: this.translate.instant('login.messages.loginError'),
+        message: errorMessage,
+        buttons: ['OK'],
+      });
+      await alert.present();
     } finally {
-      // Ensure loading state is reset even if alert fails
-      if (this.isLoading) {
-        this.ngZone.run(() => {
-          this.isLoading = false;
-          this.loginForm.enable({ emitEvent: false });
-          this.cdr.detectChanges();
-        });
-      }
+      this.logger.debug('Auth', 'Ensuring loading spinner is dismissed');
+      await loading.dismiss();
+      // No need to reset isLoading or enable form here, done in catch or success path
     }
   }
 

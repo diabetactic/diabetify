@@ -1,0 +1,74 @@
+# ==========================================
+# Test: Add Glucose Reading
+# Description: Add a new reading and verify it appears
+# ==========================================
+
+appId: io.diabetactic.app
+
+env:
+  TEST_GLUCOSE_VALUE: '120'
+
+---
+# 1. LOGIN
+- runFlow: ../../flows/login.yaml
+
+# 2. NAVIGATE TO READINGS TAB
+- tapOn:
+    text: 'Lecturas|Readings'
+- waitForAnimationToEnd
+
+# 3. VERIFY READINGS PAGE LOADED
+- extendedWaitUntil:
+    visible:
+      text: 'Mostrando.*lecturas|Showing.*readings'
+    timeout: 8000
+
+# Wait for page to fully hydrate
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 4. TAP ADD BUTTON (FAB or header button)
+- tapOn:
+    text: '.*Agregar.*|.*Add.*'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 5. VERIFY ADD READING FORM LOADED
+- extendedWaitUntil:
+    visible:
+      text: 'Agregar Lectura|Add Reading'
+    timeout: 3000
+
+# 6. ENTER GLUCOSE VALUE (Shadow DOM bypass)
+- tapOn:
+    text: 'Lectura de glucosa|Glucose Reading'
+- inputText: ${TEST_GLUCOSE_VALUE}
+- hideKeyboard
+- waitForAnimationToEnd
+
+# 7. SELECT MEAL CONTEXT (optional)
+- tapOn:
+    text: 'Contexto de comida|Meal Context'
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: 'Antes de Comer|Before Meal'
+    optional: true
+- waitForAnimationToEnd
+
+# 8. SAVE READING (bilingual)
+- tapOn:
+    text: 'Guardar lectura|Save Reading'
+- waitForAnimationToEnd
+
+# 9. WAIT FOR SUCCESS
+- extendedWaitUntil:
+    visible:
+      text: 'Mostrando.*lecturas|Showing.*readings'
+    timeout: 5000
+
+# 10. VERIFY READING APPEARS IN LIST (check value)
+- extendedWaitUntil:
+    visible:
+      text: '120'
+    timeout: 5000

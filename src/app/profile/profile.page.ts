@@ -1,6 +1,16 @@
-import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ElementRef,
+  ViewChild,
+  CUSTOM_ELEMENTS_SCHEMA,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AlertController, ToastController, LoadingController } from '@ionic/angular';
+import { IonicModule, AlertController, ToastController, LoadingController } from '@ionic/angular';
+import { TranslateModule } from '@ngx-translate/core';
 import { Subject, firstValueFrom } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 
@@ -8,11 +18,13 @@ import { TidepoolAuthService, AuthState } from '../core/services/tidepool-auth.s
 import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
 import { TranslationService, Language } from '../core/services/translation.service';
-import { TidepoolSyncService } from '../core/services/tidepool-sync.service';
 import { CapacitorHttpService } from '../core/services/capacitor-http.service';
+import { NotificationService } from '../core/services/notification.service';
 import { UserProfile, ThemeMode } from '../core/models/user-profile.model';
-import { SyncStatus, SyncMetadata } from '../core/models/tidepool-sync.model';
 import { environment } from '../../environments/environment';
+import { ROUTES, STORAGE_KEYS } from '../core/constants';
+import { ProfileItemComponent } from '../shared/components/profile-item/profile-item.component';
+import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 interface ProfileDisplayData {
   name: string;
   email: string;
@@ -56,7 +68,16 @@ interface TidepoolUserData {
   selector: 'app-profile',
   templateUrl: './profile.html',
   styleUrls: ['./profile.page.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    TranslateModule,
+    ProfileItemComponent,
+    AppIconComponent,
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ProfilePage implements OnInit, OnDestroy {
   @ViewChild('avatarInput') avatarInput?: ElementRef<HTMLInputElement>;
@@ -68,12 +89,12 @@ export class ProfilePage implements OnInit, OnDestroy {
   // Tidepool connection
   isConnected = false;
   lastSyncTime: string | null = null;
-  syncStatus: SyncStatus | null = null;
 
   // Preferences
   currentTheme: ThemeMode = 'auto';
   currentLanguage!: Language;
   currentGlucoseUnit = 'mg/dL';
+  notificationsEnabled = false;
 
   // App info
   appVersion = '0.0.1';
@@ -102,8 +123,8 @@ export class ProfilePage implements OnInit, OnDestroy {
     private profileService: ProfileService,
     private themeService: ThemeService,
     private translationService: TranslationService,
-    private syncService: TidepoolSyncService,
     private capacitorHttp: CapacitorHttpService,
+    private notificationService: NotificationService,
     private router: Router,
     private alertController: AlertController,
     private toastController: ToastController,
@@ -114,9 +135,9 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadUserData();
+    this.loadNotificationSettings();
     this.subscribeToAuthState();
     this.subscribeToProfile();
-    this.subscribeToSyncStatus();
     this.subscribeToLanguageChanges();
   }
 
@@ -140,6 +161,68 @@ export class ProfilePage implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Failed to load user data:', error);
     }
+  }
+
+  /**
+   * Load notification settings from storage
+   */
+  private loadNotificationSettings(): void {
+    const saved = localStorage.getItem(STORAGE_KEYS.NOTIFICATION_SETTINGS);
+    if (saved) {
+      const settings = JSON.parse(saved);
+      this.notificationsEnabled = settings.enabled ?? false;
+    } else {
+      this.notificationsEnabled = false;
+    }
+  }
+
+  /**
+   * Handle notifications toggle
+   */
+  async onNotificationsToggle(event: CustomEvent<{ checked: boolean }>): Promise<void> {
+    const enabled = event.detail.checked;
+
+    if (enabled) {
+      const granted = await this.notificationService.requestPermissions();
+      if (!granted) {
+        const toggle = event.target as HTMLIonToggleElement | null;
+        if (toggle) {
+          toggle.checked = false;
+        }
+        const toast = await this.toastController.create({
+          message: this.translationService.instant('profile.notifications.permissionDenied'),
+          duration: 3000,
+          color: 'warning',
+          position: 'bottom',
+        });
+        await toast.present();
+        return;
+      }
+    }
+
+    this.notificationsEnabled = enabled;
+    this.saveNotificationSettings();
+
+    const toast = await this.toastController.create({
+      message: enabled
+        ? this.translationService.instant('profile.notifications.enabled')
+        : this.translationService.instant('profile.notifications.disabled'),
+      duration: 2000,
+      color: 'success',
+      position: 'bottom',
+    });
+    await toast.present();
+  }
+
+  /**
+   * Save notification settings to storage
+   */
+  private saveNotificationSettings(): void {
+    const settings = {
+      enabled: this.notificationsEnabled,
+      readingReminders: [],
+    };
+    localStorage.setItem(STORAGE_KEYS.NOTIFICATION_SETTINGS, JSON.stringify(settings));
   }
 
   /**
@@ -168,18 +251,6 @@ export class ProfilePage implements OnInit, OnDestroy {
         this.currentTheme = profile.preferences.themeMode;
         this.currentGlucoseUnit = profile.preferences.glucoseUnit;
         this.refreshProfileDisplay();
-      }
-    });
-  }
-
-  /**
-   * Subscribe to sync status changes
-   */
-  private subscribeToSyncStatus(): void {
-    this.syncService.syncStatus$.pipe(takeUntil(this.destroy$)).subscribe(status => {
-      this.syncStatus = status;
-      if (status.lastSyncTime) {
-        this.lastSyncTime = status.lastSyncTime;
       }
     });
   }
@@ -533,7 +604,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     try {
       await this.authService.logout();
       await this.profileService.deleteProfile();
-      await this.router.navigate(['/welcome'], { replaceUrl: true });
+      await this.router.navigate([ROUTES.WELCOME], { replaceUrl: true });
     } catch (error) {
       console.error('Failed to sign out:', error);
     }
@@ -615,13 +686,11 @@ export class ProfilePage implements OnInit, OnDestroy {
         '🔵 [TidepoolInfo] Tidepool data received:',
         JSON.stringify(tidepoolData, null, 2)
       );
-      const syncMetadata = await this.syncService.getSyncMetadata();
-      console.log('🔵 [TidepoolInfo] Sync metadata:', JSON.stringify(syncMetadata, null, 2));
 
       await loading.dismiss();
 
-      // Build message with REAL Tidepool data
-      const details = this.buildTidepoolInfoMessage(tidepoolData, syncMetadata);
+      // Build message with Tidepool profile data
+      const details = this.buildTidepoolInfoMessage(tidepoolData);
 
       const alert = await this.alertController.create({
         header: this.translationService.instant('profile.tidepoolInfo.title'),
@@ -705,18 +774,22 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   /**
-   * Build info message with real Tidepool data
+   * Build info message with Tidepool profile data
    */
-  private buildTidepoolInfoMessage(
-    tidepoolData: TidepoolUserData,
-    syncMetadata: SyncMetadata
-  ): string {
+  private buildTidepoolInfoMessage(tidepoolData: TidepoolUserData): string {
     const lines: string[] = [];
 
     // Status
     lines.push(
       `${this.translationService.instant('profile.tidepoolInfo.status')}: ${this.translationService.instant('profile.connected')}`
     );
+
+    // User ID
+    if (this.authState?.userId) {
+      lines.push(
+        `${this.translationService.instant('profile.tidepoolInfo.userId')}: ${this.authState.userId}`
+      );
+    }
 
     // Profile info from Tidepool
     if (tidepoolData.profile) {
@@ -742,33 +815,17 @@ export class ProfilePage implements OnInit, OnDestroy {
       }
     }
 
-    // Data sources from Tidepool
-    lines.push(
-      `${this.translationService.instant('profile.tidepoolInfo.dataSources')}: ${tidepoolData.dataSourcesCount}`
-    );
-    if (tidepoolData.dataSources.length > 0) {
+    // Data sources from Tidepool (informational only)
+    if (tidepoolData.dataSourcesCount > 0) {
+      lines.push(
+        `${this.translationService.instant('profile.tidepoolInfo.dataSources')}: ${tidepoolData.dataSourcesCount}`
+      );
       const sourceNames = tidepoolData.dataSources
         .map(s => s.providerName || s.providerType || 'Unknown')
         .slice(0, 3)
         .join(', ');
       lines.push(
         `${this.translationService.instant('profile.tidepoolInfo.providers')}: ${sourceNames}`
-      );
-    }
-
-    // Sync metadata (local stats from synced data)
-    lines.push(
-      `${this.translationService.instant('profile.tidepoolInfo.totalReadings')}: ${syncMetadata.totalReadingsSynced}`
-    );
-    lines.push(
-      `${this.translationService.instant('profile.lastSync')}: ${this.formatLastSyncTime()}`
-    );
-
-    // Sync history
-    if (syncMetadata.syncHistory.length > 0) {
-      const successfulSyncs = syncMetadata.syncHistory.filter(h => h.success).length;
-      lines.push(
-        `${this.translationService.instant('profile.tidepoolInfo.syncHistory')}: ${successfulSyncs}/${syncMetadata.syncHistory.length}`
       );
     }
 
@@ -812,7 +869,7 @@ export class ProfilePage implements OnInit, OnDestroy {
           name: 'age',
           type: 'number',
           placeholder: this.translationService.instant('profile.agePlaceholder'),
-          value: this.profile?.age || 10,
+          value: this.profile?.age || 12,
           min: 1,
           max: 120,
         },
@@ -966,7 +1023,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     }
 
     try {
-      const imagePath = await this.readFileAsDataURL(file);
+      const imagePath = await this.resizeAndReadImage(file);
       const updatedProfile = await this.profileService.updateProfile({
         avatar: {
           id: 'custom-avatar',
@@ -983,10 +1040,42 @@ export class ProfilePage implements OnInit, OnDestroy {
     }
   }
 
-  private async readFileAsDataURL(file: File): Promise<string> {
+  private async resizeAndReadImage(file: File): Promise<string> {
     return await new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxSize = 512;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxSize) {
+              height = (height * maxSize) / width;
+              width = maxSize;
+            }
+          } else {
+            if (height > maxSize) {
+              width = (width * maxSize) / height;
+              height = maxSize;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.9));
+          } else {
+            reject(new Error('Failed to get canvas context'));
+          }
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = e.target?.result as string;
+      };
       reader.onerror = error => reject(error);
       reader.readAsDataURL(file);
     });

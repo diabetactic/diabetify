@@ -120,21 +120,6 @@
               class="sync-item flex items-center gap-3 rounded-xl p-3"
               style="background: var(--ion-color-light)"
             >
-              <app-icon name="time-outline" class="text-primary shrink-0 text-[28px]"></app-icon>
-              <div class="flex-1">
-                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">
-                  {{ 'dashboard.lastSync' | translate }}
-                </h4>
-                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">
-                  {{ getLastSyncDisplay() }}
-                </p>
-              </div>
-            </div>
-
-            <div
-              class="sync-item flex items-center gap-3 rounded-xl p-3"
-              style="background: var(--ion-color-light)"
-            >
               <app-icon
                 name="cloud-upload-outline"
                 class="text-success shrink-0 text-[28px]"
@@ -144,13 +129,13 @@
                   {{ 'dashboard.syncedItems' | translate }}
                 </h4>
                 <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">
-                  {{ syncStatus?.itemsSynced || 0 }}
+                  {{ (backendSyncResult?.fetched || 0) + (backendSyncResult?.pushed || 0) }}
                 </p>
               </div>
             </div>
 
             <div
-              *ngIf="syncStatus && syncStatus.itemsFailed > 0"
+              *ngIf="backendSyncResult && backendSyncResult.failed > 0"
               class="sync-item flex items-center gap-3 rounded-xl p-3"
               style="background: var(--ion-color-light)"
             >
@@ -163,7 +148,7 @@
                   {{ 'dashboard.failedItems' | translate }}
                 </h4>
                 <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">
-                  {{ syncStatus.itemsFailed }}
+                  {{ backendSyncResult.failed }}
                 </p>
               </div>
             </div>

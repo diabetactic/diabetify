@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { CapacitorHttp, HttpResponse } from '@capacitor/core';
 import { Platform } from '@ionic/angular';
 import { Observable, from, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+
+type ParamsType = HttpParams | Record<string, string | string[]> | undefined;
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +26,13 @@ export class CapacitorHttpService {
   /**
    * GET request híbrido
    */
-  get<T>(url: string, options?: { headers?: HttpHeaders | Record<string, string> }): Observable<T> {
+  get<T>(
+    url: string,
+    options?: {
+      headers?: HttpHeaders | Record<string, string>;
+      params?: ParamsType;
+    }
+  ): Observable<T> {
     if (this.shouldUseNativeHttp()) {
       return this.nativeGet<T>(url, options);
     }
@@ -64,7 +72,10 @@ export class CapacitorHttpService {
    */
   delete<T>(
     url: string,
-    options?: { headers?: HttpHeaders | Record<string, string> }
+    options?: {
+      headers?: HttpHeaders | Record<string, string>;
+      params?: ParamsType;
+    }
   ): Observable<T> {
     if (this.shouldUseNativeHttp()) {
       return this.nativeDelete<T>(url, options);
@@ -132,15 +143,25 @@ export class CapacitorHttpService {
    */
   private nativeGet<T>(
     url: string,
-    options?: { headers?: HttpHeaders | Record<string, string> }
+    options?: {
+      headers?: HttpHeaders | Record<string, string>;
+      params?: ParamsType;
+    }
   ): Observable<T> {
-    console.log('🔵 [Native HTTP] GET', url);
+    // Build URL with query params if provided
+    let fullUrl = url;
+    const queryString = this.buildQueryString(options?.params);
+    if (queryString) {
+      fullUrl = `${url}?${queryString}`;
+    }
+
+    console.log('🔵 [Native HTTP] GET', fullUrl);
 
     const headers = this.convertHeaders(options?.headers);
 
     return from(
       CapacitorHttp.get({
-        url,
+        url: fullUrl,
         headers,
       })
     ).pipe(
@@ -258,15 +279,25 @@ export class CapacitorHttpService {
    */
   private nativeDelete<T>(
     url: string,
-    options?: { headers?: HttpHeaders | Record<string, string> }
+    options?: {
+      headers?: HttpHeaders | Record<string, string>;
+      params?: ParamsType;
+    }
   ): Observable<T> {
-    console.log('🔵 [Native HTTP] DELETE', url);
+    // Build URL with query params if provided
+    let fullUrl = url;
+    const queryString = this.buildQueryString(options?.params);
+    if (queryString) {
+      fullUrl = `${url}?${queryString}`;
+    }
+
+    console.log('🔵 [Native HTTP] DELETE', fullUrl);
 
     const headers = this.convertHeaders(options?.headers);
 
     return from(
       CapacitorHttp.delete({
-        url,
+        url: fullUrl,
         headers,
       })
     ).pipe(
@@ -319,6 +350,28 @@ export class CapacitorHttpService {
         return throwError(() => error);
       })
     );
+  }
+
+  /**
+   * Builds query string from params (HttpParams or Record)
+   */
+  private buildQueryString(params: ParamsType): string {
+    if (!params) return '';
+
+    if (params instanceof HttpParams) {
+      return params.toString();
+    }
+
+    // Handle Record<string, string | string[]>
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (Array.isArray(value)) {
+        value.forEach(v => searchParams.append(key, v));
+      } else {
+        searchParams.append(key, value);
+      }
+    }
+    return searchParams.toString();
   }
 
   /**

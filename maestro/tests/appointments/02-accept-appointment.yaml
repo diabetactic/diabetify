@@ -1,0 +1,76 @@
+# ==========================================
+# Test: Accept Appointment (PENDING -> ACCEPTED)
+# Description: Admin accepts appointment via backoffice API
+# Prerequisite: User must be in PENDING state
+# ==========================================
+
+appId: io.diabetactic.app
+
+env:
+  BACKOFFICE_API_URL: 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com'
+  BACKOFFICE_ADMIN_USERNAME: 'admin'
+  BACKOFFICE_ADMIN_PASSWORD: 'admin'
+  TEST_USER_ID: '1000'
+
+---
+# 0. ENSURE QUEUE IS CLEAN & OPEN
+- runScript:
+    file: ../../scripts/backoffice-api-fetch.js
+    env:
+      ACTION: 'open'
+      BACKOFFICE_API_URL: ${BACKOFFICE_API_URL}
+      ADMIN_USERNAME: ${BACKOFFICE_ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${BACKOFFICE_ADMIN_PASSWORD}
+
+# 1. LOGIN
+- runFlow: ../../flows/login.yaml
+
+# 2. NAVIGATE TO APPOINTMENTS
+- runFlow: ../../flows/navigate-appointments.yaml
+
+# 3. VERIFY PENDING STATE EXISTS
+- extendedWaitUntil:
+    visible:
+      text: 'Pendiente|Pending'
+    timeout: 5000
+    optional: true
+
+# If not pending, request once to create a pending appointment
+- tapOn:
+    text: 'Solicitar Cita|Request Appointment'
+    optional: true
+- tapOn:
+    text: '.*(OK|Aceptar).*'
+    optional: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      text: 'Pendiente|Pending'
+    timeout: 8000
+
+# 4. CALL BACKOFFICE API TO ACCEPT
+- runScript:
+    file: ../../scripts/backoffice-api-fetch.js
+    env:
+      ACTION: 'accept'
+      USER_ID: ${TEST_USER_ID}
+      BACKOFFICE_API_URL: ${BACKOFFICE_API_URL}
+      ADMIN_USERNAME: ${BACKOFFICE_ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${BACKOFFICE_ADMIN_PASSWORD}
+
+# 5. PULL TO REFRESH (swipe down)
+- swipe:
+    direction: DOWN
+    duration: 500
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# 6. WAIT FOR STATE CHANGE
+- extendedWaitUntil:
+    visible:
+      text: 'Aceptada|Accepted'
+    timeout: 8000
+
+# 7. VERIFY ACCEPTED STATE
+- assertVisible:
+    text: 'Aceptada|Accepted'

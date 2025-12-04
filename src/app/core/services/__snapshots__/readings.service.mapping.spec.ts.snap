@@ -1,0 +1,37 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Backend Contract Validation Snapshot should have comprehensive mapping coverage 1`] = `
+{
+  "backendReadingTypes": [
+    "DESAYUNO",
+    "ALMUERZO",
+    "MERIENDA",
+    "CENA",
+    "EJERCICIO",
+    "OTRAS_COMIDAS",
+    "OTRO",
+  ],
+  "frontendMealContexts": [
+    "before-breakfast",
+    "after-breakfast",
+    "before-lunch",
+    "after-lunch",
+    "before-dinner",
+    "after-dinner",
+    "snack",
+    "bedtime",
+    "fasting",
+    "exercise",
+    "other",
+  ],
+  "mappedBackendTypes": [
+    "DESAYUNO",
+    "ALMUERZO",
+    "CENA",
+    "MERIENDA",
+    "OTRAS_COMIDAS",
+    "EJERCICIO",
+    "OTRO",
+  ],
+}
+`;

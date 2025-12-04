@@ -57,17 +57,30 @@ export interface AppointmentListResponse {
 
 /**
  * Common appointment motives (for UI dropdowns)
+ * Backend enum: AJUSTE, HIPOGLUCEMIA, HIPERGLUCEMIA, CETOSIS, DUDAS, OTRO
  */
 export const APPOINTMENT_MOTIVES = [
-  'control_routine',
-  'follow_up',
-  'emergency',
-  'consultation',
-  'adjustment',
-  'other',
+  'AJUSTE',
+  'HIPOGLUCEMIA',
+  'HIPERGLUCEMIA',
+  'CETOSIS',
+  'DUDAS',
+  'OTRO',
 ] as const;
 
 export type AppointmentMotive = (typeof APPOINTMENT_MOTIVES)[number];
+
+/**
+ * Mapping from backend motive to translation keys for UI display
+ */
+export const MOTIVE_TRANSLATION_KEYS: Record<AppointmentMotive, string> = {
+  AJUSTE: 'appointments.motives.adjustment',
+  HIPOGLUCEMIA: 'appointments.motives.hypoglycemia',
+  HIPERGLUCEMIA: 'appointments.motives.hyperglycemia',
+  CETOSIS: 'appointments.motives.ketosis',
+  DUDAS: 'appointments.motives.questions',
+  OTRO: 'appointments.motives.other',
+};
 
 /**
  * Common insulin types (for UI dropdowns)
@@ -87,7 +100,14 @@ export type PumpType = (typeof PUMP_TYPES)[number];
  * Appointment queue states
  * CREATED: User has created an appointment (after being ACCEPTED)
  */
-export const QUEUE_STATES = ['PENDING', 'ACCEPTED', 'DENIED', 'CREATED', 'NONE'] as const;
+export const QUEUE_STATES = [
+  'PENDING',
+  'ACCEPTED',
+  'DENIED',
+  'CREATED',
+  'NONE',
+  'BLOCKED',
+] as const;
 
 export type AppointmentQueueState = (typeof QUEUE_STATES)[number];
 

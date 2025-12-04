@@ -1,0 +1,48 @@
+# ==========================================
+# Test: Verify Resolution Display
+# Description: Check resolution details after appointment creation
+# Prerequisite: Must have at least one CREATED appointment
+# ==========================================
+
+appId: io.diabetactic.app
+
+---
+# 1. LOGIN
+- runFlow: ../../flows/login.yaml
+
+# 2. NAVIGATE TO APPOINTMENTS
+- runFlow: ../../flows/navigate-appointments.yaml
+
+# 3. VERIFY APPOINTMENTS PAGE
+- extendedWaitUntil:
+    visible:
+      text: 'Citas|Appointments'
+    timeout: 5000
+
+# 4. WAIT FOR APPOINTMENTS TO LOAD
+- extendedWaitUntil:
+    visible:
+      text: 'Actual|Current'
+    timeout: 8000
+
+# 5. TAP ON APPOINTMENT CARD TO VIEW DETAILS
+- tapOn:
+    text: 'Cita #|Appointment #'
+    optional: true
+- waitForAnimationToEnd
+
+# 6. VERIFY DETAIL PAGE (Resolution info)
+- extendedWaitUntil:
+    visible:
+      text: 'Objetivo de Glucosa|Glucose Objective'
+    timeout: 5000
+
+# 7. VERIFY RESOLUTION FIELDS DISPLAY
+- assertVisible:
+    text: 'mg/dL'
+    optional: true
+
+# 8. VERIFY APPOINTMENT DATA IS PRESENT
+- assertVisible:
+    text: 'Dosis|Dose'
+    optional: true

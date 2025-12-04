@@ -1,0 +1,34 @@
+# ==========================================
+# Test: Readings List Loads
+# Description: Verify readings page loads correctly
+# ==========================================
+
+appId: io.diabetactic.app
+
+---
+# 1. LOGIN
+- runFlow: ../../flows/login.yaml
+
+# 2. NAVIGATE TO READINGS TAB (bilingual)
+- tapOn:
+    text: 'Lecturas|Readings'
+- waitForAnimationToEnd
+
+# 3. VERIFY READINGS PAGE LOADED
+# Page title is just "Lecturas" not "Lecturas de Glucosa"
+- extendedWaitUntil:
+    visible:
+      text: 'Mostrando.*lecturas|Showing.*readings'
+    timeout: 5000
+
+# 4. WAIT FOR DATA TO LOAD (network dependent)
+# Check for any reading value (numbers are always present)
+- extendedWaitUntil:
+    visible:
+      text: 'NORMAL|ALTO|BAJO|HIGH|LOW'
+    timeout: 8000
+    optional: true
+
+# 5. ASSERT PAGE IS FUNCTIONAL
+- assertVisible:
+    text: 'Lecturas|Readings'

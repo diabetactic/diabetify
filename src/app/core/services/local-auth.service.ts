@@ -310,7 +310,7 @@ export class LocalAuthService {
           console.log('✅ [AUTH] Response:', JSON.stringify(response));
           this.logger.debug('Auth', 'Backend stage: HTTP response received', {
             stage: 'http-response',
-            hasAccessToken: !!(response as any)?.access_token,
+            hasAccessToken: !!response?.access_token,
           });
         }),
         switchMap(token => {

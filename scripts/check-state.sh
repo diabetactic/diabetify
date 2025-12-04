@@ -4,7 +4,8 @@
 # STATE CHECK - Verify all prerequisites before testing
 ################################################################################
 
-PROJECT_DIR="/home/julito/TPP/diabetify-extServices-20251103-061913/diabetify"
+# Derive PROJECT_DIR from script location (portable)
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ANDROID_DIR="$PROJECT_DIR/android"
 APP_ID="io.diabetactic.app"
 
@@ -25,10 +26,12 @@ else
     exit 1
 fi
 
-# Check Java
-echo -n "Java 25: "
-if [[ -d "/home/julito/.local/share/mise/installs/java/25.0.1" ]]; then
-    echo -e "${GREEN}✓${NC}"
+# Check Java (via mise or JAVA_HOME)
+echo -n "Java: "
+JAVA_PATH="${JAVA_HOME:-$(mise where java 2>/dev/null)}"
+if [[ -n "$JAVA_PATH" && -d "$JAVA_PATH" ]]; then
+    JAVA_VERSION=$("$JAVA_PATH/bin/java" -version 2>&1 | head -1 | cut -d'"' -f2)
+    echo -e "${GREEN}✓${NC} (v$JAVA_VERSION)"
 else
     echo -e "${RED}✗ NOT INSTALLED${NC}"
 fi

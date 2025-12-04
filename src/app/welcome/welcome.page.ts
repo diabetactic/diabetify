@@ -7,14 +7,14 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { ROUTES, ROUTE_SEGMENTS } from '../core/constants';
 
 @Component({
   selector: 'app-welcome',
   templateUrl: './welcome.page.html',
   styleUrls: ['./welcome.page.scss'],
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, IonContent, AppIconComponent],
+  imports: [CommonModule, RouterModule, TranslateModule, IonContent],
   host: {
     '[class.dark-theme]': 'isDarkMode',
   },
@@ -47,7 +47,7 @@ export class WelcomePage implements OnInit, OnDestroy {
     this.navigationSubscription = this.router.events
       .pipe(
         filter(event => event instanceof NavigationStart),
-        filter((event: NavigationStart) => !event.url.includes('/welcome'))
+        filter((event: NavigationStart) => !event.url.includes(ROUTE_SEGMENTS.WELCOME))
       )
       .subscribe(() => {
         // Force cleanup when navigating away
@@ -67,7 +67,7 @@ export class WelcomePage implements OnInit, OnDestroy {
     const profile = await this.profileService.getProfile();
     if (profile?.hasCompletedOnboarding) {
       // Navigate to tabs if already onboarded
-      this.router.navigate(['/tabs/dashboard'], { replaceUrl: true });
+      this.router.navigate([ROUTES.TABS_DASHBOARD], { replaceUrl: true });
     }
   }
 
@@ -93,7 +93,6 @@ export class WelcomePage implements OnInit, OnDestroy {
     // Ionic adds aria-hidden to hidden pages, which conflicts with focused elements
     (document.activeElement as HTMLElement)?.blur();
 
-    // Go to real login screen
-    await this.router.navigate(['/login']);
+    await this.router.navigate([ROUTES.LOGIN]);
   }
 }
