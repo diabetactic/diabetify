@@ -71,7 +71,6 @@ test.describe('Diabetactic E2E Flow', () => {
     await expect(page).toHaveURL(/\/add-reading/);
 
     // Fill Glucose Value
-    const glucoseInput = page.locator('ion-input[formControlName="value"] input'); // targeting the native input inside ion-input
     // Ionic inputs can be tricky, try fill on the ion-input first, if fails, target native
     await page.locator('ion-input[formControlName="value"]').click();
     await page.keyboard.type('125');

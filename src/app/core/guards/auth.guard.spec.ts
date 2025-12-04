@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
-import { of, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 import { AuthGuard } from './auth.guard';
 import {
@@ -12,7 +12,6 @@ import { AccountState } from '../models/user-profile.model';
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;
-  let tidepoolAuthService: jasmine.SpyObj<TidepoolAuthService>;
   let localAuthService: jasmine.SpyObj<LocalAuthService>;
   let router: jasmine.SpyObj<Router>;
   let urlTree: UrlTree;
@@ -66,9 +65,6 @@ describe('AuthGuard', () => {
     });
 
     guard = TestBed.inject(AuthGuard);
-    tidepoolAuthService = TestBed.inject(
-      TidepoolAuthService
-    ) as jasmine.SpyObj<TidepoolAuthService>;
     localAuthService = TestBed.inject(LocalAuthService) as jasmine.SpyObj<LocalAuthService>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
   });

@@ -8,8 +8,8 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, of, from, firstValueFrom } from 'rxjs';
-import { switchMap, catchError, map, timeout, retry, tap, shareReplay } from 'rxjs/operators';
+import { Observable, throwError, of, from } from 'rxjs';
+import { switchMap, catchError, map, timeout, retry, shareReplay } from 'rxjs/operators';
 
 import { ExternalServicesManager, ExternalService } from './external-services-manager.service';
 import { LocalAuthService } from './local-auth.service';
@@ -146,7 +146,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'glucoserver.readings.list',
     {
       service: ExternalService.GLUCOSERVER,
-      path: '/api/v1/readings',
+      path: '/v1/readings',
       method: 'GET',
       authenticated: true,
       timeout: 30000,
@@ -162,7 +162,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'glucoserver.readings.create',
     {
       service: ExternalService.GLUCOSERVER,
-      path: '/api/v1/readings',
+      path: '/v1/readings',
       method: 'POST',
       authenticated: true,
       timeout: 30000,
@@ -195,7 +195,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'glucoserver.readings.update',
     {
       service: ExternalService.GLUCOSERVER,
-      path: '/api/v1/readings/{id}',
+      path: '/v1/readings/{id}',
       method: 'PUT',
       authenticated: true,
       timeout: 30000,
@@ -206,7 +206,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'glucoserver.readings.delete',
     {
       service: ExternalService.GLUCOSERVER,
-      path: '/api/v1/readings/{id}',
+      path: '/v1/readings/{id}',
       method: 'DELETE',
       authenticated: true,
       timeout: 30000,
@@ -217,7 +217,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'glucoserver.statistics',
     {
       service: ExternalService.GLUCOSERVER,
-      path: '/api/v1/statistics',
+      path: '/v1/statistics',
       method: 'GET',
       authenticated: true,
       timeout: 30000,
@@ -230,7 +230,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'glucoserver.export',
     {
       service: ExternalService.GLUCOSERVER,
-      path: '/api/v1/export',
+      path: '/v1/export',
       method: 'GET',
       authenticated: true,
       timeout: 60000,
@@ -243,7 +243,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'appointments.list',
     {
       service: ExternalService.APPOINTMENTS,
-      path: '/api/appointments',
+      path: '/appointments',
       method: 'GET',
       authenticated: true,
       timeout: 30000,
@@ -256,7 +256,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'appointments.detail',
     {
       service: ExternalService.APPOINTMENTS,
-      path: '/api/appointments/{id}',
+      path: '/appointments/{id}',
       method: 'GET',
       authenticated: true,
       timeout: 30000,
@@ -266,10 +266,20 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     },
   ],
   [
+    'appointments.queue.open',
+    {
+      service: ExternalService.APPOINTMENTS,
+      path: '/appointments/queue/open',
+      method: 'GET',
+      authenticated: true,
+      timeout: 10000,
+    },
+  ],
+  [
     'appointments.create',
     {
       service: ExternalService.APPOINTMENTS,
-      path: '/api/appointments',
+      path: '/appointments',
       method: 'POST',
       authenticated: true,
       timeout: 30000,
@@ -279,7 +289,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'appointments.update',
     {
       service: ExternalService.APPOINTMENTS,
-      path: '/api/appointments/{id}',
+      path: '/appointments/{id}',
       method: 'PUT',
       authenticated: true,
       timeout: 30000,
@@ -289,7 +299,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'appointments.cancel',
     {
       service: ExternalService.APPOINTMENTS,
-      path: '/api/appointments/{id}/cancel',
+      path: '/appointments/{id}/cancel',
       method: 'PUT',
       authenticated: true,
       timeout: 30000,
@@ -299,7 +309,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'appointments.shareGlucose',
     {
       service: ExternalService.APPOINTMENTS,
-      path: '/api/appointments/{id}/share-glucose',
+      path: '/appointments/{id}/share-glucose',
       method: 'POST',
       authenticated: true,
       timeout: 60000,
@@ -331,7 +341,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'appointments.doctors.list',
     {
       service: ExternalService.APPOINTMENTS,
-      path: '/api/doctors',
+      path: '/doctors',
       method: 'GET',
       authenticated: false,
       cache: {
@@ -343,7 +353,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'appointments.slots.available',
     {
       service: ExternalService.APPOINTMENTS,
-      path: '/api/slots',
+      path: '/slots',
       method: 'GET',
       authenticated: false,
       cache: {
@@ -359,7 +369,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'clinicalForm.get',
     {
       service: ExternalService.APPOINTMENTS,
-      path: '/api/appointments/{appointmentId}/clinical-form',
+      path: '/appointments/{appointmentId}/clinical-form',
       method: 'GET',
       authenticated: true,
       timeout: 30000,
@@ -372,7 +382,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'clinicalForm.save',
     {
       service: ExternalService.APPOINTMENTS,
-      path: '/api/appointments/{appointmentId}/clinical-form',
+      path: '/appointments/{appointmentId}/clinical-form',
       method: 'POST',
       authenticated: true,
       timeout: 30000,
@@ -382,7 +392,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'clinicalForm.update',
     {
       service: ExternalService.APPOINTMENTS,
-      path: '/api/appointments/{appointmentId}/clinical-form',
+      path: '/appointments/{appointmentId}/clinical-form',
       method: 'PUT',
       authenticated: true,
       timeout: 30000,
@@ -428,7 +438,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'auth.login',
     {
       service: ExternalService.LOCAL_AUTH,
-      path: '/api/auth/login',
+      path: '/auth/login',
       method: 'POST',
       authenticated: false,
       timeout: 15000,
@@ -439,7 +449,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'auth.register',
     {
       service: ExternalService.LOCAL_AUTH,
-      path: '/api/auth/register',
+      path: '/auth/register',
       method: 'POST',
       authenticated: false,
       timeout: 15000,
@@ -450,7 +460,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'auth.refresh',
     {
       service: ExternalService.LOCAL_AUTH,
-      path: '/api/auth/refresh',
+      path: '/auth/refresh',
       method: 'POST',
       authenticated: false,
       timeout: 15000,
@@ -461,7 +471,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'auth.logout',
     {
       service: ExternalService.LOCAL_AUTH,
-      path: '/api/auth/logout',
+      path: '/auth/logout',
       method: 'POST',
       authenticated: true,
       timeout: 15000,
@@ -471,7 +481,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'auth.profile.update',
     {
       service: ExternalService.LOCAL_AUTH,
-      path: '/api/auth/profile',
+      path: '/auth/profile',
       method: 'PUT',
       authenticated: true,
       timeout: 15000,
@@ -481,7 +491,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'auth.preferences.update',
     {
       service: ExternalService.LOCAL_AUTH,
-      path: '/api/auth/preferences',
+      path: '/auth/preferences',
       method: 'PUT',
       authenticated: true,
       timeout: 15000,
@@ -546,6 +556,19 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     },
   ],
   [
+    'extservices.appointments.placement',
+    {
+      service: ExternalService.APPOINTMENTS,
+      path: '/queue/placement/{userId}',
+      method: 'GET',
+      authenticated: true,
+      timeout: 30000,
+      cache: {
+        duration: 30000, // 30 seconds - queue position changes frequently
+      },
+    },
+  ],
+  [
     'extservices.glucose.mine',
     {
       service: ExternalService.GLUCOSERVER,
@@ -580,7 +603,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       authenticated: true,
       timeout: 30000,
       transform: {
-        request: (data: unknown) => {
+        request: (_data: unknown) => {
           // This endpoint uses query params, not body
           return null;
         },

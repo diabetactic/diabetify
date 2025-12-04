@@ -218,6 +218,31 @@ export class AppointmentService {
   }
 
   /**
+   * Get user's position in the appointment queue
+   * Returns relative position (0 = next in line, 1 = second, etc.)
+   * Returns -1 if user is not in PENDING state or no queue exists
+   * TODO: Implement with LocalAuthService when available
+   */
+  getQueuePosition(): Observable<number> {
+    // Feature not fully implemented - requires LocalAuthService integration
+    // For now, return -1 (no position available)
+    return of(-1);
+  }
+
+  /**
+   * Check if the appointment queue is open
+   */
+  checkQueueOpen(): Observable<boolean> {
+    if (this.isMockMode) {
+      return of(true);
+    }
+    return this.apiGateway.request<boolean>('appointments.queue.open').pipe(
+      map(response => !!response.data),
+      catchError(() => of(false)) // Assume closed on error
+    );
+  }
+
+  /**
    * Request an appointment (submit to queue)
    * Note: Backend returns a number (queue position), not an object
    */
@@ -402,6 +427,7 @@ export class AppointmentService {
       "Appointment wasn't accepted yet": 'appointments.errors.notAccepted',
       'Appointment already exists in queue': 'appointments.errors.alreadyInQueue',
       'Appointment does not exist': 'appointments.errors.notFound',
+      'Appointment Queue is not open': 'appointments.errors.queueClosed',
     };
 
     // Check for backend error message match

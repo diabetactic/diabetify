@@ -210,7 +210,7 @@ export class MockDataService {
 
   // ====== AUTH ======
 
-  login(username: string, password: string): Observable<MockUser> {
+  login(username: string, _password: string): Observable<MockUser> {
     this.debugLog('🎭 MOCK LOGIN:', username);
     return of(this.currentUser).pipe(delay(800));
   }

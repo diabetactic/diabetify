@@ -1,11 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ReadingsService, LIVE_QUERY_FN } from './readings.service';
 import { DiabetacticDatabase } from './database.service';
-import {
-  LocalGlucoseReading,
-  GlucoseReading,
-  GlucoseStatistics,
-} from '../models/glucose-reading.model';
+import { LocalGlucoseReading, GlucoseReading } from '../models/glucose-reading.model';
 import { Observable } from 'rxjs';
 import { MockDataService } from './mock-data.service';
 
@@ -98,7 +94,7 @@ describe('ReadingsService', () => {
         time: '2024-01-15T10:00:00Z',
       };
 
-      const result = await service.addReading(reading);
+      await service.addReading(reading);
 
       expect(mockDb.readings.add).toHaveBeenCalled();
       const addedReading = (mockDb.readings.add as jest.Mock).mock.calls.slice(-1)[0][0];
