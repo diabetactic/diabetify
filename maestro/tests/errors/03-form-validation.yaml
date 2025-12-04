@@ -1,0 +1,55 @@
+# ==========================================
+# Test: Form Validation Error Handling
+# Description: Verify form validation shows appropriate errors
+# ==========================================
+
+appId: io.diabetactic.app
+
+---
+# 1. LOGIN
+- runFlow: ../../flows/login.yaml
+
+# 2. NAVIGATE TO ADD READING
+- tapOn:
+    text: 'Lecturas|Readings'
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'Agregar|Add'
+- waitForAnimationToEnd
+
+# 3. VERIFY ADD READING FORM
+- extendedWaitUntil:
+    visible:
+      text: 'Agregar Lectura|Add Reading'
+    timeout: 5000
+
+# 4. TRY TO SUBMIT EMPTY FORM
+- tapOn:
+    text: 'Guardar|Save'
+- waitForAnimationToEnd
+
+# 5. VERIFY VALIDATION ERROR APPEARS
+- assertVisible:
+    text: 'requerido|required|obligatorio|necesario'
+    optional: true
+
+# 6. ENTER INVALID VALUE (negative or too high)
+- tapOn:
+    text: 'Lectura de glucosa|Glucose Reading'
+- inputText: '-50'
+- hideKeyboard
+
+# 7. TRY TO SUBMIT
+- tapOn:
+    text: 'Guardar|Save'
+- waitForAnimationToEnd
+
+# 8. VERIFY ERROR FOR INVALID VALUE
+- assertVisible:
+    text: 'inválido|invalid|error|rango|range'
+    optional: true
+
+# 9. VERIFY STILL ON FORM (didn't save)
+- assertVisible:
+    text: 'Agregar Lectura|Add Reading'

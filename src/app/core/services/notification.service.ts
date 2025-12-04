@@ -9,6 +9,7 @@ import {
   ActionPerformed,
 } from '@capacitor/local-notifications';
 import { LoggerService } from './logger.service';
+import { ROUTES, appointmentDetailRoute } from '../constants';
 
 export interface ReadingReminder {
   id: number;
@@ -331,7 +332,7 @@ export class NotificationService {
       switch (type) {
         case 'reading_reminder':
           this.logger.info('Notifications', 'User tapped reading reminder');
-          this.router.navigate(['/add-reading']);
+          this.router.navigate([ROUTES.ADD_READING]);
           break;
 
         case 'appointment_reminder':
@@ -339,10 +340,9 @@ export class NotificationService {
             appointmentId: extra['appointmentId'],
           });
           if (extra['appointmentId']) {
-            this.router.navigate(['/appointments', extra['appointmentId'] as string]);
+            this.router.navigate([appointmentDetailRoute(extra['appointmentId'] as string)]);
           } else {
-            // Fallback to appointments list if no ID
-            this.router.navigate(['/appointments']);
+            this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
           }
           break;
 

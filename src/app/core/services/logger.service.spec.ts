@@ -4,7 +4,6 @@
 
 import { TestBed } from '@angular/core/testing';
 import { LoggerService } from './logger.service';
-import { environment } from '../../../environments/environment';
 
 describe('LoggerService', () => {
   let service: LoggerService;

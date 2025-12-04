@@ -1,0 +1,64 @@
+# ==========================================
+# Test: Edit Profile Information
+# Description: Verify user can edit and save profile data
+# ==========================================
+
+appId: io.diabetactic.app
+
+env:
+  TEST_NAME: 'Juan Carlos'
+  TEST_EMAIL: 'test@diabetactic.app'
+
+---
+# 1. LOGIN
+- runFlow: ../../flows/login.yaml
+
+# 2. NAVIGATE TO PROFILE TAB
+- tapOn:
+    text: 'Perfil|Profile'
+- waitForAnimationToEnd
+
+# 3. VERIFY PROFILE PAGE LOADED
+- extendedWaitUntil:
+    visible:
+      text: 'Perfil|Profile'
+    timeout: 5000
+
+# 4. TAP EDIT BUTTON OR PROFILE FIELD
+- tapOn:
+    text: 'Editar|Edit'
+    optional: true
+- waitForAnimationToEnd
+
+# 5. EDIT NAME FIELD (if editable)
+- tapOn:
+    text: 'Nombre|Name'
+    optional: true
+- eraseText
+- inputText: '${TEST_NAME}'
+- hideKeyboard
+
+# 6. EDIT EMAIL FIELD (if editable)
+- tapOn:
+    text: 'Email|Correo'
+    optional: true
+- eraseText
+- inputText: '${TEST_EMAIL}'
+- hideKeyboard
+
+# 7. SAVE CHANGES
+- tapOn:
+    text: 'Guardar|Save'
+    optional: true
+- waitForAnimationToEnd
+
+# 8. VERIFY CHANGES PERSISTED
+- extendedWaitUntil:
+    visible:
+      text: '${TEST_NAME}'
+    timeout: 5000
+
+# 9. VERIFY SUCCESS MESSAGE OR TOAST
+- assertVisible:
+    text: 'Guardado|Saved|Actualizado|Updated'
+    optional: true

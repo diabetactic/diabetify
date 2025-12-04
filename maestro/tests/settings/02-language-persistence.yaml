@@ -1,0 +1,116 @@
+# ==========================================
+# Test: Settings Language Persistence
+# Description: Verify language setting persists across app restarts
+# ==========================================
+
+appId: io.diabetactic.app
+
+---
+# 1. LOGIN
+- runFlow: ../../flows/login.yaml
+
+# 2. NAVIGATE TO SETTINGS
+- tapOn:
+    text: 'Perfil|Profile'
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'Configuración|Settings|Ajustes'
+- waitForAnimationToEnd
+
+# 3. VERIFY SETTINGS PAGE
+- extendedWaitUntil:
+    visible:
+      text: 'Configuración|Settings'
+    timeout: 5000
+
+# 4. FIND LANGUAGE OPTION
+- extendedWaitUntil:
+    visible:
+      text: 'Idioma|Language'
+    timeout: 3000
+
+# 5. TAP LANGUAGE SELECTOR
+- tapOn:
+    text: 'Idioma|Language'
+- waitForAnimationToEnd
+
+# 6. SELECT ENGLISH (if currently Spanish)
+- tapOn:
+    text: 'English|Inglés'
+    optional: true
+- waitForAnimationToEnd
+
+# 7. VERIFY LANGUAGE CHANGED
+- extendedWaitUntil:
+    visible:
+      text: 'Settings|Language'
+    timeout: 3000
+
+# 8. RESTART APP TO TEST PERSISTENCE
+- stopApp
+- waitForAnimationToEnd:
+    timeout: 1000
+- launchApp
+- waitForAnimationToEnd
+
+# 9. LOGIN AGAIN (now UI should be in English)
+- extendedWaitUntil:
+    visible:
+      text: 'Diabetactic'
+    timeout: 3000
+
+- tapOn:
+    text: 'Sign In|Iniciar'
+    optional: true
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      text: 'DNI or Email'
+    timeout: 3000
+
+- tapOn:
+    text: 'DNI or Email'
+- eraseText
+- inputText: '${TEST_USER_ID}'
+- hideKeyboard
+
+- tapOn:
+    text: 'Password'
+- eraseText
+- inputText: '${TEST_USER_PASSWORD}'
+- hideKeyboard
+
+- tapOn:
+    text: 'Sign In'
+- waitForAnimationToEnd
+
+# 10. VERIFY ENGLISH PERSISTED
+- extendedWaitUntil:
+    visible:
+      text: 'Dashboard|Home'
+    timeout: 5000
+
+# 11. NAVIGATE TO SETTINGS TO VERIFY
+- tapOn:
+    text: 'Profile'
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'Settings'
+- waitForAnimationToEnd
+
+# 12. CONFIRM LANGUAGE IS STILL ENGLISH
+- assertVisible:
+    text: 'Language'
+
+# 13. SWITCH BACK TO SPANISH (cleanup)
+- tapOn:
+    text: 'Language'
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'Español|Spanish'
+    optional: true
+- waitForAnimationToEnd

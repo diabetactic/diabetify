@@ -62,7 +62,7 @@ Los siguientes servicios pueden hacer llamadas HTTP directas:
 
 - **ApiGatewayService**: Comunicación centralizada con backend
 - **ExternalServicesManagerService**: Monitoreo de salud de servicios
-- **TidepoolSyncService**: Sincronización con Tidepool
+- **TidepoolAuthService**: Autenticación con Tidepool (auth-only, sin sync de datos)
 
 ## Flujo de Datos
 
@@ -74,10 +74,13 @@ Componente
 Servicio (Lógica de Negocio)
   ↓
 ApiGatewayService → Microservicios Backend
-  ↓                    ↓
-DatabaseService    TidepoolAuthService → API Tidepool
+  ↓
+DatabaseService
   ↓
 IndexedDB
+
+Nota: Tidepool se usa solo para autenticación (obtener userId).
+Los datos de glucosa provienen del backend Diabetactic.
 ```
 
 ## Estrategia Offline-First
@@ -89,9 +92,10 @@ IndexedDB
 
 ## Testing
 
-- **Tests Unitarios**: Jasmine/Karma para servicios y componentes
+- **Tests Unitarios**: Jest con jest-preset-angular para servicios y componentes
 - **Tests E2E**: Playwright para flujos de usuario
-- **Tests de Integración**: Verificar interacciones entre servicios
+- **Tests de Integración**: Jest para verificar interacciones entre servicios
+- **Tests Mobile**: Maestro para pruebas E2E en dispositivos Android
 
 ## Seguridad
 

@@ -1,0 +1,56 @@
+# ==========================================
+# Test: Request Appointment (NONE -> PENDING)
+# Description: User requests an appointment from NONE state
+# ==========================================
+
+appId: io.diabetactic.app
+
+env:
+  BACKOFFICE_API_URL: 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com'
+  BACKOFFICE_ADMIN_USERNAME: 'admin'
+  BACKOFFICE_ADMIN_PASSWORD: 'admin'
+  TEST_USER_ID: '1000'
+
+---
+# 0. ENSURE QUEUE STARTS EMPTY & OPEN
+- runScript:
+    file: ../../scripts/backoffice-api-fetch.js
+    env:
+      ACTION: 'open'
+      BACKOFFICE_API_URL: ${BACKOFFICE_API_URL}
+      ADMIN_USERNAME: ${BACKOFFICE_ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${BACKOFFICE_ADMIN_PASSWORD}
+
+# 1. LOGIN
+- runFlow: ../../flows/login.yaml
+
+# 2. NAVIGATE TO APPOINTMENTS
+- runFlow: ../../flows/navigate-appointments.yaml
+
+# 3. VERIFY APPOINTMENTS PAGE LOADED
+- extendedWaitUntil:
+    visible:
+      text: 'Citas|Appointments'
+    timeout: 5000
+
+# 4. CHECK FOR NONE STATE (Request button visible)
+# Look for "Solicitar Cita" button which means NONE state
+- extendedWaitUntil:
+    visible:
+      text: 'Solicitar Cita|Request Appointment'
+    timeout: 5000
+
+# 5. TAP REQUEST APPOINTMENT BUTTON
+- tapOn:
+    text: 'Solicitar Cita|Request Appointment'
+- waitForAnimationToEnd
+
+# 6. WAIT FOR REQUEST TO PROCESS
+- extendedWaitUntil:
+    visible:
+      text: 'Pendiente|Pending'
+    timeout: 8000
+
+# 7. VERIFY PENDING STATE
+- assertVisible:
+    text: 'Pendiente|Pending'

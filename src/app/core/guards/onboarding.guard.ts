@@ -11,6 +11,7 @@ import {
 } from '@angular/router';
 
 import { ProfileService } from '../services/profile.service';
+import { ROUTES } from '../constants';
 
 /**
  * Prevents access to authenticated sections until onboarding is complete.
@@ -44,11 +45,11 @@ export class OnboardingGuard implements CanActivate, CanMatch {
     }
 
     const queryParams =
-      returnUrl && returnUrl !== '/' && !returnUrl.startsWith('/welcome')
+      returnUrl && returnUrl !== '/' && !returnUrl.startsWith(ROUTES.WELCOME)
         ? { returnUrl }
         : undefined;
 
-    return this.router.createUrlTree(['/welcome'], { queryParams });
+    return this.router.createUrlTree([ROUTES.WELCOME], { queryParams });
   }
 
   private buildUrlFromSegments(path: string, segments: UrlSegment[]): string {

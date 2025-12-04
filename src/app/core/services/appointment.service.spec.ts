@@ -1045,7 +1045,7 @@ describe('AppointmentService', () => {
       });
     });
 
-    xit('should handle getAppointment and createAppointment concurrently', done => {
+    it('should handle getAppointment and createAppointment concurrently', done => {
       const getResponse: ApiResponse<Appointment[]> = {
         success: true,
         data: mockAppointments,
@@ -1056,7 +1056,9 @@ describe('AppointmentService', () => {
         data: { ...mockAppointment1, appointment_id: 999 },
       };
 
-      apiGateway.request.and.returnValues(of(getResponse), of(createResponse));
+      // createAppointment internally calls refreshAppointments() which calls getAppointments()
+      // So we need 3 return values: get, create, get (from refresh)
+      apiGateway.request.and.returnValues(of(getResponse), of(createResponse), of(getResponse));
 
       let getCompleted = false;
       let createCompleted = false;

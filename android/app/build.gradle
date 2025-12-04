@@ -29,6 +29,17 @@ android {
             keyAlias = 'androiddebugkey'
             keyPassword = 'android'
         }
+        release {
+            def keystorePropertiesFile = rootProject.file("keystore.properties")
+            if (keystorePropertiesFile.exists()) {
+                def props = new Properties()
+                props.load(new FileInputStream(keystorePropertiesFile))
+                storeFile = file(props['storeFile'])
+                storePassword = props['storePassword']
+                keyAlias = props['keyAlias']
+                keyPassword = props['keyPassword']
+            }
+        }
     }
     buildTypes {
         debug {
@@ -37,6 +48,7 @@ android {
         release {
             minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 

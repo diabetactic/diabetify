@@ -274,8 +274,9 @@ All components use design tokens defined in `/src/global.scss`:
 
 ## Notes
 
-- All components are **standalone** and import `CommonModule` and `IonicModule`
+- All components are **standalone** and import Ionic components individually
 - Components support **dark mode** with automatic theme adjustments
 - Accessibility features include proper ARIA labels and touch targets
-- All components follow the **Ionic Angular** design patterns
+- All components follow the **Ionic Angular standalone** patterns
 - Components are fully **typed** with TypeScript interfaces
+- Icons use **Lucide Angular** (not Material Icons)

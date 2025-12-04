@@ -16,6 +16,7 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { LocalAuthService } from '../core/services/local-auth.service';
 import { APP_CONFIG, AppConfig } from '../core/config/app-config';
+import { ROUTES } from '../core/constants';
 
 @Component({
   selector: 'app-account-pending',
@@ -51,7 +52,7 @@ export class AccountPendingPage {
   async signOut(): Promise<void> {
     try {
       await this.authService.logout();
-      await this.router.navigate(['/welcome']);
+      await this.router.navigate([ROUTES.WELCOME]);
     } catch (error) {
       console.error('Error signing out:', error);
     }

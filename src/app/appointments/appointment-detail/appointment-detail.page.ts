@@ -1,17 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController } from '@ionic/angular';
+import { IonicModule, AlertController } from '@ionic/angular';
+import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { AppointmentService } from '../../core/services/appointment.service';
 import { Appointment, AppointmentResolutionResponse } from '../../core/models/appointment.model';
 import { TranslationService } from '../../core/services/translation.service';
 import { LoggerService } from '../../core/services/logger.service';
+import { ROUTES } from '../../core/constants';
+import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-appointment-detail',
   templateUrl: './appointment-detail.page.html',
   styleUrls: ['./appointment-detail.page.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [CommonModule, FormsModule, IonicModule, TranslateModule, AppIconComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppointmentDetailPage implements OnInit {
   appointment: Appointment | null = null;
@@ -33,7 +40,7 @@ export class AppointmentDetailPage implements OnInit {
     if (appointmentId) {
       this.loadAppointment(Number(appointmentId));
     } else {
-      this.router.navigate(['/tabs/appointments']);
+      this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
     }
   }
 
@@ -54,7 +61,7 @@ export class AppointmentDetailPage implements OnInit {
         (error as Error)?.message ||
           this.translationService.instant('appointments.errors.loadFailed')
       );
-      this.router.navigate(['/tabs/appointments']);
+      this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
     } finally {
       this.loading = false;
     }
@@ -258,6 +265,6 @@ export class AppointmentDetailPage implements OnInit {
    * Navigate back
    */
   goBack(): void {
-    this.router.navigate(['/tabs/appointments']);
+    this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
   }
 }

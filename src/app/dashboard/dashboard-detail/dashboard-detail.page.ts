@@ -18,13 +18,12 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ReadingsService } from '../../core/services/readings.service';
-import { TidepoolSyncService } from '../../core/services/tidepool-sync.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { GlucoseStatistics, GlucoseUnit } from '../../core/models/glucose-reading.model';
-import { SyncStatus } from '../../core/models/tidepool-sync.model';
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
 import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
+import { ROUTES } from '../../core/constants';
 
 @Component({
   selector: 'app-dashboard-detail',
@@ -56,8 +55,8 @@ export class DashboardDetailPage implements OnInit, OnDestroy {
   // Statistics data
   statistics: GlucoseStatistics | null = null;
 
-  // Sync status
-  syncStatus: SyncStatus | null = null;
+  // Backend sync results
+  backendSyncResult: { pushed: number; fetched: number; failed: number } | null = null;
 
   // Loading states
   isLoading = true;
@@ -89,7 +88,6 @@ export class DashboardDetailPage implements OnInit, OnDestroy {
 
   constructor(
     private readingsService: ReadingsService,
-    private syncService: TidepoolSyncService,
     private router: Router,
     private translationService: TranslationService,
     private profileService: ProfileService
@@ -100,7 +98,6 @@ export class DashboardDetailPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscribeToPreferences();
     this.loadStatistics();
-    this.subscribeToSyncStatus();
   }
 
   ngOnDestroy() {
@@ -128,22 +125,12 @@ export class DashboardDetailPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Subscribe to sync status changes
-   */
-  private subscribeToSyncStatus() {
-    this.syncService.syncStatus$.pipe(takeUntil(this.destroy$)).subscribe(status => {
-      this.syncStatus = status;
-      this.isSyncing = status.isRunning;
-    });
-  }
-
-  /**
    * Handle sync button click
    */
   async onSync() {
     try {
       this.isSyncing = true;
-      await this.syncService.performManualSync();
+      this.backendSyncResult = await this.readingsService.performFullSync();
       await this.loadStatistics();
     } catch (error) {
       console.error('Error syncing data:', error);
@@ -156,7 +143,7 @@ export class DashboardDetailPage implements OnInit, OnDestroy {
    * Navigate back to dashboard
    */
   goBack() {
-    this.router.navigate(['/tabs/dashboard']);
+    this.router.navigate([ROUTES.TABS_DASHBOARD]);
   }
 
   /**
@@ -192,60 +179,27 @@ export class DashboardDetailPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Get last sync time display
-   */
-  getLastSyncDisplay(): string {
-    if (!this.syncStatus?.lastSyncTime) {
-      return this.translationService.instant('dashboard.lastSyncStatus.never');
-    }
-
-    const syncDate = new Date(this.syncStatus.lastSyncTime);
-    const now = new Date();
-    const diffMs = now.getTime() - syncDate.getTime();
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-
-    if (diffMinutes < 1) {
-      return this.translationService.instant('dashboard.lastSyncStatus.justNow');
-    } else if (diffMinutes < 60) {
-      const key =
-        diffMinutes === 1
-          ? 'dashboard.lastSyncStatus.oneMinute'
-          : 'dashboard.lastSyncStatus.manyMinutes';
-      return this.translationService.instant(key, { count: diffMinutes });
-    } else if (diffMinutes < 1440) {
-      const hours = Math.floor(diffMinutes / 60);
-      const key =
-        hours === 1 ? 'dashboard.lastSyncStatus.oneHour' : 'dashboard.lastSyncStatus.manyHours';
-      return this.translationService.instant(key, { count: hours });
-    } else {
-      const days = Math.floor(diffMinutes / 1440);
-      const key =
-        days === 1 ? 'dashboard.lastSyncStatus.oneDay' : 'dashboard.lastSyncStatus.manyDays';
-      return this.translationService.instant(key, { count: days });
-    }
-  }
-
-  /**
    * Get sync status text
    */
   getSyncStatusText(): string {
-    if (!this.syncStatus) {
-      return this.translationService.instant('dashboard.syncStatus.unknown');
-    }
-
-    if (this.syncStatus.isRunning) {
+    if (this.isSyncing) {
       return this.translationService.instant('dashboard.syncStatus.syncing');
     }
 
-    if (this.syncStatus.itemsFailed > 0) {
+    if (!this.backendSyncResult) {
+      return this.translationService.instant('dashboard.syncStatus.idle');
+    }
+
+    if (this.backendSyncResult.failed > 0) {
       return this.translationService.instant('dashboard.syncStatus.failed', {
-        count: this.syncStatus.itemsFailed,
+        count: this.backendSyncResult.failed,
       });
     }
 
-    if (this.syncStatus.itemsSynced > 0) {
+    const itemsSynced = this.backendSyncResult.fetched + this.backendSyncResult.pushed;
+    if (itemsSynced > 0) {
       return this.translationService.instant('dashboard.syncStatus.success', {
-        count: this.syncStatus.itemsSynced,
+        count: itemsSynced,
       });
     }
 

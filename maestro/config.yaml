@@ -1,0 +1,7 @@
+# Maestro Global Configuration for Diabetactic
+# See: https://maestro.mobile.dev/reference/configuration
+
+appId: io.diabetactic.app
+env:
+  TEST_USER_ID: '1000'
+  TEST_USER_PASSWORD: 'tuvieja'

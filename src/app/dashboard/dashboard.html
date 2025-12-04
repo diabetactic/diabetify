@@ -1,8 +1,6 @@
 <ion-header>
-  <ion-toolbar class="shadow-sm [--background:var(--color-base-100)]">
-    <ion-title class="text-base-content text-lg font-semibold">
-      {{ 'dashboard.title' | translate }}
-    </ion-title>
+  <ion-toolbar color="primary">
+    <ion-title>{{ 'dashboard.title' | translate }}</ion-title>
     <ion-buttons slot="end">
       <app-language-switcher displayMode="button" [showText]="false"></app-language-switcher>
       <ion-button
@@ -26,13 +24,13 @@
   <!-- Bolus Calculator FAB -->
   <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="mb-14 mr-2">
     <ion-fab-button
-      routerLink="/bolus-calculator"
+      [routerLink]="routes.BOLUS_CALCULATOR"
       color="primary"
       class="shadow-xl"
       [attr.aria-label]="'bolusCalculator.title' | translate"
     >
       <img
-        src="assets/images/bolus-calculator-icon.png"
+        src="assets/images/bolus-calculator-icon.webp"
         alt=""
         class="h-10 w-10 rounded-full object-cover"
       />
@@ -84,8 +82,8 @@
         </button>
       </div>
 
-      <!-- Stats Grid - Gradient DaisyUI stat cards -->
-      <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <!-- Stats Grid - Gradient DaisyUI stat cards (stacked vertically) -->
+      <div class="mb-6 grid grid-cols-1 gap-4">
         <app-stat-card
           [title]="'dashboard.timeInRange' | translate"
           [value]="statistics?.timeInRange ?? 0"
@@ -127,7 +125,7 @@
 
           <!-- Actions -->
           <div class="px-5 pb-4 pt-3">
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <button
                 type="button"
                 (click)="addReading()"
@@ -145,6 +143,15 @@
               >
                 <app-icon name="sync-outline" [class.spinning]="isSyncing"></app-icon>
                 {{ 'dashboard.syncNow' | translate }}
+              </button>
+
+              <button
+                type="button"
+                [routerLink]="routes.BOLUS_CALCULATOR"
+                class="btn btn-accent btn-lg inline-flex w-full items-center justify-center gap-2 rounded-2xl shadow-md"
+              >
+                <app-icon name="calculator-outline"></app-icon>
+                {{ 'bolusCalculator.title' | translate }}
               </button>
             </div>
 
@@ -184,7 +191,7 @@
           <ion-button
             fill="clear"
             size="small"
-            routerLink="/tabs/readings"
+            [routerLink]="routes.TABS_READINGS"
             class="m-0 h-auto text-sm font-medium"
           >
             {{ 'common.viewAll' | translate }}

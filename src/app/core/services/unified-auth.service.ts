@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, BehaviorSubject, combineLatest, of, from } from 'rxjs';
-import { map, switchMap, tap, catchError } from 'rxjs/operators';
+import { map, tap, catchError } from 'rxjs/operators';
 import { TidepoolAuthService, AuthState as TidepoolAuthState } from './tidepool-auth.service';
 import {
   LocalAuthService,

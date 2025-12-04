@@ -148,6 +148,7 @@ docs/archive/
 # Test results and reports
 test-results/
 playwright-report/
+playwright/artifacts/
 # test-results/
 # playwright-report/
 
@@ -171,6 +172,8 @@ android/.npm-cache/
 # npm and build caches
 .npm-cache/
 .chromium-config/
+.cache/playwright/
+.netlify/plugins/node_modules/
 
 .docker-test-config/
 
@@ -291,3 +294,27 @@ nanobanana-output/
 
 # Screenshot directories (auto-generated during testing)
 screenshots/
+
+# Local APK and build outputs
+builds/
+
+# Android secrets and IDE
+android/keystore.properties
+android/release-keystore.jks
+android/.idea/
+
+# Temporary analysis files
+*_ANALYSIS.md
+*_AUDIT.md
+VERIFICATION_PACKAGE/
+VERIFICATION_PACKAGE.zip
+
+# AI tool outputs
+.serena/
+
+# Debug screenshots in root
+login-*.png
+
+# Temporary text files
+services.txt
+tests.txt

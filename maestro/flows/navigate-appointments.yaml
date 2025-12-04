@@ -1,0 +1,21 @@
+# ==========================================
+# Flow: Navigate to Appointments
+# Description: Navigate from any screen to appointments tab
+# Prerequisite: Must be logged in
+# ==========================================
+
+appId: io.diabetactic.app
+
+---
+# 1. TAP ON APPOINTMENTS TAB (bilingual)
+- tapOn:
+    text: 'Citas|Appointments'
+- waitForAnimationToEnd
+
+# 2. WAIT FOR APPOINTMENTS PAGE TO LOAD
+- extendedWaitUntil:
+    visible:
+      text: 'Citas|Appointments'
+    timeout: 5000
+- waitForAnimationToEnd:
+    timeout: 1000

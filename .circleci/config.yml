@@ -9,6 +9,10 @@ executors:
     docker:
       - image: cimg/node:20.19
     working_directory: ~/project
+  playwright-executor:
+    docker:
+      - image: mcr.microsoft.com/playwright:v1.48.0-noble
+    working_directory: ~/project
 
 jobs:
   # Lint and unit tests
@@ -25,9 +29,11 @@ jobs:
           name: Unit Tests
           command: npm test -- --ci --coverage
       - store_test_results:
-          path: coverage
+          path: test-results/jest
       - store_artifacts:
           path: coverage
+      - store_artifacts:
+          path: test-results/jest
 
   # Build production web
   build-web:
@@ -44,15 +50,12 @@ jobs:
           paths:
             - www
 
-  # Deploy to Netlify
+  # Deploy to Netlify (uses www/ from workspace, no rebuild needed)
   deploy-netlify:
     executor: node-executor
     steps:
-      - checkout
       - attach_workspace:
           at: .
-      - node/install-packages:
-          pkg-manager: npm
       - run:
           name: Deploy to Netlify
           command: |
@@ -66,6 +69,8 @@ jobs:
       tag: 2024.01.1
     steps:
       - checkout
+      - attach_workspace:
+          at: .
       - run:
           name: Setup Node.js 20 via NVM
           command: |
@@ -80,11 +85,12 @@ jobs:
           name: Install dependencies
           command: npm ci
       - run:
-          name: Build Web
-          command: npm run build:prod
-      - run:
-          name: Sync Capacitor
+          name: Sync Capacitor (using www/ from workspace)
           command: npx cap sync android
+      - restore_cache:
+          keys:
+            - gradle-cache-v1-{{ checksum "android/build.gradle" }}
+            - gradle-cache-v1-
       - android/create-avd:
           avd-name: test-avd-30
           install: true
@@ -100,6 +106,12 @@ jobs:
       - run:
           name: Build Debug APK
           command: cd android && chmod +x gradlew && ./gradlew assembleDebug
+      - save_cache:
+          key: gradle-cache-v1-{{ checksum "android/build.gradle" }}
+          paths:
+            - ~/.gradle/caches
+            - ~/.gradle/wrapper
+            - android/.gradle
       - run:
           name: Smoke Test on API 30
           command: |
@@ -117,6 +129,8 @@ jobs:
       tag: 2024.01.1
     steps:
       - checkout
+      - attach_workspace:
+          at: .
       - run:
           name: Setup Node.js 20 via NVM
           command: |
@@ -131,11 +145,12 @@ jobs:
           name: Install dependencies
           command: npm ci
       - run:
-          name: Build Web
-          command: npm run build:prod
-      - run:
-          name: Sync Capacitor
+          name: Sync Capacitor (using www/ from workspace)
           command: npx cap sync android
+      - restore_cache:
+          keys:
+            - gradle-cache-v1-{{ checksum "android/build.gradle" }}
+            - gradle-cache-v1-
       - android/create-avd:
           avd-name: test-avd-33
           install: true
@@ -151,6 +166,12 @@ jobs:
       - run:
           name: Build Debug APK
           command: cd android && chmod +x gradlew && ./gradlew assembleDebug
+      - save_cache:
+          key: gradle-cache-v1-{{ checksum "android/build.gradle" }}
+          paths:
+            - ~/.gradle/caches
+            - ~/.gradle/wrapper
+            - android/.gradle
       - run:
           name: Smoke Test on API 33
           command: |
@@ -160,6 +181,92 @@ jobs:
             adb shell dumpsys activity activities | grep -i diabetactic || true
       - store_artifacts:
           path: android/app/build/outputs/apk/debug
+
+  # Playwright E2E (Chromium only) using official image with bundled browsers
+  playwright-e2e:
+    executor: playwright-executor
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies (skip browser download – image already has them)
+          command: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci
+      - run:
+          name: Run Playwright E2E
+          command: npm run test:e2e
+      - store_artifacts:
+          path: playwright-report
+      - store_artifacts:
+          path: playwright/artifacts
+
+  # Maestro Integration Tests - Real device testing against Heroku
+  maestro-tests:
+    executor:
+      name: android/android-machine
+      tag: 2024.01.1
+    environment:
+      TEST_USER_ID: '1000'
+      TEST_USER_PASSWORD: 'tuvieja'
+      BACKOFFICE_API_URL: 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com'
+    steps:
+      - checkout
+      - run:
+          name: Setup Node.js 20 via NVM
+          command: |
+            export NVM_DIR="/opt/circleci/.nvm"
+            source "$NVM_DIR/nvm.sh"
+            nvm install 20
+            nvm alias default 20
+            NODE_DIR=$(dirname $(which node))
+            echo "export PATH=$NODE_DIR:\$PATH" >> $BASH_ENV
+            node --version
+      - run:
+          name: Install dependencies
+          command: npm ci
+      - run:
+          name: Build Web (Heroku mode)
+          command: npm run build:heroku
+      - run:
+          name: Sync Capacitor
+          command: npx cap sync android
+      - run:
+          name: Install Maestro CLI
+          command: |
+            curl -Ls "https://get.maestro.mobile.dev" | bash
+            echo 'export PATH="$PATH:$HOME/.maestro/bin"' >> $BASH_ENV
+      - android/create-avd:
+          avd-name: maestro-avd
+          install: true
+          system-image: system-images;android-33;google_apis;x86_64
+      - android/start-emulator:
+          avd-name: maestro-avd
+          post-emulator-launch-assemble-command: ''
+      - run:
+          name: Create Debug Keystore
+          command: |
+            mkdir -p ~/.android
+            keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+      - run:
+          name: Build and Install APK
+          command: |
+            cd android && chmod +x gradlew && ./gradlew assembleDebug
+            adb install app/build/outputs/apk/debug/app-debug.apk
+      - run:
+          name: Run Maestro Tests
+          command: |
+            source $BASH_ENV
+            cd maestro
+            maestro test tests/ \
+              --env TEST_USER_ID=${TEST_USER_ID} \
+              --env TEST_USER_PASSWORD=${TEST_USER_PASSWORD} \
+              --env BACKOFFICE_API_URL=${BACKOFFICE_API_URL} \
+              --env BACKOFFICE_ADMIN_USERNAME=${BACKOFFICE_ADMIN_USERNAME} \
+              --env BACKOFFICE_ADMIN_PASSWORD=${BACKOFFICE_ADMIN_PASSWORD} \
+              --format junit --output maestro-results.xml || true
+          no_output_timeout: 15m
+      - store_test_results:
+          path: maestro
+      - store_artifacts:
+          path: maestro
 
   # Release APK - downloadable with nice name
   release-apk:
@@ -218,14 +325,26 @@ workflows:
       - build-web:
           requires:
             - test
-      # Android builds only on master to save credits
-      - build-android-api30:
+      - playwright-e2e:
           requires:
             - test
           filters:
             branches:
               only: master
+      # Android builds only on master - use www/ from build-web workspace
+      - build-android-api30:
+          requires:
+            - build-web
+          filters:
+            branches:
+              only: master
       - build-android-api33:
+          requires:
+            - build-web
+          filters:
+            branches:
+              only: master
+      - maestro-tests:
           requires:
             - test
           filters:

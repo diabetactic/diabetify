@@ -201,6 +201,10 @@
       "manyHours": "Hace {{count}} horas",
       "oneDay": "Hace {{count}} día",
       "manyDays": "Hace {{count}} días"
+    },
+    "errors": {
+      "refreshFailed": "Error al actualizar los datos. Por favor, intenta de nuevo.",
+      "syncFailed": "Error al sincronizar los datos. Por favor, verifica tu conexión."
     }
   },
   "readings": {
@@ -218,6 +222,10 @@
     "syncing": "Sincronizando...",
     "syncComplete": "Sincronización completa: {{pushed}} enviadas, {{fetched}} recibidas",
     "syncFailed": "Error de sincronización. Intenta de nuevo.",
+    "errors": {
+      "refreshFailed": "Error al actualizar las lecturas. Por favor, intenta de nuevo.",
+      "syncFailed": "Error al sincronizar las lecturas. Por favor, verifica tu conexión."
+    },
     "loadingReadings": "Cargando lecturas...",
     "noReadings": "Aún No Hay Lecturas",
     "noReadingsMessage": "Comienza a rastrear tus niveles de glucosa agregando tu primera lectura.",
@@ -511,14 +519,16 @@
         "pending": "Pendiente",
         "accepted": "Aceptada",
         "denied": "Rechazada",
-        "created": "Completada"
+        "created": "Completada",
+        "blocked": "Bloqueada"
       },
       "states": {
         "NONE": "Sin solicitud pendiente",
         "PENDING": "Su solicitud está esperando revisión",
         "ACCEPTED": "Su solicitud fue aceptada, puede completar el formulario",
         "DENIED": "Su solicitud no fue aceptada",
-        "CREATED": "Ya tiene una cita registrada"
+        "CREATED": "Ya tiene una cita registrada",
+        "BLOCKED": "La cola de citas está cerrada temporalmente"
       },
       "messages": {
         "submitSuccess": "Su solicitud de cita ha sido enviada",
@@ -526,7 +536,8 @@
         "mustRequestFirst": "Debe solicitar una cita primero",
         "waitingReview": "Su solicitud aún está esperando ser aceptada",
         "requestDenied": "Su solicitud no fue aceptada. Por favor contacte a la clínica.",
-        "canProceed": "Puede proceder a completar el formulario de cita"
+        "canProceed": "Puede proceder a completar el formulario de cita",
+        "queueClosed": "La cola de citas está cerrada. Por favor intente más tarde."
       }
     },
     "reason": "Motivo",
@@ -704,7 +715,13 @@
       "en": "English",
       "es": "Español"
     },
-    "notifications": "Notificaciones",
+    "notifications": {
+      "title": "Notificaciones",
+      "desc": "Recibe recordatorios para chequeos de glucosa",
+      "enabled": "Notificaciones activadas",
+      "disabled": "Notificaciones desactivadas",
+      "permissionDenied": "Permiso denegado. Por favor activa las notificaciones en ajustes."
+    },
     "theme": {
       "title": "Tema",
       "light": "Claro",

@@ -2,11 +2,11 @@
 
 > **Parte del monorepo [Diabetactic](../README.md)** - Ver estructura completa del proyecto
 
-Aplicación móvil desarrollada con Ionic/Angular para la gestión de lecturas de glucosa en pacientes diabéticos, con integración a la API de Tidepool.
+Aplicación móvil desarrollada con Ionic/Angular para la gestión de lecturas de glucosa en pacientes diabéticos. Integración con Tidepool para autenticación de usuarios.
 
 ## Descripción del Proyecto
 
-Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar el seguimiento y control de niveles de glucosa en sangre. El sistema permite a los usuarios registrar sus lecturas, visualizar tendencias históricas y sincronizar datos con servicios externos como Tidepool.
+Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar el seguimiento y control de niveles de glucosa en sangre. El sistema permite a los usuarios registrar sus lecturas, visualizar tendencias históricas y gestionar citas médicas. Los datos se almacenan en el backend de Diabetactic, con autenticación opcional vía Tidepool.
 
 ### Características Principales
 
