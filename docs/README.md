@@ -13,6 +13,7 @@ Documentación del proyecto Diabetactic, aplicación móvil para gestión de dia
 | [Guía de Estilos](./STYLING_GUIDE.md)          | Convenciones de CSS y componentes UI                 |
 | [Guía de Testing](./TESTING_GUIDE.md)          | Estrategias de testing (unitarios, integración, E2E) |
 | [Guía de Traducciones](./TRANSLATION_GUIDE.md) | Implementación de i18n                               |
+| [Manual de TI](./MANUAL_TI.md)                 | Guía para el equipo de TI del hospital               |
 
 ## Estructura del Proyecto
 
