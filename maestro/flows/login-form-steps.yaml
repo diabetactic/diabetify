@@ -1,0 +1,33 @@
+# ==========================================
+# Flow: Login Form Steps
+# Description: Performs the actual login form interaction.
+#              Called conditionally when login form is visible.
+# Env vars defined here (config.yaml inheritance unreliable in flows)
+# ==========================================
+
+appId: io.diabetactic.app
+
+env:
+  TEST_USER_ID: '1000'
+  TEST_USER_PASSWORD: 'tuvieja'
+
+---
+# 1. INPUT USERNAME
+- tapOn:
+    text: 'DNI o Email|DNI or Email'
+- eraseText
+- inputText: '${TEST_USER_ID}'
+- hideKeyboard
+
+# 2. INPUT PASSWORD
+- tapOn:
+    text: 'Contraseña|Password'
+- eraseText
+- inputText: '${TEST_USER_PASSWORD}'
+- hideKeyboard
+
+# 3. SUBMIT LOGIN
+- tapOn:
+    text: 'Iniciar Sesión|Sign In'
+- waitForAnimationToEnd:
+    timeout: 2000
