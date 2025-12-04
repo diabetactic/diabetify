@@ -131,7 +131,7 @@ function createSpyObj<T>(
 // Make jasmine globally available for compatibility
 (global as any).jasmine = {
   createSpyObj,
-  createSpy: (name?: string) => createJasmineLikeMock(),
+  createSpy: (_name?: string) => createJasmineLikeMock(),
   objectContaining: (expected: any) => expect.objectContaining(expected),
   arrayContaining: (expected: any[]) => expect.arrayContaining(expected),
   any: (constructor: any) => expect.any(constructor),
@@ -265,6 +265,7 @@ declare global {
   namespace jasmine {
     // Use any for SpyObj to avoid all TypeScript strictness issues
     // The actual spy functionality is provided at runtime by our createSpyObj implementation
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     type SpyObj<T> = any;
 
     function createSpyObj<T = any>(

@@ -66,7 +66,6 @@ describe('ThemeService', () => {
   });
 
   it('should toggle theme', async () => {
-    const initialDark = service.isDarkTheme();
     await service.toggleTheme();
     // The actual dark state depends on the mode and might not change immediately
     expect(service.getCurrentThemeMode()).toBeDefined();

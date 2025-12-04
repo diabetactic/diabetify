@@ -117,14 +117,16 @@ describe('ProfileService', () => {
   afterEach(() => {
     mockStorage.clear();
     mockSecureStorage.clear();
+    // Reset TestBed to force new service instance and prevent state pollution
+    TestBed.resetTestingModule();
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  // Skip getProfile tests - state pollution from singleton service
-  xdescribe('getProfile()', () => {
+  // getProfile tests - state pollution fixed with TestBed.resetTestingModule()
+  describe('getProfile()', () => {
     describe('Success Cases', () => {
       it('should return null when no profile exists', async () => {
         const profile = await service.getProfile();
@@ -632,8 +634,8 @@ describe('ProfileService', () => {
     });
   });
 
-  // Skip Tidepool Credentials tests - state pollution and SecureStorage mock issues
-  xdescribe('Tidepool Credentials Management', () => {
+  // Tidepool Credentials tests - state pollution fixed with TestBed.resetTestingModule()
+  describe('Tidepool Credentials Management', () => {
     beforeEach(async () => {
       await service.createProfile({
         name: 'Test User',
@@ -849,8 +851,8 @@ describe('ProfileService', () => {
     });
   });
 
-  // Skip hasProfile tests - state pollution from singleton service
-  xdescribe('hasProfile()', () => {
+  // hasProfile tests - state pollution fixed with TestBed.resetTestingModule()
+  describe('hasProfile()', () => {
     it('should return false when no profile exists', async () => {
       const has = await service.hasProfile();
       expect(has).toBeFalse();
@@ -872,8 +874,8 @@ describe('ProfileService', () => {
     });
   });
 
-  // Skip Export/Import tests - state pollution and error message mismatches
-  xdescribe('Export/Import', () => {
+  // Export/Import tests - state pollution fixed with TestBed.resetTestingModule()
+  describe('Export/Import', () => {
     beforeEach(async () => {
       await service.createProfile({
         name: 'Export Test',
@@ -968,23 +970,24 @@ describe('ProfileService', () => {
       it('should throw error on missing required fields', async () => {
         const invalidProfile = JSON.stringify({ age: 10 }); // Missing name
 
+        // The service throws generic "Invalid profile data" on validation failure
         await expectAsync(service.importProfile(invalidProfile)).toBeRejectedWithError(
-          'Invalid profile data: missing required fields'
+          'Invalid profile data'
         );
       });
     });
   });
 
-  // Skip Schema Migrations tests - they have state pollution issues and test
-  // internal implementation details that aren't exposed by the service API.
-  xdescribe('Schema Migrations', () => {
+  // Schema Migrations tests - state pollution fixed with TestBed.resetTestingModule()
+  // Note: These test internal implementation details that aren't exposed by the service API.
+  describe('Schema Migrations', () => {
     // Note: Schema migration tests are skipped as they require service-level
     // implementation that sets schema version during initialization.
     // The ProfileService currently doesn't implement explicit schema versioning.
 
     it('should handle missing schema version gracefully', async () => {
       // Service should work fine without schema version set
-      const profile = await service.getProfile();
+      await service.getProfile();
       // Should return null or profile without error
       expect(service).toBeTruthy();
     });

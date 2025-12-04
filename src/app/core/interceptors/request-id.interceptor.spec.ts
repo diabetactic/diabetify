@@ -7,7 +7,6 @@ import { RequestIdInterceptor } from './request-id.interceptor';
 describe('RequestIdInterceptor', () => {
   let httpClient: HttpClient;
   let httpMock: HttpTestingController;
-  let interceptor: RequestIdInterceptor;
 
   const testUrl = '/api/test-endpoint';
 
@@ -26,7 +25,6 @@ describe('RequestIdInterceptor', () => {
 
     httpClient = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);
-    interceptor = TestBed.inject(RequestIdInterceptor);
   });
 
   afterEach(() => {
