@@ -54,6 +54,7 @@
                 [class.border-danger]="
                   readingForm.get('value')?.invalid && readingForm.get('value')?.touched
                 "
+                data-testid="glucose-value-input"
               ></ion-input>
               <span class="text-medium whitespace-nowrap text-lg font-medium text-gray-500">{{
                 getUnitLabel()
@@ -128,6 +129,7 @@
                 interface="action-sheet"
                 [cancelText]="'common.cancel' | translate"
                 class="ion-select-full w-full"
+                data-testid="meal-context-select"
               >
                 <ion-select-option [value]="null">{{
                   'common.none' | translate
@@ -161,6 +163,7 @@
                 rows="4"
                 maxlength="500"
                 class="notes-textarea w-full"
+                data-testid="notes-textarea"
               ></ion-textarea>
             </div>
             <div class="label">

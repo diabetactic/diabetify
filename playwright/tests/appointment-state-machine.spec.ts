@@ -96,7 +96,7 @@ test.describe('Appointment State Machine', () => {
     if (await appointmentsTab.isVisible({ timeout: 10000 }).catch(() => false)) {
       await appointmentsTab.click();
       await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // In NONE state, should show request button
       const requestButton = page.locator(
@@ -114,7 +114,10 @@ test.describe('Appointment State Machine', () => {
         .isVisible({ timeout: 5000 })
         .catch(() => false);
 
-      expect(hasRequestButton || hasEmptyState).toBeTruthy();
+      expect(
+        hasRequestButton || hasEmptyState,
+        'Should show request button or empty state in NONE state'
+      ).toBeTruthy();
 
       console.log('✅ NONE state displays correctly');
     }
@@ -131,7 +134,7 @@ test.describe('Appointment State Machine', () => {
     if (await appointmentsTab.isVisible({ timeout: 10000 }).catch(() => false)) {
       await appointmentsTab.click();
       await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Check if currently in pending state
       const pendingIndicator = page.locator(
@@ -173,7 +176,7 @@ test.describe('Appointment State Machine', () => {
     if (await appointmentsTab.isVisible({ timeout: 10000 }).catch(() => false)) {
       await appointmentsTab.click();
       await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Check if currently in accepted state
       const acceptedIndicator = page.locator(
@@ -216,7 +219,7 @@ test.describe('Appointment State Machine', () => {
     if (await appointmentsTab.isVisible({ timeout: 10000 }).catch(() => false)) {
       await appointmentsTab.click();
       await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Check if there are completed appointments
       const createdIndicator = page.locator('text=/Creada|Created|Programada|Scheduled|Tu cita/i');
@@ -253,7 +256,7 @@ test.describe('Appointment State Machine', () => {
     if (await appointmentsTab.isVisible({ timeout: 10000 }).catch(() => false)) {
       await appointmentsTab.click();
       await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Check if in denied state
       const deniedIndicator = page.locator('text=/Rechazada|Denied|Denegada|No aprobada/i');
@@ -291,7 +294,8 @@ test.describe('Appointment State Machine', () => {
     await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
 
     // Wait for initial state and hydration
-    await page.waitForTimeout(3000);
+    await page.waitForLoadState('networkidle', { timeout: 10000 });
+    await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
 
     // Capture initial state
     const initialContent = await page.locator('ion-content').textContent();
@@ -299,14 +303,15 @@ test.describe('Appointment State Machine', () => {
     // Refresh to trigger state sync
     await page.reload();
     await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-    await page.waitForTimeout(3000);
+    await page.waitForLoadState('networkidle', { timeout: 10000 });
+    await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
 
     // Content should be consistent after refresh
     const afterRefreshContent = await page.locator('ion-content').textContent();
 
     // Both should have content
-    expect(initialContent?.length).toBeGreaterThan(0);
-    expect(afterRefreshContent?.length).toBeGreaterThan(0);
+    expect(initialContent?.length, 'Initial content should be present').toBeGreaterThan(0);
+    expect(afterRefreshContent?.length, 'Content should persist after refresh').toBeGreaterThan(0);
 
     console.log('✅ State persists across refresh');
   });
@@ -322,7 +327,7 @@ test.describe('Appointment State Machine', () => {
     if (await appointmentsTab.isVisible({ timeout: 10000 }).catch(() => false)) {
       await appointmentsTab.click();
       await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Check if queue is blocked
       const blockedIndicator = page.locator(
@@ -350,7 +355,10 @@ test.describe('Appointment State Machine', () => {
             .first()
             .isDisabled()
             .catch(() => true);
-          expect(isDisabled).toBeTruthy();
+          expect(
+            isDisabled,
+            'Request button should be disabled when queue is blocked'
+          ).toBeTruthy();
         }
 
         console.log('✅ BLOCKED state disables request');

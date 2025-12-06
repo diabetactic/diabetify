@@ -33,6 +33,7 @@
     "close": "Close",
     "cancel": "Cancel",
     "save": "Save",
+    "saving": "Saving...",
     "no": "No",
     "retry": "Retry",
     "pullToRefresh": "Pull to refresh",
@@ -47,7 +48,9 @@
     "scrollToTop": "Scroll to top",
     "dismiss": "Dismiss",
     "dismissAlert": "Dismiss alert",
-    "unableToLoad": "Unable to load"
+    "unableToLoad": "Unable to load",
+    "ok": "OK",
+    "error": "Error"
   },
   "tabs": {
     "home": "Home",
@@ -784,6 +787,14 @@
       "networkError": "Network error. Please check your connection."
     },
     "changePhoto": "Change photo",
+    "editProfile": "Edit Profile",
+    "editForm": {
+      "name": "Name",
+      "surname": "Surname",
+      "email": "Email",
+      "success": "Profile updated successfully!",
+      "error": "Failed to update profile. Please try again."
+    },
     "avatar": {
       "errorTitle": "Profile photo",
       "tooLarge": "Please choose an image smaller than 3 MB.",

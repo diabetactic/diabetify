@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ProfileService } from './profile.service';
+import { ApiGatewayService } from './api-gateway.service';
+import { of, throwError } from 'rxjs';
 import {
   UserProfile,
   CreateUserProfileInput,
@@ -103,7 +105,16 @@ describe('ProfileService', () => {
     jest.spyOn(SecureStorage, 'remove').mockImplementation(SecureStorageMock.remove);
 
     TestBed.configureTestingModule({
-      providers: [ProfileService],
+      providers: [
+        ProfileService,
+        {
+          provide: ApiGatewayService,
+          useValue: {
+            request: jest.fn(),
+            clearCache: jest.fn(),
+          },
+        },
+      ],
     });
 
     service = TestBed.inject(ProfileService);
@@ -1051,6 +1062,70 @@ describe('ProfileService', () => {
           done();
         }
       }
+    });
+  });
+
+  describe('updateProfileOnBackend', () => {
+    it('should update profile on backend via PATCH endpoint', async () => {
+      const updates = {
+        name: 'John',
+        surname: 'Doe',
+        email: 'john.doe@example.com',
+      };
+
+      const mockResponse = {
+        success: true,
+        data: { message: 'Profile updated' },
+      };
+
+      const mockApiGateway = {
+        request: jest.fn().mockReturnValue(of(mockResponse)),
+        clearCache: jest.fn(),
+      };
+
+      const service = new ProfileService(mockApiGateway as any);
+
+      await service.updateProfileOnBackend(updates);
+
+      expect(mockApiGateway.request).toHaveBeenCalledWith('extservices.users.update', {
+        body: updates,
+      });
+      expect(mockApiGateway.clearCache).toHaveBeenCalledWith('extservices.users.me');
+    });
+
+    it('should throw error if backend update fails', async () => {
+      const updates = { name: 'John' };
+
+      const mockErrorResponse = {
+        success: false,
+        error: {
+          code: 'UPDATE_FAILED',
+          message: 'Update failed',
+          retryable: false,
+        },
+      };
+
+      const mockApiGateway = {
+        request: jest.fn().mockReturnValue(of(mockErrorResponse)),
+        clearCache: jest.fn(),
+      };
+
+      const service = new ProfileService(mockApiGateway as any);
+
+      await expect(service.updateProfileOnBackend(updates)).rejects.toThrow('Update failed');
+    });
+
+    it('should handle network errors gracefully', async () => {
+      const updates = { email: 'test@example.com' };
+
+      const mockApiGateway = {
+        request: jest.fn().mockReturnValue(throwError(() => new Error('Network error'))),
+        clearCache: jest.fn(),
+      };
+
+      const service = new ProfileService(mockApiGateway as any);
+
+      await expect(service.updateProfileOnBackend(updates)).rejects.toThrow('Network error');
     });
   });
 });

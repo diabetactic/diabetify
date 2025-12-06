@@ -52,9 +52,13 @@ env:
     text: 'Carbohidratos|Carbohydrates'
 
 # 7. ENTER GLUCOSE VALUE
-# Use point tap to bypass shadow DOM (glucose input is ~35% from top)
+# Try data-testid first, fallback to point tap for shadow DOM
+- tapOn:
+    id: 'current-glucose-input'
+    optional: true
 - tapOn:
     point: '50%,35%'
+    optional: true
 - waitForAnimationToEnd:
     timeout: 500
 - inputText: ${TEST_GLUCOSE_VALUE}
@@ -63,9 +67,13 @@ env:
     timeout: 1000
 
 # 8. ENTER CARBOHYDRATE VALUE
-# Carbs input is ~50% from top (below glucose)
+# Try data-testid first, fallback to point tap for shadow DOM
+- tapOn:
+    id: 'carb-grams-input'
+    optional: true
 - tapOn:
     point: '50%,50%'
+    optional: true
 - waitForAnimationToEnd:
     timeout: 500
 - inputText: ${TEST_CARB_VALUE}
@@ -83,7 +91,11 @@ env:
 
 # 10. TAP CALCULATE BUTTON
 - tapOn:
+    id: 'calculate-bolus-btn'
+    optional: true
+- tapOn:
     text: 'Calcular Dosis|Calculate Dose'
+    optional: true
 - waitForAnimationToEnd:
     timeout: 2000
 

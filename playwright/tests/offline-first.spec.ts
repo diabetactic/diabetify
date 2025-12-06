@@ -38,7 +38,10 @@ test.describe('Offline-First Functionality', () => {
     await expect(page).toHaveURL(/\/tabs\//, { timeout: 20000 });
 
     // Wait for initial data to load and hydration to complete
-    await page.waitForTimeout(4000);
+    await page.waitForLoadState('networkidle', { timeout: 10000 });
+    await page
+      .waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 5000 })
+      .catch(() => page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 }));
   });
 
   test.describe('Reading offline workflow', () => {
@@ -48,7 +51,7 @@ test.describe('Offline-First Functionality', () => {
       // Navigate to readings first (while online)
       await page.click('[data-testid="tab-readings"], ion-tab-button[tab="readings"]');
       await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Count readings before
       const countBefore = await page.locator('ion-card, .reading-item').count();
@@ -67,8 +70,8 @@ test.describe('Offline-First Functionality', () => {
       ) {
         await fabButton.first().click();
 
-        // Wait for form
-        await page.waitForTimeout(1000);
+        // Wait for form to appear
+        await page.waitForSelector('ion-input input', { state: 'visible', timeout: 5000 });
 
         // Fill glucose value
         const glucoseInput = page.locator('ion-input input').first();
@@ -80,8 +83,8 @@ test.describe('Offline-First Functionality', () => {
           const saveButton = page.locator('[data-testid="add-reading-save-btn"]');
           await saveButton.click();
 
-          // Wait for local save
-          await page.waitForTimeout(2000);
+          // Wait for local save and navigation
+          await page.waitForLoadState('networkidle', { timeout: 5000 });
 
           // Should navigate back (local save succeeded)
           await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
@@ -106,7 +109,7 @@ test.describe('Offline-First Functionality', () => {
       // Navigate to readings (online)
       await page.click('[data-testid="tab-readings"], ion-tab-button[tab="readings"]');
       await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Note current readings
       const onlineReadings = await page.locator('ion-card, .reading-item').count();
@@ -115,8 +118,8 @@ test.describe('Offline-First Functionality', () => {
       console.log('Going offline...');
       await context.setOffline(true);
 
-      // Wait a moment
-      await page.waitForTimeout(1000);
+      // Wait for offline state to settle
+      await page.waitForLoadState('domcontentloaded', { timeout: 3000 });
 
       // Readings should still be visible (cached in IndexedDB)
       const offlineReadings = await page.locator('ion-card, .reading-item').count();
@@ -135,7 +138,7 @@ test.describe('Offline-First Functionality', () => {
       // Navigate to readings
       await page.click('[data-testid="tab-readings"], ion-tab-button[tab="readings"]');
       await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Go offline
       console.log('Going offline...');
@@ -159,7 +162,8 @@ test.describe('Offline-First Functionality', () => {
           const saveButton = page.locator('[data-testid="add-reading-save-btn"]');
           await saveButton.click();
 
-          await page.waitForTimeout(2000);
+          // Wait for navigation after save
+          await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 5000 });
         }
       }
 
@@ -167,8 +171,8 @@ test.describe('Offline-First Functionality', () => {
       console.log('Going back online...');
       await context.setOffline(false);
 
-      // Wait for sync
-      await page.waitForTimeout(5000);
+      // Wait for sync to complete
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Check for sync indicator
       const syncIndicator = page.locator('text=/Sincronizando|Syncing|Sincronizado|Synced/i');
@@ -193,7 +197,7 @@ test.describe('Offline-First Functionality', () => {
       // Navigate to readings
       await page.click('[data-testid="tab-readings"], ion-tab-button[tab="readings"]');
       await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Go offline
       await context.setOffline(true);
@@ -214,7 +218,9 @@ test.describe('Offline-First Functionality', () => {
 
           const saveButton = page.locator('[data-testid="add-reading-save-btn"]');
           await saveButton.click();
-          await page.waitForTimeout(2000);
+
+          // Wait for navigation after save
+          await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 5000 });
         }
       }
 
@@ -245,19 +251,22 @@ test.describe('Offline-First Functionality', () => {
 
       // Navigate to profile with retry for hydration
       await page.click('[data-testid="tab-profile"], ion-tab-button[tab="profile"]');
-      await page.waitForTimeout(3000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
+      await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
 
       // Get current profile content
       const profileContent = await page.locator('ion-content').textContent();
 
       // Go offline
       await context.setOffline(true);
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('domcontentloaded', { timeout: 3000 });
 
       // Profile should still be visible
       const offlineContent = await page.locator('ion-content').textContent();
 
-      expect(offlineContent?.length).toBeGreaterThan(0);
+      expect(offlineContent?.length, 'Profile should have content while offline').toBeGreaterThan(
+        0
+      );
 
       console.log('✅ Profile data preserved offline');
 
@@ -270,15 +279,15 @@ test.describe('Offline-First Functionality', () => {
 
       // Navigate to profile
       await page.click('[data-testid="tab-profile"], ion-tab-button[tab="profile"]');
-      await page.waitForTimeout(3000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Go offline
       await context.setOffline(true);
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('domcontentloaded', { timeout: 3000 });
 
       // Go back online
       await context.setOffline(false);
-      await page.waitForTimeout(3000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Profile should still work
       const isWorking = await page
@@ -286,7 +295,7 @@ test.describe('Offline-First Functionality', () => {
         .isVisible({ timeout: 5000 })
         .catch(() => false);
 
-      expect(isWorking).toBeTruthy();
+      expect(isWorking, 'Profile should be visible after reconnection').toBeTruthy();
 
       console.log('✅ Preference sync handled');
     });
@@ -298,7 +307,7 @@ test.describe('Offline-First Functionality', () => {
 
       // Go offline
       await context.setOffline(true);
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('domcontentloaded', { timeout: 3000 });
 
       // Look for offline indicator
       const offlineIndicator = page.locator(
@@ -325,9 +334,9 @@ test.describe('Offline-First Functionality', () => {
 
       // Go offline then online
       await context.setOffline(true);
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('domcontentloaded', { timeout: 3000 });
       await context.setOffline(false);
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Look for reconnection indicator
       const reconnectedIndicator = page.locator(
@@ -351,7 +360,7 @@ test.describe('Offline-First Functionality', () => {
         .isVisible({ timeout: 5000 })
         .catch(() => false);
 
-      expect(appWorking).toBeTruthy();
+      expect(appWorking, 'App should be functional after reconnection').toBeTruthy();
 
       console.log('✅ App functional after reconnection');
     });
@@ -364,7 +373,7 @@ test.describe('Offline-First Functionality', () => {
       // Navigate to readings
       await page.click('[data-testid="tab-readings"], ion-tab-button[tab="readings"]');
       await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Count initial readings
       const initialCount = await page.locator('ion-card, .reading-item').count();
@@ -372,13 +381,13 @@ test.describe('Offline-First Functionality', () => {
       // Simulate connection fluctuations
       for (let i = 0; i < 3; i++) {
         await context.setOffline(true);
-        await page.waitForTimeout(500);
+        await page.waitForLoadState('domcontentloaded', { timeout: 2000 });
         await context.setOffline(false);
-        await page.waitForTimeout(500);
+        await page.waitForLoadState('networkidle', { timeout: 3000 });
       }
 
-      // Wait for stabilization
-      await page.waitForTimeout(3000);
+      // Wait for stabilization after fluctuations
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Count readings after fluctuations
       const finalCount = await page.locator('ion-card, .reading-item').count();

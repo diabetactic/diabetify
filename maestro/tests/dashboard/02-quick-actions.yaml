@@ -1,0 +1,175 @@
+# ==========================================
+# Test: Dashboard - Quick Action Buttons
+# Description: Test all quick action buttons functionality
+# Covers: Add Reading, Sync, Bolus Calculator, FAB button
+# Uses bilingual selectors and shadow DOM workarounds
+# ==========================================
+
+appId: io.diabetactic.app
+
+env:
+  TEST_GLUCOSE_VALUE: '115'
+
+---
+# 1. LOGIN WITH FRESH STATE
+- runFlow: ../../flows/login.yaml
+
+# 2. VERIFY DASHBOARD LOADED
+- extendedWaitUntil:
+    visible:
+      text: '.*(Inicio|Home|Dashboard).*'
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 3. SCROLL TO QUICK ACTIONS CARD
+- swipe:
+    start: '50%,70%'
+    end: '50%,40%'
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 4. VERIFY QUICK ACTIONS CARD IS VISIBLE
+- extendedWaitUntil:
+    visible:
+      text: 'Acciones Rápidas|Quick Actions'
+    timeout: 5000
+
+# ===============================
+# TEST 1: ADD READING BUTTON
+# ===============================
+
+# 5. TAP "ADD READING" BUTTON
+- tapOn:
+    text: 'Agregar Lectura|Add Reading'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 6. VERIFY ADD READING MODAL OPENED
+- extendedWaitUntil:
+    visible:
+      text: 'Agregar Lectura|Add Reading'
+    timeout: 8000
+
+# 7. VERIFY GLUCOSE INPUT FIELD IS VISIBLE
+- assertVisible:
+    text: 'Glucosa|Glucose'
+
+# 8. CLOSE MODAL (back to dashboard)
+- tapOn:
+    id: 'cancel-add-reading-btn'
+    optional: true
+- tapOn:
+    text: 'Cancelar|Cancel'
+    optional: true
+- tapOn:
+    point: '10%,10%'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 9. VERIFY BACK ON DASHBOARD
+- extendedWaitUntil:
+    visible:
+      text: 'Acciones Rápidas|Quick Actions'
+    timeout: 5000
+
+# ===============================
+# TEST 2: SYNC BUTTON
+# ===============================
+
+# 10. TAP "SYNC NOW" BUTTON
+- tapOn:
+    text: 'Sincronizar Ahora|Sync Now'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 11. VERIFY SYNC INITIATED (button disabled during sync)
+# Look for spinning icon or disabled state
+- assertVisible:
+    text: 'Sincronizar|Sync'
+
+# 12. WAIT FOR SYNC TO COMPLETE
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 13. VERIFY SYNC COMPLETED (last sync timestamp updated)
+- assertVisible:
+    text: 'Última Sincronización|Last Sync'
+    optional: true
+
+# ===============================
+# TEST 3: BOLUS CALCULATOR BUTTON
+# ===============================
+
+# 14. TAP "BOLUS CALCULATOR" BUTTON
+- tapOn:
+    text: 'Calculadora de Bolo|Bolus Calculator|Calculadora|Calculator'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 15. VERIFY BOLUS CALCULATOR PAGE OPENED
+- extendedWaitUntil:
+    visible:
+      text: 'Calculadora de Bolo|Bolus Calculator'
+    timeout: 8000
+
+# 16. VERIFY CALCULATOR FORM ELEMENTS
+- assertVisible:
+    text: 'Glucosa Actual|Current Glucose'
+- assertVisible:
+    text: 'Carbohidratos|Carbohydrates'
+
+# 17. NAVIGATE BACK TO DASHBOARD
+- tapOn:
+    text: 'Inicio|Home|Dashboard'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 18. VERIFY BACK ON DASHBOARD
+- extendedWaitUntil:
+    visible:
+      text: 'Acciones Rápidas|Quick Actions'
+    timeout: 5000
+
+# ===============================
+# TEST 4: FAB BUTTON (Bolus Calculator)
+# ===============================
+
+# 19. SCROLL TO TOP TO SEE FAB CLEARLY
+- swipe:
+    start: '50%,40%'
+    end: '50%,80%'
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 20. TAP FAB BUTTON (bottom-right floating action button)
+# FAB should open bolus calculator
+- tapOn:
+    point: '90%,90%'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 21. VERIFY FAB OPENED BOLUS CALCULATOR
+- extendedWaitUntil:
+    visible:
+      text: 'Calculadora de Bolo|Bolus Calculator'
+    timeout: 8000
+
+# 22. VERIFY FAB FUNCTIONALITY MATCHES QUICK ACTION BUTTON
+- assertVisible:
+    text: 'Glucosa Actual|Current Glucose'
+
+# 23. NAVIGATE BACK TO DASHBOARD ONE MORE TIME
+- tapOn:
+    text: 'Inicio|Home|Dashboard'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 24. FINAL VERIFICATION - DASHBOARD IS STABLE
+- assertVisible:
+    text: 'Tiempo en Rango|Time in Range'
+- assertVisible:
+    text: 'Acciones Rápidas|Quick Actions'

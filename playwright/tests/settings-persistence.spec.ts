@@ -145,7 +145,10 @@ test.describe('Settings Persistence', () => {
         console.log('New language after restart:', newLanguage);
 
         // Verify language actually changed
-        expect(newLanguage && newLanguage !== currentLanguage).toBeTruthy();
+        expect(
+          newLanguage && newLanguage !== currentLanguage,
+          'Language should change after selection'
+        ).toBeTruthy();
 
         // Close new page
         await newPage.close();

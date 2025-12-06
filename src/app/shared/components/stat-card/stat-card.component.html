@@ -16,6 +16,7 @@
   [attr.role]="'article'"
   [attr.aria-label]="title"
   [attr.tabindex]="clickable ? 0 : null"
+  [attr.data-testid]="testId"
 >
   <ion-ripple-effect *ngIf="clickable"></ion-ripple-effect>
 
@@ -64,6 +65,7 @@
             [class.opacity-70]="valueUpdating"
             aria-live="polite"
             [attr.aria-label]="'Value: ' + formattedValue + (unit ? ' ' + unit : '')"
+            [attr.data-testid]="'stat-card-value'"
           >
             <span class="text-3xl font-bold leading-none drop-shadow-lg">{{ formattedValue }}</span>
             <span class="ml-1 text-sm font-medium opacity-85" *ngIf="unit">{{ unit }}</span>

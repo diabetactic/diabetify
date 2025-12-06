@@ -588,7 +588,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       path: '/glucose/mine/latest',
       method: 'GET',
       authenticated: true,
-      timeout: 30000,
+      timeout: 10000, // Faster timeout for latest readings
       cache: {
         duration: 30000, // 30 seconds
       },
@@ -621,6 +621,16 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       cache: {
         duration: 300000, // 5 minutes
       },
+    },
+  ],
+  [
+    'extservices.users.update',
+    {
+      service: ExternalService.LOCAL_AUTH,
+      path: '/users/me',
+      method: 'PATCH',
+      authenticated: true,
+      timeout: 15000,
     },
   ],
 ]);

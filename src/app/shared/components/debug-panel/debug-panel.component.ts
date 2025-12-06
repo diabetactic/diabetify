@@ -148,7 +148,8 @@ export class DebugPanelComponent implements OnInit {
     private servicesManager: ExternalServicesManager,
     private mockAdapter: MockAdapterService,
     private toastController: ToastController,
-    private capacitorHttp: CapacitorHttpService
+    private capacitorHttp: CapacitorHttpService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   async ngOnInit() {
@@ -188,6 +189,7 @@ export class DebugPanelComponent implements OnInit {
     // Subscribe to services health
     this.servicesManager.state.subscribe((state: ExternalServicesState) => {
       this.servicesHealth = state;
+      this.cdr.markForCheck();
     });
 
     // Get storage stats

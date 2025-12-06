@@ -2,8 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { ReadingsService, LIVE_QUERY_FN } from './readings.service';
 import { DiabetacticDatabase } from './database.service';
 import { LocalGlucoseReading, GlucoseReading } from '../models/glucose-reading.model';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { MockDataService } from './mock-data.service';
+import { ApiGatewayService } from './api-gateway.service';
 
 // Mock Dexie database
 class MockDatabaseService {
@@ -16,6 +17,9 @@ class MockDatabaseService {
       equals: jest.fn().mockReturnValue({
         toArray: jest.fn().mockResolvedValue([]),
       }),
+    }),
+    filter: jest.fn().mockReturnValue({
+      toArray: jest.fn().mockResolvedValue([]),
     }),
     get: jest.fn().mockResolvedValue(undefined),
     add: jest.fn().mockResolvedValue('mock-id'),
@@ -60,15 +64,21 @@ class MockDatabaseService {
 describe('ReadingsService', () => {
   let service: ReadingsService;
   let mockDb: MockDatabaseService;
+  let mockApiGateway: jest.Mocked<ApiGatewayService>;
 
   beforeEach(() => {
     mockDb = new MockDatabaseService();
+    mockApiGateway = {
+      request: jest.fn(),
+      clearCache: jest.fn(),
+    } as any;
 
     TestBed.configureTestingModule({
       providers: [
         ReadingsService,
         { provide: DiabetacticDatabase, useValue: mockDb },
         { provide: MockDataService, useValue: null },
+        { provide: ApiGatewayService, useValue: mockApiGateway },
         {
           provide: LIVE_QUERY_FN,
           useValue: (factory: () => Promise<any> | any) =>
@@ -517,6 +527,67 @@ describe('ReadingsService', () => {
       const stats = await service.getStatistics('week');
 
       expect(stats.coefficientOfVariation).toBeLessThan(36);
+    });
+  });
+
+  describe('fetchLatestFromBackend', () => {
+    it('should fetch latest readings from backend using new endpoint', async () => {
+      const mockBackendReadings = [
+        {
+          id: 1,
+          user_id: 123,
+          glucose_level: 120,
+          reading_type: 'DESAYUNO',
+          created_at: '15/12/2025 08:00:00',
+          notes: 'Test reading',
+        },
+      ];
+
+      const mockApiResponse = {
+        success: true,
+        data: { readings: mockBackendReadings },
+      };
+
+      mockApiGateway.request.mockReturnValue(of(mockApiResponse));
+      (mockDb.readings.filter as jest.Mock).mockReturnValue({
+        toArray: jest.fn().mockResolvedValue([]),
+      });
+
+      const result = await service.fetchLatestFromBackend();
+
+      expect(mockApiGateway.request).toHaveBeenCalledWith('extservices.glucose.latest');
+      expect(result.fetched).toBe(1);
+      expect(result.merged).toBe(1);
+      expect(mockDb.readings.add).toHaveBeenCalled();
+    });
+
+    it('should skip fetch if offline', async () => {
+      // Set service to offline state
+      (service as any).isOnline = false;
+
+      const result = await service.fetchLatestFromBackend();
+
+      expect(result.fetched).toBe(0);
+      expect(result.merged).toBe(0);
+      expect(mockApiGateway.request).not.toHaveBeenCalled();
+    });
+
+    it('should handle backend errors gracefully', async () => {
+      const mockErrorResponse = {
+        success: false,
+        error: {
+          code: 'BACKEND_ERROR',
+          message: 'Backend error',
+          retryable: false,
+        },
+      };
+
+      mockApiGateway.request.mockReturnValue(of(mockErrorResponse));
+
+      const result = await service.fetchLatestFromBackend();
+
+      expect(result.fetched).toBe(0);
+      expect(result.merged).toBe(0);
     });
   });
 });

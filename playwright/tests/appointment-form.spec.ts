@@ -212,7 +212,7 @@ test.describe.serial('Appointment Form Completion', () => {
     console.log('Step 2: Admin accepting appointment...');
     await page.waitForTimeout(1000);
     const accepted = await acceptNextAppointment(adminToken);
-    expect(accepted).toBeTruthy();
+    expect(accepted, 'Should show accepted status after appointment is accepted').toBeTruthy();
 
     // Refresh to get updated state
     await page.click('ion-tab-button[tab="dashboard"], [href*="dashboard"]');

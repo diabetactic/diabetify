@@ -163,7 +163,10 @@ test.describe('Heroku Readings CRUD', () => {
       .catch(() => false);
 
     // At least one of these should be visible
-    expect(hasReadings || hasAddButton || hasPageTitle).toBeTruthy();
+    expect(
+      hasReadings || hasAddButton || hasPageTitle,
+      'Readings page should show readings, add button, or page title'
+    ).toBeTruthy();
 
     if (hasReadings) {
       // Verify reading cards have required data
@@ -265,7 +268,10 @@ test.describe('Heroku Readings CRUD', () => {
       // Should contain some glucose-related content
       const hasGlucoseData = dashboardText?.includes('mg/dL') || /\d+/.test(dashboardText || '');
 
-      expect(hasGlucoseData).toBeTruthy();
+      expect(
+        hasGlucoseData,
+        'Reading card should display glucose value with unit (mg/dL or mmol/L)'
+      ).toBeTruthy();
 
       console.log('✅ Dashboard statistics loaded from Heroku');
     } else {
