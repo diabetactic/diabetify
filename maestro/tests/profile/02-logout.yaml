@@ -1,0 +1,60 @@
+# ==========================================
+# Test: Logout Flow
+# Description: Verify user can sign out and return to login screen
+# Uses login flow and profile navigation flow
+# Ensures complete logout by verifying return to welcome/login screen
+# ==========================================
+
+appId: io.diabetactic.app
+
+---
+# 1. LOGIN
+- runFlow: ../../flows/login.yaml
+
+# 2. NAVIGATE TO PROFILE TAB
+- runFlow: ../../flows/navigate-profile.yaml
+
+# 3. VERIFY PROFILE PAGE LOADED
+- extendedWaitUntil:
+    visible:
+      text: 'Perfil|Profile'
+    timeout: 5000
+
+# 4. SCROLL DOWN TO FIND SIGN OUT BUTTON
+# Sign Out button is typically at the bottom of the profile page
+- scrollUntilVisible:
+    element:
+      text: 'Cerrar Sesión|Sign Out'
+    direction: DOWN
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 5. TAP SIGN OUT BUTTON
+- tapOn:
+    text: 'Cerrar Sesión|Sign Out'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 6. VERIFY LOGOUT SUCCESSFUL - SHOULD SEE LOGIN FORM
+# Wait for login screen to appear (either welcome screen or direct login form)
+- extendedWaitUntil:
+    visible:
+      text: 'DNI o Email|DNI or Email|Diabetactic|.*Vamos.*'
+    timeout: 8000
+
+# 7. VERIFY LOGIN BUTTON IS VISIBLE (confirms we're on login screen)
+- assertVisible:
+    text: 'Iniciar Sesión|Sign In'
+
+# 8. VERIFY USER IS LOGGED OUT - TRY TO ACCESS PROFILE (SHOULD FAIL)
+# Optional: Verify we can't access authenticated screens
+- tapOn:
+    text: 'Perfil|Profile'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 9. SHOULD STILL BE ON LOGIN SCREEN (not navigated to profile)
+- assertVisible:
+    text: 'DNI o Email|DNI or Email'
