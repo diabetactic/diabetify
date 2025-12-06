@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -39,6 +39,7 @@ interface MealContextOption {
   templateUrl: './add-reading.page.html',
   styleUrls: ['./add-reading.page.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterModule,
@@ -72,18 +73,21 @@ export class AddReadingPage implements OnInit, OnDestroy {
   glucoseStatusEmoji = '';
   glucoseStatusColor = '';
 
+  // Fixed max datetime to prevent wheel picker rendering issues
+  // This stays constant while the form value changes during user interaction
+  maxDateTime: string = '';
+
   private destroy$ = new Subject<void>();
 
+  // Context options match backend ReadingTypeEnum exactly
   mealContextOptions: MealContextOption[] = [
-    { value: 'before-breakfast', labelKey: 'glucose.meal.beforeBreakfast' },
-    { value: 'after-breakfast', labelKey: 'glucose.meal.afterBreakfast' },
-    { value: 'before-lunch', labelKey: 'glucose.meal.beforeLunch' },
-    { value: 'after-lunch', labelKey: 'glucose.meal.afterLunch' },
-    { value: 'before-dinner', labelKey: 'glucose.meal.beforeDinner' },
-    { value: 'after-dinner', labelKey: 'glucose.meal.afterDinner' },
-    { value: 'snack', labelKey: 'glucose.tags.snack' },
-    { value: 'bedtime', labelKey: 'glucose.meal.bedtime' },
-    { value: 'other', labelKey: 'glucose.meal.other' },
+    { value: 'DESAYUNO', labelKey: 'glucose.context.breakfast' },
+    { value: 'ALMUERZO', labelKey: 'glucose.context.lunch' },
+    { value: 'MERIENDA', labelKey: 'glucose.context.snack' },
+    { value: 'CENA', labelKey: 'glucose.context.dinner' },
+    { value: 'EJERCICIO', labelKey: 'glucose.context.exercise' },
+    { value: 'OTRAS_COMIDAS', labelKey: 'glucose.context.otherMeals' },
+    { value: 'OTRO', labelKey: 'glucose.context.other' },
   ];
 
   constructor(
@@ -111,6 +115,10 @@ export class AddReadingPage implements OnInit, OnDestroy {
 
   private initializeForm(): void {
     const now = this.getLocalISOString(new Date());
+
+    // Set fixed max datetime once - prevents wheel picker from re-rendering
+    // as user scrolls (which caused numbers to disappear)
+    this.maxDateTime = now;
 
     this.readingForm = this.fb.group({
       value: ['', [Validators.required, Validators.min(20), Validators.max(600)]],
@@ -290,9 +298,8 @@ export class AddReadingPage implements OnInit, OnDestroy {
         units: this.currentUnit,
         time: formValue.datetime,
         subType: 'manual',
-        notes: formValue.notes ? [formValue.notes] : undefined,
-        tags: formValue.mealContext ? [formValue.mealContext] : undefined,
-        mealContext: formValue.mealContext || undefined, // For backend sync
+        notes: formValue.notes || undefined,
+        mealContext: formValue.mealContext || undefined, // Backend value (e.g. DESAYUNO)
       };
 
       this.logger.debug('UI', 'Calling addReading service');

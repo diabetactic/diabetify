@@ -65,4 +65,3 @@ env:
     timeout: 12000
 - waitForAnimationToEnd:
     timeout: 1000
-

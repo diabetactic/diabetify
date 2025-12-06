@@ -38,5 +38,4 @@ appId: io.diabetactic.app
 # If there's any appointment, these labels should appear
 - assertVisible:
     text: 'Ajuste de Dosis|Dose Adjustment|Objetivo de Glucosa|Glucose Objective|Citas|Appointments'
-
 # Test passes - page loaded and shows appointment content

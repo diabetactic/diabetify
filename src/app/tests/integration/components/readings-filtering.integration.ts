@@ -70,7 +70,7 @@ function createReading(
   value: number,
   status: GlucoseStatus,
   daysOffset: number = 0,
-  notes: string[] = []
+  notes?: string
 ): LocalGlucoseReading {
   const date = new Date();
   date.setDate(date.getDate() + daysOffset);

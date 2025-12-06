@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ToastController } from '@ionic/angular';
@@ -31,6 +31,7 @@ import { ThemeService } from '../core/services/theme.service';
 import { StatCardComponent } from '../shared/components/stat-card/stat-card.component';
 import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
 import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
+import { ErrorBannerComponent } from '../shared/components/error-banner/error-banner.component';
 import { LanguageSwitcherComponentModule } from '../shared/components/language-switcher/language-switcher.module';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 import { environment } from '../../environments/environment';
@@ -41,6 +42,7 @@ import { ROUTES } from '../core/constants';
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.page.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterModule,
@@ -61,6 +63,7 @@ import { ROUTES } from '../core/constants';
     StatCardComponent,
     ReadingItemComponent,
     EmptyStateComponent,
+    ErrorBannerComponent,
     LanguageSwitcherComponentModule,
     AppIconComponent,
   ],
@@ -76,7 +79,12 @@ export class DashboardPage implements OnInit, OnDestroy {
   recentReadings: LocalGlucoseReading[] = [];
 
   // Backend sync results (for cloud mode counter)
-  backendSyncResult: { pushed: number; fetched: number; failed: number } | null = null;
+  backendSyncResult: {
+    pushed: number;
+    fetched: number;
+    failed: number;
+    lastError?: string | null;
+  } | null = null;
 
   // Last sync time for display
   lastSyncTime: string | null = null;
@@ -118,7 +126,8 @@ export class DashboardPage implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private profileService: ProfileService,
     private logger: LoggerService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private ngZone: NgZone
   ) {
     this.logger.info('Init', 'DashboardPage initialized');
     this.preferredGlucoseUnit = this.translationService.getCurrentConfig().glucoseUnit;
@@ -288,9 +297,22 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   /**
    * Navigate to add reading page
+   * Using ngZone.run() to ensure navigation triggers immediately on mobile
    */
   addReading() {
-    this.router.navigate([ROUTES.ADD_READING]);
+    this.ngZone.run(() => {
+      this.router.navigate([ROUTES.ADD_READING]);
+    });
+  }
+
+  /**
+   * Navigate to bolus calculator page
+   * Using ngZone.run() to ensure navigation triggers immediately on mobile
+   */
+  openBolusCalculator() {
+    this.ngZone.run(() => {
+      this.router.navigate([ROUTES.BOLUS_CALCULATOR]);
+    });
   }
 
   /**
@@ -388,6 +410,22 @@ export class DashboardPage implements OnInit, OnDestroy {
       return this.backendSyncResult.failed;
     }
     return 0;
+  }
+
+  /**
+   * Get last sync error for display (debugging)
+   */
+  getLastSyncError(): string | null {
+    return this.backendSyncResult?.lastError || null;
+  }
+
+  /**
+   * Clear sync error from display
+   */
+  clearSyncError(): void {
+    if (this.backendSyncResult) {
+      this.backendSyncResult.lastError = null;
+    }
   }
 
   /**

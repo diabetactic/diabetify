@@ -36,6 +36,14 @@
           },
           "configurations": {
             "production": {
+              "optimization": true,
+              "aot": true,
+              "buildOptimizer": true,
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "commonChunk": true,
               "budgets": [
                 {
                   "type": "initial",

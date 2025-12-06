@@ -44,11 +44,21 @@
       </ion-card-header>
       <ion-card-content>
         <!-- PENDING state -->
-        <div *ngIf="queueState.state === 'PENDING'" class="flex items-center gap-3">
-          <span class="badge badge-warning gap-1">
-            <span class="loading loading-spinner loading-xs"></span>
-            {{ 'appointments.queue.labels.pending' | translate }}
-          </span>
+        <div *ngIf="queueState.state === 'PENDING'" class="flex flex-col gap-2">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="badge badge-warning gap-1">
+              <span class="loading loading-spinner loading-xs"></span>
+              {{ 'appointments.queue.labels.pending' | translate }}
+            </span>
+            <!-- Position badge next to status -->
+            <span
+              *ngIf="queueState.position && queueState.position > 0"
+              class="badge badge-outline gap-1"
+            >
+              <app-icon name="hash" class="h-3 w-3"></app-icon>
+              {{ 'appointments.queue.position' | translate: { position: queueState.position } }}
+            </span>
+          </div>
           <p class="text-base-content/70 dark:text-base-content/90 m-0 text-sm">
             {{ 'appointments.queue.states.PENDING' | translate }}
           </p>
@@ -109,13 +119,21 @@
             {{ 'appointments.queue.states.CREATED' | translate }}
           </p>
         </div>
-        <!-- Queue position if available -->
-        <p
-          *ngIf="queueState.position"
-          class="text-base-content/60 dark:text-base-content/80 mt-2 text-xs"
-        >
-          {{ 'appointments.queue.position' | translate: { position: queueState.position } }}
-        </p>
+        <!-- BLOCKED state (queue closed) -->
+        <div *ngIf="queueState.state === 'BLOCKED'" class="flex flex-col gap-3">
+          <div class="flex items-center gap-3">
+            <span class="badge badge-neutral gap-1">
+              <app-icon name="lock" class="h-3 w-3"></app-icon>
+              {{ 'appointments.queue.labels.blocked' | translate }}
+            </span>
+            <p class="text-base-content/70 dark:text-base-content/90 m-0 text-sm">
+              {{ 'appointments.queue.states.BLOCKED' | translate }}
+            </p>
+          </div>
+          <p class="text-base-content/60 dark:text-base-content/80 m-0 text-xs">
+            {{ 'appointments.queue.messages.queueClosed' | translate }}
+          </p>
+        </div>
       </ion-card-content>
     </ion-card>
 

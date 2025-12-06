@@ -218,7 +218,7 @@
       (click)="scrollToTop()"
       color="light"
       class="shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
-      aria-label="Scroll to top"
+      [attr.aria-label]="'common.scrollToTop' | translate"
     >
       <app-icon name="arrow-up"></app-icon>
     </ion-fab-button>
@@ -249,7 +249,7 @@
       <ion-toolbar>
         <ion-title>{{ 'readings.filterReadings' | translate }}</ion-title>
         <ion-buttons slot="end">
-          <ion-button (click)="closeFilterModal()" aria-label="Close">
+          <ion-button (click)="closeFilterModal()" [attr.aria-label]="'common.close' | translate">
             <app-icon slot="icon-only" name="close"></app-icon>
           </ion-button>
         </ion-buttons>
@@ -402,7 +402,7 @@
       <ion-toolbar>
         <ion-title>{{ 'readings.reading' | translate }}</ion-title>
         <ion-buttons slot="end">
-          <ion-button (click)="closeDetailModal()" aria-label="Close">
+          <ion-button (click)="closeDetailModal()" [attr.aria-label]="'common.close' | translate">
             <app-icon name="close"></app-icon>
           </ion-button>
         </ion-buttons>
@@ -521,7 +521,7 @@
             <p class="text-base-content/60 dark:text-base-content/80 text-xs">
               {{ 'readings.notes' | translate }}
             </p>
-            <h3 class="font-medium">{{ selectedReading.notes.join(', ') }}</h3>
+            <h3 class="font-medium">{{ selectedReading.notes }}</h3>
           </ion-label>
         </ion-item>
       </ion-list>

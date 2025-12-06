@@ -563,9 +563,7 @@ export class DemoDataService {
       units: 'mg/dL' as const,
       time: timestamp.toISOString(),
       context: context as 'beforeMeal' | 'afterMeal' | 'bedtime' | 'exercise' | 'other',
-      notes: this.getRandomNote(glucoseValue, context)
-        ? [this.getRandomNote(glucoseValue, context)!]
-        : [],
+      notes: this.getRandomNote(glucoseValue, context),
       deviceId: 'demo-device',
       localOnly: false,
       synced: true,

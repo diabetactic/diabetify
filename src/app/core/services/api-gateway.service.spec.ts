@@ -278,7 +278,7 @@ describe('ApiGatewayService', () => {
 
   describe('request() - PUT method', () => {
     it('should make PUT request to update reading', waitForAsync(async () => {
-      const updateData = { value: 130, notes: ['Updated'] };
+      const updateData = { value: 130, notes: 'Updated' };
 
       service
         .request('glucoserver.readings.update', { body: updateData }, { id: 'reading123' })

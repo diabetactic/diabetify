@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, ViewChild, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -69,6 +76,7 @@ interface ReadingFilters {
   templateUrl: './readings.html',
   styleUrls: ['./readings.page.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     FormsModule,
@@ -254,7 +262,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
     if (this.filters.searchTerm && this.filters.searchTerm.trim() !== '') {
       const term = this.filters.searchTerm.toLowerCase();
       filtered = filtered.filter(r => {
-        const notes = r.notes?.join(' ').toLowerCase() || '';
+        const notes = r.notes?.toLowerCase() || '';
         const tags = r.tags?.join(' ').toLowerCase() || '';
         const value = r.value.toString();
         return notes.includes(term) || tags.includes(term) || value.includes(term);

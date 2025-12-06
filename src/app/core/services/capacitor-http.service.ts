@@ -1,9 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { CapacitorHttp, HttpResponse } from '@capacitor/core';
 import { Platform } from '@ionic/angular';
-import { Observable, from, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable, from, throwError, race, timer } from 'rxjs';
+import { catchError, map, mergeMap } from 'rxjs/operators';
+import { LoggerService } from './logger.service';
+
+// Default timeout for native HTTP requests (15 seconds)
+const DEFAULT_TIMEOUT_MS = 15000;
 
 type ParamsType = HttpParams | Record<string, string | string[]> | undefined;
 
@@ -11,6 +15,8 @@ type ParamsType = HttpParams | Record<string, string | string[]> | undefined;
   providedIn: 'root',
 })
 export class CapacitorHttpService {
+  private logger = inject(LoggerService);
+
   constructor(
     private http: HttpClient,
     private platform: Platform
@@ -45,7 +51,7 @@ export class CapacitorHttpService {
   post<T>(
     url: string,
     data: unknown,
-    options?: { headers?: HttpHeaders | Record<string, string> }
+    options?: { headers?: HttpHeaders | Record<string, string>; params?: ParamsType }
   ): Observable<T> {
     if (this.shouldUseNativeHttp()) {
       return this.nativePost<T>(url, data, options);
@@ -107,7 +113,7 @@ export class CapacitorHttpService {
     headers?: Record<string, string>;
     data?: unknown;
   }): Promise<{ data: T; headers: Record<string, string>; status: number }> {
-    console.log(`🔵 [Native HTTP] ${config.method}`, config.url);
+    this.logger.debug('HTTP', `${config.method} ${config.url}`);
 
     const response = await CapacitorHttp.request({
       method: config.method,
@@ -116,7 +122,7 @@ export class CapacitorHttpService {
       data: config.data,
     });
 
-    console.log('✅ [Native HTTP] Full Response:', {
+    this.logger.debug('HTTP', 'Full Response', {
       status: response.status,
       headers: response.headers,
       data: response.data,
@@ -148,6 +154,8 @@ export class CapacitorHttpService {
       params?: ParamsType;
     }
   ): Observable<T> {
+    const startTime = Date.now();
+
     // Build URL with query params if provided
     let fullUrl = url;
     const queryString = this.buildQueryString(options?.params);
@@ -155,18 +163,22 @@ export class CapacitorHttpService {
       fullUrl = `${url}?${queryString}`;
     }
 
-    console.log('🔵 [Native HTTP] GET', fullUrl);
+    this.logger.debug('HTTP', 'GET starting', { url: fullUrl });
 
     const headers = this.convertHeaders(options?.headers);
 
-    return from(
+    const request$ = from(
       CapacitorHttp.get({
         url: fullUrl,
         headers,
       })
     ).pipe(
       map((response: HttpResponse) => {
-        console.log('✅ [Native HTTP] Response', response.status, response.data);
+        const elapsed = Date.now() - startTime;
+        this.logger.debug('HTTP', `Response in ${elapsed}ms`, {
+          status: response.status,
+          data: response.data,
+        });
 
         if (response.status >= 200 && response.status < 300) {
           return response.data as T;
@@ -179,10 +191,14 @@ export class CapacitorHttpService {
         };
       }),
       catchError(error => {
-        console.error('❌ [Native HTTP] Error', error);
+        const elapsed = Date.now() - startTime;
+        this.logger.error('HTTP', `Error after ${elapsed}ms`, error);
         return throwError(() => error);
       })
     );
+
+    // Wrap with timeout to prevent hanging requests
+    return this.withTimeout(request$, DEFAULT_TIMEOUT_MS, fullUrl);
   }
 
   /**
@@ -191,9 +207,21 @@ export class CapacitorHttpService {
   private nativePost<T>(
     url: string,
     data: unknown,
-    options?: { headers?: HttpHeaders | Record<string, string> }
+    options?: { headers?: HttpHeaders | Record<string, string>; params?: ParamsType }
   ): Observable<T> {
-    console.log('🔵 [Native HTTP] POST', url, data);
+    const startTime = Date.now();
+
+    // Build URL with query params if provided
+    let fullUrl = url;
+    this.logger.debug('HTTP', 'POST params received', { params: options?.params });
+    const queryString = this.buildQueryString(options?.params);
+    this.logger.debug('HTTP', 'POST queryString built', { queryString });
+    if (queryString) {
+      fullUrl = `${url}?${queryString}`;
+    }
+
+    this.logger.debug('HTTP', 'POST starting', { url: fullUrl });
+    this.logger.debug('HTTP', 'POST data', { data: JSON.stringify(data).substring(0, 200) });
 
     const headers = this.convertHeaders(options?.headers);
 
@@ -210,15 +238,21 @@ export class CapacitorHttpService {
       finalHeaders['Content-Type'] = 'application/json';
     }
 
-    return from(
+    this.logger.debug('HTTP', 'POST headers', { headers: finalHeaders });
+
+    const request$ = from(
       CapacitorHttp.post({
-        url,
+        url: fullUrl,
         headers: finalHeaders,
         data: bodyData,
       })
     ).pipe(
       map((response: HttpResponse) => {
-        console.log('✅ [Native HTTP] Response', response.status, response.data);
+        const elapsed = Date.now() - startTime;
+        this.logger.debug('HTTP', `Response in ${elapsed}ms`, {
+          status: response.status,
+          data: response.data,
+        });
 
         if (response.status >= 200 && response.status < 300) {
           return response.data as T;
@@ -231,10 +265,15 @@ export class CapacitorHttpService {
         };
       }),
       catchError(error => {
-        console.error('❌ [Native HTTP] Error', error);
+        const elapsed = Date.now() - startTime;
+        this.logger.error('HTTP', `Error after ${elapsed}ms`, error);
+        this.logger.error('HTTP', 'Error details', error);
         return throwError(() => error);
       })
     );
+
+    // Wrap with timeout to prevent hanging requests
+    return this.withTimeout(request$, DEFAULT_TIMEOUT_MS, fullUrl);
   }
 
   /**
@@ -245,7 +284,7 @@ export class CapacitorHttpService {
     data: unknown,
     options?: { headers?: HttpHeaders | Record<string, string> }
   ): Observable<T> {
-    console.log('🔵 [Native HTTP] PUT', url, data);
+    this.logger.debug('HTTP', 'PUT', { url, data });
 
     const headers = this.convertHeaders(options?.headers);
     const finalHeaders = {
@@ -261,14 +300,14 @@ export class CapacitorHttpService {
       })
     ).pipe(
       map((response: HttpResponse) => {
-        console.log('✅ [Native HTTP] Response', response.status, response.data);
+        this.logger.debug('HTTP', 'Response', { status: response.status, data: response.data });
         if (response.status >= 200 && response.status < 300) {
           return response.data as T;
         }
         throw { status: response.status, error: response.data, message: `HTTP ${response.status}` };
       }),
       catchError(error => {
-        console.error('❌ [Native HTTP] Error', error);
+        this.logger.error('HTTP', 'Error', error);
         return throwError(() => error);
       })
     );
@@ -291,7 +330,7 @@ export class CapacitorHttpService {
       fullUrl = `${url}?${queryString}`;
     }
 
-    console.log('🔵 [Native HTTP] DELETE', fullUrl);
+    this.logger.debug('HTTP', 'DELETE', { url: fullUrl });
 
     const headers = this.convertHeaders(options?.headers);
 
@@ -302,14 +341,14 @@ export class CapacitorHttpService {
       })
     ).pipe(
       map((response: HttpResponse) => {
-        console.log('✅ [Native HTTP] Response', response.status, response.data);
+        this.logger.debug('HTTP', 'Response', { status: response.status, data: response.data });
         if (response.status >= 200 && response.status < 300) {
           return response.data as T;
         }
         throw { status: response.status, error: response.data, message: `HTTP ${response.status}` };
       }),
       catchError(error => {
-        console.error('❌ [Native HTTP] Error', error);
+        this.logger.error('HTTP', 'Error', error);
         return throwError(() => error);
       })
     );
@@ -323,7 +362,7 @@ export class CapacitorHttpService {
     data: unknown,
     options?: { headers?: HttpHeaders | Record<string, string> }
   ): Observable<T> {
-    console.log('🔵 [Native HTTP] PATCH', url, data);
+    this.logger.debug('HTTP', 'PATCH', { url, data });
 
     const headers = this.convertHeaders(options?.headers);
     const finalHeaders = {
@@ -339,14 +378,14 @@ export class CapacitorHttpService {
       })
     ).pipe(
       map((response: HttpResponse) => {
-        console.log('✅ [Native HTTP] Response', response.status, response.data);
+        this.logger.debug('HTTP', 'Response', { status: response.status, data: response.data });
         if (response.status >= 200 && response.status < 300) {
           return response.data as T;
         }
         throw { status: response.status, error: response.data, message: `HTTP ${response.status}` };
       }),
       catchError(error => {
-        console.error('❌ [Native HTTP] Error', error);
+        this.logger.error('HTTP', 'Error', error);
         return throwError(() => error);
       })
     );
@@ -394,5 +433,28 @@ export class CapacitorHttpService {
     }
 
     return headers;
+  }
+
+  /**
+   * Wraps an observable with a timeout
+   * If the request doesn't complete within the timeout, throws a timeout error
+   */
+  private withTimeout<T>(
+    source$: Observable<T>,
+    timeoutMs: number = DEFAULT_TIMEOUT_MS,
+    url: string
+  ): Observable<T> {
+    const timeout$ = timer(timeoutMs).pipe(
+      mergeMap(() =>
+        throwError(() => ({
+          status: 0,
+          error: { message: 'Request timeout', code: 'TIMEOUT' },
+          message: `Request to ${url} timed out after ${timeoutMs}ms`,
+          isTimeout: true,
+        }))
+      )
+    );
+
+    return race(source$, timeout$);
   }
 }

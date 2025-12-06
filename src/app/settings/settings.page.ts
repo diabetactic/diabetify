@@ -1,4 +1,10 @@
-import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -20,7 +26,6 @@ import {
   IonSelect,
   IonSelectOption,
   IonToggle,
-  IonIcon,
   IonCard,
   IonCardContent,
   IonDatetime,
@@ -43,6 +48,7 @@ import { ROUTES, STORAGE_KEYS, TIMEOUTS } from '../core/constants';
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     FormsModule,
@@ -63,7 +69,6 @@ import { ROUTES, STORAGE_KEYS, TIMEOUTS } from '../core/constants';
     IonSelect,
     IonSelectOption,
     IonToggle,
-    IonIcon,
     IonCard,
     IonCardContent,
     IonDatetime,

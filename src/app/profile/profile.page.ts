@@ -5,6 +5,7 @@ import {
   ElementRef,
   ViewChild,
   CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -23,7 +24,6 @@ import { NotificationService } from '../core/services/notification.service';
 import { UserProfile, ThemeMode } from '../core/models/user-profile.model';
 import { environment } from '../../environments/environment';
 import { ROUTES, STORAGE_KEYS } from '../core/constants';
-import { ProfileItemComponent } from '../shared/components/profile-item/profile-item.component';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 interface ProfileDisplayData {
   name: string;
@@ -69,14 +69,8 @@ interface TidepoolUserData {
   templateUrl: './profile.html',
   styleUrls: ['./profile.page.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    TranslateModule,
-    ProfileItemComponent,
-    AppIconComponent,
-  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule, FormsModule, IonicModule, TranslateModule, AppIconComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ProfilePage implements OnInit, OnDestroy {

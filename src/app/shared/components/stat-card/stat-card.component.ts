@@ -10,13 +10,14 @@ import {
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { IonRippleEffect, IonSpinner, IonSkeletonText } from '@ionic/angular/standalone';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-stat-card',
   templateUrl: './stat-card.component.html',
   styleUrls: ['./stat-card.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonRippleEffect, IonSpinner, IonSkeletonText],
+  imports: [CommonModule, IonRippleEffect, IonSpinner, IonSkeletonText, TranslateModule],
   providers: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

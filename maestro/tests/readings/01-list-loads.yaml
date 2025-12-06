@@ -30,4 +30,3 @@ appId: io.diabetactic.app
 # 5. ASSERT PAGE HEADER IS VISIBLE
 - assertVisible:
     text: 'Lecturas|Readings'
-
