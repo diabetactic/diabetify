@@ -59,7 +59,7 @@ test.describe('Settings Persistence', () => {
 
       // Toggle theme
       await themeToggle.click();
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Refresh page
       await page.reload();
@@ -72,7 +72,7 @@ test.describe('Settings Persistence', () => {
 
       if (await settingsLinkAfterRefresh.isVisible({ timeout: 2000 }).catch(() => false)) {
         await settingsLinkAfterRefresh.click();
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState('networkidle', { timeout: 10000 });
       }
 
       // Verify toggle state persisted
@@ -85,7 +85,7 @@ test.describe('Settings Persistence', () => {
 
       // Toggle back to original state (cleanup)
       await newThemeToggle.click();
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
     }
   });
 
@@ -121,7 +121,9 @@ test.describe('Settings Persistence', () => {
 
       // Click language selector
       await languageButton.click();
-      await page.waitForTimeout(500);
+      await expect(page.locator('ion-popover, ion-select-popover, ion-action-sheet')).toBeVisible({
+        timeout: 5000,
+      });
 
       // Select different language (if currently Spanish, choose English)
       const targetLanguage = currentLanguage === 'es' ? 'English' : 'Español';
@@ -131,7 +133,7 @@ test.describe('Settings Persistence', () => {
 
       if (await languageOption.isVisible({ timeout: 2000 }).catch(() => false)) {
         await languageOption.click();
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState('networkidle', { timeout: 10000 });
 
         // Create new page (simulating app restart)
         const newPage = await context.newPage();
@@ -155,7 +157,7 @@ test.describe('Settings Persistence', () => {
 
         // Switch language back (cleanup)
         await page.reload();
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState('networkidle', { timeout: 10000 });
       }
     }
   });

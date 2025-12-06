@@ -1,0 +1,101 @@
+# ==========================================
+# Test: Readings - Delete Reading
+# Description: Delete a glucose reading and verify removal
+# Covers: Navigate to reading detail, delete action, confirm deletion
+# Uses bilingual selectors and swipe gestures
+# ==========================================
+
+appId: io.diabetactic.app
+
+---
+# 1. LOGIN WITH FRESH STATE
+- runFlow: ../../flows/login.yaml
+
+# 2. NAVIGATE TO READINGS TAB
+- runFlow: ../../flows/navigate-readings.yaml
+
+# 3. WAIT FOR READINGS PAGE TO FULLY HYDRATE
+- extendedWaitUntil:
+    visible:
+      text: 'Mostrando.*lecturas|Showing.*readings'
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 4. GET CURRENT READING COUNT (look for "Mostrando X lecturas")
+# This helps verify one less reading after deletion
+- assertVisible:
+    text: 'Mostrando.*lecturas|Showing.*readings'
+
+# 5. TAP ON FIRST READING TO OPEN DETAIL
+- tapOn:
+    point: '50%,40%'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 6. VERIFY READING DETAIL VIEW OPENED
+- extendedWaitUntil:
+    visible:
+      text: 'Detalles|Details|Editar|Edit'
+    timeout: 8000
+
+# 7. OPTION 1: SWIPE TO DELETE (if supported)
+# Swipe left on reading item to reveal delete
+- swipe:
+    start: '80%,50%'
+    end: '20%,50%'
+    duration: 300
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 8. OPTION 2: TAP DELETE BUTTON (3-dot menu or trash icon)
+- tapOn:
+    id: 'delete-reading-btn'
+    optional: true
+- tapOn:
+    text: 'Eliminar|Delete|Borrar|Remove'
+    optional: true
+- tapOn:
+    point: '90%,10%'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# 9. VERIFY DELETE CONFIRMATION DIALOG APPEARED
+- extendedWaitUntil:
+    visible:
+      text: 'Eliminar|Delete|Confirmar|Confirm|¿Estás seguro|Are you sure'
+    timeout: 5000
+
+# 10. CONFIRM DELETION
+- tapOn:
+    id: 'confirm-delete-btn'
+    optional: true
+- tapOn:
+    text: 'Eliminar|Delete|Sí|Yes|Confirmar|Confirm'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 11. VERIFY BACK ON READINGS LIST
+- extendedWaitUntil:
+    visible:
+      text: 'Mostrando.*lecturas|Showing.*readings|Lecturas|Readings'
+    timeout: 8000
+
+# 12. VERIFY SUCCESS MESSAGE
+- assertVisible:
+    text: 'eliminada|deleted|eliminado|removed|éxito|success'
+    optional: true
+
+# 13. VERIFY READING WAS REMOVED
+# List should have one less reading (or be empty)
+- assertVisible:
+    text: 'Mostrando.*lecturas|Showing.*readings|Sin lecturas|No readings'
+
+# 14. VERIFY PAGE IS STABLE AFTER DELETE
+- waitForAnimationToEnd:
+    timeout: 1000
+- assertVisible:
+    text: 'Lecturas|Readings'

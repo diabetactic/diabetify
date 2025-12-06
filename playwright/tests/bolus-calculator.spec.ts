@@ -384,7 +384,8 @@ test.describe('Bolus Calculator', () => {
       await foodPickerButton.click();
 
       // Wait for modal
-      await page.waitForTimeout(1000);
+      const modal = page.locator('app-food-picker, ion-modal, [class*="food-picker"]');
+      await expect(modal.first()).toBeVisible({ timeout: 5000 });
 
       // Close modal (look for cancel/close button)
       const closeButton = page
@@ -412,7 +413,8 @@ test.describe('Bolus Calculator', () => {
       await foodPickerButton.click();
 
       // Wait for modal to be fully visible
-      await page.waitForTimeout(1500);
+      const modal = page.locator('app-food-picker, ion-modal, [class*="food-picker"]');
+      await expect(modal.first()).toBeVisible({ timeout: 5000 });
 
       // Check if food items are available
       const hasFoodItems = await elementExists(page, '.food-item, ion-item, [class*="food"]', 3000);
@@ -448,7 +450,8 @@ test.describe('Bolus Calculator', () => {
       const foodPickerButton = page.locator('.food-picker-btn').first();
       await foodPickerButton.click();
 
-      await page.waitForTimeout(1500);
+      const modal = page.locator('app-food-picker, ion-modal, [class*="food-picker"]');
+      await expect(modal.first()).toBeVisible({ timeout: 5000 });
 
       // Check if foods can be selected
       const hasFoodItems = await elementExists(page, '.food-item, ion-item', 3000);
@@ -537,8 +540,10 @@ test.describe('Bolus Calculator', () => {
       );
       await resetButton.first().click();
 
-      // Wait for reset to complete
-      await page.waitForTimeout(500);
+      // Wait for form to clear
+      await expect(page.locator('ion-input#currentGlucose input').first()).toHaveValue('', {
+        timeout: 3000,
+      });
 
       // Form fields should be empty
       const glucoseValue = await page
@@ -558,8 +563,8 @@ test.describe('Bolus Calculator', () => {
       );
       await resetButton.first().click();
 
-      // Wait for animation
-      await page.waitForTimeout(500);
+      // Wait for result card to be hidden
+      await expect(page.locator('.result-card')).toBeHidden({ timeout: 3000 });
 
       // Result card should not be visible
       const resultCard = page.locator('.result-card');
@@ -572,7 +577,10 @@ test.describe('Bolus Calculator', () => {
       const resetButton = page.locator('ion-button:has(ion-icon[name="refresh-outline"])').first();
       await resetButton.click();
 
-      await page.waitForTimeout(500);
+      // Wait for form to clear
+      await expect(page.locator('ion-input#currentGlucose input').first()).toHaveValue('', {
+        timeout: 3000,
+      });
 
       // Selected foods display should not be visible
       const selectedFoodsList = page.locator('.selected-foods-list');
@@ -584,7 +592,10 @@ test.describe('Bolus Calculator', () => {
       // Reset calculator
       const resetButton = page.locator('ion-button:has(ion-icon[name="refresh-outline"])').first();
       await resetButton.click();
-      await page.waitForTimeout(500);
+      // Wait for form to clear
+      await expect(page.locator('ion-input#currentGlucose input').first()).toHaveValue('', {
+        timeout: 3000,
+      });
 
       // Perform new calculation with different values
       await page.locator('ion-input#currentGlucose input').first().fill('220');

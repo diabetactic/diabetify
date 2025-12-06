@@ -39,14 +39,14 @@ test.describe('Glucose Reading Boundary Validation', () => {
     await expect(page).toHaveURL(/\/tabs\//, { timeout: 20000 });
 
     // Wait for hydration to complete
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
 
     // Navigate directly to add reading page
     await page.goto('/add-reading');
     await expect(page).toHaveURL(/\/add-reading/, { timeout: 10000 });
 
     // Wait for form to stabilize
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
   });
 
   test.describe('mg/dL boundaries', () => {
@@ -57,7 +57,7 @@ test.describe('Glucose Reading Boundary Validation', () => {
       await expect(glucoseInput).toBeVisible({ timeout: 10000 });
 
       await glucoseInput.fill('19');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(200); // Form interaction
 
       // App shows "MUY BAJO" warning for values below valid range
       const lowWarning = page.locator('text=/MUY BAJO|VERY LOW|bajo|low/i');
@@ -88,7 +88,7 @@ test.describe('Glucose Reading Boundary Validation', () => {
       await saveButton.click();
 
       // Should succeed (navigate back to list or show success)
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle');
 
       const success = await Promise.race([
         page.waitForURL(/\/tabs\/readings/, { timeout: 10000 }).then(() => true),
@@ -118,7 +118,7 @@ test.describe('Glucose Reading Boundary Validation', () => {
       await saveButton.click();
 
       // Should succeed
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle');
 
       const success = await Promise.race([
         page.waitForURL(/\/tabs\/readings/, { timeout: 10000 }).then(() => true),
@@ -142,7 +142,7 @@ test.describe('Glucose Reading Boundary Validation', () => {
       await expect(glucoseInput).toBeVisible({ timeout: 10000 });
 
       await glucoseInput.fill('601');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(200); // Form interaction
 
       // App shows "MUY ALTO" warning for values above valid range
       const highWarning = page.locator('text=/MUY ALTO|VERY HIGH|alto|high/i');
@@ -168,7 +168,7 @@ test.describe('Glucose Reading Boundary Validation', () => {
 
       // Enter invalid value (way below minimum)
       await glucoseInput.fill('5');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(200); // Form interaction
 
       // App shows warning for values outside valid range
       const warning = page.locator('text=/MUY BAJO|VERY LOW|CRÍTICO|CRITICAL/i');
@@ -196,7 +196,7 @@ test.describe('Glucose Reading Boundary Validation', () => {
 
       // Enter invalid value - should show warning
       await glucoseInput.fill('10');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(200); // Form interaction
 
       // Should show low warning
       const lowWarning = page.locator('text=/MUY BAJO|VERY LOW|bajo|low/i');
@@ -205,7 +205,7 @@ test.describe('Glucose Reading Boundary Validation', () => {
       // Now correct to valid value
       await glucoseInput.clear();
       await glucoseInput.fill('120');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(200); // Form interaction
 
       // Should show normal status now
       const normalStatus = page.locator('text=/NORMAL|ÓPTIMO|OPTIMAL/i');
@@ -228,7 +228,7 @@ test.describe('Glucose Reading Boundary Validation', () => {
 
       // Enter valid value first
       await glucoseInput.fill('120');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(200); // Form interaction
 
       // Should show normal status
       const normalStatus = page.locator('text=/NORMAL|ÓPTIMO|OPTIMAL/i');
@@ -237,7 +237,7 @@ test.describe('Glucose Reading Boundary Validation', () => {
       // Change to very high value
       await glucoseInput.clear();
       await glucoseInput.fill('700');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(200); // Form interaction
 
       // Should show high warning
       const highWarning = page.locator('text=/MUY ALTO|VERY HIGH|CRÍTICO|alto|high/i');
@@ -263,7 +263,7 @@ test.describe('Glucose Reading Boundary Validation', () => {
 
       // Leave empty
       await glucoseInput.clear();
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(200); // Form interaction
 
       // Save button should be disabled for empty (required field)
       const saveButton = page.locator('[data-testid="add-reading-save-btn"]');
@@ -285,7 +285,7 @@ test.describe('Glucose Reading Boundary Validation', () => {
 
       // Enter non-numeric
       await glucoseInput.fill('abc');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(200); // Form interaction
 
       // Get actual value (should be empty or filtered by input type)
       const value = await glucoseInput.inputValue();
@@ -312,7 +312,7 @@ test.describe('Glucose Reading Boundary Validation', () => {
       const saveButton = page.locator('[data-testid="add-reading-save-btn"]');
       await saveButton.click();
 
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle');
 
       // Should either accept (rounding to 121 or 120) or reject decimals
       // Both are valid behaviors for mg/dL
@@ -338,7 +338,7 @@ test.describe('Glucose Reading Boundary Validation', () => {
 
       // Enter negative
       await glucoseInput.fill('-50');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(200); // Form interaction
 
       // Get actual value - HTML number input may accept negative
       const value = await glucoseInput.inputValue();

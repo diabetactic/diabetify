@@ -16,7 +16,7 @@
   [attr.role]="'article'"
   [attr.aria-label]="title"
   [attr.tabindex]="clickable ? 0 : null"
-  [attr.data-testid]="testId"
+  [attr.data-testid]="testId || 'stat-card'"
 >
   <ion-ripple-effect *ngIf="clickable"></ion-ripple-effect>
 

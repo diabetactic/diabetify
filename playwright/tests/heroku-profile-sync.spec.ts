@@ -40,7 +40,7 @@ test.describe('Heroku Profile Sync', () => {
     await expect(page).toHaveURL(/\/tabs\/profile/, { timeout: 10000 });
 
     // Wait for profile data to load
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle', { timeout: 15000 });
 
     // Should show profile information
     const profileContent = page.locator('ion-content');
@@ -62,7 +62,7 @@ test.describe('Heroku Profile Sync', () => {
     await page.click('[data-testid="tab-profile"], ion-tab-button[tab="profile"]');
     await expect(page).toHaveURL(/\/tabs\/profile/, { timeout: 10000 });
 
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle', { timeout: 15000 });
 
     // Should display username somewhere
     const profileText = await page.locator('ion-content').textContent();
@@ -84,7 +84,7 @@ test.describe('Heroku Profile Sync', () => {
     await page.click('[data-testid="tab-profile"], ion-tab-button[tab="profile"]');
     await expect(page).toHaveURL(/\/tabs\/profile/, { timeout: 10000 });
 
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle', { timeout: 15000 });
 
     // Create new page (simulate new session)
     const newPage = await context.newPage();
@@ -105,7 +105,7 @@ test.describe('Heroku Profile Sync', () => {
     // Navigate to profile in new session
     await newPage.click('[data-testid="tab-profile"], ion-tab-button[tab="profile"]');
     await expect(newPage).toHaveURL(/\/tabs\/profile/, { timeout: 10000 });
-    await newPage.waitForTimeout(2000);
+    await newPage.waitForLoadState('networkidle', { timeout: 15000 });
 
     // Get profile data in new session
     const profileDataAfter = await newPage.locator('ion-content').textContent();

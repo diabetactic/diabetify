@@ -176,7 +176,7 @@ test.describe.serial('Appointment Form Completion', () => {
       page.on('dialog', async dialog => await dialog.accept());
 
       await requestButton.first().click();
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle');
     }
 
     // Verify PENDING state UI
@@ -205,20 +205,20 @@ test.describe.serial('Appointment Form Completion', () => {
     if (await requestButton.first().isVisible({ timeout: 3000 })) {
       page.on('dialog', async dialog => await dialog.accept());
       await requestButton.first().click();
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle');
     }
 
     // ========== Step 2: Admin accepts ==========
     console.log('Step 2: Admin accepting appointment...');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
     const accepted = await acceptNextAppointment(adminToken);
     expect(accepted, 'Should show accepted status after appointment is accepted').toBeTruthy();
 
     // Refresh to get updated state
     await page.click('ion-tab-button[tab="dashboard"], [href*="dashboard"]');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
     await page.click('ion-tab-button[tab="appointments"], [href*="appointments"]');
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
 
     // ========== Step 3: Verify ACCEPTED state ==========
     console.log('Step 3: Verifying ACCEPTED state...');
@@ -260,10 +260,10 @@ test.describe.serial('Appointment Form Completion', () => {
     // Insulin Type (select)
     const insulinTypeSelect = page.locator('ion-select[name="insulin_type"]');
     await insulinTypeSelect.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(200); // Ionic select animation
     // Select "Rapid Acting" option
     await page.click('ion-select-option[value="rapid"]');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(200); // Ionic select animation
     console.log('  ✓ Insulin type: rapid');
 
     // Dose (number input)
@@ -294,9 +294,9 @@ test.describe.serial('Appointment Form Completion', () => {
     // Pump Type (select)
     const pumpTypeSelect = page.locator('ion-select[name="pump_type"]');
     await pumpTypeSelect.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(200); // Ionic select animation
     await page.click('ion-select-option[value="none"]');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(200); // Ionic select animation
     console.log('  ✓ Pump type: none (syringe/pen)');
 
     // Motive checkboxes (select multiple)
@@ -376,7 +376,7 @@ test.describe.serial('Appointment Form Completion', () => {
     // Click on appointment card to view details
     if (await appointmentCard.first().isVisible({ timeout: 3000 })) {
       await appointmentCard.first().click();
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle');
 
       // Verify key fields are displayed
       const glucoseObjectiveText = page.locator('text=/120.*mg\/dL/i');
@@ -414,7 +414,7 @@ test.describe.serial('Appointment Form Completion', () => {
     if (await requestButton.first().isVisible({ timeout: 3000 })) {
       page.on('dialog', async dialog => await dialog.accept());
       await requestButton.first().click();
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle');
     }
 
     // Admin denies via API
@@ -431,9 +431,9 @@ test.describe.serial('Appointment Form Completion', () => {
 
     // Refresh UI
     await page.click('ion-tab-button[tab="dashboard"], [href*="dashboard"]');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
     await page.click('ion-tab-button[tab="appointments"], [href*="appointments"]');
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
 
     // Verify DENIED state
     const deniedBadge = page.locator(
@@ -464,12 +464,12 @@ test.describe.serial('Appointment Form Completion', () => {
     if (await requestButton.first().isVisible({ timeout: 3000 })) {
       page.on('dialog', async dialog => await dialog.accept());
       await requestButton.first().click();
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle');
     }
 
     await acceptNextAppointment(adminToken);
     await page.reload();
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
 
     // Open form
     const createBtn = page

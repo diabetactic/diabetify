@@ -6,6 +6,7 @@
     'bg-sky-500/12 dark:bg-sky-500/18': type === 'info',
     'bg-orange-500/12 dark:bg-orange-500/18': type === 'warning',
   }"
+  [attr.data-testid]="'alert-banner-' + type"
 >
   <!-- Alert Content -->
   <div class="flex flex-1 items-center gap-3">

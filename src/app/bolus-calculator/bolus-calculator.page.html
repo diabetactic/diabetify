@@ -41,7 +41,7 @@
           class="form-input"
           [class.input-error]="isFieldInvalid('currentGlucose')"
           (ionInput)="onInputChange('currentGlucose', $event)"
-          data-testid="current-glucose-input"
+          data-testid="glucose-input"
         ></ion-input>
         <span class="error-text" *ngIf="glucoseError">{{ glucoseError }}</span>
       </div>
@@ -94,7 +94,7 @@
             class="form-input"
             [class.input-error]="isFieldInvalid('carbGrams')"
             (ionInput)="onInputChange('carbGrams', $event)"
-            data-testid="carb-grams-input"
+            data-testid="carbs-input"
           ></ion-input>
           <span class="carbs-unit-label">g</span>
         </div>
@@ -107,7 +107,7 @@
         expand="block"
         [disabled]="calculatorForm.invalid || calculating"
         class="mt-4"
-        data-testid="calculate-bolus-btn"
+        data-testid="calculate-btn"
       >
         <ion-icon slot="start" name="calculator-outline" *ngIf="!calculating"></ion-icon>
         <ion-spinner *ngIf="calculating" name="crescent"></ion-spinner>
@@ -116,7 +116,7 @@
     </form>
 
     <!-- Result Card -->
-    <div *ngIf="result" class="result-card animate-slide-in-up" data-testid="bolus-result-card">
+    <div *ngIf="result" class="result-card animate-slide-in-up" data-testid="result-card">
       <h2 class="result-title">
         <app-icon name="medical-outline" aria-hidden="true"></app-icon>
         {{ 'bolusCalculator.recommended' | translate }}
