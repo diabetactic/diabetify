@@ -32,7 +32,7 @@
           {{ 'bolusCalculator.currentGlucose' | translate }}
         </label>
         <ion-input
-          id="currentGlucose"
+          id="current-glucose-input"
           type="number"
           formControlName="currentGlucose"
           [placeholder]="'bolusCalculator.glucosePlaceholder' | translate"
@@ -85,7 +85,7 @@
         <!-- Manual Input -->
         <div class="carbs-input-row">
           <ion-input
-            id="carbGrams"
+            id="carb-grams-input"
             type="number"
             formControlName="carbGrams"
             [placeholder]="'bolusCalculator.carbsPlaceholder' | translate"
@@ -103,6 +103,7 @@
 
       <!-- Calculate Button -->
       <ion-button
+        id="calculate-bolus-btn"
         type="submit"
         expand="block"
         [disabled]="calculatorForm.invalid || calculating"
@@ -165,7 +166,13 @@
       </div>
 
       <!-- Reset Button -->
-      <ion-button (click)="resetCalculator()" fill="outline" expand="block" class="mt-4">
+      <ion-button
+        id="new-calculation-btn"
+        (click)="resetCalculator()"
+        fill="outline"
+        expand="block"
+        class="mt-4"
+      >
         <ion-icon slot="start" name="refresh-outline"></ion-icon>
         {{ 'bolusCalculator.newCalculation' | translate }}
       </ion-button>

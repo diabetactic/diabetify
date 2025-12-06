@@ -181,6 +181,7 @@
       <!-- Action Buttons -->
       <div class="action-buttons">
         <ion-button
+          id="add-reading-cancel-btn"
           expand="block"
           color="medium"
           fill="outline"
@@ -192,6 +193,7 @@
           {{ 'common.cancel' | translate }}
         </ion-button>
         <ion-button
+          id="add-reading-save-btn"
           expand="block"
           type="submit"
           [disabled]="readingForm.invalid || isSubmitting"

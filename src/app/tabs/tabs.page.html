@@ -1,25 +1,25 @@
 <ion-tabs>
   <ion-tab-bar slot="bottom">
     <!-- Dashboard Tab -->
-    <ion-tab-button tab="dashboard" data-testid="tab-dashboard">
+    <ion-tab-button id="tab-dashboard" tab="dashboard" data-testid="tab-dashboard">
       <ion-icon name="home-outline"></ion-icon>
       <ion-label>{{ 'tabs.home' | translate }}</ion-label>
     </ion-tab-button>
 
     <!-- Readings Tab -->
-    <ion-tab-button tab="readings" data-testid="tab-readings">
+    <ion-tab-button id="tab-readings" tab="readings" data-testid="tab-readings">
       <ion-icon name="document-text-outline"></ion-icon>
       <ion-label>{{ 'tabs.readings' | translate }}</ion-label>
     </ion-tab-button>
 
     <!-- Appointments Tab -->
-    <ion-tab-button tab="appointments" data-testid="tab-appointments">
+    <ion-tab-button id="tab-appointments" tab="appointments" data-testid="tab-appointments">
       <ion-icon name="calendar-outline"></ion-icon>
       <ion-label>{{ 'appointments.title' | translate }}</ion-label>
     </ion-tab-button>
 
     <!-- Profile Tab -->
-    <ion-tab-button tab="profile" data-testid="tab-profile">
+    <ion-tab-button id="tab-profile" tab="profile" data-testid="tab-profile">
       <ion-icon name="person-outline"></ion-icon>
       <ion-label>{{ 'tabs.profile' | translate }}</ion-label>
     </ion-tab-button>
@@ -28,6 +28,7 @@
   <!-- Centered FAB Button -->
   <ion-fab class="center-fab" vertical="bottom" slot="fixed">
     <ion-fab-button
+      id="fab-add-reading"
       (click)="navigateToAddReading()"
       data-testid="fab-add-reading"
       [attr.aria-label]="fabLabel"

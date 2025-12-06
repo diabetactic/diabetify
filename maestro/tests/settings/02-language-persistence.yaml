@@ -34,9 +34,8 @@ appId: io.diabetactic.app
     text: 'Idioma|Language'
 
 # 6. TAP LANGUAGE SELECTOR TO OPEN IT
-# Language row is second preference item, at ~54% from top
 - tapOn:
-    point: '70%,54%'
+    id: 'language-selector'
 - waitForAnimationToEnd:
     timeout: 2000
 
@@ -54,14 +53,6 @@ appId: io.diabetactic.app
 # Tap cancel to close without changing
 - tapOn:
     text: 'Cancelar|Cancel'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 1000
-
-# 10. IF NO CANCEL BUTTON, TAP OUTSIDE TO DISMISS
-- tapOn:
-    point: '50%,15%'
-    optional: true
 - waitForAnimationToEnd:
     timeout: 1000
 

@@ -25,7 +25,6 @@ appId: io.diabetactic.app
     visible:
       text: 'Normal|Alto|Bajo|High|Low|NORMAL|ALTO|BAJO|HIGH|LOW'
     timeout: 10000
-    optional: true
 
 # 5. ASSERT PAGE HEADER IS VISIBLE
 - assertVisible:
