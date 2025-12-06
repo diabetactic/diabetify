@@ -34,6 +34,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "no": "No",
+    "retry": "Retry",
     "pullToRefresh": "Pull to refresh",
     "refreshing": "Refreshing...",
     "loading": "Loading...",
@@ -42,7 +43,11 @@
     "yesterday": "Yesterday",
     "terms": "Terms",
     "privacy": "Privacy",
-    "support": "Support"
+    "support": "Support",
+    "scrollToTop": "Scroll to top",
+    "dismiss": "Dismiss",
+    "dismissAlert": "Dismiss alert",
+    "unableToLoad": "Unable to load"
   },
   "tabs": {
     "home": "Home",
@@ -86,7 +91,7 @@
     "accountLinked": "Tidepool account linked successfully",
     "accountUnlinked": "Tidepool account unlinked",
     "errors": {
-      "invalidCredentials": "Invalid email or password",
+      "invalidCredentials": "Invalid DNI or password",
       "emailRequired": "Email is required",
       "passwordRequired": "Password is required",
       "passwordMismatch": "Passwords do not match",
@@ -342,6 +347,15 @@
       "fasting": "Fasting",
       "other": "Other"
     },
+    "context": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "snack": "Snack",
+      "dinner": "Dinner",
+      "exercise": "Exercise",
+      "otherMeals": "Other Meals",
+      "other": "Other"
+    },
     "tags": {
       "exercise": "Exercise",
       "stress": "Stress",
@@ -519,14 +533,16 @@
         "pending": "Pending",
         "accepted": "Accepted",
         "denied": "Denied",
-        "created": "Completed"
+        "created": "Completed",
+        "blocked": "Queue Closed"
       },
       "states": {
         "NONE": "No pending request",
         "PENDING": "Your request is waiting to be reviewed",
         "ACCEPTED": "Your request was accepted, you can now fill the form",
         "DENIED": "Your request was not accepted",
-        "CREATED": "You already have a registered appointment"
+        "CREATED": "You already have a registered appointment",
+        "BLOCKED": "The appointment queue is currently closed"
       },
       "messages": {
         "submitSuccess": "Your appointment request has been submitted",
@@ -534,7 +550,8 @@
         "mustRequestFirst": "You must request an appointment first",
         "waitingReview": "Your request is still waiting to be accepted",
         "requestDenied": "Your request was not accepted. Please contact the clinic.",
-        "canProceed": "You can now proceed to fill the appointment form"
+        "canProceed": "You can now proceed to fill the appointment form",
+        "queueClosed": "The appointment queue is closed. Please try again later."
       }
     },
     "reason": "Reason",
@@ -763,7 +780,7 @@
       "connect": "Connect",
       "connecting": "Connecting to Tidepool...",
       "success": "Connected to Tidepool!",
-      "invalidCredentials": "Invalid email or password",
+      "invalidCredentials": "Invalid DNI or password",
       "networkError": "Network error. Please check your connection."
     },
     "changePhoto": "Change photo",
@@ -891,7 +908,8 @@
         "pending": "Pending",
         "active": "Active",
         "disabled": "Disabled"
-      }
+      },
+      "selectAccountState": "Select account state"
     }
   },
   "sync": {
@@ -899,7 +917,10 @@
     "status": "Sync Status",
     "inProgress": "Syncing...",
     "complete": "Sync Complete",
-    "error": "Sync Error",
+    "error": {
+      "title": "Sync Error",
+      "message": "Failed to sync your data. Please check your connection and try again."
+    },
     "lastSync": "Last Sync",
     "never": "Never",
     "automatic": "Automatic Sync",
@@ -1169,8 +1190,8 @@
       "message": "DNI: 1000 | Password: tuvieja"
     },
     "username": {
-      "label": "DNI or Email",
-      "placeholder": "Enter your DNI or email"
+      "label": "DNI",
+      "placeholder": "Enter your DNI"
     },
     "password": {
       "label": "Password",
@@ -1200,12 +1221,12 @@
       "welcomeBack": "Welcome back!",
       "loginError": "Login Error",
       "genericError": "Login failed. Please try again.",
-      "invalidCredentials": "Invalid credentials. Please check your DNI/email and password.",
-      "invalidData": "Invalid data. Please check the format of your DNI or email.",
+      "invalidCredentials": "Invalid credentials. Please check your DNI and password.",
+      "invalidData": "Invalid data. Please check the format of your DNI.",
       "connectionError": "Connection error. Please check your internet connection."
     },
     "validation": {
-      "usernameRequired": "DNI or email is required",
+      "usernameRequired": "DNI is required",
       "passwordRequired": "Password is required",
       "passwordMinLength": "Password must be at least 6 characters"
     },

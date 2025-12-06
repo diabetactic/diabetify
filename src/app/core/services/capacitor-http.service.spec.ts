@@ -685,4 +685,203 @@ describe('CapacitorHttpService', () => {
       });
     });
   });
+
+  describe('Timeout handling (native mode)', () => {
+    beforeEach(() => {
+      platform.is.mockImplementation((p: string) => {
+        if (p === 'capacitor') return true;
+        if (p === 'mobileweb') return false;
+        return false;
+      });
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('should timeout after 15 seconds by default', () => {
+      // Create a promise that never resolves
+      (CapacitorHttp.get as jest.Mock).mockImplementation(
+        () => new Promise(() => {}) // Never resolves
+      );
+
+      let timeoutError: any = null;
+
+      service.get('http://api.test.com/slow').subscribe({
+        error: error => {
+          timeoutError = error;
+        },
+      });
+
+      // Advance timer past timeout
+      jest.advanceTimersByTime(15001);
+
+      expect(timeoutError).not.toBeNull();
+      expect(timeoutError.isTimeout).toBe(true);
+      expect(timeoutError.status).toBe(0);
+      expect(timeoutError.message).toContain('timed out');
+      expect(timeoutError.message).toContain('http://api.test.com/slow');
+    });
+
+    it('should complete successfully before timeout', async () => {
+      (CapacitorHttp.get as jest.Mock).mockImplementation(
+        () =>
+          new Promise(resolve => {
+            setTimeout(() => resolve({ status: 200, data: mockResponse }), 5000);
+          })
+      );
+
+      let result: any = null;
+      let error: any = null;
+
+      service.get('http://api.test.com/fast').subscribe({
+        next: res => {
+          result = res;
+        },
+        error: err => {
+          error = err;
+        },
+      });
+
+      // Advance timer to 5 seconds (before timeout)
+      jest.advanceTimersByTime(5001);
+      // Flush microtasks to allow promise resolution to complete
+      await Promise.resolve();
+
+      expect(error).toBeNull();
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should include URL in timeout error message', () => {
+      (CapacitorHttp.post as jest.Mock).mockImplementation(() => new Promise(() => {}));
+
+      let timeoutError: any = null;
+
+      service.post('http://api.test.com/submit', { data: 'test' }).subscribe({
+        error: error => {
+          timeoutError = error;
+        },
+      });
+
+      jest.advanceTimersByTime(15001);
+
+      expect(timeoutError.message).toContain('http://api.test.com/submit');
+      expect(timeoutError.message).toContain('15000ms');
+    });
+  });
+
+  describe('HTTP 0 (network error) handling', () => {
+    beforeEach(() => {
+      platform.is.mockImplementation((p: string) => {
+        if (p === 'capacitor') return true;
+        if (p === 'mobileweb') return false;
+        return false;
+      });
+    });
+
+    it('should handle status 0 as network error', done => {
+      (CapacitorHttp.get as jest.Mock).mockResolvedValue({
+        status: 0,
+        data: null,
+      });
+
+      service.get('http://api.test.com/offline').subscribe({
+        error: error => {
+          expect(error.status).toBe(0);
+          expect(error.message).toBe('HTTP 0');
+          done();
+        },
+      });
+    });
+
+    it('should preserve error data on status 0', done => {
+      (CapacitorHttp.get as jest.Mock).mockResolvedValue({
+        status: 0,
+        data: { message: 'Network unavailable' },
+      });
+
+      service.get('http://api.test.com/offline').subscribe({
+        error: error => {
+          expect(error.error).toEqual({ message: 'Network unavailable' });
+          done();
+        },
+      });
+    });
+  });
+
+  describe('Edge cases', () => {
+    beforeEach(() => {
+      platform.is.mockImplementation((p: string) => {
+        if (p === 'capacitor') return true;
+        if (p === 'mobileweb') return false;
+        return false;
+      });
+    });
+
+    it('should handle 201 Created as success', done => {
+      (CapacitorHttp.post as jest.Mock).mockResolvedValue({
+        status: 201,
+        data: { id: 123, created: true },
+      });
+
+      service.post('http://api.test.com/create', { name: 'test' }).subscribe(result => {
+        expect(result).toEqual({ id: 123, created: true });
+        done();
+      });
+    });
+
+    it('should handle 204 No Content as success', done => {
+      (CapacitorHttp.delete as jest.Mock).mockResolvedValue({
+        status: 204,
+        data: null,
+      });
+
+      service.delete('http://api.test.com/item/1').subscribe(result => {
+        expect(result).toBeNull();
+        done();
+      });
+    });
+
+    it('should handle 299 as success (edge of 2xx range)', done => {
+      (CapacitorHttp.get as jest.Mock).mockResolvedValue({
+        status: 299,
+        data: { custom: 'response' },
+      });
+
+      service.get('http://api.test.com/custom').subscribe(result => {
+        expect(result).toEqual({ custom: 'response' });
+        done();
+      });
+    });
+
+    it('should handle 300 as error (start of 3xx range)', done => {
+      (CapacitorHttp.get as jest.Mock).mockResolvedValue({
+        status: 300,
+        data: { redirect: 'location' },
+      });
+
+      service.get('http://api.test.com/redirect').subscribe({
+        error: error => {
+          expect(error.status).toBe(300);
+          done();
+        },
+      });
+    });
+
+    it('should handle empty URL params gracefully', done => {
+      (CapacitorHttp.get as jest.Mock).mockResolvedValue({
+        status: 200,
+        data: mockResponse,
+      });
+
+      service.get('http://api.test.com/data', { params: {} }).subscribe(() => {
+        expect(CapacitorHttp.get).toHaveBeenCalledWith({
+          url: 'http://api.test.com/data',
+          headers: {},
+        });
+        done();
+      });
+    });
+  });
 });

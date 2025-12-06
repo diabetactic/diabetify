@@ -5,12 +5,13 @@
  * Note: Backend provides treatment/clinical data, NOT scheduling data.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { ApiGatewayService } from './api-gateway.service';
 import { TranslationService } from './translation.service';
 import { NotificationService } from './notification.service';
+import { LoggerService } from './logger.service';
 import { environment } from '../../../environments/environment';
 import {
   Appointment,
@@ -32,6 +33,8 @@ interface MockAppointment extends Appointment {
   providedIn: 'root',
 })
 export class AppointmentService {
+  private logger = inject(LoggerService);
+
   // Reactive state for appointments
   private appointmentsSubject = new BehaviorSubject<Appointment[]>([]);
   public appointments$ = this.appointmentsSubject.asObservable();
@@ -219,14 +222,22 @@ export class AppointmentService {
 
   /**
    * Get user's position in the appointment queue
-   * Returns relative position (0 = next in line, 1 = second, etc.)
+   * Returns relative position (1 = first in line, 2 = second, etc.)
    * Returns -1 if user is not in PENDING state or no queue exists
-   * TODO: Implement with LocalAuthService when available
    */
   getQueuePosition(): Observable<number> {
-    // Feature not fully implemented - requires LocalAuthService integration
-    // For now, return -1 (no position available)
-    return of(-1);
+    if (this.isMockMode) {
+      return of(1); // Mock: first in queue
+    }
+    return this.apiGateway.request<number>('extservices.appointments.placement').pipe(
+      map(response => {
+        if (response.success && typeof response.data === 'number') {
+          return response.data;
+        }
+        return -1;
+      }),
+      catchError(() => of(-1)) // Return -1 on error (not in queue or error)
+    );
   }
 
   /**
@@ -362,7 +373,7 @@ export class AppointmentService {
         reminderMinutesBefore: reminderMinutes,
       })
       .catch(error => {
-        console.error('Failed to schedule appointment reminder:', error);
+        this.logger.error('Appointments', 'Failed to schedule appointment reminder', error);
       });
   }
 
@@ -376,7 +387,7 @@ export class AppointmentService {
       APPOINTMENT_REMINDER_BASE_ID + parseInt(appointmentId.toString().slice(-4), 16);
 
     this.notificationService.cancelNotification(notificationId).catch(error => {
-      console.error('Failed to cancel appointment reminder:', error);
+      this.logger.error('Appointments', 'Failed to cancel appointment reminder', error);
     });
   }
 
@@ -385,7 +396,7 @@ export class AppointmentService {
    */
   private refreshAppointments(): void {
     this.getAppointments().subscribe({
-      error: err => console.error('Failed to refresh appointments:', err),
+      error: err => this.logger.error('Appointments', 'Failed to refresh appointments', err),
     });
   }
 
@@ -434,7 +445,7 @@ export class AppointmentService {
     for (const [backendMsg, translationKey] of Object.entries(backendErrorMappings)) {
       if (errorDetail.includes(backendMsg)) {
         errorMessage = this.translationService.instant(translationKey);
-        console.error('AppointmentService Error:', errorMessage, error);
+        this.logger.error('Appointments', 'Error', error, { message: errorMessage });
         return throwError(() => new Error(errorMessage));
       }
     }
@@ -464,7 +475,7 @@ export class AppointmentService {
       errorMessage = errorDetail || errorMessage;
     }
 
-    console.error('AppointmentService Error:', errorMessage, error);
+    this.logger.error('Appointments', 'Error', error, { message: errorMessage });
     return throwError(() => new Error(errorMessage));
   }
 }

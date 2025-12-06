@@ -41,6 +41,5 @@ env:
 # 6. VERIFY TAB BAR IS PRESENT (navigation working)
 - assertVisible:
     text: 'Inicio|Home'
-
 # Test passes if we got here - page loaded with queue status
 

@@ -78,4 +78,3 @@ appId: io.diabetactic.app
     text: 'Cancelar|Cancel|Cerrar|Close'
     optional: true
 - waitForAnimationToEnd
-

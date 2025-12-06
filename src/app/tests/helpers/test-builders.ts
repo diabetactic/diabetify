@@ -68,7 +68,7 @@ export class GlucoseReadingBuilder extends TestBuilder<LocalGlucoseReading> {
       time: new Date().toISOString(),
       value: 95,
       units: 'mg/dL',
-      notes: [],
+      notes: undefined,
       synced: false,
     };
   }

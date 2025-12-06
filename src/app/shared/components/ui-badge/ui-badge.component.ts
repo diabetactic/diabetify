@@ -1,5 +1,6 @@
 import { Component, Input, HostBinding, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { AppIconComponent } from '../app-icon/app-icon.component';
 
 /**
@@ -46,7 +47,7 @@ import { AppIconComponent } from '../app-icon/app-icon.component';
   templateUrl: './ui-badge.component.html',
   styleUrls: ['./ui-badge.component.scss'],
   standalone: true,
-  imports: [CommonModule, AppIconComponent],
+  imports: [CommonModule, TranslateModule, AppIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UiBadgeComponent {

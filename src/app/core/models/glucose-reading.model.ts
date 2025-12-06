@@ -81,7 +81,7 @@ export interface TidepoolBaseData {
   }>;
 
   /** User notes attached to the reading */
-  notes?: string[];
+  notes?: string;
 
   /** Tags for categorization */
   tags?: string[];

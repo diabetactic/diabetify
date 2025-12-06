@@ -69,5 +69,4 @@ appId: io.diabetactic.app
 # 11. FINAL VERIFICATION
 - assertVisible:
     text: 'Estado de la Cola|Queue Status'
-
 # Test passes - appointments page UI works correctly across navigation

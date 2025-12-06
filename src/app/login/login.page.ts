@@ -199,7 +199,7 @@ export class LoginPage implements OnInit {
           errorMessage = this.translate.instant('errors.timeout');
         } else {
           const httpError = error as { status?: number; message?: string };
-          if (httpError.status === 401) {
+          if (httpError.status === 401 || httpError.status === 403) {
             errorMessage = this.translate.instant('login.messages.invalidCredentials');
           } else if (httpError.status === 422) {
             errorMessage = this.translate.instant('login.messages.invalidData');
@@ -234,15 +234,6 @@ export class LoginPage implements OnInit {
       await loading.dismiss();
       // No need to reset isLoading or enable form here, done in catch or success path
     }
-  }
-
-  async forgotPassword() {
-    const alert = await this.alertCtrl.create({
-      header: this.translate.instant('login.forgotPasswordDialog.title'),
-      message: this.translate.instant('login.forgotPasswordDialog.message'),
-      buttons: ['OK'],
-    });
-    await alert.present();
   }
 
   private markFormGroupTouched(formGroup: FormGroup) {

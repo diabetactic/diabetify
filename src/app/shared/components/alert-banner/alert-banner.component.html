@@ -39,7 +39,7 @@
   <button
     *ngIf="dismissible"
     (click)="dismiss()"
-    aria-label="Dismiss alert"
+    [attr.aria-label]="'common.dismissAlert' | translate"
     class="flex flex-shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-1 transition-colors duration-200 hover:bg-black/10 active:bg-black/15 dark:hover:bg-white/10 dark:active:bg-white/15"
   >
     <span

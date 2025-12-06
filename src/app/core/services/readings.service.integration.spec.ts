@@ -198,7 +198,7 @@ describe('ReadingsService Integration Tests', () => {
         units: 'mg/dL',
         time: '2024-10-27T10:00:00Z',
         subType: 'manual',
-        notes: ['Test note'],
+        notes: 'Test note',
         tags: ['after-lunch'],
       };
 
@@ -208,7 +208,7 @@ describe('ReadingsService Integration Tests', () => {
       expect(retrieved).toBeDefined();
       expect(retrieved?.value).toBe(180);
       expect(retrieved?.units).toBe('mg/dL');
-      expect(retrieved?.notes).toContain('Test note');
+      expect(retrieved?.notes).toBe('Test note');
       expect(retrieved?.tags).toContain('after-lunch');
     });
   });
@@ -300,7 +300,7 @@ describe('ReadingsService Integration Tests', () => {
         units: 'mg/dL',
         time: earlier.toISOString(),
         subType: 'manual',
-        notes: ['fasting'],
+        notes: 'fasting',
       } as any);
 
       const second = await service.addReading({
@@ -333,7 +333,7 @@ describe('ReadingsService Integration Tests', () => {
       expect(summary.unit).toBe('mg/dL');
       expect(summary.readings.map(r => r.id)).toEqual([first.id, second.id]);
       expect(summary.readings[0].value).toBe(100);
-      expect(summary.readings[0].notes).toEqual(['fasting']);
+      expect(summary.readings[0].notes).toBe('fasting');
       expect(summary.readings[1].value).toBeCloseTo(117.1, 1);
       expect(summary.statistics.average).toBeCloseTo(108.6, 1);
       expect(summary.statistics.minimum).toBe(100);

@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectorRef, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -50,6 +51,8 @@ import { FoodPickerComponent } from '../shared/components/food-picker/food-picke
 export class BolusCalculatorPage {
   private translate = inject(TranslateService);
   private foodService = inject(FoodService);
+  private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
 
   calculatorForm: FormGroup;
   calculating = false;
@@ -70,6 +73,17 @@ export class BolusCalculatorPage {
       currentGlucose: ['', [Validators.required, Validators.min(40), Validators.max(600)]],
       carbGrams: ['', [Validators.required, Validators.min(0), Validators.max(300)]],
     });
+  }
+
+  /**
+   * Handle ion-input changes to ensure form values are synced immediately.
+   * This fixes the issue where the button needs multiple presses on mobile.
+   */
+  onInputChange(field: string, event: CustomEvent): void {
+    const value = event.detail.value;
+    this.calculatorForm.patchValue({ [field]: value });
+    this.calculatorForm.get(field)?.markAsTouched();
+    this.cdr.detectChanges();
   }
 
   /** Open the food picker modal */
@@ -117,6 +131,7 @@ export class BolusCalculatorPage {
           currentGlucose: parseFloat(currentGlucose),
           carbGrams: parseFloat(carbGrams),
         })
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: result => {
             this.result = result;

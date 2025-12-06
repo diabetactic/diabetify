@@ -48,6 +48,13 @@ class MockDatabaseService {
       }),
     }),
   };
+
+  // Mock transaction method - executes callback immediately
+  transaction = jest.fn().mockImplementation(async (mode: string, ...args: unknown[]) => {
+    // The last argument is the callback function
+    const callback = args[args.length - 1] as () => Promise<unknown>;
+    return await callback();
+  });
 }
 
 describe('ReadingsService', () => {
@@ -297,7 +304,7 @@ describe('ReadingsService', () => {
 
   describe('updateReading', () => {
     it('should update a reading and mark as unsynced', async () => {
-      const updates = { value: 130, notes: ['Updated note'] };
+      const updates = { value: 130, notes: 'Updated note' };
 
       (mockDb.readings.get as jest.Mock).mockResolvedValue({
         id: 'test-id',
@@ -314,7 +321,7 @@ describe('ReadingsService', () => {
         'test-id',
         expect.objectContaining({
           value: 130,
-          notes: ['Updated note'],
+          notes: 'Updated note',
           status: 'normal',
         })
       );

@@ -1,4 +1,10 @@
-import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -22,6 +28,7 @@ import { AppIconComponent } from '../shared/components/app-icon/app-icon.compone
   templateUrl: './appointments.page.html',
   styleUrls: ['./appointments.page.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, IonicModule, TranslateModule, AppIconComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

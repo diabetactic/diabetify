@@ -33,5 +33,4 @@ appId: io.diabetactic.app
 # 6. VERIFY APPOINTMENT HEADER/NAVIGATION WORKS
 - assertVisible:
     text: 'Citas|Appointments'
-
 # Test passes - appointments page displays clinical data correctly

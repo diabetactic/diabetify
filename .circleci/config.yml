@@ -183,16 +183,24 @@ jobs:
           path: android/app/build/outputs/apk/debug
 
   # Playwright E2E (Chromium only) using official image with bundled browsers
+  # Sharded across 4 parallel containers for ~60% faster execution
   playwright-e2e:
     executor: playwright-executor
+    parallelism: 4
     steps:
       - checkout
       - run:
           name: Install dependencies (skip browser download – image already has them)
           command: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci
       - run:
-          name: Run Playwright E2E
-          command: npm run test:e2e
+          name: Run Playwright E2E (Shard $CIRCLE_NODE_INDEX of $CIRCLE_NODE_TOTAL)
+          command: |
+            # Calculate shard (1-indexed for Playwright)
+            SHARD_INDEX=$((CIRCLE_NODE_INDEX + 1))
+            echo "Running shard $SHARD_INDEX of $CIRCLE_NODE_TOTAL"
+            npx playwright test --shard=$SHARD_INDEX/$CIRCLE_NODE_TOTAL --reporter=html,json
+      - store_test_results:
+          path: playwright-report
       - store_artifacts:
           path: playwright-report
       - store_artifacts:
