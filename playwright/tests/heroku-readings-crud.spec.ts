@@ -18,25 +18,37 @@ test.describe('Heroku Readings CRUD', () => {
     'Requires E2E_TEST_USERNAME and E2E_TEST_PASSWORD environment variables'
   );
 
+  // Increase timeout for Heroku tests
+  test.setTimeout(60000);
+
   const createdReadingIds: string[] = [];
   let authToken: string;
 
   test.beforeEach(async ({ page }) => {
     // Login
     await page.goto('/login');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(500); // Brief hydration buffer
     await page.waitForSelector('form', { state: 'visible', timeout: 10000 });
 
     const username = process.env.E2E_TEST_USERNAME!;
     const password = process.env.E2E_TEST_PASSWORD!;
 
+    await page.waitForSelector('input[placeholder*="DNI"], input[placeholder*="email"]', {
+      timeout: 10000,
+    });
     await page.fill('input[placeholder*="DNI"], input[placeholder*="email"]', username);
     await page.fill('input[type="password"]', password);
 
     // Capture token from login response if possible, or we'll get it separately
     const loginResponsePromise = page.waitForResponse(
-      response => response.url().includes('/token') || response.url().includes('/login')
+      response => response.url().includes('/token') || response.url().includes('/login'),
+      { timeout: 15000 }
     );
 
+    await page.waitForSelector('button:has-text("Iniciar"), button:has-text("Sign In")', {
+      timeout: 10000,
+    });
     await page.click('button:has-text("Iniciar"), button:has-text("Sign In")');
 
     try {
@@ -50,6 +62,8 @@ test.describe('Heroku Readings CRUD', () => {
     }
 
     await expect(page).toHaveURL(/\/tabs\//, { timeout: 20000 });
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(500); // Brief hydration buffer
   });
 
   test.afterAll(async () => {
@@ -82,35 +96,51 @@ test.describe('Heroku Readings CRUD', () => {
     console.log('Creating reading with Heroku backend...');
 
     // Navigate to readings
+    await page.waitForSelector('[data-testid="tab-readings"], ion-tab-button[tab="readings"]', {
+      timeout: 10000,
+    });
     await page.click('[data-testid="tab-readings"], ion-tab-button[tab="readings"]');
-    await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 15000 });
 
     // Wait for page to stabilize after navigation
-    await page.waitForLoadState('networkidle', { timeout: 15000 });
+    await page.waitForLoadState('networkidle', { timeout: 20000 });
+    await page.waitForTimeout(500); // Hydration buffer
 
     // Wait for page-specific content (add button) instead of generic ion-content
     const addButton = page.locator('ion-button:has-text("Agregar"), ion-button:has-text("Add")');
-    await expect(addButton.first()).toBeVisible({ timeout: 10000 });
+    await expect(addButton.first()).toBeVisible({ timeout: 15000 });
+    await page.waitForSelector('ion-button:has-text("Agregar"), ion-button:has-text("Add")', {
+      timeout: 10000,
+    });
     await addButton.first().click();
+
+    // Wait for modal to appear and stabilize
+    await page.waitForLoadState('networkidle', { timeout: 20000 });
+    await page.waitForTimeout(500); // Hydration buffer
 
     // Wait for add reading form input to be ready
     const glucoseInput = page.locator('ion-input input').first();
-    await expect(glucoseInput).toBeVisible({ timeout: 10000 });
+    await expect(glucoseInput).toBeVisible({ timeout: 15000 });
 
     // Generate unique reading value
     const testValue = Math.floor(Math.random() * 50) + 100; // 100-150
 
     // Fill glucose value
+    await page.waitForSelector('ion-input input', { timeout: 10000 });
     await glucoseInput.fill(testValue.toString());
 
     // Setup network interception to capture the created reading ID
     const createResponsePromise = page.waitForResponse(
       response =>
-        response.url().includes('/api/v1/readings') && response.request().method() === 'POST'
+        response.url().includes('/api/v1/readings') && response.request().method() === 'POST',
+      { timeout: 15000 }
     );
 
     // Save
     const saveButton = page.locator('ion-button:has-text("Guardar"), ion-button:has-text("Save")');
+    await page.waitForSelector('ion-button:has-text("Guardar"), ion-button:has-text("Save")', {
+      timeout: 10000,
+    });
     await saveButton.first().click();
 
     // Capture ID
@@ -128,10 +158,12 @@ test.describe('Heroku Readings CRUD', () => {
     }
 
     // Wait for navigation back to readings list
-    await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 15000 });
+    await page.waitForLoadState('networkidle', { timeout: 20000 });
+    await page.waitForTimeout(500); // Hydration buffer
 
     // Verify reading appears in list
-    await expect(page.locator('body')).toContainText(testValue.toString(), { timeout: 10000 });
+    await expect(page.locator('body')).toContainText(testValue.toString(), { timeout: 15000 });
 
     console.log(`✅ Reading created: ${testValue} mg/dL`);
   });
@@ -140,24 +172,28 @@ test.describe('Heroku Readings CRUD', () => {
     console.log('Listing readings from Heroku backend...');
 
     // Navigate to readings
+    await page.waitForSelector('[data-testid="tab-readings"], ion-tab-button[tab="readings"]', {
+      timeout: 10000,
+    });
     await page.click('[data-testid="tab-readings"], ion-tab-button[tab="readings"]');
-    await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 15000 });
 
     // Wait for page to stabilize
-    await page.waitForLoadState('networkidle', { timeout: 15000 });
+    await page.waitForLoadState('networkidle', { timeout: 20000 });
+    await page.waitForTimeout(500); // Hydration buffer
 
     // Should show either readings, add button, or page title
     const hasReadings = await page
       .locator('ion-card, .reading-item, .stat-card')
-      .isVisible({ timeout: 5000 })
+      .isVisible({ timeout: 15000 })
       .catch(() => false);
     const hasAddButton = await page
       .locator('ion-button:has-text("Agregar"), ion-button:has-text("Add")')
-      .isVisible({ timeout: 2000 })
+      .isVisible({ timeout: 15000 })
       .catch(() => false);
     const hasPageTitle = await page
       .locator('text=/Mostrando|Lecturas|Readings/i')
-      .isVisible({ timeout: 2000 })
+      .isVisible({ timeout: 15000 })
       .catch(() => false);
 
     // At least one of these should be visible
@@ -169,7 +205,7 @@ test.describe('Heroku Readings CRUD', () => {
     if (hasReadings) {
       // Verify reading cards have required data
       const firstCard = page.locator('ion-card, .reading-item').first();
-      await expect(firstCard).toBeVisible();
+      await expect(firstCard).toBeVisible({ timeout: 15000 });
 
       // Should contain glucose value
       const cardText = await firstCard.textContent();
@@ -185,19 +221,24 @@ test.describe('Heroku Readings CRUD', () => {
     console.log('Testing readings sync with Heroku...');
 
     // Navigate to readings
+    await page.waitForSelector('[data-testid="tab-readings"], ion-tab-button[tab="readings"]', {
+      timeout: 10000,
+    });
     await page.click('[data-testid="tab-readings"], ion-tab-button[tab="readings"]');
-    await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 15000 });
 
     // Wait for initial load
-    await page.waitForLoadState('networkidle', { timeout: 15000 });
+    await page.waitForLoadState('networkidle', { timeout: 20000 });
+    await page.waitForTimeout(500); // Hydration buffer
 
     // Count readings before
     const readingsCountBefore = await page.locator('ion-card, .reading-item').count();
 
     // Refresh page
     await page.reload();
-    await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
-    await page.waitForLoadState('networkidle', { timeout: 15000 });
+    await page.waitForLoadState('networkidle', { timeout: 20000 });
+    await page.waitForTimeout(500); // Hydration buffer
+    await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 15000 });
 
     // Count readings after
     const readingsCountAfter = await page.locator('ion-card, .reading-item').count();
@@ -212,18 +253,23 @@ test.describe('Heroku Readings CRUD', () => {
     console.log('Verifying readings display format...');
 
     // Navigate to readings
+    await page.waitForSelector('[data-testid="tab-readings"], ion-tab-button[tab="readings"]', {
+      timeout: 10000,
+    });
     await page.click('[data-testid="tab-readings"], ion-tab-button[tab="readings"]');
-    await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 15000 });
 
-    await page.waitForLoadState('networkidle', { timeout: 15000 });
+    await page.waitForLoadState('networkidle', { timeout: 20000 });
+    await page.waitForTimeout(500); // Hydration buffer
 
     const readingsExist = await page
       .locator('ion-card, .reading-item')
-      .isVisible({ timeout: 5000 })
+      .isVisible({ timeout: 15000 })
       .catch(() => false);
 
     if (readingsExist) {
       const firstReading = page.locator('ion-card, .reading-item').first();
+      await expect(firstReading).toBeVisible({ timeout: 15000 });
 
       // Should show glucose value with unit
       const text = await firstReading.textContent();
@@ -244,21 +290,25 @@ test.describe('Heroku Readings CRUD', () => {
     console.log('Verifying dashboard statistics from Heroku...');
 
     // Go to dashboard
+    await page.waitForSelector('[data-testid="tab-dashboard"], ion-tab-button[tab="dashboard"]', {
+      timeout: 10000,
+    });
     await page.click('[data-testid="tab-dashboard"], ion-tab-button[tab="dashboard"]');
-    await expect(page).toHaveURL(/\/tabs\/dashboard/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/tabs\/dashboard/, { timeout: 15000 });
 
     // Wait for stats to load
-    await page.waitForLoadState('networkidle', { timeout: 15000 });
+    await page.waitForLoadState('networkidle', { timeout: 20000 });
+    await page.waitForTimeout(500); // Hydration buffer
 
     // Should show some statistics
     const statsExist = await page
       .locator('ion-card, .stat-card')
-      .isVisible({ timeout: 5000 })
+      .isVisible({ timeout: 15000 })
       .catch(() => false);
 
     if (statsExist) {
       const statsCard = page.locator('ion-card, .stat-card').first();
-      await expect(statsCard).toBeVisible();
+      await expect(statsCard).toBeVisible({ timeout: 15000 });
 
       // Dashboard should show glucose data
       const dashboardText = await page.locator('ion-content').textContent();
