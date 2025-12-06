@@ -23,26 +23,29 @@ export async function loginUser(page: Page, credentials?: LoginCredentials): Pro
     await page.goto('/login');
   }
 
-  // Wait for login form with retry for hydration
-  await page.waitForSelector('form', { state: 'visible', timeout: 15000 });
+  // Wait for page to load
+  await page.waitForLoadState('networkidle', { timeout: 15000 });
 
   // If already logged in, skip
   if (page.url().includes('/tabs/')) {
     return;
   }
 
-  // Fill credentials using more reliable selectors
-  await page.fill(
-    'input[placeholder*="DNI"], input[placeholder*="email"], input[type="text"]',
-    username
-  );
-  await page.fill('input[type="password"]', password);
+  // Wait for login form with retry for hydration
+  await page.waitForSelector('[data-testid="login-username-input"]', {
+    state: 'visible',
+    timeout: 15000,
+  });
 
-  // Submit form
-  await page.click('button:has-text("Iniciar"), button:has-text("Sign In"), button[type="submit"]');
+  // Fill credentials using data-testid selectors (most reliable)
+  await page.fill('[data-testid="login-username-input"]', username);
+  await page.fill('[data-testid="login-password-input"]', password);
 
-  // Wait for successful navigation
-  await expect(page).toHaveURL(/\/tabs\//, { timeout: 20000 });
+  // Submit form using data-testid
+  await page.click('[data-testid="login-submit-btn"]');
+
+  // Wait for successful navigation to dashboard
+  await expect(page).toHaveURL(/\/tabs\//, { timeout: 30000 });
 
   // Wait for Ionic hydration
   await waitForIonicHydration(page);
