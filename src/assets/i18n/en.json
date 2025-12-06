@@ -788,6 +788,17 @@
     },
     "changePhoto": "Change photo",
     "editProfile": "Edit Profile",
+    "edit": {
+      "title": "Edit Profile",
+      "name": "First Name",
+      "surname": "Last Name",
+      "email": "Email",
+      "save": "Save Changes",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "success": "Profile updated successfully",
+      "error": "Failed to update profile"
+    },
     "editForm": {
       "name": "Name",
       "surname": "Surname",

@@ -135,6 +135,7 @@ export class ReadingsService {
   /**
    * Initialize network status monitoring
    * Listens to network changes and updates online status
+   * Auto-syncs when coming back online
    */
   private async initializeNetworkMonitoring(): Promise<void> {
     try {
@@ -148,11 +149,21 @@ export class ReadingsService {
 
       // Listen for network changes
       Network.addListener('networkStatusChange', status => {
+        const wasOffline = !this.isOnline;
         this.isOnline = status.connected;
+
         this.logger?.info(
           'Network',
           `Network status changed: ${this.isOnline ? 'online' : 'offline'}`
         );
+
+        // Auto-sync when coming back online
+        if (wasOffline && this.isOnline) {
+          this.logger?.info('Network', 'Device back online, triggering auto-sync');
+          this.performFullSync().catch(err => {
+            this.logger?.error('Network', 'Auto-sync failed after reconnection', err);
+          });
+        }
       });
     } catch (error) {
       this.logger?.warn('Network', 'Failed to initialize network monitoring', error);

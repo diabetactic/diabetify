@@ -1,0 +1,101 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>{{ 'profile.edit.title' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onCancel()" [disabled]="isSubmitting">
+        <app-icon name="close-outline" aria-hidden="true"></app-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="editForm" (ngSubmit)="onSubmit()">
+    <ion-list>
+      <!-- Name Field -->
+      <ion-item [class.ion-invalid]="isFieldInvalid('name')">
+        <ion-label position="stacked">
+          {{ 'profile.editForm.name' | translate }}
+          <span class="text-danger">*</span>
+        </ion-label>
+        <ion-input
+          formControlName="name"
+          type="text"
+          [placeholder]="'profile.editForm.name' | translate"
+          autocomplete="given-name"
+          inputmode="text"
+          [disabled]="isSubmitting"
+        ></ion-input>
+        <div class="error-message" *ngIf="isFieldInvalid('name')">
+          {{ getErrorMessage('name') }}
+        </div>
+      </ion-item>
+
+      <!-- Surname Field -->
+      <ion-item [class.ion-invalid]="isFieldInvalid('surname')">
+        <ion-label position="stacked">
+          {{ 'profile.editForm.surname' | translate }}
+        </ion-label>
+        <ion-input
+          formControlName="surname"
+          type="text"
+          [placeholder]="'profile.editForm.surname' | translate"
+          autocomplete="family-name"
+          inputmode="text"
+          [disabled]="isSubmitting"
+        ></ion-input>
+        <div class="error-message" *ngIf="isFieldInvalid('surname')">
+          {{ getErrorMessage('surname') }}
+        </div>
+      </ion-item>
+
+      <!-- Email Field -->
+      <ion-item [class.ion-invalid]="isFieldInvalid('email')">
+        <ion-label position="stacked">
+          {{ 'profile.editForm.email' | translate }}
+          <span class="text-danger">*</span>
+        </ion-label>
+        <ion-input
+          formControlName="email"
+          type="email"
+          [placeholder]="'profile.editForm.email' | translate"
+          autocomplete="email"
+          inputmode="email"
+          [disabled]="isSubmitting"
+        ></ion-input>
+        <div class="error-message" *ngIf="isFieldInvalid('email')">
+          {{ getErrorMessage('email') }}
+        </div>
+      </ion-item>
+    </ion-list>
+  </form>
+</ion-content>
+
+<ion-footer class="ion-padding">
+  <div class="button-group">
+    <ion-button
+      expand="block"
+      fill="outline"
+      color="medium"
+      (click)="onCancel()"
+      [disabled]="isSubmitting"
+    >
+      {{ 'profile.edit.cancel' | translate }}
+    </ion-button>
+    <ion-button
+      expand="block"
+      color="primary"
+      (click)="onSubmit()"
+      [disabled]="editForm.invalid || isSubmitting"
+    >
+      <app-icon
+        *ngIf="!isSubmitting"
+        name="checkmark-outline"
+        slot="start"
+        aria-hidden="true"
+      ></app-icon>
+      <ion-spinner *ngIf="isSubmitting" name="crescent" slot="start"></ion-spinner>
+      {{ isSubmitting ? ('profile.edit.saving' | translate) : ('profile.edit.save' | translate) }}
+    </ion-button>
+  </div>
+</ion-footer>

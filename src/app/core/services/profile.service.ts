@@ -213,6 +213,40 @@ export class ProfileService {
   }
 
   /**
+   * Update user profile on backend (PATCH /users/me)
+   * @param updates - Fields to update
+   * @returns Updated user data from backend
+   */
+  async updateBackendProfile(updates: BackendUserUpdate): Promise<any> {
+    try {
+      const response = await firstValueFrom(
+        this.apiGateway.request<any>('extservices.users.update', {
+          body: updates,
+        })
+      );
+
+      if (response.success && response.data) {
+        // Update local profile with new data
+        const currentProfile = await this.getProfile();
+        if (currentProfile) {
+          const updatedProfile = {
+            ...currentProfile,
+            name: updates.name || currentProfile.name,
+            email: updates.email || currentProfile.email,
+          };
+          await this.saveProfile(updatedProfile);
+        }
+        return response.data;
+      }
+
+      throw new Error(response.error?.message || 'Failed to update profile');
+    } catch (error) {
+      console.error('Failed to update backend profile:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Delete user profile
    */
   async deleteProfile(): Promise<void> {
