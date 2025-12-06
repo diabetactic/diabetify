@@ -52,8 +52,8 @@ describe('DiabetacticDatabase', () => {
       expect(database.name).toBe('DiabetacticDB');
     });
 
-    it('should initialize with version 2', () => {
-      expect(database.verno).toBe(2);
+    it('should initialize with version 3', () => {
+      expect(database.verno).toBe(3); // Version 3 added backendId index
     });
 
     it('should have readings table defined', () => {
@@ -259,7 +259,7 @@ describe('DiabetacticDatabase', () => {
           timezoneOffset: -480,
           status: 'normal',
           mealContext: 'before-breakfast',
-          notes: ['Feeling good', 'After exercise'],
+          notes: 'Feeling good. After exercise',
           tags: ['morning', 'fasting'],
         };
 
@@ -267,7 +267,7 @@ describe('DiabetacticDatabase', () => {
 
         const retrieved = await database.readings.get('full-reading');
         expect(retrieved!.deviceId).toBe('device-123');
-        expect(retrieved!.notes).toEqual(['Feeling good', 'After exercise']);
+        expect(retrieved!.notes).toBe('Feeling good. After exercise');
         expect(retrieved!.tags).toEqual(['morning', 'fasting']);
       });
     });
@@ -406,12 +406,12 @@ describe('DiabetacticDatabase', () => {
 
       it('should update nested fields', async () => {
         await database.readings.update('reading-123', {
-          notes: ['Updated note'],
+          notes: 'Updated note',
           tags: ['updated'],
         });
 
         const retrieved = await database.readings.get('reading-123');
-        expect(retrieved!.notes).toEqual(['Updated note']);
+        expect(retrieved!.notes).toBe('Updated note');
         expect(retrieved!.tags).toEqual(['updated']);
       });
     });
@@ -973,7 +973,7 @@ describe('DiabetacticDatabase', () => {
       expect(stats.syncQueueCount).toBe(0);
       expect(stats.appointmentsCount).toBe(0);
       expect(stats.databaseName).toBe('DiabetacticDB');
-      expect(stats.version).toBe(2);
+      expect(stats.version).toBe(3); // Version 3 added backendId index
     });
 
     it('should return correct counts for populated database', async () => {
@@ -1060,8 +1060,181 @@ describe('DiabetacticDatabase', () => {
 
     it('should be the same instance across imports', () => {
       // The singleton should be the same instance
-      expect(db.verno).toBe(2);
+      expect(db.verno).toBe(3); // Version 3 added backendId index
       expect(db.readings).toBeDefined();
+    });
+  });
+
+  describe('Concurrent Operations', () => {
+    it('should handle simultaneous add operations without data loss', async () => {
+      const readings = Array.from({ length: 20 }, (_, i) => ({
+        id: `concurrent-${i}`,
+        type: 'smbg' as const,
+        time: new Date(Date.now() + i * 1000).toISOString(),
+        value: 100 + i,
+        units: 'mg/dL' as const,
+        synced: false,
+      }));
+
+      // Add all readings concurrently
+      await Promise.all(readings.map(r => database.readings.add(r)));
+
+      const count = await database.readings.count();
+      expect(count).toBe(20);
+
+      // Verify all readings are present
+      const stored = await database.readings.toArray();
+      const ids = stored.map(r => r.id).sort();
+      const expectedIds = readings.map(r => r.id).sort();
+      expect(ids).toEqual(expectedIds);
+    });
+
+    it('should handle concurrent read and write operations', async () => {
+      // Seed initial data
+      await database.readings.add({
+        id: 'initial-reading',
+        type: 'smbg' as const,
+        time: new Date().toISOString(),
+        value: 100,
+        units: 'mg/dL' as const,
+        synced: false,
+      });
+
+      // Perform concurrent read and write
+      const [readResult, writeResult] = await Promise.all([
+        database.readings.get('initial-reading'),
+        database.readings.add({
+          id: 'concurrent-write',
+          type: 'smbg' as const,
+          time: new Date().toISOString(),
+          value: 150,
+          units: 'mg/dL' as const,
+          synced: false,
+        }),
+      ]);
+
+      expect(readResult).toBeDefined();
+      expect(readResult!.value).toBe(100);
+      expect(writeResult).toBe('concurrent-write');
+
+      const count = await database.readings.count();
+      expect(count).toBe(2);
+    });
+
+    it('should handle concurrent updates to different records', async () => {
+      // Seed data
+      await database.readings.bulkAdd([
+        {
+          id: 'update-1',
+          type: 'smbg' as const,
+          time: new Date().toISOString(),
+          value: 100,
+          units: 'mg/dL' as const,
+          synced: false,
+        },
+        {
+          id: 'update-2',
+          type: 'smbg' as const,
+          time: new Date().toISOString(),
+          value: 110,
+          units: 'mg/dL' as const,
+          synced: false,
+        },
+        {
+          id: 'update-3',
+          type: 'smbg' as const,
+          time: new Date().toISOString(),
+          value: 120,
+          units: 'mg/dL' as const,
+          synced: false,
+        },
+      ]);
+
+      // Concurrent updates
+      await Promise.all([
+        database.readings.update('update-1', { synced: true, value: 101 }),
+        database.readings.update('update-2', { synced: true, value: 111 }),
+        database.readings.update('update-3', { synced: true, value: 121 }),
+      ]);
+
+      const readings = await database.readings.toArray();
+      expect(readings.every(r => r.synced)).toBeTrue();
+      expect(readings.find(r => r.id === 'update-1')!.value).toBe(101);
+      expect(readings.find(r => r.id === 'update-2')!.value).toBe(111);
+      expect(readings.find(r => r.id === 'update-3')!.value).toBe(121);
+    });
+
+    it('should handle rapid sequential operations', async () => {
+      // Rapid fire adds and deletes
+      for (let i = 0; i < 10; i++) {
+        await database.readings.add({
+          id: `rapid-${i}`,
+          type: 'smbg' as const,
+          time: new Date().toISOString(),
+          value: 100 + i,
+          units: 'mg/dL' as const,
+          synced: false,
+        });
+      }
+
+      // Rapid deletes
+      for (let i = 0; i < 5; i++) {
+        await database.readings.delete(`rapid-${i}`);
+      }
+
+      const remaining = await database.readings.count();
+      expect(remaining).toBe(5);
+
+      // Verify correct items remain
+      const items = await database.readings.toArray();
+      const ids = items.map(r => r.id).sort();
+      expect(ids).toEqual(['rapid-5', 'rapid-6', 'rapid-7', 'rapid-8', 'rapid-9']);
+    });
+
+    it('should maintain data integrity under mixed concurrent operations', async () => {
+      // Seed data
+      await database.readings.bulkAdd([
+        {
+          id: 'integrity-1',
+          type: 'smbg' as const,
+          time: new Date().toISOString(),
+          value: 100,
+          units: 'mg/dL' as const,
+          synced: false,
+        },
+        {
+          id: 'integrity-2',
+          type: 'smbg' as const,
+          time: new Date().toISOString(),
+          value: 110,
+          units: 'mg/dL' as const,
+          synced: false,
+        },
+      ]);
+
+      // Mixed operations: read, update, add, delete all at once
+      const operations = Promise.all([
+        database.readings.get('integrity-1'),
+        database.readings.update('integrity-2', { synced: true }),
+        database.readings.add({
+          id: 'integrity-3',
+          type: 'smbg' as const,
+          time: new Date().toISOString(),
+          value: 120,
+          units: 'mg/dL' as const,
+          synced: false,
+        }),
+        database.readings.delete('integrity-1'),
+      ]);
+
+      await operations;
+
+      // Verify final state
+      const all = await database.readings.toArray();
+      expect(all.length).toBe(2);
+      expect(all.find(r => r.id === 'integrity-1')).toBeUndefined();
+      expect(all.find(r => r.id === 'integrity-2')!.synced).toBeTrue();
+      expect(all.find(r => r.id === 'integrity-3')!.value).toBe(120);
     });
   });
 
@@ -1077,7 +1250,7 @@ describe('DiabetacticDatabase', () => {
         value: 120,
         units: 'mg/dL' as const,
         synced: false,
-        notes: new Array(100).fill('Large note to consume space'),
+        notes: 'Large note to consume space '.repeat(100),
       }));
 
       // Should handle large bulk inserts gracefully
