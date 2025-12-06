@@ -99,20 +99,40 @@ export async function waitForElement(
 
 /**
  * Fill Ionic input (handles shadow DOM and native input)
+ * Clears existing value first and validates the final value
  */
 export async function fillIonicInput(page: Page, selector: string, value: string): Promise<void> {
   // Ionic inputs have a nested native input
   const input = page.locator(`${selector} input`).first();
   await input.waitFor({ state: 'visible', timeout: 5000 });
+
+  // Clear existing value first
+  await input.clear();
+
+  // Fill with new value
   await input.fill(value);
+
+  // Validate the value was set correctly
+  const actualValue = await input.inputValue();
+  if (actualValue !== value) {
+    throw new Error(`Failed to set input value. Expected: "${value}", but got: "${actualValue}"`);
+  }
 }
 
 /**
  * Click Ionic button with retry
+ * Checks enabled state before clicking to prevent interaction with disabled buttons
  */
 export async function clickIonicButton(page: Page, text: string): Promise<void> {
   const button = page.locator(`ion-button:has-text("${text}"), button:has-text("${text}")`).first();
   await button.waitFor({ state: 'visible', timeout: 5000 });
+
+  // Check if button is enabled
+  const isDisabled = await button.isDisabled();
+  if (isDisabled) {
+    throw new Error(`Button "${text}" is disabled and cannot be clicked`);
+  }
+
   await button.click();
 }
 

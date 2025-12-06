@@ -6,7 +6,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
 import { SecureStorage } from '@aparajita/capacitor-secure-storage';
 import {
@@ -17,6 +17,21 @@ import {
   TidepoolAuth,
   AccountState,
 } from '../models';
+import { ApiGatewayService } from './api-gateway.service';
+
+/**
+ * Backend user update payload (PATCH /users/me)
+ * Fields from backend User model that can be updated
+ */
+export interface BackendUserUpdate {
+  dni?: string;
+  password?: string;
+  name?: string;
+  surname?: string;
+  email?: string;
+  tidepool?: string;
+  hospital_account?: string;
+}
 
 /**
  * Storage keys for Capacitor Preferences
@@ -44,7 +59,7 @@ export class ProfileService {
   private _tidepoolConnected$ = new BehaviorSubject<boolean>(false);
   public readonly tidepoolConnected$ = this._tidepoolConnected$.asObservable();
 
-  constructor() {
+  constructor(private apiGateway: ApiGatewayService) {
     this.initialize();
   }
 
@@ -171,6 +186,30 @@ export class ProfileService {
 
     await this.saveProfile(updatedProfile);
     return updatedProfile;
+  }
+
+  /**
+   * Update user profile on backend via PATCH /users/me
+   * Updates name, surname, email fields on the backend
+   */
+  async updateProfileOnBackend(updates: BackendUserUpdate): Promise<void> {
+    try {
+      const response = await firstValueFrom(
+        this.apiGateway.request('extservices.users.update', {
+          body: updates,
+        })
+      );
+
+      if (!response.success) {
+        throw new Error(response.error?.message || 'Failed to update profile on backend');
+      }
+
+      // Clear cache to force re-fetch on next GET /users/me
+      this.apiGateway.clearCache('extservices.users.me');
+    } catch (error) {
+      console.error('Failed to update profile on backend:', error);
+      throw error;
+    }
   }
 
   /**

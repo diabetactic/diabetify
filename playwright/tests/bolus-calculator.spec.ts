@@ -273,7 +273,7 @@ test.describe('Bolus Calculator', () => {
         .first()
         .isVisible()
         .catch(() => false);
-      expect(hasError).toBeTruthy();
+      expect(hasError, 'Should show error message when required fields are missing').toBeTruthy();
     });
 
     test('should show error for glucose above maximum (> 600)', async ({ page }) => {
@@ -472,7 +472,10 @@ test.describe('Bolus Calculator', () => {
             .isVisible({ timeout: 3000 })
             .catch(() => false);
 
-          expect(hasSelectedDisplay).toBeTruthy();
+          expect(
+            hasSelectedDisplay,
+            'Should display selected meal type after selection'
+          ).toBeTruthy();
         }
       }
     });
@@ -695,7 +698,10 @@ test.describe('Bolus Calculator', () => {
       // Error text should be visible
       const errorText = page.locator('.error-text').first();
       const hasError = await errorText.isVisible().catch(() => false);
-      expect(hasError).toBeTruthy();
+      expect(
+        hasError,
+        'Should show error message for glucose value below minimum (19 mg/dL)'
+      ).toBeTruthy();
     });
 
     test('should have proper button text or aria-labels', async ({ page }) => {
@@ -710,7 +716,10 @@ test.describe('Bolus Calculator', () => {
         .first();
       const hasAriaLabel = await backButton.getAttribute('aria-label');
       const hasText = await backButton.textContent();
-      expect(hasAriaLabel || hasText).toBeTruthy();
+      expect(
+        hasAriaLabel || hasText,
+        'Form should have accessible labels or visible text for screen readers'
+      ).toBeTruthy();
     });
   });
 });

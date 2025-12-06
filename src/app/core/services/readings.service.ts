@@ -6,6 +6,7 @@
 import { Injectable, Optional, Inject, InjectionToken } from '@angular/core';
 import { BehaviorSubject, Observable, from, firstValueFrom } from 'rxjs';
 import { liveQuery } from 'dexie';
+import { Network } from '@capacitor/network';
 import {
   LocalGlucoseReading,
   GlucoseReading,
@@ -95,6 +96,7 @@ export class ReadingsService {
   private readonly db: DiabetacticDatabase;
   private readonly liveQueryFn: typeof liveQuery;
   private readonly isMockBackend = environment.backendMode === 'mock';
+  private isOnline = true; // Default to online
 
   // Backend reading types: DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO
   // App now uses backend values directly (no mapping needed)
@@ -111,6 +113,8 @@ export class ReadingsService {
     // ALWAYS initialize observables for reactive updates
     // This ensures readings update when added/modified
     this.initializeObservables();
+    // Initialize network status monitoring
+    this.initializeNetworkMonitoring();
   }
 
   /**
@@ -126,6 +130,35 @@ export class ReadingsService {
     this.liveQueryFn(() => this.db.syncQueue.count()).subscribe(count =>
       this._pendingSyncCount$.next(count)
     );
+  }
+
+  /**
+   * Initialize network status monitoring
+   * Listens to network changes and updates online status
+   */
+  private async initializeNetworkMonitoring(): Promise<void> {
+    try {
+      // Get initial network status
+      const status = await Network.getStatus();
+      this.isOnline = status.connected;
+      this.logger?.info(
+        'Network',
+        `Initial network status: ${this.isOnline ? 'online' : 'offline'}`
+      );
+
+      // Listen for network changes
+      Network.addListener('networkStatusChange', status => {
+        this.isOnline = status.connected;
+        this.logger?.info(
+          'Network',
+          `Network status changed: ${this.isOnline ? 'online' : 'offline'}`
+        );
+      });
+    } catch (error) {
+      this.logger?.warn('Network', 'Failed to initialize network monitoring', error);
+      // Default to online if network plugin fails
+      this.isOnline = true;
+    }
   }
 
   /**
@@ -501,6 +534,12 @@ export class ReadingsService {
       return { success: 0, failed: 0 };
     }
 
+    // Skip sync if offline
+    if (!this.isOnline) {
+      this.logger?.info('Sync', 'Skipping sync - device is offline');
+      return { success: 0, failed: 0 };
+    }
+
     if (!this.apiGateway) {
       this.logger?.warn('Sync', 'ApiGatewayService not available, skipping sync');
       return { success: 0, failed: 0 };
@@ -670,6 +709,12 @@ export class ReadingsService {
       return { fetched: 0, merged: 0 };
     }
 
+    // Skip fetch if offline
+    if (!this.isOnline) {
+      this.logger?.info('Sync', 'Skipping fetch - device is offline');
+      return { fetched: 0, merged: 0 };
+    }
+
     if (!this.apiGateway) {
       this.logger?.warn('Sync', 'ApiGatewayService not available, skipping fetch');
       return { fetched: 0, merged: 0 };
@@ -729,6 +774,86 @@ export class ReadingsService {
       return { fetched: backendReadings.length, merged };
     } catch (error) {
       this.logger?.error('Sync', 'Error fetching from backend', error);
+      return { fetched: 0, merged: 0 };
+    }
+  }
+
+  /**
+   * Fetch latest readings from Heroku backend (last 15 days)
+   * Faster alternative to fetchFromBackend() for dashboard loading
+   */
+  async fetchLatestFromBackend(): Promise<{ fetched: number; merged: number }> {
+    // Skip in mock mode
+    if (this.isMockBackend) {
+      this.logger?.debug('Sync', 'Skipping fetch in mock mode');
+      return { fetched: 0, merged: 0 };
+    }
+
+    // Skip fetch if offline
+    if (!this.isOnline) {
+      this.logger?.info('Sync', 'Skipping fetch - device is offline');
+      return { fetched: 0, merged: 0 };
+    }
+
+    if (!this.apiGateway) {
+      this.logger?.warn('Sync', 'ApiGatewayService not available, skipping fetch');
+      return { fetched: 0, merged: 0 };
+    }
+
+    try {
+      this.logger?.info('Sync', 'Fetching latest readings from backend');
+
+      const response = await firstValueFrom(
+        this.apiGateway.request<BackendGlucoseResponse>('extservices.glucose.latest')
+      );
+
+      if (!response.success || !response.data?.readings) {
+        this.logger?.warn('Sync', 'Failed to fetch latest readings from backend', response.error);
+        return { fetched: 0, merged: 0 };
+      }
+
+      const backendReadings = response.data.readings;
+      this.logger?.debug('Sync', `Fetched ${backendReadings.length} latest readings from backend`);
+
+      let merged = 0;
+
+      for (const backendReading of backendReadings) {
+        // Check if we already have this reading (by backend ID)
+        const existingReadings = await this.db.readings
+          .filter(r => r.backendId === backendReading.id)
+          .toArray();
+
+        if (existingReadings.length === 0) {
+          // New reading from backend - add to local storage
+          const localReading = this.mapBackendToLocal(backendReading);
+          await this.db.readings.add(localReading);
+          merged++;
+        } else {
+          // Existing reading - check for conflicts using server as source of truth
+          const existing = existingReadings[0];
+          const backendValue = backendReading.glucose_level;
+          const backendNotes = backendReading.notes || '';
+
+          // Only update if there are actual differences (server wins)
+          if (existing.value !== backendValue || existing.notes !== backendNotes) {
+            await this.db.readings.update(existing.id, {
+              value: backendValue,
+              notes: backendNotes,
+              mealContext: backendReading.reading_type || existing.mealContext,
+              synced: true,
+            });
+            this.logger?.debug('Sync', `Updated local reading ${existing.id} from backend`);
+          }
+        }
+      }
+
+      this.logger?.info(
+        'Sync',
+        `Latest fetch complete: ${backendReadings.length} fetched, ${merged} new merged`
+      );
+      return { fetched: backendReadings.length, merged };
+    } catch (error) {
+      this.logger?.error('Sync', 'Error fetching latest from backend', error);
       return { fetched: 0, merged: 0 };
     }
   }

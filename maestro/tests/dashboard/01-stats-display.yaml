@@ -1,0 +1,137 @@
+# ==========================================
+# Test: Dashboard - Statistics Display
+# Description: Verify dashboard stat cards display correctly
+# Covers: Time in Range, Average Glucose, stat card rendering
+# Uses bilingual selectors for language independence
+# ==========================================
+
+appId: io.diabetactic.app
+
+---
+# 1. LOGIN WITH FRESH STATE
+- runFlow: ../../flows/login.yaml
+
+# 2. VERIFY DASHBOARD LOADED
+- extendedWaitUntil:
+    visible:
+      text: '.*(Inicio|Home|Dashboard|Tablero).*'
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 3. VERIFY STATS GRID SECTION IS VISIBLE
+# Dashboard has two main stat cards in vertical grid
+- assertVisible:
+    text: 'Tiempo en Rango|Time in Range|TIR'
+
+# 4. VERIFY TIME IN RANGE STAT CARD
+- extendedWaitUntil:
+    visible:
+      text: 'Tiempo en Rango|Time in Range'
+    timeout: 5000
+
+# 5. VERIFY PERCENTAGE DISPLAY FOR TIME IN RANGE
+# Should show a percentage value (0-100%)
+- assertVisible:
+    text: '%'
+
+# 6. VERIFY AVERAGE GLUCOSE STAT CARD
+- assertVisible:
+    text: 'Glucosa Promedio|Average Glucose|Promedio|Average'
+
+# 7. VERIFY GLUCOSE UNIT DISPLAY (mg/dL or mmol/L)
+- assertVisible:
+    text: 'mg/dL|mmol/L'
+
+# 8. VERIFY STAT CARDS HAVE VALUES (not empty)
+# Both stats should show numeric values
+- assertVisible:
+    text: '\d+'
+
+# 9. SCROLL DOWN TO VERIFY QUICK ACTIONS CARD
+- swipe:
+    start: '50%,70%'
+    end: '50%,40%'
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 10. VERIFY QUICK ACTIONS CARD IS VISIBLE
+- extendedWaitUntil:
+    visible:
+      text: 'Acciones Rápidas|Quick Actions'
+    timeout: 5000
+
+# 11. VERIFY QUICK ACTIONS HEADER
+- assertVisible:
+    text: 'Resumen de Hoy|Today.?s Summary|Hoy|Today'
+
+# 12. VERIFY ADD READING BUTTON EXISTS
+- assertVisible:
+    text: 'Agregar Lectura|Add Reading'
+
+# 13. VERIFY SYNC BUTTON EXISTS
+- assertVisible:
+    text: 'Sincronizar Ahora|Sync Now|Sincronizar|Sync'
+
+# 14. VERIFY BOLUS CALCULATOR BUTTON EXISTS
+- assertVisible:
+    text: 'Calculadora de Bolo|Bolus Calculator|Calculadora|Calculator'
+
+# 15. SCROLL TO VERIFY LAST SYNC INFO
+- swipe:
+    start: '50%,70%'
+    end: '50%,40%'
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 16. VERIFY LAST SYNC TIMESTAMP SECTION
+- assertVisible:
+    text: 'Última Sincronización|Last Sync|Última|Last'
+    optional: true
+
+# 17. VERIFY SYNC ITEMS COUNT
+- assertVisible:
+    text: 'elementos|items'
+    optional: true
+
+# 18. SCROLL TO RECENT READINGS SECTION
+- swipe:
+    start: '50%,70%'
+    end: '50%,30%'
+    duration: 500
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 19. VERIFY RECENT READINGS HEADER
+- extendedWaitUntil:
+    visible:
+      text: 'Lecturas Recientes|Recent Readings'
+    timeout: 8000
+
+# 20. VERIFY "VIEW ALL" LINK EXISTS
+- assertVisible:
+    text: 'Ver Todo|View All|Ver|All'
+
+# 21. TAP "VIEW ALL" TO NAVIGATE TO READINGS
+- tapOn:
+    text: 'Ver Todo|View All'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 22. VERIFY NAVIGATED TO READINGS PAGE
+- extendedWaitUntil:
+    visible:
+      text: 'Mostrando.*lecturas|Showing.*readings'
+    timeout: 8000
+
+# 23. NAVIGATE BACK TO DASHBOARD
+- tapOn:
+    text: 'Inicio|Home|Dashboard'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 24. VERIFY BACK ON DASHBOARD
+- assertVisible:
+    text: 'Tiempo en Rango|Time in Range'

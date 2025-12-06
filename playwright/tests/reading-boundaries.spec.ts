@@ -67,7 +67,10 @@ test.describe('Glucose Reading Boundary Validation', () => {
       const saveButton = page.locator('[data-testid="add-reading-save-btn"]');
       const isDisabled = await saveButton.isDisabled().catch(() => false);
 
-      expect(hasWarning || isDisabled).toBeTruthy();
+      expect(
+        hasWarning || isDisabled,
+        'Should show warning or disable button for value below minimum (19)'
+      ).toBeTruthy();
 
       console.log('✅ Value 19 shows low warning or button disabled');
     });
@@ -149,7 +152,10 @@ test.describe('Glucose Reading Boundary Validation', () => {
       const saveButton = page.locator('[data-testid="add-reading-save-btn"]');
       const isDisabled = await saveButton.isDisabled().catch(() => false);
 
-      expect(hasWarning || isDisabled).toBeTruthy();
+      expect(
+        hasWarning || isDisabled,
+        'Should show warning or disable button for value above maximum (601)'
+      ).toBeTruthy();
 
       console.log('✅ Value 601 shows high warning or button disabled');
     });
@@ -172,7 +178,10 @@ test.describe('Glucose Reading Boundary Validation', () => {
       const saveButton = page.locator('[data-testid="add-reading-save-btn"]');
       const isDisabled = await saveButton.isDisabled().catch(() => false);
 
-      expect(hasWarning || isDisabled).toBeTruthy();
+      expect(
+        hasWarning || isDisabled,
+        'Should show validation warning or disable button for invalid value'
+      ).toBeTruthy();
 
       console.log('✅ Validation feedback shown for invalid value');
     });
@@ -203,7 +212,10 @@ test.describe('Glucose Reading Boundary Validation', () => {
       const hasNormalStatus = await normalStatus.isVisible({ timeout: 3000 }).catch(() => false);
 
       // Status should have changed
-      expect(hasLowWarning || hasNormalStatus).toBeTruthy();
+      expect(
+        hasLowWarning || hasNormalStatus,
+        'Should show updated status after entering valid value (70)'
+      ).toBeTruthy();
 
       console.log('✅ Error recovery successful - status updated after valid input');
     });

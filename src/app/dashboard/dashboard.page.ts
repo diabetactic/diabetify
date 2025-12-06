@@ -152,12 +152,18 @@ export class DashboardPage implements OnInit, OnDestroy {
     try {
       this.isLoading = true;
 
-      // In cloud mode, fetch from backend first (auto-load after login)
+      // In cloud mode, fetch latest readings from backend first (faster than full sync)
       if (!this.isMockMode) {
-        this.logger.info('Dashboard', 'Auto-syncing with backend on load');
+        this.logger.info('Dashboard', 'Auto-syncing with backend on load (latest only)');
         try {
-          this.backendSyncResult = await this.readingsService.performFullSync();
-          this.logger.info('Dashboard', 'Backend sync completed', this.backendSyncResult);
+          // Use faster latest endpoint for dashboard loading
+          const latestResult = await this.readingsService.fetchLatestFromBackend();
+          this.backendSyncResult = {
+            pushed: 0,
+            fetched: latestResult.fetched,
+            failed: 0,
+          };
+          this.logger.info('Dashboard', 'Backend latest sync completed', this.backendSyncResult);
         } catch (syncError) {
           this.logger.error('Dashboard', 'Backend sync failed on load', syncError);
         }

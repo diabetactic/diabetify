@@ -401,6 +401,17 @@ jest.mock('@capacitor/haptics', () => ({
     impact: jest.fn().mockResolvedValue(undefined),
     notification: jest.fn().mockResolvedValue(undefined),
     vibrate: jest.fn().mockResolvedValue(undefined),
+    selectionChanged: jest.fn().mockResolvedValue(undefined),
+  },
+  ImpactStyle: {
+    Light: 'LIGHT',
+    Medium: 'MEDIUM',
+    Heavy: 'HEAVY',
+  },
+  NotificationType: {
+    Success: 'SUCCESS',
+    Warning: 'WARNING',
+    Error: 'ERROR',
   },
 }));
 
