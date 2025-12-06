@@ -36,7 +36,10 @@ test.describe('Diabetactic E2E Flow', () => {
 
     // Check for key elements - stat cards or content
     const hasDashboardContent = await elementExists(page, 'ion-card, .stat-card, app-stat-card');
-    expect(hasDashboardContent).toBeTruthy();
+    expect(
+      hasDashboardContent,
+      'Dashboard should display content after successful login'
+    ).toBeTruthy();
 
     // --- 3. ADD READING ---
     console.log('🔹 Step 3: Add Glucose Reading');

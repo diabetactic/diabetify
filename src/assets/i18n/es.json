@@ -33,6 +33,7 @@
     "close": "Cerrar",
     "cancel": "Cancelar",
     "save": "Guardar",
+    "saving": "Guardando...",
     "no": "No",
     "retry": "Reintentar",
     "pullToRefresh": "Desliza para actualizar",
@@ -47,7 +48,9 @@
     "scrollToTop": "Ir arriba",
     "dismiss": "Descartar",
     "dismissAlert": "Descartar alerta",
-    "unableToLoad": "No se pudo cargar"
+    "unableToLoad": "No se pudo cargar",
+    "ok": "OK",
+    "error": "Error"
   },
   "tabs": {
     "home": "Inicio",
@@ -792,6 +795,14 @@
       "networkError": "Error de red. Por favor verifica tu conexión"
     },
     "changePhoto": "Cambiar foto",
+    "editProfile": "Editar Perfil",
+    "editForm": {
+      "name": "Nombre",
+      "surname": "Apellido",
+      "email": "Correo electrónico",
+      "success": "¡Perfil actualizado con éxito!",
+      "error": "No se pudo actualizar el perfil. Inténtalo nuevamente."
+    },
     "avatar": {
       "errorTitle": "Foto de perfil",
       "tooLarge": "Selecciona una imagen menor a 3 MB.",

@@ -206,6 +206,61 @@ jobs:
       - store_artifacts:
           path: playwright/artifacts
 
+  # Docker-based E2E Tests - Uses docker-compose with nginx for production-like environment
+  # Sharded across 4 parallel containers for optimal performance
+  e2e-docker:
+    machine:
+      image: ubuntu-2204:2024.01.1
+      docker_layer_caching: true
+    parallelism: 4
+    working_directory: ~/project
+    steps:
+      - checkout
+      - run:
+          name: Install Docker Compose v2
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y docker-compose-plugin
+            docker compose version
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build Docker images
+          command: |
+            docker compose -f docker/docker-compose.e2e.yml build --parallel
+      - run:
+          name: Start app server
+          command: |
+            docker compose -f docker/docker-compose.e2e.yml up -d app
+            echo "Waiting for app server to be healthy..."
+            timeout 30 sh -c 'until docker compose -f docker/docker-compose.e2e.yml ps app | grep -q healthy; do sleep 1; done'
+      - run:
+          name: Run Playwright E2E (Shard $CIRCLE_NODE_INDEX of $CIRCLE_NODE_TOTAL)
+          command: |
+            # Calculate shard (1-indexed for Playwright)
+            SHARD_INDEX=$((CIRCLE_NODE_INDEX + 1))
+            echo "Running shard $SHARD_INDEX of $CIRCLE_NODE_TOTAL"
+            docker compose -f docker/docker-compose.e2e.yml run --rm playwright \
+              npx playwright test --shard=$SHARD_INDEX/$CIRCLE_NODE_TOTAL --reporter=html,list,json
+      - run:
+          name: Show container logs on failure
+          when: on_fail
+          command: |
+            docker compose -f docker/docker-compose.e2e.yml logs app
+            docker compose -f docker/docker-compose.e2e.yml logs playwright
+      - run:
+          name: Cleanup
+          when: always
+          command: docker compose -f docker/docker-compose.e2e.yml down -v
+      - store_test_results:
+          path: playwright-report
+      - store_artifacts:
+          path: playwright-report
+          destination: playwright-report-shard-$CIRCLE_NODE_INDEX
+      - store_artifacts:
+          path: playwright/artifacts
+          destination: screenshots-shard-$CIRCLE_NODE_INDEX
+
   # Maestro Integration Tests - Real device testing against Heroku
   maestro-tests:
     executor:
@@ -336,6 +391,13 @@ workflows:
       - playwright-e2e:
           requires:
             - test
+          filters:
+            branches:
+              only: master
+      # Docker-based E2E with production-like nginx setup
+      - e2e-docker:
+          requires:
+            - build-web
           filters:
             branches:
               only: master

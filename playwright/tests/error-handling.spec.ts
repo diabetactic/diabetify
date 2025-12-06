@@ -142,7 +142,10 @@ test.describe('Error Handling', () => {
       dataExists.isVisible({ timeout: 5000 }).catch(() => false),
     ]);
 
-    expect(hasContent).toBeTruthy();
+    expect(
+      hasContent,
+      'Dashboard should display content even when some data fails to load'
+    ).toBeTruthy();
   });
 
   test('navigation errors are handled gracefully', async ({ page }) => {

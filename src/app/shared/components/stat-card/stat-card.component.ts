@@ -90,6 +90,10 @@ export class StatCardComponent implements OnChanges {
     return this.value;
   }
 
+  get testId(): string {
+    return 'stat-card-' + this.title.toLowerCase().replace(/\s+/g, '-');
+  }
+
   shouldPulse(): boolean {
     // Pulse animation for high glucose values (danger state)
     if (this.color === 'danger' && typeof this.value === 'number') {

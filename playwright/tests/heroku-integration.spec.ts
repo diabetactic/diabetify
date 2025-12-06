@@ -29,7 +29,7 @@ test.describe('Heroku Integration Tests', () => {
 
       const data = await response.json();
       expect(data).toHaveProperty('access_token');
-      expect(data.access_token).toBeTruthy();
+      expect(data.access_token, 'Response should contain a valid access token').toBeTruthy();
       expect(typeof data.access_token).toBe('string');
       expect(data).toHaveProperty('token_type');
       expect(data.token_type).toBe('bearer');
@@ -323,7 +323,7 @@ test.describe('Heroku Integration Tests', () => {
         });
       } catch (error) {
         // Timeout is expected
-        expect(error).toBeTruthy();
+        expect(error, 'Should throw error when login fails with invalid credentials').toBeTruthy();
       }
     });
   });

@@ -6,10 +6,27 @@ import { TranslateModule } from '@ngx-translate/core';
 import { IonicModule } from '@ionic/angular';
 import { AppComponent } from './app.component';
 import { TranslationService } from './core/services/translation.service';
+import { LocalAuthService } from './core/services/local-auth.service';
+import { SessionTimeoutService } from './core/services/session-timeout.service';
 import { getLucideIconsForTesting } from './tests/helpers/icon-test.helper';
 
 class TranslationServiceStub {
   currentLanguage$ = of('en');
+}
+
+class LocalAuthServiceStub {
+  authState$ = of({
+    isAuthenticated: false,
+    user: null,
+    accessToken: null,
+    refreshToken: null,
+    expiresAt: null,
+  });
+}
+
+class SessionTimeoutServiceStub {
+  startMonitoring = jest.fn();
+  stopMonitoring = jest.fn();
 }
 
 describe('AppComponent', () => {
@@ -22,7 +39,11 @@ describe('AppComponent', () => {
         RouterTestingModule,
         getLucideIconsForTesting(),
       ],
-      providers: [{ provide: TranslationService, useClass: TranslationServiceStub }],
+      providers: [
+        { provide: TranslationService, useClass: TranslationServiceStub },
+        { provide: LocalAuthService, useClass: LocalAuthServiceStub },
+        { provide: SessionTimeoutService, useClass: SessionTimeoutServiceStub },
+      ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
   });

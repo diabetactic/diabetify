@@ -1,0 +1,165 @@
+{
+  "description": "Test fixture for Maestro E2E tests - provides deterministic test data",
+  "user": {
+    "id": "1000",
+    "password": "tuvieja",
+    "name": "Test User"
+  },
+  "readings": [
+    {
+      "value": 95,
+      "datetime": "2025-12-06T08:00:00Z",
+      "meal_context": "fasting",
+      "notes": "Morning fasting glucose"
+    },
+    {
+      "value": 145,
+      "datetime": "2025-12-06T12:30:00Z",
+      "meal_context": "after_meal",
+      "notes": "After lunch"
+    },
+    {
+      "value": 110,
+      "datetime": "2025-12-06T14:00:00Z",
+      "meal_context": "before_meal",
+      "notes": "Before afternoon snack"
+    },
+    {
+      "value": 165,
+      "datetime": "2025-12-06T19:00:00Z",
+      "meal_context": "after_meal",
+      "notes": "After dinner - pizza night"
+    },
+    {
+      "value": 100,
+      "datetime": "2025-12-06T22:00:00Z",
+      "meal_context": "bedtime",
+      "notes": "Before bed"
+    }
+  ],
+  "appointmentQueue": {
+    "status": "open",
+    "clear": true
+  },
+  "scenarios": {
+    "readings_test": {
+      "description": "Setup for readings CRUD test",
+      "readings": [
+        {
+          "value": 120,
+          "datetime": "2025-12-06T10:00:00Z",
+          "meal_context": "before_meal",
+          "notes": "Pre-existing reading 1"
+        },
+        {
+          "value": 155,
+          "datetime": "2025-12-06T13:00:00Z",
+          "meal_context": "after_meal",
+          "notes": "Pre-existing reading 2"
+        }
+      ]
+    },
+    "appointments_test": {
+      "description": "Setup for appointments flow test",
+      "readings": [],
+      "appointmentQueue": {
+        "status": "open",
+        "clear": true
+      }
+    },
+    "bolus_calculator_test": {
+      "description": "Setup for bolus calculator test",
+      "readings": [
+        {
+          "value": 180,
+          "datetime": "2025-12-06T12:00:00Z",
+          "meal_context": "before_meal",
+          "notes": "Current glucose before calculation"
+        }
+      ]
+    },
+    "dashboard_test": {
+      "description": "Setup for dashboard analytics test",
+      "readings": [
+        {
+          "value": 92,
+          "datetime": "2025-12-05T08:00:00Z",
+          "meal_context": "fasting",
+          "notes": "Day 1 morning"
+        },
+        {
+          "value": 140,
+          "datetime": "2025-12-05T13:00:00Z",
+          "meal_context": "after_meal",
+          "notes": "Day 1 lunch"
+        },
+        {
+          "value": 108,
+          "datetime": "2025-12-05T19:00:00Z",
+          "meal_context": "after_meal",
+          "notes": "Day 1 dinner"
+        },
+        {
+          "value": 88,
+          "datetime": "2025-12-06T08:00:00Z",
+          "meal_context": "fasting",
+          "notes": "Day 2 morning"
+        },
+        {
+          "value": 152,
+          "datetime": "2025-12-06T13:00:00Z",
+          "meal_context": "after_meal",
+          "notes": "Day 2 lunch"
+        },
+        {
+          "value": 115,
+          "datetime": "2025-12-06T19:00:00Z",
+          "meal_context": "after_meal",
+          "notes": "Day 2 dinner"
+        }
+      ]
+    },
+    "empty_state_test": {
+      "description": "Setup for testing empty states",
+      "readings": [],
+      "appointmentQueue": {
+        "status": "open",
+        "clear": true
+      }
+    },
+    "high_glucose_test": {
+      "description": "Setup for high glucose alerts",
+      "readings": [
+        {
+          "value": 240,
+          "datetime": "2025-12-06T12:00:00Z",
+          "meal_context": "after_meal",
+          "notes": "Simulated high glucose"
+        },
+        {
+          "value": 255,
+          "datetime": "2025-12-06T14:00:00Z",
+          "meal_context": null,
+          "notes": "Very high glucose - should trigger alert"
+        }
+      ]
+    },
+    "low_glucose_test": {
+      "description": "Setup for low glucose alerts",
+      "readings": [
+        {
+          "value": 65,
+          "datetime": "2025-12-06T10:00:00Z",
+          "meal_context": "fasting",
+          "notes": "Simulated low glucose"
+        },
+        {
+          "value": 58,
+          "datetime": "2025-12-06T11:00:00Z",
+          "meal_context": null,
+          "notes": "Very low glucose - should trigger alert"
+        }
+      ]
+    }
+  }
+}

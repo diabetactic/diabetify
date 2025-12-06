@@ -37,6 +37,17 @@
       <h2 class="m-0 text-2xl font-bold text-white">{{ greeting }}</h2>
       <p class="m-0 text-sm text-white opacity-85">{{ emailText }}</p>
       <p class="m-0 text-sm text-white opacity-85">{{ memberSinceText }}</p>
+      <ion-button
+        fill="outline"
+        size="small"
+        color="light"
+        (click)="editProfile()"
+        data-testid="edit-profile-btn"
+        class="mt-3"
+      >
+        <ion-icon name="create-outline" slot="start"></ion-icon>
+        {{ 'profile.editProfile' | translate }}
+      </ion-button>
     </section>
 
     <section class="overview-grid">

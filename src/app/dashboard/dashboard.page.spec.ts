@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { provideRouter } from '@angular/router';
 import { of, BehaviorSubject } from 'rxjs';
@@ -391,7 +391,7 @@ describe('DashboardPage', () => {
       expect(component.showSuccessAlert).toBe(false);
     }));
 
-    it('should handle pull-to-refresh', waitForAsync(async () => {
+    it('should handle pull-to-refresh', async () => {
       const completeSpy = jest.fn();
       const mockRefreshEvent = {
         target: {
@@ -407,9 +407,9 @@ describe('DashboardPage', () => {
       expect(readingsServiceSpy.performFullSync).toHaveBeenCalled();
       expect(readingsServiceSpy.getStatistics).toHaveBeenCalled();
       expect(completeSpy).toHaveBeenCalled();
-    }));
+    });
 
-    it('should handle sync button click', waitForAsync(async () => {
+    it('should handle sync button click', async () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
@@ -421,7 +421,7 @@ describe('DashboardPage', () => {
       expect(readingsServiceSpy.performFullSync).toHaveBeenCalled();
       expect(readingsServiceSpy.getStatistics).toHaveBeenCalled();
       expect(component.isSyncing).toBe(false);
-    }));
+    });
 
     it('should dismiss success alert', () => {
       component.showSuccessAlert = true;
