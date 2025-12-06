@@ -82,14 +82,14 @@ test.describe('Readings Filtering', () => {
 
     if (await elementExists(page, statusSelect.toString(), 3000)) {
       await statusSelect.first().click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // Ionic animation
 
       // Select "Normal" option (bilingual)
       const normalOption = page.locator(
         'ion-select-option:has-text("Normal"), [role="option"]:has-text("Normal")'
       );
       await normalOption.first().click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // Ionic animation
     }
 
     // Apply filters
@@ -101,7 +101,7 @@ test.describe('Readings Filtering', () => {
     }
 
     // Wait for modal to close
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Verify filter was applied (badge should show 1)
     const badge = page.locator('ion-badge');
@@ -143,13 +143,13 @@ test.describe('Readings Filtering', () => {
 
     if (await elementExists(page, last24hButton.toString(), 3000)) {
       await last24hButton.first().click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // Ionic animation
     } else {
       // Fallback: use date pickers
       const startDateButton = page.locator('ion-datetime-button').first();
       if (await elementExists(page, startDateButton.toString(), 3000)) {
         await startDateButton.click();
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200); // Ionic animation
 
         // Select today's date
         const today = page.locator(
@@ -177,7 +177,7 @@ test.describe('Readings Filtering', () => {
       await applyButton.first().click();
     }
 
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Verify badge shows active filter
     const badge = page.locator('ion-badge');
@@ -207,7 +207,7 @@ test.describe('Readings Filtering', () => {
 
     if (await elementExists(page, last7DaysButton.toString(), 3000)) {
       await last7DaysButton.first().click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // Ionic animation
     }
 
     // Apply
@@ -218,7 +218,7 @@ test.describe('Readings Filtering', () => {
       await applyButton.first().click();
     }
 
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Verify filter applied
     const badge = page.locator('ion-badge');
@@ -248,7 +248,7 @@ test.describe('Readings Filtering', () => {
 
     if (await elementExists(page, last30DaysButton.toString(), 3000)) {
       await last30DaysButton.first().click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // Ionic animation
     }
 
     // Apply
@@ -259,7 +259,7 @@ test.describe('Readings Filtering', () => {
       await applyButton.first().click();
     }
 
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Verify filter applied
     const badge = page.locator('ion-badge');
@@ -282,11 +282,11 @@ test.describe('Readings Filtering', () => {
 
     // Type search term (common glucose value like "100")
     await searchBar.first().click();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(100); // Minimal wait
 
     const searchInput = page.locator('ion-searchbar input');
     await searchInput.first().fill('100');
-    await page.waitForTimeout(1000); // Debounce
+    await page.waitForTimeout(1000); // Search debounce - intentional
 
     // Verify results filtered
     const readings = page.locator('ion-card, .reading-item, app-reading-item');
@@ -311,7 +311,7 @@ test.describe('Readings Filtering', () => {
     // Search for common word in notes (e.g., "breakfast", "comida")
     const searchInput = page.locator('ion-searchbar input');
     await searchInput.first().fill('comida');
-    await page.waitForTimeout(1000); // Debounce
+    await page.waitForTimeout(1000); // Search debounce - intentional
 
     // Results should be filtered (if any readings have "comida" in notes)
     const readings = page.locator('ion-card, .reading-item, app-reading-item');
@@ -336,7 +336,7 @@ test.describe('Readings Filtering', () => {
     // Enter search term
     const searchInput = page.locator('ion-searchbar input');
     await searchInput.first().fill('test');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Click clear button (X icon)
     const clearButton = page.locator(
@@ -344,7 +344,7 @@ test.describe('Readings Filtering', () => {
     );
     if (await elementExists(page, clearButton.toString(), 2000)) {
       await clearButton.first().click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // Ionic animation
 
       // Search input should be cleared
       const inputValue = await searchInput.first().inputValue();
@@ -369,12 +369,12 @@ test.describe('Readings Filtering', () => {
     const statusSelect = page.locator('ion-select').first();
     if (await elementExists(page, statusSelect.toString(), 2000)) {
       await statusSelect.click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // Ionic animation
 
       const normalOption = page.locator('ion-select-option:has-text("Normal")');
       if (await elementExists(page, normalOption.toString(), 2000)) {
         await normalOption.first().click();
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200); // Ionic animation
       }
     }
 
@@ -384,7 +384,7 @@ test.describe('Readings Filtering', () => {
     );
     if (await elementExists(page, last7DaysButton.toString(), 2000)) {
       await last7DaysButton.first().click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // Ionic animation
     }
 
     // Apply filters
@@ -395,7 +395,7 @@ test.describe('Readings Filtering', () => {
       await applyButton.first().click();
     }
 
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Badge should show 2 active filters (status + date range)
     const badge = page.locator('ion-badge');
@@ -424,7 +424,7 @@ test.describe('Readings Filtering', () => {
     );
     if (await elementExists(page, last7DaysButton.toString(), 2000)) {
       await last7DaysButton.first().click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // Ionic animation
     }
 
     const applyButton = page.locator(
@@ -434,7 +434,7 @@ test.describe('Readings Filtering', () => {
       await applyButton.first().click();
     }
 
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Now clear filters
     await filterButton.first().click();
@@ -446,7 +446,7 @@ test.describe('Readings Filtering', () => {
 
     if (await elementExists(page, clearButton.toString(), 3000)) {
       await clearButton.first().click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // Ionic animation
     }
 
     // Badge should show 0 or be hidden
@@ -507,7 +507,7 @@ test.describe('Readings Filtering', () => {
     );
     if (await elementExists(page, last7DaysButton.toString(), 2000)) {
       await last7DaysButton.first().click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // Ionic animation
     }
 
     const applyButton = page.locator(
@@ -517,7 +517,7 @@ test.describe('Readings Filtering', () => {
       await applyButton.first().click();
     }
 
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Get current badge count
     const badge = page.locator('ion-badge');
@@ -528,11 +528,11 @@ test.describe('Readings Filtering', () => {
 
     // Navigate to another tab
     await navigateToTab(page, 'dashboard');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Navigate back to readings
     await navigateToTab(page, 'readings');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Badge should still show same filter count
     if ((await badge.count()) > 0) {

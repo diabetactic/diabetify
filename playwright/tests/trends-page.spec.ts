@@ -39,7 +39,7 @@ test.describe('Trends Page', () => {
 
     // Navigate to dashboard first
     await navigateToTab(page, 'dashboard');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle', { timeout: 10000 });
 
     // Check if trends button exists
     if (!(await elementExists(page, trendsButton.toString(), 3000))) {
@@ -54,7 +54,7 @@ test.describe('Trends Page', () => {
     } else {
       // Click the trends button
       await trendsButton.first().click();
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Should be on trends page
       await expect(page).toHaveURL(/\/trends/, { timeout: 5000 });
@@ -173,7 +173,7 @@ test.describe('Trends Page', () => {
 
     // Click 7 days
     await sevenDaysButton.first().click();
-    await page.waitForTimeout(1500); // Wait for data to load
+    await page.waitForLoadState('networkidle', { timeout: 10000 }); // Wait for data to load
 
     // Button should be selected/active
     const isActive = await sevenDaysButton.first().evaluate(el => {
@@ -193,7 +193,7 @@ test.describe('Trends Page', () => {
 
     if (await elementExists(page, thirtyDaysButton.toString(), 3000)) {
       await thirtyDaysButton.first().click();
-      await page.waitForTimeout(1500);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // 30 days should now be active
       const is30DaysActive = await thirtyDaysButton.first().evaluate(el => {
@@ -230,7 +230,7 @@ test.describe('Trends Page', () => {
       el.dispatchEvent(event);
     });
 
-    await page.waitForTimeout(2000); // Wait for refresh to complete
+    await page.waitForLoadState('networkidle', { timeout: 10000 }); // Wait for refresh to complete
 
     // Refresher should complete
     const refresherState = await refresher.evaluate((el: any) => {

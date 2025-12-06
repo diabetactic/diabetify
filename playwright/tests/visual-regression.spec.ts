@@ -20,7 +20,7 @@ test.describe('Visual Regression - Web & Mobile', () => {
       await page.waitForLoadState('networkidle');
 
       // Wait for animations to complete
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // CSS animation
 
       await expect(page).toHaveScreenshot('welcome-page.png', {
         fullPage: true,
@@ -31,7 +31,7 @@ test.describe('Visual Regression - Web & Mobile', () => {
     test('login page', async ({ page }) => {
       await page.goto('/login');
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // CSS animation
 
       await expect(page).toHaveScreenshot('login-page.png', {
         fullPage: true,
@@ -59,7 +59,7 @@ test.describe('Visual Regression - Web & Mobile', () => {
     });
 
     test('dashboard page', async ({ page }) => {
-      await page.waitForTimeout(1000); // Wait for data to load
+      await page.waitForLoadState('networkidle'); // Wait for data
       await expect(page).toHaveScreenshot('dashboard-page.png', {
         fullPage: true,
         animations: 'disabled',
@@ -110,7 +110,7 @@ test.describe('Visual Regression - Web & Mobile', () => {
     test('settings page', async ({ page }) => {
       await page.goto('/settings');
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // CSS animation
 
       await expect(page).toHaveScreenshot('settings-page.png', {
         fullPage: true,
@@ -121,7 +121,7 @@ test.describe('Visual Regression - Web & Mobile', () => {
     test('tips page', async ({ page }) => {
       await page.goto('/tips');
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // CSS animation
 
       await expect(page).toHaveScreenshot('tips-page.png', {
         fullPage: true,
@@ -144,7 +144,7 @@ test.describe('Visual Regression - Web & Mobile', () => {
     test('add reading form', async ({ page }) => {
       await page.goto('/add-reading');
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // CSS animation
 
       await expect(page).toHaveScreenshot('add-reading-form.png', {
         fullPage: true,
@@ -155,7 +155,7 @@ test.describe('Visual Regression - Web & Mobile', () => {
     test('bolus calculator', async ({ page }) => {
       await page.goto('/bolus-calculator');
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // CSS animation
 
       await expect(page).toHaveScreenshot('bolus-calculator.png', {
         fullPage: true,
@@ -173,7 +173,7 @@ test.describe('Visual Regression - Web & Mobile', () => {
     test('welcome page - dark mode', async ({ page }) => {
       await page.goto('/welcome');
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // CSS animation
 
       await expect(page).toHaveScreenshot('welcome-page-dark.png', {
         fullPage: true,
@@ -184,7 +184,7 @@ test.describe('Visual Regression - Web & Mobile', () => {
     test('login page - dark mode', async ({ page }) => {
       await page.goto('/login');
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // CSS animation
 
       await expect(page).toHaveScreenshot('login-page-dark.png', {
         fullPage: true,
@@ -250,7 +250,7 @@ test.describe('Visual Regression - Web & Mobile', () => {
       // Navigate to readings without data
       await page.goto('/tabs/readings');
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // CSS animation
 
       const emptyState = page.locator('.empty-state');
       if (await emptyState.isVisible()) {
@@ -291,7 +291,7 @@ test.describe('Responsive Breakpoints', () => {
       await page.setViewportSize({ width, height });
       await page.goto('/welcome');
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(200); // CSS animation
 
       await expect(page).toHaveScreenshot(`welcome-${name}.png`, {
         fullPage: true,

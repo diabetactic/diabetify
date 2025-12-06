@@ -59,7 +59,7 @@ test.describe('Error Handling', () => {
       );
       if (await submitButton.isVisible({ timeout: 3000 }).catch(() => false)) {
         await submitButton.click();
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState('networkidle', { timeout: 10000 });
 
         // Should show validation error
         const validationError = page.locator(
@@ -104,7 +104,7 @@ test.describe('Error Handling', () => {
         );
         if (await submitButton.isVisible({ timeout: 3000 }).catch(() => false)) {
           await submitButton.click();
-          await page.waitForTimeout(1000);
+          await page.waitForLoadState('networkidle', { timeout: 10000 });
 
           // Should show validation error
           const validationError = page.locator('text=/inválido|invalid|error|rango|range/i');

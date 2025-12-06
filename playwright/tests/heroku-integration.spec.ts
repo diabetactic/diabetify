@@ -238,7 +238,7 @@ test.describe('Heroku Integration Tests', () => {
       await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
 
       // Wait for data to load
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 15000 });
 
       // Check for readings content (might be empty, that's ok)
       const readingsContent = page.locator('ion-content, .readings-container');
@@ -267,7 +267,7 @@ test.describe('Heroku Integration Tests', () => {
         await expect(page).toHaveURL(/\/tabs\/appointments/, { timeout: 10000 });
 
         // Wait for data to load
-        await page.waitForTimeout(2000);
+        await page.waitForLoadState('networkidle', { timeout: 15000 });
 
         // Check for appointments content
         const appointmentsContent = page.locator('ion-content, .appointments-container');
@@ -297,7 +297,7 @@ test.describe('Heroku Integration Tests', () => {
         await expect(page).toHaveURL(/\/tabs\/profile/, { timeout: 10000 });
 
         // Wait for profile data to load
-        await page.waitForTimeout(2000);
+        await page.waitForLoadState('networkidle', { timeout: 15000 });
 
         // Check for profile content
         const profileContent = page.locator('ion-content, .profile-container');

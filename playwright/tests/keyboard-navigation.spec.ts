@@ -34,17 +34,18 @@ test.describe('Keyboard Navigation', () => {
 
   test('should navigate through tab buttons using Tab key', async ({ page }) => {
     await navigateToTab(page, 'dashboard');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Focus on the first tab button
     const dashboardTab = page.locator(
       '[data-testid="tab-dashboard"], ion-tab-button[tab="dashboard"]'
     );
+    await expect(dashboardTab.first()).toBeVisible();
     await dashboardTab.first().focus();
 
     // Press Tab to move to next tab
     await page.keyboard.press('Tab');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(100); // Minimal wait for focus transition
 
     // Check that focus moved (should be on readings tab or next interactive element)
     const focusedElement = await page.evaluate(() => document.activeElement?.tagName);
@@ -52,7 +53,7 @@ test.describe('Keyboard Navigation', () => {
 
     // Press Tab again
     await page.keyboard.press('Tab');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(100); // Minimal wait for focus transition
 
     // Focus should have moved again
     const secondFocusedElement = await page.evaluate(() => document.activeElement?.tagName);
@@ -61,10 +62,11 @@ test.describe('Keyboard Navigation', () => {
 
   test('should navigate backwards with Shift+Tab', async ({ page }) => {
     await navigateToTab(page, 'dashboard');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Focus on profile tab (last tab)
     const profileTab = page.locator('[data-testid="tab-profile"], ion-tab-button[tab="profile"]');
+    await expect(profileTab.first()).toBeVisible();
     await profileTab.first().focus();
 
     // Get current focused element
@@ -75,7 +77,7 @@ test.describe('Keyboard Navigation', () => {
 
     // Press Shift+Tab to move backwards
     await page.keyboard.press('Shift+Tab');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(100); // Minimal wait for focus transition
 
     // Focus should have moved backwards
     const newFocus = await page.evaluate(() => {
@@ -89,12 +91,13 @@ test.describe('Keyboard Navigation', () => {
 
   test('should activate tab buttons with Enter key', async ({ page }) => {
     await navigateToTab(page, 'dashboard');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Focus on readings tab
     const readingsTab = page.locator(
       '[data-testid="tab-readings"], ion-tab-button[tab="readings"]'
     );
+    await expect(readingsTab.first()).toBeVisible();
     await readingsTab.first().focus();
 
     // Verify we're on dashboard
@@ -102,7 +105,6 @@ test.describe('Keyboard Navigation', () => {
 
     // Press Enter
     await page.keyboard.press('Enter');
-    await page.waitForTimeout(1000);
 
     // Should navigate to readings
     await expect(page).toHaveURL(/\/readings/, { timeout: 5000 });
@@ -110,7 +112,7 @@ test.describe('Keyboard Navigation', () => {
 
   test('should activate tab buttons with Space key', async ({ page }) => {
     await navigateToTab(page, 'dashboard');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Focus on appointments tab
     const appointmentsTab = page.locator(
@@ -122,11 +124,11 @@ test.describe('Keyboard Navigation', () => {
       test.skip();
     }
 
+    await expect(appointmentsTab.first()).toBeVisible();
     await appointmentsTab.first().focus();
 
     // Press Space
     await page.keyboard.press('Space');
-    await page.waitForTimeout(1000);
 
     // Should navigate to appointments
     await expect(page).toHaveURL(/\/appointments/, { timeout: 5000 });
@@ -134,10 +136,11 @@ test.describe('Keyboard Navigation', () => {
 
   test('should show visible focus indicators on interactive elements', async ({ page }) => {
     await navigateToTab(page, 'dashboard');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Focus on a button
     const button = page.locator('ion-button').first();
+    await expect(button).toBeVisible();
     await button.focus();
 
     // Check for focus indicator (outline, border, or shadow)
@@ -157,7 +160,7 @@ test.describe('Keyboard Navigation', () => {
 
   test('should close modal with Escape key', async ({ page }) => {
     await navigateToTab(page, 'readings');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Open filter modal (if it exists)
     const filterButton = page.locator(
@@ -171,7 +174,7 @@ test.describe('Keyboard Navigation', () => {
       const anyModalButton = page.locator('ion-button, button').first();
       if (await elementExists(page, anyModalButton.toString(), 2000)) {
         await anyModalButton.click();
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200); // Animation only
       } else {
         test.skip();
       }
@@ -188,19 +191,14 @@ test.describe('Keyboard Navigation', () => {
 
     // Press Escape
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(1000);
 
     // Modal should be closed
-    const isModalVisible = await modal
-      .first()
-      .isVisible({ timeout: 2000 })
-      .catch(() => false);
-    expect(isModalVisible, 'Modal should close on Escape key').toBe(false);
+    await expect(modal.first()).not.toBeVisible({ timeout: 3000 });
   });
 
   test('should navigate through form fields with Tab', async ({ page }) => {
     await navigateToTab(page, 'profile');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Look for edit button
     const editButton = page.locator(
@@ -215,7 +213,7 @@ test.describe('Keyboard Navigation', () => {
       await waitForIonicHydration(page);
     } else {
       await editButton.first().click();
-      await page.waitForTimeout(1000);
+      await expect(page.locator('input, ion-input input').first()).toBeVisible({ timeout: 3000 });
     }
 
     // Get all form inputs
@@ -232,7 +230,7 @@ test.describe('Keyboard Navigation', () => {
 
     // Press Tab
     await page.keyboard.press('Tab');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(100); // Minimal wait for focus transition
 
     // Focus should move to next input
     const focusedElement = page.locator(':focus');
@@ -274,7 +272,7 @@ test.describe('Keyboard Navigation', () => {
 
   test('should navigate through list items with arrow keys (if implemented)', async ({ page }) => {
     await navigateToTab(page, 'readings');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Get reading items
     const readingItems = page.locator('ion-item, .reading-item, app-reading-item');
@@ -290,7 +288,7 @@ test.describe('Keyboard Navigation', () => {
 
     // Press down arrow
     await page.keyboard.press('ArrowDown');
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(100); // Minimal wait for focus transition
 
     // Check if focus moved (implementation-dependent)
     const focusedElement = page.locator(':focus');
@@ -314,7 +312,7 @@ test.describe('Keyboard Navigation', () => {
 
   test('should activate buttons with Space key', async ({ page }) => {
     await navigateToTab(page, 'dashboard');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Find any action button
     const button = page.locator('ion-button').first();
@@ -328,11 +326,14 @@ test.describe('Keyboard Navigation', () => {
     const initialUrl = page.url();
 
     // Focus button
+    await expect(button).toBeVisible();
     await button.focus();
 
     // Press Space
     await page.keyboard.press('Space');
-    await page.waitForTimeout(1000);
+
+    // Wait for potential navigation
+    await page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
 
     // Button should have been activated (page changed or action occurred)
     const newUrl = page.url();
@@ -344,7 +345,7 @@ test.describe('Keyboard Navigation', () => {
 
   test('should trap focus inside modal when open', async ({ page }) => {
     await navigateToTab(page, 'readings');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Open a modal
     const filterButton = page.locator(
@@ -376,7 +377,7 @@ test.describe('Keyboard Navigation', () => {
     // Tab through all elements
     for (let i = 0; i < focusableCount + 2; i++) {
       await page.keyboard.press('Tab');
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(100); // Minimal wait for focus transition
     }
 
     // Focus should still be inside modal (not leaked to background)
@@ -390,7 +391,7 @@ test.describe('Keyboard Navigation', () => {
 
   test('should support skip navigation links (if implemented)', async ({ page }) => {
     await navigateToTab(page, 'dashboard');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Look for skip links (usually hidden until focused)
     const skipLink = page.locator(
@@ -411,7 +412,9 @@ test.describe('Keyboard Navigation', () => {
 
       // Activate skip link
       await page.keyboard.press('Enter');
-      await page.waitForTimeout(500);
+
+      // Wait for focus to settle
+      await page.waitForTimeout(200);
 
       // Focus should jump to main content
       const focusedElement = await page.evaluate(() => {
@@ -425,11 +428,11 @@ test.describe('Keyboard Navigation', () => {
 
   test('should handle focus management when navigating between pages', async ({ page }) => {
     await navigateToTab(page, 'dashboard');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Navigate to readings
     await navigateToTab(page, 'readings');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Focus should be on a valid element (not lost)
     const focusedElement = await page.evaluate(() => {
@@ -443,7 +446,7 @@ test.describe('Keyboard Navigation', () => {
 
   test('should allow keyboard users to access all interactive elements', async ({ page }) => {
     await navigateToTab(page, 'dashboard');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Get all interactive elements
     const interactiveElements = page.locator(
@@ -477,6 +480,7 @@ test.describe('Keyboard Navigation', () => {
     }
 
     // At least some elements should be focusable
+    await expect(interactiveElements.first()).toBeVisible();
     await interactiveElements.first().focus();
     const firstFocused = await interactiveElements.first().evaluate(el => {
       return document.activeElement === el || el.contains(document.activeElement);
@@ -489,16 +493,17 @@ test.describe('Keyboard Navigation', () => {
 
   test('should not trap focus when no modal is open', async ({ page }) => {
     await navigateToTab(page, 'dashboard');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Focus on first element
     const firstButton = page.locator('ion-button, button').first();
+    await expect(firstButton).toBeVisible();
     await firstButton.focus();
 
     // Tab multiple times
     for (let i = 0; i < 10; i++) {
       await page.keyboard.press('Tab');
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(100); // Minimal wait for focus transition
     }
 
     // Focus should be able to move through the entire page

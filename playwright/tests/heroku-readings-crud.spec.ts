@@ -86,8 +86,7 @@ test.describe('Heroku Readings CRUD', () => {
     await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
 
     // Wait for page to stabilize after navigation
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle', { timeout: 15000 });
 
     // Wait for page-specific content (add button) instead of generic ion-content
     const addButton = page.locator('ion-button:has-text("Agregar"), ion-button:has-text("Add")');
@@ -145,8 +144,7 @@ test.describe('Heroku Readings CRUD', () => {
     await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
 
     // Wait for page to stabilize
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle', { timeout: 15000 });
 
     // Should show either readings, add button, or page title
     const hasReadings = await page
@@ -191,7 +189,7 @@ test.describe('Heroku Readings CRUD', () => {
     await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
 
     // Wait for initial load
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle', { timeout: 15000 });
 
     // Count readings before
     const readingsCountBefore = await page.locator('ion-card, .reading-item').count();
@@ -199,7 +197,7 @@ test.describe('Heroku Readings CRUD', () => {
     // Refresh page
     await page.reload();
     await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle', { timeout: 15000 });
 
     // Count readings after
     const readingsCountAfter = await page.locator('ion-card, .reading-item').count();
@@ -217,7 +215,7 @@ test.describe('Heroku Readings CRUD', () => {
     await page.click('[data-testid="tab-readings"], ion-tab-button[tab="readings"]');
     await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
 
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle', { timeout: 15000 });
 
     const readingsExist = await page
       .locator('ion-card, .reading-item')
@@ -250,7 +248,7 @@ test.describe('Heroku Readings CRUD', () => {
     await expect(page).toHaveURL(/\/tabs\/dashboard/, { timeout: 10000 });
 
     // Wait for stats to load
-    await page.waitForTimeout(3000);
+    await page.waitForLoadState('networkidle', { timeout: 15000 });
 
     // Should show some statistics
     const statsExist = await page
