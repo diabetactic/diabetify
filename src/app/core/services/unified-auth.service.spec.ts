@@ -12,8 +12,8 @@ import {
 
 describe('UnifiedAuthService', () => {
   let service: UnifiedAuthService;
-  let tidepoolAuthSpy: jasmine.SpyObj<TidepoolAuthService>;
-  let localAuthSpy: jasmine.SpyObj<LocalAuthService>;
+  let tidepoolAuthSpy: jest.Mocked<TidepoolAuthService>;
+  let localAuthSpy: jest.Mocked<LocalAuthService>;
 
   // Mock auth states
   let mockTidepoolAuthState: BehaviorSubject<TidepoolAuthState>;
@@ -21,23 +21,23 @@ describe('UnifiedAuthService', () => {
 
   beforeEach(() => {
     // Create spy objects
-    tidepoolAuthSpy = jasmine.createSpyObj('TidepoolAuthService', [
-      'login',
-      'logout',
-      'getAccessToken',
-      'refreshAccessToken',
-      'isTokenExpired',
-    ]);
+    tidepoolAuthSpy = {
+      login: jest.fn(),
+      logout: jest.fn(),
+      getAccessToken: jest.fn(),
+      refreshAccessToken: jest.fn(),
+      isTokenExpired: jest.fn(),
+    } as unknown as jest.Mocked<TidepoolAuthService>;
 
-    localAuthSpy = jasmine.createSpyObj('LocalAuthService', [
-      'login',
-      'register',
-      'logout',
-      'getAccessToken',
-      'isAuthenticated',
-      'refreshAccessToken',
-      'updatePreferences',
-    ]);
+    localAuthSpy = {
+      login: jest.fn(),
+      register: jest.fn(),
+      logout: jest.fn(),
+      getAccessToken: jest.fn(),
+      isAuthenticated: jest.fn(),
+      refreshAccessToken: jest.fn(),
+      updatePreferences: jest.fn(),
+    } as unknown as jest.Mocked<LocalAuthService>;
 
     // Initialize mock auth states
     mockTidepoolAuthState = new BehaviorSubject<TidepoolAuthState>({
@@ -211,7 +211,7 @@ describe('UnifiedAuthService', () => {
         expiresAt: Date.now() + 3600000,
       };
 
-      localAuthSpy.login.and.returnValue(of(mockLoginResult));
+      localAuthSpy.login.mockReturnValue(of(mockLoginResult));
       mockLocalAuthState.next(mockAuthState);
 
       service.loginLocal(loginRequest).subscribe(state => {
@@ -236,7 +236,7 @@ describe('UnifiedAuthService', () => {
         success: false,
         error: 'Invalid credentials',
       };
-      localAuthSpy.login.and.returnValue(of(mockLoginResult));
+      localAuthSpy.login.mockReturnValue(of(mockLoginResult));
 
       service.loginLocal(loginRequest).subscribe(state => {
         expect(state.isAuthenticated).toBe(false);
@@ -245,7 +245,7 @@ describe('UnifiedAuthService', () => {
     });
 
     it('should login with Tidepool', () => {
-      tidepoolAuthSpy.login.and.returnValue(Promise.resolve());
+      tidepoolAuthSpy.login.mockReturnValue(Promise.resolve());
 
       service.loginTidepool();
 
@@ -288,7 +288,7 @@ describe('UnifiedAuthService', () => {
         expiresAt: Date.now() + 3600000,
       };
 
-      localAuthSpy.register.and.returnValue(of(mockLoginResult));
+      localAuthSpy.register.mockReturnValue(of(mockLoginResult));
       mockLocalAuthState.next(mockAuthState);
 
       service.register(registerRequest).subscribe(state => {
@@ -327,8 +327,8 @@ describe('UnifiedAuthService', () => {
         email: 'test@example.com',
       });
 
-      localAuthSpy.logout.and.returnValue(Promise.resolve());
-      tidepoolAuthSpy.logout.and.returnValue(Promise.resolve());
+      localAuthSpy.logout.mockReturnValue(Promise.resolve());
+      tidepoolAuthSpy.logout.mockReturnValue(Promise.resolve());
 
       await service.logout();
 
@@ -337,8 +337,8 @@ describe('UnifiedAuthService', () => {
     });
 
     it('should logout from specific provider', async () => {
-      localAuthSpy.logout.and.returnValue(Promise.resolve());
-      tidepoolAuthSpy.logout.and.returnValue(Promise.resolve());
+      localAuthSpy.logout.mockReturnValue(Promise.resolve());
+      tidepoolAuthSpy.logout.mockReturnValue(Promise.resolve());
 
       await service.logoutFrom('local');
       expect(localAuthSpy.logout).toHaveBeenCalled();
@@ -374,7 +374,7 @@ describe('UnifiedAuthService', () => {
         email: 'test@example.com',
       });
 
-      tidepoolAuthSpy.getAccessToken.and.returnValue(Promise.resolve('tidepool-access-token'));
+      tidepoolAuthSpy.getAccessToken.mockReturnValue(Promise.resolve('tidepool-access-token'));
 
       service.getAccessToken().subscribe(token => {
         expect(token).toBe('tidepool-access-token');
@@ -390,8 +390,8 @@ describe('UnifiedAuthService', () => {
     });
 
     it('should get provider-specific token', done => {
-      localAuthSpy.getAccessToken.and.returnValue(Promise.resolve('local-token'));
-      tidepoolAuthSpy.getAccessToken.and.returnValue(Promise.resolve('tidepool-token'));
+      localAuthSpy.getAccessToken.mockReturnValue(Promise.resolve('local-token'));
+      tidepoolAuthSpy.getAccessToken.mockReturnValue(Promise.resolve('tidepool-token'));
 
       service.getProviderToken('local').subscribe(token => {
         expect(token).toBe('local-token');
@@ -432,8 +432,8 @@ describe('UnifiedAuthService', () => {
         expiresAt: Date.now() + 7200000,
       };
 
-      localAuthSpy.refreshAccessToken.and.returnValue(of(newLocalState));
-      tidepoolAuthSpy.refreshAccessToken.and.returnValue(Promise.resolve('new-tidepool-token'));
+      localAuthSpy.refreshAccessToken.mockReturnValue(of(newLocalState));
+      tidepoolAuthSpy.refreshAccessToken.mockReturnValue(Promise.resolve('new-tidepool-token'));
 
       service.refreshTokens().subscribe(() => {
         expect(localAuthSpy.refreshAccessToken).toHaveBeenCalled();
@@ -451,7 +451,7 @@ describe('UnifiedAuthService', () => {
         expiresAt: Date.now() + 3600000,
       });
 
-      localAuthSpy.refreshAccessToken.and.returnValue(
+      localAuthSpy.refreshAccessToken.mockReturnValue(
         throwError(() => new Error('Refresh failed'))
       );
 
@@ -501,7 +501,7 @@ describe('UnifiedAuthService', () => {
         expiresAt: Date.now() + 3600000,
       });
 
-      tidepoolAuthSpy.login.and.returnValue(Promise.resolve());
+      tidepoolAuthSpy.login.mockReturnValue(Promise.resolve());
 
       service.linkTidepoolAccount().subscribe(() => {
         expect(tidepoolAuthSpy.login).toHaveBeenCalled();
@@ -532,7 +532,7 @@ describe('UnifiedAuthService', () => {
         error: null,
       });
 
-      tidepoolAuthSpy.logout.and.returnValue(Promise.resolve());
+      tidepoolAuthSpy.logout.mockReturnValue(Promise.resolve());
 
       await service.unlinkTidepoolAccount();
 
@@ -563,7 +563,7 @@ describe('UnifiedAuthService', () => {
         language: 'es' as const,
       };
 
-      localAuthSpy.updatePreferences.and.returnValue(
+      localAuthSpy.updatePreferences.mockReturnValue(
         of({
           id: 'user',
           email: 'test@example.com',

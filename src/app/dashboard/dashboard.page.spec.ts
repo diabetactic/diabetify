@@ -202,8 +202,8 @@ class ProfileServiceStub {
   });
 
   profile$ = this.profileSubject.asObservable();
-  getProfile = jasmine.createSpy('getProfile').and.callFake(async () => this.profileSubject.value);
-  updatePreferences = jasmine.createSpy('updatePreferences').and.returnValue(Promise.resolve({}));
+  getProfile = jest.fn().mockImplementation(async () => this.profileSubject.value);
+  updatePreferences = jest.fn().mockResolvedValue({});
 }
 
 describe('DashboardPage', () => {

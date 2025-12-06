@@ -27,7 +27,7 @@ import {
   UrlTree,
   Router,
 } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
 import { map, take, switchMap } from 'rxjs/operators';
 import { TidepoolAuthService } from '../services/tidepool-auth.service';
 import { LocalAuthService } from '../services/local-auth.service';
@@ -56,44 +56,50 @@ export class AuthGuard implements CanActivate {
    * @returns True if user can access, UrlTree for redirect otherwise
    */
   canActivate(
-    route: ActivatedRouteSnapshot,
+    _route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    // First check Tidepool authentication
-    return this.tidepoolAuthService.authState.pipe(
-      take(1),
-      switchMap(tidepoolAuthState => {
-        if (tidepoolAuthState.isAuthenticated) {
-          // Tidepool auth is active, allow access
-          return [true];
-        }
-
-        // Check local authentication
-        return this.localAuthService.authState$.pipe(
+    // Wait for auth initialization to complete before checking auth state
+    // This prevents race conditions where guard runs before auth is restored from storage
+    return from(this.localAuthService.waitForInitialization()).pipe(
+      switchMap(() => {
+        // First check Tidepool authentication
+        return this.tidepoolAuthService.authState.pipe(
           take(1),
-          map(localAuthState => {
-            if (!localAuthState.isAuthenticated) {
-              const returnUrl = state.url;
-              return this.router.createUrlTree([ROUTES.TABS], {
-                queryParams: { returnUrl },
-              });
+          switchMap(tidepoolAuthState => {
+            if (tidepoolAuthState.isAuthenticated) {
+              // Tidepool auth is active, allow access
+              return [true];
             }
 
-            const accountState = localAuthState.user?.preferences
-              ? (localAuthState.user as { accountState?: AccountState }).accountState
-              : null;
+            // Check local authentication
+            return this.localAuthService.authState$.pipe(
+              take(1),
+              map(localAuthState => {
+                if (!localAuthState.isAuthenticated) {
+                  const returnUrl = state.url;
+                  return this.router.createUrlTree([ROUTES.TABS], {
+                    queryParams: { returnUrl },
+                  });
+                }
 
-            if (accountState === AccountState.PENDING) {
-              return this.router.createUrlTree([ROUTES.ACCOUNT_PENDING]);
-            }
+                const accountState = localAuthState.user?.preferences
+                  ? (localAuthState.user as { accountState?: AccountState }).accountState
+                  : null;
 
-            if (accountState === AccountState.DISABLED) {
-              this.localAuthService.logout();
-              return this.router.createUrlTree([ROUTES.WELCOME]);
-            }
+                if (accountState === AccountState.PENDING) {
+                  return this.router.createUrlTree([ROUTES.ACCOUNT_PENDING]);
+                }
 
-            // Account is ACTIVE, allow access
-            return true;
+                if (accountState === AccountState.DISABLED) {
+                  this.localAuthService.logout();
+                  return this.router.createUrlTree([ROUTES.WELCOME]);
+                }
+
+                // Account is ACTIVE, allow access
+                return true;
+              })
+            );
           })
         );
       })

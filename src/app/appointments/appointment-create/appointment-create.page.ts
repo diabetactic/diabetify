@@ -103,6 +103,7 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
   // UI state
   isLoading = false;
   showOtherMotive = false;
+  isSubmitting = false;
 
   // Queue guard state
   queueState: AppointmentQueueState | null = null;
@@ -164,6 +165,15 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
           this.canSubmit = false;
           this.queueBlockMessage = this.translationService.instant(
             'appointments.queue.messages.requestDenied'
+          );
+          await this.showBlockAlert(this.queueBlockMessage);
+          break;
+
+        case 'BLOCKED':
+          // User is blocked from creating appointments
+          this.canSubmit = false;
+          this.queueBlockMessage = this.translationService.instant(
+            'appointments.queue.messages.blocked'
           );
           await this.showBlockAlert(this.queueBlockMessage);
           break;
@@ -294,6 +304,11 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
    * Submit appointment request
    */
   async submitAppointment() {
+    // Prevent double-tap (debouncing)
+    if (this.isSubmitting) {
+      return;
+    }
+
     // Check queue state first
     if (!this.canSubmit) {
       await this.showToast(
@@ -308,6 +323,8 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
     if (!this.validateForm()) {
       return;
     }
+
+    this.isSubmitting = true;
 
     // Show loading
     const loading = await this.loadingController.create({
@@ -344,6 +361,7 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
       await this.showToast(errorMessage, 'danger');
     } finally {
       this.isLoading = false;
+      this.isSubmitting = false;
     }
   }
 

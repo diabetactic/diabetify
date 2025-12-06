@@ -441,9 +441,10 @@ export class AppointmentService {
       'Appointment Queue is not open': 'appointments.errors.queueClosed',
     };
 
-    // Check for backend error message match
+    // Check for backend error message match (case-insensitive)
+    const errorDetailLower = errorDetail.toLowerCase();
     for (const [backendMsg, translationKey] of Object.entries(backendErrorMappings)) {
-      if (errorDetail.includes(backendMsg)) {
+      if (errorDetailLower.includes(backendMsg.toLowerCase())) {
         errorMessage = this.translationService.instant(translationKey);
         this.logger.error('Appointments', 'Error', error, { message: errorMessage });
         return throwError(() => new Error(errorMessage));
