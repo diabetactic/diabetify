@@ -72,6 +72,7 @@
   <div
     class="flex items-center gap-2 overflow-x-auto whitespace-nowrap border-b border-[var(--ion-color-light-shade)] bg-[var(--ion-color-light)] px-4 py-3"
     *ngIf="hasActiveFilters()"
+    data-testid="readings-filter"
   >
     <ion-chip
       *ngIf="filters.status && filters.status !== 'all'"
@@ -119,6 +120,7 @@
   <div
     *ngIf="!isLoading && totalCount === 0"
     class="flex min-h-[400px] items-center justify-center p-8"
+    data-testid="readings-empty"
   >
     <app-empty-state
       illustration="description"
@@ -164,6 +166,7 @@
     class="page-shell pb-20"
     style="padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px))"
     *ngIf="!isLoading && groupedReadings.length > 0"
+    data-testid="readings-list"
   >
     <!-- Group by Date -->
     <div *ngFor="let group of groupedReadings; trackBy: trackByGroup" class="mb-6 last:mb-0">

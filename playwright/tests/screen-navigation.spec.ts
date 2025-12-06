@@ -48,7 +48,7 @@ test.describe('Screen Navigation Test - All 12 Screens', () => {
     try {
       // Wait for page to be ready
       await page.waitForLoadState('networkidle', { timeout: 10000 });
-      await page.waitForTimeout(1000); // Extra wait for Angular rendering
+      await page.waitForLoadState('networkidle'); // Angular rendering
 
       // Check for "No data" or empty states
       const bodyText = await page.textContent('body');
@@ -93,7 +93,7 @@ test.describe('Screen Navigation Test - All 12 Screens', () => {
         .first();
       if (await getStartedButton.isVisible({ timeout: 2000 })) {
         await getStartedButton.click();
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState('networkidle');
       }
     } catch {
       // Try login button
@@ -105,7 +105,7 @@ test.describe('Screen Navigation Test - All 12 Screens', () => {
           .first();
         if (await loginButton.isVisible({ timeout: 2000 })) {
           await loginButton.click();
-          await page.waitForTimeout(1000);
+          await page.waitForLoadState('networkidle');
         }
       } catch {
         console.log('No onboarding/login button found, proceeding...');
@@ -143,7 +143,7 @@ test.describe('Screen Navigation Test - All 12 Screens', () => {
   test('8. Settings Page', async () => {
     // Navigate from profile
     await page.goto('/tabs/profile');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Try to click settings
     try {
@@ -154,7 +154,7 @@ test.describe('Screen Navigation Test - All 12 Screens', () => {
         .first();
       if (await settingsButton.isVisible({ timeout: 2000 })) {
         await settingsButton.click();
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState('networkidle');
       }
     } catch {
       // Direct navigation if button not found
@@ -166,7 +166,7 @@ test.describe('Screen Navigation Test - All 12 Screens', () => {
 
   test('9. Advanced Settings', async () => {
     await page.goto('/settings');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Try to click advanced settings
     try {
@@ -175,7 +175,7 @@ test.describe('Screen Navigation Test - All 12 Screens', () => {
         .first();
       if (await advancedButton.isVisible({ timeout: 2000 })) {
         await advancedButton.click();
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState('networkidle');
       }
     } catch {
       // Direct navigation if button not found
@@ -188,7 +188,7 @@ test.describe('Screen Navigation Test - All 12 Screens', () => {
   test('10. Add Reading Page', async () => {
     // Try from dashboard first
     await page.goto('/tabs/dashboard');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     try {
       const addButton = page
@@ -196,7 +196,7 @@ test.describe('Screen Navigation Test - All 12 Screens', () => {
         .first();
       if (await addButton.isVisible({ timeout: 2000 })) {
         await addButton.click();
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState('networkidle');
       }
     } catch {
       // Direct navigation if button not found
@@ -208,7 +208,7 @@ test.describe('Screen Navigation Test - All 12 Screens', () => {
 
   test('11. Dashboard Detail', async () => {
     await page.goto('/tabs/dashboard');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Try to click detail view
     try {
@@ -219,7 +219,7 @@ test.describe('Screen Navigation Test - All 12 Screens', () => {
         .first();
       if (await detailButton.isVisible({ timeout: 2000 })) {
         await detailButton.click();
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState('networkidle');
       }
     } catch {
       // Direct navigation if button not found
@@ -231,14 +231,14 @@ test.describe('Screen Navigation Test - All 12 Screens', () => {
 
   test('12. Appointment Detail', async () => {
     await page.goto('/tabs/appointments');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle');
 
     // Try to click first appointment
     try {
       const firstAppointment = page.locator('ion-item').first();
       if (await firstAppointment.isVisible({ timeout: 2000 })) {
         await firstAppointment.click();
-        await page.waitForTimeout(1000);
+        await page.waitForLoadState('networkidle');
       }
     } catch {
       // Try direct navigation

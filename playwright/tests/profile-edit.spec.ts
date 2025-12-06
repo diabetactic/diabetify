@@ -54,7 +54,7 @@ test.describe('Profile Edit Flow', () => {
 
     if (await editButton.isVisible({ timeout: 3000 }).catch(() => false)) {
       await editButton.click();
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
     }
 
     // Find name input field
@@ -72,7 +72,7 @@ test.describe('Profile Edit Flow', () => {
         await saveButton.click();
 
         // Wait for save to complete
-        await page.waitForTimeout(2000);
+        await page.waitForLoadState('networkidle', { timeout: 10000 });
 
         // Verify success (toast or confirmation)
         const successMessage = page.locator('text=/Guardado|Saved|Actualizado|Updated/i');
@@ -87,7 +87,7 @@ test.describe('Profile Edit Flow', () => {
 
     if (await editButton.isVisible({ timeout: 2000 }).catch(() => false)) {
       await editButton.click();
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
     }
 
     const testName = `Test User ${Date.now()}`;
@@ -102,7 +102,7 @@ test.describe('Profile Edit Flow', () => {
       );
       if (await saveButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await saveButton.click();
-        await page.waitForTimeout(2000);
+        await page.waitForLoadState('networkidle', { timeout: 10000 });
       }
 
       // Refresh page

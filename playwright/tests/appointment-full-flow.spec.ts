@@ -207,7 +207,7 @@ test.describe.serial('Full Appointment Flow', () => {
 
       await requestButton.click();
       await submitPromise;
-      await page.waitForTimeout(1000); // Small buffer for state update
+      await page.waitForLoadState('networkidle', { timeout: 15000 }); // Wait for state update
     }
 
     // Deny via API
@@ -335,7 +335,7 @@ test.describe.serial('Full Appointment Flow', () => {
       await requestButton.first().click();
 
       // Wait for request to process (dialog will be auto-dismissed)
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 15000 });
 
       // Take screenshot to see what state we're in
       await page.screenshot({ path: `${SCREENSHOT_DIR}/appointment-after-request.png` });
@@ -379,8 +379,8 @@ test.describe.serial('Full Appointment Flow', () => {
     if (currentState === 'PENDING') {
       console.log('Step 5: Admin accepting appointment...');
 
-      // Wait a moment for the request to be processed by backend
-      await page.waitForTimeout(1000);
+      // Wait for the request to be processed by backend
+      await page.waitForLoadState('networkidle', { timeout: 15000 });
 
       // Accept via backoffice API
       const accepted = await acceptNextAppointment(adminToken);

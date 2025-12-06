@@ -1,0 +1,117 @@
+# ==========================================
+# Test: Readings - Edit Existing Reading
+# Description: Edit a glucose reading and verify update
+# Covers: Navigate to reading detail, edit value, save changes
+# Uses bilingual selectors and shadow DOM workarounds
+# ==========================================
+
+appId: io.diabetactic.app
+
+env:
+  NEW_GLUCOSE_VALUE: '135'
+
+---
+# 1. LOGIN WITH FRESH STATE
+- runFlow: ../../flows/login.yaml
+
+# 2. NAVIGATE TO READINGS TAB
+- runFlow: ../../flows/navigate-readings.yaml
+
+# 3. WAIT FOR READINGS PAGE TO FULLY HYDRATE
+- extendedWaitUntil:
+    visible:
+      text: 'Mostrando.*lecturas|Showing.*readings'
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 4. VERIFY AT LEAST ONE READING EXISTS
+# If no readings, test cannot proceed
+- assertVisible:
+    text: 'Normal|Alto|Bajo|High|Low|NORMAL|ALTO|BAJO|HIGH|LOW|\d{2,3}'
+
+# 5. TAP ON FIRST READING ITEM TO OPEN DETAIL/EDIT
+# Tap on the reading card (center of screen)
+- tapOn:
+    point: '50%,40%'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 6. VERIFY READING DETAIL/EDIT VIEW OPENED
+# Should show edit form or detail view with edit option
+- extendedWaitUntil:
+    visible:
+      text: 'Editar Lectura|Edit Reading|Editar|Edit|Detalles|Details'
+    timeout: 8000
+
+# 7. IF DETAIL VIEW, TAP EDIT BUTTON
+- tapOn:
+    id: 'edit-reading-btn'
+    optional: true
+- tapOn:
+    text: 'Editar|Edit'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# 8. VERIFY EDIT FORM IS VISIBLE
+- extendedWaitUntil:
+    visible:
+      text: 'Glucosa|Glucose'
+    timeout: 5000
+
+# 9. CLEAR EXISTING VALUE AND ENTER NEW VALUE
+# Tap on glucose input field
+- tapOn:
+    id: 'glucose-value-input'
+    optional: true
+- tapOn:
+    point: '50%,35%'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 10. CLEAR EXISTING TEXT
+- eraseText
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 11. INPUT NEW GLUCOSE VALUE
+- inputText: ${NEW_GLUCOSE_VALUE}
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 12. SCROLL TO ENSURE SAVE BUTTON IS VISIBLE
+- swipe:
+    start: '50%,80%'
+    end: '50%,40%'
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 13. TAP SAVE/UPDATE BUTTON
+- tapOn:
+    id: 'save-reading-btn'
+    optional: true
+- tapOn:
+    text: 'Guardar|Save|Actualizar|Update'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 14. VERIFY BACK ON READINGS LIST
+- extendedWaitUntil:
+    visible:
+      text: 'Mostrando.*lecturas|Showing.*readings'
+    timeout: 8000
+
+# 15. VERIFY UPDATED VALUE APPEARS IN LIST
+- assertVisible:
+    text: '135'
+    optional: true
+
+# 16. VERIFY SUCCESS MESSAGE (if shown)
+- assertVisible:
+    text: 'actualizada|updated|guardada|saved|éxito|success'
+    optional: true

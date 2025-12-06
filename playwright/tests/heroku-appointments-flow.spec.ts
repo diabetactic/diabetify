@@ -45,7 +45,7 @@ test.describe('Heroku Appointments Flow', () => {
       await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
 
       // Wait for data to load
-      await page.waitForTimeout(3000);
+      await page.waitForLoadState('networkidle', { timeout: 15000 });
 
       // Should show appointments page content
       const pageTitle = page.locator('h1, h2').first();
@@ -67,7 +67,7 @@ test.describe('Heroku Appointments Flow', () => {
       await appointmentsTab.click();
       await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
 
-      await page.waitForTimeout(3000);
+      await page.waitForLoadState('networkidle', { timeout: 15000 });
 
       // Should show some queue state indicator
       const hasQueueInfo = await page
@@ -93,12 +93,12 @@ test.describe('Heroku Appointments Flow', () => {
       await appointmentsTab.click();
       await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
 
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 15000 });
 
       // Refresh
       await page.reload();
       await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle', { timeout: 15000 });
 
       // Navigate back to appointments
       const appointmentsTabAfter = page.locator(
@@ -106,7 +106,7 @@ test.describe('Heroku Appointments Flow', () => {
       );
       if (await appointmentsTabAfter.isVisible({ timeout: 3000 }).catch(() => false)) {
         await appointmentsTabAfter.click();
-        await page.waitForTimeout(2000);
+        await page.waitForLoadState('networkidle', { timeout: 15000 });
       }
 
       // Get state after refresh
@@ -126,7 +126,7 @@ test.describe('Heroku Appointments Flow', () => {
     await page.click('[data-testid="tab-dashboard"], ion-tab-button[tab="dashboard"]');
     await expect(page).toHaveURL(/\/tabs\/dashboard/, { timeout: 10000 });
 
-    await page.waitForTimeout(3000);
+    await page.waitForLoadState('networkidle', { timeout: 15000 });
 
     // Look for appointment-related content
     const dashboardContent = await page.locator('ion-content').textContent();
