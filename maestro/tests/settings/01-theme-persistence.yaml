@@ -33,11 +33,9 @@ appId: io.diabetactic.app
 - assertVisible:
     text: 'Tema|Theme'
 
-# 6. TAP THEME SELECTOR (point tap on the right side of theme row)
-# Theme row is first preference item, approximately 45% from top
-# Tap on right side where ion-select is located
+# 6. TAP THEME SELECTOR
 - tapOn:
-    point: '70%,46%'
+    id: 'theme-selector'
 - waitForAnimationToEnd:
     timeout: 1500
 
@@ -54,14 +52,13 @@ appId: io.diabetactic.app
 # 8. CONFIRM SELECTION (tap OK on alert)
 - tapOn:
     text: 'OK|Aceptar'
-    optional: true
 - waitForAnimationToEnd:
     timeout: 1000
 
 # 9. RESTART APP TO TEST PERSISTENCE
 - stopApp
 - waitForAnimationToEnd:
-    timeout: 1500
+    timeout: 3000
 
 # 10. LOGIN AGAIN (WITHOUT clearing state to preserve preferences)
 - runFlow: ../../flows/login-no-clear.yaml
@@ -85,7 +82,7 @@ appId: io.diabetactic.app
 # 14. VERIFY THEME PERSISTED BY OPENING SELECTOR AND CHECKING DARK IS MARKED
 # Open theme selector
 - tapOn:
-    point: '70%,46%'
+    id: 'theme-selector'
 - waitForAnimationToEnd:
     timeout: 1500
 
@@ -103,6 +100,5 @@ appId: io.diabetactic.app
     timeout: 500
 - tapOn:
     text: 'OK|Aceptar'
-    optional: true
 - waitForAnimationToEnd:
     timeout: 1000

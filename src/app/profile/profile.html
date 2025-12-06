@@ -38,6 +38,7 @@
       <p class="m-0 text-sm text-white opacity-85">{{ emailText }}</p>
       <p class="m-0 text-sm text-white opacity-85">{{ memberSinceText }}</p>
       <ion-button
+        id="edit-profile-btn"
         fill="outline"
         size="small"
         color="light"
@@ -106,6 +107,7 @@
           </div>
         </div>
         <ion-select
+          id="theme-selector"
           interface="alert"
           [value]="currentTheme"
           (ionChange)="onThemeChange($event)"
@@ -134,6 +136,7 @@
           </div>
         </div>
         <ion-select
+          id="language-selector"
           interface="alert"
           [value]="currentLanguage"
           (ionChange)="onLanguageChange($event)"
@@ -309,6 +312,7 @@
     </section>
 
     <ion-button
+      id="sign-out-btn"
       expand="block"
       fill="outline"
       color="danger"

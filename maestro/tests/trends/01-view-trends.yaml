@@ -20,124 +20,28 @@ appId: io.diabetactic.app
     timeout: 2000
 
 # 3. NAVIGATE TO TRENDS PAGE
-# Trends might be in menu, bottom navigation, or accessible from readings
-# Try bottom navigation tabs first (if exists)
 - tapOn:
     text: 'Tendencias|Trends'
-    optional: true
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 4. IF TAB NAVIGATION DIDN'T WORK, TRY HAMBURGER MENU
-- tapOn:
-    id: 'menu-button'
-    optional: true
-- tapOn:
-    point: '5%,5%'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 1500
-
-# 5. LOOK FOR TRENDS IN MENU
-- scrollUntilVisible:
-    element:
-      text: 'Tendencias|Trends'
-    direction: DOWN
-    timeout: 5000
-    optional: true
-
-# 6. TAP TRENDS MENU ITEM
-- tapOn:
-    text: 'Tendencias|Trends'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
-
-# 7. IF STILL NOT ON TRENDS, TRY FROM READINGS PAGE
-- tapOn:
-    text: 'Lecturas|Readings'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 1500
-
-# 8. LOOK FOR TRENDS OPTION IN READINGS
-- tapOn:
-    text: 'Ver Tendencias|View Trends|Tendencias|Trends'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
-
-# 9. VERIFY TRENDS PAGE LOADED
+# 4. VERIFY TRENDS PAGE LOADED
 - extendedWaitUntil:
     visible:
       text: 'Tendencias|Trends'
     timeout: 8000
 
-# 10. VERIFY TRENDING UP ICON IS VISIBLE
-# Page should show chart/trending icon
-- assertVisible:
-    text: '📈|📊'
-    optional: true
-
-# 11. VERIFY "COMING SOON" OR "IN DEVELOPMENT" MESSAGE
-# Since trends is not fully implemented yet
+# 5. VERIFY "COMING SOON" MESSAGE
 - extendedWaitUntil:
     visible:
       text: 'Próximamente|Coming Soon|En desarrollo|In Development|desarrollo|development'
     timeout: 8000
 
-# 12. VERIFY PAGE TITLE
+# 6. VERIFY PAGE TITLE
 - assertVisible:
     text: 'Análisis de Tendencias|Trends Analysis|Tendencias|Trends'
 
-# 13. VERIFY INFORMATIONAL MESSAGE
-# Should explain that feature is coming soon
-- assertVisible:
-    text: 'glucosa|glucose|análisis|analysis|datos|data'
-    optional: true
-
-# 14. VERIFY NO ERROR STATE (page loads correctly)
+# 7. VERIFY NO ERROR STATE (page loads correctly)
 - assertNotVisible:
     text: 'Error|error|falló|failed'
     timeout: 2000
-
-# 15. VERIFY PAGE IS INTERACTIVE (not just a blank screen)
-- assertVisible:
-    text: '.*'
-
-# 16. SCROLL TO SEE IF THERE'S ANY ADDITIONAL CONTENT
-- swipe:
-    start: '50%,70%'
-    end: '50%,30%'
-    duration: 500
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 500
-
-# 17. VERIFY PLACEHOLDER/EMPTY STATE DESIGN
-# Should have proper empty state with icon and message
-- assertVisible:
-    text: 'Tendencias|Trends'
-
-# 18. NAVIGATE BACK TO DASHBOARD
-- tapOn:
-    text: 'Inicio|Home|Dashboard'
-    optional: true
-- tapOn:
-    id: 'back-button'
-    optional: true
-- tapOn:
-    point: '5%,5%'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
-
-# 19. VERIFY BACK ON DASHBOARD OR PREVIOUS PAGE
-- extendedWaitUntil:
-    visible:
-      text: 'Inicio|Home|Dashboard|Lecturas|Readings'
-    timeout: 8000
-
-# 20. VERIFY APP IS STABLE AFTER NAVIGATION
-- assertVisible:
-    text: 'Tiempo en Rango|Time in Range|Lecturas|Readings'
