@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # =============================================================================
+  # Development Server
+  # =============================================================================
+  dev:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    ports:
+      - "4200:4200"
+    volumes:
+      # Mount source for live reload
+      - ./src:/app/src:ro
+      - ./angular.json:/app/angular.json:ro
+      - ./tailwind.config.js:/app/tailwind.config.js:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+    environment:
+      - ENV=mock
+      - NODE_ENV=development
+    command: npm start
+
+  # =============================================================================
+  # Unit Tests (Watch Mode)
+  # =============================================================================
+  test-watch:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    volumes:
+      - ./src:/app/src:ro
+      - ./coverage:/app/coverage
+    command: npm run test:watch
+
+  # =============================================================================
+  # E2E Tests
+  # =============================================================================
+  e2e:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    volumes:
+      - ./playwright-report:/app/playwright-report
+      - ./playwright/artifacts:/app/playwright/artifacts
+    environment:
+      - CI=true
+      - E2E_SKIP_SERVER=false
+    command: npm run test:e2e
+
+  # =============================================================================
+  # CI Pipeline Simulation
+  # =============================================================================
+  ci:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    volumes:
+      - ./coverage:/app/coverage
+      - ./playwright-report:/app/playwright-report
+      - ./www:/app/www
+    environment:
+      - CI=true
+    command: bash -c "npm run lint && npm test && npm run test:e2e && npm run build:prod"
+
+  # =============================================================================
+  # Production Build
+  # =============================================================================
+  build:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    volumes:
+      - ./www:/app/www
+    command: npm run build:prod

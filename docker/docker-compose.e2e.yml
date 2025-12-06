@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # App Server - Serves the built Angular application
+  # ============================================================================
+  app:
+    image: nginx:1.25-alpine
+    container_name: diabetactic-app
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../www:/usr/share/nginx/html:ro
+    ports:
+      - "4200:80"
+    networks:
+      - e2e-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 5s
+      timeout: 3s
+      start_period: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # ============================================================================
+  # Playwright - Runs E2E tests against the app server
+  # ============================================================================
+  playwright:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.e2e
+    container_name: diabetactic-playwright
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      - E2E_HOST=app
+      - E2E_PORT=80
+      - E2E_BASE_URL=http://app:80
+      - E2E_SKIP_SERVER=true
+      - CI=true
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    volumes:
+      # Mount test artifacts for local access
+      - ../playwright/artifacts:/e2e/playwright/artifacts
+      - ../playwright-report:/e2e/playwright-report
+      # Mount tests for live updates during development
+      - ../playwright/tests:/e2e/playwright/tests:ro
+      - ../playwright.config.ts:/e2e/playwright.config.ts:ro
+    networks:
+      - e2e-network
+    working_dir: /e2e
+    command: npx playwright test --reporter=html,list,json
+
+  # ============================================================================
+  # Mock Backend (Optional) - For local backend testing
+  # ============================================================================
+  # Uncomment if you need a mock backend service
+  # mock-backend:
+  #   image: node:20-alpine
+  #   container_name: diabetactic-mock-backend
+  #   volumes:
+  #     - ../mock-api:/app
+  #   working_dir: /app
+  #   command: npm start
+  #   ports:
+  #     - "8000:8000"
+  #   networks:
+  #     - e2e-network
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/health"]
+  #     interval: 5s
+  #     timeout: 3s
+  #     start_period: 10s
+  #     retries: 5
+
+networks:
+  e2e-network:
+    driver: bridge
+    name: diabetactic-e2e
+
+# ============================================================================
+# Usage Instructions
+# ============================================================================
+#
+# 1. Build and run tests:
+#    docker-compose -f docker/docker-compose.e2e.yml up --build --abort-on-container-exit
+#
+# 2. Run tests only (if images already built):
+#    docker-compose -f docker/docker-compose.e2e.yml up --abort-on-container-exit
+#
+# 3. Clean up:
+#    docker-compose -f docker/docker-compose.e2e.yml down -v
+#
+# 4. View test reports:
+#    open playwright-report/index.html
+#
+# 5. Debug with headed browser (requires X11):
+#    docker-compose -f docker/docker-compose.e2e.yml run --rm playwright npx playwright test --headed
+#
+# ============================================================================
