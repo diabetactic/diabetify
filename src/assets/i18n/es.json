@@ -796,6 +796,17 @@
     },
     "changePhoto": "Cambiar foto",
     "editProfile": "Editar Perfil",
+    "edit": {
+      "title": "Editar Perfil",
+      "name": "Nombre",
+      "surname": "Apellido",
+      "email": "Correo electrónico",
+      "save": "Guardar Cambios",
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "success": "Perfil actualizado exitosamente",
+      "error": "Error al actualizar el perfil"
+    },
     "editForm": {
       "name": "Nombre",
       "surname": "Apellido",

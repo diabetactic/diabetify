@@ -10,7 +10,13 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonicModule, AlertController, ToastController, LoadingController } from '@ionic/angular';
+import {
+  IonicModule,
+  AlertController,
+  ToastController,
+  LoadingController,
+  ModalController,
+} from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, firstValueFrom } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
@@ -25,6 +31,7 @@ import { UserProfile, ThemeMode } from '../core/models/user-profile.model';
 import { environment } from '../../environments/environment';
 import { ROUTES, STORAGE_KEYS } from '../core/constants';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { ProfileEditComponent } from './profile-edit/profile-edit.component';
 interface ProfileDisplayData {
   name: string;
   email: string;
@@ -122,7 +129,8 @@ export class ProfilePage implements OnInit, OnDestroy {
     private router: Router,
     private alertController: AlertController,
     private toastController: ToastController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private modalController: ModalController
   ) {
     this.currentLanguage = this.translationService.getCurrentLanguage();
   }
@@ -897,103 +905,22 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   /**
-   * Edit profile - update name, surname, email on backend
+   * Edit profile - open modal to update name, surname, email on backend
    */
   async editProfile(): Promise<void> {
-    const alert = await this.alertController.create({
-      header: this.translationService.instant('profile.editProfile'),
-      inputs: [
-        {
-          name: 'name',
-          type: 'text',
-          placeholder: this.translationService.instant('profile.editForm.name'),
-          value: this.profile?.name || '',
-        },
-        {
-          name: 'surname',
-          type: 'text',
-          placeholder: this.translationService.instant('profile.editForm.surname'),
-          value: '', // Backend doesn't store surname in local profile
-        },
-        {
-          name: 'email',
-          type: 'email',
-          placeholder: this.translationService.instant('profile.editForm.email'),
-          value: this.profile?.email || '',
-        },
-      ],
-      buttons: [
-        {
-          text: this.translationService.instant('common.cancel'),
-          role: 'cancel',
-        },
-        {
-          text: this.translationService.instant('common.save'),
-          handler: async data => {
-            const updates: Record<string, string> = {};
-
-            if (data.name?.trim()) {
-              updates['name'] = data.name.trim();
-            }
-            if (data.surname?.trim()) {
-              updates['surname'] = data.surname.trim();
-            }
-            if (data.email?.trim()) {
-              updates['email'] = data.email.trim();
-            }
-
-            if (Object.keys(updates).length === 0) {
-              return; // No changes
-            }
-
-            // Show loading
-            const loading = await this.loadingController.create({
-              message: this.translationService.instant('common.saving'),
-            });
-            await loading.present();
-
-            try {
-              // Update on backend
-              await this.profileService.updateProfileOnBackend(updates);
-
-              // Update local profile (name and email only)
-              const localUpdates: Record<string, string> = {};
-              if (updates['name']) localUpdates['name'] = updates['name'];
-              if (updates['email']) localUpdates['email'] = updates['email'];
-
-              if (Object.keys(localUpdates).length > 0) {
-                await this.profileService.updateProfile(localUpdates);
-              }
-
-              await loading.dismiss();
-
-              // Show success
-              const toast = await this.toastController.create({
-                message: this.translationService.instant('profile.editForm.success'),
-                duration: 2000,
-                color: 'success',
-                position: 'bottom',
-              });
-              await toast.present();
-
-              this.refreshProfileDisplay();
-            } catch (error) {
-              await loading.dismiss();
-
-              // Show error
-              const errorAlert = await this.alertController.create({
-                header: this.translationService.instant('common.error'),
-                message: this.translationService.instant('profile.editForm.error'),
-                buttons: ['OK'],
-              });
-              await errorAlert.present();
-            }
-          },
-        },
-      ],
+    const modal = await this.modalController.create({
+      component: ProfileEditComponent,
+      cssClass: 'profile-edit-modal',
     });
 
-    await alert.present();
+    await modal.present();
+
+    const { data } = await modal.onWillDismiss<{ success: boolean }>();
+
+    // If profile was updated successfully, refresh the display
+    if (data?.success) {
+      this.refreshProfileDisplay();
+    }
   }
 
   /**
