@@ -46,6 +46,8 @@
     "test:integration": "jest --config jest.integration.config.js --runInBand --passWithNoTests",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
+    "test:e2e:docker": "./scripts/run-e2e-docker.sh",
+    "test:e2e:docker:build": "./scripts/run-e2e-docker.sh --build",
     "test:a11y": "playwright test accessibility-audit.spec.ts",
     "test:a11y:headed": "playwright test accessibility-audit.spec.ts --headed",
     "test:ui-quality": "playwright test accessibility-audit.spec.ts --grep 'UI Quality'",

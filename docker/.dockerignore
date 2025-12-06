@@ -1,0 +1,218 @@
+# =============================================================================
+# Docker Build Context Exclusions
+# =============================================================================
+# Excludes unnecessary files from Docker image to reduce size and build time
+# while keeping files needed for testing and building
+# =============================================================================
+
+# =============================================================================
+# Build Artifacts (will be regenerated)
+# =============================================================================
+node_modules/
+www/
+dist/
+.angular/
+.angular/cache/
+out-tsc/
+bazel-out/
+platforms/
+plugins/
+.ionic/
+
+# =============================================================================
+# Test Results (generated at runtime)
+# =============================================================================
+playwright/artifacts/
+playwright-report/
+coverage/
+.nyc_output/
+test-results/
+
+# NOTE: Do NOT exclude test files (*.spec.ts) - needed for npm test
+
+# =============================================================================
+# Mobile Build Artifacts
+# =============================================================================
+android/app/build/
+android/.gradle/
+android/.npm-cache/
+android/.idea/
+android/local.properties
+ios/
+
+# =============================================================================
+# Cache and Temporary Files
+# =============================================================================
+.cache/
+.npm-cache/
+.chromium-config/
+.jest-cache/
+.eslintcache
+*.tmp
+*.tmp.*
+.tmp/
+tmp/
+temp/
+.sass-cache/
+
+# =============================================================================
+# IDE and Editor Files
+# =============================================================================
+.vscode/
+.idea/
+.cursor/
+.crush/
+.gemini/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*.sw[mnpcod]
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+.history/
+
+# =============================================================================
+# OS-Specific Files
+# =============================================================================
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+Zone.Identifier
+desktop.ini
+$RECYCLE.BIN/
+
+# =============================================================================
+# Git (not needed in container)
+# =============================================================================
+.git/
+.gitignore
+.gitattributes
+.gitmodules
+
+# =============================================================================
+# CI/CD (not needed for builds)
+# =============================================================================
+.circleci/
+.github/
+
+# NOTE: Do NOT exclude .husky/ - may be needed for git hooks in container
+
+# =============================================================================
+# Documentation (not needed for runtime)
+# =============================================================================
+docs/
+*.md
+!README.md
+!CLAUDE.md
+*_BACKUP.md
+*_OLD.md
+CLEANUP_*.md
+*_SUMMARY.md
+*_COMPLETE.md
+*_PROGRESS.md
+*_REPORT.md
+*_ANALYSIS.md
+*_AUDIT.md
+VERIFICATION_PACKAGE/
+VERIFICATION_PACKAGE.zip
+
+# =============================================================================
+# Environment and Secrets
+# =============================================================================
+.env
+.env.local
+.env.*.local
+*.personal.postman_environment.json
+android/keystore.properties
+android/release-keystore.jks
+
+# =============================================================================
+# AI/Agent Generated Files
+# =============================================================================
+.claude/
+.mcp.json
+claude-flow.config.json
+.swarm/
+.hive-mind/
+.claude-flow/
+memory/
+coordination/
+.serena/
+.maestro-tests/
+.playwright-mcp/
+hive-mind-prompt-*.txt
+
+# =============================================================================
+# Database Files
+# =============================================================================
+*.db
+*.db-journal
+*.db-wal
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+diabetactic-memory-backup.json
+
+# =============================================================================
+# Large Files and Binaries
+# =============================================================================
+*.apk
+*.pdf
+*.zip
+builds/
+
+# =============================================================================
+# Logs
+# =============================================================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =============================================================================
+# Alternative Package Managers (we use npm)
+# =============================================================================
+yarn.lock
+pnpm-lock.yaml
+
+# =============================================================================
+# Backup and Temporary Files
+# =============================================================================
+*.backup
+*.bak
+*.orig
+
+# =============================================================================
+# Image Backups and Temporary Assets
+# =============================================================================
+src/assets/images/nanobanana-output/
+src/assets/images/*copyyy*
+src/assets/images/*tt.png
+nanobanana-output/
+screenshots/
+login-*.png
+_archived_assets/
+
+# =============================================================================
+# Other Development Tools (not needed in container)
+# =============================================================================
+maestro/debug-output/
+postman/
+configs/
+skills/
+output/
+clonee.sh
+setupmyenv.sh
+server.pid
+prpm.lock
+nul
+testresult.txt
+test-infrastructure-report.txt
+services.txt
+tests.txt

@@ -151,6 +151,7 @@ import {
   Rocket,
   BookOpen,
   FilePlus,
+  UtensilsCrossed,
 } from 'lucide-angular';
 
 /**
@@ -303,6 +304,7 @@ export const appIcons = {
   Rocket,
   BookOpen,
   FilePlus,
+  UtensilsCrossed,
 };
 
 /**

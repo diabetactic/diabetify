@@ -1,0 +1,69 @@
+# Multi-stage Dockerfile for Playwright E2E Testing
+# Stage 1: Build Angular app
+# Stage 2: Run Playwright tests
+
+# ============================================================================
+# Stage 1: Build Angular Application
+# ============================================================================
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm ci --prefer-offline --no-audit
+
+# Copy source code
+COPY . .
+
+# Build Angular app with mock configuration (no backend required for E2E)
+# Using mock configuration to ensure tests are self-contained
+RUN npm run build:mock
+
+# ============================================================================
+# Stage 2: Playwright Test Runner
+# ============================================================================
+FROM mcr.microsoft.com/playwright:v1.48.0-jammy
+
+WORKDIR /e2e
+
+# Install Node.js 20 (Playwright image comes with older Node)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm ci --prefer-offline --no-audit
+
+# Copy Playwright configuration and tests
+COPY playwright.config.ts ./
+COPY playwright/ ./playwright/
+
+# Copy built Angular app from builder stage
+COPY --from=builder /app/www ./www
+
+# Install serve for serving the static app
+RUN npm install -g serve@14.2.1
+
+# Create directories for test artifacts
+RUN mkdir -p playwright/artifacts playwright-report
+
+# Environment variables for E2E tests
+ENV E2E_HOST=localhost
+ENV E2E_PORT=4200
+ENV E2E_BASE_URL=http://localhost:4200
+ENV CI=true
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+# Expose port for the app server
+EXPOSE 4200
+
+# Health check to ensure app is ready before tests run
+HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=5 \
+    CMD curl -f http://localhost:4200 || exit 1
+
+# Default command: Start app server in background and run Playwright tests
+# The app server will be managed by docker-compose
+CMD ["npx", "playwright", "test"]
