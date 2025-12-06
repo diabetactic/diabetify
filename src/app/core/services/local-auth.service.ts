@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError, from, of } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Preferences } from '@capacitor/preferences';
@@ -258,7 +258,6 @@ export class LocalAuthService {
 
     // MOCK MODE: Return mock data immediately without HTTP calls
     if (isAuthMockEnabled) {
-      console.log('🎭 [AUTH] MOCK MODE - Bypassing backend, returning mock data');
       this.logger.info('Auth', 'Mock mode login - bypassing HTTP calls', {
         stage: 'mock-login',
         username,
@@ -268,9 +267,6 @@ export class LocalAuthService {
     }
 
     // REAL BACKEND MODE (cloud or local)
-    console.log('🔐 [AUTH] Base URL:', this.baseUrl);
-    console.log('🔐 [AUTH] Token endpoint:', `${this.baseUrl}/token`);
-
     this.logger.info('Auth', 'Login attempt - trying REAL backend', {
       stage: 'real-backend-start',
       username,
@@ -286,14 +282,6 @@ export class LocalAuthService {
       .set('username', username) // Can be DNI or email
       .set('password', password);
 
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/x-www-form-urlencoded',
-    });
-
-    console.log('🔐 [AUTH] Request body:', body.toString());
-    console.log('🔐 [AUTH] Request headers:', headers);
-    console.log('🔐 [AUTH] Making HTTP POST request...');
-
     this.logger.debug('Auth', 'Backend stage: sending token request', {
       stage: 'http-send',
       endpoint: `${this.baseUrl}/token`,
@@ -306,8 +294,6 @@ export class LocalAuthService {
       })
       .pipe(
         tap(response => {
-          console.log('✅ [AUTH] HTTP POST successful, response received');
-          console.log('✅ [AUTH] Response:', JSON.stringify(response));
           this.logger.debug('Auth', 'Backend stage: HTTP response received', {
             stage: 'http-response',
             hasAccessToken: !!response?.access_token,

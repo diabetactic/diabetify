@@ -261,8 +261,9 @@ export class ErrorHandlerService {
       return error;
     }
 
-    // List of sensitive fields that contain PHI
+    // List of sensitive fields that contain PHI (HIPAA compliance)
     const sensitiveFields = [
+      // Glucose/medical data
       'glucoseValue',
       'readingValue',
       'hba1c',
@@ -273,6 +274,32 @@ export class ErrorHandlerService {
       'bloodGlucose',
       'bloodSugar',
       'readings',
+      // Insulin/medication data
+      'insulin',
+      'insulinDose',
+      'bolusAmount',
+      'basalRate',
+      'carbRatio',
+      'correctionFactor',
+      // Personal identifiers
+      'phoneNumber',
+      'phone',
+      'dateOfBirth',
+      'dob',
+      'birthDate',
+      'ssn',
+      'socialSecurityNumber',
+      // Medical history
+      'medicalHistory',
+      'diagnosis',
+      'medications',
+      'allergies',
+      // Authentication tokens (prevent token leakage)
+      'accessToken',
+      'refreshToken',
+      'token',
+      'password',
+      'credentials',
     ];
 
     // Create a deep copy and redact sensitive fields
