@@ -1,0 +1,57 @@
+:host {
+  display: block;
+}
+
+.error-message {
+  color: var(--ion-color-danger);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  padding: 0 1rem;
+}
+
+.text-danger {
+  color: var(--ion-color-danger);
+}
+
+ion-item {
+  --border-color: var(--ion-color-light-shade);
+  --padding-start: 0;
+  --inner-padding-end: 0;
+
+  margin-bottom: 1rem;
+
+  &.ion-invalid {
+    --border-color: var(--ion-color-danger);
+    --highlight-color-focused: var(--ion-color-danger);
+  }
+}
+
+ion-label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.75rem;
+
+  ion-button {
+    flex: 1;
+    margin: 0;
+  }
+}
+
+ion-footer {
+  background: var(--ion-background-color);
+  border-top: 1px solid var(--ion-color-light-shade);
+}
+
+ion-list {
+  background: transparent;
+  padding: 0;
+}
+
+ion-spinner {
+  width: 20px;
+  height: 20px;
+}
