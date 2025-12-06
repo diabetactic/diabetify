@@ -7,6 +7,8 @@ import Dexie, { Table } from 'dexie';
 import { LocalGlucoseReading } from '../models';
 import { Appointment } from '../models/appointment.model';
 import { GlucoseShareRequest } from '../models/glucose-share.model';
+import { LoggerService } from './logger.service';
+import { inject } from '@angular/core';
 
 /**
  * Sync queue item for offline operations
@@ -28,6 +30,8 @@ export interface SyncQueueItem {
  * Uses Dexie for type-safe IndexedDB operations
  */
 export class DiabetacticDatabase extends Dexie {
+  private logger?: LoggerService;
+
   // Tables
   readings!: Table<LocalGlucoseReading, string>;
   syncQueue!: Table<SyncQueueItem, number>;
@@ -35,6 +39,13 @@ export class DiabetacticDatabase extends Dexie {
 
   constructor() {
     super('DiabetacticDB');
+    // Try to inject LoggerService if available
+    try {
+      this.logger = inject(LoggerService);
+    } catch {
+      // LoggerService not available in this context (e.g., during tests)
+      this.logger = undefined;
+    }
 
     // Define database schema
     // Version 1: Initial schema
@@ -56,6 +67,14 @@ export class DiabetacticDatabase extends Dexie {
 
       // New appointments table cache
       // Index by: id (primary), userId, dateTime, status, updatedAt
+      appointments: 'id, userId, dateTime, status, updatedAt',
+    });
+
+    // Version 3: Add backendId index to readings for efficient sync lookups
+    this.version(3).stores({
+      // Add backendId index to prevent O(n) scans during sync
+      readings: 'id, time, type, userId, synced, localStoredAt, backendId',
+      syncQueue: '++id, timestamp, operation, appointmentId',
       appointments: 'id, userId, dateTime, status, updatedAt',
     });
 
@@ -91,6 +110,43 @@ export class DiabetacticDatabase extends Dexie {
       databaseName: this.name,
       version: this.verno,
     };
+  }
+
+  /**
+   * Prune old readings to free space (keeps last 90 days)
+   */
+  async pruneOldData(daysToKeep: number = 90): Promise<number> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+    const cutoffTime = cutoffDate.toISOString();
+
+    const deletedCount = await this.readings.where('time').below(cutoffTime).delete();
+
+    return deletedCount;
+  }
+
+  /**
+   * Handle quota exceeded by pruning old data and retrying
+   */
+  async handleQuotaExceeded(): Promise<void> {
+    this.logger?.warn('Database', 'Storage quota exceeded, pruning old data');
+    const deleted = await this.pruneOldData(60); // Keep 60 days when quota hit
+    this.logger?.info('Database', `Pruned ${deleted} old readings to free space`);
+  }
+
+  /**
+   * Safe add that handles quota exceeded
+   */
+  async safeAdd<T>(table: Table<T, string | number>, item: T): Promise<string | number> {
+    try {
+      return await table.add(item);
+    } catch (error) {
+      if (error instanceof Error && error.name === 'QuotaExceededError') {
+        await this.handleQuotaExceeded();
+        return await table.add(item); // Retry after pruning
+      }
+      throw error;
+    }
   }
 }
 
