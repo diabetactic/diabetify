@@ -152,8 +152,8 @@ export class ProfilePage implements OnInit, OnDestroy {
         this.currentGlucoseUnit = profile.preferences.glucoseUnit;
       }
       this.currentLanguage = this.translationService.getCurrentLanguage();
-    } catch (error) {
-      console.error('Failed to load user data:', error);
+    } catch {
+      // User data load failed - handled gracefully with default values
     }
   }
 
@@ -499,20 +499,16 @@ export class ProfilePage implements OnInit, OnDestroy {
         {
           text: this.translationService.instant('profile.tidepoolLoginDialog.connect') || 'Connect',
           handler: data => {
-            console.log('🔵 [TidepoolLogin] CONNECT clicked, data:', data);
             if (!data.email || !data.password) {
-              console.log('🔴 [TidepoolLogin] Missing email or password');
               return false; // Don't close the dialog
             }
-            console.log('🔵 [TidepoolLogin] Scheduling login...');
             // Close dialog first, then perform login
             // Using setTimeout to let dialog close before showing loading
             const email = data.email;
             const password = data.password;
             setTimeout(() => {
-              console.log('🔵 [TidepoolLogin] setTimeout fired, calling performTidepoolLogin');
-              this.performTidepoolLogin(email, password).catch(err => {
-                console.error('🔴 [TidepoolLogin] performTidepoolLogin error:', err);
+              this.performTidepoolLogin(email, password).catch(() => {
+                // Error handled in performTidepoolLogin
               });
             }, 100);
             return true;
@@ -528,17 +524,11 @@ export class ProfilePage implements OnInit, OnDestroy {
    * Perform Tidepool login with credentials
    */
   private async performTidepoolLogin(email: string, password: string): Promise<void> {
-    console.log('🔵 [TidepoolLogin] performTidepoolLogin started with email:', email);
-
     try {
-      // Skip loading indicator - it was causing issues
-      console.log('🔵 [TidepoolLogin] Calling authService.loginWithCredentials...');
       await this.authService.loginWithCredentials(email, password);
-      console.log('🟢 [TidepoolLogin] loginWithCredentials completed successfully!');
 
       // Update local profile with Tidepool connection status
       if (this.profile) {
-        console.log('🔵 [TidepoolLogin] Updating profile...');
         await this.profileService.updateProfile({
           tidepoolConnection: {
             connected: true,
@@ -546,11 +536,9 @@ export class ProfilePage implements OnInit, OnDestroy {
           },
         });
         this.isConnected = true;
-        console.log('🟢 [TidepoolLogin] Profile updated');
       }
 
       // Show success toast
-      console.log('🟢 [TidepoolLogin] Showing success toast');
       const toast = await this.toastController.create({
         message:
           this.translationService.instant('profile.tidepoolLoginDialog.success') ||
@@ -561,13 +549,8 @@ export class ProfilePage implements OnInit, OnDestroy {
       });
       await toast.present();
     } catch (error: unknown) {
-      console.error('🔴 [TidepoolLogin] Error caught:', error);
       const errorMessage =
         error instanceof Error ? error.message : 'Login failed. Please check your credentials.';
-      console.error('🔴 [TidepoolLogin] Error message:', errorMessage);
-      if (error instanceof Error && error.stack) {
-        console.error('🔴 [TidepoolLogin] Error stack:', error.stack);
-      }
 
       // Show error alert
       const errorAlert = await this.alertController.create({
@@ -586,8 +569,8 @@ export class ProfilePage implements OnInit, OnDestroy {
     try {
       await this.authService.logout();
       await this.profileService.clearTidepoolCredentials();
-    } catch (error) {
-      console.error('Failed to disconnect from Tidepool:', error);
+    } catch {
+      // Disconnect errors are non-critical - continue silently
     }
   }
 
@@ -599,8 +582,8 @@ export class ProfilePage implements OnInit, OnDestroy {
       await this.authService.logout();
       await this.profileService.deleteProfile();
       await this.router.navigate([ROUTES.WELCOME], { replaceUrl: true });
-    } catch (error) {
-      console.error('Failed to sign out:', error);
+    } catch {
+      // Sign out failed - navigate to welcome anyway
     }
   }
 
@@ -620,12 +603,7 @@ export class ProfilePage implements OnInit, OnDestroy {
    * Show Tidepool info popup with REAL data from Tidepool API
    */
   async showTidepoolInfo(): Promise<void> {
-    console.log('🔵 [TidepoolInfo] Button clicked!');
-    console.log('🔵 [TidepoolInfo] isConnected:', this.isConnected);
-    console.log('🔵 [TidepoolInfo] authState:', JSON.stringify(this.authState, null, 2));
-
     if (!this.isConnected || !this.authState) {
-      console.log('🔴 [TidepoolInfo] Not connected, showing not connected message');
       const alert = await this.alertController.create({
         header: this.translationService.instant('profile.tidepoolInfo.title'),
         message: this.translationService.instant('profile.tidepoolInfo.notConnectedMessage'),
@@ -638,16 +616,12 @@ export class ProfilePage implements OnInit, OnDestroy {
 
     // Check token validity and try to refresh if needed
     let accessToken = await this.authService.getAccessToken();
-    console.log('🔵 [TidepoolInfo] Initial access token available:', !!accessToken);
 
     // If no token, try to refresh it
     if (!accessToken) {
-      console.log('🔵 [TidepoolInfo] No token, attempting refresh...');
       try {
         accessToken = await this.authService.refreshAccessToken();
-        console.log('🔵 [TidepoolInfo] Token refreshed successfully:', !!accessToken);
-      } catch (refreshError) {
-        console.error('🔴 [TidepoolInfo] Token refresh failed:', refreshError);
+      } catch {
         // Token refresh failed - user needs to re-authenticate
         const alert = await this.alertController.create({
           header: this.translationService.instant('profile.tidepoolInfo.title'),
@@ -662,10 +636,7 @@ export class ProfilePage implements OnInit, OnDestroy {
       }
     }
 
-    console.log('🔵 [TidepoolInfo] Token (first 20 chars):', accessToken?.substring(0, 20) + '...');
-
     // Show loading while fetching real data from Tidepool
-    console.log('🔵 [TidepoolInfo] Showing loading...');
     const loading = await this.loadingController.create({
       message: this.translationService.instant('common.loading'),
       spinner: 'crescent',
@@ -674,12 +645,7 @@ export class ProfilePage implements OnInit, OnDestroy {
 
     try {
       // Fetch real data from Tidepool API
-      console.log('🔵 [TidepoolInfo] Fetching Tidepool user data...');
       const tidepoolData = await this.fetchTidepoolUserData();
-      console.log(
-        '🔵 [TidepoolInfo] Tidepool data received:',
-        JSON.stringify(tidepoolData, null, 2)
-      );
 
       await loading.dismiss();
 
@@ -704,9 +670,8 @@ export class ProfilePage implements OnInit, OnDestroy {
         ],
       });
       await alert.present();
-    } catch (error) {
+    } catch {
       await loading.dismiss();
-      console.error('Failed to fetch Tidepool data:', error);
 
       // Show error message
       const alert = await this.alertController.create({
@@ -746,8 +711,8 @@ export class ProfilePage implements OnInit, OnDestroy {
           this.capacitorHttp.get<TidepoolProfile>(profileUrl, { headers })
         );
       }
-    } catch (err) {
-      console.warn('Could not fetch Tidepool profile:', err);
+    } catch {
+      // Profile fetch failed - continue with empty profile
     }
 
     // Fetch data sources from /v1/users/{userId}/data_sources
@@ -760,8 +725,8 @@ export class ProfilePage implements OnInit, OnDestroy {
         result.dataSources = sources || [];
         result.dataSourcesCount = result.dataSources.length;
       }
-    } catch (err) {
-      console.warn('Could not fetch Tidepool data sources:', err);
+    } catch {
+      // Data sources fetch failed - continue with empty array
     }
 
     return result;
@@ -880,8 +845,8 @@ export class ProfilePage implements OnInit, OnDestroy {
             if (age && age > 0 && age <= 120) {
               try {
                 await this.profileService.updateProfile({ age });
-              } catch (error) {
-                console.error('Failed to update age:', error);
+              } catch {
+                // Age update failed - handled silently
               }
             }
           },
@@ -919,8 +884,8 @@ export class ProfilePage implements OnInit, OnDestroy {
               try {
                 await this.profileService.updateProfile({ name });
                 this.refreshProfileDisplay();
-              } catch (error) {
-                console.error('Failed to update name:', error);
+              } catch {
+                // Name update failed - handled silently
               }
             }
           },
@@ -991,8 +956,7 @@ export class ProfilePage implements OnInit, OnDestroy {
         month: 'short',
         day: 'numeric',
       }).format(date);
-    } catch (error) {
-      console.warn('Failed to format date value', error);
+    } catch {
       return null;
     }
   }
@@ -1028,8 +992,7 @@ export class ProfilePage implements OnInit, OnDestroy {
       });
       this.profile = updatedProfile;
       this.refreshProfileDisplay();
-    } catch (error) {
-      console.error('Failed to update avatar', error);
+    } catch {
       await this.presentAvatarError('profile.avatar.updateFailed');
     }
   }
