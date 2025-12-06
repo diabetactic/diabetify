@@ -30,6 +30,7 @@ interface BackendGlucoseReading {
   glucose_level: number;
   reading_type: string;
   created_at: string; // Format: "DD/MM/YYYY HH:mm:ss"
+  notes?: string; // Optional notes field
 }
 
 /**
@@ -520,10 +521,11 @@ export class ReadingsService {
             await this.pushReadingToBackend(item.reading);
             this.logger?.debug('Sync', `Created reading ${item.readingId} on backend`);
           } else if (item.operation === 'delete') {
-            // Backend doesn't support delete for now, just remove from queue
-            this.logger?.debug(
+            // Backend delete not supported - reading remains on server but is deleted locally
+            // This is intentional: user can still see their data in the web portal
+            this.logger?.info(
               'Sync',
-              `Delete operation for ${item.readingId} - backend delete not supported`
+              `Delete operation for ${item.readingId} - local only (backend delete not supported)`
             );
           }
 
@@ -601,8 +603,16 @@ export class ReadingsService {
     };
 
     // Add optional created_at if reading has a time
+    // Backend expects DD/MM/YYYY HH:mm:ss format
     if (reading.time) {
-      params['created_at'] = reading.time;
+      const date = new Date(reading.time);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      params['created_at'] = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
     }
 
     // Add notes if present (single string)
@@ -693,6 +703,22 @@ export class ReadingsService {
           const localReading = this.mapBackendToLocal(backendReading);
           await this.db.readings.add(localReading);
           merged++;
+        } else {
+          // Existing reading - check for conflicts using server as source of truth
+          const existing = existingReadings[0];
+          const backendValue = backendReading.glucose_level;
+          const backendNotes = backendReading.notes || '';
+
+          // Only update if there are actual differences (server wins)
+          if (existing.value !== backendValue || existing.notes !== backendNotes) {
+            await this.db.readings.update(existing.id, {
+              value: backendValue,
+              notes: backendNotes,
+              mealContext: backendReading.reading_type || existing.mealContext,
+              synced: true,
+            });
+            this.logger?.debug('Sync', `Updated local reading ${existing.id} from backend`);
+          }
         }
       }
 
@@ -756,6 +782,7 @@ export class ReadingsService {
       isLocalOnly: false,
       status: this.calculateGlucoseStatus(backend.glucose_level, 'mg/dL'),
       mealContext: backend.reading_type || 'OTRO',
+      notes: backend.notes,
     };
 
     return localReading;
