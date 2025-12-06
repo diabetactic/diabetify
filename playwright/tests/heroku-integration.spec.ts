@@ -7,45 +7,6 @@ const skipHerokuTests = !process.env.E2E_HEROKU_TESTS;
 test.describe('Heroku Integration Tests', () => {
   test.skip(skipHerokuTests, 'Set E2E_HEROKU_TESTS=true to run Heroku integration tests');
 
-  test.describe('API Gateway Health', () => {
-    test('API Gateway is reachable and returns 200', async ({ request }) => {
-      const response = await request.get(`${HEROKU_API}/health`, {
-        timeout: 10000,
-      });
-
-      expect(response.status()).toBe(200);
-      expect(response.ok()).toBeTruthy();
-
-      const data = await response.json();
-      expect(data).toHaveProperty('status');
-      expect(data.status).toBe('ok');
-    });
-
-    test('API Gateway returns valid health response structure', async ({ request }) => {
-      const response = await request.get(`${HEROKU_API}/health`, {
-        timeout: 10000,
-      });
-
-      expect(response.status()).toBe(200);
-
-      const data = await response.json();
-      expect(data).toMatchObject({
-        status: expect.stringMatching(/ok|healthy/i),
-      });
-    });
-
-    test('API Gateway responds within acceptable time', async ({ request }) => {
-      const startTime = Date.now();
-      const response = await request.get(`${HEROKU_API}/health`, {
-        timeout: 10000,
-      });
-      const duration = Date.now() - startTime;
-
-      expect(response.ok()).toBeTruthy();
-      expect(duration).toBeLessThan(5000); // Should respond within 5 seconds
-    });
-  });
-
   test.describe('Authentication and Login', () => {
     test.skip(
       !hasCredentials,
@@ -53,8 +14,11 @@ test.describe('Heroku Integration Tests', () => {
     );
 
     test('Login with valid credentials returns auth token', async ({ request }) => {
-      const response = await request.post(`${HEROKU_API}/auth/login`, {
-        data: {
+      const response = await request.post(`${HEROKU_API}/token`, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        form: {
           username: process.env.E2E_TEST_USERNAME,
           password: process.env.E2E_TEST_PASSWORD,
         },
@@ -64,32 +28,19 @@ test.describe('Heroku Integration Tests', () => {
       expect(response.status()).toBe(200);
 
       const data = await response.json();
-      expect(data).toHaveProperty('token');
-      expect(data.token).toBeTruthy();
-      expect(typeof data.token).toBe('string');
-    });
-
-    test('Login response contains user information', async ({ request }) => {
-      const response = await request.post(`${HEROKU_API}/auth/login`, {
-        data: {
-          username: process.env.E2E_TEST_USERNAME,
-          password: process.env.E2E_TEST_PASSWORD,
-        },
-        timeout: 10000,
-      });
-
-      expect(response.status()).toBe(200);
-
-      const data = await response.json();
-      expect(data).toHaveProperty('user');
-      expect(data.user).toHaveProperty('id');
-      expect(data.user).toHaveProperty('username');
-      expect(data.user.username).toBe(process.env.E2E_TEST_USERNAME);
+      expect(data).toHaveProperty('access_token');
+      expect(data.access_token).toBeTruthy();
+      expect(typeof data.access_token).toBe('string');
+      expect(data).toHaveProperty('token_type');
+      expect(data.token_type).toBe('bearer');
     });
 
     test('Login with invalid credentials returns 401', async ({ request }) => {
-      const response = await request.post(`${HEROKU_API}/auth/login`, {
-        data: {
+      const response = await request.post(`${HEROKU_API}/token`, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        form: {
           username: 'invalid_user',
           password: 'invalid_password',
         },
@@ -110,8 +61,11 @@ test.describe('Heroku Integration Tests', () => {
 
     test.beforeEach(async ({ request }) => {
       // Get auth token before each test
-      const loginResponse = await request.post(`${HEROKU_API}/auth/login`, {
-        data: {
+      const loginResponse = await request.post(`${HEROKU_API}/token`, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        form: {
           username: process.env.E2E_TEST_USERNAME,
           password: process.env.E2E_TEST_PASSWORD,
         },
@@ -119,27 +73,11 @@ test.describe('Heroku Integration Tests', () => {
       });
 
       const loginData = await loginResponse.json();
-      authToken = loginData.token;
-    });
-
-    test('Get dashboard data with valid token', async ({ request }) => {
-      const response = await request.get(`${HEROKU_API}/api/dashboard`, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-        timeout: 10000,
-      });
-
-      expect(response.status()).toBe(200);
-
-      const data = await response.json();
-      expect(data).toBeDefined();
-      // Dashboard should contain some data structure
-      expect(typeof data).toBe('object');
+      authToken = loginData.access_token;
     });
 
     test('Get readings data with valid token', async ({ request }) => {
-      const response = await request.get(`${HEROKU_API}/api/readings`, {
+      const response = await request.get(`${HEROKU_API}/glucose/mine`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
@@ -149,12 +87,11 @@ test.describe('Heroku Integration Tests', () => {
       expect(response.status()).toBe(200);
 
       const data = await response.json();
-      expect(Array.isArray(data) || data.data).toBeDefined();
+      expect(Array.isArray(data)).toBe(true);
 
       // If readings exist, verify structure
-      const readings = Array.isArray(data) ? data : data.data || [];
-      if (readings.length > 0) {
-        const firstReading = readings[0];
+      if (data.length > 0) {
+        const firstReading = data[0];
         expect(firstReading).toHaveProperty('id');
         expect(firstReading).toHaveProperty('value');
         expect(typeof firstReading.value).toBe('number');
@@ -162,7 +99,7 @@ test.describe('Heroku Integration Tests', () => {
     });
 
     test('Get appointments data with valid token', async ({ request }) => {
-      const response = await request.get(`${HEROKU_API}/api/appointments`, {
+      const response = await request.get(`${HEROKU_API}/appointments/mine`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
@@ -172,12 +109,11 @@ test.describe('Heroku Integration Tests', () => {
       expect(response.status()).toBe(200);
 
       const data = await response.json();
-      expect(Array.isArray(data) || data.data).toBeDefined();
+      expect(Array.isArray(data)).toBe(true);
 
       // If appointments exist, verify structure
-      const appointments = Array.isArray(data) ? data : data.data || [];
-      if (appointments.length > 0) {
-        const firstAppointment = appointments[0];
+      if (data.length > 0) {
+        const firstAppointment = data[0];
         expect(firstAppointment).toHaveProperty('id');
         expect(firstAppointment).toHaveProperty('date');
         expect(firstAppointment).toHaveProperty('time');
@@ -185,7 +121,7 @@ test.describe('Heroku Integration Tests', () => {
     });
 
     test('Get user profile with valid token', async ({ request }) => {
-      const response = await request.get(`${HEROKU_API}/api/user/profile`, {
+      const response = await request.get(`${HEROKU_API}/users/me`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
@@ -200,8 +136,23 @@ test.describe('Heroku Integration Tests', () => {
       expect(data.username).toBe(process.env.E2E_TEST_USERNAME);
     });
 
+    test('Get appointment queue state with valid token', async ({ request }) => {
+      const response = await request.get(`${HEROKU_API}/appointments/state`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+        timeout: 10000,
+      });
+
+      expect(response.status()).toBe(200);
+
+      const data = await response.json();
+      expect(data).toBeDefined();
+      expect(typeof data).toBe('object');
+    });
+
     test('Reject request without auth token with 401', async ({ request }) => {
-      const response = await request.get(`${HEROKU_API}/api/dashboard`, {
+      const response = await request.get(`${HEROKU_API}/users/me`, {
         timeout: 10000,
       });
 
@@ -209,7 +160,7 @@ test.describe('Heroku Integration Tests', () => {
     });
 
     test('Reject request with invalid auth token with 401', async ({ request }) => {
-      const response = await request.get(`${HEROKU_API}/api/dashboard`, {
+      const response = await request.get(`${HEROKU_API}/users/me`, {
         headers: {
           Authorization: 'Bearer invalid_token_12345',
         },
@@ -356,38 +307,24 @@ test.describe('Heroku Integration Tests', () => {
   });
 
   test.describe('Error Handling and Edge Cases', () => {
-    test('API Gateway handles concurrent requests gracefully', async ({ request }) => {
-      // Send multiple concurrent requests
-      const requests = Array(5)
-        .fill(null)
-        .map(() => request.get(`${HEROKU_API}/health`, { timeout: 10000 }));
-
-      const responses = await Promise.all(requests);
-
-      // All should succeed
-      responses.forEach(response => {
-        expect(response.status()).toBe(200);
-      });
-    });
-
-    test('API Gateway handles timeout gracefully', async ({ request }) => {
-      // This should timeout but not crash the test
-      try {
-        await request.get(`${HEROKU_API}/health`, {
-          timeout: 100, // Very short timeout
-        });
-      } catch (error) {
-        // Timeout is expected
-        expect(error).toBeTruthy();
-      }
-    });
-
     test('Invalid endpoints return 404', async ({ request }) => {
       const response = await request.get(`${HEROKU_API}/api/invalid-endpoint-xyz`, {
         timeout: 10000,
       });
 
       expect(response.status()).toBe(404);
+    });
+
+    test('API Gateway handles timeout gracefully', async ({ request }) => {
+      // This should timeout but not crash the test
+      try {
+        await request.get(`${HEROKU_API}/users/me`, {
+          timeout: 100, // Very short timeout
+        });
+      } catch (error) {
+        // Timeout is expected
+        expect(error).toBeTruthy();
+      }
     });
   });
 });

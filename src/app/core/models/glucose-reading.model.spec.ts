@@ -90,13 +90,13 @@ describe('GlucoseReadingModel', () => {
         createdTime: '2024-01-01T12:00:00Z',
         modifiedTime: '2024-01-01T12:00:00Z',
         annotations: [{ code: 'test', value: 'annotation' }],
-        notes: ['Note 1', 'Note 2'],
+        notes: 'Note 1, Note 2',
         tags: ['tag1', 'tag2'],
       };
       expect(baseData.deviceId).toBe('device456');
       expect(baseData.timezone).toBe('America/Los_Angeles');
       expect(baseData.annotations?.length).toBe(1);
-      expect(baseData.notes?.length).toBe(2);
+      expect(baseData.notes).toBe('Note 1, Note 2');
       expect(baseData.tags?.length).toBe(2);
     });
 
@@ -225,11 +225,11 @@ describe('GlucoseReadingModel', () => {
         units: 'mg/dL',
         subType: 'manual',
         deviceId: 'meter789',
-        notes: ['Before meal'],
+        notes: 'Before meal',
         tags: ['fasting'],
       };
       expect(reading.deviceId).toBe('meter789');
-      expect(reading.notes?.[0]).toBe('Before meal');
+      expect(reading.notes).toBe('Before meal');
       expect(reading.tags?.[0]).toBe('fasting');
     });
   });
@@ -508,7 +508,7 @@ describe('GlucoseReadingModel', () => {
         value: 95,
         units: 'mg/dL',
         subType: 'manual',
-        notes: ['Before meal'],
+        notes: 'Before meal',
       };
 
       const local: LocalGlucoseReading = {

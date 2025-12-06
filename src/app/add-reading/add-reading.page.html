@@ -35,11 +35,11 @@
       <div class="mb-1">
         <ion-item
           lines="none"
-          class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+          class="bg-base-100 overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700"
         >
           <div class="form-control w-full py-2">
             <label class="label" for="glucose-value-input">
-              <span class="label-text font-medium text-gray-700 dark:text-gray-300">
+              <span class="label-text text-base-content/80 font-medium">
                 {{ 'addReading.glucoseLabel' | translate }} <span class="text-danger">*</span>
               </span>
             </label>
@@ -50,7 +50,7 @@
                 type="number"
                 inputmode="decimal"
                 [placeholder]="'addReading.glucosePlaceholder' | translate"
-                class="glucose-input flex-1 text-2xl font-bold"
+                class="glucose-input text-base-content flex-1 text-2xl font-bold"
                 [class.border-danger]="
                   readingForm.get('value')?.invalid && readingForm.get('value')?.touched
                 "
@@ -81,11 +81,11 @@
       <div class="mb-1">
         <ion-item
           lines="none"
-          class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+          class="bg-base-100 overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700"
         >
           <div class="form-control w-full py-2">
             <label class="label" for="reading-datetime">
-              <span class="label-text font-medium text-gray-700 dark:text-gray-300">
+              <span class="label-text text-base-content/80 font-medium">
                 {{ 'addReading.dateTimeLabel' | translate }} <span class="text-danger">*</span>
               </span>
             </label>
@@ -101,7 +101,7 @@
               id="reading-datetime"
               formControlName="datetime"
               presentation="date-time"
-              [max]="readingForm.get('datetime')?.value"
+              [max]="maxDateTime"
               [preferWheel]="true"
             ></ion-datetime>
           </ng-template>
@@ -112,11 +112,11 @@
       <div class="mb-1">
         <ion-item
           lines="none"
-          class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+          class="bg-base-100 overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700"
         >
           <div class="form-control w-full py-2">
             <label class="label" for="meal-context-select">
-              <span class="label-text font-medium text-gray-700 dark:text-gray-300">
+              <span class="label-text text-base-content/80 font-medium">
                 {{ 'addReading.mealContext.label' | translate }}
               </span>
             </label>
@@ -145,11 +145,11 @@
       <div class="mb-1">
         <ion-item
           lines="none"
-          class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+          class="bg-base-100 overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700"
         >
           <div class="form-control w-full py-2">
             <label class="label" for="notes-textarea">
-              <span class="label-text font-medium text-gray-700 dark:text-gray-300">
+              <span class="label-text text-base-content/80 font-medium">
                 {{ 'addReading.notes.label' | translate }}
               </span>
             </label>

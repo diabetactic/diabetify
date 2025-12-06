@@ -106,4 +106,3 @@ appId: io.diabetactic.app
     optional: true
 - waitForAnimationToEnd:
     timeout: 1000
-

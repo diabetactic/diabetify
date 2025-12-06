@@ -1,7 +1,4 @@
-// =============================================
-// Ionic Component CSS Variables (PRESERVE)
-// =============================================
-
+// Ionic Component CSS Variables
 .add-reading-content {
   --background: oklch(var(--b1));
 }
@@ -13,7 +10,6 @@
   margin-top: 8px;
 }
 
-// Form Items - softer rounded corners
 .form-item {
   --background: var(--ion-color-light);
   --border-radius: 16px;
@@ -32,7 +28,6 @@
   margin-bottom: 8px;
 }
 
-// Glucose Input with Ionic Variables
 .input-with-unit {
   display: flex;
   align-items: center;
@@ -58,7 +53,6 @@
   }
 }
 
-// Notes Textarea
 .notes-textarea {
   --background: transparent;
   --padding-start: 0;
@@ -67,12 +61,10 @@
   font-size: 14px;
 }
 
-// Date Time Button - uses DaisyUI theme variables from global.css
 ion-datetime-button {
   width: 100%;
 }
 
-// Select
 .ion-select-full {
   --padding-start: 0;
   --padding-end: 0;
@@ -80,15 +72,11 @@ ion-datetime-button {
   width: 100%;
 }
 
-// Dark mode overrides for add-reading
-// Note: ion-datetime and ion-datetime-button styling is handled globally
-// using DaisyUI theme variables in global.css
+// Dark mode
 :host-context(.dark),
-:host-context(.ion-palette-dark) {
-  ion-content {
-    --background: oklch(var(--b1));
-  }
-
+:host-context(.ion-palette-dark),
+[data-theme='dark'] {
+  ion-content,
   ion-modal {
     --background: oklch(var(--b1));
   }
@@ -105,13 +93,55 @@ ion-datetime-button {
 
   .glucose-input {
     --background: oklch(var(--b3) / 60%);
+    --color: oklch(var(--bc));
+
+    color: oklch(var(--bc));
+
+    // stylelint-disable declaration-no-important -- Required to override Ionic native input styles in dark mode
+    input,
+    .native-input {
+      color: oklch(var(--bc)) !important;
+      background: transparent !important;
+      -webkit-text-fill-color: oklch(var(--bc)) !important;
+    }
+    // stylelint-enable declaration-no-important
+  }
+
+  .notes-textarea {
+    --color: oklch(var(--bc));
+
+    color: oklch(var(--bc));
+
+    // stylelint-disable declaration-no-important -- Required to override Ionic native textarea styles
+    textarea,
+    .native-textarea {
+      color: oklch(var(--bc)) !important;
+      -webkit-text-fill-color: oklch(var(--bc)) !important;
+    }
+    // stylelint-enable declaration-no-important
+  }
+
+  ion-input,
+  ion-textarea,
+  ion-select {
+    --color: oklch(var(--bc));
+    --placeholder-color: oklch(var(--bc) / 50%);
+
+    color: oklch(var(--bc));
+
+    // stylelint-disable declaration-no-important -- Required to override Ionic native styles
+    input,
+    textarea,
+    .native-input,
+    .native-textarea {
+      color: oklch(var(--bc)) !important;
+      -webkit-text-fill-color: oklch(var(--bc)) !important;
+    }
+    // stylelint-enable declaration-no-important
   }
 }
 
-// =============================================
-// Status Preview Component (PRESERVE)
-// =============================================
-
+// Status Preview
 .status-preview {
   display: flex;
   justify-content: center;
@@ -146,9 +176,6 @@ ion-datetime-button {
   }
 }
 
-// Component-specific fadeIn: slides from ABOVE with subtle 10px distance
-// Different from global.css fadeIn (opacity only) and fadeInDown (30px from above)
-// This creates a gentler entrance effect for form elements
 @keyframes fadeIn {
   from {
     opacity: 0%;
@@ -161,10 +188,7 @@ ion-datetime-button {
   }
 }
 
-// =============================================
-// Action Buttons (PRESERVE)
-// =============================================
-
+// Action Buttons
 .action-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -188,10 +212,6 @@ ion-datetime-button {
   }
 }
 
-// =============================================
-// Dark Mode Adjustments (PRESERVE)
-// =============================================
-
 .dark .form-item {
   --background: var(--ion-color-step-50);
 }
@@ -210,10 +230,7 @@ ion-datetime-button {
   }
 }
 
-// =============================================
-// High Contrast Mode (PRESERVE)
-// =============================================
-
+// High Contrast
 .high-contrast {
   .form-item {
     --border-width: 2px;
@@ -225,10 +242,7 @@ ion-datetime-button {
   }
 }
 
-// =============================================
-// Accessibility - Focus States (PRESERVE)
-// =============================================
-
+// Focus States
 ion-input:focus-within,
 ion-textarea:focus-within,
 ion-select:focus-within {
@@ -237,7 +251,6 @@ ion-select:focus-within {
   border-radius: 14px;
 }
 
-// Softer focus ring for ion-items containing form controls
 ion-item:has(ion-input:focus),
 ion-item:has(ion-textarea:focus),
 ion-item:has(ion-select:focus) {
@@ -246,10 +259,6 @@ ion-item:has(ion-select:focus) {
   border-radius: 16px;
   transition: background 0.2s ease;
 }
-
-// =============================================
-// Responsive Design (PRESERVE)
-// =============================================
 
 @media (width <= 576px) {
   .action-buttons {

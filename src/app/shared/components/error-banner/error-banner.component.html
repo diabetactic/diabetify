@@ -1,0 +1,34 @@
+<div
+  class="alert animate-slide-in-up mb-4 shadow-lg transition-all duration-300"
+  [ngClass]="severityClass"
+  role="alert"
+  aria-live="polite"
+>
+  <app-icon [name]="iconName" class="h-6 w-6 shrink-0"></app-icon>
+  <div class="flex-1">
+    <p class="m-0 text-sm font-medium leading-relaxed">{{ message }}</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <ion-button
+      *ngIf="retryable"
+      fill="clear"
+      size="small"
+      (click)="onRetry()"
+      class="retry-btn"
+      [attr.aria-label]="retryText | translate"
+    >
+      <app-icon name="refresh-cw" class="mr-1 h-4 w-4"></app-icon>
+      <span class="text-xs font-semibold">{{ retryText | translate }}</span>
+    </ion-button>
+    <ion-button
+      *ngIf="dismissible"
+      fill="clear"
+      size="small"
+      (click)="onDismiss()"
+      class="dismiss-btn"
+      [attr.aria-label]="'common.dismiss' | translate"
+    >
+      <app-icon name="x" class="h-5 w-5"></app-icon>
+    </ion-button>
+  </div>
+</div>

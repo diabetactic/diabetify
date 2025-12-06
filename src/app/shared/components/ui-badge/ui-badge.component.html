@@ -13,7 +13,7 @@
     type="button"
     [class]="closeButtonClasses"
     (click)="onDismiss($event)"
-    aria-label="Dismiss"
+    [attr.aria-label]="'common.dismiss' | translate"
   >
     <app-icon name="close"></app-icon>
   </button>

@@ -40,6 +40,7 @@
           inputmode="numeric"
           class="form-input"
           [class.input-error]="isFieldInvalid('currentGlucose')"
+          (ionInput)="onInputChange('currentGlucose', $event)"
         ></ion-input>
         <span class="error-text" *ngIf="glucoseError">{{ glucoseError }}</span>
       </div>
@@ -90,6 +91,7 @@
             inputmode="numeric"
             class="form-input"
             [class.input-error]="isFieldInvalid('carbGrams')"
+            (ionInput)="onInputChange('carbGrams', $event)"
           ></ion-input>
           <span class="carbs-unit-label">g</span>
         </div>

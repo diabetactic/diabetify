@@ -38,5 +38,4 @@ appId: io.diabetactic.app
 # 6. VERIFY PAGE STRUCTURE REMAINS STABLE
 - assertVisible:
     text: 'Citas|Appointments'
-
 # Test passes - past appointments section is accessible

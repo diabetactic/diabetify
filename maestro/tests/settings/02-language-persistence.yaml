@@ -97,4 +97,3 @@ appId: io.diabetactic.app
 
 - assertVisible:
     text: 'Idioma|Language'
-

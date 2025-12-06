@@ -41,5 +41,4 @@ appId: io.diabetactic.app
 # 6. VERIFY APPOINTMENTS PAGE STILL LOADS
 - assertVisible:
     text: 'Estado de la Cola|Queue Status'
-
 # Test passes - appointments page navigation works correctly

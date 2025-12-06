@@ -54,7 +54,7 @@
         <ion-select
           [(ngModel)]="accountState"
           (ionChange)="onAccountStateChange($event)"
-          placeholder="Select account state"
+          [placeholder]="'settings.advanced.selectAccountState' | translate"
         >
           <ion-select-option value="pending">
             {{ 'settings.advanced.accountState.pending' | translate }}

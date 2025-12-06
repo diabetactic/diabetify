@@ -73,7 +73,7 @@ export interface TeleAppointmentReadingSummary {
     time: string;
     value: number;
     status?: GlucoseStatus;
-    notes?: string[];
+    notes?: string;
   }>;
 }
 
@@ -95,33 +95,8 @@ export class ReadingsService {
   private readonly liveQueryFn: typeof liveQuery;
   private readonly isMockBackend = environment.backendMode === 'mock';
 
-  // Mapping from local meal context to backend reading_type
-  // Backend enum: DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO
-  private readonly mealContextToBackend: Record<string, string> = {
-    'before-breakfast': 'DESAYUNO',
-    'after-breakfast': 'DESAYUNO',
-    'before-lunch': 'ALMUERZO',
-    'after-lunch': 'ALMUERZO',
-    'before-dinner': 'CENA',
-    'after-dinner': 'CENA',
-    snack: 'MERIENDA',
-    bedtime: 'OTRAS_COMIDAS', // Backend doesn't have NOCHE
-    fasting: 'OTRAS_COMIDAS', // Backend doesn't have AYUNO
-    exercise: 'EJERCICIO',
-    other: 'OTRO',
-  };
-
-  // Mapping from backend reading_type to local meal context
-  // Backend enum: DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO
-  private readonly backendToMealContext: Record<string, string> = {
-    DESAYUNO: 'before-breakfast',
-    ALMUERZO: 'before-lunch',
-    CENA: 'before-dinner',
-    MERIENDA: 'snack',
-    OTRAS_COMIDAS: 'other', // Maps to other since we lost bedtime/fasting distinction
-    EJERCICIO: 'exercise',
-    OTRO: 'other',
-  };
+  // Backend reading types: DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO
+  // App now uses backend values directly (no mapping needed)
 
   constructor(
     @Optional() database?: DiabetacticDatabase,
@@ -396,7 +371,7 @@ export class ReadingsService {
       localStoredAt: new Date().toISOString(),
       isLocalOnly: false,
       status: this.calculateGlucoseStatus(mock.glucose, 'mg/dL'),
-      notes: mock.notes ? [mock.notes] : [],
+      notes: mock.notes,
     };
     return reading;
   }
@@ -514,7 +489,11 @@ export class ReadingsService {
   /**
    * Process sync queue - pushes local readings to Heroku backend
    */
-  async syncPendingReadings(): Promise<{ success: number; failed: number }> {
+  async syncPendingReadings(): Promise<{
+    success: number;
+    failed: number;
+    lastError?: string | null;
+  }> {
     // Skip sync in mock mode
     if (this.isMockBackend) {
       this.logger?.debug('Sync', 'Skipping sync in mock mode');
@@ -526,61 +505,85 @@ export class ReadingsService {
       return { success: 0, failed: 0 };
     }
 
-    const queueItems = await this.db.syncQueue.toArray();
-    let success = 0;
-    let failed = 0;
+    // Use transaction to prevent race conditions
+    return await this.db.transaction('rw', this.db.syncQueue, this.db.readings, async () => {
+      const queueItems = await this.db.syncQueue.toArray();
+      let success = 0;
+      let failed = 0;
 
-    this.logger?.info('Sync', `Processing ${queueItems.length} items in sync queue`);
+      this.logger?.info('Sync', `Processing ${queueItems.length} items in sync queue`);
 
-    for (const item of queueItems) {
-      try {
-        if (item.operation === 'create' && item.reading) {
-          // Push new reading to backend
-          await this.pushReadingToBackend(item.reading);
-          this.logger?.debug('Sync', `Created reading ${item.readingId} on backend`);
-        } else if (item.operation === 'delete') {
-          // Backend doesn't support delete for now, just remove from queue
-          this.logger?.debug(
-            'Sync',
-            `Delete operation for ${item.readingId} - backend delete not supported`
-          );
-        }
+      for (const item of queueItems) {
+        try {
+          if (item.operation === 'create' && item.reading) {
+            // Push new reading to backend
+            await this.pushReadingToBackend(item.reading);
+            this.logger?.debug('Sync', `Created reading ${item.readingId} on backend`);
+          } else if (item.operation === 'delete') {
+            // Backend doesn't support delete for now, just remove from queue
+            this.logger?.debug(
+              'Sync',
+              `Delete operation for ${item.readingId} - backend delete not supported`
+            );
+          }
 
-        // Remove from queue on success
-        await this.db.syncQueue.delete(item.id!);
-
-        // Mark reading as synced if it was create/update
-        if (item.operation !== 'delete' && item.readingId) {
-          await this.markAsSynced(item.readingId);
-        }
-
-        success++;
-      } catch (error) {
-        failed++;
-        this.logger?.error('Sync', `Failed to sync ${item.operation} for ${item.readingId}`, error);
-
-        // Increment retry count
-        const retryCount = item.retryCount + 1;
-
-        if (retryCount >= this.SYNC_RETRY_LIMIT) {
-          // Remove from queue after max retries
-          this.logger?.warn(
-            'Sync',
-            `Max retries reached for ${item.readingId}, removing from queue`
-          );
+          // Remove from queue on success
           await this.db.syncQueue.delete(item.id!);
-        } else {
-          // Update retry count
-          await this.db.syncQueue.update(item.id!, {
-            retryCount,
-            lastError: error instanceof Error ? error.message : 'Unknown error',
+
+          // Mark reading as synced if it was create/update
+          if (item.operation !== 'delete' && item.readingId) {
+            await this.markAsSynced(item.readingId);
+          }
+
+          success++;
+        } catch (error) {
+          failed++;
+          const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+          const errorDetails = {
+            operation: item.operation,
+            readingId: item.readingId,
+            errorType: error?.constructor?.name,
+            message: errorMessage,
+            status: (error as { status?: number })?.status,
+          };
+          this.logger?.error('Sync', `Failed to sync: ${JSON.stringify(errorDetails)}`, error);
+
+          // Increment retry count
+          const retryCount = item.retryCount + 1;
+
+          // Build detailed error message for debugging
+          const detailedError = JSON.stringify({
+            type: error?.constructor?.name,
+            message: error instanceof Error ? error.message : String(error),
+            status: (error as { status?: number })?.status,
+            errorBody: (error as { error?: unknown })?.error,
           });
+
+          if (retryCount >= this.SYNC_RETRY_LIMIT) {
+            // Remove from queue after max retries
+            this.logger?.warn(
+              'Sync',
+              `Max retries reached for ${item.readingId}, removing from queue`
+            );
+            await this.db.syncQueue.delete(item.id!);
+          } else {
+            // Update retry count with detailed error
+            await this.db.syncQueue.update(item.id!, {
+              retryCount,
+              lastError: detailedError,
+            });
+          }
         }
       }
-    }
 
-    this.logger?.info('Sync', `Sync complete: ${success} success, ${failed} failed`);
-    return { success, failed };
+      this.logger?.info('Sync', `Sync complete: ${success} success, ${failed} failed`);
+      // Get the last error from the queue for debugging display
+      const queueWithErrors = await this.db.syncQueue.toArray();
+      const lastError =
+        queueWithErrors.length > 0 ? queueWithErrors[queueWithErrors.length - 1].lastError : null;
+
+      return { success, failed, lastError };
+    });
   }
 
   /**
@@ -591,22 +594,45 @@ export class ReadingsService {
       throw new Error('ApiGatewayService not available');
     }
 
-    // Map local reading to backend format
-    const readingType = this.mapMealContextToBackend(reading.mealContext);
-    const glucoseLevel = reading.value;
+    // Build params object - mealContext is already the backend value (e.g. DESAYUNO)
+    const params: Record<string, string> = {
+      glucose_level: reading.value.toString(),
+      reading_type: reading.mealContext || 'OTRO',
+    };
+
+    // Add optional created_at if reading has a time
+    if (reading.time) {
+      params['created_at'] = reading.time;
+    }
+
+    // Add notes if present (single string)
+    if (reading.notes) {
+      params['notes'] = reading.notes;
+    }
+
+    this.logger?.info('Sync', 'Pushing reading to backend', {
+      localId: reading.id,
+      params: JSON.stringify(params),
+    });
 
     // The backend expects query params, not body
-    // Build URL with query params
     const response = await firstValueFrom(
       this.apiGateway.request<BackendGlucoseReading>('extservices.glucose.create', {
-        params: {
-          glucose_level: glucoseLevel.toString(),
-          reading_type: readingType,
-        },
+        params,
       })
     );
 
+    this.logger?.info('Sync', 'Backend response received', {
+      success: response.success,
+      hasData: !!response.data,
+      error: response.error ? JSON.stringify(response.error) : null,
+    });
+
     if (!response.success) {
+      this.logger?.error('Sync', 'Backend rejected reading', {
+        error: response.error,
+        params: JSON.stringify(params),
+      });
       throw new Error(response.error?.message || 'Failed to create reading on backend');
     }
 
@@ -684,7 +710,12 @@ export class ReadingsService {
   /**
    * Full sync: push pending local changes, then fetch from backend
    */
-  async performFullSync(): Promise<{ pushed: number; fetched: number; failed: number }> {
+  async performFullSync(): Promise<{
+    pushed: number;
+    fetched: number;
+    failed: number;
+    lastError?: string | null;
+  }> {
     this.logger?.info('Sync', 'Starting full sync');
 
     // First, push any pending local changes
@@ -697,17 +728,9 @@ export class ReadingsService {
       pushed: pushResult.success,
       fetched: fetchResult.merged,
       failed: pushResult.failed,
+      lastError: pushResult.lastError,
     };
   }
-
-  /**
-   * Map local meal context to backend reading_type
-   */
-  private mapMealContextToBackend(mealContext?: string): string {
-    if (!mealContext) return 'OTRO';
-    return this.mealContextToBackend[mealContext] || 'OTRO';
-  }
-
   /**
    * Map backend reading to local format
    */
@@ -732,7 +755,7 @@ export class ReadingsService {
       localStoredAt: new Date().toISOString(),
       isLocalOnly: false,
       status: this.calculateGlucoseStatus(backend.glucose_level, 'mg/dL'),
-      mealContext: this.backendToMealContext[backend.reading_type] || 'other',
+      mealContext: backend.reading_type || 'OTRO',
     };
 
     return localReading;
@@ -821,7 +844,7 @@ export class ReadingsService {
           time: reading.time,
           value: formattedValue,
           status,
-          notes: reading.notes && reading.notes.length > 0 ? [...reading.notes] : undefined,
+          notes: reading.notes || undefined,
         };
       }),
     };

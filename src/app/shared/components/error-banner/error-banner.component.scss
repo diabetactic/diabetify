@@ -1,0 +1,49 @@
+/**
+ * Error Banner Component Styles
+ * Minimal styles - most styling via DaisyUI alert classes
+ */
+
+.retry-btn,
+.dismiss-btn {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 6px;
+  --padding-bottom: 6px;
+
+  min-height: 32px;
+  min-width: 32px;
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.retry-btn {
+  --color: inherit;
+
+  &::part(native) {
+    font-weight: 600;
+  }
+}
+
+.dismiss-btn {
+  --color: inherit;
+
+  &::part(native) {
+    border-radius: 50%;
+  }
+
+  &:hover::part(native) {
+    background: rgb(0 0 0 / 10%);
+  }
+}
+
+// Dark mode adjustments
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
+  .retry-btn:hover::part(native),
+  .dismiss-btn:hover::part(native) {
+    background: rgb(255 255 255 / 15%);
+  }
+}

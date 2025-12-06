@@ -34,6 +34,7 @@
     "cancel": "Cancelar",
     "save": "Guardar",
     "no": "No",
+    "retry": "Reintentar",
     "pullToRefresh": "Desliza para actualizar",
     "refreshing": "Actualizando...",
     "loading": "Cargando...",
@@ -42,7 +43,11 @@
     "yesterday": "Ayer",
     "terms": "Términos",
     "privacy": "Privacidad",
-    "support": "Soporte"
+    "support": "Soporte",
+    "scrollToTop": "Ir arriba",
+    "dismiss": "Descartar",
+    "dismissAlert": "Descartar alerta",
+    "unableToLoad": "No se pudo cargar"
   },
   "tabs": {
     "home": "Inicio",
@@ -55,6 +60,7 @@
     "getStarted": "Empezar",
     "login": "Iniciar Sesión",
     "loginCta": "¡Vamos!",
+    "registerLink": "Regístrate aquí",
     "heroAlt": "Una alegre ilustración de un niño superhéroe manejando con confianza su diabetes",
     "quotes": [
       "¡Eres más fuerte que la diabetes!",
@@ -85,7 +91,7 @@
     "accountLinked": "Cuenta de Tidepool vinculada exitosamente",
     "accountUnlinked": "Cuenta de Tidepool desvinculada",
     "errors": {
-      "invalidCredentials": "Correo o contraseña inválidos",
+      "invalidCredentials": "DNI o contraseña inválidos",
       "emailRequired": "El correo es requerido",
       "passwordRequired": "La contraseña es requerida",
       "passwordMismatch": "Las contraseñas no coinciden",
@@ -210,6 +216,7 @@
   "readings": {
     "title": "Lecturas de Glucosa",
     "addNew": "Agregar Nueva Lectura",
+    "addReading": "Agregar Lectura",
     "editReading": "Editar Lectura",
     "deleteReading": "Eliminar Lectura",
     "confirmDelete": "¿Estás seguro de que quieres eliminar esta lectura?",
@@ -261,7 +268,6 @@
     "sortBy": "Ordenar Por",
     "loading": "Cargando lecturas...",
     "emptyTitle": "Aún no hay lecturas de glucosa",
-    "tip": "Para lecturas más precisas, lávate las manos antes de medir y utiliza el lateral de la yema del dedo.",
     "emptyMessage": "Comienza a rastrear tus niveles de glucosa",
     "addFirst": "Agregar Primera Lectura",
     "filter": {
@@ -340,6 +346,15 @@
       "afterDinner": "Después de la Cena",
       "bedtime": "Antes de Dormir",
       "fasting": "En Ayunas",
+      "other": "Otro"
+    },
+    "context": {
+      "breakfast": "Desayuno",
+      "lunch": "Almuerzo",
+      "snack": "Merienda",
+      "dinner": "Cena",
+      "exercise": "Ejercicio",
+      "otherMeals": "Otras Comidas",
       "other": "Otro"
     },
     "tags": {
@@ -773,7 +788,7 @@
       "connect": "Conectar",
       "connecting": "Conectando...",
       "success": "¡Conectado a Tidepool!",
-      "invalidCredentials": "Correo o contraseña inválidos",
+      "invalidCredentials": "DNI o contraseña inválidos",
       "networkError": "Error de red. Por favor verifica tu conexión"
     },
     "changePhoto": "Cambiar foto",
@@ -844,6 +859,12 @@
       "minLabel": "Objetivo Bajo",
       "maxLabel": "Objetivo Alto"
     },
+    "appearance": {
+      "themeLabel": "Tema",
+      "themeLight": "Claro",
+      "themeDark": "Oscuro",
+      "themeAuto": "Automático del Sistema"
+    },
     "appearanceSettings": {
       "themeLabel": "Tema",
       "themeLight": "Claro",
@@ -893,7 +914,8 @@
         "pending": "Pendiente",
         "active": "Activa",
         "disabled": "Desactivada"
-      }
+      },
+      "selectAccountState": "Seleccionar estado de cuenta"
     },
     "language": {
       "title": "Idioma",
@@ -925,7 +947,10 @@
     "status": "Estado de Sincronización",
     "inProgress": "Sincronizando...",
     "complete": "Sincronización Completa",
-    "error": "Error de Sincronización",
+    "error": {
+      "title": "Error de Sincronización",
+      "message": "No se pudo sincronizar tus datos. Por favor verifica tu conexión e intenta nuevamente."
+    },
     "lastSync": "Última Sincronización",
     "never": "Nunca",
     "automatic": "Sincronización Automática",
@@ -1177,8 +1202,8 @@
       "message": "DNI: 1000 | Contraseña: tuvieja"
     },
     "username": {
-      "label": "DNI o Email",
-      "placeholder": "Ingresa tu DNI o email"
+      "label": "DNI",
+      "placeholder": "Ingresa tu DNI"
     },
     "password": {
       "label": "Contraseña",
@@ -1208,12 +1233,12 @@
       "welcomeBack": "¡Bienvenido de nuevo!",
       "loginError": "Error de inicio de sesión",
       "genericError": "Error al iniciar sesión. Por favor, intenta de nuevo.",
-      "invalidCredentials": "Credenciales incorrectas. Verifica tu DNI/email y contraseña.",
-      "invalidData": "Datos inválidos. Verifica el formato de tu DNI o email.",
+      "invalidCredentials": "Credenciales incorrectas. Verifica tu DNI y contraseña.",
+      "invalidData": "Datos inválidos. Verifica el formato de tu DNI.",
       "connectionError": "Error de conexión. Verifica tu conexión a internet."
     },
     "validation": {
-      "usernameRequired": "DNI o email es requerido",
+      "usernameRequired": "El DNI es requerido",
       "passwordRequired": "La contraseña es requerida",
       "passwordMinLength": "La contraseña debe tener al menos 6 caracteres"
     },
@@ -1378,5 +1403,23 @@
       "egg": "Huevo",
       "chicken": "Pollo"
     }
+  },
+  "time": {
+    "now": "Ahora",
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "tomorrow": "Mañana",
+    "thisWeek": "Esta Semana",
+    "lastWeek": "Semana Pasada",
+    "thisMonth": "Este Mes",
+    "lastMonth": "Mes Pasado",
+    "days": "días",
+    "hours": "horas",
+    "minutes": "minutos",
+    "seconds": "segundos",
+    "ago": "hace",
+    "in": "en",
+    "am": "AM",
+    "pm": "PM"
   }
 }

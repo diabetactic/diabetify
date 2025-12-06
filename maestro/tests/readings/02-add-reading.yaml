@@ -72,4 +72,3 @@ env:
 - assertVisible:
     text: '120'
     optional: true
-

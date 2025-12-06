@@ -559,7 +559,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     'extservices.appointments.placement',
     {
       service: ExternalService.APPOINTMENTS,
-      path: '/queue/placement/{userId}',
+      path: '/appointments/placement',
       method: 'GET',
       authenticated: true,
       timeout: 30000,
@@ -1384,7 +1384,7 @@ export class ApiGatewayService {
       }
 
       default:
-        console.warn(`🟡 No mock implementation for endpoint: ${endpointKey}`);
+        this.logger.warn('API', `No mock implementation for endpoint: ${endpointKey}`);
         throw new Error(`Mock not implemented for endpoint: ${endpointKey}`);
     }
   }

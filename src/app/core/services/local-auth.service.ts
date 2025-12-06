@@ -378,7 +378,7 @@ export class LocalAuthService {
           console.error('❌ [AUTH] Error error:', error?.error);
           console.error(
             '❌ [AUTH] Full error JSON:',
-            JSON.stringify(error, Object.getOwnPropertyNames(error))
+            error ? JSON.stringify(error, Object.getOwnPropertyNames(error)) : 'null/undefined'
           );
 
           const errorMessage = this.extractErrorMessage(error);
@@ -468,6 +468,7 @@ export class LocalAuthService {
   /**
    * Logout the user
    * NOTE: Always clears storage (Capacitor Preferences uses localStorage on web)
+   * CRITICAL: Also clears IndexedDB to remove PHI data (glucose readings, appointments)
    */
   async logout(): Promise<void> {
     const user = this.authStateSubject.value.user;
@@ -491,7 +492,11 @@ export class LocalAuthService {
       Preferences.remove({ key: STORAGE_KEYS.EXPIRES_AT }),
     ]);
 
-    this.logger.info('Auth', 'Logout completed', { userId: user?.id });
+    // CRITICAL: Clear IndexedDB to remove PHI data (glucose readings, appointments)
+    const { db } = await import('./database.service');
+    await db.clearAllData();
+
+    this.logger.info('Auth', 'Logout completed - all data cleared', { userId: user?.id });
   }
 
   /**
@@ -785,18 +790,12 @@ export class LocalAuthService {
 
     const errorObj = error as Record<string, unknown>;
 
-    if (errorObj['message']) {
-      const message = errorObj['message'] as string;
-      // Check for specific error codes
-      if (message.includes('accountPending')) {
-        return 'Tu cuenta está pendiente de activación. Por favor, contacta al administrador.';
-      }
-      if (message.includes('accountDisabled')) {
-        return 'Tu cuenta ha sido deshabilitada. Por favor, contacta al administrador.';
-      }
-      return message;
+    // Check for timeout error (from CapacitorHttpService withTimeout)
+    if (errorObj['isTimeout']) {
+      return 'La solicitud tardó demasiado. Verifica tu conexión e intenta de nuevo.';
     }
 
+    // Check nested error.detail first (for detailed validation errors like 422)
     const errorNested = errorObj['error'] as Record<string, unknown> | undefined;
     if (errorNested) {
       if (errorNested['detail']) {
@@ -819,14 +818,15 @@ export class LocalAuthService {
       }
     }
 
-    // HTTP status code specific messages
-    if (errorObj['status']) {
+    // HTTP status code specific messages - user-friendly error messages
+    // (use !== undefined to handle status 0)
+    if (errorObj['status'] !== undefined) {
       const status = errorObj['status'] as number;
       switch (status) {
         case 401:
-          return 'Credenciales incorrectas. Verifica tu DNI/email y contraseña.';
         case 403:
-          return 'Acceso denegado. Por favor, verifica tu cuenta.';
+          // Both 401 and 403 during login mean invalid credentials
+          return 'Credenciales incorrectas. Verifica tu DNI y contraseña.';
         case 409:
           return 'El usuario ya existe con este email.';
         case 422:
@@ -835,9 +835,27 @@ export class LocalAuthService {
           return 'Error del servidor. Por favor, intenta de nuevo más tarde.';
         case 0:
           return 'Error de conexión. Verifica tu conexión a internet.';
-        default:
-          return `Error ${status}: ${(errorObj['message'] as string | undefined) || 'Algo salió mal'}`;
       }
+    }
+
+    if (errorObj['message']) {
+      const message = errorObj['message'] as string;
+      // Check for specific error codes
+      if (message.includes('accountPending')) {
+        return 'Tu cuenta está pendiente de activación. Por favor, contacta al administrador.';
+      }
+      if (message.includes('accountDisabled')) {
+        return 'Tu cuenta ha sido deshabilitada. Por favor, contacta al administrador.';
+      }
+      // Check for timeout in message
+      if (message.toLowerCase().includes('timeout') || message.includes('timed out')) {
+        return 'La solicitud tardó demasiado. Verifica tu conexión e intenta de nuevo.';
+      }
+      // Don't show raw HTTP error messages to user
+      if (message.includes('HTTP') && /\d{3}/.test(message)) {
+        return 'Error al iniciar sesión. Por favor, intenta de nuevo.';
+      }
+      return message;
     }
 
     return 'Error al iniciar sesión. Por favor, intenta de nuevo.';
