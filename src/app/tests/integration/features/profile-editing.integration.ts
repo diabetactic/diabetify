@@ -23,10 +23,10 @@ describe('Profile Editing Integration', () => {
   let component: SettingsPage;
   let fixture: ComponentFixture<SettingsPage>;
 
-  let profileService: jasmine.SpyObj<ProfileService>;
-  let authService: jasmine.SpyObj<LocalAuthService>;
-  let themeService: jasmine.SpyObj<ThemeService>;
-  let demoDataService: jasmine.SpyObj<DemoDataService>;
+  let profileService: jest.Mocked<ProfileService>;
+  let authService: jest.Mocked<LocalAuthService>;
+  let themeService: jest.Mocked<ThemeService>;
+  let demoDataService: jest.Mocked<DemoDataService>;
   let toastController: any;
 
   let profileSubject: BehaviorSubject<UserProfile>;
@@ -67,34 +67,32 @@ describe('Profile Editing Integration', () => {
     profileSubject = new BehaviorSubject<UserProfile>(mockProfile);
 
     // Create service spies
-    profileService = jasmine.createSpyObj(
-      'ProfileService',
-      ['getProfile', 'updateProfile', 'updatePreferences'],
-      { profile$: profileSubject.asObservable() }
-    );
+    profileService = {
+      getProfile: jest.fn().mockResolvedValue(mockProfile),
+      updateProfile: jest.fn().mockResolvedValue(mockProfile),
+      updatePreferences: jest.fn().mockResolvedValue(mockProfile),
+      profile$: profileSubject.asObservable(),
+    } as any;
 
-    authService = jasmine.createSpyObj('LocalAuthService', ['isAuthenticated', 'getCurrentUser']);
+    authService = {
+      isAuthenticated: jest.fn().mockReturnValue(of(true)),
+      getCurrentUser: jest.fn().mockReturnValue({
+        dni: '1000',
+        name: 'Test User',
+        email: 'test@example.com',
+      } as any),
+    } as any;
 
-    themeService = jasmine.createSpyObj('ThemeService', ['getCurrentThemeMode', 'setThemeMode']);
+    themeService = {
+      getCurrentThemeMode: jest.fn().mockReturnValue('auto'),
+      setThemeMode: jest.fn(),
+    } as any;
 
-    demoDataService = jasmine.createSpyObj('DemoDataService', ['isDemoMode']);
+    demoDataService = {
+      isDemoMode: jest.fn().mockReturnValue(true),
+    } as any;
 
     toastController = createMockToastController();
-
-    // Setup default return values
-    profileService.getProfile.and.returnValue(Promise.resolve(mockProfile));
-    profileService.updateProfile.and.returnValue(Promise.resolve(mockProfile));
-    profileService.updatePreferences.and.returnValue(Promise.resolve(mockProfile));
-
-    authService.isAuthenticated.and.returnValue(of(true));
-    authService.getCurrentUser.and.returnValue({
-      dni: '1000',
-      name: 'Test User',
-      email: 'test@example.com',
-    } as any);
-
-    themeService.getCurrentThemeMode.and.returnValue('auto');
-    demoDataService.isDemoMode.and.returnValue(true);
 
     await TestBed.configureTestingModule({
       imports: [IonicModule.forRoot(), TranslateModule.forRoot(), SettingsPage],

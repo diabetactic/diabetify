@@ -12,8 +12,8 @@ import { AccountState } from '../models/user-profile.model';
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;
-  let localAuthService: jasmine.SpyObj<LocalAuthService>;
-  let router: jasmine.SpyObj<Router>;
+  let localAuthService: jest.Mocked<LocalAuthService>;
+  let router: jest.Mocked<Router>;
   let urlTree: UrlTree;
 
   // Auth state subjects for testing
@@ -44,16 +44,19 @@ describe('AuthGuard', () => {
     });
 
     // Create spies
-    const routerSpy = jasmine.createSpyObj<Router>('Router', ['createUrlTree']);
-    routerSpy.createUrlTree.and.returnValue(urlTree);
+    const routerSpy = {
+      createUrlTree: jest.fn().mockReturnValue(urlTree),
+    } as unknown as jest.Mocked<Router>;
 
-    const tidepoolSpy = jasmine.createSpyObj<TidepoolAuthService>('TidepoolAuthService', [], {
+    const tidepoolSpy = {
       authState: tidepoolAuthStateSubject.asObservable(),
-    });
+    } as unknown as jest.Mocked<TidepoolAuthService>;
 
-    const localSpy = jasmine.createSpyObj<LocalAuthService>('LocalAuthService', ['logout'], {
+    const localSpy = {
+      logout: jest.fn(),
+      waitForInitialization: jest.fn().mockResolvedValue(undefined),
       authState$: localAuthStateSubject.asObservable(),
-    });
+    } as unknown as jest.Mocked<LocalAuthService>;
 
     TestBed.configureTestingModule({
       providers: [
@@ -65,8 +68,8 @@ describe('AuthGuard', () => {
     });
 
     guard = TestBed.inject(AuthGuard);
-    localAuthService = TestBed.inject(LocalAuthService) as jasmine.SpyObj<LocalAuthService>;
-    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    localAuthService = TestBed.inject(LocalAuthService) as jest.Mocked<LocalAuthService>;
+    router = TestBed.inject(Router) as jest.Mocked<Router>;
   });
 
   afterEach(() => {

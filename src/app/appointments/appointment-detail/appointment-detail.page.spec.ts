@@ -12,10 +12,10 @@ import { getLucideIconsForTesting } from '../../tests/helpers/icon-test.helper';
 describe('AppointmentDetailPage', () => {
   let component: AppointmentDetailPage;
   let fixture: ComponentFixture<AppointmentDetailPage>;
-  let appointmentServiceSpy: jasmine.SpyObj<AppointmentService>;
+  let appointmentServiceSpy: jest.Mocked<AppointmentService>;
 
   beforeEach(() => {
-    const spy = jasmine.createSpyObj('AppointmentService', ['getAppointment']);
+    const spy = { getAppointment: jest.fn() } as any;
 
     TestBed.configureTestingModule({
       imports: [AppointmentDetailPageModule, TranslateModule.forRoot(), getLucideIconsForTesting()],
@@ -38,11 +38,9 @@ describe('AppointmentDetailPage', () => {
       ],
     });
 
-    appointmentServiceSpy = TestBed.inject(
-      AppointmentService
-    ) as jasmine.SpyObj<AppointmentService>;
+    appointmentServiceSpy = TestBed.inject(AppointmentService) as jest.Mocked<AppointmentService>;
     // Mock the getAppointment to return an error (since we don't have a real appointment)
-    appointmentServiceSpy.getAppointment.and.returnValue(
+    appointmentServiceSpy.getAppointment.mockReturnValue(
       throwError(() => new Error('Appointment not found'))
     );
 

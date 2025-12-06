@@ -24,23 +24,23 @@ class TidepoolAuthServiceStub {
 
   authState = this.stateSubject.asObservable();
 
-  login = jasmine.createSpy('login').and.resolveTo();
-  logout = jasmine.createSpy('logout').and.resolveTo();
+  login = jest.fn().mockResolvedValue(undefined);
+  logout = jest.fn().mockResolvedValue(undefined);
 }
 
 class ProfileServiceStub {
   private profileSubject = new BehaviorSubject<any>(null);
   profile$ = this.profileSubject.asObservable();
 
-  getProfile = jasmine.createSpy('getProfile').and.resolveTo(null);
-  updatePreferences = jasmine.createSpy('updatePreferences').and.resolveTo({});
-  updateProfile = jasmine.createSpy('updateProfile').and.resolveTo({});
-  clearTidepoolCredentials = jasmine.createSpy('clearTidepoolCredentials').and.resolveTo();
-  deleteProfile = jasmine.createSpy('deleteProfile').and.resolveTo();
+  getProfile = jest.fn().mockResolvedValue(null);
+  updatePreferences = jest.fn().mockResolvedValue({});
+  updateProfile = jest.fn().mockResolvedValue({});
+  clearTidepoolCredentials = jest.fn().mockResolvedValue(undefined);
+  deleteProfile = jest.fn().mockResolvedValue(undefined);
 }
 
 class ThemeServiceStub {
-  setThemeMode = jasmine.createSpy('setThemeMode').and.resolveTo();
+  setThemeMode = jest.fn().mockResolvedValue(undefined);
 }
 
 class TranslationServiceStub {

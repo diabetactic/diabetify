@@ -26,8 +26,8 @@ class MockNotificationService {
  */
 describe('AppointmentService', () => {
   let service: AppointmentService;
-  let apiGateway: jasmine.SpyObj<ApiGatewayService>;
-  let translationService: jasmine.SpyObj<TranslationService>;
+  let apiGateway: jest.Mocked<ApiGatewayService>;
+  let translationService: jest.Mocked<TranslationService>;
 
   // Mock appointments
   const mockAppointment1: Appointment = {
@@ -67,10 +67,12 @@ describe('AppointmentService', () => {
   const mockAppointments: Appointment[] = [mockAppointment1, mockAppointment2];
 
   beforeEach(() => {
-    const apiGatewaySpy = jasmine.createSpyObj<ApiGatewayService>('ApiGatewayService', ['request']);
-    const translationSpy = jasmine.createSpyObj<TranslationService>('TranslationService', [
-      'instant',
-    ]);
+    const apiGatewaySpy = {
+      request: jest.fn(),
+    } as unknown as jest.Mocked<ApiGatewayService>;
+    const translationSpy = {
+      instant: jest.fn(),
+    } as unknown as jest.Mocked<TranslationService>;
 
     TestBed.configureTestingModule({
       providers: [
@@ -85,11 +87,11 @@ describe('AppointmentService', () => {
     // Force non-mock mode to test API gateway calls
     (service as any).isMockMode = false;
 
-    apiGateway = TestBed.inject(ApiGatewayService) as jasmine.SpyObj<ApiGatewayService>;
-    translationService = TestBed.inject(TranslationService) as jasmine.SpyObj<TranslationService>;
+    apiGateway = TestBed.inject(ApiGatewayService) as jest.Mocked<ApiGatewayService>;
+    translationService = TestBed.inject(TranslationService) as jest.Mocked<TranslationService>;
 
     // Default translation behavior
-    translationService.instant.and.callFake((key: string) => key);
+    translationService.instant.mockImplementation((key: string) => key);
   });
 
   afterEach(() => {
@@ -111,7 +113,7 @@ describe('AppointmentService', () => {
           data: mockAppointments,
         };
 
-        apiGateway.request.and.returnValue(of(response));
+        apiGateway.request.mockReturnValue(of(response));
 
         service.getAppointments().subscribe({
           next: appointments => {
@@ -130,7 +132,7 @@ describe('AppointmentService', () => {
           data: mockAppointments,
         };
 
-        apiGateway.request.and.returnValue(of(response));
+        apiGateway.request.mockReturnValue(of(response));
 
         // Subscribe to appointments$ to verify it updates
         service.appointments$.subscribe(appointments => {
@@ -149,7 +151,7 @@ describe('AppointmentService', () => {
           data: [],
         };
 
-        apiGateway.request.and.returnValue(of(response));
+        apiGateway.request.mockReturnValue(of(response));
 
         service.getAppointments().subscribe({
           next: appointments => {
@@ -173,7 +175,7 @@ describe('AppointmentService', () => {
           data: [fullAppointment],
         };
 
-        apiGateway.request.and.returnValue(of(response));
+        apiGateway.request.mockReturnValue(of(response));
 
         service.getAppointments().subscribe({
           next: appointments => {
@@ -195,7 +197,7 @@ describe('AppointmentService', () => {
           data: [multiMotiveAppointment],
         };
 
-        apiGateway.request.and.returnValue(of(response));
+        apiGateway.request.mockReturnValue(of(response));
 
         service.getAppointments().subscribe({
           next: appointments => {
@@ -218,7 +220,7 @@ describe('AppointmentService', () => {
           },
         };
 
-        apiGateway.request.and.returnValue(of(errorResponse));
+        apiGateway.request.mockReturnValue(of(errorResponse));
 
         service.getAppointments().subscribe({
           next: () => fail('should have errored'),
@@ -234,7 +236,7 @@ describe('AppointmentService', () => {
           success: false,
         };
 
-        apiGateway.request.and.returnValue(of(errorResponse));
+        apiGateway.request.mockReturnValue(of(errorResponse));
 
         service.getAppointments().subscribe({
           next: () => fail('should have errored'),
@@ -254,9 +256,9 @@ describe('AppointmentService', () => {
           },
         };
 
-        apiGateway.request.and.returnValue(throwError(() => networkError));
+        apiGateway.request.mockReturnValue(throwError(() => networkError));
 
-        translationService.instant.and.returnValue('Network error occurred');
+        translationService.instant.mockReturnValue('Network error occurred');
 
         service.getAppointments().subscribe({
           next: () => fail('should have errored'),
@@ -279,9 +281,9 @@ describe('AppointmentService', () => {
           },
         };
 
-        apiGateway.request.and.returnValue(throwError(() => unauthorizedError));
+        apiGateway.request.mockReturnValue(throwError(() => unauthorizedError));
 
-        translationService.instant.and.returnValue('Unauthorized access');
+        translationService.instant.mockReturnValue('Unauthorized access');
 
         service.getAppointments().subscribe({
           next: () => fail('should have errored'),
@@ -304,9 +306,9 @@ describe('AppointmentService', () => {
           },
         };
 
-        apiGateway.request.and.returnValue(throwError(() => notFoundError));
+        apiGateway.request.mockReturnValue(throwError(() => notFoundError));
 
-        translationService.instant.and.returnValue('Not found');
+        translationService.instant.mockReturnValue('Not found');
 
         service.getAppointments().subscribe({
           next: () => fail('should have errored'),
@@ -327,9 +329,9 @@ describe('AppointmentService', () => {
           },
         };
 
-        apiGateway.request.and.returnValue(throwError(() => serviceUnavailableError));
+        apiGateway.request.mockReturnValue(throwError(() => serviceUnavailableError));
 
-        translationService.instant.and.returnValue('Service unavailable');
+        translationService.instant.mockReturnValue('Service unavailable');
 
         service.getAppointments().subscribe({
           next: () => fail('should have errored'),
@@ -348,7 +350,7 @@ describe('AppointmentService', () => {
           message: 'Simple error message',
         };
 
-        apiGateway.request.and.returnValue(throwError(() => simpleError));
+        apiGateway.request.mockReturnValue(throwError(() => simpleError));
 
         service.getAppointments().subscribe({
           next: () => fail('should have errored'),
@@ -360,7 +362,7 @@ describe('AppointmentService', () => {
       });
 
       it('should handle string error', done => {
-        apiGateway.request.and.returnValue(throwError(() => 'String error'));
+        apiGateway.request.mockReturnValue(throwError(() => 'String error'));
 
         service.getAppointments().subscribe({
           next: () => fail('should have errored'),
@@ -372,7 +374,7 @@ describe('AppointmentService', () => {
       });
 
       it('should handle unknown error format', done => {
-        apiGateway.request.and.returnValue(throwError(() => ({ unknown: 'format' })));
+        apiGateway.request.mockReturnValue(throwError(() => ({ unknown: 'format' })));
 
         service.getAppointments().subscribe({
           next: () => fail('should have errored'),
@@ -391,7 +393,7 @@ describe('AppointmentService', () => {
         success: true,
         data: mockAppointments,
       };
-      apiGateway.request.and.returnValue(of(response));
+      apiGateway.request.mockReturnValue(of(response));
     });
 
     describe('Success Cases', () => {
@@ -417,7 +419,7 @@ describe('AppointmentService', () => {
       });
 
       it('should call getAppointments internally', done => {
-        spyOn(service, 'getAppointments').and.callThrough();
+        jest.spyOn(service, 'getAppointments');
 
         service.getAppointment(1).subscribe({
           next: () => {
@@ -469,7 +471,7 @@ describe('AppointmentService', () => {
           },
         };
 
-        apiGateway.request.and.returnValue(of(errorResponse));
+        apiGateway.request.mockReturnValue(of(errorResponse));
 
         service.getAppointment(1).subscribe({
           next: () => fail('should have errored'),
@@ -513,7 +515,7 @@ describe('AppointmentService', () => {
           data: createdAppointment,
         };
 
-        apiGateway.request.and.returnValue(of(response));
+        apiGateway.request.mockReturnValue(of(response));
 
         // Mock getAppointments for refresh
         const refreshResponse: ApiResponse<Appointment[]> = {
@@ -521,7 +523,9 @@ describe('AppointmentService', () => {
           data: [...mockAppointments, createdAppointment],
         };
 
-        apiGateway.request.and.returnValues(of(response), of(refreshResponse));
+        apiGateway.request
+          .mockReturnValueOnce(of(response))
+          .mockReturnValueOnce(of(refreshResponse));
 
         service.createAppointment(createRequest).subscribe({
           next: appointment => {
@@ -556,7 +560,7 @@ describe('AppointmentService', () => {
           data: fullAppointment,
         };
 
-        apiGateway.request.and.returnValue(of(response));
+        apiGateway.request.mockReturnValue(of(response));
 
         service.createAppointment(fullRequest).subscribe({
           next: appointment => {
@@ -588,7 +592,7 @@ describe('AppointmentService', () => {
           data: multiMotiveAppointment,
         };
 
-        apiGateway.request.and.returnValue(of(response));
+        apiGateway.request.mockReturnValue(of(response));
 
         service.createAppointment(multiMotiveRequest).subscribe({
           next: appointment => {
@@ -610,7 +614,9 @@ describe('AppointmentService', () => {
           data: [...mockAppointments, createdAppointment],
         };
 
-        apiGateway.request.and.returnValues(of(createResponse), of(refreshResponse));
+        apiGateway.request
+          .mockReturnValueOnce(of(createResponse))
+          .mockReturnValueOnce(of(refreshResponse));
 
         service.createAppointment(createRequest).subscribe({
           next: () => {
@@ -635,7 +641,9 @@ describe('AppointmentService', () => {
           data: [...mockAppointments, createdAppointment],
         };
 
-        apiGateway.request.and.returnValues(of(createResponse), of(refreshResponse));
+        apiGateway.request
+          .mockReturnValueOnce(of(createResponse))
+          .mockReturnValueOnce(of(refreshResponse));
 
         let updateCount = 0;
         service.appointments$.subscribe(appointments => {
@@ -662,7 +670,7 @@ describe('AppointmentService', () => {
           },
         };
 
-        apiGateway.request.and.returnValue(of(errorResponse));
+        apiGateway.request.mockReturnValue(of(errorResponse));
 
         service.createAppointment(createRequest).subscribe({
           next: () => fail('should have errored'),
@@ -678,7 +686,7 @@ describe('AppointmentService', () => {
           success: false,
         };
 
-        apiGateway.request.and.returnValue(of(errorResponse));
+        apiGateway.request.mockReturnValue(of(errorResponse));
 
         service.createAppointment(createRequest).subscribe({
           next: () => fail('should have errored'),
@@ -698,9 +706,9 @@ describe('AppointmentService', () => {
           },
         };
 
-        apiGateway.request.and.returnValue(throwError(() => networkError));
+        apiGateway.request.mockReturnValue(throwError(() => networkError));
 
-        translationService.instant.and.returnValue('Network error');
+        translationService.instant.mockReturnValue('Network error');
 
         service.createAppointment(createRequest).subscribe({
           next: () => fail('should have errored'),
@@ -720,9 +728,9 @@ describe('AppointmentService', () => {
           },
         };
 
-        apiGateway.request.and.returnValue(throwError(() => unauthorizedError));
+        apiGateway.request.mockReturnValue(throwError(() => unauthorizedError));
 
-        translationService.instant.and.returnValue('Not authorized');
+        translationService.instant.mockReturnValue('Not authorized');
 
         service.createAppointment(createRequest).subscribe({
           next: () => fail('should have errored'),
@@ -748,10 +756,12 @@ describe('AppointmentService', () => {
           },
         };
 
-        apiGateway.request.and.returnValues(of(createResponse), of(refreshError));
+        apiGateway.request
+          .mockReturnValueOnce(of(createResponse))
+          .mockReturnValueOnce(of(refreshError));
 
         // Spy on console.error to verify it logs but doesn't throw
-        spyOn(console, 'error');
+        jest.spyOn(console, 'error');
 
         service.createAppointment(createRequest).subscribe({
           next: appointment => {
@@ -775,7 +785,7 @@ describe('AppointmentService', () => {
         data: { state: 'PENDING' as AppointmentQueueState, position: 1 },
       };
 
-      apiGateway.request.and.returnValue(of(response));
+      apiGateway.request.mockReturnValue(of(response));
 
       service.getQueueState().subscribe({
         next: state => {
@@ -800,7 +810,7 @@ describe('AppointmentService', () => {
         },
       };
 
-      apiGateway.request.and.returnValue(throwError(() => errorResponse));
+      apiGateway.request.mockReturnValue(throwError(() => errorResponse));
 
       service.getQueueState().subscribe({
         next: state => {
@@ -822,7 +832,7 @@ describe('AppointmentService', () => {
         },
       };
 
-      apiGateway.request.and.returnValue(throwError(() => errorResponse));
+      apiGateway.request.mockReturnValue(throwError(() => errorResponse));
 
       service.getQueueState().subscribe({
         next: state => {
@@ -844,7 +854,7 @@ describe('AppointmentService', () => {
         },
       };
 
-      apiGateway.request.and.returnValue(throwError(() => errorResponse));
+      apiGateway.request.mockReturnValue(throwError(() => errorResponse));
 
       service.getQueueState().subscribe({
         next: () => fail('should have errored'),
@@ -872,7 +882,7 @@ describe('AppointmentService', () => {
         data: mockAppointments,
       };
 
-      apiGateway.request.and.returnValue(of(response));
+      apiGateway.request.mockReturnValue(of(response));
 
       let emissionCount = 0;
       service.appointments$.subscribe(appointments => {
@@ -893,7 +903,7 @@ describe('AppointmentService', () => {
         data: mockAppointments,
       };
 
-      apiGateway.request.and.returnValue(of(response));
+      apiGateway.request.mockReturnValue(of(response));
 
       let subscriber1Received = false;
       let subscriber2Received = false;
@@ -938,7 +948,7 @@ describe('AppointmentService', () => {
         data: [zeroValueAppointment],
       };
 
-      apiGateway.request.and.returnValue(of(response));
+      apiGateway.request.mockReturnValue(of(response));
 
       service.getAppointments().subscribe({
         next: appointments => {
@@ -960,7 +970,7 @@ describe('AppointmentService', () => {
         data: [emptyMotiveAppointment],
       };
 
-      apiGateway.request.and.returnValue(of(response));
+      apiGateway.request.mockReturnValue(of(response));
 
       service.getAppointments().subscribe({
         next: appointments => {
@@ -982,7 +992,7 @@ describe('AppointmentService', () => {
         data: largeList,
       };
 
-      apiGateway.request.and.returnValue(of(response));
+      apiGateway.request.mockReturnValue(of(response));
 
       service.getAppointments().subscribe({
         next: appointments => {
@@ -1006,7 +1016,7 @@ describe('AppointmentService', () => {
         data: [longStringAppointment],
       };
 
-      apiGateway.request.and.returnValue(of(response));
+      apiGateway.request.mockReturnValue(of(response));
 
       service.getAppointments().subscribe({
         next: appointments => {
@@ -1025,7 +1035,7 @@ describe('AppointmentService', () => {
         data: mockAppointments,
       };
 
-      apiGateway.request.and.returnValue(of(response));
+      apiGateway.request.mockReturnValue(of(response));
 
       let callsCompleted = 0;
 
@@ -1058,7 +1068,10 @@ describe('AppointmentService', () => {
 
       // createAppointment internally calls refreshAppointments() which calls getAppointments()
       // So we need 3 return values: get, create, get (from refresh)
-      apiGateway.request.and.returnValues(of(getResponse), of(createResponse), of(getResponse));
+      apiGateway.request
+        .mockReturnValueOnce(of(getResponse))
+        .mockReturnValueOnce(of(createResponse))
+        .mockReturnValueOnce(of(getResponse));
 
       let getCompleted = false;
       let createCompleted = false;

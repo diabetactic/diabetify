@@ -328,14 +328,14 @@ export function getFieldErrors(fixture: ComponentFixture<any>, fieldName: string
  */
 export function createMockLoadingController() {
   const loadingElement = {
-    present: jasmine.createSpy('present').and.returnValue(Promise.resolve()),
-    dismiss: jasmine.createSpy('dismiss').and.returnValue(Promise.resolve()),
+    present: jest.fn().mockResolvedValue(undefined),
+    dismiss: jest.fn().mockResolvedValue(undefined),
   };
 
   return {
-    create: jasmine.createSpy('create').and.returnValue(Promise.resolve(loadingElement)),
-    dismiss: jasmine.createSpy('dismiss').and.returnValue(Promise.resolve()),
-    getTop: jasmine.createSpy('getTop').and.returnValue(Promise.resolve(loadingElement)),
+    create: jest.fn().mockResolvedValue(loadingElement),
+    dismiss: jest.fn().mockResolvedValue(undefined),
+    getTop: jest.fn().mockResolvedValue(loadingElement),
   };
 }
 
@@ -344,13 +344,13 @@ export function createMockLoadingController() {
  */
 export function createMockToastController() {
   const toastElement = {
-    present: jasmine.createSpy('present').and.returnValue(Promise.resolve()),
-    dismiss: jasmine.createSpy('dismiss').and.returnValue(Promise.resolve()),
+    present: jest.fn().mockResolvedValue(undefined),
+    dismiss: jest.fn().mockResolvedValue(undefined),
   };
 
   return {
-    create: jasmine.createSpy('create').and.returnValue(Promise.resolve(toastElement)),
-    dismiss: jasmine.createSpy('dismiss').and.returnValue(Promise.resolve()),
-    getTop: jasmine.createSpy('getTop').and.returnValue(Promise.resolve(toastElement)),
+    create: jest.fn().mockResolvedValue(toastElement),
+    dismiss: jest.fn().mockResolvedValue(undefined),
+    getTop: jest.fn().mockResolvedValue(toastElement),
   };
 }

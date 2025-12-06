@@ -7,9 +7,9 @@ import { skip, take } from 'rxjs/operators';
 
 describe('ThemeService', () => {
   let service: ThemeService;
-  let mockRenderer: jasmine.SpyObj<any>;
-  let mockRendererFactory: jasmine.SpyObj<RendererFactory2>;
-  let mockProfileService: jasmine.SpyObj<ProfileService>;
+  let mockRenderer: { addClass: jest.Mock; removeClass: jest.Mock };
+  let mockRendererFactory: jest.Mocked<RendererFactory2>;
+  let mockProfileService: jest.Mocked<ProfileService>;
 
   const mockUserProfile: UserProfile = {
     id: 'test-user-id',
@@ -30,19 +30,23 @@ describe('ThemeService', () => {
     localStorage.clear();
 
     // Create mock renderer
-    mockRenderer = jasmine.createSpyObj('Renderer2', ['addClass', 'removeClass']);
+    mockRenderer = {
+      addClass: jest.fn(),
+      removeClass: jest.fn(),
+    };
 
     // Create mock renderer factory
-    mockRendererFactory = jasmine.createSpyObj('RendererFactory2', ['createRenderer']);
-    mockRendererFactory.createRenderer.and.returnValue(mockRenderer);
+    mockRendererFactory = {
+      createRenderer: jest.fn().mockReturnValue(mockRenderer),
+    } as unknown as jest.Mocked<RendererFactory2>;
 
     // Create mock profile service
-    mockProfileService = jasmine.createSpyObj('ProfileService', [
-      'getProfile',
-      'updatePreferences',
-    ]);
-    mockProfileService.getProfile.and.returnValue(Promise.resolve(null));
-    mockProfileService.updatePreferences.and.returnValue(Promise.resolve(mockUserProfile));
+    mockProfileService = {
+      getProfile: jest.fn(),
+      updatePreferences: jest.fn(),
+    } as unknown as jest.Mocked<ProfileService>;
+    mockProfileService.getProfile.mockReturnValue(Promise.resolve(null));
+    mockProfileService.updatePreferences.mockReturnValue(Promise.resolve(mockUserProfile));
 
     TestBed.configureTestingModule({
       providers: [

@@ -62,35 +62,44 @@ describe('ApiGatewayService', () => {
   beforeEach(() => {
     // Create spies for all dependencies
     // Note: recordServiceError is private but accessed via bracket notation in the service
-    mockExternalServices = jasmine.createSpyObj('ExternalServicesManager', ['isServiceAvailable']);
-    // Add recordServiceError as a property to handle bracket notation access
-    (mockExternalServices as any)['recordServiceError'] = jasmine.createSpy('recordServiceError');
-    mockLocalAuth = jasmine.createSpyObj('LocalAuthService', ['getAccessToken']);
-    mockTidepoolAuth = jasmine.createSpyObj('TidepoolAuthService', ['getAccessToken']);
-    mockEnvDetector = jasmine.createSpyObj('EnvironmentDetectorService', ['isProduction']);
-    mockPlatformDetector = jasmine.createSpyObj('PlatformDetectorService', ['getApiBaseUrl']);
-    mockAdapterService = jasmine.createSpyObj('MockAdapterService', [
-      'isServiceMockEnabled',
-      'isMockEnabled',
-    ]);
-    mockLogger = jasmine.createSpyObj('LoggerService', [
-      'info',
-      'debug',
-      'warn',
-      'error',
-      'getRequestId',
-      'setRequestId',
-    ]);
+    mockExternalServices = {
+      isServiceAvailable: jest.fn(),
+      recordServiceError: jest.fn(),
+    } as any;
+    mockLocalAuth = {
+      getAccessToken: jest.fn(),
+    } as any;
+    mockTidepoolAuth = {
+      getAccessToken: jest.fn(),
+    } as any;
+    mockEnvDetector = {
+      isProduction: jest.fn(),
+    } as any;
+    mockPlatformDetector = {
+      getApiBaseUrl: jest.fn(),
+    } as any;
+    mockAdapterService = {
+      isServiceMockEnabled: jest.fn(),
+      isMockEnabled: jest.fn(),
+    } as any;
+    mockLogger = {
+      info: jest.fn(),
+      debug: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+      getRequestId: jest.fn(),
+      setRequestId: jest.fn(),
+    } as any;
 
     // Default spy behaviors - MUST set isServiceAvailable to true for all tests
-    mockExternalServices.isServiceAvailable.and.returnValue(true);
-    mockLocalAuth.getAccessToken.and.returnValue(Promise.resolve('mock-local-token'));
-    mockTidepoolAuth.getAccessToken.and.returnValue(Promise.resolve('mock-tidepool-token'));
-    mockPlatformDetector.getApiBaseUrl.and.returnValue('http://localhost:8000');
+    mockExternalServices.isServiceAvailable.mockReturnValue(true);
+    mockLocalAuth.getAccessToken.mockReturnValue(Promise.resolve('mock-local-token'));
+    mockTidepoolAuth.getAccessToken.mockReturnValue(Promise.resolve('mock-tidepool-token'));
+    mockPlatformDetector.getApiBaseUrl.mockReturnValue('http://localhost:8000');
     // CRITICAL: Disable mocks to force HTTP requests for HttpTestingController
-    mockAdapterService.isServiceMockEnabled.and.returnValue(false);
-    mockAdapterService.isMockEnabled.and.returnValue(false);
-    mockLogger.getRequestId.and.returnValue('test-request-id');
+    mockAdapterService.isServiceMockEnabled.mockReturnValue(false);
+    mockAdapterService.isMockEnabled.mockReturnValue(false);
+    mockLogger.getRequestId.mockReturnValue('test-request-id');
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -121,7 +130,7 @@ describe('ApiGatewayService', () => {
     httpMock.verify();
     service.clearCache();
     // Reset spy call history
-    mockExternalServices.isServiceAvailable.calls.reset();
+    jest.clearAllMocks();
   });
 
   it('should be created', () => {
@@ -309,7 +318,7 @@ describe('ApiGatewayService', () => {
 
   describe('Authentication', () => {
     it('should add Bearer token for authenticated endpoints', waitForAsync(async () => {
-      mockLocalAuth.getAccessToken.and.returnValue(Promise.resolve('test-token-123'));
+      mockLocalAuth.getAccessToken.mockReturnValue(Promise.resolve('test-token-123'));
 
       service.request('glucoserver.readings.list').subscribe();
 
@@ -322,7 +331,7 @@ describe('ApiGatewayService', () => {
     }));
 
     it('should use Tidepool token for Tidepool endpoints', waitForAsync(async () => {
-      mockTidepoolAuth.getAccessToken.and.returnValue(Promise.resolve('tidepool-token'));
+      mockTidepoolAuth.getAccessToken.mockReturnValue(Promise.resolve('tidepool-token'));
 
       service.request('tidepool.user.profile', {}, { userId: 'user123' }).subscribe();
 
@@ -346,7 +355,7 @@ describe('ApiGatewayService', () => {
     }));
 
     it('should throw error if authentication required but no token available', (done: jest.DoneCallback) => {
-      mockLocalAuth.getAccessToken.and.returnValue(Promise.resolve(null));
+      mockLocalAuth.getAccessToken.mockReturnValue(Promise.resolve(null));
 
       service.request('glucoserver.readings.list').subscribe({
         next: () => {
@@ -365,7 +374,7 @@ describe('ApiGatewayService', () => {
 
   describe('Platform-Specific Base URLs', () => {
     it('should use platform detector for API Gateway base URL', waitForAsync(async () => {
-      mockPlatformDetector.getApiBaseUrl.and.returnValue('http://10.0.2.2:8000');
+      mockPlatformDetector.getApiBaseUrl.mockReturnValue('http://10.0.2.2:8000');
 
       service.request('glucoserver.readings.list').subscribe();
 

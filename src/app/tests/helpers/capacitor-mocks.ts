@@ -26,41 +26,41 @@ export function mockCapacitorPreferences() {
   mockStorage.clear();
 
   const preferencesMock: any = {
-    get: jasmine.createSpy('Preferences.get').and.callFake(async (opts: { key: string }) => {
+    get: jest.fn().mockImplementation(async (opts: { key: string }) => {
       const value = mockStorage.get(opts.key) || null;
       return { value };
     }),
 
-    set: jasmine
-      .createSpy('Preferences.set')
-      .and.callFake(async (opts: { key: string; value: string }) => {
-        mockStorage.set(opts.key, opts.value);
-        return Promise.resolve();
-      }),
+    set: jest.fn().mockImplementation(async (opts: { key: string; value: string }) => {
+      mockStorage.set(opts.key, opts.value);
+      return Promise.resolve();
+    }),
 
-    remove: jasmine.createSpy('Preferences.remove').and.callFake(async (opts: { key: string }) => {
+    remove: jest.fn().mockImplementation(async (opts: { key: string }) => {
       mockStorage.delete(opts.key);
       return Promise.resolve();
     }),
 
-    clear: jasmine.createSpy('Preferences.clear').and.callFake(async () => {
+    clear: jest.fn().mockImplementation(async () => {
       mockStorage.clear();
       return Promise.resolve();
     }),
 
-    keys: jasmine.createSpy('Preferences.keys').and.callFake(async () => {
+    keys: jest.fn().mockImplementation(async () => {
       return { keys: Array.from(mockStorage.keys()) };
     }),
 
-    migrate: jasmine.createSpy('Preferences.migrate').and.returnValue(Promise.resolve()),
+    migrate: jest.fn().mockResolvedValue(undefined),
 
-    removeOld: jasmine.createSpy('Preferences.removeOld').and.returnValue(Promise.resolve()),
+    removeOld: jest.fn().mockResolvedValue(undefined),
   };
 
   // Override the actual Preferences API
   (Object.keys(preferencesMock) as Array<keyof typeof preferencesMock>).forEach(key => {
     if (Preferences && (Preferences as any)[key]) {
-      spyOn(Preferences as any, key as any).and.callFake((preferencesMock as any)[key] as any);
+      jest
+        .spyOn(Preferences as any, key as any)
+        .mockImplementation((preferencesMock as any)[key] as any);
     }
   });
 
@@ -79,17 +79,17 @@ export function mockCapacitorPlatform(platform: 'android' | 'ios' | 'web') {
 
   // Mock isNativePlatform - this is the critical fix
   if (typeof Capacitor.isNativePlatform === 'function') {
-    spyOn(Capacitor, 'isNativePlatform').and.returnValue(isNative);
+    jest.spyOn(Capacitor, 'isNativePlatform').mockReturnValue(isNative);
   }
 
   // Mock getPlatform
   if (typeof Capacitor.getPlatform === 'function') {
-    spyOn(Capacitor, 'getPlatform').and.returnValue(platform);
+    jest.spyOn(Capacitor, 'getPlatform').mockReturnValue(platform);
   }
 
   // Mock isPluginAvailable
   if (typeof Capacitor.isPluginAvailable === 'function') {
-    spyOn(Capacitor, 'isPluginAvailable').and.returnValue(isNative);
+    jest.spyOn(Capacitor, 'isPluginAvailable').mockReturnValue(isNative);
   }
 
   // Mock platform property for backward compatibility
@@ -186,7 +186,7 @@ export function expectPreferenceCall(
   key?: string,
   value?: string
 ) {
-  const spy = (Preferences as any)[method] as jasmine.Spy;
+  const spy = (Preferences as any)[method] as jest.Mock;
   expect(spy).toHaveBeenCalled();
 
   if (key) {

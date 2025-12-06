@@ -57,29 +57,27 @@ describe('ProfileService', () => {
 
     // Mock Capacitor Preferences
     const PreferencesMock = {
-      get: jasmine.createSpy('get').and.callFake(async (options: { key: string }) => {
+      get: jest.fn().mockImplementation(async (options: { key: string }) => {
         const value = mockStorage.get(options.key);
         return { value: value || null };
       }),
-      set: jasmine
-        .createSpy('set')
-        .and.callFake(async (options: { key: string; value: string }) => {
-          mockStorage.set(options.key, options.value);
-        }),
-      remove: jasmine.createSpy('remove').and.callFake(async (options: { key: string }) => {
+      set: jest.fn().mockImplementation(async (options: { key: string; value: string }) => {
+        mockStorage.set(options.key, options.value);
+      }),
+      remove: jest.fn().mockImplementation(async (options: { key: string }) => {
         mockStorage.delete(options.key);
       }),
     };
 
     // Mock SecureStorage
     const SecureStorageMock = {
-      get: jasmine.createSpy('get').and.callFake(async (key: string) => {
+      get: jest.fn().mockImplementation(async (key: string) => {
         return mockSecureStorage.get(key) || null;
       }),
-      set: jasmine.createSpy('set').and.callFake(async (key: string, value: any) => {
+      set: jest.fn().mockImplementation(async (key: string, value: any) => {
         mockSecureStorage.set(key, value);
       }),
-      remove: jasmine.createSpy('remove').and.callFake(async (key: string) => {
+      remove: jest.fn().mockImplementation(async (key: string) => {
         mockSecureStorage.delete(key);
       }),
     };
@@ -96,13 +94,13 @@ describe('ProfileService', () => {
     const { Preferences } = await import('@capacitor/preferences');
     const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
 
-    spyOn(Preferences, 'get').and.callFake(PreferencesMock.get);
-    spyOn(Preferences, 'set').and.callFake(PreferencesMock.set);
-    spyOn(Preferences, 'remove').and.callFake(PreferencesMock.remove);
+    jest.spyOn(Preferences, 'get').mockImplementation(PreferencesMock.get);
+    jest.spyOn(Preferences, 'set').mockImplementation(PreferencesMock.set);
+    jest.spyOn(Preferences, 'remove').mockImplementation(PreferencesMock.remove);
 
-    spyOn(SecureStorage, 'get').and.callFake(SecureStorageMock.get);
-    spyOn(SecureStorage, 'set').and.callFake(SecureStorageMock.set);
-    spyOn(SecureStorage, 'remove').and.callFake(SecureStorageMock.remove);
+    jest.spyOn(SecureStorage, 'get').mockImplementation(SecureStorageMock.get);
+    jest.spyOn(SecureStorage, 'set').mockImplementation(SecureStorageMock.set);
+    jest.spyOn(SecureStorage, 'remove').mockImplementation(SecureStorageMock.remove);
 
     TestBed.configureTestingModule({
       providers: [ProfileService],
@@ -209,12 +207,10 @@ describe('ProfileService', () => {
       });
 
       it('should handle storage read error gracefully', async () => {
-        spyOn(console, 'error');
+        jest.spyOn(console, 'error');
 
         const { Preferences } = await import('@capacitor/preferences');
-        (Preferences.get as jasmine.Spy).and.returnValue(
-          Promise.reject(new Error('Storage error'))
-        );
+        (Preferences.get as jest.Mock).mockReturnValue(Promise.reject(new Error('Storage error')));
 
         const profile = await service.getProfile();
 
@@ -681,12 +677,10 @@ describe('ProfileService', () => {
       });
 
       it('should handle storage error', async () => {
-        spyOn(console, 'error');
+        jest.spyOn(console, 'error');
 
         const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
-        (SecureStorage.set as jasmine.Spy).and.returnValue(
-          Promise.reject(new Error('Storage full'))
-        );
+        (SecureStorage.set as jest.Mock).mockReturnValue(Promise.reject(new Error('Storage full')));
 
         await expectAsync(service.setTidepoolCredentials(mockTidepoolAuth)).toBeRejectedWithError(
           'Failed to save authentication credentials'
@@ -716,7 +710,7 @@ describe('ProfileService', () => {
           expiresAt: Date.now() - 1000, // Expired
         };
 
-        spyOn(console, 'warn');
+        jest.spyOn(console, 'warn');
         mockSecureStorage.set('diabetactic_tidepool_auth', expiredAuth);
 
         const auth = await service.getTidepoolCredentials();
@@ -726,10 +720,10 @@ describe('ProfileService', () => {
       });
 
       it('should handle storage read error', async () => {
-        spyOn(console, 'error');
+        jest.spyOn(console, 'error');
 
         const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
-        (SecureStorage.get as jasmine.Spy).and.returnValue(Promise.reject(new Error('Read error')));
+        (SecureStorage.get as jest.Mock).mockReturnValue(Promise.reject(new Error('Read error')));
 
         const auth = await service.getTidepoolCredentials();
 
@@ -994,7 +988,7 @@ describe('ProfileService', () => {
 
     it('should not run migrations if already at current version', async () => {
       mockStorage.set('diabetactic_schema_version', '1');
-      spyOn(console, 'log');
+      jest.spyOn(console, 'log');
 
       // Service already initialized in beforeEach, just verify it works
       expect(service).toBeTruthy();
