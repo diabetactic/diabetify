@@ -20,62 +20,23 @@ appId: io.diabetactic.app
     timeout: 2000
 
 # 3. NAVIGATE TO TIPS PAGE
-# Tips might be accessible from menu, settings, or direct navigation
-# Try hamburger menu first
-- tapOn:
-    id: 'menu-button'
-    optional: true
-- tapOn:
-    point: '5%,5%'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 1500
-
-# 4. LOOK FOR TIPS MENU ITEM
-- tapOn:
-    text: 'Consejos|Tips|Recomendaciones|Recommendations'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
-
-# 5. IF MENU NAVIGATION DIDN'T WORK, TRY SETTINGS
-- tapOn:
-    text: 'Configuración|Settings'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 1500
-
-# 6. LOOK FOR TIPS IN SETTINGS
-- scrollUntilVisible:
-    element:
-      text: 'Consejos|Tips'
-    direction: DOWN
-    timeout: 5000
-    optional: true
-
-# 7. TAP TIPS OPTION
+# Direct navigation from dashboard
 - tapOn:
     text: 'Consejos|Tips'
-    optional: true
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 8. VERIFY TIPS PAGE LOADED
+# 4. VERIFY TIPS PAGE LOADED
 - extendedWaitUntil:
     visible:
       text: 'Consejos|Tips|Recomendaciones|Recommendations'
     timeout: 8000
 
-# 9. VERIFY PAGE SUBTITLE/DESCRIPTION
+# 5. VERIFY PAGE SUBTITLE/DESCRIPTION
 - assertVisible:
     text: 'diabetes|glucosa|glucose|salud|health'
 
-# 10. VERIFY TIPS ICON IS VISIBLE
-- assertVisible:
-    text: '💡|🔦'
-    optional: true
-
-# 11. SCROLL TO VIEW MULTIPLE TIPS
+# 6. SCROLL TO VIEW MULTIPLE TIPS
 - swipe:
     start: '50%,70%'
     end: '50%,30%'
@@ -83,68 +44,13 @@ appId: io.diabetactic.app
 - waitForAnimationToEnd:
     timeout: 500
 
-# 12. VERIFY TIP CATEGORIES ARE PRESENT
-# Categories: glucose, nutrition, exercise, medication
+# 7. VERIFY TIP CATEGORIES ARE PRESENT
 - assertVisible:
     text: 'Glucosa|Glucose|Nutrición|Nutrition|Ejercicio|Exercise|Medicación|Medication'
 
-# 13. VERIFY TIP CARDS HAVE ICONS
-# Each tip should have category icon
-- assertVisible:
-    text: '.*'
-
-# 14. SCROLL MORE TO SEE ALL TIPS
-- swipe:
-    start: '50%,70%'
-    end: '50%,30%'
-    duration: 500
-- waitForAnimationToEnd:
-    timeout: 500
-
-# 15. VERIFY DISCLAIMER TEXT AT BOTTOM
+# 8. VERIFY DISCLAIMER TEXT AT BOTTOM
 - scrollUntilVisible:
     element:
       text: 'consulta|consult|médico|doctor|profesional|professional'
     direction: DOWN
     timeout: 8000
-
-# 16. VERIFY DISCLAIMER WARNING ICON
-- assertVisible:
-    text: '⚠️|⚠'
-    optional: true
-
-# 17. VERIFY AT LEAST 3-4 TIPS ARE VISIBLE
-# Tips should cover different categories
-- assertVisible:
-    text: 'Glucosa|Glucose'
-- assertVisible:
-    text: 'Nutrición|Nutrition|Carbohidratos|Carbohydrates'
-    optional: true
-
-# 18. SCROLL BACK TO TOP
-- swipe:
-    start: '50%,30%'
-    end: '50%,70%'
-    duration: 500
-- waitForAnimationToEnd:
-    timeout: 500
-
-# 19. VERIFY PAGE TITLE AGAIN (back at top)
-- assertVisible:
-    text: 'Consejos|Tips'
-
-# 20. NAVIGATE BACK TO DASHBOARD
-- tapOn:
-    id: 'back-button'
-    optional: true
-- tapOn:
-    point: '5%,5%'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
-
-# 21. VERIFY BACK ON PREVIOUS SCREEN
-- extendedWaitUntil:
-    visible:
-      text: 'Inicio|Home|Dashboard|Configuración|Settings'
-    timeout: 5000

@@ -1,0 +1,173 @@
+# ==========================================
+# Test: Bolus Calculator - High Carbs Scenarios
+# Description: Test high carbohydrate calculations
+# Covers: High carb dosing, form validation
+# ==========================================
+
+appId: io.diabetactic.app
+
+env:
+  NORMAL_GLUCOSE: '110'
+  HIGH_CARBS: '120'
+  NORMAL_CARBS: '60'
+
+---
+# 1. LOGIN
+- runFlow: ../../flows/login.yaml
+
+# 2. WAIT FOR DASHBOARD TO LOAD
+- extendedWaitUntil:
+    visible:
+      text: '.*(Inicio|Home|Dashboard).*'
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 3. NAVIGATE TO BOLUS CALCULATOR
+- tapOn:
+    text: 'Calculadora|Calculator'
+- waitForAnimationToEnd:
+    timeout: 1500
+
+# 4. VERIFY BOLUS CALCULATOR PAGE LOADED
+- extendedWaitUntil:
+    visible:
+      text: 'Calculadora de Bolo|Bolus Calculator'
+    timeout: 8000
+
+# ===============================
+# TEST 1: HIGH CARB VALUE
+# ===============================
+
+# 5. ENTER NORMAL GLUCOSE
+- tapOn:
+    id: 'current-glucose-input'
+- waitForAnimationToEnd:
+    timeout: 500
+- inputText: ${NORMAL_GLUCOSE}
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 6. ENTER HIGH CARB VALUE
+- tapOn:
+    id: 'carb-grams-input'
+- waitForAnimationToEnd:
+    timeout: 500
+- inputText: ${HIGH_CARBS}
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 7. SCROLL AND CALCULATE
+- swipe:
+    start: '50%,80%'
+    end: '50%,40%'
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 500
+- tapOn:
+    id: 'calculate-bolus-btn'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 8. VERIFY HIGH CARB DOSE CALCULATED
+- extendedWaitUntil:
+    visible:
+      text: 'Dosis Recomendada|Recommended Dose'
+    timeout: 8000
+
+# 9. VERIFY HIGH CARB VALUE IN DETAILS
+- assertVisible:
+    text: '120'
+
+# 10. VERIFY DETAILS SECTION SHOWS BREAKDOWN
+- scrollUntilVisible:
+    element:
+      text: 'Detalles|Details'
+    direction: DOWN
+    timeout: 5000
+
+# ===============================
+# TEST 2: FORM VALIDATION
+# ===============================
+
+# 11. RESET FORM FOR VALIDATION TEST
+- scrollUntilVisible:
+    element:
+      text: 'Nueva Calculación|New Calculation'
+    direction: DOWN
+    timeout: 5000
+- tapOn:
+    text: 'Nueva Calculación|New Calculation'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 12. TRY TO CALCULATE WITHOUT INPUT (should show validation error)
+- swipe:
+    start: '50%,80%'
+    end: '50%,40%'
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 500
+- tapOn:
+    id: 'calculate-bolus-btn'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 13. VERIFY NO RESULT SHOWN (validation prevented calculation)
+- assertNotVisible:
+    text: 'Dosis Recomendada|Recommended Dose'
+    timeout: 2000
+
+# ===============================
+# TEST 3: COMPLETE NORMAL CALCULATION
+# ===============================
+
+# 14. ENTER VALID NORMAL VALUES
+- tapOn:
+    id: 'current-glucose-input'
+- waitForAnimationToEnd:
+    timeout: 500
+- inputText: ${NORMAL_GLUCOSE}
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 15. ENTER NORMAL CARBS
+- tapOn:
+    id: 'carb-grams-input'
+- waitForAnimationToEnd:
+    timeout: 500
+- inputText: ${NORMAL_CARBS}
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 16. CALCULATE FINAL DOSE
+- swipe:
+    start: '50%,80%'
+    end: '50%,40%'
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 500
+- tapOn:
+    id: 'calculate-bolus-btn'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 17. VERIFY SUCCESSFUL CALCULATION
+- extendedWaitUntil:
+    visible:
+      text: 'Dosis Recomendada|Recommended Dose'
+    timeout: 8000
+
+# 18. VERIFY NORMAL RANGE (no warnings)
+- assertVisible:
+    text: 'unidades|units'
+
+# 19. FINAL VERIFICATION - VALUES DISPLAYED
+- assertVisible:
+    text: '110'
+- assertVisible:
+    text: '60'

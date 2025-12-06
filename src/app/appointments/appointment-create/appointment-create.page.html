@@ -46,6 +46,7 @@
       >
         <div class="w-full py-2">
           <ion-select
+            id="insulin-type-selector"
             label-placement="stacked"
             [(ngModel)]="formData.insulin_type"
             name="insulin_type"
@@ -275,6 +276,7 @@
       <!-- Buttons -->
       <div class="ion-padding-top">
         <ion-button
+          id="appointment-submit-btn"
           expand="block"
           (click)="submitAppointment()"
           [disabled]="isLoading"
@@ -286,6 +288,7 @@
         </ion-button>
 
         <ion-button
+          id="appointment-cancel-btn"
           expand="block"
           (click)="cancel()"
           [disabled]="isLoading"

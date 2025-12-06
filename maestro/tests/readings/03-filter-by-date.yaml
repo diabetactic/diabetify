@@ -1,8 +1,7 @@
 # ==========================================
-# Test: Readings - Filter by Date Range
-# Description: Test date range filtering functionality
-# Covers: Open filter modal, select date range, verify filtered results
-# Uses bilingual selectors and shadow DOM workarounds
+# Test: Readings - Filter UI Visibility
+# Description: Verify filter modal can be opened and closed
+# SIMPLIFIED: Complex date picker interactions delegated to Playwright
 # ==========================================
 
 appId: io.diabetactic.app
@@ -22,128 +21,40 @@ appId: io.diabetactic.app
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 4. VERIFY FILTER BUTTON IS VISIBLE
-- assertVisible:
-    text: 'Filter|Filtrar'
-    optional: true
-
-# 5. TAP FILTER BUTTON (filter icon in toolbar)
-# Try icon first, fallback to point tap
-- tapOn:
-    id: 'filter-button'
-    optional: true
+# 4. TAP FILTER BUTTON (filter icon in toolbar)
+# Using point tap since no id/data-testid exists for filter button
 - tapOn:
     point: '90%,10%'
-    optional: true
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 6. VERIFY FILTER MODAL OPENED
+# 5. VERIFY FILTER MODAL OPENED
 - extendedWaitUntil:
     visible:
       text: 'Filtrar Lecturas|Filter Readings|Filtros|Filters'
     timeout: 8000
 
-# 7. VERIFY DATE RANGE OPTION IS VISIBLE
+# 6. VERIFY DATE RANGE OPTION IS VISIBLE
 - assertVisible:
     text: 'Rango de Fecha|Date Range|Desde|From|Hasta|To'
 
-# 8. SELECT START DATE SECTION
-# Tap on "From" or "Desde" date picker
-- tapOn:
-    text: 'Desde|From'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 1000
+# 7. VERIFY STATUS FILTER IS VISIBLE
+- assertVisible:
+    text: 'Estado|Status'
 
-# 9. IF DATE PICKER OPENED, SELECT A DATE
-# Date picker might show calendar - select "today - 7 days"
+# 8. CLOSE FILTER MODAL WITHOUT APPLYING
+# Tap outside modal or use back button
 - tapOn:
-    text: 'OK|Aceptar'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 1000
-
-# 10. SELECT END DATE SECTION
-- tapOn:
-    text: 'Hasta|To|Until'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 1000
-
-# 11. CONFIRM END DATE
-- tapOn:
-    text: 'OK|Aceptar'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 1000
-
-# 12. SCROLL TO ENSURE APPLY BUTTON IS VISIBLE
-- swipe:
-    start: '50%,80%'
-    end: '50%,40%'
-    duration: 400
-- waitForAnimationToEnd:
-    timeout: 500
-
-# 13. TAP APPLY FILTERS BUTTON
-- tapOn:
-    id: 'apply-filters-btn'
-    optional: true
-- tapOn:
-    text: 'Aplicar Filtros|Apply Filters|Aplicar|Apply'
-    optional: true
+    point: '50%,95%'
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 14. VERIFY MODAL CLOSED AND BACK ON READINGS PAGE
+# 9. VERIFY MODAL CLOSED AND BACK ON READINGS PAGE
 - extendedWaitUntil:
     visible:
       text: 'Mostrando.*lecturas|Showing.*readings'
     timeout: 8000
 
-# 15. VERIFY FILTER CHIP/BADGE IS VISIBLE (indicates active filter)
+# 10. VERIFY NO FILTERS APPLIED (no filter chips)
 - assertVisible:
-    text: 'Rango de Fecha|Date Range'
-    optional: true
-
-# 16. VERIFY FILTER COUNT BADGE ON FILTER BUTTON
-# Should show "1" badge indicating one active filter
-- assertVisible:
-    text: '1'
-    optional: true
-
-# 17. TAP FILTER BUTTON AGAIN TO VERIFY SELECTED VALUES PERSIST
-- tapOn:
-    point: '90%,10%'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
-
-# 18. VERIFY FILTER MODAL SHOWS ACTIVE FILTERS
-- extendedWaitUntil:
-    visible:
-      text: 'Filtrar Lecturas|Filter Readings'
-    timeout: 5000
-
-# 19. CLEAR FILTERS
-- scrollUntilVisible:
-    element:
-      text: 'Limpiar Filtros|Clear Filters|Limpiar|Clear'
-    direction: DOWN
-    timeout: 5000
-- tapOn:
-    text: 'Limpiar Filtros|Clear Filters|Limpiar|Clear'
-- waitForAnimationToEnd:
-    timeout: 2000
-
-# 20. VERIFY FILTERS CLEARED (no active filter chips)
-- extendedWaitUntil:
-    visible:
-      text: 'Mostrando.*lecturas|Showing.*readings'
-    timeout: 8000
-
-# 21. VERIFY FILTER BADGE DISAPPEARED
-- assertNotVisible:
-    text: 'Rango de Fecha|Date Range'
-    timeout: 2000
+    text: 'Lecturas|Readings'

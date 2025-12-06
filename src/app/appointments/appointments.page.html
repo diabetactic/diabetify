@@ -2,7 +2,11 @@
   <ion-toolbar color="primary">
     <ion-title>{{ 'appointments.title' | translate }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="createAppointment()" [disabled]="!canCreateAppointment">
+      <ion-button
+        id="create-appointment-btn"
+        (click)="createAppointment()"
+        [disabled]="!canCreateAppointment"
+      >
         <app-icon slot="icon-only" name="add"></app-icon>
       </ion-button>
     </ion-buttons>
@@ -152,6 +156,7 @@
           {{ 'appointments.queue.states.NONE' | translate }}
         </p>
         <ion-button
+          id="request-appointment-btn"
           expand="block"
           (click)="onRequestAppointment()"
           [disabled]="requestingAppointment"

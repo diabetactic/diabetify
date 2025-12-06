@@ -46,11 +46,7 @@ env:
 
 # 7. IF DETAIL VIEW, TAP EDIT BUTTON
 - tapOn:
-    id: 'edit-reading-btn'
-    optional: true
-- tapOn:
     text: 'Editar|Edit'
-    optional: true
 - waitForAnimationToEnd:
     timeout: 1500
 
@@ -64,19 +60,7 @@ env:
 # Tap on glucose input field
 - tapOn:
     id: 'glucose-value-input'
-    optional: true
-- tapOn:
-    point: '50%,35%'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 500
-
-# 10. CLEAR EXISTING TEXT
 - eraseText
-- waitForAnimationToEnd:
-    timeout: 500
-
-# 11. INPUT NEW GLUCOSE VALUE
 - inputText: ${NEW_GLUCOSE_VALUE}
 - hideKeyboard
 - waitForAnimationToEnd:
@@ -92,11 +76,7 @@ env:
 
 # 13. TAP SAVE/UPDATE BUTTON
 - tapOn:
-    id: 'save-reading-btn'
-    optional: true
-- tapOn:
     text: 'Guardar|Save|Actualizar|Update'
-    optional: true
 - waitForAnimationToEnd:
     timeout: 2000
 
@@ -106,12 +86,8 @@ env:
       text: 'Mostrando.*lecturas|Showing.*readings'
     timeout: 8000
 
-# 15. VERIFY UPDATED VALUE APPEARS IN LIST
-- assertVisible:
-    text: '135'
-    optional: true
-
-# 16. VERIFY SUCCESS MESSAGE (if shown)
-- assertVisible:
-    text: 'actualizada|updated|guardada|saved|éxito|success'
-    optional: true
+# 15. VERIFY UPDATED VALUE APPEARS IN LIST (may need sync)
+- extendedWaitUntil:
+    visible:
+      text: '135'
+    timeout: 5000
