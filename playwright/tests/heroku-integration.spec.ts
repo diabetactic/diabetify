@@ -177,16 +177,23 @@ test.describe('Heroku Integration Tests', () => {
       'Requires E2E_TEST_USERNAME and E2E_TEST_PASSWORD environment variables'
     );
 
+    // Increase timeout for Heroku tests
+    test.setTimeout(60000);
+
     test.beforeEach(async ({ page }) => {
       // Skip server startup for Heroku tests since we're testing against live API
       // Navigate to the app
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(500); // Brief hydration buffer
 
       // Handle welcome screen if present
       if (page.url().includes('/welcome')) {
         const loginBtn = page.locator('[data-testid="welcome-login-btn"]');
         if ((await loginBtn.count()) > 0) {
+          await page.waitForSelector('[data-testid="welcome-login-btn"]', { timeout: 10000 });
           await loginBtn.click();
+          await page.waitForLoadState('networkidle');
         }
       }
     });
@@ -201,16 +208,30 @@ test.describe('Heroku Integration Tests', () => {
         const username = process.env.E2E_TEST_USERNAME;
         const password = process.env.E2E_TEST_PASSWORD;
 
+        await page.waitForSelector('#username', { timeout: 10000 });
         await page.fill('#username', username!);
         await page.fill('#password', password!);
+
+        // Wait for login response
+        const loginResponsePromise = page.waitForResponse(
+          response => response.url().includes('/token') || response.url().includes('/login'),
+          { timeout: 15000 }
+        );
+
+        await page.waitForSelector('[data-testid="login-submit-btn"]', { timeout: 10000 });
         await page.click('[data-testid="login-submit-btn"]');
 
-        // Wait for dashboard
-        await expect(page).toHaveURL(/\/tabs\/dashboard/, { timeout: 15000 });
+        // Wait for login to complete
+        await loginResponsePromise;
+
+        // Wait for navigation and hydration
+        await expect(page).toHaveURL(/\/tabs\/dashboard/, { timeout: 20000 });
+        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(500); // Brief hydration buffer
       }
 
-      // Verify dashboard is visible
-      await expect(page.locator('[data-testid="tab-dashboard"]')).toBeVisible();
+      // Verify dashboard is visible with extended timeout
+      await expect(page.locator('[data-testid="tab-dashboard"]')).toBeVisible({ timeout: 15000 });
 
       // Check for stats or data cards
       const statCards = page.locator('.stat-card, app-stat-card, ion-card');
@@ -226,23 +247,36 @@ test.describe('Heroku Integration Tests', () => {
         const username = process.env.E2E_TEST_USERNAME;
         const password = process.env.E2E_TEST_PASSWORD;
 
+        await page.waitForSelector('#username', { timeout: 10000 });
         await page.fill('#username', username!);
         await page.fill('#password', password!);
-        await page.click('[data-testid="login-submit-btn"]');
 
-        await expect(page).toHaveURL(/\/tabs\//, { timeout: 15000 });
+        const loginResponsePromise = page.waitForResponse(
+          response => response.url().includes('/token') || response.url().includes('/login'),
+          { timeout: 15000 }
+        );
+
+        await page.waitForSelector('[data-testid="login-submit-btn"]', { timeout: 10000 });
+        await page.click('[data-testid="login-submit-btn"]');
+        await loginResponsePromise;
+
+        await expect(page).toHaveURL(/\/tabs\//, { timeout: 20000 });
+        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(500);
       }
 
       // Navigate to readings
+      await page.waitForSelector('[data-testid="tab-readings"]', { timeout: 10000 });
       await page.click('[data-testid="tab-readings"]');
-      await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
+      await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 15000 });
 
       // Wait for data to load
-      await page.waitForLoadState('networkidle', { timeout: 15000 });
+      await page.waitForLoadState('networkidle', { timeout: 20000 });
+      await page.waitForTimeout(500); // Hydration buffer
 
       // Check for readings content (might be empty, that's ok)
       const readingsContent = page.locator('ion-content, .readings-container');
-      await expect(readingsContent).toBeVisible();
+      await expect(readingsContent).toBeVisible({ timeout: 15000 });
     });
 
     test('Appointments page loads with real Heroku data', async ({ page }) => {
@@ -253,25 +287,38 @@ test.describe('Heroku Integration Tests', () => {
         const username = process.env.E2E_TEST_USERNAME;
         const password = process.env.E2E_TEST_PASSWORD;
 
+        await page.waitForSelector('#username', { timeout: 10000 });
         await page.fill('#username', username!);
         await page.fill('#password', password!);
-        await page.click('[data-testid="login-submit-btn"]');
 
-        await expect(page).toHaveURL(/\/tabs\//, { timeout: 15000 });
+        const loginResponsePromise = page.waitForResponse(
+          response => response.url().includes('/token') || response.url().includes('/login'),
+          { timeout: 15000 }
+        );
+
+        await page.waitForSelector('[data-testid="login-submit-btn"]', { timeout: 10000 });
+        await page.click('[data-testid="login-submit-btn"]');
+        await loginResponsePromise;
+
+        await expect(page).toHaveURL(/\/tabs\//, { timeout: 20000 });
+        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(500);
       }
 
       // Navigate to appointments
       const appointmentsTab = page.locator('[data-testid="tab-appointments"]');
       if ((await appointmentsTab.count()) > 0) {
+        await page.waitForSelector('[data-testid="tab-appointments"]', { timeout: 10000 });
         await appointmentsTab.click();
-        await expect(page).toHaveURL(/\/tabs\/appointments/, { timeout: 10000 });
+        await expect(page).toHaveURL(/\/tabs\/appointments/, { timeout: 15000 });
 
         // Wait for data to load
-        await page.waitForLoadState('networkidle', { timeout: 15000 });
+        await page.waitForLoadState('networkidle', { timeout: 20000 });
+        await page.waitForTimeout(500); // Hydration buffer
 
         // Check for appointments content
         const appointmentsContent = page.locator('ion-content, .appointments-container');
-        await expect(appointmentsContent).toBeVisible();
+        await expect(appointmentsContent).toBeVisible({ timeout: 15000 });
       }
     });
 
@@ -283,25 +330,38 @@ test.describe('Heroku Integration Tests', () => {
         const username = process.env.E2E_TEST_USERNAME;
         const password = process.env.E2E_TEST_PASSWORD;
 
+        await page.waitForSelector('#username', { timeout: 10000 });
         await page.fill('#username', username!);
         await page.fill('#password', password!);
-        await page.click('[data-testid="login-submit-btn"]');
 
-        await expect(page).toHaveURL(/\/tabs\//, { timeout: 15000 });
+        const loginResponsePromise = page.waitForResponse(
+          response => response.url().includes('/token') || response.url().includes('/login'),
+          { timeout: 15000 }
+        );
+
+        await page.waitForSelector('[data-testid="login-submit-btn"]', { timeout: 10000 });
+        await page.click('[data-testid="login-submit-btn"]');
+        await loginResponsePromise;
+
+        await expect(page).toHaveURL(/\/tabs\//, { timeout: 20000 });
+        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(500);
       }
 
       // Navigate to profile
       const profileTab = page.locator('[data-testid="tab-profile"]');
       if ((await profileTab.count()) > 0) {
+        await page.waitForSelector('[data-testid="tab-profile"]', { timeout: 10000 });
         await profileTab.click();
-        await expect(page).toHaveURL(/\/tabs\/profile/, { timeout: 10000 });
+        await expect(page).toHaveURL(/\/tabs\/profile/, { timeout: 15000 });
 
         // Wait for profile data to load
-        await page.waitForLoadState('networkidle', { timeout: 15000 });
+        await page.waitForLoadState('networkidle', { timeout: 20000 });
+        await page.waitForTimeout(500); // Hydration buffer
 
         // Check for profile content
         const profileContent = page.locator('ion-content, .profile-container');
-        await expect(profileContent).toBeVisible();
+        await expect(profileContent).toBeVisible({ timeout: 15000 });
       }
     });
   });
