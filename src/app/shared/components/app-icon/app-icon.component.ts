@@ -305,6 +305,8 @@ export class AppIconComponent {
     psychology: 'brain',
     fitness_center: 'dumbbell',
     sports: 'trophy',
+    'restaurant-outline': 'utensils-crossed',
+    restaurant: 'utensils-crossed',
   };
 
   get mappedName(): string {

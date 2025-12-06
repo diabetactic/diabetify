@@ -1,0 +1,143 @@
+# =============================================================================
+# Diabetactic Development and Testing Dockerfile
+# =============================================================================
+# Based on Microsoft Playwright image with Chromium browsers pre-installed
+# Supports: Unit tests (Jest), E2E tests (Playwright), Dev server, Production builds
+#
+# Build: docker build -f docker/Dockerfile.dev -t diabetactic:dev .
+# Run tests: docker run --rm diabetactic:dev npm test
+# Run E2E: docker run --rm -p 4200:4200 diabetactic:dev npm run test:e2e
+# Dev server: docker run --rm -p 4200:4200 -v $(pwd):/app diabetactic:dev npm start
+# =============================================================================
+
+FROM mcr.microsoft.com/playwright:v1.48.0-jammy
+
+# =============================================================================
+# Stage 1: Base Setup
+# =============================================================================
+
+# Set environment variables
+ENV NODE_VERSION=20 \
+    NPM_CONFIG_LOGLEVEL=warn \
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+    PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium \
+    DEBIAN_FRONTEND=noninteractive \
+    CI=true
+
+# Install Node.js 20 (if not present) and essential tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    git \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Verify Node.js version (Playwright image should include Node 20)
+RUN node --version && npm --version
+
+# Set working directory
+WORKDIR /app
+
+# =============================================================================
+# Stage 2: Dependencies (Optimized for layer caching)
+# =============================================================================
+
+# Copy package files first (for better layer caching)
+COPY package.json package-lock.json ./
+
+# Install dependencies with production optimizations
+# - Clean install (ci) for reproducible builds
+# - Disable progress bars to reduce logs in CI
+# - Use cache mount to speed up rebuilds
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --prefer-offline --no-audit --no-fund --loglevel=error
+
+# =============================================================================
+# Stage 3: Application Code
+# =============================================================================
+
+# Copy source code and configuration files
+# Note: .dockerignore will exclude node_modules, build artifacts, etc.
+COPY . .
+
+# =============================================================================
+# Stage 4: Expose Ports
+# =============================================================================
+
+# 4200: Angular dev server
+# 9323: Playwright inspector
+EXPOSE 4200 9323
+
+# =============================================================================
+# Stage 5: Entrypoint Script
+# =============================================================================
+
+# Create entrypoint script with multiple modes
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+# Default command if no arguments provided\n\
+if [ $# -eq 0 ]; then\n\
+  echo "Diabetactic Docker Container - Available commands:"\n\
+  echo "  npm test                 - Run unit tests (Jest)"\n\
+  echo "  npm run test:watch       - Run tests in watch mode"\n\
+  echo "  npm run test:coverage    - Run tests with coverage"\n\
+  echo "  npm run test:e2e         - Run E2E tests (Playwright)"\n\
+  echo "  npm run test:e2e:headed  - Run E2E tests with browser visible"\n\
+  echo "  npm start                - Start dev server (port 4200)"\n\
+  echo "  npm run build:prod       - Production build"\n\
+  echo "  npm run lint             - Run ESLint"\n\
+  echo "  npm run format:check     - Check code formatting"\n\
+  echo "  npm run quality          - Run lint + tests"\n\
+  echo ""\n\
+  echo "Example: docker run --rm diabetactic:dev npm test"\n\
+  exit 0\n\
+fi\n\
+\n\
+# Execute the provided command\n\
+exec "$@"\n\
+' > /entrypoint.sh && chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Default command: show help
+CMD []
+
+# =============================================================================
+# Build and Run Examples
+# =============================================================================
+#
+# Build image:
+#   docker build -f docker/Dockerfile.dev -t diabetactic:dev .
+#
+# Run unit tests:
+#   docker run --rm diabetactic:dev npm test
+#
+# Run unit tests with coverage:
+#   docker run --rm -v $(pwd)/coverage:/app/coverage diabetactic:dev npm run test:coverage
+#
+# Run E2E tests (headless):
+#   docker run --rm diabetactic:dev npm run test:e2e
+#
+# Run dev server (accessible at http://localhost:4200):
+#   docker run --rm -p 4200:4200 diabetactic:dev npm start
+#
+# Run dev server with live reload (mount source code):
+#   docker run --rm -p 4200:4200 -v $(pwd)/src:/app/src diabetactic:dev npm start
+#
+# Production build (output to www/):
+#   docker run --rm -v $(pwd)/www:/app/www diabetactic:dev npm run build:prod
+#
+# Lint and test:
+#   docker run --rm diabetactic:dev npm run quality
+#
+# Interactive shell:
+#   docker run --rm -it diabetactic:dev bash
+#
+# CI mode (for CircleCI/GitHub Actions):
+#   docker run --rm \
+#     -e CI=true \
+#     -v $(pwd)/coverage:/app/coverage \
+#     -v $(pwd)/playwright-report:/app/playwright-report \
+#     diabetactic:dev npm run test:ci
+#
+# =============================================================================
