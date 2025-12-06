@@ -269,10 +269,24 @@
     color: var(--dt-color-text-muted);
   }
 
+  .login-input:focus {
+    border-color: var(--ion-color-primary);
+    box-shadow: var(--dt-shadow-focus, 0 0 0 3px oklch(var(--p) / 15%));
+  }
+
   .remember-row,
   .link-row,
   .footer-legal {
     color: var(--dt-color-text-secondary);
+  }
+
+  // Ensure native input contrast in dark mode
+  input[type='text'],
+  input[type='email'],
+  input[type='password'] {
+    background-color: var(--dt-color-surface-soft);
+    color: var(--dt-color-text-primary);
+    -webkit-text-fill-color: var(--dt-color-text-primary);
   }
 }
 

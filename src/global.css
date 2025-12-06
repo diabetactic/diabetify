@@ -104,6 +104,14 @@
   /* Illustration shadows */
   --shadow-illustration-light: 0 8px 32px rgb(59 130 246 / 15%), 0 4px 12px rgb(0 0 0 / 8%);
   --shadow-illustration-dark: 0 8px 32px rgb(0 0 0 / 40%), 0 0 20px rgb(148 163 184 / 10%);
+
+  /* Border radius tokens (smooth, not sharp) */
+  --radius-xs: 0.25rem; /* 4px - tiny elements */
+  --radius-sm: 0.5rem; /* 8px - badges, chips */
+  --radius-md: 0.75rem; /* 12px - inputs, buttons */
+  --radius-lg: 1rem; /* 16px - cards */
+  --radius-xl: 1.5rem; /* 24px - large cards, modals */
+  --radius-full: 9999px; /* pill shape */
 }
 
 .dark,
@@ -430,9 +438,18 @@
   :root[data-theme='dark'] ion-select,
   .dark ion-select,
   .ion-palette-dark ion-select {
-    --background: var(--color-base-100, #1a1a2e);
+    --background: var(--diabetactic-surface-dark, #1e293b);
     --color: var(--color-base-content, #e5e7eb);
     --placeholder-color: rgb(229 231 235 / 60%);
+  }
+
+  /* Ion select interface (popover/alert) - Dark Mode */
+  :root[data-theme='dark'] .select-interface-option,
+  .dark .select-interface-option,
+  .ion-palette-dark .select-interface-option {
+    --background: var(--diabetactic-surface-dark, #1e293b);
+    --background-hover: rgb(96 165 250 / 15%);
+    --color: #e5e7eb;
   }
 
   :root[data-theme='dark'] ion-action-sheet,
@@ -1244,6 +1261,49 @@ html {
   --background: var(--diabetactic-surface-dark, #1e293b);
 }
 
+/* Native input/textarea elements inside Ionic components - Dark Mode */
+.ion-palette-dark ion-input input,
+.ion-palette-dark ion-input .native-input,
+.ion-palette-dark ion-textarea textarea,
+.ion-palette-dark ion-textarea .native-textarea,
+.dark ion-input input,
+.dark ion-input .native-input,
+.dark ion-textarea textarea,
+.dark ion-textarea .native-textarea,
+:root[data-theme='dark'] ion-input input,
+:root[data-theme='dark'] ion-input .native-input,
+:root[data-theme='dark'] ion-textarea textarea,
+:root[data-theme='dark'] ion-textarea .native-textarea {
+  background-color: var(--diabetactic-surface-dark, #1e293b) !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+/* Native HTML input/select/textarea elements - Dark Mode */
+.ion-palette-dark input:not([type='range']):not([type='checkbox']):not([type='radio']),
+.ion-palette-dark select,
+.ion-palette-dark textarea,
+.dark input:not([type='range']):not([type='checkbox']):not([type='radio']),
+.dark select,
+.dark textarea,
+:root[data-theme='dark'] input:not([type='range']):not([type='checkbox']):not([type='radio']),
+:root[data-theme='dark'] select,
+:root[data-theme='dark'] textarea {
+  background-color: #1e293b !important;
+  color: #e5e7eb !important;
+  border-color: #475569 !important;
+}
+
+.ion-palette-dark input::placeholder,
+.ion-palette-dark textarea::placeholder,
+.dark input::placeholder,
+.dark textarea::placeholder,
+:root[data-theme='dark'] input::placeholder,
+:root[data-theme='dark'] textarea::placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
 /* Ion Segment - Dark Mode */
 .ion-palette-dark ion-segment,
 .dark ion-segment,
@@ -1257,6 +1317,84 @@ html {
   --color: rgb(255 255 255 / 70%);
   --color-checked: #fff;
   --indicator-color: var(--ion-color-primary);
+}
+
+/* Ion Modal - Dark Mode */
+.ion-palette-dark ion-modal,
+.dark ion-modal,
+:root[data-theme='dark'] ion-modal {
+  --background: var(--ion-background-color);
+}
+
+.ion-palette-dark .modal-wrapper,
+.dark .modal-wrapper,
+:root[data-theme='dark'] .modal-wrapper {
+  --background: var(--ion-background-color);
+}
+
+/* Ion Alert - Dark Mode */
+.ion-palette-dark ion-alert,
+.dark ion-alert,
+:root[data-theme='dark'] ion-alert {
+  --background: var(--ion-card-background);
+  --backdrop-opacity: 0.6;
+}
+
+.ion-palette-dark .alert-wrapper,
+.dark .alert-wrapper,
+:root[data-theme='dark'] .alert-wrapper {
+  --background: var(--ion-card-background);
+}
+
+.ion-palette-dark .alert-input,
+.dark .alert-input,
+:root[data-theme='dark'] .alert-input {
+  background-color: var(--diabetactic-surface-dark, #1e293b) !important;
+  color: #e5e7eb !important;
+  border: 1px solid var(--dt-color-border-input) !important;
+}
+
+.ion-palette-dark .alert-radio-label,
+.ion-palette-dark .alert-checkbox-label,
+.dark .alert-radio-label,
+.dark .alert-checkbox-label,
+:root[data-theme='dark'] .alert-radio-label,
+:root[data-theme='dark'] .alert-checkbox-label {
+  color: var(--dt-color-text-primary);
+}
+
+/* Ion Popover - Dark Mode */
+.ion-palette-dark ion-popover,
+.dark ion-popover,
+:root[data-theme='dark'] ion-popover {
+  --background: var(--ion-card-background);
+  --box-shadow: var(--shadow-08);
+}
+
+.ion-palette-dark .popover-content,
+.dark .popover-content,
+:root[data-theme='dark'] .popover-content {
+  --background: var(--ion-card-background);
+}
+
+/* Ion Searchbar - Dark Mode */
+.ion-palette-dark ion-searchbar,
+.dark ion-searchbar,
+:root[data-theme='dark'] ion-searchbar {
+  --background: var(--diabetactic-surface-dark, #1e293b);
+  --color: #e5e7eb;
+  --placeholder-color: #9ca3af;
+  --icon-color: #9ca3af;
+  --clear-button-color: #9ca3af;
+  --cancel-button-color: var(--ion-color-primary);
+}
+
+.ion-palette-dark ion-searchbar .searchbar-input,
+.dark ion-searchbar .searchbar-input,
+:root[data-theme='dark'] ion-searchbar .searchbar-input {
+  background: var(--diabetactic-surface-dark, #1e293b) !important;
+  color: #e5e7eb !important;
+  border: 1px solid var(--dt-color-border-input);
 }
 
 /* ============================================

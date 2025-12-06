@@ -24,6 +24,11 @@
   padding: 1.5rem;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-06);
+
+  // Ensure ion-buttons have smooth rounded corners
+  ion-button {
+    --border-radius: var(--radius-md);
+  }
 }
 
 .form-field {
@@ -50,10 +55,12 @@
   --padding-end: 1rem;
   --padding-top: 0.75rem;
   --padding-bottom: 0.75rem;
+  --border-radius: var(--radius-md);
 
   border: 1px solid var(--ion-color-step-300, #c8c7cc);
   border-radius: var(--radius-md);
   font-size: 1rem;
+  overflow: hidden; // Ensure inner content respects border-radius
 
   &.input-error {
     border-color: var(--ion-color-danger);
@@ -71,6 +78,11 @@
   padding: 1.5rem;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-07);
+
+  // Ensure ion-buttons have smooth rounded corners
+  ion-button {
+    --border-radius: var(--radius-md);
+  }
 }
 
 .result-title {
@@ -288,19 +300,35 @@
 }
 
 // Dark mode adjustments
-:host-context(.dark) {
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
   .info-banner {
     background-color: oklch(var(--p) / 15%);
   }
 
-  .form-input {
-    --background: var(--ion-color-step-100);
+  .card {
+    background: var(--ion-card-background);
+    border: 1px solid var(--dt-color-border-subtle);
+  }
 
-    border-color: var(--ion-color-step-500);
+  .form-input {
+    --background: var(--diabetactic-surface-dark, #1e293b);
+    --color: var(--dt-color-text-primary);
+
+    border-color: var(--dt-color-border-input);
+
+    // Force native input styling
+    input,
+    .native-input {
+      background-color: var(--diabetactic-surface-dark, var(--dt-color-surface-soft));
+      color: var(--dt-color-text-primary);
+      -webkit-text-fill-color: var(--dt-color-text-primary);
+    }
   }
 
   .food-picker-btn {
     background: var(--dt-color-surface-soft);
+    border-color: var(--ion-color-primary);
   }
 
   .selected-foods-list {
@@ -309,13 +337,23 @@
 
   .selected-food-chip {
     background: var(--dt-color-surface);
+    color: var(--dt-color-text-primary);
   }
 
   .clear-foods-btn {
     background: rgb(255 255 255 / 10%);
+    color: var(--dt-color-text-secondary);
 
     &:hover {
       background: rgb(255 255 255 / 20%);
     }
+  }
+
+  // Ensure all native inputs have proper contrast
+  input[type='number'],
+  input[type='text'] {
+    background-color: var(--diabetactic-surface-dark, var(--dt-color-surface-soft));
+    color: var(--dt-color-text-primary);
+    -webkit-text-fill-color: var(--dt-color-text-primary);
   }
 }
