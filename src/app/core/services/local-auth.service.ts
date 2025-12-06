@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError, from, of } from 'rxjs';
+import { Observable, BehaviorSubject, throwError, from, of, firstValueFrom } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Preferences } from '@capacitor/preferences';
 import { PlatformDetectorService } from './platform-detector.service';
@@ -194,49 +194,51 @@ export class LocalAuthService {
     try {
       // Always try to restore from storage (works on both native and web)
       // Capacitor Preferences uses localStorage on web platforms
-      try {
-        const [accessToken, refreshToken, userStr, expiresAtStr] = await Promise.all([
-          Preferences.get({ key: STORAGE_KEYS.ACCESS_TOKEN }),
-          Preferences.get({ key: STORAGE_KEYS.REFRESH_TOKEN }),
-          Preferences.get({ key: STORAGE_KEYS.USER }),
-          Preferences.get({ key: STORAGE_KEYS.EXPIRES_AT }),
-        ]);
+      const [accessToken, refreshToken, userStr, expiresAtStr] = await Promise.all([
+        Preferences.get({ key: STORAGE_KEYS.ACCESS_TOKEN }),
+        Preferences.get({ key: STORAGE_KEYS.REFRESH_TOKEN }),
+        Preferences.get({ key: STORAGE_KEYS.USER }),
+        Preferences.get({ key: STORAGE_KEYS.EXPIRES_AT }),
+      ]);
 
-        const hasAccessToken = !!accessToken.value;
-        const hasRefreshToken = !!refreshToken.value;
-        const hasUser = !!userStr.value;
+      const hasAccessToken = !!accessToken.value;
+      const hasRefreshToken = !!refreshToken.value;
+      const hasUser = !!userStr.value;
 
-        if (hasAccessToken && hasUser && userStr.value) {
-          const user = JSON.parse(userStr.value) as LocalUser;
-          const expiresAt = expiresAtStr.value ? parseInt(expiresAtStr.value, 10) : null;
+      if (hasAccessToken && hasUser && userStr.value) {
+        const user = JSON.parse(userStr.value) as LocalUser;
+        const expiresAt = expiresAtStr.value ? parseInt(expiresAtStr.value, 10) : null;
 
-          // Check if token is expired
-          if (!expiresAt || Date.now() < expiresAt) {
-            this.logger.info('Auth', 'Auth state restored from storage', { userId: user.id });
-            this.authStateSubject.next({
-              isAuthenticated: true,
-              user,
-              accessToken: accessToken.value,
-              refreshToken: hasRefreshToken ? refreshToken.value : null,
-              expiresAt,
-            });
-          } else if (hasRefreshToken) {
-            this.logger.info('Auth', 'Token expired, attempting refresh');
-            // Try to refresh the token
-            this.refreshAccessToken().subscribe({
-              error: err => this.logger.error('Auth', 'Token refresh failed', err),
-            });
-          }
-        } else if (hasRefreshToken) {
-          this.logger.info('Auth', 'No access token, attempting refresh');
-          // Try to refresh the token
-          this.refreshAccessToken().subscribe({
-            error: err => this.logger.error('Auth', 'Token refresh failed', err),
+        // Check if token is expired
+        if (!expiresAt || Date.now() < expiresAt) {
+          this.logger.info('Auth', 'Auth state restored from storage', { userId: user.id });
+          this.authStateSubject.next({
+            isAuthenticated: true,
+            user,
+            accessToken: accessToken.value,
+            refreshToken: hasRefreshToken ? refreshToken.value : null,
+            expiresAt,
           });
+        } else if (hasRefreshToken) {
+          this.logger.info('Auth', 'Token expired, attempting refresh');
+          // Try to refresh the token - await to ensure init completes after refresh
+          try {
+            await firstValueFrom(this.refreshAccessToken());
+          } catch (err) {
+            this.logger.error('Auth', 'Token refresh failed', err);
+          }
         }
-      } catch (error) {
-        this.logger.error('Auth', 'Failed to initialize auth state', error);
+      } else if (hasRefreshToken) {
+        this.logger.info('Auth', 'No access token, attempting refresh');
+        // Try to refresh the token - await to ensure init completes after refresh
+        try {
+          await firstValueFrom(this.refreshAccessToken());
+        } catch (err) {
+          this.logger.error('Auth', 'Token refresh failed', err);
+        }
       }
+    } catch (error) {
+      this.logger.error('Auth', 'Failed to initialize auth state', error);
     } finally {
       // Resolve initialization promise when complete (success or error)
       this.initializationResolve();
@@ -568,6 +570,14 @@ export class LocalAuthService {
           );
       })
     );
+  }
+
+  /**
+   * Wait for auth initialization to complete
+   * Useful for guards and components that need to wait for auth state restoration
+   */
+  async waitForInitialization(): Promise<void> {
+    await this.initializationPromise;
   }
 
   /**

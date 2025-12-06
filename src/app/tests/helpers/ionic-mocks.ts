@@ -10,24 +10,18 @@
  * Used to detect platform capabilities
  */
 export function createMockPlatform() {
-  const mock = jasmine.createSpyObj(
-    'Platform',
-    ['is', 'ready', 'resume', 'pause', 'width', 'height', 'isPortrait', 'isLandscape'],
-    {
-      platforms: () => ['web'],
-      isRTL: false,
-    }
-  );
-
-  // Set default return values
-  mock.is.and.returnValue(false);
-  mock.ready.and.returnValue(Promise.resolve());
-  mock.resume.and.returnValue({ subscribe: jasmine.createSpy() });
-  mock.pause.and.returnValue({ subscribe: jasmine.createSpy() });
-  mock.width.and.returnValue(360);
-  mock.height.and.returnValue(640);
-  mock.isPortrait.and.returnValue(true);
-  mock.isLandscape.and.returnValue(false);
+  const mock = {
+    is: jest.fn().mockReturnValue(false),
+    ready: jest.fn().mockResolvedValue(undefined),
+    resume: jest.fn().mockReturnValue({ subscribe: jest.fn() }),
+    pause: jest.fn().mockReturnValue({ subscribe: jest.fn() }),
+    width: jest.fn().mockReturnValue(360),
+    height: jest.fn().mockReturnValue(640),
+    isPortrait: jest.fn().mockReturnValue(true),
+    isLandscape: jest.fn().mockReturnValue(false),
+    platforms: () => ['web'],
+    isRTL: false,
+  };
 
   return mock;
 }
@@ -37,24 +31,17 @@ export function createMockPlatform() {
  * Used for navigation between pages
  */
 export function createMockNavController() {
-  const mock = jasmine.createSpyObj('NavController', [
-    'navigateForward',
-    'navigateBack',
-    'navigateRoot',
-    'pop',
-    'push',
-    'setDirection',
-    'canGoBack',
-  ]);
+  const mock = {
+    navigateForward: jest.fn().mockResolvedValue(true),
+    navigateBack: jest.fn().mockResolvedValue(true),
+    navigateRoot: jest.fn().mockResolvedValue(true),
+    pop: jest.fn().mockResolvedValue(true),
+    push: jest.fn().mockResolvedValue(true),
+    setDirection: jest.fn(),
+    canGoBack: jest.fn().mockReturnValue(false),
+  };
 
-  // Set default return values for promises
-  mock.navigateForward.and.returnValue(Promise.resolve(true));
-  mock.navigateBack.and.returnValue(Promise.resolve(true));
-  mock.navigateRoot.and.returnValue(Promise.resolve(true));
-  mock.pop.and.returnValue(Promise.resolve(true));
-  mock.push.and.returnValue(Promise.resolve(true));
-  mock.setDirection.and.returnValue(mock);
-  mock.canGoBack.and.returnValue(false);
+  mock.setDirection.mockReturnValue(mock);
 
   return mock;
 }
@@ -65,20 +52,17 @@ export function createMockNavController() {
  */
 export function createMockModalController() {
   const mockModal = {
-    present: jasmine.createSpy('present').and.returnValue(Promise.resolve()),
-    dismiss: jasmine.createSpy('dismiss').and.returnValue(Promise.resolve(true)),
-    onDidDismiss: jasmine
-      .createSpy('onDidDismiss')
-      .and.returnValue(Promise.resolve({ data: undefined, role: 'backdrop' })),
-    onWillDismiss: jasmine
-      .createSpy('onWillDismiss')
-      .and.returnValue(Promise.resolve({ data: undefined, role: 'backdrop' })),
+    present: jest.fn().mockResolvedValue(undefined),
+    dismiss: jest.fn().mockResolvedValue(true),
+    onDidDismiss: jest.fn().mockResolvedValue({ data: undefined, role: 'backdrop' }),
+    onWillDismiss: jest.fn().mockResolvedValue({ data: undefined, role: 'backdrop' }),
   };
 
-  const mock = jasmine.createSpyObj('ModalController', ['create', 'dismiss', 'getTop']);
-  mock.create.and.returnValue(Promise.resolve(mockModal));
-  mock.dismiss.and.returnValue(Promise.resolve(true));
-  mock.getTop.and.returnValue(Promise.resolve(mockModal));
+  const mock = {
+    create: jest.fn().mockResolvedValue(mockModal),
+    dismiss: jest.fn().mockResolvedValue(true),
+    getTop: jest.fn().mockResolvedValue(mockModal),
+  };
 
   return mock;
 }
@@ -89,20 +73,17 @@ export function createMockModalController() {
  */
 export function createMockAlertController() {
   const mockAlert = {
-    present: jasmine.createSpy('present').and.returnValue(Promise.resolve()),
-    dismiss: jasmine.createSpy('dismiss').and.returnValue(Promise.resolve(true)),
-    onDidDismiss: jasmine
-      .createSpy('onDidDismiss')
-      .and.returnValue(Promise.resolve({ data: undefined, role: 'backdrop' })),
-    onWillDismiss: jasmine
-      .createSpy('onWillDismiss')
-      .and.returnValue(Promise.resolve({ data: undefined, role: 'backdrop' })),
+    present: jest.fn().mockResolvedValue(undefined),
+    dismiss: jest.fn().mockResolvedValue(true),
+    onDidDismiss: jest.fn().mockResolvedValue({ data: undefined, role: 'backdrop' }),
+    onWillDismiss: jest.fn().mockResolvedValue({ data: undefined, role: 'backdrop' }),
   };
 
-  const mock = jasmine.createSpyObj('AlertController', ['create', 'dismiss', 'getTop']);
-  mock.create.and.returnValue(Promise.resolve(mockAlert));
-  mock.dismiss.and.returnValue(Promise.resolve(true));
-  mock.getTop.and.returnValue(Promise.resolve(mockAlert));
+  const mock = {
+    create: jest.fn().mockResolvedValue(mockAlert),
+    dismiss: jest.fn().mockResolvedValue(true),
+    getTop: jest.fn().mockResolvedValue(mockAlert),
+  };
 
   return mock;
 }
@@ -113,17 +94,16 @@ export function createMockAlertController() {
  */
 export function createMockLoadingController() {
   const mockLoading = {
-    present: jasmine.createSpy('present').and.returnValue(Promise.resolve()),
-    dismiss: jasmine.createSpy('dismiss').and.returnValue(Promise.resolve(true)),
-    onDidDismiss: jasmine
-      .createSpy('onDidDismiss')
-      .and.returnValue(Promise.resolve({ data: undefined, role: undefined })),
+    present: jest.fn().mockResolvedValue(undefined),
+    dismiss: jest.fn().mockResolvedValue(true),
+    onDidDismiss: jest.fn().mockResolvedValue({ data: undefined, role: undefined }),
   };
 
-  const mock = jasmine.createSpyObj('LoadingController', ['create', 'dismiss', 'getTop']);
-  mock.create.and.returnValue(Promise.resolve(mockLoading));
-  mock.dismiss.and.returnValue(Promise.resolve(true));
-  mock.getTop.and.returnValue(Promise.resolve(mockLoading));
+  const mock = {
+    create: jest.fn().mockResolvedValue(mockLoading),
+    dismiss: jest.fn().mockResolvedValue(true),
+    getTop: jest.fn().mockResolvedValue(mockLoading),
+  };
 
   return mock;
 }
@@ -134,17 +114,16 @@ export function createMockLoadingController() {
  */
 export function createMockToastController() {
   const mockToast = {
-    present: jasmine.createSpy('present').and.returnValue(Promise.resolve()),
-    dismiss: jasmine.createSpy('dismiss').and.returnValue(Promise.resolve(true)),
-    onDidDismiss: jasmine
-      .createSpy('onDidDismiss')
-      .and.returnValue(Promise.resolve({ data: undefined, role: undefined })),
+    present: jest.fn().mockResolvedValue(undefined),
+    dismiss: jest.fn().mockResolvedValue(true),
+    onDidDismiss: jest.fn().mockResolvedValue({ data: undefined, role: undefined }),
   };
 
-  const mock = jasmine.createSpyObj('ToastController', ['create', 'dismiss', 'getTop']);
-  mock.create.and.returnValue(Promise.resolve(mockToast));
-  mock.dismiss.and.returnValue(Promise.resolve(true));
-  mock.getTop.and.returnValue(Promise.resolve(mockToast));
+  const mock = {
+    create: jest.fn().mockResolvedValue(mockToast),
+    dismiss: jest.fn().mockResolvedValue(true),
+    getTop: jest.fn().mockResolvedValue(mockToast),
+  };
 
   return mock;
 }
@@ -155,17 +134,16 @@ export function createMockToastController() {
  */
 export function createMockActionSheetController() {
   const mockActionSheet = {
-    present: jasmine.createSpy('present').and.returnValue(Promise.resolve()),
-    dismiss: jasmine.createSpy('dismiss').and.returnValue(Promise.resolve(true)),
-    onDidDismiss: jasmine
-      .createSpy('onDidDismiss')
-      .and.returnValue(Promise.resolve({ data: undefined, role: 'backdrop' })),
+    present: jest.fn().mockResolvedValue(undefined),
+    dismiss: jest.fn().mockResolvedValue(true),
+    onDidDismiss: jest.fn().mockResolvedValue({ data: undefined, role: 'backdrop' }),
   };
 
-  const mock = jasmine.createSpyObj('ActionSheetController', ['create', 'dismiss', 'getTop']);
-  mock.create.and.returnValue(Promise.resolve(mockActionSheet));
-  mock.dismiss.and.returnValue(Promise.resolve(true));
-  mock.getTop.and.returnValue(Promise.resolve(mockActionSheet));
+  const mock = {
+    create: jest.fn().mockResolvedValue(mockActionSheet),
+    dismiss: jest.fn().mockResolvedValue(true),
+    getTop: jest.fn().mockResolvedValue(mockActionSheet),
+  };
 
   return mock;
 }
@@ -176,17 +154,16 @@ export function createMockActionSheetController() {
  */
 export function createMockPopoverController() {
   const mockPopover = {
-    present: jasmine.createSpy('present').and.returnValue(Promise.resolve()),
-    dismiss: jasmine.createSpy('dismiss').and.returnValue(Promise.resolve(true)),
-    onDidDismiss: jasmine
-      .createSpy('onDidDismiss')
-      .and.returnValue(Promise.resolve({ data: undefined, role: 'backdrop' })),
+    present: jest.fn().mockResolvedValue(undefined),
+    dismiss: jest.fn().mockResolvedValue(true),
+    onDidDismiss: jest.fn().mockResolvedValue({ data: undefined, role: 'backdrop' }),
   };
 
-  const mock = jasmine.createSpyObj('PopoverController', ['create', 'dismiss', 'getTop']);
-  mock.create.and.returnValue(Promise.resolve(mockPopover));
-  mock.dismiss.and.returnValue(Promise.resolve(true));
-  mock.getTop.and.returnValue(Promise.resolve(mockPopover));
+  const mock = {
+    create: jest.fn().mockResolvedValue(mockPopover),
+    dismiss: jest.fn().mockResolvedValue(true),
+    getTop: jest.fn().mockResolvedValue(mockPopover),
+  };
 
   return mock;
 }

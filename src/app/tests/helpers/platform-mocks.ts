@@ -31,29 +31,19 @@ export const PLATFORM_BASE_URLS = {
  */
 export function createMockPlatformDetectorService(
   platform: 'android' | 'ios' | 'web' = 'web'
-): jasmine.SpyObj<PlatformDetectorService> {
-  const mock = jasmine.createSpyObj<PlatformDetectorService>('PlatformDetectorService', [
-    'getApiBaseUrl',
-    'getPlatformConfig',
-    'logPlatformInfo',
-  ]);
-
-  // Configure API base URL based on platform
-  mock.getApiBaseUrl.and.returnValue(PLATFORM_BASE_URLS[platform]);
-
-  // Configure platform detection
-  // Configure platform config
-  mock.getPlatformConfig.and.returnValue({
-    platform,
-    isNative: platform !== 'web',
-    isWeb: platform === 'web',
-    isMobile: platform !== 'web',
-    isDesktop: platform === 'web',
-    baseUrl: PLATFORM_BASE_URLS[platform],
-  });
-
-  // Stub logging method
-  mock.logPlatformInfo.and.stub();
+): jest.Mocked<PlatformDetectorService> {
+  const mock = {
+    getApiBaseUrl: jest.fn().mockReturnValue(PLATFORM_BASE_URLS[platform]),
+    getPlatformConfig: jest.fn().mockReturnValue({
+      platform,
+      isNative: platform !== 'web',
+      isWeb: platform === 'web',
+      isMobile: platform !== 'web',
+      isDesktop: platform === 'web',
+      baseUrl: PLATFORM_BASE_URLS[platform],
+    }),
+    logPlatformInfo: jest.fn(),
+  } as jest.Mocked<PlatformDetectorService>;
 
   return mock;
 }
@@ -77,23 +67,18 @@ export function createMockPlatformDetectorService(
 export function createDynamicPlatformDetectorMock() {
   let currentPlatform: 'android' | 'ios' | 'web' = 'web';
 
-  const mock = jasmine.createSpyObj<PlatformDetectorService>('PlatformDetectorService', [
-    'getApiBaseUrl',
-    'getPlatformConfig',
-    'logPlatformInfo',
-  ]);
-
-  mock.getApiBaseUrl.and.callFake(() => PLATFORM_BASE_URLS[currentPlatform]);
-  mock.getPlatformConfig.and.callFake(() => ({
-    platform: currentPlatform,
-    isNative: currentPlatform !== 'web',
-    isWeb: currentPlatform === 'web',
-    isMobile: currentPlatform !== 'web',
-    isDesktop: currentPlatform === 'web',
-    baseUrl: PLATFORM_BASE_URLS[currentPlatform],
-  }));
-
-  mock.logPlatformInfo.and.stub();
+  const mock = {
+    getApiBaseUrl: jest.fn().mockImplementation(() => PLATFORM_BASE_URLS[currentPlatform]),
+    getPlatformConfig: jest.fn().mockImplementation(() => ({
+      platform: currentPlatform,
+      isNative: currentPlatform !== 'web',
+      isWeb: currentPlatform === 'web',
+      isMobile: currentPlatform !== 'web',
+      isDesktop: currentPlatform === 'web',
+      baseUrl: PLATFORM_BASE_URLS[currentPlatform],
+    })),
+    logPlatformInfo: jest.fn(),
+  } as jest.Mocked<PlatformDetectorService>;
 
   return {
     mock,
@@ -111,7 +96,7 @@ export function createDynamicPlatformDetectorMock() {
  * expectPlatformConfig(service, 'android', 'http://10.0.2.2:8000');
  */
 export function expectPlatformConfig(
-  service: jasmine.SpyObj<PlatformDetectorService>,
+  service: jest.Mocked<PlatformDetectorService>,
   expectedPlatform: string,
   expectedUrl: string
 ) {

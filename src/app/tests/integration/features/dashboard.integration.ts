@@ -132,9 +132,9 @@ describe('DashboardPage Integration – core flows', () => {
   let component: DashboardPage;
   let fixture: ComponentFixture<DashboardPage>;
 
-  let readingsServiceSpy: jasmine.SpyObj<ReadingsService>;
-  let appointmentServiceSpy: jasmine.SpyObj<AppointmentService>;
-  let toastControllerSpy: jasmine.SpyObj<ToastController>;
+  let readingsServiceSpy: jest.Mocked<ReadingsService>;
+  let appointmentServiceSpy: jest.Mocked<AppointmentService>;
+  let toastControllerSpy: jest.Mocked<ToastController>;
   let router: Router;
   let translationServiceStub: TranslationServiceStub;
   let profileServiceStub: ProfileServiceStub;
@@ -190,47 +190,35 @@ describe('DashboardPage Integration – core flows', () => {
     mockReadingsSubject = new BehaviorSubject<LocalGlucoseReading[]>(mockRecentReadings);
     mockUpcomingAppointmentSubject = new BehaviorSubject<Appointment | null>(mockAppointment);
 
-    readingsServiceSpy = jasmine.createSpyObj(
-      'ReadingsService',
-      ['getStatistics', 'getAllReadings', 'performFullSync'],
-      { readings$: mockReadingsSubject.asObservable() }
-    );
-
-    appointmentServiceSpy = jasmine.createSpyObj(
-      'AppointmentService',
-      ['getAppointments', 'shareGlucoseData'],
-      {
-        appointments$: of([mockAppointment]),
-        upcomingAppointment$: mockUpcomingAppointmentSubject.asObservable(),
-      }
-    );
-
-    toastControllerSpy = jasmine.createSpyObj('ToastController', ['create']);
-    translationServiceStub = new TranslationServiceStub();
-    profileServiceStub = new ProfileServiceStub();
-
-    readingsServiceSpy.getStatistics.and.returnValue(Promise.resolve(mockStatistics));
-    readingsServiceSpy.getAllReadings.and.returnValue(
-      Promise.resolve({
+    readingsServiceSpy = {
+      getStatistics: jest.fn().mockResolvedValue(mockStatistics),
+      getAllReadings: jest.fn().mockResolvedValue({
         readings: mockRecentReadings,
         total: mockRecentReadings.length,
         hasMore: false,
         offset: 0,
         limit: 5,
-      })
-    );
-    readingsServiceSpy.performFullSync.and.returnValue(
-      Promise.resolve({ pushed: 0, fetched: 0, failed: 0 })
-    );
-    appointmentServiceSpy.getAppointments.and.returnValue(of([mockAppointment]));
-    appointmentServiceSpy.shareGlucoseData.and.returnValue(
-      of({ shared: true, recordCount: 10 }) as any
-    );
+      }),
+      performFullSync: jest.fn().mockResolvedValue({ pushed: 0, fetched: 0, failed: 0 }),
+      readings$: mockReadingsSubject.asObservable(),
+    } as any;
+
+    appointmentServiceSpy = {
+      getAppointments: jest.fn().mockReturnValue(of([mockAppointment])),
+      shareGlucoseData: jest.fn().mockReturnValue(of({ shared: true, recordCount: 10 }) as any),
+      appointments$: of([mockAppointment]),
+      upcomingAppointment$: mockUpcomingAppointmentSubject.asObservable(),
+    } as any;
 
     const mockToast = {
-      present: jasmine.createSpy('present'),
+      present: jest.fn(),
     };
-    toastControllerSpy.create.and.returnValue(Promise.resolve(mockToast as any));
+    toastControllerSpy = {
+      create: jest.fn().mockResolvedValue(mockToast as any),
+    } as any;
+
+    translationServiceStub = new TranslationServiceStub();
+    profileServiceStub = new ProfileServiceStub();
 
     await TestBed.configureTestingModule({
       imports: [IonicModule.forRoot(), TranslateModule.forRoot(), DashboardPage],
@@ -272,7 +260,7 @@ describe('DashboardPage Integration – core flows', () => {
     tick();
 
     component.handleRefresh({
-      target: { complete: jasmine.createSpy('complete') },
+      target: { complete: jest.fn() },
     } as any);
     tick();
 

@@ -14,8 +14,8 @@ import { UserProfile } from '../models';
 
 describe('OnboardingGuard', () => {
   let guard: OnboardingGuard;
-  let profileService: jasmine.SpyObj<ProfileService>;
-  let router: jasmine.SpyObj<Router>;
+  let profileService: jest.Mocked<ProfileService>;
+  let router: jest.Mocked<Router>;
   let urlTree: UrlTree;
 
   const makeSegment = (path: string): UrlSegment =>
@@ -23,10 +23,13 @@ describe('OnboardingGuard', () => {
 
   beforeEach(() => {
     urlTree = {} as UrlTree;
-    const routerSpy = jasmine.createSpyObj<Router>('Router', ['createUrlTree']);
-    routerSpy.createUrlTree.and.returnValue(urlTree);
+    const routerSpy = {
+      createUrlTree: jest.fn().mockReturnValue(urlTree),
+    } as unknown as jest.Mocked<Router>;
 
-    const profileSpy = jasmine.createSpyObj<ProfileService>('ProfileService', ['getProfile']);
+    const profileSpy = {
+      getProfile: jest.fn(),
+    } as unknown as jest.Mocked<ProfileService>;
 
     TestBed.configureTestingModule({
       providers: [
@@ -37,12 +40,12 @@ describe('OnboardingGuard', () => {
     });
 
     guard = TestBed.inject(OnboardingGuard);
-    profileService = TestBed.inject(ProfileService) as jasmine.SpyObj<ProfileService>;
-    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    profileService = TestBed.inject(ProfileService) as jest.Mocked<ProfileService>;
+    router = TestBed.inject(Router) as jest.Mocked<Router>;
   });
 
   it('allows activation when onboarding is complete', async () => {
-    profileService.getProfile.and.resolveTo({ hasCompletedOnboarding: true } as UserProfile);
+    profileService.getProfile.mockResolvedValue({ hasCompletedOnboarding: true } as UserProfile);
 
     const result = await guard.canActivate(
       {} as ActivatedRouteSnapshot,
@@ -54,7 +57,7 @@ describe('OnboardingGuard', () => {
   });
 
   it('redirects to welcome when onboarding data is missing', async () => {
-    profileService.getProfile.and.resolveTo(null);
+    profileService.getProfile.mockResolvedValue(null);
 
     const targetUrl = '/tabs/dashboard';
     const result = await guard.canActivate(
@@ -69,7 +72,7 @@ describe('OnboardingGuard', () => {
   });
 
   it('computes returnUrl from matched segments', async () => {
-    profileService.getProfile.and.resolveTo({ hasCompletedOnboarding: false } as UserProfile);
+    profileService.getProfile.mockResolvedValue({ hasCompletedOnboarding: false } as UserProfile);
 
     const segments = [makeSegment('tabs'), makeSegment('dashboard')];
     const result = await guard.canMatch({ path: 'tabs' } as Route, segments);
@@ -81,11 +84,10 @@ describe('OnboardingGuard', () => {
   });
 
   it('omits returnUrl when navigating to the welcome route', async () => {
-    profileService.getProfile.and.resolveTo(null);
-    // Note: calls.reset() in Jest compatibility layer also resets return value,
-    // so we need to set it again after reset
+    profileService.getProfile.mockResolvedValue(null);
+    // Note: mockClear() clears call history but preserves mock implementation
     router.createUrlTree.mockClear();
-    router.createUrlTree.and.returnValue(urlTree);
+    router.createUrlTree.mockReturnValue(urlTree);
 
     const result = await guard.canMatch({ path: 'welcome' } as Route, [makeSegment('welcome')]);
 

@@ -43,6 +43,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   queueLoading = false;
   queueError: string | null = null;
   requestingAppointment = false;
+  isSubmitting = false;
 
   /**
    * Get the current/upcoming appointment (first in list)
@@ -349,7 +350,9 @@ export class AppointmentsPage implements OnInit, OnDestroy {
       const isNotFoundError =
         errorMsg.includes('not found') ||
         errorMsg.includes('no encontrada') ||
-        errorMsg.includes('does not exist');
+        errorMsg.includes('does not exist') ||
+        errorMsg.includes('not in queue') ||
+        errorMsg.includes('no está en la cola');
 
       if (!isNotFoundError) {
         this.logger.error('Appointments', 'Error loading queue state', error);
@@ -369,11 +372,12 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    * Request an appointment (submit to queue)
    */
   async onRequestAppointment(): Promise<void> {
-    // Prevent multiple requests
-    if (this.requestingAppointment || !this.canRequestAppointment) {
+    // Prevent multiple requests (debouncing)
+    if (this.isSubmitting || this.requestingAppointment || !this.canRequestAppointment) {
       return;
     }
 
+    this.isSubmitting = true;
     this.requestingAppointment = true;
     this.queueError = null;
 
@@ -395,6 +399,8 @@ export class AppointmentsPage implements OnInit, OnDestroy {
         (error as Error)?.message ||
         this.translationService.instant('appointments.queue.messages.submitError');
       this.requestingAppointment = false;
+    } finally {
+      this.isSubmitting = false;
     }
     // Note: Don't reset requestingAppointment on success - the optimistic state update handles it
   }

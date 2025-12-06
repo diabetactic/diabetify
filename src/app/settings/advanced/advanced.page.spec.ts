@@ -11,34 +11,32 @@ import { getLucideIconsForTesting } from '../../tests/helpers/icon-test.helper';
 describe('AdvancedPage', () => {
   let component: AdvancedPage;
   let fixture: ComponentFixture<AdvancedPage>;
-  let mockAuthService: jasmine.SpyObj<UnifiedAuthService>;
-  let mockAlertController: jasmine.SpyObj<AlertController>;
-  let mockToastController: jasmine.SpyObj<ToastController>;
-  let mockRouter: jasmine.SpyObj<Router>;
-  let mockTranslationService: jasmine.SpyObj<TranslationService>;
+  let mockAuthService: jest.Mocked<UnifiedAuthService>;
+  let mockAlertController: jest.Mocked<AlertController>;
+  let mockToastController: jest.Mocked<ToastController>;
+  let mockRouter: jest.Mocked<Router>;
+  let mockTranslationService: jest.Mocked<TranslationService>;
 
   beforeEach(async () => {
-    mockAuthService = jasmine.createSpyObj('UnifiedAuthService', ['logout']);
-    mockAlertController = jasmine.createSpyObj('AlertController', ['create']);
-    mockToastController = jasmine.createSpyObj('ToastController', ['create']);
-    mockRouter = jasmine.createSpyObj('Router', ['navigate', 'navigateByUrl'], {
+    mockAuthService = { logout: jest.fn() } as any;
+    mockAlertController = { create: jest.fn() } as any;
+    mockToastController = { create: jest.fn() } as any;
+    mockRouter = {
+      navigate: jest.fn(),
+      navigateByUrl: jest.fn(),
       events: new Subject(),
       url: '/',
-    });
-    mockTranslationService = jasmine.createSpyObj('TranslationService', ['instant']);
+    } as any;
+    mockTranslationService = { instant: jest.fn() } as any;
 
     // Mock the alert and toast controllers' create methods
-    (mockAlertController.create as jasmine.Spy).and.returnValue(
-      Promise.resolve({
-        present: jasmine.createSpy('present').and.returnValue(Promise.resolve()),
-      } as any)
-    );
+    mockAlertController.create.mockResolvedValue({
+      present: jest.fn().mockResolvedValue(undefined),
+    } as any);
 
-    (mockToastController.create as jasmine.Spy).and.returnValue(
-      Promise.resolve({
-        present: jasmine.createSpy('present').and.returnValue(Promise.resolve()),
-      } as any)
-    );
+    mockToastController.create.mockResolvedValue({
+      present: jest.fn().mockResolvedValue(undefined),
+    } as any);
 
     await TestBed.configureTestingModule({
       imports: [

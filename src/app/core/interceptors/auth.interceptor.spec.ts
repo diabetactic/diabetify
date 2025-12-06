@@ -11,20 +11,22 @@ import { LocalAuthService, LocalAuthState } from '../services/local-auth.service
 describe('AuthInterceptor', () => {
   let httpClient: HttpClient;
   let httpMock: HttpTestingController;
-  let authService: jasmine.SpyObj<LocalAuthService>;
-  let router: jasmine.SpyObj<Router>;
+  let authService: jest.Mocked<LocalAuthService>;
+  let router: jest.Mocked<Router>;
   let interceptor: AuthInterceptor;
 
   const testUrl = '/api/test-endpoint';
   const mockRefreshToken = 'mock-refresh-token-67890';
 
   beforeEach(() => {
-    const authServiceSpy = jasmine.createSpyObj<LocalAuthService>('LocalAuthService', [
-      'refreshAccessToken',
-      'logout',
-    ]);
+    const authServiceSpy = {
+      refreshAccessToken: jest.fn(),
+      logout: jest.fn(),
+    } as unknown as jest.Mocked<LocalAuthService>;
 
-    const routerSpy = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    const routerSpy = {
+      navigate: jest.fn(),
+    } as unknown as jest.Mocked<Router>;
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -42,12 +44,12 @@ describe('AuthInterceptor', () => {
 
     httpClient = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);
-    authService = TestBed.inject(LocalAuthService) as jasmine.SpyObj<LocalAuthService>;
-    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    authService = TestBed.inject(LocalAuthService) as jest.Mocked<LocalAuthService>;
+    router = TestBed.inject(Router) as jest.Mocked<Router>;
     interceptor = TestBed.inject(AuthInterceptor);
 
     // Default logout behavior
-    authService.logout.and.returnValue(Promise.resolve());
+    authService.logout.mockResolvedValue();
 
     // Reset interceptor state to prevent pollution
     (interceptor as any).isRefreshing = false;
@@ -111,7 +113,7 @@ describe('AuthInterceptor', () => {
         expiresAt: Date.now() + 3600000,
       };
 
-      authService.refreshAccessToken.and.returnValue(of(newAuthState));
+      authService.refreshAccessToken.mockReturnValue(of(newAuthState));
 
       const mockResponse = { data: 'success after refresh' };
 
@@ -140,7 +142,7 @@ describe('AuthInterceptor', () => {
         expiresAt: Date.now() + 3600000,
       };
 
-      authService.refreshAccessToken.and.returnValue(of(newAuthState));
+      authService.refreshAccessToken.mockReturnValue(of(newAuthState));
 
       httpClient.get(testUrl).subscribe(() => {
         done();
@@ -155,7 +157,7 @@ describe('AuthInterceptor', () => {
     });
 
     it('should logout and redirect on refresh failure', done => {
-      authService.refreshAccessToken.and.returnValue(
+      authService.refreshAccessToken.mockReturnValue(
         throwError(() => new Error('Refresh token expired'))
       );
 
@@ -186,7 +188,7 @@ describe('AuthInterceptor', () => {
         expiresAt: null,
       };
 
-      authService.refreshAccessToken.and.returnValue(of(authStateWithoutToken));
+      authService.refreshAccessToken.mockReturnValue(of(authStateWithoutToken));
 
       httpClient.get(testUrl).subscribe({
         next: () => fail('should have failed'),
@@ -212,7 +214,7 @@ describe('AuthInterceptor', () => {
       };
 
       // Add delay to refresh to simulate slow network
-      authService.refreshAccessToken.and.returnValue(of(newAuthState).pipe(delay(100)));
+      authService.refreshAccessToken.mockReturnValue(of(newAuthState).pipe(delay(100)));
 
       let completedRequests = 0;
 
@@ -276,7 +278,7 @@ describe('AuthInterceptor', () => {
         expiresAt: Date.now() + 3600000,
       };
 
-      authService.refreshAccessToken.and.returnValue(of(newAuthState).pipe(delay(50)));
+      authService.refreshAccessToken.mockReturnValue(of(newAuthState).pipe(delay(50)));
 
       // Rapidly fire multiple requests
       for (let i = 0; i < 5; i++) {
@@ -328,7 +330,7 @@ describe('AuthInterceptor', () => {
   describe('5xx Server Error Retry with Exponential Backoff', () => {
     // Spy on calculateBackoffDelay to return timer(0) for instant retries in tests
     beforeEach(() => {
-      spyOn(interceptor as any, 'calculateBackoffDelay').and.returnValue(timer(0));
+      jest.spyOn(interceptor as any, 'calculateBackoffDelay').mockReturnValue(timer(0));
     });
 
     it('should retry on 500 Internal Server Error', fakeAsync(() => {
@@ -442,7 +444,7 @@ describe('AuthInterceptor', () => {
         expiresAt: Date.now() + 3600000,
       };
 
-      authService.refreshAccessToken.and.returnValue(of(newAuthState));
+      authService.refreshAccessToken.mockReturnValue(of(newAuthState));
 
       httpClient.post(testUrl, postData).subscribe(() => {
         done();
@@ -471,7 +473,7 @@ describe('AuthInterceptor', () => {
         expiresAt: Date.now() + 3600000,
       };
 
-      authService.refreshAccessToken.and.returnValue(of(newAuthState));
+      authService.refreshAccessToken.mockReturnValue(of(newAuthState));
 
       httpClient.put(testUrl, putData).subscribe(() => {
         done();
@@ -497,7 +499,7 @@ describe('AuthInterceptor', () => {
         expiresAt: Date.now() + 3600000,
       };
 
-      authService.refreshAccessToken.and.returnValue(of(newAuthState));
+      authService.refreshAccessToken.mockReturnValue(of(newAuthState));
 
       httpClient.delete(testUrl).subscribe(() => {
         done();
@@ -525,7 +527,7 @@ describe('AuthInterceptor', () => {
         expiresAt: Date.now() + 3600000,
       };
 
-      authService.refreshAccessToken.and.returnValue(of(authStateWithEmptyToken));
+      authService.refreshAccessToken.mockReturnValue(of(authStateWithEmptyToken));
 
       httpClient.get(testUrl).subscribe({
         next: () => fail('should have failed with empty token'),
@@ -548,7 +550,7 @@ describe('AuthInterceptor', () => {
         expiresAt: Date.now() + 3600000,
       };
 
-      authService.refreshAccessToken.and.returnValue(of(newAuthState).pipe(delay(50)));
+      authService.refreshAccessToken.mockReturnValue(of(newAuthState).pipe(delay(50)));
 
       let completedCount = 0;
 
