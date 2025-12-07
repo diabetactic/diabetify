@@ -16,10 +16,22 @@ appId: io.diabetactic.app
 # 3. WAIT FOR READINGS PAGE TO FULLY HYDRATE
 - extendedWaitUntil:
     visible:
-      text: 'Mostrando.*lecturas|Showing.*readings|Lecturas|Readings'
+      text: 'Lecturas|Readings'
     timeout: 10000
+
+# 3.1 WAIT FOR LOADING TO COMPLETE
+- extendedWaitUntil:
+    notVisible:
+      text: 'Cargando lecturas|Loading readings'
+    timeout: 30000
 - waitForAnimationToEnd:
     timeout: 2000
+
+# 3.2 VERIFY CONTENT IS VISIBLE
+- extendedWaitUntil:
+    visible:
+      text: 'Mostrando.*lecturas|Showing.*readings|Sin lecturas|No readings'
+    timeout: 10000
 
 # 4. TAP FILTER BUTTON (filter icon in toolbar)
 # Using point tap since no id/data-testid exists for filter button

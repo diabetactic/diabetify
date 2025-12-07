@@ -13,10 +13,24 @@ appId: io.diabetactic.app
     text: 'Lecturas|Readings'
 - waitForAnimationToEnd
 
-# 2. WAIT FOR READINGS PAGE TO LOAD
+# 2. WAIT FOR READINGS PAGE HEADER TO LOAD
 - extendedWaitUntil:
     visible:
-      text: 'Mostrando.*lecturas|Showing.*readings'
+      text: 'Lecturas|Readings'
     timeout: 8000
+
+# 3. WAIT FOR LOADING TO COMPLETE
+- extendedWaitUntil:
+    notVisible:
+      text: 'Cargando lecturas|Loading readings'
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 4. VERIFY CONTENT IS VISIBLE (readings list or empty state)
+- extendedWaitUntil:
+    visible:
+      text: 'Mostrando.*lecturas|Showing.*readings|Sin lecturas|No readings'
+    timeout: 10000
 - waitForAnimationToEnd:
     timeout: 1000

@@ -218,6 +218,7 @@
   },
   "readings": {
     "title": "Glucose Readings",
+    "tip": "Track your glucose levels regularly to better understand your patterns and manage your diabetes effectively.",
     "addNew": "Add New Reading",
     "addReading": "Add Reading",
     "editReading": "Edit Reading",

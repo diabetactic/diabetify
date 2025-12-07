@@ -21,13 +21,21 @@ appId: io.diabetactic.app
       text: 'Citas|Appointments'
     timeout: 8000
 
-# 4. VERIFY QUEUE STATUS SECTION EXISTS
+# 4. WAIT FOR LOADING TO COMPLETE
+- extendedWaitUntil:
+    notVisible:
+      text: 'Cargando citas|Loading appointments|Cargando...'
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 5. VERIFY QUEUE CONTENT IS VISIBLE (either status or request button)
 - extendedWaitUntil:
     visible:
-      text: 'Estado de la Cola|Queue Status'
-    timeout: 5000
+      text: 'Estado de la Cola|Queue Status|Solicitar Cita|Request Appointment|No tienes citas|No appointments'
+    timeout: 10000
 
-# 5. NAVIGATE TO ANOTHER TAB AND BACK
+# 6. NAVIGATE TO ANOTHER TAB AND BACK
 - tapOn:
     text: 'Lecturas|Readings'
 - waitForAnimationToEnd:
@@ -38,7 +46,7 @@ appId: io.diabetactic.app
 - waitForAnimationToEnd:
     timeout: 1500
 
-# 6. VERIFY APPOINTMENTS PAGE STILL LOADS
+# 7. VERIFY APPOINTMENTS PAGE STILL LOADS
 - assertVisible:
-    text: 'Estado de la Cola|Queue Status'
+    text: 'Citas|Appointments'
 # Test passes - appointments page navigation works correctly

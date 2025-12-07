@@ -20,10 +20,22 @@ env:
 # 3. WAIT FOR READINGS PAGE TO FULLY HYDRATE
 - extendedWaitUntil:
     visible:
-      text: 'Mostrando.*lecturas|Showing.*readings'
+      text: 'Lecturas|Readings'
     timeout: 10000
+
+# 3.1 WAIT FOR LOADING TO COMPLETE
+- extendedWaitUntil:
+    notVisible:
+      text: 'Cargando lecturas|Loading readings'
+    timeout: 30000
 - waitForAnimationToEnd:
     timeout: 2000
+
+# 3.2 VERIFY CONTENT IS VISIBLE
+- extendedWaitUntil:
+    visible:
+      text: 'Mostrando.*lecturas|Showing.*readings|Sin lecturas|No readings'
+    timeout: 10000
 
 # 4. VERIFY AT LEAST ONE READING EXISTS
 # If no readings, test cannot proceed

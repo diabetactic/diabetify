@@ -5,6 +5,7 @@ import {
   ViewChild,
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -148,7 +149,8 @@ export class ReadingsPage implements OnInit, OnDestroy {
     private profileService: ProfileService,
     private translationService: TranslationService,
     private logger: LoggerService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private cdr: ChangeDetectorRef
   ) {
     this.logger.info('Init', 'ReadingsPage initialized');
   }
@@ -173,6 +175,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
           'Sync',
           `Auto-sync complete: ${result.fetched} fetched, ${result.pushed} pushed`
         );
+        this.cdr.markForCheck();
       }
     } catch (error) {
       // Silent fail - don't show error for background sync
@@ -202,10 +205,12 @@ export class ReadingsPage implements OnInit, OnDestroy {
           this.totalCount = readings.length;
           this.applyFiltersAndGroup();
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
         error: error => {
           this.logger.error('Readings', 'Error loading readings', error);
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
       });
   }
@@ -421,6 +426,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
     this.profileService.profile$.pipe(takeUntil(this.destroy$)).subscribe(profile => {
       if (profile?.preferences?.glucoseUnit) {
         this.preferredUnit = profile.preferences.glucoseUnit;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -534,6 +540,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
       await this.showToast(errorMessage, 'danger');
     } finally {
       this.isSyncing = false;
+      this.cdr.markForCheck();
     }
   }
 

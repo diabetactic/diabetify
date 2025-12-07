@@ -653,16 +653,16 @@ export class ReadingsService {
     };
 
     // Add optional created_at if reading has a time
-    // Backend expects DD/MM/YYYY HH:mm:ss format
+    // Backend expects ISO format: YYYY-MM-DDTHH:mm:ss
     if (reading.time) {
       const date = new Date(reading.time);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
       const hours = String(date.getHours()).padStart(2, '0');
       const minutes = String(date.getMinutes()).padStart(2, '0');
       const seconds = String(date.getSeconds()).padStart(2, '0');
-      params['created_at'] = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+      params['created_at'] = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
     }
 
     // Add notes if present (single string)

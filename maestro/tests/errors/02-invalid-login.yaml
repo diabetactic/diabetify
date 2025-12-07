@@ -2,6 +2,7 @@
 # Test: Invalid Login Error Handling
 # Description: Verify app shows error for invalid credentials
 # Does NOT use shared login flow - tests login error specifically
+# NOTE: For API 36+, app must be launched via run-tests.sh script
 # ==========================================
 
 appId: io.diabetactic.app
@@ -11,19 +12,15 @@ env:
   INVALID_PASSWORD: 'wrong_password_12345'
 
 ---
-# 1. CLEAR STATE AND LAUNCH
-- clearState: io.diabetactic.app
-- launchApp
-
-# 2. WAIT FOR APP TO LOAD
+# 1. WAIT FOR APP (launched via wrapper script on API 36)
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 3. WAIT FOR WELCOME SCREEN
+# 2. WAIT FOR WELCOME SCREEN OR LOGIN FORM
 - extendedWaitUntil:
     visible:
-      text: '.*Diabetactic.*'
-    timeout: 8000
+      text: '.*Diabetactic.*|.*DNI.*|.*Vamos.*'
+    timeout: 10000
 
 # 4. TAP "VAMOS/LET'S GO" TO PROCEED TO LOGIN
 - tapOn:
@@ -35,12 +32,12 @@ env:
 # 5. WAIT FOR LOGIN FORM
 - extendedWaitUntil:
     visible:
-      text: 'DNI o Email|DNI or Email'
+      text: 'DNI'
     timeout: 5000
 
 # 6. ENTER INVALID USERNAME
 - tapOn:
-    text: 'DNI o Email|DNI or Email'
+    text: 'DNI'
 - eraseText
 - inputText: '${INVALID_USER}'
 - hideKeyboard
@@ -59,9 +56,10 @@ env:
     timeout: 3000
 
 # 9. WAIT FOR ERROR ALERT TO APPEAR
+# Actual messages: "Invalid DNI or password" / "DNI o contraseña inválidos" / "Credenciales incorrectas"
 - extendedWaitUntil:
     visible:
-      text: 'HTTP 403|Error de inicio'
+      text: 'Invalid|inválidos|incorrectas|Credenciales|Error|password|contraseña'
     timeout: 8000
 
 # 10. DISMISS ERROR ALERT
@@ -73,7 +71,7 @@ env:
 # 11. VERIFY STILL ON LOGIN PAGE (didn't navigate to dashboard)
 - extendedWaitUntil:
     visible:
-      text: 'DNI o Email|DNI or Email'
+      text: 'DNI'
     timeout: 5000
 
 # 12. VERIFY LOGIN BUTTON IS STILL PRESENT

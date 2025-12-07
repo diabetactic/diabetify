@@ -15,7 +15,7 @@ env:
 # 1. LOGIN
 - runFlow: ../../flows/login.yaml
 
-# 2. WAIT FOR DASHBOARD TO LOAD
+# 2. WAIT FOR DASHBOARD TO FULLY LOAD (skeleton complete)
 - extendedWaitUntil:
     visible:
       text: '.*(Inicio|Home|Dashboard).*'
@@ -23,13 +23,35 @@ env:
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 3. NAVIGATE TO BOLUS CALCULATOR
+# 3. WAIT FOR SKELETON LOADING TO COMPLETE
+- extendedWaitUntil:
+    visible:
+      text: 'Tiempo en Rango|Time in Range|%|mg/dL'
+    timeout: 25000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 4. WAIT FOR QUICK ACTIONS TO LOAD (indicates skeleton complete)
+- extendedWaitUntil:
+    visible:
+      text: 'Acciones Rápidas|Quick Actions'
+    timeout: 10000
+
+# 4. SCROLL DOWN TO ENSURE BUTTON IS VISIBLE
+- swipe:
+    start: '50%,70%'
+    end: '50%,40%'
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 5. NAVIGATE TO BOLUS CALCULATOR VIA QUICK ACTIONS BUTTON
 - tapOn:
-    text: 'Calculadora|Calculator'
+    text: 'Calculadora de Bolos|Bolus Calculator'
 - waitForAnimationToEnd:
     timeout: 1500
 
-# 4. VERIFY BOLUS CALCULATOR PAGE LOADED
+# 6. VERIFY BOLUS CALCULATOR PAGE LOADED
 - extendedWaitUntil:
     visible:
       text: 'Calculadora de Bolo|Bolus Calculator'

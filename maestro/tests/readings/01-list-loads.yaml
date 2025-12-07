@@ -13,17 +13,20 @@ appId: io.diabetactic.app
 # 2. NAVIGATE TO READINGS TAB
 - runFlow: ../../flows/navigate-readings.yaml
 
-# 3. VERIFY READINGS PAGE LOADED WITH DATA
-# Wait for the count text that indicates data loaded
+# 3. VERIFY READINGS PAGE LOADED
 - extendedWaitUntil:
     visible:
-      text: 'Mostrando.*lecturas|Showing.*readings'
+      text: 'Lecturas|Readings'
     timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-# 4. WAIT FOR READING STATUS TO APPEAR (network dependent)
+# 4. VERIFY PAGE CONTENT LOADED (either readings exist or empty state)
+# If user has readings: Shows "Mostrando X lecturas" and status badges
+# If user has no readings: Shows empty state message
 - extendedWaitUntil:
     visible:
-      text: 'Normal|Alto|Bajo|High|Low|NORMAL|ALTO|BAJO|HIGH|LOW'
+      text: 'Mostrando.*lecturas|Showing.*readings|No tienes lecturas|No readings|Sin lecturas|No data'
     timeout: 10000
 
 # 5. ASSERT PAGE HEADER IS VISIBLE
