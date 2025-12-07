@@ -20,9 +20,18 @@ env:
       text: '.*(Inicio|Home|Dashboard).*'
     timeout: 10000
 - waitForAnimationToEnd:
+    timeout: 3000
+
+# 3. WAIT FOR LOADING TO COMPLETE (skeleton disappears)
+# Wait for stat cards to appear - they show after isLoading=false
+- extendedWaitUntil:
+    visible:
+      text: 'Tiempo en Rango|Time in Range|%|mg/dL'
+    timeout: 20000
+- waitForAnimationToEnd:
     timeout: 2000
 
-# 3. SCROLL TO QUICK ACTIONS CARD
+# 4. SCROLL TO QUICK ACTIONS CARD
 - swipe:
     start: '50%,70%'
     end: '50%,40%'
@@ -30,7 +39,7 @@ env:
 - waitForAnimationToEnd:
     timeout: 500
 
-# 4. VERIFY QUICK ACTIONS CARD IS VISIBLE
+# 5. VERIFY QUICK ACTIONS CARD IS VISIBLE
 - extendedWaitUntil:
     visible:
       text: 'Acciones Rápidas|Quick Actions'
@@ -40,7 +49,7 @@ env:
 # TEST 1: ADD READING BUTTON
 # ===============================
 
-# 5. TAP "ADD READING" BUTTON
+# 6. TAP "ADD READING" BUTTON
 - tapOn:
     text: 'Agregar Lectura|Add Reading'
 - waitForAnimationToEnd:
@@ -105,7 +114,7 @@ env:
 
 # 14. TAP "BOLUS CALCULATOR" BUTTON
 - tapOn:
-    text: 'Calculadora de Bolo|Bolus Calculator|Calculadora|Calculator'
+    text: 'Calculadora de Bolos|Bolus Calculator'
 - waitForAnimationToEnd:
     timeout: 2000
 

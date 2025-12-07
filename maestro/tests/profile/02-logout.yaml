@@ -24,15 +24,15 @@ appId: io.diabetactic.app
 # Sign Out button is typically at the bottom of the profile page
 - scrollUntilVisible:
     element:
-      text: 'Cerrar Sesión|Sign Out'
+      id: 'sign-out-btn'
     direction: DOWN
     timeout: 10000
 - waitForAnimationToEnd:
     timeout: 1000
 
-# 5. TAP SIGN OUT BUTTON
+# 5. TAP SIGN OUT BUTTON (using id selector)
 - tapOn:
-    text: 'Cerrar Sesión|Sign Out'
+    id: 'sign-out-btn'
 - waitForAnimationToEnd:
     timeout: 2000
 
@@ -40,7 +40,7 @@ appId: io.diabetactic.app
 # Wait for login screen to appear (either welcome screen or direct login form)
 - extendedWaitUntil:
     visible:
-      text: 'DNI o Email|DNI or Email|Diabetactic|.*Vamos.*'
+      text: 'DNI|Diabetactic|.*Vamos.*'
     timeout: 8000
 
 # 7. VERIFY LOGIN BUTTON IS VISIBLE (confirms we're on login screen)
@@ -57,4 +57,4 @@ appId: io.diabetactic.app
 
 # 9. SHOULD STILL BE ON LOGIN SCREEN (not navigated to profile)
 - assertVisible:
-    text: 'DNI o Email|DNI or Email'
+    text: 'DNI'

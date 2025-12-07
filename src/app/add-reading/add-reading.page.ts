@@ -1,4 +1,10 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -98,7 +104,8 @@ export class AddReadingPage implements OnInit, OnDestroy {
     private navCtrl: NavController,
     private toastController: ToastController,
     private translate: TranslateService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -153,6 +160,7 @@ export class AddReadingPage implements OnInit, OnDestroy {
         this.currentUnit = profile.preferences.glucoseUnit;
         // Update validators based on unit
         this.updateValidatorsForUnit(this.currentUnit);
+        this.cdr.markForCheck();
       }
     });
   }
@@ -325,6 +333,7 @@ export class AddReadingPage implements OnInit, OnDestroy {
       await this.showErrorToast(error);
     } finally {
       this.isSubmitting = false;
+      this.cdr.markForCheck();
     }
   }
 
