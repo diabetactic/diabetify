@@ -14,41 +14,49 @@ appId: io.diabetactic.app
 # 2. VERIFY DASHBOARD LOADED
 - extendedWaitUntil:
     visible:
-      text: '.*(Inicio|Home|Dashboard|Tablero).*'
+      text: '.*(Inicio|Home|Dashboard|Tablero|Panel de Control).*'
     timeout: 10000
 - waitForAnimationToEnd:
-    timeout: 2000
+    timeout: 3000
 
-# 3. VERIFY STATS GRID SECTION IS VISIBLE
-# Dashboard has two main stat cards in vertical grid
-- assertVisible:
-    text: 'Tiempo en Rango|Time in Range|TIR'
-
-# 4. VERIFY TIME IN RANGE STAT CARD
+# 3. WAIT FOR LOADING TO COMPLETE (skeleton disappears)
+# Wait for stat cards to appear - they show after isLoading=false
+# Increase timeout for slow network conditions
 - extendedWaitUntil:
     visible:
       text: 'Tiempo en Rango|Time in Range'
-    timeout: 5000
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 2000
 
-# 5. VERIFY PERCENTAGE DISPLAY FOR TIME IN RANGE
+# 4. VERIFY STATS GRID SECTION IS VISIBLE
+# Dashboard has two main stat cards in vertical grid
+- assertVisible:
+    text: 'Tiempo en Rango|Time in Range'
+
+# 5. VERIFY TIME IN RANGE STAT CARD
+- assertVisible:
+    text: 'Tiempo en Rango|Time in Range'
+
+# 6. VERIFY PERCENTAGE DISPLAY FOR TIME IN RANGE
 # Should show a percentage value (0-100%)
 - assertVisible:
     text: '%'
 
-# 6. VERIFY AVERAGE GLUCOSE STAT CARD
+# 7. VERIFY AVERAGE GLUCOSE STAT CARD
 - assertVisible:
     text: 'Glucosa Promedio|Average Glucose|Promedio|Average'
 
-# 7. VERIFY GLUCOSE UNIT DISPLAY (mg/dL or mmol/L)
+# 8. VERIFY GLUCOSE UNIT DISPLAY (mg/dL or mmol/L)
 - assertVisible:
     text: 'mg/dL|mmol/L'
 
-# 8. VERIFY STAT CARDS HAVE VALUES (not empty)
+# 9. VERIFY STAT CARDS HAVE VALUES (not empty)
 # Both stats should show numeric values
 - assertVisible:
     text: '\d+'
 
-# 9. SCROLL DOWN TO VERIFY QUICK ACTIONS CARD
+# 10. SCROLL DOWN TO VERIFY QUICK ACTIONS CARD
 - swipe:
     start: '50%,70%'
     end: '50%,40%'
@@ -56,7 +64,7 @@ appId: io.diabetactic.app
 - waitForAnimationToEnd:
     timeout: 500
 
-# 10. VERIFY QUICK ACTIONS CARD IS VISIBLE
+# 11. VERIFY QUICK ACTIONS CARD IS VISIBLE
 - extendedWaitUntil:
     visible:
       text: 'Acciones Rápidas|Quick Actions'

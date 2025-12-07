@@ -15,7 +15,7 @@ env:
 # 1. LOGIN
 - runFlow: ../../flows/login.yaml
 
-# 2. WAIT FOR DASHBOARD TO LOAD
+# 2. WAIT FOR DASHBOARD TO FULLY LOAD (skeleton complete)
 - extendedWaitUntil:
     visible:
       text: '.*(Inicio|Home|Dashboard).*'
@@ -23,27 +23,48 @@ env:
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 3. NAVIGATE TO BOLUS CALCULATOR
-# Can use either FAB or Quick Actions button
-# Try Quick Actions button first (more reliable)
+# 3. WAIT FOR SKELETON LOADING TO COMPLETE
+# Dashboard shows skeleton while loading stats - wait for it to finish
+- extendedWaitUntil:
+    visible:
+      text: 'Tiempo en Rango|Time in Range|%|mg/dL'
+    timeout: 25000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 4. WAIT FOR QUICK ACTIONS TO LOAD (indicates skeleton complete)
+- extendedWaitUntil:
+    visible:
+      text: 'Acciones Rápidas|Quick Actions'
+    timeout: 10000
+
+# 5. SCROLL DOWN TO ENSURE BUTTON IS VISIBLE
+- swipe:
+    start: '50%,70%'
+    end: '50%,40%'
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 6. NAVIGATE TO BOLUS CALCULATOR VIA QUICK ACTIONS BUTTON
 - tapOn:
-    text: 'Calculadora|Calculator'
+    text: 'Calculadora de Bolos|Bolus Calculator'
 - waitForAnimationToEnd:
     timeout: 1500
 
-# 5. VERIFY BOLUS CALCULATOR PAGE LOADED
+# 7. VERIFY BOLUS CALCULATOR PAGE LOADED
 - extendedWaitUntil:
     visible:
       text: 'Calculadora de Bolo|Bolus Calculator'
     timeout: 8000
 
-# 6. VERIFY FORM ELEMENTS ARE VISIBLE
+# 8. VERIFY FORM ELEMENTS ARE VISIBLE
 - assertVisible:
     text: 'Glucosa Actual|Current Glucose'
 - assertVisible:
     text: 'Carbohidratos|Carbohydrates'
 
-# 7. ENTER GLUCOSE VALUE
+# 9. ENTER GLUCOSE VALUE
 - tapOn:
     id: 'current-glucose-input'
 - waitForAnimationToEnd:
@@ -53,7 +74,7 @@ env:
 - waitForAnimationToEnd:
     timeout: 1000
 
-# 8. ENTER CARBOHYDRATE VALUE
+# 10. ENTER CARBOHYDRATE VALUE
 - tapOn:
     id: 'carb-grams-input'
 - waitForAnimationToEnd:
@@ -63,7 +84,7 @@ env:
 - waitForAnimationToEnd:
     timeout: 1000
 
-# 9. SCROLL TO ENSURE CALCULATE BUTTON IS VISIBLE
+# 11. SCROLL TO ENSURE CALCULATE BUTTON IS VISIBLE
 - swipe:
     start: '50%,80%'
     end: '50%,40%'
@@ -71,51 +92,50 @@ env:
 - waitForAnimationToEnd:
     timeout: 500
 
-# 10. TAP CALCULATE BUTTON
+# 12. TAP CALCULATE BUTTON
 - tapOn:
     id: 'calculate-bolus-btn'
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 11. VERIFY RESULT IS DISPLAYED
+# 13. VERIFY RESULT IS DISPLAYED
 # Should see "Recommended Dose" heading and units
 - extendedWaitUntil:
     visible:
       text: 'Dosis Recomendada|Recommended Dose'
     timeout: 8000
 
-# 12. VERIFY INSULIN UNITS ARE SHOWN
+# 14. VERIFY INSULIN UNITS ARE SHOWN
 - assertVisible:
     text: 'unidades|units'
 
-# 13. VERIFY DETAILS SECTION IS VISIBLE
+# 15. VERIFY DETAILS SECTION IS VISIBLE
 - assertVisible:
     text: 'Detalles|Details'
 
-# 14. VERIFY INPUT VALUES ARE DISPLAYED IN RESULTS
+# 16. VERIFY INPUT VALUES ARE DISPLAYED IN RESULTS
 - assertVisible:
     text: '180'
 - assertVisible:
     text: '45'
 
-# 15. VERIFY NEW CALCULATION BUTTON IS AVAILABLE
+# 17. VERIFY NEW CALCULATION BUTTON IS AVAILABLE
 - scrollUntilVisible:
     element:
       text: 'Nueva Calculación|New Calculation'
     direction: DOWN
     timeout: 5000
 
-# 16. TAP NEW CALCULATION TO RESET FORM
+# 18. TAP NEW CALCULATION TO RESET FORM
 - tapOn:
     text: 'Nueva Calculación|New Calculation'
 - waitForAnimationToEnd:
     timeout: 1000
 
-# 17. VERIFY FORM IS RESET (result should disappear)
+# 19. VERIFY FORM IS RESET (result should disappear)
 - assertNotVisible:
     text: 'Dosis Recomendada|Recommended Dose'
-    timeout: 2000
 
-# 18. VERIFY FORM IS READY FOR NEW INPUT
+# 20. VERIFY FORM IS READY FOR NEW INPUT
 - assertVisible:
     text: 'Calcular Dosis|Calculate Dose'

@@ -1,8 +1,7 @@
 # ==========================================
-# Flow: Robust Login (API 36 Compatible)
-# Description: Log in from wherever the app is currently at.
-# For API 36+, run scripts/run-tests.sh which clears data and launches via adb.
-# Env vars defined here (config.yaml inheritance unreliable in flows)
+# Flow: Login for API 36+ (No launchApp)
+# Description: Works with already-running app. For API 36 compatibility.
+# Usage: Run scripts/run-tests.sh which launches app via adb first.
 # ==========================================
 
 appId: io.diabetactic.app
@@ -12,7 +11,8 @@ env:
   TEST_USER_PASSWORD: 'tuvieja'
 
 ---
-# 1. HYDRATION WAIT - App should already be running (via wrapper script on API 36)
+# 1. ENSURE APP IS IN FOREGROUND
+# Don't use launchApp or clearState - app should already be running via adb
 - waitForAnimationToEnd:
     timeout: 2000
 
@@ -20,9 +20,9 @@ env:
 - extendedWaitUntil:
     visible:
       text: '.*Diabetactic.*|.*Vamos.*|.*Inicio.*|.*Dashboard.*|.*DNI.*|.*Lecturas.*|.*Readings.*'
-    timeout: 12000
+    timeout: 10000
 
-# 3. IF ALREADY ON DASHBOARD, LOG OUT FIRST (to ensure fresh login)
+# 3. IF ON DASHBOARD, LOG OUT FIRST
 - tapOn:
     text: 'Perfil|Profile'
     optional: true
@@ -39,7 +39,7 @@ env:
     text: '.*Cerrar sesión.*|.*Sign out.*|.*Logout.*'
     optional: true
 - tapOn:
-    text: 'Cerrar sesión|Sign out|Confirmar|Confirm|OK|Aceptar'
+    text: 'Cerrar sesión|Sign out|Confirmar|Confirm|OK'
     optional: true
 - waitForAnimationToEnd:
     timeout: 2000

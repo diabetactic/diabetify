@@ -1,0 +1,23 @@
+# ==========================================
+# Flow: Launch App (API 36 Workaround)
+# Description: Workaround for Maestro launchApp issue on Android API 36.
+#              Uses runScript to launch via adb shell command.
+# ==========================================
+
+appId: io.diabetactic.app
+
+---
+# Workaround: Use adb to launch instead of Maestro's launchApp
+- runScript:
+    script: |
+      const output = execSync('adb shell am start -n io.diabetactic.app/.MainActivity');
+
+# Wait for app to start
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify app launched
+- extendedWaitUntil:
+    visible:
+      text: '.*Diabetactic.*|.*Inicio.*|.*Dashboard.*'
+    timeout: 10000

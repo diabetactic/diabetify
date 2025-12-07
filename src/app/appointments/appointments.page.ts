@@ -4,6 +4,7 @@ import {
   OnDestroy,
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -88,7 +89,8 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     private appointmentService: AppointmentService,
     private router: Router,
     private translationService: TranslationService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private cdr: ChangeDetectorRef
   ) {
     this.logger.info('Init', 'AppointmentsPage initialized');
   }
@@ -114,6 +116,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   private subscribeToAppointments(): void {
     this.appointmentService.appointments$.pipe(takeUntil(this.destroy$)).subscribe(appointments => {
       this.appointments = appointments;
+      this.cdr.markForCheck();
     });
   }
 
@@ -133,6 +136,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
         this.translationService.instant('appointments.errors.loadListFailed');
     } finally {
       this.loading = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -365,6 +369,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     } finally {
       this.queueLoading = false;
       this.requestingAppointment = false; // Reset request flag after state is loaded
+      this.cdr.markForCheck();
     }
   }
 
@@ -401,6 +406,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
       this.requestingAppointment = false;
     } finally {
       this.isSubmitting = false;
+      this.cdr.markForCheck();
     }
     // Note: Don't reset requestingAppointment on success - the optimistic state update handles it
   }

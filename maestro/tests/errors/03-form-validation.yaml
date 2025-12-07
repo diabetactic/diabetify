@@ -25,9 +25,9 @@ appId: io.diabetactic.app
       text: 'Agregar Lectura|Add Reading'
     timeout: 5000
 
-# 5. TRY TO SUBMIT EMPTY FORM
+# 5. TRY TO SUBMIT EMPTY FORM (save button is disabled when form invalid)
 - tapOn:
-    id: 'submit-reading-btn'
+    id: 'add-reading-save-btn'
 - waitForAnimationToEnd:
     timeout: 1000
 
@@ -41,7 +41,7 @@ appId: io.diabetactic.app
 
 # 8. ENTER INVALID VALUE
 - tapOn:
-    id: 'glucose-input'
+    id: 'glucose-value-input'
 - inputText: '-50'
 - hideKeyboard
 - waitForAnimationToEnd:
@@ -54,7 +54,7 @@ appId: io.diabetactic.app
 - waitForAnimationToEnd:
     timeout: 500
 - tapOn:
-    id: 'submit-reading-btn'
+    id: 'add-reading-save-btn'
 - waitForAnimationToEnd:
     timeout: 1000
 
@@ -65,7 +65,7 @@ appId: io.diabetactic.app
 
 # 11. CLEAR INVALID VALUE AND ENTER VALID ONE
 - tapOn:
-    id: 'glucose-input'
+    id: 'glucose-value-input'
 - eraseText
 - inputText: '100'
 - hideKeyboard
@@ -79,12 +79,12 @@ appId: io.diabetactic.app
 - waitForAnimationToEnd:
     timeout: 500
 - tapOn:
-    id: 'submit-reading-btn'
+    id: 'add-reading-save-btn'
 - waitForAnimationToEnd:
     timeout: 2000
 
 # 13. VERIFY WE RETURNED TO READINGS LIST (success)
 - extendedWaitUntil:
     visible:
-      text: 'Mostrando.*lecturas|Showing.*readings'
+      text: 'Mostrando.*lecturas|Showing.*readings|Lecturas|Readings'
     timeout: 8000

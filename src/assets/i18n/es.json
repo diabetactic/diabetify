@@ -218,6 +218,7 @@
   },
   "readings": {
     "title": "Lecturas de Glucosa",
+    "tip": "Registra tus niveles de glucosa regularmente para entender mejor tus patrones y manejar tu diabetes de manera efectiva.",
     "addNew": "Agregar Nueva Lectura",
     "addReading": "Agregar Lectura",
     "editReading": "Editar Lectura",

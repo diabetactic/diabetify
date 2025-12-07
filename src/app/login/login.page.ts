@@ -120,20 +120,35 @@ export class LoginPage implements OnInit {
       cssClass: 'custom-loading',
     });
     await loading.present();
+    console.log('🔵 [LOGIN-DEBUG] loading.present() completed!');
     this.logger.debug('Auth', 'Loading spinner presented', { stage: 'ui-loading-presented' });
 
     const { username, password, rememberMe } = this.loginForm.value;
+    console.log('🔵 [LOGIN-DEBUG] Form values extracted:', {
+      username,
+      hasPassword: !!password,
+      rememberMe,
+    });
 
     try {
       // Add a 10-second timeout for the core login API call
+      console.log('🔵 [LOGIN-DEBUG] Creating loginPromise via firstValueFrom');
       this.logger.debug('Auth', 'Creating loginPromise and timeoutPromise', {
         stage: 'before-promise-race',
       });
-      const loginPromise = firstValueFrom(this.authService.login(username, password, rememberMe));
+      const loginObservable = this.authService.login(username, password, rememberMe);
+      console.log('🔵 [LOGIN-DEBUG] Observable obtained, calling firstValueFrom');
+      const loginPromise = firstValueFrom(loginObservable);
+      console.log('🔵 [LOGIN-DEBUG] firstValueFrom called - Observable is now subscribed');
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Login API call timed out')), 10000)
+        setTimeout(() => {
+          console.log('🔵 [LOGIN-DEBUG] 10-second timeout triggered!');
+          reject(new Error('Login API call timed out'));
+        }, 10000)
       );
+      console.log('🔵 [LOGIN-DEBUG] Starting Promise.race');
       const result = await Promise.race([loginPromise, timeoutPromise]);
+      console.log('🔵 [LOGIN-DEBUG] Promise.race completed', { success: result?.success });
       this.logger.debug('Auth', 'Login Promise.race resolved', {
         stage: 'after-promise-race',
         success: result?.success ?? null,

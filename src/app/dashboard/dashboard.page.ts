@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, NgZone, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  NgZone,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ToastController } from '@ionic/angular';
@@ -127,7 +134,8 @@ export class DashboardPage implements OnInit, OnDestroy {
     private profileService: ProfileService,
     private logger: LoggerService,
     private themeService: ThemeService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private cdr: ChangeDetectorRef
   ) {
     this.logger.info('Init', 'DashboardPage initialized');
     this.preferredGlucoseUnit = this.translationService.getCurrentConfig().glucoseUnit;
@@ -184,6 +192,7 @@ export class DashboardPage implements OnInit, OnDestroy {
       this.logger.error('Dashboard', 'Error loading dashboard data', error);
     } finally {
       this.isLoading = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -205,6 +214,7 @@ export class DashboardPage implements OnInit, OnDestroy {
             this.preferredGlucoseUnit
           );
         }
+        this.cdr.markForCheck();
       },
       error: error => {
         this.logger.error('Dashboard', 'Error subscribing to readings', error);
@@ -259,6 +269,7 @@ export class DashboardPage implements OnInit, OnDestroy {
       );
     } finally {
       this.isSyncing = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -387,6 +398,7 @@ export class DashboardPage implements OnInit, OnDestroy {
         if (!this.isLoading) {
           this.loadDashboardData();
         }
+        this.cdr.markForCheck();
       }
     });
   }

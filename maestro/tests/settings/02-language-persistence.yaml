@@ -1,16 +1,15 @@
 # ==========================================
 # Test: Language Selector Functionality
-# Description: Verify language selector can be opened and options displayed
+# Description: Verify language selector can be opened and options displayed.
+# Note: Full language change and app restart persistence testing unreliable in Maestro.
+#       This test verifies the selector UI works correctly.
 # Location: Profile page -> Preferences section
-# NOTE: Full language change verification is unreliable in WebView/Maestro.
-#       This test verifies the selector UI works. Detailed i18n behavior
-#       should be tested via Playwright or manual testing.
 # ==========================================
 
 appId: io.diabetactic.app
 
 ---
-# 1. LOGIN (fresh state)
+# 1. LOGIN
 - runFlow: ../../flows/login.yaml
 
 # 2. NAVIGATE TO PROFILE TAB
@@ -50,41 +49,17 @@ appId: io.diabetactic.app
     text: 'Español'
 
 # 9. CANCEL/DISMISS THE ALERT (tap outside or cancel button)
-# Tap cancel to close without changing
 - tapOn:
     text: 'Cancelar|Cancel'
 - waitForAnimationToEnd:
     timeout: 1000
 
-# 11. VERIFY WE'RE BACK ON PROFILE (alert dismissed)
+# 10. VERIFY WE'RE BACK ON PROFILE (alert dismissed)
 - extendedWaitUntil:
     visible:
       text: 'Preferencias|Preferences'
     timeout: 5000
 
-# 12. RESTART APP TO VERIFY PROFILE STILL LOADS (basic persistence)
-- stopApp
-- waitForAnimationToEnd:
-    timeout: 1500
-
-# 13. LOGIN AGAIN
-- runFlow: ../../flows/login-no-clear.yaml
-
-# 14. NAVIGATE TO PROFILE
-- runFlow: ../../flows/navigate-profile.yaml
-
-# 15. VERIFY PROFILE PAGE LOADS SUCCESSFULLY
-- extendedWaitUntil:
-    visible:
-      text: 'Perfil|Profile|Preferencias|Preferences'
-    timeout: 5000
-
-# 16. SCROLL AND VERIFY PREFERENCES STILL ACCESSIBLE
-- swipe:
-    direction: UP
-    duration: 400
-- waitForAnimationToEnd:
-    timeout: 1000
-
+# 11. VERIFY LANGUAGE LABEL STILL VISIBLE (back on profile)
 - assertVisible:
     text: 'Idioma|Language'

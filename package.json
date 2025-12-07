@@ -18,7 +18,7 @@
     "build:heroku": "ng build --configuration=heroku",
     "build:analyze": "ng build --stats-json && echo 'Run: npx webpack-bundle-analyzer dist/stats.json'",
     "// === MOBILE BUILD ===": "",
-    "mobile:sync": "npm run build:prod && npx cap sync",
+    "mobile:sync": "npm run build:heroku && npx cap sync",
     "mobile:build": "npm run mobile:sync && cd android && ./gradlew assembleDebug",
     "mobile:build:release": "npm run mobile:sync && cd android && ./gradlew assembleRelease",
     "mobile:install": "npm run mobile:build && cd android && ./gradlew installDebug",
