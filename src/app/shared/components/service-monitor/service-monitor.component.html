@@ -69,7 +69,7 @@
           size="12"
           size-md="6"
           size-lg="4"
-          *ngFor="let service of services"
+          *ngFor="let service of services; trackBy: trackByService"
           class="px-1 md:px-2"
         >
           <div
@@ -140,7 +140,7 @@
                   <div *ngIf="circuitBreakers" class="flex items-center justify-between py-2">
                     <span class="text-base-content/70 text-sm">Circuit Breaker</span>
                     <span
-                      *ngFor="let cb of circuitBreakers"
+                      *ngFor="let cb of circuitBreakers; trackBy: trackByCircuitBreaker"
                       class="text-sm font-medium"
                       [ngClass]="{
                         'text-green-600 dark:text-green-400':
@@ -201,7 +201,10 @@
         </ion-card-header>
         <ion-card-content>
           <div class="space-y-3">
-            <div *ngFor="let workflow of activeWorkflows" class="bg-base-200 rounded-lg p-3">
+            <div
+              *ngFor="let workflow of activeWorkflows; trackBy: trackByWorkflow"
+              class="bg-base-200 rounded-lg p-3"
+            >
               <div class="flex items-start justify-between">
                 <div class="flex-1">
                   <h3 class="text-base-content text-sm font-medium">
@@ -236,7 +239,7 @@
         <ion-card-content>
           <div class="space-y-2">
             <div
-              *ngFor="let workflow of completedWorkflows.slice(0, 5)"
+              *ngFor="let workflow of completedWorkflows.slice(0, 5); trackBy: trackByWorkflow"
               class="hover:bg-base-200 flex items-start gap-3 rounded-lg p-2"
             >
               <ion-icon
@@ -347,7 +350,10 @@
         </div>
 
         <!-- Circuit Breaker Details -->
-        <div *ngFor="let cb of circuitBreakers" class="card bg-base-100 mb-4 shadow-xl">
+        <div
+          *ngFor="let cb of circuitBreakers; trackBy: trackByCircuitBreaker"
+          class="card bg-base-100 mb-4 shadow-xl"
+        >
           <div class="card-body">
             <div *ngIf="cb.service === selectedService">
               <ion-card-header>

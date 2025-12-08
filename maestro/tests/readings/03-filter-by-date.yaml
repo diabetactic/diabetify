@@ -23,7 +23,7 @@ appId: io.diabetactic.app
 - extendedWaitUntil:
     notVisible:
       text: 'Cargando lecturas|Loading readings'
-    timeout: 30000
+    timeout: 20000
 - waitForAnimationToEnd:
     timeout: 2000
 

@@ -27,7 +27,7 @@ env:
 - extendedWaitUntil:
     visible:
       text: 'Tiempo en Rango|Time in Range|%|mg/dL'
-    timeout: 20000
+    timeout: 18000
 - waitForAnimationToEnd:
     timeout: 2000
 
@@ -65,9 +65,9 @@ env:
 - assertVisible:
     text: 'Glucosa|Glucose'
 
-# 8. CLOSE MODAL (back to dashboard)
+# 8. CLOSE MODAL (back to dashboard) - use correct data-testid
 - tapOn:
-    id: 'cancel-add-reading-btn'
+    id: 'add-reading-cancel-btn'
     optional: true
 - tapOn:
     text: 'Cancelar|Cancel'

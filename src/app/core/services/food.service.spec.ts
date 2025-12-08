@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { FoodService } from './food.service';
-import { FoodItem, SelectedFood, FoodCategory } from '../models/food.model';
+import { FoodCategory } from '../models/food.model';
 
 describe('FoodService', () => {
   let service: FoodService;

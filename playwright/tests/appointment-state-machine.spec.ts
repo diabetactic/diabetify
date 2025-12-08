@@ -152,7 +152,7 @@ test.describe('Appointment State Machine', () => {
           'button:has-text("Solicitar cita"), ion-button:has-text("Solicitar cita")'
         );
 
-        const hasRequestButton = await requestButton
+        const _hasRequestButton = await requestButton
           .first()
           .isVisible({ timeout: 3000 })
           .catch(() => false);

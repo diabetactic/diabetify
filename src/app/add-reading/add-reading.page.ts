@@ -127,8 +127,12 @@ export class AddReadingPage implements OnInit, OnDestroy {
     // as user scrolls (which caused numbers to disappear)
     this.maxDateTime = now;
 
+    // Use currentUnit for initial validators (fixes race condition for mmol/L users)
+    const minValue = this.currentUnit === 'mmol/L' ? 1.1 : 20;
+    const maxValue = this.currentUnit === 'mmol/L' ? 33.3 : 600;
+
     this.readingForm = this.fb.group({
-      value: ['', [Validators.required, Validators.min(20), Validators.max(600)]],
+      value: ['', [Validators.required, Validators.min(minValue), Validators.max(maxValue)]],
       datetime: [now, Validators.required],
       mealContext: [''],
       notes: [''],
@@ -362,5 +366,10 @@ export class AddReadingPage implements OnInit, OnDestroy {
       icon: 'alert-circle-outline',
     });
     await toast.present();
+  }
+
+  // trackBy function for meal context options ngFor
+  trackByMealContext(index: number, option: MealContextOption): string {
+    return option.value;
   }
 }

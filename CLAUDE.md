@@ -25,6 +25,25 @@ Diabetactic is an Ionic/Angular mobile app for diabetes glucose management. Buil
 
 ---
 
+## Test Credentials (Quick Reference)
+
+| System             | Username/ID  | Password               | URL                                                            |
+| ------------------ | ------------ | ---------------------- | -------------------------------------------------------------- |
+| **Mobile App**     | `1000`       | `tuvieja`              | N/A (app login)                                                |
+| **Backoffice API** | `admin`      | `admin`                | `https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com` |
+| **Main API**       | Bearer token | (from /token endpoint) | `https://diabetactic-api-gateway-37949d6f182f.herokuapp.com`   |
+
+**Backoffice API Actions** (used by Maestro appointment tests):
+
+```bash
+# Accept/Deny/Clear appointment queue for user
+ACTION=accept USER_ID=1000 node maestro/scripts/backoffice-api.js
+ACTION=deny USER_ID=1000 node maestro/scripts/backoffice-api.js
+ACTION=clear node maestro/scripts/backoffice-api.js
+```
+
+---
+
 ## Available AI Tools & Agents
 
 ### MCP Servers Available

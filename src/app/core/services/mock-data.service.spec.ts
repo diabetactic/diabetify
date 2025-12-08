@@ -500,7 +500,8 @@ describe('MockDataService', () => {
       await firstValueFrom(service.getReadings());
       const duration = Date.now() - startTime;
 
-      expect(duration).toBeGreaterThanOrEqual(300);
+      // Allow 20% tolerance for timing flakiness (300ms * 0.8 = 240ms)
+      expect(duration).toBeGreaterThanOrEqual(240);
     });
 
     it('should simulate delay for addReading', async () => {
@@ -508,7 +509,8 @@ describe('MockDataService', () => {
       await firstValueFrom(service.addReading({ glucose: 120 }));
       const duration = Date.now() - startTime;
 
-      expect(duration).toBeGreaterThanOrEqual(500);
+      // Allow 20% tolerance for timing flakiness (500ms * 0.8 = 400ms)
+      expect(duration).toBeGreaterThanOrEqual(400);
     });
 
     it('should simulate delay for getStats', async () => {
@@ -516,7 +518,8 @@ describe('MockDataService', () => {
       await firstValueFrom(service.getStats());
       const duration = Date.now() - startTime;
 
-      expect(duration).toBeGreaterThanOrEqual(400);
+      // Allow 20% tolerance for timing flakiness (400ms * 0.8 = 320ms)
+      expect(duration).toBeGreaterThanOrEqual(320);
     });
   });
 

@@ -38,12 +38,14 @@ describe('TipsPage', () => {
         expect(typeof tip.icon).toBe('string');
         expect(typeof tip.title).toBe('string');
         expect(typeof tip.description).toBe('string');
-        expect(['glucose', 'nutrition', 'exercise', 'medication']).toContain(tip.category);
+        expect(['glucose', 'nutrition', 'exercise', 'medication', 'wellness', 'safety']).toContain(
+          tip.category
+        );
       });
     });
 
-    it('should have exactly 6 tips', () => {
-      expect(component.tips).toHaveLength(6);
+    it('should have exactly 10 tips', () => {
+      expect(component.tips).toHaveLength(10);
     });
   });
 
@@ -89,6 +91,34 @@ describe('TipsPage', () => {
       expect(sleepTip?.title).toBe('tips.sleep.title');
       expect(sleepTip?.category).toBe('glucose');
     });
+
+    it('should have stress management tip', () => {
+      const stressTip = component.tips.find(t => t.icon === 'happy-outline');
+      expect(stressTip).toBeDefined();
+      expect(stressTip?.title).toBe('tips.stress.title');
+      expect(stressTip?.category).toBe('wellness');
+    });
+
+    it('should have foot care tip', () => {
+      const footcareTip = component.tips.find(t => t.icon === 'footsteps-outline');
+      expect(footcareTip).toBeDefined();
+      expect(footcareTip?.title).toBe('tips.footcare.title');
+      expect(footcareTip?.category).toBe('wellness');
+    });
+
+    it('should have emergency preparedness tip', () => {
+      const emergencyTip = component.tips.find(t => t.icon === 'warning-outline');
+      expect(emergencyTip).toBeDefined();
+      expect(emergencyTip?.title).toBe('tips.emergency.title');
+      expect(emergencyTip?.category).toBe('safety');
+    });
+
+    it('should have social support tip', () => {
+      const supportTip = component.tips.find(t => t.icon === 'people-outline');
+      expect(supportTip).toBeDefined();
+      expect(supportTip?.title).toBe('tips.support.title');
+      expect(supportTip?.category).toBe('safety');
+    });
   });
 
   describe('Category Distribution', () => {
@@ -111,6 +141,16 @@ describe('TipsPage', () => {
       const medicationTips = component.tips.filter(t => t.category === 'medication');
       expect(medicationTips.length).toBeGreaterThanOrEqual(1);
     });
+
+    it('should have wellness tips', () => {
+      const wellnessTips = component.tips.filter(t => t.category === 'wellness');
+      expect(wellnessTips.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should have safety tips', () => {
+      const safetyTips = component.tips.filter(t => t.category === 'safety');
+      expect(safetyTips.length).toBeGreaterThanOrEqual(2);
+    });
   });
 
   describe('getCategoryIcon', () => {
@@ -132,6 +172,16 @@ describe('TipsPage', () => {
     it('should return medical icon for medication category', () => {
       const icon = component.getCategoryIcon('medication');
       expect(icon).toBe('medical-outline');
+    });
+
+    it('should return heart icon for wellness category', () => {
+      const icon = component.getCategoryIcon('wellness');
+      expect(icon).toBe('heart-outline');
+    });
+
+    it('should return shield icon for safety category', () => {
+      const icon = component.getCategoryIcon('safety');
+      expect(icon).toBe('shield-checkmark-outline');
     });
 
     it('should return default icon for unknown category', () => {
@@ -176,6 +226,16 @@ describe('TipsPage', () => {
       expect(color).toBe('danger');
     });
 
+    it('should return tertiary color for wellness category', () => {
+      const color = component.getCategoryColor('wellness');
+      expect(color).toBe('tertiary');
+    });
+
+    it('should return secondary color for safety category', () => {
+      const color = component.getCategoryColor('safety');
+      expect(color).toBe('secondary');
+    });
+
     it('should return medium color for unknown category', () => {
       const color = component.getCategoryColor('unknown');
       expect(color).toBe('medium');
@@ -200,12 +260,12 @@ describe('TipsPage', () => {
   describe('Edge Cases', () => {
     it('should maintain tips array reference', () => {
       const originalLength = component.tips.length;
-      const originalTip = { ...component.tips[0] };
+      const originalTip = component.tips[0];
 
       // Array reference is mutable in TypeScript/JavaScript
       // But we can verify original data integrity
       expect(component.tips.length).toBe(originalLength);
-      expect(component.tips[0]).toMatchObject({
+      expect(originalTip).toMatchObject({
         icon: 'water-outline',
         title: 'tips.hydration.title',
         category: 'glucose',
@@ -278,7 +338,7 @@ describe('TipsPage', () => {
 
   describe('Category Helpers Coverage', () => {
     it('should cover all category types with getCategoryIcon', () => {
-      const categories = ['glucose', 'nutrition', 'exercise', 'medication'];
+      const categories = ['glucose', 'nutrition', 'exercise', 'medication', 'wellness', 'safety'];
       categories.forEach(category => {
         const icon = component.getCategoryIcon(category);
         expect(icon).not.toBe('information-circle-outline');
@@ -286,7 +346,7 @@ describe('TipsPage', () => {
     });
 
     it('should cover all category types with getCategoryColor', () => {
-      const categories = ['glucose', 'nutrition', 'exercise', 'medication'];
+      const categories = ['glucose', 'nutrition', 'exercise', 'medication', 'wellness', 'safety'];
       categories.forEach(category => {
         const color = component.getCategoryColor(category);
         expect(color).not.toBe('medium');

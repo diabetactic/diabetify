@@ -163,6 +163,14 @@
       <ion-label>{{ 'settings.sections.notifications' | translate }}</ion-label>
     </ion-list-header>
     <ion-list class="mb-4">
+      <!-- Web platform notification warning -->
+      <ion-item *ngIf="isWebPlatform" lines="none" class="bg-warning/10">
+        <app-icon name="alert-circle-outline" slot="start" class="text-warning"></app-icon>
+        <ion-label class="ion-text-wrap">
+          <p class="text-warning text-sm">{{ 'settings.notifications.webWarning' | translate }}</p>
+        </ion-label>
+      </ion-item>
+
       <!-- Master notifications toggle -->
       <ion-item>
         <app-icon name="notifications-outline" slot="start"></app-icon>
@@ -185,7 +193,7 @@
           </ion-label>
         </ion-item>
 
-        <ion-item *ngFor="let reminder of readingReminders">
+        <ion-item *ngFor="let reminder of readingReminders; trackBy: trackByReminder">
           <ion-label>
             <h3 class="font-medium">{{ reminder.label }}</h3>
             <p class="text-sm">{{ reminder.time }}</p>
@@ -204,8 +212,8 @@
           ></ion-toggle>
         </ion-item>
 
-        <!-- Test Notification Button (dev only) -->
-        <ion-item *ngIf="isDevEnvironment" button (click)="testNotification()">
+        <!-- Test Notification Button -->
+        <ion-item button (click)="testNotification()" data-testid="test-notification-btn">
           <app-icon name="notifications-outline" slot="start" class="text-warning"></app-icon>
           <ion-label>
             <h3 class="font-medium">{{ 'settings.notifications.test' | translate }}</h3>

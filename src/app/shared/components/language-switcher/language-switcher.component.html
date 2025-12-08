@@ -32,7 +32,10 @@
   placeholder="{{ 'settings.language.title' | translate }}"
   class="language-select min-w-[120px] sm:min-w-[80px]"
 >
-  <ion-select-option *ngFor="let lang of availableLanguages" [value]="lang.code">
+  <ion-select-option
+    *ngFor="let lang of availableLanguages; trackBy: trackByLanguage"
+    [value]="lang.code"
+  >
     <span class="mr-2 inline-flex items-center align-middle text-xl">{{
       getFlagEmoji(lang.code)
     }}</span>

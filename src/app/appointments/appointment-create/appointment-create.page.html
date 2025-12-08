@@ -58,7 +58,10 @@
               {{ 'appointments.create.insulin_type' | translate }}
               <span class="text-red-500">*</span>
             </div>
-            <ion-select-option *ngFor="let type of insulinTypes" [value]="type.value">
+            <ion-select-option
+              *ngFor="let type of insulinTypes; trackBy: trackByInsulinType"
+              [value]="type.value"
+            >
               {{ type.label | translate }}
             </ion-select-option>
           </ion-select>
@@ -204,7 +207,10 @@
               {{ 'appointments.create.pump_type' | translate }}
               <span class="text-red-500">*</span>
             </div>
-            <ion-select-option *ngFor="let type of pumpTypes" [value]="type.value">
+            <ion-select-option
+              *ngFor="let type of pumpTypes; trackBy: trackByPumpType"
+              [value]="type.value"
+            >
               {{ type.label | translate }}
             </ion-select-option>
           </ion-select>
@@ -220,7 +226,11 @@
         <div
           class="mt-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
         >
-          <ion-item *ngFor="let motive of motiveOptions" lines="full" class="last:border-b-0">
+          <ion-item
+            *ngFor="let motive of motiveOptions; trackBy: trackByMotive"
+            lines="full"
+            class="last:border-b-0"
+          >
             <ion-checkbox
               [checked]="isMotiveSelected(motive.value)"
               (ionChange)="onMotiveChange(motive.value, $event)"

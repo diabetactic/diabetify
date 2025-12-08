@@ -27,7 +27,7 @@ env:
 - extendedWaitUntil:
     visible:
       text: 'Tiempo en Rango|Time in Range|%|mg/dL'
-    timeout: 25000
+    timeout: 18000
 - waitForAnimationToEnd:
     timeout: 2000
 

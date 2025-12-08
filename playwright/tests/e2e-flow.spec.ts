@@ -4,7 +4,6 @@ import {
   navigateToTab,
   waitForIonicHydration,
   fillIonicInput,
-  clickIonicButton,
   elementExists,
 } from '../helpers/test-helpers';
 

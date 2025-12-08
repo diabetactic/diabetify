@@ -11,15 +11,12 @@
 
 import { TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
-import { of, throwError, BehaviorSubject } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { LocalAuthService, LocalUser, AccountState } from '../../core/services/local-auth.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { ApiGatewayService } from '../../core/services/api-gateway.service';
 import { CapacitorHttpService } from '../../core/services/capacitor-http.service';
-import {
-  ExternalServicesManager,
-  ExternalService,
-} from '../../core/services/external-services-manager.service';
+import { ExternalServicesManager } from '../../core/services/external-services-manager.service';
 import { PlatformDetectorService } from '../../core/services/platform-detector.service';
 import { EnvironmentDetectorService } from '../../core/services/environment-detector.service';
 import { LoggerService } from '../../core/services/logger.service';
@@ -279,6 +276,22 @@ describe('Auth Flow Integration Tests', () => {
       expect(profile?.preferences?.glucoseUnit).toBe('mmol/L');
       expect(profile?.preferences?.theme).toBe('dark');
     });
+
+    it('should store gamification fields from backend user', async () => {
+      // ARRANGE
+      mockCapacitorHttp.post.and.returnValue(of(mockTokenResponse));
+      mockCapacitorHttp.get.and.returnValue(of(mockGatewayUser));
+
+      // ACT
+      const loginResult = await localAuthService.login('1000', 'password').toPromise();
+      expect(loginResult?.success).toBeTrue();
+
+      // ASSERT: auth state contains streak fields
+      const authState = await localAuthService.authState$.toPromise();
+      expect(authState?.user?.streak).toBe(0);
+      expect(authState?.user?.max_streak).toBe(0);
+      expect(authState?.user?.times_measured).toBe(0);
+    });
   });
 
   describe('Token Refresh Flow', () => {
@@ -459,9 +472,7 @@ describe('Auth Flow Integration Tests', () => {
       const mockReadingsResponse = { readings: [] };
       const mockAppointmentsResponse = { appointments: [] };
 
-      let callCount = 0;
       mockCapacitorHttp.get.and.callFake((url: string) => {
-        callCount++;
         if (url.includes('/glucose/mine')) {
           return of(mockReadingsResponse);
         }

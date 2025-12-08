@@ -254,8 +254,8 @@ test.describe('Offline-First Functionality', () => {
       await page.waitForLoadState('networkidle', { timeout: 10000 });
       await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
 
-      // Get current profile content
-      const profileContent = await page.locator('ion-content').textContent();
+      // Get current profile content (stored for potential future comparison)
+      const _profileContent = await page.locator('ion-content').textContent();
 
       // Go offline
       await context.setOffline(true);

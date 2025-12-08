@@ -7,13 +7,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import {
-  loginUser,
-  waitForIonicHydration,
-  fillIonicInput,
-  waitForElement,
-  elementExists,
-} from '../helpers/test-helpers';
+import { loginUser, waitForIonicHydration, elementExists } from '../helpers/test-helpers';
 
 test.describe('Bolus Calculator', () => {
   test.beforeEach(async ({ page }) => {

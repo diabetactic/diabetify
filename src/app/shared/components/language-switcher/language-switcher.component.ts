@@ -164,6 +164,11 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
     return this.currentLanguage?.code === language;
   }
 
+  // trackBy function for available languages ngFor
+  trackByLanguage(index: number, lang: LanguageConfig): string {
+    return lang.code;
+  }
+
   /**
    * Get flag emoji for language
    */

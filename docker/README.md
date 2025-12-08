@@ -1,74 +1,370 @@
-# Docker E2E Testing Infrastructure
+# Diabetactic Docker Infrastructure
 
-This directory contains Docker infrastructure for running Playwright E2E tests in isolated containers.
+This directory contains Docker infrastructure for local backend development and E2E testing.
 
-## Files
+## Contents
+
+### Local Backend Testing (`docker-compose.local.yml`)
+
+Full-stack local development environment that replicates Heroku.
+
+- **API Gateway** (port 8000) - Main entry point for frontend
+- **API Gateway Backoffice** (port 8001) - Admin operations
+- **Login Service** - User authentication and management
+- **Glucoserver** - Glucose readings data
+- **Appointments** - Medical appointments
+- **Test Utils** - Helper container for user management
+- **PostgreSQL Databases** - Separate databases for each service
+
+See below for complete documentation.
+
+### E2E Testing (`docker-compose.e2e.yml`)
+
+Playwright E2E tests in isolated containers:
 
 - **Dockerfile.e2e** - Multi-stage Docker image for building the app and running Playwright tests
-- **docker-compose.e2e.yml** - Orchestrates app server (nginx) and Playwright test runner
 - **nginx.conf** - Nginx configuration optimized for Angular SPA with proper routing
 - **.dockerignore** - Excludes unnecessary files from Docker build context
 
-## Quick Start
+For E2E testing documentation, run:
 
 ```bash
-# Run E2E tests in Docker (recommended)
 npm run test:e2e:docker
-
-# Or use the shell script directly
-./scripts/run-e2e-docker.sh
-
-# Force rebuild of Docker images
-./scripts/run-e2e-docker.sh --build
-
-# Keep containers running for debugging
-./scripts/run-e2e-docker.sh --keep-running
 ```
 
-## Architecture
+---
 
-### Services
+# Local Backend Testing Environment
 
-1. **app** (nginx:1.25-alpine)
-   - Serves the built Angular application
-   - Port: 4200 (mapped from nginx port 80)
-   - Handles Angular routing with try_files
-   - Gzip compression enabled
-   - Health check configured
+This Docker-based setup replicates the Heroku production environment locally for development and testing.
 
-2. **playwright** (mcr.microsoft.com/playwright:v1.48.0-jammy)
-   - Runs Playwright E2E tests
-   - Waits for app service to be healthy before starting
-   - Outputs test reports and artifacts to mounted volumes
-   - Automatically exits after tests complete
+## Overview
 
-### Network
+This environment runs all 5 Diabetactic backend services locally:
 
-- All services connected via diabetactic-e2e bridge network
-- Playwright service accesses app via http://app:80
-- No external network dependencies during tests
+1. **API Gateway** (port 8000) - Main entry point for frontend
+2. **API Gateway Backoffice** (port 8001) - Admin operations
+3. **Login Service** - User authentication and management
+4. **Glucoserver** - Glucose readings data
+5. **Appointments** - Medical appointments
+6. **Test Utils** - Helper container for user management
 
-## Test Reports
+All services use PostgreSQL databases with separate containers for data isolation.
 
-After tests run, reports are available locally:
+## Quick Start
 
-- **HTML Report**: playwright-report/index.html
-- **JSON Results**: playwright-report/results.json
-- **Screenshots**: playwright/artifacts/ (on failure)
-- **Videos**: playwright/artifacts/ (on failure)
+### Prerequisites
 
-## CI/CD Integration
+- Docker and Docker Compose installed
+- Backend repositories at `/home/julito/TPP/diabetactic/`
+- Port 8000 available (API Gateway)
 
-See README.md for CircleCI and GitHub Actions examples.
+### Start Services
+
+```bash
+cd /home/julito/TPP/diabetactic/diabetify/docker
+./start.sh
+```
+
+This will:
+
+- Build all Docker images (first run takes 2-3 minutes)
+- Start PostgreSQL databases
+- Start all backend services
+- Wait for health checks to pass
+- Display service URLs
+
+### Stop Services
+
+```bash
+./stop.sh
+```
+
+### Reset Database
+
+**WARNING: This deletes all data!**
+
+```bash
+./reset-db.sh
+```
+
+## User Management
+
+### Create Test User
+
+```bash
+# Basic user (auto-generated email)
+./create-user.sh <dni> <password>
+
+# Example
+./create-user.sh 1000 tuvieja
+
+# Full user details
+./create-user.sh <dni> <password> <name> <surname> <email>
+
+# Example
+./create-user.sh 1001 password123 John Doe john@example.com
+```
+
+### Delete User
+
+```bash
+./delete-user.sh <dni>
+
+# Example
+./delete-user.sh 1000
+```
+
+Note: This actually blocks the user (backend has no delete endpoint).
+
+### Get User Info
+
+```bash
+./get-user.sh <dni>
+
+# Example
+./get-user.sh 1000
+```
+
+### List All Users
+
+```bash
+./list-users.sh
+```
+
+## Service URLs
+
+- **API Gateway**: http://localhost:8000
+- **API Gateway Docs**: http://localhost:8000/docs
+- **Backoffice API**: http://localhost:8001
+- **Backoffice Docs**: http://localhost:8001/docs
+
+## Viewing Logs
+
+```bash
+# All services
+./logs.sh
+
+# Specific service
+./logs.sh api-gateway
+./logs.sh login_service
+./logs.sh glucoserver
+./logs.sh appointments
+```
+
+## Frontend Integration
+
+Update your app to use the local backend:
+
+```bash
+# In diabetify root directory
+ENV=local npm start
+```
+
+This sets `DEV_BACKEND_MODE` to 'local' in `src/environments/environment.ts`.
+
+### Environment Configuration
+
+The app automatically detects the platform and uses the correct URL:
+
+- **Web (via proxy)**: `http://localhost:8000`
+- **Android Native**: `http://10.0.2.2:8000` (Android emulator host address)
+- **iOS Native**: `http://localhost:8000`
+
+No additional configuration needed!
+
+## Docker Compose Services
+
+| Service                | Container Name                     | Port     | Purpose                 |
+| ---------------------- | ---------------------------------- | -------- | ----------------------- |
+| api-gateway            | diabetactic_api_gateway            | 8000     | Main API entry point    |
+| api-gateway-backoffice | diabetactic_api_gateway_backoffice | 8001     | Admin operations        |
+| login_service          | diabetactic_login_service          | Internal | User auth               |
+| glucoserver            | diabetactic_glucoserver            | Internal | Glucose data            |
+| appointments           | diabetactic_appointments           | Internal | Appointments            |
+| users_db               | diabetactic_users_db               | Internal | User database           |
+| glucoserver_db         | diabetactic_glucoserver_db         | Internal | Glucose database        |
+| appointments_db        | diabetactic_appointments_db        | Internal | Appointments database   |
+| test-utils             | diabetactic_test_utils             | -        | User management scripts |
+
+## Database Volumes
+
+Data is persisted in Docker volumes:
+
+- `postgres_data_users` - User accounts
+- `postgres_data_glucoserver` - Glucose readings
+- `postgres_data_appointments` - Appointments
+
+To completely remove all data:
+
+```bash
+docker compose -f docker-compose.local.yml down -v
+```
 
 ## Troubleshooting
 
-### Build Failures
+### Services won't start
 
-docker system prune -a
-./scripts/run-e2e-docker.sh --build --clean
+```bash
+# Check logs
+./logs.sh
 
-### View Logs
+# Check if ports are in use
+lsof -i :8000
+lsof -i :8001
 
-docker-compose -f docker/docker-compose.e2e.yml logs app
-docker-compose -f docker/docker-compose.e2e.yml logs playwright
+# Restart everything
+./stop.sh
+./start.sh
+```
+
+### Database connection errors
+
+```bash
+# Reset databases
+./reset-db.sh
+```
+
+### User creation fails
+
+```bash
+# Check login service logs
+./logs.sh login_service
+
+# Verify test-utils container is running
+docker ps | grep test_utils
+```
+
+### API Gateway returns 502/503
+
+The gateway depends on all backend services. Check if they're healthy:
+
+```bash
+docker compose -f docker-compose.local.yml ps
+```
+
+All services should show "running" status.
+
+## Advanced Usage
+
+### Execute commands in test-utils container
+
+```bash
+docker exec -it diabetactic_test_utils bash
+# Now you can run user_manager.py directly
+python3 user_manager.py list
+```
+
+### Update hospital account status
+
+```bash
+docker exec diabetactic_test_utils python3 user_manager.py update-status <dni> <status>
+
+# Example
+docker exec diabetactic_test_utils python3 user_manager.py update-status 1000 accepted
+```
+
+### Access PostgreSQL databases directly
+
+```bash
+# Users database
+docker exec -it diabetactic_users_db psql -U postgres -d users
+
+# Glucose database
+docker exec -it diabetactic_glucoserver_db psql -U postgres -d glucoserver
+
+# Appointments database
+docker exec -it diabetactic_appointments_db psql -U postgres -d appointments
+```
+
+## Development Workflow
+
+1. **Start local backend**:
+
+   ```bash
+   cd docker
+   ./start.sh
+   ```
+
+2. **Create test user**:
+
+   ```bash
+   ./create-user.sh 1000 tuvieja
+   ```
+
+3. **Start frontend with local backend**:
+
+   ```bash
+   cd /home/julito/TPP/diabetactic/diabetify
+   ENV=local npm start
+   ```
+
+4. **Test the app**:
+   - Web: http://localhost:8100
+   - Login with DNI: 1000, Password: tuvieja
+
+5. **View backend logs**:
+
+   ```bash
+   cd docker
+   ./logs.sh api-gateway
+   ```
+
+6. **Stop when done**:
+   ```bash
+   ./stop.sh
+   ```
+
+## Comparison with Heroku
+
+| Aspect          | Heroku (Cloud)                  | Local Docker   |
+| --------------- | ------------------------------- | -------------- |
+| URL             | dt-api-gateway-\*.herokuapp.com | localhost:8000 |
+| Setup           | None                            | `./start.sh`   |
+| Speed           | Network latency                 | Local (fast)   |
+| Data            | Persistent                      | Resettable     |
+| Cost            | Paid                            | Free           |
+| Internet        | Required                        | Not required   |
+| User Management | Web interface                   | CLI scripts    |
+
+## File Structure
+
+```
+docker/
+├── docker-compose.local.yml   # Main compose file for local backend
+├── docker-compose.e2e.yml     # E2E testing compose file
+├── Dockerfile.test-utils      # Test utilities container
+├── Dockerfile.e2e             # E2E testing Dockerfile
+├── start.sh                   # Start all services
+├── stop.sh                    # Stop all services
+├── reset-db.sh                # Reset databases
+├── create-user.sh             # Create test user
+├── delete-user.sh             # Delete test user
+├── list-users.sh              # List all users
+├── get-user.sh                # Get user info
+├── logs.sh                    # View service logs
+├── test-utils/
+│   └── user_manager.py        # User management library
+└── README.md                  # This file
+```
+
+## Notes
+
+- This setup does NOT replace Heroku - it's for local testing only
+- Heroku support is maintained in `environment.ts` (cloud mode)
+- Database schema is auto-created by FastAPI/SQLAlchemy on first run
+- Hot reload is enabled - backend code changes reflect immediately
+- Frontend code changes also hot-reload with `npm start`
+
+## Support
+
+For issues or questions:
+
+1. Check logs: `./logs.sh`
+2. Reset environment: `./reset-db.sh`
+3. Verify Docker is running: `docker info`
+4. Check port availability: `lsof -i :8000`
+
+---
+
+**Last Updated**: 2025-12-07

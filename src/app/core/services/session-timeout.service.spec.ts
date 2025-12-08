@@ -4,16 +4,13 @@ import { NgZone } from '@angular/core';
 import { SessionTimeoutService } from './session-timeout.service';
 import { LocalAuthService } from './local-auth.service';
 import { LoggerService } from './logger.service';
-import { ROUTES } from '../constants';
 
 describe('SessionTimeoutService', () => {
   let service: SessionTimeoutService;
   let authService: jest.Mocked<LocalAuthService>;
-  let router: jest.Mocked<Router>;
+  let _router: jest.Mocked<Router>;
   let logger: jest.Mocked<LoggerService>;
-  let ngZone: NgZone;
-
-  const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+  let _ngZone: NgZone;
 
   beforeEach(() => {
     const mockAuthService = {
@@ -42,9 +39,9 @@ describe('SessionTimeoutService', () => {
 
     service = TestBed.inject(SessionTimeoutService);
     authService = TestBed.inject(LocalAuthService) as jest.Mocked<LocalAuthService>;
-    router = TestBed.inject(Router) as jest.Mocked<Router>;
+    _router = TestBed.inject(Router) as jest.Mocked<Router>;
     logger = TestBed.inject(LoggerService) as jest.Mocked<LoggerService>;
-    ngZone = TestBed.inject(NgZone);
+    _ngZone = TestBed.inject(NgZone);
   });
 
   afterEach(() => {

@@ -29,7 +29,6 @@ import { Network } from '@capacitor/network';
 
 describe('Readings Sync Integration Tests', () => {
   let readingsService: ReadingsService;
-  let apiGatewayService: ApiGatewayService;
   let mockCapacitorHttp: jasmine.SpyObj<CapacitorHttpService>;
   let mockLocalAuth: jasmine.SpyObj<LocalAuthService>;
 

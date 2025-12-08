@@ -5,7 +5,7 @@
  * Supports English and Spanish with real-time language switching.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Device } from '@capacitor/device';
 import { Preferences } from '@capacitor/preferences';
@@ -50,7 +50,7 @@ export interface TranslationState {
 @Injectable({
   providedIn: 'root',
 })
-export class TranslationService {
+export class TranslationService implements OnDestroy {
   // Language configurations
   private readonly LANGUAGES: Map<Language, LanguageConfig> = new Map([
     [
@@ -114,6 +114,14 @@ export class TranslationService {
 
   constructor(private translate: TranslateService) {
     this.initialize();
+  }
+
+  /**
+   * Clean up subscriptions when service is destroyed
+   * Prevents memory leaks from uncompleted BehaviorSubject
+   */
+  ngOnDestroy(): void {
+    this.state$.complete();
   }
 
   /**

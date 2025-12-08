@@ -121,13 +121,13 @@ describe('TrendsPage', () => {
     it('should be stateless', () => {
       // Component should not maintain any state
       const componentState = { ...component };
-      const expectedState = {};
 
       // Filter out Angular internal properties (those starting with ɵ or __ngContext__)
       const customKeys = Object.keys(componentState).filter(
         key => !key.startsWith('ɵ') && !key.includes('__ngContext__')
       );
 
+      // All custom state keys should be empty (stateless component)
       expect(customKeys.length).toBe(0);
     });
   });

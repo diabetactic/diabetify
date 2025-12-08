@@ -63,23 +63,23 @@ env:
       text: 'DNI|Iniciar Sesión|Sign In'
     timeout: 5000
 
-# 7. INPUT USERNAME
+# 7. INPUT USERNAME - use data-testid for robustness
 - tapOn:
-    text: 'Ingresa tu DNI|Enter your DNI|DNI'
+    id: 'login-username-input'
 - eraseText
 - inputText: '${TEST_USER_ID}'
 - hideKeyboard
 
-# 8. INPUT PASSWORD
+# 8. INPUT PASSWORD - use data-testid for robustness
 - tapOn:
-    text: 'Ingresa tu contraseña|Enter your password|Contraseña|Password'
+    id: 'login-password-input'
 - eraseText
 - inputText: '${TEST_USER_PASSWORD}'
 - hideKeyboard
 
-# 9. SUBMIT
+# 9. SUBMIT - use data-testid for robustness
 - tapOn:
-    text: 'Iniciar Sesión|Sign In'
+    id: 'login-submit-btn'
 - waitForAnimationToEnd:
     timeout: 3000
 

@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, combineLatest, of, from } from 'rxjs';
-import { map, tap, catchError } from 'rxjs/operators';
+import { Injectable, OnDestroy } from '@angular/core';
+import { Observable, BehaviorSubject, combineLatest, of, from, Subject } from 'rxjs';
+import { map, tap, catchError, takeUntil } from 'rxjs/operators';
 import { TidepoolAuthService, AuthState as TidepoolAuthState } from './tidepool-auth.service';
 import {
   LocalAuthService,
@@ -10,6 +10,7 @@ import {
   UserPreferences as LocalUserPreferences,
 } from './local-auth.service';
 import { LoggerService } from './logger.service';
+import { ApiGatewayService } from './api-gateway.service';
 
 /**
  * Unified authentication provider type
@@ -69,7 +70,10 @@ export interface UnifiedUser {
 @Injectable({
   providedIn: 'root',
 })
-export class UnifiedAuthService {
+export class UnifiedAuthService implements OnDestroy {
+  // Subject for cleanup on destroy
+  private destroy$ = new Subject<void>();
+
   // Unified auth state
   private unifiedAuthStateSubject = new BehaviorSubject<UnifiedAuthState>({
     isAuthenticated: false,
@@ -87,7 +91,8 @@ export class UnifiedAuthService {
   constructor(
     private tidepoolAuth: TidepoolAuthService,
     private localAuth: LocalAuthService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private apiGateway: ApiGatewayService
   ) {
     this.logger.info('Init', 'UnifiedAuthService initialized');
     // Combine both authentication states
@@ -95,14 +100,25 @@ export class UnifiedAuthService {
   }
 
   /**
+   * Clean up subscriptions when service is destroyed
+   * Prevents memory leaks from uncompleted BehaviorSubjects and subscriptions
+   */
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.unifiedAuthStateSubject.complete();
+    this.logger.debug('Auth', 'UnifiedAuthService destroyed, resources cleaned up');
+  }
+
+  /**
    * Initialize unified authentication by combining both providers
    */
   private initializeUnifiedAuth(): void {
-    combineLatest([this.tidepoolAuth.authState, this.localAuth.authState$]).subscribe(
-      ([tidepoolState, localState]) => {
+    combineLatest([this.tidepoolAuth.authState, this.localAuth.authState$])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([tidepoolState, localState]) => {
         this.updateUnifiedState(tidepoolState, localState);
-      }
-    );
+      });
   }
 
   /**
@@ -212,6 +228,11 @@ export class UnifiedAuthService {
     }
 
     await Promise.all(promises);
+
+    // Clear API cache to prevent stale data from previous user
+    this.apiGateway.clearCache();
+    this.logger.debug('Auth', 'API cache cleared');
+
     this.logger.info('Auth', 'Logout completed');
   }
 

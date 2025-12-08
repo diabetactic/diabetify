@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom, of, throwError, BehaviorSubject } from 'rxjs';
-import { ServiceOrchestrator, WorkflowType, WorkflowState } from './service-orchestrator.service';
+import { of, throwError, BehaviorSubject } from 'rxjs';
+import { ServiceOrchestrator, WorkflowType } from './service-orchestrator.service';
 import {
   ExternalServicesManager,
   ExternalService,
@@ -12,11 +12,11 @@ import { UnifiedAuthService } from './unified-auth.service';
 import { GlucoserverService } from './glucoserver.service';
 import { AppointmentService } from './appointment.service';
 import { ReadingsService } from './readings.service';
-import { db } from './database.service';
+// Database service not directly used in tests
 
 describe('ServiceOrchestrator', () => {
   let service: ServiceOrchestrator;
-  let externalServices: jest.Mocked<ExternalServicesManager>;
+  let _externalServices: jest.Mocked<ExternalServicesManager>;
   let unifiedAuth: jest.Mocked<UnifiedAuthService>;
   let glucoserver: jest.Mocked<GlucoserverService>;
   let appointments: jest.Mocked<AppointmentService>;
@@ -100,7 +100,7 @@ describe('ServiceOrchestrator', () => {
     });
 
     service = TestBed.inject(ServiceOrchestrator);
-    externalServices = TestBed.inject(
+    _externalServices = TestBed.inject(
       ExternalServicesManager
     ) as jest.Mocked<ExternalServicesManager>;
     unifiedAuth = TestBed.inject(UnifiedAuthService) as jest.Mocked<UnifiedAuthService>;
@@ -472,7 +472,7 @@ describe('ServiceOrchestrator', () => {
 
   describe('Workflow State Tracking', () => {
     it('should track workflow progress through steps', async () => {
-      const workflowStates: WorkflowState[] = [];
+      // Track workflow progression
       unifiedAuth.isAuthenticated.mockReturnValue(true);
 
       const result = await service.executeFullSync();

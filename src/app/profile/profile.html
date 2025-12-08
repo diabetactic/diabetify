@@ -168,7 +168,10 @@
           aria-label="{{ 'profile.glucoseUnits' | translate }}"
           data-testid="glucose-units-selector"
         >
-          <ion-select-option *ngFor="let option of unitOptions" [value]="option.value">
+          <ion-select-option
+            *ngFor="let option of unitOptions; trackBy: trackByUnitOption"
+            [value]="option.value"
+          >
             {{ option.label }}
           </ion-select-option>
         </ion-select>

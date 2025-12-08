@@ -6,7 +6,7 @@
  * retry/fallback strategies for multi-service workflows.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { timeout, take } from 'rxjs/operators';
 
@@ -83,7 +83,7 @@ export interface OrchestrationResult<T = unknown> {
 @Injectable({
   providedIn: 'root',
 })
-export class ServiceOrchestrator {
+export class ServiceOrchestrator implements OnDestroy {
   private activeWorkflows = new Map<string, BehaviorSubject<WorkflowState>>();
   private completedWorkflows: WorkflowState[] = [];
   private readonly MAX_WORKFLOW_HISTORY = 50;
@@ -95,6 +95,18 @@ export class ServiceOrchestrator {
     private appointments: AppointmentService,
     private readings: ReadingsService
   ) {}
+
+  /**
+   * Clean up subscriptions when service is destroyed
+   * Prevents memory leaks from uncompleted BehaviorSubjects
+   */
+  ngOnDestroy(): void {
+    // Complete all active workflow BehaviorSubjects
+    for (const subject of this.activeWorkflows.values()) {
+      subject.complete();
+    }
+    this.activeWorkflows.clear();
+  }
 
   /**
    * Execute a full data synchronization workflow

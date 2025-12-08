@@ -9,7 +9,7 @@
  */
 
 import { test, expect, Page } from '@playwright/test';
-import { loginUser, navigateToTab, waitForIonicHydration } from '../helpers/test-helpers';
+import { loginUser, waitForIonicHydration } from '../helpers/test-helpers';
 
 /**
  * Helper to check if user is logged in by checking URL
@@ -42,8 +42,8 @@ async function performLogout(page: Page): Promise<void> {
  * Note: In web context, we can only check localStorage as Preferences
  * uses native storage on mobile
  */
-async function checkStorageCleared(page: Page): Promise<void> {
-  const storageCheck = await page.evaluate(() => {
+async function _checkStorageCleared(page: Page): Promise<void> {
+  const _storageCheck = await page.evaluate(() => {
     // Check localStorage for any auth-related keys
     const keys = ['access_token', 'refresh_token', 'diabetactic_user_profile', 'userSettings'];
 

@@ -9,7 +9,22 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonContent,
+  IonRefresher,
+  IonRefresherContent,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle,
+  IonCardContent,
+} from '@ionic/angular/standalone';
+import { ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, firstValueFrom } from 'rxjs';
 import { AppointmentService } from '../core/services/appointment.service';
@@ -30,7 +45,25 @@ import { AppIconComponent } from '../shared/components/app-icon/app-icon.compone
   styleUrls: ['./appointments.page.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, IonicModule, TranslateModule, AppIconComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    AppIconComponent,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonContent,
+    IonRefresher,
+    IonRefresherContent,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardSubtitle,
+    IonCardContent,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppointmentsPage implements OnInit, OnDestroy {
@@ -90,7 +123,8 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     private router: Router,
     private translationService: TranslationService,
     private logger: LoggerService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toastController: ToastController
   ) {
     this.logger.info('Init', 'AppointmentsPage initialized');
   }
@@ -99,9 +133,13 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     this.loadAppointments();
     this.subscribeToAppointments();
     if (environment.backendMode !== 'mock') {
+      // Set loading guard before async load to prevent stale UI
+      this.queueLoading = true;
       this.loadQueueState();
     } else {
-      this.logger.info('Queue', 'Skipping queue state in mock mode');
+      // Mock mode: set explicit NONE state immediately (no loading needed)
+      this.queueState = { state: 'NONE' };
+      this.logger.info('Queue', 'Mock mode: queue state set to NONE');
     }
   }
 
@@ -394,7 +432,10 @@ export class AppointmentsPage implements OnInit, OnDestroy {
       this.queueState = { state: 'PENDING' as AppointmentQueueState };
 
       // Show success message
-      alert(this.translationService.instant('appointments.queue.messages.submitSuccess'));
+      await this.showToast(
+        this.translationService.instant('appointments.queue.messages.submitSuccess'),
+        'success'
+      );
 
       // Reload actual queue state from server (in background)
       this.loadQueueState();
@@ -477,5 +518,26 @@ export class AppointmentsPage implements OnInit, OnDestroy {
       'qwerty',
     ];
     return !invalidValues.includes(trimmed) && trimmed.length > 1;
+  }
+
+  /**
+   * Show toast message
+   */
+  private async showToast(
+    message: string,
+    color: 'success' | 'warning' | 'danger' = 'success'
+  ): Promise<void> {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      position: 'bottom',
+      color,
+    });
+    await toast.present();
+  }
+
+  // trackBy function for past appointments ngFor
+  trackByAppointment(index: number, appointment: Appointment): number {
+    return appointment.appointment_id;
   }
 }

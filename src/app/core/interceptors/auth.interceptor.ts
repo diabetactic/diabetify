@@ -10,7 +10,7 @@
  * This ensures robust authentication flow across all API requests.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import {
   HttpRequest,
   HttpHandler,
@@ -18,18 +18,29 @@ import {
   HttpInterceptor,
   HttpErrorResponse,
 } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError, timer } from 'rxjs';
+import { Observable, BehaviorSubject, throwError, timer, Subject } from 'rxjs';
 import { catchError, filter, take, switchMap, retryWhen, mergeMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { LocalAuthService } from '../services/local-auth.service';
 import { ROUTES } from '../constants';
 
 @Injectable()
-export class AuthInterceptor implements HttpInterceptor {
+export class AuthInterceptor implements HttpInterceptor, OnDestroy {
+  private destroy$ = new Subject<void>();
   private isRefreshing = false;
   private refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(
     null
   );
+
+  /**
+   * Clean up subscriptions when interceptor is destroyed
+   * Prevents memory leaks from uncompleted BehaviorSubject
+   */
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.refreshTokenSubject.complete();
+  }
 
   // Exponential backoff configuration for 5xx errors
   private readonly baseDelay = 1000; // 1 second base delay
@@ -54,11 +65,13 @@ export class AuthInterceptor implements HttpInterceptor {
       retryWhen(errors =>
         errors.pipe(
           mergeMap((error, attemptIndex) => {
-            // Only retry 5xx server errors (not 401, 403, 4xx client errors)
+            // Only retry 5xx server errors for GET requests (idempotent operations only)
+            // POST/PUT/DELETE are not retried to prevent duplicate operations
             if (
               error instanceof HttpErrorResponse &&
               error.status >= 500 &&
-              attemptIndex < this.maxRetries
+              attemptIndex < this.maxRetries &&
+              request.method === 'GET'
             ) {
               return this.calculateBackoffDelay(attemptIndex);
             }

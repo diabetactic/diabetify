@@ -29,6 +29,7 @@ import {
 } from '../../core/models/appointment.model';
 import { LocalAuthService } from '../../core/services/local-auth.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { LoggerService } from '../../core/services/logger.service';
 import { ROUTES } from '../../core/constants';
 
 @Component({
@@ -118,7 +119,8 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
     private toastController: ToastController,
     private appointmentService: AppointmentService,
     private authService: LocalAuthService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private logger: LoggerService
   ) {}
 
   ngOnInit() {
@@ -179,7 +181,7 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
           break;
       }
     } catch (error) {
-      console.error('Error checking queue state:', error);
+      this.logger.error('Appointments', 'Error checking queue state', error);
       // On error, allow submission (fallback to backend validation)
       this.canSubmit = true;
     } finally {
@@ -353,7 +355,7 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
       this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
     } catch (error: unknown) {
       await loading.dismiss();
-      console.error('Error creating appointment:', error);
+      this.logger.error('Appointments', 'Error creating appointment', error);
       const errorMessage =
         error instanceof Error
           ? error.message
@@ -401,5 +403,18 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
       position: 'bottom',
     });
     await toast.present();
+  }
+
+  // trackBy functions for ngFor optimization
+  trackByInsulinType(index: number, type: { value: string; label: string }): string {
+    return type.value;
+  }
+
+  trackByPumpType(index: number, type: { value: string; label: string }): string {
+    return type.value;
+  }
+
+  trackByMotive(index: number, motive: { value: string; label: string }): string {
+    return motive.value;
   }
 }
