@@ -1,11 +1,88 @@
 version = 1
 
+# DeepSource Configuration for Diabetify
+# Angular 20 + Ionic 8 + TypeScript 5.8 + Jest
+
+# Test coverage reporting (uploads from CI)
+test_coverage_enabled = true
+
+# Files to exclude from analysis
+exclude_patterns = [
+  # Build outputs
+  "www/**",
+  "dist/**",
+  ".angular/**",
+
+  # Dependencies
+  "node_modules/**",
+
+  # Android build artifacts
+  "android/.gradle/**",
+  "android/build/**",
+  "android/app/build/**",
+  "android/capacitor-cordova-android-plugins/build/**",
+
+  # iOS artifacts (if added later)
+  "ios/Pods/**",
+  "ios/build/**",
+
+  # Test artifacts
+  "coverage/**",
+  "playwright/artifacts/**",
+  "playwright-report/**",
+  "maestro/.maestro/**",
+
+  # Generated files
+  "src/polyfills.ts",
+  "src/environments/environment.prod.ts",
+
+  # Third-party and vendor files
+  "**/vendor/**",
+
+  # IDE and editor
+  ".idea/**",
+  ".vscode/**"
+]
+
+# JavaScript/TypeScript Analyzer (primary)
 [[analyzers]]
 name = "javascript"
+enabled = true
 
   [analyzers.meta]
+  # Angular 20 framework support
   plugins = [
-    "angular",
-    "angularjs"
+    "angular"
   ]
-  environment = ["jest"]
+
+  # Jest test environment
+  environment = [
+    "jest",
+    "browser"
+  ]
+
+  # TypeScript version
+  dialect = "typescript"
+
+  # Skip problematic rules for Angular projects
+  skip_doc_coverage = [
+    # Angular lifecycle hooks don't need JSDoc
+    "ngOnInit",
+    "ngOnDestroy",
+    "ngAfterViewInit",
+    "ngOnChanges"
+  ]
+
+# Test coverage transformer (Jest LCOV format)
+[[transformers]]
+name = "test-coverage"
+enabled = true
+
+  [transformers.meta]
+  # CircleCI uploads lcov.info from coverage/
+  coverage_files = [
+    "coverage/lcov.info"
+  ]
+
+  # Only track src/ files for coverage
+  base_path = "src/"

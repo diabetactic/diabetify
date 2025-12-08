@@ -28,6 +28,18 @@ jobs:
       - run:
           name: Unit Tests
           command: npm test -- --ci --coverage
+      - run:
+          name: Upload Coverage to DeepSource
+          command: |
+            # Install DeepSource CLI
+            curl https://deepsource.io/cli | sh
+
+            # Upload coverage (requires DEEPSOURCE_DSN env var in CircleCI)
+            if [ -n "$DEEPSOURCE_DSN" ]; then
+              ./bin/deepsource report --analyzer test-coverage --key javascript --value-file coverage/lcov.info
+            else
+              echo "Skipping DeepSource upload (DEEPSOURCE_DSN not set)"
+            fi
       - store_test_results:
           path: test-results/jest
       - store_artifacts:
