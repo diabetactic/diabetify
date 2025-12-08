@@ -26,6 +26,15 @@ exclude_patterns = [
   "ios/Pods/**",
   "ios/build/**",
 
+  # Test files (console.log, any, mocks are acceptable in tests)
+  "**/*.spec.ts",
+  "**/*.test.ts",
+  "**/tests/**",
+  "src/app/tests/**",
+  "playwright/**",
+  "maestro/**",
+  "setup-jest.ts",
+
   # Test artifacts
   "coverage/**",
   "playwright/artifacts/**",
@@ -41,7 +50,12 @@ exclude_patterns = [
 
   # IDE and editor
   ".idea/**",
-  ".vscode/**"
+  ".vscode/**",
+
+  # Scripts and config (not production code)
+  "scripts/**",
+  "*.config.js",
+  "*.config.ts"
 ]
 
 # JavaScript/TypeScript Analyzer (primary)
@@ -63,3 +77,29 @@ enabled = true
 
   # TypeScript version
   dialect = "typescript"
+
+  # Skip these Angular lifecycle hooks (don't need JSDoc)
+  skip_doc_coverage = [
+    "ngOnInit",
+    "ngOnDestroy",
+    "ngAfterViewInit",
+    "ngOnChanges",
+    "ngDoCheck",
+    "ngAfterContentInit",
+    "ngAfterContentChecked",
+    "ngAfterViewChecked"
+  ]
+
+# Test coverage transformer (Jest LCOV format)
+[[transformers]]
+name = "test-coverage"
+enabled = true
+
+  [transformers.meta]
+  # CircleCI uploads lcov.info from coverage/
+  coverage_files = [
+    "coverage/lcov.info"
+  ]
+
+  # Only track src/ files for coverage
+  base_path = "src/"
