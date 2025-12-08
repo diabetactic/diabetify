@@ -63,26 +63,3 @@ enabled = true
 
   # TypeScript version
   dialect = "typescript"
-
-  # Skip problematic rules for Angular projects
-  skip_doc_coverage = [
-    # Angular lifecycle hooks don't need JSDoc
-    "ngOnInit",
-    "ngOnDestroy",
-    "ngAfterViewInit",
-    "ngOnChanges"
-  ]
-
-# Test coverage transformer (Jest LCOV format)
-[[transformers]]
-name = "test-coverage"
-enabled = true
-
-  [transformers.meta]
-  # CircleCI uploads lcov.info from coverage/
-  coverage_files = [
-    "coverage/lcov.info"
-  ]
-
-  # Only track src/ files for coverage
-  base_path = "src/"
