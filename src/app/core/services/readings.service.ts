@@ -3,7 +3,7 @@
  * Provides CRUD operations, offline queue, and statistics calculation
  */
 
-import { Injectable, Optional, Inject, InjectionToken, OnDestroy } from '@angular/core';
+import { Injectable, Optional, Inject, InjectionToken, OnDestroy, Injector } from '@angular/core';
 import { BehaviorSubject, Observable, from, firstValueFrom } from 'rxjs';
 import { liveQuery } from 'dexie';
 import { Network } from '@capacitor/network';
@@ -21,6 +21,7 @@ import { db, DiabetacticDatabase, SyncQueueItem } from './database.service';
 import { MockDataService, MockReading } from './mock-data.service';
 import { ApiGatewayService } from './api-gateway.service';
 import { LoggerService } from './logger.service';
+import { LocalAuthService } from './local-auth.service';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -108,7 +109,8 @@ export class ReadingsService implements OnDestroy {
     @Optional() @Inject(LIVE_QUERY_FN) liveQueryFn?: typeof liveQuery,
     @Optional() private mockData?: MockDataService,
     @Optional() private apiGateway?: ApiGatewayService,
-    @Optional() private logger?: LoggerService
+    @Optional() private logger?: LoggerService,
+    @Optional() private injector?: Injector
   ) {
     this.db = database ?? db;
     this.liveQueryFn = liveQueryFn ?? liveQuery;
@@ -117,6 +119,18 @@ export class ReadingsService implements OnDestroy {
     this.initializeObservables();
     // Initialize network status monitoring
     this.initializeNetworkMonitoring();
+  }
+
+  /**
+   * Get LocalAuthService lazily to avoid circular dependency
+   */
+  private getLocalAuthService(): LocalAuthService | null {
+    if (!this.injector) return null;
+    try {
+      return this.injector.get(LocalAuthService);
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -571,85 +585,105 @@ export class ReadingsService implements OnDestroy {
     }
 
     // Use transaction to prevent race conditions
-    return await this.db.transaction('rw', this.db.syncQueue, this.db.readings, async () => {
-      const queueItems = await this.db.syncQueue.toArray();
-      let success = 0;
-      let failed = 0;
+    const result = await this.db.transaction(
+      'rw',
+      this.db.syncQueue,
+      this.db.readings,
+      async () => {
+        const queueItems = await this.db.syncQueue.toArray();
+        let success = 0;
+        let failed = 0;
 
-      this.logger?.info('Sync', `Processing ${queueItems.length} items in sync queue`);
+        this.logger?.info('Sync', `Processing ${queueItems.length} items in sync queue`);
 
-      for (const item of queueItems) {
-        try {
-          if (item.operation === 'create' && item.reading) {
-            // Push new reading to backend
-            await this.pushReadingToBackend(item.reading);
-            this.logger?.debug('Sync', `Created reading ${item.readingId} on backend`);
-          } else if (item.operation === 'delete') {
-            // Backend delete not supported - reading remains on server but is deleted locally
-            // This is intentional: user can still see their data in the web portal
-            this.logger?.info(
-              'Sync',
-              `Delete operation for ${item.readingId} - local only (backend delete not supported)`
-            );
-          }
+        for (const item of queueItems) {
+          try {
+            if (item.operation === 'create' && item.reading) {
+              // Push new reading to backend
+              await this.pushReadingToBackend(item.reading);
+              this.logger?.debug('Sync', `Created reading ${item.readingId} on backend`);
+            } else if (item.operation === 'delete') {
+              // Backend delete not supported - reading remains on server but is deleted locally
+              // This is intentional: user can still see their data in the web portal
+              this.logger?.info(
+                'Sync',
+                `Delete operation for ${item.readingId} - local only (backend delete not supported)`
+              );
+            }
 
-          // Remove from queue on success
-          await this.db.syncQueue.delete(item.id!);
-
-          // Mark reading as synced if it was create/update
-          if (item.operation !== 'delete' && item.readingId) {
-            await this.markAsSynced(item.readingId);
-          }
-
-          success++;
-        } catch (error) {
-          failed++;
-          const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
-          const errorDetails = {
-            operation: item.operation,
-            readingId: item.readingId,
-            errorType: error?.constructor?.name,
-            message: errorMessage,
-            status: (error as { status?: number })?.status,
-          };
-          this.logger?.error('Sync', `Failed to sync: ${JSON.stringify(errorDetails)}`, error);
-
-          // Increment retry count
-          const retryCount = item.retryCount + 1;
-
-          // Build detailed error message for debugging
-          const detailedError = JSON.stringify({
-            type: error?.constructor?.name,
-            message: error instanceof Error ? error.message : String(error),
-            status: (error as { status?: number })?.status,
-            errorBody: (error as { error?: unknown })?.error,
-          });
-
-          if (retryCount >= this.SYNC_RETRY_LIMIT) {
-            // Remove from queue after max retries
-            this.logger?.warn(
-              'Sync',
-              `Max retries reached for ${item.readingId}, removing from queue`
-            );
+            // Remove from queue on success
             await this.db.syncQueue.delete(item.id!);
-          } else {
-            // Update retry count with detailed error
-            await this.db.syncQueue.update(item.id!, {
-              retryCount,
-              lastError: detailedError,
+
+            // Mark reading as synced if it was create/update
+            if (item.operation !== 'delete' && item.readingId) {
+              await this.markAsSynced(item.readingId);
+            }
+
+            success++;
+          } catch (error) {
+            failed++;
+            const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+            const errorDetails = {
+              operation: item.operation,
+              readingId: item.readingId,
+              errorType: error?.constructor?.name,
+              message: errorMessage,
+              status: (error as { status?: number })?.status,
+            };
+            this.logger?.error('Sync', `Failed to sync: ${JSON.stringify(errorDetails)}`, error);
+
+            // Increment retry count
+            const retryCount = item.retryCount + 1;
+
+            // Build detailed error message for debugging
+            const detailedError = JSON.stringify({
+              type: error?.constructor?.name,
+              message: error instanceof Error ? error.message : String(error),
+              status: (error as { status?: number })?.status,
+              errorBody: (error as { error?: unknown })?.error,
             });
+
+            if (retryCount >= this.SYNC_RETRY_LIMIT) {
+              // Remove from queue after max retries
+              this.logger?.warn(
+                'Sync',
+                `Max retries reached for ${item.readingId}, removing from queue`
+              );
+              await this.db.syncQueue.delete(item.id!);
+            } else {
+              // Update retry count with detailed error
+              await this.db.syncQueue.update(item.id!, {
+                retryCount,
+                lastError: detailedError,
+              });
+            }
           }
         }
+
+        this.logger?.info('Sync', `Sync complete: ${success} success, ${failed} failed`);
+        // Get the last error from the queue for debugging display
+        const queueWithErrors = await this.db.syncQueue.toArray();
+        const lastError =
+          queueWithErrors.length > 0 ? queueWithErrors[queueWithErrors.length - 1].lastError : null;
+
+        return { success, failed, lastError };
       }
+    );
 
-      this.logger?.info('Sync', `Sync complete: ${success} success, ${failed} failed`);
-      // Get the last error from the queue for debugging display
-      const queueWithErrors = await this.db.syncQueue.toArray();
-      const lastError =
-        queueWithErrors.length > 0 ? queueWithErrors[queueWithErrors.length - 1].lastError : null;
+    // After successful sync, refresh user profile to update gamification data (streak, times_measured)
+    // This is done outside the transaction so it doesn't block the sync result
+    if (result.success > 0) {
+      const localAuthService = this.getLocalAuthService();
+      if (localAuthService) {
+        this.logger?.info('Sync', 'Refreshing user profile to update gamification data');
+        // Don't await - let it refresh in background
+        localAuthService.refreshUserProfile().catch(err => {
+          this.logger?.warn('Sync', 'Failed to refresh user profile after sync', err);
+        });
+      }
+    }
 
-      return { success, failed, lastError };
-    });
+    return result;
   }
 
   /**
