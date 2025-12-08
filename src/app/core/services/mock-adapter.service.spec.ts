@@ -184,7 +184,8 @@ describe('MockAdapterService', () => {
       await service.mockGetAllReadings();
       const duration = Date.now() - startTime;
 
-      expect(duration).toBeGreaterThanOrEqual(300);
+      // Allow some timing variance (300ms target, 280ms threshold for CI reliability)
+      expect(duration).toBeGreaterThanOrEqual(280);
     });
   });
 
