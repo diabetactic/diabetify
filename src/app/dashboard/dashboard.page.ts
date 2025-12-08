@@ -41,6 +41,8 @@ import { EmptyStateComponent } from '../shared/components/empty-state/empty-stat
 import { ErrorBannerComponent } from '../shared/components/error-banner/error-banner.component';
 import { LanguageSwitcherComponentModule } from '../shared/components/language-switcher/language-switcher.module';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { StreakCardComponent } from '../shared/components/streak-card/streak-card.component';
+import { LocalAuthService } from '../core/services/local-auth.service';
 import { environment } from '../../environments/environment';
 import { ROUTES } from '../core/constants';
 
@@ -73,6 +75,7 @@ import { ROUTES } from '../core/constants';
     ErrorBannerComponent,
     LanguageSwitcherComponentModule,
     AppIconComponent,
+    StreakCardComponent,
   ],
 })
 export class DashboardPage implements OnInit, OnDestroy {
@@ -106,6 +109,12 @@ export class DashboardPage implements OnInit, OnDestroy {
   // Kid-friendly view toggle
   showDetails = false;
 
+  // Gamification data
+  streak = 0;
+  maxStreak = 0;
+  timesMeasured = 0;
+  isLoadingStreak = true;
+
   // Gradient colors for stat cards (matching uiResources design)
   gradients = {
     hba1c: ['#60a5fa', '#3b82f6'] as [string, string], // Blue gradient (blue-400 to blue-500)
@@ -132,6 +141,7 @@ export class DashboardPage implements OnInit, OnDestroy {
     private router: Router,
     private translationService: TranslationService,
     private profileService: ProfileService,
+    private localAuthService: LocalAuthService,
     private logger: LoggerService,
     private themeService: ThemeService,
     private ngZone: NgZone,
@@ -143,6 +153,7 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscribeToPreferences();
+    this.subscribeToGamification();
     this.loadDashboardData();
     this.subscribeToReadings();
   }
@@ -404,6 +415,27 @@ export class DashboardPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Subscribe to gamification data from auth state
+   */
+  private subscribeToGamification(): void {
+    this.localAuthService.authState$.pipe(takeUntil(this.destroy$)).subscribe(state => {
+      if (state.user) {
+        this.streak = state.user.streak ?? 0;
+        this.maxStreak = state.user.max_streak ?? 0;
+        this.timesMeasured = state.user.times_measured ?? 0;
+        this.isLoadingStreak = false;
+        this.cdr.markForCheck();
+      } else {
+        this.streak = 0;
+        this.maxStreak = 0;
+        this.timesMeasured = 0;
+        this.isLoadingStreak = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  /**
    * Toggle technical details section
    */
   toggleDetails(): void {
@@ -494,5 +526,10 @@ export class DashboardPage implements OnInit, OnDestroy {
       return this.translationService.instant('dashboard.kids.status.good');
     }
     return this.translationService.instant('dashboard.kids.status.needsWork');
+  }
+
+  // trackBy function for recent readings ngFor
+  trackByReading(index: number, reading: LocalGlucoseReading): string {
+    return reading.id;
   }
 }

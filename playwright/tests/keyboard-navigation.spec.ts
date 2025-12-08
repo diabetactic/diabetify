@@ -34,7 +34,7 @@ import {
   waitForElement,
   elementExists,
 } from '../helpers/test-helpers';
-import { BilingualText, IonicComponents } from '../helpers/selectors';
+// Selector helpers available: BilingualText, IonicComponents (currently unused in skipped tests)
 
 test.describe('Keyboard Navigation', () => {
   test.beforeEach(async ({ page }) => {

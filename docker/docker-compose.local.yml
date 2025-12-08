@@ -1,0 +1,162 @@
+services:
+  # PostgreSQL Databases
+  glucoserver_db:
+    container_name: diabetactic_glucoserver_db
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=glucoserver
+    volumes:
+      - postgres_data_glucoserver:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - diabetactic-network
+
+  users_db:
+    container_name: diabetactic_users_db
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=users
+    volumes:
+      - postgres_data_users:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - diabetactic-network
+
+  appointments_db:
+    container_name: diabetactic_appointments_db
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=appointments
+    volumes:
+      - postgres_data_appointments:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - diabetactic-network
+
+  # Backend Services
+  glucoserver:
+    container_name: diabetactic_glucoserver
+    build: ../../glucoserver/
+    command: bash -c 'while !</dev/tcp/glucoserver_db/5432; do sleep 1; done; python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload'
+    depends_on:
+      glucoserver_db:
+        condition: service_healthy
+    volumes:
+      - ../../glucoserver:/app
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@glucoserver_db:5432/glucoserver
+    networks:
+      - diabetactic-network
+
+  login_service:
+    container_name: diabetactic_login_service
+    build: ../../login/
+    command: bash -c 'while !</dev/tcp/users_db/5432; do sleep 1; done; python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload'
+    depends_on:
+      users_db:
+        condition: service_healthy
+    volumes:
+      - ../../login:/app
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@users_db:5432/users
+      - NOREPLY_ACCOUNT=diabetactic@gmail.com
+      - NOREPLY_PASSWORD=mtoj zcft rxbt pgta
+      - BACKOFFICE_FRONT_URL=http://localhost:3000
+    networks:
+      - diabetactic-network
+
+  appointments:
+    container_name: diabetactic_appointments
+    build: ../../appointments/
+    command: bash -c 'while !</dev/tcp/appointments_db/5432; do sleep 1; done; python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload'
+    depends_on:
+      appointments_db:
+        condition: service_healthy
+    volumes:
+      - ../../appointments:/app
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@appointments_db:5432/appointments
+    networks:
+      - diabetactic-network
+
+  api-gateway:
+    container_name: diabetactic_api_gateway
+    build: ../../api-gateway/
+    command: bash -c 'while !</dev/tcp/login_service/8000; do sleep 1; done; python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload'
+    ports:
+      - "8000:8000"
+    depends_on:
+      - login_service
+      - appointments
+      - glucoserver
+    volumes:
+      - ../../api-gateway:/app
+    environment:
+      - USERS_BASE_URL=http://login_service:8000
+      - APPOINTMENTS_BASE_URL=http://appointments:8000
+      - GLUCOSERVER_BASE_URL=http://glucoserver:8000
+      - SECRET_KEY=9830e8615a20b5b145edd6cbf11ca1943cb15dac7ff72be7fd0f046d133b2740
+    networks:
+      - diabetactic-network
+
+  api-gateway-backoffice:
+    container_name: diabetactic_api_gateway_backoffice
+    build: ../../api-gateway-backoffice/
+    command: bash -c 'while !</dev/tcp/login_service/8000; do sleep 1; done; python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload'
+    ports:
+      - "8001:8000"
+    depends_on:
+      - login_service
+      - appointments
+      - glucoserver
+    volumes:
+      - ../../api-gateway-backoffice:/app
+    environment:
+      - USERS_BASE_URL=http://login_service:8000
+      - APPOINTMENTS_BASE_URL=http://appointments:8000
+      - GLUCOSERVER_BASE_URL=http://glucoserver:8000
+      - SECRET_KEY=9830e8615a20b5b145edd6cbf11ca1943cb15dac7ff72be7fd0f046d133b2740
+    networks:
+      - diabetactic-network
+
+  # Test Utils Container - for user management scripts
+  test-utils:
+    container_name: diabetactic_test_utils
+    build:
+      context: .
+      dockerfile: Dockerfile.test-utils
+    depends_on:
+      - api-gateway
+    environment:
+      - API_GATEWAY_URL=http://api-gateway:8000
+      - LOGIN_SERVICE_URL=http://login_service:8000
+    networks:
+      - diabetactic-network
+    command: tail -f /dev/null  # Keep container running
+
+volumes:
+  postgres_data_users:
+  postgres_data_appointments:
+  postgres_data_glucoserver:
+
+networks:
+  diabetactic-network:
+    driver: bridge

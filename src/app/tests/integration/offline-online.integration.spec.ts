@@ -30,7 +30,6 @@ import { Network } from '@capacitor/network';
 
 describe('Offline-Online Integration Tests', () => {
   let readingsService: ReadingsService;
-  let apiGatewayService: ApiGatewayService;
   let mockCapacitorHttp: jasmine.SpyObj<CapacitorHttpService>;
   let mockLocalAuth: jasmine.SpyObj<LocalAuthService>;
 
@@ -576,9 +575,7 @@ describe('Offline-Online Integration Tests', () => {
     it('should perform full sync after extended offline period', async () => {
       // ARRANGE: Simulate offline period with local changes
       simulateOffline();
-      const localReading = await readingsService.addReading(
-        createMockReading({ value: 140, mealContext: 'DESAYUNO' })
-      );
+      await readingsService.addReading(createMockReading({ value: 140, mealContext: 'DESAYUNO' }));
 
       // Setup backend responses
       mockCapacitorHttp.post.and.returnValue(

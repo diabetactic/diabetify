@@ -1,0 +1,75 @@
+/**
+ * Streak Card Component Styles
+ *
+ * Kid-friendly styling with playful animations
+ */
+
+:host {
+  display: block;
+}
+
+.card {
+  // Subtle glow effect on hover
+  &:hover {
+    // stylelint-disable-next-line scale-unlimited/declaration-strict-value
+    box-shadow: var(
+      --shadow-lg,
+      0 10px 25px -5px rgb(0 0 0 / 10%),
+      0 8px 10px -6px rgb(0 0 0 / 10%)
+    );
+  }
+}
+
+// Custom progress bar styling
+.progress {
+  &::-webkit-progress-bar {
+    background-color: rgb(255 255 255 / 30%);
+    border-radius: 9999px;
+  }
+
+  &::-webkit-progress-value {
+    border-radius: 9999px;
+    transition: width 0.5s ease-out;
+  }
+
+  &::-moz-progress-bar {
+    border-radius: 9999px;
+    transition: width 0.5s ease-out;
+  }
+}
+
+// Badge animation
+.badge-warning {
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(-10%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+// Emoji hover effect
+.text-4xl {
+  cursor: default;
+  transition: transform 0.3s ease;
+}
+
+// Stat boxes
+.bg-white\/20 {
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    background-color: rgb(255 255 255 / 25%);
+    transform: translateY(-1px);
+  }
+}

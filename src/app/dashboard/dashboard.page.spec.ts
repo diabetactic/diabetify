@@ -15,11 +15,13 @@ import { ProfileService } from '../core/services/profile.service';
 import { getLucideIconsForTesting } from '../tests/helpers/icon-test.helper';
 import { LoggerService } from '../core/services/logger.service';
 import { ThemeService } from '../core/services/theme.service';
+import { LocalAuthService } from '../core/services/local-auth.service';
 import { Component, Input } from '@angular/core';
 import { StatCardComponent } from '../shared/components/stat-card/stat-card.component';
 import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
 import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+// StreakCardComponent imported by DashboardPage - not used directly in tests
 
 class LoggerServiceStub {
   info(_context: string, _message: string, _data?: any): void {}
@@ -31,6 +33,28 @@ class LoggerServiceStub {
 class ThemeServiceStub {
   isDarkTheme(): boolean {
     return false;
+  }
+}
+
+class LocalAuthServiceStub {
+  private authStateSubject = new BehaviorSubject({
+    isAuthenticated: true,
+    user: {
+      id: 1000,
+      email: 'test@example.com',
+      full_name: 'Test User',
+      streak: 5,
+      max_streak: 10,
+      times_measured: 42,
+    },
+    isLoading: false,
+    error: null,
+  });
+
+  authState$ = this.authStateSubject.asObservable();
+
+  emit(state: any) {
+    this.authStateSubject.next(state);
   }
 }
 
@@ -220,6 +244,7 @@ describe('DashboardPage', () => {
   let toastControllerSpy: jest.Mocked<ToastController>;
   let translationServiceStub: TranslationServiceStub;
   let profileServiceStub: ProfileServiceStub;
+  let localAuthServiceStub: LocalAuthServiceStub;
 
   let mockReadingsSubject: BehaviorSubject<LocalGlucoseReading[]>;
 
@@ -347,6 +372,7 @@ describe('DashboardPage', () => {
         { provide: ProfileService, useValue: profileServiceStub },
         { provide: LoggerService, useClass: LoggerServiceStub },
         { provide: ThemeService, useClass: ThemeServiceStub },
+        { provide: LocalAuthService, useClass: LocalAuthServiceStub },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     })
@@ -367,10 +393,40 @@ describe('DashboardPage', () => {
 
     fixture = TestBed.createComponent(DashboardPage);
     component = fixture.componentInstance;
+    localAuthServiceStub = TestBed.inject(LocalAuthService) as unknown as LocalAuthServiceStub;
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should load streak data from auth state', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.streak).toBe(5);
+    expect(component.maxStreak).toBe(10);
+    expect(component.timesMeasured).toBe(42);
+  });
+
+  it('should reset streak data when user logs out', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    localAuthServiceStub.emit({
+      isAuthenticated: false,
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+      expiresAt: null,
+    });
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.streak).toBe(0);
+    expect(component.maxStreak).toBe(0);
+    expect(component.timesMeasured).toBe(0);
   });
 
   describe('Component Initialization', () => {

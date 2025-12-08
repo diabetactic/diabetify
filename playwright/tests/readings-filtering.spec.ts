@@ -14,12 +14,10 @@ import {
   loginUser,
   navigateToTab,
   waitForIonicHydration,
-  fillIonicInput,
-  clickIonicButton,
   waitForElement,
   elementExists,
 } from '../helpers/test-helpers';
-import { BilingualText, IonicComponents, Selectors } from '../helpers/selectors';
+// Selector helpers available: BilingualText, IonicComponents, Selectors (for future use)
 
 test.describe('Readings Filtering', () => {
   test.beforeEach(async ({ page }) => {
@@ -301,8 +299,7 @@ test.describe('Readings Filtering', () => {
   });
 
   test('should search readings by notes', async ({ page }) => {
-    const searchBar = page.locator('ion-searchbar');
-
+    // Check if search is available
     if (!(await elementExists(page, 'ion-searchbar', 3000))) {
       console.log('⚠️  Search functionality not implemented - skipping test');
       test.skip();
@@ -326,8 +323,7 @@ test.describe('Readings Filtering', () => {
   });
 
   test('should clear search when X button is clicked', async ({ page }) => {
-    const searchBar = page.locator('ion-searchbar');
-
+    // Check if search is available
     if (!(await elementExists(page, 'ion-searchbar', 3000))) {
       console.log('⚠️  Search functionality not implemented - skipping test');
       test.skip();
@@ -468,7 +464,6 @@ test.describe('Readings Filtering', () => {
     }
 
     // Search for something that won't exist
-    const searchBar = page.locator('ion-searchbar');
     if (await elementExists(page, 'ion-searchbar', 3000)) {
       const searchInput = page.locator('ion-searchbar input');
       await searchInput.first().fill('xyznonexistent99999');

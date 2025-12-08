@@ -134,7 +134,10 @@
                 <ion-select-option [value]="null">{{
                   'common.none' | translate
                 }}</ion-select-option>
-                <ion-select-option *ngFor="let option of mealContextOptions" [value]="option.value">
+                <ion-select-option
+                  *ngFor="let option of mealContextOptions; trackBy: trackByMealContext"
+                  [value]="option.value"
+                >
                   {{ option.labelKey | translate }}
                 </ion-select-option>
               </ion-select>

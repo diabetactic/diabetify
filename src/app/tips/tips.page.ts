@@ -17,7 +17,7 @@ interface Tip {
   icon: string;
   title: string;
   description: string;
-  category: 'glucose' | 'nutrition' | 'exercise' | 'medication';
+  category: 'glucose' | 'nutrition' | 'exercise' | 'medication' | 'wellness' | 'safety';
 }
 
 @Component({
@@ -81,6 +81,30 @@ export class TipsPage {
       description: 'tips.sleep.description',
       category: 'glucose',
     },
+    {
+      icon: 'happy-outline',
+      title: 'tips.stress.title',
+      description: 'tips.stress.description',
+      category: 'wellness',
+    },
+    {
+      icon: 'footsteps-outline',
+      title: 'tips.footcare.title',
+      description: 'tips.footcare.description',
+      category: 'wellness',
+    },
+    {
+      icon: 'warning-outline',
+      title: 'tips.emergency.title',
+      description: 'tips.emergency.description',
+      category: 'safety',
+    },
+    {
+      icon: 'people-outline',
+      title: 'tips.support.title',
+      description: 'tips.support.description',
+      category: 'safety',
+    },
   ];
 
   getCategoryIcon(category: string): string {
@@ -89,6 +113,8 @@ export class TipsPage {
       nutrition: 'nutrition-outline',
       exercise: 'fitness-outline',
       medication: 'medical-outline',
+      wellness: 'heart-outline',
+      safety: 'shield-checkmark-outline',
     };
     return icons[category] || 'information-circle-outline';
   }
@@ -99,7 +125,14 @@ export class TipsPage {
       nutrition: 'success',
       exercise: 'warning',
       medication: 'danger',
+      wellness: 'tertiary',
+      safety: 'secondary',
     };
     return colors[category] || 'medium';
+  }
+
+  // trackBy function for tips ngFor
+  trackByTip(index: number, tip: Tip): string {
+    return tip.title;
   }
 }

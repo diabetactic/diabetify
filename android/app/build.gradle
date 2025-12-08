@@ -49,8 +49,8 @@ android {
             minifyEnabled = true
             shrinkResources = true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            // Use debug signing for testing - change to signingConfigs.release for Play Store
-            signingConfig signingConfigs.debug
+            // Use release signing for Play Store distribution
+            signingConfig signingConfigs.release
         }
     }
 

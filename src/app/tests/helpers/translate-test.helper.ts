@@ -4,7 +4,7 @@
  * Provides proper TranslateService mock for testing
  */
 
-import { TranslateService, TranslateModule, TranslateLoader } from '@ngx-translate/core';
+import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { Observable, of } from 'rxjs';
 
 /**

@@ -735,8 +735,10 @@ export class ExternalServicesManager implements OnDestroy {
 
   /**
    * Cleanup on service destruction
+   * Prevents memory leaks from subscriptions and BehaviorSubjects
    */
   public ngOnDestroy(): void {
     this.stopHealthCheckInterval();
+    this.state$.complete();
   }
 }

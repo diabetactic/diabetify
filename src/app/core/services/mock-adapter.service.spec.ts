@@ -1,9 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { MockAdapterService } from './mock-adapter.service';
 import { DemoDataService } from './demo-data.service';
-import { MockAdapterConfig } from '../config/mock-adapter-config';
-import { LocalGlucoseReading, UserProfile, GlucoseStatistics } from '../models';
-import { PaginatedReadings } from './readings.service';
+import { LocalGlucoseReading, UserProfile } from '../models';
 
 describe('MockAdapterService', () => {
   let service: MockAdapterService;
@@ -49,10 +47,6 @@ describe('MockAdapterService', () => {
 
     it('should auto-initialize mock data on creation', () => {
       // Data should be initialized in localStorage
-      const readings = localStorage.getItem('diabetactic_mock_readings');
-      const appointments = localStorage.getItem('diabetactic_mock_appointments');
-      const profile = localStorage.getItem('diabetactic_mock_profile');
-
       // Data initialization is async, so we just check the service exists
       expect(service).toBeTruthy();
     });

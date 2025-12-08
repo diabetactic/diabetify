@@ -32,7 +32,7 @@ appId: io.diabetactic.app
 - extendedWaitUntil:
     notVisible:
       text: 'Cargando citas|Loading appointments|Cargando...'
-    timeout: 30000
+    timeout: 20000
 - waitForAnimationToEnd:
     timeout: 2000
 

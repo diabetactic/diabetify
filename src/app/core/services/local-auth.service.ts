@@ -49,6 +49,10 @@ export interface LocalUser {
   createdAt: string;
   updatedAt: string;
   preferences?: UserPreferences;
+  // Gamification fields from backend
+  times_measured?: number;
+  streak?: number;
+  max_streak?: number;
 }
 
 /**
@@ -419,6 +423,9 @@ export class LocalAuthService {
         diabetesType: '1',
         diagnosisDate: '2020-03-15',
         dateOfBirth: '2013-08-22',
+        times_measured: 42,
+        streak: 5,
+        max_streak: 10,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         preferences: {
@@ -581,9 +588,12 @@ export class LocalAuthService {
             }),
             catchError(error => {
               this.logger.error('Auth', 'Token refresh failed', error);
-              // Clear invalid refresh token
-              from(Preferences.remove({ key: STORAGE_KEYS.REFRESH_TOKEN })).subscribe();
-              return throwError(() => new Error('Token refresh failed. Please login again.'));
+              // Clear invalid refresh token - properly await instead of fire-and-forget
+              return from(Preferences.remove({ key: STORAGE_KEYS.REFRESH_TOKEN })).pipe(
+                switchMap(() =>
+                  throwError(() => new Error('Token refresh failed. Please login again.'))
+                )
+              );
             })
           );
       })
@@ -771,6 +781,9 @@ export class LocalAuthService {
       lastName: user.surname,
       role: 'patient',
       accountState,
+      times_measured: user.times_measured,
+      streak: user.streak,
+      max_streak: user.max_streak,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       preferences: {

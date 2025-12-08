@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 import { IonFabButton, IonIcon, IonButton } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { trigger, style, transition, animate } from '@angular/animations';
@@ -110,7 +111,8 @@ const BACKOFFICE_ADMIN_PASSWORD = 'admin';
     ]),
   ],
 })
-export class DebugPanelComponent implements OnInit {
+export class DebugPanelComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   isOpen = false;
   selectedTab = 'info';
   debugInfo: DebugInfo | null = null;
@@ -157,6 +159,15 @@ export class DebugPanelComponent implements OnInit {
     this.loadMockConfig();
   }
 
+  /**
+   * Clean up subscriptions when component is destroyed
+   * Prevents memory leaks from uncompleted subscriptions
+   */
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   async loadDebugInfo() {
     // Get device info
     const deviceInfo = await Device.getInfo();
@@ -186,11 +197,13 @@ export class DebugPanelComponent implements OnInit {
     //   };
     // });
 
-    // Subscribe to services health
-    this.servicesManager.state.subscribe((state: ExternalServicesState) => {
-      this.servicesHealth = state;
-      this.cdr.markForCheck();
-    });
+    // Subscribe to services health with cleanup
+    this.servicesManager.state
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state: ExternalServicesState) => {
+        this.servicesHealth = state;
+        this.cdr.markForCheck();
+      });
 
     // Get storage stats
     await this.loadStorageStats();

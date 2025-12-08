@@ -8,9 +8,9 @@
 appId: io.diabetactic.app
 
 ---
-# 1. TAP ON PROFILE TAB (bilingual text selector)
+# 1. TAP ON PROFILE TAB - use data-testid for robustness
 - tapOn:
-    text: 'Perfil|Profile'
+    id: 'tab-profile'
 - waitForAnimationToEnd
 
 # 2. WAIT FOR PROFILE PAGE TO LOAD

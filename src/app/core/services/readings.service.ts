@@ -3,10 +3,11 @@
  * Provides CRUD operations, offline queue, and statistics calculation
  */
 
-import { Injectable, Optional, Inject, InjectionToken } from '@angular/core';
+import { Injectable, Optional, Inject, InjectionToken, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable, from, firstValueFrom } from 'rxjs';
 import { liveQuery } from 'dexie';
 import { Network } from '@capacitor/network';
+import { PluginListenerHandle } from '@capacitor/core';
 import {
   LocalGlucoseReading,
   GlucoseReading,
@@ -82,8 +83,9 @@ export interface TeleAppointmentReadingSummary {
 @Injectable({
   providedIn: 'root',
 })
-export class ReadingsService {
+export class ReadingsService implements OnDestroy {
   private readonly SYNC_RETRY_LIMIT = 3;
+  private networkListenerHandle: PluginListenerHandle | null = null;
 
   // Observable for all readings (reactive)
   private _readings$ = new BehaviorSubject<LocalGlucoseReading[]>([]);
@@ -118,6 +120,18 @@ export class ReadingsService {
   }
 
   /**
+   * Clean up resources when service is destroyed
+   * Prevents memory leaks from network listener
+   */
+  ngOnDestroy(): void {
+    if (this.networkListenerHandle) {
+      this.networkListenerHandle.remove();
+      this.networkListenerHandle = null;
+      this.logger?.debug('Network', 'Network listener removed');
+    }
+  }
+
+  /**
    * Initialize reactive observables using Dexie's liveQuery
    */
   private initializeObservables(): void {
@@ -147,8 +161,8 @@ export class ReadingsService {
         `Initial network status: ${this.isOnline ? 'online' : 'offline'}`
       );
 
-      // Listen for network changes
-      Network.addListener('networkStatusChange', status => {
+      // Listen for network changes - store handle for cleanup
+      this.networkListenerHandle = await Network.addListener('networkStatusChange', status => {
         const wasOffline = !this.isOnline;
         this.isOnline = status.connected;
 
@@ -653,16 +667,13 @@ export class ReadingsService {
     };
 
     // Add optional created_at if reading has a time
-    // Backend expects ISO format: YYYY-MM-DDTHH:mm:ss
+    // Backend expects ISO 8601 format with timezone: YYYY-MM-DDTHH:mm:ssZ
+    // Using toISOString() ensures UTC timezone consistency across all platforms
     if (reading.time) {
       const date = new Date(reading.time);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      const seconds = String(date.getSeconds()).padStart(2, '0');
-      params['created_at'] = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+      // toISOString() returns UTC time with 'Z' suffix (e.g., 2025-12-08T04:45:00.000Z)
+      // Slice to remove milliseconds if backend doesn't expect them
+      params['created_at'] = date.toISOString().slice(0, 19) + 'Z';
     }
 
     // Add notes if present (single string)

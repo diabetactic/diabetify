@@ -39,9 +39,10 @@ env:
     timeout: 1000
 
 # 5. CONDITIONAL LOGIN - only if login form is visible
+# Use broader match for DNI-related text
 - runFlow:
     when:
-      visible: 'DNI o Email|DNI or Email|Ingresa tu DNI|Enter your DNI'
+      visible: '.*DNI.*'
     file: login-form-steps.yaml
 
 # 6. VERIFY DASHBOARD LOADED

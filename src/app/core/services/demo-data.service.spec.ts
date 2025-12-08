@@ -1,8 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { DemoDataService } from './demo-data.service';
-import { LocalGlucoseReading, UserProfile } from '../models';
-import { Appointment } from '../models/appointment.model';
 import { AccountState } from '../models/user-profile.model';
 
 describe('DemoDataService', () => {
