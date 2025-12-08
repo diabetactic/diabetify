@@ -2,7 +2,23 @@ import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonicModule, AlertController } from '@ionic/angular';
+import { AlertController, ToastController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle,
+  IonCardContent,
+  IonList,
+  IonItem,
+  IonLabel,
+} from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { AppointmentService } from '../../core/services/appointment.service';
@@ -17,7 +33,26 @@ import { AppIconComponent } from '../../shared/components/app-icon/app-icon.comp
   templateUrl: './appointment-detail.page.html',
   styleUrls: ['./appointment-detail.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, TranslateModule, AppIconComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    AppIconComponent,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonContent,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardSubtitle,
+    IonCardContent,
+    IonList,
+    IonItem,
+    IonLabel,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppointmentDetailPage implements OnInit {
@@ -31,6 +66,7 @@ export class AppointmentDetailPage implements OnInit {
     private router: Router,
     private appointmentService: AppointmentService,
     private alertController: AlertController,
+    private toastController: ToastController,
     private translationService: TranslationService,
     private logger: LoggerService
   ) {}
@@ -56,7 +92,7 @@ export class AppointmentDetailPage implements OnInit {
       // Also load resolution data
       this.loadResolution(id);
     } catch (error: unknown) {
-      console.error('Error loading appointment:', error);
+      this.logger.error('Appointments', 'Error loading appointment', error);
       await this.showError(
         (error as Error)?.message ||
           this.translationService.instant('appointments.errors.loadFailed')
@@ -79,11 +115,31 @@ export class AppointmentDetailPage implements OnInit {
         resolution: this.resolution,
       });
     } catch (error: unknown) {
-      // Resolution may not exist for pending appointments, which is expected
-      this.logger.info('UI', 'Resolution not available', {
-        appointmentId: id,
-        error: (error as Error)?.message,
-      });
+      const errorMsg = ((error as Error)?.message || '').toLowerCase();
+      // Check if this is a "not found" error (expected for pending appointments)
+      const isNotFoundError =
+        errorMsg.includes('not found') ||
+        errorMsg.includes('no encontrada') ||
+        errorMsg.includes('does not exist') ||
+        errorMsg.includes('404');
+
+      if (isNotFoundError) {
+        // Resolution not found is expected for pending appointments
+        this.logger.info('UI', 'Resolution not available', {
+          appointmentId: id,
+          error: (error as Error)?.message,
+        });
+      } else {
+        // Actual error (network, server, etc.) - show toast
+        this.logger.error('UI', 'Failed to load resolution', {
+          appointmentId: id,
+          error: (error as Error)?.message,
+        });
+        await this.showToast(
+          this.translationService.instant('appointments.errors.resolutionLoadFailed'),
+          'warning'
+        );
+      }
       this.resolution = null;
     } finally {
       this.loadingResolution = false;
@@ -266,5 +322,21 @@ export class AppointmentDetailPage implements OnInit {
    */
   goBack(): void {
     this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
+  }
+
+  /**
+   * Show toast message
+   */
+  private async showToast(
+    message: string,
+    color: 'success' | 'warning' | 'danger' = 'success'
+  ): Promise<void> {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      position: 'bottom',
+      color,
+    });
+    await toast.present();
   }
 }

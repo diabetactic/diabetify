@@ -289,4 +289,17 @@ export class ServiceMonitorComponent implements OnInit, OnDestroy {
         return 'ellipse-outline';
     }
   }
+
+  // trackBy functions for ngFor optimization
+  trackByService(index: number, service: ServiceHealthCheck): ExternalService {
+    return service.service;
+  }
+
+  trackByCircuitBreaker(index: number, cb: CircuitBreakerState): ExternalService {
+    return cb.service;
+  }
+
+  trackByWorkflow(index: number, workflow: WorkflowState): string {
+    return workflow.workflowId;
+  }
 }

@@ -3,7 +3,7 @@
  * Manages Material Design theming with child-friendly color palettes
  */
 
-import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
+import { Injectable, Renderer2, RendererFactory2, OnDestroy } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { ColorPalette, ThemeMode } from '../models';
 import { ProfileService } from './profile.service';
@@ -62,9 +62,11 @@ export const COLOR_PALETTES: PaletteDefinition[] = [
 @Injectable({
   providedIn: 'root',
 })
-export class ThemeService {
+export class ThemeService implements OnDestroy {
   private readonly LEGACY_THEME_KEY = 'diabetactic-theme';
   private renderer: Renderer2;
+  private mediaQueryListener: ((e: MediaQueryListEvent) => void) | null = null;
+  private mediaQuery: MediaQueryList | null = null;
 
   // Theme state observables (default light mode)
   private _themeMode$ = new BehaviorSubject<ThemeMode>('light');
@@ -122,18 +124,38 @@ export class ThemeService {
   }
 
   /**
+   * Clean up subscriptions and listeners when service is destroyed
+   * Prevents memory leaks from BehaviorSubjects and event listeners
+   */
+  ngOnDestroy(): void {
+    // Remove media query listener to prevent memory leak
+    if (this.mediaQuery && this.mediaQueryListener) {
+      this.mediaQuery.removeEventListener('change', this.mediaQueryListener);
+    }
+
+    // Complete all BehaviorSubjects
+    this._themeMode$.complete();
+    this._colorPalette$.complete();
+    this._highContrast$.complete();
+    this._isDark$.complete();
+
+    this.logger.debug('UI', 'ThemeService destroyed, resources cleaned up');
+  }
+
+  /**
    * Setup listener for system theme changes
    */
   private setupSystemThemeListener(): void {
     if (typeof window !== 'undefined' && window.matchMedia) {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      this.mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-      if (mediaQuery.addEventListener) {
-        mediaQuery.addEventListener('change', () => {
+      if (this.mediaQuery.addEventListener) {
+        this.mediaQueryListener = () => {
           if (this._themeMode$.value === 'auto') {
             this.applyTheme();
           }
-        });
+        };
+        this.mediaQuery.addEventListener('change', this.mediaQueryListener);
       }
     }
   }

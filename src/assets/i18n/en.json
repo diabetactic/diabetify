@@ -50,7 +50,8 @@
     "dismissAlert": "Dismiss alert",
     "unableToLoad": "Unable to load",
     "ok": "OK",
-    "error": "Error"
+    "error": "Error",
+    "sync": "Sync"
   },
   "tabs": {
     "home": "Home",
@@ -516,6 +517,7 @@
     "errors": {
       "loadFailed": "Error loading appointment",
       "loadListFailed": "Error loading appointments",
+      "resolutionLoadFailed": "Could not load appointment resolution",
       "unauthorized": "Unauthorized. Please log in again.",
       "notFound": "Appointment not found.",
       "slotUnavailable": "The time slot is no longer available.",
@@ -854,6 +856,7 @@
       "vibration": "Vibration",
       "test": "Test Notification",
       "testDesc": "Send a test notification to verify setup",
+      "webWarning": "Push notifications are only available on mobile devices. Install the app for full notification support.",
       "morningCheck": "Morning check",
       "lunchCheck": "Lunch check",
       "dinnerCheck": "Dinner check"
@@ -1289,6 +1292,22 @@
     "sleep": {
       "title": "Get Quality Sleep",
       "description": "Aim for 7-9 hours of quality sleep each night. Poor sleep can affect blood sugar levels and insulin sensitivity."
+    },
+    "stress": {
+      "title": "Manage Stress",
+      "description": "Practice relaxation techniques like deep breathing, meditation, or yoga. Chronic stress can raise blood sugar levels through hormones like cortisol."
+    },
+    "footcare": {
+      "title": "Care for Your Feet",
+      "description": "Check your feet daily for cuts, blisters, or changes. Keep them clean and moisturized. Diabetes can affect circulation and nerve sensitivity in your feet."
+    },
+    "emergency": {
+      "title": "Be Prepared for Emergencies",
+      "description": "Always carry fast-acting glucose sources (like glucose tablets or juice) for low blood sugar. Wear medical identification and share your emergency plan with family."
+    },
+    "support": {
+      "title": "Build Your Support Network",
+      "description": "Connect with family, friends, or diabetes support groups. Emotional support is crucial for managing a chronic condition. Consider joining local or online diabetes communities."
     }
   },
   "notifications": {
@@ -1413,6 +1432,27 @@
       "potato": "Potato",
       "egg": "Egg",
       "chicken": "Chicken"
+    }
+  },
+  "gamification": {
+    "streakTitle": "Your Streak",
+    "currentStreak": "Current Streak",
+    "maxStreak": "Best Streak",
+    "timesMeasured": "Total Readings",
+    "days": "days",
+    "day": "day",
+    "keepGoing": "Keep up the great work!",
+    "levels": {
+      "starter": "Getting Started",
+      "consistent": "Building Habits",
+      "dedicated": "Dedicated",
+      "champion": "Champion",
+      "legend": "Legend"
+    },
+    "messages": {
+      "noStreak": "Start tracking to build your streak!",
+      "streakLost": "Don't give up! Start a new streak today.",
+      "newRecord": "New personal best!"
     }
   }
 }

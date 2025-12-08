@@ -25,7 +25,7 @@ appId: io.diabetactic.app
 - extendedWaitUntil:
     visible:
       text: 'Tiempo en Rango|Time in Range'
-    timeout: 30000
+    timeout: 18000
 - waitForAnimationToEnd:
     timeout: 2000
 

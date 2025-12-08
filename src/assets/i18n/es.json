@@ -50,7 +50,8 @@
     "dismissAlert": "Descartar alerta",
     "unableToLoad": "No se pudo cargar",
     "ok": "OK",
-    "error": "Error"
+    "error": "Error",
+    "sync": "Sincronizar"
   },
   "tabs": {
     "home": "Inicio",
@@ -517,6 +518,7 @@
     "errors": {
       "loadFailed": "Error al cargar la cita",
       "loadListFailed": "Error al cargar las citas",
+      "resolutionLoadFailed": "No se pudo cargar la resolución de la cita",
       "unauthorized": "No autorizado. Por favor, inicie sesión nuevamente.",
       "notFound": "Cita no encontrada.",
       "slotUnavailable": "El horario ya no está disponible.",
@@ -782,7 +784,8 @@
       "dataSources": "Fuentes de Datos",
       "providers": "Dispositivos Conectados",
       "totalReadings": "Lecturas Sincronizadas",
-      "syncHistory": "Sincronizaciones Exitosas"
+      "syncHistory": "Sincronizaciones Exitosas",
+      "sessionExpired": "Tu sesión de Tidepool ha expirado. Por favor desconecta y vuelve a conectar con Tidepool."
     },
     "tidepoolLoginDialog": {
       "title": "Conectar a Tidepool",
@@ -862,6 +865,7 @@
       "vibration": "Vibración",
       "test": "Probar Notificación",
       "testDesc": "Enviar notificación de prueba para verificar configuración",
+      "webWarning": "Las notificaciones push solo están disponibles en dispositivos móviles. Instala la app para soporte completo de notificaciones.",
       "morningCheck": "Control matutino",
       "lunchCheck": "Control del almuerzo",
       "dinnerCheck": "Control de la cena"
@@ -1301,6 +1305,22 @@
     "sleep": {
       "title": "Duerme Bien",
       "description": "Intenta dormir de 7 a 9 horas de calidad cada noche. El mal sueño puede afectar los niveles de azúcar en sangre y la sensibilidad a la insulina."
+    },
+    "stress": {
+      "title": "Maneja el Estrés",
+      "description": "Practica técnicas de relajación como respiración profunda, meditación o yoga. El estrés crónico puede elevar los niveles de azúcar en sangre a través de hormonas como el cortisol."
+    },
+    "footcare": {
+      "title": "Cuida tus Pies",
+      "description": "Revisa tus pies diariamente buscando cortes, ampollas o cambios. Mantenlos limpios e hidratados. La diabetes puede afectar la circulación y sensibilidad nerviosa en tus pies."
+    },
+    "emergency": {
+      "title": "Prepárate para Emergencias",
+      "description": "Siempre lleva fuentes de glucosa de acción rápida (como tabletas de glucosa o jugo) para hipoglucemia. Usa identificación médica y comparte tu plan de emergencia con tu familia."
+    },
+    "support": {
+      "title": "Construye tu Red de Apoyo",
+      "description": "Conéctate con familia, amigos o grupos de apoyo para diabetes. El apoyo emocional es crucial para manejar una condición crónica. Considera unirte a comunidades de diabetes locales o en línea."
     }
   },
   "notifications": {
@@ -1444,5 +1464,26 @@
     "in": "en",
     "am": "AM",
     "pm": "PM"
+  },
+  "gamification": {
+    "streakTitle": "Tu Racha",
+    "currentStreak": "Racha Actual",
+    "maxStreak": "Mejor Racha",
+    "timesMeasured": "Total de Lecturas",
+    "days": "días",
+    "day": "día",
+    "keepGoing": "¡Sigue así, lo estás haciendo genial!",
+    "levels": {
+      "starter": "Empezando",
+      "consistent": "Creando Hábitos",
+      "dedicated": "Dedicado",
+      "champion": "Campeón",
+      "legend": "Leyenda"
+    },
+    "messages": {
+      "noStreak": "¡Empieza a registrar para construir tu racha!",
+      "streakLost": "¡No te rindas! Empieza una nueva racha hoy.",
+      "newRecord": "¡Nuevo récord personal!"
+    }
   }
 }

@@ -5,7 +5,7 @@
  * (iOS Keychain, Android KeyStore with native encryption)
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
 import { SecureStorage } from '@aparajita/capacitor-secure-storage';
@@ -50,7 +50,7 @@ const CURRENT_SCHEMA_VERSION = 1;
 @Injectable({
   providedIn: 'root',
 })
-export class ProfileService {
+export class ProfileService implements OnDestroy {
   // Reactive profile state
   private _profile$ = new BehaviorSubject<UserProfile | null>(null);
   public readonly profile$ = this._profile$.asObservable();
@@ -61,6 +61,15 @@ export class ProfileService {
 
   constructor(private apiGateway: ApiGatewayService) {
     this.initialize();
+  }
+
+  /**
+   * Clean up subscriptions when service is destroyed
+   * Prevents memory leaks from uncompleted BehaviorSubjects
+   */
+  ngOnDestroy(): void {
+    this._profile$.complete();
+    this._tidepoolConnected$.complete();
   }
 
   /**

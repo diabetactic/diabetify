@@ -9,11 +9,13 @@ import {
   LoginResult,
   RegisterRequest,
 } from './local-auth.service';
+import { ApiGatewayService } from './api-gateway.service';
 
 describe('UnifiedAuthService', () => {
   let service: UnifiedAuthService;
   let tidepoolAuthSpy: jest.Mocked<TidepoolAuthService>;
   let localAuthSpy: jest.Mocked<LocalAuthService>;
+  let apiGatewaySpy: jest.Mocked<Partial<ApiGatewayService>>;
 
   // Mock auth states
   let mockTidepoolAuthState: BehaviorSubject<TidepoolAuthState>;
@@ -38,6 +40,10 @@ describe('UnifiedAuthService', () => {
       refreshAccessToken: jest.fn(),
       updatePreferences: jest.fn(),
     } as unknown as jest.Mocked<LocalAuthService>;
+
+    apiGatewaySpy = {
+      clearCache: jest.fn(),
+    } as jest.Mocked<Partial<ApiGatewayService>>;
 
     // Initialize mock auth states
     mockTidepoolAuthState = new BehaviorSubject<TidepoolAuthState>({
@@ -71,6 +77,7 @@ describe('UnifiedAuthService', () => {
         UnifiedAuthService,
         { provide: TidepoolAuthService, useValue: tidepoolAuthSpy },
         { provide: LocalAuthService, useValue: localAuthSpy },
+        { provide: ApiGatewayService, useValue: apiGatewaySpy },
       ],
     });
 

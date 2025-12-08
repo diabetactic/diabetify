@@ -1,6 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 
 export type AlertType = 'success' | 'info' | 'warning';
@@ -10,7 +9,7 @@ export type AlertType = 'success' | 'info' | 'warning';
   templateUrl: './alert-banner.component.html',
   styleUrls: ['./alert-banner.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, TranslateModule],
+  imports: [CommonModule, TranslateModule],
 })
 export class AlertBannerComponent {
   @Input() type: AlertType = 'info';

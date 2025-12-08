@@ -30,7 +30,7 @@ describe('LoginPage', () => {
   let loadingCtrl: jest.Mocked<LoadingController>;
   let toastCtrl: jest.Mocked<ToastController>;
   let alertCtrl: jest.Mocked<AlertController>;
-  let translate: TranslateService;
+  let _translate: TranslateService;
   let logger: LoggerServiceStub;
   let mockLoading: any;
   let mockToast: any;
@@ -129,7 +129,7 @@ describe('LoginPage', () => {
 
     fixture = TestBed.createComponent(LoginPage);
     component = fixture.componentInstance;
-    translate = TestBed.inject(TranslateService);
+    _translate = TestBed.inject(TranslateService);
   });
 
   afterEach(() => {
@@ -178,7 +178,7 @@ describe('LoginPage', () => {
       Object.defineProperty(router, 'url', { writable: true, value: '/login' });
 
       const newFixture = TestBed.createComponent(LoginPage);
-      const newComponent = newFixture.componentInstance;
+      // Component created above triggers auth check on construction
 
       newFixture.detectChanges();
       await newFixture.whenStable();
@@ -199,7 +199,7 @@ describe('LoginPage', () => {
       Object.defineProperty(router, 'url', { writable: true, value: '/tabs/dashboard' });
 
       const newFixture = TestBed.createComponent(LoginPage);
-      const newComponent = newFixture.componentInstance;
+      // Component created above triggers auth check on construction
 
       newFixture.detectChanges();
       await newFixture.whenStable();

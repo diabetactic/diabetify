@@ -20,10 +20,9 @@ env:
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 4. TAP ADD BUTTON (FAB - using text from dashboard button)
-# On dashboard there's a visible "Agregar Lectura" button, or tap + icon FAB
+# 4. TAP ADD BUTTON (FAB) - use data-testid for robustness
 - tapOn:
-    text: 'Agregar Lectura|Add Reading|Agregar Nueva Lectura|Add New Reading'
+    id: 'fab-add-reading'
 - waitForAnimationToEnd:
     timeout: 2000
 

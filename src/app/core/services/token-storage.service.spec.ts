@@ -304,14 +304,9 @@ describe('TokenStorageService', () => {
 
     it('should calculate correct expiry timestamp', async () => {
       const expiresIn = 7200; // 2 hours
-      const beforeUpdate = Date.now();
 
       service.updateAccessToken('new-token', expiresIn);
 
-      const afterUpdate = Date.now();
-
-      // Verify expiry is approximately correct (within 100ms tolerance)
-      const expectedExpiry = beforeUpdate + expiresIn * 1000;
       const token = await service.getAccessToken();
       expect(token).toBe('new-token');
 
@@ -896,7 +891,6 @@ describe('TokenStorageService', () => {
     });
 
     it('should not retain stale expiry after clearAccessToken', async () => {
-      const futureExpiry = Date.now() + 3600000;
       service.updateAccessToken('token', 3600);
 
       service.clearAccessToken();

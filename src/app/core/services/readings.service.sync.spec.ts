@@ -523,10 +523,6 @@ describe('ReadingsService - Sync Queue Logic', () => {
     it('should push before pull (order matters)', async () => {
       const callOrder: string[] = [];
 
-      // Track order of operations
-      const originalSync = service.syncPendingReadings.bind(service);
-      const originalFetch = service.fetchFromBackend.bind(service);
-
       jest.spyOn(service, 'syncPendingReadings').mockImplementation(async () => {
         callOrder.push('push');
         return { success: 0, failed: 0 };

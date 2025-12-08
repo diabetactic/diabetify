@@ -6,8 +6,6 @@ import {
   ExternalServicesManager,
   ExternalService,
   HealthStatus,
-  CircuitBreakerState,
-  ServiceHealthCheck,
 } from './external-services-manager.service';
 import { Network } from '@capacitor/network';
 import { environment } from '../../../environments/environment';

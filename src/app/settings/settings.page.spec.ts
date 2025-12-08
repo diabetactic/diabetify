@@ -1,21 +1,16 @@
-import { ComponentFixture, TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AlertController, LoadingController, ToastController, IonicModule } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { of, BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 import { SettingsPage } from './settings.page';
 import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
-import {
-  LocalAuthService,
-  LocalUser,
-  UserPreferences,
-  AccountState,
-} from '../core/services/local-auth.service';
+import { LocalAuthService, LocalUser, AccountState } from '../core/services/local-auth.service';
 import { DemoDataService } from '../core/services/demo-data.service';
 import { NotificationService, ReadingReminder } from '../core/services/notification.service';
-import { ROUTES, STORAGE_KEYS, TIMEOUTS } from '../core/constants';
+import { ROUTES, STORAGE_KEYS } from '../core/constants';
 
 describe('SettingsPage', () => {
   let component: SettingsPage;
@@ -612,13 +607,24 @@ describe('SettingsPage', () => {
   });
 
   describe('Test Notification', () => {
-    it('should show immediate test notification', async () => {
+    it('should show immediate test notification with one of the rotating messages', async () => {
       await component.testNotification();
 
-      expect(mockNotificationService.showImmediateNotification).toHaveBeenCalledWith(
-        'Test Notification',
-        'Notifications are working correctly!'
-      );
+      // The test notification now rotates through different types
+      expect(mockNotificationService.showImmediateNotification).toHaveBeenCalledTimes(1);
+      const [title, body] = mockNotificationService.showImmediateNotification.mock.calls[0];
+
+      // Valid notification types
+      const validTitles = ['Diabetactic', 'Appointment Reminder', 'Daily Check'];
+      const validBodies = [
+        'Time to check your glucose levels!',
+        'You have a medical appointment in 30 minutes',
+        'Remember to log your morning glucose reading',
+      ];
+
+      expect(validTitles).toContain(title);
+      expect(validBodies).toContain(body);
+
       expect(mockToastController.create).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Test notification sent',

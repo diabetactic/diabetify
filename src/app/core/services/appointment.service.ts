@@ -5,9 +5,9 @@
  * Note: Backend provides treatment/clinical data, NOT scheduling data.
  */
 
-import { Injectable, inject } from '@angular/core';
-import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { Injectable, inject, OnDestroy } from '@angular/core';
+import { Observable, BehaviorSubject, throwError, of, Subject } from 'rxjs';
+import { catchError, map, tap, takeUntil } from 'rxjs/operators';
 import { ApiGatewayService } from './api-gateway.service';
 import { TranslationService } from './translation.service';
 import { NotificationService } from './notification.service';
@@ -32,12 +32,15 @@ interface MockAppointment extends Appointment {
 @Injectable({
   providedIn: 'root',
 })
-export class AppointmentService {
+export class AppointmentService implements OnDestroy {
   private logger = inject(LoggerService);
 
   // Reactive state for appointments
   private appointmentsSubject = new BehaviorSubject<Appointment[]>([]);
   public appointments$ = this.appointmentsSubject.asObservable();
+
+  // Subject for cleanup on destroy
+  private destroy$ = new Subject<void>();
 
   private readonly isMockMode = environment.backendMode === 'mock';
 
@@ -392,12 +395,23 @@ export class AppointmentService {
   }
 
   /**
+   * Clean up subscriptions when service is destroyed
+   */
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.appointmentsSubject.complete();
+  }
+
+  /**
    * Refresh appointments list
    */
   private refreshAppointments(): void {
-    this.getAppointments().subscribe({
-      error: err => this.logger.error('Appointments', 'Failed to refresh appointments', err),
-    });
+    this.getAppointments()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        error: err => this.logger.error('Appointments', 'Failed to refresh appointments', err),
+      });
   }
 
   /**

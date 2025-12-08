@@ -11,12 +11,23 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
-  IonicModule,
   AlertController,
   ToastController,
   LoadingController,
   ModalController,
 } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonAvatar,
+  IonButton,
+  IonIcon,
+  IonSelect,
+  IonSelectOption,
+  IonToggle,
+} from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, firstValueFrom } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
@@ -77,7 +88,22 @@ interface TidepoolUserData {
   styleUrls: ['./profile.page.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, IonicModule, TranslateModule, AppIconComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    AppIconComponent,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonAvatar,
+    IonButton,
+    IonIcon,
+    IonSelect,
+    IonSelectOption,
+    IonToggle,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ProfilePage implements OnInit, OnDestroy {
@@ -1092,5 +1118,10 @@ export class ProfilePage implements OnInit, OnDestroy {
         avatarUrl: undefined,
       };
     }
+  }
+
+  // trackBy function for unit options ngFor
+  trackByUnitOption(index: number, option: { value: string; label: string }): string {
+    return option.value;
   }
 }

@@ -1,13 +1,10 @@
-# Arquitectura - Diabetactic
+# Arquitectura - Diabetify
 
 ## Visión General
 
-Diabetactic es un sistema distribuido compuesto por:
+Diabetify es una aplicación móvil Ionic/Angular que se comunica con un backend de microservicios a través de un API Gateway centralizado.
 
-- **diabetify** (este repositorio): App móvil Ionic/Angular
-- **Backend microservicios**: api-gateway, glucoserver, appointments, login
-
-Ver [README del monorepo](../../README.md) para la estructura completa.
+El backend (en repositorios separados) expone servicios para autenticación, lecturas de glucosa y citas médicas.
 
 ## Patrón API Gateway
 

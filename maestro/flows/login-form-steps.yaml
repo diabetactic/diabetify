@@ -12,22 +12,22 @@ env:
   TEST_USER_PASSWORD: 'tuvieja'
 
 ---
-# 1. INPUT USERNAME
+# 1. INPUT USERNAME - use native id attribute (not data-testid)
 - tapOn:
-    text: 'DNI o Email|DNI or Email'
+    id: 'username'
 - eraseText
 - inputText: '${TEST_USER_ID}'
 - hideKeyboard
 
-# 2. INPUT PASSWORD
+# 2. INPUT PASSWORD - use native id attribute (not data-testid)
 - tapOn:
-    text: 'Contraseña|Password'
+    id: 'password'
 - eraseText
 - inputText: '${TEST_USER_PASSWORD}'
 - hideKeyboard
 
-# 3. SUBMIT LOGIN
+# 3. SUBMIT LOGIN - native id matches data-testid
 - tapOn:
-    text: 'Iniciar Sesión|Sign In'
+    id: 'login-submit-btn'
 - waitForAnimationToEnd:
     timeout: 2000

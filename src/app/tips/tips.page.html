@@ -19,7 +19,7 @@
 
     <!-- Tips list -->
     <div class="space-y-4">
-      <ion-card *ngFor="let tip of tips" class="m-0">
+      <ion-card *ngFor="let tip of tips; trackBy: trackByTip" class="m-0">
         <ion-card-content>
           <div class="flex items-start gap-3">
             <div

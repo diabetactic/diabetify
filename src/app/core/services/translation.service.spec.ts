@@ -65,7 +65,8 @@ describe('TranslationService', () => {
     it('should load stored language preference on init', async () => {
       (Preferences.get as jest.Mock).mockResolvedValue({ value: 'en' });
 
-      const newService = new TranslationService(translateService);
+      // Create service to trigger init
+      new TranslationService(translateService);
       await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(translateService.use).toHaveBeenCalledWith('en');

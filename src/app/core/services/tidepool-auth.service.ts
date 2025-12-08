@@ -9,11 +9,11 @@
  * @see https://tools.ietf.org/html/rfc7636 (PKCE)
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Browser } from '@capacitor/browser';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, PluginListenerHandle } from '@capacitor/core';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 
 import { TidepoolAuth, TidepoolTokenResponse } from '../models/tidepool-auth.model';
@@ -92,7 +92,7 @@ export class AuthenticationError extends Error {
 @Injectable({
   providedIn: 'root',
 })
-export class TidepoolAuthService {
+export class TidepoolAuthService implements OnDestroy {
   private readonly oauthConfig: OAuthConfig;
   private readonly MAX_RETRY_ATTEMPTS = 3;
   private readonly RETRY_DELAY_MS = 1000;
@@ -102,7 +102,7 @@ export class TidepoolAuthService {
   private pendingState: string | null = null;
 
   // Deep link listener reference for cleanup
-  private deepLinkListener: unknown = null;
+  private deepLinkListener: PluginListenerHandle | null = null;
 
   // Authentication state observable
   private authState$ = new BehaviorSubject<AuthState>({
@@ -125,10 +125,23 @@ export class TidepoolAuthService {
   constructor(
     private http: HttpClient,
     private capacitorHttp: CapacitorHttpService,
-    private tokenStorage: TokenStorageService
+    private tokenStorage: TokenStorageService,
+    private ngZone: NgZone
   ) {
     this.oauthConfig = getOAuthConfig();
     this.initialize();
+  }
+
+  /**
+   * Clean up listeners when service is destroyed
+   * Prevents memory leaks from Capacitor plugin listeners
+   */
+  ngOnDestroy(): void {
+    if (this.deepLinkListener) {
+      this.deepLinkListener.remove();
+      this.deepLinkListener = null;
+    }
+    this.authState$.complete();
   }
 
   /**
@@ -136,9 +149,12 @@ export class TidepoolAuthService {
    * Sets up app URL listener for OAuth callbacks
    */
   private async initialize(): Promise<void> {
-    // Register deep link listener for OAuth callback
-    App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
-      this.handleDeepLink(event.url);
+    // Register deep link listener for OAuth callback - store for cleanup
+    this.deepLinkListener = await App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
+      // Capacitor callbacks run outside Angular zone - wrap in ngZone.run
+      this.ngZone.run(() => {
+        this.handleDeepLink(event.url);
+      });
     });
 
     // Check if we have a stored refresh token and restore session

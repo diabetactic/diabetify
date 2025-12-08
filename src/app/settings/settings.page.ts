@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
-import { AlertController, LoadingController, ToastController } from '@ionic/angular';
+import { AlertController, LoadingController, Platform, ToastController } from '@ionic/angular';
 import {
   IonHeader,
   IonToolbar,
@@ -124,18 +124,25 @@ export class SettingsPage implements OnInit, OnDestroy {
   notificationPermissionGranted = false;
   readingReminders: ReadingReminder[] = [];
 
+  // Platform detection for web notification warning
+  isWebPlatform = false;
+
   constructor(
     private router: Router,
     private alertController: AlertController,
     private loadingController: LoadingController,
     private toastController: ToastController,
+    private platform: Platform,
     private profileService: ProfileService,
     private themeService: ThemeService,
     private authService: LocalAuthService,
     private demoDataService: DemoDataService,
     private notificationService: NotificationService,
     private translate: TranslateService
-  ) {}
+  ) {
+    // Detect if running on web (not native)
+    this.isWebPlatform = !this.platform.is('capacitor');
+  }
 
   ngOnInit() {
     this.initializeReadingReminders();
@@ -499,13 +506,34 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Test notification (for debugging)
+   * Test notification - sends a sample notification to preview how it looks
    */
   async testNotification() {
-    await this.notificationService.showImmediateNotification(
-      'Test Notification',
-      'Notifications are working correctly!'
-    );
+    const notificationTypes = [
+      {
+        title: 'Diabetactic',
+        body: 'Time to check your glucose levels!',
+      },
+      {
+        title: 'Appointment Reminder',
+        body: 'You have a medical appointment in 30 minutes',
+      },
+      {
+        title: 'Daily Check',
+        body: 'Remember to log your morning glucose reading',
+      },
+    ];
+
+    // Rotate through notification types for variety
+    const randomIndex = Math.floor(Math.random() * notificationTypes.length);
+    const { title, body } = notificationTypes[randomIndex];
+
+    await this.notificationService.showImmediateNotification(title, body);
     await this.showToast('Test notification sent', 'success');
+  }
+
+  // trackBy function for reading reminders ngFor
+  trackByReminder(index: number, reminder: ReadingReminder): number {
+    return reminder.id;
   }
 }

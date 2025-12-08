@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
 import {
@@ -8,6 +8,7 @@ import {
   LocalNotificationSchema,
   ActionPerformed,
 } from '@capacitor/local-notifications';
+import { PluginListenerHandle } from '@capacitor/core';
 import { LoggerService } from './logger.service';
 import { ROUTES, appointmentDetailRoute } from '../constants';
 
@@ -27,10 +28,11 @@ export interface AppointmentReminder {
 @Injectable({
   providedIn: 'root',
 })
-export class NotificationService {
+export class NotificationService implements OnDestroy {
   private readonly READING_REMINDER_BASE_ID = 1000;
   private readonly APPOINTMENT_REMINDER_BASE_ID = 2000;
   private hasPermission = false;
+  private listenerHandles: PluginListenerHandle[] = [];
 
   constructor(
     private platform: Platform,
@@ -47,12 +49,16 @@ export class NotificationService {
       return;
     }
 
-    // Listen for notification actions
-    await LocalNotifications.addListener('localNotificationReceived', notification => {
-      this.logger.info('Notifications', 'Notification received', { id: notification.id });
-    });
+    // Listen for notification actions - store handles for cleanup
+    const receivedHandle = await LocalNotifications.addListener(
+      'localNotificationReceived',
+      notification => {
+        this.logger.info('Notifications', 'Notification received', { id: notification.id });
+      }
+    );
+    this.listenerHandles.push(receivedHandle);
 
-    await LocalNotifications.addListener(
+    const actionHandle = await LocalNotifications.addListener(
       'localNotificationActionPerformed',
       (action: ActionPerformed) => {
         this.logger.info('Notifications', 'Notification action performed', {
@@ -62,6 +68,19 @@ export class NotificationService {
         this.handleNotificationAction(action);
       }
     );
+    this.listenerHandles.push(actionHandle);
+  }
+
+  /**
+   * Clean up notification listeners when service is destroyed
+   * Prevents memory leaks from Capacitor plugin listeners
+   */
+  ngOnDestroy(): void {
+    for (const handle of this.listenerHandles) {
+      handle.remove();
+    }
+    this.listenerHandles = [];
+    this.logger.debug('Notifications', 'Notification listeners removed');
   }
 
   /**
