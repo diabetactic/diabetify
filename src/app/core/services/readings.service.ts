@@ -612,7 +612,9 @@ export class ReadingsService implements OnDestroy {
             }
 
             // Remove from queue on success
-            await this.db.syncQueue.delete(item.id!);
+            if (item.id !== undefined) {
+              await this.db.syncQueue.delete(item.id);
+            }
 
             // Mark reading as synced if it was create/update
             if (item.operation !== 'delete' && item.readingId) {
@@ -649,13 +651,17 @@ export class ReadingsService implements OnDestroy {
                 'Sync',
                 `Max retries reached for ${item.readingId}, removing from queue`
               );
-              await this.db.syncQueue.delete(item.id!);
+              if (item.id !== undefined) {
+                await this.db.syncQueue.delete(item.id);
+              }
             } else {
               // Update retry count with detailed error
-              await this.db.syncQueue.update(item.id!, {
-                retryCount,
-                lastError: detailedError,
-              });
+              if (item.id !== undefined) {
+                await this.db.syncQueue.update(item.id, {
+                  retryCount,
+                  lastError: detailedError,
+                });
+              }
             }
           }
         }
