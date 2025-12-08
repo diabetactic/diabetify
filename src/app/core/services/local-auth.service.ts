@@ -767,6 +767,49 @@ export class LocalAuthService {
   }
 
   /**
+   * Public method to refresh user profile (gamification data: streak, times_measured, max_streak)
+   * Call this after syncing readings to update gamification stats without re-login.
+   * Returns a promise that resolves when the profile is refreshed.
+   */
+  public async refreshUserProfile(): Promise<void> {
+    const currentState = this.authStateSubject.value;
+
+    if (!currentState.isAuthenticated || !currentState.accessToken) {
+      this.logger.warn('Auth', 'Cannot refresh profile: user not authenticated');
+      return;
+    }
+
+    try {
+      this.logger.info('Auth', 'Refreshing user profile for gamification data');
+
+      const profile = await firstValueFrom(this.fetchUserProfile(currentState.accessToken));
+
+      const updatedUser = this.mapGatewayUser(profile);
+
+      // Update the auth state with fresh user data
+      this.authStateSubject.next({
+        ...currentState,
+        user: updatedUser,
+      });
+
+      // Persist the updated user to storage
+      await Preferences.set({
+        key: STORAGE_KEYS.USER,
+        value: JSON.stringify(updatedUser),
+      });
+
+      this.logger.info('Auth', 'User profile refreshed successfully', {
+        times_measured: updatedUser.times_measured,
+        streak: updatedUser.streak,
+        max_streak: updatedUser.max_streak,
+      });
+    } catch (error) {
+      this.logger.error('Auth', 'Failed to refresh user profile', error);
+      // Don't throw - this is a non-critical background refresh
+    }
+  }
+
+  /**
    * Map API Gateway user payload into the local user format used by the app
    */
   private mapGatewayUser(user: GatewayUserResponse): LocalUser {
