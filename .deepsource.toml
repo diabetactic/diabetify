@@ -35,6 +35,10 @@ exclude_patterns = [
   "maestro/**",
   "setup-jest.ts",
 
+  # Dev-only debug components (not production code, don't need coverage)
+  "src/app/shared/components/debug-panel/**",
+  "src/app/testing/**",
+
   # Test artifacts
   "coverage/**",
   "playwright/artifacts/**",
