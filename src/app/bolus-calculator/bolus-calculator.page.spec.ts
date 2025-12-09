@@ -6,6 +6,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BolusCalculatorPage } from './bolus-calculator.page';
 import { MockDataService, BolusCalculation } from '../core/services/mock-data.service';
 import { FoodService } from '../core/services/food.service';
+import { LoggerService } from '../core/services/logger.service';
 import { FoodPickerResult, SelectedFood } from '../core/models/food.model';
 import { of, throwError } from 'rxjs';
 import { delay } from 'rxjs/operators';
@@ -18,10 +19,18 @@ describe('BolusCalculatorPage', () => {
   let mockDataService: jest.Mocked<MockDataService>;
   let mockNavController: jest.Mocked<NavController>;
   let mockFoodService: jest.Mocked<FoodService>;
+  let mockLoggerService: jest.Mocked<LoggerService>;
 
   beforeEach(async () => {
     mockDataService = {
       calculateBolus: jest.fn(),
+    } as any;
+
+    mockLoggerService = {
+      error: jest.fn(),
+      warn: jest.fn(),
+      info: jest.fn(),
+      debug: jest.fn(),
     } as any;
 
     mockNavController = {
@@ -61,6 +70,7 @@ describe('BolusCalculatorPage', () => {
         { provide: MockDataService, useValue: mockDataService },
         { provide: NavController, useValue: mockNavController },
         { provide: FoodService, useValue: mockFoodService },
+        { provide: LoggerService, useValue: mockLoggerService },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
@@ -384,7 +394,6 @@ describe('BolusCalculatorPage', () => {
 
   describe('Error Handling', () => {
     it('should handle calculation error gracefully', fakeAsync(() => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
       mockDataService.calculateBolus.mockReturnValue(
         throwError(() => new Error('Calculation failed'))
       );
@@ -399,13 +408,14 @@ describe('BolusCalculatorPage', () => {
 
       expect(component.calculating).toBe(false);
       expect(component.result).toBeNull();
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error calculating bolus:', expect.any(Error));
-
-      consoleErrorSpy.mockRestore();
+      expect(mockLoggerService.error).toHaveBeenCalledWith(
+        'BolusCalculator',
+        'Error calculating bolus',
+        expect.any(Error)
+      );
     }));
 
     it('should handle service throw error', fakeAsync(() => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
       mockDataService.calculateBolus.mockImplementation(() => {
         throw new Error('Service unavailable');
       });
@@ -418,9 +428,7 @@ describe('BolusCalculatorPage', () => {
       component.calculateBolus();
 
       expect(component.calculating).toBe(false);
-      expect(consoleErrorSpy).toHaveBeenCalled();
-
-      consoleErrorSpy.mockRestore();
+      expect(mockLoggerService.error).toHaveBeenCalled();
     }));
   });
 
