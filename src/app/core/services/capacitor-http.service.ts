@@ -221,7 +221,9 @@ export class CapacitorHttpService {
     }
 
     this.logger.debug('HTTP', 'POST starting', { url: fullUrl });
-    this.logger.debug('HTTP', 'POST data', { data: JSON.stringify(data).substring(0, 200) });
+    this.logger.debug('HTTP', 'POST data', {
+      data: data ? JSON.stringify(data).substring(0, 200) : 'undefined',
+    });
 
     const headers = this.convertHeaders(options?.headers);
 
