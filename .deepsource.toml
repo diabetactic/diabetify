@@ -78,3 +78,8 @@ enabled = true
   # TypeScript version
   dialect = "typescript"
 
+# Test Coverage Analyzer
+[[analyzers]]
+name = "test-coverage"
+enabled = true
+
