@@ -448,24 +448,22 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
    * Returns true if confirmed, false otherwise
    */
   private async showConfirm(message: string): Promise<boolean> {
-    return new Promise(async resolve => {
-      const alert = await this.alertController.create({
-        header: 'Confirm',
-        message,
-        buttons: [
-          {
-            text: 'Cancel',
-            role: 'cancel',
-            handler: () => resolve(false),
-          },
-          {
-            text: 'OK',
-            handler: () => resolve(true),
-          },
-        ],
-      });
-      await alert.present();
+    const alert = await this.alertController.create({
+      header: 'Confirm',
+      message,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        },
+        {
+          text: 'OK',
+        },
+      ],
     });
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+    return role !== 'cancel';
   }
 
   /**
@@ -473,31 +471,32 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
    * Returns the entered value or null if cancelled
    */
   private async showPrompt(message: string, placeholder?: string): Promise<string | null> {
-    return new Promise(async resolve => {
-      const alert = await this.alertController.create({
-        header: 'Input',
-        message,
-        inputs: [
-          {
-            name: 'value',
-            type: 'text',
-            placeholder: placeholder || '',
-          },
-        ],
-        buttons: [
-          {
-            text: 'Cancel',
-            role: 'cancel',
-            handler: () => resolve(null),
-          },
-          {
-            text: 'OK',
-            handler: data => resolve(data.value || null),
-          },
-        ],
-      });
-      await alert.present();
+    const alert = await this.alertController.create({
+      header: 'Input',
+      message,
+      inputs: [
+        {
+          name: 'value',
+          type: 'text',
+          placeholder: placeholder || '',
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        },
+        {
+          text: 'OK',
+        },
+      ],
     });
+    await alert.present();
+    const { role, data } = await alert.onDidDismiss();
+    if (role === 'cancel') {
+      return null;
+    }
+    return data?.values?.value || null;
   }
 
   // =========================================================
