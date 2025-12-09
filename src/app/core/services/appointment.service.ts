@@ -251,7 +251,7 @@ export class AppointmentService implements OnDestroy {
       return of(true);
     }
     return this.apiGateway.request<boolean>('appointments.queue.open').pipe(
-      map(response => !!response.data),
+      map(response => Boolean(response.data)),
       catchError(() => of(false)) // Assume closed on error
     );
   }

@@ -300,7 +300,7 @@ export class PerformanceMonitor {
     );
     if (slowOperations.length > 0) {
       console.warn(
-        '⚠️ Slow Operations (>' + this.thresholds.renderTime + 'ms):',
+        `⚠️ Slow Operations (>${this.thresholds.renderTime}ms):`,
         slowOperations.map(([l]) => l)
       );
     }
@@ -310,7 +310,7 @@ export class PerformanceMonitor {
     );
     if (memoryHeavy.length > 0) {
       console.warn(
-        '⚠️ High Memory Usage (>' + (this.thresholds.memoryUsage / 1048576).toFixed(2) + 'MB):',
+        `⚠️ High Memory Usage (>${(this.thresholds.memoryUsage / 1048576).toFixed(2)}MB):`,
         memoryHeavy.map(([l]) => l)
       );
     }
@@ -318,7 +318,7 @@ export class PerformanceMonitor {
     const domHeavy = measurements.filter(([_, m]) => m.domNodes > this.thresholds.domNodes);
     if (domHeavy.length > 0) {
       console.warn(
-        '⚠️ Large DOM Changes (>' + this.thresholds.domNodes + ' nodes):',
+        `⚠️ Large DOM Changes (>${this.thresholds.domNodes} nodes):`,
         domHeavy.map(([l]) => l)
       );
     }

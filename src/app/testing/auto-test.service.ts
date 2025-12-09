@@ -61,7 +61,7 @@ export class AutoTestService {
       }
       // Store token for subsequent requests
       localStorage.setItem('access_token', response.data.access_token);
-      return { token: response.data.access_token.substring(0, 20) + '...' };
+      return { token: `${response.data.access_token.substring(0, 20)}...` };
     });
 
     // Test 2: User Profile

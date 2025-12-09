@@ -179,6 +179,12 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
           );
           await this.showBlockAlert(this.queueBlockMessage);
           break;
+
+        default:
+          // Unknown state - treat as blocked
+          this.canSubmit = false;
+          this.queueBlockMessage = 'Unable to verify appointment eligibility';
+          break;
       }
     } catch (error) {
       this.logger.error('Appointments', 'Error checking queue state', error);

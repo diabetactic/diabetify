@@ -262,7 +262,7 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
       alert('✅ Sync completed');
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      alert('❌ Sync failed: ' + message);
+      alert(`❌ Sync failed: ${message}`);
     }
   }
 

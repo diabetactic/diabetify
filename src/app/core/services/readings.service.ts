@@ -493,6 +493,9 @@ export class ReadingsService implements OnDestroy {
       case 'all':
         startDate = new Date(0); // Beginning of time
         break;
+      default:
+        // Exhaustive check - should never reach here with proper typing
+        throw new Error(`Invalid period: ${period}`);
     }
 
     const displayUnit: GlucoseUnit = unit || 'mg/dL';
@@ -713,7 +716,7 @@ export class ReadingsService implements OnDestroy {
       const date = new Date(reading.time);
       // toISOString() returns UTC time with 'Z' suffix (e.g., 2025-12-08T04:45:00.000Z)
       // Slice to remove milliseconds if backend doesn't expect them
-      params['created_at'] = date.toISOString().slice(0, 19) + 'Z';
+      params['created_at'] = `${date.toISOString().slice(0, 19)}Z`;
     }
 
     // Add notes if present (single string)
@@ -735,7 +738,7 @@ export class ReadingsService implements OnDestroy {
 
     this.logger?.info('Sync', 'Backend response received', {
       success: response.success,
-      hasData: !!response.data,
+      hasData: Boolean(response.data),
       error: response.error ? JSON.stringify(response.error) : null,
     });
 

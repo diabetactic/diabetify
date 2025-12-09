@@ -93,7 +93,7 @@ export class DOMSnapshot {
       return '(null element)';
     }
     const html = element.outerHTML;
-    return html.length > maxLength ? html.substring(0, maxLength) + '...' : html;
+    return html.length > maxLength ? `${html.substring(0, maxLength)}...` : html;
   }
 
   static captureTree(element: Element | null, depth: number = 3): any {

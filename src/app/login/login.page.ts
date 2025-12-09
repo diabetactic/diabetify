@@ -277,7 +277,7 @@ export class LoginPage implements OnInit {
 
   isFieldInvalid(fieldName: string): boolean {
     const field = this.loginForm.get(fieldName);
-    return !!(field?.invalid && (field?.dirty || field?.touched));
+    return Boolean(field?.invalid && (field?.dirty || field?.touched));
   }
 
   private async ensureOnboardingProfile(localUser: LocalUser): Promise<void> {
