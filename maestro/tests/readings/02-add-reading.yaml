@@ -1,13 +1,14 @@
 # ==========================================
-# Test: Add Glucose Reading
-# Description: Add a new reading and verify it appears
-# Uses text selectors (data-testid not accessible in Capacitor WebView)
+# Test: Add Glucose Reading (WITH BACKEND VERIFICATION)
+# Description: Add a new reading and VERIFY it was saved to backend
+# This test actually validates data persistence, not just UI
 # ==========================================
 
 appId: io.diabetactic.app
 
 env:
-  TEST_GLUCOSE_VALUE: '120'
+  TEST_GLUCOSE_VALUE: '142'
+  API_BASE_URL: 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com'
 
 ---
 # 1. LOGIN
@@ -20,19 +21,28 @@ env:
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 4. TAP ADD BUTTON (FAB) - use data-testid for robustness
+# 4. STORE INITIAL READING COUNT (for comparison)
+- runScript:
+    file: ../../scripts/verify-backend.js
+    env:
+      VERIFY_ACTION: 'get_readings'
+      USER_ID: ${TEST_USER_ID}
+      USER_PASSWORD: ${TEST_USER_PASSWORD}
+      API_BASE_URL: ${API_BASE_URL}
+
+# 5. TAP ADD BUTTON (FAB)
 - tapOn:
     id: 'fab-add-reading'
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 5. VERIFY ADD READING FORM LOADED
+# 6. VERIFY ADD READING FORM LOADED
 - extendedWaitUntil:
     visible:
       text: 'Agregar Lectura|Add Reading'
     timeout: 5000
 
-# 6. ENTER GLUCOSE VALUE
+# 7. ENTER GLUCOSE VALUE
 - tapOn:
     id: 'glucose-value-input'
 - inputText: ${TEST_GLUCOSE_VALUE}
@@ -40,30 +50,44 @@ env:
 - waitForAnimationToEnd:
     timeout: 1000
 
-# 7. SWIPE UP TO MAKE SURE SAVE BUTTON IS VISIBLE
+# 8. SWIPE UP TO MAKE SURE SAVE BUTTON IS VISIBLE
 - swipe:
     start: '50%,80%'
     end: '50%,40%'
 - waitForAnimationToEnd:
     timeout: 500
 
-# 8. SAVE READING - use data-testid
+# 9. SAVE READING
 - tapOn:
     id: 'add-reading-save-btn'
 - waitForAnimationToEnd:
-    timeout: 2000
+    timeout: 3000
 
-# 9. WAIT FOR SUCCESS (back to readings list)
+# 10. WAIT FOR SUCCESS (back to readings list)
 - extendedWaitUntil:
     visible:
       text: 'Mostrando.*lecturas|Showing.*readings|Lecturas|Readings'
-    timeout: 8000
+    timeout: 10000
 
-# 10. VERIFY WE'RE ON READINGS PAGE (new reading may need sync to appear)
+# 11. CRITICAL: VERIFY BACKEND RECEIVED THE READING
+# This is the REAL test - did the data actually persist?
+- runScript:
+    file: ../../scripts/verify-backend.js
+    env:
+      VERIFY_ACTION: 'readings_exist'
+      EXPECTED_VALUE: ${TEST_GLUCOSE_VALUE}
+      USER_ID: ${TEST_USER_ID}
+      USER_PASSWORD: ${TEST_USER_PASSWORD}
+      API_BASE_URL: ${API_BASE_URL}
+
+# 12. VERIFY OUTPUT FROM SCRIPT (reading was found)
+- assertTrue: ${output.verified}
+- assertTrue: ${output.readingFound}
+
+# 13. UI CHECK (now safe to be flexible since backend is verified)
 - assertVisible:
     text: 'Lecturas|Readings'
 
-# 11. OPTIONAL: Check if 120 appears (may need time to sync)
+# 14. VERIFY READING APPEARS IN UI (should match backend)
 - assertVisible:
-    text: '120'
-    optional: true
+    text: '142'
