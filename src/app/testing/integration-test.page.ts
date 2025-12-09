@@ -365,7 +365,7 @@ export class IntegrationTestPage implements OnInit {
     }
   }
 
-  private async showToast(message: string, color: string = 'dark') {
+  private async showToast(message: string, color = 'dark') {
     const toast = await this.toastController.create({
       message,
       duration: 2000,
