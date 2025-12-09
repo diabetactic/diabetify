@@ -41,6 +41,7 @@ import { NotificationService, ReadingReminder } from '../core/services/notificat
 import { LocalUser, UserPreferences } from '../core/services/local-auth.service';
 import { environment } from '../../environments/environment';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { LoggerService } from '../core/services/logger.service';
 import { ROUTES, STORAGE_KEYS, TIMEOUTS } from '../core/constants';
 
 @Component({
@@ -138,7 +139,8 @@ export class SettingsPage implements OnInit, OnDestroy {
     private authService: LocalAuthService,
     private demoDataService: DemoDataService,
     private notificationService: NotificationService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private logger: LoggerService
   ) {
     // Detect if running on web (not native)
     this.isWebPlatform = !this.platform.is('capacitor');
@@ -214,7 +216,7 @@ export class SettingsPage implements OnInit, OnDestroy {
         }
       }
     } catch (error) {
-      console.error('Error loading user data:', error);
+      this.logger.error('Settings', 'Error loading user data', error);
       await this.showToast('Error al cargar los datos del usuario', 'danger');
     }
   }
@@ -322,7 +324,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.hasChanges = false;
       await this.showToast('Configuración guardada exitosamente', 'success');
     } catch (error) {
-      console.error('Error saving settings:', error);
+      this.logger.error('Settings', 'Error saving settings', error);
       await this.showToast('Error al guardar la configuración', 'danger');
     } finally {
       await loading.dismiss();
