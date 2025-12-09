@@ -27,6 +27,7 @@ import { UnifiedAuthService } from '../../core/services/unified-auth.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { db } from '../../core/services/database.service';
 import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
+import { LoggerService } from '../../core/services/logger.service';
 import { ROUTES, TIMEOUTS } from '../../core/constants';
 
 @Component({
@@ -66,7 +67,8 @@ export class AdvancedPage implements OnDestroy {
     private alertController: AlertController,
     private toastController: ToastController,
     private router: Router,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private logger: LoggerService
   ) {}
 
   ngOnDestroy(): void {
@@ -94,7 +96,7 @@ export class AdvancedPage implements OnDestroy {
               await this.authService.logout();
               this.router.navigate([ROUTES.WELCOME]);
             } catch (error) {
-              console.error('Sign out error:', error);
+              this.logger.error('Auth', 'Sign out error', error);
               const toast = await this.toastController.create({
                 message: this.translationService.instant('errors.generic'),
                 duration: TIMEOUTS.TOAST_SHORT,
@@ -148,7 +150,7 @@ export class AdvancedPage implements OnDestroy {
                 window.location.reload();
               }, 500);
             } catch (error) {
-              console.error('Clear data error:', error);
+              this.logger.error('Settings', 'Clear data error', error);
               const toast = await this.toastController.create({
                 message: this.translationService.instant('settings.advanced.clearDataError'),
                 duration: TIMEOUTS.TOAST_SHORT,
@@ -169,6 +171,6 @@ export class AdvancedPage implements OnDestroy {
    */
   onAccountStateChange(event: CustomEvent): void {
     this.accountState = event.detail.value;
-    console.log('Account state changed to:', this.accountState);
+    this.logger.debug('Settings', 'Account state changed', { state: this.accountState });
   }
 }

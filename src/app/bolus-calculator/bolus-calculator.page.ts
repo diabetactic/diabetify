@@ -22,6 +22,7 @@ import { FoodService } from '../core/services/food.service';
 import { FoodPickerResult, SelectedFood } from '../core/models/food.model';
 import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
 import { FoodPickerComponent } from '../shared/components/food-picker/food-picker.component';
+import { LoggerService } from '../core/services/logger.service';
 
 @Component({
   selector: 'app-bolus-calculator',
@@ -53,6 +54,7 @@ export class BolusCalculatorPage {
   private foodService = inject(FoodService);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
+  private logger = inject(LoggerService);
 
   calculatorForm: FormGroup;
   calculating = false;
@@ -138,12 +140,12 @@ export class BolusCalculatorPage {
             this.calculating = false;
           },
           error: error => {
-            console.error('Error calculating bolus:', error);
+            this.logger.error('BolusCalculator', 'Error calculating bolus', error);
             this.calculating = false;
           },
         });
     } catch (error) {
-      console.error('Error calculating bolus:', error);
+      this.logger.error('BolusCalculator', 'Error calculating bolus', error);
       this.calculating = false;
     }
   }

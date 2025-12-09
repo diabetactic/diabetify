@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ToastController, AlertController } from '@ionic/angular';
 import {
   IonHeader,
   IonToolbar,
@@ -13,6 +14,7 @@ import {
   IonIcon,
 } from '@ionic/angular/standalone';
 import { AutoTestService, TestResult } from './auto-test.service';
+import { LoggerService } from '../core/services/logger.service';
 
 @Component({
   selector: 'app-integration-test',
@@ -322,6 +324,10 @@ import { AutoTestService, TestResult } from './auto-test.service';
   ],
 })
 export class IntegrationTestPage implements OnInit {
+  private logger = inject(LoggerService);
+  private toastController = inject(ToastController);
+  private alertController = inject(AlertController);
+
   apiUrl: string;
   username = '1000';
   password = 'tuvieja';
@@ -333,13 +339,13 @@ export class IntegrationTestPage implements OnInit {
   }
 
   ngOnInit() {
-    console.log('🧪 Integration Test Page loaded');
-    console.log('🌐 API URL:', this.apiUrl);
+    this.logger.debug('IntegrationTest', 'Integration Test Page loaded');
+    this.logger.debug('IntegrationTest', 'API URL', { apiUrl: this.apiUrl });
   }
 
   async runAllTests() {
     if (!this.password) {
-      alert('Por favor ingresa la contraseña');
+      await this.showToast('Por favor ingresa la contraseña', 'warning');
       return;
     }
 
@@ -349,11 +355,33 @@ export class IntegrationTestPage implements OnInit {
     try {
       this.results = await this.autoTest.runAllTests(this.username, this.password);
     } catch (error) {
-      console.error('Test suite error:', error);
-      alert(`Error running tests: ${error instanceof Error ? error.message : String(error)}`);
+      this.logger.error('IntegrationTest', 'Test suite error', error);
+      await this.showAlert(
+        'Error',
+        `Error running tests: ${error instanceof Error ? error.message : String(error)}`
+      );
     } finally {
       this.running = false;
     }
+  }
+
+  private async showToast(message: string, color: string = 'dark') {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position: 'bottom',
+      color,
+    });
+    await toast.present();
+  }
+
+  private async showAlert(header: string, message: string) {
+    const alert = await this.alertController.create({
+      header,
+      message,
+      buttons: ['OK'],
+    });
+    await alert.present();
   }
 
   get successCount(): number {

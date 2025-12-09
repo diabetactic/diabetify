@@ -19,7 +19,7 @@ import {
 } from '../../../core/services/external-services-manager.service';
 import { db } from '../../../core/services/database.service';
 import { MockAdapterService } from '../../../core/services/mock-adapter.service';
-import { ToastController } from '@ionic/angular';
+import { ToastController, AlertController } from '@ionic/angular';
 import { AppIconComponent } from '../app-icon/app-icon.component';
 import { CapacitorHttpService } from '../../../core/services/capacitor-http.service';
 import { API_GATEWAY_BASE_URL } from '../../config/api-base-url';
@@ -150,6 +150,7 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
     private servicesManager: ExternalServicesManager,
     private mockAdapter: MockAdapterService,
     private toastController: ToastController,
+    private alertController: AlertController,
     private capacitorHttp: CapacitorHttpService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -230,39 +231,42 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
   }
 
   async clearAllData() {
-    if (confirm('⚠️ This will delete ALL local data. Are you sure?')) {
+    const confirmed = await this.showConfirm('⚠️ This will delete ALL local data. Are you sure?');
+    if (confirmed) {
       await db.readings.clear();
       await db.syncQueue.clear();
       await Preferences.clear();
-      alert('✅ All data cleared. Please restart the app.');
+      await this.showAlert('✅ All data cleared. Please restart the app.');
       window.location.reload();
     }
   }
 
   async clearReadings() {
-    if (confirm('⚠️ This will delete all glucose readings. Continue?')) {
+    const confirmed = await this.showConfirm('⚠️ This will delete all glucose readings. Continue?');
+    if (confirmed) {
       await db.readings.clear();
       await this.loadStorageStats();
-      alert('✅ Readings cleared');
+      await this.showAlert('✅ Readings cleared');
     }
   }
 
   async clearPreferences() {
-    if (confirm('⚠️ This will clear all app preferences. Continue?')) {
+    const confirmed = await this.showConfirm('⚠️ This will clear all app preferences. Continue?');
+    if (confirmed) {
       await Preferences.clear();
-      alert('✅ Preferences cleared. Please restart the app.');
+      await this.showAlert('✅ Preferences cleared. Please restart the app.');
       window.location.reload();
     }
   }
 
   async forceSync() {
-    alert('🔄 Starting sync...');
+    await this.showAlert('🔄 Starting sync...');
     try {
       // Trigger sync (implementation depends on your sync service)
-      alert('✅ Sync completed');
+      await this.showAlert('✅ Sync completed');
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      alert(`❌ Sync failed: ${message}`);
+      await this.showAlert(`❌ Sync failed: ${message}`);
     }
   }
 
@@ -272,24 +276,24 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
         key: 'debug_custom_backend_url',
         value: this.customBackendUrl,
       });
-      alert('✅ Custom backend URL saved. Please restart the app to apply changes.');
+      await this.showAlert('✅ Custom backend URL saved. Please restart the app to apply changes.');
     }
   }
 
   async clearCustomBackendUrl() {
     await Preferences.remove({ key: 'debug_custom_backend_url' });
     this.customBackendUrl = '';
-    alert('✅ Custom backend URL cleared. Please restart the app.');
+    await this.showAlert('✅ Custom backend URL cleared. Please restart the app.');
   }
 
-  simulateAccountState(state: 'pending' | 'active' | 'disabled') {
+  async simulateAccountState(state: 'pending' | 'active' | 'disabled') {
     // This would need to be implemented in your auth service
-    alert(
+    await this.showAlert(
       `🎭 Simulating account state: ${state}\n\nNote: This requires backend support to actually work.`
     );
   }
 
-  copyDebugInfo() {
+  async copyDebugInfo() {
     const info = JSON.stringify(
       {
         debugInfo: this.debugInfo,
@@ -301,9 +305,8 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
       2
     );
 
-    navigator.clipboard.writeText(info).then(() => {
-      alert('✅ Debug info copied to clipboard');
-    });
+    await navigator.clipboard.writeText(info);
+    await this.showAlert('✅ Debug info copied to clipboard');
   }
 
   getHealthColor(status: HealthStatus): string {
@@ -390,7 +393,10 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
    * Clear all mock data
    */
   async clearMockData() {
-    if (confirm('⚠️ This will clear all mock data (readings, appointments, profile). Continue?')) {
+    const confirmed = await this.showConfirm(
+      '⚠️ This will clear all mock data (readings, appointments, profile). Continue?'
+    );
+    if (confirmed) {
       this.mockAdapter.clearAllMockData();
       await this.showToast('🗑️ Mock data cleared', 'medium');
     }
@@ -423,6 +429,75 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
       color,
     });
     await toast.present();
+  }
+
+  /**
+   * Show alert dialog (replaces browser alert())
+   */
+  private async showAlert(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Debug Panel',
+      message,
+      buttons: ['OK'],
+    });
+    await alert.present();
+  }
+
+  /**
+   * Show confirmation dialog (replaces browser confirm())
+   * Returns true if confirmed, false otherwise
+   */
+  private async showConfirm(message: string): Promise<boolean> {
+    return new Promise(async resolve => {
+      const alert = await this.alertController.create({
+        header: 'Confirm',
+        message,
+        buttons: [
+          {
+            text: 'Cancel',
+            role: 'cancel',
+            handler: () => resolve(false),
+          },
+          {
+            text: 'OK',
+            handler: () => resolve(true),
+          },
+        ],
+      });
+      await alert.present();
+    });
+  }
+
+  /**
+   * Show prompt dialog (replaces browser prompt())
+   * Returns the entered value or null if cancelled
+   */
+  private async showPrompt(message: string, placeholder?: string): Promise<string | null> {
+    return new Promise(async resolve => {
+      const alert = await this.alertController.create({
+        header: 'Input',
+        message,
+        inputs: [
+          {
+            name: 'value',
+            type: 'text',
+            placeholder: placeholder || '',
+          },
+        ],
+        buttons: [
+          {
+            text: 'Cancel',
+            role: 'cancel',
+            handler: () => resolve(null),
+          },
+          {
+            text: 'OK',
+            handler: data => resolve(data.value || null),
+          },
+        ],
+      });
+      await alert.present();
+    });
   }
 
   // =========================================================
@@ -538,7 +613,7 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
    * Clear the entire appointments queue in backoffice.
    */
   async devClearAppointmentQueue(): Promise<void> {
-    const confirmed = confirm(
+    const confirmed = await this.showConfirm(
       '⚠️ This will clear the ENTIRE appointment queue in the Heroku backoffice.\n\nAre you sure?'
     );
     if (!confirmed) {
@@ -566,8 +641,9 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
    * Mirrors scripts/appointments/create-resolution.sh with safe defaults.
    */
   async devCreateResolution(): Promise<void> {
-    const input = prompt(
-      'Enter appointment_id to create a resolution for (you can get IDs from the backoffice or API logs):'
+    const input = await this.showPrompt(
+      'Enter appointment_id to create a resolution for (you can get IDs from the backoffice or API logs):',
+      'e.g. 123'
     );
     if (!input) {
       return;
@@ -579,7 +655,7 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const confirmed = confirm(
+    const confirmed = await this.showConfirm(
       `Create a sample resolution for appointment ${appointmentId} in the backoffice?`
     );
     if (!confirmed) {
