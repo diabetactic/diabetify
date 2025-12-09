@@ -36,7 +36,7 @@ jobs:
 
             # Upload coverage (requires DEEPSOURCE_DSN env var in CircleCI)
             if [ -n "$DEEPSOURCE_DSN" ]; then
-              ./bin/deepsource report --analyzer test-coverage --key javascript --value-file coverage/lcov.info
+              ./bin/deepsource report --analyzer test-coverage --key javascript --value-file coverage/diabetactic/lcov.info
             else
               echo "Skipping DeepSource upload (DEEPSOURCE_DSN not set)"
             fi
