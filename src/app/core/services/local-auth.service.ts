@@ -205,9 +205,9 @@ export class LocalAuthService {
         Preferences.get({ key: STORAGE_KEYS.EXPIRES_AT }),
       ]);
 
-      const hasAccessToken = !!accessToken.value;
-      const hasRefreshToken = !!refreshToken.value;
-      const hasUser = !!userStr.value;
+      const hasAccessToken = Boolean(accessToken.value);
+      const hasRefreshToken = Boolean(refreshToken.value);
+      const hasUser = Boolean(userStr.value);
 
       if (hasAccessToken && hasUser && userStr.value) {
         const user = JSON.parse(userStr.value) as LocalUser;
@@ -304,13 +304,13 @@ export class LocalAuthService {
       tap(response => {
         this.logger.debug('Auth', 'Backend stage: HTTP response received', {
           stage: 'http-response',
-          hasAccessToken: !!response?.access_token,
+          hasAccessToken: Boolean(response?.access_token),
         });
       }),
       switchMap(token => {
         this.logger.debug('Auth', 'Backend stage: processing token response', {
           stage: 'process-token',
-          hasAccessToken: !!token?.access_token,
+          hasAccessToken: Boolean(token?.access_token),
         });
         if (!token?.access_token) {
           return throwError(
@@ -602,7 +602,7 @@ export class LocalAuthService {
    * Check if user is authenticated
    */
   isAuthenticated(): Observable<boolean> {
-    return this.authState$.pipe(map(state => state.isAuthenticated && !!state.accessToken));
+    return this.authState$.pipe(map(state => state.isAuthenticated && Boolean(state.accessToken)));
   }
 
   /**
@@ -878,6 +878,9 @@ export class LocalAuthService {
           return 'Error del servidor. Por favor, intenta de nuevo más tarde.';
         case 0:
           return 'Error de conexión. Verifica tu conexión a internet.';
+        default:
+          // Other HTTP error codes - fall through to check message
+          break;
       }
     }
 

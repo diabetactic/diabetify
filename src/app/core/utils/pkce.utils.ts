@@ -30,8 +30,7 @@ export function generateRandomString(
     length > OAUTH_CONSTANTS.CODE_VERIFIER_MAX_LENGTH
   ) {
     throw new Error(
-      `Random string length must be between ${OAUTH_CONSTANTS.CODE_VERIFIER_MIN_LENGTH} ` +
-        `and ${OAUTH_CONSTANTS.CODE_VERIFIER_MAX_LENGTH} characters`
+      `Random string length must be between ${OAUTH_CONSTANTS.CODE_VERIFIER_MIN_LENGTH} and ${OAUTH_CONSTANTS.CODE_VERIFIER_MAX_LENGTH} characters`
     );
   }
 

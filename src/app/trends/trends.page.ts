@@ -11,5 +11,9 @@ import { TranslateModule } from '@ngx-translate/core';
   imports: [IonHeader, IonToolbar, IonTitle, IonContent, TranslateModule],
 })
 export class TrendsPage {
-  constructor() {}
+  // TODO: Implement glucose trends analytics
+  // - Time in range charts
+  // - Daily/weekly/monthly patterns
+  // - A1C estimation
+  // - Variability metrics
 }

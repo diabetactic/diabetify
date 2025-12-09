@@ -106,7 +106,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
 
     const state = this.queueState?.state;
     const hasCurrent =
-      !!state && state !== 'NONE' && state !== 'DENIED' && this.appointments.length > 0;
+      Boolean(state) && state !== 'NONE' && state !== 'DENIED' && this.appointments.length > 0;
 
     if (hasCurrent) {
       return this.appointments.length > 1 ? this.appointments.slice(1) : [];

@@ -91,7 +91,7 @@ export class StatCardComponent implements OnChanges {
   }
 
   get testId(): string {
-    return 'stat-card-' + this.title.toLowerCase().replace(/\s+/g, '-');
+    return `stat-card-${this.title.toLowerCase().replace(/\s+/g, '-')}`;
   }
 
   shouldPulse(): boolean {
