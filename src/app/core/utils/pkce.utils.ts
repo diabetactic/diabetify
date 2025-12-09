@@ -191,7 +191,7 @@ export function buildAuthorizationUrl(
     redirect_uri: redirectUri,
     response_type: OAUTH_CONSTANTS.RESPONSE_TYPE,
     scope: scopes.join(' '),
-    state: state,
+    state,
     code_challenge: challenge.codeChallenge,
     code_challenge_method: challenge.codeChallengeMethod,
   });

@@ -19,10 +19,9 @@ const windowScope: GlobalWithOverride = (
 const runtimeOverride: string | undefined =
   windowScope.__DIABETACTIC_API_BASE_URL || globalScope.__DIABETACTIC_API_BASE_URL;
 
-const processOverride: string | undefined =
-  globalScope.process && globalScope.process.env
-    ? globalScope.process.env.API_GATEWAY_URL
-    : undefined;
+const processOverride: string | undefined = globalScope.process?.env
+  ? globalScope.process.env.API_GATEWAY_URL
+  : undefined;
 
 const explicitOverride = runtimeOverride || processOverride || null;
 

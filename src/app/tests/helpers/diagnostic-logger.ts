@@ -125,7 +125,7 @@ export class TestDiagnostics {
     const elements = document.querySelectorAll('[id], [class*="ion-"]');
 
     elements.forEach(element => {
-      if (element instanceof HTMLElement && element.offsetParent !== null) {
+      if (element instanceof HTMLElement && element?.offsetParent !== null) {
         const computed = window.getComputedStyle(element);
         const key = element.id || element.className.split(' ')[0] || element.tagName;
         styles[key] = {
@@ -465,7 +465,7 @@ export async function waitForVisible(selector: string, timeout = 5000): Promise<
   while (Date.now() - start < timeout) {
     const element = document.querySelector(selector) as HTMLElement;
 
-    if (element && element.offsetParent !== null) {
+    if (element?.offsetParent !== null) {
       const elapsed = Date.now() - start;
       diagnostics?.log('WAIT', `Element visible: ${selector}`, {
         elapsed: `${elapsed}ms`,

@@ -53,13 +53,9 @@ export class CapacitorHttpService {
     data: unknown,
     options?: { headers?: HttpHeaders | Record<string, string>; params?: ParamsType }
   ): Observable<T> {
-    const useNative = this.shouldUseNativeHttp();
-    console.log('🔵 [HTTP-DEBUG] post() called', { url, useNative });
-    if (useNative) {
-      console.log('🔵 [HTTP-DEBUG] Using NATIVE HTTP (CapacitorHttp)');
+    if (this.shouldUseNativeHttp()) {
       return this.nativePost<T>(url, data, options);
     }
-    console.log('🔵 [HTTP-DEBUG] Using Angular HttpClient');
     return this.http.post<T>(url, data, options);
   }
 
@@ -243,24 +239,16 @@ export class CapacitorHttpService {
     }
 
     this.logger.debug('HTTP', 'POST headers', { headers: finalHeaders });
-    console.log('🔵 [HTTP-DEBUG] nativePost: Creating CapacitorHttp.post Promise');
 
     const httpPromise = CapacitorHttp.post({
       url: fullUrl,
       headers: finalHeaders,
       data: bodyData,
     });
-    console.log(
-      '🔵 [HTTP-DEBUG] nativePost: CapacitorHttp.post Promise created, wrapping in from()'
-    );
 
     const request$ = from(httpPromise).pipe(
       map((response: HttpResponse) => {
         const elapsed = Date.now() - startTime;
-        console.log('🔵 [HTTP-DEBUG] nativePost: Response received in map()', {
-          elapsed,
-          status: response.status,
-        });
         this.logger.debug('HTTP', `Response in ${elapsed}ms`, {
           status: response.status,
           data: response.data,
@@ -278,14 +266,11 @@ export class CapacitorHttpService {
       }),
       catchError(error => {
         const elapsed = Date.now() - startTime;
-        console.log('🔵 [HTTP-DEBUG] nativePost: Error in catchError()', { elapsed, error });
         this.logger.error('HTTP', `Error after ${elapsed}ms`, error);
-        this.logger.error('HTTP', 'Error details', error);
         return throwError(() => error);
       })
     );
 
-    console.log('🔵 [HTTP-DEBUG] nativePost: Returning Observable with timeout wrapper');
     // Wrap with timeout to prevent hanging requests
     return this.withTimeout(request$, DEFAULT_TIMEOUT_MS, fullUrl);
   }
@@ -310,7 +295,7 @@ export class CapacitorHttpService {
       CapacitorHttp.put({
         url,
         headers: finalHeaders,
-        data: data,
+        data,
       })
     ).pipe(
       map((response: HttpResponse) => {
@@ -388,7 +373,7 @@ export class CapacitorHttpService {
       CapacitorHttp.patch({
         url,
         headers: finalHeaders,
-        data: data,
+        data,
       })
     ).pipe(
       map((response: HttpResponse) => {

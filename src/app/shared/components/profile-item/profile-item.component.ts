@@ -19,8 +19,8 @@ export class ProfileItemComponent {
   @Input() actionType: ActionType = 'chevron';
   @Input() actionValue: string | number | boolean | null = null;
   @Input() iconColor: string = '#3b82f6';
-  @Output() itemClick = new EventEmitter<void>();
-  @Output() toggleChange = new EventEmitter<boolean>();
+  @Output() readonly itemClick = new EventEmitter<void>();
+  @Output() readonly toggleChange = new EventEmitter<boolean>();
 
   onItemClick(): void {
     if (this.actionType !== 'toggle') {
