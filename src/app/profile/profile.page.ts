@@ -426,7 +426,7 @@ export class ProfilePage implements OnInit, OnDestroy {
    * Determine if emergency contact data exists.
    */
   get hasEmergencyContact(): boolean {
-    return !!this.profile?.emergencyContact;
+    return Boolean(this.profile?.emergencyContact);
   }
 
   /**

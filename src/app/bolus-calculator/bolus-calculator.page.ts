@@ -186,6 +186,6 @@ export class BolusCalculatorPage {
 
   isFieldInvalid(fieldName: string): boolean {
     const field = this.calculatorForm.get(fieldName);
-    return !!(field?.invalid && (field?.dirty || field?.touched));
+    return Boolean(field?.invalid && (field?.dirty || field?.touched));
   }
 }

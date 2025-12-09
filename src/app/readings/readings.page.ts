@@ -389,9 +389,9 @@ export class ReadingsPage implements OnInit, OnDestroy {
   hasActiveFilters(): boolean {
     return (
       this.filters.status !== 'all' ||
-      !!this.filters.startDate ||
-      !!this.filters.endDate ||
-      !!this.filters.searchTerm
+      Boolean(this.filters.startDate) ||
+      Boolean(this.filters.endDate) ||
+      Boolean(this.filters.searchTerm)
     );
   }
 

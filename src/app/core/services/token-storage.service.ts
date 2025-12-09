@@ -47,8 +47,6 @@ export class TokenStorageService {
   private accessToken: string | null = null;
   private accessTokenExpiry: number | null = null;
 
-  constructor() {}
-
   /**
    * Store complete authentication data securely
    *

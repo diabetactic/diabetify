@@ -310,7 +310,7 @@ export class MockAdapterService {
         ? JSON.parse(stored)
         : this.demoDataService.generateUserProfile();
 
-      const token = 'mock_token_' + Date.now();
+      const token = `mock_token_${Date.now()}`;
       localStorage.setItem('diabetactic_mock_token', token);
 
       return this.delay({
@@ -368,7 +368,7 @@ export class MockAdapterService {
     };
 
     return {
-      token: 'mock_token_' + Date.now(),
+      token: `mock_token_${Date.now()}`,
       user: profile,
     };
   }
@@ -486,7 +486,7 @@ export class MockAdapterService {
    */
   async mockRefreshToken(oldToken: string): Promise<string> {
     if (await this.mockVerifyToken(oldToken)) {
-      const newToken = 'mock_token_' + Date.now();
+      const newToken = `mock_token_${Date.now()}`;
       localStorage.setItem('diabetactic_mock_token', newToken);
       return this.delay(newToken);
     }
@@ -594,7 +594,7 @@ export class MockAdapterService {
     // When talking to real backends (local Docker, cloud/Heroku, or production),
     // force mocks off so the app uses real services.
     const backendMode = (environment as { backendMode?: string }).backendMode;
-    const isProd = !!(environment as { production?: boolean }).production;
+    const isProd = Boolean((environment as { production?: boolean }).production);
 
     if (isProd || backendMode === 'local' || backendMode === 'cloud') {
       config.enabled = false;
@@ -616,7 +616,7 @@ export class MockAdapterService {
 
   private getDefaultConfig(): MockAdapterConfig {
     const backendMode = (environment as { backendMode?: string }).backendMode;
-    const isProd = !!(environment as { production?: boolean }).production;
+    const isProd = Boolean((environment as { production?: boolean }).production);
 
     // For production, cloud/Heroku, and local Docker environments we default to REAL backends.
     if (isProd || backendMode === 'local' || backendMode === 'cloud') {
