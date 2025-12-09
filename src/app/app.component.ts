@@ -72,17 +72,15 @@ export class AppComponent implements OnInit, OnDestroy {
     const url = environment.backendServices.apiGateway.baseUrl;
     const isProduction = environment.production;
 
-    // Only log to console in development mode
+    // Log configuration via LoggerService (respects environment settings)
     if (!isProduction) {
-      console.group('🚀 App Configuration');
-      console.log('%c Backend Mode:', 'font-weight: bold', mode.toUpperCase());
-      console.log('%c API Gateway:', 'font-weight: bold', url);
-      console.log('%c Production:', 'font-weight: bold', isProduction);
-      console.groupEnd();
+      this.logger.debug('Config', `Backend Mode: ${mode.toUpperCase()}`);
+      this.logger.debug('Config', `API Gateway: ${url}`);
+      this.logger.debug('Config', `Production: ${isProduction}`);
 
       // Warn if using cloud backend in development
       if (mode === 'cloud') {
-        console.warn('⚠️  Using CLOUD backend in development mode!');
+        this.logger.warn('Config', 'Using CLOUD backend in development mode!');
       }
     }
 

@@ -15,6 +15,7 @@ import {
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { LocalAuthService } from '../core/services/local-auth.service';
+import { LoggerService } from '../core/services/logger.service';
 import { APP_CONFIG, AppConfig } from '../core/config/app-config';
 import { ROUTES } from '../core/constants';
 
@@ -43,7 +44,8 @@ export class AccountPendingPage {
   constructor(
     @Inject(APP_CONFIG) public appConfig: AppConfig,
     private authService: LocalAuthService,
-    private router: Router
+    private router: Router,
+    private logger: LoggerService
   ) {}
 
   /**
@@ -54,7 +56,7 @@ export class AccountPendingPage {
       await this.authService.logout();
       await this.router.navigate([ROUTES.WELCOME]);
     } catch (error) {
-      console.error('Error signing out:', error);
+      this.logger.error('Auth', 'Error signing out', error);
     }
   }
 }
