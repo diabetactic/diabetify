@@ -1,27 +1,45 @@
 # ==========================================
-# Test: Appointments Page - Appointment Card Interaction
-# Description: Verify appointment cards can be tapped and show details
-# NOTE: This test validates appointment card interaction.
-#       Full accept/deny flow requires clean backend state.
-#       For full flow testing, use Playwright against local Docker.
+# Test: Accept Appointment (WITH BACKEND VERIFICATION)
+# Description: Accept a pending appointment via backoffice and verify UI updates
+# This test validates the full PENDING -> ACCEPTED flow
 # ==========================================
 
 appId: io.diabetactic.app
 
+env:
+  BACKOFFICE_API_URL: 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com'
+  API_BASE_URL: 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com'
+  ADMIN_USERNAME: 'admin'
+  ADMIN_PASSWORD: 'admin'
+
 ---
-# 1. LOGIN
+# 1. SETUP: Clear queue and create a pending appointment
+- runScript:
+    file: ../../scripts/backoffice-api-fetch.js
+    env:
+      ACTION: 'clear'
+      BACKOFFICE_API_URL: ${BACKOFFICE_API_URL}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+- runScript:
+    file: ../../scripts/backoffice-api-fetch.js
+    env:
+      ACTION: 'open'
+      BACKOFFICE_API_URL: ${BACKOFFICE_API_URL}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+# 2. LOGIN
 - runFlow: ../../flows/login.yaml
 
-# 2. NAVIGATE TO APPOINTMENTS
+# 3. NAVIGATE TO APPOINTMENTS AND REQUEST
 - runFlow: ../../flows/navigate-appointments.yaml
 
-# 3. VERIFY PAGE HEADER LOADED
 - extendedWaitUntil:
     visible:
       text: 'Citas|Appointments'
     timeout: 8000
-- waitForAnimationToEnd:
-    timeout: 2000
 
 # 4. WAIT FOR LOADING TO COMPLETE
 - extendedWaitUntil:
@@ -31,26 +49,67 @@ appId: io.diabetactic.app
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 5. VERIFY QUEUE CONTENT IS VISIBLE (either status or request button)
-- extendedWaitUntil:
-    visible:
-      text: 'Estado de la Cola|Queue Status|Solicitar Cita|Request Appointment|No tienes citas|No appointments'
-    timeout: 10000
-
-# 6. VERIFY APPOINTMENT CONTENT IS VISIBLE
-- extendedWaitUntil:
-    visible:
-      text: 'ACTUAL|Citas Anteriores|Past Appointments|Solicitar Cita|Request Appointment|Pendiente|Pending|No tienes citas|No appointments'
-    timeout: 5000
-
-# 7. IF THERE ARE APPOINTMENTS, TRY TO EXPAND PAST APPOINTMENTS
+# 5. REQUEST APPOINTMENT (if not already pending)
 - tapOn:
-    text: 'Citas Anteriores|Past Appointments'
+    text: 'Solicitar|Request|Pedir Cita'
     optional: true
 - waitForAnimationToEnd:
-    timeout: 1500
+    timeout: 2000
 
-# 8. VERIFY PAGE STRUCTURE (appointments page is displayed)
+- tapOn:
+    text: 'Enviar|Submit|Confirmar|Confirm'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 6. VERIFY STATE IS PENDING
+- runScript:
+    file: ../../scripts/verify-backend.js
+    env:
+      VERIFY_ACTION: 'appointment_state'
+      EXPECTED_STATE: 'PENDING'
+      USER_ID: ${TEST_USER_ID}
+      USER_PASSWORD: ${TEST_USER_PASSWORD}
+      API_BASE_URL: ${API_BASE_URL}
+
+# 7. ACCEPT APPOINTMENT VIA BACKOFFICE API
+- runScript:
+    file: ../../scripts/backoffice-api-fetch.js
+    env:
+      ACTION: 'accept'
+      USER_ID: ${TEST_USER_ID}
+      BACKOFFICE_API_URL: ${BACKOFFICE_API_URL}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+# 8. CRITICAL: VERIFY BACKEND STATE IS NOW ACCEPTED
+- runScript:
+    file: ../../scripts/verify-backend.js
+    env:
+      VERIFY_ACTION: 'appointment_state'
+      EXPECTED_STATE: 'ACCEPTED'
+      USER_ID: ${TEST_USER_ID}
+      USER_PASSWORD: ${TEST_USER_PASSWORD}
+      API_BASE_URL: ${API_BASE_URL}
+
+- assertTrue: ${output.verified}
+
+# 9. REFRESH UI (pull to refresh)
+- swipe:
+    direction: DOWN
+    duration: 500
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 10. UI VERIFICATION - Should show accepted status
+- extendedWaitUntil:
+    visible:
+      text: 'ACCEPTED|Aceptado|Aceptada|Aprobado|Approved'
+    timeout: 10000
+
+- assertVisible:
+    text: 'ACCEPTED|Aceptado|Aceptada|Aprobado|Approved'
+
+# 11. VERIFY PAGE IS STABLE
 - assertVisible:
     text: 'Citas|Appointments'
-# Test passes - page loaded and shows appointment content

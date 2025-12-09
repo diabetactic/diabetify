@@ -2,6 +2,16 @@
 # See: https://maestro.mobile.dev/reference/configuration
 
 appId: io.diabetactic.app
+
 env:
+  # User credentials for app login
   TEST_USER_ID: '1000'
   TEST_USER_PASSWORD: 'tuvieja'
+
+  # API URLs for backend verification
+  API_BASE_URL: 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com'
+  BACKOFFICE_API_URL: 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com'
+
+  # Admin credentials for backoffice operations
+  ADMIN_USERNAME: 'admin'
+  ADMIN_PASSWORD: 'admin'

@@ -1,27 +1,45 @@
 # ==========================================
-# Test: Appointments Page - Past Appointments Section
-# Description: Verify past appointments can be expanded and viewed
-# NOTE: Deny flow requires specific queue state setup.
-#       This test verifies past appointments UI.
-#       For full deny flow, use Playwright against local Docker.
+# Test: Deny Appointment (WITH BACKEND VERIFICATION)
+# Description: Deny a pending appointment via backoffice and verify UI updates
+# This test validates the full PENDING -> DENIED flow
 # ==========================================
 
 appId: io.diabetactic.app
 
+env:
+  BACKOFFICE_API_URL: 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com'
+  API_BASE_URL: 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com'
+  ADMIN_USERNAME: 'admin'
+  ADMIN_PASSWORD: 'admin'
+
 ---
-# 1. LOGIN
+# 1. SETUP: Clear queue and open it
+- runScript:
+    file: ../../scripts/backoffice-api-fetch.js
+    env:
+      ACTION: 'clear'
+      BACKOFFICE_API_URL: ${BACKOFFICE_API_URL}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+- runScript:
+    file: ../../scripts/backoffice-api-fetch.js
+    env:
+      ACTION: 'open'
+      BACKOFFICE_API_URL: ${BACKOFFICE_API_URL}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+# 2. LOGIN
 - runFlow: ../../flows/login.yaml
 
-# 2. NAVIGATE TO APPOINTMENTS
+# 3. NAVIGATE TO APPOINTMENTS
 - runFlow: ../../flows/navigate-appointments.yaml
 
-# 3. VERIFY PAGE HEADER LOADED
 - extendedWaitUntil:
     visible:
       text: 'Citas|Appointments'
     timeout: 8000
-- waitForAnimationToEnd:
-    timeout: 2000
 
 # 4. WAIT FOR LOADING TO COMPLETE
 - extendedWaitUntil:
@@ -31,26 +49,67 @@ appId: io.diabetactic.app
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 5. VERIFY QUEUE CONTENT IS VISIBLE (either status or request button)
-- extendedWaitUntil:
-    visible:
-      text: 'Estado de la Cola|Queue Status|Solicitar Cita|Request Appointment|No tienes citas|No appointments'
-    timeout: 10000
-
-# 6. CHECK FOR APPOINTMENT CONTENT SECTION
-- extendedWaitUntil:
-    visible:
-      text: 'ACTUAL|Citas Anteriores|Past Appointments|Solicitar Cita|Pendiente|Pending|No tienes citas|No appointments'
-    timeout: 5000
-
-# 7. TRY TO EXPAND PAST APPOINTMENTS (optional - may not exist)
+# 5. REQUEST APPOINTMENT
 - tapOn:
-    text: 'Citas Anteriores|Past Appointments'
+    text: 'Solicitar|Request|Pedir Cita'
     optional: true
 - waitForAnimationToEnd:
-    timeout: 1500
+    timeout: 2000
 
-# 8. VERIFY PAGE STRUCTURE REMAINS STABLE
+- tapOn:
+    text: 'Enviar|Submit|Confirmar|Confirm'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 6. VERIFY STATE IS PENDING
+- runScript:
+    file: ../../scripts/verify-backend.js
+    env:
+      VERIFY_ACTION: 'appointment_state'
+      EXPECTED_STATE: 'PENDING'
+      USER_ID: ${TEST_USER_ID}
+      USER_PASSWORD: ${TEST_USER_PASSWORD}
+      API_BASE_URL: ${API_BASE_URL}
+
+# 7. DENY APPOINTMENT VIA BACKOFFICE API
+- runScript:
+    file: ../../scripts/backoffice-api-fetch.js
+    env:
+      ACTION: 'deny'
+      USER_ID: ${TEST_USER_ID}
+      BACKOFFICE_API_URL: ${BACKOFFICE_API_URL}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+# 8. CRITICAL: VERIFY BACKEND STATE IS NOW DENIED
+- runScript:
+    file: ../../scripts/verify-backend.js
+    env:
+      VERIFY_ACTION: 'appointment_state'
+      EXPECTED_STATE: 'DENIED'
+      USER_ID: ${TEST_USER_ID}
+      USER_PASSWORD: ${TEST_USER_PASSWORD}
+      API_BASE_URL: ${API_BASE_URL}
+
+- assertTrue: ${output.verified}
+
+# 9. REFRESH UI
+- swipe:
+    direction: DOWN
+    duration: 500
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 10. UI VERIFICATION - Should show denied/rejected status
+- extendedWaitUntil:
+    visible:
+      text: 'DENIED|Denegado|Rechazado|Rejected|No Disponible'
+    timeout: 10000
+
+- assertVisible:
+    text: 'DENIED|Denegado|Rechazado|Rejected|No Disponible'
+
+# 11. VERIFY PAGE IS STABLE
 - assertVisible:
     text: 'Citas|Appointments'
-# Test passes - past appointments section is accessible
