@@ -19,7 +19,7 @@ export class EmptyStateComponent implements OnInit, OnDestroy {
   @Input() heading: string = 'No data yet';
   @Input() message: string = 'Get started by adding your first item.';
   @Input() ctaText: string = '';
-  @Output() ctaClick = new EventEmitter<void>();
+  @Output() readonly ctaClick = new EventEmitter<void>();
 
   isDarkMode = false;
   private themeSubscription?: Subscription;

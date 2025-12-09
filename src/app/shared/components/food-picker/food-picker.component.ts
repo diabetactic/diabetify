@@ -60,10 +60,10 @@ export class FoodPickerComponent implements OnInit {
   @Input() isOpen = false;
 
   /** Emitted when the picker is closed without selection */
-  @Output() closed = new EventEmitter<void>();
+  @Output() readonly closed = new EventEmitter<void>();
 
   /** Emitted when foods are confirmed */
-  @Output() confirmed = new EventEmitter<FoodPickerResult>();
+  @Output() readonly confirmed = new EventEmitter<FoodPickerResult>();
 
   /** Current search query */
   searchQuery = signal('');

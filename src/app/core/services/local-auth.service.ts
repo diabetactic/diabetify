@@ -255,14 +255,6 @@ export class LocalAuthService {
    */
   login(username: string, password: string, rememberMe: boolean = false): Observable<LoginResult> {
     const isAuthMockEnabled = this.mockAdapter.isServiceMockEnabled('auth');
-    // DEBUG: Raw console.log to trace login hang (bypasses logger filter)
-    console.log('🔵 [AUTH-DEBUG] login() called', {
-      username,
-      backendMode: (environment as { backendMode?: string }).backendMode,
-      mockEnabled: isAuthMockEnabled,
-      baseUrl: this.baseUrl,
-    });
-    // SECURITY: Removed credential logging - HIPAA/COPPA compliance
     this.logger.debug('Auth', 'Login attempt', {
       stage: 'start',
       backendMode: (environment as { backendMode?: string }).backendMode,
@@ -280,9 +272,6 @@ export class LocalAuthService {
     }
 
     // REAL BACKEND MODE (cloud or local)
-    console.log('🔵 [AUTH-DEBUG] REAL backend mode - about to call HTTP', {
-      tokenEndpoint: `${this.baseUrl}/token`,
-    });
     this.logger.info('Auth', 'Login attempt - trying REAL backend', {
       stage: 'real-backend-start',
       username,
@@ -304,7 +293,6 @@ export class LocalAuthService {
     });
 
     // Call token endpoint directly (use Capacitor HTTP to bypass CORS)
-    console.log('🔵 [AUTH-DEBUG] Creating capacitorHttp.post Observable');
     const httpObservable = this.capacitorHttp.post<GatewayTokenResponse>(
       `${this.baseUrl}/token`,
       body.toString(),
@@ -312,12 +300,8 @@ export class LocalAuthService {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       }
     );
-    console.log('🔵 [AUTH-DEBUG] Observable created, returning piped Observable');
     return httpObservable.pipe(
       tap(response => {
-        console.log('🔵 [AUTH-DEBUG] HTTP response received in tap()', {
-          hasToken: !!response?.access_token,
-        });
         this.logger.debug('Auth', 'Backend stage: HTTP response received', {
           stage: 'http-response',
           hasAccessToken: !!response?.access_token,
@@ -380,19 +364,8 @@ export class LocalAuthService {
           status: (error && error.status) || null,
           message: error?.message,
         });
-        console.error('❌ [AUTH] HTTP request failed');
-        console.error('❌ [AUTH] Error object:', error);
-        console.error('❌ [AUTH] Error status:', error?.status);
-        console.error('❌ [AUTH] Error statusText:', error?.statusText);
-        console.error('❌ [AUTH] Error message:', error?.message);
-        console.error('❌ [AUTH] Error error:', error?.error);
-        console.error(
-          '❌ [AUTH] Full error JSON:',
-          error ? JSON.stringify(error, Object.getOwnPropertyNames(error)) : 'null/undefined'
-        );
 
         const errorMessage = this.extractErrorMessage(error);
-        console.error('❌ [AUTH] Extracted error message:', errorMessage);
 
         this.logger.error('Auth', 'Login failed', error, {
           username,

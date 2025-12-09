@@ -15,12 +15,12 @@ export class AlertBannerComponent {
   @Input() type: AlertType = 'info';
   @Input() message: string = '';
   @Input() dismissible: boolean = false;
-  @Output() dismissed = new EventEmitter<void>();
+  @Output() readonly dismissed = new EventEmitter<void>();
 
   visible: boolean = true;
 
-  getIcon(): string {
-    switch (this.type) {
+  static getIconForType(type: AlertType): string {
+    switch (type) {
       case 'success':
         return 'check_circle';
       case 'info':
@@ -30,6 +30,10 @@ export class AlertBannerComponent {
       default:
         return 'info';
     }
+  }
+
+  getIcon(): string {
+    return AlertBannerComponent.getIconForType(this.type);
   }
 
   dismiss(): void {

@@ -212,7 +212,7 @@ export class TidepoolAuthService implements OnDestroy {
         tokenType: 'Bearer',
         issuedAt: Date.now(),
         expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-        userId: userId,
+        userId,
         email: userEmail,
         scope: 'data:read data:write profile:read',
       };
@@ -224,7 +224,7 @@ export class TidepoolAuthService implements OnDestroy {
         isAuthenticated: true,
         isLoading: false,
         error: null,
-        userId: userId,
+        userId,
         email: userEmail,
         flowStep: 'idle',
         lastAuthenticated: Date.now(),
@@ -397,7 +397,7 @@ export class TidepoolAuthService implements OnDestroy {
       grant_type: 'authorization_code',
       client_id: this.oauthConfig.clientId,
       redirect_uri: this.oauthConfig.redirectUri,
-      code: code,
+      code,
       code_verifier: codeVerifier,
     });
 

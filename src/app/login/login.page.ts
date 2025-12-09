@@ -143,7 +143,7 @@ export class LoginPage implements OnInit {
         success: result?.success ?? null,
       });
 
-      if (result && result.success) {
+      if (result?.success) {
         this.logger.info('Auth', 'Login successful, starting post-login flow', {
           stage: 'login-success',
         });

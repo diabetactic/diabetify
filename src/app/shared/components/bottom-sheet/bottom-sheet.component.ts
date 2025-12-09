@@ -192,7 +192,7 @@ export class BottomSheetComponent {
   @Input() closeLabel = 'Close';
 
   /** Emitted when the sheet is closed */
-  @Output() closed = new EventEmitter<void>();
+  @Output() readonly closed = new EventEmitter<void>();
 
   /** Unique ID for the header (for aria-labelledby) */
   readonly headerId = `bottom-sheet-header-${Math.random().toString(36).substring(2, 9)}`;

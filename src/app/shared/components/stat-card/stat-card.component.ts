@@ -34,7 +34,7 @@ export class StatCardComponent implements OnChanges {
   @Input() error: boolean = false;
   @Input() clickable: boolean = false;
 
-  @Output() cardClick = new EventEmitter<void>();
+  @Output() readonly cardClick = new EventEmitter<void>();
 
   valueUpdating = false;
   private previousValue: number | string = 0;

@@ -185,7 +185,7 @@ export class TranslationService implements OnDestroy {
   /**
    * Map device language code to supported language
    */
-  private mapDeviceLanguage(deviceLang: string): Language {
+  private static mapDeviceLanguage(deviceLang: string): Language {
     // Extract primary language code (e.g., 'es-MX' -> 'es')
     const primaryLang = deviceLang.split('-')[0].toLowerCase();
 
@@ -429,7 +429,7 @@ export class TranslationService implements OnDestroy {
    */
   public async resetToDeviceLanguage(): Promise<void> {
     const deviceLang = await this.detectDeviceLanguage();
-    const mappedLang = this.mapDeviceLanguage(deviceLang);
+    const mappedLang = TranslationService.mapDeviceLanguage(deviceLang);
     await this.setLanguage(mappedLang);
   }
 

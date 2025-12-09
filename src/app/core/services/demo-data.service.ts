@@ -116,7 +116,10 @@ export class DemoDataService {
    */
   getTimeSlots(doctorId: string, date: string): Observable<Array<Record<string, unknown>>> {
     const baseSlots = [...this.DEMO_TIME_SLOTS];
-    const randomUnavailable = this.getRandomSlots(baseSlots, 3 + Math.floor(Math.random() * 4));
+    const randomUnavailable = DemoDataService.getRandomSlots(
+      baseSlots,
+      3 + Math.floor(Math.random() * 4)
+    );
 
     const slots = baseSlots.map(time => ({
       time,
@@ -563,7 +566,7 @@ export class DemoDataService {
       units: 'mg/dL' as const,
       time: timestamp.toISOString(),
       context: context as 'beforeMeal' | 'afterMeal' | 'bedtime' | 'exercise' | 'other',
-      notes: this.getRandomNote(glucoseValue, context),
+      notes: DemoDataService.getRandomNote(glucoseValue, context),
       deviceId: 'demo-device',
       localOnly: false,
       synced: true,
@@ -572,7 +575,7 @@ export class DemoDataService {
     } as LocalGlucoseReading;
   }
 
-  private getRandomNote(value: number, context: string): string | undefined {
+  private static getRandomNote(value: number, context: string): string | undefined {
     if (Math.random() > 0.8) {
       // 20% chance of having a note
       if (value < 70) {
@@ -613,18 +616,18 @@ export class DemoDataService {
     return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   }
 
-  private getRandomSlots(slots: string[], count: number): string[] {
+  private static getRandomSlots(slots: string[], count: number): string[] {
     const shuffled = [...slots].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, count);
   }
 
-  private getFutureDate(days: number): string {
+  private static getFutureDate(days: number): string {
     const date = new Date();
     date.setDate(date.getDate() + days);
     return date.toISOString().split('T')[0];
   }
 
-  private getPastDate(days: number): string {
+  private static getPastDate(days: number): string {
     const date = new Date();
     date.setDate(date.getDate() - days);
     return date.toISOString();

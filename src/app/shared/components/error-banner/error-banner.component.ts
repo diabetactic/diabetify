@@ -20,8 +20,8 @@ export class ErrorBannerComponent {
   @Input() dismissible: boolean = true;
   @Input() retryable: boolean = false;
   @Input() retryText: string = 'common.retry';
-  @Output() dismissed = new EventEmitter<void>();
-  @Output() retry = new EventEmitter<void>();
+  @Output() readonly dismissed = new EventEmitter<void>();
+  @Output() readonly retry = new EventEmitter<void>();
 
   get severityClass(): string {
     switch (this.severity) {
