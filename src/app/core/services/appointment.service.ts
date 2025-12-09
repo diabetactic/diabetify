@@ -279,7 +279,7 @@ export class AppointmentService implements OnDestroy {
           return {
             success: true,
             state: 'PENDING' as AppointmentQueueState,
-            position: position,
+            position,
             message: `Added to queue at position ${position}`,
           };
         }

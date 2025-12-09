@@ -104,7 +104,7 @@ export class ProfileEditComponent implements OnInit {
    */
   isFieldInvalid(fieldName: string): boolean {
     const control = this.editForm.get(fieldName);
-    return !!(control && control.invalid && control.touched);
+    return !!(control?.invalid && control?.touched);
   }
 
   /**

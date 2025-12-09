@@ -407,9 +407,9 @@ export class UnifiedAuthService implements OnDestroy {
 
     return {
       id: tidepoolState.userId,
-      email: email,
-      firstName: firstName,
-      lastName: lastName,
+      email,
+      firstName,
+      lastName,
       fullName: `${firstName} ${lastName}`.trim(),
       provider: 'tidepool',
       tidepoolUserId: tidepoolState.userId,

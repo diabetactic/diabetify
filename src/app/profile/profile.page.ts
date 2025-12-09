@@ -1020,7 +1020,7 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   async onAvatarSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    const file = input.files && input.files[0];
+    const file = input.files?.[0];
     if (!file) {
       return;
     }

@@ -57,7 +57,7 @@ export class WelcomePage implements OnInit, OnDestroy {
     // MOCK QUOTES - Load translated quotes and set random quote
     if (this.showMockQuotes) {
       this.mockQuotes = this.translate.instant('welcome.quotes') as string[];
-      if (this.mockQuotes && this.mockQuotes.length > 0) {
+      if (this.mockQuotes?.length > 0) {
         this.currentQuote = this.mockQuotes[Math.floor(Math.random() * this.mockQuotes.length)];
       }
     }
