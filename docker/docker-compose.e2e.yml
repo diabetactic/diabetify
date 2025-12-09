@@ -1,5 +1,4 @@
-version: '3.8'
-
+# Docker Compose v2+ (no version key needed)
 services:
   # ============================================================================
   # App Server - Serves the built Angular application
