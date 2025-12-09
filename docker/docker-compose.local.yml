@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres_data_glucoserver:/var/lib/postgresql/data/
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -27,7 +27,7 @@ services:
     volumes:
       - postgres_data_users:/var/lib/postgresql/data/
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -44,7 +44,7 @@ services:
     volumes:
       - postgres_data_appointments:/var/lib/postgresql/data/
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -102,7 +102,7 @@ services:
     build: ../../api-gateway/
     command: bash -c 'while !</dev/tcp/login_service/8000; do sleep 1; done; python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload'
     ports:
-      - "8000:8000"
+      - '8000:8000'
     depends_on:
       - login_service
       - appointments
@@ -122,7 +122,7 @@ services:
     build: ../../api-gateway-backoffice/
     command: bash -c 'while !</dev/tcp/login_service/8000; do sleep 1; done; python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload'
     ports:
-      - "8001:8000"
+      - '8001:8000'
     depends_on:
       - login_service
       - appointments
@@ -150,7 +150,7 @@ services:
       - LOGIN_SERVICE_URL=http://login_service:8000
     networks:
       - diabetactic-network
-    command: tail -f /dev/null  # Keep container running
+    command: tail -f /dev/null # Keep container running
 
 volumes:
   postgres_data_users:
