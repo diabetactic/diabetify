@@ -1,14 +1,17 @@
 # ==========================================
-# Test: Readings - Edit Existing Reading
-# Description: Edit a glucose reading and verify update
-# Covers: Navigate to reading detail, edit value, save changes
-# Uses bilingual selectors and shadow DOM workarounds
+# Test: Edit Existing Reading (WITH BACKEND VERIFICATION)
+# Description: Edit a glucose reading and VERIFY update in backend
+# This test validates data persistence on edit, not just UI
 # ==========================================
 
 appId: io.diabetactic.app
 
 env:
-  NEW_GLUCOSE_VALUE: '135'
+  # Create reading with this value first
+  INITIAL_VALUE: '175'
+  # Edit to this value
+  EDITED_VALUE: '135'
+  API_BASE_URL: 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com'
 
 ---
 # 1. LOGIN WITH FRESH STATE
@@ -31,54 +34,87 @@ env:
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 3.2 VERIFY CONTENT IS VISIBLE
-- extendedWaitUntil:
-    visible:
-      text: 'Mostrando.*lecturas|Showing.*readings|Sin lecturas|No readings'
-    timeout: 10000
-
-# 4. VERIFY AT LEAST ONE READING EXISTS
-# If no readings, test cannot proceed
-- assertVisible:
-    text: 'Normal|Alto|Bajo|High|Low|NORMAL|ALTO|BAJO|HIGH|LOW|\d{2,3}'
-
-# 5. TAP ON FIRST READING ITEM TO OPEN DETAIL/EDIT
-# Tap on the reading card (center of screen)
+# 4. CREATE A READING TO EDIT (deterministic test)
 - tapOn:
-    point: '50%,40%'
+    id: 'fab-add-reading'
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 6. VERIFY READING DETAIL/EDIT VIEW OPENED
-# Should show edit form or detail view with edit option
+- extendedWaitUntil:
+    visible:
+      text: 'Agregar Lectura|Add Reading'
+    timeout: 5000
+
+- tapOn:
+    id: 'glucose-value-input'
+- inputText: ${INITIAL_VALUE}
+- hideKeyboard
+
+- swipe:
+    start: '50%,80%'
+    end: '50%,40%'
+
+- tapOn:
+    id: 'add-reading-save-btn'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 5. VERIFY READING WAS CREATED IN BACKEND
+- runScript:
+    file: ../../scripts/verify-backend.js
+    env:
+      VERIFY_ACTION: 'readings_exist'
+      EXPECTED_VALUE: ${INITIAL_VALUE}
+      USER_ID: ${TEST_USER_ID}
+      USER_PASSWORD: ${TEST_USER_PASSWORD}
+      API_BASE_URL: ${API_BASE_URL}
+
+- assertTrue: ${output.verified}
+
+# 6. WAIT FOR LIST TO RELOAD
+- extendedWaitUntil:
+    visible:
+      text: 'Mostrando.*lecturas|Showing.*readings|Lecturas|Readings'
+    timeout: 10000
+
+# 7. VERIFY INITIAL VALUE APPEARS
+- assertVisible:
+    text: '175'
+
+# 8. TAP ON THE READING TO EDIT IT
+- tapOn:
+    text: '175'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 9. VERIFY READING DETAIL VIEW OPENED
 - extendedWaitUntil:
     visible:
       text: 'Editar Lectura|Edit Reading|Editar|Edit|Detalles|Details'
     timeout: 8000
 
-# 7. IF DETAIL VIEW, TAP EDIT BUTTON
+# 10. TAP EDIT BUTTON IF IN DETAIL VIEW
 - tapOn:
     text: 'Editar|Edit'
 - waitForAnimationToEnd:
     timeout: 1500
 
-# 8. VERIFY EDIT FORM IS VISIBLE
+# 11. VERIFY EDIT FORM IS VISIBLE
 - extendedWaitUntil:
     visible:
       text: 'Glucosa|Glucose'
     timeout: 5000
 
-# 9. CLEAR EXISTING VALUE AND ENTER NEW VALUE
-# Tap on glucose input field
+# 12. CLEAR EXISTING VALUE AND ENTER NEW VALUE
 - tapOn:
     id: 'glucose-value-input'
 - eraseText
-- inputText: ${NEW_GLUCOSE_VALUE}
+- inputText: ${EDITED_VALUE}
 - hideKeyboard
 - waitForAnimationToEnd:
     timeout: 1000
 
-# 12. SCROLL TO ENSURE SAVE BUTTON IS VISIBLE
+# 13. SCROLL TO ENSURE SAVE BUTTON IS VISIBLE
 - swipe:
     start: '50%,80%'
     end: '50%,40%'
@@ -86,20 +122,36 @@ env:
 - waitForAnimationToEnd:
     timeout: 500
 
-# 13. TAP SAVE/UPDATE BUTTON
+# 14. TAP SAVE/UPDATE BUTTON
 - tapOn:
     text: 'Guardar|Save|Actualizar|Update'
 - waitForAnimationToEnd:
-    timeout: 2000
+    timeout: 3000
 
-# 14. VERIFY BACK ON READINGS LIST
+# 15. VERIFY BACK ON READINGS LIST
 - extendedWaitUntil:
     visible:
       text: 'Mostrando.*lecturas|Showing.*readings'
     timeout: 8000
 
-# 15. VERIFY UPDATED VALUE APPEARS IN LIST (may need sync)
-- extendedWaitUntil:
-    visible:
-      text: '135'
-    timeout: 5000
+# 16. CRITICAL: VERIFY BACKEND HAS THE EDITED VALUE
+- runScript:
+    file: ../../scripts/verify-backend.js
+    env:
+      VERIFY_ACTION: 'readings_exist'
+      EXPECTED_VALUE: ${EDITED_VALUE}
+      USER_ID: ${TEST_USER_ID}
+      USER_PASSWORD: ${TEST_USER_PASSWORD}
+      API_BASE_URL: ${API_BASE_URL}
+
+# 17. VERIFY OUTPUT
+- assertTrue: ${output.verified}
+- assertTrue: ${output.readingFound}
+
+# 18. UI VERIFICATION - Edited value should appear
+- assertVisible:
+    text: '135'
+
+# 19. VERIFY PAGE IS STABLE
+- assertVisible:
+    text: 'Lecturas|Readings'
