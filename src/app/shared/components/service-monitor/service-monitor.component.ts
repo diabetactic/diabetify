@@ -300,6 +300,6 @@ export class ServiceMonitorComponent implements OnInit, OnDestroy {
   }
 
   trackByWorkflow(index: number, workflow: WorkflowState): string {
-    return workflow.workflowId;
+    return workflow.id;
   }
 }

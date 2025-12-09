@@ -296,6 +296,8 @@ jobs:
       TEST_USER_ID: '1000'
       TEST_USER_PASSWORD: 'tuvieja'
       BACKOFFICE_API_URL: 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com'
+      BACKOFFICE_ADMIN_USERNAME: 'admin'
+      BACKOFFICE_ADMIN_PASSWORD: 'admin'
     steps:
       - checkout
       - run:
@@ -454,7 +456,7 @@ workflows:
             - test
       - playwright-e2e:
           requires:
-            - test
+            - build-web
           filters:
             branches:
               only: master
