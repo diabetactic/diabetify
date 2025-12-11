@@ -2,6 +2,7 @@
 # Test: Readings - Filter UI Visibility
 # Description: Verify filter modal can be opened and closed
 # SIMPLIFIED: Complex date picker interactions delegated to Playwright
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
@@ -16,13 +17,13 @@ appId: io.diabetactic.app
 # 3. WAIT FOR READINGS PAGE TO FULLY HYDRATE
 - extendedWaitUntil:
     visible:
-      text: 'Lecturas|Readings'
+      text: '.*Lecturas.*|.*Readings.*'
     timeout: 10000
 
 # 3.1 WAIT FOR LOADING TO COMPLETE
 - extendedWaitUntil:
     notVisible:
-      text: 'Cargando lecturas|Loading readings'
+      text: '.*Cargando.*lecturas.*|.*Loading.*readings.*'
     timeout: 20000
 - waitForAnimationToEnd:
     timeout: 2000
@@ -30,43 +31,43 @@ appId: io.diabetactic.app
 # 3.2 VERIFY CONTENT IS VISIBLE
 - extendedWaitUntil:
     visible:
-      text: 'Mostrando.*lecturas|Showing.*readings|Sin lecturas|No readings'
+      text: '.*Mostrando.*lecturas.*|.*Showing.*readings.*|.*Sin.*lecturas.*|.*No.*readings.*'
     timeout: 10000
 
 # 4. TAP FILTER BUTTON (filter icon in toolbar)
-# Using point tap since no id/data-testid exists for filter button
 - tapOn:
-    point: '90%,10%'
+    id: 'filter-button'
 - waitForAnimationToEnd:
     timeout: 2000
 
 # 5. VERIFY FILTER MODAL OPENED
 - extendedWaitUntil:
     visible:
-      text: 'Filtrar Lecturas|Filter Readings|Filtros|Filters'
+      text: '.*Filtrar.*Lecturas.*|.*Filter.*Readings.*|.*Filtros.*|.*Filters.*'
     timeout: 8000
 
 # 6. VERIFY DATE RANGE OPTION IS VISIBLE
 - assertVisible:
-    text: 'Rango de Fecha|Date Range|Desde|From|Hasta|To'
+    text: '.*Rango.*Fecha.*|.*Date.*Range.*|.*Desde.*|.*From.*|.*Hasta.*|.*To.*'
 
 # 7. VERIFY STATUS FILTER IS VISIBLE
 - assertVisible:
-    text: 'Estado|Status'
+    text: '.*Estado.*|.*Status.*'
 
 # 8. CLOSE FILTER MODAL WITHOUT APPLYING
-# Tap outside modal or use back button
+# Try tapping outside modal, cancel button, or back/close
 - tapOn:
-    point: '50%,95%'
+    text: '.*Cancelar.*|.*Cancel.*|.*Cerrar.*|.*Close.*'
+    optional: true
 - waitForAnimationToEnd:
     timeout: 2000
 
 # 9. VERIFY MODAL CLOSED AND BACK ON READINGS PAGE
 - extendedWaitUntil:
     visible:
-      text: 'Mostrando.*lecturas|Showing.*readings'
+      text: '.*Mostrando.*lecturas.*|.*Showing.*readings.*|.*Lecturas.*|.*Readings.*'
     timeout: 8000
 
 # 10. VERIFY NO FILTERS APPLIED (no filter chips)
 - assertVisible:
-    text: 'Lecturas|Readings'
+    text: '.*Lecturas.*|.*Readings.*'

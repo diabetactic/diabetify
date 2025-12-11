@@ -5,6 +5,7 @@
 #       requires clean backend state not available in shared environments.
 #       This test verifies all UI elements work regardless of state.
 #       For full flow testing, use Playwright against local Docker.
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
@@ -16,8 +17,8 @@ appId: io.diabetactic.app
 # 2. VERIFY WE START ON A TAB PAGE
 - extendedWaitUntil:
     visible:
-      text: 'Inicio|Home|Lecturas|Readings|Citas|Appointments|Perfil|Profile'
-    timeout: 8000
+      text: '.*Inicio.*|.*Home.*|.*Lecturas.*|.*Readings.*|.*Citas.*|.*Appointments.*|.*Perfil.*|.*Profile.*'
+    timeout: 5000
 
 # 3. NAVIGATE TO APPOINTMENTS TAB
 - runFlow: ../../flows/navigate-appointments.yaml
@@ -25,55 +26,48 @@ appId: io.diabetactic.app
 # 4. VERIFY APPOINTMENTS PAGE HEADER
 - extendedWaitUntil:
     visible:
-      text: 'Citas|Appointments'
+      text: '.*Citas.*|.*Appointments.*'
     timeout: 5000
 
 # 5. WAIT FOR LOADING TO COMPLETE
 - extendedWaitUntil:
     notVisible:
-      text: 'Cargando citas|Loading appointments|Cargando...'
-    timeout: 20000
-- waitForAnimationToEnd:
-    timeout: 2000
+      text: '.*Cargando.*citas.*|.*Loading.*appointments.*|.*Cargando.*'
+    timeout: 8000
 
 # 6. VERIFY QUEUE CONTENT IS VISIBLE (either status or request button)
 - extendedWaitUntil:
     visible:
-      text: 'Estado de la Cola|Queue Status|Solicitar Cita|Request Appointment|No tienes citas|No appointments'
-    timeout: 10000
+      text: '.*Estado.*Cola.*|.*Queue.*Status.*|.*Solicitar.*Cita.*|.*Request.*Appointment.*|.*No.*tienes.*citas.*|.*No.*appointments.*'
+    timeout: 5000
 
 # 7. VERIFY CONTENT AREA HAS EXPECTED STRUCTURE
 - extendedWaitUntil:
     visible:
-      text: 'ACTUAL|Solicitar Cita|Request Appointment|Citas Anteriores|Pendiente|Pending|No tienes citas|No appointments'
+      text: '.*ACTUAL.*|.*Solicitar.*Cita.*|.*Request.*Appointment.*|.*Citas.*Anteriores.*|.*Pendiente.*|.*Pending.*|.*No.*tienes.*citas.*|.*No.*appointments.*'
     timeout: 5000
 
-# 8. TEST PULL-TO-REFRESH
+# 8. TEST PULL-TO-REFRESH (explicit coordinates)
 - swipe:
-    direction: DOWN
+    start: '50%,30%'
+    end: '50%,70%'
     duration: 500
-- waitForAnimationToEnd:
-    timeout: 3000
 
 # 9. VERIFY PAGE STILL LOADS AFTER REFRESH
 - assertVisible:
-    text: 'Citas|Appointments'
+    text: '.*Citas.*|.*Appointments.*'
 
 # 10. NAVIGATE TO PROFILE AND BACK
 - tapOn:
-    text: 'Perfil|Profile'
-- waitForAnimationToEnd:
-    timeout: 1500
+    text: '.*Perfil.*|.*Profile.*'
 - assertVisible:
-    text: 'Perfil|Profile'
+    text: '.*Perfil.*|.*Profile.*'
 
 # 11. RETURN TO APPOINTMENTS
 - tapOn:
-    text: 'Citas|Appointments'
-- waitForAnimationToEnd:
-    timeout: 1500
+    text: '.*Citas.*|.*Appointments.*'
 
 # 12. FINAL VERIFICATION
 - assertVisible:
-    text: 'Citas|Appointments'
+    text: '.*Citas.*|.*Appointments.*'
 # Test passes - appointments page UI works correctly across navigation

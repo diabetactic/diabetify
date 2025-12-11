@@ -167,7 +167,7 @@ export class ProfileEditComponent implements OnInit {
 
       // Close modal with success result
       await this.modalController.dismiss({ success: true });
-    } catch (_error) {
+    } catch {
       await loading.dismiss();
 
       // Show error toast

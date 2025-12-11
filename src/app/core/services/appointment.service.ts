@@ -235,7 +235,9 @@ export class AppointmentService implements OnDestroy {
     return this.apiGateway.request<number>('extservices.appointments.placement').pipe(
       map(response => {
         if (response.success && typeof response.data === 'number') {
-          return response.data;
+          // Backend returns 0-indexed position, convert to 1-indexed for users
+          // Position 0 → "Position 1", Position 1 → "Position 2", etc.
+          return response.data + 1;
         }
         return -1;
       }),
@@ -296,6 +298,14 @@ export class AppointmentService implements OnDestroy {
     if (this.isMockMode) {
       return of({
         appointment_id: appointmentId,
+        change_basal_type: 'Lantus',
+        change_basal_dose: 22,
+        change_basal_time: '22:00',
+        change_fast_type: 'Humalog',
+        change_ratio: 12,
+        change_sensitivity: 45,
+        emergency_care: false,
+        needed_physical_appointment: false,
         state: 'ACCEPTED' as AppointmentQueueState,
       });
     }

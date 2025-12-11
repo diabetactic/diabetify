@@ -2,11 +2,14 @@
 # Test: Deny Appointment (WITH BACKEND VERIFICATION)
 # Description: Deny a pending appointment via backoffice and verify UI updates
 # This test validates the full PENDING -> DENIED flow
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
 
 env:
+  TEST_USER_ID: '1000'
+  TEST_USER_PASSWORD: 'tuvieja'
   BACKOFFICE_API_URL: 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com'
   API_BASE_URL: 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com'
   ADMIN_USERNAME: 'admin'
@@ -38,26 +41,26 @@ env:
 
 - extendedWaitUntil:
     visible:
-      text: 'Citas|Appointments'
+      text: '.*Citas.*|.*Appointments.*'
     timeout: 8000
 
 # 4. WAIT FOR LOADING TO COMPLETE
 - extendedWaitUntil:
     notVisible:
-      text: 'Cargando citas|Loading appointments|Cargando...'
+      text: '.*Cargando.*citas.*|.*Loading.*appointments.*|.*Cargando.*'
     timeout: 20000
 - waitForAnimationToEnd:
     timeout: 2000
 
 # 5. REQUEST APPOINTMENT
 - tapOn:
-    text: 'Solicitar|Request|Pedir Cita'
+    text: '.*Solicitar.*|.*Request.*|.*Pedir.*Cita.*'
     optional: true
 - waitForAnimationToEnd:
     timeout: 2000
 
 - tapOn:
-    text: 'Enviar|Submit|Confirmar|Confirm'
+    text: '.*Enviar.*|.*Submit.*|.*Confirmar.*|.*Confirm.*'
     optional: true
 - waitForAnimationToEnd:
     timeout: 3000
@@ -94,9 +97,10 @@ env:
 
 - assertTrue: ${output.verified}
 
-# 9. REFRESH UI
+# 9. REFRESH UI (pull to refresh with explicit coordinates)
 - swipe:
-    direction: DOWN
+    start: '50%,30%'
+    end: '50%,70%'
     duration: 500
 - waitForAnimationToEnd:
     timeout: 5000
@@ -104,12 +108,12 @@ env:
 # 10. UI VERIFICATION - Should show denied/rejected status
 - extendedWaitUntil:
     visible:
-      text: 'DENIED|Denegado|Rechazado|Rejected|No Disponible'
+      text: '.*DENIED.*|.*Denegad.*|.*Rechazad.*|.*Rejected.*|.*No.*Disponible.*'
     timeout: 10000
 
 - assertVisible:
-    text: 'DENIED|Denegado|Rechazado|Rejected|No Disponible'
+    text: '.*DENIED.*|.*Denegad.*|.*Rechazad.*|.*Rejected.*|.*No.*Disponible.*'
 
 # 11. VERIFY PAGE IS STABLE
 - assertVisible:
-    text: 'Citas|Appointments'
+    text: '.*Citas.*|.*Appointments.*'

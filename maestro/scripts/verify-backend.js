@@ -24,6 +24,20 @@ var EXPECTED_VALUE = typeof EXPECTED_VALUE !== 'undefined' ? EXPECTED_VALUE : nu
 var EXPECTED_STATE = typeof EXPECTED_STATE !== 'undefined' ? EXPECTED_STATE : null;
 var MIN_COUNT = typeof MIN_COUNT !== 'undefined' ? parseInt(MIN_COUNT) : 0;
 
+// Retry settings for sync delays
+var MAX_RETRIES = typeof MAX_RETRIES !== 'undefined' ? parseInt(MAX_RETRIES) : 5;
+var RETRY_DELAY_MS = typeof RETRY_DELAY_MS !== 'undefined' ? parseInt(RETRY_DELAY_MS) : 2000;
+
+// ==========================================
+// UTILITY: Sleep function (busy wait for GraalJS)
+// ==========================================
+function sleep(ms) {
+  var start = Date.now();
+  while (Date.now() - start < ms) {
+    // Busy wait - only option in GraalJS without async
+  }
+}
+
 // ==========================================
 // HTTP REQUEST HELPER
 // ==========================================
@@ -71,38 +85,75 @@ function getUserToken() {
 // ==========================================
 
 /**
- * Verify a reading with specific value exists
+ * Verify a reading with specific value exists (with retry for sync delays)
  */
 function verifyReadingExists(token, expectedValue) {
   console.log('Verifying reading with value ' + expectedValue + ' exists...');
+  console.log('Max retries: ' + MAX_RETRIES + ', delay: ' + RETRY_DELAY_MS + 'ms');
 
-  var data = request('GET', '/glucose/mine', '', token);
-  var readings = data && data.readings ? data.readings : data;
+  var lastError = null;
+  var recentReadings = [];
 
-  if (!readings || !Array.isArray(readings)) {
-    throw new Error('No readings array returned from API');
-  }
+  for (var attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    console.log('Attempt ' + attempt + '/' + MAX_RETRIES + '...');
 
-  console.log('Found ' + readings.length + ' readings in backend');
+    var data = request('GET', '/glucose/mine', '', token);
+    var readings = data && data.readings ? data.readings : data;
 
-  // Look for reading with expected value (within last 5 readings for efficiency)
-  var found = false;
-  var recentReadings = readings.slice(0, 10); // Check last 10
-
-  for (var i = 0; i < recentReadings.length; i++) {
-    var reading = recentReadings[i];
-    var value = reading.glucose_level || reading.value;
-    console.log('  Reading ' + i + ': value=' + value);
-    if (value == expectedValue) {
-      found = true;
-      console.log('FOUND reading with value ' + expectedValue + ' at position ' + i);
-      break;
+    if (!readings || !Array.isArray(readings)) {
+      lastError = 'No readings array returned from API';
+      if (attempt < MAX_RETRIES) {
+        console.log('No readings array, retrying in ' + RETRY_DELAY_MS + 'ms...');
+        sleep(RETRY_DELAY_MS);
+        continue;
+      }
+      throw new Error(lastError);
     }
-  }
 
-  if (!found) {
-    throw new Error(
-      'VERIFICATION FAILED: Reading with value ' +
+    console.log('Found ' + readings.length + ' readings in backend');
+
+    // Look for reading with expected value (within last 10 readings)
+    var found = false;
+    recentReadings = readings.slice(0, 10);
+
+    for (var i = 0; i < recentReadings.length; i++) {
+      var reading = recentReadings[i];
+      var value = reading.glucose_level || reading.value;
+      if (attempt === 1 || attempt === MAX_RETRIES) {
+        console.log('  Reading ' + i + ': value=' + value);
+      }
+      if (value == expectedValue) {
+        found = true;
+        console.log('FOUND reading with value ' + expectedValue + ' at position ' + i);
+        break;
+      }
+    }
+
+    if (found) {
+      // Export to Maestro output
+      output.verified = true;
+      output.readingFound = true;
+      output.value = expectedValue;
+      output.attempts = attempt;
+      console.log(
+        'VERIFICATION PASSED: Reading ' +
+          expectedValue +
+          ' exists in backend (attempt ' +
+          attempt +
+          ')'
+      );
+      return;
+    }
+
+    // Not found yet, retry if we have attempts left
+    if (attempt < MAX_RETRIES) {
+      console.log('Reading not found yet, retrying in ' + RETRY_DELAY_MS + 'ms...');
+      sleep(RETRY_DELAY_MS);
+    } else {
+      lastError =
+        'VERIFICATION FAILED after ' +
+        MAX_RETRIES +
+        ' attempts: Reading with value ' +
         expectedValue +
         ' NOT found in backend! ' +
         'Last 10 readings: ' +
@@ -110,15 +161,11 @@ function verifyReadingExists(token, expectedValue) {
           recentReadings.map(function (r) {
             return r.glucose_level || r.value;
           })
-        )
-    );
+        );
+    }
   }
 
-  // Export to Maestro output
-  output.verified = true;
-  output.readingFound = true;
-  output.value = expectedValue;
-  console.log('VERIFICATION PASSED: Reading ' + expectedValue + ' exists in backend');
+  throw new Error(lastError);
 }
 
 /**
@@ -191,13 +238,14 @@ function verifyAppointmentState(token, expectedState) {
 
   var state = request('GET', '/appointments/state', '', token);
 
-  // Handle different response formats
-  var actualState = state;
-  if (typeof state === 'object') {
-    actualState = state.state || state.status || 'NONE';
-  }
-  if (state === null) {
+  // Handle different response formats - check null FIRST
+  var actualState = 'NONE';
+  if (state === null || state === undefined) {
     actualState = 'NONE';
+  } else if (typeof state === 'object') {
+    actualState = state.state || state.status || 'NONE';
+  } else {
+    actualState = state;
   }
 
   console.log('Current appointment state: ' + actualState);

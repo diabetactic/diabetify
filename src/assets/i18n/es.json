@@ -558,7 +558,10 @@
         "waitingReview": "Su solicitud aún está esperando ser aceptada",
         "requestDenied": "Su solicitud no fue aceptada. Por favor contacte a la clínica.",
         "canProceed": "Puede proceder a completar el formulario de cita",
-        "queueClosed": "La cola de citas está cerrada. Por favor intente más tarde."
+        "queueClosed": "La cola de citas está cerrada. Por favor intente más tarde.",
+        "accepted": "¡Su solicitud de cita ha sido aceptada!",
+        "denied": "Su solicitud de cita no fue aceptada",
+        "created": "Su cita ha sido registrada exitosamente"
       }
     },
     "reason": "Motivo",
@@ -652,7 +655,15 @@
       "resolvedAt": "Resuelto el",
       "resolvedBy": "Resuelto por",
       "notes": "Notas de Resolución",
-      "loading": "Cargando resolución..."
+      "loading": "Cargando resolución...",
+      "basalType": "Tipo de Insulina Basal",
+      "basalDose": "Dosis Basal",
+      "basalTime": "Hora de Administración",
+      "fastType": "Tipo de Insulina Rápida",
+      "ratio": "Relación Insulina-Carbohidratos",
+      "sensitivity": "Factor de Corrección",
+      "emergencyCare": "Requiere Atención de Emergencia",
+      "needsPhysicalAppointment": "Requiere Cita Presencial"
     },
     "create": {
       "title": "Nueva Cita",

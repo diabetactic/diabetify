@@ -1,0 +1,68 @@
+# ==========================================
+# Flow: Create Appointment Form
+# Description: Fill and submit the create appointment form
+# Expects: Create appointment form to be visible (ACCEPTED state)
+# ==========================================
+
+appId: io.diabetactic.app
+
+---
+# 1. WAIT FOR FORM TO BE VISIBLE
+- extendedWaitUntil:
+    visible:
+      text: '.*Crear.*Cita.*|.*Create.*Appointment.*|.*Nueva.*Cita.*|.*New.*Appointment.*|.*Fecha.*|.*Date.*'
+    timeout: 8000
+
+# 2. TAP ON DATE PICKER
+- tapOn:
+    text: '.*Fecha.*|.*Date.*|.*Seleccionar.*fecha.*|.*Select.*date.*'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 3. IF DATE PICKER OPENED, SELECT A DATE
+# Usually ionic datetime - tap OK/Done to confirm
+- tapOn:
+    text: '.*OK.*|.*Done.*|.*Aceptar.*|.*Listo.*|.*Confirmar.*|.*Confirm.*'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 4. TAP ON TIME PICKER (if separate)
+- tapOn:
+    text: '.*Hora.*|.*Time.*|.*Seleccionar.*hora.*|.*Select.*time.*'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 5. CONFIRM TIME SELECTION
+- tapOn:
+    text: '.*OK.*|.*Done.*|.*Aceptar.*|.*Listo.*'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 6. ADD NOTES/REASON (optional)
+- tapOn:
+    text: '.*Motivo.*|.*Reason.*|.*Notas.*|.*Notes.*|.*Descripci.*n.*|.*Description.*'
+    optional: true
+- runFlow:
+    when:
+      visible:
+        text: '.*Motivo.*|.*Reason.*|.*Notas.*|.*Notes.*'
+    commands:
+      - inputText: '__E2E_TEST__ Appointment created via Maestro'
+      - hideKeyboard
+    optional: true
+
+# 7. TAP CREATE/CONFIRM BUTTON
+- tapOn:
+    text: '.*Crear.*|.*Create.*|.*Confirmar.*|.*Confirm.*|.*Guardar.*|.*Save.*|.*Agendar.*|.*Schedule.*'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 8. WAIT FOR SUCCESS
+- extendedWaitUntil:
+    visible:
+      text: '.*Citas.*|.*Appointments.*|.*Creada.*|.*Created.*|.*xito.*|.*Success.*|.*Cita.*programada.*|.*Appointment.*scheduled.*'
+    timeout: 10000

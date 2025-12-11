@@ -3,7 +3,7 @@
 # Description: Used for persistence tests where stored preferences must survive.
 #              Does NOT call clearState. Handles both "already logged in" and
 #              "needs to log in" scenarios.
-# Env vars defined here (config.yaml inheritance unreliable in flows)
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
@@ -13,30 +13,36 @@ env:
   TEST_USER_PASSWORD: 'tuvieja'
 
 ---
-# 1. HYDRATION WAIT - App should already be running
+# 0. STOP APP FIRST TO ENSURE CLEAN STATE
+- stopApp
+
+# 0.1. LAUNCH APP VIA DEEP LINK (launchApp has issues)
+- openLink: diabetactic://
+
+# 1. HYDRATION WAIT - Give app time to fully start
 - waitForAnimationToEnd:
-    timeout: 2000
+    timeout: 3000
 
 # 2. WAIT FOR APP TO SHOW SOMETHING
 # Could be welcome screen (need to login) or dashboard (already logged in)
 - extendedWaitUntil:
     visible:
       text: '.*Diabetactic.*|.*Inicio.*|.*Dashboard.*|.*Home.*|.*Perfil.*|.*Profile.*|.*Vamos.*|.*DNI.*'
-    timeout: 10000
+    timeout: 15000
 
 # 3. CHECK IF ALREADY ON DASHBOARD (skip login if so)
 # Try to find a dashboard element first - if found, we're logged in
 - runFlow:
     when:
-      visible: 'Lecturas|Readings|Citas|Appointments|Inicio|Home'
+      visible: '.*Lecturas.*|.*Readings.*|.*Citas.*|.*Appointments.*|.*Inicio.*|.*Home.*'
     file: skip-login.yaml
 
 # 4. IF ON WELCOME SCREEN, TAP TO GO TO LOGIN
 - tapOn:
-    text: '.*Vamos.*|.*Let.*Go.*'
+    text: '.*Vamos.*|.*Let.*Go.*|.*Sign.*In.*'
     optional: true
 - waitForAnimationToEnd:
-    timeout: 1000
+    timeout: 2000
 
 # 5. CONDITIONAL LOGIN - only if login form is visible
 # Use broader match for DNI-related text
@@ -48,7 +54,7 @@ env:
 # 6. VERIFY DASHBOARD LOADED
 - extendedWaitUntil:
     visible:
-      text: '.*(Inicio|Home|Dashboard|Tablero|Citas|Appointments|Lecturas|Readings|Perfil|Profile).*'
-    timeout: 12000
+      text: '.*Inicio.*|.*Home.*|.*Dashboard.*|.*Tablero.*|.*Citas.*|.*Appointments.*|.*Lecturas.*|.*Readings.*|.*Perfil.*|.*Profile.*'
+    timeout: 15000
 - waitForAnimationToEnd:
     timeout: 1000

@@ -132,10 +132,24 @@ export interface AppointmentSubmitResponse {
 
 /**
  * Response from GET /appointments/{id}/resolution
+ * Contains doctor's treatment recommendations from the resolution
  */
 export interface AppointmentResolutionResponse {
   appointment_id: number;
-  state: AppointmentQueueState;
+  // Treatment change recommendations
+  change_basal_type: string;
+  change_basal_dose: number;
+  change_basal_time: string;
+  change_fast_type: string;
+  change_ratio: number;
+  change_sensitivity: number;
+  // Flags
+  emergency_care: boolean;
+  needed_physical_appointment: boolean;
+  // Optional
+  glucose_scale?: string | null;
+  // Legacy fields (for backwards compatibility with old UI expectations)
+  state?: AppointmentQueueState;
   resolved_at?: string;
   resolved_by?: string;
   notes?: string;

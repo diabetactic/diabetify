@@ -2,21 +2,40 @@
 # Flow: Navigate to Profile Tab
 # Description: Navigate from any screen to profile tab
 # Prerequisite: Must be logged in
-# Uses text selector (data-testid not accessible in Capacitor WebView)
+# Uses text matching for robust bilingual support
 # ==========================================
 
 appId: io.diabetactic.app
 
 ---
-# 1. TAP ON PROFILE TAB - use data-testid for robustness
+# 0. DISMISS ANY OPEN MODALS by tapping outside (handles edit profile modal)
+# Using optional tap on area outside modals - tapping readings tab first
+- tapOn:
+    id: 'tab-readings'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 1. TAP ON PROFILE TAB
 - tapOn:
     id: 'tab-profile'
-- waitForAnimationToEnd
+- waitForAnimationToEnd:
+    timeout: 1500
 
 # 2. WAIT FOR PROFILE PAGE TO LOAD
 - extendedWaitUntil:
     visible:
-      text: 'Perfil|Profile'
+      text: '.*Perfil.*|.*Profile.*'
     timeout: 5000
 - waitForAnimationToEnd:
-    timeout: 1000
+    timeout: 500
+
+# 3. SCROLL TO TOP to reset scroll position (ensures consistent state between tests)
+- swipe:
+    direction: DOWN
+    duration: 300
+- swipe:
+    direction: DOWN
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 500

@@ -1,36 +1,23 @@
 # ==========================================
-# Flow: Navigate to Readings Tab
+# Flow: Navigate to Readings Page
 # Description: Navigate from any screen to readings tab
 # Prerequisite: Must be logged in
-# Uses text selector (data-testid not accessible in Capacitor WebView)
+# Uses tab bar ID for reliable navigation
 # ==========================================
 
 appId: io.diabetactic.app
 
 ---
-# 1. TAP ON READINGS TAB - use data-testid for robustness
+# 1. TAP ON READINGS TAB IN TAB BAR
 - tapOn:
     id: 'tab-readings'
-- waitForAnimationToEnd
-
-# 2. WAIT FOR READINGS PAGE HEADER TO LOAD
-- extendedWaitUntil:
-    visible:
-      text: 'Lecturas|Readings'
-    timeout: 8000
-
-# 3. WAIT FOR LOADING TO COMPLETE
-- extendedWaitUntil:
-    notVisible:
-      text: 'Cargando lecturas|Loading readings'
-    timeout: 20000
-- waitForAnimationToEnd:
-    timeout: 2000
-
-# 4. VERIFY CONTENT IS VISIBLE (readings list or empty state)
-- extendedWaitUntil:
-    visible:
-      text: 'Mostrando.*lecturas|Showing.*readings|Sin lecturas|No readings'
-    timeout: 10000
 - waitForAnimationToEnd:
     timeout: 1000
+
+# 2. WAIT FOR READINGS PAGE CONTENT TO LOAD (count text or empty state)
+- extendedWaitUntil:
+    visible:
+      text: '.*Mostrando.*lecturas.*|.*Showing.*readings.*|.*Sin.*lecturas.*|.*No.*readings.*'
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 500

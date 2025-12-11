@@ -2,6 +2,7 @@
 # Flow: Login for API 36+ (No launchApp)
 # Description: Works with already-running app. For API 36 compatibility.
 # Usage: Run scripts/run-tests.sh which launches app via adb first.
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
@@ -24,22 +25,22 @@ env:
 
 # 3. IF ON DASHBOARD, LOG OUT FIRST
 - tapOn:
-    text: 'Perfil|Profile'
+    text: '.*Perfil.*|.*Profile.*'
     optional: true
 - waitForAnimationToEnd:
     timeout: 1000
 
 - scrollUntilVisible:
     element:
-      text: '.*Cerrar sesión.*|.*Sign out.*|.*Logout.*'
+      text: '.*Cerrar.*sesi.*|.*Sign.*out.*|.*Logout.*'
     direction: DOWN
     timeout: 5000
     optional: true
 - tapOn:
-    text: '.*Cerrar sesión.*|.*Sign out.*|.*Logout.*'
+    text: '.*Cerrar.*sesi.*|.*Sign.*out.*|.*Logout.*'
     optional: true
 - tapOn:
-    text: 'Cerrar sesión|Sign out|Confirmar|Confirm|OK'
+    text: '.*Cerrar.*sesi.*|.*Sign.*out.*|.*Confirmar.*|.*Confirm.*|.*OK.*'
     optional: true
 - waitForAnimationToEnd:
     timeout: 2000
@@ -52,7 +53,7 @@ env:
 
 # 5. TAP VAMOS IF ON WELCOME
 - tapOn:
-    text: '.*Vamos.*|.*Let.*Go.*'
+    text: '.*Vamos.*|.*Let.*Go.*|.*Sign.*In.*'
     optional: true
 - waitForAnimationToEnd:
     timeout: 1500
@@ -60,7 +61,7 @@ env:
 # 6. WAIT FOR LOGIN FORM READY
 - extendedWaitUntil:
     visible:
-      text: 'DNI|Iniciar Sesión|Sign In'
+      text: '.*DNI.*|.*Iniciar.*Sesi.*|.*Sign.*In.*'
     timeout: 5000
 
 # 7. INPUT USERNAME - use data-testid for robustness
@@ -86,7 +87,7 @@ env:
 # 10. VERIFY DASHBOARD LOADED
 - extendedWaitUntil:
     visible:
-      text: '.*(Inicio|Home|Dashboard|Tablero|Lecturas|Readings|Mi Día|My Day).*'
+      text: '.*Inicio.*|.*Home.*|.*Dashboard.*|.*Tablero.*|.*Lecturas.*|.*Readings.*|.*Mi.*D.*a.*|.*My.*Day.*'
     timeout: 20000
 - waitForAnimationToEnd:
     timeout: 2000

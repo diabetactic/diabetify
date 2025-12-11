@@ -1,26 +1,13 @@
 # =============================================================================
 # Docker Compose Configuration for Diabetify Development & CI/CD
 # =============================================================================
-# This file provides multiple services for development, testing, and CI/CD:
-#
-# Services:
-#   - dev:         Development server with hot reload (port 4200)
-#   - test:        Run unit tests with Jest
-#   - test-watch:  Run unit tests in watch mode
-#   - e2e:         Run Playwright E2E tests
-#   - coverage:    Run tests with coverage report
-#   - lint:        Run ESLint and Stylelint
-#   - ci:          Full CI pipeline (lint + test + e2e)
+# Services: dev, test, test-watch, e2e, coverage, lint, ci
 #
 # Usage:
 #   docker compose up dev                    # Start dev server
 #   docker compose run --rm test             # Run unit tests
-#   docker compose run --rm test-watch       # Test watch mode
 #   docker compose run --rm e2e              # Run E2E tests
-#   docker compose run --rm coverage         # Generate coverage report
-#   docker compose run --rm lint             # Run linters
 #   docker compose run --rm ci               # Full CI pipeline
-#
 # =============================================================================
 
 version: '3.8'
@@ -41,27 +28,6 @@ x-base-service: &base-service
     - NODE_ENV=development
     - CI=false
 
-x-base-volumes: &base-volumes
-  - ./src:/app/src:ro                      # Source code (read-only for safety)
-  - ./package.json:/app/package.json:ro    # Package files
-  - ./package-lock.json:/app/package-lock.json:ro
-  - ./tsconfig.json:/app/tsconfig.json:ro
-  - ./tsconfig.app.json:/app/tsconfig.app.json:ro
-  - ./tsconfig.spec.json:/app/tsconfig.spec.json:ro
-  - ./angular.json:/app/angular.json:ro
-  - ./jest.config.js:/app/jest.config.js:ro
-  - ./setup-jest.ts:/app/setup-jest.ts:ro
-  - ./playwright.config.ts:/app/playwright.config.ts:ro
-  - ./tailwind.config.js:/app/tailwind.config.js:ro
-  - ./postcss.config.js:/app/postcss.config.js:ro
-  - ./.eslintrc.json:/app/.eslintrc.json:ro
-  - ./.prettierrc:/app/.prettierrc:ro
-  - ./.stylelintrc.json:/app/.stylelintrc.json:ro
-  # Exclude from container
-  - /app/node_modules                       # Use container's node_modules
-  - /app/.angular                           # Prevent host pollution
-  - /app/www                                # Build output
-
 # =============================================================================
 # Services
 # =============================================================================
@@ -75,16 +41,22 @@ services:
     container_name: diabetactic-dev
     command: npm run start:mock
     ports:
-      - "4200:4200"
+      - '4200:4200'
     volumes:
-      <<: *base-volumes
-      # Allow write access for Angular build cache
+      - ./src:/app/src:ro
+      - ./package.json:/app/package.json:ro
+      - ./package-lock.json:/app/package-lock.json:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./tsconfig.app.json:/app/tsconfig.app.json:ro
+      - ./angular.json:/app/angular.json:ro
+      - ./tailwind.config.js:/app/tailwind.config.js:ro
+      - ./postcss.config.js:/app/postcss.config.js:ro
       - dev-cache:/app/.angular
       - dev-www:/app/www
     environment:
       - NODE_ENV=development
       - CI=false
-      - ENV=mock                            # Use mock backend by default
+      - ENV=mock
     networks:
       - diabetactic
     restart: unless-stopped
@@ -97,8 +69,15 @@ services:
     container_name: diabetactic-test
     command: npm test
     volumes:
-      <<: *base-volumes
-      - ./coverage:/app/coverage            # Coverage output
+      - ./src:/app/src:ro
+      - ./package.json:/app/package.json:ro
+      - ./package-lock.json:/app/package-lock.json:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./tsconfig.spec.json:/app/tsconfig.spec.json:ro
+      - ./jest.config.js:/app/jest.config.js:ro
+      - ./setup-jest.ts:/app/setup-jest.ts:ro
+      - ./angular.json:/app/angular.json:ro
+      - ./coverage:/app/coverage
       - test-cache:/app/.angular
     environment:
       - NODE_ENV=test
@@ -114,14 +93,20 @@ services:
     container_name: diabetactic-test-watch
     command: npm run test:watch
     volumes:
-      <<: *base-volumes
+      - ./src:/app/src:ro
+      - ./package.json:/app/package.json:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./tsconfig.spec.json:/app/tsconfig.spec.json:ro
+      - ./jest.config.js:/app/jest.config.js:ro
+      - ./setup-jest.ts:/app/setup-jest.ts:ro
+      - ./angular.json:/app/angular.json:ro
       - ./coverage:/app/coverage
       - test-cache:/app/.angular
     environment:
       - NODE_ENV=test
       - CI=false
-    stdin_open: true                        # Keep stdin open
-    tty: true                               # Allocate pseudo-TTY for interactive watch
+    stdin_open: true
+    tty: true
     networks:
       - diabetactic
 
@@ -133,33 +118,17 @@ services:
     container_name: diabetactic-e2e
     command: npm run test:e2e
     volumes:
-      <<: *base-volumes
-      - ./playwright-report:/app/playwright-report        # HTML report
-      - ./playwright/artifacts:/app/playwright/artifacts  # Screenshots/videos
-      - e2e-cache:/app/.angular
-    environment:
-      - NODE_ENV=test
-      - CI=true                             # Run in CI mode (headless)
-      - PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
-    networks:
-      - diabetactic
-
-  # ---------------------------------------------------------------------------
-  # E2E Tests (Headed Mode)
-  # ---------------------------------------------------------------------------
-  e2e-headed:
-    <<: *base-service
-    container_name: diabetactic-e2e-headed
-    command: npm run test:e2e:headed
-    volumes:
-      <<: *base-volumes
+      - ./src:/app/src:ro
+      - ./package.json:/app/package.json:ro
+      - ./playwright:/app/playwright:ro
+      - ./playwright.config.ts:/app/playwright.config.ts:ro
+      - ./angular.json:/app/angular.json:ro
       - ./playwright-report:/app/playwright-report
       - ./playwright/artifacts:/app/playwright/artifacts
       - e2e-cache:/app/.angular
     environment:
       - NODE_ENV=test
-      - CI=false
-      - DISPLAY=${DISPLAY:-:0}              # X11 display for headed mode
+      - CI=true
       - PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
     networks:
       - diabetactic
@@ -172,7 +141,11 @@ services:
     container_name: diabetactic-a11y
     command: npm run test:a11y
     volumes:
-      <<: *base-volumes
+      - ./src:/app/src:ro
+      - ./package.json:/app/package.json:ro
+      - ./playwright:/app/playwright:ro
+      - ./playwright.config.ts:/app/playwright.config.ts:ro
+      - ./angular.json:/app/angular.json:ro
       - ./playwright-report:/app/playwright-report
       - ./playwright/artifacts:/app/playwright/artifacts
       - a11y-cache:/app/.angular
@@ -190,8 +163,14 @@ services:
     container_name: diabetactic-coverage
     command: npm run test:coverage
     volumes:
-      <<: *base-volumes
-      - ./coverage:/app/coverage            # HTML and LCOV reports
+      - ./src:/app/src:ro
+      - ./package.json:/app/package.json:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./tsconfig.spec.json:/app/tsconfig.spec.json:ro
+      - ./jest.config.js:/app/jest.config.js:ro
+      - ./setup-jest.ts:/app/setup-jest.ts:ro
+      - ./angular.json:/app/angular.json:ro
+      - ./coverage:/app/coverage
       - coverage-cache:/app/.angular
     environment:
       - NODE_ENV=test
@@ -207,22 +186,11 @@ services:
     container_name: diabetactic-lint
     command: bash -c "npm run lint && npm run lint:styles"
     volumes:
-      <<: *base-volumes
-    environment:
-      - NODE_ENV=development
-      - CI=true
-    networks:
-      - diabetactic
-
-  # ---------------------------------------------------------------------------
-  # Formatting Check (Prettier)
-  # ---------------------------------------------------------------------------
-  format:
-    <<: *base-service
-    container_name: diabetactic-format
-    command: npm run format:check
-    volumes:
-      <<: *base-volumes
+      - ./src:/app/src:ro
+      - ./package.json:/app/package.json:ro
+      - ./.eslintrc.json:/app/.eslintrc.json:ro
+      - ./.stylelintrc.json:/app/.stylelintrc.json:ro
+      - ./angular.json:/app/angular.json:ro
     environment:
       - NODE_ENV=development
       - CI=true
@@ -246,14 +214,24 @@ services:
       echo '=== CI Pipeline Complete ==='
       "
     volumes:
-      <<: *base-volumes
-      - ./coverage:/app/coverage                          # Jest coverage
-      - ./playwright-report:/app/playwright-report        # E2E reports
-      - ./playwright/artifacts:/app/playwright/artifacts  # E2E artifacts
+      - ./src:/app/src:ro
+      - ./package.json:/app/package.json:ro
+      - ./playwright:/app/playwright:ro
+      - ./playwright.config.ts:/app/playwright.config.ts:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./tsconfig.spec.json:/app/tsconfig.spec.json:ro
+      - ./jest.config.js:/app/jest.config.js:ro
+      - ./setup-jest.ts:/app/setup-jest.ts:ro
+      - ./angular.json:/app/angular.json:ro
+      - ./.eslintrc.json:/app/.eslintrc.json:ro
+      - ./.stylelintrc.json:/app/.stylelintrc.json:ro
+      - ./coverage:/app/coverage
+      - ./playwright-report:/app/playwright-report
+      - ./playwright/artifacts:/app/playwright/artifacts
       - ci-cache:/app/.angular
     environment:
       - NODE_ENV=test
-      - CI=true                             # Enable CI mode
+      - CI=true
       - PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
     networks:
       - diabetactic
@@ -266,24 +244,13 @@ services:
     container_name: diabetactic-build-prod
     command: npm run build:prod
     volumes:
-      <<: *base-volumes
-      - ./www:/app/www                      # Production output
-      - build-cache:/app/.angular
-    environment:
-      - NODE_ENV=production
-      - CI=true
-    networks:
-      - diabetactic
-
-  # ---------------------------------------------------------------------------
-  # Bundle Analysis
-  # ---------------------------------------------------------------------------
-  build-analyze:
-    <<: *base-service
-    container_name: diabetactic-build-analyze
-    command: npm run build:analyze
-    volumes:
-      <<: *base-volumes
+      - ./src:/app/src:ro
+      - ./package.json:/app/package.json:ro
+      - ./angular.json:/app/angular.json:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./tsconfig.app.json:/app/tsconfig.app.json:ro
+      - ./tailwind.config.js:/app/tailwind.config.js:ro
+      - ./postcss.config.js:/app/postcss.config.js:ro
       - ./www:/app/www
       - build-cache:/app/.angular
     environment:
@@ -300,7 +267,9 @@ services:
     container_name: diabetactic-shell
     command: bash
     volumes:
-      <<: *base-volumes
+      - ./src:/app/src:ro
+      - ./package.json:/app/package.json:ro
+      - ./angular.json:/app/angular.json:ro
       - ./coverage:/app/coverage
       - ./playwright-report:/app/playwright-report
       - ./www:/app/www
@@ -321,7 +290,9 @@ services:
     container_name: diabetactic-i18n
     command: npm run i18n:check
     volumes:
-      <<: *base-volumes
+      - ./src:/app/src:ro
+      - ./package.json:/app/package.json:ro
+      - ./scripts:/app/scripts:ro
     environment:
       - NODE_ENV=development
       - CI=true
@@ -360,42 +331,3 @@ volumes:
     name: diabetactic-build-cache
   shell-cache:
     name: diabetactic-shell-cache
-
-# =============================================================================
-# Usage Examples
-# =============================================================================
-#
-# Development:
-#   docker compose up dev                    # Start dev server (http://localhost:4200)
-#   docker compose logs -f dev               # Follow dev server logs
-#
-# Testing:
-#   docker compose run --rm test             # Run unit tests once
-#   docker compose run --rm test-watch       # Watch mode (interactive)
-#   docker compose run --rm coverage         # Generate coverage report
-#   docker compose run --rm e2e              # Run E2E tests (headless)
-#   docker compose run --rm e2e-headed       # Run E2E tests (browser visible)
-#   docker compose run --rm a11y             # Run accessibility tests
-#
-# Quality:
-#   docker compose run --rm lint             # Run linters
-#   docker compose run --rm format           # Check formatting
-#   docker compose run --rm i18n             # Check translation keys
-#
-# Build:
-#   docker compose run --rm build-prod       # Production build
-#   docker compose run --rm build-analyze    # Bundle analysis
-#
-# CI/CD:
-#   docker compose run --rm ci               # Full CI pipeline
-#
-# Debugging:
-#   docker compose run --rm shell            # Interactive bash shell
-#   docker compose exec dev bash             # Shell in running dev container
-#
-# Cleanup:
-#   docker compose down                      # Stop all services
-#   docker compose down -v                   # Stop and remove volumes
-#   docker system prune -af --volumes        # Clean everything (use with caution)
-#
-# =============================================================================

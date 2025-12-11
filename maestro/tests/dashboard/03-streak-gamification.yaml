@@ -1,0 +1,76 @@
+# ==========================================
+# Test: Dashboard - Streak Gamification Display
+# Description: Verify streak card displays correctly on dashboard
+# Covers: Streak count, level emoji, max streak, times measured
+# Uses .* wildcards for bilingual support with special chars
+# ==========================================
+
+appId: io.diabetactic.app
+
+---
+# 1. LOGIN WITH FRESH STATE (same as working 01-stats-display test)
+- runFlow: ../../flows/login.yaml
+
+# 2. VERIFY DASHBOARD LOADED - wait for stats grid which indicates page loaded
+- extendedWaitUntil:
+    visible:
+      text: '.*Tiempo.*Rango.*|.*Time.*Range.*|.*Panel.*Control.*'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 3. SCROLL TO TOP TO FIND STREAK CARD
+# The streak card is at the very top of dashboard content, ABOVE the stats
+# Swipe from top to bottom (30% to 70%) = scroll UP to reveal top content
+- swipe:
+    start: '50%,30%'
+    end: '50%,70%'
+    duration: 500
+- waitForAnimationToEnd:
+    timeout: 500
+
+# Scroll up again to ensure we reach the very top
+- swipe:
+    start: '50%,30%'
+    end: '50%,70%'
+    duration: 500
+- waitForAnimationToEnd:
+    timeout: 500
+
+# One more scroll to be sure
+- swipe:
+    start: '50%,30%'
+    end: '50%,70%'
+    duration: 500
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 4. VERIFY STREAK CARD IS NOW VISIBLE
+- extendedWaitUntil:
+    visible:
+      text: '.*Tu.*Racha.*|.*Your.*Streak.*'
+    timeout: 8000
+
+# 5. VERIFY STREAK VALUE EXISTS (shows days count)
+# Should display a number followed by "days" or "dias"
+- assertVisible:
+    text: '.*days.*|.*d.*as.*|.*day.*|.*d.*a.*'
+
+# 6. VERIFY LEVEL DISPLAY (matches any streak level)
+# English: Getting Started, Building Habits, Dedicated, Champion, Legend
+# Spanish: Empezando, Creando Hábitos, Dedicado, Campeón, Leyenda
+- extendedWaitUntil:
+    visible:
+      text: '.*Getting.*Started.*|.*Empezando.*|.*Building.*Habits.*|.*Creando.*|.*Dedicated.*|.*Dedicado.*|.*Champion.*|.*Campe.*|.*Legend.*|.*Leyenda.*'
+    timeout: 5000
+
+# 7. VERIFY MAX STREAK STAT
+# English: "Best Streak" | Spanish: "Mejor Racha"
+- assertVisible:
+    text: '.*Best.*Streak.*|.*Mejor.*Racha.*|.*Max.*Streak.*'
+
+# 8. VERIFY TOTAL READINGS STAT
+# English: "Total Readings" | Spanish: "Total de Lecturas"
+- assertVisible:
+    text: '.*Total.*Readings.*|.*Total.*de.*Lecturas.*|.*Times.*Measured.*'
+# Test passes - streak gamification card displays correctly

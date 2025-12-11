@@ -2,6 +2,7 @@
 # Test: Bolus Calculator - High Glucose Scenarios
 # Description: Test high glucose with zero/normal carbs
 # Covers: Correction dose, high glucose warnings
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
@@ -18,7 +19,7 @@ env:
 # 2. WAIT FOR DASHBOARD TO FULLY LOAD (skeleton complete)
 - extendedWaitUntil:
     visible:
-      text: '.*(Inicio|Home|Dashboard).*'
+      text: '.*Inicio.*|.*Home.*|.*Dashboard.*'
     timeout: 8000
 - waitForAnimationToEnd:
     timeout: 2000
@@ -26,7 +27,7 @@ env:
 # 3. WAIT FOR SKELETON LOADING TO COMPLETE
 - extendedWaitUntil:
     visible:
-      text: 'Tiempo en Rango|Time in Range|%|mg/dL'
+      text: '.*Tiempo.*Rango.*|.*Time.*Range.*|%|mg/dL'
     timeout: 18000
 - waitForAnimationToEnd:
     timeout: 2000
@@ -34,7 +35,7 @@ env:
 # 4. WAIT FOR QUICK ACTIONS TO LOAD (indicates skeleton complete)
 - extendedWaitUntil:
     visible:
-      text: 'Acciones Rápidas|Quick Actions'
+      text: '.*Acciones.*R.*pidas.*|.*Quick.*Actions.*'
     timeout: 10000
 
 # 4. SCROLL DOWN TO ENSURE BUTTON IS VISIBLE
@@ -47,14 +48,14 @@ env:
 
 # 5. NAVIGATE TO BOLUS CALCULATOR VIA QUICK ACTIONS BUTTON
 - tapOn:
-    text: 'Calculadora de Bolos|Bolus Calculator'
+    text: '.*Calculadora.*Bolo.*|.*Bolus.*Calculator.*'
 - waitForAnimationToEnd:
     timeout: 1500
 
 # 6. VERIFY BOLUS CALCULATOR PAGE LOADED
 - extendedWaitUntil:
     visible:
-      text: 'Calculadora de Bolo|Bolus Calculator'
+      text: '.*Calculadora.*Bolo.*|.*Bolus.*Calculator.*'
     timeout: 8000
 
 # ===============================
@@ -98,12 +99,12 @@ env:
 # 9. VERIFY RESULT SHOWS CORRECTION DOSE ONLY
 - extendedWaitUntil:
     visible:
-      text: 'Dosis Recomendada|Recommended Dose'
+      text: '.*Dosis.*Recomendada.*|.*Recommended.*Dose.*'
     timeout: 8000
 
 # 10. VERIFY DOSE IS NON-ZERO (correction needed for high glucose)
 - assertVisible:
-    text: 'unidades|units'
+    text: '.*unidades.*|.*units.*'
 
 # ===============================
 # TEST 2: HIGH GLUCOSE WITH NORMAL CARBS
@@ -112,11 +113,11 @@ env:
 # 11. RESET FORM
 - scrollUntilVisible:
     element:
-      text: 'Nueva Calculación|New Calculation'
+      text: '.*Nueva.*Calculaci.*n.*|.*New.*Calculation.*'
     direction: DOWN
     timeout: 5000
 - tapOn:
-    text: 'Nueva Calculación|New Calculation'
+    text: '.*Nueva.*Calculaci.*n.*|.*New.*Calculation.*'
 - waitForAnimationToEnd:
     timeout: 1000
 
@@ -155,7 +156,7 @@ env:
 # 15. VERIFY COMBINED DOSE (CORRECTION + CARB)
 - extendedWaitUntil:
     visible:
-      text: 'Dosis Recomendada|Recommended Dose'
+      text: '.*Dosis.*Recomendada.*|.*Recommended.*Dose.*'
     timeout: 8000
 
 # 16. VERIFY VALUES DISPLAYED IN RESULTS
