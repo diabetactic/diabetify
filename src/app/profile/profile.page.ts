@@ -33,6 +33,7 @@ import { Subject, firstValueFrom } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 
 import { TidepoolAuthService, AuthState } from '../core/services/tidepool-auth.service';
+import { LocalAuthService } from '../core/services/local-auth.service';
 import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
 import { TranslationService, Language } from '../core/services/translation.service';
@@ -147,6 +148,7 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   constructor(
     private authService: TidepoolAuthService,
+    private localAuthService: LocalAuthService,
     private profileService: ProfileService,
     private themeService: ThemeService,
     private translationService: TranslationService,
@@ -613,11 +615,13 @@ export class ProfilePage implements OnInit, OnDestroy {
    */
   async onSignOut(): Promise<void> {
     try {
-      await this.authService.logout();
+      // Clear BOTH auth services - LocalAuth for app tokens, Tidepool for OAuth
+      await Promise.all([this.localAuthService.logout(), this.authService.logout()]);
       await this.profileService.deleteProfile();
       await this.router.navigate([ROUTES.WELCOME], { replaceUrl: true });
     } catch {
       // Sign out failed - navigate to welcome anyway
+      await this.router.navigate([ROUTES.WELCOME], { replaceUrl: true });
     }
   }
 

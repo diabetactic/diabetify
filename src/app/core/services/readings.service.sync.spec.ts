@@ -240,7 +240,7 @@ describe('ReadingsService - Sync Queue Logic', () => {
       expect(mockDb.syncQueue.delete).toHaveBeenCalled();
     });
 
-    it('should increment retryCount on network error', async () => {
+    it('should re-add item with incremented retryCount on network error', async () => {
       const queueItem = createQueueItem({ retryCount: 0 });
       mockDb.addQueueItem(queueItem);
 
@@ -248,8 +248,9 @@ describe('ReadingsService - Sync Queue Logic', () => {
 
       await service.syncPendingReadings();
 
-      expect(mockDb.syncQueue.update).toHaveBeenCalledWith(
-        expect.any(Number),
+      // Delete-first pattern: item deleted before POST, re-added on failure
+      expect(mockDb.syncQueue.delete).toHaveBeenCalled();
+      expect(mockDb.syncQueue.add).toHaveBeenCalledWith(
         expect.objectContaining({
           retryCount: 1,
           lastError: expect.stringContaining('Network error'),

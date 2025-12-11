@@ -272,6 +272,9 @@ export class DashboardPage implements OnInit, OnDestroy {
       );
       const result = await this.readingsService.getAllReadings(5);
       this.recentReadings = result.readings;
+
+      // Show success toast to user
+      await this.showToast(this.translationService.instant('dashboard.syncComplete'), 'success');
     } catch (error) {
       this.logger.error('Dashboard', 'Error syncing data from backend', error);
       await this.showToast(
