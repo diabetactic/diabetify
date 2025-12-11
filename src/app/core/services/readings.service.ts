@@ -101,6 +101,14 @@ export class ReadingsService implements OnDestroy {
   private readonly isMockBackend = environment.backendMode === 'mock';
   private isOnline = true; // Default to online
 
+  // Sync mutex to prevent concurrent sync operations causing duplicates
+  private syncInProgress = false;
+  private syncPromise: Promise<{
+    success: number;
+    failed: number;
+    lastError?: string | null;
+  }> | null = null;
+
   // Backend reading types: DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO
   // App now uses backend values directly (no mapping needed)
 
@@ -587,6 +595,35 @@ export class ReadingsService implements OnDestroy {
       return { success: 0, failed: 0 };
     }
 
+    // SYNC MUTEX: Prevent concurrent sync operations that cause duplicates
+    // If sync is already in progress, return the existing promise instead of starting a new one
+    if (this.syncInProgress && this.syncPromise) {
+      this.logger?.info('Sync', 'Sync already in progress, returning existing promise');
+      return this.syncPromise;
+    }
+
+    // Mark sync as in progress and create the sync promise
+    this.syncInProgress = true;
+    this.syncPromise = this.executeSync();
+
+    try {
+      return await this.syncPromise;
+    } finally {
+      // Always clean up the mutex when done
+      this.syncInProgress = false;
+      this.syncPromise = null;
+    }
+  }
+
+  /**
+   * Internal method that performs the actual sync operation
+   * This is wrapped by syncPendingReadings() with mutex protection
+   */
+  private async executeSync(): Promise<{
+    success: number;
+    failed: number;
+    lastError?: string | null;
+  }> {
     // Use transaction to prevent race conditions
     const result = await this.db.transaction(
       'rw',
@@ -600,7 +637,19 @@ export class ReadingsService implements OnDestroy {
         this.logger?.info('Sync', `Processing ${queueItems.length} items in sync queue`);
 
         for (const item of queueItems) {
+          // CRITICAL FIX: Delete from queue FIRST to prevent duplicates
+          // If POST succeeds but later operations fail, we don't want to re-POST
+          const queueItemId = item.id;
+
           try {
+            // Step 1: Remove from queue FIRST (before HTTP call)
+            // This prevents duplicates if the POST succeeds but subsequent operations fail
+            if (queueItemId !== undefined) {
+              await this.db.syncQueue.delete(queueItemId);
+              this.logger?.debug('Sync', `Removed ${item.readingId} from queue before POST`);
+            }
+
+            // Step 2: Perform the backend operation
             if (item.operation === 'create' && item.reading) {
               // Push new reading to backend
               await this.pushReadingToBackend(item.reading);
@@ -614,14 +663,19 @@ export class ReadingsService implements OnDestroy {
               );
             }
 
-            // Remove from queue on success
-            if (item.id !== undefined) {
-              await this.db.syncQueue.delete(item.id);
-            }
-
-            // Mark reading as synced if it was create/update
+            // Step 3: Mark reading as synced if it was create/update
+            // This can fail safely - reading is already on backend, queue item already deleted
             if (item.operation !== 'delete' && item.readingId) {
-              await this.markAsSynced(item.readingId);
+              try {
+                await this.markAsSynced(item.readingId);
+              } catch (markError) {
+                // Non-critical: reading was successfully synced, just couldn't mark it locally
+                this.logger?.warn(
+                  'Sync',
+                  `Could not mark ${item.readingId} as synced locally`,
+                  markError
+                );
+              }
             }
 
             success++;
@@ -648,23 +702,28 @@ export class ReadingsService implements OnDestroy {
               errorBody: (error as { error?: unknown })?.error,
             });
 
-            if (retryCount >= this.SYNC_RETRY_LIMIT) {
-              // Remove from queue after max retries
+            // Re-add to queue for retry (since we deleted it before attempting)
+            if (retryCount < this.SYNC_RETRY_LIMIT) {
+              // Re-add with incremented retry count
+              const retryItem: SyncQueueItem = {
+                operation: item.operation,
+                readingId: item.readingId,
+                reading: item.reading,
+                timestamp: item.timestamp,
+                retryCount,
+                lastError: detailedError,
+              };
+              await this.db.syncQueue.add(retryItem);
+              this.logger?.info(
+                'Sync',
+                `Re-added ${item.readingId} to queue for retry (attempt ${retryCount}/${this.SYNC_RETRY_LIMIT})`
+              );
+            } else {
+              // Max retries reached - don't re-add, item stays deleted
               this.logger?.warn(
                 'Sync',
-                `Max retries reached for ${item.readingId}, removing from queue`
+                `Max retries reached for ${item.readingId}, not re-adding to queue`
               );
-              if (item.id !== undefined) {
-                await this.db.syncQueue.delete(item.id);
-              }
-            } else {
-              // Update retry count with detailed error
-              if (item.id !== undefined) {
-                await this.db.syncQueue.update(item.id, {
-                  retryCount,
-                  lastError: detailedError,
-                });
-              }
             }
           }
         }

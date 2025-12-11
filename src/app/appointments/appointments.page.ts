@@ -271,7 +271,8 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    */
   private subscribeToAppointments(): void {
     this.appointmentService.appointments$.pipe(takeUntil(this.destroy$)).subscribe(appointments => {
-      this.appointments = appointments;
+      // Sort by appointment_id descending (most recent first)
+      this.appointments = [...appointments].sort((a, b) => b.appointment_id - a.appointment_id);
       this.cdr.markForCheck();
     });
   }

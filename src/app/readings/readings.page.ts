@@ -483,12 +483,27 @@ export class ReadingsPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Map backend meal context values to i18n context keys
+   * Backend sends: DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO
+   * i18n uses: glucose.context.breakfast, glucose.context.lunch, etc.
+   */
+  private readonly mealContextMap: Record<string, string> = {
+    DESAYUNO: 'breakfast',
+    ALMUERZO: 'lunch',
+    MERIENDA: 'snack',
+    CENA: 'dinner',
+    EJERCICIO: 'exercise',
+    OTRAS_COMIDAS: 'otherMeals',
+    OTRO: 'other',
+  };
+
+  /**
    * Get meal context label
    */
   getMealLabel(mealContext?: string): string {
     if (!mealContext) return '';
-    const key = `glucose.meal.${mealContext}`;
-    return this.translationService.instant(key);
+    const contextKey = this.mealContextMap[mealContext] || 'other';
+    return this.translationService.instant(`glucose.context.${contextKey}`);
   }
 
   /**
