@@ -863,18 +863,51 @@ export class ReadingsService implements OnDestroy {
 
       for (const backendReading of backendReadings) {
         // Check if we already have this reading (by backend ID)
-        const existingReadings = await this.db.readings
+        const existingByBackendId = await this.db.readings
           .filter(r => r.backendId === backendReading.id)
           .toArray();
 
-        if (existingReadings.length === 0) {
-          // New reading from backend - add to local storage
-          const localReading = this.mapBackendToLocal(backendReading);
-          await this.db.readings.add(localReading);
-          merged++;
+        if (existingByBackendId.length === 0) {
+          // No match by backendId - check for unsynced local readings with same value+time
+          // This prevents duplicates when sync hasn't completed yet (timezone race condition)
+          const backendValue = backendReading.glucose_level;
+          const backendTime = this.parseBackendTimestamp(backendReading.created_at);
+          const FOUR_HOURS_MS = 4 * 60 * 60 * 1000; // Tolerance for timezone differences
+
+          const existingByValueTime = await this.db.readings
+            .filter(r => {
+              // Only check unsynced local readings (synced ones would have backendId)
+              if (r.synced || r.backendId) return false;
+              // Must have same glucose value
+              if (r.value !== backendValue) return false;
+              // Must be within time tolerance window
+              const localTime = new Date(r.time).getTime();
+              const timeDiff = Math.abs(localTime - backendTime);
+              return timeDiff <= FOUR_HOURS_MS;
+            })
+            .toArray();
+
+          if (existingByValueTime.length > 0) {
+            // Found matching local reading - link it to backend instead of creating duplicate
+            const localMatch = existingByValueTime[0];
+            await this.db.readings.update(localMatch.id, {
+              backendId: backendReading.id,
+              synced: true,
+              time: new Date(backendTime).toISOString(), // Use backend time as source of truth
+            });
+            this.logger?.debug(
+              'Sync',
+              `Linked local reading ${localMatch.id} to backend ${backendReading.id} (value+time match)`
+            );
+          } else {
+            // Truly new reading from backend - add to local storage
+            const localReading = this.mapBackendToLocal(backendReading);
+            await this.db.readings.add(localReading);
+            merged++;
+          }
         } else {
           // Existing reading - check for conflicts using server as source of truth
-          const existing = existingReadings[0];
+          const existing = existingByBackendId[0];
           const backendValue = backendReading.glucose_level;
           const backendNotes = backendReading.notes || '';
 
@@ -943,18 +976,51 @@ export class ReadingsService implements OnDestroy {
 
       for (const backendReading of backendReadings) {
         // Check if we already have this reading (by backend ID)
-        const existingReadings = await this.db.readings
+        const existingByBackendId = await this.db.readings
           .filter(r => r.backendId === backendReading.id)
           .toArray();
 
-        if (existingReadings.length === 0) {
-          // New reading from backend - add to local storage
-          const localReading = this.mapBackendToLocal(backendReading);
-          await this.db.readings.add(localReading);
-          merged++;
+        if (existingByBackendId.length === 0) {
+          // No match by backendId - check for unsynced local readings with same value+time
+          // This prevents duplicates when sync hasn't completed yet (timezone race condition)
+          const backendValue = backendReading.glucose_level;
+          const backendTime = this.parseBackendTimestamp(backendReading.created_at);
+          const FOUR_HOURS_MS = 4 * 60 * 60 * 1000; // Tolerance for timezone differences
+
+          const existingByValueTime = await this.db.readings
+            .filter(r => {
+              // Only check unsynced local readings (synced ones would have backendId)
+              if (r.synced || r.backendId) return false;
+              // Must have same glucose value
+              if (r.value !== backendValue) return false;
+              // Must be within time tolerance window
+              const localTime = new Date(r.time).getTime();
+              const timeDiff = Math.abs(localTime - backendTime);
+              return timeDiff <= FOUR_HOURS_MS;
+            })
+            .toArray();
+
+          if (existingByValueTime.length > 0) {
+            // Found matching local reading - link it to backend instead of creating duplicate
+            const localMatch = existingByValueTime[0];
+            await this.db.readings.update(localMatch.id, {
+              backendId: backendReading.id,
+              synced: true,
+              time: new Date(backendTime).toISOString(), // Use backend time as source of truth
+            });
+            this.logger?.debug(
+              'Sync',
+              `Linked local reading ${localMatch.id} to backend ${backendReading.id} (value+time match)`
+            );
+          } else {
+            // Truly new reading from backend - add to local storage
+            const localReading = this.mapBackendToLocal(backendReading);
+            await this.db.readings.add(localReading);
+            merged++;
+          }
         } else {
           // Existing reading - check for conflicts using server as source of truth
-          const existing = existingReadings[0];
+          const existing = existingByBackendId[0];
           const backendValue = backendReading.glucose_level;
           const backendNotes = backendReading.notes || '';
 
@@ -1006,6 +1072,18 @@ export class ReadingsService implements OnDestroy {
       lastError: pushResult.lastError,
     };
   }
+
+  /**
+   * Parse backend timestamp format "DD/MM/YYYY HH:mm:ss" to milliseconds since epoch.
+   * Backend stores in Argentina timezone (UTC-3), so we parse accordingly.
+   */
+  private parseBackendTimestamp(createdAt: string): number {
+    const [datePart, timePart] = createdAt.split(' ');
+    const [day, month, year] = datePart.split('/');
+    // Parse as local time (backend returns Argentina time)
+    return new Date(`${year}-${month}-${day}T${timePart}`).getTime();
+  }
+
   /**
    * Map backend reading to local format
    */

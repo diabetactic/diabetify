@@ -122,6 +122,28 @@ export class LoginPage implements OnInit {
     await loading.present();
     this.logger.debug('Auth', 'Loading spinner presented', { stage: 'ui-loading-presented' });
 
+    // FAILSAFE: Dismiss loading after 15 seconds NO MATTER WHAT
+    // This ensures the user is never stuck on a spinning screen forever
+    const failsafeTimeout = setTimeout(async () => {
+      this.logger.error('Auth', 'FAILSAFE: 15-second hard timeout triggered - dismissing loading');
+      try {
+        await loading.dismiss();
+        this.ngZone.run(() => {
+          this.isLoading = false;
+          this.loginForm.enable({ emitEvent: false });
+          this.cdr.detectChanges();
+        });
+        const alert = await this.alertCtrl.create({
+          header: this.translate.instant('login.messages.loginError'),
+          message: this.translate.instant('errors.timeout'),
+          buttons: ['OK'],
+        });
+        await alert.present();
+      } catch (e) {
+        this.logger.error('Auth', 'FAILSAFE cleanup error', e);
+      }
+    }, 15000);
+
     const { username, password, rememberMe } = this.loginForm.value;
 
     try {
@@ -234,6 +256,8 @@ export class LoginPage implements OnInit {
       });
       await alert.present();
     } finally {
+      // Cancel the failsafe timeout since we're handling the result normally
+      clearTimeout(failsafeTimeout);
       this.logger.debug('Auth', 'Ensuring loading spinner is dismissed');
       await loading.dismiss();
       // No need to reset isLoading or enable form here, done in catch or success path
