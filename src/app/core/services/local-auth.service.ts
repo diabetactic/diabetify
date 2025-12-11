@@ -195,6 +195,10 @@ export class LocalAuthService {
    * NOTE: Capacitor Preferences uses localStorage on web, so we always use it
    */
   private async initializeAuthState(): Promise<void> {
+    // Timeout for token refresh operations during initialization
+    // Prevents app from hanging indefinitely if HTTP call stalls on native
+    const INIT_REFRESH_TIMEOUT_MS = 8000;
+
     try {
       // Always try to restore from storage (works on both native and web)
       // Capacitor Preferences uses localStorage on web platforms
@@ -224,21 +228,33 @@ export class LocalAuthService {
             expiresAt,
           });
         } else if (hasRefreshToken) {
-          this.logger.info('Auth', 'Token expired, attempting refresh');
-          // Try to refresh the token - await to ensure init completes after refresh
+          this.logger.info('Auth', 'Token expired, attempting refresh with timeout');
+          // Try to refresh the token with timeout protection
           try {
-            await firstValueFrom(this.refreshAccessToken());
+            const refreshPromise = firstValueFrom(this.refreshAccessToken());
+            const timeoutPromise = new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error('Init refresh timeout')), INIT_REFRESH_TIMEOUT_MS)
+            );
+            await Promise.race([refreshPromise, timeoutPromise]);
           } catch (err) {
-            this.logger.error('Auth', 'Token refresh failed', err);
+            this.logger.error('Auth', 'Token refresh failed during init', err);
+            // Clear invalid tokens to prevent future hangs
+            await this.clearStoredTokens();
           }
         }
       } else if (hasRefreshToken) {
-        this.logger.info('Auth', 'No access token, attempting refresh');
-        // Try to refresh the token - await to ensure init completes after refresh
+        this.logger.info('Auth', 'No access token, attempting refresh with timeout');
+        // Try to refresh the token with timeout protection
         try {
-          await firstValueFrom(this.refreshAccessToken());
+          const refreshPromise = firstValueFrom(this.refreshAccessToken());
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Init refresh timeout')), INIT_REFRESH_TIMEOUT_MS)
+          );
+          await Promise.race([refreshPromise, timeoutPromise]);
         } catch (err) {
-          this.logger.error('Auth', 'Token refresh failed', err);
+          this.logger.error('Auth', 'Token refresh failed during init', err);
+          // Clear invalid tokens to prevent future hangs
+          await this.clearStoredTokens();
         }
       }
     } catch (error) {
@@ -246,6 +262,23 @@ export class LocalAuthService {
     } finally {
       // Resolve initialization promise when complete (success or error)
       this.initializationResolve();
+    }
+  }
+
+  /**
+   * Clear stored tokens from Preferences
+   * Used when token refresh fails to prevent future hangs
+   */
+  private async clearStoredTokens(): Promise<void> {
+    try {
+      await Promise.all([
+        Preferences.remove({ key: STORAGE_KEYS.ACCESS_TOKEN }),
+        Preferences.remove({ key: STORAGE_KEYS.REFRESH_TOKEN }),
+        Preferences.remove({ key: STORAGE_KEYS.EXPIRES_AT }),
+      ]);
+      this.logger.info('Auth', 'Cleared stored tokens after refresh failure');
+    } catch (e) {
+      this.logger.error('Auth', 'Failed to clear stored tokens', e);
     }
   }
 

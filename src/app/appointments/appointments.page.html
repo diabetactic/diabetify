@@ -319,11 +319,9 @@
         class="bg-base-300/50 dark:bg-base-100/10 border-base-300 dark:border-base-content/10 flex cursor-pointer items-center justify-between rounded-xl border px-4 py-3"
         role="button"
         tabindex="0"
-        (click)="pastAppointmentsExpanded = !pastAppointmentsExpanded"
-        (keydown.enter)="pastAppointmentsExpanded = !pastAppointmentsExpanded"
-        (keydown.space)="
-          pastAppointmentsExpanded = !pastAppointmentsExpanded; $event.preventDefault()
-        "
+        (click)="togglePastAppointments()"
+        (keydown.enter)="togglePastAppointments()"
+        (keydown.space)="togglePastAppointments(); $event.preventDefault()"
       >
         <span
           class="text-base-content/80 dark:text-base-content/90 flex items-center gap-2 text-sm font-medium"
@@ -331,10 +329,13 @@
           <app-icon name="history" class="h-4 w-4"></app-icon>
           {{ 'appointments.past' | translate }} ({{ pastAppointments.length }})
         </span>
-        <app-icon
-          [name]="pastAppointmentsExpanded ? 'chevron-up' : 'chevron-down'"
-          class="text-base-content/60 dark:text-base-content/80"
-        ></app-icon>
+        <div class="flex items-center gap-2">
+          <span *ngIf="resolutionsLoading" class="loading loading-spinner loading-xs"></span>
+          <app-icon
+            [name]="pastAppointmentsExpanded ? 'chevron-up' : 'chevron-down'"
+            class="text-base-content/60 dark:text-base-content/80"
+          ></app-icon>
+        </div>
       </div>
 
       <div *ngIf="pastAppointmentsExpanded" class="mt-4 flex flex-col gap-3">
@@ -344,16 +345,39 @@
           (click)="viewAppointment(appointment)"
         >
           <ion-card-header class="pb-2">
-            <ion-card-subtitle class="flex items-center gap-2 text-xs">
-              <app-icon
-                name="clipboard-list"
-                class="text-base-content/50 dark:text-base-content/70 h-4 w-4"
-              ></app-icon>
-              {{ 'appointments.record' | translate }} #{{ appointment.appointment_id }}
-            </ion-card-subtitle>
-            <ion-card-title class="text-base">
-              {{ formatMotive(appointment.motive) }}
-            </ion-card-title>
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <ion-card-subtitle class="flex items-center gap-2 text-xs">
+                  <app-icon
+                    name="clipboard-list"
+                    class="text-base-content/50 dark:text-base-content/70 h-4 w-4"
+                  ></app-icon>
+                  {{ 'appointments.record' | translate }} #{{ appointment.appointment_id }}
+                </ion-card-subtitle>
+                <ion-card-title class="text-base">
+                  {{ formatMotive(appointment.motive) }}
+                </ion-card-title>
+              </div>
+              <!-- Resolution flags badges -->
+              <div class="flex flex-wrap gap-1">
+                <span
+                  *ngIf="hasEmergencyCare(appointment.appointment_id)"
+                  class="badge badge-error badge-sm gap-1"
+                  [title]="'appointments.resolution.emergencyCare' | translate"
+                >
+                  <app-icon name="alert-triangle" class="h-3 w-3"></app-icon>
+                  {{ 'appointments.resolution.emergencyCareShort' | translate }}
+                </span>
+                <span
+                  *ngIf="needsPhysicalAppointment(appointment.appointment_id)"
+                  class="badge badge-warning badge-sm gap-1"
+                  [title]="'appointments.resolution.physicalAppointment' | translate"
+                >
+                  <app-icon name="stethoscope" class="h-3 w-3"></app-icon>
+                  {{ 'appointments.resolution.physicalAppointmentShort' | translate }}
+                </span>
+              </div>
+            </div>
           </ion-card-header>
 
           <ion-card-content class="pt-0">
