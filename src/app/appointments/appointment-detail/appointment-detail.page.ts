@@ -1,4 +1,4 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -68,7 +68,8 @@ export class AppointmentDetailPage implements OnInit {
     private alertController: AlertController,
     private toastController: ToastController,
     private translationService: TranslationService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -143,6 +144,8 @@ export class AppointmentDetailPage implements OnInit {
       this.resolution = null;
     } finally {
       this.loadingResolution = false;
+      // Manually trigger change detection to ensure UI updates
+      this.cdr.detectChanges();
     }
   }
 

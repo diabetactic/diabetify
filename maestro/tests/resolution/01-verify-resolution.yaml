@@ -1,7 +1,9 @@
 # ==========================================
-# Test: Verify Appointment Resolution Display
-# Description: Check appointment details are visible on the appointments page
-# Verifies that appointment cards show key clinical data (glucose, dose, etc)
+# Test: Verify Appointment Resolution Display (Basic Smoke Test)
+# Description: Navigates to appointments page and verifies basic structure
+# This is a SMOKE TEST - just checks page loads correctly
+# For full resolution verification, use 02-create-and-verify-resolution.yaml or 03-smart-e2e-resolution.yaml
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
@@ -16,7 +18,7 @@ appId: io.diabetactic.app
 # 3. WAIT FOR APPOINTMENTS PAGE HEADER TO LOAD
 - extendedWaitUntil:
     visible:
-      text: 'Citas|Appointments'
+      text: '.*Citas.*|.*Appointments.*'
     timeout: 10000
 - waitForAnimationToEnd:
     timeout: 2000
@@ -24,22 +26,21 @@ appId: io.diabetactic.app
 # 4. WAIT FOR LOADING TO COMPLETE
 - extendedWaitUntil:
     notVisible:
-      text: 'Cargando citas|Loading appointments|Cargando...'
+      text: '.*Cargando.*citas.*|.*Loading.*appointments.*|.*Cargando.*'
     timeout: 20000
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 5. VERIFY CONTENT SECTION EXISTS (queue panel or request button)
+# 5. VERIFY CONTENT SECTION EXISTS (queue panel or request button or appointment cards)
 - extendedWaitUntil:
     visible:
-      text: 'Estado de la Cola|Queue Status|Solicitar Cita|Request Appointment|No tienes citas|No appointments'
+      text: '.*Estado.*Cola.*|.*Queue.*Status.*|.*Solicitar.*Cita.*|.*Request.*Appointment.*|.*No.*tienes.*citas.*|.*No.*appointments.*|.*ACTUAL.*|.*CURRENT.*|.*Completada.*|.*Completed.*'
     timeout: 10000
 
 # 6. VERIFY APPOINTMENTS PAGE STRUCTURE
 - assertVisible:
-    text: 'Citas|Appointments'
-
-# 7. VERIFY APPOINTMENT HEADER/NAVIGATION WORKS
-- assertVisible:
-    text: 'Citas|Appointments'
-# Test passes - appointments page displays clinical data correctly
+    text: '.*Citas.*|.*Appointments.*'
+    label: 'Appointments page title visible'
+# Test passes - appointments page structure is correct
+# NOTE: This test does NOT verify resolution data
+# Use test 02 or 03 for complete resolution verification

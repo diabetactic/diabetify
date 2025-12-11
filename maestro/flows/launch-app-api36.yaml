@@ -2,6 +2,7 @@
 # Flow: Launch App (API 36 Workaround)
 # Description: Workaround for Maestro launchApp issue on Android API 36.
 #              Uses runScript to launch via adb shell command.
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
@@ -19,5 +20,5 @@ appId: io.diabetactic.app
 # Verify app launched
 - extendedWaitUntil:
     visible:
-      text: '.*Diabetactic.*|.*Inicio.*|.*Dashboard.*'
+      text: '.*Diabetactic.*|.*Inicio.*|.*Dashboard.*|.*Vamos.*|.*Sign.*In.*'
     timeout: 10000

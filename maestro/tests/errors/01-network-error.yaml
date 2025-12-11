@@ -3,6 +3,7 @@
 # Description: Verify app handles network errors gracefully
 # Note: Full offline testing requires airplane mode or network interception
 #       This test verifies basic error handling UI
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
@@ -17,7 +18,7 @@ appId: io.diabetactic.app
 # 3. VERIFY READINGS PAGE LOADED
 - extendedWaitUntil:
     visible:
-      text: 'Mostrando.*lecturas|Showing.*readings|Lecturas|Readings'
+      text: '.*Mostrando.*lecturas.*|.*Showing.*readings.*|.*Lecturas.*|.*Readings.*'
     timeout: 8000
 
 # Note: Full offline testing would require manual airplane mode enable.
@@ -25,7 +26,7 @@ appId: io.diabetactic.app
 
 # 4. VERIFY PAGE HEADER REMAINS VISIBLE
 - assertVisible:
-    text: 'Lecturas|Readings'
+    text: '.*Lecturas.*|.*Readings.*'
 
 # 5. PULL TO REFRESH (simulates network request)
 - swipe:
@@ -37,23 +38,24 @@ appId: io.diabetactic.app
 # 6. VERIFY APP RECOVERS (either shows data or appropriate message)
 - extendedWaitUntil:
     visible:
-      text: 'Mostrando.*lecturas|Showing.*readings|Lecturas|Readings|Error|Sin conexión|Offline'
+      text: '.*Mostrando.*lecturas.*|.*Showing.*readings.*|.*Lecturas.*|.*Readings.*|.*Error.*|.*Sin.*conexi.*n.*|.*Offline.*'
     timeout: 10000
 
 # 7. TRY TO OPEN ADD READING (verify form is accessible)
 - tapOn:
-    text: 'Agregar Lectura|Add Reading|Agregar Nueva Lectura|Add New Reading'
+    text: '.*Agregar.*Lectura.*|.*Add.*Reading.*|.*Agregar.*Nueva.*Lectura.*|.*Add.*New.*Reading.*'
 - waitForAnimationToEnd:
     timeout: 2000
 
 # 8. VERIFY ADD FORM LOADED (app didn't crash)
 - extendedWaitUntil:
     visible:
-      text: 'Agregar Lectura|Add Reading'
+      text: '.*Agregar.*Lectura.*|.*Add.*Reading.*'
     timeout: 5000
 
 # 9. CANCEL AND RETURN (using X button or Cancel text)
 - tapOn:
-    text: 'Cancelar|Cancel|CANCELAR|CANCEL'
+    text: '.*Cancelar.*|.*Cancel.*|.*CANCELAR.*|.*CANCEL.*'
     optional: true
-- waitForAnimationToEnd
+- waitForAnimationToEnd:
+    timeout: 2000

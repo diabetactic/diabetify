@@ -1,0 +1,56 @@
+# ==========================================
+# Flow: Smart Login - Works Reliably
+# Description: Uses pressKey Home + tap app icon instead of stopApp + openLink
+#              which crashes the app on this device
+# ==========================================
+
+appId: io.diabetactic.app
+
+env:
+  TEST_USER_ID: '1000'
+  TEST_USER_PASSWORD: 'tuvieja'
+
+---
+# 1. PRESS HOME to ensure we're on home screen
+- pressKey: Home
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 2. TAP APP ICON to launch (more reliable than openLink)
+- tapOn:
+    text: 'diabetactic'
+- waitForAnimationToEnd:
+    timeout: 8000
+
+# 3. WAIT FOR APP TO SHOW SOMETHING
+- extendedWaitUntil:
+    visible:
+      text: '.*Diabetactic.*|.*Bienvenido.*|.*Vamos.*|.*DNI.*|.*Inicio.*|.*Home.*|.*Lecturas.*|.*Readings.*'
+    timeout: 15000
+
+# 4. CHECK IF ALREADY LOGGED IN (skip login if dashboard visible)
+- runFlow:
+    when:
+      visible: '.*Lecturas.*|.*Readings.*|.*Citas.*|.*Appointments.*|.*Inicio.*|.*Home.*'
+    file: skip-login.yaml
+
+# 5. IF ON WELCOME SCREEN, TAP VAMOS
+- tapOn:
+    text: '.*Vamos.*|.*Let.*Go.*'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 6. CONDITIONAL LOGIN - only if DNI field visible
+- runFlow:
+    when:
+      visible: '.*DNI.*'
+    file: login-form-steps.yaml
+
+# 7. VERIFY DASHBOARD LOADED
+- extendedWaitUntil:
+    visible:
+      text: '.*Inicio.*|.*Home.*|.*Lecturas.*|.*Readings.*|.*Citas.*|.*Appointments.*|.*Perfil.*|.*Profile.*'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 1000

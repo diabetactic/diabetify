@@ -21,6 +21,7 @@ const envMode = (process.env.ENV || 'mock').toLowerCase();
 
 let apiGatewayUrl;
 let configName;
+let proxyConfig;
 
 switch (envMode) {
   case 'cloud':
@@ -29,20 +30,24 @@ switch (envMode) {
       process.env.HEROKU_API_BASE_URL ||
       'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
     configName = 'heroku';
+    proxyConfig = 'proxy.conf.json'; // Heroku proxy
     break;
   case 'local':
     // Local Docker / backend
     apiGatewayUrl = process.env.LOCAL_API_GATEWAY_URL || 'http://localhost:8000';
     configName = 'local';
+    proxyConfig = 'proxy.conf.local.json'; // Local Docker proxy
     break;
   case 'mock':
     // Pure front-end / mock data
     apiGatewayUrl = process.env.MOCK_API_GATEWAY_URL || '';
     configName = 'mock';
+    proxyConfig = 'proxy.conf.json'; // Not used but needed for ng serve
     break;
   default:
     apiGatewayUrl = process.env.LOCAL_API_GATEWAY_URL || 'http://localhost:8000';
     configName = 'development';
+    proxyConfig = 'proxy.conf.json';
     break;
 }
 
@@ -50,11 +55,11 @@ switch (envMode) {
 process.env.API_GATEWAY_URL = apiGatewayUrl;
 
 console.log(
-  `[dev] ENV=${envMode} → API_GATEWAY_URL=${apiGatewayUrl || '(mock mode)'} (ng serve --configuration ${configName} --proxy-config proxy.conf.json)`
+  `[dev] ENV=${envMode} → API_GATEWAY_URL=${apiGatewayUrl || '(mock mode)'} (ng serve --configuration ${configName} --proxy-config ${proxyConfig})`
 );
 
 const ngCommand = process.platform === 'win32' ? 'ng.cmd' : 'ng';
-const args = ['serve', '--proxy-config', 'proxy.conf.json', '--configuration', configName];
+const args = ['serve', '--proxy-config', proxyConfig, '--configuration', configName];
 
 const child = spawn(ngCommand, args, {
   stdio: 'inherit',

@@ -2,13 +2,13 @@
 # Flow: Navigate to Appointments Tab
 # Description: Navigate from any screen to appointments tab
 # Prerequisite: Must be logged in
-# Uses text selector (data-testid not accessible in Capacitor WebView)
+# Uses text matching for robust bilingual support
 # ==========================================
 
 appId: io.diabetactic.app
 
 ---
-# 1. TAP ON APPOINTMENTS TAB - use data-testid for robustness
+# 1. TAP ON APPOINTMENTS TAB
 - tapOn:
     id: 'tab-appointments'
 - waitForAnimationToEnd:
@@ -17,7 +17,7 @@ appId: io.diabetactic.app
 # 2. WAIT FOR APPOINTMENTS PAGE TO LOAD
 - extendedWaitUntil:
     visible:
-      text: 'Citas|Appointments'
+      text: '.*Citas.*|.*Appointments.*'
     timeout: 8000
 - waitForAnimationToEnd:
     timeout: 1000

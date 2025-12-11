@@ -1,8 +1,8 @@
 # ==========================================
-# Flow: Robust Login (API 36 Compatible)
-# Description: Log in from wherever the app is currently at.
-# For API 36+, run scripts/run-tests.sh which clears data and launches via adb.
-# Env vars defined here (config.yaml inheritance unreliable in flows)
+# Flow: Robust Login - Fresh State
+# Description: Stop app, clear keychain, open via deep link, log in if needed
+# Uses openLink (not launchApp which fails on this device)
+# Handles both: already logged in OR needs login
 # ==========================================
 
 appId: io.diabetactic.app
@@ -12,81 +12,50 @@ env:
   TEST_USER_PASSWORD: 'tuvieja'
 
 ---
-# 1. HYDRATION WAIT - App should already be running (via wrapper script on API 36)
+# 1. STOP APP FIRST (ensures clean restart)
+- stopApp
+
+# 2. CLEAR KEYCHAIN (clears stored auth tokens - tries to force login)
+- clearKeychain
+
+# 3. OPEN APP VIA DEEP LINK (launchApp fails on this device, openLink works)
+- openLink: diabetactic://
+
+# 4. HYDRATION WAIT - Give WebView time to initialize
 - waitForAnimationToEnd:
-    timeout: 2000
-
-# 2. CHECK CURRENT STATE - could be welcome, login, or dashboard
-- extendedWaitUntil:
-    visible:
-      text: '.*Diabetactic.*|.*Vamos.*|.*Inicio.*|.*Dashboard.*|.*DNI.*|.*Lecturas.*|.*Readings.*'
-    timeout: 12000
-
-# 3. IF ALREADY ON DASHBOARD, LOG OUT FIRST (to ensure fresh login)
-- tapOn:
-    text: 'Perfil|Profile'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 1000
-
-- scrollUntilVisible:
-    element:
-      text: '.*Cerrar sesión.*|.*Sign out.*|.*Logout.*'
-    direction: DOWN
-    timeout: 5000
-    optional: true
-- tapOn:
-    text: '.*Cerrar sesión.*|.*Sign out.*|.*Logout.*'
-    optional: true
-- tapOn:
-    text: 'Cerrar sesión|Sign out|Confirmar|Confirm|OK|Aceptar'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
-
-# 4. NOW ON WELCOME SCREEN OR LOGIN SCREEN
-- extendedWaitUntil:
-    visible:
-      text: '.*Diabetactic.*|.*Vamos.*|.*DNI.*|.*Iniciar.*'
-    timeout: 8000
-
-# 5. TAP VAMOS IF ON WELCOME
-- tapOn:
-    text: '.*Vamos.*|.*Let.*Go.*'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 1500
-
-# 6. WAIT FOR LOGIN FORM READY
-- extendedWaitUntil:
-    visible:
-      text: 'DNI|Iniciar Sesión|Sign In'
     timeout: 5000
 
-# 7. INPUT USERNAME - use native id attribute (not data-testid)
-- tapOn:
-    id: 'username'
-- eraseText
-- inputText: '${TEST_USER_ID}'
-- hideKeyboard
-
-# 8. INPUT PASSWORD - use native id attribute (not data-testid)
-- tapOn:
-    id: 'password'
-- eraseText
-- inputText: '${TEST_USER_PASSWORD}'
-- hideKeyboard
-
-# 9. SUBMIT - native id matches data-testid
-- tapOn:
-    id: 'login-submit-btn'
-- waitForAnimationToEnd:
-    timeout: 3000
-
-# 10. VERIFY DASHBOARD LOADED
+# 5. WAIT FOR APP TO SHOW (welcome OR dashboard - handles both cases)
 - extendedWaitUntil:
     visible:
-      text: '.*(Inicio|Home|Dashboard|Tablero|Lecturas|Readings|Mi Día|My Day).*'
+      text: '.*Diabetactic.*|.*Bienvenido.*|.*Welcome.*|.*Vamos.*|.*Sign In.*|.*DNI.*|.*Inicio.*|.*Home.*|.*Lecturas.*|.*Readings.*|.*Citas.*|.*Appointments.*|.*Perfil.*|.*Profile.*|.*Panel.*'
     timeout: 20000
 - waitForAnimationToEnd:
     timeout: 2000
+
+# 6. TAP CTA TO GO TO LOGIN (only if on welcome screen)
+# Uses separate flow file because runFlow+when requires file: not commands:
+- runFlow:
+    when:
+      visible: '.*Vamos.*'
+    file: tap-vamos.yaml
+# Fallback: try Let's Go / Sign In / Iniciar variants
+- tapOn:
+    text: '.*Let.*s Go.*|.*Sign In.*|.*Iniciar.*'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 7. CONDITIONAL LOGIN - only if DNI field is visible (not logged in)
+- runFlow:
+    when:
+      visible: '.*DNI.*'
+    file: login-form-steps.yaml
+
+# 8. VERIFY DASHBOARD LOADED (bilingual)
+- extendedWaitUntil:
+    visible:
+      text: '.*Inicio.*|.*Home.*|.*Dashboard.*|.*Tablero.*|.*Lecturas.*|.*Readings.*|.*Citas.*|.*Appointments.*|.*Perfil.*|.*Profile.*|.*Panel.*'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 1000

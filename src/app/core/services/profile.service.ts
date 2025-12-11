@@ -226,10 +226,10 @@ export class ProfileService implements OnDestroy {
    * @param updates - Fields to update
    * @returns Updated user data from backend
    */
-  async updateBackendProfile(updates: BackendUserUpdate): Promise<any> {
+  async updateBackendProfile(updates: BackendUserUpdate): Promise<BackendUserUpdate> {
     try {
       const response = await firstValueFrom(
-        this.apiGateway.request<any>('extservices.users.update', {
+        this.apiGateway.request<BackendUserUpdate>('extservices.users.update', {
           body: updates,
         })
       );

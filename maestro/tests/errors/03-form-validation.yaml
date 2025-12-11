@@ -1,7 +1,7 @@
 # ==========================================
 # Test: Form Validation Error Handling
 # Description: Verify form validation shows appropriate errors
-# Uses text selectors (data-testid not accessible in Capacitor WebView)
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
@@ -15,14 +15,14 @@ appId: io.diabetactic.app
 
 # 3. OPEN ADD READING FORM (using text selector)
 - tapOn:
-    text: 'Agregar Lectura|Add Reading|Agregar Nueva Lectura|Add New Reading'
+    text: '.*Agregar.*Lectura.*|.*Add.*Reading.*|.*Agregar.*Nueva.*Lectura.*|.*Add.*New.*Reading.*'
 - waitForAnimationToEnd:
     timeout: 2000
 
 # 4. VERIFY ADD READING FORM LOADED
 - extendedWaitUntil:
     visible:
-      text: 'Agregar Lectura|Add Reading'
+      text: '.*Agregar.*Lectura.*|.*Add.*Reading.*'
     timeout: 5000
 
 # 5. TRY TO SUBMIT EMPTY FORM (save button is disabled when form invalid)
@@ -33,21 +33,21 @@ appId: io.diabetactic.app
 
 # 6. VERIFY VALIDATION - form should not close (still on form)
 - assertVisible:
-    text: 'Agregar Lectura|Add Reading'
+    text: '.*Agregar.*Lectura.*|.*Add.*Reading.*'
 
 # 7. CHECK FOR VALIDATION MESSAGE
 - assertVisible:
-    text: 'requerido|required|obligatorio|necesario|ingresa|enter'
+    text: '.*requerido.*|.*required.*|.*obligatorio.*|.*necesario.*|.*ingresa.*|.*enter.*'
 
-# 8. ENTER INVALID VALUE
+# 8. TEST BELOW MINIMUM VALUE (mg/dL min is 20)
 - tapOn:
     id: 'glucose-value-input'
-- inputText: '-50'
+- inputText: '10'
 - hideKeyboard
 - waitForAnimationToEnd:
     timeout: 1000
 
-# 9. TRY TO SUBMIT WITH INVALID VALUE
+# 9. TRY TO SUBMIT WITH VALUE BELOW MINIMUM
 - swipe:
     start: '50%,80%'
     end: '50%,40%'
@@ -61,9 +61,33 @@ appId: io.diabetactic.app
 # 10. VERIFY VALIDATION ERROR OR DISABLED STATE
 # Form should either show error message or remain on form
 - assertVisible:
-    text: 'Agregar Lectura|Add Reading'
+    text: '.*Agregar.*Lectura.*|.*Add.*Reading.*'
 
-# 11. CLEAR INVALID VALUE AND ENTER VALID ONE
+# 11. TEST ABOVE MAXIMUM VALUE (mg/dL max is 600)
+- tapOn:
+    id: 'glucose-value-input'
+- eraseText
+- inputText: '700'
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 12. TRY TO SUBMIT WITH VALUE ABOVE MAXIMUM
+- swipe:
+    start: '50%,80%'
+    end: '50%,40%'
+- waitForAnimationToEnd:
+    timeout: 500
+- tapOn:
+    id: 'add-reading-save-btn'
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 13. VERIFY STILL ON FORM (validation prevented submit)
+- assertVisible:
+    text: '.*Agregar.*Lectura.*|.*Add.*Reading.*'
+
+# 14. CLEAR INVALID VALUE AND ENTER VALID ONE
 - tapOn:
     id: 'glucose-value-input'
 - eraseText
@@ -72,7 +96,7 @@ appId: io.diabetactic.app
 - waitForAnimationToEnd:
     timeout: 1000
 
-# 12. NOW SUBMIT SHOULD WORK
+# 15. NOW SUBMIT SHOULD WORK
 - swipe:
     start: '50%,80%'
     end: '50%,40%'
@@ -83,8 +107,8 @@ appId: io.diabetactic.app
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 13. VERIFY WE RETURNED TO READINGS LIST (success)
+# 16. VERIFY WE RETURNED TO READINGS LIST (success)
 - extendedWaitUntil:
     visible:
-      text: 'Mostrando.*lecturas|Showing.*readings|Lecturas|Readings'
+      text: '.*Mostrando.*lecturas.*|.*Showing.*readings.*|.*Lecturas.*|.*Readings.*'
     timeout: 8000

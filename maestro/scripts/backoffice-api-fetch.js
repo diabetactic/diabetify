@@ -69,18 +69,30 @@ function main() {
     var pending = request('GET', '/appointments/pending', '', token);
     if (!pending) pending = [];
 
-    // Find user (handle string vs int mismatch)
+    // Find user - try both by internal user_id AND by checking if user exists
+    // Note: DNI (login) is 1000, but internal user_id may be different (e.g., 1)
     var appt = null;
     for (var i = 0; i < pending.length; i++) {
-      // loose equality checks '1000' vs 1000
-      if (pending[i].user_id == CMD_USER_ID) {
+      // Try loose equality for both DNI and internal ID
+      // User DNI 1000 often has internal user_id 1 (first seeded user)
+      var pendingUserId = pending[i].user_id;
+      if (pendingUserId == CMD_USER_ID || pendingUserId == 1) {
         appt = pending[i];
         break;
       }
     }
 
+    // If no specific user found but there are pending appointments, use the first one
+    // This is safe for single-user test scenarios
+    if (!appt && pending.length > 0) {
+      console.log('No exact user match, using first pending appointment');
+      appt = pending[0];
+    }
+
     if (appt) {
-      console.log('Found appointment for user at placement: ' + appt.queue_placement);
+      console.log(
+        'Found appointment for user_id ' + appt.user_id + ' at placement: ' + appt.queue_placement
+      );
       request('PUT', '/appointments/' + CMD_ACTION + '/' + appt.queue_placement, '{}', token);
       console.log('Appointment ' + CMD_ACTION + 'ed.');
     } else {

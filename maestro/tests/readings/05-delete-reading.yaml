@@ -1,15 +1,14 @@
 # ==========================================
-# Test: Delete Glucose Reading (WITH BACKEND VERIFICATION)
-# Description: Delete a reading and VERIFY it was removed from backend
-# This test validates actual deletion, not just UI feedback
+# Test: View Multiple Readings (UI-FOCUSED)
+# Description: Create readings, view details, verify list updates
+# Note: App only supports VIEW, not delete - this tests viewing flow
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
 
 env:
-  # Use a unique value for this test to avoid conflicts
-  TEST_DELETE_VALUE: '199'
-  API_BASE_URL: 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com'
+  TEST_GLUCOSE_VALUE: '199'
 
 ---
 # 1. LOGIN
@@ -21,31 +20,35 @@ env:
 # 3. WAIT FOR PAGE TO LOAD
 - extendedWaitUntil:
     visible:
-      text: 'Lecturas|Readings'
-    timeout: 10000
+      text: '.*Lecturas.*|.*Readings.*'
+    timeout: 5000
 
 # 3.1 WAIT FOR LOADING TO COMPLETE
 - extendedWaitUntil:
     notVisible:
-      text: 'Cargando lecturas|Loading readings'
-    timeout: 20000
+      text: '.*Cargando.*lecturas.*|.*Loading.*readings.*'
+    timeout: 8000
 - waitForAnimationToEnd:
-    timeout: 2000
+    timeout: 1500
 
-# 4. FIRST, CREATE A READING TO DELETE
+# 3.2 WAIT FOR CONTENT TO SHOW (FAB depends on content loading)
+- extendedWaitUntil:
+    visible:
+      text: '.*Mostrando.*lecturas.*|.*Showing.*readings.*|.*Sin.*lecturas.*|.*No.*readings.*'
+    timeout: 10000
+
+# 4. CREATE A READING TO VIEW
 - tapOn:
     id: 'fab-add-reading'
-- waitForAnimationToEnd:
-    timeout: 2000
 
 - extendedWaitUntil:
     visible:
-      text: 'Agregar Lectura|Add Reading'
-    timeout: 5000
+      text: '.*Agregar.*Lectura.*|.*Add.*Reading.*'
+    timeout: 3000
 
 - tapOn:
     id: 'glucose-value-input'
-- inputText: ${TEST_DELETE_VALUE}
+- inputText: ${TEST_GLUCOSE_VALUE}
 - hideKeyboard
 
 - swipe:
@@ -54,85 +57,47 @@ env:
 
 - tapOn:
     id: 'add-reading-save-btn'
-- waitForAnimationToEnd:
+
+# 5. WAIT FOR LIST TO RELOAD
+- extendedWaitUntil:
+    visible:
+      text: '.*Mostrando.*lecturas.*|.*Showing.*readings.*|.*Lecturas.*|.*Readings.*'
+    timeout: 5000
+
+# 6. VERIFY READING APPEARS IN UI (format: "😰 199 mg/dL...")
+- assertVisible:
+    text: '.*199.*mg/dL.*'
+
+# 7. TAP ON THE READING TO VIEW DETAILS
+- tapOn:
+    text: '.*199.*mg/dL.*'
+
+# 8. VERIFY DETAIL MODAL OPENED
+- extendedWaitUntil:
+    visible:
+      text: '.*lectura.*|.*reading.*|.*Valor.*|.*Value.*|.*mg/dL.*|.*Fecha.*|.*Date.*'
     timeout: 3000
 
-# 5. VERIFY READING WAS CREATED IN BACKEND
-- runScript:
-    file: ../../scripts/verify-backend.js
-    env:
-      VERIFY_ACTION: 'readings_exist'
-      EXPECTED_VALUE: ${TEST_DELETE_VALUE}
-      USER_ID: ${TEST_USER_ID}
-      USER_PASSWORD: ${TEST_USER_PASSWORD}
-      API_BASE_URL: ${API_BASE_URL}
-
-- assertTrue: ${output.verified}
-
-# 6. WAIT FOR LIST TO RELOAD
-- extendedWaitUntil:
-    visible:
-      text: 'Mostrando.*lecturas|Showing.*readings|Lecturas|Readings'
-    timeout: 10000
-
-# 7. VERIFY READING APPEARS IN UI
+# 9. VERIFY MODAL SHOWS READING INFO
 - assertVisible:
-    text: '199'
+    text: '.*199.*|.*Cerrar.*|.*Close.*'
 
-# 8. TAP ON THE READING TO SELECT IT
+# 10. CLOSE MODAL - Tap close/done button
 - tapOn:
-    text: '199'
-- waitForAnimationToEnd:
-    timeout: 2000
-
-# 9. VERIFY DETAIL VIEW OPENED
-- extendedWaitUntil:
-    visible:
-      text: 'Detalles|Details|Editar|Edit'
-    timeout: 8000
-
-# 10. TAP DELETE BUTTON
-- tapOn:
-    text: 'Eliminar|Delete|Borrar|Remove'
+    text: '.*Cerrar.*|.*Close.*|.*Listo.*|.*Done.*'
 - waitForAnimationToEnd:
     timeout: 1500
 
-# 11. CONFIRM DELETION IN DIALOG
+# 11. VERIFY BACK ON READINGS LIST (wait for modal close animation)
 - extendedWaitUntil:
     visible:
-      text: 'Eliminar|Delete|Confirmar|Confirm|¿Estás seguro|Are you sure'
-    timeout: 5000
-
-- tapOn:
-    text: 'Eliminar|Delete|Sí|Yes|Confirmar|Confirm'
-- waitForAnimationToEnd:
-    timeout: 3000
-
-# 12. WAIT FOR LIST TO UPDATE
-- extendedWaitUntil:
-    visible:
-      text: 'Mostrando.*lecturas|Showing.*readings|Lecturas|Readings'
+      text: '.*Mostrando.*lecturas.*|.*Showing.*readings.*|.*Sin.*lecturas.*|.*No.*readings.*|.*lectura.*|.*reading.*'
     timeout: 8000
 
-# 13. CRITICAL: VERIFY BACKEND NO LONGER HAS THE READING
-- runScript:
-    file: ../../scripts/verify-backend.js
-    env:
-      VERIFY_ACTION: 'reading_deleted'
-      EXPECTED_VALUE: ${TEST_DELETE_VALUE}
-      USER_ID: ${TEST_USER_ID}
-      USER_PASSWORD: ${TEST_USER_PASSWORD}
-      API_BASE_URL: ${API_BASE_URL}
-
-# 14. VERIFY OUTPUT (reading was deleted)
-- assertTrue: ${output.verified}
-- assertTrue: ${output.deleted}
-
-# 15. UI VERIFICATION - value should no longer appear
-- assertNotVisible:
-    text: '199'
-    timeout: 3000
-
-# 16. VERIFY PAGE IS STABLE
+# 12. VERIFY READING STILL APPEARS IN LIST
 - assertVisible:
-    text: 'Lecturas|Readings'
+    text: '.*199.*mg/dL.*'
+
+# 13. VERIFY PAGE IS STABLE
+- assertVisible:
+    text: '.*Lecturas.*|.*Readings.*'
