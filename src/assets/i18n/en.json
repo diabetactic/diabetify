@@ -557,7 +557,10 @@
         "waitingReview": "Your request is still waiting to be accepted",
         "requestDenied": "Your request was not accepted. Please contact the clinic.",
         "canProceed": "You can now proceed to fill the appointment form",
-        "queueClosed": "The appointment queue is closed. Please try again later."
+        "queueClosed": "The appointment queue is closed. Please try again later.",
+        "accepted": "Your appointment request has been accepted!",
+        "denied": "Your appointment request was not accepted",
+        "created": "Your appointment has been successfully registered"
       }
     },
     "reason": "Reason",
@@ -651,7 +654,15 @@
       "resolvedAt": "Resolved on",
       "resolvedBy": "Resolved by",
       "notes": "Resolution Notes",
-      "loading": "Loading resolution..."
+      "loading": "Loading resolution...",
+      "basalType": "Basal Insulin Type",
+      "basalDose": "Basal Dose",
+      "basalTime": "Administration Time",
+      "fastType": "Fast Insulin Type",
+      "ratio": "Insulin-to-Carb Ratio",
+      "sensitivity": "Correction Factor",
+      "emergencyCare": "Emergency Care Required",
+      "needsPhysicalAppointment": "Physical Appointment Needed"
     },
     "create": {
       "title": "New Appointment",

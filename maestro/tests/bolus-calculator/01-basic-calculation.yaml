@@ -2,7 +2,7 @@
 # Test: Bolus Calculator - Basic Insulin Calculation
 # Description: Test complete flow of insulin dose calculation
 # Covers: Input glucose, input carbs, calculate, verify result
-# Uses point-based taps for shadow DOM form elements
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
@@ -18,51 +18,42 @@ env:
 # 2. WAIT FOR DASHBOARD TO FULLY LOAD (skeleton complete)
 - extendedWaitUntil:
     visible:
-      text: '.*(Inicio|Home|Dashboard).*'
-    timeout: 8000
-- waitForAnimationToEnd:
-    timeout: 2000
+      text: '.*Inicio.*|.*Home.*|.*Dashboard.*'
+    timeout: 5000
 
 # 3. WAIT FOR SKELETON LOADING TO COMPLETE
-# Dashboard shows skeleton while loading stats - wait for it to finish
 - extendedWaitUntil:
     visible:
-      text: 'Tiempo en Rango|Time in Range|%|mg/dL'
-    timeout: 18000
-- waitForAnimationToEnd:
-    timeout: 2000
+      text: '.*Tiempo.*Rango.*|.*Time.*Range.*|%|mg/dL'
+    timeout: 12000
 
 # 4. WAIT FOR QUICK ACTIONS TO LOAD (indicates skeleton complete)
 - extendedWaitUntil:
     visible:
-      text: 'Acciones Rápidas|Quick Actions'
-    timeout: 10000
+      text: '.*Acciones.*R.*pidas.*|.*Quick.*Actions.*'
+    timeout: 5000
 
 # 5. SCROLL DOWN TO ENSURE BUTTON IS VISIBLE
 - swipe:
     start: '50%,70%'
     end: '50%,40%'
     duration: 400
-- waitForAnimationToEnd:
-    timeout: 500
 
 # 6. NAVIGATE TO BOLUS CALCULATOR VIA QUICK ACTIONS BUTTON
 - tapOn:
-    text: 'Calculadora de Bolos|Bolus Calculator'
-- waitForAnimationToEnd:
-    timeout: 1500
+    text: '.*Calculadora.*Bolo.*|.*Bolus.*Calculator.*'
 
 # 7. VERIFY BOLUS CALCULATOR PAGE LOADED
 - extendedWaitUntil:
     visible:
-      text: 'Calculadora de Bolo|Bolus Calculator'
-    timeout: 8000
+      text: '.*Calculadora.*Bolo.*|.*Bolus.*Calculator.*'
+    timeout: 3000
 
 # 8. VERIFY FORM ELEMENTS ARE VISIBLE
 - assertVisible:
-    text: 'Glucosa Actual|Current Glucose'
+    text: '.*Glucosa.*Actual.*|.*Current.*Glucose.*'
 - assertVisible:
-    text: 'Carbohidratos|Carbohydrates'
+    text: '.*Carbohidratos.*|.*Carbohydrates.*'
 
 # 9. ENTER GLUCOSE VALUE
 - tapOn:
@@ -99,19 +90,18 @@ env:
     timeout: 2000
 
 # 13. VERIFY RESULT IS DISPLAYED
-# Should see "Recommended Dose" heading and units
 - extendedWaitUntil:
     visible:
-      text: 'Dosis Recomendada|Recommended Dose'
-    timeout: 8000
+      text: '.*Dosis.*Recomendada.*|.*Recommended.*Dose.*'
+    timeout: 5000
 
 # 14. VERIFY INSULIN UNITS ARE SHOWN
 - assertVisible:
-    text: 'unidades|units'
+    text: '.*unidades.*|.*units.*'
 
 # 15. VERIFY DETAILS SECTION IS VISIBLE
 - assertVisible:
-    text: 'Detalles|Details'
+    text: '.*Detalles.*|.*Details.*'
 
 # 16. VERIFY INPUT VALUES ARE DISPLAYED IN RESULTS
 - assertVisible:
@@ -122,20 +112,18 @@ env:
 # 17. VERIFY NEW CALCULATION BUTTON IS AVAILABLE
 - scrollUntilVisible:
     element:
-      text: 'Nueva Calculación|New Calculation'
+      text: '.*Nueva.*Calculaci.*n.*|.*New.*Calculation.*'
     direction: DOWN
     timeout: 5000
 
 # 18. TAP NEW CALCULATION TO RESET FORM
 - tapOn:
-    text: 'Nueva Calculación|New Calculation'
-- waitForAnimationToEnd:
-    timeout: 1000
+    text: '.*Nueva.*Calculaci.*n.*|.*New.*Calculation.*'
 
 # 19. VERIFY FORM IS RESET (result should disappear)
 - assertNotVisible:
-    text: 'Dosis Recomendada|Recommended Dose'
+    text: '.*Dosis.*Recomendada.*|.*Recommended.*Dose.*'
 
 # 20. VERIFY FORM IS READY FOR NEW INPUT
 - assertVisible:
-    text: 'Calcular Dosis|Calculate Dose'
+    text: '.*Calcular.*Dosis.*|.*Calculate.*Dose.*'

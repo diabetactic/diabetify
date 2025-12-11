@@ -2,7 +2,7 @@
 # Test: Invalid Login Error Handling
 # Description: Verify app shows error for invalid credentials
 # Does NOT use shared login flow - tests login error specifically
-# NOTE: For API 36+, app must be launched via run-tests.sh script
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
@@ -12,11 +12,15 @@ env:
   INVALID_PASSWORD: 'wrong_password_12345'
 
 ---
-# 1. WAIT FOR APP (launched via wrapper script on API 36)
+# 1. LAUNCH APP WITH CLEAN STATE - ensures idempotent test
+- launchApp:
+    clearState: true
+
+# 2. WAIT FOR APP TO FULLY LOAD
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 2. WAIT FOR WELCOME SCREEN OR LOGIN FORM
+# 3. WAIT FOR WELCOME SCREEN OR LOGIN FORM
 - extendedWaitUntil:
     visible:
       text: '.*Diabetactic.*|.*DNI.*|.*Vamos.*'
@@ -24,7 +28,7 @@ env:
 
 # 4. TAP "VAMOS/LET'S GO" TO PROCEED TO LOGIN
 - tapOn:
-    text: '.*Vamos.*|.*Let.*Go.*'
+    text: '.*Vamos.*|.*Let.*Go.*|.*Sign.*In.*'
     optional: true
 - waitForAnimationToEnd:
     timeout: 1500
@@ -32,26 +36,26 @@ env:
 # 5. WAIT FOR LOGIN FORM
 - extendedWaitUntil:
     visible:
-      text: 'DNI'
+      text: '.*DNI.*'
     timeout: 5000
 
 # 6. ENTER INVALID USERNAME
 - tapOn:
-    text: 'DNI'
+    text: '.*DNI.*'
 - eraseText
 - inputText: '${INVALID_USER}'
 - hideKeyboard
 
 # 7. ENTER INVALID PASSWORD
 - tapOn:
-    text: 'Contraseña|Password'
+    text: '.*Contrase.*a.*|.*Password.*'
 - eraseText
 - inputText: '${INVALID_PASSWORD}'
 - hideKeyboard
 
 # 8. SUBMIT LOGIN
 - tapOn:
-    text: 'Iniciar Sesión|Sign In'
+    text: '.*Iniciar.*Sesi.*n.*|.*Sign.*In.*'
 - waitForAnimationToEnd:
     timeout: 3000
 
@@ -59,21 +63,21 @@ env:
 # Actual messages: "Invalid DNI or password" / "DNI o contraseña inválidos" / "Credenciales incorrectas"
 - extendedWaitUntil:
     visible:
-      text: 'Invalid|inválidos|incorrectas|Credenciales|Error|password|contraseña'
+      text: '.*Invalid.*|.*inv.*lidos.*|.*incorrectas.*|.*Credenciales.*|.*Error.*|.*password.*|.*contrase.*a.*'
     timeout: 8000
 
 # 10. DISMISS ERROR ALERT
 - tapOn:
-    text: 'OK|Aceptar'
+    text: '.*OK.*|.*Aceptar.*'
 - waitForAnimationToEnd:
     timeout: 1000
 
 # 11. VERIFY STILL ON LOGIN PAGE (didn't navigate to dashboard)
 - extendedWaitUntil:
     visible:
-      text: 'DNI'
+      text: '.*DNI.*'
     timeout: 5000
 
 # 12. VERIFY LOGIN BUTTON IS STILL PRESENT
 - assertVisible:
-    text: 'Iniciar Sesión|Sign In'
+    text: '.*Iniciar.*Sesi.*n.*|.*Sign.*In.*'

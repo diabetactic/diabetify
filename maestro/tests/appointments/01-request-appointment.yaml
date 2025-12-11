@@ -2,11 +2,14 @@
 # Test: Request Appointment (WITH BACKEND VERIFICATION)
 # Description: Request appointment and VERIFY state changes to PENDING
 # This test validates the full appointment request flow
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
 
 env:
+  TEST_USER_ID: '1000'
+  TEST_USER_PASSWORD: 'tuvieja'
   BACKOFFICE_API_URL: 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com'
   API_BASE_URL: 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com'
   ADMIN_USERNAME: 'admin'
@@ -50,7 +53,7 @@ env:
 # 6. VERIFY PAGE HEADER LOADED
 - extendedWaitUntil:
     visible:
-      text: 'Citas|Appointments'
+      text: '.*Citas.*|.*Appointments.*'
     timeout: 8000
 
 # 7. WAIT FOR PAGE TO FULLY LOAD
@@ -59,7 +62,7 @@ env:
 
 # 8. TAP REQUEST APPOINTMENT BUTTON
 - tapOn:
-    text: 'Solicitar|Request|Pedir Cita|Request Appointment'
+    text: '.*Solicitar.*|.*Request.*|.*Pedir.*Cita.*|.*Request.*Appointment.*'
 - waitForAnimationToEnd:
     timeout: 2000
 
@@ -67,12 +70,12 @@ env:
 # (Queue might auto-submit, or show form - handle both)
 - extendedWaitUntil:
     visible:
-      text: 'Cola|Queue|Enviado|Submitted|PENDING|Pendiente|Solicitar|Submit'
+      text: '.*Cola.*|.*Queue.*|.*Enviado.*|.*Submitted.*|.*PENDING.*|.*Pendiente.*|.*Solicitar.*|.*Submit.*'
     timeout: 10000
 
 # 10. IF SUBMIT BUTTON VISIBLE, TAP IT
 - tapOn:
-    text: 'Enviar|Submit|Confirmar|Confirm'
+    text: '.*Enviar.*|.*Submit.*|.*Confirmar.*|.*Confirm.*'
     optional: true
 - waitForAnimationToEnd:
     timeout: 3000
@@ -90,6 +93,14 @@ env:
 # 12. VERIFY OUTPUT
 - assertTrue: ${output.verified}
 
-# 13. UI VERIFICATION - Should show pending status
+# 13. REFRESH UI to ensure state update is visible
+- swipe:
+    start: '50%,30%'
+    end: '50%,70%'
+    duration: 500
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 14. UI VERIFICATION - Should show pending status
 - assertVisible:
-    text: 'PENDING|Pendiente|En Cola|In Queue|Esperando|Waiting'
+    text: '.*PENDING.*|.*Pendiente.*|.*En.*Cola.*|.*In.*Queue.*|.*Esperando.*|.*Waiting.*'

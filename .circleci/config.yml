@@ -359,12 +359,23 @@ jobs:
             - ~/.gradle/caches
             - android/.gradle
       - run:
+          name: Pre-test API Verification
+          command: node maestro/scripts/ci-e2e-full-test.js --verify
+      - run:
+          name: Capture Before State
+          command: node maestro/scripts/ci-verification.js before
+      - run:
           name: Run Maestro Tests
           command: |
             source $BASH_ENV
             cd maestro
             # Run each test directory explicitly (Maestro needs direct yaml paths)
             for dir in tests/*/; do
+              # Skip docker tests (they require local backend)
+              if [ "$(basename $dir)" = "docker" ]; then
+                echo "Skipping docker tests (requires local backend)"
+                continue
+              fi
               echo "Running tests in $dir"
               maestro test "$dir" \
                 --env TEST_USER_ID=${TEST_USER_ID} \
@@ -375,6 +386,9 @@ jobs:
                 --format junit --output "maestro-results-$(basename $dir).xml" || true
             done
           no_output_timeout: 15m
+      - run:
+          name: Post-test Verification (Compare Before/After)
+          command: node maestro/scripts/ci-verification.js after || true
       - store_test_results:
           path: maestro
       - store_artifacts:

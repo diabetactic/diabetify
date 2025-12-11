@@ -1,0 +1,192 @@
+# ==========================================
+# Test: Docker Backend - Resolution E2E Verification
+# Description: Complete resolution flow against Docker backend
+# Flow: Clear queue → Request → Accept → Create → Add Resolution → Verify
+# Tags: @docker @docker-resolution
+# Prerequisites:
+#   - Docker backend running (cd docker && ./start.sh)
+#   - Test user exists (cd docker && ./seed-test-data.sh)
+# ==========================================
+
+appId: io.diabetactic.app
+
+env:
+  API_BASE_URL: 'http://10.0.2.2:8000'
+  BACKOFFICE_API_URL: 'http://10.0.2.2:8001'
+  DOCKER_BACKEND: 'true'
+  ADMIN_USERNAME: 'admin'
+  ADMIN_PASSWORD: 'admin'
+
+---
+# ==========================================
+# PHASE 1: SETUP - Clear appointment queue
+# ==========================================
+- runScript:
+    file: ../../scripts/backoffice-api-fetch.js
+    env:
+      ACTION: 'clear'
+      BACKOFFICE_API_URL: ${BACKOFFICE_API_URL}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+# ==========================================
+# PHASE 2: LOGIN
+# ==========================================
+- runFlow: ../../flows/login-local.yaml
+
+# ==========================================
+# PHASE 3: VERIFY INITIAL STATE IS NONE
+# ==========================================
+- runScript:
+    file: ../../scripts/verify-backend-docker.js
+    env:
+      VERIFY_ACTION: 'appointment_state'
+      EXPECTED_STATE: 'NONE'
+      API_BASE_URL: ${API_BASE_URL}
+
+# ==========================================
+# PHASE 4: NAVIGATE TO APPOINTMENTS
+# ==========================================
+- runFlow: ../../flows/navigate-appointments.yaml
+
+- extendedWaitUntil:
+    visible:
+      text: '.*Citas.*|.*Appointments.*'
+    timeout: 8000
+
+- extendedWaitUntil:
+    notVisible:
+      text: '.*Cargando.*|.*Loading.*'
+    timeout: 15000
+
+# ==========================================
+# PHASE 5: REQUEST APPOINTMENT (NONE → PENDING)
+# ==========================================
+- tapOn:
+    text: '.*Solicitar.*Cita.*|.*Request.*Appointment.*'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify PENDING in backend
+- runScript:
+    file: ../../scripts/verify-backend-docker.js
+    env:
+      VERIFY_ACTION: 'appointment_state'
+      EXPECTED_STATE: 'PENDING'
+      API_BASE_URL: ${API_BASE_URL}
+
+- assertTrue: ${output.verified}
+
+# ==========================================
+# PHASE 6: ACCEPT VIA BACKOFFICE (PENDING → ACCEPTED)
+# ==========================================
+- runScript:
+    file: ../../scripts/backoffice-api-fetch.js
+    env:
+      ACTION: 'accept'
+      USER_ID: '1000'
+      BACKOFFICE_API_URL: ${BACKOFFICE_API_URL}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Verify ACCEPTED in backend
+- runScript:
+    file: ../../scripts/verify-backend-docker.js
+    env:
+      VERIFY_ACTION: 'appointment_state'
+      EXPECTED_STATE: 'ACCEPTED'
+      API_BASE_URL: ${API_BASE_URL}
+
+- assertTrue: ${output.verified}
+
+# Pull to refresh UI
+- swipe:
+    direction: DOWN
+    duration: 500
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# ==========================================
+# PHASE 7: CREATE APPOINTMENT (ACCEPTED → CREATED)
+# ==========================================
+# Use API to ensure appointment is created
+- runScript:
+    file: ../../scripts/ensure-appointment-created.js
+    env:
+      USER_ID: '1000'
+      USER_PASSWORD: 'tuvieja'
+      API_BASE_URL: ${API_BASE_URL}
+
+# Store appointment ID for resolution
+- assertTrue: ${output.appointmentId}
+
+# ==========================================
+# PHASE 8: CREATE RESOLUTION VIA BACKOFFICE
+# ==========================================
+- runScript:
+    file: ../../scripts/resolution-api.js
+    env:
+      ACTION: 'create'
+      APPOINTMENT_ID: ${output.appointmentId}
+      BASAL_TYPE: 'Lantus'
+      BASAL_DOSE: '22'
+      BASAL_TIME: '22:00'
+      FAST_TYPE: 'Humalog'
+      RATIO: '12'
+      SENSITIVITY: '45'
+      BACKOFFICE_API_URL: ${BACKOFFICE_API_URL}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+# ==========================================
+# PHASE 9: VERIFY RESOLUTION EXISTS IN BACKEND
+# ==========================================
+- runScript:
+    file: ../../scripts/verify-backend-docker.js
+    env:
+      VERIFY_ACTION: 'resolution_exists'
+      APPOINTMENT_ID: ${output.appointmentId}
+      BACKOFFICE_API_URL: ${BACKOFFICE_API_URL}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+- assertTrue: ${output.verified}
+- assertTrue: ${output.exists}
+
+# ==========================================
+# PHASE 10: REFRESH UI AND VERIFY DISPLAY
+# ==========================================
+- swipe:
+    direction: DOWN
+    duration: 500
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- extendedWaitUntil:
+    notVisible:
+      text: '.*Cargando.*|.*Loading.*'
+    timeout: 15000
+
+# Navigate to appointment detail
+- tapOn:
+    text: '.*Completada.*|.*Completed.*'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Scroll to find resolution section
+- scroll:
+    direction: DOWN
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Verify resolution data is displayed in UI
+- extendedWaitUntil:
+    visible:
+      text: '.*Resoluci.*|.*Resolution.*|.*Indicaciones.*|.*Instructions.*|.*Lantus.*|.*22.*'
+    timeout: 15000
+# Test completed - Full resolution flow verified against Docker backend!

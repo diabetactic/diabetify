@@ -2,7 +2,7 @@
 # Test: View Profile Information
 # Description: Verify user can view profile page and interact with elements
 # Uses shared navigation flow for profile tab
-# Note: Profile page shows user info but editing may require specific UI elements
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
@@ -18,13 +18,13 @@ appId: io.diabetactic.app
 # Should see greeting with user's name or email
 - extendedWaitUntil:
     visible:
-      text: 'Perfil|Profile|Hola|Hello'
+      text: '.*Perfil.*|.*Profile.*|.*Hola.*|.*Hello.*'
     timeout: 5000
 
 # 4. VERIFY KEY PROFILE SECTIONS ARE VISIBLE
 # Hero section with avatar and greeting
 - assertVisible:
-    text: '.*@.*|Miembro desde|Member since'
+    text: '.*@.*|.*Miembro.*desde.*|.*Member.*since.*'
     optional: true
 
 # 5. SCROLL DOWN TO SEE MORE CONTENT
@@ -37,14 +37,14 @@ appId: io.diabetactic.app
 # 6. VERIFY PREFERENCES SECTION IS VISIBLE
 - extendedWaitUntil:
     visible:
-      text: 'Preferencias|Preferences'
+      text: '.*Preferencias.*|.*Preferences.*'
     timeout: 5000
 
 # 7. VERIFY SETTINGS OPTIONS ARE VISIBLE
 - assertVisible:
-    text: 'Tema|Theme'
+    text: '.*Tema.*|.*Theme.*'
 - assertVisible:
-    text: 'Idioma|Language'
+    text: '.*Idioma.*|.*Language.*'
 
 # 8. SCROLL TO BOTTOM
 - swipe:
@@ -55,26 +55,28 @@ appId: io.diabetactic.app
 
 # 9. VERIFY ABOUT SECTION AND SIGN OUT BUTTON
 - assertVisible:
-    text: 'Acerca de|About'
+    text: '.*Acerca.*de.*|.*About.*'
     optional: true
 - extendedWaitUntil:
     visible:
-      text: 'Cerrar Sesión|Sign Out'
+      text: '.*Cerrar.*Sesi.*n.*|.*Sign.*Out.*'
     timeout: 5000
 
 # 10. TAP AGE EDIT BUTTON (if editable)
 - swipe:
     direction: UP
     duration: 400
-- waitForAnimationToEnd
+- waitForAnimationToEnd:
+    timeout: 1000
 - tapOn:
-    text: 'Edad|Age'
+    text: '.*Edad.*|.*Age.*'
     optional: true
 - waitForAnimationToEnd:
     timeout: 1000
 
 # 11. CLOSE ANY DIALOG THAT OPENED
 - tapOn:
-    text: 'Cancelar|Cancel|Cerrar|Close'
+    text: '.*Cancelar.*|.*Cancel.*|.*Cerrar.*|.*Close.*'
     optional: true
-- waitForAnimationToEnd
+- waitForAnimationToEnd:
+    timeout: 1000

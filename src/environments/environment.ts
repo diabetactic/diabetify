@@ -32,17 +32,17 @@ const DEV_BACKEND_MODE: BackendMode = 'cloud';
  */
 function getBaseUrl(mode: BackendMode): string {
   if (mode === 'local') {
-    // Local Docker env (container-managing docker-compose.test.yml, API Gateway on port 8004)
+    // Local Docker env (docker-compose.local.yml, API Gateway on port 8000)
     if (Capacitor.isNativePlatform()) {
       const platform = Capacitor.getPlatform();
       if (platform === 'android') {
-        return 'http://10.0.2.2:8004';
+        return 'http://10.0.2.2:8000'; // Android emulator host
       }
       // iOS simulator / device
-      return 'http://localhost:8004';
+      return 'http://localhost:8000';
     }
     // Web dev hitting local gateway directly
-    return 'http://localhost:8004';
+    return 'http://localhost:8000';
   }
 
   // cloud or mock → use Heroku API Gateway

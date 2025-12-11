@@ -2,7 +2,7 @@
 # Flow: Login Form Steps
 # Description: Performs the actual login form interaction.
 #              Called conditionally when login form is visible.
-# Env vars defined here (config.yaml inheritance unreliable in flows)
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
@@ -12,22 +12,22 @@ env:
   TEST_USER_PASSWORD: 'tuvieja'
 
 ---
-# 1. INPUT USERNAME - use native id attribute (not data-testid)
+# 1. INPUT USERNAME - tap on label since IDs may not work in WebView
 - tapOn:
-    id: 'username'
+    text: '.*DNI.*|.*Usuario.*|.*Username.*'
 - eraseText
 - inputText: '${TEST_USER_ID}'
 - hideKeyboard
 
-# 2. INPUT PASSWORD - use native id attribute (not data-testid)
+# 2. INPUT PASSWORD - tap on label
 - tapOn:
-    id: 'password'
+    text: '.*Contrase.*|.*Password.*'
 - eraseText
 - inputText: '${TEST_USER_PASSWORD}'
 - hideKeyboard
 
-# 3. SUBMIT LOGIN - native id matches data-testid
+# 3. SUBMIT LOGIN
 - tapOn:
-    id: 'login-submit-btn'
+    text: '.*Iniciar.*Sesi.*|.*Sign.*In.*|.*Log.*In.*|.*Ingresar.*'
 - waitForAnimationToEnd:
     timeout: 2000

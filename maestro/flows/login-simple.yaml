@@ -1,0 +1,54 @@
+# ==========================================
+# Flow: Simple Login - launchApp based
+# Description: Use launchApp (not openLink) for reliable app launch
+# ==========================================
+
+appId: io.diabetactic.app
+
+env:
+  TEST_USER_ID: '1000'
+  TEST_USER_PASSWORD: 'tuvieja'
+
+---
+# 1. LAUNCH APP WITH launchApp (more reliable than openLink)
+- launchApp:
+    clearState: false
+
+# 2. HYDRATION WAIT
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 3. WAIT FOR APP TO SHOW SOMETHING
+- extendedWaitUntil:
+    visible:
+      text: '.*Diabetactic.*|.*Inicio.*|.*Dashboard.*|.*Home.*|.*Perfil.*|.*Profile.*|.*Vamos.*|.*DNI.*|.*Lecturas.*|.*Readings.*|.*Citas.*|.*Appointments.*'
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 4. SKIP LOGIN IF ALREADY ON DASHBOARD
+- runFlow:
+    when:
+      visible: '.*Lecturas.*|.*Readings.*|.*Citas.*|.*Appointments.*|.*Inicio.*|.*Home.*'
+    file: skip-login.yaml
+
+# 5. TAP CTA TO GO TO LOGIN (only if on welcome screen)
+- tapOn:
+    text: '.*Vamos.*|.*Let.*Go.*|.*Sign.*In.*'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 6. CONDITIONAL LOGIN - only if DNI field is visible
+- runFlow:
+    when:
+      visible: '.*DNI.*'
+    file: login-form-steps.yaml
+
+# 7. VERIFY DASHBOARD LOADED
+- extendedWaitUntil:
+    visible:
+      text: '.*Inicio.*|.*Home.*|.*Dashboard.*|.*Lecturas.*|.*Readings.*|.*Citas.*|.*Appointments.*|.*Perfil.*|.*Profile.*'
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 1000

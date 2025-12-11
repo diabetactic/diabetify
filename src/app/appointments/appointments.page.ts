@@ -26,7 +26,7 @@ import {
 } from '@ionic/angular/standalone';
 import { ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject, takeUntil, firstValueFrom } from 'rxjs';
+import { Subject, takeUntil, firstValueFrom, interval, Subscription } from 'rxjs';
 import { AppointmentService } from '../core/services/appointment.service';
 import {
   Appointment,
@@ -78,6 +78,10 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   queueError: string | null = null;
   requestingAppointment = false;
   isSubmitting = false;
+
+  // Polling for real-time queue updates
+  private pollingSubscription: Subscription | null = null;
+  private readonly POLLING_INTERVAL_MS = 15000; // Poll every 15 seconds
 
   /**
    * Get the current/upcoming appointment (first in list)
@@ -144,8 +148,122 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopPolling();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Start polling for queue state updates (when in PENDING or ACCEPTED state)
+   */
+  private startPolling(): void {
+    // Only poll if not already polling and in a state that can change
+    if (this.pollingSubscription) return;
+
+    const state = this.queueState?.state;
+    if (state !== 'PENDING' && state !== 'ACCEPTED') return;
+
+    this.logger.info('Queue', 'Starting polling for queue updates', {
+      interval: this.POLLING_INTERVAL_MS,
+    });
+
+    this.pollingSubscription = interval(this.POLLING_INTERVAL_MS)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.pollQueueState();
+      });
+  }
+
+  /**
+   * Stop polling for queue state updates
+   */
+  private stopPolling(): void {
+    if (this.pollingSubscription) {
+      this.pollingSubscription.unsubscribe();
+      this.pollingSubscription = null;
+      this.logger.info('Queue', 'Stopped polling for queue updates');
+    }
+  }
+
+  /**
+   * Poll queue state silently (no loading indicator)
+   */
+  private async pollQueueState(): Promise<void> {
+    if (environment.backendMode === 'mock') return;
+
+    try {
+      const previousState = this.queueState?.state;
+      const newState = await firstValueFrom(this.appointmentService.getQueueState());
+
+      // Check if state changed
+      if (newState.state !== previousState) {
+        this.logger.info('Queue', 'Queue state changed via polling', {
+          from: previousState,
+          to: newState.state,
+        });
+
+        this.queueState = newState;
+
+        // Show toast notification for state change
+        await this.notifyStateChange(previousState, newState.state);
+
+        // If moved to ACCEPTED, fetch position (should be undefined now, but for completeness)
+        // If moved to CREATED or DENIED, stop polling
+        if (
+          newState.state === 'CREATED' ||
+          newState.state === 'DENIED' ||
+          newState.state === 'NONE'
+        ) {
+          this.stopPolling();
+        }
+
+        this.cdr.markForCheck();
+      } else if (newState.state === 'PENDING') {
+        // Update position even if state didn't change
+        try {
+          const position = await firstValueFrom(this.appointmentService.getQueuePosition());
+          if (position >= 0 && position !== this.queueState?.position) {
+            this.queueState = { ...this.queueState!, position };
+            this.cdr.markForCheck();
+          }
+        } catch {
+          // Ignore position fetch errors during polling
+        }
+      }
+    } catch (error) {
+      // Silently ignore polling errors - don't spam user
+      this.logger.warn('Queue', 'Polling error (ignored)', error);
+    }
+  }
+
+  /**
+   * Show toast notification when queue state changes
+   */
+  private async notifyStateChange(
+    fromState: AppointmentQueueState | undefined,
+    toState: AppointmentQueueState
+  ): Promise<void> {
+    let message: string;
+    let color: 'success' | 'warning' | 'danger' = 'success';
+
+    switch (toState) {
+      case 'ACCEPTED':
+        message = this.translationService.instant('appointments.queue.messages.accepted');
+        color = 'success';
+        break;
+      case 'DENIED':
+        message = this.translationService.instant('appointments.queue.messages.denied');
+        color = 'danger';
+        break;
+      case 'CREATED':
+        message = this.translationService.instant('appointments.queue.messages.created');
+        color = 'success';
+        break;
+      default:
+        return; // Don't notify for other state changes
+    }
+
+    await this.showToast(message, color);
   }
 
   /**
@@ -407,6 +525,10 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     } finally {
       this.queueLoading = false;
       this.requestingAppointment = false; // Reset request flag after state is loaded
+
+      // Start polling if in a state that can change (PENDING or ACCEPTED)
+      this.startPolling();
+
       this.cdr.markForCheck();
     }
   }

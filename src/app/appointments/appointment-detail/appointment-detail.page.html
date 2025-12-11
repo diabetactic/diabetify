@@ -197,39 +197,82 @@
 
       <!-- Resolution card - shown when resolution data is available -->
       <ion-card
-        *ngIf="resolution && resolution.resolved_at"
+        *ngIf="resolution && resolution.change_basal_type"
         class="!m-0 border-l-4 border-l-green-500"
       >
         <ion-card-header>
           <ion-card-title class="flex items-center gap-2 text-lg">
-            <app-icon name="check-circle" class="text-green-500"></app-icon>
+            <app-icon name="clipboard-check" class="text-green-500"></app-icon>
             {{ 'appointments.detail.resolution' | translate }}
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
           <ion-list lines="none" class="ion-no-padding">
-            <ion-item *ngIf="resolution.resolved_at">
+            <!-- Basal Insulin Changes -->
+            <ion-item>
               <ion-label>
                 <p class="text-base-content/60 dark:text-base-content/80">
-                  {{ 'appointments.resolution.resolvedAt' | translate }}
+                  {{ 'appointments.resolution.basalType' | translate }}
                 </p>
-                <h3 class="font-semibold">{{ formatResolutionDate(resolution.resolved_at) }}</h3>
+                <h3 class="font-semibold">{{ resolution.change_basal_type }}</h3>
               </ion-label>
             </ion-item>
-            <ion-item *ngIf="resolution.resolved_by">
+            <ion-item>
               <ion-label>
                 <p class="text-base-content/60 dark:text-base-content/80">
-                  {{ 'appointments.resolution.resolvedBy' | translate }}
+                  {{ 'appointments.resolution.basalDose' | translate }}
                 </p>
-                <h3 class="font-semibold">{{ resolution.resolved_by }}</h3>
+                <h3 class="font-semibold">{{ resolution.change_basal_dose }} U</h3>
               </ion-label>
             </ion-item>
-            <ion-item *ngIf="resolution.notes">
+            <ion-item>
               <ion-label>
                 <p class="text-base-content/60 dark:text-base-content/80">
-                  {{ 'appointments.resolution.notes' | translate }}
+                  {{ 'appointments.resolution.basalTime' | translate }}
                 </p>
-                <h3 class="whitespace-pre-wrap font-semibold">{{ resolution.notes }}</h3>
+                <h3 class="font-semibold">{{ resolution.change_basal_time }}</h3>
+              </ion-label>
+            </ion-item>
+            <!-- Fast Insulin Changes -->
+            <ion-item>
+              <ion-label>
+                <p class="text-base-content/60 dark:text-base-content/80">
+                  {{ 'appointments.resolution.fastType' | translate }}
+                </p>
+                <h3 class="font-semibold">{{ resolution.change_fast_type }}</h3>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>
+                <p class="text-base-content/60 dark:text-base-content/80">
+                  {{ 'appointments.resolution.ratio' | translate }}
+                </p>
+                <h3 class="font-semibold">1:{{ resolution.change_ratio }}</h3>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>
+                <p class="text-base-content/60 dark:text-base-content/80">
+                  {{ 'appointments.resolution.sensitivity' | translate }}
+                </p>
+                <h3 class="font-semibold">{{ resolution.change_sensitivity }} mg/dL</h3>
+              </ion-label>
+            </ion-item>
+            <!-- Flags -->
+            <ion-item *ngIf="resolution.emergency_care" class="text-error">
+              <ion-label>
+                <h3 class="flex items-center gap-2 font-semibold text-red-500">
+                  <app-icon name="alert-triangle" class="text-red-500"></app-icon>
+                  {{ 'appointments.resolution.emergencyCare' | translate }}
+                </h3>
+              </ion-label>
+            </ion-item>
+            <ion-item *ngIf="resolution.needed_physical_appointment" class="text-warning">
+              <ion-label>
+                <h3 class="flex items-center gap-2 font-semibold text-amber-500">
+                  <app-icon name="calendar" class="text-amber-500"></app-icon>
+                  {{ 'appointments.resolution.needsPhysicalAppointment' | translate }}
+                </h3>
               </ion-label>
             </ion-item>
           </ion-list>

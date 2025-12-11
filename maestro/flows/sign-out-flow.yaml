@@ -1,0 +1,38 @@
+# ==========================================
+# Flow: Sign Out
+# Description: Navigate to profile and sign out
+#              Used when already logged in and need fresh login
+# ==========================================
+
+appId: io.diabetactic.app
+
+---
+# 1. Navigate to profile tab
+- tapOn:
+    text: '.*Perfil.*|.*Profile.*'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 2. Scroll down to find sign out button
+- swipe:
+    direction: UP
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 500
+
+# 3. Tap sign out button
+- tapOn:
+    id: 'sign-out-btn'
+    optional: true
+- tapOn:
+    text: '.*Cerrar.*Sesi.*|.*Sign.*Out.*|.*Salir.*|.*Logout.*'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 4. Wait for welcome screen
+- extendedWaitUntil:
+    visible:
+      text: '.*Diabetactic.*|.*Bienvenido.*|.*Welcome.*|.*Vamos.*'
+    timeout: 10000

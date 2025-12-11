@@ -4,6 +4,7 @@
 # NOTE: Creating appointments requires ACCEPTED queue state.
 #       This test verifies the page structure and navigation.
 #       For full create flow, use Playwright against local Docker.
+# Uses .* wildcards for bilingual support with special chars
 # ==========================================
 
 appId: io.diabetactic.app
@@ -18,13 +19,13 @@ appId: io.diabetactic.app
 # 3. VERIFY PAGE HEADER (Citas title)
 - extendedWaitUntil:
     visible:
-      text: 'Citas|Appointments'
+      text: '.*Citas.*|.*Appointments.*'
     timeout: 8000
 
 # 4. WAIT FOR LOADING TO COMPLETE
 - extendedWaitUntil:
     notVisible:
-      text: 'Cargando citas|Loading appointments|Cargando...'
+      text: '.*Cargando.*citas.*|.*Loading.*appointments.*|.*Cargando.*'
     timeout: 20000
 - waitForAnimationToEnd:
     timeout: 2000
@@ -32,21 +33,21 @@ appId: io.diabetactic.app
 # 5. VERIFY QUEUE CONTENT IS VISIBLE (either status or request button)
 - extendedWaitUntil:
     visible:
-      text: 'Estado de la Cola|Queue Status|Solicitar Cita|Request Appointment|No tienes citas|No appointments'
+      text: '.*Estado.*Cola.*|.*Queue.*Status.*|.*Solicitar.*Cita.*|.*Request.*Appointment.*|.*No.*tienes.*citas.*|.*No.*appointments.*'
     timeout: 10000
 
 # 6. NAVIGATE TO ANOTHER TAB AND BACK
 - tapOn:
-    text: 'Lecturas|Readings'
+    text: '.*Lecturas.*|.*Readings.*'
 - waitForAnimationToEnd:
     timeout: 1500
 
 - tapOn:
-    text: 'Citas|Appointments'
+    text: '.*Citas.*|.*Appointments.*'
 - waitForAnimationToEnd:
     timeout: 1500
 
 # 7. VERIFY APPOINTMENTS PAGE STILL LOADS
 - assertVisible:
-    text: 'Citas|Appointments'
+    text: '.*Citas.*|.*Appointments.*'
 # Test passes - appointments page navigation works correctly
