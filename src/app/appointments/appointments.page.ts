@@ -32,6 +32,7 @@ import {
   Appointment,
   AppointmentQueueState,
   AppointmentQueueStateResponse,
+  AppointmentResolutionResponse,
 } from '../core/models/appointment.model';
 import { TranslationService } from '../core/services/translation.service';
 import { LoggerService } from '../core/services/logger.service';
@@ -82,6 +83,10 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   // Polling for real-time queue updates
   private pollingSubscription: Subscription | null = null;
   private readonly POLLING_INTERVAL_MS = 15000; // Poll every 15 seconds
+
+  // Resolution data cache
+  resolutions: Map<number, AppointmentResolutionResponse> = new Map();
+  resolutionsLoading = false;
 
   /**
    * Get the current/upcoming appointment (first in list)
@@ -662,5 +667,67 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   // trackBy function for past appointments ngFor
   trackByAppointment(index: number, appointment: Appointment): number {
     return appointment.appointment_id;
+  }
+
+  /**
+   * Toggle past appointments expansion and load resolutions if expanding
+   */
+  togglePastAppointments(): void {
+    this.pastAppointmentsExpanded = !this.pastAppointmentsExpanded;
+    if (this.pastAppointmentsExpanded && this.pastAppointments.length > 0) {
+      this.loadResolutionsForPastAppointments();
+    }
+  }
+
+  /**
+   * Load resolutions for all past appointments
+   */
+  private async loadResolutionsForPastAppointments(): Promise<void> {
+    if (this.resolutionsLoading) return;
+    if (environment.backendMode === 'mock') return;
+
+    this.resolutionsLoading = true;
+    this.cdr.markForCheck();
+
+    for (const apt of this.pastAppointments) {
+      // Skip if already cached
+      if (this.resolutions.has(apt.appointment_id)) continue;
+
+      try {
+        const resolution = await firstValueFrom(
+          this.appointmentService.getResolution(apt.appointment_id)
+        );
+        if (resolution) {
+          this.resolutions.set(apt.appointment_id, resolution);
+        }
+      } catch {
+        // Silently ignore - appointment may not have a resolution
+        this.logger.debug('Resolution', `No resolution for appointment ${apt.appointment_id}`);
+      }
+    }
+
+    this.resolutionsLoading = false;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Get resolution for an appointment (from cache)
+   */
+  getResolution(appointmentId: number): AppointmentResolutionResponse | undefined {
+    return this.resolutions.get(appointmentId);
+  }
+
+  /**
+   * Check if appointment has resolution with emergency care flag
+   */
+  hasEmergencyCare(appointmentId: number): boolean {
+    return this.resolutions.get(appointmentId)?.emergency_care === true;
+  }
+
+  /**
+   * Check if appointment has resolution with physical appointment flag
+   */
+  needsPhysicalAppointment(appointmentId: number): boolean {
+    return this.resolutions.get(appointmentId)?.needed_physical_appointment === true;
   }
 }

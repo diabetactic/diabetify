@@ -527,7 +527,11 @@
       "queueFull": "No se pueden tomar más citas hoy.",
       "notInQueue": "Debe solicitar una cita antes de completar el formulario.",
       "notAccepted": "Su solicitud aún no ha sido aceptada.",
-      "alreadyInQueue": "Ya tiene una solicitud de cita pendiente."
+      "alreadyInQueue": "Ya tiene una solicitud de cita pendiente.",
+      "cannotCreate": "No puedes crear una cita en este momento",
+      "alreadyHasAppointment": "Ya tienes una cita activa",
+      "pendingRequest": "Tu solicitud de cita está pendiente de aprobación",
+      "blocked": "No puedes crear citas en este momento"
     },
     "queue": {
       "title": "Solicitud de Cita",
@@ -652,6 +656,7 @@
       "resolution": "Resolución"
     },
     "resolution": {
+      "title": "Resolución",
       "resolvedAt": "Resuelto el",
       "resolvedBy": "Resuelto por",
       "notes": "Notas de Resolución",
@@ -663,6 +668,9 @@
       "ratio": "Relación Insulina-Carbohidratos",
       "sensitivity": "Factor de Corrección",
       "emergencyCare": "Requiere Atención de Emergencia",
+      "emergencyCareShort": "Emergencia",
+      "physicalAppointment": "Requiere Cita Presencial",
+      "physicalAppointmentShort": "Presencial",
       "needsPhysicalAppointment": "Requiere Cita Presencial"
     },
     "create": {

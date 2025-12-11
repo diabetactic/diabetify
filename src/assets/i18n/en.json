@@ -526,7 +526,11 @@
       "queueFull": "No more appointments can be taken today.",
       "notInQueue": "You need to request an appointment before filling the form.",
       "notAccepted": "Your request hasn't been accepted yet.",
-      "alreadyInQueue": "You already have a pending appointment request."
+      "alreadyInQueue": "You already have a pending appointment request.",
+      "cannotCreate": "You cannot create an appointment at this time",
+      "alreadyHasAppointment": "You already have an active appointment",
+      "pendingRequest": "Your appointment request is pending approval",
+      "blocked": "You cannot create appointments at this time"
     },
     "queue": {
       "title": "Appointment Request",
@@ -651,6 +655,7 @@
       "resolution": "Resolution"
     },
     "resolution": {
+      "title": "Resolution",
       "resolvedAt": "Resolved on",
       "resolvedBy": "Resolved by",
       "notes": "Resolution Notes",
@@ -662,6 +667,9 @@
       "ratio": "Insulin-to-Carb Ratio",
       "sensitivity": "Correction Factor",
       "emergencyCare": "Emergency Care Required",
+      "emergencyCareShort": "Emergency",
+      "physicalAppointment": "Requires in-person visit",
+      "physicalAppointmentShort": "In-Person",
       "needsPhysicalAppointment": "Physical Appointment Needed"
     },
     "create": {

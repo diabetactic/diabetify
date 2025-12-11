@@ -508,19 +508,13 @@ workflows:
               only: master
 
   # Release workflow - manual trigger para generar APK descargable
+  # No approval required - just tests must pass
   release:
     jobs:
       - test:
           filters:
             branches:
               only: master
-      - hold-for-approval:
-          type: approval
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
       - release-apk:
           requires:
-            - hold-for-approval
+            - test
