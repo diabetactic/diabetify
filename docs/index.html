@@ -6,11 +6,11 @@
     <title>Diabetactic - Aplicación de Gestión de Glucosa | FIUBA</title>
     <meta
       name="description"
-      content="Trabajo Profesional de Ingeniería en Informática - FIUBA. Aplicación móvil para el registro y seguimiento de niveles de glucosa en personas con diabetes."
+      content="Trabajo Profesional FIUBA. Aplicación móvil para registro de glucosa y gestión de citas médicas, las funcionalidades más solicitadas por hospitales."
     />
     <meta
       name="keywords"
-      content="diabetes, glucosa, FIUBA, trabajo profesional, ingeniería informática, aplicación móvil"
+      content="diabetes, glucosa, citas médicas, FIUBA, trabajo profesional, ingeniería informática, aplicación móvil"
     />
 
     <!-- SEO Meta Tags -->
@@ -23,7 +23,7 @@
     <meta property="og:title" content="Diabetactic - Trabajo Profesional FIUBA" />
     <meta
       property="og:description"
-      content="Aplicación móvil para el registro y seguimiento de niveles de glucosa en personas con diabetes."
+      content="Aplicación móvil para registro de glucosa y gestión de citas médicas. Trabajo Profesional FIUBA."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://diabetactic.github.io/diabetify/" />
@@ -95,9 +95,9 @@
       }
 
       .glass-dark {
-        background: rgba(15, 23, 42, 0.95);
+        background: rgba(30, 41, 59, 0.95);
         backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
 
       .gradient-bg {
@@ -308,9 +308,11 @@
             </h1>
 
             <p class="text-xl leading-relaxed text-gray-600 dark:text-gray-300">
-              Aplicación móvil para el registro y seguimiento de niveles de glucosa en personas con
-              diabetes. Desarrollada como Trabajo Profesional para la carrera de Ingeniería en
-              Informática de la Facultad de Ingeniería de la Universidad de Buenos Aires (FIUBA).
+              Aplicación móvil para el <strong>registro de glucosa</strong> y
+              <strong>gestión de citas médicas</strong>, las funcionalidades más solicitadas por
+              hospitales para el seguimiento de pacientes con diabetes. Incluye sistema de rachas y
+              logros para fomentar el uso constante. Desarrollada como Trabajo Profesional para
+              Ingeniería en Informática (FIUBA).
             </p>
 
             <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
@@ -376,11 +378,11 @@
             <div
               class="phone-screen floating w-[270px] rounded-[2.5rem] bg-gray-900 p-2 shadow-2xl"
             >
-              <div class="aspect-[9/19] overflow-hidden rounded-[2rem] bg-white">
+              <div class="aspect-[9/19.5] overflow-hidden rounded-[2rem] bg-white">
                 <img
                   src="assets/screenshots/dashboard.png"
                   alt="Diabetactic Dashboard - Panel de Control con rachas y estadísticas"
-                  class="h-full w-full object-cover object-top"
+                  class="h-full w-full object-contain"
                 />
               </div>
             </div>
@@ -522,129 +524,7 @@
         </div>
 
         <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          <!-- Screenshot 1 - Dashboard -->
-          <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
-          >
-            <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/dashboard.png"
-                alt="Panel de Control - Dashboard con rachas y estadísticas"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
-            </div>
-            <div class="p-6">
-              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Panel de Control</h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400">
-                Dashboard principal con sistema de rachas, tiempo en rango y estadísticas de
-                lecturas.
-              </p>
-            </div>
-          </div>
-
-          <!-- Screenshot 2 - Readings -->
-          <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
-          >
-            <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/readings.png"
-                alt="Lista de Lecturas - Historial de mediciones de glucosa"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
-            </div>
-            <div class="p-6">
-              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
-                Lecturas de Glucosa
-              </h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400">
-                Historial de mediciones con categorización por fecha, indicadores de estado y
-                búsqueda.
-              </p>
-            </div>
-          </div>
-
-          <!-- Screenshot 3 - Bolus Calculator -->
-          <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
-          >
-            <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/bolus-calculator.png"
-                alt="Calculadora de Bolos - Cálculo de dosis de insulina"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
-            </div>
-            <div class="p-6">
-              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
-                Calculadora de Bolos
-              </h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400">
-                Cálculo de dosis de insulina basado en carbohidratos y factor de sensibilidad.
-              </p>
-            </div>
-          </div>
-
-          <!-- Screenshot 4 - Appointments -->
-          <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
-          >
-            <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/appointments.png"
-                alt="Gestión de Citas - Sistema de solicitud de citas médicas"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
-            </div>
-            <div class="p-6">
-              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Gestión de Citas</h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400">
-                Sistema de solicitud de citas médicas con historial de citas anteriores.
-              </p>
-            </div>
-          </div>
-
-          <!-- Screenshot 5 - Profile Dark Mode -->
-          <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
-          >
-            <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/profile-dark.png"
-                alt="Perfil de Usuario - Modo oscuro"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
-            </div>
-            <div class="p-6">
-              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
-                Perfil (Modo Oscuro)
-              </h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400">
-                Información del usuario y configuración personal con tema oscuro.
-              </p>
-            </div>
-          </div>
-
-          <!-- Screenshot 6 - Settings Dark -->
-          <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
-          >
-            <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/settings-dark.png"
-                alt="Configuración - Ajustes de la aplicación en modo oscuro"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
-            </div>
-            <div class="p-6">
-              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Configuración</h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400">
-                Ajustes de tema, idioma, unidades y preferencias de sincronización.
-              </p>
-            </div>
-          </div>
-
-          <!-- Screenshot 7 - Welcome -->
+          <!-- Screenshot 1 - Welcome -->
           <div
             class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
           >
@@ -665,7 +545,7 @@
             </div>
           </div>
 
-          <!-- Screenshot 8 - Login -->
+          <!-- Screenshot 2 - Login -->
           <div
             class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
           >
@@ -684,7 +564,47 @@
             </div>
           </div>
 
-          <!-- Screenshot 9 - Add Reading -->
+          <!-- Screenshot 3 - Dashboard -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/dashboard.png"
+                alt="Panel de Control - Dashboard con rachas y estadísticas"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Panel de Control</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Dashboard principal con sistema de rachas, tiempo en rango y estadísticas.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 4 - Readings -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/readings.png"
+                alt="Lista de Lecturas - Historial de mediciones de glucosa"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
+                Lecturas de Glucosa
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Historial de mediciones con categorización por fecha e indicadores de estado.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 5 - Add Reading -->
           <div
             class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
           >
@@ -699,6 +619,88 @@
               <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Agregar Lectura</h3>
               <p class="text-sm text-gray-600 dark:text-gray-400">
                 Formulario para registrar nuevas lecturas de glucosa con contexto y notas.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 6 - Appointments -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/appointments.png"
+                alt="Gestión de Citas - Sistema de solicitud de citas médicas"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Gestión de Citas</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Sistema de solicitud de citas médicas con historial de citas anteriores.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 7 - Bolus Calculator -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/bolus-calculator.png"
+                alt="Calculadora de Bolos - Cálculo de dosis de insulina"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
+                Calculadora de Bolos
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Cálculo de dosis de insulina basado en carbohidratos y factor de sensibilidad.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 8 - Bolus Food Picker -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/bolus-food-picker.png"
+                alt="Selector de Alimentos - Conteo de carbohidratos"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
+                Selector de Alimentos
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Biblioteca de alimentos con conteo de carbohidratos por categoría.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 9 - Profile -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/profile-dark.png"
+                alt="Perfil de Usuario - Información y preferencias"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
+                Perfil de Usuario
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Información del usuario y configuración personal con modo oscuro.
               </p>
             </div>
           </div>

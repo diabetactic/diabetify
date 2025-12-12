@@ -346,7 +346,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Sign out
+   * Sign out with proper error handling
    */
   async signOut() {
     const alert = await this.alertController.create({
@@ -360,8 +360,16 @@ export class SettingsPage implements OnInit, OnDestroy {
         {
           text: 'Cerrar Sesión',
           handler: async () => {
-            await this.authService.logout();
-            await this.router.navigate([ROUTES.LOGIN], { replaceUrl: true });
+            try {
+              await this.authService.logout();
+              await this.router.navigate([ROUTES.LOGIN], { replaceUrl: true });
+            } catch (error) {
+              this.logger.error('Settings', 'Failed to logout', error);
+              // Even if logout fails, still navigate to login page
+              // This ensures user can re-authenticate
+              await this.showToast('Error al cerrar sesión', 'warning');
+              await this.router.navigate([ROUTES.LOGIN], { replaceUrl: true });
+            }
           },
         },
       ],

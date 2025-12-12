@@ -52,7 +52,7 @@ async function main() {
     await page.waitForTimeout(2000);
     await page.screenshot({
       path: join(screenshotsDir, 'bolus-calculator.png'),
-      fullPage: false
+      fullPage: false,
     });
     console.log('✅ bolus-calculator.png saved');
 
@@ -67,7 +67,7 @@ async function main() {
     await page.waitForTimeout(500);
     await page.screenshot({
       path: join(screenshotsDir, 'profile-dark.png'),
-      fullPage: false
+      fullPage: false,
     });
     console.log('✅ profile-dark.png saved');
 
@@ -82,12 +82,11 @@ async function main() {
     await page.waitForTimeout(500);
     await page.screenshot({
       path: join(screenshotsDir, 'settings-dark.png'),
-      fullPage: false
+      fullPage: false,
     });
     console.log('✅ settings-dark.png saved');
 
     console.log('\n🎉 All screenshots captured successfully!');
-
   } catch (error) {
     console.error('❌ Error:', error.message);
     // Take debug screenshot

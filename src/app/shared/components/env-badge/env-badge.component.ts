@@ -74,7 +74,7 @@ import { environment, BackendMode } from '../../../../environments/environment';
 })
 export class EnvBadgeComponent {
   readonly mode: BackendMode = environment.backendMode;
-  readonly showBadge = environment.features?.devTools ?? !environment.production;
+  readonly showBadge = environment.features?.showEnvBadge ?? false;
 
   get modeLabel(): string {
     switch (this.mode) {

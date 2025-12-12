@@ -241,6 +241,18 @@ ion-segment {
   }
 }
 
+// Button styling - smoother border radius
+ion-button {
+  --border-radius: 14px;
+
+  min-height: 48px;
+  font-weight: 600;
+
+  &[expand='block'] {
+    --border-radius: 14px;
+  }
+}
+
 // Dark mode adjustments - uses DaisyUI semantic colors
 :host-context(.dark),
 :host-context(.ion-palette-dark),

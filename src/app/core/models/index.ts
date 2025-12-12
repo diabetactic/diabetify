@@ -26,3 +26,6 @@ export * from './clinical-form.model';
 
 // Food models for carbohydrate counting
 export * from './food.model';
+
+// Achievements/gamification models
+export * from './achievements.model';

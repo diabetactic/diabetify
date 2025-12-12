@@ -558,6 +558,120 @@ export class MockAdapterService {
     });
   }
 
+  // ==================== ACHIEVEMENTS MOCK METHODS ====================
+
+  /**
+   * Mock: Get streak data for gamification
+   * Returns simulated streak data based on stored readings
+   */
+  async mockGetStreakData(): Promise<{
+    streak: number;
+    max_streak: number;
+    four_times_today: number;
+    streak_last_date: string;
+  }> {
+    await this.delay(undefined);
+
+    // Calculate streak from readings
+    const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
+    const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
+
+    // Simple streak calculation based on readings per day
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Count readings today (for four_times_today)
+    const todayReadings = allReadings.filter(r => {
+      const readingDate = new Date(r.time);
+      readingDate.setHours(0, 0, 0, 0);
+      return readingDate.getTime() === today.getTime();
+    });
+
+    // Simulate streak calculation (in real backend this is more sophisticated)
+    const mockStreak = Math.min(todayReadings.length > 0 ? 7 : 0, 30);
+    const mockMaxStreak = Math.max(mockStreak, 14);
+
+    return {
+      streak: mockStreak,
+      max_streak: mockMaxStreak,
+      four_times_today: Math.min(todayReadings.length, 3), // 0-3 range
+      streak_last_date: today.toISOString().split('T')[0],
+    };
+  }
+
+  /**
+   * Mock: Get achievements list
+   * Returns sample achievements for testing
+   */
+  async mockGetAchievements(): Promise<
+    Array<{
+      ach_id: number;
+      name: string;
+      attribute: string;
+      got: boolean;
+      progress: number;
+      threshold: number;
+    }>
+  > {
+    await this.delay(undefined);
+
+    // Get reading count for progress calculation
+    const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
+    const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
+    const totalReadings = allReadings.length;
+
+    return [
+      {
+        ach_id: 1,
+        name: 'Primera Lectura',
+        attribute: 'times_measured',
+        got: totalReadings >= 1,
+        progress: Math.min(totalReadings, 1),
+        threshold: 1,
+      },
+      {
+        ach_id: 2,
+        name: '10 Lecturas',
+        attribute: 'times_measured',
+        got: totalReadings >= 10,
+        progress: Math.min(totalReadings, 10),
+        threshold: 10,
+      },
+      {
+        ach_id: 3,
+        name: '50 Lecturas',
+        attribute: 'times_measured',
+        got: totalReadings >= 50,
+        progress: Math.min(totalReadings, 50),
+        threshold: 50,
+      },
+      {
+        ach_id: 4,
+        name: '100 Lecturas',
+        attribute: 'times_measured',
+        got: totalReadings >= 100,
+        progress: Math.min(totalReadings, 100),
+        threshold: 100,
+      },
+      {
+        ach_id: 5,
+        name: 'Racha de 7 días',
+        attribute: 'max_streak',
+        got: false, // Would need real streak tracking
+        progress: 3,
+        threshold: 7,
+      },
+      {
+        ach_id: 6,
+        name: 'Racha de 30 días',
+        attribute: 'max_streak',
+        got: false,
+        progress: 3,
+        threshold: 30,
+      },
+    ];
+  }
+
   /**
    * Clear all mock data (useful for testing/reset).
    * Removes all app-specific keys from localStorage.
