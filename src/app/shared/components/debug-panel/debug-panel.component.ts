@@ -176,7 +176,7 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
 
     this.debugInfo = {
       platform: Capacitor.getPlatform(),
-      version: '1.0.0-dev', // Static version since appVersion is not available
+      version: '0.0.1-dev', // Static version since appVersion is not available
       deviceModel: deviceInfo.model,
       osVersion: deviceInfo.osVersion,
       networkStatus: networkStatus.connected ? 'Online' : 'Offline',
