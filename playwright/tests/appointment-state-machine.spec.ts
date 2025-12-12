@@ -9,12 +9,17 @@
  * Requires E2E_HEROKU_TESTS=true and valid credentials.
  */
 
-import { test, expect, request, APIRequestContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import {
+  getAdminToken,
+  resetQueue,
+  acceptNextAppointment,
+  denyNextAppointment,
+} from '../helpers/backoffice-api';
 
 const hasCredentials = process.env.E2E_TEST_USERNAME && process.env.E2E_TEST_PASSWORD;
 const skipHerokuTests = !process.env.E2E_HEROKU_TESTS;
-const BACKOFFICE_URL =
-  process.env.BACKOFFICE_API_URL || 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com';
+const SCREENSHOT_DIR = 'playwright/artifacts/screenshots';
 
 test.describe('Appointment State Machine', () => {
   test.skip(skipHerokuTests, 'Set E2E_HEROKU_TESTS=true to run Heroku integration tests');
@@ -23,37 +28,14 @@ test.describe('Appointment State Machine', () => {
     'Requires E2E_TEST_USERNAME and E2E_TEST_PASSWORD environment variables'
   );
 
-  let backofficeApi: APIRequestContext;
   let backofficeToken: string;
 
   test.beforeAll(async () => {
-    // Get backoffice token for admin operations
-    const adminUser = process.env.BACKOFFICE_ADMIN_USERNAME || 'admin';
-    const adminPassword = process.env.BACKOFFICE_ADMIN_PASSWORD || 'admin';
-
-    backofficeApi = await request.newContext();
-
     try {
-      const response = await backofficeApi.post(`${BACKOFFICE_URL}/token`, {
-        form: {
-          username: adminUser,
-          password: adminPassword,
-        },
-      });
-
-      if (response.ok()) {
-        const data = await response.json();
-        backofficeToken = data.access_token;
-        console.log('✅ Backoffice authentication successful');
-      }
+      backofficeToken = await getAdminToken();
+      console.log('✅ Backoffice authentication successful');
     } catch (e) {
       console.warn('⚠️ Could not authenticate with backoffice:', e);
-    }
-  });
-
-  test.afterAll(async () => {
-    if (backofficeApi) {
-      await backofficeApi.dispose();
     }
   });
 
@@ -72,299 +54,105 @@ test.describe('Appointment State Machine', () => {
     await expect(page).toHaveURL(/\/tabs\//, { timeout: 20000 });
   });
 
-  test('NONE state: should show "Request Appointment" button', async ({ page }) => {
-    console.log('Testing NONE state (no pending/active appointment)...');
+  test('full flow: NONE → PENDING → ACCEPTED → CREATED', async ({ page }) => {
+    // Ensure the user starts in a clean state
+    await resetQueue(backofficeToken);
+    console.log('Queue reset for user');
 
-    // Clear any existing appointment queue for this user via backoffice
-    if (backofficeToken) {
-      try {
-        await backofficeApi.post(`${BACKOFFICE_URL}/api/v1/appointments/clear-queue`, {
-          headers: { Authorization: `Bearer ${backofficeToken}` },
-          data: { user_id: process.env.E2E_TEST_USERNAME },
-        });
-        console.log('Cleared appointment queue');
-      } catch {
-        console.warn('Could not clear queue (may not have endpoint)');
-      }
-    }
+    // 1. ========= NONE: Verify initial state and request appointment =========
+    console.log('STEP 1: Verifying NONE state and requesting appointment...');
+    await page.goto('/tabs/appointments');
+    await page.waitForLoadState('networkidle');
 
-    // Navigate to appointments
-    const appointmentsTab = page.locator(
-      '[data-testid="tab-appointments"], ion-tab-button[tab="appointments"]'
+    const requestButton = page.locator(
+      'ion-button:has-text("SOLICITAR CITA"), ion-button:has-text("Solicitar Cita")'
     );
+    await expect(requestButton.first()).toBeVisible({ timeout: 10000 });
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/state-none.png` });
 
-    if (await appointmentsTab.isVisible({ timeout: 10000 }).catch(() => false)) {
-      await appointmentsTab.click();
-      await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-      await page.waitForLoadState('networkidle', { timeout: 10000 });
+    page.on('dialog', dialog => dialog.accept());
+    await requestButton.first().click();
+    await page.waitForLoadState('networkidle');
+    console.log('✅ Appointment requested.');
 
-      // In NONE state, should show request button
-      const requestButton = page.locator(
-        'button:has-text("Solicitar"), button:has-text("Request"), ion-button:has-text("Solicitar")'
-      );
-
-      const hasRequestButton = await requestButton
-        .first()
-        .isVisible({ timeout: 10000 })
-        .catch(() => false);
-
-      // Or should show empty state with option to request
-      const hasEmptyState = await page
-        .locator('text=/No tienes citas|No appointments|Solicita tu primera/i')
-        .isVisible({ timeout: 5000 })
-        .catch(() => false);
-
-      expect(
-        hasRequestButton || hasEmptyState,
-        'Should show request button or empty state in NONE state'
-      ).toBeTruthy();
-
-      console.log('✅ NONE state displays correctly');
-    }
-  });
-
-  test('PENDING state: should show waiting message', async ({ page }) => {
-    console.log('Testing PENDING state (appointment requested, awaiting review)...');
-
-    // Navigate to appointments
-    const appointmentsTab = page.locator(
-      '[data-testid="tab-appointments"], ion-tab-button[tab="appointments"]'
+    // 2. ========= PENDING: Verify pending state =========
+    console.log('STEP 2: Verifying PENDING state...');
+    const pendingBadge = page.locator(
+      '.badge-warning:has-text("Pendiente"), .badge-warning:has-text("Pending")'
     );
+    await expect(pendingBadge).toBeVisible({ timeout: 15000 });
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/state-pending.png` });
+    console.log('✅ UI updated to PENDING.');
 
-    if (await appointmentsTab.isVisible({ timeout: 10000 }).catch(() => false)) {
-      await appointmentsTab.click();
-      await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-      await page.waitForLoadState('networkidle', { timeout: 10000 });
+    // 3. ========= ACCEPTED: Admin accepts, verify UI update =========
+    console.log('STEP 3: Admin accepting appointment and verifying ACCEPTED state...');
+    const accepted = await acceptNextAppointment(backofficeToken);
+    expect(accepted, 'Admin failed to accept appointment via API').toBe(true);
+    console.log('✅ Appointment accepted via API.');
 
-      // Check if currently in pending state
-      const pendingIndicator = page.locator(
-        'text=/Pendiente|Pending|En revisión|Under review|Esperando|Waiting/i'
-      );
-
-      const isPending = await pendingIndicator
-        .first()
-        .isVisible({ timeout: 5000 })
-        .catch(() => false);
-
-      if (isPending) {
-        // Should NOT show the request button in pending state
-        const requestButton = page.locator(
-          'button:has-text("Solicitar cita"), ion-button:has-text("Solicitar cita")'
-        );
-
-        const _hasRequestButton = await requestButton
-          .first()
-          .isVisible({ timeout: 3000 })
-          .catch(() => false);
-
-        // In pending state, request button should be hidden or disabled
-        console.log('✅ PENDING state displays correctly');
-      } else {
-        console.log('ℹ️ Not in PENDING state (may need to request first)');
-      }
-    }
-  });
-
-  test('ACCEPTED state: should show form to complete appointment', async ({ page }) => {
-    console.log('Testing ACCEPTED state (appointment accepted, needs form)...');
-
-    // Navigate to appointments
-    const appointmentsTab = page.locator(
-      '[data-testid="tab-appointments"], ion-tab-button[tab="appointments"]'
-    );
-
-    if (await appointmentsTab.isVisible({ timeout: 10000 }).catch(() => false)) {
-      await appointmentsTab.click();
-      await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-      await page.waitForLoadState('networkidle', { timeout: 10000 });
-
-      // Check if currently in accepted state
-      const acceptedIndicator = page.locator(
-        'text=/Aceptada|Accepted|Completar|Complete|Llenar formulario|Fill form/i'
-      );
-
-      const isAccepted = await acceptedIndicator
-        .first()
-        .isVisible({ timeout: 5000 })
-        .catch(() => false);
-
-      if (isAccepted) {
-        // Should show a button to complete the form
-        const completeButton = page.locator(
-          'button:has-text("Completar"), button:has-text("Complete"), ion-button:has-text("Llenar")'
-        );
-
-        const hasCompleteButton = await completeButton
-          .first()
-          .isVisible({ timeout: 3000 })
-          .catch(() => false);
-
-        if (hasCompleteButton) {
-          console.log('✅ ACCEPTED state shows form button');
-        }
-      } else {
-        console.log('ℹ️ Not in ACCEPTED state');
-      }
-    }
-  });
-
-  test('CREATED state: should show appointment details', async ({ page }) => {
-    console.log('Testing CREATED state (appointment completed)...');
-
-    // Navigate to appointments
-    const appointmentsTab = page.locator(
-      '[data-testid="tab-appointments"], ion-tab-button[tab="appointments"]'
-    );
-
-    if (await appointmentsTab.isVisible({ timeout: 10000 }).catch(() => false)) {
-      await appointmentsTab.click();
-      await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-      await page.waitForLoadState('networkidle', { timeout: 10000 });
-
-      // Check if there are completed appointments
-      const createdIndicator = page.locator('text=/Creada|Created|Programada|Scheduled|Tu cita/i');
-
-      const hasCreated = await createdIndicator
-        .first()
-        .isVisible({ timeout: 5000 })
-        .catch(() => false);
-
-      if (hasCreated) {
-        // Should show appointment details
-        const hasDetails = await page
-          .locator('text=/Fecha|Date|Hora|Time|Doctor/i')
-          .isVisible({ timeout: 3000 })
-          .catch(() => false);
-
-        if (hasDetails) {
-          console.log('✅ CREATED state shows appointment details');
-        }
-      } else {
-        console.log('ℹ️ No completed appointments');
-      }
-    }
-  });
-
-  test('DENIED state: should show denial message and allow re-request', async ({ page }) => {
-    console.log('Testing DENIED state (appointment was denied)...');
-
-    // Navigate to appointments
-    const appointmentsTab = page.locator(
-      '[data-testid="tab-appointments"], ion-tab-button[tab="appointments"]'
-    );
-
-    if (await appointmentsTab.isVisible({ timeout: 10000 }).catch(() => false)) {
-      await appointmentsTab.click();
-      await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-      await page.waitForLoadState('networkidle', { timeout: 10000 });
-
-      // Check if in denied state
-      const deniedIndicator = page.locator('text=/Rechazada|Denied|Denegada|No aprobada/i');
-
-      const isDenied = await deniedIndicator
-        .first()
-        .isVisible({ timeout: 5000 })
-        .catch(() => false);
-
-      if (isDenied) {
-        // Should show option to request again
-        const requestAgainButton = page.locator(
-          'button:has-text("Solicitar"), button:has-text("Request"), button:has-text("Intentar")'
-        );
-
-        const canRequestAgain = await requestAgainButton
-          .first()
-          .isVisible({ timeout: 3000 })
-          .catch(() => false);
-
-        if (canRequestAgain) {
-          console.log('✅ DENIED state allows re-request');
-        }
-      } else {
-        console.log('ℹ️ Not in DENIED state');
-      }
-    }
-  });
-
-  test('state transitions should update UI immediately', async ({ page }) => {
-    console.log('Testing state transition UI updates...');
-
-    // Navigate to appointments
-    await page.click('[data-testid="tab-appointments"], ion-tab-button[tab="appointments"]');
-    await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-
-    // Wait for initial state and hydration
-    await page.waitForLoadState('networkidle', { timeout: 10000 });
-    await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
-
-    // Capture initial state
-    const initialContent = await page.locator('ion-content').textContent();
-
-    // Refresh to trigger state sync
+    // Refresh UI to reflect the change
     await page.reload();
-    await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-    await page.waitForLoadState('networkidle', { timeout: 10000 });
-    await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
+    await page.waitForLoadState('networkidle');
 
-    // Content should be consistent after refresh
-    const afterRefreshContent = await page.locator('ion-content').textContent();
+    const createAppointmentButton = page.locator(
+      'ion-button:has-text("AGREGAR NUEVA CITA"), ion-button:has-text("Crear Cita")'
+    );
+    await expect(createAppointmentButton.first()).toBeVisible({ timeout: 15000 });
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/state-accepted.png` });
+    console.log('✅ UI updated to ACCEPTED.');
 
-    // Both should have content
-    expect(initialContent?.length, 'Initial content should be present').toBeGreaterThan(0);
-    expect(afterRefreshContent?.length, 'Content should persist after refresh').toBeGreaterThan(0);
+    // 4. ========= CREATED: Fill form and create appointment =========
+    console.log('STEP 4: Filling form and creating appointment...');
+    await createAppointmentButton.first().click();
+    await page.waitForURL(/\/create/, { timeout: 10000 });
 
-    console.log('✅ State persists across refresh');
+    // Fill the form (simple example)
+    await page.locator('ion-input[formcontrolname="glucose_objective"]').fill('120');
+    await page.locator('ion-input[formcontrolname="carbohydrate_ratio"]').fill('10');
+
+    const saveButton = page.locator('ion-button:has-text("Guardar")');
+    await saveButton.click();
+    await page.waitForURL(/\/appointments/, { timeout: 10000 });
+    console.log('✅ Appointment form submitted.');
+
+    // Verify the final state
+    const createdAppointment = page.locator('ion-card.appointment-card:has-text("ACTUAL")');
+    await expect(createdAppointment).toBeVisible({ timeout: 15000 });
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/state-created.png` });
+    console.log('✅ UI updated to CREATED. Flow complete!');
   });
 
-  test('queue closed (BLOCKED): should show appropriate message', async ({ page }) => {
-    console.log('Testing BLOCKED state (queue is closed)...');
+  test('denied flow: NONE → PENDING → DENIED', async ({ page }) => {
+    // Ensure the user starts in a clean state
+    await resetQueue(backofficeToken);
 
-    // Navigate to appointments
-    const appointmentsTab = page.locator(
-      '[data-testid="tab-appointments"], ion-tab-button[tab="appointments"]'
+    // 1. Request appointment
+    await page.goto('/tabs/appointments');
+    await page.waitForLoadState('networkidle');
+    const requestButton = page.locator(
+      'ion-button:has-text("SOLICITAR CITA"), ion-button:has-text("Solicitar Cita")'
     );
+    await expect(requestButton.first()).toBeVisible();
+    page.on('dialog', dialog => dialog.accept());
+    await requestButton.first().click();
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('.badge-warning')).toBeVisible(); // Now in PENDING
 
-    if (await appointmentsTab.isVisible({ timeout: 10000 }).catch(() => false)) {
-      await appointmentsTab.click();
-      await expect(page).toHaveURL(/\/appointments/, { timeout: 10000 });
-      await page.waitForLoadState('networkidle', { timeout: 10000 });
+    // 2. Admin denies appointment
+    const denied = await denyNextAppointment(backofficeToken);
+    expect(denied, 'Admin failed to deny appointment via API').toBe(true);
 
-      // Check if queue is blocked
-      const blockedIndicator = page.locator(
-        'text=/Cola cerrada|Queue closed|No disponible|Not available|Cupos agotados/i'
-      );
+    // 3. Verify UI updates to DENIED state
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    const deniedBadge = page.locator(
+      '.badge-error:has-text("Rechazada"), .badge-error:has-text("Denied")'
+    );
+    await expect(deniedBadge).toBeVisible({ timeout: 10000 });
 
-      const isBlocked = await blockedIndicator
-        .first()
-        .isVisible({ timeout: 5000 })
-        .catch(() => false);
-
-      if (isBlocked) {
-        // Request button should be disabled
-        const requestButton = page.locator(
-          'button:has-text("Solicitar"), ion-button:has-text("Solicitar")'
-        );
-
-        if (
-          await requestButton
-            .first()
-            .isVisible({ timeout: 3000 })
-            .catch(() => false)
-        ) {
-          const isDisabled = await requestButton
-            .first()
-            .isDisabled()
-            .catch(() => true);
-          expect(
-            isDisabled,
-            'Request button should be disabled when queue is blocked'
-          ).toBeTruthy();
-        }
-
-        console.log('✅ BLOCKED state disables request');
-      } else {
-        console.log('ℹ️ Queue is not blocked');
-      }
-    }
+    // After being denied, the user should be able to request a new appointment
+    await expect(requestButton.first()).toBeVisible();
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/state-denied.png` });
+    console.log('✅ Denied flow verified.');
   });
 });

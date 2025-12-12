@@ -78,15 +78,23 @@ export default defineConfig({
     // 3. Set E2E_ANDROID=true environment variable
     // 4. Tests will run on real Android WebView
     // Example: E2E_ANDROID=true npm run test:e2e
-  ],
-  webServer: process.env.E2E_SKIP_SERVER
-    ? undefined
-    : {
-        command: `npx ng serve --configuration local --port ${PORT}`,
-        url: `${BASE_URL}`,
-        reuseExistingServer: !process.env.CI,
-        timeout: 120_000,
-        stdout: 'pipe',
-        stderr: 'pipe',
+    {
+      name: 'android-webview',
+      testMatch: /android-webview\.spec\.ts/,
+      use: {
+        // Android tests connect to a running app, so no device emulation is needed.
       },
+    },
+  ],
+  webServer:
+    process.env.E2E_ANDROID || process.env.E2E_SKIP_SERVER
+      ? undefined
+      : {
+          command: `npx ng serve --configuration local --port ${PORT}`,
+          url: `${BASE_URL}`,
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+          stdout: 'pipe',
+          stderr: 'pipe',
+        },
 });

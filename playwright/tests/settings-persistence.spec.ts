@@ -8,6 +8,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { restartApp } from '../helpers';
 
 test.describe('Settings Persistence', () => {
   test.beforeEach(async ({ page }) => {
@@ -27,139 +28,78 @@ test.describe('Settings Persistence', () => {
     }
   });
 
-  test('theme setting persists after page refresh', async ({ page }) => {
-    // Navigate to profile or settings
-    await page.click('[data-testid="tab-profile"], ion-tab-button[tab="profile"]');
+  test('theme setting persists after app restart', async ({ page }) => {
+    // Navigate to settings
+    await page.goto('/settings');
     await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
 
-    // Find settings link
-    const settingsLink = page.locator(
-      'ion-button:has-text("Configuración"), ion-button:has-text("Settings"), [href*="settings"]'
-    );
-
-    if (await settingsLink.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await settingsLink.click();
-      await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
-    } else {
-      // Try direct navigation
-      await page.goto('/settings');
-      await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
-    }
-
-    // Find theme toggle
     const themeToggle = page
-      .locator(
-        'ion-toggle:near(:text("Tema")), ion-toggle:near(:text("Theme")), ion-toggle:near(:text("Dark"))'
-      )
+      .locator('ion-toggle:near(:text("Tema")), ion-toggle:near(:text("Theme"))')
       .first();
+    await expect(themeToggle).toBeVisible({ timeout: 3000 });
 
-    if (await themeToggle.isVisible({ timeout: 3000 }).catch(() => false)) {
-      // Get current state
-      const isChecked = await themeToggle.evaluate((el: any) => el.checked);
+    // Get current state
+    const isChecked = await themeToggle.evaluate((el: any) => el.checked);
 
-      // Toggle theme
-      await themeToggle.click();
-      await page.waitForLoadState('networkidle', { timeout: 10000 });
+    // Toggle theme
+    await themeToggle.click();
+    await page.waitForLoadState('networkidle', { timeout: 10000 });
 
-      // Refresh page
-      await page.reload();
-      await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
+    // Restart app
+    await restartApp(page);
 
-      // Navigate back to settings
-      const settingsLinkAfterRefresh = page.locator(
-        'ion-button:has-text("Configuración"), ion-button:has-text("Settings")'
-      );
+    // Return to settings
+    await page.goto('/settings');
+    await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
 
-      if (await settingsLinkAfterRefresh.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await settingsLinkAfterRefresh.click();
-        await page.waitForLoadState('networkidle', { timeout: 10000 });
-      }
+    // Verify theme persisted
+    const newThemeToggle = page
+      .locator('ion-toggle:near(:text("Tema")), ion-toggle:near(:text("Theme"))')
+      .first();
+    const newIsChecked = await newThemeToggle.evaluate((el: any) => el.checked);
+    expect(newIsChecked).toBe(!isChecked);
 
-      // Verify toggle state persisted
-      const newThemeToggle = page
-        .locator('ion-toggle:near(:text("Tema")), ion-toggle:near(:text("Theme"))')
-        .first();
-
-      const newIsChecked = await newThemeToggle.evaluate((el: any) => el.checked);
-      expect(newIsChecked).toBe(!isChecked);
-
-      // Toggle back to original state (cleanup)
-      await newThemeToggle.click();
-      await page.waitForLoadState('networkidle', { timeout: 10000 });
-    }
+    // Cleanup: Toggle back to original state
+    await newThemeToggle.click();
+    await page.waitForLoadState('networkidle', { timeout: 10000 });
   });
 
-  test('language setting persists after app restart', async ({ page, context }) => {
+  test('language setting persists after app restart', async ({ page }) => {
     // Navigate to settings
-    await page.click('[data-testid="tab-profile"], ion-tab-button[tab="profile"]');
+    await page.goto('/settings');
     await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
 
-    const settingsLink = page.locator(
-      'ion-button:has-text("Configuración"), ion-button:has-text("Settings"), [href*="settings"]'
-    );
+    // Get current language
+    const getLang = () => page.evaluate(() => document.documentElement.lang);
+    const initialLang = await getLang();
 
-    if (await settingsLink.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await settingsLink.click();
-      await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
-    } else {
-      await page.goto('/settings');
-      await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
-    }
+    // Determine target language
+    const targetLang = initialLang === 'es' ? 'en' : 'es';
+    const targetLangLabel = initialLang === 'es' ? 'English' : 'Español';
 
-    // Find language selector
-    const languageButton = page
-      .locator('ion-button:has-text("Idioma"), ion-button:has-text("Language"), ion-select')
-      .first();
+    // Change language
+    await page.locator('ion-select:near(:text("Idioma"), :text("Language"))').click();
+    await page.locator(`ion-select-option:has-text("${targetLangLabel}")`).click();
+    await page.locator('ion-alert button:has-text("OK")').click();
+    await page.waitForLoadState('networkidle', { timeout: 10000 });
 
-    if (await languageButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      // Note: Get current language from UI
-      const currentLanguage = await page.evaluate(() => {
-        return document.querySelector('html')?.getAttribute('lang') || 'es';
-      });
+    // Verify language changed before restart
+    expect(await getLang()).toBe(targetLang);
 
-      console.log('Current language:', currentLanguage);
+    // Restart app
+    await restartApp(page);
 
-      // Click language selector
-      await languageButton.click();
-      await expect(page.locator('ion-popover, ion-select-popover, ion-action-sheet')).toBeVisible({
-        timeout: 5000,
-      });
+    // Verify language persisted
+    expect(await getLang()).toBe(targetLang);
 
-      // Select different language (if currently Spanish, choose English)
-      const targetLanguage = currentLanguage === 'es' ? 'English' : 'Español';
-      const languageOption = page.locator(
-        `text=${targetLanguage}, button:has-text("${targetLanguage}")`
-      );
-
-      if (await languageOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await languageOption.click();
-        await page.waitForLoadState('networkidle', { timeout: 10000 });
-
-        // Create new page (simulating app restart)
-        const newPage = await context.newPage();
-        await newPage.goto('/');
-
-        // Check if language persisted
-        const newLanguage = await newPage.evaluate(() => {
-          return document.querySelector('html')?.getAttribute('lang');
-        });
-
-        console.log('New language after restart:', newLanguage);
-
-        // Verify language actually changed
-        expect(
-          newLanguage && newLanguage !== currentLanguage,
-          'Language should change after selection'
-        ).toBeTruthy();
-
-        // Close new page
-        await newPage.close();
-
-        // Switch language back (cleanup)
-        await page.reload();
-        await page.waitForLoadState('networkidle', { timeout: 10000 });
-      }
-    }
+    // Cleanup: Revert to initial language
+    await page.goto('/settings');
+    await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
+    const initialLangLabel = initialLang === 'es' ? 'Español' : 'English';
+    await page.locator('ion-select:near(:text("Idioma"), :text("Language"))').click();
+    await page.locator(`ion-select-option:has-text("${initialLangLabel}")`).click();
+    await page.locator('ion-alert button:has-text("OK")').click();
+    await page.waitForLoadState('networkidle', { timeout: 10000 });
   });
 
   test('settings page is accessible from profile', async ({ page }) => {
