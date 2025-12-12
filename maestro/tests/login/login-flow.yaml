@@ -1,0 +1,21 @@
+appId: io.diabetactic.app
+name: Login Flow
+---
+- launchApp
+- takeScreenshot: welcome_screen.png
+- tapOn: "Let's Go|Vamos"
+- extendedWaitUntil:
+    visible: "User ID|Usuario"
+    timeout: 8000
+- tapOn: "User ID|Usuario"
+- inputText: "1000"
+- tapOn: "Password|Contraseña"
+- inputText: "tuvieja"
+- hideKeyboard
+- tapOn: "Login|Iniciar Sesión"
+- takeScreenshot: dashboard.png
+- extendedWaitUntil:
+    visible: "Statistics|Estadísticas"
+    timeout: 8000
+- assertVisible:
+    text: "Statistics|Estadísticas"
