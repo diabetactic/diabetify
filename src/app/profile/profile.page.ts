@@ -954,6 +954,13 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   /**
+   * Navigate to advanced settings page for glucose targets and notification scheduling
+   */
+  async goToSettings(): Promise<void> {
+    await this.router.navigate([ROUTES.SETTINGS]);
+  }
+
+  /**
    * Listen for language changes emitted by the translation service
    */
   private subscribeToLanguageChanges(): void {

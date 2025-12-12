@@ -773,6 +773,8 @@
     "autoTheme": "Automático",
     "glucoseUnit": "Unidad de Glucosa",
     "glucoseUnits": "Unidades de Glucosa",
+    "advancedSettings": "Configuración Avanzada",
+    "advancedSettingsDesc": "Objetivos de glucosa, recordatorios y más",
     "privacy": "Privacidad",
     "dataSharing": "Compartir Datos",
     "exportData": "Exportar Datos",
