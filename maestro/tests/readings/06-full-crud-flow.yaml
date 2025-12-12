@@ -1,0 +1,90 @@
+# ==========================================
+# Test: Full Readings CRUD Flow
+# Description: Covers Add, View, and Filter operations for glucose readings.
+# ==========================================
+
+appId: io.diabetactic.app
+env:
+  TEST_USER_ID: '1000'
+  TEST_USER_PASSWORD: 'tuvieja'
+  TEST_GLUCOSE_VALUE: '120'
+---
+# 1. LOGIN
+- runFlow: ../../flows/login.yaml
+
+# 2. NAVIGATE TO READINGS TAB
+- runFlow: ../../flows/navigate-readings.yaml
+
+# 3. VERIFY READINGS PAGE LOADED
+- extendedWaitUntil:
+    visible:
+      text: '.*Lecturas.*|.*Readings.*'
+    timeout: 10000
+
+# 4. TAP ADD BUTTON (FAB)
+- tapOn:
+    id: 'fab-add-reading'
+
+# 5. VERIFY ADD READING FORM LOADED
+- extendedWaitUntil:
+    visible:
+      text: '.*Agregar.*Lectura.*|.*Add.*Reading.*'
+    timeout: 3000
+
+# 6. ENTER GLUCOSE VALUE
+- tapOn:
+    id: 'glucose-value-input'
+- inputText: ${TEST_GLUCOSE_VALUE}
+- hideKeyboard
+
+# 7. SAVE READING
+- tapOn:
+    id: 'add-reading-save-btn'
+
+# 8. VERIFY READING APPEARS IN LIST
+- extendedWaitUntil:
+    visible:
+      text: '.*${TEST_GLUCOSE_VALUE}.*mg/dL.*'
+    timeout: 5000
+
+# 9. TAP ON THE NEW READING TO VIEW DETAILS
+- tapOn:
+    text: '.*${TEST_GLUCOSE_VALUE}.*mg/dL.*'
+
+# 10. VERIFY DETAIL MODAL OPENS
+- extendedWaitUntil:
+    visible:
+      text: '.*Detalles.*de.*Lectura.*|.*Reading.*Details.*'
+    timeout: 3000
+
+# 11. VERIFY GLUCOSE VALUE IN MODAL
+- assertVisible:
+    text: '.*${TEST_GLUCOSE_VALUE}.*mg/dL.*'
+
+# 12. CLOSE THE MODAL
+- tapOn:
+    text: '.*Cerrar.*|.*Close.*'
+
+# 13. TAP FILTER BUTTON
+- tapOn:
+    id: 'filter-button'
+
+# 14. VERIFY FILTER MODAL OPENED
+- extendedWaitUntil:
+    visible:
+      text: '.*Filtrar.*Lecturas.*|.*Filter.*Readings.*'
+    timeout: 3000
+
+# 15. SELECT "TODAY" FILTER
+- tapOn:
+    text: '.*Hoy.*|.*Today.*'
+
+# 16. APPLY FILTERS
+- tapOn:
+    text: '.*Aplicar.*|.*Apply.*'
+
+# 17. VERIFY LIST IS FILTERED
+- extendedWaitUntil:
+    visible:
+      text: '.*Mostrando.*1.*lectura.*|.*Showing.*1.*reading.*'
+    timeout: 5000
