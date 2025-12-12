@@ -55,7 +55,7 @@ The following MCP servers are configured and can be used for enhanced capabiliti
 | **zen**      | Multi-model AI collaboration      | `chat`, `thinkdeep`, `codereview`, `debug`, `analyze`, `consensus` |
 | **context7** | Library documentation lookup      | `resolve-library-id`, `get-library-docs`                           |
 | **tavily**   | Web search and content extraction | `tavily-search`, `tavily-extract`, `tavily-crawl`                  |
-| **circleci** | CI/CD pipeline management         | `get_build_failure_logs`, `run_pipeline`, `config_helper`          |
+| **github**   | GitHub repository management      | `list_issues`, `create_pull_request`, `get_file_contents`          |
 
 **Zen MCP Models Available:**
 
@@ -197,7 +197,7 @@ npm run cap:update            # Update Capacitor plugins
 ### Testing & Quality
 
 - **Jest**: 29.7.0 (unit tests)
-- **jest-junit**: For CI test results (visible in CircleCI UI)
+- **jest-junit**: For CI test results (visible in GitHub Actions)
 - **Playwright**: 1.48.0 (E2E tests)
 - **@axe-core/playwright**: 4.11.0 (accessibility)
 - **ESLint**: 9.0.0 + TypeScript ESLint 8.0.0
@@ -334,7 +334,7 @@ All pages use Angular standalone components with Ionic standalone imports:
 - **Test location**: Spec files alongside source (`*.spec.ts`)
 - **Coverage**: Run `npm run test:coverage` for HTML reports in `coverage/`
 - **Fake IndexedDB**: `fake-indexeddb` package for Dexie testing
-- **CI Results**: jest-junit configured for CircleCI test visibility
+- **CI Results**: jest-junit configured for GitHub Actions test visibility
 
 ### E2E Tests (Playwright 1.48.0)
 
@@ -597,48 +597,44 @@ App uses lazy-loaded routes with `OnboardingGuard` protecting authenticated page
 
 ---
 
-## CI/CD (CircleCI)
+## CI/CD (GitHub Actions)
 
-Configuration in `.circleci/config.yml`. Two workflows:
+Configuration in `.github/workflows/`. Three workflows:
 
-### CI Workflow (on all pushes)
+### CI Workflow (`ci.yml`)
 
-- **test** - Lint + Unit tests (with jest-junit for CircleCI test visibility)
-- **build-web** - Production build (persists www/ to workspace)
-- **build-android-api30/33** - Android smoke tests (master only, uses workspace from build-web)
-- **maestro-tests** - E2E integration tests with real Heroku backend (master only)
-- **deploy-netlify** - Deploy to Netlify (master only, uses workspace)
+Runs on all pushes to master/main/develop and PRs:
 
-### Release Workflow (manual)
+- **test** - Lint + Unit tests with coverage
+- **build-web** - Production build (uploads www/ artifact)
+- **build-android** - Android debug build (master only)
 
-- Requires approval in CircleCI UI
+### Android Workflow (`android.yml`)
+
+Runs on pushes to master:
+
+- **build-android** - Full Android build with caching
+- **upload-artifact** - APK available for download
+
+### Release Workflow (`release.yml`)
+
+Manual trigger for production releases:
+
 - Builds versioned APK: `diabetactic-v{version}.apk`
-- APK downloadable from CircleCI artifacts
+- Creates GitHub Release with APK attached
 
-### Optimizations Applied
+### Key Features
 
-- **jest-junit**: Test results visible in CircleCI UI
-- **Gradle caching**: Faster Android builds
-- **Workspace reuse**: Android jobs don't rebuild www/
-- **Simplified deploy-netlify**: No redundant checkout/install
+- **Node.js 20**: Consistent across all jobs
+- **npm ci**: Fast, reproducible installs
+- **DeepSource**: Coverage reporting integration
+- **Artifact uploads**: Build outputs preserved for 7 days
 
-### Environment Variables (in CircleCI)
+### Environment Variables (GitHub Secrets)
 
-- `NETLIFY_SITE_ID` - Netlify site ID
-- `NETLIFY_AUTH_TOKEN` - Netlify deploy token
-
-### Using CircleCI MCP
-
-```typescript
-// Get build failure logs
-mcp__circleci__get_build_failure_logs({ projectSlug: 'gh/org/repo', branch: 'master' });
-
-// Validate config
-mcp__circleci__config_helper({ configFile: '...' });
-
-// Trigger pipeline
-mcp__circleci__run_pipeline({ projectSlug: 'gh/org/repo', branch: 'feature' });
-```
+- `DEEPSOURCE_DSN` - DeepSource coverage reporting
+- `NETLIFY_SITE_ID` - Netlify site ID (optional)
+- `NETLIFY_AUTH_TOKEN` - Netlify deploy token (optional)
 
 ---
 
@@ -756,8 +752,8 @@ npm run build:analyze   # Analyze bundle size
 | `angular.json`                                    | Angular build configurations         |
 | `capacitor.config.ts`                             | Capacitor native bridge config       |
 | `playwright.config.ts`                            | E2E test configuration               |
-| `.circleci/config.yml`                            | CI/CD pipeline configuration         |
+| `.github/workflows/ci.yml`                        | CI/CD pipeline configuration         |
 
 ---
 
-_Last updated: 2025-12-04_
+_Last updated: 2025-12-12_

@@ -155,14 +155,14 @@ playwright/
 
 ## CI/CD Integration
 
-Tests run automatically in CircleCI on push to master:
+Tests run automatically in GitHub Actions on push to master/main:
 
-- Lint + Unit tests
-- E2E tests (mobile-chromium)
-- Accessibility audit
+- Lint + Unit tests (with coverage)
+- Production build
+- E2E tests (sharded Playwright)
 - Netlify deployment
 
-See `.circleci/config.yml` for details.
+See `.github/workflows/ci.yml` for details.
 
 ## Troubleshooting
 
