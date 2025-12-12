@@ -158,6 +158,9 @@
             <a href="#features" class="hover:text-primary-600 text-gray-600 transition-colors"
               >Funciones</a
             >
+            <a href="#gallery" class="hover:text-primary-600 text-gray-600 transition-colors"
+              >Capturas</a
+            >
             <a href="#streaks" class="hover:text-primary-600 text-gray-600 transition-colors"
               >Rachas</a
             >
@@ -233,73 +236,15 @@
             </div>
           </div>
 
-          <!-- Right Content - Phone Mockup -->
+          <!-- Right Content - Phone Mockup with Real Screenshots -->
           <div class="phone-mockup flex justify-center lg:justify-end">
             <div class="phone-screen floating w-[300px] rounded-[3rem] bg-gray-900 p-3">
               <div class="h-[600px] overflow-hidden rounded-[2.5rem] bg-white">
-                <!-- App Header -->
-                <div class="bg-primary-600 px-6 py-8 text-white">
-                  <div class="flex items-start justify-between">
-                    <div>
-                      <p class="text-primary-100 text-sm">Buenos días</p>
-                      <h2 class="text-2xl font-bold">María</h2>
-                    </div>
-                    <div
-                      class="flex h-12 w-12 items-center justify-center rounded-full bg-white/20"
-                    >
-                      <i data-lucide="user" class="h-6 w-6"></i>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- App Content -->
-                <div class="-mt-4 px-4">
-                  <!-- Current Reading Card -->
-                  <div class="mb-4 rounded-2xl bg-white p-6 shadow-lg">
-                    <div class="mb-4 flex items-center justify-between">
-                      <span class="text-sm text-gray-500">Última lectura</span>
-                      <span class="text-xs text-gray-400">hace 2h</span>
-                    </div>
-                    <div class="flex items-end space-x-2">
-                      <span class="text-primary-600 text-5xl font-bold">118</span>
-                      <span class="pb-2 text-gray-500">mg/dL</span>
-                    </div>
-                    <div
-                      class="mt-3 inline-flex items-center space-x-1 rounded-full bg-green-100 px-3 py-1 text-sm text-green-700"
-                    >
-                      <i data-lucide="check-circle" class="h-4 w-4"></i>
-                      <span>En rango</span>
-                    </div>
-                  </div>
-
-                  <!-- Stats Grid -->
-                  <div class="mb-4 grid grid-cols-2 gap-3">
-                    <div class="rounded-xl bg-amber-50 p-4">
-                      <div class="mb-2 flex items-center space-x-2">
-                        <i data-lucide="flame" class="h-5 w-5 text-amber-500"></i>
-                        <span class="text-sm text-gray-600">Racha</span>
-                      </div>
-                      <span class="text-2xl font-bold text-gray-800">7 días</span>
-                    </div>
-                    <div class="rounded-xl bg-blue-50 p-4">
-                      <div class="mb-2 flex items-center space-x-2">
-                        <i data-lucide="target" class="h-5 w-5 text-blue-500"></i>
-                        <span class="text-sm text-gray-600">En rango</span>
-                      </div>
-                      <span class="text-2xl font-bold text-gray-800">85%</span>
-                    </div>
-                  </div>
-
-                  <!-- Quick Actions -->
-                  <div class="flex space-x-3">
-                    <button
-                      class="bg-primary-600 flex flex-1 items-center justify-center space-x-2 rounded-xl py-3 text-white"
-                    >
-                      <i data-lucide="plus" class="h-5 w-5"></i>
-                      <span class="font-medium">Nueva Lectura</span>
-                    </button>
-                  </div>
-                </div>
+                <img
+                  src="assets/screenshots/dashboard.png"
+                  alt="Diabetactic Dashboard - Panel de Control con rachas y estadísticas"
+                  class="h-full w-full object-cover object-top"
+                />
               </div>
             </div>
           </div>
@@ -414,6 +359,79 @@
               Soporte para autenticación mediante OAuth con Tidepool, plataforma de datos de
               diabetes de código abierto.
             </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screenshots Gallery Section -->
+    <section id="gallery" class="bg-gray-50 py-24">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mb-16 text-center">
+          <h2 class="font-display mb-4 text-4xl font-bold text-gray-900">Capturas de Pantalla</h2>
+          <p class="mx-auto max-w-2xl text-xl text-gray-600">
+            Interfaz de usuario de la aplicación móvil
+          </p>
+        </div>
+
+        <div class="grid gap-8 md:grid-cols-3">
+          <!-- Screenshot 1 - Dashboard -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/dashboard.png"
+                alt="Panel de Control - Dashboard con rachas y estadísticas"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900">Panel de Control</h3>
+              <p class="text-sm text-gray-600">
+                Dashboard principal con sistema de rachas, tiempo en rango y estadísticas de
+                lecturas.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 2 - Readings -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/readings.png"
+                alt="Lista de Lecturas - Historial de mediciones de glucosa"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900">Lecturas de Glucosa</h3>
+              <p class="text-sm text-gray-600">
+                Historial de mediciones con categorización por fecha, indicadores de estado y
+                búsqueda.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 3 - Appointments -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/appointments.png"
+                alt="Gestión de Citas - Sistema de solicitud de citas médicas"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900">Gestión de Citas</h3>
+              <p class="text-sm text-gray-600">
+                Sistema de solicitud de citas médicas con historial de citas anteriores.
+              </p>
+            </div>
           </div>
         </div>
       </div>
