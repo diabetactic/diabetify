@@ -1,0 +1,9 @@
+device:
+  platform: android
+  connection: adb
+  package: io.diabetactic.app
+
+settings:
+  screenshot_quality: high
+  element_detection: ai
+  timeout: 30000
