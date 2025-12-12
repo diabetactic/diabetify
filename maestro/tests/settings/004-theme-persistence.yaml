@@ -1,0 +1,35 @@
+appId: io.diabetactic.app
+name: "Settings - Theme Persistence"
+tags:
+  - settings
+  - theme
+  - persistence
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+
+- runFlow:
+    file: ../../flows/login-and-navigate-to-settings.yaml
+
+- mcp__mobile__screenshot:
+    name: "theme_before"
+
+- tapOn:
+    id: "theme-toggle"
+
+- mcp__mobile__screenshot:
+    name: "theme_after"
+
+- stopApp
+
+- launchApp:
+    clearState: false
+
+- runFlow:
+    file: ../../flows/navigate-profile.yaml
+- tapOn:
+    id: "settings-button"
+
+- runFlow:
+    file: ../../flows/assert-dark-theme.yaml

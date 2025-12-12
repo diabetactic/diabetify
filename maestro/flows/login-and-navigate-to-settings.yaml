@@ -1,0 +1,4 @@
+- runFlow: login.yaml
+- runFlow: navigate-profile.yaml
+- tapOn:
+    id: "settings-button"
