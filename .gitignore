@@ -295,6 +295,7 @@ nanobanana-output/
 
 # Screenshot directories (auto-generated during testing)
 screenshots/
+!docs/assets/screenshots/
 
 # Local APK and build outputs
 builds/
