@@ -12,6 +12,10 @@ module.exports = {
     '<rootDir>/src/app/tests/integration/',
     // Exclude environment files (not tests)
     '<rootDir>/src/environments/',
+    // Exclude WebdriverIO E2E tests (run with wdio, not Jest)
+    '<rootDir>/webdriverio/',
+    '<rootDir>/e2e-wdio/',
+    '<rootDir>/test/',
   ],
   collectCoverageFrom: [
     'src/app/**/*.ts',
