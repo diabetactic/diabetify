@@ -13,7 +13,7 @@ Diabetactic is an Ionic/Angular mobile app for diabetes glucose management.
 ```bash
 npm install              # Install dependencies
 npm run build:prod       # Production build
-npm test                 # Run Jest unit tests (1012 tests)
+npm test                 # Run Jest unit tests
 npm run lint             # ESLint + Stylelint
 ```
 
@@ -146,7 +146,7 @@ ENV=cloud npm start     # Heroku production
 
 ## Pre-Commit Checklist
 
-- [ ] `npm test` passes (all 1012 tests)
+- [ ] `npm test` passes
 - [ ] `npm run lint` has no errors
 - [ ] Translations added to both language files
 - [ ] PR targets correct branch (NOT master)

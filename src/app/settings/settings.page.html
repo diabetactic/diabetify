@@ -182,6 +182,7 @@
           [checked]="notificationsEnabled"
           (ionChange)="onNotificationsToggle($event)"
           slot="end"
+          [attr.aria-label]="'settings.notifications.enable' | translate"
         ></ion-toggle>
       </ion-item>
 
@@ -209,6 +210,7 @@
             [checked]="reminder.enabled"
             (ionChange)="onReminderToggle(reminder, $event)"
             slot="end"
+            [attr.aria-label]="reminder.label"
           ></ion-toggle>
         </ion-item>
 

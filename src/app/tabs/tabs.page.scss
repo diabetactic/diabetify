@@ -2,6 +2,34 @@
 // Most styles migrated to Tailwind v4 utilities
 // Keeping only Ionic-specific CSS variables that can't be replaced
 
+// Floating status badges for demo visibility
+.status-badges {
+  position: fixed;
+  top: env(safe-area-inset-top, 8px);
+  right: 8px;
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: rgb(255 255 255 / 90%);
+  border-radius: 8px;
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+  backdrop-filter: blur(8px);
+}
+
+:host-context(.dark),
+:host-context(.ion-palette-dark),
+:host-context([data-theme='dark']) {
+  .status-badges {
+    background: rgb(30 30 46 / 90%);
+    /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
+    box-shadow: 0 2px 8px rgb(0 0 0 / 40%);
+  }
+}
+
 ion-tab-bar {
   --background: #fff;
   --border: 1px solid #e5e7eb;

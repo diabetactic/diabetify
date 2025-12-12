@@ -15,6 +15,23 @@ import { IonicRouteStrategy } from '@ionic/angular';
 import { importProvidersFrom, LOCALE_ID } from '@angular/core';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { environment } from './environments/environment';
+
+/**
+ * Production Console Filter
+ * Suppresses console.log/debug/info in production for clean demo experience.
+ * Preserves console.warn and console.error for debugging issues.
+ */
+if (environment.production) {
+  // Store original console methods
+  const noop = () => {};
+
+  // Override verbose console methods in production
+  console.log = noop;
+  console.debug = noop;
+  console.info = noop;
+  // Keep console.warn and console.error for important messages
+}
 
 // Ionicons - must be registered globally BEFORE app bootstrap for standalone components
 // OPTIMIZED: Only 18 actually used icons (removed 86 unused icons, ~80KB savings)

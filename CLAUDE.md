@@ -141,7 +141,7 @@ npm run deploy:device         # Build and force reinstall APK
 npm run deploy:apk            # Build and show APK path
 
 # Testing (Jest + Playwright)
-npm test                      # Run all unit tests (Jest) - 1012 passed, 0 skipped
+npm test                      # Run all unit tests (Jest)
 npm run test:unit             # Run unit tests (same as test)
 npm run test:watch            # Watch mode for unit tests
 npm run test:coverage         # Unit tests with coverage report
@@ -320,10 +320,10 @@ All pages use Angular standalone components with Ionic standalone imports:
 
 ## Testing
 
-### Test Suite Status (as of 2025-12-04)
+### Test Suite Status
 
-- **1012 tests passed**, 0 skipped, 0 failed
-- **45 test suites**
+- **2060+ tests** across 69 test suites
+- Unit tests (Jest) + E2E tests (Playwright) + Mobile tests (Maestro)
 
 ### Unit Tests (Jest 29.7.0)
 

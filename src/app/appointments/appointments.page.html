@@ -6,6 +6,7 @@
         id="create-appointment-btn"
         (click)="createAppointment()"
         [disabled]="!canCreateAppointment"
+        [attr.aria-label]="'appointments.actions.create' | translate"
       >
         <app-icon slot="icon-only" name="add"></app-icon>
       </ion-button>
@@ -164,6 +165,7 @@
           (click)="onRequestAppointment()"
           [disabled]="requestingAppointment"
           class="w-full"
+          [attr.aria-label]="'appointments.queue.request' | translate"
         >
           <app-icon name="send" slot="start" *ngIf="!requestingAppointment"></app-icon>
           <span
