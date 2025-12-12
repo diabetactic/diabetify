@@ -205,11 +205,12 @@
 
             <div class="flex flex-col gap-4 sm:flex-row">
               <a
-                href="https://github.com/diabetactic/diabetify/releases"
+                href="https://github.com/diabetactic/diabetify/releases/download/v0.0.1/diabetactic-v0.0.1.apk"
                 class="bg-primary-600 hover:bg-primary-700 inline-flex items-center justify-center space-x-2 rounded-2xl px-8 py-4 font-semibold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+                aria-label="Descargar Diabetactic versión 0.0.1 para Android (APK de 24MB)"
               >
                 <i data-lucide="download" class="h-5 w-5"></i>
-                <span>Descargar APK</span>
+                <span>Descargar APK v0.0.1</span>
               </a>
               <a
                 href="https://diabetactic.netlify.app"
@@ -374,7 +375,7 @@
           </p>
         </div>
 
-        <div class="grid gap-8 md:grid-cols-3">
+        <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <!-- Screenshot 1 - Dashboard -->
           <div
             class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl"
@@ -415,7 +416,26 @@
             </div>
           </div>
 
-          <!-- Screenshot 3 - Appointments -->
+          <!-- Screenshot 3 - Bolus Calculator -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/bolus-calculator.png"
+                alt="Calculadora de Bolos - Cálculo de dosis de insulina"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900">Calculadora de Bolos</h3>
+              <p class="text-sm text-gray-600">
+                Cálculo de dosis de insulina basado en carbohidratos y factor de sensibilidad.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 4 - Appointments -->
           <div
             class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl"
           >
@@ -430,6 +450,44 @@
               <h3 class="mb-2 text-lg font-bold text-gray-900">Gestión de Citas</h3>
               <p class="text-sm text-gray-600">
                 Sistema de solicitud de citas médicas con historial de citas anteriores.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 5 - Profile Dark Mode -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/profile-dark.png"
+                alt="Perfil de Usuario - Modo oscuro"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900">Perfil (Modo Oscuro)</h3>
+              <p class="text-sm text-gray-600">
+                Información del usuario y configuración personal con tema oscuro.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 6 - Settings Dark -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/settings-dark.png"
+                alt="Configuración - Ajustes de la aplicación en modo oscuro"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900">Configuración</h3>
+              <p class="text-sm text-gray-600">
+                Ajustes de tema, idioma, unidades y preferencias de sincronización.
               </p>
             </div>
           </div>
