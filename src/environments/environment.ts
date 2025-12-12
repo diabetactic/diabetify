@@ -70,7 +70,7 @@ export const environment = {
     uploadUrl: 'https://api.tidepool.org/data',
 
     // OAuth2 Configuration
-    // TODO: Replace with actual client ID from Tidepool developer portal
+    // Client ID for Tidepool authentication (auth-only integration)
     clientId: 'diabetactic-mobile-dev',
 
     // Redirect URI for OAuth flow (must be registered with Tidepool)

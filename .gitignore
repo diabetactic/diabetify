@@ -245,6 +245,8 @@ skills/
 
 # Temp files
 *.apk
+# Allow APK in docs for landing page download
+!docs/*.apk
 server.pid
 prpm.lock
 

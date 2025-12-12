@@ -17,6 +17,8 @@ import { AppointmentService } from '../core/services/appointment.service';
 import { TranslationService } from '../core/services/translation.service';
 import { AppointmentQueueStateResponse } from '../core/models/appointment.model';
 import { environment } from '../../environments/environment';
+import { EnvBadgeComponent } from '../shared/components/env-badge/env-badge.component';
+import { SyncStatusComponent } from '../shared/components/sync-status/sync-status.component';
 
 @Component({
   selector: 'app-tabs',
@@ -32,6 +34,8 @@ import { environment } from '../../environments/environment';
     IonFab,
     IonFabButton,
     TranslateModule,
+    EnvBadgeComponent,
+    SyncStatusComponent,
   ],
 })
 export class TabsPage implements OnInit, OnDestroy {
