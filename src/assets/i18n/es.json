@@ -1269,7 +1269,7 @@
       "link": "Regístrate aquí"
     },
     "footer": {
-      "copyright": "© 2025 Diabetactic • v1.0.0",
+      "copyright": "© 2025 Diabetactic • v0.0.1",
       "links": {
         "terms": "Términos",
         "privacy": "Privacidad",
@@ -1493,6 +1493,7 @@
     "timesMeasured": "Total de Lecturas",
     "days": "días",
     "day": "día",
+    "toNextLevel": "para",
     "keepGoing": "¡Sigue así, lo estás haciendo genial!",
     "levels": {
       "starter": "Empezando",

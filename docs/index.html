@@ -13,6 +13,12 @@
       content="diabetes, glucosa, FIUBA, trabajo profesional, ingeniería informática, aplicación móvil"
     />
 
+    <!-- SEO Meta Tags -->
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#16a34a" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#22c55e" media="(prefers-color-scheme: dark)" />
+    <link rel="canonical" href="https://diabetactic.github.io/diabetify/" />
+
     <!-- Open Graph / Social Media -->
     <meta property="og:title" content="Diabetactic - Trabajo Profesional FIUBA" />
     <meta
@@ -21,6 +27,17 @@
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://diabetactic.github.io/diabetify/" />
+    <meta
+      property="og:image"
+      content="https://diabetactic.github.io/diabetify/assets/screenshots/dashboard.png"
+    />
+    <meta property="og:image:width" content="780" />
+    <meta property="og:image:height" content="1688" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:image"
+      content="https://diabetactic.github.io/diabetify/assets/screenshots/dashboard.png"
+    />
 
     <!-- Favicon -->
     <link
@@ -37,6 +54,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             fontFamily: {
@@ -141,9 +159,11 @@
     </style>
   </head>
 
-  <body class="font-sans antialiased">
+  <body
+    class="bg-white font-sans text-gray-900 antialiased transition-colors dark:bg-slate-900 dark:text-slate-100"
+  >
     <!-- Navigation -->
-    <nav class="glass fixed z-50 w-full">
+    <nav class="glass dark:glass-dark fixed z-50 w-full">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
           <div class="flex items-center space-x-3">
@@ -152,58 +172,147 @@
             >
               <i data-lucide="activity" class="h-6 w-6 text-white"></i>
             </div>
-            <span class="font-display text-xl font-bold text-gray-800">Diabetactic</span>
+            <span class="font-display text-xl font-bold text-gray-800 dark:text-white"
+              >Diabetactic</span
+            >
           </div>
           <div class="hidden items-center space-x-8 md:flex">
-            <a href="#features" class="hover:text-primary-600 text-gray-600 transition-colors"
+            <a
+              href="#features"
+              class="hover:text-primary-600 dark:hover:text-primary-400 text-gray-600 transition-colors dark:text-gray-300"
               >Funciones</a
             >
-            <a href="#gallery" class="hover:text-primary-600 text-gray-600 transition-colors"
+            <a
+              href="#gallery"
+              class="hover:text-primary-600 dark:hover:text-primary-400 text-gray-600 transition-colors dark:text-gray-300"
               >Capturas</a
             >
-            <a href="#streaks" class="hover:text-primary-600 text-gray-600 transition-colors"
+            <a
+              href="#streaks"
+              class="hover:text-primary-600 dark:hover:text-primary-400 text-gray-600 transition-colors dark:text-gray-300"
               >Rachas</a
             >
-            <a href="#tech" class="hover:text-primary-600 text-gray-600 transition-colors"
+            <a
+              href="#tech"
+              class="hover:text-primary-600 dark:hover:text-primary-400 text-gray-600 transition-colors dark:text-gray-300"
               >Tecnología</a
             >
+            <!-- Theme Toggle -->
+            <button
+              id="theme-toggle"
+              class="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
+              aria-label="Cambiar tema"
+            >
+              <i data-lucide="sun" class="h-5 w-5 dark:hidden"></i>
+              <i data-lucide="moon" class="hidden h-5 w-5 dark:block"></i>
+            </button>
             <a
               href="https://github.com/diabetactic/diabetify"
               target="_blank"
-              class="flex items-center space-x-2 rounded-full bg-gray-900 px-4 py-2 text-white transition-colors hover:bg-gray-800"
+              class="flex items-center space-x-2 rounded-full bg-gray-900 px-4 py-2 text-white transition-colors hover:bg-gray-800 dark:bg-slate-700 dark:hover:bg-slate-600"
             >
               <i data-lucide="github" class="h-4 w-4"></i>
               <span>GitHub</span>
             </a>
           </div>
+          <!-- Mobile Menu Button -->
+          <button
+            id="mobile-menu-btn"
+            class="rounded-lg p-2 text-gray-600 dark:text-gray-300 md:hidden"
+            aria-label="Abrir menú"
+          >
+            <i data-lucide="menu" class="h-6 w-6"></i>
+          </button>
         </div>
       </div>
     </nav>
 
+    <!-- Mobile Menu Drawer -->
+    <div id="mobile-menu" class="fixed inset-0 z-[60] hidden md:hidden">
+      <div class="absolute inset-0 bg-black/50" id="mobile-menu-backdrop"></div>
+      <nav class="absolute right-0 top-0 h-full w-64 bg-white p-6 shadow-xl dark:bg-slate-900">
+        <div class="mb-6 flex justify-end">
+          <button
+            id="mobile-menu-close"
+            class="p-2 text-gray-600 dark:text-gray-300"
+            aria-label="Cerrar menú"
+          >
+            <i data-lucide="x" class="h-6 w-6"></i>
+          </button>
+        </div>
+        <div class="flex flex-col space-y-4">
+          <a
+            href="#features"
+            class="hover:text-primary-600 dark:hover:text-primary-400 text-lg text-gray-700 dark:text-gray-200"
+            >Funciones</a
+          >
+          <a
+            href="#gallery"
+            class="hover:text-primary-600 dark:hover:text-primary-400 text-lg text-gray-700 dark:text-gray-200"
+            >Capturas</a
+          >
+          <a
+            href="#streaks"
+            class="hover:text-primary-600 dark:hover:text-primary-400 text-lg text-gray-700 dark:text-gray-200"
+            >Rachas</a
+          >
+          <a
+            href="#tech"
+            class="hover:text-primary-600 dark:hover:text-primary-400 text-lg text-gray-700 dark:text-gray-200"
+            >Tecnología</a
+          >
+          <hr class="border-gray-200 dark:border-slate-700" />
+          <button
+            id="mobile-theme-toggle"
+            class="flex items-center space-x-2 text-lg text-gray-700 dark:text-gray-200"
+          >
+            <i data-lucide="sun" class="h-5 w-5 dark:hidden"></i>
+            <i data-lucide="moon" class="hidden h-5 w-5 dark:block"></i>
+            <span class="dark:hidden">Modo oscuro</span>
+            <span class="hidden dark:inline">Modo claro</span>
+          </button>
+          <a
+            href="https://github.com/diabetactic/diabetify"
+            target="_blank"
+            class="flex items-center space-x-2 text-lg text-gray-700 dark:text-gray-200"
+          >
+            <i data-lucide="github" class="h-5 w-5"></i>
+            <span>GitHub</span>
+          </a>
+        </div>
+      </nav>
+    </div>
+
     <!-- Hero Section -->
-    <section class="gradient-bg min-h-screen overflow-hidden pb-16 pt-24">
+    <section
+      class="gradient-bg min-h-screen overflow-hidden pb-16 pt-24 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900"
+    >
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="grid items-center gap-12 lg:grid-cols-2">
           <!-- Left Content -->
           <div class="space-y-8">
             <div
-              class="inline-flex items-center space-x-2 rounded-full bg-white/80 px-4 py-2 shadow-sm"
+              class="inline-flex items-center space-x-2 rounded-full bg-white/80 px-4 py-2 shadow-sm dark:bg-slate-800/80"
             >
               <span class="bg-primary-500 h-2 w-2 animate-pulse rounded-full"></span>
-              <span class="text-sm font-medium text-gray-700">Trabajo Profesional - FIUBA</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >Trabajo Profesional - FIUBA</span
+              >
             </div>
 
-            <h1 class="font-display text-5xl font-bold leading-tight text-gray-900 md:text-6xl">
+            <h1
+              class="font-display text-5xl font-bold leading-tight text-gray-900 dark:text-white md:text-6xl"
+            >
               Diabetactic
             </h1>
 
-            <p class="text-xl leading-relaxed text-gray-600">
+            <p class="text-xl leading-relaxed text-gray-600 dark:text-gray-300">
               Aplicación móvil para el registro y seguimiento de niveles de glucosa en personas con
               diabetes. Desarrollada como Trabajo Profesional para la carrera de Ingeniería en
               Informática de la Facultad de Ingeniería de la Universidad de Buenos Aires (FIUBA).
             </p>
 
-            <div class="flex flex-col gap-4 sm:flex-row">
+            <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
               <a
                 href="diabetactic-v0.0.1.apk"
                 class="bg-primary-600 hover:bg-primary-700 inline-flex items-center justify-center space-x-2 rounded-2xl px-8 py-4 font-semibold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
@@ -215,25 +324,48 @@
               </a>
               <a
                 href="https://scintillating-crisp-431d20.netlify.app"
-                class="inline-flex items-center justify-center space-x-2 rounded-2xl bg-white px-8 py-4 font-semibold text-gray-800 shadow-lg transition-all hover:-translate-y-1 hover:bg-gray-50 hover:shadow-xl"
+                class="inline-flex items-center justify-center space-x-2 rounded-2xl bg-white px-8 py-4 font-semibold text-gray-800 shadow-lg transition-all hover:-translate-y-1 hover:bg-gray-50 hover:shadow-xl dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700"
               >
                 <i data-lucide="globe" class="h-5 w-5"></i>
                 <span>Versión Web</span>
               </a>
+              <!-- Play Store Coming Soon -->
+              <span
+                class="inline-flex cursor-not-allowed items-center justify-center space-x-3 rounded-2xl bg-slate-800 px-6 py-4 text-white opacity-75 dark:bg-slate-700"
+                title="Próximamente disponible"
+              >
+                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"
+                  />
+                </svg>
+                <div class="text-left">
+                  <div class="text-xs opacity-75">Próximamente en</div>
+                  <div class="text-sm font-semibold">Google Play</div>
+                </div>
+              </span>
             </div>
 
-            <div class="flex items-center space-x-8 pt-4">
+            <div class="flex flex-wrap items-center gap-4 pt-4 sm:gap-8">
               <div class="flex items-center space-x-2">
-                <i data-lucide="shield-check" class="text-primary-600 h-5 w-5"></i>
-                <span class="text-sm text-gray-600">Almacenamiento local seguro</span>
+                <i
+                  data-lucide="shield-check"
+                  class="text-primary-600 dark:text-primary-400 h-5 w-5"
+                ></i>
+                <span class="text-sm text-gray-600 dark:text-gray-400"
+                  >Almacenamiento local seguro</span
+                >
               </div>
               <div class="flex items-center space-x-2">
-                <i data-lucide="wifi-off" class="text-primary-600 h-5 w-5"></i>
-                <span class="text-sm text-gray-600">Funcionalidad offline</span>
+                <i
+                  data-lucide="wifi-off"
+                  class="text-primary-600 dark:text-primary-400 h-5 w-5"
+                ></i>
+                <span class="text-sm text-gray-600 dark:text-gray-400">Funcionalidad offline</span>
               </div>
               <div class="flex items-center space-x-2">
-                <i data-lucide="code-2" class="text-primary-600 h-5 w-5"></i>
-                <span class="text-sm text-gray-600">Código abierto</span>
+                <i data-lucide="code-2" class="text-primary-600 dark:text-primary-400 h-5 w-5"></i>
+                <span class="text-sm text-gray-600 dark:text-gray-400">Código abierto</span>
               </div>
             </div>
           </div>
@@ -241,7 +373,7 @@
           <!-- Right Content - Phone Mockup with Real Screenshots -->
           <div class="phone-mockup flex justify-center lg:justify-end">
             <div class="phone-screen floating w-[300px] rounded-[3rem] bg-gray-900 p-3">
-              <div class="h-[600px] overflow-hidden rounded-[2.5rem] bg-white">
+              <div class="aspect-[9/15] overflow-hidden rounded-[2.5rem] bg-white">
                 <img
                   src="assets/screenshots/dashboard.png"
                   alt="Diabetactic Dashboard - Panel de Control con rachas y estadísticas"
@@ -255,13 +387,13 @@
     </section>
 
     <!-- Features Section -->
-    <section id="features" class="bg-white py-24">
+    <section id="features" class="bg-white py-24 dark:bg-slate-900">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="mb-16 text-center">
-          <h2 class="font-display mb-4 text-4xl font-bold text-gray-900">
+          <h2 class="font-display mb-4 text-4xl font-bold text-gray-900 dark:text-white">
             Funcionalidades Principales
           </h2>
-          <p class="mx-auto max-w-2xl text-xl text-gray-600">
+          <p class="mx-auto max-w-2xl text-xl text-gray-600 dark:text-gray-300">
             Módulos desarrollados para cubrir las necesidades de gestión de diabetes
           </p>
         </div>
@@ -269,15 +401,17 @@
         <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           <!-- Feature 1 -->
           <div
-            class="feature-card from-primary-50 border-primary-100 rounded-3xl border bg-gradient-to-br to-white p-8"
+            class="feature-card from-primary-50 dark:from-primary-900/20 border-primary-100 dark:border-primary-800/30 rounded-3xl border bg-gradient-to-br to-white p-8 dark:to-slate-800"
           >
             <div
               class="bg-primary-500 mb-6 flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg"
             >
               <i data-lucide="droplet" class="h-7 w-7 text-white"></i>
             </div>
-            <h3 class="mb-3 text-xl font-bold text-gray-900">Registro de Lecturas</h3>
-            <p class="text-gray-600">
+            <h3 class="mb-3 text-xl font-bold text-gray-900 dark:text-white">
+              Registro de Lecturas
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
               Permite registrar mediciones de glucosa con contexto de comidas, notas adicionales y
               almacenamiento persistente en IndexedDB.
             </p>
@@ -285,15 +419,17 @@
 
           <!-- Feature 2 -->
           <div
-            class="feature-card rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-8"
+            class="feature-card rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-8 dark:border-blue-800/30 dark:from-blue-900/20 dark:to-slate-800"
           >
             <div
               class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500 shadow-lg"
             >
               <i data-lucide="calculator" class="h-7 w-7 text-white"></i>
             </div>
-            <h3 class="mb-3 text-xl font-bold text-gray-900">Calculadora de Bolos</h3>
-            <p class="text-gray-600">
+            <h3 class="mb-3 text-xl font-bold text-gray-900 dark:text-white">
+              Calculadora de Bolos
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
               Implementa el cálculo de dosis de insulina basado en carbohidratos, ratio
               insulina/carbohidrato y factor de sensibilidad configurables.
             </p>
@@ -301,15 +437,15 @@
 
           <!-- Feature 3 -->
           <div
-            class="feature-card rounded-3xl border border-purple-100 bg-gradient-to-br from-purple-50 to-white p-8"
+            class="feature-card rounded-3xl border border-purple-100 bg-gradient-to-br from-purple-50 to-white p-8 dark:border-purple-800/30 dark:from-purple-900/20 dark:to-slate-800"
           >
             <div
               class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-500 shadow-lg"
             >
               <i data-lucide="calendar-check" class="h-7 w-7 text-white"></i>
             </div>
-            <h3 class="mb-3 text-xl font-bold text-gray-900">Gestión de Citas</h3>
-            <p class="text-gray-600">
+            <h3 class="mb-3 text-xl font-bold text-gray-900 dark:text-white">Gestión de Citas</h3>
+            <p class="text-gray-600 dark:text-gray-300">
               Sistema de solicitud de citas médicas con flujo de estados (pendiente, aceptada,
               creada) y sincronización con backend.
             </p>
@@ -317,15 +453,15 @@
 
           <!-- Feature 4 -->
           <div
-            class="feature-card rounded-3xl border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-8"
+            class="feature-card rounded-3xl border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-8 dark:border-amber-800/30 dark:from-amber-900/20 dark:to-slate-800"
           >
             <div
               class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500 shadow-lg"
             >
               <i data-lucide="bar-chart-3" class="h-7 w-7 text-white"></i>
             </div>
-            <h3 class="mb-3 text-xl font-bold text-gray-900">Panel de Control</h3>
-            <p class="text-gray-600">
+            <h3 class="mb-3 text-xl font-bold text-gray-900 dark:text-white">Panel de Control</h3>
+            <p class="text-gray-600 dark:text-gray-300">
               Visualización de estadísticas agregadas, última lectura, porcentaje en rango y días de
               racha activa.
             </p>
@@ -333,15 +469,17 @@
 
           <!-- Feature 5 -->
           <div
-            class="feature-card rounded-3xl border border-rose-100 bg-gradient-to-br from-rose-50 to-white p-8"
+            class="feature-card rounded-3xl border border-rose-100 bg-gradient-to-br from-rose-50 to-white p-8 dark:border-rose-800/30 dark:from-rose-900/20 dark:to-slate-800"
           >
             <div
               class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-500 shadow-lg"
             >
               <i data-lucide="cloud-off" class="h-7 w-7 text-white"></i>
             </div>
-            <h3 class="mb-3 text-xl font-bold text-gray-900">Arquitectura Offline-First</h3>
-            <p class="text-gray-600">
+            <h3 class="mb-3 text-xl font-bold text-gray-900 dark:text-white">
+              Arquitectura Offline-First
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
               Los datos se almacenan localmente en IndexedDB (Dexie) y se sincronizan con el
               servidor cuando hay conectividad disponible.
             </p>
@@ -349,17 +487,19 @@
 
           <!-- Feature 6 -->
           <div
-            class="feature-card rounded-3xl border border-teal-100 bg-gradient-to-br from-teal-50 to-white p-8"
+            class="feature-card rounded-3xl border border-teal-100 bg-gradient-to-br from-teal-50 to-white p-8 dark:border-teal-800/30 dark:from-teal-900/20 dark:to-slate-800"
           >
             <div
               class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-500 shadow-lg"
             >
               <i data-lucide="link" class="h-7 w-7 text-white"></i>
             </div>
-            <h3 class="mb-3 text-xl font-bold text-gray-900">Integración Tidepool</h3>
-            <p class="text-gray-600">
-              Soporte para autenticación mediante OAuth con Tidepool, plataforma de datos de
-              diabetes de código abierto.
+            <h3 class="mb-3 text-xl font-bold text-gray-900 dark:text-white">
+              Integración Tidepool
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              Autenticación mediante Tidepool (solo login, datos gestionados localmente). Plataforma
+              de código abierto para diabetes.
             </p>
           </div>
         </div>
@@ -367,11 +507,13 @@
     </section>
 
     <!-- Screenshots Gallery Section -->
-    <section id="gallery" class="bg-gray-50 py-24">
+    <section id="gallery" class="bg-gray-50 py-24 dark:bg-slate-800">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="mb-16 text-center">
-          <h2 class="font-display mb-4 text-4xl font-bold text-gray-900">Capturas de Pantalla</h2>
-          <p class="mx-auto max-w-2xl text-xl text-gray-600">
+          <h2 class="font-display mb-4 text-4xl font-bold text-gray-900 dark:text-white">
+            Capturas de Pantalla
+          </h2>
+          <p class="mx-auto max-w-2xl text-xl text-gray-600 dark:text-gray-300">
             Interfaz de usuario de la aplicación móvil
           </p>
         </div>
@@ -379,7 +521,7 @@
         <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <!-- Screenshot 1 - Dashboard -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl"
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
           >
             <div class="aspect-[9/16] overflow-hidden">
               <img
@@ -389,8 +531,8 @@
               />
             </div>
             <div class="p-6">
-              <h3 class="mb-2 text-lg font-bold text-gray-900">Panel de Control</h3>
-              <p class="text-sm text-gray-600">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Panel de Control</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
                 Dashboard principal con sistema de rachas, tiempo en rango y estadísticas de
                 lecturas.
               </p>
@@ -399,7 +541,7 @@
 
           <!-- Screenshot 2 - Readings -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl"
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
           >
             <div class="aspect-[9/16] overflow-hidden">
               <img
@@ -409,8 +551,10 @@
               />
             </div>
             <div class="p-6">
-              <h3 class="mb-2 text-lg font-bold text-gray-900">Lecturas de Glucosa</h3>
-              <p class="text-sm text-gray-600">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
+                Lecturas de Glucosa
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
                 Historial de mediciones con categorización por fecha, indicadores de estado y
                 búsqueda.
               </p>
@@ -419,7 +563,7 @@
 
           <!-- Screenshot 3 - Bolus Calculator -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl"
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
           >
             <div class="aspect-[9/16] overflow-hidden">
               <img
@@ -429,8 +573,10 @@
               />
             </div>
             <div class="p-6">
-              <h3 class="mb-2 text-lg font-bold text-gray-900">Calculadora de Bolos</h3>
-              <p class="text-sm text-gray-600">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
+                Calculadora de Bolos
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
                 Cálculo de dosis de insulina basado en carbohidratos y factor de sensibilidad.
               </p>
             </div>
@@ -438,7 +584,7 @@
 
           <!-- Screenshot 4 - Appointments -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl"
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
           >
             <div class="aspect-[9/16] overflow-hidden">
               <img
@@ -448,8 +594,8 @@
               />
             </div>
             <div class="p-6">
-              <h3 class="mb-2 text-lg font-bold text-gray-900">Gestión de Citas</h3>
-              <p class="text-sm text-gray-600">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Gestión de Citas</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
                 Sistema de solicitud de citas médicas con historial de citas anteriores.
               </p>
             </div>
@@ -457,7 +603,7 @@
 
           <!-- Screenshot 5 - Profile Dark Mode -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl"
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
           >
             <div class="aspect-[9/16] overflow-hidden">
               <img
@@ -467,8 +613,10 @@
               />
             </div>
             <div class="p-6">
-              <h3 class="mb-2 text-lg font-bold text-gray-900">Perfil (Modo Oscuro)</h3>
-              <p class="text-sm text-gray-600">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
+                Perfil (Modo Oscuro)
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
                 Información del usuario y configuración personal con tema oscuro.
               </p>
             </div>
@@ -476,7 +624,7 @@
 
           <!-- Screenshot 6 - Settings Dark -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl"
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
           >
             <div class="aspect-[9/16] overflow-hidden">
               <img
@@ -486,9 +634,68 @@
               />
             </div>
             <div class="p-6">
-              <h3 class="mb-2 text-lg font-bold text-gray-900">Configuración</h3>
-              <p class="text-sm text-gray-600">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Configuración</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
                 Ajustes de tema, idioma, unidades y preferencias de sincronización.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 7 - Welcome -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/welcome.png"
+                alt="Pantalla de Bienvenida - Inicio de sesión"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
+                Pantalla de Bienvenida
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Pantalla inicial para iniciar sesión o registrarse en la aplicación.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 8 - Login -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/login.png"
+                alt="Inicio de Sesión - Formulario de autenticación"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Inicio de Sesión</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Formulario de autenticación seguro con ID de usuario y contraseña.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 9 - Add Reading -->
+          <div
+            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/add-reading.png"
+                alt="Agregar Lectura - Formulario de registro de glucosa"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Agregar Lectura</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Formulario para registrar nuevas lecturas de glucosa con contexto y notas.
               </p>
             </div>
           </div>
@@ -663,70 +870,72 @@
     </section>
 
     <!-- Tech Stack Section -->
-    <section id="tech" class="bg-gray-50 py-24">
+    <section id="tech" class="bg-gray-50 py-24 dark:bg-slate-800">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="mb-16 text-center">
-          <h2 class="font-display mb-4 text-4xl font-bold text-gray-900">Stack Tecnológico</h2>
-          <p class="mx-auto max-w-2xl text-xl text-gray-600">
+          <h2 class="font-display mb-4 text-4xl font-bold text-gray-900 dark:text-white">
+            Stack Tecnológico
+          </h2>
+          <p class="mx-auto max-w-2xl text-xl text-gray-600 dark:text-gray-300">
             Tecnologías utilizadas en el desarrollo de la aplicación
           </p>
         </div>
 
         <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div
-            class="rounded-2xl bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md"
+            class="rounded-2xl bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md dark:bg-slate-900"
           >
             <div
-              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-100"
+              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-100 dark:bg-red-900/30"
             >
               <svg class="h-10 w-10" viewBox="0 0 24 24" fill="#DD0031">
                 <path d="M12 2L2 7l1.5 13L12 22l8.5-2L22 7 12 2z" />
               </svg>
             </div>
-            <h4 class="font-semibold text-gray-900">Angular 20</h4>
-            <p class="text-sm text-gray-500">Framework</p>
+            <h4 class="font-semibold text-gray-900 dark:text-white">Angular 20.3.14</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Framework</p>
           </div>
 
           <div
-            class="rounded-2xl bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md"
+            class="rounded-2xl bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md dark:bg-slate-900"
           >
             <div
-              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100"
+              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 dark:bg-blue-900/30"
             >
               <svg class="h-10 w-10" viewBox="0 0 24 24" fill="#3880FF">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
               </svg>
             </div>
-            <h4 class="font-semibold text-gray-900">Ionic 8</h4>
-            <p class="text-sm text-gray-500">UI Framework</p>
+            <h4 class="font-semibold text-gray-900 dark:text-white">Ionic 8.7.11</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400">UI Framework</p>
           </div>
 
           <div
-            class="rounded-2xl bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md"
+            class="rounded-2xl bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md dark:bg-slate-900"
           >
             <div
-              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-green-100"
+              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-green-100 dark:bg-green-900/30"
             >
               <svg class="h-10 w-10" viewBox="0 0 24 24" fill="#119EFF">
                 <circle cx="12" cy="12" r="10" />
               </svg>
             </div>
-            <h4 class="font-semibold text-gray-900">Capacitor 6</h4>
-            <p class="text-sm text-gray-500">Native Bridge</p>
+            <h4 class="font-semibold text-gray-900 dark:text-white">Capacitor 6.2.1</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Native Bridge</p>
           </div>
 
           <div
-            class="rounded-2xl bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md"
+            class="rounded-2xl bg-white p-6 text-center shadow-sm transition-shadow hover:shadow-md dark:bg-slate-900"
           >
             <div
-              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-cyan-100"
+              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-cyan-100 dark:bg-cyan-900/30"
             >
               <svg class="h-10 w-10" viewBox="0 0 24 24" fill="#06B6D4">
                 <path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="2" />
               </svg>
             </div>
-            <h4 class="font-semibold text-gray-900">Tailwind CSS</h4>
-            <p class="text-sm text-gray-500">Styling</p>
+            <h4 class="font-semibold text-gray-900 dark:text-white">Tailwind 3.4.13</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Styling</p>
           </div>
         </div>
 
@@ -734,7 +943,7 @@
           <a
             href="https://github.com/diabetactic/diabetify"
             target="_blank"
-            class="text-primary-600 hover:text-primary-700 inline-flex items-center space-x-2 font-medium"
+            class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 inline-flex items-center space-x-2 font-medium"
           >
             <span>Ver repositorio en GitHub</span>
             <i data-lucide="external-link" class="h-4 w-4"></i>
@@ -834,6 +1043,64 @@
     <script>
       // Initialize Lucide icons
       lucide.createIcons();
+
+      // Theme Toggle
+      (function () {
+        const html = document.documentElement;
+        const themeToggle = document.getElementById('theme-toggle');
+        const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+
+        // Check for saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+          html.classList.add('dark');
+        }
+
+        function toggleTheme() {
+          html.classList.toggle('dark');
+          const isDark = html.classList.contains('dark');
+          localStorage.setItem('theme', isDark ? 'dark' : 'light');
+          // Re-initialize icons after theme change
+          lucide.createIcons();
+        }
+
+        if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+        if (mobileThemeToggle) mobileThemeToggle.addEventListener('click', toggleTheme);
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+          if (!localStorage.getItem('theme')) {
+            html.classList.toggle('dark', e.matches);
+            lucide.createIcons();
+          }
+        });
+      })();
+
+      // Mobile Menu
+      (function () {
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+        const mobileMenuBackdrop = document.getElementById('mobile-menu-backdrop');
+        const mobileMenuLinks = mobileMenu?.querySelectorAll('a[href^="#"]');
+
+        function openMenu() {
+          mobileMenu?.classList.remove('hidden');
+          document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenu() {
+          mobileMenu?.classList.add('hidden');
+          document.body.style.overflow = '';
+        }
+
+        mobileMenuBtn?.addEventListener('click', openMenu);
+        mobileMenuClose?.addEventListener('click', closeMenu);
+        mobileMenuBackdrop?.addEventListener('click', closeMenu);
+        mobileMenuLinks?.forEach(link => link.addEventListener('click', closeMenu));
+      })();
 
       // Smooth scroll for navigation links
       document.querySelectorAll('a[href^="#"]').forEach(anchor => {

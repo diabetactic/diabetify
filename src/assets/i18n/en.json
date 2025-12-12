@@ -1256,7 +1256,7 @@
       "link": "Sign up here"
     },
     "footer": {
-      "copyright": "© 2025 Diabetactic • v1.0.0",
+      "copyright": "© 2025 Diabetactic • v0.0.1",
       "links": {
         "terms": "Terms",
         "privacy": "Privacy",
@@ -1462,6 +1462,7 @@
     "timesMeasured": "Total Readings",
     "days": "days",
     "day": "day",
+    "toNextLevel": "to",
     "keepGoing": "Keep up the great work!",
     "levels": {
       "starter": "Getting Started",
