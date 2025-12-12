@@ -68,6 +68,7 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:docker": "./scripts/run-e2e-docker.sh",
     "test:e2e:docker:build": "./scripts/run-e2e-docker.sh --build",
+    "test:e2e:wdio": "wdio run webdriverio/wdio.conf.ts",
     "test:a11y": "playwright test accessibility-audit.spec.ts",
     "test:a11y:headed": "playwright test accessibility-audit.spec.ts --headed",
     "test:ui-quality": "playwright test accessibility-audit.spec.ts --grep 'UI Quality'",
@@ -151,7 +152,14 @@
     "@types/pixelmatch": "^5.2.6",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "@wdio/appium-service": "^9.21.0",
+    "@wdio/cli": "^9.21.1",
+    "@wdio/local-runner": "^9.21.0",
+    "@wdio/mocha-framework": "^9.21.0",
+    "@wdio/spec-reporter": "^9.20.0",
     "angular-eslint": "^21.0.1",
+    "appium": "^3.1.2",
+    "appium-uiautomator2-driver": "^6.7.0",
     "axe-html-reporter": "^2.2.11",
     "daisyui": "^5.5.5",
     "eslint": "^9.0.0",
@@ -179,7 +187,8 @@
     "tailwindcss": "^3.4.13",
     "ts-node": "^10.9.2",
     "typescript": "~5.8.0",
-    "typescript-eslint": "^8.48.0"
+    "typescript-eslint": "^8.48.0",
+    "webdriverio": "^9.21.0"
   },
   "description": "Diabetactic - Mobile app for diabetes glucose management built with Ionic/Angular",
   "lint-staged": {
