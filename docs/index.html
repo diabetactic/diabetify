@@ -95,9 +95,9 @@
       }
 
       .glass-dark {
-        background: rgba(17, 24, 39, 0.9);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
       }
 
       .gradient-bg {
@@ -167,11 +167,12 @@
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
           <div class="flex items-center space-x-3">
-            <div
-              class="bg-primary-500 flex h-10 w-10 items-center justify-center rounded-xl shadow-lg"
-            >
-              <i data-lucide="activity" class="h-6 w-6 text-white"></i>
-            </div>
+            <!-- Logo options: app-icon-512.png (gradient drop), hero-kids-new.webp (mascots) -->
+            <img
+              src="assets/images/app-icon-512.png"
+              alt="Diabetactic Logo"
+              class="h-10 w-10 rounded-xl shadow-lg"
+            />
             <span class="font-display text-xl font-bold text-gray-800 dark:text-white"
               >Diabetactic</span
             >
@@ -179,28 +180,28 @@
           <div class="hidden items-center space-x-8 md:flex">
             <a
               href="#features"
-              class="hover:text-primary-600 dark:hover:text-primary-400 text-gray-600 transition-colors dark:text-gray-300"
+              class="hover:text-primary-600 dark:hover:text-primary-400 text-gray-600 transition-colors dark:text-slate-100"
               >Funciones</a
             >
             <a
               href="#gallery"
-              class="hover:text-primary-600 dark:hover:text-primary-400 text-gray-600 transition-colors dark:text-gray-300"
+              class="hover:text-primary-600 dark:hover:text-primary-400 text-gray-600 transition-colors dark:text-slate-100"
               >Capturas</a
             >
             <a
               href="#streaks"
-              class="hover:text-primary-600 dark:hover:text-primary-400 text-gray-600 transition-colors dark:text-gray-300"
+              class="hover:text-primary-600 dark:hover:text-primary-400 text-gray-600 transition-colors dark:text-slate-100"
               >Rachas</a
             >
             <a
               href="#tech"
-              class="hover:text-primary-600 dark:hover:text-primary-400 text-gray-600 transition-colors dark:text-gray-300"
+              class="hover:text-primary-600 dark:hover:text-primary-400 text-gray-600 transition-colors dark:text-slate-100"
               >Tecnología</a
             >
             <!-- Theme Toggle -->
             <button
               id="theme-toggle"
-              class="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
+              class="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 dark:text-slate-100 dark:hover:bg-slate-700"
               aria-label="Cambiar tema"
             >
               <i data-lucide="sun" class="h-5 w-5 dark:hidden"></i>
@@ -218,7 +219,7 @@
           <!-- Mobile Menu Button -->
           <button
             id="mobile-menu-btn"
-            class="rounded-lg p-2 text-gray-600 dark:text-gray-300 md:hidden"
+            class="rounded-lg p-2 text-gray-600 dark:text-slate-100 md:hidden"
             aria-label="Abrir menú"
           >
             <i data-lucide="menu" class="h-6 w-6"></i>
@@ -372,8 +373,10 @@
 
           <!-- Right Content - Phone Mockup with Real Screenshots -->
           <div class="phone-mockup flex justify-center lg:justify-end">
-            <div class="phone-screen floating w-[300px] rounded-[3rem] bg-gray-900 p-3">
-              <div class="aspect-[9/15] overflow-hidden rounded-[2.5rem] bg-white">
+            <div
+              class="phone-screen floating w-[270px] rounded-[2.5rem] bg-gray-900 p-2 shadow-2xl"
+            >
+              <div class="aspect-[9/19] overflow-hidden rounded-[2rem] bg-white">
                 <img
                   src="assets/screenshots/dashboard.png"
                   alt="Diabetactic Dashboard - Panel de Control con rachas y estadísticas"
