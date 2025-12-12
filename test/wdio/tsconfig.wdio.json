@@ -1,0 +1,14 @@
+
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "module": "CommonJS",
+    "target": "es2022",
+    "esModuleInterop": true,
+    "strict": true,
+    "types": ["node", "webdriverio/async", "jasmine"]
+  },
+  "include": [
+    "app/**/*.spec.ts"
+  ]
+}

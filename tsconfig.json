@@ -19,7 +19,8 @@
     "target": "es2022",
     "module": "es2020",
     "lib": ["es2020", "dom"],
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "types": ["jasmine", "webdriverio"]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
@@ -27,6 +28,6 @@
     "strictInputAccessModifiers": true,
     "strictTemplates": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "test/wdio/**/*.spec.ts"],
   "exclude": ["node_modules", "relatedServices"]
 }
