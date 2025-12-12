@@ -1,0 +1,6 @@
+appId: io.diabetactic.app
+name: Deep Linking Test
+---
+- stopApp
+- openLink: "diabetactic://appointments"
+- assertVisible: ".*Appointments.*"

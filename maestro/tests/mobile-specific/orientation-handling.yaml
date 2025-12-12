@@ -1,0 +1,16 @@
+appId: io.diabetactic.app
+name: Orientation Handling Test
+---
+- runFlow: ../flows/login.yaml
+- runScript: ../scripts/login-user-2002.js
+- runFlow: ../flows/login-form-steps.yaml
+- runFlow: ../flows/tap-vamos.yaml
+- assertVisible: ".*Dashboard.*"
+- rotateDevice
+- assertVisible: ".*Dashboard.*"
+- assertVisible: ".*Readings.*"
+- assertVisible: ".*Appointments.*"
+- rotateDevice
+- assertVisible: ".*Dashboard.*"
+- assertVisible: ".*Readings.*"
+- assertVisible: ".*Appointments.*"

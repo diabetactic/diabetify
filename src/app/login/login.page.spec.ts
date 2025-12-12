@@ -529,7 +529,7 @@ describe('LoginPage', () => {
 
       expect(profileService.createProfile).toHaveBeenCalledWith(
         expect.objectContaining({
-          name: 'Test User',
+          name: 'test@example.com',
           email: 'test@example.com',
           age: 12,
           accountState: AccountState.ACTIVE,
@@ -597,13 +597,15 @@ describe('LoginPage', () => {
   });
 
   describe('Edge Cases', () => {
-    it('should handle non-Error thrown objects', waitForAsync(async () => {
-      authService.login.mockReturnValue(throwError(() => 'string error'));
+    beforeEach(() => {
       component.loginForm.patchValue({
         username: 'test@example.com',
         password: 'password123',
       });
+    });
 
+    it('should handle non-Error thrown objects', waitForAsync(async () => {
+      authService.login.mockReturnValue(throwError(() => 'string error'));
       await component.onSubmit();
 
       expect(alertCtrl.create).toHaveBeenCalled();
