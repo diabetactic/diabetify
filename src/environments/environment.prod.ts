@@ -70,7 +70,7 @@ export const environment = {
   backendServices: {
     // Glucose data management service
     glucoserver: {
-      baseUrl: '', // Disabled by default after removing xDrip/glucoserver integration
+      baseUrl: getBaseUrl(PROD_BACKEND_MODE), // Same API gateway as auth/appointments
       apiPath: '',
       requestTimeout: 30000,
     },
