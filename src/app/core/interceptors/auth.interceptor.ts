@@ -80,8 +80,13 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
         )
       ),
       catchError(error => {
-        if (error instanceof HttpErrorResponse && error.status === 401) {
-          return this.handle401Error(request, next);
+        if (error instanceof HttpErrorResponse) {
+          if (error.status === 401) {
+            return this.handle401Error(request, next);
+          }
+          if (error.status === 403) {
+            return this.handle403Error(error);
+          }
         }
         return throwError(() => error);
       })
@@ -131,6 +136,24 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
         switchMap(token => next.handle(this.addTokenToRequest(request, token!)))
       );
     }
+  }
+
+  /**
+   * Handle 403 Forbidden errors
+   * 403 indicates the user's token is valid but lacks required permissions.
+   * This typically means the user needs to re-authenticate to get fresh permissions.
+   * Unlike 401, token refresh won't help - we need a full re-login.
+   */
+  private handle403Error(error: HttpErrorResponse): Observable<never> {
+    console.warn('[AuthInterceptor] 403 Forbidden - forcing re-login for fresh permissions');
+
+    // Force logout and redirect to welcome page
+    // Don't wait for logout to complete, just trigger it
+    this.authService.logout().then(() => {
+      this.router.navigate([ROUTES.WELCOME]);
+    });
+
+    return throwError(() => error);
   }
 
   /**

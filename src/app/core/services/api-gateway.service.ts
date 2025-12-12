@@ -238,6 +238,34 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
     },
   ],
 
+  // Achievements endpoints (gamification)
+  [
+    'achievements.streak',
+    {
+      service: ExternalService.GLUCOSERVER,
+      path: '/achievements/streak/',
+      method: 'GET',
+      authenticated: true,
+      timeout: 10000,
+      cache: {
+        duration: 60000, // 1 minute cache
+      },
+    },
+  ],
+  [
+    'achievements.list',
+    {
+      service: ExternalService.GLUCOSERVER,
+      path: '/achievements/',
+      method: 'GET',
+      authenticated: true,
+      timeout: 10000,
+      cache: {
+        duration: 60000, // 1 minute cache
+      },
+    },
+  ],
+
   // Appointment endpoints
   [
     'appointments.list',
@@ -1356,6 +1384,13 @@ export class ApiGatewayService {
         return this.mockAdapter.mockGetStatistics(
           (params?.['days'] as number | undefined) || 30
         ) as Promise<T>;
+
+      // Achievements endpoints
+      case 'achievements.streak':
+        return this.mockAdapter.mockGetStreakData() as Promise<T>;
+
+      case 'achievements.list':
+        return this.mockAdapter.mockGetAchievements() as Promise<T>;
 
       // Auth endpoints
       case 'auth.login': {

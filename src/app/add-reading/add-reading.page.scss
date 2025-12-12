@@ -196,6 +196,13 @@ ion-datetime-button {
   margin-top: 24px;
   padding-bottom: 16px;
 
+  ion-button {
+    --border-radius: 14px;
+
+    min-height: 48px;
+    font-weight: 600;
+  }
+
   .cancel-button {
     --border-width: 2px;
     --border-color: var(--ion-color-medium);

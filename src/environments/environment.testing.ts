@@ -87,5 +87,6 @@ export const environment = {
     useTidepoolIntegration: false, // Use mocks
     useTidepoolMock: true, // Enable Tidepool mock
     devTools: true, // Enable debug panel
+    showEnvBadge: false, // Show CLOUD/LOCAL/MOCK badge (set true for debugging)
   },
 };

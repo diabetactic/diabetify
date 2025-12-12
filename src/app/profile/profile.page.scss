@@ -86,15 +86,16 @@ ion-content {
 }
 
 // Overview card with transitions (SCSS for hover/focus states)
+// Uses DaisyUI oklch colors that auto-adapt to light/dark theme
 .overview-card {
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: var(--ion-color-light, #fff);
+  background: oklch(var(--b1));
   border-radius: 16px;
   box-shadow: var(--shadow-03);
-  color: var(--ion-color-dark, #0d1b2a);
+  color: oklch(var(--bc));
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
@@ -124,15 +125,16 @@ button.overview-card {
   box-shadow: var(--shadow-03);
 }
 
-// Card base styling
+// Card base styling - Uses DaisyUI oklch colors that auto-adapt to light/dark theme
 .card {
-  background: var(--ion-color-light, #fff);
+  background: oklch(var(--b1));
   border-radius: 20px;
   padding: 20px;
   box-shadow: var(--shadow-05);
   display: flex;
   flex-direction: column;
   gap: 16px;
+  color: oklch(var(--bc));
 }
 
 // Preference rows with pseudo-element

@@ -31,6 +31,8 @@ export class StreakCardComponent {
   @Input() maxStreak: number = 0;
   @Input() timesMeasured: number = 0;
   @Input() loading: boolean = false;
+  /** Measurements today counter (0-3, resets when hitting 4) */
+  @Input() fourTimesToday: number = 0;
 
   /**
    * Streak levels with emoji progression

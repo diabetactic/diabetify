@@ -96,5 +96,6 @@ export const environment = {
     useTidepoolIntegration: (DEV_BACKEND_MODE as BackendMode) === 'cloud',
     useTidepoolMock: (DEV_BACKEND_MODE as BackendMode) === 'mock',
     devTools: true,
+    showEnvBadge: false, // Show CLOUD/LOCAL/MOCK badge (set true for debugging)
   },
 };
