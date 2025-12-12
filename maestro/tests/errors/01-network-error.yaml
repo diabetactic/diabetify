@@ -21,41 +21,38 @@ appId: io.diabetactic.app
       text: '.*Mostrando.*lecturas.*|.*Showing.*readings.*|.*Lecturas.*|.*Readings.*'
     timeout: 8000
 
-# Note: Full offline testing would require manual airplane mode enable.
-# This test verifies the UI handles gracefully and doesn't crash.
+# 4. DISABLE NETWORK
+- setNetworkConnection: "none"
+- waitForAnimationToEnd:
+    timeout: 1000
 
-# 4. VERIFY PAGE HEADER REMAINS VISIBLE
-- assertVisible:
-    text: '.*Lecturas.*|.*Readings.*'
-
-# 5. PULL TO REFRESH (simulates network request)
+# 5. PULL TO REFRESH TO TRIGGER NETWORK ERROR
 - swipe:
     direction: DOWN
     duration: 500
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 6. VERIFY APP RECOVERS (either shows data or appropriate message)
+# 6. VERIFY OFFLINE/ERROR MESSAGE APPEARS
 - extendedWaitUntil:
     visible:
-      text: '.*Mostrando.*lecturas.*|.*Showing.*readings.*|.*Lecturas.*|.*Readings.*|.*Error.*|.*Sin.*conexi.*n.*|.*Offline.*'
+      text: '.*Error.*|.*Sin.*conexi.*n.*|.*Offline.*'
     timeout: 10000
 
-# 7. TRY TO OPEN ADD READING (verify form is accessible)
-- tapOn:
-    text: '.*Agregar.*Lectura.*|.*Add.*Reading.*|.*Agregar.*Nueva.*Lectura.*|.*Add.*New.*Reading.*'
+# 7. RE-ENABLE NETWORK TO CLEAN UP
+- setNetworkConnection: "all"
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 8. PULL TO REFRESH AGAIN TO VERIFY RECOVERY
+- swipe:
+    direction: DOWN
+    duration: 500
 - waitForAnimationToEnd:
     timeout: 2000
 
-# 8. VERIFY ADD FORM LOADED (app didn't crash)
+# 9. VERIFY DATA IS SHOWN AGAIN
 - extendedWaitUntil:
     visible:
-      text: '.*Agregar.*Lectura.*|.*Add.*Reading.*'
-    timeout: 5000
-
-# 9. CANCEL AND RETURN (using X button or Cancel text)
-- tapOn:
-    text: '.*Cancelar.*|.*Cancel.*|.*CANCELAR.*|.*CANCEL.*'
-    optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+      text: '.*Mostrando.*lecturas.*|.*Showing.*readings.*'
+    timeout: 10000
