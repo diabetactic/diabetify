@@ -764,6 +764,8 @@
     "autoTheme": "Auto",
     "glucoseUnit": "Glucose Unit",
     "glucoseUnits": "Glucose Units",
+    "advancedSettings": "Advanced Settings",
+    "advancedSettingsDesc": "Glucose targets, reminders, and more",
     "privacy": "Privacy",
     "dataSharing": "Data Sharing",
     "exportData": "Export Data",

@@ -200,6 +200,30 @@
           data-testid="notifications-toggle"
         ></ion-toggle>
       </div>
+
+      <button
+        type="button"
+        class="preference-row link"
+        (click)="goToSettings()"
+        data-testid="advanced-settings-btn"
+      >
+        <div class="flex min-w-0 flex-1 items-center gap-3">
+          <app-icon
+            name="settings-outline"
+            aria-hidden="true"
+            class="text-primary text-[26px]"
+          ></app-icon>
+          <div>
+            <p class="text-dark m-0 text-base font-semibold">
+              {{ 'profile.advancedSettings' | translate }}
+            </p>
+            <p class="text-medium mb-0 mt-1 text-xs">
+              {{ 'profile.advancedSettingsDesc' | translate }}
+            </p>
+          </div>
+        </div>
+        <app-icon name="chevron-forward-outline" aria-hidden="true" class="text-medium"></app-icon>
+      </button>
     </section>
 
     <section class="card tidepool-card">
