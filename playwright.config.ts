@@ -82,7 +82,7 @@ export default defineConfig({
   webServer: process.env.E2E_SKIP_SERVER
     ? undefined
     : {
-        command: `npx ng serve --configuration development --port ${PORT}`,
+        command: `npx ng serve --configuration local --port ${PORT}`,
         url: `${BASE_URL}`,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
