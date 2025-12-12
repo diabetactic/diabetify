@@ -326,4 +326,92 @@ test.describe('Heroku Readings CRUD', () => {
       console.log('ℹ️  Dashboard statistics not available');
     }
   });
+
+  test('edit reading with Heroku backend', async ({ page }) => {
+    // 1. Create a reading to edit first
+    const initialValue = '150';
+    await createReading(page, initialValue);
+
+    // 2. Click on the reading to edit
+    await page.getByText(`${initialValue} mg/dL`).click();
+
+    // 3. Edit the value
+    const editedValue = '165';
+    await page.getByTestId('glucose-input').fill(editedValue);
+    await page.getByTestId('save-reading-btn').click();
+
+    // 4. Verify the new value is displayed
+    await expect(page.getByText(`${editedValue} mg/dL`)).toBeVisible();
+    await expect(page.getByText(`${initialValue} mg/dL`)).not.toBeVisible();
+  });
+
+  async function createReading(page, value) {
+    await page.getByTestId('fab-button').click();
+    await page.getByTestId('glucose-input').fill(value);
+    await page.getByTestId('save-reading-btn').click();
+    await expect(page.getByText(`${value} mg/dL`)).toBeVisible();
+  }
+
+  test('delete reading with Heroku backend', async ({ page }) => {
+    // 1. Create a reading to delete
+    const valueToDelete = '180';
+    await createReading(page, valueToDelete);
+
+    // 2. Swipe to reveal delete button and click it
+    const readingItem = page.getByText(`${valueToDelete} mg/dL`);
+
+    // Simulate swipe gesture using touchscreen
+    const boundingBox = await readingItem.boundingBox();
+    if (boundingBox) {
+      const startX = boundingBox.x + boundingBox.width * 0.8;
+      const startY = boundingBox.y + boundingBox.height / 2;
+      const endX = boundingBox.x + boundingBox.width * 0.2;
+      const endY = startY;
+      await page.touchscreen.swipe(startX, startY, endX, endY, { steps: 10 });
+    }
+
+    await page.getByTestId('delete-reading-btn').click();
+
+    // 3. Confirm deletion in the dialog
+    await page.getByTestId('confirm-delete-btn').click();
+
+    // 4. Verify the reading is removed
+    await expect(page.getByText(`${valueToDelete} mg/dL`)).not.toBeVisible();
+  });
+
+  test('pull-to-refresh should reload readings', async ({ page }) => {
+    await page.goto('/tabs/readings');
+
+    // Simulate pull-to-refresh
+    await page.evaluate(() => {
+      const content = document.querySelector('ion-content');
+      if (content) {
+        content.scrollToPoint(0, -100, 500);
+      }
+    });
+
+    // Check if the refresher is visible
+    const refresher = page.locator('ion-refresher-content');
+    await expect(refresher).toBeVisible();
+
+    // Wait for the refresh to complete
+    await expect(refresher).not.toBeVisible({ timeout: 15000 });
+
+    // We can't easily verify new data is loaded without mocking,
+    // but we can at least ensure the page doesn't crash.
+    await expect(page.locator('ion-list')).toBeVisible();
+  });
+
+  test('should show validation error for empty glucose reading', async ({ page }) => {
+    await page.getByTestId('fab-button').click();
+    await page.getByTestId('save-reading-btn').click();
+    await expect(page.getByTestId('validation-error')).toHaveText('El valor de glucosa es requerido');
+  });
+
+  test('should show validation error for non-numeric glucose reading', async ({ page }) => {
+    await page.getByTestId('fab-button').click();
+    await page.getByTestId('glucose-input').fill('abc');
+    await page.getByTestId('save-reading-btn').click();
+    await expect(page.getByTestId('validation-error')).toHaveText('El valor de glucosa debe ser un número');
+  });
 });
