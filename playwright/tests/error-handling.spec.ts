@@ -156,7 +156,32 @@ test.describe('Error Handling', () => {
     await expect(page).toHaveURL(/\/(login|welcome)/, { timeout: 5000 });
 
     // Should not crash or show blank page
-    const content = page.locator('ion-content, body');
+    const content = page.locator('ion-content').first();
     await expect(content).toBeVisible();
+  });
+
+  test('network error on login shows error message', async ({ page }) => {
+    // Mock the API route to simulate a network error
+    await page.route('**/token', async (route) => {
+      // Respond with a network error
+      await route.abort();
+    });
+
+    await page.goto('/login');
+    await page.waitForSelector('form', { state: 'visible', timeout: 10000 });
+
+    // Enter valid credentials
+    await page.fill('input[placeholder*="DNI"], input[placeholder*="email"]', 'any_user');
+    await page.fill('input[type="password"]', 'any_password');
+
+    // Submit
+    await page.click('button:has-text("Iniciar"), button:has-text("Sign In")');
+
+    // Wait for error message
+    const errorMessage = page.locator('text=/Error de conexión/i');
+    await expect(errorMessage).toBeVisible({ timeout: 5000 });
+
+    // Should still be on login page
+    await expect(page).toHaveURL(/\/login/, { timeout: 3000 });
   });
 });
