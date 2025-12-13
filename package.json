@@ -4,6 +4,7 @@
   "author": "Diabetactic Team - FIUBA",
   "homepage": "https://github.com/diabetactic/diabetify",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "ng:help": "ng -h",
     "ng:mcp": "ng mcp",
     "// === DEV SERVER ===": "",
