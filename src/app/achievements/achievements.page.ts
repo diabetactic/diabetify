@@ -22,7 +22,6 @@ import {
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
 import { AchievementsService } from '@services/achievements.service';
 import { TranslationService } from '@services/translation.service';
