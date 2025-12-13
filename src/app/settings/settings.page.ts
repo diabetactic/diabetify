@@ -5,7 +5,7 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
@@ -33,16 +33,16 @@ import {
 } from '@ionic/angular/standalone';
 import { Subject } from 'rxjs';
 
-import { ProfileService } from '../core/services/profile.service';
-import { ThemeService } from '../core/services/theme.service';
-import { LocalAuthService } from '../core/services/local-auth.service';
-import { DemoDataService } from '../core/services/demo-data.service';
-import { NotificationService, ReadingReminder } from '../core/services/notification.service';
-import { LocalUser, UserPreferences } from '../core/services/local-auth.service';
-import { environment } from '../../environments/environment';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
-import { LoggerService } from '../core/services/logger.service';
-import { ROUTES, STORAGE_KEYS, TIMEOUTS } from '../core/constants';
+import { ProfileService } from '@services/profile.service';
+import { ThemeService } from '@services/theme.service';
+import { LocalAuthService } from '@services/local-auth.service';
+import { DemoDataService } from '@services/demo-data.service';
+import { NotificationService, ReadingReminder } from '@services/notification.service';
+import { LocalUser, UserPreferences } from '@services/local-auth.service';
+import { environment } from '@env/environment';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
+import { LoggerService } from '@services/logger.service';
+import { ROUTES, STORAGE_KEYS, TIMEOUTS } from '@core/constants';
 
 @Component({
   selector: 'app-settings',
@@ -51,10 +51,8 @@ import { ROUTES, STORAGE_KEYS, TIMEOUTS } from '../core/constants';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     FormsModule,
     TranslateModule,
-    // Ionic standalone components
     IonHeader,
     IonToolbar,
     IonButtons,
@@ -74,9 +72,8 @@ import { ROUTES, STORAGE_KEYS, TIMEOUTS } from '../core/constants';
     IonCardContent,
     IonDatetime,
     IonRange,
-    // App components
-    AppIconComponent,
-  ],
+    AppIconComponent
+],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class SettingsPage implements OnInit, OnDestroy {

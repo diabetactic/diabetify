@@ -16,13 +16,13 @@ import {
   GlucoseType,
   GlucoseUnit,
   GlucoseStatus,
-} from '../models';
-import { db, DiabetacticDatabase, SyncQueueItem } from './database.service';
-import { MockDataService, MockReading } from './mock-data.service';
-import { ApiGatewayService } from './api-gateway.service';
-import { LoggerService } from './logger.service';
-import { LocalAuthService } from './local-auth.service';
-import { environment } from '../../../environments/environment';
+} from '@models/glucose-reading.model';
+import { db, DiabetacticDatabase, SyncQueueItem } from '@services/database.service';
+import { MockDataService, MockReading } from '@services/mock-data.service';
+import { ApiGatewayService } from '@services/api-gateway.service';
+import { LoggerService } from '@services/logger.service';
+import { LocalAuthService } from '@services/local-auth.service';
+import { environment } from '@env/environment';
 
 /**
  * Backend glucose reading format from Heroku API

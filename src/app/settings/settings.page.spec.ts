@@ -5,12 +5,12 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 
 import { SettingsPage } from './settings.page';
-import { ProfileService } from '../core/services/profile.service';
-import { ThemeService } from '../core/services/theme.service';
-import { LocalAuthService, LocalUser, AccountState } from '../core/services/local-auth.service';
-import { DemoDataService } from '../core/services/demo-data.service';
-import { NotificationService, ReadingReminder } from '../core/services/notification.service';
-import { ROUTES, STORAGE_KEYS } from '../core/constants';
+import { ProfileService } from '@core/services/profile.service';
+import { ThemeService } from '@core/services/theme.service';
+import { LocalAuthService, LocalUser, AccountState } from '@core/services/local-auth.service';
+import { DemoDataService } from '@core/services/demo-data.service';
+import { NotificationService, ReadingReminder } from '@core/services/notification.service';
+import { ROUTES, STORAGE_KEYS } from '@core/constants';
 
 describe('SettingsPage', () => {
   let component: SettingsPage;

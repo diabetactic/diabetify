@@ -1,17 +1,17 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError, BehaviorSubject } from 'rxjs';
-import { ServiceOrchestrator, WorkflowType } from './service-orchestrator.service';
+import { ServiceOrchestrator, WorkflowType } from '@services/service-orchestrator.service';
 import {
   ExternalServicesManager,
   ExternalService,
   ExternalServicesState,
   HealthStatus,
   ServiceHealthCheck,
-} from './external-services-manager.service';
-import { UnifiedAuthService } from './unified-auth.service';
-import { GlucoserverService } from './glucoserver.service';
-import { AppointmentService } from './appointment.service';
-import { ReadingsService } from './readings.service';
+} from '@services/external-services-manager.service';
+import { UnifiedAuthService } from '@services/unified-auth.service';
+import { GlucoserverService } from '@services/glucoserver.service';
+import { AppointmentService } from '@services/appointment.service';
+import { ReadingsService } from '@services/readings.service';
 // Database service not directly used in tests
 
 describe('ServiceOrchestrator', () => {

@@ -5,7 +5,7 @@
  * Import this in tests that render components using Lucide icons
  */
 import { LucideAngularModule } from 'lucide-angular';
-import { appIcons } from '../../shared/icons/lucide-icons';
+import { appIcons } from '@shared/icons/lucide-icons';
 
 /**
  * Get LucideAngularModule configured with all app icons for testing

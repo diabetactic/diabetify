@@ -1,16 +1,16 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
-import { AppointmentService } from './appointment.service';
-import { ApiGatewayService, ApiResponse } from './api-gateway.service';
-import { TranslationService } from './translation.service';
-import { NotificationService } from './notification.service';
+import { AppointmentService } from '@services/appointment.service';
+import { ApiGatewayService, ApiResponse } from '@services/api-gateway.service';
+import { TranslationService } from '@services/translation.service';
+import { NotificationService } from '@services/notification.service';
 import {
   Appointment,
   CreateAppointmentRequest,
   AppointmentQueueState,
   AppointmentQueueStateResponse,
-} from '../models/appointment.model';
+} from '@models/appointment.model';
 
 /**
  * Mock NotificationService for testing

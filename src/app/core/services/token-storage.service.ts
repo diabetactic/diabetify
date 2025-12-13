@@ -18,8 +18,8 @@
 
 import { Injectable } from '@angular/core';
 import { SecureStorage } from '@aparajita/capacitor-secure-storage';
-import { TidepoolAuth, TokenValidation } from '../models/tidepool-auth.model';
-import { OAUTH_CONSTANTS } from '../config/oauth.config';
+import { TidepoolAuth, TokenValidation } from '@models/tidepool-auth.model';
+import { OAUTH_CONSTANTS } from '@core/config/oauth.config';
 
 /**
  * Storage keys for tokens

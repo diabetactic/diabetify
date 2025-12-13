@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { Capacitor } from '@capacitor/core';
-import { HapticService } from './haptic.service';
+import { HapticService } from '@services/haptic.service';
 
 // Mock Capacitor
 jest.mock('@capacitor/core');

@@ -13,7 +13,7 @@
  */
 
 import { Injectable, InjectionToken } from '@angular/core';
-import { environment, BackendMode } from '../../../environments/environment';
+import { environment, BackendMode } from '@env/environment';
 import { Capacitor } from '@capacitor/core';
 
 /**

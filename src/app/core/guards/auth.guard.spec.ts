@@ -6,9 +6,9 @@ import { AuthGuard } from './auth.guard';
 import {
   TidepoolAuthService,
   AuthState as TidepoolAuthState,
-} from '../services/tidepool-auth.service';
-import { LocalAuthService, LocalAuthState } from '../services/local-auth.service';
-import { AccountState } from '../models/user-profile.model';
+} from '@services/tidepool-auth.service';
+import { LocalAuthService, LocalAuthState } from '@services/local-auth.service';
+import { AccountState } from '@models/user-profile.model';
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;

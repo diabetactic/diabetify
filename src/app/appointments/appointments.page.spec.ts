@@ -5,9 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppointmentsPage } from './appointments.page';
-import { AppointmentService } from '../core/services/appointment.service';
+import { AppointmentService } from '@core/services/appointment.service';
 import { of } from 'rxjs';
-import { getLucideIconsForTesting } from '../tests/helpers/icon-test.helper';
+import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helper';
 
 // Mock AppointmentService with Jest
 const mockAppointmentService = {

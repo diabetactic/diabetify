@@ -43,15 +43,15 @@ import {
   LocalGlucoseReading,
   GlucoseStatus,
   GlucoseUnit,
-} from '../core/models/glucose-reading.model';
-import { ReadingsService } from '../core/services/readings.service';
-import { ProfileService } from '../core/services/profile.service';
-import { TranslationService } from '../core/services/translation.service';
-import { LoggerService } from '../core/services/logger.service';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
-import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
-import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
-import { ROUTES } from '../core/constants';
+} from '@models/glucose-reading.model';
+import { ReadingsService } from '@services/readings.service';
+import { ProfileService } from '@services/profile.service';
+import { TranslationService } from '@services/translation.service';
+import { LoggerService } from '@services/logger.service';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
+import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { ReadingItemComponent } from '@shared/components/reading-item/reading-item.component';
+import { ROUTES } from '@core/constants';
 
 /**
  * Interface for grouped readings by date

@@ -16,7 +16,7 @@
       <ion-item
         lines="none"
         class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
-      >
+        >
         <div class="w-full py-2">
           <ion-input
             type="number"
@@ -27,7 +27,7 @@
             min="0"
             required
             class="text-lg"
-          >
+            >
             <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
               {{ 'appointments.create.glucose_objective' | translate }}
               <span class="text-red-500">*</span>
@@ -43,7 +43,7 @@
       <ion-item
         lines="none"
         class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
-      >
+        >
         <div class="w-full py-2">
           <ion-select
             id="insulin-type-selector"
@@ -53,17 +53,18 @@
             interface="popover"
             [placeholder]="'appointments.create.insulin_type' | translate"
             data-testid="insulin-type-selector"
-          >
+            >
             <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
               {{ 'appointments.create.insulin_type' | translate }}
               <span class="text-red-500">*</span>
             </div>
-            <ion-select-option
-              *ngFor="let type of insulinTypes; trackBy: trackByInsulinType"
-              [value]="type.value"
-            >
-              {{ type.label | translate }}
-            </ion-select-option>
+            @for (type of insulinTypes; track trackByInsulinType($index, type)) {
+              <ion-select-option
+                [value]="type.value"
+                >
+                {{ type.label | translate }}
+              </ion-select-option>
+            }
           </ion-select>
         </div>
       </ion-item>
@@ -72,7 +73,7 @@
       <ion-item
         lines="none"
         class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
-      >
+        >
         <div class="w-full py-2">
           <ion-input
             type="number"
@@ -84,7 +85,7 @@
             step="0.1"
             required
             class="text-lg"
-          >
+            >
             <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
               {{ 'appointments.create.dose' | translate }}
               <span class="text-red-500">*</span>
@@ -98,7 +99,7 @@
       <ion-item
         lines="none"
         class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
-      >
+        >
         <div class="w-full py-2">
           <ion-input
             type="text"
@@ -107,7 +108,7 @@
             name="fast_insulin"
             [placeholder]="'appointments.create.fast_insulin' | translate"
             required
-          >
+            >
             <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
               {{ 'appointments.create.fast_insulin' | translate }}
               <span class="text-red-500">*</span>
@@ -120,7 +121,7 @@
       <ion-item
         lines="none"
         class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
-      >
+        >
         <div class="w-full py-2">
           <ion-input
             type="number"
@@ -131,7 +132,7 @@
             min="0"
             step="0.1"
             required
-          >
+            >
             <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
               {{ 'appointments.create.fixed_dose' | translate }}
               <span class="text-red-500">*</span>
@@ -145,7 +146,7 @@
       <ion-item
         lines="none"
         class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
-      >
+        >
         <div class="w-full py-2">
           <ion-input
             type="number"
@@ -156,7 +157,7 @@
             min="0"
             step="0.1"
             required
-          >
+            >
             <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
               {{ 'appointments.create.ratio' | translate }}
               <span class="text-red-500">*</span>
@@ -169,7 +170,7 @@
       <ion-item
         lines="none"
         class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
-      >
+        >
         <div class="w-full py-2">
           <ion-input
             type="number"
@@ -180,7 +181,7 @@
             min="0"
             step="0.1"
             required
-          >
+            >
             <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
               {{ 'appointments.create.sensitivity' | translate }}
               <span class="text-red-500">*</span>
@@ -193,7 +194,7 @@
       <ion-item
         lines="none"
         class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
-      >
+        >
         <div class="w-full py-2">
           <ion-select
             label-placement="stacked"
@@ -202,17 +203,18 @@
             interface="popover"
             [placeholder]="'appointments.create.pump_type' | translate"
             data-testid="pump-type-selector"
-          >
+            >
             <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
               {{ 'appointments.create.pump_type' | translate }}
               <span class="text-red-500">*</span>
             </div>
-            <ion-select-option
-              *ngFor="let type of pumpTypes; trackBy: trackByPumpType"
-              [value]="type.value"
-            >
-              {{ type.label | translate }}
-            </ion-select-option>
+            @for (type of pumpTypes; track trackByPumpType($index, type)) {
+              <ion-select-option
+                [value]="type.value"
+                >
+                {{ type.label | translate }}
+              </ion-select-option>
+            }
           </ion-select>
         </div>
       </ion-item>
@@ -225,49 +227,51 @@
         </ion-label>
         <div
           class="mt-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
-        >
-          <ion-item
-            *ngFor="let motive of motiveOptions; trackBy: trackByMotive"
-            lines="full"
-            class="last:border-b-0"
           >
-            <ion-checkbox
-              [checked]="isMotiveSelected(motive.value)"
-              (ionChange)="onMotiveChange(motive.value, $event)"
-              slot="start"
-            ></ion-checkbox>
-            <ion-label>{{ motive.label | translate }}</ion-label>
-          </ion-item>
+          @for (motive of motiveOptions; track trackByMotive($index, motive)) {
+            <ion-item
+              lines="full"
+              class="last:border-b-0"
+              >
+              <ion-checkbox
+                [checked]="isMotiveSelected(motive.value)"
+                (ionChange)="onMotiveChange(motive.value, $event)"
+                slot="start"
+              ></ion-checkbox>
+              <ion-label>{{ motive.label | translate }}</ion-label>
+            </ion-item>
+          }
         </div>
       </div>
 
       <!-- Other Motive (conditional) -->
-      <ion-item
-        *ngIf="showOtherMotive"
-        lines="none"
-        class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
-      >
-        <div class="w-full py-2">
-          <ion-input
-            type="text"
-            label-placement="stacked"
-            [(ngModel)]="formData.other_motive"
-            name="other_motive"
-            [placeholder]="'appointments.create.other_motive' | translate"
+      @if (showOtherMotive) {
+        <ion-item
+          lines="none"
+          class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
           >
-            <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
-              {{ 'appointments.create.other_motive' | translate }}
-              <span class="text-red-500">*</span>
-            </div>
-          </ion-input>
-        </div>
-      </ion-item>
+          <div class="w-full py-2">
+            <ion-input
+              type="text"
+              label-placement="stacked"
+              [(ngModel)]="formData.other_motive"
+              name="other_motive"
+              [placeholder]="'appointments.create.other_motive' | translate"
+              >
+              <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
+                {{ 'appointments.create.other_motive' | translate }}
+                <span class="text-red-500">*</span>
+              </div>
+            </ion-input>
+          </div>
+        </ion-item>
+      }
 
       <!-- Another Treatment (optional) -->
       <ion-item
         lines="none"
         class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
-      >
+        >
         <div class="w-full py-2">
           <ion-textarea
             label-placement="stacked"
@@ -275,7 +279,7 @@
             name="another_treatment"
             [placeholder]="'appointments.create.another_treatment' | translate"
             rows="3"
-          >
+            >
             <div slot="label" class="mb-1 font-medium text-gray-700 dark:text-gray-300">
               {{ 'appointments.create.another_treatment' | translate }}
             </div>
@@ -292,7 +296,7 @@
           [disabled]="isLoading"
           color="primary"
           data-testid="appointment-submit-btn"
-        >
+          >
           <ion-icon name="checkmark-circle" slot="start"></ion-icon>
           {{ 'appointments.create.submit' | translate }}
         </ion-button>
@@ -305,7 +309,7 @@
           fill="outline"
           color="medium"
           data-testid="appointment-cancel-btn"
-        >
+          >
           <ion-icon name="close-circle" slot="start"></ion-icon>
           {{ 'common.cancel' | translate }}
         </ion-button>

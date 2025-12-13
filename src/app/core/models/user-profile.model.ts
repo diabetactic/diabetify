@@ -3,7 +3,7 @@
  * Manages user preferences, Tidepool connection, and app settings
  */
 
-import { GlucoseUnit } from './glucose-reading.model';
+import { GlucoseUnit } from '@models/glucose-reading.model';
 
 /**
  * Account state enum for pre-enabled account workflow

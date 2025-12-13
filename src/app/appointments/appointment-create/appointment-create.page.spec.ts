@@ -20,14 +20,14 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 import { AppointmentCreatePage } from './appointment-create.page';
-import { AppointmentService } from '../../core/services/appointment.service';
-import { LocalAuthService } from '../../core/services/local-auth.service';
-import { TranslationService } from '../../core/services/translation.service';
+import { AppointmentService } from '@core/services/appointment.service';
+import { LocalAuthService } from '@core/services/local-auth.service';
+import { TranslationService } from '@core/services/translation.service';
 import {
   BACKEND_APPOINTMENT_MOTIVES,
   isValidBackendMotive,
-} from '../../core/contracts/backend-enums.contract';
-import { APPOINTMENT_MOTIVES } from '../../core/models/appointment.model';
+} from '@core/contracts/backend-enums.contract';
+import { APPOINTMENT_MOTIVES } from '@core/models/appointment.model';
 import { of } from 'rxjs';
 
 // ============================================================================

@@ -4,10 +4,10 @@
  */
 
 import Dexie, { Table } from 'dexie';
-import { LocalGlucoseReading } from '../models';
-import { Appointment } from '../models/appointment.model';
-import { GlucoseShareRequest } from '../models/glucose-share.model';
-import { LoggerService } from './logger.service';
+import { LocalGlucoseReading } from '@models/glucose-reading.model';
+import { Appointment } from '@models/appointment.model';
+import { GlucoseShareRequest } from '@models/glucose-share.model';
+import { LoggerService } from '@services/logger.service';
 import { inject } from '@angular/core';
 
 /**

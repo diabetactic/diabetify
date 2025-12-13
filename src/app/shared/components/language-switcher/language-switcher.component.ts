@@ -6,7 +6,7 @@
  */
 
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { PopoverController } from '@ionic/angular';
 import {
@@ -27,7 +27,7 @@ import {
   TranslationService,
   Language,
   LanguageConfig,
-} from '../../../core/services/translation.service';
+} from '@services/translation.service';
 
 @Component({
   selector: 'app-language-switcher',
@@ -35,15 +35,13 @@ import {
   styleUrls: ['./language-switcher.component.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     TranslateModule,
     AppIconComponent,
-    // Ionic standalone components
     IonButton,
     IonSelect,
-    IonSelectOption,
-  ],
+    IonSelectOption
+],
 })
 export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   @Input() displayMode: 'button' | 'select' | 'popover' = 'button';
@@ -207,36 +205,37 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   selector: 'app-language-popover',
   standalone: true,
   imports: [
-    CommonModule,
     TranslateModule,
-    // Ionic standalone components
     IonList,
     IonListHeader,
     IonLabel,
     IonItem,
     IonIcon,
-    IonButton,
-  ],
+    IonButton
+],
   template: `
     <ion-list class="m-0">
       <ion-list-header class="text-xs font-semibold uppercase">
         <ion-label>{{ 'settings.language.title' | translate }}</ion-label>
       </ion-list-header>
-      <ion-item
-        *ngFor="let lang of languages"
-        button
-        (click)="selectLanguage(lang.code)"
-        [class.selected]="isSelected(lang.code)"
-        class="language-item"
-      >
-        <ion-label>
-          <span class="mr-3 text-xl">{{ getFlagEmoji(lang.code) }}</span>
-          <span class="font-medium">{{ lang.nativeName }}</span>
-          <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">({{ lang.code }})</span>
-        </ion-label>
-        <ion-icon *ngIf="isSelected(lang.code)" name="checkmark" slot="end" color="primary">
-        </ion-icon>
-      </ion-item>
+      @for (lang of languages; track lang) {
+        <ion-item
+          button
+          (click)="selectLanguage(lang.code)"
+          [class.selected]="isSelected(lang.code)"
+          class="language-item"
+          >
+          <ion-label>
+            <span class="mr-3 text-xl">{{ getFlagEmoji(lang.code) }}</span>
+            <span class="font-medium">{{ lang.nativeName }}</span>
+            <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">({{ lang.code }})</span>
+          </ion-label>
+          @if (isSelected(lang.code)) {
+            <ion-icon name="checkmark" slot="end" color="primary">
+            </ion-icon>
+          }
+        </ion-item>
+      }
       <ion-item lines="none">
         <ion-label class="ion-text-center">
           <ion-button fill="clear" size="small" (click)="resetToDevice()">
@@ -246,7 +245,7 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
         </ion-label>
       </ion-item>
     </ion-list>
-  `,
+    `,
   styles: [
     `
       .language-item.selected {

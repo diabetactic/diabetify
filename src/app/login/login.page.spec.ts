@@ -7,12 +7,12 @@ import { of, throwError, BehaviorSubject } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 import { LoginPage } from './login.page';
-import { LocalAuthService, LocalUser, AccountState } from '../core/services/local-auth.service';
-import { ProfileService } from '../core/services/profile.service';
-import { LoggerService } from '../core/services/logger.service';
-import { ROUTES } from '../core/constants';
-import { getLucideIconsForTesting } from '../tests/helpers/icon-test.helper';
-import { DEFAULT_USER_PREFERENCES } from '../core/models/user-profile.model';
+import { LocalAuthService, LocalUser, AccountState } from '@core/services/local-auth.service';
+import { ProfileService } from '@core/services/profile.service';
+import { LoggerService } from '@core/services/logger.service';
+import { ROUTES } from '@core/constants';
+import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helper';
+import { DEFAULT_USER_PREFERENCES } from '@core/models/user-profile.model';
 
 class LoggerServiceStub {
   info = jest.fn();

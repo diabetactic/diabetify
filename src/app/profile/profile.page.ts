@@ -7,7 +7,7 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
@@ -32,17 +32,17 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject, firstValueFrom } from 'rxjs';
 import { take, takeUntil } from 'rxjs/operators';
 
-import { TidepoolAuthService, AuthState } from '../core/services/tidepool-auth.service';
-import { LocalAuthService } from '../core/services/local-auth.service';
-import { ProfileService } from '../core/services/profile.service';
-import { ThemeService } from '../core/services/theme.service';
-import { TranslationService, Language } from '../core/services/translation.service';
+import { TidepoolAuthService, AuthState } from '@services/tidepool-auth.service';
+import { LocalAuthService } from '@services/local-auth.service';
+import { ProfileService } from '@services/profile.service';
+import { ThemeService } from '@services/theme.service';
+import { TranslationService, Language } from '@services/translation.service';
 import { HttpClient } from '@angular/common/http';
-import { NotificationService } from '../core/services/notification.service';
-import { UserProfile, ThemeMode } from '../core/models/user-profile.model';
-import { environment } from '../../environments/environment';
-import { ROUTES, STORAGE_KEYS } from '../core/constants';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { NotificationService } from '@services/notification.service';
+import { UserProfile, ThemeMode } from '@models/user-profile.model';
+import { environment } from '@env/environment';
+import { ROUTES, STORAGE_KEYS } from '@core/constants';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { ProfileEditComponent } from './profile-edit/profile-edit.component';
 interface ProfileDisplayData {
   name: string;
@@ -90,7 +90,6 @@ interface TidepoolUserData {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     FormsModule,
     TranslateModule,
     AppIconComponent,
@@ -103,8 +102,8 @@ interface TidepoolUserData {
     IonIcon,
     IonSelect,
     IonSelectOption,
-    IonToggle,
-  ],
+    IonToggle
+],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ProfilePage implements OnInit, OnDestroy {

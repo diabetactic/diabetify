@@ -10,7 +10,7 @@ import {
   GlucoseShareStatus,
   GlucoseShareQueueEntry,
   ProviderAccessLog,
-} from './glucose-share.model';
+} from '@models/glucose-share.model';
 
 describe('GlucoseShareModel', () => {
   describe('GlucoseReadingSummary interface', () => {

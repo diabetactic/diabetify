@@ -33,7 +33,7 @@ import {
   MOTIVE_TRANSLATION_KEYS,
   AppointmentMotive,
   AppointmentQueueState,
-} from '../models/appointment.model';
+} from '@models/appointment.model';
 
 // ============================================================================
 // GLUCOSE READING TYPE TESTS

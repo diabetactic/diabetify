@@ -11,7 +11,7 @@ import {
   IonCardContent,
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
 interface Tip {
   icon: string;

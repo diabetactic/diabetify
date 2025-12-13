@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import {
   IonHeader,
   IonToolbar,
@@ -14,10 +14,10 @@ import {
   IonButton,
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
-import { LocalAuthService } from '../core/services/local-auth.service';
-import { LoggerService } from '../core/services/logger.service';
-import { APP_CONFIG, AppConfig } from '../core/config/app-config';
-import { ROUTES } from '../core/constants';
+import { LocalAuthService } from '@core/services/local-auth.service';
+import { LoggerService } from '@core/services/logger.service';
+import { APP_CONFIG, AppConfig } from '@core/config/app-config';
+import { ROUTES } from '@core/constants';
 
 @Component({
   selector: 'app-account-pending',
@@ -25,9 +25,7 @@ import { ROUTES } from '../core/constants';
   styleUrls: ['./account-pending.page.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     TranslateModule,
-    // Ionic standalone components
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -37,8 +35,8 @@ import { ROUTES } from '../core/constants';
     IonCardTitle,
     IonCardContent,
     IonLabel,
-    IonButton,
-  ],
+    IonButton
+],
 })
 export class AccountPendingPage {
   constructor(

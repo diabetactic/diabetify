@@ -8,7 +8,7 @@
         [disabled]="isSyncing"
         class="dashboard-toolbar-btn"
         [attr.aria-label]="'dashboard.syncNow' | translate"
-      >
+        >
         <ion-icon slot="icon-only" name="sync-outline" [class.spinning]="isSyncing"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -28,97 +28,98 @@
       color="primary"
       class="shadow-xl"
       [attr.aria-label]="'bolusCalculator.title' | translate"
-    >
+      >
       <img
         src="assets/images/bolus-calculator-icon.webp"
         alt=""
         class="h-10 w-10 rounded-full object-cover"
-      />
+        />
     </ion-fab-button>
   </ion-fab>
 
   <div class="page-shell">
     <!-- Loading Skeleton State -->
-    <div *ngIf="isLoading" class="animate-pulse">
-      <!-- Skeleton: Stats Grid -->
-      <div class="mb-6 grid grid-cols-1 gap-4">
-        <!-- Stat Card Skeleton 1 -->
-        <div class="bg-base-200 h-28 rounded-2xl"></div>
-        <!-- Stat Card Skeleton 2 -->
-        <div class="bg-base-200 h-28 rounded-2xl"></div>
-      </div>
-
-      <!-- Skeleton: Quick Actions Card -->
-      <div class="bg-base-100 mb-6 overflow-hidden rounded-2xl shadow-lg">
-        <!-- Header skeleton -->
-        <div class="bg-primary/20 h-16"></div>
-        <!-- Body skeleton -->
-        <div class="space-y-3 p-5">
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <div class="bg-base-200 h-12 rounded-2xl"></div>
-            <div class="bg-base-200 h-12 rounded-2xl"></div>
-            <div class="bg-base-200 h-12 rounded-2xl"></div>
+    @if (isLoading) {
+      <div class="animate-pulse">
+        <!-- Skeleton: Stats Grid -->
+        <div class="mb-6 grid grid-cols-1 gap-4">
+          <!-- Stat Card Skeleton 1 -->
+          <div class="bg-base-200 h-28 rounded-2xl"></div>
+          <!-- Stat Card Skeleton 2 -->
+          <div class="bg-base-200 h-28 rounded-2xl"></div>
+        </div>
+        <!-- Skeleton: Quick Actions Card -->
+        <div class="bg-base-100 mb-6 overflow-hidden rounded-2xl shadow-lg">
+          <!-- Header skeleton -->
+          <div class="bg-primary/20 h-16"></div>
+          <!-- Body skeleton -->
+          <div class="space-y-3 p-5">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div class="bg-base-200 h-12 rounded-2xl"></div>
+              <div class="bg-base-200 h-12 rounded-2xl"></div>
+              <div class="bg-base-200 h-12 rounded-2xl"></div>
+            </div>
+            <div class="bg-base-200 mt-4 h-10 rounded-xl"></div>
           </div>
-          <div class="bg-base-200 mt-4 h-10 rounded-xl"></div>
+        </div>
+        <!-- Skeleton: Recent Readings Section -->
+        <div class="mt-6">
+          <div class="mb-4 flex items-center justify-between">
+            <div class="bg-base-200 h-6 w-40 rounded"></div>
+            <div class="bg-base-200 h-6 w-20 rounded"></div>
+          </div>
+          <!-- Reading Item Skeletons -->
+          <div class="flex flex-col gap-3">
+            <div class="bg-base-200 h-20 rounded-2xl"></div>
+            <div class="bg-base-200 h-20 rounded-2xl"></div>
+            <div class="bg-base-200 h-20 rounded-2xl"></div>
+          </div>
         </div>
       </div>
-
-      <!-- Skeleton: Recent Readings Section -->
-      <div class="mt-6">
-        <div class="mb-4 flex items-center justify-between">
-          <div class="bg-base-200 h-6 w-40 rounded"></div>
-          <div class="bg-base-200 h-6 w-20 rounded"></div>
-        </div>
-        <!-- Reading Item Skeletons -->
-        <div class="flex flex-col gap-3">
-          <div class="bg-base-200 h-20 rounded-2xl"></div>
-          <div class="bg-base-200 h-20 rounded-2xl"></div>
-          <div class="bg-base-200 h-20 rounded-2xl"></div>
-        </div>
-      </div>
-    </div>
+    }
 
     <!-- Dashboard Content -->
-    <ng-container *ngIf="!isLoading">
+    @if (!isLoading) {
       <!-- Success Alert Banner -->
-      <div *ngIf="showSuccessAlert" class="alert alert-success mb-4 shadow-lg" role="status">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6 shrink-0 stroke-current"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        <span>{{ 'messages.saveSuccess' | translate }}</span>
-        <button
-          class="btn btn-sm btn-ghost"
-          (click)="onAlertDismissed()"
-          [attr.aria-label]="'common.dismissAlert' | translate"
-        >
+      @if (showSuccessAlert) {
+        <div class="alert alert-success mb-4 shadow-lg" role="status">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
+            class="h-6 w-6 shrink-0 stroke-current"
             fill="none"
             viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
+            >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
           </svg>
-        </button>
-      </div>
-
+          <span>{{ 'messages.saveSuccess' | translate }}</span>
+          <button
+            class="btn btn-sm btn-ghost"
+            (click)="onAlertDismissed()"
+            [attr.aria-label]="'common.dismissAlert' | translate"
+            >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+              >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+                />
+            </svg>
+          </button>
+        </div>
+      }
       <!-- Gamification Streak Card -->
       <app-streak-card
         class="mb-6"
@@ -127,7 +128,6 @@
         [timesMeasured]="timesMeasured"
         [loading]="isLoadingStreak"
       ></app-streak-card>
-
       <!-- Stats Grid - Gradient DaisyUI stat cards (stacked vertically) -->
       <div class="mb-6 grid grid-cols-1 gap-4" data-testid="stats-container">
         <app-stat-card
@@ -137,9 +137,8 @@
           [icon]="icons.timeInRange"
           color="info"
           [gradientColors]="gradients.timeInRange"
-        >
+          >
         </app-stat-card>
-
         <app-stat-card
           [title]="'dashboard.averageGlucose' | translate"
           [value]="statistics?.average ?? 0"
@@ -147,30 +146,29 @@
           [icon]="icons.avgGlucose"
           color="success"
           [gradientColors]="gradients.avgGlucose"
-        >
+          >
         </app-stat-card>
       </div>
-
       <!-- Sync Error Banner -->
-      <app-error-banner
-        *ngIf="getLastSyncError()"
-        [message]="'sync.error.message' | translate"
-        severity="error"
-        [retryable]="true"
-        [retryText]="'common.retry'"
-        (retry)="onSync()"
-        (dismissed)="clearSyncError()"
-      ></app-error-banner>
-
+      @if (getLastSyncError()) {
+        <app-error-banner
+          [message]="'sync.error.message' | translate"
+          severity="error"
+          [retryable]="true"
+          [retryText]="'common.retry'"
+          (retry)="onSync()"
+          (dismissed)="clearSyncError()"
+        ></app-error-banner>
+      }
       <!-- Quick Actions Card (daisyUI card with gradient header) -->
       <div
         class="card bg-base-100 quick-actions-card mb-6 overflow-hidden shadow-lg transition-shadow duration-200 hover:shadow-xl"
-      >
+        >
         <div class="card-body gap-4 p-0">
           <!-- Gradient header -->
           <div
             class="from-primary to-primary/80 text-primary-content flex items-center justify-between bg-gradient-to-r px-5 py-4"
-          >
+            >
             <div>
               <h2 class="card-title m-0 text-lg font-bold">
                 {{ 'dashboard.quickActions' | translate }}
@@ -181,7 +179,6 @@
             </div>
             <span class="material-symbols-outlined text-3xl drop-shadow-sm"> bolt </span>
           </div>
-
           <!-- Actions -->
           <div class="px-5 pb-4 pt-3">
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -190,36 +187,33 @@
                 (click)="addReading()"
                 class="btn btn-primary btn-lg inline-flex w-full items-center justify-center gap-2 rounded-2xl shadow-md transition-transform active:scale-[0.97]"
                 data-testid="quick-add-reading"
-              >
+                >
                 <app-icon name="add-circle-outline"></app-icon>
                 {{ 'dashboard.addReading' | translate }}
               </button>
-
               <button
                 type="button"
                 (click)="onSync()"
                 [disabled]="isSyncing"
                 class="btn btn-secondary btn-lg inline-flex w-full items-center justify-center gap-2 rounded-2xl shadow-md transition-transform active:scale-[0.97] disabled:active:scale-100"
-              >
+                >
                 <app-icon name="sync-outline" [class.spinning]="isSyncing"></app-icon>
                 {{ 'dashboard.syncNow' | translate }}
               </button>
-
               <button
                 type="button"
                 (click)="openBolusCalculator()"
                 class="btn btn-accent btn-lg inline-flex w-full items-center justify-center gap-2 rounded-2xl shadow-md transition-transform active:scale-[0.97]"
                 data-testid="quick-bolus-calculator"
-              >
+                >
                 <app-icon name="calculator-outline"></app-icon>
                 {{ 'bolusCalculator.title' | translate }}
               </button>
             </div>
-
             <!-- Sync status footer -->
             <div
               class="bg-base-200/70 text-base-content/70 dark:text-base-content/90 mt-4 flex items-center justify-between rounded-xl px-3 py-2 text-xs"
-            >
+              >
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-base"> sync </span>
                 <span>
@@ -231,20 +225,19 @@
                 <span class="font-semibold">
                   {{ getSyncItemsCount() }} {{ 'sync.items' | translate }}
                 </span>
-                <span
-                  *ngIf="getSyncFailedCount() > 0"
-                  class="sync-error text-error ml-1 font-semibold"
-                >
-                  ({{ getSyncFailedCount() }} {{ 'sync.failed' | translate }})
-                </span>
+                @if (getSyncFailedCount() > 0) {
+                  <span
+                    class="sync-error text-error ml-1 font-semibold"
+                    >
+                    ({{ getSyncFailedCount() }} {{ 'sync.failed' | translate }})
+                  </span>
+                }
               </div>
             </div>
-
             <!-- Error details removed - now shown in error banner above -->
           </div>
         </div>
       </div>
-
       <!-- Recent Readings Section -->
       <div class="recent-readings-section mt-6" data-testid="recent-readings">
         <div class="mb-4 flex items-center justify-between">
@@ -256,31 +249,33 @@
             size="small"
             [routerLink]="routes.TABS_READINGS"
             class="m-0 h-auto text-sm font-medium"
-          >
+            >
             {{ 'common.viewAll' | translate }}
             <app-icon name="chevron-forward-outline" class="text-base"></app-icon>
           </ion-button>
         </div>
-
         <!-- Empty State -->
-        <app-empty-state
-          *ngIf="recentReadings.length === 0"
-          illustration="fitness_center"
-          [heading]="'dashboard.noReadings' | translate"
-          [message]="'dashboard.noReadingsMessage' | translate"
-          ctaText=""
-        >
-        </app-empty-state>
-
+        @if (recentReadings.length === 0) {
+          <app-empty-state
+            illustration="fitness_center"
+            [heading]="'dashboard.noReadings' | translate"
+            [message]="'dashboard.noReadingsMessage' | translate"
+            ctaText=""
+            >
+          </app-empty-state>
+        }
         <!-- Reading Items -->
-        <div class="flex flex-col gap-3" *ngIf="recentReadings.length > 0">
-          <app-reading-item
-            *ngFor="let reading of recentReadings; trackBy: trackByReading"
-            [reading]="reading"
-          >
-          </app-reading-item>
-        </div>
+        @if (recentReadings.length > 0) {
+          <div class="flex flex-col gap-3">
+            @for (reading of recentReadings; track trackByReading($index, reading)) {
+              <app-reading-item
+                [reading]="reading"
+                >
+              </app-reading-item>
+            }
+          </div>
+        }
       </div>
-    </ng-container>
+    }
   </div>
 </ion-content>

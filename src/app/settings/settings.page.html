@@ -10,7 +10,7 @@
         [disabled]="!hasChanges"
         class="inline-flex items-center gap-2 text-white"
         [attr.aria-label]="'common.save' | translate"
-      >
+        >
         <app-icon name="save-outline" class="text-inherit"></app-icon>
       </ion-button>
     </ion-buttons>
@@ -48,7 +48,7 @@
           (ionChange)="onGlucoseUnitChange($event)"
           interface="popover"
           class="max-w-[50%]"
-        >
+          >
           <ion-select-option value="mg/dL">
             {{ 'settings.glucose.mgdl' | translate }}
           </ion-select-option>
@@ -82,7 +82,7 @@
           pin="true"
           (ionChange)="hasChanges = true"
           class="py-2"
-        >
+          >
           <ion-label slot="start" class="text-xs">{{
             glucoseSettings.unit === 'mg/dL' ? 50 : 2.8
           }}</ion-label>
@@ -104,7 +104,7 @@
           pin="true"
           (ionChange)="hasChanges = true"
           class="py-2"
-        >
+          >
           <ion-label slot="start" class="text-xs">{{
             glucoseSettings.unit === 'mg/dL' ? 140 : 7.8
           }}</ion-label>
@@ -127,7 +127,7 @@
           (ionChange)="onThemeChange($event)"
           interface="popover"
           class="max-w-[50%]"
-        >
+          >
           <ion-select-option value="light">
             {{ 'settings.appearance.themeLight' | translate }}
           </ion-select-option>
@@ -147,7 +147,7 @@
           (ionChange)="onLanguageChange($event)"
           interface="popover"
           class="max-w-[50%]"
-        >
+          >
           <ion-select-option value="es">
             {{ 'settings.language.es' | translate }}
           </ion-select-option>
@@ -164,12 +164,14 @@
     </ion-list-header>
     <ion-list class="mb-4">
       <!-- Web platform notification warning -->
-      <ion-item *ngIf="isWebPlatform" lines="none" class="bg-warning/10">
-        <app-icon name="alert-circle-outline" slot="start" class="text-warning"></app-icon>
-        <ion-label class="ion-text-wrap">
-          <p class="text-warning text-sm">{{ 'settings.notifications.webWarning' | translate }}</p>
-        </ion-label>
-      </ion-item>
+      @if (isWebPlatform) {
+        <ion-item lines="none" class="bg-warning/10">
+          <app-icon name="alert-circle-outline" slot="start" class="text-warning"></app-icon>
+          <ion-label class="ion-text-wrap">
+            <p class="text-warning text-sm">{{ 'settings.notifications.webWarning' | translate }}</p>
+          </ion-label>
+        </ion-item>
+      }
 
       <!-- Master notifications toggle -->
       <ion-item>
@@ -187,33 +189,33 @@
       </ion-item>
 
       <!-- Reading Reminders -->
-      <ng-container *ngIf="notificationsEnabled">
+      @if (notificationsEnabled) {
         <ion-item lines="none" class="mt-2">
           <ion-label class="text-sm font-medium">
             {{ 'settings.notifications.readingReminders' | translate }}
           </ion-label>
         </ion-item>
-
-        <ion-item *ngFor="let reminder of readingReminders; trackBy: trackByReminder">
-          <ion-label>
-            <h3 class="font-medium">{{ reminder.label }}</h3>
-            <p class="text-sm">{{ reminder.time }}</p>
-          </ion-label>
-          <ion-datetime
-            presentation="time"
-            [value]="'2024-01-01T' + reminder.time + ':00'"
-            (ionChange)="onReminderTimeChange(reminder, $event)"
-            class="ml-auto"
-            style="max-width: 120px"
-          ></ion-datetime>
-          <ion-toggle
-            [checked]="reminder.enabled"
-            (ionChange)="onReminderToggle(reminder, $event)"
-            slot="end"
-            [attr.aria-label]="reminder.label"
-          ></ion-toggle>
-        </ion-item>
-
+        @for (reminder of readingReminders; track trackByReminder($index, reminder)) {
+          <ion-item>
+            <ion-label>
+              <h3 class="font-medium">{{ reminder.label }}</h3>
+              <p class="text-sm">{{ reminder.time }}</p>
+            </ion-label>
+            <ion-datetime
+              presentation="time"
+              [value]="'2024-01-01T' + reminder.time + ':00'"
+              (ionChange)="onReminderTimeChange(reminder, $event)"
+              class="ml-auto"
+              style="max-width: 120px"
+            ></ion-datetime>
+            <ion-toggle
+              [checked]="reminder.enabled"
+              (ionChange)="onReminderToggle(reminder, $event)"
+              slot="end"
+              [attr.aria-label]="reminder.label"
+            ></ion-toggle>
+          </ion-item>
+        }
         <!-- Test Notification Button -->
         <ion-item button (click)="testNotification()" data-testid="test-notification-btn">
           <app-icon name="notifications-outline" slot="start" class="text-warning"></app-icon>
@@ -222,7 +224,7 @@
             <p class="text-sm">{{ 'settings.notifications.testDesc' | translate }}</p>
           </ion-label>
         </ion-item>
-      </ng-container>
+      }
     </ion-list>
 
     <!-- Advanced Settings -->
@@ -245,17 +247,19 @@
     </ion-list>
 
     <!-- Demo Mode Notice -->
-    <ion-card *ngIf="isDemoMode" class="demo-notice">
-      <ion-card-content class="flex items-center gap-3 p-3">
-        <app-icon
-          name="information-circle-outline"
-          class="text-warning shrink-0 text-2xl"
-        ></app-icon>
-        <p class="m-0 text-sm">
-          {{ 'settings.demoMode' | translate }}
-        </p>
-      </ion-card-content>
-    </ion-card>
+    @if (isDemoMode) {
+      <ion-card class="demo-notice">
+        <ion-card-content class="flex items-center gap-3 p-3">
+          <app-icon
+            name="information-circle-outline"
+            class="text-warning shrink-0 text-2xl"
+          ></app-icon>
+          <p class="m-0 text-sm">
+            {{ 'settings.demoMode' | translate }}
+          </p>
+        </ion-card-content>
+      </ion-card>
+    }
 
     <!-- Version Info -->
     <div class="p-5 text-center">

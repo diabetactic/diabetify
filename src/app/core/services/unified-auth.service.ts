@@ -1,16 +1,16 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Observable, BehaviorSubject, combineLatest, of, from, Subject } from 'rxjs';
 import { map, tap, catchError, takeUntil } from 'rxjs/operators';
-import { TidepoolAuthService, AuthState as TidepoolAuthState } from './tidepool-auth.service';
+import { TidepoolAuthService, AuthState as TidepoolAuthState } from '@services/tidepool-auth.service';
 import {
   LocalAuthService,
   LocalAuthState,
   LoginRequest,
   RegisterRequest,
   UserPreferences as LocalUserPreferences,
-} from './local-auth.service';
-import { LoggerService } from './logger.service';
-import { ApiGatewayService } from './api-gateway.service';
+} from '@services/local-auth.service';
+import { LoggerService } from '@services/logger.service';
+import { ApiGatewayService } from '@services/api-gateway.service';
 
 /**
  * Unified authentication provider type

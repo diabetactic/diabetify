@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
-import { API_GATEWAY_BASE_URL, getApiGatewayOverride } from '../../shared/config/api-base-url';
+import { API_GATEWAY_BASE_URL, getApiGatewayOverride } from '@core/../shared/config/api-base-url';
 
 @Injectable({
   providedIn: 'root',

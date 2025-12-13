@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { ProfileService } from './profile.service';
-import { ApiGatewayService } from './api-gateway.service';
-import { LoggerService } from './logger.service';
+import { ProfileService } from '@services/profile.service';
+import { ApiGatewayService } from '@services/api-gateway.service';
+import { LoggerService } from '@services/logger.service';
 import { of, throwError } from 'rxjs';
 import {
   UserProfile,
@@ -10,7 +10,7 @@ import {
   DEFAULT_USER_PREFERENCES,
   TidepoolAuth,
   AccountState,
-} from '../models';
+} from '@core/models';
 
 /**
  * Comprehensive test suite for ProfileService

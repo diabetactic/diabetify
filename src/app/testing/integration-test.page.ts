@@ -14,7 +14,7 @@ import {
   IonIcon,
 } from '@ionic/angular/standalone';
 import { AutoTestService, TestResult } from './auto-test.service';
-import { LoggerService } from '../core/services/logger.service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
   selector: 'app-integration-test',
@@ -39,19 +39,19 @@ import { LoggerService } from '../core/services/logger.service';
         <ion-title>🧪 Automated Integration Tests</ion-title>
       </ion-toolbar>
     </ion-header>
-
+    
     <ion-content class="ion-padding">
       <div class="test-container prose prose-sm">
         <!-- Credentials Section -->
         <div class="credentials-section">
           <h2>🔑 Heroku API Gateway</h2>
           <p class="api-url"><strong>URL:</strong> {{ apiUrl }}</p>
-
+    
           <ion-item>
             <ion-label position="stacked">Username (DNI)</ion-label>
             <ion-input [(ngModel)]="username" placeholder="1000" [disabled]="running"></ion-input>
           </ion-item>
-
+    
           <ion-item>
             <ion-label position="stacked">Password</ion-label>
             <ion-input
@@ -61,14 +61,14 @@ import { LoggerService } from '../core/services/logger.service';
               [disabled]="running"
             ></ion-input>
           </ion-item>
-
+    
           <ion-button
             expand="block"
             (click)="runAllTests()"
             [disabled]="running"
             color="success"
             class="run-button"
-          >
+            >
             <ion-icon
               name="{{ running ? 'hourglass-outline' : 'rocket-outline' }}"
               slot="start"
@@ -76,58 +76,64 @@ import { LoggerService } from '../core/services/logger.service';
             {{ running ? '⏳ Running Tests...' : '🚀 Run All Tests' }}
           </ion-button>
         </div>
-
+    
         <!-- Results Section -->
-        <div *ngIf="results.length > 0" class="results-section">
-          <h2>📊 Test Results ({{ successCount }}/{{ results.length }} passed)</h2>
-
-          <div
-            *ngFor="let result of results"
-            class="test-result"
-            [class.success]="result.status === 'success'"
-            [class.error]="result.status === 'error'"
-            [class.pending]="result.status === 'pending'"
-          >
-            <div class="result-header">
-              <span class="test-name">{{ result.name }}</span>
-              <span class="test-duration" *ngIf="result.duration">{{ result.duration }}ms</span>
-            </div>
-
-            <div class="result-message">{{ result.message }}</div>
-
-            <div *ngIf="result.data" class="result-data">
-              <pre>{{ result.data | json }}</pre>
-            </div>
-
-            <div *ngIf="result.error && result.status === 'error'" class="result-error">
-              <strong>Error Details:</strong>
-              <pre>{{ result.error | json }}</pre>
+        @if (results.length > 0) {
+          <div class="results-section">
+            <h2>📊 Test Results ({{ successCount }}/{{ results.length }} passed)</h2>
+            @for (result of results; track result) {
+              <div
+                class="test-result"
+                [class.success]="result.status === 'success'"
+                [class.error]="result.status === 'error'"
+                [class.pending]="result.status === 'pending'"
+                >
+                <div class="result-header">
+                  <span class="test-name">{{ result.name }}</span>
+                  @if (result.duration) {
+                    <span class="test-duration">{{ result.duration }}ms</span>
+                  }
+                </div>
+                <div class="result-message">{{ result.message }}</div>
+                @if (result.data) {
+                  <div class="result-data">
+                    <pre>{{ result.data | json }}</pre>
+                  </div>
+                }
+                @if (result.error && result.status === 'error') {
+                  <div class="result-error">
+                    <strong>Error Details:</strong>
+                    <pre>{{ result.error | json }}</pre>
+                  </div>
+                }
+              </div>
+            }
+            <!-- Summary -->
+            <div
+              class="summary-card"
+              [class.all-pass]="successCount === results.length"
+              [class.some-fail]="successCount < results.length"
+              >
+              <h3>{{ summaryEmoji }} Summary</h3>
+              <p>
+                <strong>Passed:</strong> {{ successCount }} <br />
+                <strong>Failed:</strong> {{ errorCount }} <br />
+                <strong>Total Time:</strong> {{ totalDuration }}ms
+              </p>
             </div>
           </div>
-
-          <!-- Summary -->
-          <div
-            class="summary-card"
-            [class.all-pass]="successCount === results.length"
-            [class.some-fail]="successCount < results.length"
-          >
-            <h3>{{ summaryEmoji }} Summary</h3>
-            <p>
-              <strong>Passed:</strong> {{ successCount }} <br />
-              <strong>Failed:</strong> {{ errorCount }} <br />
-              <strong>Total Time:</strong> {{ totalDuration }}ms
-            </p>
-          </div>
-        </div>
-
+        }
+    
         <!-- Empty State -->
-        <div *ngIf="results.length === 0 && !running" class="empty-state">
-          <ion-icon name="flask-outline" size="large"></ion-icon>
-          <p>Click "Run All Tests" to start automated testing</p>
-        </div>
+        @if (results.length === 0 && !running) {
+          <div class="empty-state">
+            <ion-icon name="flask-outline" size="large"></ion-icon>
+            <p>Click "Run All Tests" to start automated testing</p>
+          </div>
+        }
       </div>
     </ion-content>
-  `,
+    `,
   styles: [
     `
       .test-container {

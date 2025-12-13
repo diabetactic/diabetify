@@ -10,13 +10,13 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { timeout, take } from 'rxjs/operators';
 
-import { ExternalServicesManager, ExternalService } from './external-services-manager.service';
-import { UnifiedAuthService } from './unified-auth.service';
-import { GlucoserverService, GlucoseReading as GlucoserverReading } from './glucoserver.service';
-import { AppointmentService } from './appointment.service';
-import { ReadingsService } from './readings.service';
-import { db } from './database.service';
-import { LocalGlucoseReading } from '../models/glucose-reading.model';
+import { ExternalServicesManager, ExternalService } from '@services/external-services-manager.service';
+import { UnifiedAuthService } from '@services/unified-auth.service';
+import { GlucoserverService, GlucoseReading as GlucoserverReading } from '@services/glucoserver.service';
+import { AppointmentService } from '@services/appointment.service';
+import { ReadingsService } from '@services/readings.service';
+import { db } from '@services/database.service';
+import { LocalGlucoseReading } from '@models/glucose-reading.model';
 
 /**
  * Workflow types

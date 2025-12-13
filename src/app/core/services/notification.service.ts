@@ -9,8 +9,8 @@ import {
   ActionPerformed,
 } from '@capacitor/local-notifications';
 import { PluginListenerHandle } from '@capacitor/core';
-import { LoggerService } from './logger.service';
-import { ROUTES, appointmentDetailRoute } from '../constants';
+import { LoggerService } from '@services/logger.service';
+import { ROUTES, appointmentDetailRoute } from '@core/constants';
 
 export interface ReadingReminder {
   id: number;

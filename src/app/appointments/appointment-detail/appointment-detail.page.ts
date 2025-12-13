@@ -1,5 +1,5 @@
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
@@ -21,12 +21,12 @@ import {
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
-import { AppointmentService } from '../../core/services/appointment.service';
-import { Appointment, AppointmentResolutionResponse } from '../../core/models/appointment.model';
-import { TranslationService } from '../../core/services/translation.service';
-import { LoggerService } from '../../core/services/logger.service';
-import { ROUTES } from '../../core/constants';
-import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
+import { AppointmentService } from '@services/appointment.service';
+import { Appointment, AppointmentResolutionResponse } from '@models/appointment.model';
+import { TranslationService } from '@services/translation.service';
+import { LoggerService } from '@services/logger.service';
+import { ROUTES } from '@core/constants';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-appointment-detail',
@@ -34,7 +34,6 @@ import { AppIconComponent } from '../../shared/components/app-icon/app-icon.comp
   styleUrls: ['./appointment-detail.page.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     TranslateModule,
     AppIconComponent,
@@ -51,8 +50,8 @@ import { AppIconComponent } from '../../shared/components/app-icon/app-icon.comp
     IonCardContent,
     IonList,
     IonItem,
-    IonLabel,
-  ],
+    IonLabel
+],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppointmentDetailPage implements OnInit {

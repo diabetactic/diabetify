@@ -2,10 +2,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { AddReadingPage } from './add-reading.page';
-import { getLucideIconsForTesting } from '../tests/helpers/icon-test.helper';
-import { ReadingsService } from '../core/services/readings.service';
-import { ProfileService } from '../core/services/profile.service';
-import { LoggerService } from '../core/services/logger.service';
+import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helper';
+import { ReadingsService } from '@core/services/readings.service';
+import { ProfileService } from '@core/services/profile.service';
+import { LoggerService } from '@core/services/logger.service';
 import { BehaviorSubject, of } from 'rxjs';
 
 describe('AddReadingPage', () => {

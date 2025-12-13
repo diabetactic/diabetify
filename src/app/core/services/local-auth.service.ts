@@ -3,12 +3,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError, from, of, firstValueFrom } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Preferences } from '@capacitor/preferences';
-import { PlatformDetectorService } from './platform-detector.service';
-import { LoggerService } from './logger.service';
-import { MockDataService } from './mock-data.service';
-import { MockAdapterService } from './mock-adapter.service';
-import { environment } from '../../../environments/environment';
-import { API_GATEWAY_BASE_URL } from '../../shared/config/api-base-url';
+import { PlatformDetectorService } from '@services/platform-detector.service';
+import { LoggerService } from '@services/logger.service';
+import { MockDataService } from '@services/mock-data.service';
+import { MockAdapterService } from '@services/mock-adapter.service';
+import { environment } from '@env/environment';
+import { API_GATEWAY_BASE_URL } from '@core/../shared/config/api-base-url';
 
 /**
  * Local authentication state

@@ -1,5 +1,5 @@
 import { Component, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
@@ -22,13 +22,13 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
 
-import { environment } from '../../../environments/environment';
-import { UnifiedAuthService } from '../../core/services/unified-auth.service';
-import { TranslationService } from '../../core/services/translation.service';
-import { db } from '../../core/services/database.service';
-import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
-import { LoggerService } from '../../core/services/logger.service';
-import { ROUTES, TIMEOUTS } from '../../core/constants';
+import { environment } from '@env/environment';
+import { UnifiedAuthService } from '@services/unified-auth.service';
+import { TranslationService } from '@services/translation.service';
+import { db } from '@services/database.service';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
+import { LoggerService } from '@services/logger.service';
+import { ROUTES, TIMEOUTS } from '@core/constants';
 
 @Component({
   selector: 'app-advanced',
@@ -36,10 +36,8 @@ import { ROUTES, TIMEOUTS } from '../../core/constants';
   styleUrls: ['./advanced.page.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     TranslateModule,
-    // Ionic standalone components
     IonHeader,
     IonToolbar,
     IonButtons,
@@ -53,9 +51,8 @@ import { ROUTES, TIMEOUTS } from '../../core/constants';
     IonLabel,
     IonSelect,
     IonSelectOption,
-    // App components
-    AppIconComponent,
-  ],
+    AppIconComponent
+],
 })
 export class AdvancedPage implements OnDestroy {
   isDevMode = !environment.production;

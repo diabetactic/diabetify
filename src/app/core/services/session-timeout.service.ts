@@ -7,9 +7,9 @@ import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { fromEvent, merge, Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
-import { LocalAuthService } from './local-auth.service';
-import { LoggerService } from './logger.service';
-import { ROUTES } from '../constants';
+import { LocalAuthService } from '@services/local-auth.service';
+import { LoggerService } from '@services/logger.service';
+import { ROUTES } from '@core/constants';
 
 @Injectable({
   providedIn: 'root',

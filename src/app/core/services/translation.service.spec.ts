@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
-import { TranslationService, Language, LanguageConfig } from './translation.service';
+import { TranslationService, Language, LanguageConfig } from '@services/translation.service';
 import { Device } from '@capacitor/device';
 import { Preferences } from '@capacitor/preferences';
 

@@ -3,9 +3,9 @@
  * Tests actual database operations without mocks
  */
 import { TestBed } from '@angular/core/testing';
-import { ReadingsService } from './readings.service';
-import { db } from './database.service';
-import { GlucoseReading, GlucoseStatus } from '../models/glucose-reading.model';
+import { ReadingsService } from '@services/readings.service';
+import { db } from '@services/database.service';
+import { GlucoseReading, GlucoseStatus } from '@models/glucose-reading.model';
 
 describe('ReadingsService Integration Tests', () => {
   let service: ReadingsService;

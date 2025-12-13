@@ -14,11 +14,11 @@ import {
   CreateUserProfileInput,
   UpdateUserProfileInput,
   DEFAULT_USER_PREFERENCES,
-  TidepoolAuth,
   AccountState,
-} from '../models';
-import { ApiGatewayService } from './api-gateway.service';
-import { LoggerService } from './logger.service';
+} from '@models/user-profile.model';
+import { TidepoolAuth } from '@models/tidepool-auth.model';
+import { ApiGatewayService } from '@services/api-gateway.service';
+import { LoggerService } from '@services/logger.service';
 
 /**
  * Backend user update payload (PATCH /users/me)

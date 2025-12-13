@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { RendererFactory2 } from '@angular/core';
-import { ThemeService } from './theme.service';
-import { ProfileService } from './profile.service';
-import { UserProfile, DEFAULT_USER_PREFERENCES, AccountState } from '../models/user-profile.model';
+import { ThemeService } from '@services/theme.service';
+import { ProfileService } from '@services/profile.service';
+import { UserProfile, DEFAULT_USER_PREFERENCES, AccountState } from '@models/user-profile.model';
 import { skip, take } from 'rxjs/operators';
 
 describe('ThemeService', () => {

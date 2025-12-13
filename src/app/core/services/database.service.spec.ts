@@ -1,9 +1,9 @@
 import Dexie, { Table } from 'dexie';
 import 'fake-indexeddb/auto';
 import FDBFactory from 'fake-indexeddb/lib/FDBFactory';
-import { DiabetacticDatabase, SyncQueueItem, db } from './database.service';
-import { LocalGlucoseReading } from '../models/glucose-reading.model';
-import { Appointment } from '../models/appointment.model';
+import { DiabetacticDatabase, SyncQueueItem, db } from '@services/database.service';
+import { LocalGlucoseReading } from '@models/glucose-reading.model';
+import { Appointment } from '@models/appointment.model';
 
 /**
  * Extended Appointment type for database tests

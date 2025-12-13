@@ -12,282 +12,284 @@
 <ion-content [fullscreen]="true" class="appointment-detail-content">
   <div class="px-4 py-6">
     <!-- Loading state -->
-    <div *ngIf="loading" class="flex flex-col items-center justify-center gap-4 py-12">
-      <app-icon name="loader-circle" class="text-primary animate-spin text-4xl"></app-icon>
-      <p class="text-base-content/60 dark:text-base-content/80 m-0 text-base">
-        {{ 'appointments.detail.loading' | translate }}
-      </p>
-    </div>
+    @if (loading) {
+      <div class="flex flex-col items-center justify-center gap-4 py-12">
+        <app-icon name="loader-circle" class="text-primary animate-spin text-4xl"></app-icon>
+        <p class="text-base-content/60 dark:text-base-content/80 m-0 text-base">
+          {{ 'appointments.detail.loading' | translate }}
+        </p>
+      </div>
+    }
 
     <!-- Appointment details -->
-    <div *ngIf="!loading && appointment" class="flex flex-col gap-4">
-      <!-- Header card with ID and motive -->
-      <ion-card class="!m-0">
-        <ion-card-header>
-          <ion-card-subtitle class="flex items-center gap-2">
-            <app-icon name="clipboard-list" class="text-primary"></app-icon>
-            {{ 'appointments.record' | translate }} #{{ appointment.appointment_id }}
-          </ion-card-subtitle>
-          <ion-card-title class="text-xl">
-            {{ formatMotive(appointment.motive) }}
-          </ion-card-title>
-        </ion-card-header>
-      </ion-card>
-
-      <!-- Treatment parameters card -->
-      <ion-card class="!m-0">
-        <ion-card-header>
-          <ion-card-title class="flex items-center gap-2 text-lg">
-            <app-icon name="activity" class="text-primary"></app-icon>
-            {{ 'appointments.detail.treatmentParams' | translate }}
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="grid grid-cols-2 gap-4">
-            <!-- Glucose Objective -->
-            <div class="bg-base-200 flex flex-col rounded-xl p-3">
-              <span
-                class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
-              >
-                {{ 'appointments.fields.glucoseObjective' | translate }}
-              </span>
-              <span class="text-primary text-lg font-bold">
-                {{ appointment.glucose_objective }} mg/dL
-              </span>
+    @if (!loading && appointment) {
+      <div class="flex flex-col gap-4">
+        <!-- Header card with ID and motive -->
+        <ion-card class="!m-0">
+          <ion-card-header>
+            <ion-card-subtitle class="flex items-center gap-2">
+              <app-icon name="clipboard-list" class="text-primary"></app-icon>
+              {{ 'appointments.record' | translate }} #{{ appointment.appointment_id }}
+            </ion-card-subtitle>
+            <ion-card-title class="text-xl">
+              {{ formatMotive(appointment.motive) }}
+            </ion-card-title>
+          </ion-card-header>
+        </ion-card>
+        <!-- Treatment parameters card -->
+        <ion-card class="!m-0">
+          <ion-card-header>
+            <ion-card-title class="flex items-center gap-2 text-lg">
+              <app-icon name="activity" class="text-primary"></app-icon>
+              {{ 'appointments.detail.treatmentParams' | translate }}
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="grid grid-cols-2 gap-4">
+              <!-- Glucose Objective -->
+              <div class="bg-base-200 flex flex-col rounded-xl p-3">
+                <span
+                  class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+                  >
+                  {{ 'appointments.fields.glucoseObjective' | translate }}
+                </span>
+                <span class="text-primary text-lg font-bold">
+                  {{ appointment.glucose_objective }} mg/dL
+                </span>
+              </div>
+              <!-- Insulin Type -->
+              <div class="bg-base-200 flex flex-col rounded-xl p-3">
+                <span
+                  class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+                  >
+                  {{ 'appointments.fields.insulinType' | translate }}
+                </span>
+                <span class="text-lg font-semibold">
+                  {{ formatInsulinType(appointment.insulin_type) }}
+                </span>
+              </div>
+              <!-- Dose -->
+              <div class="bg-base-200 flex flex-col rounded-xl p-3">
+                <span
+                  class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+                  >
+                  {{ 'appointments.fields.dose' | translate }}
+                </span>
+                <span class="text-lg font-semibold">{{ appointment.dose }} U</span>
+              </div>
+              <!-- Fixed Dose -->
+              <div class="bg-base-200 flex flex-col rounded-xl p-3">
+                <span
+                  class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+                  >
+                  {{ 'appointments.fields.fixedDose' | translate }}
+                </span>
+                <span class="text-lg font-semibold">{{ appointment.fixed_dose }} U</span>
+              </div>
+              <!-- Ratio -->
+              <div class="bg-base-200 flex flex-col rounded-xl p-3">
+                <span
+                  class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+                  >
+                  {{ 'appointments.fields.ratio' | translate }}
+                </span>
+                <span class="text-lg font-semibold">1:{{ appointment.ratio }}</span>
+              </div>
+              <!-- Sensitivity -->
+              <div class="bg-base-200 flex flex-col rounded-xl p-3">
+                <span
+                  class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+                  >
+                  {{ 'appointments.fields.sensitivity' | translate }}
+                </span>
+                <span class="text-lg font-semibold">{{ appointment.sensitivity }}</span>
+              </div>
             </div>
-
-            <!-- Insulin Type -->
-            <div class="bg-base-200 flex flex-col rounded-xl p-3">
-              <span
-                class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
-              >
-                {{ 'appointments.fields.insulinType' | translate }}
+          </ion-card-content>
+        </ion-card>
+        <!-- Insulin details card -->
+        <ion-card class="!m-0">
+          <ion-card-header>
+            <ion-card-title class="flex items-center gap-2 text-lg">
+              <app-icon name="syringe" class="text-primary"></app-icon>
+              {{ 'appointments.detail.insulinDetails' | translate }}
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list lines="none" class="ion-no-padding">
+              <ion-item>
+                <ion-label>
+                  <p class="text-base-content/60 dark:text-base-content/80">
+                    {{ 'appointments.fields.fastInsulin' | translate }}
+                  </p>
+                  <h3 class="font-semibold">{{ formatTextField(appointment.fast_insulin) }}</h3>
+                </ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>
+                  <p class="text-base-content/60 dark:text-base-content/80">
+                    {{ 'appointments.fields.pumpType' | translate }}
+                  </p>
+                  <h3 class="font-semibold">{{ formatPumpType(appointment.pump_type) }}</h3>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+        <!-- Control data card -->
+        @if (appointment.control_data && !isPlaceholderValue(appointment.control_data)) {
+          <ion-card
+            class="!m-0"
+            >
+            <ion-card-header>
+              <ion-card-title class="flex items-center gap-2 text-lg">
+                <app-icon name="file-text" class="text-primary"></app-icon>
+                {{ 'appointments.fields.controlData' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p class="text-base-content/70 dark:text-base-content/90">
+                {{ appointment.control_data }}
+              </p>
+            </ion-card-content>
+          </ion-card>
+        }
+        <!-- Other motive card -->
+        @if (appointment.other_motive && !isPlaceholderValue(appointment.other_motive)) {
+          <ion-card
+            class="!m-0"
+            >
+            <ion-card-header>
+              <ion-card-title class="flex items-center gap-2 text-lg">
+                <app-icon name="message-square" class="text-primary"></app-icon>
+                {{ 'appointments.fields.otherMotive' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p class="text-base-content/70 dark:text-base-content/90">
+                {{ appointment.other_motive }}
+              </p>
+            </ion-card-content>
+          </ion-card>
+        }
+        <!-- Another treatment card -->
+        @if (appointment.another_treatment && !isPlaceholderValue(appointment.another_treatment)) {
+          <ion-card
+            class="!m-0"
+            >
+            <ion-card-header>
+              <ion-card-title class="flex items-center gap-2 text-lg">
+                <app-icon name="pill" class="text-primary"></app-icon>
+                {{ 'appointments.fields.otherTreatment' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p class="text-base-content/70 dark:text-base-content/90">
+                {{ appointment.another_treatment }}
+              </p>
+            </ion-card-content>
+          </ion-card>
+        }
+        <!-- Resolution card - shown when resolution data is available -->
+        @if (resolution && resolution.change_basal_type) {
+          <ion-card
+            class="!m-0 border-l-4 border-l-green-500"
+            >
+            <ion-card-header>
+              <ion-card-title class="flex items-center gap-2 text-lg">
+                <app-icon name="clipboard-check" class="text-green-500"></app-icon>
+                {{ 'appointments.detail.resolution' | translate }}
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list lines="none" class="ion-no-padding">
+                <!-- Basal Insulin Changes -->
+                <ion-item>
+                  <ion-label>
+                    <p class="text-base-content/60 dark:text-base-content/80">
+                      {{ 'appointments.resolution.basalType' | translate }}
+                    </p>
+                    <h3 class="font-semibold">{{ resolution.change_basal_type }}</h3>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>
+                    <p class="text-base-content/60 dark:text-base-content/80">
+                      {{ 'appointments.resolution.basalDose' | translate }}
+                    </p>
+                    <h3 class="font-semibold">{{ resolution.change_basal_dose }} U</h3>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>
+                    <p class="text-base-content/60 dark:text-base-content/80">
+                      {{ 'appointments.resolution.basalTime' | translate }}
+                    </p>
+                    <h3 class="font-semibold">{{ resolution.change_basal_time }}</h3>
+                  </ion-label>
+                </ion-item>
+                <!-- Fast Insulin Changes -->
+                <ion-item>
+                  <ion-label>
+                    <p class="text-base-content/60 dark:text-base-content/80">
+                      {{ 'appointments.resolution.fastType' | translate }}
+                    </p>
+                    <h3 class="font-semibold">{{ resolution.change_fast_type }}</h3>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>
+                    <p class="text-base-content/60 dark:text-base-content/80">
+                      {{ 'appointments.resolution.ratio' | translate }}
+                    </p>
+                    <h3 class="font-semibold">1:{{ resolution.change_ratio }}</h3>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>
+                    <p class="text-base-content/60 dark:text-base-content/80">
+                      {{ 'appointments.resolution.sensitivity' | translate }}
+                    </p>
+                    <h3 class="font-semibold">{{ resolution.change_sensitivity }} mg/dL</h3>
+                  </ion-label>
+                </ion-item>
+                <!-- Flags -->
+                @if (resolution.emergency_care) {
+                  <ion-item class="text-error">
+                    <ion-label>
+                      <h3 class="flex items-center gap-2 font-semibold text-red-500">
+                        <app-icon name="alert-triangle" class="text-red-500"></app-icon>
+                        {{ 'appointments.resolution.emergencyCare' | translate }}
+                      </h3>
+                    </ion-label>
+                  </ion-item>
+                }
+                @if (resolution.needed_physical_appointment) {
+                  <ion-item class="text-warning">
+                    <ion-label>
+                      <h3 class="flex items-center gap-2 font-semibold text-amber-500">
+                        <app-icon name="calendar" class="text-amber-500"></app-icon>
+                        {{ 'appointments.resolution.needsPhysicalAppointment' | translate }}
+                      </h3>
+                    </ion-label>
+                  </ion-item>
+                }
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+        }
+        <!-- Resolution loading state -->
+        @if (loadingResolution) {
+          <ion-card class="!m-0">
+            <ion-card-content class="flex items-center justify-center py-4">
+              <app-icon name="loader-circle" class="text-primary mr-2 animate-spin"></app-icon>
+              <span class="text-base-content/60 dark:text-base-content/80">
+                {{ 'appointments.resolution.loading' | translate }}
               </span>
-              <span class="text-lg font-semibold">
-                {{ formatInsulinType(appointment.insulin_type) }}
-              </span>
-            </div>
-
-            <!-- Dose -->
-            <div class="bg-base-200 flex flex-col rounded-xl p-3">
-              <span
-                class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
-              >
-                {{ 'appointments.fields.dose' | translate }}
-              </span>
-              <span class="text-lg font-semibold">{{ appointment.dose }} U</span>
-            </div>
-
-            <!-- Fixed Dose -->
-            <div class="bg-base-200 flex flex-col rounded-xl p-3">
-              <span
-                class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
-              >
-                {{ 'appointments.fields.fixedDose' | translate }}
-              </span>
-              <span class="text-lg font-semibold">{{ appointment.fixed_dose }} U</span>
-            </div>
-
-            <!-- Ratio -->
-            <div class="bg-base-200 flex flex-col rounded-xl p-3">
-              <span
-                class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
-              >
-                {{ 'appointments.fields.ratio' | translate }}
-              </span>
-              <span class="text-lg font-semibold">1:{{ appointment.ratio }}</span>
-            </div>
-
-            <!-- Sensitivity -->
-            <div class="bg-base-200 flex flex-col rounded-xl p-3">
-              <span
-                class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
-              >
-                {{ 'appointments.fields.sensitivity' | translate }}
-              </span>
-              <span class="text-lg font-semibold">{{ appointment.sensitivity }}</span>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Insulin details card -->
-      <ion-card class="!m-0">
-        <ion-card-header>
-          <ion-card-title class="flex items-center gap-2 text-lg">
-            <app-icon name="syringe" class="text-primary"></app-icon>
-            {{ 'appointments.detail.insulinDetails' | translate }}
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-list lines="none" class="ion-no-padding">
-            <ion-item>
-              <ion-label>
-                <p class="text-base-content/60 dark:text-base-content/80">
-                  {{ 'appointments.fields.fastInsulin' | translate }}
-                </p>
-                <h3 class="font-semibold">{{ formatTextField(appointment.fast_insulin) }}</h3>
-              </ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-label>
-                <p class="text-base-content/60 dark:text-base-content/80">
-                  {{ 'appointments.fields.pumpType' | translate }}
-                </p>
-                <h3 class="font-semibold">{{ formatPumpType(appointment.pump_type) }}</h3>
-              </ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Control data card -->
-      <ion-card
-        *ngIf="appointment.control_data && !isPlaceholderValue(appointment.control_data)"
-        class="!m-0"
-      >
-        <ion-card-header>
-          <ion-card-title class="flex items-center gap-2 text-lg">
-            <app-icon name="file-text" class="text-primary"></app-icon>
-            {{ 'appointments.fields.controlData' | translate }}
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <p class="text-base-content/70 dark:text-base-content/90">
-            {{ appointment.control_data }}
-          </p>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Other motive card -->
-      <ion-card
-        *ngIf="appointment.other_motive && !isPlaceholderValue(appointment.other_motive)"
-        class="!m-0"
-      >
-        <ion-card-header>
-          <ion-card-title class="flex items-center gap-2 text-lg">
-            <app-icon name="message-square" class="text-primary"></app-icon>
-            {{ 'appointments.fields.otherMotive' | translate }}
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <p class="text-base-content/70 dark:text-base-content/90">
-            {{ appointment.other_motive }}
-          </p>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Another treatment card -->
-      <ion-card
-        *ngIf="appointment.another_treatment && !isPlaceholderValue(appointment.another_treatment)"
-        class="!m-0"
-      >
-        <ion-card-header>
-          <ion-card-title class="flex items-center gap-2 text-lg">
-            <app-icon name="pill" class="text-primary"></app-icon>
-            {{ 'appointments.fields.otherTreatment' | translate }}
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <p class="text-base-content/70 dark:text-base-content/90">
-            {{ appointment.another_treatment }}
-          </p>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Resolution card - shown when resolution data is available -->
-      <ion-card
-        *ngIf="resolution && resolution.change_basal_type"
-        class="!m-0 border-l-4 border-l-green-500"
-      >
-        <ion-card-header>
-          <ion-card-title class="flex items-center gap-2 text-lg">
-            <app-icon name="clipboard-check" class="text-green-500"></app-icon>
-            {{ 'appointments.detail.resolution' | translate }}
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-list lines="none" class="ion-no-padding">
-            <!-- Basal Insulin Changes -->
-            <ion-item>
-              <ion-label>
-                <p class="text-base-content/60 dark:text-base-content/80">
-                  {{ 'appointments.resolution.basalType' | translate }}
-                </p>
-                <h3 class="font-semibold">{{ resolution.change_basal_type }}</h3>
-              </ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-label>
-                <p class="text-base-content/60 dark:text-base-content/80">
-                  {{ 'appointments.resolution.basalDose' | translate }}
-                </p>
-                <h3 class="font-semibold">{{ resolution.change_basal_dose }} U</h3>
-              </ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-label>
-                <p class="text-base-content/60 dark:text-base-content/80">
-                  {{ 'appointments.resolution.basalTime' | translate }}
-                </p>
-                <h3 class="font-semibold">{{ resolution.change_basal_time }}</h3>
-              </ion-label>
-            </ion-item>
-            <!-- Fast Insulin Changes -->
-            <ion-item>
-              <ion-label>
-                <p class="text-base-content/60 dark:text-base-content/80">
-                  {{ 'appointments.resolution.fastType' | translate }}
-                </p>
-                <h3 class="font-semibold">{{ resolution.change_fast_type }}</h3>
-              </ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-label>
-                <p class="text-base-content/60 dark:text-base-content/80">
-                  {{ 'appointments.resolution.ratio' | translate }}
-                </p>
-                <h3 class="font-semibold">1:{{ resolution.change_ratio }}</h3>
-              </ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-label>
-                <p class="text-base-content/60 dark:text-base-content/80">
-                  {{ 'appointments.resolution.sensitivity' | translate }}
-                </p>
-                <h3 class="font-semibold">{{ resolution.change_sensitivity }} mg/dL</h3>
-              </ion-label>
-            </ion-item>
-            <!-- Flags -->
-            <ion-item *ngIf="resolution.emergency_care" class="text-error">
-              <ion-label>
-                <h3 class="flex items-center gap-2 font-semibold text-red-500">
-                  <app-icon name="alert-triangle" class="text-red-500"></app-icon>
-                  {{ 'appointments.resolution.emergencyCare' | translate }}
-                </h3>
-              </ion-label>
-            </ion-item>
-            <ion-item *ngIf="resolution.needed_physical_appointment" class="text-warning">
-              <ion-label>
-                <h3 class="flex items-center gap-2 font-semibold text-amber-500">
-                  <app-icon name="calendar" class="text-amber-500"></app-icon>
-                  {{ 'appointments.resolution.needsPhysicalAppointment' | translate }}
-                </h3>
-              </ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Resolution loading state -->
-      <ion-card *ngIf="loadingResolution" class="!m-0">
-        <ion-card-content class="flex items-center justify-center py-4">
-          <app-icon name="loader-circle" class="text-primary mr-2 animate-spin"></app-icon>
-          <span class="text-base-content/60 dark:text-base-content/80">
-            {{ 'appointments.resolution.loading' | translate }}
-          </span>
-        </ion-card-content>
-      </ion-card>
-    </div>
+            </ion-card-content>
+          </ion-card>
+        }
+      </div>
+    }
   </div>
 </ion-content>

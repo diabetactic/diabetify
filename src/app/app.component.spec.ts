@@ -5,9 +5,9 @@ import { of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { IonicModule } from '@ionic/angular';
 import { AppComponent } from './app.component';
-import { TranslationService } from './core/services/translation.service';
-import { LocalAuthService } from './core/services/local-auth.service';
-import { SessionTimeoutService } from './core/services/session-timeout.service';
+import { TranslationService } from '@services/translation.service';
+import { LocalAuthService } from '@services/local-auth.service';
+import { SessionTimeoutService } from '@services/session-timeout.service';
 import { getLucideIconsForTesting } from './tests/helpers/icon-test.helper';
 
 class TranslationServiceStub {

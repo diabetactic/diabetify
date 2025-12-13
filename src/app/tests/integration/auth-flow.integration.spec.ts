@@ -12,16 +12,16 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
-import { LocalAuthService, LocalUser, AccountState } from '../../core/services/local-auth.service';
-import { ProfileService } from '../../core/services/profile.service';
-import { ApiGatewayService } from '../../core/services/api-gateway.service';
-import { ExternalServicesManager } from '../../core/services/external-services-manager.service';
-import { PlatformDetectorService } from '../../core/services/platform-detector.service';
-import { EnvironmentDetectorService } from '../../core/services/environment-detector.service';
-import { LoggerService } from '../../core/services/logger.service';
-import { MockAdapterService } from '../../core/services/mock-adapter.service';
-import { MockDataService } from '../../core/services/mock-data.service';
-import { TidepoolAuthService } from '../../core/services/tidepool-auth.service';
+import { LocalAuthService, LocalUser, AccountState } from '@core/services/local-auth.service';
+import { ProfileService } from '@core/services/profile.service';
+import { ApiGatewayService } from '@core/services/api-gateway.service';
+import { ExternalServicesManager } from '@core/services/external-services-manager.service';
+import { PlatformDetectorService } from '@core/services/platform-detector.service';
+import { EnvironmentDetectorService } from '@core/services/environment-detector.service';
+import { LoggerService } from '@core/services/logger.service';
+import { MockAdapterService } from '@core/services/mock-adapter.service';
+import { MockDataService } from '@core/services/mock-data.service';
+import { TidepoolAuthService } from '@core/services/tidepool-auth.service';
 import { Preferences } from '@capacitor/preferences';
 
 describe('Auth Flow Integration Tests', () => {

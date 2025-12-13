@@ -17,15 +17,15 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 import { ReadingsPage } from '../../../readings/readings.page';
-import { ReadingsService } from '../../../core/services/readings.service';
-import { ProfileService } from '../../../core/services/profile.service';
-import { TranslationService } from '../../../core/services/translation.service';
-import { LoggerService } from '../../../core/services/logger.service';
+import { ReadingsService } from '@services/readings.service';
+import { ProfileService } from '@services/profile.service';
+import { TranslationService } from '@services/translation.service';
+import { LoggerService } from '@services/logger.service';
 import {
   LocalGlucoseReading,
   GlucoseStatus,
   GlucoseUnit,
-} from '../../../core/models/glucose-reading.model';
+} from '@models/glucose-reading.model';
 
 class ReadingsServiceStub {
   private _readings$ = new BehaviorSubject<LocalGlucoseReading[]>([]);

@@ -2,9 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { AccountPendingPage } from './account-pending.page';
-import { LocalAuthService } from '../core/services/local-auth.service';
+import { LocalAuthService } from '@core/services/local-auth.service';
 import { Router } from '@angular/router';
-import { APP_CONFIG } from '../core/config/app-config';
+import { APP_CONFIG } from '@core/config/app-config';
 
 describe('AccountPendingPage', () => {
   let component: AccountPendingPage;

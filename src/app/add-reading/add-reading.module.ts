@@ -7,7 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { AddReadingPageRoutingModule } from './add-reading-routing.module';
 
 import { AddReadingPage } from './add-reading.page';
-import { AlertBannerComponent } from '../shared/components/alert-banner/alert-banner.component';
+import { AlertBannerComponent } from '@shared/components/alert-banner/alert-banner.component';
 
 @NgModule({
   imports: [

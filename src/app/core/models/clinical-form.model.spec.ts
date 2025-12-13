@@ -13,7 +13,7 @@ import {
   ClinicalForm,
   ClinicalFormTemplate,
   SaveClinicalFormRequest,
-} from './clinical-form.model';
+} from '@models/clinical-form.model';
 
 describe('ClinicalFormModel', () => {
   describe('DataProvenance enum', () => {

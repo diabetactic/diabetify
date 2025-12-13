@@ -7,8 +7,8 @@ import {
   ExternalServicesManager,
   ExternalServicesState,
   HealthStatus,
-} from '../../../core/services/external-services-manager.service';
-import { ServiceOrchestrator } from '../../../core/services/service-orchestrator.service';
+} from '@services/external-services-manager.service';
+import { ServiceOrchestrator } from '@services/service-orchestrator.service';
 
 describe('ServiceMonitorComponent', () => {
   let component: ServiceMonitorComponent;

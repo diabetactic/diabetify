@@ -5,9 +5,9 @@
 
 import { Injectable, Renderer2, RendererFactory2, OnDestroy } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { ColorPalette, ThemeMode } from '../models';
-import { ProfileService } from './profile.service';
-import { LoggerService } from './logger.service';
+import { ColorPalette, ThemeMode } from '@models/user-profile.model';
+import { ProfileService } from '@services/profile.service';
+import { LoggerService } from '@services/logger.service';
 
 /**
  * Color palette definitions

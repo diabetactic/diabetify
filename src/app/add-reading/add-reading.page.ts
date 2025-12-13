@@ -5,7 +5,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ToastController, NavController } from '@ionic/angular';
@@ -29,11 +29,11 @@ import {
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 
-import { ReadingsService } from '../core/services/readings.service';
-import { ProfileService } from '../core/services/profile.service';
-import { LoggerService } from '../core/services/logger.service';
-import { SMBGReading, GlucoseUnit, GlucoseStatus } from '../core/models/glucose-reading.model';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { ReadingsService } from '@services/readings.service';
+import { ProfileService } from '@services/profile.service';
+import { LoggerService } from '@services/logger.service';
+import { SMBGReading, GlucoseUnit, GlucoseStatus } from '@models/glucose-reading.model';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
 interface MealContextOption {
   value: string;
@@ -47,11 +47,9 @@ interface MealContextOption {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     RouterModule,
     ReactiveFormsModule,
     TranslateModule,
-    // Ionic standalone components
     IonHeader,
     IonToolbar,
     IonButtons,
@@ -67,9 +65,8 @@ interface MealContextOption {
     IonSelect,
     IonSelectOption,
     IonTextarea,
-    // App components
-    AppIconComponent,
-  ],
+    AppIconComponent
+],
 })
 export class AddReadingPage implements OnInit, OnDestroy {
   readingForm!: FormGroup;

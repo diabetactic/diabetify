@@ -5,9 +5,9 @@ import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { AppointmentDetailPage } from './appointment-detail.page';
-import { AppointmentService } from '../../core/services/appointment.service';
+import { AppointmentService } from '@core/services/appointment.service';
 import { AppointmentDetailPageModule } from './appointment-detail.module';
-import { getLucideIconsForTesting } from '../../tests/helpers/icon-test.helper';
+import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helper';
 
 describe('AppointmentDetailPage', () => {
   let component: AppointmentDetailPage;

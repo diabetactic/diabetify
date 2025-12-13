@@ -26,9 +26,11 @@
           inputmode="text"
           [disabled]="isSubmitting"
         ></ion-input>
-        <div class="error-message" *ngIf="isFieldInvalid('name')">
-          {{ getErrorMessage('name') }}
-        </div>
+        @if (isFieldInvalid('name')) {
+          <div class="error-message">
+            {{ getErrorMessage('name') }}
+          </div>
+        }
       </ion-item>
 
       <!-- Surname Field -->
@@ -44,9 +46,11 @@
           inputmode="text"
           [disabled]="isSubmitting"
         ></ion-input>
-        <div class="error-message" *ngIf="isFieldInvalid('surname')">
-          {{ getErrorMessage('surname') }}
-        </div>
+        @if (isFieldInvalid('surname')) {
+          <div class="error-message">
+            {{ getErrorMessage('surname') }}
+          </div>
+        }
       </ion-item>
 
       <!-- Email Field -->
@@ -63,9 +67,11 @@
           inputmode="email"
           [disabled]="isSubmitting"
         ></ion-input>
-        <div class="error-message" *ngIf="isFieldInvalid('email')">
-          {{ getErrorMessage('email') }}
-        </div>
+        @if (isFieldInvalid('email')) {
+          <div class="error-message">
+            {{ getErrorMessage('email') }}
+          </div>
+        }
       </ion-item>
     </ion-list>
   </form>
@@ -79,7 +85,7 @@
       color="medium"
       (click)="onCancel()"
       [disabled]="isSubmitting"
-    >
+      >
       {{ 'profile.edit.cancel' | translate }}
     </ion-button>
     <ion-button
@@ -87,14 +93,17 @@
       color="primary"
       (click)="onSubmit()"
       [disabled]="editForm.invalid || isSubmitting"
-    >
-      <app-icon
-        *ngIf="!isSubmitting"
-        name="checkmark-outline"
-        slot="start"
-        aria-hidden="true"
-      ></app-icon>
-      <ion-spinner *ngIf="isSubmitting" name="crescent" slot="start"></ion-spinner>
+      >
+      @if (!isSubmitting) {
+        <app-icon
+          name="checkmark-outline"
+          slot="start"
+          aria-hidden="true"
+        ></app-icon>
+      }
+      @if (isSubmitting) {
+        <ion-spinner name="crescent" slot="start"></ion-spinner>
+      }
       {{ isSubmitting ? ('profile.edit.saving' | translate) : ('profile.edit.save' | translate) }}
     </ion-button>
   </div>

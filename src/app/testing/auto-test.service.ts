@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { ApiGatewayService } from '../core/services/api-gateway.service';
-import { LocalAuthService } from '../core/services/local-auth.service';
+import { ApiGatewayService } from '@core/services/api-gateway.service';
+import { LocalAuthService } from '@core/services/local-auth.service';
 import { firstValueFrom } from 'rxjs';
-import { API_GATEWAY_BASE_URL } from '../shared/config/api-base-url';
+import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
 
 // Backend appointment type from ExtServices API
 export interface AppointmentPost {

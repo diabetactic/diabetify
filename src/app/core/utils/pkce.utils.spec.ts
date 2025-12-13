@@ -12,7 +12,7 @@ import {
   validateCodeVerifier,
   buildAuthorizationUrl,
 } from './pkce.utils';
-import { OAUTH_CONSTANTS } from '../config/oauth.config';
+import { OAUTH_CONSTANTS } from '@core/config/oauth.config';
 
 describe('PKCEUtils', () => {
   describe('generateRandomString', () => {

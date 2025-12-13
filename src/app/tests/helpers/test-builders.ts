@@ -3,7 +3,7 @@
  * Provides builder pattern utilities for creating test data
  */
 
-import { LocalGlucoseReading, GlucoseStatistics } from '../../core/models';
+import { LocalGlucoseReading, GlucoseStatistics } from '@core/models';
 
 /**
  * Test-only profile type for integration tests

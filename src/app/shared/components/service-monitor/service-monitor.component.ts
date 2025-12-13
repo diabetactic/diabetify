@@ -18,11 +18,11 @@ import {
   ServiceHealthCheck,
   CircuitBreakerState,
   HealthStatus,
-} from '../../../core/services/external-services-manager.service';
+} from '@services/external-services-manager.service';
 import {
   ServiceOrchestrator,
   WorkflowState,
-} from '../../../core/services/service-orchestrator.service';
+} from '@services/service-orchestrator.service';
 
 @Component({
   selector: 'app-service-monitor',

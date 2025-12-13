@@ -1,5 +1,5 @@
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import {
   ModalController,
@@ -19,9 +19,9 @@ import {
 } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { ProfileService } from '../../core/services/profile.service';
-import { UserProfile } from '../../core/models/user-profile.model';
-import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
+import { ProfileService } from '@core/services/profile.service';
+import { UserProfile } from '@core/models/user-profile.model';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-profile-edit',
@@ -29,7 +29,6 @@ import { AppIconComponent } from '../../shared/components/app-icon/app-icon.comp
   styleUrls: ['./profile-edit.component.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     TranslateModule,
     IonHeader,
@@ -43,8 +42,8 @@ import { AppIconComponent } from '../../shared/components/app-icon/app-icon.comp
     IonLabel,
     IonInput,
     IonFooter,
-    AppIconComponent,
-  ],
+    AppIconComponent
+],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ProfileEditComponent implements OnInit {

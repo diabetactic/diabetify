@@ -1,4 +1,4 @@
-import { environment } from '../../../environments/environment';
+import { environment } from '@env/environment';
 
 interface GlobalWithOverride {
   __DIABETACTIC_API_BASE_URL?: string;

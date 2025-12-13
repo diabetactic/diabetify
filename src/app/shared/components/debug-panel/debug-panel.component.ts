@@ -9,16 +9,16 @@ import { Capacitor } from '@capacitor/core';
 import { Device } from '@capacitor/device';
 import { Network } from '@capacitor/network';
 import { Preferences } from '@capacitor/preferences';
-import { environment } from '../../../../environments/environment';
-import { TidepoolAuthService } from '../../../core/services/tidepool-auth.service';
-import { LocalAuthService } from '../../../core/services/local-auth.service';
+import { environment } from '@env/environment';
+import { TidepoolAuthService } from '@services/tidepool-auth.service';
+import { LocalAuthService } from '@services/local-auth.service';
 import {
   ExternalServicesManager,
   ExternalServicesState,
   HealthStatus,
-} from '../../../core/services/external-services-manager.service';
-import { db } from '../../../core/services/database.service';
-import { MockAdapterService } from '../../../core/services/mock-adapter.service';
+} from '@services/external-services-manager.service';
+import { db } from '@services/database.service';
+import { MockAdapterService } from '@services/mock-adapter.service';
 import { ToastController, AlertController } from '@ionic/angular';
 import { AppIconComponent } from '../app-icon/app-icon.component';
 import { HttpClient } from '@angular/common/http';

@@ -10,9 +10,9 @@ import {
   UrlTree,
 } from '@angular/router';
 
-import { ProfileService } from '../services/profile.service';
-import { LoggerService } from '../services/logger.service';
-import { ROUTES } from '../constants';
+import { ProfileService } from '@services/profile.service';
+import { LoggerService } from '@services/logger.service';
+import { ROUTES } from '@core/constants';
 
 /**
  * Prevents access to authenticated sections until onboarding is complete.

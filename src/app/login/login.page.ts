@@ -14,16 +14,16 @@ import {
   IonText,
 } from '@ionic/angular/standalone';
 import { firstValueFrom } from 'rxjs';
-import { LocalAuthService, LocalUser } from '../core/services/local-auth.service';
-import { ProfileService } from '../core/services/profile.service';
-import { LoggerService } from '../core/services/logger.service';
-import { CommonModule } from '@angular/common';
+import { LocalAuthService, LocalUser } from '@services/local-auth.service';
+import { ProfileService } from '@services/profile.service';
+import { LoggerService } from '@services/logger.service';
+
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
-import { AccountState, DEFAULT_USER_PREFERENCES } from '../core/models/user-profile.model';
-import { ROUTES } from '../core/constants';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
+import { AccountState, DEFAULT_USER_PREFERENCES } from '@models/user-profile.model';
+import { ROUTES } from '@core/constants';
 
 @Component({
   selector: 'app-login',
@@ -31,12 +31,10 @@ import { ROUTES } from '../core/constants';
   styleUrls: ['./login.page.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
     TranslateModule,
-    // Ionic standalone components
     IonContent,
     IonIcon,
     IonButton,
@@ -44,9 +42,8 @@ import { ROUTES } from '../core/constants';
     IonFooter,
     IonToolbar,
     IonText,
-    // App components
-    AppIconComponent,
-  ],
+    AppIconComponent
+],
 })
 export class LoginPage implements OnInit, OnDestroy {
   loginForm: FormGroup;

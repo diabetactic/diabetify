@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import { ReadingsService, LIVE_QUERY_FN } from './readings.service';
-import { DiabetacticDatabase } from './database.service';
-import { LocalGlucoseReading, GlucoseReading } from '../models/glucose-reading.model';
+import { ReadingsService, LIVE_QUERY_FN } from '@services/readings.service';
+import { DiabetacticDatabase } from '@services/database.service';
+import { LocalGlucoseReading, GlucoseReading } from '@models/glucose-reading.model';
 import { Observable, of } from 'rxjs';
-import { MockDataService } from './mock-data.service';
-import { ApiGatewayService } from './api-gateway.service';
+import { MockDataService } from '@services/mock-data.service';
+import { ApiGatewayService } from '@services/api-gateway.service';
 
 // Mock Dexie database
 class MockDatabaseService {

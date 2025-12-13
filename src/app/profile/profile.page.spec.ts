@@ -7,11 +7,11 @@ import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { ProfilePage } from './profile.page';
-import { TidepoolAuthService, AuthState } from '../core/services/tidepool-auth.service';
-import { ProfileService } from '../core/services/profile.service';
-import { ThemeService } from '../core/services/theme.service';
-import { TranslationService, Language, LanguageConfig } from '../core/services/translation.service';
-import { getLucideIconsForTesting } from '../tests/helpers/icon-test.helper';
+import { TidepoolAuthService, AuthState } from '@core/services/tidepool-auth.service';
+import { ProfileService } from '@core/services/profile.service';
+import { ThemeService } from '@core/services/theme.service';
+import { TranslationService, Language, LanguageConfig } from '@core/services/translation.service';
+import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helper';
 
 class TidepoolAuthServiceStub {
   private stateSubject = new BehaviorSubject<AuthState>({

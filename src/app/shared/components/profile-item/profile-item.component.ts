@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { IonItem, IonToggle } from '@ionic/angular/standalone';
 
 export type ActionType = 'none' | 'toggle' | 'chevron' | 'badge';
@@ -9,7 +9,7 @@ export type ActionType = 'none' | 'toggle' | 'chevron' | 'badge';
   templateUrl: './profile-item.component.html',
   styleUrls: ['./profile-item.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonItem, IonToggle],
+  imports: [IonItem, IonToggle],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileItemComponent {

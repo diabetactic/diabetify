@@ -8,8 +8,8 @@ import { ReadingsPage } from './readings.page';
 import { ReadingsPageRoutingModule } from './readings-routing.module';
 
 // Import shared components (standalone)
-import { ReadingItemComponent, EmptyStateComponent } from '../shared/components';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { ReadingItemComponent, EmptyStateComponent } from '@shared/components';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
 @NgModule({
   imports: [

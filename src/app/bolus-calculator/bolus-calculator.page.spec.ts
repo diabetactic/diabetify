@@ -4,14 +4,14 @@ import { TranslateModule } from '@ngx-translate/core';
 import { IonicModule, NavController } from '@ionic/angular';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BolusCalculatorPage } from './bolus-calculator.page';
-import { MockDataService, BolusCalculation } from '../core/services/mock-data.service';
-import { FoodService } from '../core/services/food.service';
-import { LoggerService } from '../core/services/logger.service';
-import { FoodPickerResult, SelectedFood } from '../core/models/food.model';
+import { MockDataService, BolusCalculation } from '@core/services/mock-data.service';
+import { FoodService } from '@core/services/food.service';
+import { LoggerService } from '@core/services/logger.service';
+import { FoodPickerResult, SelectedFood } from '@core/models/food.model';
 import { of, throwError } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { CUSTOM_ELEMENTS_SCHEMA, signal, computed } from '@angular/core';
-import { getLucideIconsForTesting } from '../tests/helpers/icon-test.helper';
+import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helper';
 
 describe('BolusCalculatorPage', () => {
   let component: BolusCalculatorPage;

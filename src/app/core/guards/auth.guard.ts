@@ -29,10 +29,10 @@ import {
 } from '@angular/router';
 import { Observable, from } from 'rxjs';
 import { map, take, switchMap } from 'rxjs/operators';
-import { TidepoolAuthService } from '../services/tidepool-auth.service';
-import { LocalAuthService } from '../services/local-auth.service';
-import { AccountState } from '../models/user-profile.model';
-import { ROUTES } from '../constants';
+import { TidepoolAuthService } from '@services/tidepool-auth.service';
+import { LocalAuthService } from '@services/local-auth.service';
+import { AccountState } from '@models/user-profile.model';
+import { ROUTES } from '@core/constants';
 
 @Injectable({
   providedIn: 'root',

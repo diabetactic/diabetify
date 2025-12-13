@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { fakerES as faker } from '@faker-js/faker';
-import { DemoDataService } from './demo-data.service';
-import { MockAdapterConfig } from '../config/mock-adapter-config';
-import { LocalGlucoseReading, UserProfile, GlucoseStatistics } from '../models';
-import { AccountState } from '../models/user-profile.model';
-import { PaginatedReadings } from './readings.service';
-import { environment } from '../../../environments/environment';
+import { DemoDataService } from '@services/demo-data.service';
+import { MockAdapterConfig } from '@core/config/mock-adapter-config';
+import { LocalGlucoseReading, GlucoseStatistics } from '@models/glucose-reading.model';
+import { UserProfile, AccountState } from '@models/user-profile.model';
+import { PaginatedReadings } from '@services/readings.service';
+import { environment } from '@env/environment';
 
 /**
  * Mock Adapter Service

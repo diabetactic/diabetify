@@ -3,8 +3,8 @@ import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { WelcomePage } from './welcome.page';
-import { ProfileService } from '../core/services/profile.service';
-import { ThemeService } from '../core/services/theme.service';
+import { ProfileService } from '@core/services/profile.service';
+import { ThemeService } from '@core/services/theme.service';
 
 describe('WelcomePage', () => {
   let component: WelcomePage;

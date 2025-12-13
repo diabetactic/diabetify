@@ -8,11 +8,11 @@ import { DashboardPage } from './dashboard.page';
 import { DashboardPageRoutingModule } from './dashboard-routing.module';
 
 // Import standalone components
-import { StatCardComponent } from '../shared/components/stat-card/stat-card.component';
-import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
-import { AlertBannerComponent } from '../shared/components/alert-banner/alert-banner.component';
-import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
-import { LanguageSwitcherComponentModule } from '../shared/components/language-switcher/language-switcher.module';
+import { StatCardComponent } from '@shared/components/stat-card/stat-card.component';
+import { ReadingItemComponent } from '@shared/components/reading-item/reading-item.component';
+import { AlertBannerComponent } from '@shared/components/alert-banner/alert-banner.component';
+import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { LanguageSwitcherComponentModule } from '@shared/components/language-switcher/language-switcher.module';
 
 @NgModule({
   imports: [

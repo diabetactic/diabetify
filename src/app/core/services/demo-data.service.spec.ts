@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
-import { DemoDataService } from './demo-data.service';
-import { AccountState } from '../models/user-profile.model';
+import { DemoDataService } from '@services/demo-data.service';
+import { AccountState } from '@models/user-profile.model';
 
 describe('DemoDataService', () => {
   let service: DemoDataService;

@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { fakerES as faker } from '@faker-js/faker';
 import { Observable, of } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
-import { LocalGlucoseReading, UserProfile } from '../models';
-import { Appointment } from '../models/appointment.model';
-import { AccountState } from '../models/user-profile.model';
+import { LocalGlucoseReading } from '@models/glucose-reading.model';
+import { UserProfile, AccountState } from '@models/user-profile.model';
+import { Appointment } from '@models/appointment.model';
 
 /**
  * Demo Data Service for seeding test data

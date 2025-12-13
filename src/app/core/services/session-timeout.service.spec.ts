@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { NgZone } from '@angular/core';
-import { SessionTimeoutService } from './session-timeout.service';
-import { LocalAuthService } from './local-auth.service';
-import { LoggerService } from './logger.service';
+import { SessionTimeoutService } from '@services/session-timeout.service';
+import { LocalAuthService } from '@services/local-auth.service';
+import { LoggerService } from '@services/logger.service';
 
 describe('SessionTimeoutService', () => {
   let service: SessionTimeoutService;

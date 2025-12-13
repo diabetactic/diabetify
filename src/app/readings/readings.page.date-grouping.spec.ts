@@ -8,11 +8,11 @@ import { ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { ReadingsPage } from './readings.page';
-import { ReadingsService } from '../core/services/readings.service';
-import { ProfileService } from '../core/services/profile.service';
-import { TranslationService } from '../core/services/translation.service';
-import { LoggerService } from '../core/services/logger.service';
-import { LocalGlucoseReading } from '../core/models/glucose-reading.model';
+import { ReadingsService } from '@core/services/readings.service';
+import { ProfileService } from '@core/services/profile.service';
+import { TranslationService } from '@core/services/translation.service';
+import { LoggerService } from '@core/services/logger.service';
+import { LocalGlucoseReading } from '@core/models/glucose-reading.model';
 
 describe('ReadingsPage - Date Grouping', () => {
   let component: ReadingsPage;

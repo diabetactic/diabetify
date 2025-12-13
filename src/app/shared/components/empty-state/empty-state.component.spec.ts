@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { EmptyStateComponent } from './empty-state.component';
-import { ThemeService } from '../../../core/services/theme.service';
+import { ThemeService } from '@services/theme.service';
 
 describe('EmptyStateComponent', () => {
   let component: EmptyStateComponent;

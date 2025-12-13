@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angu
 import { CommonModule } from '@angular/common';
 import { IonButton } from '@ionic/angular/standalone';
 import { Subscription } from 'rxjs';
-import { ThemeService } from '../../../core/services/theme.service';
+import { ThemeService } from '@services/theme.service';
 
 @Component({
   selector: 'app-empty-state',

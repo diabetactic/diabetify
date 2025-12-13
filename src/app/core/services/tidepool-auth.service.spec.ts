@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
-import { TidepoolAuthService } from './tidepool-auth.service';
-import { TokenStorageService } from './token-storage.service';
-import { TidepoolAuth } from '../models/tidepool-auth.model';
+import { TidepoolAuthService } from '@services/tidepool-auth.service';
+import { TokenStorageService } from '@services/token-storage.service';
+import { TidepoolAuth } from '@models/tidepool-auth.model';
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 
