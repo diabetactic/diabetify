@@ -4,9 +4,9 @@ import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, of } from 'rxjs';
 import { DashboardDetailPage } from './dashboard-detail.page';
-import { ReadingsService } from '../../core/services/readings.service';
-import { ProfileService } from '../../core/services/profile.service';
-import { TranslationService } from '../../core/services/translation.service';
+import { ReadingsService } from '@core/services/readings.service';
+import { ProfileService } from '@core/services/profile.service';
+import { TranslationService } from '@core/services/translation.service';
 
 describe('DashboardDetailPage', () => {
   let component: DashboardDetailPage;

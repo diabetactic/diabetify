@@ -5,9 +5,9 @@
 
 import { Injectable, signal, computed } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { StreakData, Achievement } from '../models/achievements.model';
-import { ApiGatewayService } from './api-gateway.service';
-import { LoggerService } from './logger.service';
+import { StreakData, Achievement } from '@models/achievements.model';
+import { ApiGatewayService } from '@services/api-gateway.service';
+import { LoggerService } from '@services/logger.service';
 
 /** Cache entry with TTL tracking */
 interface CacheEntry<T> {

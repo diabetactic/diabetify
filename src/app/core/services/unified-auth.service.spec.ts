@@ -1,15 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { of, BehaviorSubject, throwError } from 'rxjs';
-import { UnifiedAuthService } from './unified-auth.service';
-import { TidepoolAuthService, AuthState as TidepoolAuthState } from './tidepool-auth.service';
+import { UnifiedAuthService } from '@services/unified-auth.service';
+import { TidepoolAuthService, AuthState as TidepoolAuthState } from '@services/tidepool-auth.service';
 import {
   LocalAuthService,
   LocalAuthState,
   LoginRequest,
   LoginResult,
   RegisterRequest,
-} from './local-auth.service';
-import { ApiGatewayService } from './api-gateway.service';
+} from '@services/local-auth.service';
+import { ApiGatewayService } from '@services/api-gateway.service';
 
 describe('UnifiedAuthService', () => {
   let service: UnifiedAuthService;

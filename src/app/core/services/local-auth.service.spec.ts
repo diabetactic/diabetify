@@ -3,11 +3,11 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
 
-import { LocalAuthService, LocalAuthState, LocalUser, AccountState } from './local-auth.service';
-import { PlatformDetectorService } from './platform-detector.service';
-import { LoggerService } from './logger.service';
-import { MockDataService } from './mock-data.service';
-import { MockAdapterService } from './mock-adapter.service';
+import { LocalAuthService, LocalAuthState, LocalUser, AccountState } from '@services/local-auth.service';
+import { PlatformDetectorService } from '@services/platform-detector.service';
+import { LoggerService } from '@services/logger.service';
+import { MockDataService } from '@services/mock-data.service';
+import { MockAdapterService } from '@services/mock-adapter.service';
 import { HttpClient } from '@angular/common/http';
 
 // Mock Preferences - already mocked in setup-jest.ts but we need to control it per test

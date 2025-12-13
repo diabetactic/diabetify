@@ -2,7 +2,7 @@
  * Glucose sharing models for sharing data with healthcare providers
  */
 
-import { LocalGlucoseReading } from './glucose-reading.model';
+import { LocalGlucoseReading } from '@models/glucose-reading.model';
 
 /**
  * Glucose reading summary for sharing (privacy-first approach)

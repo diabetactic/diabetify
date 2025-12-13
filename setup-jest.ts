@@ -460,6 +460,9 @@ jest.mock('@capacitor/local-notifications', () => ({
   },
 }));
 
+// Note: @capawesome-team/capacitor-biometrics is mocked via moduleNameMapper in jest.config.js
+// because the package doesn't exist in public npm (it's a premium plugin)
+
 // Mock @ionic/core/components to avoid Stencil ESM issues
 jest.mock('@ionic/core/components', () => ({
   setAssetPath: jest.fn(),

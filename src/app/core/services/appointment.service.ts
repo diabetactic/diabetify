@@ -8,11 +8,11 @@
 import { Injectable, inject, OnDestroy } from '@angular/core';
 import { Observable, BehaviorSubject, throwError, of, Subject } from 'rxjs';
 import { catchError, map, tap, takeUntil } from 'rxjs/operators';
-import { ApiGatewayService } from './api-gateway.service';
-import { TranslationService } from './translation.service';
-import { NotificationService } from './notification.service';
-import { LoggerService } from './logger.service';
-import { environment } from '../../../environments/environment';
+import { ApiGatewayService } from '@services/api-gateway.service';
+import { TranslationService } from '@services/translation.service';
+import { NotificationService } from '@services/notification.service';
+import { LoggerService } from '@services/logger.service';
+import { environment } from '@env/environment';
 import {
   Appointment,
   CreateAppointmentRequest,
@@ -20,7 +20,7 @@ import {
   AppointmentQueueStateResponse,
   AppointmentSubmitResponse,
   AppointmentResolutionResponse,
-} from '../models/appointment.model';
+} from '@models/appointment.model';
 
 /**
  * Mock appointment for development/testing

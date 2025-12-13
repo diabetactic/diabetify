@@ -6,7 +6,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router, RouterModule } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import {
@@ -25,26 +25,26 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { ReadingsService } from '../core/services/readings.service';
-import { LoggerService } from '../core/services/logger.service';
+import { ReadingsService } from '@services/readings.service';
+import { LoggerService } from '@services/logger.service';
 import {
   LocalGlucoseReading,
   GlucoseStatistics,
   GlucoseUnit,
-} from '../core/models/glucose-reading.model';
-import { TranslationService } from '../core/services/translation.service';
-import { ProfileService } from '../core/services/profile.service';
-import { ThemeService } from '../core/services/theme.service';
-import { StatCardComponent } from '../shared/components/stat-card/stat-card.component';
-import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
-import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
-import { ErrorBannerComponent } from '../shared/components/error-banner/error-banner.component';
-import { LanguageSwitcherComponentModule } from '../shared/components/language-switcher/language-switcher.module';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
-import { StreakCardComponent } from '../shared/components/streak-card/streak-card.component';
-import { LocalAuthService } from '../core/services/local-auth.service';
-import { environment } from '../../environments/environment';
-import { ROUTES } from '../core/constants';
+} from '@models/glucose-reading.model';
+import { TranslationService } from '@services/translation.service';
+import { ProfileService } from '@services/profile.service';
+import { ThemeService } from '@services/theme.service';
+import { StatCardComponent } from '@shared/components/stat-card/stat-card.component';
+import { ReadingItemComponent } from '@shared/components/reading-item/reading-item.component';
+import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { ErrorBannerComponent } from '@shared/components/error-banner/error-banner.component';
+import { LanguageSwitcherComponentModule } from '@shared/components/language-switcher/language-switcher.module';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
+import { StreakCardComponent } from '@shared/components/streak-card/streak-card.component';
+import { LocalAuthService } from '@services/local-auth.service';
+import { environment } from '@env/environment';
+import { ROUTES } from '@core/constants';
 
 @Component({
   selector: 'app-dashboard',
@@ -53,10 +53,8 @@ import { ROUTES } from '../core/constants';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     RouterModule,
     TranslateModule,
-    // Ionic standalone components
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -68,15 +66,14 @@ import { ROUTES } from '../core/constants';
     IonRefresherContent,
     IonFab,
     IonFabButton,
-    // App components
     StatCardComponent,
     ReadingItemComponent,
     EmptyStateComponent,
     ErrorBannerComponent,
     LanguageSwitcherComponentModule,
     AppIconComponent,
-    StreakCardComponent,
-  ],
+    StreakCardComponent
+],
 })
 export class DashboardPage implements OnInit, OnDestroy {
   readonly isMockMode = environment.backendMode === 'mock';

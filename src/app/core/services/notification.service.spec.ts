@@ -2,8 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { NgZone } from '@angular/core';
 import { Platform } from '@ionic/angular';
-import { NotificationService, ReadingReminder, AppointmentReminder } from './notification.service';
-import { LoggerService } from './logger.service';
+import { NotificationService, ReadingReminder, AppointmentReminder } from '@services/notification.service';
+import { LoggerService } from '@services/logger.service';
 import {
   LocalNotifications,
   PendingLocalNotificationSchema,

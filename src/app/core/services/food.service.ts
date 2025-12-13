@@ -5,7 +5,7 @@ import {
   FoodCategoryInfo,
   SelectedFood,
   FoodPickerResult,
-} from '../models/food.model';
+} from '@models/food.model';
 
 /**
  * Service for managing food database and carbohydrate counting

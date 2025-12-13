@@ -1,20 +1,20 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router, RouterModule, NavigationStart } from '@angular/router';
 import { IonContent } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
-import { ProfileService } from '../core/services/profile.service';
-import { ThemeService } from '../core/services/theme.service';
-import { ROUTES, ROUTE_SEGMENTS } from '../core/constants';
+import { ProfileService } from '@services/profile.service';
+import { ThemeService } from '@services/theme.service';
+import { ROUTES, ROUTE_SEGMENTS } from '@core/constants';
 
 @Component({
   selector: 'app-welcome',
   templateUrl: './welcome.page.html',
   styleUrls: ['./welcome.page.scss'],
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, IonContent],
+  imports: [RouterModule, TranslateModule, IonContent],
   host: {
     '[class.dark-theme]': 'isDarkMode',
   },

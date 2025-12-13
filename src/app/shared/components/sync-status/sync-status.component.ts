@@ -5,11 +5,11 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Network } from '@capacitor/network';
 import { Subject } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
-import { db } from '../../../core/services/database.service';
+import { db } from '@services/database.service';
 
 type SyncState = 'online' | 'offline' | 'pending';
 
@@ -21,7 +21,7 @@ type SyncState = 'online' | 'offline' | 'pending';
 @Component({
   selector: 'app-sync-status',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
   template: `
     <span
       class="sync-status"

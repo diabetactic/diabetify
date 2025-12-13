@@ -1,57 +1,57 @@
-<div
-  *ngIf="visible"
-  class="mb-4 flex items-center justify-between gap-3 rounded-xl p-3 shadow-md transition-all duration-200"
+@if (visible) {
+  <div
+    class="mb-4 flex items-center justify-between gap-3 rounded-xl p-3 shadow-md transition-all duration-200"
   [ngClass]="{
     'bg-yellow-200/50 dark:bg-yellow-200/25': type === 'success',
     'bg-sky-500/12 dark:bg-sky-500/18': type === 'info',
     'bg-orange-500/12 dark:bg-orange-500/18': type === 'warning',
   }"
-  [attr.data-testid]="'alert-banner-' + type"
->
-  <!-- Alert Content -->
-  <div class="flex flex-1 items-center gap-3">
-    <!-- Icon -->
-    <span
-      class="material-symbols-outlined flex-shrink-0 text-2xl"
+    [attr.data-testid]="'alert-banner-' + type"
+    >
+    <!-- Alert Content -->
+    <div class="flex flex-1 items-center gap-3">
+      <!-- Icon -->
+      <span
+        class="material-symbols-outlined flex-shrink-0 text-2xl"
       [ngClass]="{
         'text-yellow-600 dark:text-yellow-400': type === 'success',
         'text-sky-600 dark:text-sky-400': type === 'info',
         'text-orange-600 dark:text-orange-400': type === 'warning',
       }"
-      [style.font-variation-settings]="type === 'success' ? '\'FILL\' 1' : '\'FILL\' 0'"
-    >
-      {{ getIcon() }}
-    </span>
-
-    <!-- Message -->
-    <p
-      class="m-0 flex-1 text-sm font-medium leading-snug"
+        [style.font-variation-settings]="type === 'success' ? '\'FILL\' 1' : '\'FILL\' 0'"
+        >
+        {{ getIcon() }}
+      </span>
+      <!-- Message -->
+      <p
+        class="m-0 flex-1 text-sm font-medium leading-snug"
       [ngClass]="{
         'text-yellow-800 dark:text-yellow-100': type === 'success',
         'text-sky-700 dark:text-sky-300': type === 'info',
         'text-orange-700 dark:text-orange-300': type === 'warning',
       }"
-    >
-      {{ message }}
-    </p>
-  </div>
-
-  <!-- Dismiss Button -->
-  <button
-    *ngIf="dismissible"
-    (click)="dismiss()"
-    [attr.aria-label]="'common.dismissAlert' | translate"
-    class="flex flex-shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-1 transition-colors duration-200 hover:bg-black/10 active:bg-black/15 dark:hover:bg-white/10 dark:active:bg-white/15"
-  >
-    <span
-      class="material-symbols-outlined text-xl"
+        >
+        {{ message }}
+      </p>
+    </div>
+    <!-- Dismiss Button -->
+    @if (dismissible) {
+      <button
+        (click)="dismiss()"
+        [attr.aria-label]="'common.dismissAlert' | translate"
+        class="flex flex-shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-1 transition-colors duration-200 hover:bg-black/10 active:bg-black/15 dark:hover:bg-white/10 dark:active:bg-white/15"
+        >
+        <span
+          class="material-symbols-outlined text-xl"
       [ngClass]="{
         'text-yellow-700 dark:text-yellow-200': type === 'success',
         'text-sky-600 dark:text-sky-400': type === 'info',
         'text-orange-600 dark:text-orange-400': type === 'warning',
       }"
-    >
-      close
-    </span>
-  </button>
-</div>
+          >
+          close
+        </span>
+      </button>
+    }
+  </div>
+}

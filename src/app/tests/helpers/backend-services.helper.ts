@@ -12,7 +12,7 @@
 
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { API_GATEWAY_BASE_URL } from '../../shared/config/api-base-url';
+import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
 
 /**
  * Test user credentials for integration tests

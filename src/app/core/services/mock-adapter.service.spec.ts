@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { MockAdapterService } from './mock-adapter.service';
-import { DemoDataService } from './demo-data.service';
-import { LocalGlucoseReading, UserProfile } from '../models';
+import { MockAdapterService } from '@services/mock-adapter.service';
+import { DemoDataService } from '@services/demo-data.service';
+import { LocalGlucoseReading, UserProfile } from '@core/models';
 
 describe('MockAdapterService', () => {
   let service: MockAdapterService;

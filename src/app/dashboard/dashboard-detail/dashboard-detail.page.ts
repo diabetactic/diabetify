@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router, RouterModule } from '@angular/router';
 import {
   IonHeader,
@@ -17,13 +17,13 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { ReadingsService } from '../../core/services/readings.service';
-import { ProfileService } from '../../core/services/profile.service';
-import { TranslationService } from '../../core/services/translation.service';
-import { GlucoseStatistics, GlucoseUnit } from '../../core/models/glucose-reading.model';
-import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
-import { AppIconComponent } from '../../shared/components/app-icon/app-icon.component';
-import { ROUTES } from '../../core/constants';
+import { ReadingsService } from '@services/readings.service';
+import { ProfileService } from '@services/profile.service';
+import { TranslationService } from '@services/translation.service';
+import { GlucoseStatistics, GlucoseUnit } from '@models/glucose-reading.model';
+import { StatCardComponent } from '@shared/components/stat-card/stat-card.component';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
+import { ROUTES } from '@core/constants';
 
 @Component({
   selector: 'app-dashboard-detail',
@@ -31,10 +31,8 @@ import { ROUTES } from '../../core/constants';
   styleUrls: ['./dashboard-detail.page.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     TranslateModule,
-    // Ionic standalone components
     IonHeader,
     IonToolbar,
     IonButtons,
@@ -46,10 +44,9 @@ import { ROUTES } from '../../core/constants';
     IonCardTitle,
     IonCardContent,
     IonIcon,
-    // App components
     StatCardComponent,
-    AppIconComponent,
-  ],
+    AppIconComponent
+],
 })
 export class DashboardDetailPage implements OnInit, OnDestroy {
   // Statistics data

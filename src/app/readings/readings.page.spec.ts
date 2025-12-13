@@ -7,15 +7,15 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 import { ReadingsPage } from './readings.page';
 import { ReadingsPageModule } from './readings.module';
-import { ReadingsService } from '../core/services/readings.service';
-import { ProfileService } from '../core/services/profile.service';
-import { TranslationService } from '../core/services/translation.service';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
-import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
-import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
+import { ReadingsService } from '@core/services/readings.service';
+import { ProfileService } from '@core/services/profile.service';
+import { TranslationService } from '@core/services/translation.service';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
+import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { ReadingItemComponent } from '@shared/components/reading-item/reading-item.component';
 import { Component, Input } from '@angular/core';
-import { getLucideIconsForTesting } from '../tests/helpers/icon-test.helper';
-import { LoggerService } from '../core/services/logger.service';
+import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helper';
+import { LoggerService } from '@core/services/logger.service';
 
 class LoggerServiceStub {
   info(_context: string, _message: string, _data?: any): void {}

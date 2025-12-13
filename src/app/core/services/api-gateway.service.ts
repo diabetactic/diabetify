@@ -11,17 +11,17 @@ import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular
 import { Observable, throwError, of, from } from 'rxjs';
 import { switchMap, catchError, map, timeout, retry, shareReplay } from 'rxjs/operators';
 
-import { ExternalServicesManager, ExternalService } from './external-services-manager.service';
-import { LocalAuthService } from './local-auth.service';
-import { TidepoolAuthService } from './tidepool-auth.service';
-import { EnvironmentDetectorService } from './environment-detector.service';
-import { PlatformDetectorService } from './platform-detector.service';
-import { LoggerService } from './logger.service';
-import { MockAdapterService } from './mock-adapter.service';
+import { ExternalServicesManager, ExternalService } from '@services/external-services-manager.service';
+import { LocalAuthService } from '@services/local-auth.service';
+import { TidepoolAuthService } from '@services/tidepool-auth.service';
+import { EnvironmentDetectorService } from '@services/environment-detector.service';
+import { PlatformDetectorService } from '@services/platform-detector.service';
+import { LoggerService } from '@services/logger.service';
+import { MockAdapterService } from '@services/mock-adapter.service';
 import { LRUCache } from 'lru-cache';
-import { environment } from '../../../environments/environment';
-import { API_GATEWAY_BASE_URL } from '../../shared/config/api-base-url';
-import { LocalGlucoseReading } from '../models/glucose-reading.model';
+import { environment } from '@env/environment';
+import { API_GATEWAY_BASE_URL } from '@core/../shared/config/api-base-url';
+import { LocalGlucoseReading } from '@models/glucose-reading.model';
 
 /**
  * API endpoint configuration

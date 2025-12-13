@@ -14,7 +14,7 @@ import {
   TidepoolSession,
   TokenValidation,
   PKCEChallenge,
-} from './tidepool-auth.model';
+} from '@models/tidepool-auth.model';
 
 describe('TidepoolAuthModel', () => {
   describe('Type definitions', () => {

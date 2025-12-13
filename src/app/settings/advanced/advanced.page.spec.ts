@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AdvancedPage } from './advanced.page';
-import { UnifiedAuthService } from '../../core/services/unified-auth.service';
-import { TranslationService } from '../../core/services/translation.service';
+import { UnifiedAuthService } from '@core/services/unified-auth.service';
+import { TranslationService } from '@core/services/translation.service';
 import { AlertController, IonicModule, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
-import { getTranslateModuleForTesting } from '../../tests/helpers/translate-test.helper';
-import { getLucideIconsForTesting } from '../../tests/helpers/icon-test.helper';
+import { getTranslateModuleForTesting } from '@core/../tests/helpers/translate-test.helper';
+import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helper';
 
 describe('AdvancedPage', () => {
   let component: AdvancedPage;

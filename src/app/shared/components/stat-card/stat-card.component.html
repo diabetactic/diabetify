@@ -17,8 +17,10 @@
   [attr.aria-label]="title"
   [attr.tabindex]="clickable ? 0 : null"
   [attr.data-testid]="testId || 'stat-card'"
->
-  <ion-ripple-effect *ngIf="clickable"></ion-ripple-effect>
+  >
+  @if (clickable) {
+    <ion-ripple-effect></ion-ripple-effect>
+  }
 
   <div
     class="stat h-full p-4"
@@ -26,39 +28,40 @@
     [style.background]="
       'linear-gradient(135deg, ' + gradientColors[0] + ', ' + gradientColors[1] + ')'
     "
-  >
+    >
     <!-- Loading State -->
-    <div *ngIf="loading; else content" class="flex flex-col gap-2">
-      <ion-spinner class="text-white"></ion-spinner>
-      <ion-skeleton-text animated class="w-3/5"></ion-skeleton-text>
-      <ion-skeleton-text animated class="w-2/5"></ion-skeleton-text>
-      <div class="sr-only" role="status">Loading...</div>
-    </div>
-
-    <ng-template #content>
-      <!-- Error State -->
-      <div *ngIf="error; else normal">
-        <div class="flex flex-col items-center justify-center gap-2 p-5 text-center">
-          <span class="material-symbols-outlined text-4xl text-red-400">error_outline</span>
-          <span class="text-white">{{ 'common.unableToLoad' | translate }}</span>
-          <button
-            *ngIf="clickable"
-            class="mt-2 cursor-pointer rounded-lg border border-white/30 bg-white/20 px-4 py-2 text-white transition-all hover:bg-white/30"
-            (click)="onCardClicked()"
-          >
-            Retry
-          </button>
-        </div>
+    @if (loading) {
+      <div class="flex flex-col gap-2">
+        <ion-spinner class="text-white"></ion-spinner>
+        <ion-skeleton-text animated class="w-3/5"></ion-skeleton-text>
+        <ion-skeleton-text animated class="w-2/5"></ion-skeleton-text>
+        <div class="sr-only" role="status">Loading...</div>
       </div>
-
-      <!-- Normal State -->
-      <ng-template #normal>
+    } @else {
+      <!-- Error State -->
+      @if (error) {
+        <div>
+          <div class="flex flex-col items-center justify-center gap-2 p-5 text-center">
+            <span class="material-symbols-outlined text-4xl text-red-400">error_outline</span>
+            <span class="text-white">{{ 'common.unableToLoad' | translate }}</span>
+            @if (clickable) {
+              <button
+                class="mt-2 cursor-pointer rounded-lg border border-white/30 bg-white/20 px-4 py-2 text-white transition-all hover:bg-white/30"
+                (click)="onCardClicked()"
+                >
+                Retry
+              </button>
+            }
+          </div>
+        </div>
+      } @else {
         <div class="flex h-full flex-col justify-between">
           <!-- Icon -->
-          <div class="stat-figure text-white opacity-80" *ngIf="icon">
-            <span class="material-symbols-outlined text-5xl drop-shadow-lg">{{ icon }}</span>
-          </div>
-
+          @if (icon) {
+            <div class="stat-figure text-white opacity-80">
+              <span class="material-symbols-outlined text-5xl drop-shadow-lg">{{ icon }}</span>
+            </div>
+          }
           <!-- Value -->
           <div
             class="stat-value mb-2 text-white"
@@ -66,44 +69,49 @@
             aria-live="polite"
             [attr.aria-label]="'Value: ' + formattedValue + (unit ? ' ' + unit : '')"
             [attr.data-testid]="'stat-card-value'"
-          >
+            >
             <span class="text-3xl font-bold leading-none drop-shadow-lg">{{ formattedValue }}</span>
-            <span class="ml-1 text-sm font-medium opacity-85" *ngIf="unit">{{ unit }}</span>
+            @if (unit) {
+              <span class="ml-1 text-sm font-medium opacity-85">{{ unit }}</span>
+            }
           </div>
-
           <!-- Title -->
           <div
             class="stat-title truncate text-[15px] font-semibold leading-tight text-white opacity-90 drop-shadow-md"
             [attr.title]="title"
-          >
+            >
             {{ title }}
           </div>
-
           <!-- Trend -->
-          <div class="stat-desc mt-2 text-white" *ngIf="trend">
-            <div
-              class="flex items-center gap-1 text-sm"
+          @if (trend) {
+            <div class="stat-desc mt-2 text-white">
+              <div
+                class="flex items-center gap-1 text-sm"
               [ngClass]="{
                 'text-green-400': trend === 'up',
                 'text-red-400': trend === 'down',
                 'text-white/80': trend === 'stable',
               }"
-            >
-              <span class="material-symbols-outlined text-lg">{{
-                trend === 'up' ? 'arrow_upward' : trend === 'down' ? 'arrow_downward' : 'remove'
-              }}</span>
-              <span *ngIf="trendValue" class="font-semibold"
-                >{{ trendValue > 0 ? '+' : '' }}{{ trendValue }}</span
-              >
+                >
+                <span class="material-symbols-outlined text-lg">{{
+                  trend === 'up' ? 'arrow_upward' : trend === 'down' ? 'arrow_downward' : 'remove'
+                }}</span>
+                @if (trendValue) {
+                  <span class="font-semibold"
+                    >{{ trendValue > 0 ? '+' : '' }}{{ trendValue }}</span
+                    >
+                  }
+                </div>
+              </div>
+            }
+            <!-- Footer slot -->
+            <div class="mt-2">
+              <ng-content select="[slot='footer']"></ng-content>
             </div>
           </div>
+        }
+        <!-- Normal State -->
+      }
 
-          <!-- Footer slot -->
-          <div class="mt-2">
-            <ng-content select="[slot='footer']"></ng-content>
-          </div>
-        </div>
-      </ng-template>
-    </ng-template>
+    </div>
   </div>
-</div>

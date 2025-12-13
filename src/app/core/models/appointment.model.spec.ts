@@ -16,12 +16,12 @@ import {
   InsulinType,
   PUMP_TYPES,
   PumpType,
-} from './appointment.model';
+} from '@models/appointment.model';
 
 import {
   BACKEND_APPOINTMENT_MOTIVES,
   isValidBackendMotive,
-} from '../contracts/backend-enums.contract';
+} from '@core/contracts/backend-enums.contract';
 
 describe('AppointmentModel', () => {
   describe('Appointment interface', () => {

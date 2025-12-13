@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
-import { PlatformDetectorService } from './platform-detector.service';
-import { API_GATEWAY_BASE_URL, getApiGatewayOverride } from '../../shared/config/api-base-url';
+import { PlatformDetectorService } from '@services/platform-detector.service';
+import { API_GATEWAY_BASE_URL, getApiGatewayOverride } from '@core/../shared/config/api-base-url';
 
 // Mock Capacitor
 jest.mock('@capacitor/core');

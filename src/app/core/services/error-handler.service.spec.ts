@@ -10,7 +10,7 @@
 
 import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ErrorHandlerService, AppError, ErrorCategory } from './error-handler.service';
+import { ErrorHandlerService, AppError, ErrorCategory } from '@services/error-handler.service';
 
 describe('ErrorHandlerService', () => {
   let service: ErrorHandlerService;

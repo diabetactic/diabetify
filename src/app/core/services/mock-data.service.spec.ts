@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
-import { MockDataService } from './mock-data.service';
-import { environment } from '../../../environments/environment';
+import { MockDataService } from '@services/mock-data.service';
+import { environment } from '@env/environment';
 
 describe('MockDataService', () => {
   let service: MockDataService;

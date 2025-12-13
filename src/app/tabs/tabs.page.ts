@@ -12,13 +12,13 @@ import {
 } from '@ionic/angular/standalone';
 import { ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
-import { ROUTES, ROUTE_SEGMENTS } from '../core/constants';
-import { AppointmentService } from '../core/services/appointment.service';
-import { TranslationService } from '../core/services/translation.service';
-import { AppointmentQueueStateResponse } from '../core/models/appointment.model';
-import { environment } from '../../environments/environment';
-import { EnvBadgeComponent } from '../shared/components/env-badge/env-badge.component';
-import { SyncStatusComponent } from '../shared/components/sync-status/sync-status.component';
+import { ROUTES, ROUTE_SEGMENTS } from '@core/constants';
+import { AppointmentService } from '@services/appointment.service';
+import { TranslationService } from '@services/translation.service';
+import { AppointmentQueueStateResponse } from '@models/appointment.model';
+import { environment } from '@env/environment';
+import { EnvBadgeComponent } from '@shared/components/env-badge/env-badge.component';
+import { SyncStatusComponent } from '@shared/components/sync-status/sync-status.component';
 
 @Component({
   selector: 'app-tabs',

@@ -18,16 +18,16 @@
 
 import { TestBed } from '@angular/core/testing';
 import { Observable } from 'rxjs';
-import { ReadingsService, LIVE_QUERY_FN } from './readings.service';
-import { DiabetacticDatabase } from './database.service';
-import { MockDataService } from './mock-data.service';
-import { ApiGatewayService } from './api-gateway.service';
-import { LoggerService } from './logger.service';
+import { ReadingsService, LIVE_QUERY_FN } from '@services/readings.service';
+import { DiabetacticDatabase } from '@services/database.service';
+import { MockDataService } from '@services/mock-data.service';
+import { ApiGatewayService } from '@services/api-gateway.service';
+import { LoggerService } from '@services/logger.service';
 import {
   BACKEND_READING_TYPES,
   isValidBackendReadingType,
-} from '../contracts/backend-enums.contract';
-import { GlucoseReading } from '../models/glucose-reading.model';
+} from '@core/contracts/backend-enums.contract';
+import { GlucoseReading } from '@models/glucose-reading.model';
 
 // ============================================================================
 // EXPECTED MAPPING DEFINITIONS

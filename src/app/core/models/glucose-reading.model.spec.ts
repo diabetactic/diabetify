@@ -17,7 +17,7 @@ import {
   LocalGlucoseReading,
   GlucoseQueryParams,
   GlucoseStatistics,
-} from './glucose-reading.model';
+} from '@models/glucose-reading.model';
 
 describe('GlucoseReadingModel', () => {
   describe('Type definitions', () => {

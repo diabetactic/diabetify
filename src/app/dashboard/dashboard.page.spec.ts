@@ -4,23 +4,23 @@ import { provideRouter } from '@angular/router';
 import { of, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DashboardPage } from './dashboard.page';
-import { ReadingsService } from '../core/services/readings.service';
-import { AppointmentService } from '../core/services/appointment.service';
-import { Appointment } from '../core/models/appointment.model';
-import { LocalGlucoseReading, GlucoseStatistics } from '../core/models/glucose-reading.model';
+import { ReadingsService } from '@core/services/readings.service';
+import { AppointmentService } from '@core/services/appointment.service';
+import { Appointment } from '@core/models/appointment.model';
+import { LocalGlucoseReading, GlucoseStatistics } from '@core/models/glucose-reading.model';
 import { TranslateModule } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { TranslationService, Language, LanguageConfig } from '../core/services/translation.service';
-import { ProfileService } from '../core/services/profile.service';
-import { getLucideIconsForTesting } from '../tests/helpers/icon-test.helper';
-import { LoggerService } from '../core/services/logger.service';
-import { ThemeService } from '../core/services/theme.service';
-import { LocalAuthService } from '../core/services/local-auth.service';
+import { TranslationService, Language, LanguageConfig } from '@core/services/translation.service';
+import { ProfileService } from '@core/services/profile.service';
+import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helper';
+import { LoggerService } from '@core/services/logger.service';
+import { ThemeService } from '@core/services/theme.service';
+import { LocalAuthService } from '@core/services/local-auth.service';
 import { Component, Input } from '@angular/core';
-import { StatCardComponent } from '../shared/components/stat-card/stat-card.component';
-import { ReadingItemComponent } from '../shared/components/reading-item/reading-item.component';
-import { EmptyStateComponent } from '../shared/components/empty-state/empty-state.component';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { StatCardComponent } from '@shared/components/stat-card/stat-card.component';
+import { ReadingItemComponent } from '@shared/components/reading-item/reading-item.component';
+import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 // StreakCardComponent imported by DashboardPage - not used directly in tests
 
 class LoggerServiceStub {

@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
@@ -22,15 +22,15 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, firstValueFrom } from 'rxjs';
 
-import { AppointmentService } from '../../core/services/appointment.service';
+import { AppointmentService } from '@services/appointment.service';
 import {
   CreateAppointmentRequest,
   AppointmentQueueState,
-} from '../../core/models/appointment.model';
-import { LocalAuthService } from '../../core/services/local-auth.service';
-import { TranslationService } from '../../core/services/translation.service';
-import { LoggerService } from '../../core/services/logger.service';
-import { ROUTES } from '../../core/constants';
+} from '@models/appointment.model';
+import { LocalAuthService } from '@services/local-auth.service';
+import { TranslationService } from '@services/translation.service';
+import { LoggerService } from '@services/logger.service';
+import { ROUTES } from '@core/constants';
 
 @Component({
   selector: 'app-appointment-create',
@@ -38,10 +38,8 @@ import { ROUTES } from '../../core/constants';
   styleUrls: ['./appointment-create.page.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     TranslateModule,
-    // Ionic standalone components
     IonHeader,
     IonToolbar,
     IonButtons,
@@ -55,8 +53,8 @@ import { ROUTES } from '../../core/constants';
     IonSelectOption,
     IonLabel,
     IonCheckbox,
-    IonTextarea,
-  ],
+    IonTextarea
+],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppointmentCreatePage implements OnInit, OnDestroy {

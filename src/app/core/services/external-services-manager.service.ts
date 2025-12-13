@@ -12,7 +12,7 @@ import { BehaviorSubject, Observable, Subscription, timer, firstValueFrom } from
 import { timeout, retry } from 'rxjs/operators';
 import { Network } from '@capacitor/network';
 
-import { environment } from '../../../environments/environment';
+import { environment } from '@env/environment';
 
 /**
  * External service types

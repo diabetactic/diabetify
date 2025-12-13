@@ -13,7 +13,7 @@ import {
   UserProfile,
   CreateUserProfileInput,
   UpdateUserProfileInput,
-} from './user-profile.model';
+} from '@models/user-profile.model';
 
 describe('UserProfileModel', () => {
   describe('AccountState enum', () => {

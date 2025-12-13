@@ -4,7 +4,7 @@ import {
   initializeEnvironmentConfig,
   ENVIRONMENT_CONFIG,
 } from './environment-config.service';
-import { environment } from '../../../environments/environment';
+import { environment } from '@env/environment';
 
 // Mock Capacitor
 jest.mock('@capacitor/core', () => ({

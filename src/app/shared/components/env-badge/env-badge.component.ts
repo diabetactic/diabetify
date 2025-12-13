@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { environment, BackendMode } from '../../../../environments/environment';
+
+import { environment, BackendMode } from '@env/environment';
 
 /**
  * Environment Badge Component
@@ -10,7 +10,7 @@ import { environment, BackendMode } from '../../../../environments/environment';
 @Component({
   selector: 'app-env-badge',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     @if (showBadge) {
       <span

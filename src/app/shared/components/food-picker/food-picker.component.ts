@@ -10,19 +10,19 @@ import {
   HostListener,
   OnInit,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IonButton, IonSearchbar } from '@ionic/angular/standalone';
-import { FoodService } from '../../../core/services/food.service';
+import { FoodService } from '@services/food.service';
 import {
   FoodItem,
   FoodCategory,
   FoodCategoryInfo,
   SelectedFood,
   FoodPickerResult,
-} from '../../../core/models/food.model';
+} from '@core/models/food.model';
 import { AppIconComponent } from '../app-icon/app-icon.component';
 
 /**
@@ -33,7 +33,7 @@ import { AppIconComponent } from '../app-icon/app-icon.component';
 @Component({
   selector: 'app-food-picker',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, AppIconComponent, IonButton, IonSearchbar],
+  imports: [FormsModule, TranslateModule, AppIconComponent, IonButton, IonSearchbar],
   templateUrl: './food-picker.component.html',
   styleUrl: './food-picker.component.scss',
   animations: [

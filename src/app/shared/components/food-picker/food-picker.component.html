@@ -1,12 +1,13 @@
 <!-- Backdrop -->
-<div
-  *ngIf="isOpen"
-  class="food-picker-backdrop"
-  [class.food-picker-backdrop--visible]="isOpen"
-  (click)="onBackdropClick()"
-  [@fadeInOut]="isOpen ? 'visible' : 'hidden'"
-  role="presentation"
-></div>
+@if (isOpen) {
+  <div
+    class="food-picker-backdrop"
+    [class.food-picker-backdrop--visible]="isOpen"
+    (click)="onBackdropClick()"
+    [@fadeInOut]="isOpen ? 'visible' : 'hidden'"
+    role="presentation"
+  ></div>
+}
 
 <!-- Modal -->
 <div
@@ -17,7 +18,7 @@
   [attr.aria-hidden]="!isOpen"
   aria-modal="true"
   aria-labelledby="food-picker-title"
->
+  >
   <!-- Handle bar -->
   <div class="food-picker-handle" aria-hidden="true">
     <div class="food-picker-handle-bar"></div>
@@ -34,7 +35,7 @@
         (click)="cancel()"
         [attr.aria-label]="'common.close' | translate"
         type="button"
-      >
+        >
         <app-icon name="x" size="md"></app-icon>
       </button>
     </div>
@@ -51,21 +52,23 @@
   </div>
 
   <!-- Category tabs (only when not searching) -->
-  <div class="food-picker-categories" *ngIf="searchQuery().length < 2">
-    <div class="category-scroll">
-      @for (cat of categories; track cat.key) {
-        <button
-          class="category-chip"
-          [class.category-chip--active]="selectedCategory() === cat.key"
-          (click)="selectedCategory.set(cat.key)"
-          type="button"
-        >
-          <span class="category-emoji">{{ cat.emoji }}</span>
-          <span class="category-name">{{ cat.nameKey | translate }}</span>
-        </button>
-      }
+  @if (searchQuery().length < 2) {
+    <div class="food-picker-categories">
+      <div class="category-scroll">
+        @for (cat of categories; track cat.key) {
+          <button
+            class="category-chip"
+            [class.category-chip--active]="selectedCategory() === cat.key"
+            (click)="selectedCategory.set(cat.key)"
+            type="button"
+            >
+            <span class="category-emoji">{{ cat.emoji }}</span>
+            <span class="category-name">{{ cat.nameKey | translate }}</span>
+          </button>
+        }
+      </div>
     </div>
-  </div>
+  }
 
   <!-- Food list -->
   <div class="food-picker-content">
@@ -76,7 +79,7 @@
             class="food-item-main"
             (click)="isSelected(food.id) ? removeFood(food.id) : addFood(food)"
             type="button"
-          >
+            >
             <span class="food-emoji">{{ food.emoji }}</span>
             <div class="food-info">
               <span class="food-name">{{ food.nameKey | translate }}</span>
@@ -96,7 +99,7 @@
                 (click)="updateServings(food.id, -0.5); $event.stopPropagation()"
                 type="button"
                 [attr.aria-label]="'foodPicker.decrease' | translate"
-              >
+                >
                 <app-icon name="minus" size="sm"></app-icon>
               </button>
               <span class="qty-value">
@@ -107,14 +110,14 @@
                 (click)="updateServings(food.id, 0.5); $event.stopPropagation()"
                 type="button"
                 [attr.aria-label]="'foodPicker.increase' | translate"
-              >
+                >
                 <app-icon name="plus" size="sm"></app-icon>
               </button>
               <span class="qty-carbs"> {{ getSelectedFood(food.id)?.totalCarbs }}g </span>
             </div>
           }
         </div>
-      } @empty {
+        } @empty {
         <div class="food-empty">
           <span class="food-empty-icon">🔍</span>
           <p>{{ 'foodPicker.noResults' | translate }}</p>
@@ -126,20 +129,22 @@
   <!-- Footer with totals and actions -->
   <div class="food-picker-footer">
     <!-- Selected summary -->
-    <div class="selected-summary" *ngIf="selectedCount() > 0">
-      <div class="summary-items">
-        <span class="summary-count">
-          {{ selectedCount() }} {{ 'foodPicker.itemsSelected' | translate }}
-        </span>
-        <button class="clear-btn" (click)="clearAll()" type="button">
-          {{ 'foodPicker.clearAll' | translate }}
-        </button>
+    @if (selectedCount() > 0) {
+      <div class="selected-summary">
+        <div class="summary-items">
+          <span class="summary-count">
+            {{ selectedCount() }} {{ 'foodPicker.itemsSelected' | translate }}
+          </span>
+          <button class="clear-btn" (click)="clearAll()" type="button">
+            {{ 'foodPicker.clearAll' | translate }}
+          </button>
+        </div>
+        <div class="summary-total">
+          <span class="total-label">{{ 'foodPicker.totalCarbs' | translate }}</span>
+          <span class="total-value">{{ totalCarbs() }}g</span>
+        </div>
       </div>
-      <div class="summary-total">
-        <span class="total-label">{{ 'foodPicker.totalCarbs' | translate }}</span>
-        <span class="total-value">{{ totalCarbs() }}g</span>
-      </div>
-    </div>
+    }
 
     <!-- Actions -->
     <div class="food-picker-actions">
@@ -150,7 +155,7 @@
         (click)="confirm()"
         [disabled]="selectedCount() === 0"
         class="action-btn action-btn--confirm"
-      >
+        >
         <app-icon name="check" slot="start" size="sm"></app-icon>
         {{ 'foodPicker.confirm' | translate }} ({{ totalCarbs() }}g)
       </ion-button>

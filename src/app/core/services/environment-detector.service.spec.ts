@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { EnvironmentDetectorService } from './environment-detector.service';
+import { EnvironmentDetectorService } from '@services/environment-detector.service';
 import { Capacitor } from '@capacitor/core';
 
 // Mock Capacitor

@@ -27,18 +27,18 @@ import {
 import { ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, firstValueFrom, interval } from 'rxjs';
-import { AppointmentService } from '../core/services/appointment.service';
+import { AppointmentService } from '@services/appointment.service';
 import {
   Appointment,
   AppointmentQueueState,
   AppointmentQueueStateResponse,
   AppointmentResolutionResponse,
-} from '../core/models/appointment.model';
-import { TranslationService } from '../core/services/translation.service';
-import { LoggerService } from '../core/services/logger.service';
-import { environment } from '../../environments/environment';
-import { ROUTES, appointmentDetailRoute } from '../core/constants';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+} from '@models/appointment.model';
+import { TranslationService } from '@services/translation.service';
+import { LoggerService } from '@services/logger.service';
+import { environment } from '@env/environment';
+import { ROUTES, appointmentDetailRoute } from '@core/constants';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-appointments',

@@ -14,20 +14,61 @@ executors:
       - image: mcr.microsoft.com/playwright:v1.48.0-noble
     working_directory: ~/project
 
+# Commands for pnpm installation and caching
+commands:
+  install-pnpm:
+    description: "Install pnpm using corepack"
+    steps:
+      - run:
+          name: Enable Corepack and Install pnpm
+          command: |
+            corepack enable
+            corepack prepare pnpm@9 --activate
+            pnpm --version
+
+  restore-pnpm-cache:
+    description: "Restore pnpm store cache"
+    steps:
+      - restore_cache:
+          keys:
+            - pnpm-store-v1-{{ checksum "pnpm-lock.yaml" }}
+            - pnpm-store-v1-
+
+  save-pnpm-cache:
+    description: "Save pnpm store cache"
+    steps:
+      - save_cache:
+          key: pnpm-store-v1-{{ checksum "pnpm-lock.yaml" }}
+          paths:
+            - ~/.local/share/pnpm/store
+
+  install-dependencies:
+    description: "Install dependencies with pnpm"
+    steps:
+      - install-pnpm
+      - restore-pnpm-cache
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - save-pnpm-cache
+
 jobs:
   # Lint and unit tests
   test:
     executor: node-executor
+    environment:
+      # Turborepo remote cache (configure in CircleCI project settings)
+      TURBO_TOKEN: ""  # Set via CircleCI environment variables
+      TURBO_TEAM: ""   # Set via CircleCI environment variables
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: npm
+      - install-dependencies
       - run:
           name: Lint
-          command: npm run lint
+          command: pnpm run lint
       - run:
           name: Unit Tests
-          command: npm test -- --ci --coverage
+          command: pnpm test -- --ci --coverage
       - run:
           name: Upload Coverage to DeepSource
           command: |
@@ -50,17 +91,20 @@ jobs:
   # Build production web
   build-web:
     executor: node-executor
+    environment:
+      TURBO_TOKEN: ""  # Set via CircleCI environment variables
+      TURBO_TEAM: ""   # Set via CircleCI environment variables
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: npm
+      - install-dependencies
       - run:
           name: Build Production
-          command: npm run build:prod
+          command: pnpm run build:prod
       - persist_to_workspace:
           root: .
           paths:
             - www
+            - node_modules/.cache/turbo  # Persist turbo cache for workspace
 
   # Deploy to Netlify (uses www/ from workspace, no rebuild needed)
   deploy-netlify:
@@ -68,17 +112,22 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - install-pnpm
+      - run:
+          name: Install Netlify CLI
+          command: pnpm add -g netlify-cli
       - run:
           name: Deploy to Netlify
-          command: |
-            npm install -g netlify-cli
-            netlify deploy --prod --dir=www --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
+          command: netlify deploy --prod --dir=www --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
 
   # Android build - API 30 (Android 11)
   build-android-api30:
     executor:
       name: android/android-machine
       tag: 2024.01.1
+    environment:
+      TURBO_TOKEN: ""  # Set via CircleCI environment variables
+      TURBO_TEAM: ""   # Set via CircleCI environment variables
     steps:
       - checkout
       - attach_workspace:
@@ -94,11 +143,19 @@ jobs:
             echo "export PATH=$NODE_DIR:\$PATH" >> $BASH_ENV
             node --version
       - run:
+          name: Enable Corepack and Install pnpm
+          command: |
+            corepack enable
+            corepack prepare pnpm@9 --activate
+            pnpm --version
+      - restore-pnpm-cache
+      - run:
           name: Install dependencies
-          command: npm ci
+          command: pnpm install --frozen-lockfile
+      - save-pnpm-cache
       - run:
           name: Sync Capacitor (using www/ from workspace)
-          command: npx cap sync android
+          command: pnpm exec cap sync android
       - restore_cache:
           keys:
             - gradle-wrapper-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}
@@ -146,6 +203,9 @@ jobs:
     executor:
       name: android/android-machine
       tag: 2024.01.1
+    environment:
+      TURBO_TOKEN: ""  # Set via CircleCI environment variables
+      TURBO_TEAM: ""   # Set via CircleCI environment variables
     steps:
       - checkout
       - attach_workspace:
@@ -161,11 +221,19 @@ jobs:
             echo "export PATH=$NODE_DIR:\$PATH" >> $BASH_ENV
             node --version
       - run:
+          name: Enable Corepack and Install pnpm
+          command: |
+            corepack enable
+            corepack prepare pnpm@9 --activate
+            pnpm --version
+      - restore-pnpm-cache
+      - run:
           name: Install dependencies
-          command: npm ci
+          command: pnpm install --frozen-lockfile
+      - save-pnpm-cache
       - run:
           name: Sync Capacitor (using www/ from workspace)
-          command: npx cap sync android
+          command: pnpm exec cap sync android
       - restore_cache:
           keys:
             - gradle-wrapper-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}
@@ -213,18 +281,22 @@ jobs:
   playwright-e2e:
     executor: playwright-executor
     parallelism: 4
+    environment:
+      TURBO_TOKEN: ""  # Set via CircleCI environment variables
+      TURBO_TEAM: ""   # Set via CircleCI environment variables
     steps:
       - checkout
+      - install-pnpm
       - run:
           name: Install dependencies (skip browser download – image already has them)
-          command: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci
+          command: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 pnpm install --frozen-lockfile
       - run:
           name: Run Playwright E2E (Shard $CIRCLE_NODE_INDEX of $CIRCLE_NODE_TOTAL)
           command: |
             # Calculate shard (1-indexed for Playwright)
             SHARD_INDEX=$((CIRCLE_NODE_INDEX + 1))
             echo "Running shard $SHARD_INDEX of $CIRCLE_NODE_TOTAL"
-            npx playwright test --shard=$SHARD_INDEX/$CIRCLE_NODE_TOTAL --reporter=html,json
+            pnpm exec playwright test --shard=$SHARD_INDEX/$CIRCLE_NODE_TOTAL --reporter=html,json
       - store_test_results:
           path: playwright-report
       - store_artifacts:
@@ -240,6 +312,9 @@ jobs:
       docker_layer_caching: true
     parallelism: 4
     working_directory: ~/project
+    environment:
+      TURBO_TOKEN: ""  # Set via CircleCI environment variables
+      TURBO_TEAM: ""   # Set via CircleCI environment variables
     steps:
       - checkout
       - run:
@@ -248,6 +323,12 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y docker-compose-plugin
             docker compose version
+      - run:
+          name: Enable Corepack and Install pnpm
+          command: |
+            corepack enable
+            corepack prepare pnpm@9 --activate
+            pnpm --version
       - attach_workspace:
           at: .
       - run:
@@ -298,6 +379,8 @@ jobs:
       BACKOFFICE_API_URL: 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com'
       BACKOFFICE_ADMIN_USERNAME: 'admin'
       BACKOFFICE_ADMIN_PASSWORD: 'admin'
+      TURBO_TOKEN: ""  # Set via CircleCI environment variables
+      TURBO_TEAM: ""   # Set via CircleCI environment variables
     steps:
       - checkout
       - run:
@@ -311,14 +394,22 @@ jobs:
             echo "export PATH=$NODE_DIR:\$PATH" >> $BASH_ENV
             node --version
       - run:
+          name: Enable Corepack and Install pnpm
+          command: |
+            corepack enable
+            corepack prepare pnpm@9 --activate
+            pnpm --version
+      - restore-pnpm-cache
+      - run:
           name: Install dependencies
-          command: npm ci
+          command: pnpm install --frozen-lockfile
+      - save-pnpm-cache
       - run:
           name: Build Web (Heroku mode)
-          command: npm run build:heroku
+          command: pnpm run build:heroku
       - run:
           name: Sync Capacitor
-          command: npx cap sync android
+          command: pnpm exec cap sync android
       - restore_cache:
           keys:
             - gradle-wrapper-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}
@@ -399,6 +490,9 @@ jobs:
     executor:
       name: android/android-machine
       tag: 2024.01.1
+    environment:
+      TURBO_TOKEN: ""  # Set via CircleCI environment variables
+      TURBO_TEAM: ""   # Set via CircleCI environment variables
     steps:
       - checkout
       - run:
@@ -412,8 +506,16 @@ jobs:
             echo "export PATH=$NODE_DIR:\$PATH" >> $BASH_ENV
             node --version
       - run:
+          name: Enable Corepack and Install pnpm
+          command: |
+            corepack enable
+            corepack prepare pnpm@9 --activate
+            pnpm --version
+      - restore-pnpm-cache
+      - run:
           name: Install dependencies
-          command: npm ci
+          command: pnpm install --frozen-lockfile
+      - save-pnpm-cache
       - run:
           name: Get version from package.json
           command: |
@@ -421,10 +523,10 @@ jobs:
             echo "export VERSION=$VERSION" >> $BASH_ENV
       - run:
           name: Build Production Web
-          command: npm run build:prod
+          command: pnpm run build:prod
       - run:
           name: Sync Capacitor
-          command: npx cap sync android
+          command: pnpm exec cap sync android
       - restore_cache:
           keys:
             - gradle-wrapper-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}

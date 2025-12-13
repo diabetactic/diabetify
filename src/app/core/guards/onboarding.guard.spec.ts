@@ -9,8 +9,8 @@ import {
 } from '@angular/router';
 
 import { OnboardingGuard } from './onboarding.guard';
-import { ProfileService } from '../services/profile.service';
-import { UserProfile } from '../models';
+import { ProfileService } from '@services/profile.service';
+import { UserProfile } from '@core/models';
 
 describe('OnboardingGuard', () => {
   let guard: OnboardingGuard;

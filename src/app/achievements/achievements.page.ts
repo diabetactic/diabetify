@@ -24,10 +24,10 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { AchievementsService } from '../core/services/achievements.service';
-import { TranslationService } from '../core/services/translation.service';
-import { Achievement, StreakData, getAchievementProgress } from '../core/models/achievements.model';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
+import { AchievementsService } from '@services/achievements.service';
+import { TranslationService } from '@services/translation.service';
+import { Achievement, StreakData, getAchievementProgress } from '@models/achievements.model';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-achievements',

@@ -11,11 +11,11 @@ import { BehaviorSubject, of } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 import { SettingsPage } from '../../../settings/settings.page';
-import { ProfileService } from '../../../core/services/profile.service';
-import { LocalAuthService } from '../../../core/services/local-auth.service';
-import { ThemeService } from '../../../core/services/theme.service';
-import { DemoDataService } from '../../../core/services/demo-data.service';
-import { UserProfile } from '../../../core/models/user-profile.model';
+import { ProfileService } from '@services/profile.service';
+import { LocalAuthService } from '@services/local-auth.service';
+import { ThemeService } from '@services/theme.service';
+import { DemoDataService } from '@services/demo-data.service';
+import { UserProfile } from '@models/user-profile.model';
 
 import { createMockToastController } from '../../helpers/dom-utils';
 

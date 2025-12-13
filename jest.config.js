@@ -55,9 +55,16 @@ module.exports = {
     '^@app/(.*)$': '<rootDir>/src/app/$1',
     '^@core/(.*)$': '<rootDir>/src/app/core/$1',
     '^@shared/(.*)$': '<rootDir>/src/app/shared/$1',
+    '^@env/(.*)$': '<rootDir>/src/environments/$1',
     '^@environments/(.*)$': '<rootDir>/src/environments/$1',
+    '^@models/(.*)$': '<rootDir>/src/app/core/models/$1',
+    '^@services/(.*)$': '<rootDir>/src/app/core/services/$1',
+    '^@guards/(.*)$': '<rootDir>/src/app/core/guards/$1',
+    '^@interceptors/(.*)$': '<rootDir>/src/app/core/interceptors/$1',
     // Mock ionicons to avoid ESM issues
     'ionicons/components/ion-icon.js': '<rootDir>/src/app/tests/mocks/ionicons.mock.ts',
+    // Mock premium Capawesome biometrics plugin (not in public npm)
+    '@capawesome-team/capacitor-biometrics': '<rootDir>/src/mocks/__mocks__/@capawesome-team/capacitor-biometrics.ts',
   },
   transformIgnorePatterns: [
     'node_modules/(?!(@ionic|@stencil|@capacitor|@angular|rxjs|@ngx-translate|lucide-angular|dexie|tslib|@faker-js|ionicons)/)',

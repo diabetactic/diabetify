@@ -5,10 +5,10 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { AchievementsPage } from './achievements.page';
-import { AchievementsService } from '../core/services/achievements.service';
-import { TranslationService, Language } from '../core/services/translation.service';
-import { Achievement, StreakData } from '../core/models/achievements.model';
-import { getLucideIconsForTesting } from '../tests/helpers/icon-test.helper';
+import { AchievementsService } from '@core/services/achievements.service';
+import { TranslationService, Language } from '@core/services/translation.service';
+import { Achievement, StreakData } from '@core/models/achievements.model';
+import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helper';
 
 // Mock data
 const mockStreakData: StreakData = {

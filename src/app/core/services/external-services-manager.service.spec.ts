@@ -6,9 +6,9 @@ import {
   ExternalServicesManager,
   ExternalService,
   HealthStatus,
-} from './external-services-manager.service';
+} from '@services/external-services-manager.service';
 import { Network } from '@capacitor/network';
-import { environment } from '../../../environments/environment';
+import { environment } from '@env/environment';
 
 // Mock Capacitor Network
 jest.mock('@capacitor/network');

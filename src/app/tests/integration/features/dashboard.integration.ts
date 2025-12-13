@@ -14,16 +14,16 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 import { DashboardPage } from '../../../dashboard/dashboard.page';
-import { ReadingsService } from '../../../core/services/readings.service';
-import { AppointmentService } from '../../../core/services/appointment.service';
-import { Appointment } from '../../../core/models/appointment.model';
-import { LocalGlucoseReading, GlucoseStatistics } from '../../../core/models/glucose-reading.model';
+import { ReadingsService } from '@services/readings.service';
+import { AppointmentService } from '@services/appointment.service';
+import { Appointment } from '@models/appointment.model';
+import { LocalGlucoseReading, GlucoseStatistics } from '@models/glucose-reading.model';
 import {
   TranslationService,
   Language,
   LanguageConfig,
-} from '../../../core/services/translation.service';
-import { ProfileService } from '../../../core/services/profile.service';
+} from '@services/translation.service';
+import { ProfileService } from '@services/profile.service';
 
 class TranslationServiceStub {
   private readonly languages: LanguageConfig[] = [

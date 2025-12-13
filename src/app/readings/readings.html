@@ -6,7 +6,7 @@
         (click)="syncWithBackend()"
         [disabled]="isSyncing"
         [attr.aria-label]="'common.sync' | translate"
-      >
+        >
         <app-icon
           slot="icon-only"
           [name]="isSyncing ? 'loader-circle' : 'refresh-cw'"
@@ -18,409 +18,426 @@
         (click)="openFilterModal()"
         class="relative"
         [attr.aria-label]="'readings.filterReadings' | translate"
-      >
+        >
         <app-icon slot="icon-only" name="filter-outline"></app-icon>
-        <ion-badge
-          *ngIf="getFilterCount() > 0"
-          color="danger"
-          class="absolute -right-1 -top-1 h-5 min-w-5 rounded-full text-[10px]"
-          >{{ getFilterCount() }}</ion-badge
-        >
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-
-  <!-- Search Bar -->
-  <ion-toolbar color="primary" class="px-4 py-2">
-    <ion-searchbar
-      [(ngModel)]="searchTerm"
-      (ionInput)="onSearchChange($event)"
-      [placeholder]="'readings.searchPlaceholder' | translate"
-      [debounce]="300"
-      animated="true"
-      showCancelButton="focus"
-      (ionClear)="clearSearch()"
-    >
-    </ion-searchbar>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
-  <!-- Pull to refresh -->
-  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
-    <ion-refresher-content
-      pullingIcon="chevron-down-circle-outline"
-      [pullingText]="'common.pullToRefresh' | translate"
-      refreshingSpinner="circles"
-      [refreshingText]="'common.refreshing' | translate"
-    >
-    </ion-refresher-content>
-  </ion-refresher>
-
-  <!-- Readings tip banner -->
-  <div class="page-shell pb-0 pt-4">
-    <div
-      class="bg-info/10 dark:bg-info/20 border-info/30 flex items-start gap-3 rounded-xl border px-4 py-3"
-    >
-      <app-icon name="droplet" class="text-info mt-0.5 h-5 w-5 flex-shrink-0"></app-icon>
-      <p class="text-info dark:text-info-content m-0 text-sm leading-relaxed">
-        {{ 'readings.tip' | translate }}
-      </p>
-    </div>
-  </div>
-
-  <!-- Active Filters Chips -->
-  <div
-    class="flex items-center gap-2 overflow-x-auto whitespace-nowrap border-b border-[var(--ion-color-light-shade)] bg-[var(--ion-color-light)] px-4 py-3"
-    *ngIf="hasActiveFilters()"
-    data-testid="readings-filter"
-  >
-    <ion-chip
-      *ngIf="filters.status && filters.status !== 'all'"
-      (click)="clearFilters()"
-      color="primary"
-      class="m-0 cursor-pointer"
-    >
-      <ion-label>{{ getStatusLabel(filters.status) }}</ion-label>
-      <app-icon name="close-circle"></app-icon>
-    </ion-chip>
-    <ion-chip
-      *ngIf="filters.startDate"
-      (click)="clearFilters()"
-      color="primary"
-      class="m-0 cursor-pointer"
-    >
-      <ion-label
-        >{{ filters.startDate | date: 'MMM d' }} - {{ filters.endDate | date: 'MMM d' }}</ion-label
-      >
-      <app-icon name="close-circle"></app-icon>
-    </ion-chip>
-    <ion-chip
-      *ngIf="filters.searchTerm"
-      (click)="clearSearch()"
-      color="primary"
-      class="m-0 cursor-pointer"
-    >
-      <ion-label>{{ 'readings.search' | translate }}: {{ filters.searchTerm }}</ion-label>
-      <app-icon name="close-circle"></app-icon>
-    </ion-chip>
-    <ion-button fill="clear" size="small" (click)="clearFilters()" class="shrink-0">{{
-      'readings.clearAll' | translate
-    }}</ion-button>
-  </div>
-
-  <!-- Loading State - using DaisyUI loading component -->
-  <div class="flex min-h-[300px] flex-col items-center justify-center p-8" *ngIf="isLoading">
-    <span class="loading loading-spinner loading-lg text-primary mb-4"></span>
-    <p class="text-base-content/60 dark:text-base-content/80 m-0 text-sm">
-      {{ 'readings.loadingReadings' | translate }}
-    </p>
-  </div>
-
-  <!-- Empty State -->
-  <div
-    *ngIf="!isLoading && totalCount === 0"
-    class="flex min-h-[400px] items-center justify-center p-8"
-    data-testid="readings-empty"
-  >
-    <app-empty-state
-      illustration="description"
-      [heading]="'readings.noReadings' | translate"
-      [message]="'readings.noReadingsMessage' | translate"
-      [ctaText]="'readings.addReading' | translate"
-      (ctaClick)="addReading()"
-    >
-    </app-empty-state>
-  </div>
-
-  <!-- No Results State (after filtering) -->
-  <div
-    *ngIf="!isLoading && totalCount > 0 && filteredReadings.length === 0"
-    class="flex min-h-[400px] items-center justify-center p-8"
-  >
-    <app-empty-state
-      illustration="search"
-      [heading]="'readings.noResults' | translate"
-      [message]="'readings.noResultsMessage' | translate"
-      [ctaText]="'readings.clearFilters' | translate"
-      (ctaClick)="clearFilters()"
-    >
-    </app-empty-state>
-  </div>
-
-  <!-- Readings Count -->
-  <div
-    class="border-b border-[var(--ion-color-light-shade)] px-4 py-3 pb-2"
-    *ngIf="!isLoading && filteredReadings.length > 0"
-  >
-    <ion-text color="medium">
-      <p class="m-0 text-center text-[13px]">
-        {{ 'readings.showing' | translate }} {{ filteredReadings.length }}
-        {{ 'readings.of' | translate }} {{ totalCount }} {{ 'readings.readings' | translate }}
-        <span *ngIf="hasActiveFilters()"> ({{ 'readings.filtered' | translate }})</span>
-      </p>
-    </ion-text>
-  </div>
-
-  <!-- Grouped Readings List with Virtual Scrolling -->
-  <div
-    class="page-shell pb-20"
-    style="padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px))"
-    *ngIf="!isLoading && groupedReadings.length > 0"
-    data-testid="readings-list"
-  >
-    <!-- Group by Date -->
-    <div *ngFor="let group of groupedReadings; trackBy: trackByGroup" class="mb-6 last:mb-0">
-      <!-- Date Header -->
-      <div
-        class="sticky top-0 z-10 flex items-center justify-between border-b-2 border-[var(--ion-color-primary)] bg-[var(--ion-background-color)] px-4 py-4 pb-2"
-      >
-        <ion-text>
-          <h2 class="m-0 text-lg font-semibold text-[var(--ion-color-dark)]">
-            {{ group.displayDate }}
-          </h2>
-        </ion-text>
-        <ion-text color="medium">
-          <p class="m-0 text-[13px]">
-            {{ group.readings.length }}
-            {{
-              group.readings.length !== 1
-                ? ('readings.readings' | translate)
-                : ('readings.reading' | translate)
-            }}
-          </p>
-        </ion-text>
-      </div>
-
-      <!-- Readings in this group -->
-      <div class="m-0 px-4 py-2">
-        <div
-          *ngFor="let reading of group.readings; trackBy: trackByReading"
-          class="cursor-pointer transition-transform duration-200 ease-in-out active:scale-[0.98]"
-          (click)="onReadingClick(reading)"
-          (keyup.enter)="onReadingClick(reading)"
-          role="button"
-          tabindex="0"
-        >
-          <app-reading-item [reading]="reading" class="block w-full"></app-reading-item>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Scroll to Top Button -->
-  <ion-fab
-    vertical="bottom"
-    horizontal="end"
-    slot="fixed"
-    class="!bottom-20"
-    style="bottom: calc(5rem + env(safe-area-inset-bottom, 0px)) !important"
-    *ngIf="groupedReadings.length > 2"
-  >
-    <ion-fab-button
-      size="small"
-      (click)="scrollToTop()"
-      color="light"
-      class="shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
-      [attr.aria-label]="'common.scrollToTop' | translate"
-    >
-      <app-icon name="arrow-up"></app-icon>
-    </ion-fab-button>
-  </ion-fab>
-
-  <!-- Add Reading FAB -->
-  <ion-fab
-    vertical="bottom"
-    horizontal="end"
-    slot="fixed"
-    style="bottom: calc(1rem + env(safe-area-inset-bottom, 0px))"
-  >
-    <ion-fab-button
-      (click)="addReading()"
-      color="primary"
-      class="shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
-      [attr.aria-label]="'readings.addReading' | translate"
-    >
-      <app-icon name="add"></app-icon>
-    </ion-fab-button>
-  </ion-fab>
-</ion-content>
-
-<!-- Filter Modal -->
-<ion-modal [isOpen]="isFilterModalOpen" (didDismiss)="closeFilterModal()">
-  <ng-template>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>{{ 'readings.filterReadings' | translate }}</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="closeFilterModal()" [attr.aria-label]="'common.close' | translate">
-            <app-icon slot="icon-only" name="close"></app-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content class="ion-padding">
-      <!-- Status Filter -->
-      <div class="mb-6">
-        <ion-list-header class="mb-2 !px-0 !pr-0">
-          <ion-label class="text-sm font-semibold uppercase text-[var(--ion-color-medium)]">{{
-            'readings.glucoseStatus' | translate
-          }}</ion-label>
-        </ion-list-header>
-        <ion-list class="!p-0">
-          <ion-item>
-            <ion-select
-              [(ngModel)]="filters.status"
-              [placeholder]="'readings.selectStatus' | translate"
-              interface="popover"
+        @if (getFilterCount() > 0) {
+          <ion-badge
+            color="danger"
+            class="absolute -right-1 -top-1 h-5 min-w-5 rounded-full text-[10px]"
+            >{{ getFilterCount() }}</ion-badge
             >
-              <ion-select-option value="all">{{
-                'readings.filter.all' | translate
-              }}</ion-select-option>
-              <ion-select-option value="normal">{{
-                'glucose.status.normal' | translate
-              }}</ion-select-option>
-              <ion-select-option value="low">{{
-                'glucose.status.low' | translate
-              }}</ion-select-option>
-              <ion-select-option value="critical-low">{{
-                'glucose.status.veryLow' | translate
-              }}</ion-select-option>
-              <ion-select-option value="high">{{
-                'glucose.status.high' | translate
-              }}</ion-select-option>
-              <ion-select-option value="critical-high">{{
-                'glucose.status.veryHigh' | translate
-              }}</ion-select-option>
-            </ion-select>
-          </ion-item>
-        </ion-list>
-      </div>
+          }
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
 
-      <!-- Date Range Filter -->
-      <div class="mb-6">
-        <ion-list-header class="mb-2 !px-0 !pr-0">
-          <ion-label class="text-sm font-semibold uppercase text-[var(--ion-color-medium)]">{{
-            'readings.dateRange' | translate
-          }}</ion-label>
-        </ion-list-header>
-        <ion-list class="!p-0">
-          <ion-item>
-            <ion-label position="stacked">{{ 'readings.startDate' | translate }}</ion-label>
-            <ion-datetime-button datetime="startDatetime"></ion-datetime-button>
-            <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime
-                  id="startDatetime"
-                  [(ngModel)]="filters.startDate"
-                  presentation="date"
-                  [max]="filters.endDate || undefined"
-                >
-                </ion-datetime>
-              </ng-template>
-            </ion-modal>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">{{ 'readings.endDate' | translate }}</ion-label>
-            <ion-datetime-button datetime="endDatetime"></ion-datetime-button>
-            <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime
-                  id="endDatetime"
-                  [(ngModel)]="filters.endDate"
-                  presentation="date"
-                  [min]="filters.startDate || undefined"
-                >
-                </ion-datetime>
-              </ng-template>
-            </ion-modal>
-          </ion-item>
-        </ion-list>
-      </div>
-
-      <!-- Quick Date Filters -->
-      <div class="mb-6">
-        <ion-list-header class="mb-2 !px-0 !pr-0">
-          <ion-label class="text-sm font-semibold uppercase text-[var(--ion-color-medium)]">{{
-            'readings.quickFilters' | translate
-          }}</ion-label>
-        </ion-list-header>
-        <ion-button
-          expand="block"
-          fill="outline"
-          (click)="setFilterAllTime()"
-          class="mt-2 first:mt-0"
+    <!-- Search Bar -->
+    <ion-toolbar color="primary" class="px-4 py-2">
+      <ion-searchbar
+        [(ngModel)]="searchTerm"
+        (ionInput)="onSearchChange($event)"
+        [placeholder]="'readings.searchPlaceholder' | translate"
+        [debounce]="300"
+        animated="true"
+        showCancelButton="focus"
+        (ionClear)="clearSearch()"
         >
-          {{ 'readings.filter.all' | translate }}
-        </ion-button>
-        <ion-button
-          expand="block"
-          fill="outline"
-          (click)="setFilterLast24Hours()"
-          class="mt-2 first:mt-0"
-        >
-          {{ 'readings.filter.last24Hours' | translate }}
-        </ion-button>
-        <ion-button
-          expand="block"
-          fill="outline"
-          (click)="setFilterLast7Days()"
-          class="mt-2 first:mt-0"
-        >
-          {{ 'readings.filter.last7Days' | translate }}
-        </ion-button>
-        <ion-button
-          expand="block"
-          fill="outline"
-          (click)="setFilterLast30Days()"
-          class="mt-2 first:mt-0"
-        >
-          {{ 'readings.filter.last30Days' | translate }}
-        </ion-button>
-      </div>
+      </ion-searchbar>
+    </ion-toolbar>
+  </ion-header>
 
-      <!-- Action Buttons -->
-      <div class="mt-8 pb-4">
-        <ion-button expand="block" (click)="applyFiltersAndCloseModal()" class="mt-3 first:mt-0">
-          {{ 'readings.applyFilters' | translate }}
-        </ion-button>
-        <ion-button
-          expand="block"
-          fill="clear"
-          (click)="clearFiltersAndCloseModal()"
-          class="mt-3 first:mt-0"
+  <ion-content [fullscreen]="true">
+    <!-- Pull to refresh -->
+    <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+      <ion-refresher-content
+        pullingIcon="chevron-down-circle-outline"
+        [pullingText]="'common.pullToRefresh' | translate"
+        refreshingSpinner="circles"
+        [refreshingText]="'common.refreshing' | translate"
         >
-          {{ 'readings.clearAll' | translate }}
-        </ion-button>
-      </div>
-    </ion-content>
-  </ng-template>
-</ion-modal>
+      </ion-refresher-content>
+    </ion-refresher>
 
-<!-- Reading Detail Modal -->
-<ion-modal [isOpen]="isDetailModalOpen" (didDismiss)="closeDetailModal()">
-  <ng-template>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>{{ 'readings.reading' | translate }}</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="closeDetailModal()" [attr.aria-label]="'common.close' | translate">
-            <app-icon name="close"></app-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content class="ion-padding" *ngIf="selectedReading">
-      <!-- Glucose Value Card -->
-      <div class="bg-base-100 mb-6 rounded-2xl p-6 text-center shadow-lg">
-        <p class="text-base-content/60 dark:text-base-content/80 mb-2 text-sm">
-          {{ 'readings.value' | translate }}
+    <!-- Readings tip banner -->
+    <div class="page-shell pb-0 pt-4">
+      <div
+        class="bg-info/10 dark:bg-info/20 border-info/30 flex items-start gap-3 rounded-xl border px-4 py-3"
+        >
+        <app-icon name="droplet" class="text-info mt-0.5 h-5 w-5 flex-shrink-0"></app-icon>
+        <p class="text-info dark:text-info-content m-0 text-sm leading-relaxed">
+          {{ 'readings.tip' | translate }}
         </p>
-        <p
-          class="text-5xl font-bold"
+      </div>
+    </div>
+
+    <!-- Active Filters Chips -->
+    @if (hasActiveFilters()) {
+      <div
+        class="flex items-center gap-2 overflow-x-auto whitespace-nowrap border-b border-[var(--ion-color-light-shade)] bg-[var(--ion-color-light)] px-4 py-3"
+        data-testid="readings-filter"
+        >
+        @if (filters.status && filters.status !== 'all') {
+          <ion-chip
+            (click)="clearFilters()"
+            color="primary"
+            class="m-0 cursor-pointer"
+            >
+            <ion-label>{{ getStatusLabel(filters.status) }}</ion-label>
+            <app-icon name="close-circle"></app-icon>
+          </ion-chip>
+        }
+        @if (filters.startDate) {
+          <ion-chip
+            (click)="clearFilters()"
+            color="primary"
+            class="m-0 cursor-pointer"
+            >
+            <ion-label
+              >{{ filters.startDate | date: 'MMM d' }} - {{ filters.endDate | date: 'MMM d' }}</ion-label
+              >
+              <app-icon name="close-circle"></app-icon>
+            </ion-chip>
+          }
+          @if (filters.searchTerm) {
+            <ion-chip
+              (click)="clearSearch()"
+              color="primary"
+              class="m-0 cursor-pointer"
+              >
+              <ion-label>{{ 'readings.search' | translate }}: {{ filters.searchTerm }}</ion-label>
+              <app-icon name="close-circle"></app-icon>
+            </ion-chip>
+          }
+          <ion-button fill="clear" size="small" (click)="clearFilters()" class="shrink-0">{{
+            'readings.clearAll' | translate
+          }}</ion-button>
+        </div>
+      }
+
+      <!-- Loading State - using DaisyUI loading component -->
+      @if (isLoading) {
+        <div class="flex min-h-[300px] flex-col items-center justify-center p-8">
+          <span class="loading loading-spinner loading-lg text-primary mb-4"></span>
+          <p class="text-base-content/60 dark:text-base-content/80 m-0 text-sm">
+            {{ 'readings.loadingReadings' | translate }}
+          </p>
+        </div>
+      }
+
+      <!-- Empty State -->
+      @if (!isLoading && totalCount === 0) {
+        <div
+          class="flex min-h-[400px] items-center justify-center p-8"
+          data-testid="readings-empty"
+          >
+          <app-empty-state
+            illustration="description"
+            [heading]="'readings.noReadings' | translate"
+            [message]="'readings.noReadingsMessage' | translate"
+            [ctaText]="'readings.addReading' | translate"
+            (ctaClick)="addReading()"
+            >
+          </app-empty-state>
+        </div>
+      }
+
+      <!-- No Results State (after filtering) -->
+      @if (!isLoading && totalCount > 0 && filteredReadings.length === 0) {
+        <div
+          class="flex min-h-[400px] items-center justify-center p-8"
+          >
+          <app-empty-state
+            illustration="search"
+            [heading]="'readings.noResults' | translate"
+            [message]="'readings.noResultsMessage' | translate"
+            [ctaText]="'readings.clearFilters' | translate"
+            (ctaClick)="clearFilters()"
+            >
+          </app-empty-state>
+        </div>
+      }
+
+      <!-- Readings Count -->
+      @if (!isLoading && filteredReadings.length > 0) {
+        <div
+          class="border-b border-[var(--ion-color-light-shade)] px-4 py-3 pb-2"
+          >
+          <ion-text color="medium">
+            <p class="m-0 text-center text-[13px]">
+              {{ 'readings.showing' | translate }} {{ filteredReadings.length }}
+              {{ 'readings.of' | translate }} {{ totalCount }} {{ 'readings.readings' | translate }}
+              @if (hasActiveFilters()) {
+                <span> ({{ 'readings.filtered' | translate }})</span>
+              }
+            </p>
+          </ion-text>
+        </div>
+      }
+
+      <!-- Grouped Readings List with Virtual Scrolling -->
+      @if (!isLoading && groupedReadings.length > 0) {
+        <div
+          class="page-shell pb-20"
+          style="padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px))"
+          data-testid="readings-list"
+          >
+          <!-- Group by Date -->
+          @for (group of groupedReadings; track trackByGroup($index, group)) {
+            <div class="mb-6 last:mb-0">
+              <!-- Date Header -->
+              <div
+                class="sticky top-0 z-10 flex items-center justify-between border-b-2 border-[var(--ion-color-primary)] bg-[var(--ion-background-color)] px-4 py-4 pb-2"
+                >
+                <ion-text>
+                  <h2 class="m-0 text-lg font-semibold text-[var(--ion-color-dark)]">
+                    {{ group.displayDate }}
+                  </h2>
+                </ion-text>
+                <ion-text color="medium">
+                  <p class="m-0 text-[13px]">
+                    {{ group.readings.length }}
+                    {{
+                    group.readings.length !== 1
+                    ? ('readings.readings' | translate)
+                    : ('readings.reading' | translate)
+                    }}
+                  </p>
+                </ion-text>
+              </div>
+              <!-- Readings in this group -->
+              <div class="m-0 px-4 py-2">
+                @for (reading of group.readings; track trackByReading($index, reading)) {
+                  <div
+                    class="cursor-pointer transition-transform duration-200 ease-in-out active:scale-[0.98]"
+                    (click)="onReadingClick(reading)"
+                    (keyup.enter)="onReadingClick(reading)"
+                    role="button"
+                    tabindex="0"
+                    >
+                    <app-reading-item [reading]="reading" class="block w-full"></app-reading-item>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Scroll to Top Button -->
+      @if (groupedReadings.length > 2) {
+        <ion-fab
+          vertical="bottom"
+          horizontal="end"
+          slot="fixed"
+          class="!bottom-20"
+          style="bottom: calc(5rem + env(safe-area-inset-bottom, 0px)) !important"
+          >
+          <ion-fab-button
+            size="small"
+            (click)="scrollToTop()"
+            color="light"
+            class="shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
+            [attr.aria-label]="'common.scrollToTop' | translate"
+            >
+            <app-icon name="arrow-up"></app-icon>
+          </ion-fab-button>
+        </ion-fab>
+      }
+
+      <!-- Add Reading FAB -->
+      <ion-fab
+        vertical="bottom"
+        horizontal="end"
+        slot="fixed"
+        style="bottom: calc(1rem + env(safe-area-inset-bottom, 0px))"
+        >
+        <ion-fab-button
+          (click)="addReading()"
+          color="primary"
+          class="shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
+          [attr.aria-label]="'readings.addReading' | translate"
+          >
+          <app-icon name="add"></app-icon>
+        </ion-fab-button>
+      </ion-fab>
+    </ion-content>
+
+    <!-- Filter Modal -->
+    <ion-modal [isOpen]="isFilterModalOpen" (didDismiss)="closeFilterModal()">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>{{ 'readings.filterReadings' | translate }}</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="closeFilterModal()" [attr.aria-label]="'common.close' | translate">
+                <app-icon slot="icon-only" name="close"></app-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+
+        <ion-content class="ion-padding">
+          <!-- Status Filter -->
+          <div class="mb-6">
+            <ion-list-header class="mb-2 !px-0 !pr-0">
+              <ion-label class="text-sm font-semibold uppercase text-[var(--ion-color-medium)]">{{
+                'readings.glucoseStatus' | translate
+              }}</ion-label>
+            </ion-list-header>
+            <ion-list class="!p-0">
+              <ion-item>
+                <ion-select
+                  [(ngModel)]="filters.status"
+                  [placeholder]="'readings.selectStatus' | translate"
+                  interface="popover"
+                  >
+                  <ion-select-option value="all">{{
+                    'readings.filter.all' | translate
+                  }}</ion-select-option>
+                  <ion-select-option value="normal">{{
+                    'glucose.status.normal' | translate
+                  }}</ion-select-option>
+                  <ion-select-option value="low">{{
+                    'glucose.status.low' | translate
+                  }}</ion-select-option>
+                  <ion-select-option value="critical-low">{{
+                    'glucose.status.veryLow' | translate
+                  }}</ion-select-option>
+                  <ion-select-option value="high">{{
+                    'glucose.status.high' | translate
+                  }}</ion-select-option>
+                  <ion-select-option value="critical-high">{{
+                    'glucose.status.veryHigh' | translate
+                  }}</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-list>
+          </div>
+
+          <!-- Date Range Filter -->
+          <div class="mb-6">
+            <ion-list-header class="mb-2 !px-0 !pr-0">
+              <ion-label class="text-sm font-semibold uppercase text-[var(--ion-color-medium)]">{{
+                'readings.dateRange' | translate
+              }}</ion-label>
+            </ion-list-header>
+            <ion-list class="!p-0">
+              <ion-item>
+                <ion-label position="stacked">{{ 'readings.startDate' | translate }}</ion-label>
+                <ion-datetime-button datetime="startDatetime"></ion-datetime-button>
+                <ion-modal [keepContentsMounted]="true">
+                  <ng-template>
+                    <ion-datetime
+                      id="startDatetime"
+                      [(ngModel)]="filters.startDate"
+                      presentation="date"
+                      [max]="filters.endDate || undefined"
+                      >
+                    </ion-datetime>
+                  </ng-template>
+                </ion-modal>
+              </ion-item>
+
+              <ion-item>
+                <ion-label position="stacked">{{ 'readings.endDate' | translate }}</ion-label>
+                <ion-datetime-button datetime="endDatetime"></ion-datetime-button>
+                <ion-modal [keepContentsMounted]="true">
+                  <ng-template>
+                    <ion-datetime
+                      id="endDatetime"
+                      [(ngModel)]="filters.endDate"
+                      presentation="date"
+                      [min]="filters.startDate || undefined"
+                      >
+                    </ion-datetime>
+                  </ng-template>
+                </ion-modal>
+              </ion-item>
+            </ion-list>
+          </div>
+
+          <!-- Quick Date Filters -->
+          <div class="mb-6">
+            <ion-list-header class="mb-2 !px-0 !pr-0">
+              <ion-label class="text-sm font-semibold uppercase text-[var(--ion-color-medium)]">{{
+                'readings.quickFilters' | translate
+              }}</ion-label>
+            </ion-list-header>
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="setFilterAllTime()"
+              class="mt-2 first:mt-0"
+              >
+              {{ 'readings.filter.all' | translate }}
+            </ion-button>
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="setFilterLast24Hours()"
+              class="mt-2 first:mt-0"
+              >
+              {{ 'readings.filter.last24Hours' | translate }}
+            </ion-button>
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="setFilterLast7Days()"
+              class="mt-2 first:mt-0"
+              >
+              {{ 'readings.filter.last7Days' | translate }}
+            </ion-button>
+            <ion-button
+              expand="block"
+              fill="outline"
+              (click)="setFilterLast30Days()"
+              class="mt-2 first:mt-0"
+              >
+              {{ 'readings.filter.last30Days' | translate }}
+            </ion-button>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="mt-8 pb-4">
+            <ion-button expand="block" (click)="applyFiltersAndCloseModal()" class="mt-3 first:mt-0">
+              {{ 'readings.applyFilters' | translate }}
+            </ion-button>
+            <ion-button
+              expand="block"
+              fill="clear"
+              (click)="clearFiltersAndCloseModal()"
+              class="mt-3 first:mt-0"
+              >
+              {{ 'readings.clearAll' | translate }}
+            </ion-button>
+          </div>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+
+    <!-- Reading Detail Modal -->
+    <ion-modal [isOpen]="isDetailModalOpen" (didDismiss)="closeDetailModal()">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>{{ 'readings.reading' | translate }}</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="closeDetailModal()" [attr.aria-label]="'common.close' | translate">
+                <app-icon name="close"></app-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+
+        @if (selectedReading) {
+          <ion-content class="ion-padding">
+            <!-- Glucose Value Card -->
+            <div class="bg-base-100 mb-6 rounded-2xl p-6 text-center shadow-lg">
+              <p class="text-base-content/60 dark:text-base-content/80 mb-2 text-sm">
+                {{ 'readings.value' | translate }}
+              </p>
+              <p
+                class="text-5xl font-bold"
           [ngClass]="{
             'text-success': selectedReading.status === 'normal',
             'text-warning': selectedReading.status === 'low' || selectedReading.status === 'high',
@@ -428,17 +445,16 @@
               selectedReading.status === 'critical-low' ||
               selectedReading.status === 'critical-high',
           }"
-        >
-          {{ selectedReading.value }}
-        </p>
-        <p class="text-base-content/60 dark:text-base-content/80 mt-1 text-sm">
-          {{ preferredUnit }}
-        </p>
-
-        <!-- Status Badge -->
-        <div class="mt-4">
-          <span
-            class="badge badge-lg"
+                >
+                {{ selectedReading.value }}
+              </p>
+              <p class="text-base-content/60 dark:text-base-content/80 mt-1 text-sm">
+                {{ preferredUnit }}
+              </p>
+              <!-- Status Badge -->
+              <div class="mt-4">
+                <span
+                  class="badge badge-lg"
             [ngClass]="{
               'badge-success': selectedReading.status === 'normal',
               'badge-warning':
@@ -447,95 +463,93 @@
                 selectedReading.status === 'critical-low' ||
                 selectedReading.status === 'critical-high',
             }"
-          >
-            {{ getStatusLabel(selectedReading.status || 'normal') }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Details List -->
-      <ion-list class="rounded-xl">
-        <!-- Date -->
-        <ion-item>
-          <app-icon name="calendar" slot="start" class="text-primary"></app-icon>
-          <ion-label>
-            <p class="text-base-content/60 dark:text-base-content/80 text-xs">
-              {{ 'readings.date' | translate }}
-            </p>
-            <h3 class="font-medium">{{ formatReadingDate(selectedReading.time) }}</h3>
-          </ion-label>
-        </ion-item>
-
-        <!-- Time -->
-        <ion-item>
-          <app-icon name="clock" slot="start" class="text-primary"></app-icon>
-          <ion-label>
-            <p class="text-base-content/60 dark:text-base-content/80 text-xs">
-              {{ 'readings.time' | translate }}
-            </p>
-            <h3 class="font-medium">{{ formatReadingTime(selectedReading.time) }}</h3>
-          </ion-label>
-        </ion-item>
-
-        <!-- Meal Context -->
-        <ion-item *ngIf="selectedReading.mealContext">
-          <app-icon name="utensils" slot="start" class="text-primary"></app-icon>
-          <ion-label>
-            <p class="text-base-content/60 dark:text-base-content/80 text-xs">
-              {{ 'readings.mealTag' | translate }}
-            </p>
-            <h3 class="font-medium">{{ getMealLabel(selectedReading.mealContext) }}</h3>
-          </ion-label>
-        </ion-item>
-
-        <!-- Device/Source -->
-        <ion-item>
-          <app-icon name="smartphone" slot="start" class="text-primary"></app-icon>
-          <ion-label>
-            <p class="text-base-content/60 dark:text-base-content/80 text-xs">
-              {{ 'readings.device' | translate }}
-            </p>
-            <h3 class="font-medium">
-              {{ selectedReading.deviceId || ('readings.manual' | translate) }}
-            </h3>
-          </ion-label>
-        </ion-item>
-
-        <!-- Sync Status -->
-        <ion-item>
-          <app-icon
-            [name]="selectedReading.synced ? 'cloud' : 'cloud-off'"
-            slot="start"
-            [class]="selectedReading.synced ? 'text-success' : 'text-warning'"
-          ></app-icon>
-          <ion-label>
-            <p class="text-base-content/60 dark:text-base-content/80 text-xs">
-              {{ 'sync.status' | translate }}
-            </p>
-            <h3 class="font-medium">
-              {{ (selectedReading.synced ? 'readings.synced' : 'readings.notSynced') | translate }}
-            </h3>
-          </ion-label>
-        </ion-item>
-
-        <!-- Notes -->
-        <ion-item *ngIf="selectedReading.notes && selectedReading.notes.length > 0">
-          <app-icon name="file-text" slot="start" class="text-primary"></app-icon>
-          <ion-label class="ion-text-wrap">
-            <p class="text-base-content/60 dark:text-base-content/80 text-xs">
-              {{ 'readings.notes' | translate }}
-            </p>
-            <h3 class="font-medium">{{ selectedReading.notes }}</h3>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-
-      <!-- Close Button -->
-      <div class="mt-6 pb-4">
-        <ion-button expand="block" (click)="closeDetailModal()">
-          {{ 'common.close' | translate }}
-        </ion-button>
-      </div>
-    </ion-content>
-  </ng-template>
-</ion-modal>
+                  >
+                  {{ getStatusLabel(selectedReading.status || 'normal') }}
+                </span>
+              </div>
+            </div>
+            <!-- Details List -->
+            <ion-list class="rounded-xl">
+              <!-- Date -->
+              <ion-item>
+                <app-icon name="calendar" slot="start" class="text-primary"></app-icon>
+                <ion-label>
+                  <p class="text-base-content/60 dark:text-base-content/80 text-xs">
+                    {{ 'readings.date' | translate }}
+                  </p>
+                  <h3 class="font-medium">{{ formatReadingDate(selectedReading.time) }}</h3>
+                </ion-label>
+              </ion-item>
+              <!-- Time -->
+              <ion-item>
+                <app-icon name="clock" slot="start" class="text-primary"></app-icon>
+                <ion-label>
+                  <p class="text-base-content/60 dark:text-base-content/80 text-xs">
+                    {{ 'readings.time' | translate }}
+                  </p>
+                  <h3 class="font-medium">{{ formatReadingTime(selectedReading.time) }}</h3>
+                </ion-label>
+              </ion-item>
+              <!-- Meal Context -->
+              @if (selectedReading.mealContext) {
+                <ion-item>
+                  <app-icon name="utensils" slot="start" class="text-primary"></app-icon>
+                  <ion-label>
+                    <p class="text-base-content/60 dark:text-base-content/80 text-xs">
+                      {{ 'readings.mealTag' | translate }}
+                    </p>
+                    <h3 class="font-medium">{{ getMealLabel(selectedReading.mealContext) }}</h3>
+                  </ion-label>
+                </ion-item>
+              }
+              <!-- Device/Source -->
+              <ion-item>
+                <app-icon name="smartphone" slot="start" class="text-primary"></app-icon>
+                <ion-label>
+                  <p class="text-base-content/60 dark:text-base-content/80 text-xs">
+                    {{ 'readings.device' | translate }}
+                  </p>
+                  <h3 class="font-medium">
+                    {{ selectedReading.deviceId || ('readings.manual' | translate) }}
+                  </h3>
+                </ion-label>
+              </ion-item>
+              <!-- Sync Status -->
+              <ion-item>
+                <app-icon
+                  [name]="selectedReading.synced ? 'cloud' : 'cloud-off'"
+                  slot="start"
+                  [class]="selectedReading.synced ? 'text-success' : 'text-warning'"
+                ></app-icon>
+                <ion-label>
+                  <p class="text-base-content/60 dark:text-base-content/80 text-xs">
+                    {{ 'sync.status' | translate }}
+                  </p>
+                  <h3 class="font-medium">
+                    {{ (selectedReading.synced ? 'readings.synced' : 'readings.notSynced') | translate }}
+                  </h3>
+                </ion-label>
+              </ion-item>
+              <!-- Notes -->
+              @if (selectedReading.notes && selectedReading.notes.length > 0) {
+                <ion-item>
+                  <app-icon name="file-text" slot="start" class="text-primary"></app-icon>
+                  <ion-label class="ion-text-wrap">
+                    <p class="text-base-content/60 dark:text-base-content/80 text-xs">
+                      {{ 'readings.notes' | translate }}
+                    </p>
+                    <h3 class="font-medium">{{ selectedReading.notes }}</h3>
+                  </ion-label>
+                </ion-item>
+              }
+            </ion-list>
+            <!-- Close Button -->
+            <div class="mt-6 pb-4">
+              <ion-button expand="block" (click)="closeDetailModal()">
+                {{ 'common.close' | translate }}
+              </ion-button>
+            </div>
+          </ion-content>
+        }
+      </ng-template>
+    </ion-modal>

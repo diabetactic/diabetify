@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
 import { SecureStorage } from '@aparajita/capacitor-secure-storage';
-import { LoggerService } from './logger.service';
+import { LoggerService } from '@services/logger.service';
 
 export interface BiometricConfig {
   enabled: boolean;

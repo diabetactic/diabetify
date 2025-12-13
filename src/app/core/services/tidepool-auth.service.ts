@@ -16,12 +16,12 @@ import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { Capacitor, PluginListenerHandle } from '@capacitor/core';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 
-import { TidepoolAuth, TidepoolTokenResponse } from '../models/tidepool-auth.model';
-import { getOAuthConfig, OAuthConfig } from '../config/oauth.config';
-import { generatePKCEChallenge, generateState, buildAuthorizationUrl } from '../utils/pkce.utils';
-import { TokenStorageService } from './token-storage.service';
-import { LoggerService } from './logger.service';
-import { environment } from '../../../environments/environment';
+import { TidepoolAuth, TidepoolTokenResponse } from '@models/tidepool-auth.model';
+import { getOAuthConfig, OAuthConfig } from '@core/config/oauth.config';
+import { generatePKCEChallenge, generateState, buildAuthorizationUrl } from '@core/utils/pkce.utils';
+import { TokenStorageService } from '@services/token-storage.service';
+import { LoggerService } from '@services/logger.service';
+import { environment } from '@env/environment';
 
 /**
  * Authentication state interface

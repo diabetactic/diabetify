@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { ReadingItemComponent } from './reading-item.component';
-import { TranslationService } from '../../../core/services/translation.service';
-import { LocalGlucoseReading } from '../../../core/models/glucose-reading.model';
+import { TranslationService } from '@services/translation.service';
+import { LocalGlucoseReading } from '@core/models/glucose-reading.model';
 
 class TranslationServiceStub {
   formatTime(): string {

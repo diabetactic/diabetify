@@ -15,7 +15,7 @@ import { Routes } from '@angular/router';
 import { setupCapacitorMocks } from './capacitor-mocks';
 import { createAllIonicMocks } from './ionic-mocks';
 import { createMockPlatformDetectorService } from './platform-mocks';
-import { PlatformDetectorService } from '../../core/services/platform-detector.service';
+import { PlatformDetectorService } from '@core/services/platform-detector.service';
 
 import { Observable, of } from 'rxjs';
 

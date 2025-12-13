@@ -1,9 +1,9 @@
 import { TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
-import { AchievementsService } from './achievements.service';
-import { ApiGatewayService } from './api-gateway.service';
-import { LoggerService } from './logger.service';
-import { StreakData, Achievement } from '../models/achievements.model';
+import { AchievementsService } from '@services/achievements.service';
+import { ApiGatewayService } from '@services/api-gateway.service';
+import { LoggerService } from '@services/logger.service';
+import { StreakData, Achievement } from '@models/achievements.model';
 
 describe('AchievementsService', () => {
   let service: AchievementsService;

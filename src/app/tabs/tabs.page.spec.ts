@@ -4,8 +4,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { TabsPage } from './tabs.page';
-import { AppointmentService } from '../core/services/appointment.service';
-import { TranslationService } from '../core/services/translation.service';
+import { AppointmentService } from '@core/services/appointment.service';
+import { TranslationService } from '@core/services/translation.service';
 import { ToastController } from '@ionic/angular';
 
 describe('TabsPage', () => {

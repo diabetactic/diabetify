@@ -21,9 +21,9 @@ import {
 import { Observable, BehaviorSubject, throwError, timer, Subject } from 'rxjs';
 import { catchError, filter, take, switchMap, retryWhen, mergeMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { LocalAuthService } from '../services/local-auth.service';
-import { LoggerService } from '../services/logger.service';
-import { ROUTES } from '../constants';
+import { LocalAuthService } from '@services/local-auth.service';
+import { LoggerService } from '@services/logger.service';
+import { ROUTES } from '@core/constants';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor, OnDestroy {

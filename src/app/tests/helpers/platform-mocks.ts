@@ -4,7 +4,7 @@
  * Provides mock for PlatformDetectorService to control platform behavior in tests
  * Fixes ~35% of test failures related to API URL mismatches
  */
-import { PlatformDetectorService } from '../../core/services/platform-detector.service';
+import { PlatformDetectorService } from '@core/services/platform-detector.service';
 
 /**
  * API base URLs for different platforms

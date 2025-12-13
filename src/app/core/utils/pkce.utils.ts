@@ -9,8 +9,8 @@
  * @see https://developer.tidepool.org/authentication
  */
 
-import { OAUTH_CONSTANTS } from '../config/oauth.config';
-import type { PKCEChallenge } from '../models/tidepool-auth.model';
+import { OAUTH_CONSTANTS } from '@core/config/oauth.config';
+import type { PKCEChallenge } from '@models/tidepool-auth.model';
 
 /**
  * Generate a cryptographically secure random string for PKCE

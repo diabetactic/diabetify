@@ -1,7 +1,7 @@
 import { Component, inject, signal, ChangeDetectorRef, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NavController } from '@ionic/angular';
 import {
@@ -17,12 +17,12 @@ import {
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { MockDataService, BolusCalculation } from '../core/services/mock-data.service';
-import { FoodService } from '../core/services/food.service';
-import { FoodPickerResult, SelectedFood } from '../core/models/food.model';
-import { AppIconComponent } from '../shared/components/app-icon/app-icon.component';
-import { FoodPickerComponent } from '../shared/components/food-picker/food-picker.component';
-import { LoggerService } from '../core/services/logger.service';
+import { MockDataService, BolusCalculation } from '@services/mock-data.service';
+import { FoodService } from '@services/food.service';
+import { FoodPickerResult, SelectedFood } from '@models/food.model';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
+import { FoodPickerComponent } from '@shared/components/food-picker/food-picker.component';
+import { LoggerService } from '@services/logger.service';
 
 @Component({
   selector: 'app-bolus-calculator',
@@ -30,14 +30,12 @@ import { LoggerService } from '../core/services/logger.service';
   styleUrls: ['./bolus-calculator.page.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
     TranslateModule,
     AppIconComponent,
     FoodPickerComponent,
-    // Ionic standalone components
     IonHeader,
     IonToolbar,
     IonButtons,
@@ -46,8 +44,8 @@ import { LoggerService } from '../core/services/logger.service';
     IonTitle,
     IonContent,
     IonInput,
-    IonSpinner,
-  ],
+    IonSpinner
+],
 })
 export class BolusCalculatorPage {
   private translate = inject(TranslateService);

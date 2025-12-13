@@ -9,7 +9,7 @@
  * @see https://openid.net/developers/how-connect-works/
  */
 
-import { environment } from '../../../environments/environment';
+import { environment } from '@env/environment';
 
 /**
  * OAuth2 Configuration Interface

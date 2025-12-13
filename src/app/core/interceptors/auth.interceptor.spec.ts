@@ -6,7 +6,7 @@ import { of, throwError, BehaviorSubject, timer } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
 import { AuthInterceptor } from './auth.interceptor';
-import { LocalAuthService, LocalAuthState } from '../services/local-auth.service';
+import { LocalAuthService, LocalAuthState } from '@services/local-auth.service';
 
 describe('AuthInterceptor', () => {
   let httpClient: HttpClient;

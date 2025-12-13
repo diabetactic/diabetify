@@ -1,8 +1,8 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonItem } from '@ionic/angular/standalone';
-import { LocalGlucoseReading } from '../../../core/models/glucose-reading.model';
-import { TranslationService } from '../../../core/services/translation.service';
+import { LocalGlucoseReading } from '@core/models/glucose-reading.model';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-reading-item',

@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { SecureStorage } from '@aparajita/capacitor-secure-storage';
 
-import { TokenStorageService } from './token-storage.service';
-import { TidepoolAuth } from '../models/tidepool-auth.model';
-import { OAUTH_CONSTANTS } from '../config/oauth.config';
+import { TokenStorageService } from '@services/token-storage.service';
+import { TidepoolAuth } from '@models/tidepool-auth.model';
+import { OAUTH_CONSTANTS } from '@core/config/oauth.config';
 
 // Mock SecureStorage - already mocked in setup-jest.ts but we need to control it per test
 jest.mock('@aparajita/capacitor-secure-storage', () => ({

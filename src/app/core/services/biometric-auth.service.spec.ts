@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { BiometricAuthService, BiometricConfig } from './biometric-auth.service';
-import { LoggerService } from './logger.service';
+import { BiometricAuthService, BiometricConfig } from '@services/biometric-auth.service';
+import { LoggerService } from '@services/logger.service';
 import { Preferences } from '@capacitor/preferences';
 import { SecureStorage } from '@aparajita/capacitor-secure-storage';
 

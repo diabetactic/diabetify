@@ -17,19 +17,21 @@
 <ion-content>
   <div class="p-4 pb-6">
     <!-- Loading State -->
-    <div *ngIf="isLoading" class="flex min-h-[300px] flex-col items-center justify-center gap-4">
-      <app-icon name="loader" class="h-12 w-12 animate-spin"></app-icon>
-      <p class="text-base" style="color: var(--ion-color-medium)">
-        {{ 'app.loading' | translate }}
-      </p>
-    </div>
+    @if (isLoading) {
+      <div class="flex min-h-[300px] flex-col items-center justify-center gap-4">
+        <app-icon name="loader" class="h-12 w-12 animate-spin"></app-icon>
+        <p class="text-base" style="color: var(--ion-color-medium)">
+          {{ 'app.loading' | translate }}
+        </p>
+      </div>
+    }
 
     <!-- Detail Content -->
-    <ng-container *ngIf="!isLoading">
+    @if (!isLoading) {
       <!-- Info Banner -->
       <div
         class="card info-banner bg-base-100 mb-5 rounded-2xl border border-blue-400/20 shadow-sm"
-      >
+        >
         <div class="card-body p-4">
           <div class="flex items-center gap-3">
             <app-icon
@@ -42,7 +44,6 @@
           </div>
         </div>
       </div>
-
       <!-- All Statistics Grid -->
       <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-1 sm:gap-3">
         <!-- HbA1c (Estimated A1C) -->
@@ -52,9 +53,8 @@
           unit=""
           [icon]="icons.hba1c"
           [gradientColors]="gradients.hba1c"
-        >
+          >
         </app-stat-card>
-
         <!-- GMI (Glucose Management Indicator) -->
         <app-stat-card
           [title]="'readings.statistics.gmi' | translate"
@@ -62,9 +62,8 @@
           unit=""
           [icon]="icons.gmi"
           [gradientColors]="gradients.gmi"
-        >
+          >
         </app-stat-card>
-
         <!-- Time in Range -->
         <app-stat-card
           [title]="'readings.statistics.timeInRange' | translate"
@@ -72,9 +71,8 @@
           unit=""
           [icon]="icons.timeInRange"
           [gradientColors]="gradients.timeInRange"
-        >
+          >
         </app-stat-card>
-
         <!-- Average Glucose -->
         <app-stat-card
           [title]="'readings.statistics.average' | translate"
@@ -82,9 +80,8 @@
           [unit]="getCurrentGlucoseUnit()"
           [icon]="icons.avgGlucose"
           [gradientColors]="gradients.avgGlucose"
-        >
+          >
         </app-stat-card>
-
         <!-- Standard Deviation -->
         <app-stat-card
           [title]="'readings.statistics.stdDev' | translate"
@@ -92,9 +89,8 @@
           [unit]="getCurrentGlucoseUnit()"
           [icon]="icons.stdDev"
           [gradientColors]="gradients.stdDev"
-        >
+          >
         </app-stat-card>
-
         <!-- Coefficient of Variation -->
         <app-stat-card
           [title]="'readings.statistics.cv' | translate"
@@ -102,10 +98,9 @@
           unit=""
           [icon]="icons.cv"
           [gradientColors]="gradients.cv"
-        >
+          >
         </app-stat-card>
       </div>
-
       <!-- Sync Status Card -->
       <ion-card class="mb-5 rounded-2xl">
         <ion-card-header>
@@ -119,7 +114,7 @@
             <div
               class="sync-item flex items-center gap-3 rounded-xl p-3"
               style="background: var(--ion-color-light)"
-            >
+              >
               <app-icon
                 name="cloud-upload-outline"
                 class="text-success shrink-0 text-[28px]"
@@ -133,30 +128,29 @@
                 </p>
               </div>
             </div>
-
-            <div
-              *ngIf="backendSyncResult && backendSyncResult.failed > 0"
-              class="sync-item flex items-center gap-3 rounded-xl p-3"
-              style="background: var(--ion-color-light)"
-            >
-              <app-icon
-                name="alert-circle-outline"
-                class="text-danger shrink-0 text-[28px]"
-              ></app-icon>
-              <div class="flex-1">
-                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">
-                  {{ 'dashboard.failedItems' | translate }}
-                </h4>
-                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">
-                  {{ backendSyncResult.failed }}
-                </p>
+            @if (backendSyncResult && backendSyncResult.failed > 0) {
+              <div
+                class="sync-item flex items-center gap-3 rounded-xl p-3"
+                style="background: var(--ion-color-light)"
+                >
+                <app-icon
+                  name="alert-circle-outline"
+                  class="text-danger shrink-0 text-[28px]"
+                ></app-icon>
+                <div class="flex-1">
+                  <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">
+                    {{ 'dashboard.failedItems' | translate }}
+                  </h4>
+                  <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">
+                    {{ backendSyncResult.failed }}
+                  </p>
+                </div>
               </div>
-            </div>
-
+            }
             <div
               class="sync-item flex items-center gap-3 rounded-xl p-3"
               style="background: var(--ion-color-light)"
-            >
+              >
               <ion-icon
                 [name]="isSyncing ? 'ellipse' : 'checkmark-circle'"
                 [color]="isSyncing ? 'warning' : 'success'"
@@ -172,22 +166,24 @@
               </div>
             </div>
           </div>
-
           <ion-button
             expand="block"
             (click)="onSync()"
             [disabled]="isSyncing"
             class="mt-4 inline-flex items-center gap-2"
-          >
-            <app-icon name="loader" *ngIf="isSyncing" class="animate-spin"></app-icon>
-            <span *ngIf="!isSyncing">
-              <app-icon name="sync-outline"></app-icon>
-              {{ 'dashboard.syncNow' | translate }}
-            </span>
+            >
+            @if (isSyncing) {
+              <app-icon name="loader" class="animate-spin"></app-icon>
+            }
+            @if (!isSyncing) {
+              <span>
+                <app-icon name="sync-outline"></app-icon>
+                {{ 'dashboard.syncNow' | translate }}
+              </span>
+            }
           </ion-button>
         </ion-card-content>
       </ion-card>
-
       <!-- Additional Info Card -->
       <ion-card class="mb-5 rounded-2xl">
         <ion-card-header>
@@ -223,6 +219,6 @@
           </div>
         </ion-card-content>
       </ion-card>
-    </ng-container>
+    }
   </div>
 </ion-content>

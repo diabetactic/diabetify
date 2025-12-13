@@ -9,14 +9,14 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { HttpErrorResponse } from '@angular/common/http';
 // Observable removed - no longer needed after CapacitorHttpService cleanup
 
-import { ApiGatewayService, ApiEndpoint } from './api-gateway.service';
-import { ExternalServicesManager, ExternalService } from './external-services-manager.service';
-import { LocalAuthService } from './local-auth.service';
-import { TidepoolAuthService } from './tidepool-auth.service';
-import { EnvironmentDetectorService } from './environment-detector.service';
-import { PlatformDetectorService } from './platform-detector.service';
-import { MockAdapterService } from './mock-adapter.service';
-import { LoggerService } from './logger.service';
+import { ApiGatewayService, ApiEndpoint } from '@services/api-gateway.service';
+import { ExternalServicesManager, ExternalService } from '@services/external-services-manager.service';
+import { LocalAuthService } from '@services/local-auth.service';
+import { TidepoolAuthService } from '@services/tidepool-auth.service';
+import { EnvironmentDetectorService } from '@services/environment-detector.service';
+import { PlatformDetectorService } from '@services/platform-detector.service';
+import { MockAdapterService } from '@services/mock-adapter.service';
+import { LoggerService } from '@services/logger.service';
 // Note: ApiGatewayService now uses HttpClient directly via Capacitor 6 auto-patching
 // No need for MockCapacitorHttpService - HttpClientTestingModule provides the mock
 

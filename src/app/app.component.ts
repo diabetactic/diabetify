@@ -12,8 +12,8 @@ import { LocalAuthService } from './core/services/local-auth.service';
 import { SessionTimeoutService } from './core/services/session-timeout.service';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
-import { environment } from '../environments/environment';
-import { CommonModule } from '@angular/common';
+import { environment } from '@env/environment';
+
 import { TranslateModule } from '@ngx-translate/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { Subject } from 'rxjs';
@@ -25,7 +25,7 @@ import { takeUntil } from 'rxjs/operators';
   styleUrls: ['app.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, TranslateModule, IonApp, IonRouterOutlet],
+  imports: [TranslateModule, IonApp, IonRouterOutlet],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppComponent implements OnInit, OnDestroy {
