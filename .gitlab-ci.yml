@@ -47,7 +47,7 @@ lint:
   needs: [install]
   script:
     - pnpm run lint
-  allow_failure: true  # Warnings shouldn't block
+  allow_failure: true # Warnings shouldn't block
 
 # Format check
 format:
@@ -92,7 +92,7 @@ build:android:
   extends: .node_job
   stage: build
   needs: [build:prod]
-  image: cimg/android:2024.11-node  # Android SDK image
+  image: cimg/android:2024.11-node # Android SDK image
   only:
     - master
     - main
@@ -145,5 +145,5 @@ security:
 # Variables
 variables:
   PNPM_HOME: /root/.local/share/pnpm
-  FF_USE_FASTZIP: "true"
+  FF_USE_FASTZIP: 'true'
   ARTIFACT_COMPRESSION_LEVEL: fast

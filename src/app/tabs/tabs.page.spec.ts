@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { TabsPage } from './tabs.page';
 import { AppointmentService } from '@core/services/appointment.service';
@@ -30,8 +30,9 @@ describe('TabsPage', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TabsPage, TranslateModule.forRoot(), RouterTestingModule],
+      imports: [TabsPage, TranslateModule.forRoot()],
       providers: [
+        provideRouter([]),
         { provide: AppointmentService, useValue: mockAppointmentService },
         { provide: TranslationService, useValue: mockTranslationService },
         { provide: ToastController, useValue: mockToastController },

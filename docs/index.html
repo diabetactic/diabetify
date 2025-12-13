@@ -156,6 +156,78 @@
           transform: translateY(-20px) rotateY(-5deg) rotateX(5deg);
         }
       }
+
+      /* Respect reduced motion preference */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+        .floating {
+          animation: none;
+        }
+        .streak-glow {
+          animation: none;
+        }
+      }
+
+      /* Lightbox styles */
+      #lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.9);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s;
+      }
+      #lightbox.active {
+        opacity: 1;
+        visibility: visible;
+      }
+      #lightbox img {
+        max-width: 90vw;
+        max-height: 90vh;
+        border-radius: 1rem;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+      }
+      #lightbox button {
+        position: absolute;
+        background: rgba(255,255,255,0.1);
+        border: none;
+        color: white;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.5rem;
+        transition: background 0.2s;
+      }
+      #lightbox button:hover {
+        background: rgba(255,255,255,0.2);
+      }
+      #lightbox .lb-close { top: 1rem; right: 1rem; }
+      #lightbox .lb-prev { left: 1rem; top: 50%; transform: translateY(-50%); }
+      #lightbox .lb-next { right: 1rem; top: 50%; transform: translateY(-50%); }
+      .screenshot-card { cursor: pointer; }
+
+      /* Reveal on scroll */
+      [data-reveal] {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+      }
+      [data-reveal].revealed {
+        opacity: 1;
+        transform: translateY(0);
+      }
     </style>
   </head>
 
@@ -325,13 +397,14 @@
 
             <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
               <a
-                href="diabetactic-v0.0.1.apk"
+                href="https://github.com/diabetactic/diabetify/releases/latest"
                 class="bg-primary-600 hover:bg-primary-700 inline-flex items-center justify-center space-x-2 rounded-2xl px-8 py-4 font-semibold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
-                aria-label="Descargar Diabetactic versión 0.0.1 para Android (APK de 24MB)"
-                download
+                aria-label="Descargar última versión de Diabetactic para Android"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <i data-lucide="download" class="h-5 w-5"></i>
-                <span>Descargar APK v0.0.1</span>
+                <span>Descargar APK (Última versión)</span>
               </a>
               <a
                 href="https://scintillating-crisp-431d20.netlify.app"
@@ -387,11 +460,14 @@
               class="phone-screen floating w-[270px] rounded-[2.5rem] bg-gray-900 p-2 shadow-2xl"
             >
               <div class="aspect-[9/19.5] overflow-hidden rounded-[2rem] bg-white">
-                <img
-                  src="assets/screenshots/dashboard.png"
-                  alt="Diabetactic Dashboard - Panel de Control con rachas y estadísticas"
-                  class="h-full w-full object-contain"
-                />
+                <picture>
+                  <source srcset="assets/screenshots/dashboard.webp" type="image/webp" />
+                  <img
+                    src="assets/screenshots/dashboard.png"
+                    alt="Diabetactic Dashboard - Panel de Control con rachas y estadísticas"
+                    class="h-full w-full object-contain"
+                  />
+                </picture>
               </div>
             </div>
           </div>
@@ -534,14 +610,19 @@
         <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <!-- Screenshot 1 - Welcome -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            class="screenshot-card group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            data-screenshot="welcome"
           >
             <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/welcome.png"
-                alt="Pantalla de Bienvenida - Inicio de sesión"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
+              <picture>
+                <source srcset="assets/screenshots/welcome.webp" type="image/webp" />
+                <img
+                  src="assets/screenshots/welcome.png"
+                  alt="Pantalla de Bienvenida - Inicio de sesión"
+                  class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+                  loading="lazy"
+                />
+              </picture>
             </div>
             <div class="p-6">
               <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
@@ -555,14 +636,19 @@
 
           <!-- Screenshot 2 - Login -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            class="screenshot-card group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            data-screenshot="login"
           >
             <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/login.png"
-                alt="Inicio de Sesión - Formulario de autenticación"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
+              <picture>
+                <source srcset="assets/screenshots/login.webp" type="image/webp" />
+                <img
+                  src="assets/screenshots/login.png"
+                  alt="Inicio de Sesión - Formulario de autenticación"
+                  class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+                  loading="lazy"
+                />
+              </picture>
             </div>
             <div class="p-6">
               <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Inicio de Sesión</h3>
@@ -574,14 +660,19 @@
 
           <!-- Screenshot 3 - Dashboard -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            class="screenshot-card group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            data-screenshot="dashboard"
           >
             <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/dashboard.png"
-                alt="Panel de Control - Dashboard con rachas y estadísticas"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
+              <picture>
+                <source srcset="assets/screenshots/dashboard.webp" type="image/webp" />
+                <img
+                  src="assets/screenshots/dashboard.png"
+                  alt="Panel de Control - Dashboard con rachas y estadísticas"
+                  class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+                  loading="lazy"
+                />
+              </picture>
             </div>
             <div class="p-6">
               <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Panel de Control</h3>
@@ -593,14 +684,19 @@
 
           <!-- Screenshot 4 - Readings -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            class="screenshot-card group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            data-screenshot="readings"
           >
             <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/readings.png"
-                alt="Lista de Lecturas - Historial de mediciones de glucosa"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
+              <picture>
+                <source srcset="assets/screenshots/readings.webp" type="image/webp" />
+                <img
+                  src="assets/screenshots/readings.png"
+                  alt="Lista de Lecturas - Historial de mediciones de glucosa"
+                  class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+                  loading="lazy"
+                />
+              </picture>
             </div>
             <div class="p-6">
               <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
@@ -614,14 +710,19 @@
 
           <!-- Screenshot 5 - Add Reading -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            class="screenshot-card group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            data-screenshot="add-reading"
           >
             <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/add-reading.png"
-                alt="Agregar Lectura - Formulario de registro de glucosa"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
+              <picture>
+                <source srcset="assets/screenshots/add-reading.webp" type="image/webp" />
+                <img
+                  src="assets/screenshots/add-reading.png"
+                  alt="Agregar Lectura - Formulario de registro de glucosa"
+                  class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+                  loading="lazy"
+                />
+              </picture>
             </div>
             <div class="p-6">
               <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Agregar Lectura</h3>
@@ -633,14 +734,19 @@
 
           <!-- Screenshot 6 - Appointments -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            class="screenshot-card group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            data-screenshot="appointments"
           >
             <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/appointments.png"
-                alt="Gestión de Citas - Sistema de solicitud de citas médicas"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
+              <picture>
+                <source srcset="assets/screenshots/appointments.webp" type="image/webp" />
+                <img
+                  src="assets/screenshots/appointments.png"
+                  alt="Gestión de Citas - Sistema de solicitud de citas médicas"
+                  class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+                  loading="lazy"
+                />
+              </picture>
             </div>
             <div class="p-6">
               <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Gestión de Citas</h3>
@@ -652,14 +758,19 @@
 
           <!-- Screenshot 7 - Bolus Calculator -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            class="screenshot-card group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            data-screenshot="bolus-calculator"
           >
             <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/bolus-calculator.png"
-                alt="Calculadora de Bolos - Cálculo de dosis de insulina"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
+              <picture>
+                <source srcset="assets/screenshots/bolus-calculator.webp" type="image/webp" />
+                <img
+                  src="assets/screenshots/bolus-calculator.png"
+                  alt="Calculadora de Bolos - Cálculo de dosis de insulina"
+                  class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+                  loading="lazy"
+                />
+              </picture>
             </div>
             <div class="p-6">
               <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
@@ -673,14 +784,19 @@
 
           <!-- Screenshot 8 - Bolus Food Picker -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            class="screenshot-card group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            data-screenshot="bolus-food-picker"
           >
             <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/bolus-food-picker.png"
-                alt="Selector de Alimentos - Conteo de carbohidratos"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
+              <picture>
+                <source srcset="assets/screenshots/bolus-food-picker.webp" type="image/webp" />
+                <img
+                  src="assets/screenshots/bolus-food-picker.png"
+                  alt="Selector de Alimentos - Conteo de carbohidratos"
+                  class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+                  loading="lazy"
+                />
+              </picture>
             </div>
             <div class="p-6">
               <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
@@ -694,14 +810,19 @@
 
           <!-- Screenshot 9 - Profile -->
           <div
-            class="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            class="screenshot-card group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            data-screenshot="profile-dark"
           >
             <div class="aspect-[9/16] overflow-hidden">
-              <img
-                src="assets/screenshots/profile-dark.png"
-                alt="Perfil de Usuario - Información y preferencias"
-                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
-              />
+              <picture>
+                <source srcset="assets/screenshots/profile-dark.webp" type="image/webp" />
+                <img
+                  src="assets/screenshots/profile-dark.png"
+                  alt="Perfil de Usuario - Información y preferencias"
+                  class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+                  loading="lazy"
+                />
+              </picture>
             </div>
             <div class="p-6">
               <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
@@ -1119,6 +1240,237 @@
       </div>
     </section>
 
+    <!-- FAQ Section -->
+    <section id="faq" class="bg-white py-24 dark:bg-slate-900">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div class="mb-16 text-center">
+          <div
+            class="mb-4 inline-flex items-center space-x-2 rounded-full bg-primary-100 px-4 py-2 dark:bg-primary-900/30"
+          >
+            <i data-lucide="help-circle" class="h-4 w-4 text-primary-600 dark:text-primary-400"></i>
+            <span class="text-sm font-medium text-primary-600 dark:text-primary-300"
+              >Preguntas Frecuentes</span
+            >
+          </div>
+          <h2 class="font-display mb-4 text-4xl font-bold text-gray-900 dark:text-white">
+            ¿Tienes dudas?
+          </h2>
+          <p class="mx-auto max-w-2xl text-xl text-gray-600 dark:text-gray-300">
+            Aquí encontrarás respuestas a las preguntas más comunes sobre Diabetactic
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          <!-- FAQ Item 1 -->
+          <details
+            class="group rounded-2xl bg-gray-50 p-6 transition-all hover:shadow-md dark:bg-slate-800"
+          >
+            <summary
+              class="flex cursor-pointer items-center justify-between font-semibold text-gray-900 dark:text-white"
+            >
+              <span>¿Qué es Diabetactic y quién puede usarla?</span>
+              <i
+                data-lucide="chevron-down"
+                class="h-5 w-5 transition-transform group-open:rotate-180"
+              ></i>
+            </summary>
+            <div class="mt-4 text-gray-600 dark:text-gray-400">
+              <p>
+                Diabetactic es una aplicación móvil desarrollada como Trabajo Profesional de
+                Ingeniería en Informática (FIUBA) para facilitar el manejo de diabetes tipo 1. Está
+                diseñada para pacientes pediátricos del Hospital Garrahan y sus familias, permitiendo
+                el registro de glucosa, gestión de citas médicas, y cálculo de dosis de insulina.
+              </p>
+            </div>
+          </details>
+
+          <!-- FAQ Item 2 -->
+          <details
+            class="group rounded-2xl bg-gray-50 p-6 transition-all hover:shadow-md dark:bg-slate-800"
+          >
+            <summary
+              class="flex cursor-pointer items-center justify-between font-semibold text-gray-900 dark:text-white"
+            >
+              <span>¿La aplicación funciona sin conexión a internet?</span>
+              <i
+                data-lucide="chevron-down"
+                class="h-5 w-5 transition-transform group-open:rotate-180"
+              ></i>
+            </summary>
+            <div class="mt-4 text-gray-600 dark:text-gray-400">
+              <p>
+                Sí, Diabetactic utiliza una arquitectura <strong>offline-first</strong> con IndexedDB
+                (Dexie). Todas las lecturas de glucosa, citas y configuraciones se guardan localmente
+                en tu dispositivo y se sincronizan automáticamente cuando recuperas la conexión. Esto
+                garantiza que siempre puedas registrar tus datos sin depender de internet.
+              </p>
+            </div>
+          </details>
+
+          <!-- FAQ Item 3 -->
+          <details
+            class="group rounded-2xl bg-gray-50 p-6 transition-all hover:shadow-md dark:bg-slate-800"
+          >
+            <summary
+              class="flex cursor-pointer items-center justify-between font-semibold text-gray-900 dark:text-white"
+            >
+              <span>¿Cómo instalo la aplicación en mi dispositivo Android?</span>
+              <i
+                data-lucide="chevron-down"
+                class="h-5 w-5 transition-transform group-open:rotate-180"
+              ></i>
+            </summary>
+            <div class="mt-4 text-gray-600 dark:text-gray-400">
+              <p>
+                Descarga el archivo APK desde la sección de
+                <a
+                  href="https://github.com/diabetactic/diabetify/releases/latest"
+                  target="_blank"
+                  class="text-primary-600 dark:text-primary-400 hover:underline"
+                  >releases en GitHub</a
+                >. Una vez descargado, abre el archivo y sigue las instrucciones de instalación.
+                Puede que necesites habilitar la opción "Instalar desde fuentes desconocidas" en la
+                configuración de seguridad de tu dispositivo Android.
+              </p>
+            </div>
+          </details>
+
+          <!-- FAQ Item 4 -->
+          <details
+            class="group rounded-2xl bg-gray-50 p-6 transition-all hover:shadow-md dark:bg-slate-800"
+          >
+            <summary
+              class="flex cursor-pointer items-center justify-between font-semibold text-gray-900 dark:text-white"
+            >
+              <span>¿Mis datos están seguros?</span>
+              <i
+                data-lucide="chevron-down"
+                class="h-5 w-5 transition-transform group-open:rotate-180"
+              ></i>
+            </summary>
+            <div class="mt-4 text-gray-600 dark:text-gray-400">
+              <p>
+                Sí, Diabetactic implementa múltiples capas de seguridad: almacenamiento cifrado con
+                <strong>@aparajita/capacitor-secure-storage</strong> para credenciales sensibles,
+                autenticación biométrica opcional (huella digital/Face ID), y comunicación encriptada
+                HTTPS con el backend. Los datos se almacenan localmente en tu dispositivo y solo se
+                sincronizan con el servidor del Hospital Garrahan cuando tienes conexión.
+              </p>
+            </div>
+          </details>
+
+          <!-- FAQ Item 5 -->
+          <details
+            class="group rounded-2xl bg-gray-50 p-6 transition-all hover:shadow-md dark:bg-slate-800"
+          >
+            <summary
+              class="flex cursor-pointer items-center justify-between font-semibold text-gray-900 dark:text-white"
+            >
+              <span>¿Qué tecnologías se utilizaron para desarrollar Diabetactic?</span>
+              <i
+                data-lucide="chevron-down"
+                class="h-5 w-5 transition-transform group-open:rotate-180"
+              ></i>
+            </summary>
+            <div class="mt-4 text-gray-600 dark:text-gray-400">
+              <p>
+                Diabetactic está construida con tecnologías web modernas: <strong>Angular 20</strong>
+                como framework principal, <strong>Ionic 8</strong> para la UI móvil,
+                <strong>Capacitor 6</strong> como puente nativo, <strong>Tailwind CSS</strong> y
+                <strong>DaisyUI</strong> para estilos, <strong>Dexie</strong> para almacenamiento
+                offline, y <strong>Playwright + Maestro</strong> para testing. El backend está
+                desplegado en Heroku y utiliza FastAPI (Python).
+              </p>
+            </div>
+          </details>
+
+          <!-- FAQ Item 6 -->
+          <details
+            class="group rounded-2xl bg-gray-50 p-6 transition-all hover:shadow-md dark:bg-slate-800"
+          >
+            <summary
+              class="flex cursor-pointer items-center justify-between font-semibold text-gray-900 dark:text-white"
+            >
+              <span>¿La calculadora de bolos es precisa?</span>
+              <i
+                data-lucide="chevron-down"
+                class="h-5 w-5 transition-transform group-open:rotate-180"
+              ></i>
+            </summary>
+            <div class="mt-4 text-gray-600 dark:text-gray-400">
+              <p>
+                La calculadora de bolos es una <strong>herramienta de asistencia educativa</strong>
+                que ayuda a estimar dosis de insulina basándose en carbohidratos, factor de
+                sensibilidad y glucosa actual. <strong>NO reemplaza el criterio médico</strong>.
+                Siempre consulta con tu equipo de salud antes de ajustar dosis de insulina y usa los
+                valores configurados por tus profesionales.
+              </p>
+            </div>
+          </details>
+
+          <!-- FAQ Item 7 -->
+          <details
+            class="group rounded-2xl bg-gray-50 p-6 transition-all hover:shadow-md dark:bg-slate-800"
+          >
+            <summary
+              class="flex cursor-pointer items-center justify-between font-semibold text-gray-900 dark:text-white"
+            >
+              <span>¿Puedo exportar mis datos de glucosa?</span>
+              <i
+                data-lucide="chevron-down"
+                class="h-5 w-5 transition-transform group-open:rotate-180"
+              ></i>
+            </summary>
+            <div class="mt-4 text-gray-600 dark:text-gray-400">
+              <p>
+                Actualmente, todos los datos se sincronizan automáticamente con el backend del
+                Hospital Garrahan cuando tienes conexión. Los profesionales de salud pueden acceder a
+                estos datos a través del <strong>backoffice web</strong>. Estamos trabajando en
+                funcionalidades de exportación (PDF, CSV) para que puedas compartir tus reportes
+                directamente desde la aplicación móvil.
+              </p>
+            </div>
+          </details>
+
+          <!-- FAQ Item 8 -->
+          <details
+            class="group rounded-2xl bg-gray-50 p-6 transition-all hover:shadow-md dark:bg-slate-800"
+          >
+            <summary
+              class="flex cursor-pointer items-center justify-between font-semibold text-gray-900 dark:text-white"
+            >
+              <span>¿Hay versión para iOS?</span>
+              <i
+                data-lucide="chevron-down"
+                class="h-5 w-5 transition-transform group-open:rotate-180"
+              ></i>
+            </summary>
+            <div class="mt-4 text-gray-600 dark:text-gray-400">
+              <p>
+                La aplicación está desarrollada con <strong>Capacitor</strong>, un framework
+                multiplataforma que permite compilar para iOS. Sin embargo, actualmente solo está
+                disponible la versión Android. La versión iOS requeriría una cuenta de Apple
+                Developer ($99/año) y pruebas específicas en dispositivos iOS. El código está
+                preparado para esta expansión futura.
+              </p>
+            </div>
+          </details>
+        </div>
+
+        <div class="mt-12 text-center">
+          <p class="text-gray-600 dark:text-gray-400">
+            ¿Tienes más preguntas?
+            <a
+              href="https://github.com/diabetactic/diabetify/issues"
+              target="_blank"
+              class="text-primary-600 dark:text-primary-400 hover:underline font-medium"
+              >Abre un issue en GitHub</a
+            >
+          </p>
+        </div>
+      </div>
+    </section>
+
     <!-- Footer -->
     <footer class="bg-gray-900 py-16 text-white">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -1279,6 +1631,114 @@
           }
         });
       });
+
+      // Lightbox functionality
+      (function () {
+        // Create lightbox HTML structure
+        const lightboxHTML = `
+          <div id="lightbox">
+            <button id="lightbox-close" aria-label="Cerrar lightbox">
+              <i data-lucide="x"></i>
+            </button>
+            <button id="lightbox-prev" aria-label="Imagen anterior">
+              <i data-lucide="chevron-left"></i>
+            </button>
+            <button id="lightbox-next" aria-label="Siguiente imagen">
+              <i data-lucide="chevron-right"></i>
+            </button>
+            <img src="" alt="" />
+          </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', lightboxHTML);
+
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = lightbox.querySelector('img');
+        const closeBtn = document.getElementById('lightbox-close');
+        const prevBtn = document.getElementById('lightbox-prev');
+        const nextBtn = document.getElementById('lightbox-next');
+        const screenshots = Array.from(document.querySelectorAll('.screenshot-card'));
+        let currentIndex = 0;
+
+        function openLightbox(index) {
+          currentIndex = index;
+          const screenshot = screenshots[index];
+          const img = screenshot.querySelector('img');
+          const picture = screenshot.querySelector('picture');
+
+          // Use WebP source if available, otherwise PNG
+          const webpSource = picture?.querySelector('source[type="image/webp"]');
+          const imgSrc = webpSource?.srcset || img.src;
+
+          lightboxImg.src = imgSrc;
+          lightboxImg.alt = img.alt;
+          lightbox.classList.add('active');
+          document.body.style.overflow = 'hidden';
+
+          // Update Lucide icons
+          lucide.createIcons();
+        }
+
+        function closeLightbox() {
+          lightbox.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+
+        function showPrev() {
+          currentIndex = (currentIndex - 1 + screenshots.length) % screenshots.length;
+          openLightbox(currentIndex);
+        }
+
+        function showNext() {
+          currentIndex = (currentIndex + 1) % screenshots.length;
+          openLightbox(currentIndex);
+        }
+
+        // Event listeners
+        screenshots.forEach((card, index) => {
+          card.addEventListener('click', () => openLightbox(index));
+          card.style.cursor = 'pointer';
+        });
+
+        closeBtn.addEventListener('click', closeLightbox);
+        prevBtn.addEventListener('click', showPrev);
+        nextBtn.addEventListener('click', showNext);
+        lightbox.addEventListener('click', (e) => {
+          if (e.target === lightbox) closeLightbox();
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+          if (!lightbox.classList.contains('active')) return;
+
+          if (e.key === 'Escape') closeLightbox();
+          if (e.key === 'ArrowLeft') showPrev();
+          if (e.key === 'ArrowRight') showNext();
+        });
+
+        // Initialize Lucide icons for lightbox buttons
+        lucide.createIcons();
+      })();
+
+      // Reveal on scroll animation
+      (function () {
+        const revealElements = document.querySelectorAll('[data-reveal]');
+
+        const revealOnScroll = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('revealed');
+              revealOnScroll.unobserve(entry.target);
+            }
+          });
+        }, {
+          threshold: 0.1,
+          rootMargin: '0px 0px -50px 0px'
+        });
+
+        revealElements.forEach(el => {
+          revealOnScroll.observe(el);
+        });
+      })();
     </script>
   </body>
 </html>

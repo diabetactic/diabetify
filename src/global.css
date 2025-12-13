@@ -793,48 +793,58 @@
 /* List item entrance animation with stagger support */
 @keyframes listItemEnter {
   from {
-    opacity: 0;
+    opacity: 0%;
     transform: translateY(12px);
   }
+
   to {
-    opacity: 1;
+    opacity: 100%;
     transform: translateY(0);
   }
 }
 
 .animate-list-enter {
   animation: listItemEnter 0.3s ease-out forwards;
-  opacity: 0;
+  opacity: 0%;
 }
 
 /* Stagger delays for list items (use with ngFor index) */
 .stagger-1 {
   animation-delay: 0.05s;
 }
+
 .stagger-2 {
   animation-delay: 0.1s;
 }
+
 .stagger-3 {
   animation-delay: 0.15s;
 }
+
 .stagger-4 {
   animation-delay: 0.2s;
 }
+
 .stagger-5 {
   animation-delay: 0.25s;
 }
+
 .stagger-6 {
   animation-delay: 0.3s;
 }
+
 .stagger-7 {
   animation-delay: 0.35s;
 }
+
 .stagger-8 {
   animation-delay: 0.4s;
 }
+
 .stagger-9 {
   animation-delay: 0.45s;
 }
+
 .stagger-10 {
   animation-delay: 0.5s;
 }
@@ -842,32 +852,35 @@
 /* Card scale-in animation for dashboard */
 @keyframes cardScaleIn {
   from {
-    opacity: 0;
+    opacity: 0%;
     transform: scale(0.95);
   }
+
   to {
-    opacity: 1;
+    opacity: 100%;
     transform: scale(1);
   }
 }
 
 .animate-card-enter {
   animation: cardScaleIn 0.25s ease-out forwards;
-  opacity: 0;
+  opacity: 0%;
 }
 
 /* Success checkmark animation */
 @keyframes successPop {
   0% {
     transform: scale(0);
-    opacity: 0;
+    opacity: 0%;
   }
+
   50% {
     transform: scale(1.2);
   }
+
   100% {
     transform: scale(1);
-    opacity: 1;
+    opacity: 100%;
   }
 }
 
@@ -878,10 +891,11 @@
 /* Smooth skeleton fade-out */
 @keyframes skeletonFadeOut {
   from {
-    opacity: 1;
+    opacity: 100%;
   }
+
   to {
-    opacity: 0;
+    opacity: 0%;
   }
 }
 
@@ -1188,7 +1202,7 @@ ion-select:focus-visible,
 ion-toggle:focus-visible {
   outline: 2px solid var(--ion-color-primary);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 4px rgb(59 130 246 / 20%);
 }
 
 /* Focus for interactive elements */
@@ -1443,13 +1457,13 @@ button:focus-visible {
 }
 
 /* Native HTML input/select/textarea elements - Dark Mode */
-.ion-palette-dark input:not([type='range']):not([type='checkbox']):not([type='radio']),
+.ion-palette-dark input:not([type='range'], [type='checkbox'], [type='radio']),
 .ion-palette-dark select,
 .ion-palette-dark textarea,
-.dark input:not([type='range']):not([type='checkbox']):not([type='radio']),
+.dark input:not([type='range'], [type='checkbox'], [type='radio']),
 .dark select,
 .dark textarea,
-:root[data-theme='dark'] input:not([type='range']):not([type='checkbox']):not([type='radio']),
+:root[data-theme='dark'] input:not([type='range'], [type='checkbox'], [type='radio']),
 :root[data-theme='dark'] select,
 :root[data-theme='dark'] textarea {
   background-color: #1e293b !important;
@@ -1464,7 +1478,7 @@ button:focus-visible {
 :root[data-theme='dark'] input::placeholder,
 :root[data-theme='dark'] textarea::placeholder {
   color: #9ca3af !important;
-  opacity: 1 !important;
+  opacity: 100% !important;
 }
 
 /* Ion Segment - Dark Mode */

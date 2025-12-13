@@ -1,81 +1,80 @@
 # CircleCI Job Example for Docker E2E Tests
-# Add this job to your .circleci/config.yml
+# Add these jobs to your .circleci/config.yml
 
 jobs:
   e2e-docker:
     # Use CircleCI's machine executor for Docker-in-Docker support
     machine:
       image: ubuntu-2204:2024.01.1
-      docker_layer_caching: true  # Cache Docker layers for faster builds
-    
-    resource_class: large  # More resources for Docker + Playwright
-    
+      docker_layer_caching: true # Cache Docker layers for faster builds
+
+    resource_class: large # More resources for Docker + Playwright
+
     steps:
       - checkout
-      
+
       - run:
           name: Install Docker Compose
           command: |
             sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
             docker-compose --version
-      
+
       - run:
           name: Build Angular App
           command: |
             # Install Node.js dependencies (needed for npm run build:mock)
             npm ci --prefer-offline --no-audit
             npm run build:mock
-      
+
       - run:
           name: Run E2E Tests in Docker
           command: |
             ./scripts/run-e2e-docker.sh --build --clean
           no_output_timeout: 10m
-      
+
       - store_test_results:
           path: playwright-report
-      
+
       - store_artifacts:
           path: playwright-report
           destination: test-reports
-      
+
       - store_artifacts:
           path: playwright/artifacts
           destination: test-artifacts
 
-# Alternative: Using Docker executor (if you have setup_remote_docker)
-jobs:
+  # Alternative: Using Docker executor (if you have setup_remote_docker)
   e2e-docker-remote:
     docker:
       - image: cimg/node:20.11
-    
+
     resource_class: large
-    
+
     steps:
       - checkout
-      
+
       - setup_remote_docker:
           version: 20.10.24
           docker_layer_caching: true
-      
+
       - run:
           name: Install Docker Compose
           command: |
             sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
-      
+
       - run:
           name: Build Angular App
           command: npm ci && npm run build:mock
-      
+
       - run:
           name: Run E2E Tests
           command: ./scripts/run-e2e-docker.sh --build --clean
-      
+
       - store_test_results:
           path: playwright-report
-      
+
       - store_artifacts:
           path: playwright-report
           destination: test-reports
@@ -85,9 +84,9 @@ workflows:
   version: 2
   ci:
     jobs:
-      - test              # Existing unit tests job
-      - build-web         # Existing build job
-      - e2e-docker:       # New Docker E2E job
+      - test # Existing unit tests job
+      - build-web # Existing build job
+      - e2e-docker: # New Docker E2E job
           requires:
             - test
             - build-web
@@ -104,4 +103,3 @@ workflows:
 # 4. Run only on main branches to conserve CI credits
 # 5. Cache npm dependencies between jobs
 # 6. Parallelize if you have multiple test suites
-

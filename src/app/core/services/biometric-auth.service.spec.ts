@@ -2,13 +2,33 @@ import { TestBed } from '@angular/core/testing';
 import { BiometricAuthService, BiometricConfig } from '@services/biometric-auth.service';
 import { LoggerService } from '@services/logger.service';
 import { Preferences } from '@capacitor/preferences';
-import { SecureStorage } from '@aparajita/capacitor-secure-storage';
 
-// Mock the biometric plugin
-jest.mock('@capawesome-team/capacitor-biometrics', () => ({
-  BiometricAuth: {
-    isAvailable: jest.fn(),
-    authenticate: jest.fn(),
+// Create mock functions for NativeBiometric
+const mockIsAvailable = jest.fn();
+const mockVerifyIdentity = jest.fn();
+const mockSetCredentials = jest.fn();
+const mockGetCredentials = jest.fn();
+const mockDeleteCredentials = jest.fn();
+const mockIsCredentialsSaved = jest.fn();
+
+// Mock the Capgo biometric plugin
+jest.mock('@capgo/capacitor-native-biometric', () => ({
+  NativeBiometric: {
+    isAvailable: mockIsAvailable,
+    verifyIdentity: mockVerifyIdentity,
+    setCredentials: mockSetCredentials,
+    getCredentials: mockGetCredentials,
+    deleteCredentials: mockDeleteCredentials,
+    isCredentialsSaved: mockIsCredentialsSaved,
+  },
+  BiometryType: {
+    NONE: 0,
+    TOUCH_ID: 1,
+    FACE_ID: 2,
+    FINGERPRINT: 3,
+    FACE_AUTHENTICATION: 4,
+    IRIS_AUTHENTICATION: 5,
+    MULTIPLE: 6,
   },
 }));
 
@@ -31,22 +51,18 @@ describe('BiometricAuthService', () => {
       error: jest.fn(),
     } as unknown as jest.Mocked<LoggerService>;
 
-    // Reset mocks
+    // Reset all mocks
+    jest.clearAllMocks();
+
+    // Reset Capacitor Preferences mocks
     (Preferences.get as jest.Mock).mockResolvedValue({ value: null });
     (Preferences.set as jest.Mock).mockResolvedValue(undefined);
-    (SecureStorage.getItem as jest.Mock).mockResolvedValue(null);
-    (SecureStorage.setItem as jest.Mock).mockResolvedValue(undefined);
-    (SecureStorage.removeItem as jest.Mock).mockResolvedValue(undefined);
 
     await TestBed.configureTestingModule({
       providers: [BiometricAuthService, { provide: LoggerService, useValue: mockLogger }],
     }).compileComponents();
 
     service = TestBed.inject(BiometricAuthService);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
   });
 
   describe('initial state', () => {
@@ -66,10 +82,9 @@ describe('BiometricAuthService', () => {
 
   describe('isBiometricAvailable', () => {
     it('should return true when biometric is available', async () => {
-      const { BiometricAuth } = await import('@capawesome-team/capacitor-biometrics');
-      (BiometricAuth.isAvailable as jest.Mock).mockResolvedValue({
+      mockIsAvailable.mockResolvedValue({
         isAvailable: true,
-        biometryType: 'FINGERPRINT',
+        biometryType: 3, // FINGERPRINT
       });
 
       const result = await service.isBiometricAvailable();
@@ -77,16 +92,14 @@ describe('BiometricAuthService', () => {
     });
 
     it('should return false when biometric is not available', async () => {
-      const { BiometricAuth } = await import('@capawesome-team/capacitor-biometrics');
-      (BiometricAuth.isAvailable as jest.Mock).mockResolvedValue({ isAvailable: false });
+      mockIsAvailable.mockResolvedValue({ isAvailable: false, biometryType: 0 });
 
       const result = await service.isBiometricAvailable();
       expect(result).toBe(false);
     });
 
     it('should return false when plugin throws', async () => {
-      const { BiometricAuth } = await import('@capawesome-team/capacitor-biometrics');
-      (BiometricAuth.isAvailable as jest.Mock).mockRejectedValue(new Error('Plugin not available'));
+      mockIsAvailable.mockRejectedValue(new Error('Plugin not available'));
 
       const result = await service.isBiometricAvailable();
       expect(result).toBe(false);
@@ -95,17 +108,21 @@ describe('BiometricAuthService', () => {
 
   describe('enrollBiometric', () => {
     it('should enroll successfully when biometric is available', async () => {
-      const { BiometricAuth } = await import('@capawesome-team/capacitor-biometrics');
-      (BiometricAuth.isAvailable as jest.Mock).mockResolvedValue({
+      mockIsAvailable.mockResolvedValue({
         isAvailable: true,
-        biometryType: 'FINGERPRINT',
+        biometryType: 3, // FINGERPRINT
       });
+      mockSetCredentials.mockResolvedValue(undefined);
 
       const result = await service.enrollBiometric('user123', 'token123');
 
       expect(result.success).toBe(true);
       expect(result.authenticated).toBe(true);
-      expect(SecureStorage.setItem).toHaveBeenCalled();
+      expect(mockSetCredentials).toHaveBeenCalledWith({
+        username: 'user123',
+        password: 'token123',
+        server: 'io.diabetactic.app',
+      });
       expect(Preferences.set).toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
         'Biometric',
@@ -115,8 +132,7 @@ describe('BiometricAuthService', () => {
     });
 
     it('should fail when biometric is not available', async () => {
-      const { BiometricAuth } = await import('@capawesome-team/capacitor-biometrics');
-      (BiometricAuth.isAvailable as jest.Mock).mockResolvedValue({ isAvailable: false });
+      mockIsAvailable.mockResolvedValue({ isAvailable: false, biometryType: 0 });
 
       const result = await service.enrollBiometric('user123', 'token123');
 
@@ -126,40 +142,51 @@ describe('BiometricAuthService', () => {
   });
 
   describe('authenticateWithBiometric', () => {
-    beforeEach(async () => {
-      // Set up enrolled state
-      (Preferences.get as jest.Mock).mockResolvedValue({
-        value: JSON.stringify(mockBiometricConfig),
-      });
-      service = TestBed.inject(BiometricAuthService);
-    });
-
-    it('should authenticate successfully', async () => {
-      const { BiometricAuth } = await import('@capawesome-team/capacitor-biometrics');
-      (BiometricAuth.authenticate as jest.Mock).mockResolvedValue({ success: true });
+    it('should authenticate successfully when enrolled', async () => {
+      // Manually set the biometric config to enrolled state
+      (service as any).biometricConfigSubject.next(mockBiometricConfig);
+      mockVerifyIdentity.mockResolvedValue(undefined); // verifyIdentity resolves on success
 
       const result = await service.authenticateWithBiometric('Test reason');
 
       expect(result.success).toBe(true);
       expect(result.authenticated).toBe(true);
+      expect(mockVerifyIdentity).toHaveBeenCalledWith(
+        expect.objectContaining({
+          reason: 'Test reason',
+          title: 'Diabetactic',
+        })
+      );
     });
 
     it('should fail when not enrolled', async () => {
-      (Preferences.get as jest.Mock).mockResolvedValue({ value: null });
-      service = TestBed.inject(BiometricAuthService);
-
       const result = await service.authenticateWithBiometric();
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Not enrolled');
     });
+
+    it('should fail when user cancels', async () => {
+      // Manually set the biometric config to enrolled state
+      (service as any).biometricConfigSubject.next(mockBiometricConfig);
+      mockVerifyIdentity.mockRejectedValue({ code: 16 }); // USER_CANCEL
+
+      const result = await service.authenticateWithBiometric('Test reason');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Cancelled');
+    });
   });
 
   describe('clearBiometricEnrollment', () => {
     it('should clear enrollment', async () => {
+      mockDeleteCredentials.mockResolvedValue(undefined);
+
       await service.clearBiometricEnrollment();
 
-      expect(SecureStorage.removeItem).toHaveBeenCalled();
+      expect(mockDeleteCredentials).toHaveBeenCalledWith({
+        server: 'io.diabetactic.app',
+      });
       expect(Preferences.set).toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith('Biometric', 'Enrollment cleared');
     });
@@ -167,16 +194,22 @@ describe('BiometricAuthService', () => {
 
   describe('getStoredCredentials', () => {
     it('should return credentials when stored', async () => {
-      const credentials = { userId: 'user123', accessToken: 'token123' };
-      (SecureStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(credentials));
+      mockIsCredentialsSaved.mockResolvedValue({ isSaved: true });
+      mockGetCredentials.mockResolvedValue({
+        username: 'user123',
+        password: 'token123',
+      });
 
       const result = await service.getStoredCredentials();
 
-      expect(result).toEqual(credentials);
+      expect(result).toEqual({
+        userId: 'user123',
+        accessToken: 'token123',
+      });
     });
 
     it('should return null when no credentials stored', async () => {
-      (SecureStorage.getItem as jest.Mock).mockResolvedValue(null);
+      mockIsCredentialsSaved.mockResolvedValue({ isSaved: false });
 
       const result = await service.getStoredCredentials();
 

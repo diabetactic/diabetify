@@ -6,6 +6,9 @@
 # - Anti-AI commit signature detection (blocks AI-authored commits)
 # - Sensitive data leak prevention
 # - Build validation on push
+# - Branch name validation
+# - Package lock consistency
+# - File size limits
 
 pre-commit:
   parallel: true
@@ -38,7 +41,43 @@ pre-commit:
           echo "❌ Potential secrets detected! Review staged files."
           exit 1
         fi
-      fail_text: "Potential secrets detected in staged files!"
+      fail_text: 'Potential secrets detected in staged files!'
+
+    # Check for large files (>1MB) - prevents bloating repository
+    no-large-files:
+      run: |
+        MAX_SIZE=1048576  # 1MB in bytes
+        for file in {staged_files}; do
+          if [ -f "$file" ]; then
+            size=$(wc -c < "$file" 2>/dev/null || echo "0")
+            if [ "$size" -gt "$MAX_SIZE" ]; then
+              echo "❌ File too large: $file ($(numfmt --to=iec $size 2>/dev/null || echo "${size} bytes"))"
+              echo "   Consider using Git LFS for large files."
+              exit 1
+            fi
+          fi
+        done
+      fail_text: 'Large files detected! Use Git LFS or reduce file size.'
+
+    # Verify pnpm-lock.yaml is in sync with package.json
+    lockfile-check:
+      glob: 'package.json'
+      run: |
+        if [ -f pnpm-lock.yaml ]; then
+          if ! pnpm install --frozen-lockfile --ignore-scripts 2>/dev/null; then
+            echo "⚠️  pnpm-lock.yaml may be out of sync. Run 'pnpm install' to update."
+          fi
+        fi
+
+    # Check for console.log statements in production code (warning only)
+    no-console-logs:
+      glob: '*.ts'
+      run: |
+        if grep -n "console\\.log\\|console\\.debug" {staged_files} 2>/dev/null | grep -v "\.spec\.ts" | grep -v "logger\.service\.ts" | grep -v "environment"; then
+          echo "⚠️  console.log statements found. Consider using LoggerService instead."
+        fi
+        # Warning only - don't fail the commit
+        exit 0
 
 commit-msg:
   commands:
@@ -63,7 +102,7 @@ commit-msg:
           echo ""
           exit 1
         fi
-      fail_text: "AI signature detected in commit message!"
+      fail_text: 'AI signature detected in commit message!'
 
     # Enforce conventional commit format
     conventional-commit:
@@ -90,13 +129,44 @@ commit-msg:
         fi
 
 pre-push:
+  parallel: false # Run sequentially - quality must pass before build
   commands:
+    # Validate branch naming convention
+    branch-name:
+      run: |
+        BRANCH=$(git rev-parse --abbrev-ref HEAD)
+        # Allow master, main, develop, release/*, hotfix/*, feature/*, fix/*, test/*, docs/*
+        if ! echo "$BRANCH" | grep -qE "^(master|main|develop|release/|hotfix/|feature/|fix/|test/|docs/|chore/)"; then
+          echo ""
+          echo "╔══════════════════════════════════════════════════════════════════╗"
+          echo "║  ⚠️  BRANCH NAMING CONVENTION                                    ║"
+          echo "║                                                                  ║"
+          echo "║  Current branch: $BRANCH"
+          echo "║                                                                  ║"
+          echo "║  Recommended prefixes:                                           ║"
+          echo "║  • feature/  - New features                                      ║"
+          echo "║  • fix/      - Bug fixes                                         ║"
+          echo "║  • hotfix/   - Urgent production fixes                           ║"
+          echo "║  • release/  - Release branches                                  ║"
+          echo "║  • docs/     - Documentation updates                             ║"
+          echo "║  • test/     - Test infrastructure                               ║"
+          echo "║  • chore/    - Maintenance tasks                                 ║"
+          echo "╚══════════════════════════════════════════════════════════════════╝"
+          echo ""
+          # Warning only - don't block
+        fi
+
     # Run quality checks before push
     quality:
       run: pnpm run quality
       fail_text: "Quality checks failed. Run 'pnpm run quality' to see details."
 
-    # Verify build passes
+    # Verify TypeScript types
+    typecheck:
+      run: npx ng build --configuration=production --aot 2>&1 | head -50 || true
+      fail_text: 'TypeScript errors detected!'
+
+    # Verify build passes (production build validates types)
     build-check:
       run: pnpm run build:prod
-      fail_text: "Production build failed! Fix errors before pushing."
+      fail_text: 'Production build failed! Fix errors before pushing.'

@@ -151,15 +151,32 @@ describe('ErrorBannerComponent', () => {
   });
 
   describe('severity combinations', () => {
-    const severities: ErrorSeverity[] = ['error', 'warning', 'info'];
+    it('should handle error severity correctly', () => {
+      // Default severity is error, no change needed
+      expect(component.severityClass).toBe('alert-error');
+      expect(component.iconName).toBe('alert-circle');
+    });
 
-    severities.forEach(severity => {
-      it(`should handle ${severity} severity correctly`, () => {
-        component.severity = severity;
-        fixture.detectChanges();
-        expect(component.severityClass).toBeTruthy();
-        expect(component.iconName).toBeTruthy();
-      });
+    it('should handle warning severity correctly', () => {
+      // Create a fresh component with warning severity
+      const warningFixture = TestBed.createComponent(ErrorBannerComponent);
+      const warningComponent = warningFixture.componentInstance;
+      warningComponent.severity = 'warning';
+      warningFixture.detectChanges();
+
+      expect(warningComponent.severityClass).toBe('alert-warning');
+      expect(warningComponent.iconName).toBe('alert-triangle');
+    });
+
+    it('should handle info severity correctly', () => {
+      // Create a fresh component with info severity
+      const infoFixture = TestBed.createComponent(ErrorBannerComponent);
+      const infoComponent = infoFixture.componentInstance;
+      infoComponent.severity = 'info';
+      infoFixture.detectChanges();
+
+      expect(infoComponent.severityClass).toBe('alert-info');
+      expect(infoComponent.iconName).toBe('info');
     });
   });
 });

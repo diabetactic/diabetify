@@ -1,6 +1,6 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { IonicModule } from '@ionic/angular';
@@ -36,10 +36,10 @@ describe('AppComponent', () => {
         AppComponent,
         IonicModule.forRoot(),
         TranslateModule.forRoot(),
-        RouterTestingModule,
         getLucideIconsForTesting(),
       ],
       providers: [
+        provideRouter([]),
         { provide: TranslationService, useClass: TranslationServiceStub },
         { provide: LocalAuthService, useClass: LocalAuthServiceStub },
         { provide: SessionTimeoutService, useClass: SessionTimeoutServiceStub },

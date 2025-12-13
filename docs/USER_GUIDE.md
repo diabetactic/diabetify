@@ -466,5 +466,5 @@ _Diabetactic es una herramienta complementaria para el manejo de la diabetes. Si
 
 **Documentación Relacionada**:
 
-- [Guía de Modos de Backend](BACKEND_MODE_GUIDE.md) - Para desarrolladores/administradores de TI
-- [Guía de Desarrollo Android](ANDROID_DEVELOPMENT.md) - Compilación y despliegue móvil
+- [Arquitectura del Sistema](ARCHITECTURE.md) - Detalles técnicos de la aplicación
+- [Guía de Testing](TESTING_GUIDE.md) - Estrategias de pruebas

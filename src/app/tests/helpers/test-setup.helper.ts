@@ -6,7 +6,7 @@
  */
 import { TestBed, TestModuleMetadata } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Routes } from '@angular/router';
@@ -39,10 +39,10 @@ export interface TestSetupOptions {
   /** Include HttpClientTestingModule */
   includeHttp?: boolean;
 
-  /** Include RouterTestingModule */
+  /** Include Router via provideRouter */
   includeRouter?: boolean;
 
-  /** Custom routes for RouterTestingModule */
+  /** Custom routes for provideRouter */
   routes?: Routes;
 
   /** Include TranslateModule */
@@ -95,7 +95,7 @@ export interface TestSetupResult {
  * 2. Creating Ionic mocks (all controllers)
  * 3. Configuring platform detection
  * 4. Adding HttpClientTestingModule
- * 5. Adding RouterTestingModule
+ * 5. Adding provideRouter
  * 6. Adding TranslateModule with fake loader
  * 7. Adding CUSTOM_ELEMENTS_SCHEMA for ion-* components
  *
@@ -165,9 +165,9 @@ export async function setupTestBed(options: TestSetupOptions = {}): Promise<Test
     config.imports!.push(HttpClientTestingModule);
   }
 
-  // Add Router testing module
+  // Add Router via provideRouter
   if (includeRouter) {
-    config.imports!.push(RouterTestingModule.withRoutes(routes));
+    config.providers!.push(provideRouter(routes));
   }
 
   // Add Translate module
