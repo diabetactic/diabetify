@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
@@ -117,11 +117,11 @@ describe('ReadingsPage', () => {
       imports: [
         IonicModule.forRoot(),
         TranslateModule.forRoot(),
-        RouterTestingModule,
         ReadingsPageModule,
         getLucideIconsForTesting(),
       ],
       providers: [
+        provideRouter([]),
         { provide: ReadingsService, useClass: ReadingsServiceStub },
         { provide: ProfileService, useClass: ProfileServiceStub },
         { provide: TranslationService, useClass: TranslationServiceStub },

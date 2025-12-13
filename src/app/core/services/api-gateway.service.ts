@@ -23,7 +23,7 @@ import { LoggerService } from '@services/logger.service';
 import { MockAdapterService } from '@services/mock-adapter.service';
 import { LRUCache } from 'lru-cache';
 import { environment } from '@env/environment';
-import { API_GATEWAY_BASE_URL } from '@core/../shared/config/api-base-url';
+import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
 import { LocalGlucoseReading } from '@models/glucose-reading.model';
 
 /**

@@ -1,6 +1,6 @@
-# Testing Guide - Diabetactic Angular/Ionic App
+# Guía de Testing - Diabetactic
 
-Quick reference for writing tests in this codebase. See `TEST_QUALITY_ANALYSIS.md` for comprehensive analysis.
+Referencia rápida para escribir tests en este proyecto.
 
 ---
 
@@ -215,11 +215,11 @@ const mockAuth = MockFactory.createLocalAuthMock();
 
 ---
 
-## Resources
+## Recursos
 
-- **Full Analysis**: `TEST_QUALITY_ANALYSIS.md`
-- **Setup**: `setup-jest.ts`
-- **Helpers**: `/src/app/tests/helpers/`
-- **Examples**: Existing specs in `/src/app/core/services/`
+- **Configuración Jest**: `setup-jest.ts`
+- **Helpers de test**: `/src/app/tests/helpers/`
+- **Ejemplos**: Specs existentes en `/src/app/core/services/`
+- **Tests E2E**: `playwright/tests/` y `maestro/tests/`
 
-**Last Updated**: December 13, 2025
+**Última actualización**: Diciembre 2025

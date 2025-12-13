@@ -11,7 +11,7 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -90,8 +90,9 @@ describe('ReadingsPage Integration – filters & grouping', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ReadingsPage],
-      imports: [IonicModule.forRoot(), RouterTestingModule, TranslateModule.forRoot()],
+      imports: [IonicModule.forRoot(), TranslateModule.forRoot()],
       providers: [
+        provideRouter([]),
         { provide: ReadingsService, useClass: ReadingsServiceStub },
         { provide: ProfileService, useClass: ProfileServiceStub },
         { provide: TranslationService, useClass: TranslationServiceStub },

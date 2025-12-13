@@ -21,7 +21,7 @@ export interface BiometricAuthResult {
 @Injectable({ providedIn: 'root' })
 export class BiometricAuthService {
   private readonly STORAGE_KEY_BIOMETRIC_CONFIG = 'diabetactic_biometric_config';
-  private readonly BIOMETRIC_CREDENTIAL_ID = 'diabetactic_biometric_auth';
+  private readonly BIOMETRIC_CREDENTIAL_SERVER = 'io.diabetactic.app';
 
   private biometricConfigSubject = new BehaviorSubject<BiometricConfig>({
     enabled: false,
@@ -41,9 +41,8 @@ export class BiometricAuthService {
    */
   async isBiometricAvailable(): Promise<boolean> {
     try {
-      // Dynamic import to avoid errors when plugin not installed
-      const { BiometricAuth } = await import('@capawesome-team/capacitor-biometrics');
-      const result = await BiometricAuth.isAvailable();
+      const { NativeBiometric } = await import('@capgo/capacitor-native-biometric');
+      const result = await NativeBiometric.isAvailable({ useFallback: false });
       return result.isAvailable;
     } catch (error) {
       this.logger.debug('Biometric', 'Biometric plugin not available', error);
@@ -56,11 +55,23 @@ export class BiometricAuthService {
    */
   async getBiometryType(): Promise<string> {
     try {
-      const { BiometricAuth } = await import('@capawesome-team/capacitor-biometrics');
-      const result = await BiometricAuth.isAvailable();
-      return result.biometryType || 'unknown';
+      const { NativeBiometric, BiometryType } = await import('@capgo/capacitor-native-biometric');
+      const result = await NativeBiometric.isAvailable({ useFallback: false });
+
+      switch (result.biometryType) {
+        case BiometryType.FINGERPRINT:
+        case BiometryType.TOUCH_ID:
+          return 'fingerprint';
+        case BiometryType.FACE_ID:
+        case BiometryType.FACE_AUTHENTICATION:
+          return 'face';
+        case BiometryType.IRIS_AUTHENTICATION:
+          return 'iris';
+        default:
+          return 'none';
+      }
     } catch (error) {
-      return 'unknown';
+      return 'none';
     }
   }
 
@@ -74,11 +85,13 @@ export class BiometricAuthService {
         return { success: false, authenticated: false, error: 'Biometric not available' };
       }
 
-      // Store credentials in SecureStorage
-      await SecureStorage.setItem(
-        this.BIOMETRIC_CREDENTIAL_ID,
-        JSON.stringify({ userId, accessToken, enrolledAt: new Date().toISOString() })
-      );
+      // Store credentials using the plugin's built-in secure storage
+      const { NativeBiometric } = await import('@capgo/capacitor-native-biometric');
+      await NativeBiometric.setCredentials({
+        username: userId,
+        password: accessToken,
+        server: this.BIOMETRIC_CREDENTIAL_SERVER,
+      });
 
       // Update config
       const biometryType = await this.getBiometryType();
@@ -116,17 +129,18 @@ export class BiometricAuthService {
         return { success: false, authenticated: false, error: 'Not enrolled' };
       }
 
-      const { BiometricAuth } = await import('@capawesome-team/capacitor-biometrics');
-      const result = await BiometricAuth.authenticate({
-        reason,
-        cancelTitle: 'Cancel',
-        fallbackTitle: 'Use passcode',
-        androidConfirmationRequired: false,
-      });
+      const { NativeBiometric } = await import('@capgo/capacitor-native-biometric');
 
-      if (!result.success) {
-        return { success: false, authenticated: false, error: 'Authentication failed' };
-      }
+      // verifyIdentity throws on failure, resolves on success
+      await NativeBiometric.verifyIdentity({
+        reason,
+        title: 'Diabetactic',
+        subtitle: 'Login with biometrics',
+        description: reason,
+        useFallback: true,
+        fallbackTitle: 'Use passcode',
+        maxAttempts: 3,
+      });
 
       this.logger.info('Biometric', 'Authentication successful');
       return { success: true, authenticated: true, biometryType: config.biometryType };
@@ -142,11 +156,25 @@ export class BiometricAuthService {
    */
   async getStoredCredentials(): Promise<{ userId: string; accessToken: string } | null> {
     try {
-      const result = await SecureStorage.getItem(this.BIOMETRIC_CREDENTIAL_ID);
-      if (result) {
-        return JSON.parse(result);
+      const { NativeBiometric } = await import('@capgo/capacitor-native-biometric');
+
+      // First check if credentials are saved
+      const { isSaved } = await NativeBiometric.isCredentialsSaved({
+        server: this.BIOMETRIC_CREDENTIAL_SERVER,
+      });
+
+      if (!isSaved) {
+        return null;
       }
-      return null;
+
+      const credentials = await NativeBiometric.getCredentials({
+        server: this.BIOMETRIC_CREDENTIAL_SERVER,
+      });
+
+      return {
+        userId: credentials.username,
+        accessToken: credentials.password,
+      };
     } catch (error) {
       this.logger.error('Biometric', 'Failed to get stored credentials', error);
       return null;
@@ -158,7 +186,10 @@ export class BiometricAuthService {
    */
   async clearBiometricEnrollment(): Promise<void> {
     try {
-      await SecureStorage.removeItem(this.BIOMETRIC_CREDENTIAL_ID);
+      const { NativeBiometric } = await import('@capgo/capacitor-native-biometric');
+      await NativeBiometric.deleteCredentials({
+        server: this.BIOMETRIC_CREDENTIAL_SERVER,
+      });
 
       const config: BiometricConfig = {
         enabled: false,
@@ -193,17 +224,23 @@ export class BiometricAuthService {
 
   private extractBiometricError(error: unknown): string {
     const err = error as Record<string, unknown>;
-    switch (err['code']) {
-      case 'NOT_AVAILABLE':
+    const code = err['code'] || err['errorCode'];
+
+    // BiometricAuthError enum values from @capgo/capacitor-native-biometric
+    switch (code) {
+      case 1: // BIOMETRICS_UNAVAILABLE
         return 'Biometric not available';
-      case 'NOT_ENROLLED':
+      case 3: // BIOMETRICS_NOT_ENROLLED
         return 'No biometric enrolled on device';
-      case 'AUTHENTICATION_FAILED':
+      case 10: // AUTHENTICATION_FAILED
         return 'Authentication failed';
-      case 'USER_CANCEL':
+      case 16: // USER_CANCEL
         return 'Cancelled';
-      case 'BIOMETRIC_ERROR_LOCKOUT':
+      case 2: // USER_LOCKOUT
+      case 4: // USER_TEMPORARY_LOCKOUT
         return 'Too many attempts. Use password.';
+      case 17: // USER_FALLBACK
+        return 'User chose fallback';
       default:
         return 'Authentication failed';
     }

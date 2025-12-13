@@ -23,7 +23,7 @@ JAVA_HOME=$(mise where java) ANDROID_HOME=$ANDROID_HOME ./gradlew installDebug
 
 "android:rebuild" = '''
 rm -rf .angular www android/app/build
-npm run build:mock
+pnpm run build:mock
 npx cap sync
 cd android && JAVA_HOME=$(mise where java) ANDROID_HOME=$ANDROID_HOME ./gradlew installDebug
 '''
@@ -41,23 +41,23 @@ cd android && JAVA_HOME=$(mise where java) ANDROID_HOME=$ANDROID_HOME ./gradlew 
 "logs-tail" = "make logs-tail"
 "screenshot" = "make screenshot-home"
 
-# Test commands - Quality checks (uses existing npm scripts)
-"test:quality" = "npm run quality"
-"test:lint" = "npm run lint"
-"test:lint:fix" = "npm run lint:fix"
+# Test commands - Quality checks (uses existing pnpm scripts)
+"test:quality" = "pnpm run quality"
+"test:lint" = "pnpm run lint"
+"test:lint:fix" = "pnpm run lint:fix"
 
-# Test commands - Unit tests (uses existing npm scripts)
-"test:unit" = "npm run test:ci"
-"test:e2e" = "npm run test:e2e"
-"test:a11y" = "npm run test:a11y"
+# Test commands - Unit tests (uses existing pnpm scripts)
+"test:unit" = "pnpm run test:ci"
+"test:e2e" = "pnpm run test:e2e"
+"test:a11y" = "pnpm run test:a11y"
 
 # Test commands - Full tests (combined)
-"test:full" = "npm run quality && npm run test:e2e"
+"test:full" = "pnpm run quality && pnpm run test:e2e"
 
 # Test commands - Mode-specific (build + test with specific env)
-"test:mock" = "ENV=mock npm test"
-"test:heroku" = "ENV=cloud npm test"
-"test:local" = "ENV=local npm test"
+"test:mock" = "ENV=mock pnpm test"
+"test:heroku" = "ENV=cloud pnpm test"
+"test:local" = "ENV=local pnpm test"
 
 # Test commands - Comprehensive (all test types)
-"test:all" = "npm run quality && npm run test:e2e && npm run test:a11y"
+"test:all" = "pnpm run quality && pnpm run test:e2e && pnpm run test:a11y"

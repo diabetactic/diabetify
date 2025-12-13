@@ -249,10 +249,15 @@ skills/
 
 # Temp files
 *.apk
-# Allow APK in docs for landing page download
-!docs/*.apk
 server.pid
 prpm.lock
+
+# Release directories (use GitHub Releases instead)
+releases/
+release/
+
+# Old Husky (replaced by Lefthook)
+.husky/
 
 # npm cache in wrong locations
 **/.npm-cache/

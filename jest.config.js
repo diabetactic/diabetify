@@ -63,12 +63,9 @@ module.exports = {
     '^@interceptors/(.*)$': '<rootDir>/src/app/core/interceptors/$1',
     // Mock ionicons to avoid ESM issues
     'ionicons/components/ion-icon.js': '<rootDir>/src/app/tests/mocks/ionicons.mock.ts',
-    // Mock premium Capawesome biometrics plugin (not in public npm)
-    '@capawesome-team/capacitor-biometrics':
-      '<rootDir>/src/mocks/__mocks__/@capawesome-team/capacitor-biometrics.ts',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(@ionic|@stencil|@capacitor|@angular|rxjs|@ngx-translate|lucide-angular|dexie|tslib|@faker-js|ionicons)/)',
+    'node_modules/(?!(@ionic|@stencil|@capacitor|@capgo|@angular|rxjs|@ngx-translate|lucide-angular|dexie|tslib|@faker-js|ionicons)/)',
   ],
   testEnvironmentOptions: {
     customExportConditions: ['node', 'node-addons'],

@@ -8,7 +8,7 @@ import { LoggerService } from '@services/logger.service';
 import { MockDataService } from '@services/mock-data.service';
 import { MockAdapterService } from '@services/mock-adapter.service';
 import { environment } from '@env/environment';
-import { API_GATEWAY_BASE_URL } from '@core/../shared/config/api-base-url';
+import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
 
 /**
  * Local authentication state

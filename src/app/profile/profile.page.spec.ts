@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -119,12 +119,12 @@ describe('ProfilePage', () => {
       imports: [
         IonicModule.forRoot(),
         TranslateModule.forRoot(),
-        RouterTestingModule,
         HttpClientTestingModule,
         ProfilePage,
         getLucideIconsForTesting(),
       ],
       providers: [
+        provideRouter([]),
         { provide: TidepoolAuthService, useClass: TidepoolAuthServiceStub },
         { provide: ProfileService, useClass: ProfileServiceStub },
         { provide: ThemeService, useClass: ThemeServiceStub },
