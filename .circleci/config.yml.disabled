@@ -1,0 +1,622 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.2.0
+  android: circleci/android@2.5.0
+
+executors:
+  node-executor:
+    docker:
+      - image: cimg/node:20.19
+    working_directory: ~/project
+  playwright-executor:
+    docker:
+      - image: mcr.microsoft.com/playwright:v1.48.0-noble
+    working_directory: ~/project
+
+# Commands for pnpm installation and caching
+commands:
+  install-pnpm:
+    description: 'Install pnpm using corepack'
+    steps:
+      - run:
+          name: Enable Corepack and Install pnpm
+          command: |
+            corepack enable
+            corepack prepare pnpm@9 --activate
+            pnpm --version
+
+  restore-pnpm-cache:
+    description: 'Restore pnpm store cache'
+    steps:
+      - restore_cache:
+          keys:
+            - pnpm-store-v1-{{ checksum "pnpm-lock.yaml" }}
+            - pnpm-store-v1-
+
+  save-pnpm-cache:
+    description: 'Save pnpm store cache'
+    steps:
+      - save_cache:
+          key: pnpm-store-v1-{{ checksum "pnpm-lock.yaml" }}
+          paths:
+            - ~/.local/share/pnpm/store
+
+  install-dependencies:
+    description: 'Install dependencies with pnpm'
+    steps:
+      - install-pnpm
+      - restore-pnpm-cache
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - save-pnpm-cache
+
+jobs:
+  # Lint and unit tests
+  test:
+    executor: node-executor
+    environment:
+      # Turborepo remote cache (configure in CircleCI project settings)
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Lint
+          command: pnpm run lint
+      - run:
+          name: Unit Tests
+          command: pnpm test -- --ci --coverage
+      - run:
+          name: Upload Coverage to DeepSource
+          command: |
+            # Install DeepSource CLI
+            curl https://deepsource.io/cli | sh
+
+            # Upload coverage (requires DEEPSOURCE_DSN env var in CircleCI)
+            if [ -n "$DEEPSOURCE_DSN" ]; then
+              ./bin/deepsource report --analyzer test-coverage --key javascript --value-file coverage/diabetactic/lcov.info
+            else
+              echo "Skipping DeepSource upload (DEEPSOURCE_DSN not set)"
+            fi
+      - store_test_results:
+          path: test-results/jest
+      - store_artifacts:
+          path: coverage
+      - store_artifacts:
+          path: test-results/jest
+
+  # Build production web
+  build-web:
+    executor: node-executor
+    environment:
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Build Production
+          command: pnpm run build:prod
+      - persist_to_workspace:
+          root: .
+          paths:
+            - www
+            - node_modules/.cache/turbo # Persist turbo cache for workspace
+
+  # Deploy to Netlify (uses www/ from workspace, no rebuild needed)
+  deploy-netlify:
+    executor: node-executor
+    steps:
+      - attach_workspace:
+          at: .
+      - install-pnpm
+      - run:
+          name: Install Netlify CLI
+          command: pnpm add -g netlify-cli
+      - run:
+          name: Deploy to Netlify
+          command: netlify deploy --prod --dir=www --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
+
+  # Android build - API 30 (Android 11)
+  build-android-api30:
+    executor:
+      name: android/android-machine
+      tag: 2024.01.1
+    environment:
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Setup Node.js 20 via NVM
+          command: |
+            export NVM_DIR="/opt/circleci/.nvm"
+            source "$NVM_DIR/nvm.sh"
+            nvm install 20
+            nvm alias default 20
+            NODE_DIR=$(dirname $(which node))
+            echo "export PATH=$NODE_DIR:\$PATH" >> $BASH_ENV
+            node --version
+      - run:
+          name: Enable Corepack and Install pnpm
+          command: |
+            corepack enable
+            corepack prepare pnpm@9 --activate
+            pnpm --version
+      - restore-pnpm-cache
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - save-pnpm-cache
+      - run:
+          name: Sync Capacitor (using www/ from workspace)
+          command: pnpm exec cap sync android
+      - restore_cache:
+          keys:
+            - gradle-wrapper-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}
+            - gradle-wrapper-v1-
+      - restore_cache:
+          keys:
+            - gradle-cache-v1-{{ checksum "android/build.gradle" }}
+            - gradle-cache-v1-
+      - android/create-avd:
+          avd-name: test-avd-30
+          install: true
+          system-image: system-images;android-30;google_apis;x86_64
+      - android/start-emulator:
+          avd-name: test-avd-30
+          post-emulator-launch-assemble-command: ''
+      - run:
+          name: Create Debug Keystore
+          command: |
+            mkdir -p ~/.android
+            keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+      - run:
+          name: Build Debug APK
+          command: cd android && chmod +x gradlew && ./gradlew assembleDebug
+      - save_cache:
+          key: gradle-wrapper-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}
+          paths:
+            - ~/.gradle/wrapper
+      - save_cache:
+          key: gradle-cache-v1-{{ checksum "android/build.gradle" }}
+          paths:
+            - ~/.gradle/caches
+            - android/.gradle
+      - run:
+          name: Smoke Test on API 30
+          command: |
+            adb install android/app/build/outputs/apk/debug/app-debug.apk
+            adb shell am start -n io.diabetactic.app/.MainActivity
+            sleep 10
+            adb shell dumpsys activity activities | grep -i diabetactic || true
+      - store_artifacts:
+          path: android/app/build/outputs/apk/debug
+
+  # Android build - API 33 (Android 13)
+  build-android-api33:
+    executor:
+      name: android/android-machine
+      tag: 2024.01.1
+    environment:
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Setup Node.js 20 via NVM
+          command: |
+            export NVM_DIR="/opt/circleci/.nvm"
+            source "$NVM_DIR/nvm.sh"
+            nvm install 20
+            nvm alias default 20
+            NODE_DIR=$(dirname $(which node))
+            echo "export PATH=$NODE_DIR:\$PATH" >> $BASH_ENV
+            node --version
+      - run:
+          name: Enable Corepack and Install pnpm
+          command: |
+            corepack enable
+            corepack prepare pnpm@9 --activate
+            pnpm --version
+      - restore-pnpm-cache
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - save-pnpm-cache
+      - run:
+          name: Sync Capacitor (using www/ from workspace)
+          command: pnpm exec cap sync android
+      - restore_cache:
+          keys:
+            - gradle-wrapper-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}
+            - gradle-wrapper-v1-
+      - restore_cache:
+          keys:
+            - gradle-cache-v1-{{ checksum "android/build.gradle" }}
+            - gradle-cache-v1-
+      - android/create-avd:
+          avd-name: test-avd-33
+          install: true
+          system-image: system-images;android-33;google_apis;x86_64
+      - android/start-emulator:
+          avd-name: test-avd-33
+          post-emulator-launch-assemble-command: ''
+      - run:
+          name: Create Debug Keystore
+          command: |
+            mkdir -p ~/.android
+            keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+      - run:
+          name: Build Debug APK
+          command: cd android && chmod +x gradlew && ./gradlew assembleDebug
+      - save_cache:
+          key: gradle-wrapper-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}
+          paths:
+            - ~/.gradle/wrapper
+      - save_cache:
+          key: gradle-cache-v1-{{ checksum "android/build.gradle" }}
+          paths:
+            - ~/.gradle/caches
+            - android/.gradle
+      - run:
+          name: Smoke Test on API 33
+          command: |
+            adb install android/app/build/outputs/apk/debug/app-debug.apk
+            adb shell am start -n io.diabetactic.app/.MainActivity
+            sleep 10
+            adb shell dumpsys activity activities | grep -i diabetactic || true
+      - store_artifacts:
+          path: android/app/build/outputs/apk/debug
+
+  # Playwright E2E (Chromium only) using official image with bundled browsers
+  # Sharded across 4 parallel containers for ~60% faster execution
+  playwright-e2e:
+    executor: playwright-executor
+    parallelism: 4
+    environment:
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
+    steps:
+      - checkout
+      - install-pnpm
+      - run:
+          name: Install dependencies (skip browser download – image already has them)
+          command: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 pnpm install --frozen-lockfile
+      - run:
+          name: Run Playwright E2E (Shard $CIRCLE_NODE_INDEX of $CIRCLE_NODE_TOTAL)
+          command: |
+            # Calculate shard (1-indexed for Playwright)
+            SHARD_INDEX=$((CIRCLE_NODE_INDEX + 1))
+            echo "Running shard $SHARD_INDEX of $CIRCLE_NODE_TOTAL"
+            pnpm exec playwright test --shard=$SHARD_INDEX/$CIRCLE_NODE_TOTAL --reporter=html,json
+      - store_test_results:
+          path: playwright-report
+      - store_artifacts:
+          path: playwright-report
+      - store_artifacts:
+          path: playwright/artifacts
+
+  # Docker-based E2E Tests - Uses docker-compose with nginx for production-like environment
+  # Sharded across 4 parallel containers for optimal performance
+  e2e-docker:
+    machine:
+      image: ubuntu-2204:2024.01.1
+      docker_layer_caching: true
+    parallelism: 4
+    working_directory: ~/project
+    environment:
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
+    steps:
+      - checkout
+      - run:
+          name: Install Docker Compose v2
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y docker-compose-plugin
+            docker compose version
+      - run:
+          name: Enable Corepack and Install pnpm
+          command: |
+            corepack enable
+            corepack prepare pnpm@9 --activate
+            pnpm --version
+      - attach_workspace:
+          at: .
+      - run:
+          name: Build Docker images
+          command: |
+            docker compose -f docker/docker-compose.e2e.yml build --parallel
+      - run:
+          name: Start app server
+          command: |
+            docker compose -f docker/docker-compose.e2e.yml up -d app
+            echo "Waiting for app server to be healthy..."
+            timeout 30 sh -c 'until docker compose -f docker/docker-compose.e2e.yml ps app | grep -q healthy; do sleep 1; done'
+      - run:
+          name: Run Playwright E2E (Shard $CIRCLE_NODE_INDEX of $CIRCLE_NODE_TOTAL)
+          command: |
+            # Calculate shard (1-indexed for Playwright)
+            SHARD_INDEX=$((CIRCLE_NODE_INDEX + 1))
+            echo "Running shard $SHARD_INDEX of $CIRCLE_NODE_TOTAL"
+            docker compose -f docker/docker-compose.e2e.yml run --rm playwright \
+              npx playwright test --shard=$SHARD_INDEX/$CIRCLE_NODE_TOTAL --reporter=html,list,json
+      - run:
+          name: Show container logs on failure
+          when: on_fail
+          command: |
+            docker compose -f docker/docker-compose.e2e.yml logs app
+            docker compose -f docker/docker-compose.e2e.yml logs playwright
+      - run:
+          name: Cleanup
+          when: always
+          command: docker compose -f docker/docker-compose.e2e.yml down -v
+      - store_test_results:
+          path: playwright-report
+      - store_artifacts:
+          path: playwright-report
+          destination: playwright-report-shard-$CIRCLE_NODE_INDEX
+      - store_artifacts:
+          path: playwright/artifacts
+          destination: screenshots-shard-$CIRCLE_NODE_INDEX
+
+  # Maestro Integration Tests - Real device testing against Heroku
+  maestro-tests:
+    executor:
+      name: android/android-machine
+      tag: 2024.01.1
+    environment:
+      TEST_USER_ID: '1000'
+      TEST_USER_PASSWORD: 'tuvieja'
+      BACKOFFICE_API_URL: 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com'
+      BACKOFFICE_ADMIN_USERNAME: 'admin'
+      BACKOFFICE_ADMIN_PASSWORD: 'admin'
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
+    steps:
+      - checkout
+      - run:
+          name: Setup Node.js 20 via NVM
+          command: |
+            export NVM_DIR="/opt/circleci/.nvm"
+            source "$NVM_DIR/nvm.sh"
+            nvm install 20
+            nvm alias default 20
+            NODE_DIR=$(dirname $(which node))
+            echo "export PATH=$NODE_DIR:\$PATH" >> $BASH_ENV
+            node --version
+      - run:
+          name: Enable Corepack and Install pnpm
+          command: |
+            corepack enable
+            corepack prepare pnpm@9 --activate
+            pnpm --version
+      - restore-pnpm-cache
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - save-pnpm-cache
+      - run:
+          name: Build Web (Heroku mode)
+          command: pnpm run build:heroku
+      - run:
+          name: Sync Capacitor
+          command: pnpm exec cap sync android
+      - restore_cache:
+          keys:
+            - gradle-wrapper-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}
+            - gradle-wrapper-v1-
+      - restore_cache:
+          keys:
+            - gradle-cache-v1-{{ checksum "android/build.gradle" }}
+            - gradle-cache-v1-
+      - run:
+          name: Install Maestro CLI
+          command: |
+            curl -Ls "https://get.maestro.mobile.dev" | bash
+            echo 'export PATH="$PATH:$HOME/.maestro/bin"' >> $BASH_ENV
+      - android/create-avd:
+          avd-name: maestro-avd
+          install: true
+          system-image: system-images;android-33;google_apis;x86_64
+      - android/start-emulator:
+          avd-name: maestro-avd
+          post-emulator-launch-assemble-command: ''
+      - run:
+          name: Create Debug Keystore
+          command: |
+            mkdir -p ~/.android
+            keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+      - run:
+          name: Build and Install APK
+          command: |
+            cd android && chmod +x gradlew && ./gradlew assembleDebug
+            adb install app/build/outputs/apk/debug/app-debug.apk
+      - save_cache:
+          key: gradle-wrapper-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}
+          paths:
+            - ~/.gradle/wrapper
+      - save_cache:
+          key: gradle-cache-v1-{{ checksum "android/build.gradle" }}
+          paths:
+            - ~/.gradle/caches
+            - android/.gradle
+      - run:
+          name: Pre-test API Verification
+          command: node maestro/scripts/ci-e2e-full-test.js --verify
+      - run:
+          name: Capture Before State
+          command: node maestro/scripts/ci-verification.js before
+      - run:
+          name: Run Maestro Tests
+          command: |
+            source $BASH_ENV
+            cd maestro
+            # Run each test directory explicitly (Maestro needs direct yaml paths)
+            for dir in tests/*/; do
+              # Skip docker tests (they require local backend)
+              if [ "$(basename $dir)" = "docker" ]; then
+                echo "Skipping docker tests (requires local backend)"
+                continue
+              fi
+              echo "Running tests in $dir"
+              maestro test "$dir" \
+                --env TEST_USER_ID=${TEST_USER_ID} \
+                --env TEST_USER_PASSWORD=${TEST_USER_PASSWORD} \
+                --env BACKOFFICE_API_URL=${BACKOFFICE_API_URL} \
+                --env BACKOFFICE_ADMIN_USERNAME=${BACKOFFICE_ADMIN_USERNAME} \
+                --env BACKOFFICE_ADMIN_PASSWORD=${BACKOFFICE_ADMIN_PASSWORD} \
+                --format junit --output "maestro-results-$(basename $dir).xml" || true
+            done
+          no_output_timeout: 15m
+      - run:
+          name: Post-test Verification (Compare Before/After)
+          command: node maestro/scripts/ci-verification.js after || true
+      - store_test_results:
+          path: maestro
+      - store_artifacts:
+          path: maestro
+
+  # Release APK - downloadable with nice name
+  release-apk:
+    executor:
+      name: android/android-machine
+      tag: 2024.01.1
+    environment:
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
+    steps:
+      - checkout
+      - run:
+          name: Setup Node.js 20 via NVM
+          command: |
+            export NVM_DIR="/opt/circleci/.nvm"
+            source "$NVM_DIR/nvm.sh"
+            nvm install 20
+            nvm alias default 20
+            NODE_DIR=$(dirname $(which node))
+            echo "export PATH=$NODE_DIR:\$PATH" >> $BASH_ENV
+            node --version
+      - run:
+          name: Enable Corepack and Install pnpm
+          command: |
+            corepack enable
+            corepack prepare pnpm@9 --activate
+            pnpm --version
+      - restore-pnpm-cache
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - save-pnpm-cache
+      - run:
+          name: Get version from package.json
+          command: |
+            VERSION=$(node -p "require('./package.json').version")
+            echo "export VERSION=$VERSION" >> $BASH_ENV
+      - run:
+          name: Build Production Web
+          command: pnpm run build:prod
+      - run:
+          name: Sync Capacitor
+          command: pnpm exec cap sync android
+      - restore_cache:
+          keys:
+            - gradle-wrapper-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}
+            - gradle-wrapper-v1-
+      - restore_cache:
+          keys:
+            - gradle-cache-v1-{{ checksum "android/build.gradle" }}
+            - gradle-cache-v1-
+      - run:
+          name: Create Debug Keystore
+          command: |
+            mkdir -p ~/.android
+            keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+      - run:
+          name: Build Debug APK
+          command: cd android && chmod +x gradlew && ./gradlew assembleDebug
+      - save_cache:
+          key: gradle-wrapper-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}
+          paths:
+            - ~/.gradle/wrapper
+      - save_cache:
+          key: gradle-cache-v1-{{ checksum "android/build.gradle" }}
+          paths:
+            - ~/.gradle/caches
+            - android/.gradle
+      - run:
+          name: Rename APK with nice name
+          command: |
+            mkdir -p release
+            cp android/app/build/outputs/apk/debug/app-debug.apk "release/diabetactic-v${VERSION}.apk"
+            echo "📦 APK listo: diabetactic-v${VERSION}.apk"
+      - store_artifacts:
+          path: release
+          destination: apk-release
+
+workflows:
+  # Main CI workflow - runs on all pushes
+  ci:
+    jobs:
+      - test
+      - build-web:
+          requires:
+            - test
+      - playwright-e2e:
+          requires:
+            - build-web
+          filters:
+            branches:
+              only: master
+      # Docker-based E2E with production-like nginx setup
+      - e2e-docker:
+          requires:
+            - build-web
+          filters:
+            branches:
+              only: master
+      # Android builds only on master - use www/ from build-web workspace
+      - build-android-api30:
+          requires:
+            - build-web
+          filters:
+            branches:
+              only: master
+      - build-android-api33:
+          requires:
+            - build-web
+          filters:
+            branches:
+              only: master
+      - maestro-tests:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - deploy-netlify:
+          requires:
+            - build-web
+          filters:
+            branches:
+              only: master
+
+  # Release workflow - manual trigger para generar APK descargable
+  # No approval required - just tests must pass
+  release:
+    jobs:
+      - test:
+          filters:
+            branches:
+              only: master
+      - release-apk:
+          requires:
+            - test

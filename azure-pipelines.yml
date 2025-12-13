@@ -1,0 +1,155 @@
+# Azure DevOps Pipelines - 1800 free minutes/month
+# Best free tier for private repos
+# https://azure.microsoft.com/en-us/services/devops/pipelines/
+
+trigger:
+  branches:
+    include:
+      - master
+      - main
+  paths:
+    exclude:
+      - '*.md'
+      - 'docs/**'
+
+pr:
+  branches:
+    include:
+      - master
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  NODE_VERSION: '22.x'
+  PNPM_HOME: $(Pipeline.Workspace)/.pnpm-store
+
+stages:
+  - stage: Quality
+    displayName: 'Quality Checks'
+    jobs:
+      - job: LintAndFormat
+        displayName: 'Lint & Format'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(NODE_VERSION)
+            displayName: 'Install Node.js'
+
+          - script: |
+              corepack enable
+              corepack prepare pnpm@latest --activate
+              pnpm config set store-dir $(PNPM_HOME)
+            displayName: 'Setup pnpm'
+
+          - script: pnpm install --frozen-lockfile
+            displayName: 'Install dependencies'
+
+          - script: pnpm run lint
+            displayName: 'Run ESLint'
+            continueOnError: true
+
+          - script: pnpm run format:check
+            displayName: 'Check Prettier formatting'
+
+  - stage: Test
+    displayName: 'Testing'
+    dependsOn: Quality
+    jobs:
+      - job: UnitTests
+        displayName: 'Unit Tests'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(NODE_VERSION)
+
+          - script: |
+              corepack enable
+              corepack prepare pnpm@latest --activate
+              pnpm config set store-dir $(PNPM_HOME)
+            displayName: 'Setup pnpm'
+
+          - script: pnpm install --frozen-lockfile
+            displayName: 'Install dependencies'
+
+          - script: pnpm test -- --ci --coverage --maxWorkers=2
+            displayName: 'Run Jest tests'
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/junit.xml'
+              failTaskOnFailedTests: true
+
+          - task: PublishCodeCoverageResults@1
+            inputs:
+              codeCoverageTool: 'Cobertura'
+              summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml'
+
+  - stage: Build
+    displayName: 'Build'
+    dependsOn: Test
+    jobs:
+      - job: ProductionBuild
+        displayName: 'Production Build'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(NODE_VERSION)
+
+          - script: |
+              corepack enable
+              corepack prepare pnpm@latest --activate
+              pnpm config set store-dir $(PNPM_HOME)
+            displayName: 'Setup pnpm'
+
+          - script: pnpm install --frozen-lockfile
+            displayName: 'Install dependencies'
+
+          - script: pnpm run build:prod
+            displayName: 'Build production'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: 'www'
+              ArtifactName: 'diabetify-web'
+              publishLocation: 'Container'
+
+  - stage: Android
+    displayName: 'Android Build'
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    jobs:
+      - job: AndroidDebug
+        displayName: 'Android Debug APK'
+        pool:
+          vmImage: 'macos-latest'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(NODE_VERSION)
+
+          - task: JavaToolInstaller@0
+            inputs:
+              versionSpec: '17'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+
+          - script: |
+              corepack enable
+              corepack prepare pnpm@latest --activate
+            displayName: 'Setup pnpm'
+
+          - script: pnpm install --frozen-lockfile
+            displayName: 'Install dependencies'
+
+          - script: pnpm run mobile:build
+            displayName: 'Build Android APK'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: 'android/app/build/outputs/apk/debug'
+              ArtifactName: 'diabetify-android'
+              publishLocation: 'Container'
