@@ -50,8 +50,8 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
     IonCardContent,
     IonList,
     IonItem,
-    IonLabel
-],
+    IonLabel,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppointmentDetailPage implements OnInit {

@@ -42,8 +42,8 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
     IonLabel,
     IonInput,
     IonFooter,
-    AppIconComponent
-],
+    AppIconComponent,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ProfileEditComponent implements OnInit {

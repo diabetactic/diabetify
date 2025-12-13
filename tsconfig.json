@@ -5,27 +5,13 @@
     "skipLibCheck": true,
     "baseUrl": "./",
     "paths": {
-      "@core/*": [
-        "src/app/core/*"
-      ],
-      "@shared/*": [
-        "src/app/shared/*"
-      ],
-      "@env/*": [
-        "src/environments/*"
-      ],
-      "@models/*": [
-        "src/app/core/models/*"
-      ],
-      "@services/*": [
-        "src/app/core/services/*"
-      ],
-      "@guards/*": [
-        "src/app/core/guards/*"
-      ],
-      "@interceptors/*": [
-        "src/app/core/interceptors/*"
-      ]
+      "@core/*": ["src/app/core/*"],
+      "@shared/*": ["src/app/shared/*"],
+      "@env/*": ["src/environments/*"],
+      "@models/*": ["src/app/core/models/*"],
+      "@services/*": ["src/app/core/services/*"],
+      "@guards/*": ["src/app/core/guards/*"],
+      "@interceptors/*": ["src/app/core/interceptors/*"]
     },
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,

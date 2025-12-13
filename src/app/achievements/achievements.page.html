@@ -50,86 +50,84 @@
             <span class="streak-max-label">{{ 'achievements.maxStreak' | translate }}</span>
             <span class="streak-max-number"
               >{{ streak?.max_streak ?? 0 }} {{ 'achievements.days' | translate }}</span
-              >
-            </div>
+            >
           </div>
-        </section>
-        <!-- Daily Progress Section -->
-        <section class="daily-progress-section">
-          <h3 class="section-title">{{ 'achievements.todayProgress' | translate }}</h3>
-          <div class="daily-progress-card">
-            <div class="daily-info">
-              <app-icon name="water" class="text-primary text-2xl"></app-icon>
-              <span class="daily-text">
-                {{ dailyMeasurements }}/{{ dailyTarget }} {{ 'achievements.measurements' | translate }}
-              </span>
-            </div>
-            <div class="daily-bar">
-              <ion-progress-bar
-                [value]="getDailyProgress() / 100"
-                [color]="dailyMeasurements >= dailyTarget ? 'success' : 'primary'"
-              ></ion-progress-bar>
-            </div>
-            <p class="daily-hint">{{ 'achievements.dailyHint' | translate }}</p>
+        </div>
+      </section>
+      <!-- Daily Progress Section -->
+      <section class="daily-progress-section">
+        <h3 class="section-title">{{ 'achievements.todayProgress' | translate }}</h3>
+        <div class="daily-progress-card">
+          <div class="daily-info">
+            <app-icon name="water" class="text-primary text-2xl"></app-icon>
+            <span class="daily-text">
+              {{ dailyMeasurements }}/{{ dailyTarget }}
+              {{ 'achievements.measurements' | translate }}
+            </span>
           </div>
-        </section>
-        <!-- Achievements Summary -->
-        <section class="summary-section">
-          <div class="summary-card">
-            <app-icon name="trophy" class="text-3xl text-amber-500"></app-icon>
-            <div class="summary-info">
-              <span class="summary-number">{{ getEarnedCount() }}/{{ getTotalCount() }}</span>
-              <span class="summary-label">{{ 'achievements.earned' | translate }}</span>
-            </div>
+          <div class="daily-bar">
+            <ion-progress-bar
+              [value]="getDailyProgress() / 100"
+              [color]="dailyMeasurements >= dailyTarget ? 'success' : 'primary'"
+            ></ion-progress-bar>
           </div>
-        </section>
-        <!-- Achievements List -->
-        <section class="achievements-list-section">
-          <h3 class="section-title">{{ 'achievements.allAchievements' | translate }}</h3>
-          <div class="achievements-grid">
-            @for (achievement of achievements; track trackByAchievement($index, achievement)) {
-              <div
-                class="achievement-card"
-                [class.achievement-card--earned]="achievement.got"
-                >
-                <div class="achievement-icon-wrapper">
-                  <app-icon
-                    [name]="getAchievementIcon(achievement)"
-                    [class]="'achievement-icon ' + getAchievementColor(achievement)"
-                  ></app-icon>
-                  @if (achievement.got) {
-                    <div class="earned-badge">
-                      <app-icon name="checkmark" class="text-xs text-white"></app-icon>
-                    </div>
-                  }
-                </div>
-                <div class="achievement-content">
-                  <h4 class="achievement-name">{{ achievement.name }}</h4>
-                  <div class="achievement-progress-info">
-                    <span class="progress-text">
-                      {{ achievement.progress }}/{{ achievement.threshold }}
-                    </span>
-                    <span class="progress-percent">
-                      {{ getAchievementProgress(achievement) | number: '1.0-0' }}%
-                    </span>
+          <p class="daily-hint">{{ 'achievements.dailyHint' | translate }}</p>
+        </div>
+      </section>
+      <!-- Achievements Summary -->
+      <section class="summary-section">
+        <div class="summary-card">
+          <app-icon name="trophy" class="text-3xl text-amber-500"></app-icon>
+          <div class="summary-info">
+            <span class="summary-number">{{ getEarnedCount() }}/{{ getTotalCount() }}</span>
+            <span class="summary-label">{{ 'achievements.earned' | translate }}</span>
+          </div>
+        </div>
+      </section>
+      <!-- Achievements List -->
+      <section class="achievements-list-section">
+        <h3 class="section-title">{{ 'achievements.allAchievements' | translate }}</h3>
+        <div class="achievements-grid">
+          @for (achievement of achievements; track trackByAchievement($index, achievement)) {
+            <div class="achievement-card" [class.achievement-card--earned]="achievement.got">
+              <div class="achievement-icon-wrapper">
+                <app-icon
+                  [name]="getAchievementIcon(achievement)"
+                  [class]="'achievement-icon ' + getAchievementColor(achievement)"
+                ></app-icon>
+                @if (achievement.got) {
+                  <div class="earned-badge">
+                    <app-icon name="checkmark" class="text-xs text-white"></app-icon>
                   </div>
-                  <ion-progress-bar
-                    [value]="getAchievementProgress(achievement) / 100"
-                    [color]="getProgressBarColor(achievement)"
-                    class="achievement-progress-bar"
-                  ></ion-progress-bar>
-                </div>
+                }
               </div>
-            }
-          </div>
-          <!-- Empty State -->
-          @if (achievements.length === 0) {
-            <div class="empty-state">
-              <app-icon name="ribbon-outline" class="text-5xl text-gray-400"></app-icon>
-              <p class="mt-2 text-gray-500">{{ 'achievements.noAchievements' | translate }}</p>
+              <div class="achievement-content">
+                <h4 class="achievement-name">{{ achievement.name }}</h4>
+                <div class="achievement-progress-info">
+                  <span class="progress-text">
+                    {{ achievement.progress }}/{{ achievement.threshold }}
+                  </span>
+                  <span class="progress-percent">
+                    {{ getAchievementProgress(achievement) | number: '1.0-0' }}%
+                  </span>
+                </div>
+                <ion-progress-bar
+                  [value]="getAchievementProgress(achievement) / 100"
+                  [color]="getProgressBarColor(achievement)"
+                  class="achievement-progress-bar"
+                ></ion-progress-bar>
+              </div>
             </div>
           }
-        </section>
-      </div>
-    }
-  </ion-content>
+        </div>
+        <!-- Empty State -->
+        @if (achievements.length === 0) {
+          <div class="empty-state">
+            <app-icon name="ribbon-outline" class="text-5xl text-gray-400"></app-icon>
+            <p class="mt-2 text-gray-500">{{ 'achievements.noAchievements' | translate }}</p>
+          </div>
+        }
+      </section>
+    </div>
+  }
+</ion-content>

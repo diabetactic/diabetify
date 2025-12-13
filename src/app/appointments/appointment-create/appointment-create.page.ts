@@ -23,10 +23,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject, firstValueFrom } from 'rxjs';
 
 import { AppointmentService } from '@services/appointment.service';
-import {
-  CreateAppointmentRequest,
-  AppointmentQueueState,
-} from '@models/appointment.model';
+import { CreateAppointmentRequest, AppointmentQueueState } from '@models/appointment.model';
 import { LocalAuthService } from '@services/local-auth.service';
 import { TranslationService } from '@services/translation.service';
 import { LoggerService } from '@services/logger.service';
@@ -53,8 +50,8 @@ import { ROUTES } from '@core/constants';
     IonSelectOption,
     IonLabel,
     IonCheckbox,
-    IonTextarea
-],
+    IonTextarea,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppointmentCreatePage implements OnInit, OnDestroy {

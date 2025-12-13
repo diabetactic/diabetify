@@ -1,7 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
-import { GlucoserverService, GlucoseReading, GlucoseStatistics } from '@services/glucoserver.service';
+import {
+  GlucoserverService,
+  GlucoseReading,
+  GlucoseStatistics,
+} from '@services/glucoserver.service';
 import { environment } from '@env/environment';
 
 describe('GlucoserverService', () => {

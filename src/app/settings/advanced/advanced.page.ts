@@ -51,8 +51,8 @@ import { ROUTES, TIMEOUTS } from '@core/constants';
     IonLabel,
     IonSelect,
     IonSelectOption,
-    AppIconComponent
-],
+    AppIconComponent,
+  ],
 })
 export class AdvancedPage implements OnDestroy {
   isDevMode = !environment.production;

@@ -17,13 +17,9 @@ import { TextEncoder, TextDecoder } from 'util';
 import * as crypto from 'crypto';
 
 // Initialize Angular testing environment
-TestBed.initTestEnvironment(
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting(),
-  {
-    teardown: { destroyAfterEach: true },
-  }
-);
+TestBed.initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting(), {
+  teardown: { destroyAfterEach: true },
+});
 
 // Alias Jest as vi globally for compatibility with tests that use jest.fn() directly
 (global as any).jest = vi;
@@ -71,7 +67,7 @@ function createJasmineLikeMock<T extends (...args: any[]) => any>(): JasmineLike
       return mockFn;
     },
     returnValues: (...values: any[]) => {
-      values.forEach((value) => {
+      values.forEach(value => {
         mockFn.mockReturnValueOnce(value);
       });
       return mockFn;

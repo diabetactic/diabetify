@@ -18,7 +18,11 @@ import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 
 import { TidepoolAuth, TidepoolTokenResponse } from '@models/tidepool-auth.model';
 import { getOAuthConfig, OAuthConfig } from '@core/config/oauth.config';
-import { generatePKCEChallenge, generateState, buildAuthorizationUrl } from '@core/utils/pkce.utils';
+import {
+  generatePKCEChallenge,
+  generateState,
+  buildAuthorizationUrl,
+} from '@core/utils/pkce.utils';
 import { TokenStorageService } from '@services/token-storage.service';
 import { LoggerService } from '@services/logger.service';
 import { environment } from '@env/environment';

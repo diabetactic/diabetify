@@ -13,8 +13,9 @@ setupZoneTestEnv();
 // Provides jasmine.SpyObj and jasmine.createSpyObj with .and.returnValue() support
 
 // Extend jest.Mock to support Jasmine's .and.returnValue() pattern
-interface JasmineLikeMock<T extends (...args: any[]) => any = (...args: any[]) => any>
-  extends jest.Mock<ReturnType<T>, Parameters<T>> {
+interface JasmineLikeMock<
+  T extends (...args: any[]) => any = (...args: any[]) => any,
+> extends jest.Mock<ReturnType<T>, Parameters<T>> {
   and: {
     returnValue: (value: ReturnType<T>) => JasmineLikeMock<T>;
     returnValues: (...values: ReturnType<T>[]) => JasmineLikeMock<T>;

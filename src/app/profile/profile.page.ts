@@ -102,8 +102,8 @@ interface TidepoolUserData {
     IonIcon,
     IonSelect,
     IonSelectOption,
-    IonToggle
-],
+    IonToggle,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ProfilePage implements OnInit, OnDestroy {

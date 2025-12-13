@@ -10,7 +10,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 // Observable removed - no longer needed after CapacitorHttpService cleanup
 
 import { ApiGatewayService, ApiEndpoint } from '@services/api-gateway.service';
-import { ExternalServicesManager, ExternalService } from '@services/external-services-manager.service';
+import {
+  ExternalServicesManager,
+  ExternalService,
+} from '@services/external-services-manager.service';
 import { LocalAuthService } from '@services/local-auth.service';
 import { TidepoolAuthService } from '@services/tidepool-auth.service';
 import { EnvironmentDetectorService } from '@services/environment-detector.service';

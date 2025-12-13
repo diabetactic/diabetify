@@ -45,8 +45,8 @@ import { ROUTES } from '@core/constants';
     IonCardContent,
     IonIcon,
     StatCardComponent,
-    AppIconComponent
-],
+    AppIconComponent,
+  ],
 })
 export class DashboardDetailPage implements OnInit, OnDestroy {
   // Statistics data

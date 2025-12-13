@@ -1,32 +1,32 @@
 <div
   class="animate-fade-in flex min-h-[400px] flex-col items-center justify-center px-6 py-12 text-center"
-  >
+>
   <div
     class="from-primary/10 to-primary/5 dark:from-primary/30 dark:to-primary/20 dark:border-primary/40 mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br transition-transform duration-300 hover:scale-105 dark:border-2"
-    >
+  >
     <span
       [ngClass]="iconClass"
       class="text-primary text-6xl opacity-70 transition-opacity duration-200 dark:text-blue-400 dark:opacity-100"
       aria-hidden="true"
       >{{ illustration }}</span
-      >
-    </div>
-    <h2 class="text-base-content mb-3 text-2xl font-bold leading-tight tracking-tight">
-      {{ heading }}
-    </h2>
-    <p
-      class="text-base-content/70 dark:text-base-content/80 mb-6 max-w-[320px] text-base leading-relaxed"
-      >
-      {{ message }}
-    </p>
-    @if (ctaText) {
-      <ion-button
-        expand="block"
-        (click)="onCtaClick()"
-        class="btn-primary max-w-[240px] transition-transform active:scale-95"
-        fill="solid"
-        >
-        {{ ctaText }}
-      </ion-button>
-    }
+    >
   </div>
+  <h2 class="text-base-content mb-3 text-2xl font-bold leading-tight tracking-tight">
+    {{ heading }}
+  </h2>
+  <p
+    class="text-base-content/70 dark:text-base-content/80 mb-6 max-w-[320px] text-base leading-relaxed"
+  >
+    {{ message }}
+  </p>
+  @if (ctaText) {
+    <ion-button
+      expand="block"
+      (click)="onCtaClick()"
+      class="btn-primary max-w-[240px] transition-transform active:scale-95"
+      fill="solid"
+    >
+      {{ ctaText }}
+    </ion-button>
+  }
+</div>

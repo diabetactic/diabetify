@@ -72,8 +72,8 @@ import { ROUTES, STORAGE_KEYS, TIMEOUTS } from '@core/constants';
     IonCardContent,
     IonDatetime,
     IonRange,
-    AppIconComponent
-],
+    AppIconComponent,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class SettingsPage implements OnInit, OnDestroy {

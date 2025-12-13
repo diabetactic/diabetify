@@ -21,11 +21,7 @@ import { ReadingsService } from '@services/readings.service';
 import { ProfileService } from '@services/profile.service';
 import { TranslationService } from '@services/translation.service';
 import { LoggerService } from '@services/logger.service';
-import {
-  LocalGlucoseReading,
-  GlucoseStatus,
-  GlucoseUnit,
-} from '@models/glucose-reading.model';
+import { LocalGlucoseReading, GlucoseStatus, GlucoseUnit } from '@models/glucose-reading.model';
 
 class ReadingsServiceStub {
   private _readings$ = new BehaviorSubject<LocalGlucoseReading[]>([]);

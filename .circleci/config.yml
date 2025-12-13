@@ -17,7 +17,7 @@ executors:
 # Commands for pnpm installation and caching
 commands:
   install-pnpm:
-    description: "Install pnpm using corepack"
+    description: 'Install pnpm using corepack'
     steps:
       - run:
           name: Enable Corepack and Install pnpm
@@ -27,7 +27,7 @@ commands:
             pnpm --version
 
   restore-pnpm-cache:
-    description: "Restore pnpm store cache"
+    description: 'Restore pnpm store cache'
     steps:
       - restore_cache:
           keys:
@@ -35,7 +35,7 @@ commands:
             - pnpm-store-v1-
 
   save-pnpm-cache:
-    description: "Save pnpm store cache"
+    description: 'Save pnpm store cache'
     steps:
       - save_cache:
           key: pnpm-store-v1-{{ checksum "pnpm-lock.yaml" }}
@@ -43,7 +43,7 @@ commands:
             - ~/.local/share/pnpm/store
 
   install-dependencies:
-    description: "Install dependencies with pnpm"
+    description: 'Install dependencies with pnpm'
     steps:
       - install-pnpm
       - restore-pnpm-cache
@@ -58,8 +58,8 @@ jobs:
     executor: node-executor
     environment:
       # Turborepo remote cache (configure in CircleCI project settings)
-      TURBO_TOKEN: ""  # Set via CircleCI environment variables
-      TURBO_TEAM: ""   # Set via CircleCI environment variables
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
     steps:
       - checkout
       - install-dependencies
@@ -92,8 +92,8 @@ jobs:
   build-web:
     executor: node-executor
     environment:
-      TURBO_TOKEN: ""  # Set via CircleCI environment variables
-      TURBO_TEAM: ""   # Set via CircleCI environment variables
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
     steps:
       - checkout
       - install-dependencies
@@ -104,7 +104,7 @@ jobs:
           root: .
           paths:
             - www
-            - node_modules/.cache/turbo  # Persist turbo cache for workspace
+            - node_modules/.cache/turbo # Persist turbo cache for workspace
 
   # Deploy to Netlify (uses www/ from workspace, no rebuild needed)
   deploy-netlify:
@@ -126,8 +126,8 @@ jobs:
       name: android/android-machine
       tag: 2024.01.1
     environment:
-      TURBO_TOKEN: ""  # Set via CircleCI environment variables
-      TURBO_TEAM: ""   # Set via CircleCI environment variables
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
     steps:
       - checkout
       - attach_workspace:
@@ -204,8 +204,8 @@ jobs:
       name: android/android-machine
       tag: 2024.01.1
     environment:
-      TURBO_TOKEN: ""  # Set via CircleCI environment variables
-      TURBO_TEAM: ""   # Set via CircleCI environment variables
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
     steps:
       - checkout
       - attach_workspace:
@@ -282,8 +282,8 @@ jobs:
     executor: playwright-executor
     parallelism: 4
     environment:
-      TURBO_TOKEN: ""  # Set via CircleCI environment variables
-      TURBO_TEAM: ""   # Set via CircleCI environment variables
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
     steps:
       - checkout
       - install-pnpm
@@ -313,8 +313,8 @@ jobs:
     parallelism: 4
     working_directory: ~/project
     environment:
-      TURBO_TOKEN: ""  # Set via CircleCI environment variables
-      TURBO_TEAM: ""   # Set via CircleCI environment variables
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
     steps:
       - checkout
       - run:
@@ -379,8 +379,8 @@ jobs:
       BACKOFFICE_API_URL: 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com'
       BACKOFFICE_ADMIN_USERNAME: 'admin'
       BACKOFFICE_ADMIN_PASSWORD: 'admin'
-      TURBO_TOKEN: ""  # Set via CircleCI environment variables
-      TURBO_TEAM: ""   # Set via CircleCI environment variables
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
     steps:
       - checkout
       - run:
@@ -491,8 +491,8 @@ jobs:
       name: android/android-machine
       tag: 2024.01.1
     environment:
-      TURBO_TOKEN: ""  # Set via CircleCI environment variables
-      TURBO_TEAM: ""   # Set via CircleCI environment variables
+      TURBO_TOKEN: '' # Set via CircleCI environment variables
+      TURBO_TEAM: '' # Set via CircleCI environment variables
     steps:
       - checkout
       - run:

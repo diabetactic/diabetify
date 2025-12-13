@@ -44,8 +44,8 @@ import { LoggerService } from '@services/logger.service';
     IonTitle,
     IonContent,
     IonInput,
-    IonSpinner
-],
+    IonSpinner,
+  ],
 })
 export class BolusCalculatorPage {
   private translate = inject(TranslateService);

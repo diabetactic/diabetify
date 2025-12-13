@@ -42,8 +42,8 @@ import { ROUTES } from '@core/constants';
     IonFooter,
     IonToolbar,
     IonText,
-    AppIconComponent
-],
+    AppIconComponent,
+  ],
 })
 export class LoginPage implements OnInit, OnDestroy {
   loginForm: FormGroup;

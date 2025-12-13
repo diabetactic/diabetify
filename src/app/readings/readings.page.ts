@@ -39,11 +39,7 @@ import { ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import {
-  LocalGlucoseReading,
-  GlucoseStatus,
-  GlucoseUnit,
-} from '@models/glucose-reading.model';
+import { LocalGlucoseReading, GlucoseStatus, GlucoseUnit } from '@models/glucose-reading.model';
 import { ReadingsService } from '@services/readings.service';
 import { ProfileService } from '@services/profile.service';
 import { TranslationService } from '@services/translation.service';

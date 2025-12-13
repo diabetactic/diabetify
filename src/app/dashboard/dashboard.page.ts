@@ -27,11 +27,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ReadingsService } from '@services/readings.service';
 import { LoggerService } from '@services/logger.service';
-import {
-  LocalGlucoseReading,
-  GlucoseStatistics,
-  GlucoseUnit,
-} from '@models/glucose-reading.model';
+import { LocalGlucoseReading, GlucoseStatistics, GlucoseUnit } from '@models/glucose-reading.model';
 import { TranslationService } from '@services/translation.service';
 import { ProfileService } from '@services/profile.service';
 import { ThemeService } from '@services/theme.service';
@@ -72,8 +68,8 @@ import { ROUTES } from '@core/constants';
     ErrorBannerComponent,
     LanguageSwitcherComponentModule,
     AppIconComponent,
-    StreakCardComponent
-],
+    StreakCardComponent,
+  ],
 })
 export class DashboardPage implements OnInit, OnDestroy {
   readonly isMockMode = environment.backendMode === 'mock';

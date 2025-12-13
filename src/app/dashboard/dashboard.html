@@ -8,7 +8,7 @@
         [disabled]="isSyncing"
         class="dashboard-toolbar-btn"
         [attr.aria-label]="'dashboard.syncNow' | translate"
-        >
+      >
         <ion-icon slot="icon-only" name="sync-outline" [class.spinning]="isSyncing"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -28,12 +28,12 @@
       color="primary"
       class="shadow-xl"
       [attr.aria-label]="'bolusCalculator.title' | translate"
-      >
+    >
       <img
         src="assets/images/bolus-calculator-icon.webp"
         alt=""
         class="h-10 w-10 rounded-full object-cover"
-        />
+      />
     </ion-fab-button>
   </ion-fab>
 
@@ -88,20 +88,20 @@
             class="h-6 w-6 shrink-0 stroke-current"
             fill="none"
             viewBox="0 0 24 24"
-            >
+          >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
               d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
+            />
           </svg>
           <span>{{ 'messages.saveSuccess' | translate }}</span>
           <button
             class="btn btn-sm btn-ghost"
             (click)="onAlertDismissed()"
             [attr.aria-label]="'common.dismissAlert' | translate"
-            >
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-5 w-5"
@@ -109,13 +109,13 @@
               viewBox="0 0 24 24"
               stroke="currentColor"
               aria-hidden="true"
-              >
+            >
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
                 d="M6 18L18 6M6 6l12 12"
-                />
+              />
             </svg>
           </button>
         </div>
@@ -137,7 +137,7 @@
           [icon]="icons.timeInRange"
           color="info"
           [gradientColors]="gradients.timeInRange"
-          >
+        >
         </app-stat-card>
         <app-stat-card
           [title]="'dashboard.averageGlucose' | translate"
@@ -146,7 +146,7 @@
           [icon]="icons.avgGlucose"
           color="success"
           [gradientColors]="gradients.avgGlucose"
-          >
+        >
         </app-stat-card>
       </div>
       <!-- Sync Error Banner -->
@@ -163,12 +163,12 @@
       <!-- Quick Actions Card (daisyUI card with gradient header) -->
       <div
         class="card bg-base-100 quick-actions-card mb-6 overflow-hidden shadow-lg transition-shadow duration-200 hover:shadow-xl"
-        >
+      >
         <div class="card-body gap-4 p-0">
           <!-- Gradient header -->
           <div
             class="from-primary to-primary/80 text-primary-content flex items-center justify-between bg-gradient-to-r px-5 py-4"
-            >
+          >
             <div>
               <h2 class="card-title m-0 text-lg font-bold">
                 {{ 'dashboard.quickActions' | translate }}
@@ -187,7 +187,7 @@
                 (click)="addReading()"
                 class="btn btn-primary btn-lg inline-flex w-full items-center justify-center gap-2 rounded-2xl shadow-md transition-transform active:scale-[0.97]"
                 data-testid="quick-add-reading"
-                >
+              >
                 <app-icon name="add-circle-outline"></app-icon>
                 {{ 'dashboard.addReading' | translate }}
               </button>
@@ -196,7 +196,7 @@
                 (click)="onSync()"
                 [disabled]="isSyncing"
                 class="btn btn-secondary btn-lg inline-flex w-full items-center justify-center gap-2 rounded-2xl shadow-md transition-transform active:scale-[0.97] disabled:active:scale-100"
-                >
+              >
                 <app-icon name="sync-outline" [class.spinning]="isSyncing"></app-icon>
                 {{ 'dashboard.syncNow' | translate }}
               </button>
@@ -205,7 +205,7 @@
                 (click)="openBolusCalculator()"
                 class="btn btn-accent btn-lg inline-flex w-full items-center justify-center gap-2 rounded-2xl shadow-md transition-transform active:scale-[0.97]"
                 data-testid="quick-bolus-calculator"
-                >
+              >
                 <app-icon name="calculator-outline"></app-icon>
                 {{ 'bolusCalculator.title' | translate }}
               </button>
@@ -213,7 +213,7 @@
             <!-- Sync status footer -->
             <div
               class="bg-base-200/70 text-base-content/70 dark:text-base-content/90 mt-4 flex items-center justify-between rounded-xl px-3 py-2 text-xs"
-              >
+            >
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-base"> sync </span>
                 <span>
@@ -226,9 +226,7 @@
                   {{ getSyncItemsCount() }} {{ 'sync.items' | translate }}
                 </span>
                 @if (getSyncFailedCount() > 0) {
-                  <span
-                    class="sync-error text-error ml-1 font-semibold"
-                    >
+                  <span class="sync-error text-error ml-1 font-semibold">
                     ({{ getSyncFailedCount() }} {{ 'sync.failed' | translate }})
                   </span>
                 }
@@ -249,7 +247,7 @@
             size="small"
             [routerLink]="routes.TABS_READINGS"
             class="m-0 h-auto text-sm font-medium"
-            >
+          >
             {{ 'common.viewAll' | translate }}
             <app-icon name="chevron-forward-outline" class="text-base"></app-icon>
           </ion-button>
@@ -261,17 +259,14 @@
             [heading]="'dashboard.noReadings' | translate"
             [message]="'dashboard.noReadingsMessage' | translate"
             ctaText=""
-            >
+          >
           </app-empty-state>
         }
         <!-- Reading Items -->
         @if (recentReadings.length > 0) {
           <div class="flex flex-col gap-3">
             @for (reading of recentReadings; track trackByReading($index, reading)) {
-              <app-reading-item
-                [reading]="reading"
-                >
-              </app-reading-item>
+              <app-reading-item [reading]="reading"> </app-reading-item>
             }
           </div>
         }

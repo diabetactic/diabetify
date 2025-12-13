@@ -19,10 +19,7 @@ import {
   CircuitBreakerState,
   HealthStatus,
 } from '@services/external-services-manager.service';
-import {
-  ServiceOrchestrator,
-  WorkflowState,
-} from '@services/service-orchestrator.service';
+import { ServiceOrchestrator, WorkflowState } from '@services/service-orchestrator.service';
 
 @Component({
   selector: 'app-service-monitor',

@@ -12,7 +12,12 @@ import {
   withPreloading,
 } from '@angular/router';
 import { IonicRouteStrategy } from '@ionic/angular';
-import { APP_INITIALIZER, importProvidersFrom, LOCALE_ID, provideZoneChangeDetection } from '@angular/core';
+import {
+  APP_INITIALIZER,
+  importProvidersFrom,
+  LOCALE_ID,
+  provideZoneChangeDetection,
+} from '@angular/core';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { environment } from './environments/environment';
@@ -115,7 +120,8 @@ export function createTranslateLoader() {
 
 bootstrapApplication(AppComponent, {
   providers: [
-    provideZoneChangeDetection(),provideAnimations(),
+    provideZoneChangeDetection(),
+    provideAnimations(),
     provideIonicAngular(),
     provideRouter(APP_ROUTES, withPreloading(PreloadAllModules)),
     provideHttpClient(),

@@ -11,7 +11,10 @@ import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular
 import { Observable, throwError, of, from } from 'rxjs';
 import { switchMap, catchError, map, timeout, retry, shareReplay } from 'rxjs/operators';
 
-import { ExternalServicesManager, ExternalService } from '@services/external-services-manager.service';
+import {
+  ExternalServicesManager,
+  ExternalService,
+} from '@services/external-services-manager.service';
 import { LocalAuthService } from '@services/local-auth.service';
 import { TidepoolAuthService } from '@services/tidepool-auth.service';
 import { EnvironmentDetectorService } from '@services/environment-detector.service';

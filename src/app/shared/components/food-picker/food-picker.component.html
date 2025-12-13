@@ -18,7 +18,7 @@
   [attr.aria-hidden]="!isOpen"
   aria-modal="true"
   aria-labelledby="food-picker-title"
-  >
+>
   <!-- Handle bar -->
   <div class="food-picker-handle" aria-hidden="true">
     <div class="food-picker-handle-bar"></div>
@@ -35,7 +35,7 @@
         (click)="cancel()"
         [attr.aria-label]="'common.close' | translate"
         type="button"
-        >
+      >
         <app-icon name="x" size="md"></app-icon>
       </button>
     </div>
@@ -61,7 +61,7 @@
             [class.category-chip--active]="selectedCategory() === cat.key"
             (click)="selectedCategory.set(cat.key)"
             type="button"
-            >
+          >
             <span class="category-emoji">{{ cat.emoji }}</span>
             <span class="category-name">{{ cat.nameKey | translate }}</span>
           </button>
@@ -79,7 +79,7 @@
             class="food-item-main"
             (click)="isSelected(food.id) ? removeFood(food.id) : addFood(food)"
             type="button"
-            >
+          >
             <span class="food-emoji">{{ food.emoji }}</span>
             <div class="food-info">
               <span class="food-name">{{ food.nameKey | translate }}</span>
@@ -99,7 +99,7 @@
                 (click)="updateServings(food.id, -0.5); $event.stopPropagation()"
                 type="button"
                 [attr.aria-label]="'foodPicker.decrease' | translate"
-                >
+              >
                 <app-icon name="minus" size="sm"></app-icon>
               </button>
               <span class="qty-value">
@@ -110,14 +110,14 @@
                 (click)="updateServings(food.id, 0.5); $event.stopPropagation()"
                 type="button"
                 [attr.aria-label]="'foodPicker.increase' | translate"
-                >
+              >
                 <app-icon name="plus" size="sm"></app-icon>
               </button>
               <span class="qty-carbs"> {{ getSelectedFood(food.id)?.totalCarbs }}g </span>
             </div>
           }
         </div>
-        } @empty {
+      } @empty {
         <div class="food-empty">
           <span class="food-empty-icon">🔍</span>
           <p>{{ 'foodPicker.noResults' | translate }}</p>
@@ -155,7 +155,7 @@
         (click)="confirm()"
         [disabled]="selectedCount() === 0"
         class="action-btn action-btn--confirm"
-        >
+      >
         <app-icon name="check" slot="start" size="sm"></app-icon>
         {{ 'foodPicker.confirm' | translate }} ({{ totalCarbs() }}g)
       </ion-button>

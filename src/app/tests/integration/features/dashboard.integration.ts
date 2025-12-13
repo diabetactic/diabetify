@@ -18,11 +18,7 @@ import { ReadingsService } from '@services/readings.service';
 import { AppointmentService } from '@services/appointment.service';
 import { Appointment } from '@models/appointment.model';
 import { LocalGlucoseReading, GlucoseStatistics } from '@models/glucose-reading.model';
-import {
-  TranslationService,
-  Language,
-  LanguageConfig,
-} from '@services/translation.service';
+import { TranslationService, Language, LanguageConfig } from '@services/translation.service';
 import { ProfileService } from '@services/profile.service';
 
 class TranslationServiceStub {

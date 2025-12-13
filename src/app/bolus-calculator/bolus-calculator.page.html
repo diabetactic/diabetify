@@ -62,7 +62,7 @@
           (click)="openFoodPicker()"
           [disabled]="calculating"
           data-testid="food-picker-btn"
-          >
+        >
           <span class="food-picker-icon">🍽️</span>
           <span class="food-picker-text">{{ 'bolusCalculator.selectFoods' | translate }}</span>
           <app-icon name="chevron-right" size="sm" class="food-picker-arrow"></app-icon>
@@ -113,7 +113,7 @@
         [disabled]="calculatorForm.invalid || calculating"
         class="mt-4"
         data-testid="calculate-btn"
-        >
+      >
         @if (!calculating) {
           <ion-icon slot="start" name="calculator-outline"></ion-icon>
         }
@@ -177,7 +177,7 @@
           fill="outline"
           expand="block"
           class="mt-4"
-          >
+        >
           <ion-icon slot="start" name="refresh-outline"></ion-icon>
           {{ 'bolusCalculator.newCalculation' | translate }}
         </ion-button>

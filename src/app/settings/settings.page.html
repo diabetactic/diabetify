@@ -10,7 +10,7 @@
         [disabled]="!hasChanges"
         class="inline-flex items-center gap-2 text-white"
         [attr.aria-label]="'common.save' | translate"
-        >
+      >
         <app-icon name="save-outline" class="text-inherit"></app-icon>
       </ion-button>
     </ion-buttons>
@@ -48,7 +48,7 @@
           (ionChange)="onGlucoseUnitChange($event)"
           interface="popover"
           class="max-w-[50%]"
-          >
+        >
           <ion-select-option value="mg/dL">
             {{ 'settings.glucose.mgdl' | translate }}
           </ion-select-option>
@@ -82,7 +82,7 @@
           pin="true"
           (ionChange)="hasChanges = true"
           class="py-2"
-          >
+        >
           <ion-label slot="start" class="text-xs">{{
             glucoseSettings.unit === 'mg/dL' ? 50 : 2.8
           }}</ion-label>
@@ -104,7 +104,7 @@
           pin="true"
           (ionChange)="hasChanges = true"
           class="py-2"
-          >
+        >
           <ion-label slot="start" class="text-xs">{{
             glucoseSettings.unit === 'mg/dL' ? 140 : 7.8
           }}</ion-label>
@@ -127,7 +127,7 @@
           (ionChange)="onThemeChange($event)"
           interface="popover"
           class="max-w-[50%]"
-          >
+        >
           <ion-select-option value="light">
             {{ 'settings.appearance.themeLight' | translate }}
           </ion-select-option>
@@ -147,7 +147,7 @@
           (ionChange)="onLanguageChange($event)"
           interface="popover"
           class="max-w-[50%]"
-          >
+        >
           <ion-select-option value="es">
             {{ 'settings.language.es' | translate }}
           </ion-select-option>
@@ -168,7 +168,9 @@
         <ion-item lines="none" class="bg-warning/10">
           <app-icon name="alert-circle-outline" slot="start" class="text-warning"></app-icon>
           <ion-label class="ion-text-wrap">
-            <p class="text-warning text-sm">{{ 'settings.notifications.webWarning' | translate }}</p>
+            <p class="text-warning text-sm">
+              {{ 'settings.notifications.webWarning' | translate }}
+            </p>
           </ion-label>
         </ion-item>
       }

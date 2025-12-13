@@ -5,7 +5,7 @@
   data-testid="streak-card"
   role="region"
   [attr.aria-label]="'gamification.streakTitle' | translate"
-  >
+>
   <!-- Main gradient background -->
   <div class="card-body bg-gradient-to-br p-4" [ngClass]="gradientClass">
     <!-- Loading State -->
@@ -22,7 +22,7 @@
         <span
           class="text-4xl drop-shadow-lg transition-transform duration-300 hover:scale-125"
           [attr.aria-label]="'Level: ' + ('gamification.levels.' + currentLevel.key | translate)"
-          >
+        >
           {{ currentLevel.emoji }}
         </span>
       </div>
@@ -52,71 +52,70 @@
             <span
               >{{ currentLevel.emoji }}
               {{ 'gamification.levels.' + currentLevel.key | translate }}</span
-              >
-              <span
-                >{{ nextLevel.emoji }} {{ 'gamification.levels.' + nextLevel.key | translate }}</span
-                >
-              </div>
-              <progress
-                class="progress h-2 w-full bg-white/30"
-                [ngClass]="progressBarClass"
-                [value]="progressToNextLevel"
-                max="100"
-                [attr.aria-label]="'Progress to next level: ' + progressToNextLevel + '%'"
-              ></progress>
-              <div class="mt-1 text-center text-xs text-white/80">
-                {{ daysToNextLevel }}
-                {{
-                daysToNextLevel === 1
+            >
+            <span
+              >{{ nextLevel.emoji }} {{ 'gamification.levels.' + nextLevel.key | translate }}</span
+            >
+          </div>
+          <progress
+            class="progress h-2 w-full bg-white/30"
+            [ngClass]="progressBarClass"
+            [value]="progressToNextLevel"
+            max="100"
+            [attr.aria-label]="'Progress to next level: ' + progressToNextLevel + '%'"
+          ></progress>
+          <div class="mt-1 text-center text-xs text-white/80">
+            {{ daysToNextLevel }}
+            {{
+              daysToNextLevel === 1
                 ? ('gamification.day' | translate)
                 : ('gamification.days' | translate)
-                }}
-                {{ 'gamification.toNextLevel' | translate }} {{ nextLevel.emoji }}
-              </div>
-            </div>
-          }
-          <!-- Stats row -->
-          <div class="mt-4 grid grid-cols-2 gap-4">
-            <!-- Max streak -->
-            <div class="rounded-xl bg-white/20 p-3 backdrop-blur-sm">
-              <div class="text-xs font-medium text-white/80">
-                {{ 'gamification.maxStreak' | translate }}
-              </div>
-              <div class="mt-1 flex items-baseline gap-1">
-                <span class="text-2xl font-bold text-white" data-testid="max-streak-value">
-                  {{ maxStreak }}
-                </span>
-                <span class="text-sm text-white/80">
-                  {{
-                  maxStreak === 1
+            }}
+            {{ 'gamification.toNextLevel' | translate }} {{ nextLevel.emoji }}
+          </div>
+        </div>
+      }
+      <!-- Stats row -->
+      <div class="mt-4 grid grid-cols-2 gap-4">
+        <!-- Max streak -->
+        <div class="rounded-xl bg-white/20 p-3 backdrop-blur-sm">
+          <div class="text-xs font-medium text-white/80">
+            {{ 'gamification.maxStreak' | translate }}
+          </div>
+          <div class="mt-1 flex items-baseline gap-1">
+            <span class="text-2xl font-bold text-white" data-testid="max-streak-value">
+              {{ maxStreak }}
+            </span>
+            <span class="text-sm text-white/80">
+              {{
+                maxStreak === 1
                   ? ('gamification.day' | translate)
                   : ('gamification.days' | translate)
-                  }}
-                </span>
-              </div>
-            </div>
-            <!-- Total readings -->
-            <div class="rounded-xl bg-white/20 p-3 backdrop-blur-sm">
-              <div class="text-xs font-medium text-white/80">
-                {{ 'gamification.timesMeasured' | translate }}
-              </div>
-              <div class="mt-1 flex items-baseline gap-1">
-                <span class="text-2xl font-bold text-white" data-testid="times-measured-value">
-                  {{ timesMeasured }}
-                </span>
-              </div>
-            </div>
+              }}
+            </span>
           </div>
-          <!-- Encouraging message -->
-          <div class="mt-4 text-center text-sm font-medium text-white drop-shadow">
-            @if (streak > 0) {
-              <span>{{ 'gamification.keepGoing' | translate }}</span>
-            }
-            @if (streak === 0) {
-              <span>{{ 'gamification.messages.noStreak' | translate }}</span>
-            }
+        </div>
+        <!-- Total readings -->
+        <div class="rounded-xl bg-white/20 p-3 backdrop-blur-sm">
+          <div class="text-xs font-medium text-white/80">
+            {{ 'gamification.timesMeasured' | translate }}
           </div>
-        }
-
+          <div class="mt-1 flex items-baseline gap-1">
+            <span class="text-2xl font-bold text-white" data-testid="times-measured-value">
+              {{ timesMeasured }}
+            </span>
+          </div>
+        </div>
       </div>
-    </div>
+      <!-- Encouraging message -->
+      <div class="mt-4 text-center text-sm font-medium text-white drop-shadow">
+        @if (streak > 0) {
+          <span>{{ 'gamification.keepGoing' | translate }}</span>
+        }
+        @if (streak === 0) {
+          <span>{{ 'gamification.messages.noStreak' | translate }}</span>
+        }
+      </div>
+    }
+  </div>
+</div>
