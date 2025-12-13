@@ -1,0 +1,30 @@
+# Render Blueprint - Free Static Site Hosting
+# https://render.com/docs/blueprint-spec
+# Free tier: Unlimited static sites, 400 build minutes/month
+
+services:
+  - type: web
+    name: diabetify
+    runtime: static
+    buildCommand: pnpm install && pnpm run build:prod
+    staticPublishPath: ./www
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: PNPM_VERSION
+        value: 9
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
