@@ -26,7 +26,7 @@ import {
 } from '@ionic/angular/standalone';
 import { ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject, takeUntil, firstValueFrom, interval, Subscription } from 'rxjs';
+import { Subject, takeUntil, firstValueFrom, interval } from 'rxjs';
 import { AppointmentService } from '../core/services/appointment.service';
 import {
   Appointment,
@@ -81,8 +81,10 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   isSubmitting = false;
 
   // Polling for real-time queue updates
-  private pollingSubscription: Subscription | null = null;
   private readonly POLLING_INTERVAL_MS = 15000; // Poll every 15 seconds
+  private consecutivePollingFailures = 0;
+  private readonly MAX_POLLING_FAILURES = 3; // Show warning after 3 consecutive failures
+  private pollingErrorShown = false;
 
   // Resolution data cache
   resolutions: Map<number, AppointmentResolutionResponse> = new Map();
@@ -153,17 +155,21 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.stopPolling();
+    // Only need destroy$ - polling uses takeUntil(destroy$) for automatic cleanup
     this.destroy$.next();
     this.destroy$.complete();
   }
 
+  // Track if polling is active (managed via destroy$, not manual subscription)
+  private isPollingActive = false;
+
   /**
    * Start polling for queue state updates (when in PENDING or ACCEPTED state)
+   * Uses takeUntil(destroy$) for automatic cleanup - no manual unsubscription needed
    */
   private startPolling(): void {
     // Only poll if not already polling and in a state that can change
-    if (this.pollingSubscription) return;
+    if (this.isPollingActive) return;
 
     const state = this.queueState?.state;
     if (state !== 'PENDING' && state !== 'ACCEPTED') return;
@@ -172,7 +178,11 @@ export class AppointmentsPage implements OnInit, OnDestroy {
       interval: this.POLLING_INTERVAL_MS,
     });
 
-    this.pollingSubscription = interval(this.POLLING_INTERVAL_MS)
+    this.isPollingActive = true;
+    this.consecutivePollingFailures = 0;
+    this.pollingErrorShown = false;
+
+    interval(this.POLLING_INTERVAL_MS)
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.pollQueueState();
@@ -180,12 +190,11 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Stop polling for queue state updates
+   * Stop polling indicator (actual subscription is managed by destroy$)
    */
   private stopPolling(): void {
-    if (this.pollingSubscription) {
-      this.pollingSubscription.unsubscribe();
-      this.pollingSubscription = null;
+    if (this.isPollingActive) {
+      this.isPollingActive = false;
       this.logger.info('Queue', 'Stopped polling for queue updates');
     }
   }
@@ -199,6 +208,10 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     try {
       const previousState = this.queueState?.state;
       const newState = await firstValueFrom(this.appointmentService.getQueueState());
+
+      // Reset failure counter on successful poll
+      this.consecutivePollingFailures = 0;
+      this.pollingErrorShown = false;
 
       // Check if state changed
       if (newState.state !== previousState) {
@@ -236,8 +249,21 @@ export class AppointmentsPage implements OnInit, OnDestroy {
         }
       }
     } catch (error) {
-      // Silently ignore polling errors - don't spam user
-      this.logger.warn('Queue', 'Polling error (ignored)', error);
+      // Track consecutive failures and warn user if updates are unavailable
+      this.consecutivePollingFailures++;
+      this.logger.warn('Queue', 'Polling error', {
+        consecutiveFailures: this.consecutivePollingFailures,
+        error,
+      });
+
+      // Show warning to user after MAX_POLLING_FAILURES consecutive failures
+      if (this.consecutivePollingFailures >= this.MAX_POLLING_FAILURES && !this.pollingErrorShown) {
+        this.pollingErrorShown = true;
+        this.showToast(
+          this.translationService.instant('appointments.queue.messages.updatesUnavailable'),
+          'warning'
+        );
+      }
     }
   }
 
@@ -474,6 +500,8 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   async loadQueueState(): Promise<void> {
     if (environment.backendMode === 'mock') {
       this.queueState = { state: 'NONE' };
+      this.queueLoading = false; // Reset loading state in mock mode
+      this.cdr.markForCheck();
       return;
     }
 
@@ -700,9 +728,27 @@ export class AppointmentsPage implements OnInit, OnDestroy {
         if (resolution) {
           this.resolutions.set(apt.appointment_id, resolution);
         }
-      } catch {
-        // Silently ignore - appointment may not have a resolution
-        this.logger.debug('Resolution', `No resolution for appointment ${apt.appointment_id}`);
+      } catch (error: unknown) {
+        // Distinguish between "not found" (expected) and real errors
+        const errorMsg = (error as Error)?.message?.toLowerCase() || '';
+        const httpStatus = (error as { status?: number })?.status;
+        const isNotFoundError =
+          httpStatus === 404 ||
+          errorMsg.includes('not found') ||
+          errorMsg.includes('no resolution') ||
+          errorMsg.includes('no encontrad');
+
+        if (isNotFoundError) {
+          // Expected: appointment doesn't have a resolution yet
+          this.logger.debug('Resolution', `No resolution for appointment ${apt.appointment_id}`);
+        } else {
+          // Unexpected error: network issue, server error, etc.
+          this.logger.warn(
+            'Resolution',
+            `Failed to fetch resolution for appointment ${apt.appointment_id}`,
+            error
+          );
+        }
       }
     }
 

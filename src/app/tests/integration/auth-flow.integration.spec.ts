@@ -15,7 +15,6 @@ import { of, throwError } from 'rxjs';
 import { LocalAuthService, LocalUser, AccountState } from '../../core/services/local-auth.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { ApiGatewayService } from '../../core/services/api-gateway.service';
-import { CapacitorHttpService } from '../../core/services/capacitor-http.service';
 import { ExternalServicesManager } from '../../core/services/external-services-manager.service';
 import { PlatformDetectorService } from '../../core/services/platform-detector.service';
 import { EnvironmentDetectorService } from '../../core/services/environment-detector.service';
@@ -29,7 +28,7 @@ describe('Auth Flow Integration Tests', () => {
   let localAuthService: LocalAuthService;
   let profileService: ProfileService;
   let apiGatewayService: ApiGatewayService;
-  let mockCapacitorHttp: jasmine.SpyObj<CapacitorHttpService>;
+  let mockHttpClient: jasmine.SpyObj<HttpClient>;
   let mockExternalServices: jasmine.SpyObj<ExternalServicesManager>;
 
   const mockUser: LocalUser = {
@@ -71,15 +70,8 @@ describe('Auth Flow Integration Tests', () => {
   };
 
   beforeEach(() => {
-    // Create Capacitor HTTP mock
-    mockCapacitorHttp = jasmine.createSpyObj('CapacitorHttpService', [
-      'get',
-      'post',
-      'put',
-      'delete',
-      'patch',
-      'request',
-    ]);
+    // Create HttpClient mock (services now use HttpClient directly with Capacitor auto-patching)
+    mockHttpClient = jasmine.createSpyObj('HttpClient', ['get', 'post', 'put', 'delete', 'patch']);
 
     // Create ExternalServicesManager mock
     mockExternalServices = jasmine.createSpyObj('ExternalServicesManager', [
@@ -93,8 +85,7 @@ describe('Auth Flow Integration Tests', () => {
         LocalAuthService,
         ProfileService,
         ApiGatewayService,
-        { provide: HttpClient, useValue: jasmine.createSpyObj('HttpClient', ['get', 'post']) },
-        { provide: CapacitorHttpService, useValue: mockCapacitorHttp },
+        { provide: HttpClient, useValue: mockHttpClient },
         { provide: ExternalServicesManager, useValue: mockExternalServices },
         {
           provide: PlatformDetectorService,
@@ -147,8 +138,8 @@ describe('Auth Flow Integration Tests', () => {
   describe('Complete Login Flow', () => {
     it('should complete login → profile fetch → token storage flow', async () => {
       // ARRANGE: Setup HTTP responses
-      mockCapacitorHttp.post.and.returnValue(of(mockTokenResponse));
-      mockCapacitorHttp.get.and.returnValue(of(mockGatewayUser));
+      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
+      mockHttpClient.get.and.returnValue(of(mockGatewayUser));
 
       // ACT: Execute login
       const loginResult = await localAuthService.login('1000', 'password').toPromise();
@@ -159,15 +150,15 @@ describe('Auth Flow Integration Tests', () => {
       expect(loginResult?.user?.id).toBe('1000');
 
       // Verify HTTP calls were made in correct order
-      expect(mockCapacitorHttp.post).toHaveBeenCalledTimes(1);
-      expect(mockCapacitorHttp.get).toHaveBeenCalledTimes(1);
+      expect(mockHttpClient.post).toHaveBeenCalledTimes(1);
+      expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
 
       // Verify token endpoint was called
-      const postCall = mockCapacitorHttp.post.calls.mostRecent();
+      const postCall = mockHttpClient.post.calls.mostRecent();
       expect(postCall.args[0]).toContain('/token');
 
       // Verify profile endpoint was called with auth header
-      const getCall = mockCapacitorHttp.get.calls.mostRecent();
+      const getCall = mockHttpClient.get.calls.mostRecent();
       expect(getCall.args[0]).toContain('/users/me');
       expect(getCall.args[1]?.headers?.Authorization).toBe('Bearer mock_access_token_12345');
 
@@ -196,8 +187,8 @@ describe('Auth Flow Integration Tests', () => {
     it('should handle account pending state during login', async () => {
       // ARRANGE: User with pending account
       const pendingUser = { ...mockGatewayUser, state: 'pending' as const };
-      mockCapacitorHttp.post.and.returnValue(of(mockTokenResponse));
-      mockCapacitorHttp.get.and.returnValue(of(pendingUser));
+      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
+      mockHttpClient.get.and.returnValue(of(pendingUser));
 
       // ACT: Execute login
       const loginResult = await localAuthService.login('1000', 'password').toPromise();
@@ -216,8 +207,8 @@ describe('Auth Flow Integration Tests', () => {
     it('should handle account disabled state during login', async () => {
       // ARRANGE: User with disabled account
       const disabledUser = { ...mockGatewayUser, state: 'disabled' as const };
-      mockCapacitorHttp.post.and.returnValue(of(mockTokenResponse));
-      mockCapacitorHttp.get.and.returnValue(of(disabledUser));
+      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
+      mockHttpClient.get.and.returnValue(of(disabledUser));
 
       // ACT: Execute login
       const loginResult = await localAuthService.login('1000', 'password').toPromise();
@@ -231,8 +222,8 @@ describe('Auth Flow Integration Tests', () => {
   describe('Profile Sync After Login', () => {
     it('should create local profile after successful login', async () => {
       // ARRANGE
-      mockCapacitorHttp.post.and.returnValue(of(mockTokenResponse));
-      mockCapacitorHttp.get.and.returnValue(of(mockGatewayUser));
+      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
+      mockHttpClient.get.and.returnValue(of(mockGatewayUser));
 
       // ACT: Login and create profile
       const loginResult = await localAuthService.login('1000', 'password').toPromise();
@@ -255,8 +246,8 @@ describe('Auth Flow Integration Tests', () => {
 
     it('should update profile preferences after login', async () => {
       // ARRANGE: Login first
-      mockCapacitorHttp.post.and.returnValue(of(mockTokenResponse));
-      mockCapacitorHttp.get.and.returnValue(of(mockGatewayUser));
+      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
+      mockHttpClient.get.and.returnValue(of(mockGatewayUser));
 
       await localAuthService.login('1000', 'password').toPromise();
       await profileService.createProfile({
@@ -279,8 +270,8 @@ describe('Auth Flow Integration Tests', () => {
 
     it('should store gamification fields from backend user', async () => {
       // ARRANGE
-      mockCapacitorHttp.post.and.returnValue(of(mockTokenResponse));
-      mockCapacitorHttp.get.and.returnValue(of(mockGatewayUser));
+      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
+      mockHttpClient.get.and.returnValue(of(mockGatewayUser));
 
       // ACT
       const loginResult = await localAuthService.login('1000', 'password').toPromise();
@@ -320,7 +311,7 @@ describe('Auth Flow Integration Tests', () => {
         token_type: 'bearer',
         expires_in: 1800,
       };
-      mockCapacitorHttp.post.and.returnValue(of(newTokenResponse));
+      mockHttpClient.post.and.returnValue(of(newTokenResponse));
 
       // ACT: Trigger token refresh
       const refreshedState = await localAuthService.refreshAccessToken().toPromise();
@@ -330,7 +321,7 @@ describe('Auth Flow Integration Tests', () => {
       expect(refreshedState?.isAuthenticated).toBeTrue();
 
       // Verify refresh endpoint was called
-      const postCall = mockCapacitorHttp.post.calls.mostRecent();
+      const postCall = mockHttpClient.post.calls.mostRecent();
       expect(postCall.args[0]).toContain('/token');
       expect(postCall.args[1]).toContain('grant_type=refresh_token');
       expect(postCall.args[1]).toContain('refresh_token=valid_refresh_token');
@@ -352,7 +343,7 @@ describe('Auth Flow Integration Tests', () => {
       });
 
       // Setup failure response
-      mockCapacitorHttp.post.and.returnValue(
+      mockHttpClient.post.and.returnValue(
         throwError(() => ({ status: 401, message: 'Invalid refresh token' }))
       );
 
@@ -372,8 +363,8 @@ describe('Auth Flow Integration Tests', () => {
   describe('Logout Flow', () => {
     it('should clear all auth data and profile on logout', async () => {
       // ARRANGE: Setup authenticated state
-      mockCapacitorHttp.post.and.returnValue(of(mockTokenResponse));
-      mockCapacitorHttp.get.and.returnValue(of(mockGatewayUser));
+      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
+      mockHttpClient.get.and.returnValue(of(mockGatewayUser));
 
       await localAuthService.login('1000', 'password').toPromise();
       await profileService.createProfile({
@@ -406,7 +397,7 @@ describe('Auth Flow Integration Tests', () => {
   describe('Error Handling', () => {
     it('should handle network errors during login', async () => {
       // ARRANGE: Simulate network error
-      mockCapacitorHttp.post.and.returnValue(
+      mockHttpClient.post.and.returnValue(
         throwError(() => ({ status: 0, message: 'Network error' }))
       );
 
@@ -426,7 +417,7 @@ describe('Auth Flow Integration Tests', () => {
 
     it('should handle invalid credentials during login', async () => {
       // ARRANGE: Simulate 401 unauthorized
-      mockCapacitorHttp.post.and.returnValue(
+      mockHttpClient.post.and.returnValue(
         throwError(() => ({ status: 401, message: 'Invalid credentials' }))
       );
 
@@ -440,8 +431,8 @@ describe('Auth Flow Integration Tests', () => {
 
     it('should handle profile fetch failure after successful token', async () => {
       // ARRANGE: Token succeeds but profile fetch fails
-      mockCapacitorHttp.post.and.returnValue(of(mockTokenResponse));
-      mockCapacitorHttp.get.and.returnValue(
+      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
+      mockHttpClient.get.and.returnValue(
         throwError(() => ({ status: 500, message: 'Server error' }))
       );
 
@@ -463,8 +454,8 @@ describe('Auth Flow Integration Tests', () => {
   describe('Concurrent Request Handling', () => {
     it('should handle concurrent authenticated requests with single token', async () => {
       // ARRANGE: Login first
-      mockCapacitorHttp.post.and.returnValue(of(mockTokenResponse));
-      mockCapacitorHttp.get.and.returnValue(of(mockGatewayUser));
+      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
+      mockHttpClient.get.and.returnValue(of(mockGatewayUser));
 
       await localAuthService.login('1000', 'password').toPromise();
 
@@ -472,7 +463,7 @@ describe('Auth Flow Integration Tests', () => {
       const mockReadingsResponse = { readings: [] };
       const mockAppointmentsResponse = { appointments: [] };
 
-      mockCapacitorHttp.get.and.callFake((url: string) => {
+      mockHttpClient.get.and.callFake((url: string) => {
         if (url.includes('/glucose/mine')) {
           return of(mockReadingsResponse);
         }
@@ -493,7 +484,7 @@ describe('Auth Flow Integration Tests', () => {
       expect(appointmentsResult?.success).toBeTrue();
 
       // Verify both requests used the access token
-      const calls = mockCapacitorHttp.get.calls.all();
+      const calls = mockHttpClient.get.calls.all();
       const authenticatedCalls = calls.filter((call: any) =>
         call.args[1]?.headers?.Authorization?.includes('mock_access_token_12345')
       );

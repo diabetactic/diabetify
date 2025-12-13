@@ -243,13 +243,13 @@ ion-segment {
 
 // Button styling - smoother border radius
 ion-button {
-  --border-radius: 14px;
+  --border-radius: 1rem;
 
   min-height: 48px;
   font-weight: 600;
 
   &[expand='block'] {
-    --border-radius: 14px;
+    --border-radius: 1rem;
   }
 }
 

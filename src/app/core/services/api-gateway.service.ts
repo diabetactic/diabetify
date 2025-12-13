@@ -19,7 +19,6 @@ import { PlatformDetectorService } from './platform-detector.service';
 import { LoggerService } from './logger.service';
 import { MockAdapterService } from './mock-adapter.service';
 import { LRUCache } from 'lru-cache';
-import { CapacitorHttpService } from './capacitor-http.service';
 import { environment } from '../../../environments/environment';
 import { API_GATEWAY_BASE_URL } from '../../shared/config/api-base-url';
 import { LocalGlucoseReading } from '../models/glucose-reading.model';
@@ -699,7 +698,6 @@ export class ApiGatewayService {
 
   constructor(
     private http: HttpClient,
-    private capacitorHttp: CapacitorHttpService,
     private externalServices: ExternalServicesManager,
     private localAuth: LocalAuthService,
     private tidepoolAuth: TidepoolAuthService,
@@ -857,28 +855,29 @@ export class ApiGatewayService {
         ({ url, headers, body }) => {
           let request$: Observable<unknown>;
 
-          // Use CapacitorHttp service (bypasses CORS on native platforms)
+          // Use Angular HttpClient directly
+          // With CapacitorHttp auto-patching enabled (capacitor.config.ts),
+          // HttpClient uses native HTTP on mobile platforms (bypasses CORS)
           const requestOptions = {
             headers,
-            params: options?.params,
-            responseType: options?.responseType || 'json',
+            params: options?.params as HttpParams,
           };
 
           switch (endpoint.method) {
             case 'GET':
-              request$ = this.capacitorHttp.get(url, requestOptions);
+              request$ = this.http.get(url, requestOptions);
               break;
             case 'POST':
-              request$ = this.capacitorHttp.post(url, body, requestOptions);
+              request$ = this.http.post(url, body, requestOptions);
               break;
             case 'PUT':
-              request$ = this.capacitorHttp.put(url, body, requestOptions);
+              request$ = this.http.put(url, body, requestOptions);
               break;
             case 'DELETE':
-              request$ = this.capacitorHttp.delete(url, requestOptions);
+              request$ = this.http.delete(url, requestOptions);
               break;
             case 'PATCH':
-              request$ = this.capacitorHttp.patch(url, body, requestOptions);
+              request$ = this.http.patch(url, body, requestOptions);
               break;
             default:
               return throwError(() => new Error('Unsupported method'));

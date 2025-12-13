@@ -1,6 +1,8 @@
-import { Component, OnInit, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { LoadingController, ToastController, AlertController } from '@ionic/angular';
 import {
   IonContent,
@@ -12,7 +14,6 @@ import {
   IonText,
 } from '@ionic/angular/standalone';
 import { firstValueFrom } from 'rxjs';
-import { take } from 'rxjs/operators';
 import { LocalAuthService, LocalUser } from '../core/services/local-auth.service';
 import { ProfileService } from '../core/services/profile.service';
 import { LoggerService } from '../core/services/logger.service';
@@ -47,10 +48,11 @@ import { ROUTES } from '../core/constants';
     AppIconComponent,
   ],
 })
-export class LoginPage implements OnInit {
+export class LoginPage implements OnInit, OnDestroy {
   loginForm: FormGroup;
   showPassword = false;
   isLoading = false;
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
@@ -77,7 +79,7 @@ export class LoginPage implements OnInit {
     // Check if user is already logged in (single, deferred check to avoid double-activation)
     this.authService
       .isAuthenticated()
-      .pipe(take(1))
+      .pipe(takeUntil(this.destroy$))
       .subscribe(isAuth => {
         if (isAuth && !this.router.url.startsWith(ROUTES.TABS)) {
           this.logger.info('Auth', 'User already authenticated, navigating to dashboard.');
@@ -86,6 +88,11 @@ export class LoginPage implements OnInit {
           }, 0);
         }
       });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   togglePasswordVisibility() {

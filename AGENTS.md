@@ -6,7 +6,9 @@
 
 Diabetactic is an Ionic/Angular mobile app for diabetes glucose management.
 
-**Stack**: Angular 20.3.14, Ionic 8.7.11, Capacitor 6.2.1, Tailwind CSS + DaisyUI
+**Stack**: Angular 20.3.14, Ionic 8.7.11, Capacitor 6.2.1, Tailwind CSS + DaisyUI, Jest 29.7.0, Playwright 1.48.0
+
+**Documentation**: See `CLAUDE.md` for comprehensive project documentation
 
 ## Build Commands
 
@@ -47,9 +49,9 @@ npm run test:coverage    # Coverage report
 
 ### Testing
 
-- Jest for unit tests (\*.spec.ts alongside source)
-- Playwright for web E2E (playwright/tests/)
-- Maestro for mobile E2E (maestro/tests/)
+- Jest 29.7.0 for unit tests (\*.spec.ts alongside source)
+- All Capacitor plugins mocked in `setup-jest.ts`
+- 1012 tests passing, 0 skipped, 0 failed (as of 2025-12-04)
 
 ## File Structure
 
@@ -96,46 +98,60 @@ ENV=mock npm start      # Mock backend (offline) - RECOMMENDED
 ENV=cloud npm start     # Heroku production
 ```
 
-## E2E Testing Branches
+## E2E Testing
 
-| Branch                        | Framework            | Status               |
-| ----------------------------- | -------------------- | -------------------- |
-| `test/e2e-playwright-android` | Playwright           | Ready                |
-| `test/e2e-webdriverio-appium` | WebdriverIO + Appium | PRs #62-69 pending   |
-| `test/e2e-mobile-mcp`         | Mobile MCP           | PR #60 has conflicts |
+### Web E2E (Playwright 1.48.0)
 
-## Agent-Specific Instructions
+- **Location**: `playwright/tests/`
+- **Run**: `npm run test:e2e` (headless) or `npm run test:e2e:headed`
+- **Features**:
+  - Visual regression testing
+  - Accessibility audits with @axe-core/playwright
+  - Auto-screenshots on failure in `playwright/artifacts/`
+- **Key tests**:
+  - `accessibility-audit.spec.ts` - WCAG compliance
+  - `heroku-integration.spec.ts` - Backend integration
+  - `heroku-appointments-flow.spec.ts` - Appointments E2E
+  - `heroku-readings-crud.spec.ts` - Readings CRUD
+  - `error-handling.spec.ts` - Error scenarios
 
-### For Jules (Google)
+### Mobile E2E (Maestro)
 
-- Focus on WebdriverIO E2E setup
-- Branch: `test/e2e-webdriverio-appium`
-- PRs #62-69 need review and merge
-- Run: `npm test` before submitting PRs
+- **Location**: `maestro/tests/`
+- **Run**: `maestro test maestro/tests/` (requires running emulator + installed APK)
+- **Backend**: Tests against real Heroku production API
+- **Test Structure**:
+  - `readings/` - List, add, edit glucose readings
+  - `appointments/` - Full appointment lifecycle (request → pending → accepted → created)
+  - `profile/` - Profile editing
+  - `settings/` - Theme and language persistence
+  - `errors/` - Network errors, invalid login, form validation
+- **Key Features**:
+  - Bilingual support (Spanish/English regex patterns)
+  - Shadow DOM bypass strategies
+  - Backoffice API integration for appointment queue management
+  - Deterministic state management with `clearState`
 
-### For Codex (OpenAI)
+**Backoffice API helper** (for appointment tests):
 
-- Focus on Mobile MCP evaluation
-- Branch: `test/e2e-mobile-mcp`
-- PR #60 needs conflict resolution
-- Test with: `cd maestro/mobile-mcp && node run-tests.js`
-
-### For Claude Code
-
-- Focus on Playwright Android testing
-- Branch: `test/e2e-playwright-android`
-- Branch is ready for testing
-- Run: `npm run test:e2e -- --project=mobile-chromium`
+```bash
+# Actions: accept, deny, clear
+ACTION=accept USER_ID=1000 node maestro/scripts/backoffice-api.js
+ACTION=clear node maestro/scripts/backoffice-api.js
+```
 
 ## Key Files to Know
 
-| File                                           | Purpose                |
-| ---------------------------------------------- | ---------------------- |
-| `src/app/core/services/api-gateway.service.ts` | All API calls          |
-| `src/app/core/services/local-auth.service.ts`  | Authentication         |
-| `src/environments/environment.ts`              | Backend mode config    |
-| `setup-jest.ts`                                | Jest + Capacitor mocks |
-| `playwright.config.ts`                         | E2E test config        |
+| File                                              | Purpose                           |
+| ------------------------------------------------- | --------------------------------- |
+| `CLAUDE.md`                                       | Comprehensive project docs        |
+| `src/app/core/services/api-gateway.service.ts`    | All API calls (endpoint registry) |
+| `src/app/core/services/capacitor-http.service.ts` | Hybrid HTTP (web/native)          |
+| `src/app/core/services/local-auth.service.ts`     | Authentication                    |
+| `src/environments/environment.ts`                 | Backend mode config               |
+| `setup-jest.ts`                                   | Jest + Capacitor mocks            |
+| `playwright.config.ts`                            | Playwright E2E config             |
+| `maestro/config.yaml`                             | Maestro E2E config                |
 
 ## Common Gotchas
 

@@ -22,8 +22,12 @@
     <div class="flex items-center gap-2">
       <app-icon name="bug" class="text-primary text-xl"></app-icon>
       <div class="flex flex-col">
-        <h2 class="text-base-content text-lg font-bold">Dev Tools</h2>
-        <p class="text-base-content/60 m-0 text-xs">Minimal helpers for Heroku/local testing</p>
+        <h2 class="text-base-content text-lg font-bold">
+          {{ 'debug.devTools.title' | translate }}
+        </h2>
+        <p class="text-base-content/60 m-0 text-xs">
+          {{ 'debug.devTools.description' | translate }}
+        </p>
       </div>
     </div>
     <ion-button
@@ -41,13 +45,15 @@
   <div class="flex-1 space-y-3 overflow-y-auto p-4">
     <!-- Environment summary -->
     <div *ngIf="debugInfo" class="bg-base-200 rounded-lg p-3">
-      <h3 class="text-base-content/60 mb-2 text-sm font-semibold">Environment</h3>
+      <h3 class="text-base-content/60 mb-2 text-sm font-semibold">
+        {{ 'debug.devTools.environment' | translate }}
+      </h3>
       <p class="text-base-content/70 m-0 text-xs">
-        Mode:
+        {{ 'debug.devTools.mode' | translate }}:
         <span class="text-base-content font-mono">{{ debugInfo.environment }}</span>
       </p>
       <p class="text-base-content/70 mt-1 text-xs">
-        API:
+        {{ 'debug.devTools.api' | translate }}:
         <span class="text-base-content break-all font-mono text-[10px]">{{
           debugInfo.apiBaseUrl
         }}</span>
@@ -57,19 +63,19 @@
     <!-- Appointments queue tools -->
     <div class="bg-base-200 space-y-2 rounded-lg p-3">
       <h3 class="text-base-content/60 mb-1 text-sm font-semibold">
-        Appointments Queue (Backoffice)
+        {{ 'debug.devTools.appointmentsQueue' | translate }}
       </h3>
       <p class="text-base-content/60 m-0 text-[11px]">
-        Uses admin credentials against the Heroku backoffice API. Intended for dev/testing only.
+        {{ 'debug.devTools.queueDescription' | translate }}
       </p>
       <div class="mt-2 flex flex-col gap-2">
         <ion-button size="small" expand="block" (click)="devAcceptNextAppointment()">
           <app-icon name="check" class="mr-1"></app-icon>
-          Accept next pending
+          {{ 'debug.devTools.acceptNextPending' | translate }}
         </ion-button>
         <ion-button size="small" expand="block" color="warning" (click)="devDenyNextAppointment()">
           <app-icon name="x" class="mr-1"></app-icon>
-          Deny next pending
+          {{ 'debug.devTools.denyNextPending' | translate }}
         </ion-button>
         <ion-button
           size="small"
@@ -79,25 +85,26 @@
           (click)="devClearAppointmentQueue()"
         >
           <app-icon name="trash-2" class="mr-1"></app-icon>
-          Clear entire queue
+          {{ 'debug.devTools.clearQueue' | translate }}
         </ion-button>
       </div>
     </div>
 
     <!-- User tools -->
     <div class="bg-base-200 space-y-2 rounded-lg p-3">
-      <h3 class="text-base-content/60 mb-1 text-sm font-semibold">Users & Resolutions</h3>
+      <h3 class="text-base-content/60 mb-1 text-sm font-semibold">
+        {{ 'debug.devTools.usersResolutions' | translate }}
+      </h3>
       <p class="text-base-content/60 m-0 text-[11px]">
-        Create a test patient user via the main API gateway, or a sample resolution in the
-        backoffice for a specific appointment.
+        {{ 'debug.devTools.usersDescription' | translate }}
       </p>
       <ion-button size="small" expand="block" (click)="devCreateTestUser()">
         <app-icon name="user-plus" class="mr-1"></app-icon>
-        Create test user
+        {{ 'debug.devTools.createTestUser' | translate }}
       </ion-button>
       <ion-button size="small" expand="block" fill="outline" (click)="devCreateResolution()">
         <app-icon name="file-plus" class="mr-1"></app-icon>
-        Create resolution for appointment
+        {{ 'debug.devTools.createResolution' | translate }}
       </ion-button>
     </div>
 
@@ -105,9 +112,11 @@
     <div
       class="rounded-lg border-2 border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20"
     >
-      <h3 class="mb-2 text-sm font-semibold text-red-900 dark:text-red-200">Local Danger Zone</h3>
+      <h3 class="mb-2 text-sm font-semibold text-red-900 dark:text-red-200">
+        {{ 'debug.devTools.localDangerZone' | translate }}
+      </h3>
       <p class="mb-3 text-xs text-red-700 dark:text-red-300">
-        These actions only affect local data on this device (IndexedDB + Preferences).
+        {{ 'debug.devTools.localDangerDescription' | translate }}
       </p>
       <div class="flex flex-col gap-2">
         <ion-button
@@ -119,7 +128,7 @@
           class="inline-flex items-center gap-2"
         >
           <app-icon name="trash-outline"></app-icon>
-          Clear local readings
+          {{ 'debug.devTools.clearLocalReadings' | translate }}
         </ion-button>
         <ion-button
           expand="block"
@@ -130,7 +139,7 @@
           class="inline-flex items-center gap-2"
         >
           <app-icon name="trash-outline"></app-icon>
-          Clear preferences
+          {{ 'debug.devTools.clearPreferencesAction' | translate }}
         </ion-button>
         <ion-button
           expand="block"
@@ -140,7 +149,7 @@
           class="inline-flex items-center gap-2"
         >
           <app-icon name="nuclear-outline"></app-icon>
-          Clear ALL local data
+          {{ 'debug.devTools.clearAllLocalData' | translate }}
         </ion-button>
       </div>
     </div>

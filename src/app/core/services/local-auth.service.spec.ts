@@ -8,7 +8,7 @@ import { PlatformDetectorService } from './platform-detector.service';
 import { LoggerService } from './logger.service';
 import { MockDataService } from './mock-data.service';
 import { MockAdapterService } from './mock-adapter.service';
-import { CapacitorHttpService } from './capacitor-http.service';
+import { HttpClient } from '@angular/common/http';
 
 // Mock Preferences - already mocked in setup-jest.ts but we need to control it per test
 jest.mock('@capacitor/preferences', () => ({
@@ -25,7 +25,7 @@ describe('LocalAuthService', () => {
   let logger: jest.Mocked<LoggerService>;
   let mockData: jest.Mocked<MockDataService>;
   let mockAdapter: jest.Mocked<MockAdapterService>;
-  let capacitorHttp: jest.Mocked<CapacitorHttpService>;
+  let httpMock: jest.Mocked<HttpClient>;
 
   const mockUser: LocalUser = {
     id: 'test-user-123',
@@ -82,12 +82,12 @@ describe('LocalAuthService', () => {
       isServiceMockEnabled: jest.fn().mockReturnValue(false),
     } as unknown as jest.Mocked<MockAdapterService>;
 
-    capacitorHttp = {
+    httpMock = {
       get: jest.fn(),
       post: jest.fn(),
       put: jest.fn(),
       delete: jest.fn(),
-    } as unknown as jest.Mocked<CapacitorHttpService>;
+    } as unknown as jest.Mocked<HttpClient>;
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -97,7 +97,7 @@ describe('LocalAuthService', () => {
         { provide: LoggerService, useValue: logger },
         { provide: MockDataService, useValue: mockData },
         { provide: MockAdapterService, useValue: mockAdapter },
-        { provide: CapacitorHttpService, useValue: capacitorHttp },
+        { provide: HttpClient, useValue: httpMock },
       ],
     });
 
@@ -148,12 +148,11 @@ describe('LocalAuthService', () => {
 
       // Create new service instance to trigger initialization with stored data
       const newService = new LocalAuthService(
-        TestBed.inject(HttpClientTestingModule as any),
+        httpMock,
         platformDetector,
         logger,
         mockData,
-        mockAdapter,
-        capacitorHttp
+        mockAdapter
       );
 
       await (newService as any).initializationPromise;
@@ -200,15 +199,15 @@ describe('LocalAuthService', () => {
 
       it('should authenticate against backend successfully', done => {
         // Mock token endpoint
-        capacitorHttp.post.mockReturnValueOnce(of(mockTokenResponse));
+        httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
 
         // Mock user profile endpoint
-        capacitorHttp.get.mockReturnValueOnce(of(mockGatewayUserResponse));
+        httpMock.get.mockReturnValueOnce(of(mockGatewayUserResponse));
 
         service.login('test@example.com', 'password123').subscribe(result => {
           expect(result.success).toBe(true);
           expect(result.user).toBeDefined();
-          expect(capacitorHttp.post).toHaveBeenCalledWith(
+          expect(httpMock.post).toHaveBeenCalledWith(
             expect.stringContaining('/token'),
             expect.any(String),
             expect.any(Object)
@@ -218,7 +217,7 @@ describe('LocalAuthService', () => {
       });
 
       it('should return error when authentication fails', done => {
-        capacitorHttp.post.mockReturnValueOnce(
+        httpMock.post.mockReturnValueOnce(
           throwError(() => ({
             status: 401,
             error: { detail: 'Invalid credentials' },
@@ -233,8 +232,8 @@ describe('LocalAuthService', () => {
       });
 
       it('should return error when account is pending', done => {
-        capacitorHttp.post.mockReturnValueOnce(of(mockTokenResponse));
-        capacitorHttp.get.mockReturnValueOnce(
+        httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
+        httpMock.get.mockReturnValueOnce(
           of({
             ...mockGatewayUserResponse,
             state: 'pending',
@@ -255,8 +254,8 @@ describe('LocalAuthService', () => {
       });
 
       it('should return error when account is disabled', done => {
-        capacitorHttp.post.mockReturnValueOnce(of(mockTokenResponse));
-        capacitorHttp.get.mockReturnValueOnce(
+        httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
+        httpMock.get.mockReturnValueOnce(
           of({
             ...mockGatewayUserResponse,
             state: 'disabled',
@@ -277,8 +276,8 @@ describe('LocalAuthService', () => {
       });
 
       it('should update authState$ on successful login', done => {
-        capacitorHttp.post.mockReturnValueOnce(of(mockTokenResponse));
-        capacitorHttp.get.mockReturnValueOnce(of(mockGatewayUserResponse));
+        httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
+        httpMock.get.mockReturnValueOnce(of(mockGatewayUserResponse));
 
         service.login('test@example.com', 'password123').subscribe(() => {
           service.authState$.subscribe(state => {
@@ -290,8 +289,8 @@ describe('LocalAuthService', () => {
       });
 
       it('should store tokens when login succeeds', done => {
-        capacitorHttp.post.mockReturnValueOnce(of(mockTokenResponse));
-        capacitorHttp.get.mockReturnValueOnce(of(mockGatewayUserResponse));
+        httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
+        httpMock.get.mockReturnValueOnce(of(mockGatewayUserResponse));
 
         service.login('test@example.com', 'password123', true).subscribe(() => {
           expect(Preferences.set).toHaveBeenCalledWith(
@@ -370,7 +369,7 @@ describe('LocalAuthService', () => {
     it('should refresh token when refresh token exists', done => {
       (Preferences.get as jest.Mock).mockResolvedValueOnce({ value: 'stored-refresh-token' });
 
-      capacitorHttp.post.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(
         of({
           access_token: 'new-access-token',
           token_type: 'bearer',
@@ -407,7 +406,7 @@ describe('LocalAuthService', () => {
     it('should throw error when refresh fails', done => {
       (Preferences.get as jest.Mock).mockResolvedValueOnce({ value: 'stored-refresh-token' });
 
-      capacitorHttp.post.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(
         throwError(() => ({
           status: 401,
           error: { detail: 'Invalid refresh token' },
@@ -480,7 +479,7 @@ describe('LocalAuthService', () => {
     it('should handle network errors gracefully', done => {
       mockAdapter.isServiceMockEnabled.mockReturnValue(false);
 
-      capacitorHttp.post.mockReturnValueOnce(throwError(() => new Error('Network error')));
+      httpMock.post.mockReturnValueOnce(throwError(() => new Error('Network error')));
 
       service.login('test@example.com', 'password').subscribe(result => {
         expect(result.success).toBe(false);
@@ -492,7 +491,7 @@ describe('LocalAuthService', () => {
     it('should handle malformed responses', done => {
       mockAdapter.isServiceMockEnabled.mockReturnValue(false);
 
-      capacitorHttp.post.mockReturnValueOnce(of({})); // No access_token
+      httpMock.post.mockReturnValueOnce(of({})); // No access_token
 
       service.login('test@example.com', 'password').subscribe(result => {
         expect(result.success).toBe(false);
@@ -507,7 +506,7 @@ describe('LocalAuthService', () => {
     });
 
     it('should return timeout message for timeout errors', done => {
-      capacitorHttp.post.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(
         throwError(() => ({
           isTimeout: true,
           status: 0,
@@ -523,7 +522,7 @@ describe('LocalAuthService', () => {
     });
 
     it('should return specific message for 401 status', done => {
-      capacitorHttp.post.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(
         throwError(() => ({
           status: 401,
         }))
@@ -537,7 +536,7 @@ describe('LocalAuthService', () => {
     });
 
     it('should return specific message for 403 status', done => {
-      capacitorHttp.post.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(
         throwError(() => ({
           status: 403,
         }))
@@ -552,7 +551,7 @@ describe('LocalAuthService', () => {
     });
 
     it('should return specific message for 409 conflict', done => {
-      capacitorHttp.post.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(
         throwError(() => ({
           status: 409,
         }))
@@ -566,7 +565,7 @@ describe('LocalAuthService', () => {
     });
 
     it('should return specific message for 422 validation error', done => {
-      capacitorHttp.post.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(
         throwError(() => ({
           status: 422,
         }))
@@ -580,7 +579,7 @@ describe('LocalAuthService', () => {
     });
 
     it('should return specific message for 500 server error', done => {
-      capacitorHttp.post.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(
         throwError(() => ({
           status: 500,
         }))
@@ -594,7 +593,7 @@ describe('LocalAuthService', () => {
     });
 
     it('should return connection error message for status 0', done => {
-      capacitorHttp.post.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(
         throwError(() => ({
           status: 0,
         }))
@@ -608,7 +607,7 @@ describe('LocalAuthService', () => {
     });
 
     it('should handle nested error.detail array', done => {
-      capacitorHttp.post.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(
         throwError(() => ({
           status: 422,
           error: {
@@ -629,7 +628,7 @@ describe('LocalAuthService', () => {
     });
 
     it('should handle nested error.detail string', done => {
-      capacitorHttp.post.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(
         throwError(() => ({
           status: 400,
           error: {
@@ -646,7 +645,7 @@ describe('LocalAuthService', () => {
     });
 
     it('should handle null/undefined error gracefully', done => {
-      capacitorHttp.post.mockReturnValueOnce(throwError(() => null));
+      httpMock.post.mockReturnValueOnce(throwError(() => null));
 
       service.login('test@example.com', 'password').subscribe(result => {
         expect(result.success).toBe(false);
@@ -656,7 +655,7 @@ describe('LocalAuthService', () => {
     });
 
     it('should handle string error', done => {
-      capacitorHttp.post.mockReturnValueOnce(throwError(() => 'Simple error message'));
+      httpMock.post.mockReturnValueOnce(throwError(() => 'Simple error message'));
 
       service.login('test@example.com', 'password').subscribe(result => {
         expect(result.success).toBe(false);
@@ -672,8 +671,8 @@ describe('LocalAuthService', () => {
     });
 
     it('should set user accountState from backend response', done => {
-      capacitorHttp.post.mockReturnValueOnce(of(mockTokenResponse));
-      capacitorHttp.get.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
+      httpMock.get.mockReturnValueOnce(
         of({
           ...mockGatewayUserResponse,
           state: 'active',
@@ -688,8 +687,8 @@ describe('LocalAuthService', () => {
     });
 
     it('should default to ACTIVE when backend returns no state', done => {
-      capacitorHttp.post.mockReturnValueOnce(of(mockTokenResponse));
-      capacitorHttp.get.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
+      httpMock.get.mockReturnValueOnce(
         of({
           ...mockGatewayUserResponse,
           state: undefined,
@@ -704,8 +703,8 @@ describe('LocalAuthService', () => {
     });
 
     it('should reject login for pending accounts with specific error', done => {
-      capacitorHttp.post.mockReturnValueOnce(of(mockTokenResponse));
-      capacitorHttp.get.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
+      httpMock.get.mockReturnValueOnce(
         of({
           ...mockGatewayUserResponse,
           state: 'pending',
@@ -725,8 +724,8 @@ describe('LocalAuthService', () => {
     });
 
     it('should reject login for disabled accounts with specific error', done => {
-      capacitorHttp.post.mockReturnValueOnce(of(mockTokenResponse));
-      capacitorHttp.get.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
+      httpMock.get.mockReturnValueOnce(
         of({
           ...mockGatewayUserResponse,
           state: 'disabled',
@@ -746,8 +745,8 @@ describe('LocalAuthService', () => {
     });
 
     it('should NOT update auth state for pending accounts', done => {
-      capacitorHttp.post.mockReturnValueOnce(of(mockTokenResponse));
-      capacitorHttp.get.mockReturnValueOnce(
+      httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
+      httpMock.get.mockReturnValueOnce(
         of({
           ...mockGatewayUserResponse,
           state: 'pending',

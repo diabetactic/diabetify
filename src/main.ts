@@ -12,7 +12,7 @@ import {
   withPreloading,
 } from '@angular/router';
 import { IonicRouteStrategy } from '@ionic/angular';
-import { importProvidersFrom, LOCALE_ID } from '@angular/core';
+import { APP_INITIALIZER, importProvidersFrom, LOCALE_ID } from '@angular/core';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { environment } from './environments/environment';
@@ -91,6 +91,10 @@ import {
   TranslateHttpLoaderConfig,
 } from '@ngx-translate/http-loader';
 import { APP_CONFIG, defaultAppConfig } from './app/core/config/app-config';
+import {
+  EnvironmentConfigService,
+  initializeEnvironmentConfig,
+} from './app/core/config/environment-config.service';
 import { APP_ROUTES } from './app/app-routing.module';
 import { LucideAngularModule } from 'lucide-angular';
 import { appIcons } from './app/shared/icons/lucide-icons';
@@ -121,6 +125,13 @@ bootstrapApplication(AppComponent, {
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: TRANSLATE_HTTP_LOADER_CONFIG, useValue: httpLoaderConfig },
     { provide: APP_CONFIG, useValue: defaultAppConfig },
+    // Environment configuration - initialized before app bootstrap
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeEnvironmentConfig,
+      deps: [EnvironmentConfigService],
+      multi: true,
+    },
     importProvidersFrom(
       TranslateModule.forRoot({
         loader: {

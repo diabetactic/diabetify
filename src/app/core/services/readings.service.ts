@@ -4,7 +4,7 @@
  */
 
 import { Injectable, Optional, Inject, InjectionToken, OnDestroy, Injector } from '@angular/core';
-import { BehaviorSubject, Observable, from, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, from, firstValueFrom } from 'rxjs';
 import { liveQuery } from 'dexie';
 import { Network } from '@capacitor/network';
 import { PluginListenerHandle } from '@capacitor/core';
@@ -87,6 +87,8 @@ export interface TeleAppointmentReadingSummary {
 export class ReadingsService implements OnDestroy {
   private readonly SYNC_RETRY_LIMIT = 3;
   private networkListenerHandle: PluginListenerHandle | null = null;
+  private readonly destroy$ = new Subject<void>();
+  private liveQuerySubscriptions: { unsubscribe: () => void }[] = [];
 
   // Observable for all readings (reactive)
   private _readings$ = new BehaviorSubject<LocalGlucoseReading[]>([]);
@@ -143,9 +145,17 @@ export class ReadingsService implements OnDestroy {
 
   /**
    * Clean up resources when service is destroyed
-   * Prevents memory leaks from network listener
+   * Prevents memory leaks from network listener and observables
    */
   ngOnDestroy(): void {
+    // Complete destroy$ to unsubscribe all observables
+    this.destroy$.next();
+    this.destroy$.complete();
+
+    // Clean up liveQuery subscriptions to prevent memory leaks
+    this.liveQuerySubscriptions.forEach(sub => sub.unsubscribe());
+    this.liveQuerySubscriptions = [];
+
     if (this.networkListenerHandle) {
       this.networkListenerHandle.remove();
       this.networkListenerHandle = null;
@@ -155,17 +165,20 @@ export class ReadingsService implements OnDestroy {
 
   /**
    * Initialize reactive observables using Dexie's liveQuery
+   * Stores subscription references for cleanup on service destruction
    */
   private initializeObservables(): void {
-    // Subscribe to readings changes
-    this.liveQueryFn(() => this.db.readings.orderBy('time').reverse().toArray()).subscribe(
-      readings => this._readings$.next(readings)
-    );
+    // Subscribe to readings changes with cleanup
+    const readingsSub = this.liveQueryFn(() =>
+      this.db.readings.orderBy('time').reverse().toArray()
+    ).subscribe(readings => this._readings$.next(readings));
+    this.liveQuerySubscriptions.push(readingsSub);
 
-    // Subscribe to sync queue changes
-    this.liveQueryFn(() => this.db.syncQueue.count()).subscribe(count =>
+    // Subscribe to sync queue changes with cleanup
+    const syncQueueSub = this.liveQueryFn(() => this.db.syncQueue.count()).subscribe(count =>
       this._pendingSyncCount$.next(count)
     );
+    this.liveQuerySubscriptions.push(syncQueueSub);
   }
 
   /**

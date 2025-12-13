@@ -18,6 +18,7 @@ import {
   AccountState,
 } from '../models';
 import { ApiGatewayService } from './api-gateway.service';
+import { LoggerService } from './logger.service';
 
 /**
  * Backend user update payload (PATCH /users/me)
@@ -59,7 +60,10 @@ export class ProfileService implements OnDestroy {
   private _tidepoolConnected$ = new BehaviorSubject<boolean>(false);
   public readonly tidepoolConnected$ = this._tidepoolConnected$.asObservable();
 
-  constructor(private apiGateway: ApiGatewayService) {
+  constructor(
+    private apiGateway: ApiGatewayService,
+    private logger: LoggerService
+  ) {
     this.initialize();
   }
 
@@ -88,7 +92,7 @@ export class ProfileService implements OnDestroy {
         this._tidepoolConnected$.next(profile.tidepoolConnection.connected);
       }
     } catch (error) {
-      console.error('Failed to initialize ProfileService:', error);
+      this.logger.error('ProfileService', 'Failed to initialize ProfileService', error);
     }
   }
 
@@ -117,7 +121,7 @@ export class ProfileService implements OnDestroy {
 
       return profile;
     } catch (error) {
-      console.error('Failed to get profile:', error);
+      this.logger.error('ProfileService', 'Failed to get profile', error);
       return null;
     }
   }
@@ -216,7 +220,7 @@ export class ProfileService implements OnDestroy {
       // Clear cache to force re-fetch on next GET /users/me
       this.apiGateway.clearCache('extservices.users.me');
     } catch (error) {
-      console.error('Failed to update profile on backend:', error);
+      this.logger.error('ProfileService', 'Failed to update profile on backend', error);
       throw error;
     }
   }
@@ -250,7 +254,7 @@ export class ProfileService implements OnDestroy {
 
       throw new Error(response.error?.message || 'Failed to update profile');
     } catch (error) {
-      console.error('Failed to update backend profile:', error);
+      this.logger.error('ProfileService', 'Failed to update backend profile', error);
       throw error;
     }
   }
@@ -299,7 +303,7 @@ export class ProfileService implements OnDestroy {
 
       this._tidepoolConnected$.next(true);
     } catch (error) {
-      console.error('Failed to set Tidepool credentials:', error);
+      this.logger.error('ProfileService', 'Failed to set Tidepool credentials', error);
       throw new Error('Failed to save authentication credentials');
     }
   }
@@ -319,13 +323,13 @@ export class ProfileService implements OnDestroy {
 
       // Check if token is expired
       if (auth.expiresAt && auth.expiresAt < Date.now()) {
-        console.warn('Tidepool auth token expired');
+        this.logger.warn('ProfileService', 'Tidepool auth token expired');
         // Don't clear automatically - let the auth service handle refresh
       }
 
       return auth;
     } catch (error) {
-      console.error('Failed to get Tidepool credentials:', error);
+      this.logger.error('ProfileService', 'Failed to get Tidepool credentials', error);
       return null;
     }
   }
@@ -418,7 +422,10 @@ export class ProfileService implements OnDestroy {
     const currentVersion = value ? parseInt(value, 10) : 0;
 
     if (currentVersion < CURRENT_SCHEMA_VERSION) {
-      console.log(`Running migrations from version ${currentVersion} to ${CURRENT_SCHEMA_VERSION}`);
+      this.logger.info(
+        'ProfileService',
+        `Running migrations from version ${currentVersion} to ${CURRENT_SCHEMA_VERSION}`
+      );
 
       // Run migrations sequentially
       for (let version = currentVersion + 1; version <= CURRENT_SCHEMA_VERSION; version++) {
@@ -437,7 +444,7 @@ export class ProfileService implements OnDestroy {
    * Execute migration for specific version
    */
   private async migrate(toVersion: number): Promise<void> {
-    console.log(`Migrating to version ${toVersion}`);
+    this.logger.info('ProfileService', `Migrating to version ${toVersion}`);
 
     switch (toVersion) {
       case 1:
@@ -445,7 +452,7 @@ export class ProfileService implements OnDestroy {
         break;
       // Add future migrations here
       default:
-        console.warn(`No migration defined for version ${toVersion}`);
+        this.logger.warn('ProfileService', `No migration defined for version ${toVersion}`);
     }
   }
 
@@ -470,7 +477,7 @@ export class ProfileService implements OnDestroy {
       };
 
       await this.saveProfile(migratedProfile);
-      console.log('Profile migrated to v1');
+      this.logger.info('ProfileService', 'Profile migrated to v1');
     }
   }
 
@@ -521,7 +528,7 @@ export class ProfileService implements OnDestroy {
       await this.saveProfile(profile);
       return profile;
     } catch (error) {
-      console.error('Failed to import profile:', error);
+      this.logger.error('ProfileService', 'Failed to import profile', error);
       throw new Error('Invalid profile data');
     }
   }

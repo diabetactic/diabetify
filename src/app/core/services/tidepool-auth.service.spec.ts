@@ -1,12 +1,21 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { TidepoolAuthService } from './tidepool-auth.service';
 import { TokenStorageService } from './token-storage.service';
-import { CapacitorHttpService } from './capacitor-http.service';
 import { TidepoolAuth } from '../models/tidepool-auth.model';
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
+
+// Helper to create mock HttpResponse with headers
+function createMockHttpResponse<T>(
+  body: T,
+  headers: Record<string, string>,
+  status = 200
+): HttpResponse<T> {
+  const httpHeaders = new HttpHeaders(headers);
+  return new HttpResponse<T>({ body, headers: httpHeaders, status });
+}
 
 // Mock Capacitor modules
 jest.mock('@capacitor/browser');
@@ -21,7 +30,6 @@ jest.mock('@capacitor/core');
 describe('TidepoolAuthService', () => {
   let service: TidepoolAuthService;
   let httpMock: jest.Mocked<HttpClient>;
-  let capacitorHttpMock: jest.Mocked<CapacitorHttpService>;
   let tokenStorageMock: jest.Mocked<TokenStorageService>;
 
   const mockAuthData: TidepoolAuth = {
@@ -37,11 +45,6 @@ describe('TidepoolAuthService', () => {
 
   beforeEach(() => {
     httpMock = {
-      post: jest.fn(),
-    } as any;
-
-    capacitorHttpMock = {
-      request: jest.fn(),
       post: jest.fn(),
     } as any;
 
@@ -65,7 +68,6 @@ describe('TidepoolAuthService', () => {
       providers: [
         TidepoolAuthService,
         { provide: HttpClient, useValue: httpMock },
-        { provide: CapacitorHttpService, useValue: capacitorHttpMock },
         { provide: TokenStorageService, useValue: tokenStorageMock },
       ],
     });
@@ -75,29 +77,21 @@ describe('TidepoolAuthService', () => {
 
   describe('loginWithCredentials', () => {
     it('should successfully login with valid credentials', async () => {
-      const mockResponse = {
-        status: 200,
-        headers: {
-          'x-tidepool-session-token': 'session-token-123',
-        },
-        data: {
-          userid: 'user123',
-          username: 'test@example.com',
-        },
-      };
+      const mockBody = { userid: 'user123', username: 'test@example.com' };
+      const mockHeaders = { 'x-tidepool-session-token': 'session-token-123' };
 
-      capacitorHttpMock.request.mockResolvedValue(mockResponse);
+      httpMock.post.mockReturnValue(of(createMockHttpResponse(mockBody, mockHeaders)));
 
       await service.loginWithCredentials('test@example.com', 'password123');
 
-      expect(capacitorHttpMock.request).toHaveBeenCalledWith({
-        method: 'POST',
-        url: 'https://api.tidepool.org/auth/login',
-        headers: {
-          Authorization: expect.stringContaining('Basic'),
-          'Content-Type': 'application/json',
-        },
-      });
+      expect(httpMock.post).toHaveBeenCalledWith(
+        'https://api.tidepool.org/auth/login',
+        null,
+        expect.objectContaining({
+          headers: expect.any(HttpHeaders),
+          observe: 'response',
+        })
+      );
 
       expect(tokenStorageMock.storeAuth).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -109,10 +103,9 @@ describe('TidepoolAuthService', () => {
     });
 
     it('should handle invalid credentials', async () => {
-      capacitorHttpMock.request.mockRejectedValue({
-        status: 401,
-        message: 'Invalid credentials',
-      });
+      httpMock.post.mockReturnValue(
+        throwError(() => ({ status: 401, message: 'Invalid credentials' }))
+      );
 
       await expect(
         service.loginWithCredentials('test@example.com', 'wrongpassword')
@@ -120,11 +113,8 @@ describe('TidepoolAuthService', () => {
     });
 
     it('should handle missing session token', async () => {
-      capacitorHttpMock.request.mockResolvedValue({
-        status: 200,
-        headers: {},
-        data: { userid: 'user123' },
-      });
+      const mockBody = { userid: 'user123' };
+      httpMock.post.mockReturnValue(of(createMockHttpResponse(mockBody, {})));
 
       await expect(service.loginWithCredentials('test@example.com', 'password123')).rejects.toThrow(
         'No session token received from Tidepool'
@@ -132,11 +122,8 @@ describe('TidepoolAuthService', () => {
     });
 
     it('should handle missing user ID', async () => {
-      capacitorHttpMock.request.mockResolvedValue({
-        status: 200,
-        headers: { 'x-tidepool-session-token': 'token' },
-        data: {},
-      });
+      const mockHeaders = { 'x-tidepool-session-token': 'token' };
+      httpMock.post.mockReturnValue(of(createMockHttpResponse({}, mockHeaders)));
 
       await expect(service.loginWithCredentials('test@example.com', 'password123')).rejects.toThrow(
         'No user ID received from Tidepool'
@@ -144,13 +131,10 @@ describe('TidepoolAuthService', () => {
     });
 
     it('should update auth state on successful login', async () => {
-      const mockResponse = {
-        status: 200,
-        headers: { 'x-tidepool-session-token': 'token' },
-        data: { userid: 'user123', username: 'test@example.com' },
-      };
+      const mockBody = { userid: 'user123', username: 'test@example.com' };
+      const mockHeaders = { 'x-tidepool-session-token': 'token' };
 
-      capacitorHttpMock.request.mockResolvedValue(mockResponse);
+      httpMock.post.mockReturnValue(of(createMockHttpResponse(mockBody, mockHeaders)));
 
       await service.loginWithCredentials('test@example.com', 'password123');
 
@@ -209,7 +193,7 @@ describe('TidepoolAuthService', () => {
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMTIzIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIn0.test',
       };
 
-      capacitorHttpMock.post.mockReturnValue(of(mockTokenResponse));
+      httpMock.post.mockReturnValue(of(mockTokenResponse));
 
       const newToken = await service.refreshAccessToken();
 
@@ -226,7 +210,7 @@ describe('TidepoolAuthService', () => {
     });
 
     it('should logout if refresh fails', async () => {
-      capacitorHttpMock.post.mockReturnValue(throwError(() => new Error('Refresh failed')));
+      httpMock.post.mockReturnValue(throwError(() => new Error('Refresh failed')));
 
       await expect(service.refreshAccessToken()).rejects.toThrow('Session expired');
 
@@ -257,7 +241,7 @@ describe('TidepoolAuthService', () => {
         id_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMTIzIn0.test',
       };
 
-      capacitorHttpMock.post.mockReturnValue(of(mockTokenResponse));
+      httpMock.post.mockReturnValue(of(mockTokenResponse));
 
       const token = await service.getAccessToken();
 

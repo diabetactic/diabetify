@@ -16,6 +16,12 @@ const config: CapacitorConfig = {
       // Android Keystore configuration
       sharedPreferencesName: 'io.diabetactic.secure.prefs',
     },
+    CapacitorHttp: {
+      // Enable auto-patching: patches window.fetch and XMLHttpRequest
+      // so Angular HttpClient uses native HTTP on mobile platforms
+      // This bypasses CORS and allows interceptors to work properly
+      enabled: true,
+    },
   },
 };
 

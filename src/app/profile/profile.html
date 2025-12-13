@@ -88,6 +88,28 @@
           <p class="text-medium mb-0 mt-1 text-sm">{{ emergencySummary }}</p>
         </div>
       </div>
+
+      <button
+        type="button"
+        class="overview-card"
+        (click)="goToAchievements()"
+        data-testid="achievements-btn"
+      >
+        <app-icon
+          name="trophy-outline"
+          aria-hidden="true"
+          class="text-[28px] text-amber-500"
+        ></app-icon>
+        <div class="min-w-0 flex-1">
+          <p class="m-0 text-base font-semibold">
+            {{ 'achievements.viewAchievements' | translate }}
+          </p>
+          <p class="text-medium mb-0 mt-1 text-sm">
+            {{ 'achievements.achievementsDesc' | translate }}
+          </p>
+        </div>
+        <app-icon name="chevron-forward-outline" aria-hidden="true" class="text-medium"></app-icon>
+      </button>
     </section>
 
     <section class="card">

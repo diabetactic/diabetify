@@ -5,16 +5,68 @@
  * - accept: Accept the next pending appointment
  * - deny: Deny the next pending appointment
  * - clear: Clear all pending appointments from queue
+ * - open: Open the appointment queue
+ * - close: Close the appointment queue
+ *
+ * Auto-detects Docker backend (localhost:8001) if running.
  */
 
 const https = require('https');
+const http = require('http');
 
-const BACKOFFICE_URL =
-  process.env.BACKOFFICE_API_URL || 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com';
-const ACTION = process.env.ACTION; // 'accept', 'deny', or 'clear'
+const HEROKU_URL = 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com';
+const LOCAL_URL = 'http://localhost:8001';
+
+// Will be set after auto-detection
+let BACKOFFICE_URL = process.env.BACKOFFICE_API_URL || null;
+const ACTION = process.env.ACTION; // 'accept', 'deny', 'clear', 'open', 'close'
 const USER_ID = process.env.USER_ID || '1000';
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+
+/**
+ * Auto-detect backend (Docker local or Heroku)
+ */
+async function detectBackend() {
+  if (BACKOFFICE_URL) {
+    console.log(`Using configured backend: ${BACKOFFICE_URL}`);
+    return BACKOFFICE_URL;
+  }
+
+  return new Promise(resolve => {
+    const req = http.request(
+      {
+        hostname: 'localhost',
+        port: 8001,
+        path: '/docs',
+        method: 'GET',
+        timeout: 2000,
+      },
+      res => {
+        if (res.statusCode === 200) {
+          console.log('✓ Docker backend detected (localhost:8001)');
+          resolve(LOCAL_URL);
+        } else {
+          console.log('⚠ Docker not available, using Heroku');
+          resolve(HEROKU_URL);
+        }
+      }
+    );
+
+    req.on('error', () => {
+      console.log('⚠ Docker not running, using Heroku');
+      resolve(HEROKU_URL);
+    });
+
+    req.on('timeout', () => {
+      req.destroy();
+      console.log('⚠ Docker timeout, using Heroku');
+      resolve(HEROKU_URL);
+    });
+
+    req.end();
+  });
+}
 
 /**
  * Make HTTPS request
@@ -155,6 +207,9 @@ async function closeQueue(token) {
  */
 async function main() {
   try {
+    // Auto-detect backend before any operations
+    BACKOFFICE_URL = await detectBackend();
+
     console.log(`Executing action: ${ACTION} for user: ${USER_ID}`);
 
     const token = await getAdminToken();

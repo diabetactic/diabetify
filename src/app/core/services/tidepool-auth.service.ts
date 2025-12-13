@@ -20,7 +20,7 @@ import { TidepoolAuth, TidepoolTokenResponse } from '../models/tidepool-auth.mod
 import { getOAuthConfig, OAuthConfig } from '../config/oauth.config';
 import { generatePKCEChallenge, generateState, buildAuthorizationUrl } from '../utils/pkce.utils';
 import { TokenStorageService } from './token-storage.service';
-import { CapacitorHttpService } from './capacitor-http.service';
+import { LoggerService } from './logger.service';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -124,9 +124,9 @@ export class TidepoolAuthService implements OnDestroy {
 
   constructor(
     private http: HttpClient,
-    private capacitorHttp: CapacitorHttpService,
     private tokenStorage: TokenStorageService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private logger: LoggerService
   ) {
     this.oauthConfig = getOAuthConfig();
     this.initialize();
@@ -176,30 +176,33 @@ export class TidepoolAuthService implements OnDestroy {
       // Create Basic auth header
       const credentials = btoa(`${email}:${password}`);
 
-      // Call Tidepool's login endpoint (https://api.tidepool.org/auth/login)
-      const response = await this.capacitorHttp.request<Record<string, unknown>>({
-        method: 'POST',
-        url: `https://api.tidepool.org/auth/login`,
-        headers: {
-          Authorization: `Basic ${credentials}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      // Call Tidepool's login endpoint using HttpClient with observe: 'response' to get headers
+      // With CapacitorHttp auto-patching enabled, HttpClient uses native HTTP on mobile
+      const httpResponse = await firstValueFrom(
+        this.http.post<Record<string, unknown>>(`https://api.tidepool.org/auth/login`, null, {
+          headers: new HttpHeaders({
+            Authorization: `Basic ${credentials}`,
+            'Content-Type': 'application/json',
+          }),
+          observe: 'response',
+        })
+      );
 
-      console.log('🔵 [TidepoolAuth] Login response:', JSON.stringify(response, null, 2));
+      this.logger.debug('TidepoolAuth', 'Login response status', { status: httpResponse.status });
 
       // Extract session token from response headers
       const sessionToken =
-        response['headers']?.['x-tidepool-session-token'] ||
-        response['headers']?.['X-Tidepool-Session-Token'];
+        httpResponse.headers.get('x-tidepool-session-token') ||
+        httpResponse.headers.get('X-Tidepool-Session-Token');
 
       if (!sessionToken) {
         throw new Error('No session token received from Tidepool');
       }
 
       // Get user ID from response body
-      const userId = (response['data']?.['userid'] || response['data']?.['userId']) as string;
-      const userEmail = (response['data']?.['username'] as string | undefined) || email;
+      const responseBody = httpResponse.body || {};
+      const userId = (responseBody['userid'] || responseBody['userId']) as string;
+      const userEmail = (responseBody['username'] as string | undefined) || email;
 
       if (!userId) {
         throw new Error('No user ID received from Tidepool');
@@ -230,9 +233,9 @@ export class TidepoolAuthService implements OnDestroy {
         lastAuthenticated: Date.now(),
       });
 
-      console.log('🟢 [TidepoolAuth] Login successful! User:', userId);
+      this.logger.info('TidepoolAuth', 'Login successful', { userId });
     } catch (error: unknown) {
-      console.error('🔴 [TidepoolAuth] Login failed:', error);
+      this.logger.error('TidepoolAuth', 'Login failed', error);
 
       const errorObj = error as Record<string, unknown>;
       let errorMessage = 'Login failed';
@@ -309,7 +312,7 @@ export class TidepoolAuthService implements OnDestroy {
         toolbarColor: '#2196F3',
       });
     } catch (error) {
-      console.error('Login failed:', error);
+      this.logger.error('TidepoolAuth', 'Login failed', error);
       this.updateAuthState({
         isLoading: false,
         error: 'Failed to start login process',
@@ -358,7 +361,7 @@ export class TidepoolAuthService implements OnDestroy {
       // Clear temporary OAuth state
       this.clearPendingOAuthData();
     } catch (error) {
-      console.error('OAuth callback error:', error);
+      this.logger.error('TidepoolAuth', 'OAuth callback error', error);
       this.updateAuthState({
         isLoading: false,
         error: error instanceof Error ? error.message : 'Authentication failed',
@@ -406,13 +409,12 @@ export class TidepoolAuthService implements OnDestroy {
     });
 
     try {
-      // Exchange code for tokens using CapacitorHttp (bypasses CORS)
+      // Exchange code for tokens
+      // With CapacitorHttp auto-patching enabled, HttpClient uses native HTTP on mobile
       const tokenResponse = await firstValueFrom(
-        this.capacitorHttp.post<TidepoolTokenResponse>(
-          this.oauthConfig.tokenEndpoint,
-          body.toString(),
-          { headers }
-        )
+        this.http.post<TidepoolTokenResponse>(this.oauthConfig.tokenEndpoint, body.toString(), {
+          headers,
+        })
       );
 
       if (!tokenResponse) {
@@ -436,7 +438,7 @@ export class TidepoolAuthService implements OnDestroy {
         email: userInfo?.['email'] as string,
       });
     } catch (error) {
-      console.error('Token exchange failed:', error);
+      this.logger.error('TidepoolAuth', 'Token exchange failed', error);
       throw new Error('Failed to exchange authorization code for tokens');
     }
   }
@@ -487,7 +489,7 @@ export class TidepoolAuthService implements OnDestroy {
 
       return JSON.parse(decodedPayload);
     } catch (error) {
-      console.error('Failed to decode ID token:', error);
+      this.logger.error('TidepoolAuth', 'Failed to decode ID token', error);
       return {};
     }
   }
@@ -517,13 +519,12 @@ export class TidepoolAuthService implements OnDestroy {
         'Content-Type': 'application/x-www-form-urlencoded',
       });
 
-      // Request new tokens using CapacitorHttp (bypasses CORS)
+      // Request new tokens
+      // With CapacitorHttp auto-patching enabled, HttpClient uses native HTTP on mobile
       const tokenResponse = await firstValueFrom(
-        this.capacitorHttp.post<TidepoolTokenResponse>(
-          this.oauthConfig.tokenEndpoint,
-          body.toString(),
-          { headers }
-        )
+        this.http.post<TidepoolTokenResponse>(this.oauthConfig.tokenEndpoint, body.toString(), {
+          headers,
+        })
       );
 
       if (!tokenResponse) {
@@ -540,7 +541,7 @@ export class TidepoolAuthService implements OnDestroy {
 
       return tokenResponse['access_token'];
     } catch (error) {
-      console.error('Token refresh failed:', error);
+      this.logger.error('TidepoolAuth', 'Token refresh failed', error);
       // Clear auth state if refresh fails
       await this.logout();
       throw new Error('Session expired. Please log in again.');
@@ -567,7 +568,7 @@ export class TidepoolAuthService implements OnDestroy {
       try {
         return await this.refreshAccessToken();
       } catch (error) {
-        console.error('Failed to restore session:', error);
+        this.logger.error('TidepoolAuth', 'Failed to restore session', error);
         return null;
       }
     }
@@ -595,7 +596,7 @@ export class TidepoolAuthService implements OnDestroy {
         email: null,
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      this.logger.error('TidepoolAuth', 'Logout error', error);
       throw error;
     }
   }
@@ -636,7 +637,7 @@ export class TidepoolAuthService implements OnDestroy {
         }
       }
     } catch (error) {
-      console.error('Session restoration failed:', error);
+      this.logger.error('TidepoolAuth', 'Session restoration failed', error);
       this.updateAuthState({ isLoading: false });
     }
   }

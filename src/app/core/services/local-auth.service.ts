@@ -7,7 +7,6 @@ import { PlatformDetectorService } from './platform-detector.service';
 import { LoggerService } from './logger.service';
 import { MockDataService } from './mock-data.service';
 import { MockAdapterService } from './mock-adapter.service';
-import { CapacitorHttpService } from './capacitor-http.service';
 import { environment } from '../../../environments/environment';
 import { API_GATEWAY_BASE_URL } from '../../shared/config/api-base-url';
 
@@ -167,8 +166,7 @@ export class LocalAuthService {
     private platformDetector: PlatformDetectorService,
     private logger: LoggerService,
     private mockData: MockDataService,
-    private mockAdapter: MockAdapterService,
-    private capacitorHttp: CapacitorHttpService
+    private mockAdapter: MockAdapterService
   ) {
     this.logger.info('Init', 'LocalAuthService initialized');
     // Set base URL for API calls
@@ -325,8 +323,9 @@ export class LocalAuthService {
       endpoint: `${this.baseUrl}/token`,
     });
 
-    // Call token endpoint directly (use Capacitor HTTP to bypass CORS)
-    const httpObservable = this.capacitorHttp.post<GatewayTokenResponse>(
+    // Call token endpoint directly
+    // With CapacitorHttp auto-patching enabled, HttpClient uses native HTTP on mobile
+    const httpObservable = this.http.post<GatewayTokenResponse>(
       `${this.baseUrl}/token`,
       body.toString(),
       {
@@ -539,7 +538,7 @@ export class LocalAuthService {
 
         this.logger.info('Auth', 'Calling refresh endpoint', { endpoint: `${this.baseUrl}/token` });
 
-        return this.capacitorHttp
+        return this.http
           .post<GatewayTokenResponse>(`${this.baseUrl}/token`, body.toString(), {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           })
@@ -748,7 +747,7 @@ export class LocalAuthService {
     const reminderTime = (expiresInSeconds - 300) * 1000;
     if (reminderTime > 0) {
       setTimeout(() => {
-        console.log('Token will expire soon. User should re-authenticate.');
+        this.logger.warn('Auth', 'Token will expire soon - user should re-authenticate');
         // Could emit an event here for the UI to show a warning
       }, reminderTime);
     }
@@ -762,14 +761,13 @@ export class LocalAuthService {
       Authorization: `Bearer ${accessToken}`,
     };
 
-    // Call user profile endpoint directly (use Capacitor HTTP to bypass CORS)
-    return this.capacitorHttp
-      .get<GatewayUserResponse>(`${this.baseUrl}/users/me`, { headers })
-      .pipe(
-        catchError(() => {
-          return throwError(() => new Error('Failed to fetch user profile'));
-        })
-      );
+    // Call user profile endpoint directly
+    // With CapacitorHttp auto-patching enabled, HttpClient uses native HTTP on mobile
+    return this.http.get<GatewayUserResponse>(`${this.baseUrl}/users/me`, { headers }).pipe(
+      catchError(() => {
+        return throwError(() => new Error('Failed to fetch user profile'));
+      })
+    );
   }
 
   /**
@@ -866,7 +864,7 @@ export class LocalAuthService {
 
     const errorObj = error as Record<string, unknown>;
 
-    // Check for timeout error (from CapacitorHttpService withTimeout)
+    // Check for timeout error
     if (errorObj['isTimeout']) {
       return 'La solicitud tardó demasiado. Verifica tu conexión e intenta de nuevo.';
     }

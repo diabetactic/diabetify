@@ -188,17 +188,26 @@ export class DashboardPage implements OnInit, OnDestroy {
         }
       }
 
-      // Get statistics for the last month
-      this.statistics = await this.readingsService.getStatistics(
-        'month',
-        70,
-        180,
-        this.preferredGlucoseUnit
-      );
+      // Load statistics and readings in parallel using Promise.allSettled
+      // This ensures both complete regardless of individual failures
+      const [statisticsResult, readingsResult] = await Promise.allSettled([
+        this.readingsService.getStatistics('month', 70, 180, this.preferredGlucoseUnit),
+        this.readingsService.getAllReadings(5),
+      ]);
 
-      // Get recent readings (last 5)
-      const result = await this.readingsService.getAllReadings(5);
-      this.recentReadings = result.readings;
+      // Update statistics if successful, keep existing on failure
+      if (statisticsResult.status === 'fulfilled') {
+        this.statistics = statisticsResult.value;
+      } else {
+        this.logger.warn('Dashboard', 'Failed to load statistics', statisticsResult.reason);
+      }
+
+      // Update readings if successful, keep existing on failure
+      if (readingsResult.status === 'fulfilled') {
+        this.recentReadings = readingsResult.value.readings;
+      } else {
+        this.logger.warn('Dashboard', 'Failed to load recent readings', readingsResult.reason);
+      }
     } catch (error) {
       this.logger.error('Dashboard', 'Error loading dashboard data', error);
     } finally {

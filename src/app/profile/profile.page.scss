@@ -165,7 +165,7 @@ button.overview-card {
 
 // Tidepool button custom styling
 .tidepool-card ion-button {
-  --border-radius: 12px;
+  --border-radius: 1rem;
 
   font-weight: 600;
 }
@@ -186,12 +186,12 @@ button.overview-card {
 .about-row.link:focus-visible {
   outline: 2px solid var(--ion-color-primary, #3b82f6);
   outline-offset: 2px;
-  border-radius: 12px;
+  border-radius: 1rem;
 }
 
 // Sign out button custom styling
 .sign-out {
-  --border-radius: 14px;
+  --border-radius: 1rem;
 
   margin-top: 8px;
 

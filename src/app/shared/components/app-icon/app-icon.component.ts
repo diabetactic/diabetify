@@ -307,6 +307,13 @@ export class AppIconComponent {
     sports: 'trophy',
     'restaurant-outline': 'utensils-crossed',
     restaurant: 'utensils-crossed',
+    // Achievement icons
+    'trophy-outline': 'trophy',
+    trophy: 'trophy',
+    'flame-outline': 'flame',
+    flame: 'flame',
+    'ribbon-outline': 'award',
+    ribbon: 'award',
   };
 
   get mappedName(): string {

@@ -2,11 +2,6 @@
 // Most styles use Tailwind v4 utilities
 // Keeping only Ionic-specific CSS variables and complex animations
 
-// Ionic datetime custom styling
-ion-datetime {
-  --background: oklch(var(--b1));
-}
-
 // Ionic textarea custom styling
 ion-textarea {
   --background: oklch(var(--b1));
@@ -45,17 +40,13 @@ ion-searchbar {
   --color: oklch(var(--bc));
   --placeholder-color: oklch(var(--bc) / 50%);
   --icon-color: oklch(var(--bc) / 50%);
-  --border-radius: 12px;
+  --border-radius: 1rem;
   --box-shadow: var(--shadow-34);
 }
 
 // Dark mode - class-based
 :host-context(.dark),
 :host-context(.ion-palette-dark) {
-  ion-datetime {
-    --background: oklch(var(--b2));
-  }
-
   ion-textarea {
     --background: oklch(var(--b2));
     --color: oklch(var(--bc));

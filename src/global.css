@@ -40,8 +40,8 @@
   --color-success-content: #0f172a; /* contraste 8.8:1 sobre success */
   --color-warning: #f59e0b;
   --color-warning-content: #000;
-  --color-error: #ef4444;
-  --color-error-content: #0f172a; /* contraste 5.3:1 sobre error */
+  --color-error: #fca5a5;
+  --color-error-content: #0f172a; /* contraste 8.9:1 sobre error (WCAG AA compliant) */
 
   /* Semantic app colors (light) */
   --dt-color-text-primary: #1f2937; /* slate-800 */
@@ -234,13 +234,13 @@
   --ion-color-warning-shade: #d88b0a;
   --ion-color-warning-tint: #f6a823;
 
-  /* Bridge DaisyUI error to Ionic danger */
-  --ion-color-danger: #ef4444;
-  --ion-color-danger-rgb: 239, 68, 68;
-  --ion-color-danger-contrast: #fff;
-  --ion-color-danger-contrast-rgb: 255, 255, 255;
-  --ion-color-danger-shade: #d13c3c;
-  --ion-color-danger-tint: #f05757;
+  /* Bridge DaisyUI error to Ionic danger (Lighter for dark mode - better contrast) */
+  --ion-color-danger: #fca5a5;
+  --ion-color-danger-rgb: 252, 165, 165;
+  --ion-color-danger-contrast: #0f172a;
+  --ion-color-danger-contrast-rgb: 15, 23, 42;
+  --ion-color-danger-shade: #ef4444;
+  --ion-color-danger-tint: #fecaca;
 
   /* Dark theme background and surface colors */
   --ion-background-color: #101c22;
@@ -261,11 +261,11 @@
   --dt-color-surface: rgb(15 23 42 / 96%);
   --dt-color-surface-soft: rgb(15 23 42 / 92%);
 
-  /* Glucose status colors (dark - same as light for now) */
+  /* Glucose status colors (dark - adjusted for better contrast) */
   --glucose-normal: #22c55e;
   --glucose-low: #f59e0b;
-  --glucose-high: #ef4444;
-  --glucose-critical: #dc2626;
+  --glucose-high: #fca5a5;
+  --glucose-critical: #fecaca;
 }
 
 /* ============================================
@@ -334,6 +334,24 @@
 
   /* ========== FORM CONTROLS (THEME-AWARE) ========== */
 
+  /* Consistent input border radius - 1rem (16px) to match card styling */
+  ion-input,
+  ion-select,
+  ion-textarea,
+  ion-searchbar {
+    --border-radius: 1rem;
+  }
+
+  .input,
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='number'],
+  select,
+  textarea {
+    border-radius: 1rem;
+  }
+
   /* Light theme - datetime components (hex fallbacks for Android WebView) */
   ion-datetime {
     --background: var(--color-base-100, #fff);
@@ -347,6 +365,8 @@
     --header-color: var(--color-base-content, #0d171c);
     --backdrop-opacity: 0.35;
 
+    width: 100%;
+    max-width: 100%;
     border-radius: 16px;
     box-shadow: var(--shadow-10, 0 12px 30px -10px rgb(0 0 0 / 20%));
     color: var(--color-base-content, #0d171c);
@@ -359,6 +379,7 @@
 
   ion-datetime::part(wheel-item) {
     font-weight: 600;
+    width: 100%;
 
     /* Fix for numbers disappearing during scroll */
     will-change: transform;
@@ -375,6 +396,7 @@
     --padding-bottom: 10px;
     --border-color: rgb(13 23 28 / 12%);
 
+    width: 100%;
     border: 1px solid var(--border-color);
     border-radius: 12px;
     box-shadow: var(--shadow-06, 0 8px 18px -14px rgb(0 0 0 / 35%));
@@ -386,6 +408,20 @@
     font-weight: 600;
     letter-spacing: 0.01em;
     gap: 0.35rem;
+  }
+
+  /* Date picker in modal/popover context */
+  ion-modal ion-datetime,
+  ion-popover ion-datetime {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Date picker in cards */
+  .card ion-datetime,
+  ion-card ion-datetime {
+    width: 100%;
+    border-radius: 1rem;
   }
 
   ion-select {
@@ -1133,6 +1169,34 @@ html {
   }
 }
 /* stylelint-enable declaration-no-important */
+
+/* ============================================
+ * ACCESSIBILITY: FOCUS INDICATORS
+ * Keyboard navigation support (WCAG 2.1 AA)
+ * ============================================ */
+
+/* Global focus-visible indicator for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 2px;
+}
+
+/* Enhanced focus for Ionic components */
+ion-button:focus-visible::part(native),
+ion-input:focus-visible,
+ion-select:focus-visible,
+ion-toggle:focus-visible {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+/* Focus for interactive elements */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 2px;
+}
 
 /* Material Symbols Outlined configuration */
 .material-symbols-outlined {

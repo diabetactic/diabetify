@@ -62,6 +62,11 @@ export const APP_ROUTES: Routes = [
     loadComponent: () =>
       import('./bolus-calculator/bolus-calculator.page').then(m => m.BolusCalculatorPage),
   },
+  {
+    path: 'achievements',
+    canMatch: [OnboardingGuard],
+    loadComponent: () => import('./achievements/achievements.page').then(m => m.AchievementsPage),
+  },
 ];
 
 @NgModule({

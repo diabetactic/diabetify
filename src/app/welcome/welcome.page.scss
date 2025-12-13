@@ -151,9 +151,9 @@
   padding: 8px;
 }
 
-// Register link - styled like the design
+// Register link - styled like the design (WCAG AA compliant)
 .register-link {
-  color: #0e7490; // Cyan-700 (was #0891b2 cyan-600 - insufficient contrast 3.68:1)
+  color: #0a5f7d; // Darker cyan for better contrast (7.2:1 ratio)
   font-size: 16px;
   font-weight: 600;
   text-decoration: none;
