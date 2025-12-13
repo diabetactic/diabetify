@@ -85,7 +85,7 @@
       color="medium"
       (click)="onCancel()"
       [disabled]="isSubmitting"
-      >
+    >
       {{ 'profile.edit.cancel' | translate }}
     </ion-button>
     <ion-button
@@ -93,13 +93,9 @@
       color="primary"
       (click)="onSubmit()"
       [disabled]="editForm.invalid || isSubmitting"
-      >
+    >
       @if (!isSubmitting) {
-        <app-icon
-          name="checkmark-outline"
-          slot="start"
-          aria-hidden="true"
-        ></app-icon>
+        <app-icon name="checkmark-outline" slot="start" aria-hidden="true"></app-icon>
       }
       @if (isSubmitting) {
         <ion-spinner name="crescent" slot="start"></ion-spinner>

@@ -39,19 +39,19 @@ import { LoggerService } from '@core/services/logger.service';
         <ion-title>🧪 Automated Integration Tests</ion-title>
       </ion-toolbar>
     </ion-header>
-    
+
     <ion-content class="ion-padding">
       <div class="test-container prose prose-sm">
         <!-- Credentials Section -->
         <div class="credentials-section">
           <h2>🔑 Heroku API Gateway</h2>
           <p class="api-url"><strong>URL:</strong> {{ apiUrl }}</p>
-    
+
           <ion-item>
             <ion-label position="stacked">Username (DNI)</ion-label>
             <ion-input [(ngModel)]="username" placeholder="1000" [disabled]="running"></ion-input>
           </ion-item>
-    
+
           <ion-item>
             <ion-label position="stacked">Password</ion-label>
             <ion-input
@@ -61,14 +61,14 @@ import { LoggerService } from '@core/services/logger.service';
               [disabled]="running"
             ></ion-input>
           </ion-item>
-    
+
           <ion-button
             expand="block"
             (click)="runAllTests()"
             [disabled]="running"
             color="success"
             class="run-button"
-            >
+          >
             <ion-icon
               name="{{ running ? 'hourglass-outline' : 'rocket-outline' }}"
               slot="start"
@@ -76,7 +76,7 @@ import { LoggerService } from '@core/services/logger.service';
             {{ running ? '⏳ Running Tests...' : '🚀 Run All Tests' }}
           </ion-button>
         </div>
-    
+
         <!-- Results Section -->
         @if (results.length > 0) {
           <div class="results-section">
@@ -87,7 +87,7 @@ import { LoggerService } from '@core/services/logger.service';
                 [class.success]="result.status === 'success'"
                 [class.error]="result.status === 'error'"
                 [class.pending]="result.status === 'pending'"
-                >
+              >
                 <div class="result-header">
                   <span class="test-name">{{ result.name }}</span>
                   @if (result.duration) {
@@ -113,7 +113,7 @@ import { LoggerService } from '@core/services/logger.service';
               class="summary-card"
               [class.all-pass]="successCount === results.length"
               [class.some-fail]="successCount < results.length"
-              >
+            >
               <h3>{{ summaryEmoji }} Summary</h3>
               <p>
                 <strong>Passed:</strong> {{ successCount }} <br />
@@ -123,7 +123,7 @@ import { LoggerService } from '@core/services/logger.service';
             </div>
           </div>
         }
-    
+
         <!-- Empty State -->
         @if (results.length === 0 && !running) {
           <div class="empty-state">
@@ -133,7 +133,7 @@ import { LoggerService } from '@core/services/logger.service';
         }
       </div>
     </ion-content>
-    `,
+  `,
   styles: [
     `
       .test-container {

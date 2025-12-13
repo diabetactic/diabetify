@@ -3,7 +3,12 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
 
-import { LocalAuthService, LocalAuthState, LocalUser, AccountState } from '@services/local-auth.service';
+import {
+  LocalAuthService,
+  LocalAuthState,
+  LocalUser,
+  AccountState,
+} from '@services/local-auth.service';
 import { PlatformDetectorService } from '@services/platform-detector.service';
 import { LoggerService } from '@services/logger.service';
 import { MockDataService } from '@services/mock-data.service';

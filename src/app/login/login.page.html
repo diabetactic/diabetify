@@ -6,7 +6,7 @@
         src="assets/images/welcome-kids.webp"
         alt="{{ 'welcome.heroAlt' | translate }}"
         class="kids-image"
-        />
+      />
     </div>
     <h1 class="login-title">{{ 'app.name' | translate }}</h1>
     <p class="login-subtitle">
@@ -31,7 +31,7 @@
             spellcheck="false"
             class="login-input"
             data-testid="login-username-input"
-            />
+          />
         </div>
         <label class="field-label" for="password">
           {{ 'login.password.label' | translate }}
@@ -48,7 +48,7 @@
             spellcheck="false"
             class="login-input"
             data-testid="login-password-input"
-            />
+          />
           <ion-button
             fill="clear"
             (click)="togglePasswordVisibility()"
@@ -58,7 +58,7 @@
               showPassword ? ('login.hidePassword' | translate) : ('login.showPassword' | translate)
             "
             type="button"
-            >
+          >
             <ion-icon
               slot="icon-only"
               [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
@@ -74,56 +74,56 @@
             labelPlacement="end"
             [attr.aria-label]="'login.rememberMe' | translate"
             >{{ 'login.rememberMe' | translate }}</ion-checkbox
-            >
-          </div>
+          >
+        </div>
 
-          <button
-            id="login-submit-btn"
-            type="submit"
-            class="login-cta"
-            [disabled]="isLoading || loginForm.invalid"
-            data-testid="login-submit-btn"
-            >
-            @if (!isLoading) {
-              <span>{{ 'login.submitButton' | translate }}</span>
-            }
-            @if (isLoading) {
-              <span class="flex items-center justify-center gap-2">
-                <app-icon name="loader" class="animate-spin"></app-icon>
-                {{ 'login.messages.loggingIn' | translate }}
-              </span>
-            }
-          </button>
+        <button
+          id="login-submit-btn"
+          type="submit"
+          class="login-cta"
+          [disabled]="isLoading || loginForm.invalid"
+          data-testid="login-submit-btn"
+        >
+          @if (!isLoading) {
+            <span>{{ 'login.submitButton' | translate }}</span>
+          }
+          @if (isLoading) {
+            <span class="flex items-center justify-center gap-2">
+              <app-icon name="loader" class="animate-spin"></app-icon>
+              {{ 'login.messages.loggingIn' | translate }}
+            </span>
+          }
+        </button>
 
-          <div class="footer-legal mt-6">
-            <span>© 2025 {{ 'app.name' | translate }} v0.0.1</span>
-            <span>{{ 'common.terms' | translate }}</span>
-            <span>{{ 'common.privacy' | translate }}</span>
-            <span>{{ 'common.support' | translate }}</span>
-          </div>
-        </form>
-      </div>
+        <div class="footer-legal mt-6">
+          <span>© 2025 {{ 'app.name' | translate }} v0.0.1</span>
+          <span>{{ 'common.terms' | translate }}</span>
+          <span>{{ 'common.privacy' | translate }}</span>
+          <span>{{ 'common.support' | translate }}</span>
+        </div>
+      </form>
     </div>
-  </ion-content>
+  </div>
+</ion-content>
 
-  <!-- Footer -->
-  <ion-footer class="login-footer">
-    <ion-toolbar color="light" class="py-2.5 text-center">
-      <ion-text color="medium">
-        <p class="my-0.5 text-xs">{{ 'login.footer.copyright' | translate }}</p>
-        <p class="my-0.5 text-xs">
-          <a href="#" class="text-primary mx-1.5 no-underline hover:underline">{{
-            'login.footer.links.terms' | translate
-          }}</a>
-          •
-          <a href="#" class="text-primary mx-1.5 no-underline hover:underline">{{
-            'login.footer.links.privacy' | translate
-          }}</a>
-          •
-          <a href="#" class="text-primary mx-1.5 no-underline hover:underline">{{
-            'login.footer.links.support' | translate
-          }}</a>
-        </p>
-      </ion-text>
-    </ion-toolbar>
-  </ion-footer>
+<!-- Footer -->
+<ion-footer class="login-footer">
+  <ion-toolbar color="light" class="py-2.5 text-center">
+    <ion-text color="medium">
+      <p class="my-0.5 text-xs">{{ 'login.footer.copyright' | translate }}</p>
+      <p class="my-0.5 text-xs">
+        <a href="#" class="text-primary mx-1.5 no-underline hover:underline">{{
+          'login.footer.links.terms' | translate
+        }}</a>
+        •
+        <a href="#" class="text-primary mx-1.5 no-underline hover:underline">{{
+          'login.footer.links.privacy' | translate
+        }}</a>
+        •
+        <a href="#" class="text-primary mx-1.5 no-underline hover:underline">{{
+          'login.footer.links.support' | translate
+        }}</a>
+      </p>
+    </ion-text>
+  </ion-toolbar>
+</ion-footer>

@@ -23,25 +23,14 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { AppIconComponent } from '../app-icon/app-icon.component';
 
-import {
-  TranslationService,
-  Language,
-  LanguageConfig,
-} from '@services/translation.service';
+import { TranslationService, Language, LanguageConfig } from '@services/translation.service';
 
 @Component({
   selector: 'app-language-switcher',
   templateUrl: './language-switcher.component.html',
   styleUrls: ['./language-switcher.component.scss'],
   standalone: true,
-  imports: [
-    FormsModule,
-    TranslateModule,
-    AppIconComponent,
-    IonButton,
-    IonSelect,
-    IonSelectOption
-],
+  imports: [FormsModule, TranslateModule, AppIconComponent, IonButton, IonSelect, IonSelectOption],
 })
 export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   @Input() displayMode: 'button' | 'select' | 'popover' = 'button';
@@ -204,15 +193,7 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
 @Component({
   selector: 'app-language-popover',
   standalone: true,
-  imports: [
-    TranslateModule,
-    IonList,
-    IonListHeader,
-    IonLabel,
-    IonItem,
-    IonIcon,
-    IonButton
-],
+  imports: [TranslateModule, IonList, IonListHeader, IonLabel, IonItem, IonIcon, IonButton],
   template: `
     <ion-list class="m-0">
       <ion-list-header class="text-xs font-semibold uppercase">
@@ -224,15 +205,14 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
           (click)="selectLanguage(lang.code)"
           [class.selected]="isSelected(lang.code)"
           class="language-item"
-          >
+        >
           <ion-label>
             <span class="mr-3 text-xl">{{ getFlagEmoji(lang.code) }}</span>
             <span class="font-medium">{{ lang.nativeName }}</span>
             <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">({{ lang.code }})</span>
           </ion-label>
           @if (isSelected(lang.code)) {
-            <ion-icon name="checkmark" slot="end" color="primary">
-            </ion-icon>
+            <ion-icon name="checkmark" slot="end" color="primary"> </ion-icon>
           }
         </ion-item>
       }
@@ -245,7 +225,7 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
         </ion-label>
       </ion-item>
     </ion-list>
-    `,
+  `,
   styles: [
     `
       .language-item.selected {

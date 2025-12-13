@@ -7,15 +7,13 @@
     [disabled]="isLoading"
     (click)="toggleLanguage()"
     class="language-btn inline-flex items-center gap-2"
-    >
+  >
     @if (isLoading) {
       <app-icon name="loader" class="h-[18px] w-[18px] animate-spin"></app-icon>
     }
     @if (!isLoading) {
       @if (showIcon && currentLanguage) {
-        <span
-          class="mr-2 inline-flex items-center align-middle text-xl"
-          >
+        <span class="mr-2 inline-flex items-center align-middle text-xl">
           {{ getFlagEmoji(currentLanguage.code) }}
         </span>
       }
@@ -37,11 +35,9 @@
     interface="popover"
     placeholder="{{ 'settings.language.title' | translate }}"
     class="language-select min-w-[120px] sm:min-w-[80px]"
-    >
+  >
     @for (lang of availableLanguages; track trackByLanguage($index, lang)) {
-      <ion-select-option
-        [value]="lang.code"
-        >
+      <ion-select-option [value]="lang.code">
         <span class="mr-2 inline-flex items-center align-middle text-xl">{{
           getFlagEmoji(lang.code)
         }}</span>
@@ -58,15 +54,13 @@
     [disabled]="isLoading"
     (click)="showLanguagePopover($event)"
     class="language-btn inline-flex items-center gap-2"
-    >
+  >
     @if (isLoading) {
       <app-icon name="loader" class="h-[18px] w-[18px] animate-spin"></app-icon>
     }
     @if (!isLoading) {
       @if (showIcon && currentLanguage) {
-        <span
-          class="mr-2 inline-flex items-center align-middle text-xl"
-          >
+        <span class="mr-2 inline-flex items-center align-middle text-xl">
           {{ getFlagEmoji(currentLanguage.code) }}
         </span>
       }

@@ -65,8 +65,8 @@ interface MealContextOption {
     IonSelect,
     IonSelectOption,
     IonTextarea,
-    AppIconComponent
-],
+    AppIconComponent,
+  ],
 })
 export class AddReadingPage implements OnInit, OnDestroy {
   readingForm!: FormGroup;

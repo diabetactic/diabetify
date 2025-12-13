@@ -18,7 +18,7 @@
         fill="none"
         viewBox="0 0 24 24"
         class="h-6 w-6 shrink-0 stroke-current"
-        >
+      >
         <path
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -36,7 +36,7 @@
         <ion-item
           lines="none"
           class="bg-base-100 overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700"
-          >
+        >
           <div class="form-control w-full py-2">
             <label class="label" for="glucose-value-input">
               <span class="label-text text-base-content/80 font-medium">
@@ -87,7 +87,7 @@
         <ion-item
           lines="none"
           class="bg-base-100 overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700"
-          >
+        >
           <div class="form-control w-full py-2">
             <label class="label" for="reading-datetime">
               <span class="label-text text-base-content/80 font-medium">
@@ -118,7 +118,7 @@
         <ion-item
           lines="none"
           class="bg-base-100 overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700"
-          >
+        >
           <div class="form-control w-full py-2">
             <label class="label" for="meal-context-select">
               <span class="label-text text-base-content/80 font-medium">
@@ -134,14 +134,12 @@
                 [cancelText]="'common.cancel' | translate"
                 class="ion-select-full w-full"
                 data-testid="meal-context-select"
-                >
+              >
                 <ion-select-option [value]="null">{{
                   'common.none' | translate
                 }}</ion-select-option>
                 @for (option of mealContextOptions; track trackByMealContext($index, option)) {
-                  <ion-select-option
-                    [value]="option.value"
-                    >
+                  <ion-select-option [value]="option.value">
                     {{ option.labelKey | translate }}
                   </ion-select-option>
                 }
@@ -156,7 +154,7 @@
         <ion-item
           lines="none"
           class="bg-base-100 overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700"
-          >
+        >
           <div class="form-control w-full py-2">
             <label class="label" for="notes-textarea">
               <span class="label-text text-base-content/80 font-medium">
@@ -177,8 +175,8 @@
             <div class="label">
               <span class="label-text-alt text-gray-500">
                 {{
-                'addReading.notes.counter'
-                | translate: { count: readingForm.get('notes')?.value?.length || 0, max: 500 }
+                  'addReading.notes.counter'
+                    | translate: { count: readingForm.get('notes')?.value?.length || 0, max: 500 }
                 }}
               </span>
             </div>
@@ -198,7 +196,7 @@
           class="cancel-button"
           data-testid="add-reading-cancel-btn"
           [attr.aria-label]="'common.cancel' | translate"
-          >
+        >
           {{ 'common.cancel' | translate }}
         </ion-button>
         <ion-button
@@ -209,7 +207,7 @@
           class="save-button inline-flex items-center gap-2"
           data-testid="add-reading-save-btn"
           [attr.aria-label]="'addReading.actions.save' | translate"
-          >
+        >
           @if (isSubmitting) {
             <app-icon name="loader" class="animate-spin"></app-icon>
           }

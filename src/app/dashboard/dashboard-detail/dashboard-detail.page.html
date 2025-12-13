@@ -31,7 +31,7 @@
       <!-- Info Banner -->
       <div
         class="card info-banner bg-base-100 mb-5 rounded-2xl border border-blue-400/20 shadow-sm"
-        >
+      >
         <div class="card-body p-4">
           <div class="flex items-center gap-3">
             <app-icon
@@ -53,7 +53,7 @@
           unit=""
           [icon]="icons.hba1c"
           [gradientColors]="gradients.hba1c"
-          >
+        >
         </app-stat-card>
         <!-- GMI (Glucose Management Indicator) -->
         <app-stat-card
@@ -62,7 +62,7 @@
           unit=""
           [icon]="icons.gmi"
           [gradientColors]="gradients.gmi"
-          >
+        >
         </app-stat-card>
         <!-- Time in Range -->
         <app-stat-card
@@ -71,7 +71,7 @@
           unit=""
           [icon]="icons.timeInRange"
           [gradientColors]="gradients.timeInRange"
-          >
+        >
         </app-stat-card>
         <!-- Average Glucose -->
         <app-stat-card
@@ -80,7 +80,7 @@
           [unit]="getCurrentGlucoseUnit()"
           [icon]="icons.avgGlucose"
           [gradientColors]="gradients.avgGlucose"
-          >
+        >
         </app-stat-card>
         <!-- Standard Deviation -->
         <app-stat-card
@@ -89,7 +89,7 @@
           [unit]="getCurrentGlucoseUnit()"
           [icon]="icons.stdDev"
           [gradientColors]="gradients.stdDev"
-          >
+        >
         </app-stat-card>
         <!-- Coefficient of Variation -->
         <app-stat-card
@@ -98,7 +98,7 @@
           unit=""
           [icon]="icons.cv"
           [gradientColors]="gradients.cv"
-          >
+        >
         </app-stat-card>
       </div>
       <!-- Sync Status Card -->
@@ -114,7 +114,7 @@
             <div
               class="sync-item flex items-center gap-3 rounded-xl p-3"
               style="background: var(--ion-color-light)"
-              >
+            >
               <app-icon
                 name="cloud-upload-outline"
                 class="text-success shrink-0 text-[28px]"
@@ -132,7 +132,7 @@
               <div
                 class="sync-item flex items-center gap-3 rounded-xl p-3"
                 style="background: var(--ion-color-light)"
-                >
+              >
                 <app-icon
                   name="alert-circle-outline"
                   class="text-danger shrink-0 text-[28px]"
@@ -150,7 +150,7 @@
             <div
               class="sync-item flex items-center gap-3 rounded-xl p-3"
               style="background: var(--ion-color-light)"
-              >
+            >
               <ion-icon
                 [name]="isSyncing ? 'ellipse' : 'checkmark-circle'"
                 [color]="isSyncing ? 'warning' : 'success'"
@@ -171,7 +171,7 @@
             (click)="onSync()"
             [disabled]="isSyncing"
             class="mt-4 inline-flex items-center gap-2"
-            >
+          >
             @if (isSyncing) {
               <app-icon name="loader" class="animate-spin"></app-icon>
             }

@@ -1,31 +1,102 @@
 # Lefthook Configuration for Diabetify
 # Replaces Husky + lint-staged for faster parallel git hooks
+#
+# Features:
+# - Parallel pre-commit linting (10x faster than sequential Husky)
+# - Anti-AI commit signature detection (blocks AI-authored commits)
+# - Sensitive data leak prevention
+# - Build validation on push
 
 pre-commit:
   parallel: true
   commands:
     lint-ts:
-      glob: "*.{ts,js}"
+      glob: '*.{ts,js}'
       run: npx prettier --write {staged_files} && npx eslint --fix {staged_files}
       stage_fixed: true
 
     lint-html:
-      glob: "*.html"
+      glob: '*.html'
       run: npx prettier --write {staged_files}
       stage_fixed: true
 
     lint-scss:
-      glob: "*.scss"
+      glob: '*.scss'
       run: npx prettier --write {staged_files} && npx stylelint --fix {staged_files}
       stage_fixed: true
 
     lint-json:
-      glob: "*.{json,md}"
+      glob: '*.{json,md}'
       run: npx prettier --write {staged_files}
       stage_fixed: true
 
+    # Prevent accidental commits of sensitive data
+    no-secrets:
+      glob: '*.{ts,js,json,env}'
+      run: |
+        if grep -rE "(password|secret|api_key|private_key)\s*[:=]\s*['\"][^'\"]+['\"]" {staged_files} 2>/dev/null | grep -v "\.spec\." | grep -v "mock"; then
+          echo "❌ Potential secrets detected! Review staged files."
+          exit 1
+        fi
+      fail_text: "Potential secrets detected in staged files!"
+
+commit-msg:
+  commands:
+    # Block AI-authored commit signatures
+    no-ai-signatures:
+      run: |
+        # Block common AI assistant signatures
+        if grep -qiE "(Generated with|Co-Authored-By:.*Claude|Co-Authored-By:.*GPT|Co-Authored-By:.*Copilot|🤖.*Generated|AI-assisted)" "$1"; then
+          echo ""
+          echo "╔══════════════════════════════════════════════════════════════════╗"
+          echo "║  ❌ AI SIGNATURE DETECTED IN COMMIT MESSAGE                      ║"
+          echo "║                                                                  ║"
+          echo "║  This repository blocks AI-authored commit signatures.          ║"
+          echo "║  Please remove any AI attribution lines from your commit.       ║"
+          echo "║                                                                  ║"
+          echo "║  Blocked patterns:                                               ║"
+          echo "║  • 'Generated with [Claude/GPT/Copilot]'                        ║"
+          echo "║  • 'Co-Authored-By: Claude/GPT/Copilot'                         ║"
+          echo "║  • '🤖 Generated'                                               ║"
+          echo "║  • 'AI-assisted'                                                ║"
+          echo "╚══════════════════════════════════════════════════════════════════╝"
+          echo ""
+          exit 1
+        fi
+      fail_text: "AI signature detected in commit message!"
+
+    # Enforce conventional commit format
+    conventional-commit:
+      run: |
+        # Check for conventional commit format: type(scope): description
+        if ! head -1 "$1" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: .{1,}$"; then
+          echo ""
+          echo "╔══════════════════════════════════════════════════════════════════╗"
+          echo "║  ⚠️  COMMIT MESSAGE FORMAT                                       ║"
+          echo "║                                                                  ║"
+          echo "║  Use conventional commit format:                                 ║"
+          echo "║  type(scope): description                                        ║"
+          echo "║                                                                  ║"
+          echo "║  Types: feat, fix, docs, style, refactor, perf, test,           ║"
+          echo "║         build, ci, chore, revert                                ║"
+          echo "║                                                                  ║"
+          echo "║  Examples:                                                       ║"
+          echo "║  • feat(readings): add glucose trend chart                      ║"
+          echo "║  • fix(auth): resolve token refresh race condition              ║"
+          echo "║  • docs: update API documentation                               ║"
+          echo "╚══════════════════════════════════════════════════════════════════╝"
+          echo ""
+          # Warning only, don't block
+        fi
+
 pre-push:
   commands:
+    # Run quality checks before push
     quality:
-      run: npm run quality
-      fail_text: "Quality checks failed. Run 'npm run quality' to see details."
+      run: pnpm run quality
+      fail_text: "Quality checks failed. Run 'pnpm run quality' to see details."
+
+    # Verify build passes
+    build-check:
+      run: pnpm run build:prod
+      fail_text: "Production build failed! Fix errors before pushing."

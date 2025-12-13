@@ -1,7 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { of, BehaviorSubject, throwError } from 'rxjs';
 import { UnifiedAuthService } from '@services/unified-auth.service';
-import { TidepoolAuthService, AuthState as TidepoolAuthState } from '@services/tidepool-auth.service';
+import {
+  TidepoolAuthService,
+  AuthState as TidepoolAuthState,
+} from '@services/tidepool-auth.service';
 import {
   LocalAuthService,
   LocalAuthState,

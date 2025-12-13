@@ -11,8 +11,7 @@
         <div class="avatar-wrapper">
           <ion-avatar class="hero-avatar">
             @if (!avatarUrl) {
-              <ion-icon name="person-circle-outline" class="avatar-fallback">
-              </ion-icon>
+              <ion-icon name="person-circle-outline" class="avatar-fallback"> </ion-icon>
             }
             @if (avatarUrl) {
               <img [src]="avatarUrl" [alt]="'profile.avatarAlt' | translate" />
@@ -25,7 +24,7 @@
           accept="image/*"
           hidden
           (change)="onAvatarSelected($event)"
-          />
+        />
         <ion-button
           fill="outline"
           size="small"
@@ -33,7 +32,7 @@
           class="change-photo-btn"
           (click)="triggerAvatarUpload()"
           data-testid="avatar-upload-btn"
-          >
+        >
           <ion-icon name="camera-outline" slot="start"></ion-icon>
           {{ 'profile.changePhoto' | translate }}
         </ion-button>
@@ -49,7 +48,7 @@
         (click)="editProfile()"
         data-testid="edit-profile-btn"
         class="mt-3"
-        >
+      >
         <ion-icon name="create-outline" slot="start"></ion-icon>
         {{ 'profile.editProfile' | translate }}
       </ion-button>
@@ -98,7 +97,7 @@
         class="overview-card"
         (click)="goToAchievements()"
         data-testid="achievements-btn"
-        >
+      >
         <app-icon
           name="trophy-outline"
           aria-hidden="true"
@@ -139,7 +138,7 @@
           (ionChange)="onThemeChange($event)"
           aria-label="{{ 'profile.theme.title' | translate }}"
           data-testid="theme-selector"
-          >
+        >
           <ion-select-option value="light">{{
             'profile.theme.light' | translate
           }}</ion-select-option>
@@ -168,7 +167,7 @@
           (ionChange)="onLanguageChange($event)"
           aria-label="{{ 'profile.language.title' | translate }}"
           data-testid="language-selector"
-          >
+        >
           <ion-select-option value="en">{{ 'profile.language.en' | translate }}</ion-select-option>
           <ion-select-option value="es">{{ 'profile.language.es' | translate }}</ion-select-option>
         </ion-select>
@@ -193,11 +192,9 @@
           (ionChange)="onGlucoseUnitChange($event)"
           aria-label="{{ 'profile.glucoseUnits' | translate }}"
           data-testid="glucose-units-selector"
-          >
+        >
           @for (option of unitOptions; track trackByUnitOption($index, option)) {
-            <ion-select-option
-              [value]="option.value"
-              >
+            <ion-select-option [value]="option.value">
               {{ option.label }}
             </ion-select-option>
           }
@@ -233,7 +230,7 @@
         class="preference-row link"
         (click)="goToSettings()"
         data-testid="advanced-settings-btn"
-        >
+      >
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <app-icon
             name="settings-outline"
@@ -267,9 +264,9 @@
             </p>
             <p class="text-medium mb-0 mt-1 text-sm">
               {{
-              isConnected
-              ? ('profile.connected' | translate)
-              : ('profile.notConnected' | translate)
+                isConnected
+                  ? ('profile.connected' | translate)
+                  : ('profile.notConnected' | translate)
               }}
             </p>
           </div>
@@ -280,14 +277,12 @@
           (click)="showTidepoolInfo()"
           data-testid="tidepool-info-btn"
           class="text-primary min-h-[44px] min-w-[44px]"
-          >
+        >
           <ion-icon slot="icon-only" name="information-circle-outline" size="large"></ion-icon>
         </ion-button>
       </div>
       @if (isConnected && (authState?.userId || profile?.tidepoolConnection?.userId)) {
-        <div
-          class="bg-base-200/60 mt-3 rounded-lg px-3 py-2"
-          >
+        <div class="bg-base-200/60 mt-3 rounded-lg px-3 py-2">
           <p class="text-base-content/60 m-0 text-xs font-medium">
             {{ 'profile.tidepoolUserId' | translate }}
           </p>
@@ -308,7 +303,7 @@
           color="primary"
           (click)="openTidepoolDashboard()"
           data-testid="tidepool-dashboard-btn"
-          >
+        >
           <ion-icon slot="start" name="open-outline"></ion-icon>
           {{ 'profile.viewDashboard' | translate }}
         </ion-button>
@@ -318,7 +313,7 @@
         [color]="isConnected ? 'danger' : 'primary'"
         (click)="onToggleTidepoolConnection()"
         data-testid="tidepool-connect-btn"
-        >
+      >
         <ion-icon
           slot="start"
           [name]="isConnected ? 'log-out-outline' : 'log-in-outline'"
@@ -377,7 +372,7 @@
       class="sign-out inline-flex items-center gap-2"
       (click)="onSignOut()"
       data-testid="sign-out-btn"
-      >
+    >
       <app-icon name="log-out-outline"></app-icon>
       {{ 'profile.signOut' | translate }}
     </ion-button>

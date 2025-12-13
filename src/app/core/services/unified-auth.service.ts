@@ -1,7 +1,10 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Observable, BehaviorSubject, combineLatest, of, from, Subject } from 'rxjs';
 import { map, tap, catchError, takeUntil } from 'rxjs/operators';
-import { TidepoolAuthService, AuthState as TidepoolAuthState } from '@services/tidepool-auth.service';
+import {
+  TidepoolAuthService,
+  AuthState as TidepoolAuthState,
+} from '@services/tidepool-auth.service';
 import {
   LocalAuthService,
   LocalAuthState,

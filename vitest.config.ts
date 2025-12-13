@@ -12,7 +12,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
       include: ['src/app/**/*.ts'],
-      exclude: ['src/app/**/*.spec.ts', 'src/app/**/*.mock.ts']
+      exclude: ['src/app/**/*.spec.ts', 'src/app/**/*.mock.ts'],
     },
     // Allow external dependencies that need to be processed
     deps: {
@@ -23,9 +23,9 @@ export default defineConfig({
         '@capacitor/preferences',
         '@capacitor/device',
         '@capacitor/network',
-        '@ngx-translate/core'
-      ]
-    }
+        '@ngx-translate/core',
+      ],
+    },
   },
   resolve: {
     alias: {
@@ -35,7 +35,7 @@ export default defineConfig({
       '@services': fileURLToPath(new URL('./src/app/core/services', import.meta.url)),
       '@models': fileURLToPath(new URL('./src/app/core/models', import.meta.url)),
       '@guards': fileURLToPath(new URL('./src/app/core/guards', import.meta.url)),
-      '@interceptors': fileURLToPath(new URL('./src/app/core/interceptors', import.meta.url))
-    }
-  }
+      '@interceptors': fileURLToPath(new URL('./src/app/core/interceptors', import.meta.url)),
+    },
+  },
 });

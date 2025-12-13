@@ -17,7 +17,7 @@
   [attr.aria-label]="title"
   [attr.tabindex]="clickable ? 0 : null"
   [attr.data-testid]="testId || 'stat-card'"
-  >
+>
   @if (clickable) {
     <ion-ripple-effect></ion-ripple-effect>
   }
@@ -28,7 +28,7 @@
     [style.background]="
       'linear-gradient(135deg, ' + gradientColors[0] + ', ' + gradientColors[1] + ')'
     "
-    >
+  >
     <!-- Loading State -->
     @if (loading) {
       <div class="flex flex-col gap-2">
@@ -48,7 +48,7 @@
               <button
                 class="mt-2 cursor-pointer rounded-lg border border-white/30 bg-white/20 px-4 py-2 text-white transition-all hover:bg-white/30"
                 (click)="onCardClicked()"
-                >
+              >
                 Retry
               </button>
             }
@@ -69,7 +69,7 @@
             aria-live="polite"
             [attr.aria-label]="'Value: ' + formattedValue + (unit ? ' ' + unit : '')"
             [attr.data-testid]="'stat-card-value'"
-            >
+          >
             <span class="text-3xl font-bold leading-none drop-shadow-lg">{{ formattedValue }}</span>
             @if (unit) {
               <span class="ml-1 text-sm font-medium opacity-85">{{ unit }}</span>
@@ -79,7 +79,7 @@
           <div
             class="stat-title truncate text-[15px] font-semibold leading-tight text-white opacity-90 drop-shadow-md"
             [attr.title]="title"
-            >
+          >
             {{ title }}
           </div>
           <!-- Trend -->
@@ -87,31 +87,28 @@
             <div class="stat-desc mt-2 text-white">
               <div
                 class="flex items-center gap-1 text-sm"
-              [ngClass]="{
-                'text-green-400': trend === 'up',
-                'text-red-400': trend === 'down',
-                'text-white/80': trend === 'stable',
-              }"
-                >
+                [ngClass]="{
+                  'text-green-400': trend === 'up',
+                  'text-red-400': trend === 'down',
+                  'text-white/80': trend === 'stable',
+                }"
+              >
                 <span class="material-symbols-outlined text-lg">{{
                   trend === 'up' ? 'arrow_upward' : trend === 'down' ? 'arrow_downward' : 'remove'
                 }}</span>
                 @if (trendValue) {
-                  <span class="font-semibold"
-                    >{{ trendValue > 0 ? '+' : '' }}{{ trendValue }}</span
-                    >
-                  }
-                </div>
+                  <span class="font-semibold">{{ trendValue > 0 ? '+' : '' }}{{ trendValue }}</span>
+                }
               </div>
-            }
-            <!-- Footer slot -->
-            <div class="mt-2">
-              <ng-content select="[slot='footer']"></ng-content>
             </div>
+          }
+          <!-- Footer slot -->
+          <div class="mt-2">
+            <ng-content select="[slot='footer']"></ng-content>
           </div>
-        }
-        <!-- Normal State -->
+        </div>
       }
-
-    </div>
+      <!-- Normal State -->
+    }
   </div>
+</div>

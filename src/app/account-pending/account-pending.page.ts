@@ -35,8 +35,8 @@ import { ROUTES } from '@core/constants';
     IonCardTitle,
     IonCardContent,
     IonLabel,
-    IonButton
-],
+    IonButton,
+  ],
 })
 export class AccountPendingPage {
   constructor(

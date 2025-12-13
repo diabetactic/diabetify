@@ -10,9 +10,15 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { timeout, take } from 'rxjs/operators';
 
-import { ExternalServicesManager, ExternalService } from '@services/external-services-manager.service';
+import {
+  ExternalServicesManager,
+  ExternalService,
+} from '@services/external-services-manager.service';
 import { UnifiedAuthService } from '@services/unified-auth.service';
-import { GlucoserverService, GlucoseReading as GlucoserverReading } from '@services/glucoserver.service';
+import {
+  GlucoserverService,
+  GlucoseReading as GlucoserverReading,
+} from '@services/glucoserver.service';
 import { AppointmentService } from '@services/appointment.service';
 import { ReadingsService } from '@services/readings.service';
 import { db } from '@services/database.service';
