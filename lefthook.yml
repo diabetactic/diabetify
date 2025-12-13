@@ -1,0 +1,31 @@
+# Lefthook Configuration for Diabetify
+# Replaces Husky + lint-staged for faster parallel git hooks
+
+pre-commit:
+  parallel: true
+  commands:
+    lint-ts:
+      glob: "*.{ts,js}"
+      run: npx prettier --write {staged_files} && npx eslint --fix {staged_files}
+      stage_fixed: true
+
+    lint-html:
+      glob: "*.html"
+      run: npx prettier --write {staged_files}
+      stage_fixed: true
+
+    lint-scss:
+      glob: "*.scss"
+      run: npx prettier --write {staged_files} && npx stylelint --fix {staged_files}
+      stage_fixed: true
+
+    lint-json:
+      glob: "*.{json,md}"
+      run: npx prettier --write {staged_files}
+      stage_fixed: true
+
+pre-push:
+  commands:
+    quality:
+      run: npm run quality
+      fail_text: "Quality checks failed. Run 'npm run quality' to see details."

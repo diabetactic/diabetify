@@ -135,8 +135,12 @@ CLEANUP_*.md
 nul
 
 # Alternative package managers
-pnpm-lock.yaml
+# pnpm-lock.yaml - TRACKED: Required for reproducible builds with pnpm
 yarn.lock
+
+# pnpm specific
+.pnpm-debug.log*
+.pnpm-store/
 
 # Old task management
 .taskmaster/
@@ -209,7 +213,7 @@ test-infrastructure-report.txt
 
 # Local environment and development artifacts
 .envrc
-.npmrc
+# .npmrc - TRACKED: Required for pnpm configuration
 bin/
 mcp-android-server/
 extServicesCompose/
@@ -324,3 +328,4 @@ services.txt
 tests.txt
 _archived_assets/
 .aider*
+.turbo

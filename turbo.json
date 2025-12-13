@@ -1,0 +1,150 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["www/**", "dist/**", ".angular/**"],
+      "inputs": [
+        "src/**",
+        "angular.json",
+        "tsconfig*.json",
+        "tailwind.config.js",
+        "postcss.config.js"
+      ]
+    },
+    "build:prod": {
+      "dependsOn": ["^build"],
+      "outputs": ["www/**", ".angular/**"],
+      "inputs": [
+        "src/**",
+        "angular.json",
+        "tsconfig*.json",
+        "tailwind.config.js",
+        "postcss.config.js"
+      ]
+    },
+    "build:mock": {
+      "dependsOn": ["^build"],
+      "outputs": ["www/**", ".angular/**"],
+      "inputs": [
+        "src/**",
+        "angular.json",
+        "tsconfig*.json",
+        "src/environments/environment.mock.ts",
+        "tailwind.config.js"
+      ]
+    },
+    "build:heroku": {
+      "dependsOn": ["^build"],
+      "outputs": ["www/**", ".angular/**"],
+      "inputs": [
+        "src/**",
+        "angular.json",
+        "tsconfig*.json",
+        "src/environments/environment.heroku.ts",
+        "tailwind.config.js"
+      ]
+    },
+    "build:analyze": {
+      "dependsOn": ["^build"],
+      "outputs": ["www/**", "dist/stats.json"],
+      "inputs": ["src/**", "angular.json", "tsconfig*.json"]
+    },
+    "mobile:sync": {
+      "dependsOn": ["build:heroku"],
+      "outputs": ["android/**", "ios/**"],
+      "inputs": ["www/**", "capacitor.config.ts"]
+    },
+    "mobile:build": {
+      "dependsOn": ["mobile:sync"],
+      "outputs": ["android/app/build/outputs/apk/**"],
+      "inputs": ["android/**", "!android/build/**", "!android/.gradle/**"]
+    },
+    "mobile:build:release": {
+      "dependsOn": ["mobile:sync"],
+      "outputs": ["android/app/build/outputs/apk/release/**"],
+      "inputs": ["android/**", "!android/build/**", "!android/.gradle/**"]
+    },
+    "test": {
+      "outputs": ["coverage/**"],
+      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
+    },
+    "test:watch": {
+      "cache": false,
+      "persistent": true
+    },
+    "test:coverage": {
+      "outputs": ["coverage/**"],
+      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
+    },
+    "test:ci": {
+      "outputs": ["coverage/**", "test-results/**"],
+      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
+    },
+    "test:integration": {
+      "outputs": ["test-results/**"],
+      "inputs": ["src/**/*.ts", "jest.integration.config.js"]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "outputs": ["playwright-report/**", "test-results/**", "playwright/artifacts/**"],
+      "inputs": ["playwright/**", "playwright.config.ts", "www/**"]
+    },
+    "test:e2e:headed": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "outputs": ["playwright-report/**", "test-results/**"],
+      "inputs": ["playwright/**", "playwright.config.ts", "www/**"]
+    },
+    "test:a11y": {
+      "dependsOn": ["build"],
+      "outputs": ["playwright-report/**", "test-results/**"],
+      "inputs": ["playwright/tests/accessibility-audit.spec.ts", "playwright.config.ts", "www/**"]
+    },
+    "test:mobile": {
+      "dependsOn": ["mobile:build", "test:e2e"],
+      "cache": false
+    },
+    "lint": {
+      "outputs": [],
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.js",
+        "src/**/*.html",
+        ".eslintrc.json",
+        "eslint.config.mjs"
+      ]
+    },
+    "lint:styles": {
+      "outputs": [],
+      "inputs": ["src/**/*.scss", "src/**/*.css", ".stylelintrc.json"]
+    },
+    "lint:fix": {
+      "outputs": [],
+      "inputs": ["src/**/*.ts", "src/**/*.js", "src/**/*.html", ".eslintrc.json"],
+      "cache": false
+    },
+    "format": {
+      "outputs": [],
+      "inputs": ["src/**", "playwright/**", "scripts/**", ".prettierrc", ".prettierignore"],
+      "cache": false
+    },
+    "format:check": {
+      "outputs": [],
+      "inputs": ["src/**", "playwright/**", "scripts/**", ".prettierrc", ".prettierignore"]
+    },
+    "quality": {
+      "dependsOn": ["lint", "test"],
+      "outputs": []
+    },
+    "i18n:check": {
+      "outputs": [],
+      "inputs": ["src/assets/i18n/*.json", "scripts/check-i18n-missing.js"]
+    },
+    "docs:sync": {
+      "outputs": [],
+      "inputs": ["docs/**/*.md", "CLAUDE.md", "scripts/sync-docs.mjs"],
+      "cache": false
+    }
+  }
+}

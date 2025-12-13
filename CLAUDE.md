@@ -19,9 +19,10 @@ Diabetactic is an Ionic/Angular mobile app for diabetes glucose management. Buil
 3. **Translations required in both `en.json` AND `es.json`** for any user-facing text
 4. **Prefer editing existing files** over creating new ones
 5. **Never save files to root folder** - use appropriate subdirectories
-6. **Run `npm test` before committing** - ensure tests pass
+6. **Run `pnpm test` before committing** - ensure tests pass
 7. **Offline-first**: Data stored in IndexedDB (Dexie), synced when online
-8. **Husky git hooks** are configured with lint-staged for pre-commit quality checks
+8. **Lefthook git hooks** are configured with lint-staged for pre-commit quality checks
+9. **Use pnpm instead of npm** - 3x faster installs, better caching with Turborepo
 
 ---
 
@@ -100,12 +101,14 @@ Use these specialized agents for complex tasks:
 
 ## Essential Commands
 
+**Note**: Use `pnpm` for 3x faster execution. All commands work with `npm` too.
+
 ```bash
 # Development (three backend modes controlled by scripts/start-with-env.mjs)
-npm start                     # Default - auto-detects ENV variable
-npm run start:mock            # In-memory mock data, no backend needed (RECOMMENDED)
-npm run start:local           # Local Docker backend (localhost:8000)
-npm run start:cloud           # Heroku production API (cloud)
+pnpm start                     # Default - auto-detects ENV variable
+pnpm run start:mock            # In-memory mock data, no backend needed (RECOMMENDED)
+pnpm run start:local           # Local Docker backend (localhost:8000)
+pnpm run start:cloud           # Heroku production API (cloud)
 
 # Build (Web)
 npm run build                 # Development build (outputs to www/)
@@ -211,9 +214,110 @@ npm run cap:update            # Update Capacitor plugins
 
 ### Development Tools
 
-- **Husky**: 9.1.7 (git hooks)
+- **pnpm**: 10.0+ (fast, disk-efficient package manager)
+- **Turborepo**: 2.3.3 (build system with intelligent caching)
+- **Lefthook**: 2.0.0 (fast git hooks manager)
 - **lint-staged**: 16.2.3 (pre-commit linting)
 - **@faker-js/faker**: 10.1.0 (test data)
+
+---
+
+## Tooling Modernization
+
+As of December 2025, Diabetify has been upgraded with modern tooling for improved performance and developer experience.
+
+### pnpm (Package Manager)
+
+**Why pnpm?** 3x faster installs, 50% less disk space, strict dependency resolution.
+
+```bash
+# Installation
+npm install -g pnpm@latest
+
+# Usage (drop-in replacement for npm)
+pnpm install                  # Install dependencies
+pnpm run start:mock           # Run dev server
+pnpm test                     # Run tests
+pnpm run build:prod           # Production build
+
+# Benefits
+# - Symlinked node_modules saves ~1GB disk space
+# - Parallel installs are 3x faster than npm
+# - Strict mode prevents phantom dependencies
+```
+
+**All npm commands work with pnpm** - just replace `npm` with `pnpm`.
+
+### Turborepo (Build System)
+
+**Why Turborepo?** Intelligent task caching eliminates redundant work.
+
+```bash
+# Cached tasks (run instantly if inputs unchanged)
+pnpm run build                # Caches build output
+pnpm test                     # Caches test results
+pnpm run lint                 # Caches lint results
+
+# How it works
+# 1. Turborepo hashes your source files
+# 2. If hash matches cache, returns cached result instantly
+# 3. If hash differs, runs task and caches new result
+
+# Cache location: node_modules/.cache/turbo
+# Clear cache: rm -rf node_modules/.cache/turbo
+```
+
+**Cache hits** mean tests/builds complete in <1s instead of minutes.
+
+### Lefthook (Git Hooks)
+
+**Why Lefthook?** 10x faster than Husky, written in Go, parallel execution.
+
+```bash
+# Hooks are configured in lefthook.yml
+# Pre-commit: lint-staged (lint only changed files)
+# Pre-push: run tests (ensure quality before push)
+
+# Manual execution
+pnpm exec lefthook run pre-commit
+pnpm exec lefthook run pre-push
+
+# Skip hooks (use sparingly)
+git commit --no-verify
+git push --no-verify
+```
+
+**Lefthook vs Husky**: Same functionality, 10x faster hook execution.
+
+### Path Aliases (TypeScript)
+
+Configured in `tsconfig.json` for cleaner imports:
+
+```typescript
+// Old (relative imports)
+import { AuthService } from '../../../core/services/auth.service';
+
+// New (path aliases)
+import { AuthService } from '@app/core/services/auth.service';
+import { ReadingModel } from '@app/core/models/reading.model';
+import { SharedComponent } from '@app/shared/component';
+
+// Available aliases
+// @app/*        → src/app/*
+// @env/*        → src/environments/*
+// @assets/*     → src/assets/*
+// @core/*       → src/app/core/*
+// @shared/*     → src/app/shared/*
+```
+
+**Note**: Jest and Angular are configured to resolve these aliases automatically.
+
+### Migration Notes
+
+- **npm → pnpm**: All existing scripts work unchanged
+- **Husky → Lefthook**: Same hooks, faster execution
+- **No Turborepo config needed**: Works automatically via turbo.json
+- **Backwards compatible**: npm still works if pnpm not installed
 
 ---
 
@@ -230,9 +334,9 @@ The app supports three backend modes controlled by `DEV_BACKEND_MODE`:
 Control via ENV variable:
 
 ```bash
-ENV=mock npm start      # Mock backend (offline) - RECOMMENDED for development
-ENV=local npm start     # Local Docker (localhost:8000)
-ENV=cloud npm start     # Heroku production (default)
+ENV=mock pnpm start      # Mock backend (offline) - RECOMMENDED for development
+ENV=local pnpm start     # Local Docker (localhost:8000)
+ENV=cloud pnpm start     # Heroku production (default)
 ```
 
 ### Core Services (src/app/core/services/)
@@ -702,38 +806,38 @@ Tidepool integration has been simplified to auth-only (completed 2025-12-04):
 ### Start Development
 
 ```bash
-npm run start:mock      # Best for offline development
-npm run start:cloud     # Test against Heroku backend
+pnpm run start:mock      # Best for offline development
+pnpm run start:cloud     # Test against Heroku backend
 ```
 
 ### Before Committing
 
 ```bash
-npm run quality         # Lint + test
-npm run format          # Format all files
+pnpm run quality         # Lint + test (cached by Turborepo)
+pnpm run format          # Format all files
 ```
 
 ### Run Tests
 
 ```bash
-npm test                # Quick unit test run
-npm run test:watch      # TDD mode
-npm run test:e2e        # Full E2E suite
+pnpm test                # Quick unit test run (cached by Turborepo)
+pnpm run test:watch      # TDD mode
+pnpm run test:e2e        # Full E2E suite
 ```
 
 ### Deploy to Android
 
 ```bash
-npm run mobile:sync     # Build + sync
-npm run android:open    # Open Android Studio
-npm run deploy:device   # Full build + install
+pnpm run mobile:sync     # Build + sync (cached by Turborepo)
+pnpm run android:open    # Open Android Studio
+pnpm run deploy:device   # Full build + install
 ```
 
 ### Debugging
 
 ```bash
-npm run android:logs    # View app logs
-npm run build:analyze   # Analyze bundle size
+pnpm run android:logs    # View app logs
+pnpm run build:analyze   # Analyze bundle size
 ```
 
 ---
