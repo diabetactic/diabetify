@@ -1,7 +1,8 @@
 // IMPORTANT: Set API base URL override BEFORE any other imports
 // This ensures the api-base-url.ts module picks up the test URL
 // when it's first imported by any test or service
-(globalThis as any).__DIABETACTIC_API_BASE_URL = 'http://localhost:8000';
+(globalThis as { __DIABETACTIC_API_BASE_URL?: string }).__DIABETACTIC_API_BASE_URL =
+  'http://localhost:8000';
 
 // Import zone.js for Angular support
 import 'zone.js';
@@ -22,7 +23,7 @@ TestBed.initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicT
 });
 
 // Alias Jest as vi globally for compatibility with tests that use jest.fn() directly
-(global as any).jest = vi;
+(global as typeof globalThis & { jest: typeof vi }).jest = vi;
 
 // Vitest compatibility layer for easier migration from Jest/Jasmine
 // Provides jasmine.SpyObj and jasmine.createSpyObj with .and.returnValue() support

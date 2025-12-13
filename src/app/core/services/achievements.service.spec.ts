@@ -1,4 +1,4 @@
-import { TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { AchievementsService } from '@services/achievements.service';
 import { ApiGatewayService } from '@services/api-gateway.service';

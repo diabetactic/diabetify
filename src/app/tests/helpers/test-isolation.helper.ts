@@ -86,7 +86,7 @@ export async function resetCapacitorMocks(): Promise<void> {
     if (jest.isMockFunction(SecureStorage.clear)) {
       (SecureStorage.clear as jest.Mock).mockResolvedValue(undefined);
     }
-  } catch (error) {
+  } catch {
     // Silently fail if modules not available (e.g., in some test contexts)
   }
 }
