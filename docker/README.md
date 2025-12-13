@@ -327,25 +327,136 @@ docker exec -it diabetactic_appointments_db psql -U postgres -d appointments
 | Internet        | Required                        | Not required   |
 | User Management | Web interface                   | CLI scripts    |
 
+## Appointment Testing
+
+### Appointment State Machine
+
+```
+┌─────────────────────────────────────────────────┐
+│          Appointment State Machine              │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│   NONE ──[request]──> PENDING                   │
+│                          │                      │
+│              ┌───────────┼───────────┐          │
+│              │           │           │          │
+│        [deny]▼     [accept]▼    [close]▼        │
+│           DENIED      ACCEPTED    BLOCKED       │
+│              │           │                      │
+│        [request]   [create]▼                    │
+│              │        CREATED                   │
+│              ▼           │                      │
+│           NONE ◄─────────┘                      │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+
+### Quick Appointment Commands
+
+```bash
+# Clear queue and start fresh
+./test-appointment-flow.sh clear
+
+# Accept user's pending appointment
+./test-appointment-flow.sh accept 1000
+
+# Deny user's pending appointment
+./test-appointment-flow.sh deny 1000
+
+# Open/close appointment queue
+./test-appointment-flow.sh open
+./test-appointment-flow.sh close
+
+# Check queue status
+./test-appointment-flow.sh status 1000
+
+# Run full flow demo with state visualization
+./test-appointment-flow.sh full 1000
+```
+
+### Testing Appointment Flow
+
+1. **Clear existing state**: `./test-appointment-flow.sh clear`
+2. **In mobile app**: Request appointment (NONE → PENDING)
+3. **Accept via script**: `./test-appointment-flow.sh accept 1000`
+4. **In mobile app**: Create appointment (ACCEPTED → CREATED)
+
+## E2E Testing Integration
+
+### Playwright Docker Tests
+
+Dedicated Docker tests in `playwright/tests/docker-backend-e2e.spec.ts`:
+
+```bash
+# Run Docker-specific Playwright tests
+E2E_DOCKER_TESTS=true \
+E2E_API_URL=http://localhost:8000 \
+E2E_BACKOFFICE_URL=http://localhost:8001 \
+npm run test:e2e -- --grep "@docker"
+```
+
+### Maestro Integration
+
+The `maestro/scripts/backoffice-api.js` auto-detects Docker backend:
+
+```bash
+# Auto-detects localhost:8001 if Docker is running
+ACTION=accept USER_ID=1000 node maestro/scripts/backoffice-api.js
+
+# Force specific backend
+BACKOFFICE_API_URL=http://localhost:8001 ACTION=clear node maestro/scripts/backoffice-api.js
+```
+
+For resolution-api.js (runs in Maestro GraalJS), pass URL via environment:
+
+```yaml
+# In Maestro flow
+- runScript:
+    file: ../../scripts/resolution-api.js
+    env:
+      ACTION: ensure
+      APPOINTMENT_ID: '100'
+      BACKOFFICE_API_URL: 'http://10.0.2.2:8001' # Android emulator
+```
+
+**Note**: Android emulator uses `10.0.2.2` to reach host machine's localhost.
+
+### Full E2E Test Runner
+
+```bash
+# Run Playwright tests against Docker backend
+./run-e2e-docker.sh playwright
+
+# Run Maestro mobile tests
+./run-e2e-docker.sh maestro
+
+# Full suite (both)
+./run-e2e-docker.sh all
+```
+
 ## File Structure
 
 ```
 docker/
-├── docker-compose.local.yml   # Main compose file for local backend
-├── docker-compose.e2e.yml     # E2E testing compose file
-├── Dockerfile.test-utils      # Test utilities container
-├── Dockerfile.e2e             # E2E testing Dockerfile
-├── start.sh                   # Start all services
-├── stop.sh                    # Stop all services
-├── reset-db.sh                # Reset databases
-├── create-user.sh             # Create test user
-├── delete-user.sh             # Delete test user
-├── list-users.sh              # List all users
-├── get-user.sh                # Get user info
-├── logs.sh                    # View service logs
+├── docker-compose.local.yml     # Main compose file for local backend
+├── docker-compose.e2e.yml       # E2E testing compose file
+├── Dockerfile.test-utils        # Test utilities container
+├── Dockerfile.e2e               # E2E testing Dockerfile
+├── start.sh                     # Start all services
+├── stop.sh                      # Stop all services
+├── reset-db.sh                  # Reset databases
+├── create-user.sh               # Create test user
+├── delete-user.sh               # Delete test user
+├── list-users.sh                # List all users
+├── get-user.sh                  # Get user info
+├── logs.sh                      # View service logs
+├── run-e2e-docker.sh            # E2E test orchestrator
+├── seed-test-data.sh            # Seed test data
+├── cleanup-test-data.sh         # Cleanup test data
+├── test-appointment-flow.sh     # Appointment testing helper
 ├── test-utils/
-│   └── user_manager.py        # User management library
-└── README.md                  # This file
+│   └── user_manager.py          # User management library
+└── README.md                    # This file
 ```
 
 ## Notes

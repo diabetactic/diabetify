@@ -124,6 +124,28 @@
       "active": "Active"
     }
   },
+  "biometric": {
+    "title": "Biometric Login",
+    "enrollTitle": "Enable Biometric Login",
+    "enrollMessage": "Would you like to use your fingerprint or face to login faster?",
+    "enrollButton": "Enable Biometric",
+    "enrollSuccess": "Biometric authentication enabled successfully",
+    "loginWith": "Login with {{type}}",
+    "loginWithFingerprint": "Login with Fingerprint",
+    "loginWithFace": "Login with Face ID",
+    "authenticating": "Authenticating...",
+    "prompt": "Authenticate to access your account",
+    "error": "Authentication Failed",
+    "usePassword": "Use Password Instead",
+    "disabled": "Biometric authentication disabled",
+    "notAvailable": "Biometric authentication not available on this device",
+    "settings": {
+      "title": "Biometric Authentication",
+      "description": "Use fingerprint or face to login",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    }
+  },
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome back",
@@ -564,7 +586,8 @@
         "queueClosed": "The appointment queue is closed. Please try again later.",
         "accepted": "Your appointment request has been accepted!",
         "denied": "Your appointment request was not accepted",
-        "created": "Your appointment has been successfully registered"
+        "created": "Your appointment has been successfully registered",
+        "updatesUnavailable": "Real-time updates are temporarily unavailable"
       }
     },
     "reason": "Reason",
@@ -789,7 +812,7 @@
       "notConnectedMessage": "You are not connected to Tidepool. Connect your account to sync glucose data and share with your healthcare team.",
       "learnMore": "Learn More",
       "fetchError": "Could not fetch data from Tidepool. Please try again later.",
-      "sessionExpired": "Your Tidepool session has expired. Please disconnect and reconnect to Tidepool.",
+      "sessionExpired": "Session expired. Please reconnect.",
       "fullName": "Name",
       "birthday": "Birthday",
       "diagnosisDate": "Diagnosis Date",
@@ -1107,6 +1130,27 @@
       "actions": "Actions",
       "config": "Config"
     },
+    "devTools": {
+      "title": "Dev Tools",
+      "description": "Minimal helpers for Heroku/local testing",
+      "appointmentsQueue": "Appointments Queue (Backoffice)",
+      "acceptNextPending": "Accept next pending",
+      "denyNextPending": "Deny next pending",
+      "clearQueue": "Clear entire queue",
+      "usersResolutions": "Users & Resolutions",
+      "createTestUser": "Create test user",
+      "createResolution": "Create resolution for appointment",
+      "localDangerZone": "Local Danger Zone",
+      "localDangerDescription": "These actions only affect local data on this device (IndexedDB + Preferences).",
+      "clearLocalReadings": "Clear local readings",
+      "clearPreferencesAction": "Clear preferences",
+      "clearAllLocalData": "Clear ALL local data",
+      "environment": "Environment",
+      "mode": "Mode",
+      "api": "API",
+      "queueDescription": "Uses admin credentials against the Heroku backoffice API. Intended for dev/testing only.",
+      "usersDescription": "Create a test patient user via the main API gateway, or a sample resolution in the backoffice for a specific appointment."
+    },
     "device": {
       "title": "Device Information",
       "platform": "Platform",
@@ -1213,7 +1257,8 @@
       "circuitBreakerTimeout": "Circuit Breaker Timeout",
       "cacheDuration": "Cache Duration",
       "noCache": "No Cache",
-      "offlineSupport": "Offline Support"
+      "offlineSupport": "Offline Support",
+      "responseTime": "Response Time"
     },
     "circuitBreakerDetails": {
       "state": "State",
@@ -1476,5 +1521,19 @@
       "streakLost": "Don't give up! Start a new streak today.",
       "newRecord": "New personal best!"
     }
+  },
+  "achievements": {
+    "title": "Achievements",
+    "currentStreak": "Day Streak",
+    "maxStreak": "Record",
+    "days": "days",
+    "todayProgress": "Today's Progress",
+    "measurements": "measurements",
+    "dailyHint": "Take 4 measurements daily to maintain your streak!",
+    "earned": "Achievements Earned",
+    "allAchievements": "All Achievements",
+    "noAchievements": "No achievements yet. Start tracking to unlock them!",
+    "viewAchievements": "View Achievements",
+    "achievementsDesc": "Track your progress and earn badges"
   }
 }

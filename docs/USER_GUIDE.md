@@ -1,434 +1,470 @@
-# Diabetactic User Guide
+# Guía de Usuario de Diabetactic
 
-**Welcome to Diabetactic!** Your friendly companion for managing diabetes. This guide will help you get started with the app and make the most of its features.
+**¡Bienvenido a Diabetactic!** Tu compañero para el manejo de la diabetes. Esta guía te ayudará a comenzar con la aplicación y aprovechar al máximo sus funciones.
 
-**Note**: The official name of this app is "Diabetactic".
-
----
-
-## Table of Contents
-
-1. [Getting Started](#getting-started)
-2. [Dashboard Overview](#dashboard-overview)
-3. [Adding Glucose Readings](#adding-glucose-readings)
-4. [Viewing Your Readings](#viewing-your-readings)
-5. [Managing Appointments](#managing-appointments)
-6. [Settings and Profile](#settings-and-profile)
-7. [Kids Mode](#kids-mode)
-8. [Offline Use](#offline-use)
-9. [Getting Help](#getting-help)
+**Nota**: El nombre oficial de esta aplicación es "Diabetactic".
 
 ---
 
-## Getting Started
+## Tabla de Contenidos
 
-### First Time Login
-
-When you first open Diabetactic, you'll see a colorful welcome screen with a friendly illustration. This app is designed especially for kids aged 6-14 to help manage their diabetes with confidence!
-
-**To log in:**
-
-1. Tap the login button on the welcome screen
-2. Enter your email and password provided by your hospital or healthcare team
-3. Tap "Sign In"
-
-> **Note:** Registration is handled by your healthcare provider. If you don't have login credentials, please contact your diabetes care team at the hospital.
-
-### Account Status
-
-After logging in, your account may be in one of these states:
-
-- **Active**: You can use all features of the app
-- **Pending**: Your account is being reviewed by the hospital team. You'll receive an email when it's activated.
-- **Need help?** If you have questions about your account, contact the support email shown on screen.
+1. [Primeros Pasos](#primeros-pasos)
+2. [Vista General del Panel](#vista-general-del-panel)
+3. [Agregar Lecturas de Glucosa](#agregar-lecturas-de-glucosa)
+4. [Ver tus Lecturas](#ver-tus-lecturas)
+5. [Gestión de Citas](#gestión-de-citas)
+6. [Configuración y Perfil](#configuración-y-perfil)
+7. [Modo Infantil](#modo-infantil)
+8. [Uso Sin Conexión](#uso-sin-conexión)
+9. [Obtener Ayuda](#obtener-ayuda)
 
 ---
 
-## Dashboard Overview
+## Primeros Pasos
 
-The Dashboard is your home base! It shows you everything important at a glance.
+### Primer Inicio de Sesión
 
-### What You'll See
+Cuando abras Diabetactic por primera vez, verás una pantalla de bienvenida con una ilustración amigable. Esta aplicación está diseñada especialmente para niños de 6 a 14 años para ayudarles a manejar su diabetes con confianza.
 
-**Quick Stats** (Kid-Friendly View)
+**Para iniciar sesión:**
 
-- **Smiley Face Status**: Shows how you're doing overall
-  - Happy face = You're doing amazing! (70% or more time in good range)
-  - Neutral face = Good job! Keep it up! (50-70% time in range)
-  - Needs work face = Let's work on this together (less than 50% in range)
+1. Toca el botón de inicio de sesión en la pantalla de bienvenida
+2. Ingresa tu correo electrónico y contraseña proporcionados por tu hospital o equipo de salud
+3. Toca "Iniciar Sesión"
 
-- **Time in Good Range**: How much of the time your sugar levels are just right
-- **Average Sugar**: Your typical glucose level
-- **Recent Readings**: Your last few glucose checks
+> **Nota:** El registro es manejado por tu proveedor de salud. Si no tienes credenciales de acceso, por favor contacta a tu equipo de diabetes en el hospital.
 
-**Quick Actions**
+### Estado de la Cuenta
 
-- **Add Reading** button (the big blue circle with a plus sign)
-- **Sync** button to update your data
-- **View All Readings** to see your complete history
+Después de iniciar sesión, tu cuenta puede estar en uno de estos estados:
 
-### Parent/Technical View
-
-If you're a parent or guardian, tap "More Details" to see:
-
-- Estimated HbA1c (shows average blood glucose over 2-3 months)
-- GMI (Glucose Management Indicator)
-- Coefficient of Variation (how much glucose levels vary)
-- Detailed sync status
+- **Activa**: Puedes usar todas las funciones de la aplicación
+- **Pendiente**: Tu cuenta está siendo revisada por el equipo del hospital. Recibirás un correo cuando sea activada.
+- **¿Necesitas ayuda?** Si tienes preguntas sobre tu cuenta, contacta al correo de soporte mostrado en pantalla.
 
 ---
 
-## Adding Glucose Readings
+## Vista General del Panel
 
-Recording your glucose readings is quick and easy!
+El Panel de Control es tu base principal. Te muestra todo lo importante de un vistazo.
 
-### How to Add a Reading
+### Lo que Verás
 
-1. **From the Dashboard**, tap the big blue button with a plus sign (+)
-   - You can also use the "Add Reading" button in the Readings tab
+**Estadísticas Rápidas** (Vista Amigable para Niños)
 
-2. **Enter Your Glucose Value**
-   - Type in the number from your glucose meter
-   - The app works with both mg/dL and mmol/L (you can change this in Settings)
+- **Estado con Carita**: Muestra cómo te va en general
+  - Carita feliz = ¡Lo estás haciendo increíble! (70% o más del tiempo en buen rango)
+  - Carita neutral = ¡Buen trabajo! ¡Sigue así! (50-70% del tiempo en rango)
+  - Carita que necesita mejorar = Trabajemos juntos en esto (menos del 50% en rango)
 
-3. **Set the Date and Time**
-   - Usually, this is already set to "right now"
-   - Tap to change if you're entering an older reading
+- **Tiempo en Buen Rango**: Cuánto tiempo tus niveles de azúcar están bien
+- **Azúcar Promedio**: Tu nivel típico de glucosa
+- **Lecturas Recientes**: Tus últimas mediciones de glucosa
 
-4. **Add Meal Context (Optional)**
-   - Select when the reading was taken:
-     - Before Breakfast
-     - After Breakfast
-     - Before Lunch
-     - After Lunch
-     - Before Dinner
-     - After Dinner
-     - Bedtime
-     - Fasting
-     - Other
+**Acciones Rápidas**
 
-5. **Add Notes (Optional)**
-   - Write anything special about this reading
-   - Examples: "Felt shaky," "After playing soccer," "Birthday party"
+- Botón **Agregar Lectura** (el círculo azul grande con el signo más)
+- Botón **Sincronizar** para actualizar tus datos
+- **Ver Todas las Lecturas** para ver tu historial completo
 
-6. **Tap "Save Reading"**
+### Vista para Padres/Técnica
 
-Your reading is saved immediately! It's stored on your phone and will sync with the hospital system when you have internet.
+Si eres padre o tutor, toca "Más Detalles" para ver:
 
-### Tips for Accurate Readings
-
-- Wash and dry your hands before testing
-- Use the side of your fingertip, not the pad
-- Make sure your hands are warm for better blood flow
-- Record the reading right after you take it so you don't forget
+- HbA1c Estimada (muestra el promedio de glucosa en sangre de 2-3 meses)
+- GMI (Indicador de Gestión de Glucosa)
+- Coeficiente de Variación (cuánto varían los niveles de glucosa)
+- Estado detallado de sincronización
 
 ---
 
-## Viewing Your Readings
+## Agregar Lecturas de Glucosa
 
-The Readings page shows all your glucose measurements in one place.
+¡Registrar tus lecturas de glucosa es rápido y fácil!
 
-### Features
+### Cómo Agregar una Lectura
 
-**Search and Filter**
+1. **Desde el Panel**, toca el botón azul grande con el signo más (+)
+   - También puedes usar el botón "Agregar Lectura" en la pestaña de Lecturas
 
-- Search by notes or tags
-- Filter by date range (today, this week, this month, etc.)
-- Filter by glucose status (very low, low, normal, high, very high)
-- Sort by newest first, oldest first, high to low, or low to high
+2. **Ingresa tu Valor de Glucosa**
+   - Escribe el número de tu medidor de glucosa
+   - La aplicación funciona con mg/dL y mmol/L (puedes cambiar esto en Configuración)
 
-**Reading Details**
-Each reading shows:
+3. **Establece la Fecha y Hora**
+   - Normalmente, esto ya está configurado a "ahora mismo"
+   - Toca para cambiar si estás ingresando una lectura anterior
 
-- Glucose value with color-coded status
-- Date and time
-- Meal context (if you added it)
-- Any notes you wrote
-- Sync status (whether it's uploaded to the hospital)
+4. **Agrega Contexto de Comida (Opcional)**
+   - Selecciona cuándo se tomó la lectura:
+     - Antes del Desayuno
+     - Después del Desayuno
+     - Antes del Almuerzo
+     - Después del Almuerzo
+     - Antes de la Cena
+     - Después de la Cena
+     - Hora de Dormir
+     - En Ayunas
+     - Otro
 
-**Quick Actions**
+5. **Agrega Notas (Opcional)**
+   - Escribe cualquier cosa especial sobre esta lectura
+   - Ejemplos: "Me sentí tembloroso," "Después de jugar fútbol," "Fiesta de cumpleaños"
 
-- Tap a reading to view full details
-- Pull down to refresh and sync with the hospital
-- Tap the search icon to find specific readings
+6. **Toca "Guardar Lectura"**
 
----
+¡Tu lectura se guarda inmediatamente! Se almacena en tu teléfono y se sincronizará con el sistema del hospital cuando tengas internet.
 
-## Managing Appointments
+### Consejos para Lecturas Precisas
 
-Keep track of your doctor visits and checkups.
-
-### Viewing Appointments
-
-The Appointments page shows:
-
-- **Current/Upcoming**: Your next scheduled visit
-- **Past Appointments**: History of previous visits
-
-### Appointment Details
-
-For each appointment, you'll see:
-
-- Date and time
-- Doctor's name
-- Location (or "Video Call" if online)
-- Appointment type (routine control, follow-up, consultation, etc.)
-- Any special notes
-
-### Requesting an Appointment
-
-1. Go to the Appointments tab
-2. Tap "Request Appointment"
-3. Wait for the hospital to accept your request
-4. Once accepted, fill in the appointment form with:
-   - Why you need the appointment (routine control, follow-up, etc.)
-   - Your current insulin information
-   - Any questions or concerns
-
-### Appointment Notifications
-
-The app will remind you about upcoming appointments:
-
-- 24 hours before
-- 1 hour before
-- At the appointment time
-
-Make sure notifications are enabled in Settings!
+- Lávate y sécate las manos antes de hacer la prueba
+- Usa el lado de la punta de tu dedo, no la yema
+- Asegúrate de que tus manos estén calientes para mejor flujo sanguíneo
+- Registra la lectura justo después de tomarla para que no la olvides
 
 ---
 
-## Settings and Profile
+## Ver tus Lecturas
 
-Personalize your app experience in the Settings menu.
+La página de Lecturas muestra todas tus mediciones de glucosa en un solo lugar.
 
-### How to Access Settings
+### Funcionalidades
 
-1. Tap the Profile tab at the bottom
-2. Or tap the menu icon (three lines) and select Settings
+**Búsqueda y Filtros**
 
-### Available Settings
+- Buscar por notas o etiquetas
+- Filtrar por rango de fechas (hoy, esta semana, este mes, etc.)
+- Filtrar por estado de glucosa (muy bajo, bajo, normal, alto, muy alto)
+- Ordenar por más reciente, más antiguo, de alto a bajo, o de bajo a alto
 
-**Profile Information**
+**Detalles de Lectura**
+Cada lectura muestra:
 
-- Name
-- Email
-- Phone number
-- Date of birth
+- Valor de glucosa con estado codificado por color
+- Fecha y hora
+- Contexto de comida (si lo agregaste)
+- Cualquier nota que escribiste
+- Estado de sincronización (si está subido al hospital)
 
-**Preferences**
+**Acciones Rápidas**
 
-- **Glucose Unit**: Choose mg/dL or mmol/L
-- **Language**: English or Spanish
-- **Theme**: Light mode, dark mode, or match your phone's setting
-- **Target Range**: Set your personal glucose target range (usually 70-180 mg/dL)
-
-**Notifications**
-
-- Appointment reminders
-- Reading reminders
-- General notifications
-
-**Reading Reminders**
-
-- Set up to 4 daily reminders to check your glucose
-- Example: "Breakfast - 8:00 AM," "Bedtime - 9:00 PM"
-- Turn individual reminders on or off
-
-**Glucose Targets**
-
-- Low target: Minimum safe glucose level
-- High target: Maximum target glucose level
-- These help calculate your "time in range"
-
-### Tidepool Integration
-
-If your healthcare team uses Tidepool, you can connect your account:
-
-1. Go to Profile or Settings
-2. Tap "Connect to Tidepool"
-3. Log in with your Tidepool credentials
-4. Your data will sync automatically
-
-**What is Tidepool?**
-Tidepool is a service that lets you share your diabetes data with your healthcare team, family members, and other diabetes apps.
+- Toca una lectura para ver detalles completos
+- Desliza hacia abajo para refrescar y sincronizar con el hospital
+- Toca el ícono de búsqueda para encontrar lecturas específicas
 
 ---
 
-## Kids Mode
+## Gestión de Citas
 
-Diabetactic is designed to be fun and encouraging for kids!
+Mantén un registro de tus visitas médicas y controles.
 
-### Kid-Friendly Features
+### Ver Citas
 
-**Simple Language**
+La página de Citas muestra:
 
-- "Sugar levels" instead of "glucose readings"
-- "Time in Good Range" instead of "time in range percentage"
-- Friendly messages like "You're doing amazing!"
+- **Actual/Próxima**: Tu próxima visita programada
+- **Citas Pasadas**: Historial de visitas anteriores
 
-**Cheerful Design**
+### Detalles de Cita
 
-- Bright colors with Tailwind CSS + DaisyUI styling
-- Smiley face status indicators
-- Friendly welcome illustrations
+Para cada cita, verás:
 
-**Encouragement**
+- Fecha y hora
+- Nombre del médico
+- Ubicación (o "Videollamada" si es en línea)
+- Tipo de cita (control de rutina, seguimiento, consulta, etc.)
+- Cualquier nota especial
 
-- Positive messages when you check your readings
-- Fun quotes on the welcome screen
-- Celebration when you stay in range
+### Solicitar una Cita
 
-### Switching Between Views
+1. Ve a la pestaña de Citas
+2. Toca "Solicitar Cita"
+3. Espera a que el hospital acepte tu solicitud
+4. Una vez aceptada, completa el formulario de cita con:
+   - Por qué necesitas la cita (control de rutina, seguimiento, etc.)
+   - Tu información actual de insulina
+   - Cualquier pregunta o preocupación
 
-Parents can toggle between:
+### Notificaciones de Citas
 
-- **Kid View**: Simple stats and encouraging messages
-- **Parent View**: Detailed medical information and technical metrics
+La aplicación te recordará sobre citas próximas:
 
-Tap "Parent View" or "More Details" on the Dashboard to see technical information like HbA1c, GMI, and coefficient of variation.
+- 24 horas antes
+- 1 hora antes
+- A la hora de la cita
 
----
-
-## Offline Use
-
-Diabetactic works even without internet!
-
-### How It Works
-
-1. **Everything is saved locally** on your phone first
-2. **Data syncs automatically** when you have internet
-3. **View all your readings** anytime, online or offline
-
-### What Works Offline
-
-- Adding new glucose readings
-- Viewing past readings
-- Checking your dashboard stats
-- Viewing appointments
-
-### What Needs Internet
-
-- Syncing data with the hospital
-- Requesting new appointments
-- Connecting to Tidepool
-- Getting the latest data from your healthcare team
-
-### Syncing Your Data
-
-**Automatic Sync**
-The app syncs automatically when:
-
-- You open the app with internet
-- You pull down to refresh on the Dashboard or Readings page
-
-**Manual Sync**
-Tap the sync button (circular arrow icon) on the Dashboard to sync immediately.
-
-**Sync Status**
-Look for these indicators:
-
-- "Synced" (green checkmark): Data is up-to-date
-- "Syncing..." (spinning icon): Upload in progress
-- "Failed" (red X): Something went wrong, try again
+¡Asegúrate de que las notificaciones estén habilitadas en Configuración!
 
 ---
 
-## Getting Help
+## Configuración y Perfil
 
-### Common Questions
+Personaliza tu experiencia en la aplicación en el menú de Configuración.
 
-**Q: I forgot my password. What do I do?**
-A: Contact your hospital's diabetes care team. They manage all accounts and can reset your password.
+### Cómo Acceder a Configuración
 
-**Q: My readings aren't syncing. What's wrong?**
-A:
+1. Toca la pestaña de Perfil en la parte inferior
+2. O toca el ícono de menú (tres líneas) y selecciona Configuración
 
-1. Check your internet connection
-2. Try pulling down to refresh on the Dashboard
-3. Tap the sync button
-4. If still not working, close and reopen the app
+### Configuraciones Disponibles
 
-**Q: Can I use this app if I'm younger than 6 or older than 14?**
-A: Yes! While the app is designed for kids 6-14, people of any age with diabetes can use it. The "Parent View" has more detailed information for adults.
+**Información del Perfil**
 
-**Q: Will my data be shared with anyone?**
-A: Your data is only shared with your healthcare team at the hospital. If you connect to Tidepool, you control who sees your Tidepool data. See the [Parent Guide](PARENT_GUIDE.md) for more about privacy.
+- Nombre
+- Correo electrónico
+- Número de teléfono
+- Fecha de nacimiento
 
-**Q: What if I want to delete a reading?**
-A: Currently, you can view and add readings. To delete a reading, please contact your healthcare team.
+**Preferencias**
 
-**Q: The app is in Spanish. How do I change to English?**
-A: Go to Settings → Language → Select "English"
+- **Unidad de Glucosa**: Elige mg/dL o mmol/L
+- **Idioma**: Inglés o Español
+- **Tema**: Modo claro, modo oscuro, o coincidir con la configuración de tu teléfono
+- **Rango Objetivo**: Establece tu rango personal de glucosa objetivo (usualmente 70-180 mg/dL)
 
-### Technical Support
+**Notificaciones**
 
-For technical issues or questions:
+- Recordatorios de citas
+- Recordatorios de lecturas
+- Notificaciones generales
 
-- Check the app's Help section in Settings
-- Contact your hospital's diabetes care team
-- Email: [Your hospital's support email]
+**Recordatorios de Lecturas**
 
-### Emergency
+- Configura hasta 4 recordatorios diarios para revisar tu glucosa
+- Ejemplo: "Desayuno - 8:00 AM," "Hora de dormir - 9:00 PM"
+- Activa o desactiva recordatorios individuales
 
-**This app is not for emergencies!**
-If you have:
+**Objetivos de Glucosa**
 
-- Very low blood sugar (below 70 mg/dL or 3.9 mmol/L) with symptoms
-- Very high blood sugar (above 300 mg/dL or 16.7 mmol/L)
-- Feel very unwell
+- Objetivo bajo: Nivel mínimo seguro de glucosa
+- Objetivo alto: Nivel máximo objetivo de glucosa
+- Estos ayudan a calcular tu "tiempo en rango"
 
-**Take action:**
+### Integración con Tidepool
 
-1. Follow your diabetes emergency plan
-2. Tell a parent or trusted adult
-3. Contact your doctor or go to the emergency room
+Si tu equipo de salud usa Tidepool, puedes conectar tu cuenta:
 
----
+1. Ve a Perfil o Configuración
+2. Toca "Conectar con Tidepool"
+3. Inicia sesión con tus credenciales de Tidepool
+4. Tus datos se sincronizarán automáticamente
 
-## Tips for Success
-
-1. **Check regularly**: Test your glucose at the times your doctor recommended
-2. **Record right away**: Add readings to the app as soon as you test
-3. **Add notes**: Writing what you were doing helps you and your doctor understand patterns
-4. **Sync often**: Keep your data up-to-date by syncing regularly
-5. **Keep appointments**: Don't miss your checkups with your diabetes team
-6. **Ask questions**: Use the notes field to write questions for your doctor
+**¿Qué es Tidepool?**
+Tidepool es un servicio que te permite compartir tus datos de diabetes con tu equipo de salud, familiares y otras aplicaciones de diabetes.
 
 ---
 
-## Glossary
+## Modo Infantil
 
-- **Glucose/Blood Sugar**: The amount of sugar in your blood. Too high or too low can make you feel sick.
-- **Time in Range**: The percentage of time your glucose is in the healthy target range (usually 70-180 mg/dL)
-- **HbA1c**: A test that shows your average blood sugar over the past 2-3 months
-- **CGM**: Continuous Glucose Monitor - a device that checks your sugar automatically
-- **Sync**: Uploading your data to the hospital's computer system
-- **mg/dL and mmol/L**: Two different ways to measure glucose (like inches and centimeters for height)
+¡Diabetactic está diseñado para ser divertido y alentador para los niños!
+
+### Características Amigables para Niños
+
+**Lenguaje Simple**
+
+- "Niveles de azúcar" en lugar de "lecturas de glucosa"
+- "Tiempo en Buen Rango" en lugar de "porcentaje de tiempo en rango"
+- Mensajes amigables como "¡Lo estás haciendo increíble!"
+
+**Diseño Alegre**
+
+- Colores brillantes con estilos de Tailwind CSS + DaisyUI
+- Indicadores de estado con caritas
+- Ilustraciones de bienvenida amigables
+
+**Motivación**
+
+- Mensajes positivos cuando revisas tus lecturas
+- Frases divertidas en la pantalla de bienvenida
+- Celebración cuando te mantienes en rango
+
+### Cambiar Entre Vistas
+
+Los padres pueden alternar entre:
+
+- **Vista para Niños**: Estadísticas simples y mensajes alentadores
+- **Vista para Padres**: Información médica detallada y métricas técnicas
+
+Toca "Vista para Padres" o "Más Detalles" en el Panel para ver información técnica como HbA1c, GMI y coeficiente de variación.
 
 ---
 
-## What's Next?
+## Uso Sin Conexión
 
-Now that you know how to use Diabetactic, you're ready to take charge of managing your diabetes! Remember:
+¡Diabetactic funciona incluso sin internet!
 
-- **You're not alone**: Your family, doctors, and this app are here to help
-- **Small steps matter**: Every reading you record helps you stay healthy
-- **Be proud**: Managing diabetes takes courage and you're doing great!
+### Cómo Funciona
 
-**For parents and guardians**, check out the [Parent Guide](PARENT_GUIDE.md) for more detailed information about data security, Tidepool integration, and understanding glucose metrics.
+1. **Todo se guarda localmente** en tu teléfono primero
+2. **Los datos se sincronizan automáticamente** cuando tienes internet
+3. **Ve todas tus lecturas** en cualquier momento, con o sin conexión
+
+### Qué Funciona Sin Conexión
+
+- Agregar nuevas lecturas de glucosa
+- Ver lecturas pasadas
+- Revisar las estadísticas de tu panel
+- Ver citas
+
+### Qué Necesita Internet
+
+- Sincronizar datos con el hospital
+- Solicitar nuevas citas
+- Conectar con Tidepool
+- Obtener los últimos datos de tu equipo de salud
+
+### Sincronizar tus Datos
+
+**Sincronización Automática**
+La aplicación sincroniza automáticamente cuando:
+
+- Abres la aplicación con internet
+- Deslizas hacia abajo para refrescar en el Panel o página de Lecturas
+
+**Sincronización Manual**
+Toca el botón de sincronización (ícono de flecha circular) en el Panel para sincronizar inmediatamente.
+
+**Estado de Sincronización**
+Busca estos indicadores:
+
+- "Sincronizado" (marca verde): Los datos están actualizados
+- "Sincronizando..." (ícono girando): Subida en progreso
+- "Falló" (X roja): Algo salió mal, intenta de nuevo
 
 ---
 
-**App Version:** 0.0.1
-**Last Updated:** November 2025
-**Technology**: Built with Ionic 8, Angular 20, Capacitor 6, and Tailwind CSS
+## Obtener Ayuda
 
-_Diabetactic is a companion tool for diabetes management. Always follow your healthcare provider's medical advice._
+### Preguntas Frecuentes
+
+**P: Olvidé mi contraseña. ¿Qué hago?**
+R: Contacta al equipo de diabetes de tu hospital. Ellos manejan todas las cuentas y pueden restablecer tu contraseña.
+
+**P: Mis lecturas no se sincronizan. ¿Qué pasa?**
+R:
+
+1. Revisa tu conexión a internet
+2. Intenta deslizar hacia abajo para refrescar en el Panel
+3. Toca el botón de sincronización
+4. Si aún no funciona, cierra y vuelve a abrir la aplicación
+
+**P: ¿Puedo usar esta aplicación si soy menor de 6 o mayor de 14 años?**
+R: ¡Sí! Aunque la aplicación está diseñada para niños de 6-14 años, personas de cualquier edad con diabetes pueden usarla. La "Vista para Padres" tiene información más detallada para adultos.
+
+**P: ¿Mis datos serán compartidos con alguien?**
+R: Tus datos solo se comparten con tu equipo de salud en el hospital. Si te conectas a Tidepool, tú controlas quién ve tus datos de Tidepool.
+
+**P: ¿Qué pasa si quiero eliminar una lectura?**
+R: Actualmente, puedes ver y agregar lecturas. Para eliminar una lectura, por favor contacta a tu equipo de salud.
+
+**P: La aplicación está en inglés. ¿Cómo la cambio a español?**
+R: Ve a Configuración → Idioma → Selecciona "Español"
+
+### Soporte Técnico
+
+Para problemas técnicos o preguntas:
+
+- Revisa la sección de Ayuda de la aplicación en Configuración
+- Contacta al equipo de diabetes de tu hospital
+- Correo: [Correo de soporte de tu hospital]
+
+### Emergencia
+
+**¡Esta aplicación no es para emergencias!**
+Si tienes:
+
+- Azúcar en sangre muy baja (menos de 70 mg/dL o 3.9 mmol/L) con síntomas
+- Azúcar en sangre muy alta (más de 300 mg/dL o 16.7 mmol/L)
+- Te sientes muy mal
+
+**Toma acción:**
+
+1. Sigue tu plan de emergencia para diabetes
+2. Avisa a un padre o adulto de confianza
+3. Contacta a tu médico o ve a la sala de emergencias
 
 ---
 
-**Related Documentation**:
+## Consejos para el Éxito
 
-- [Parent Guide](PARENT_GUIDE.md) - Detailed guide for parents and guardians
-- [Backend Mode Guide](BACKEND_MODE_GUIDE.md) - For developers/IT administrators
-- [Android Quick Start](ANDROID_QUICK_START.md) - Mobile app installation guide
+1. **Revisa regularmente**: Mide tu glucosa en los horarios que tu médico recomendó
+2. **Registra inmediatamente**: Agrega lecturas a la aplicación tan pronto como las tomes
+3. **Agrega notas**: Escribir lo que estabas haciendo ayuda a ti y a tu médico a entender patrones
+4. **Sincroniza seguido**: Mantén tus datos actualizados sincronizando regularmente
+5. **Mantén las citas**: No faltes a tus controles con tu equipo de diabetes
+6. **Haz preguntas**: Usa el campo de notas para escribir preguntas para tu médico
+
+---
+
+## Glosario
+
+- **Glucosa/Azúcar en Sangre**: La cantidad de azúcar en tu sangre. Muy alta o muy baja puede hacerte sentir mal.
+- **Tiempo en Rango**: El porcentaje de tiempo que tu glucosa está en el rango objetivo saludable (usualmente 70-180 mg/dL)
+- **HbA1c**: Una prueba que muestra tu azúcar en sangre promedio de los últimos 2-3 meses
+- **CGM**: Monitor Continuo de Glucosa - un dispositivo que revisa tu azúcar automáticamente
+- **Sincronizar**: Subir tus datos al sistema del hospital
+- **mg/dL y mmol/L**: Dos formas diferentes de medir glucosa (como centímetros y pulgadas para la altura)
+
+---
+
+## ¿Qué Sigue?
+
+Ahora que sabes cómo usar Diabetactic, ¡estás listo para tomar el control del manejo de tu diabetes! Recuerda:
+
+- **No estás solo**: Tu familia, médicos y esta aplicación están aquí para ayudar
+- **Los pequeños pasos importan**: Cada lectura que registras te ayuda a mantenerte saludable
+- **Siéntete orgulloso**: Manejar la diabetes requiere valentía y ¡lo estás haciendo muy bien!
+
+---
+
+## Depuración y Logs (Para Desarrolladores)
+
+Si eres desarrollador o personal de TI, estos consejos te ayudarán a depurar la aplicación.
+
+### Filtrar Mensajes en DevTools del Navegador
+
+- **Por nivel**: Botones "Errores", "Warnings", "Info"
+- **Por texto**: Escribir "Backend" o "[Config]" en la caja de filtro
+- **Por regex**: Usar `/patrón/` para filtrado avanzado
+
+### Tags de Log de la App
+
+```
+[INFO] [Init] AppComponent initialized     // Filtro: "[Init]"
+[INFO] [Config] Backend configuration      // Filtro: "[Config]"
+[INFO] [Auth] User authenticated           // Filtro: "[Auth]"
+```
+
+### Depuración Remota en Android
+
+```bash
+# Ver logs de la app
+adb logcat | grep -i diabetactic
+
+# WebView (console.log desde Angular)
+adb logcat | grep -i chromium
+
+# En Chrome escritorio: chrome://inspect
+# Muestra consola del dispositivo móvil
+```
+
+### Copiar Datos de Consola
+
+- **Clic derecho** en mensaje → "Copiar mensaje"
+- **Clic derecho** en objeto → "Copiar objeto" (JSON)
+- **Preservar log**: Marcar para mantener entre refrescos
+
+---
+
+**Versión de la App:** 0.0.1
+**Última Actualización:** Diciembre 2025
+**Tecnología**: Construida con Ionic 8, Angular 20, Capacitor 6 y Tailwind CSS
+
+_Diabetactic es una herramienta complementaria para el manejo de la diabetes. Siempre sigue los consejos médicos de tu proveedor de salud._
+
+---
+
+**Documentación Relacionada**:
+
+- [Guía de Modos de Backend](BACKEND_MODE_GUIDE.md) - Para desarrolladores/administradores de TI
+- [Guía de Desarrollo Android](ANDROID_DEVELOPMENT.md) - Compilación y despliegue móvil

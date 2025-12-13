@@ -14,7 +14,6 @@ import { HttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { ReadingsService } from '../../core/services/readings.service';
 import { ApiGatewayService, ApiResponse } from '../../core/services/api-gateway.service';
-import { CapacitorHttpService } from '../../core/services/capacitor-http.service';
 import { ExternalServicesManager } from '../../core/services/external-services-manager.service';
 import { PlatformDetectorService } from '../../core/services/platform-detector.service';
 import { EnvironmentDetectorService } from '../../core/services/environment-detector.service';
@@ -29,7 +28,7 @@ import { Network } from '@capacitor/network';
 
 describe('Readings Sync Integration Tests', () => {
   let readingsService: ReadingsService;
-  let mockCapacitorHttp: jasmine.SpyObj<CapacitorHttpService>;
+  let mockHttpClient: jasmine.SpyObj<HttpClient>;
   let mockLocalAuth: jasmine.SpyObj<LocalAuthService>;
 
   const createMockReading = (
@@ -55,14 +54,8 @@ describe('Readings Sync Integration Tests', () => {
     await db.readings.clear();
     await db.syncQueue.clear();
 
-    // Create mocks
-    mockCapacitorHttp = jasmine.createSpyObj('CapacitorHttpService', [
-      'get',
-      'post',
-      'put',
-      'delete',
-      'patch',
-    ]);
+    // Create HttpClient mock (services now use HttpClient directly with Capacitor auto-patching)
+    mockHttpClient = jasmine.createSpyObj('HttpClient', ['get', 'post', 'put', 'delete', 'patch']);
 
     mockLocalAuth = jasmine.createSpyObj('LocalAuthService', [
       'getAccessToken',
@@ -76,8 +69,7 @@ describe('Readings Sync Integration Tests', () => {
       providers: [
         ReadingsService,
         ApiGatewayService,
-        { provide: HttpClient, useValue: jasmine.createSpyObj('HttpClient', ['get', 'post']) },
-        { provide: CapacitorHttpService, useValue: mockCapacitorHttp },
+        { provide: HttpClient, useValue: mockHttpClient },
         {
           provide: ExternalServicesManager,
           useValue: jasmine.createSpyObj('ExternalServicesManager', [
@@ -208,7 +200,7 @@ describe('Readings Sync Integration Tests', () => {
           created_at: '06/12/2025 10:00:00',
         },
       };
-      mockCapacitorHttp.post.and.returnValue(of(backendResponse.data));
+      mockHttpClient.post.and.returnValue(of(backendResponse.data));
 
       // ACT: Process sync queue
       const syncResult = await readingsService.syncPendingReadings();
@@ -218,8 +210,8 @@ describe('Readings Sync Integration Tests', () => {
       expect(syncResult.failed).toBe(0);
 
       // Verify backend was called
-      expect(mockCapacitorHttp.post).toHaveBeenCalledTimes(1);
-      const postCall = mockCapacitorHttp.post.calls.mostRecent();
+      expect(mockHttpClient.post).toHaveBeenCalledTimes(1);
+      const postCall = mockHttpClient.post.calls.mostRecent();
       expect(postCall.args[0]).toContain('/glucose/create');
 
       // Verify reading marked as synced
@@ -237,7 +229,7 @@ describe('Readings Sync Integration Tests', () => {
       const reading = await readingsService.addReading(createMockReading({ value: 180 }));
 
       // Setup backend to fail
-      mockCapacitorHttp.post.and.returnValue(
+      mockHttpClient.post.and.returnValue(
         throwError(() => ({ status: 500, message: 'Server error' }))
       );
 
@@ -262,7 +254,7 @@ describe('Readings Sync Integration Tests', () => {
       await readingsService.addReading(createMockReading({ value: 160 }));
 
       // Setup backend to always fail
-      mockCapacitorHttp.post.and.returnValue(
+      mockHttpClient.post.and.returnValue(
         throwError(() => ({ status: 500, message: 'Server error' }))
       );
 
@@ -284,7 +276,7 @@ describe('Readings Sync Integration Tests', () => {
 
       // Setup backend responses (return unique IDs)
       let backendId = 100;
-      mockCapacitorHttp.post.and.callFake(() =>
+      mockHttpClient.post.and.callFake(() =>
         of({
           id: backendId++,
           user_id: 1,
@@ -302,7 +294,7 @@ describe('Readings Sync Integration Tests', () => {
       expect(syncResult.failed).toBe(0);
 
       // Verify backend called 3 times
-      expect(mockCapacitorHttp.post).toHaveBeenCalledTimes(3);
+      expect(mockHttpClient.post).toHaveBeenCalledTimes(3);
 
       // Verify all readings marked as synced
       const allReadings = await db.readings.toArray();
@@ -335,7 +327,7 @@ describe('Readings Sync Integration Tests', () => {
           },
         ],
       };
-      mockCapacitorHttp.get.and.returnValue(of(backendReadings));
+      mockHttpClient.get.and.returnValue(of(backendReadings));
 
       // ACT: Fetch from backend
       const fetchResult = await readingsService.fetchFromBackend();
@@ -384,7 +376,7 @@ describe('Readings Sync Integration Tests', () => {
           },
         ],
       };
-      mockCapacitorHttp.get.and.returnValue(of(backendReadings));
+      mockHttpClient.get.and.returnValue(of(backendReadings));
 
       // ACT: Fetch and merge
       await readingsService.fetchFromBackend();
@@ -467,7 +459,7 @@ describe('Readings Sync Integration Tests', () => {
       (Network.getStatus as jest.Mock).mockResolvedValue({ connected: true });
 
       // Setup backend response
-      mockCapacitorHttp.post.and.returnValue(
+      mockHttpClient.post.and.returnValue(
         of({
           id: 777,
           user_id: 1,
@@ -499,7 +491,7 @@ describe('Readings Sync Integration Tests', () => {
       await readingsService.addReading(createMockReading({ value: 140, mealContext: 'DESAYUNO' }));
 
       // Setup backend responses
-      mockCapacitorHttp.post.and.returnValue(
+      mockHttpClient.post.and.returnValue(
         of({
           id: 600,
           user_id: 1,
@@ -509,7 +501,7 @@ describe('Readings Sync Integration Tests', () => {
         })
       );
 
-      mockCapacitorHttp.get.and.returnValue(
+      mockHttpClient.get.and.returnValue(
         of({
           readings: [
             {

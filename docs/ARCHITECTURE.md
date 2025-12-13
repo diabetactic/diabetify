@@ -108,3 +108,46 @@ Los datos de glucosa provienen del backend Diabetactic.
 - Lazy loading de rutas
 - Optimización de imágenes
 - Objetivo de bundle: <2MB inicial
+
+## Integración Tidepool (Auth-Only)
+
+Tidepool se usa **solo para autenticación** - obtener ID de usuario. Los datos de glucosa provienen del backend Diabetactic.
+
+### Flujo OAuth2/PKCE
+
+1. Usuario toca "Conectar con Tidepool"
+2. App abre página de login de Tidepool en navegador in-app
+3. Usuario inicia sesión con credenciales Tidepool
+4. Tidepool redirige con código de autorización
+5. App intercambia código por tokens y extrae userId
+
+### Configuración
+
+```typescript
+// src/environments/environment.ts
+tidepool: {
+  baseUrl: 'https://api.tidepool.org',
+  authUrl: 'https://api.tidepool.org/auth',
+  clientId: 'diabetactic-mobile-dev',
+  redirectUri: 'diabetactic://oauth/callback',
+  scopes: 'profile:read',
+}
+```
+
+### URI de Redirección (Android)
+
+```xml
+<!-- android/app/src/main/AndroidManifest.xml -->
+<intent-filter>
+  <action android:name="android.intent.action.VIEW" />
+  <category android:name="android.intent.category.DEFAULT" />
+  <category android:name="android.intent.category.BROWSABLE" />
+  <data android:scheme="diabetactic" android:host="oauth" android:path="/callback" />
+</intent-filter>
+```
+
+### Archivos Relacionados
+
+- `src/app/core/services/tidepool-auth.service.ts` - Autenticación OAuth
+- `src/app/core/config/oauth.config.ts` - Configuración OAuth
+- `src/app/core/utils/pkce.utils.ts` - Utilidades PKCE

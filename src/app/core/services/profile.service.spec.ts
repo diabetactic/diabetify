@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ProfileService } from './profile.service';
 import { ApiGatewayService } from './api-gateway.service';
+import { LoggerService } from './logger.service';
 import { of, throwError } from 'rxjs';
 import {
   UserProfile,
@@ -114,6 +115,15 @@ describe('ProfileService', () => {
             clearCache: jest.fn(),
           },
         },
+        {
+          provide: LoggerService,
+          useValue: {
+            info: jest.fn(),
+            debug: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+          },
+        },
       ],
     });
 
@@ -218,7 +228,8 @@ describe('ProfileService', () => {
       });
 
       it('should handle storage read error gracefully', async () => {
-        jest.spyOn(console, 'error');
+        const loggerService = TestBed.inject(LoggerService);
+        jest.spyOn(loggerService, 'error');
 
         const { Preferences } = await import('@capacitor/preferences');
         (Preferences.get as jest.Mock).mockReturnValue(Promise.reject(new Error('Storage error')));
@@ -226,7 +237,7 @@ describe('ProfileService', () => {
         const profile = await service.getProfile();
 
         expect(profile).toBeNull();
-        expect(console.error).toHaveBeenCalled();
+        expect(loggerService.error).toHaveBeenCalled();
       });
     });
   });
@@ -721,17 +732,22 @@ describe('ProfileService', () => {
           expiresAt: Date.now() - 1000, // Expired
         };
 
-        jest.spyOn(console, 'warn');
+        const loggerService = TestBed.inject(LoggerService);
+        jest.spyOn(loggerService, 'warn');
         mockSecureStorage.set('diabetactic_tidepool_auth', expiredAuth);
 
         const auth = await service.getTidepoolCredentials();
 
         expect(auth).toBeTruthy();
-        expect(console.warn).toHaveBeenCalledWith('Tidepool auth token expired');
+        expect(loggerService.warn).toHaveBeenCalledWith(
+          'ProfileService',
+          'Tidepool auth token expired'
+        );
       });
 
       it('should handle storage read error', async () => {
-        jest.spyOn(console, 'error');
+        const loggerService = TestBed.inject(LoggerService);
+        jest.spyOn(loggerService, 'error');
 
         const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
         (SecureStorage.get as jest.Mock).mockReturnValue(Promise.reject(new Error('Read error')));
@@ -739,7 +755,7 @@ describe('ProfileService', () => {
         const auth = await service.getTidepoolCredentials();
 
         expect(auth).toBeNull();
-        expect(console.error).toHaveBeenCalled();
+        expect(loggerService.error).toHaveBeenCalled();
       });
     });
 
@@ -1083,7 +1099,14 @@ describe('ProfileService', () => {
         clearCache: jest.fn(),
       };
 
-      const service = new ProfileService(mockApiGateway as any);
+      const mockLogger = {
+        info: jest.fn(),
+        debug: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+      };
+
+      const service = new ProfileService(mockApiGateway as any, mockLogger as any);
 
       await service.updateProfileOnBackend(updates);
 
@@ -1110,7 +1133,14 @@ describe('ProfileService', () => {
         clearCache: jest.fn(),
       };
 
-      const service = new ProfileService(mockApiGateway as any);
+      const mockLogger = {
+        info: jest.fn(),
+        debug: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+      };
+
+      const service = new ProfileService(mockApiGateway as any, mockLogger as any);
 
       await expect(service.updateProfileOnBackend(updates)).rejects.toThrow('Update failed');
     });
@@ -1123,7 +1153,14 @@ describe('ProfileService', () => {
         clearCache: jest.fn(),
       };
 
-      const service = new ProfileService(mockApiGateway as any);
+      const mockLogger = {
+        info: jest.fn(),
+        debug: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+      };
+
+      const service = new ProfileService(mockApiGateway as any, mockLogger as any);
 
       await expect(service.updateProfileOnBackend(updates)).rejects.toThrow('Network error');
     });

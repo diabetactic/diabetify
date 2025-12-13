@@ -39,13 +39,13 @@
     --padding-end: 12px;
     --padding-top: 8px;
     --padding-bottom: 8px;
-    --border-radius: 12px;
+    --border-radius: 1rem;
     --background: oklch(var(--b2) / 50%);
 
     flex: 1;
     font-size: 24px;
     font-weight: 600;
-    border-radius: 12px;
+    border-radius: 1rem;
 
     &.invalid {
       --color: var(--ion-color-danger);
@@ -59,10 +59,6 @@
   --padding-end: 0;
 
   font-size: 14px;
-}
-
-ion-datetime-button {
-  width: 100%;
 }
 
 .ion-select-full {
@@ -197,7 +193,7 @@ ion-datetime-button {
   padding-bottom: 16px;
 
   ion-button {
-    --border-radius: 14px;
+    --border-radius: 1rem;
 
     min-height: 48px;
     font-weight: 600;
@@ -255,7 +251,7 @@ ion-textarea:focus-within,
 ion-select:focus-within {
   outline: 2px solid var(--ion-color-primary);
   outline-offset: 3px;
-  border-radius: 14px;
+  border-radius: 1rem;
 }
 
 ion-item:has(ion-input:focus),

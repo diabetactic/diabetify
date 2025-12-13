@@ -21,7 +21,7 @@ import { db } from '../../../core/services/database.service';
 import { MockAdapterService } from '../../../core/services/mock-adapter.service';
 import { ToastController, AlertController } from '@ionic/angular';
 import { AppIconComponent } from '../app-icon/app-icon.component';
-import { CapacitorHttpService } from '../../../core/services/capacitor-http.service';
+import { HttpClient } from '@angular/common/http';
 import { API_GATEWAY_BASE_URL } from '../../config/api-base-url';
 import { firstValueFrom } from 'rxjs';
 
@@ -151,7 +151,7 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
     private mockAdapter: MockAdapterService,
     private toastController: ToastController,
     private alertController: AlertController,
-    private capacitorHttp: CapacitorHttpService,
+    private http: HttpClient,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -517,7 +517,7 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
     )}`;
 
     const response = await firstValueFrom(
-      this.capacitorHttp.post<BackofficeTokenResponse>(`${BACKOFFICE_BASE_URL}/token`, body, {
+      this.http.post<BackofficeTokenResponse>(`${BACKOFFICE_BASE_URL}/token`, body, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       })
     );
@@ -539,12 +539,9 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
       const headers = { Authorization: `Bearer ${token}` };
 
       const pending = await firstValueFrom(
-        this.capacitorHttp.get<BackofficeQueueEntry[]>(
-          `${BACKOFFICE_BASE_URL}/appointments/pending`,
-          {
-            headers,
-          }
-        )
+        this.http.get<BackofficeQueueEntry[]>(`${BACKOFFICE_BASE_URL}/appointments/pending`, {
+          headers,
+        })
       );
 
       if (!pending || pending.length === 0) {
@@ -556,11 +553,7 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
       const placement = entry.queue_placement ?? '(unknown)';
 
       await firstValueFrom(
-        this.capacitorHttp.put(
-          `${BACKOFFICE_BASE_URL}/appointments/accept/${placement}`,
-          {},
-          { headers }
-        )
+        this.http.put(`${BACKOFFICE_BASE_URL}/appointments/accept/${placement}`, {}, { headers })
       );
 
       await this.showToast(`Accepted appointment in queue position ${placement}`, 'success');
@@ -578,12 +571,9 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
       const headers = { Authorization: `Bearer ${token}` };
 
       const pending = await firstValueFrom(
-        this.capacitorHttp.get<BackofficeQueueEntry[]>(
-          `${BACKOFFICE_BASE_URL}/appointments/pending`,
-          {
-            headers,
-          }
-        )
+        this.http.get<BackofficeQueueEntry[]>(`${BACKOFFICE_BASE_URL}/appointments/pending`, {
+          headers,
+        })
       );
 
       if (!pending || pending.length === 0) {
@@ -595,11 +585,7 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
       const placement = entry.queue_placement ?? '(unknown)';
 
       await firstValueFrom(
-        this.capacitorHttp.put(
-          `${BACKOFFICE_BASE_URL}/appointments/deny/${placement}`,
-          {},
-          { headers }
-        )
+        this.http.put(`${BACKOFFICE_BASE_URL}/appointments/deny/${placement}`, {}, { headers })
       );
 
       await this.showToast(`Denied appointment in queue position ${placement}`, 'warning');
@@ -624,7 +610,7 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
       const headers = { Authorization: `Bearer ${token}` };
 
       await firstValueFrom(
-        this.capacitorHttp.delete(`${BACKOFFICE_BASE_URL}/appointments`, {
+        this.http.delete(`${BACKOFFICE_BASE_URL}/appointments`, {
           headers,
         })
       );
@@ -688,11 +674,9 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
       };
 
       await firstValueFrom(
-        this.capacitorHttp.post(
-          `${BACKOFFICE_BASE_URL}/appointments/${appointmentId}/resolution`,
-          payload,
-          { headers }
-        )
+        this.http.post(`${BACKOFFICE_BASE_URL}/appointments/${appointmentId}/resolution`, payload, {
+          headers,
+        })
       );
 
       await this.showToast(`Resolution created for appointment ${appointmentId}`, 'success');
@@ -719,7 +703,7 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
 
     try {
       await firstValueFrom(
-        this.capacitorHttp.post(`${API_GATEWAY_BASE_URL}/api/auth/register`, payload, {
+        this.http.post(`${API_GATEWAY_BASE_URL}/api/auth/register`, payload, {
           headers: { 'Content-Type': 'application/json' },
         })
       );

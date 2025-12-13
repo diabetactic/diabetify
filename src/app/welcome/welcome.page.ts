@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationStart } from '@angular/router';
 import { IonContent } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
 import { ROUTES, ROUTE_SEGMENTS } from '../core/constants';
@@ -21,8 +21,7 @@ import { ROUTES, ROUTE_SEGMENTS } from '../core/constants';
 })
 export class WelcomePage implements OnInit, OnDestroy {
   isDarkMode = false;
-  private themeSubscription?: Subscription;
-  private navigationSubscription?: Subscription;
+  private readonly destroy$ = new Subject<void>();
 
   // MOCK QUOTES - Set to false to remove quotes display
   showMockQuotes = false;
@@ -38,20 +37,22 @@ export class WelcomePage implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    // Subscribe to theme changes
-    this.themeSubscription = this.themeService.isDark$.subscribe(isDark => {
+    // Subscribe to theme changes with automatic cleanup
+    this.themeService.isDark$.pipe(takeUntil(this.destroy$)).subscribe(isDark => {
       this.isDarkMode = isDark;
     });
 
     // CRITICAL: Listen for navigation away from welcome page to ensure cleanup
-    this.navigationSubscription = this.router.events
+    this.router.events
       .pipe(
         filter(event => event instanceof NavigationStart),
-        filter((event: NavigationStart) => !event.url.includes(ROUTE_SEGMENTS.WELCOME))
+        filter((event: NavigationStart) => !event.url.includes(ROUTE_SEGMENTS.WELCOME)),
+        takeUntil(this.destroy$)
       )
       .subscribe(() => {
-        // Force cleanup when navigating away
-        this.cleanup();
+        // Complete destroy$ on navigation away for immediate cleanup
+        this.destroy$.next();
+        this.destroy$.complete();
       });
 
     // MOCK QUOTES - Load translated quotes and set random quote
@@ -72,17 +73,8 @@ export class WelcomePage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.cleanup();
-  }
-
-  /**
-   * Cleanup method to properly dispose subscriptions and resources
-   */
-  private cleanup(): void {
-    this.themeSubscription?.unsubscribe();
-    this.navigationSubscription?.unsubscribe();
-    this.themeSubscription = undefined;
-    this.navigationSubscription = undefined;
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**

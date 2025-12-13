@@ -124,6 +124,28 @@
       "active": "Activa"
     }
   },
+  "biometric": {
+    "title": "Inicio de Sesión Biométrico",
+    "enrollTitle": "Habilitar Inicio Biométrico",
+    "enrollMessage": "¿Desea usar su huella digital o rostro para iniciar sesión más rápido?",
+    "enrollButton": "Habilitar Biométrico",
+    "enrollSuccess": "Autenticación biométrica habilitada exitosamente",
+    "loginWith": "Iniciar con {{type}}",
+    "loginWithFingerprint": "Iniciar con Huella Digital",
+    "loginWithFace": "Iniciar con Face ID",
+    "authenticating": "Autenticando...",
+    "prompt": "Autentíquese para acceder a su cuenta",
+    "error": "Autenticación Fallida",
+    "usePassword": "Usar Contraseña",
+    "disabled": "Autenticación biométrica deshabilitada",
+    "notAvailable": "Autenticación biométrica no disponible en este dispositivo",
+    "settings": {
+      "title": "Autenticación Biométrica",
+      "description": "Use huella digital o rostro para iniciar sesión",
+      "enabled": "Habilitado",
+      "disabled": "Deshabilitado"
+    }
+  },
   "dashboard": {
     "title": "Panel de Control",
     "welcome": "Bienvenido de vuelta",
@@ -432,6 +454,7 @@
     "history": "Historial",
     "schedule": "Programar Cita",
     "loading": "Cargando citas...",
+    "updatesUnavailable": "Las actualizaciones en tiempo real no están disponibles temporalmente",
     "dataShared": "Datos Compartidos",
     "record": "Cita",
     "tabs": {
@@ -700,14 +723,6 @@
       "other_motive": "Especificar Otro Motivo",
       "another_treatment": "Tratamientos Adicionales",
       "submit": "Crear Cita"
-    },
-    "backend": {
-      "info": "Tus citas se registran desde el sistema clínico. Aquí puedes ver el detalle de las citas ya creadas por tu equipo médico.",
-      "titleWithId": "Detalles de la Cita #{{id}}",
-      "empty": {
-        "title": "Aún no hay citas registradas",
-        "message": "Cuando tu equipo médico programe una cita, aparecerá automáticamente en esta pantalla."
-      }
     }
   },
   "profile": {
@@ -806,7 +821,7 @@
       "providers": "Dispositivos Conectados",
       "totalReadings": "Lecturas Sincronizadas",
       "syncHistory": "Sincronizaciones Exitosas",
-      "sessionExpired": "Tu sesión de Tidepool ha expirado. Por favor desconecta y vuelve a conectar con Tidepool."
+      "sessionExpired": "Sesión expirada. Por favor reconecte."
     },
     "tidepoolLoginDialog": {
       "title": "Conectar a Tidepool",
@@ -913,12 +928,6 @@
       "themeDark": "Oscuro",
       "themeAuto": "Automático del Sistema"
     },
-    "appearanceSettings": {
-      "themeLabel": "Tema",
-      "themeLight": "Claro",
-      "themeDark": "Oscuro",
-      "themeAuto": "Automático del Sistema"
-    },
     "profile": {
       "avatarAlt": "Foto de perfil"
     },
@@ -971,23 +980,7 @@
       "english": "English",
       "spanish": "Español",
       "en": "English",
-      "es": "Español",
-      "now": "Ahora",
-      "today": "Hoy",
-      "yesterday": "Ayer",
-      "tomorrow": "Mañana",
-      "thisWeek": "Esta Semana",
-      "lastWeek": "Semana Pasada",
-      "thisMonth": "Este Mes",
-      "lastMonth": "Mes Pasado",
-      "days": "días",
-      "hours": "horas",
-      "minutes": "minutos",
-      "seconds": "segundos",
-      "ago": "hace",
-      "in": "en",
-      "am": "AM",
-      "pm": "PM"
+      "es": "Español"
     }
   },
   "sync": {
@@ -1120,6 +1113,27 @@
       "actions": "Acciones",
       "config": "Config"
     },
+    "devTools": {
+      "title": "Herramientas de Desarrollo",
+      "description": "Ayudantes mínimos para pruebas Heroku/local",
+      "appointmentsQueue": "Cola de Citas (Backoffice)",
+      "acceptNextPending": "Aceptar siguiente pendiente",
+      "denyNextPending": "Denegar siguiente pendiente",
+      "clearQueue": "Limpiar toda la cola",
+      "usersResolutions": "Usuarios y Resoluciones",
+      "createTestUser": "Crear usuario de prueba",
+      "createResolution": "Crear resolución para cita",
+      "localDangerZone": "Zona de Peligro Local",
+      "localDangerDescription": "Estas acciones solo afectan datos locales en este dispositivo (IndexedDB + Preferencias).",
+      "clearLocalReadings": "Limpiar lecturas locales",
+      "clearPreferencesAction": "Limpiar preferencias",
+      "clearAllLocalData": "Limpiar TODOS los datos locales",
+      "environment": "Entorno",
+      "mode": "Modo",
+      "api": "API",
+      "queueDescription": "Usa credenciales de administrador contra la API backoffice de Heroku. Solo para desarrollo/pruebas.",
+      "usersDescription": "Crea un usuario paciente de prueba vía el gateway principal de la API, o una resolución de ejemplo en el backoffice para una cita específica."
+    },
     "device": {
       "title": "Información del Dispositivo",
       "platform": "Plataforma",
@@ -1226,7 +1240,8 @@
       "circuitBreakerTimeout": "Tiempo de Espera del Cortacircuitos",
       "cacheDuration": "Duración del Caché",
       "noCache": "Sin Caché",
-      "offlineSupport": "Soporte Sin Conexión"
+      "offlineSupport": "Soporte Sin Conexión",
+      "responseTime": "Tiempo de Respuesta"
     },
     "circuitBreakerDetails": {
       "state": "Estado",
@@ -1507,5 +1522,19 @@
       "streakLost": "¡No te rindas! Empieza una nueva racha hoy.",
       "newRecord": "¡Nuevo récord personal!"
     }
+  },
+  "achievements": {
+    "title": "Logros",
+    "currentStreak": "Días de Racha",
+    "maxStreak": "Récord",
+    "days": "días",
+    "todayProgress": "Progreso de Hoy",
+    "measurements": "mediciones",
+    "dailyHint": "¡Toma 4 mediciones diarias para mantener tu racha!",
+    "earned": "Logros Obtenidos",
+    "allAchievements": "Todos los Logros",
+    "noAchievements": "Aún no hay logros. ¡Empieza a registrar para desbloquearlos!",
+    "viewAchievements": "Ver Logros",
+    "achievementsDesc": "Sigue tu progreso y gana insignias"
   }
 }

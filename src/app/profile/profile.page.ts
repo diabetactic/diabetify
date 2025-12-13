@@ -37,7 +37,7 @@ import { LocalAuthService } from '../core/services/local-auth.service';
 import { ProfileService } from '../core/services/profile.service';
 import { ThemeService } from '../core/services/theme.service';
 import { TranslationService, Language } from '../core/services/translation.service';
-import { CapacitorHttpService } from '../core/services/capacitor-http.service';
+import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '../core/services/notification.service';
 import { UserProfile, ThemeMode } from '../core/models/user-profile.model';
 import { environment } from '../../environments/environment';
@@ -152,7 +152,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     private profileService: ProfileService,
     private themeService: ThemeService,
     private translationService: TranslationService,
-    private capacitorHttp: CapacitorHttpService,
+    private http: HttpClient,
     private notificationService: NotificationService,
     private router: Router,
     private alertController: AlertController,
@@ -746,7 +746,7 @@ export class ProfilePage implements OnInit, OnDestroy {
       if (userId) {
         const profileUrl = `${baseUrl}/metadata/${userId}/profile`;
         result.profile = await firstValueFrom(
-          this.capacitorHttp.get<TidepoolProfile>(profileUrl, { headers })
+          this.http.get<TidepoolProfile>(profileUrl, { headers })
         );
       }
     } catch {
@@ -758,7 +758,7 @@ export class ProfilePage implements OnInit, OnDestroy {
       if (userId) {
         const dataSourcesUrl = `${baseUrl}/data/v1/users/${userId}/data_sources`;
         const sources = await firstValueFrom(
-          this.capacitorHttp.get<TidepoolDataSource[]>(dataSourcesUrl, { headers })
+          this.http.get<TidepoolDataSource[]>(dataSourcesUrl, { headers })
         );
         result.dataSources = sources || [];
         result.dataSourcesCount = result.dataSources.length;
@@ -958,6 +958,13 @@ export class ProfilePage implements OnInit, OnDestroy {
    */
   async goToSettings(): Promise<void> {
     await this.router.navigate([ROUTES.SETTINGS]);
+  }
+
+  /**
+   * Navigate to achievements page
+   */
+  async goToAchievements(): Promise<void> {
+    await this.router.navigate(['/achievements']);
   }
 
   /**

@@ -72,7 +72,7 @@ ion-toolbar[color='primary'] ion-searchbar {
   --placeholder-color: var(--ion-color-medium, #6b7280);
   --icon-color: var(--ion-color-medium, #6b7280);
   --clear-button-color: var(--ion-color-medium, #6b7280);
-  --border-radius: 12px;
+  --border-radius: 1rem;
 }
 
 /* Dark mode searchbar with hex fallbacks for Android WebView */

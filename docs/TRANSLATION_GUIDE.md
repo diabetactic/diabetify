@@ -95,7 +95,7 @@ Ejemplos:
 ## Verificar Traducciones
 
 ```bash
-npm run i18n:missing
+npm run i18n:check
 ```
 
 Este script verifica:
@@ -153,7 +153,7 @@ Siempre actualizar ambos archivos de idioma juntos.
    private readonly supportedLanguages = ['en', 'es', 'fr'];
    ```
 4. Traducir contenido
-5. Verificar: `npm run i18n:missing`
+5. Verificar: `npm run i18n:check`
 
 ## Estado Actual
 

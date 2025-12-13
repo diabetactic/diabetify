@@ -44,7 +44,7 @@ export class ServiceMonitorComponent implements OnInit, OnDestroy {
   // UI state
   selectedService: ExternalService | null = null;
   showDetails = false;
-  autoRefresh = false; // DISABLED: Health checks cause CORS errors - use CapacitorHttpService instead
+  autoRefresh = false; // DISABLED: Health checks cause CORS errors on web (native uses auto-patched HttpClient)
   refreshInterval = 10000; // 10 seconds
 
   // Subscriptions
@@ -97,9 +97,8 @@ export class ServiceMonitorComponent implements OnInit, OnDestroy {
       this.startAutoRefresh();
     }
 
-    // DISABLED: Health checks cause CORS errors on native platforms
-    // when using HttpClient instead of CapacitorHttpService.
-    // To fix this, external-services-manager should use CapacitorHttpService.
+    // DISABLED: Health checks cause CORS errors on web platforms.
+    // With Capacitor 6 auto-patching, HttpClient uses native HTTP on mobile.
     // this.checkAllServices();
   }
 

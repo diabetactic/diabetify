@@ -7,7 +7,7 @@
 import { TestBed, waitForAsync } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
+// Observable removed - no longer needed after CapacitorHttpService cleanup
 
 import { ApiGatewayService, ApiEndpoint } from './api-gateway.service';
 import { ExternalServicesManager, ExternalService } from './external-services-manager.service';
@@ -17,36 +17,8 @@ import { EnvironmentDetectorService } from './environment-detector.service';
 import { PlatformDetectorService } from './platform-detector.service';
 import { MockAdapterService } from './mock-adapter.service';
 import { LoggerService } from './logger.service';
-import { CapacitorHttpService } from './capacitor-http.service';
-import { HttpClient } from '@angular/common/http';
-
-/**
- * Mock CapacitorHttpService that directly delegates to HttpClient
- * without async platform checks, making it compatible with fakeAsync tests
- */
-class MockCapacitorHttpService {
-  constructor(private http: HttpClient) {}
-
-  get<T>(url: string, options?: any): Observable<T> {
-    return this.http.get<T>(url, options) as Observable<T>;
-  }
-
-  post<T>(url: string, data: any, options?: any): Observable<T> {
-    return this.http.post<T>(url, data, options) as Observable<T>;
-  }
-
-  put<T>(url: string, data: any, options?: any): Observable<T> {
-    return this.http.put<T>(url, data, options) as Observable<T>;
-  }
-
-  delete<T>(url: string, options?: any): Observable<T> {
-    return this.http.delete<T>(url, options) as Observable<T>;
-  }
-
-  patch<T>(url: string, data: any, options?: any): Observable<T> {
-    return this.http.patch<T>(url, data, options) as Observable<T>;
-  }
-}
+// Note: ApiGatewayService now uses HttpClient directly via Capacitor 6 auto-patching
+// No need for MockCapacitorHttpService - HttpClientTestingModule provides the mock
 
 describe('ApiGatewayService', () => {
   let service: ApiGatewayService;
@@ -105,13 +77,8 @@ describe('ApiGatewayService', () => {
       imports: [HttpClientTestingModule],
       providers: [
         ApiGatewayService,
-        // Use mock CapacitorHttpService that directly uses HttpClient
-        // This avoids async platform checks and works with fakeAsync
-        {
-          provide: CapacitorHttpService,
-          useFactory: (http: HttpClient) => new MockCapacitorHttpService(http),
-          deps: [HttpClient],
-        },
+        // ApiGatewayService now uses HttpClient directly (Capacitor 6 auto-patching)
+        // HttpClientTestingModule provides the mock HttpClient automatically
         { provide: ExternalServicesManager, useValue: mockExternalServices },
         { provide: LocalAuthService, useValue: mockLocalAuth },
         { provide: TidepoolAuthService, useValue: mockTidepoolAuth },

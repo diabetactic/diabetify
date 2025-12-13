@@ -15,7 +15,7 @@ import { HttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { ReadingsService } from '../../core/services/readings.service';
 import { ApiGatewayService } from '../../core/services/api-gateway.service';
-import { CapacitorHttpService } from '../../core/services/capacitor-http.service';
+// CapacitorHttpService removed - services now use HttpClient directly with Capacitor auto-patching
 import { ExternalServicesManager } from '../../core/services/external-services-manager.service';
 import { PlatformDetectorService } from '../../core/services/platform-detector.service';
 import { EnvironmentDetectorService } from '../../core/services/environment-detector.service';
@@ -30,7 +30,7 @@ import { Network } from '@capacitor/network';
 
 describe('Offline-Online Integration Tests', () => {
   let readingsService: ReadingsService;
-  let mockCapacitorHttp: jasmine.SpyObj<CapacitorHttpService>;
+  let mockHttpClient: jasmine.SpyObj<HttpClient>;
   let mockLocalAuth: jasmine.SpyObj<LocalAuthService>;
 
   const createMockReading = (
@@ -68,13 +68,7 @@ describe('Offline-Online Integration Tests', () => {
     await db.syncQueue.clear();
 
     // Create mocks
-    mockCapacitorHttp = jasmine.createSpyObj('CapacitorHttpService', [
-      'get',
-      'post',
-      'put',
-      'delete',
-      'patch',
-    ]);
+    mockHttpClient = jasmine.createSpyObj('HttpClient', ['get', 'post', 'put', 'delete', 'patch']);
 
     mockLocalAuth = jasmine.createSpyObj('LocalAuthService', [
       'getAccessToken',
@@ -88,8 +82,7 @@ describe('Offline-Online Integration Tests', () => {
       providers: [
         ReadingsService,
         ApiGatewayService,
-        { provide: HttpClient, useValue: jasmine.createSpyObj('HttpClient', ['get', 'post']) },
-        { provide: CapacitorHttpService, useValue: mockCapacitorHttp },
+        { provide: HttpClient, useValue: mockHttpClient },
         {
           provide: ExternalServicesManager,
           useValue: jasmine.createSpyObj('ExternalServicesManager', [
@@ -194,7 +187,7 @@ describe('Offline-Online Integration Tests', () => {
       expect(syncResult.failed).toBe(0);
 
       // No HTTP calls made
-      expect(mockCapacitorHttp.post).not.toHaveBeenCalled();
+      expect(mockHttpClient.post).not.toHaveBeenCalled();
 
       // Reading still in queue
       const queueItems = await db.syncQueue.toArray();
@@ -233,7 +226,7 @@ describe('Offline-Online Integration Tests', () => {
 
       // Setup backend responses
       let backendId = 1000;
-      mockCapacitorHttp.post.and.callFake(() =>
+      mockHttpClient.post.and.callFake(() =>
         of({
           id: backendId++,
           user_id: 1,
@@ -269,7 +262,7 @@ describe('Offline-Online Integration Tests', () => {
 
       // Setup backend to fail on second call
       let callCount = 0;
-      mockCapacitorHttp.post.and.callFake(() => {
+      mockHttpClient.post.and.callFake(() => {
         callCount++;
         if (callCount === 2) {
           return throwError(() => ({ status: 500, message: 'Server error' }));
@@ -310,7 +303,7 @@ describe('Offline-Online Integration Tests', () => {
 
       // Simulate network drop mid-sync
       let syncAttempts = 0;
-      mockCapacitorHttp.post.and.callFake(() => {
+      mockHttpClient.post.and.callFake(() => {
         syncAttempts++;
         if (syncAttempts === 2) {
           // Network drops on second reading
@@ -335,7 +328,7 @@ describe('Offline-Online Integration Tests', () => {
 
       // Restore network
       simulateOnline();
-      mockCapacitorHttp.post.and.returnValue(
+      mockHttpClient.post.and.returnValue(
         of({
           id: 2000,
           user_id: 1,
@@ -362,7 +355,7 @@ describe('Offline-Online Integration Tests', () => {
       await readingsService.addReading(createMockReading({ value: 100 }));
 
       // Setup backend
-      mockCapacitorHttp.post.and.returnValue(
+      mockHttpClient.post.and.returnValue(
         of({
           id: 1000,
           user_id: 1,
@@ -396,7 +389,7 @@ describe('Offline-Online Integration Tests', () => {
       await readingsService.addReading(createMockReading({ value: 150 }));
 
       // Setup backend with delay
-      mockCapacitorHttp.post.and.returnValue(
+      mockHttpClient.post.and.returnValue(
         of({
           id: 1000,
           user_id: 1,
@@ -429,7 +422,7 @@ describe('Offline-Online Integration Tests', () => {
       // ARRANGE: Add and sync reading
       const reading = await readingsService.addReading(createMockReading({ value: 100 }));
 
-      mockCapacitorHttp.post.and.returnValue(
+      mockHttpClient.post.and.returnValue(
         of({
           id: 5000,
           user_id: 1,
@@ -547,7 +540,7 @@ describe('Offline-Online Integration Tests', () => {
 
       // Setup backend for batch sync
       let backendId = 10000;
-      mockCapacitorHttp.post.and.callFake(() =>
+      mockHttpClient.post.and.callFake(() =>
         of({
           id: backendId++,
           user_id: 1,
@@ -578,7 +571,7 @@ describe('Offline-Online Integration Tests', () => {
       await readingsService.addReading(createMockReading({ value: 140, mealContext: 'DESAYUNO' }));
 
       // Setup backend responses
-      mockCapacitorHttp.post.and.returnValue(
+      mockHttpClient.post.and.returnValue(
         of({
           id: 6000,
           user_id: 1,
@@ -589,7 +582,7 @@ describe('Offline-Online Integration Tests', () => {
       );
 
       // Backend has new readings too
-      mockCapacitorHttp.get.and.returnValue(
+      mockHttpClient.get.and.returnValue(
         of({
           readings: [
             {

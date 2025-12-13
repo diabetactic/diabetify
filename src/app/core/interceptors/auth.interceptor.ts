@@ -22,6 +22,7 @@ import { Observable, BehaviorSubject, throwError, timer, Subject } from 'rxjs';
 import { catchError, filter, take, switchMap, retryWhen, mergeMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { LocalAuthService } from '../services/local-auth.service';
+import { LoggerService } from '../services/logger.service';
 import { ROUTES } from '../constants';
 
 @Injectable()
@@ -49,13 +50,17 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
 
   constructor(
     private router: Router,
-    private authService: LocalAuthService
+    private authService: LocalAuthService,
+    private logger: LoggerService
   ) {}
 
   /**
    * Intercept HTTP requests to add authentication and handle errors
    * - 401: Unauthorized - triggers token refresh with request queueing
    * - 5xx: Server errors - applies exponential backoff retry with jitter
+   *
+   * Note: With CapacitorHttp auto-patching enabled, errors on native platforms
+   * may be plain objects instead of HttpErrorResponse. We handle both cases.
    */
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     // Note: Token injection is handled by ApiGatewayService
@@ -65,14 +70,22 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
       retryWhen(errors =>
         errors.pipe(
           mergeMap((error, attemptIndex) => {
+            // Extract status from HttpErrorResponse or plain object (native CapacitorHttp)
+            const status = this.extractErrorStatus(error);
+
             // Only retry 5xx server errors for GET requests (idempotent operations only)
             // POST/PUT/DELETE are not retried to prevent duplicate operations
             if (
-              error instanceof HttpErrorResponse &&
-              error.status >= 500 &&
+              status !== null &&
+              status >= 500 &&
               attemptIndex < this.maxRetries &&
               request.method === 'GET'
             ) {
+              this.logger.debug(
+                'AuthInterceptor',
+                `Retrying 5xx error (attempt ${attemptIndex + 1}/${this.maxRetries})`,
+                { status, url: request.url }
+              );
               return this.calculateBackoffDelay(attemptIndex);
             }
             return throwError(() => error);
@@ -80,17 +93,39 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
         )
       ),
       catchError(error => {
-        if (error instanceof HttpErrorResponse) {
-          if (error.status === 401) {
-            return this.handle401Error(request, next);
-          }
-          if (error.status === 403) {
-            return this.handle403Error(error);
-          }
+        // Extract status from HttpErrorResponse or plain object (native CapacitorHttp)
+        const status = this.extractErrorStatus(error);
+
+        if (status === 401) {
+          this.logger.debug('AuthInterceptor', '401 Unauthorized - attempting token refresh');
+          return this.handle401Error(request, next);
+        }
+        if (status === 403) {
+          return this.handle403Error(error);
         }
         return throwError(() => error);
       })
     );
+  }
+
+  /**
+   * Extract HTTP status code from error object.
+   * Handles both HttpErrorResponse (web) and plain objects (native CapacitorHttp).
+   */
+  private extractErrorStatus(error: unknown): number | null {
+    if (error instanceof HttpErrorResponse) {
+      return error.status;
+    }
+
+    // Handle plain error objects from CapacitorHttp on native platforms
+    if (error && typeof error === 'object' && 'status' in error) {
+      const status = (error as { status: unknown }).status;
+      if (typeof status === 'number') {
+        return status;
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -145,7 +180,7 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
    * Unlike 401, token refresh won't help - we need a full re-login.
    */
   private handle403Error(error: HttpErrorResponse): Observable<never> {
-    console.warn('[AuthInterceptor] 403 Forbidden - forcing re-login for fresh permissions');
+    this.logger.warn('AuthInterceptor', '403 Forbidden - forcing re-login for fresh permissions');
 
     // Force logout and redirect to welcome page
     // Don't wait for logout to complete, just trigger it

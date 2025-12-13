@@ -11,6 +11,7 @@ import {
 } from '@angular/router';
 
 import { ProfileService } from '../services/profile.service';
+import { LoggerService } from '../services/logger.service';
 import { ROUTES } from '../constants';
 
 /**
@@ -23,7 +24,8 @@ import { ROUTES } from '../constants';
 export class OnboardingGuard implements CanActivate, CanMatch {
   constructor(
     private readonly profileService: ProfileService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly logger: LoggerService
   ) {}
 
   canActivate(
@@ -39,17 +41,23 @@ export class OnboardingGuard implements CanActivate, CanMatch {
   }
 
   private async ensureOnboardingComplete(returnUrl: string): Promise<boolean | UrlTree> {
-    const profile = await this.profileService.getProfile();
-    if (profile?.hasCompletedOnboarding) {
-      return true;
+    try {
+      const profile = await this.profileService.getProfile();
+      if (profile?.hasCompletedOnboarding) {
+        return true;
+      }
+
+      const queryParams =
+        returnUrl && returnUrl !== '/' && !returnUrl.startsWith(ROUTES.WELCOME)
+          ? { returnUrl }
+          : undefined;
+
+      return this.router.createUrlTree([ROUTES.WELCOME], { queryParams });
+    } catch (error) {
+      this.logger.error('OnboardingGuard', 'Failed to check onboarding status', error);
+      // On error, redirect to welcome page to allow re-authentication
+      return this.router.createUrlTree([ROUTES.WELCOME]);
     }
-
-    const queryParams =
-      returnUrl && returnUrl !== '/' && !returnUrl.startsWith(ROUTES.WELCOME)
-        ? { returnUrl }
-        : undefined;
-
-    return this.router.createUrlTree([ROUTES.WELCOME], { queryParams });
   }
 
   private buildUrlFromSegments(path: string, segments: UrlSegment[]): string {

@@ -323,3 +323,4 @@ login-*.png
 services.txt
 tests.txt
 _archived_assets/
+.aider*

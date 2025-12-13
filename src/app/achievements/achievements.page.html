@@ -1,0 +1,130 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'achievements.title' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="achievements-content" [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex h-64 items-center justify-center">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !isLoading" class="p-4 text-center">
+    <app-icon name="alert-circle-outline" class="text-danger mb-2 text-4xl"></app-icon>
+    <p class="text-danger">{{ error }}</p>
+    <button class="btn btn-primary btn-sm mt-2" (click)="loadData(true)">
+      {{ 'common.retry' | translate }}
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!isLoading && !error" class="page-shell flex flex-col gap-6 pb-8 pt-4">
+    <!-- Streak Hero Section -->
+    <section class="streak-hero">
+      <div class="streak-card">
+        <div class="streak-icon-container">
+          <app-icon
+            [name]="getStreakFireIcon()"
+            [class]="'streak-fire ' + getStreakFireColor()"
+          ></app-icon>
+        </div>
+        <div class="streak-info">
+          <span class="streak-number">{{ streak?.streak ?? 0 }}</span>
+          <span class="streak-label">{{ 'achievements.currentStreak' | translate }}</span>
+        </div>
+        <div class="streak-max">
+          <span class="streak-max-label">{{ 'achievements.maxStreak' | translate }}</span>
+          <span class="streak-max-number"
+            >{{ streak?.max_streak ?? 0 }} {{ 'achievements.days' | translate }}</span
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- Daily Progress Section -->
+    <section class="daily-progress-section">
+      <h3 class="section-title">{{ 'achievements.todayProgress' | translate }}</h3>
+      <div class="daily-progress-card">
+        <div class="daily-info">
+          <app-icon name="water" class="text-primary text-2xl"></app-icon>
+          <span class="daily-text">
+            {{ dailyMeasurements }}/{{ dailyTarget }} {{ 'achievements.measurements' | translate }}
+          </span>
+        </div>
+        <div class="daily-bar">
+          <ion-progress-bar
+            [value]="getDailyProgress() / 100"
+            [color]="dailyMeasurements >= dailyTarget ? 'success' : 'primary'"
+          ></ion-progress-bar>
+        </div>
+        <p class="daily-hint">{{ 'achievements.dailyHint' | translate }}</p>
+      </div>
+    </section>
+
+    <!-- Achievements Summary -->
+    <section class="summary-section">
+      <div class="summary-card">
+        <app-icon name="trophy" class="text-3xl text-amber-500"></app-icon>
+        <div class="summary-info">
+          <span class="summary-number">{{ getEarnedCount() }}/{{ getTotalCount() }}</span>
+          <span class="summary-label">{{ 'achievements.earned' | translate }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Achievements List -->
+    <section class="achievements-list-section">
+      <h3 class="section-title">{{ 'achievements.allAchievements' | translate }}</h3>
+
+      <div class="achievements-grid">
+        <div
+          *ngFor="let achievement of achievements; trackBy: trackByAchievement"
+          class="achievement-card"
+          [class.achievement-card--earned]="achievement.got"
+        >
+          <div class="achievement-icon-wrapper">
+            <app-icon
+              [name]="getAchievementIcon(achievement)"
+              [class]="'achievement-icon ' + getAchievementColor(achievement)"
+            ></app-icon>
+            <div *ngIf="achievement.got" class="earned-badge">
+              <app-icon name="checkmark" class="text-xs text-white"></app-icon>
+            </div>
+          </div>
+
+          <div class="achievement-content">
+            <h4 class="achievement-name">{{ achievement.name }}</h4>
+            <div class="achievement-progress-info">
+              <span class="progress-text">
+                {{ achievement.progress }}/{{ achievement.threshold }}
+              </span>
+              <span class="progress-percent">
+                {{ getAchievementProgress(achievement) | number: '1.0-0' }}%
+              </span>
+            </div>
+            <ion-progress-bar
+              [value]="getAchievementProgress(achievement) / 100"
+              [color]="getProgressBarColor(achievement)"
+              class="achievement-progress-bar"
+            ></ion-progress-bar>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="achievements.length === 0" class="empty-state">
+        <app-icon name="ribbon-outline" class="text-5xl text-gray-400"></app-icon>
+        <p class="mt-2 text-gray-500">{{ 'achievements.noAchievements' | translate }}</p>
+      </div>
+    </section>
+  </div>
+</ion-content>

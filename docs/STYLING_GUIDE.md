@@ -2,7 +2,7 @@
 
 ## Stack de Estilos
 
-- **Tailwind CSS v4**: Framework utility-first
+- **Tailwind CSS v3.4**: Framework utility-first
 - **Ionic 8**: Componentes optimizados para móvil
 - **DaisyUI**: Componentes pre-estilizados
 

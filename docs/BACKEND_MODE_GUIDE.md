@@ -1,84 +1,84 @@
-# Backend Mode Configuration Guide
+# Guía de Configuración de Modos de Backend
 
-Diabetactic supports three backend modes to accommodate different development and deployment scenarios. This guide explains how to switch between them and verify which mode is active.
-
----
-
-## Overview of Backend Modes
-
-The app supports three backend modes:
-
-1. **`mock`** - In-memory mock adapter, no backend required
-2. **`local`** - Local Docker backend at localhost:8000
-3. **`cloud`** (alias: `heroku`) - Heroku API Gateway (production)
-
-### When to Use Each Mode
-
-**Mock Mode** (`mock`)
-
-- Use for: Fast development, offline work, unit testing
-- Backend: None required (in-memory data)
-- Data: Temporary, reset on app restart
-- Tidepool: Mock integration (no real Tidepool connection)
-
-**Local Mode** (`local`)
-
-- Use for: Full-stack development, Docker Compose testing
-- Backend: Docker Compose with extServices running on localhost:8000
-- Data: Persists in local PostgreSQL
-- Tidepool: Can connect to real Tidepool API (optional)
-
-**Cloud Mode** (`cloud` or `heroku`)
-
-- Use for: Integration testing, production validation
-- Backend: Heroku API Gateway at https://diabetactic-api-gateway-37949d6f182f.herokuapp.com
-- Data: Persists in Heroku PostgreSQL
-- Tidepool: Full integration with Tidepool API
+Diabetactic soporta tres modos de backend para adaptarse a diferentes escenarios de desarrollo y despliegue. Esta guía explica cómo cambiar entre ellos y verificar qué modo está activo.
 
 ---
 
-## Switching Between Modes
+## Resumen de Modos de Backend
 
-### Using npm Scripts (Recommended)
+La aplicación soporta tres modos de backend:
 
-The easiest way to switch modes is using the provided npm scripts:
+1. **`mock`** - Adaptador mock en memoria, no requiere backend
+2. **`local`** - Backend Docker local en localhost:8000
+3. **`cloud`** (alias: `heroku`) - API Gateway de Heroku (producción)
+
+### Cuándo Usar Cada Modo
+
+**Modo Mock** (`mock`)
+
+- Usar para: Desarrollo rápido, trabajo offline, pruebas unitarias
+- Backend: No requerido (datos en memoria)
+- Datos: Temporales, se reinician al cerrar la aplicación
+- Tidepool: Integración mock (sin conexión real a Tidepool)
+
+**Modo Local** (`local`)
+
+- Usar para: Desarrollo full-stack, pruebas con Docker Compose
+- Backend: Docker Compose con extServices corriendo en localhost:8000
+- Datos: Persisten en PostgreSQL local
+- Tidepool: Puede conectar a la API real de Tidepool (opcional)
+
+**Modo Cloud** (`cloud` o `heroku`)
+
+- Usar para: Pruebas de integración, validación de producción
+- Backend: API Gateway de Heroku en https://diabetactic-api-gateway-37949d6f182f.herokuapp.com
+- Datos: Persisten en PostgreSQL de Heroku
+- Tidepool: Integración completa con la API de Tidepool
+
+---
+
+## Cambiar Entre Modos
+
+### Usando Scripts npm (Recomendado)
+
+La forma más fácil de cambiar de modo es usando los scripts npm proporcionados:
 
 ```bash
-# Mock mode - in-memory data, no backend required
+# Modo mock - datos en memoria, no requiere backend
 npm run start:mock
 
-# Local mode - Docker backend at localhost:8000
+# Modo local - backend Docker en localhost:8000
 npm run start:local
 
-# Cloud mode - Heroku production API
+# Modo cloud - API de producción de Heroku
 npm run start:cloud
 ```
 
-### Using ENV Variable
+### Usando Variable ENV
 
-You can also use the `ENV` variable directly:
+También puedes usar la variable `ENV` directamente:
 
 ```bash
-# Mock mode
+# Modo mock
 ENV=mock npm start
 
-# Local mode
+# Modo local
 ENV=local npm start
 
-# Cloud mode (both work)
+# Modo cloud (ambos funcionan)
 ENV=cloud npm start
 ENV=heroku npm start
 ```
 
-### Default Mode
+### Modo Por Defecto
 
-If no `ENV` variable is specified:
+Si no se especifica la variable `ENV`:
 
 ```bash
-npm start  # Defaults to 'mock' mode
+npm start  # Por defecto usa modo 'mock'
 ```
 
-The default is configured in `scripts/start-with-env.mjs` (line 20):
+El valor por defecto está configurado en `scripts/start-with-env.mjs` (línea 20):
 
 ```javascript
 const envMode = (process.env.ENV || 'mock').toLowerCase();
@@ -86,281 +86,281 @@ const envMode = (process.env.ENV || 'mock').toLowerCase();
 
 ---
 
-## Configuration Details
+## Detalles de Configuración
 
-### Environment Configuration File
+### Archivo de Configuración de Entorno
 
-The backend mode is primarily configured in `src/environments/environment.ts`:
+El modo de backend se configura principalmente en `src/environments/environment.ts`:
 
 ```typescript
 const DEV_BACKEND_MODE: BackendMode = 'cloud';
 ```
 
-However, this hardcoded value is **overridden** by the `ENV` variable when using `npm start`.
+Sin embargo, este valor hardcodeado es **sobrescrito** por la variable `ENV` cuando se usa `npm start`.
 
-### How the ENV Variable Works
+### Cómo Funciona la Variable ENV
 
-The `scripts/start-with-env.mjs` script:
+El script `scripts/start-with-env.mjs`:
 
-1. Reads the `ENV` environment variable
-2. Maps it to the appropriate API Gateway URL:
-   - `mock` → No URL (empty string)
+1. Lee la variable de entorno `ENV`
+2. La mapea a la URL apropiada del API Gateway:
+   - `mock` → Sin URL (cadena vacía)
    - `local` → `http://localhost:8000`
    - `cloud`/`heroku` → `https://diabetactic-api-gateway-37949d6f182f.herokuapp.com`
-3. Sets `API_GATEWAY_URL` environment variable
-4. Launches Angular dev server with the correct configuration
+3. Establece la variable de entorno `API_GATEWAY_URL`
+4. Inicia el servidor de desarrollo Angular con la configuración correcta
 
-### Platform-Specific URLs
+### URLs Específicas por Plataforma
 
-The app handles platform differences automatically:
+La aplicación maneja las diferencias de plataforma automáticamente:
 
-**Web Development (Browser)**
+**Desarrollo Web (Navegador)**
 
-- `mock` → No backend
+- `mock` → Sin backend
 - `local` → `http://localhost:8000`
-- `cloud` → `/api` (uses proxy.conf.json to avoid CORS)
+- `cloud` → `/api` (usa proxy.conf.json para evitar CORS)
 
-**Android Native**
+**Android Nativo**
 
-- `mock` → No backend
-- `local` → `http://10.0.2.2:8000` (Android emulator localhost)
-- `cloud` → Direct Heroku URL
+- `mock` → Sin backend
+- `local` → `http://10.0.2.2:8000` (localhost del emulador Android)
+- `cloud` → URL directa de Heroku
 
-**iOS Native**
+**iOS Nativo**
 
-- `mock` → No backend
+- `mock` → Sin backend
 - `local` → `http://localhost:8000`
-- `cloud` → Direct Heroku URL
+- `cloud` → URL directa de Heroku
 
 ---
 
-## Verifying Active Backend Mode
+## Verificar el Modo de Backend Activo
 
-### Console Logs
+### Logs de Consola
 
-When the app starts, check the terminal output:
+Cuando la aplicación inicia, verifica la salida de la terminal:
 
 ```bash
 [dev] ENV=mock → API_GATEWAY_URL=(mock mode) (ng serve --configuration mock --proxy-config proxy.conf.json)
 ```
 
-This shows:
+Esto muestra:
 
-- Current ENV mode
-- API Gateway URL (or "mock mode" if using mock)
-- Angular configuration being used
+- Modo ENV actual
+- URL del API Gateway (o "mock mode" si usa mock)
+- Configuración de Angular que se está usando
 
-### Browser DevTools
+### DevTools del Navegador
 
-Open the browser console and check for environment logs. The app logs configuration on startup.
+Abre la consola del navegador y busca los logs del entorno. La aplicación registra la configuración al inicio.
 
-You can also inspect the environment object:
+También puedes inspeccionar el objeto environment:
 
 ```javascript
-// In browser console
+// En la consola del navegador
 import { environment } from './environments/environment';
-console.log('Backend Mode:', environment.backendMode);
-console.log('API Gateway URL:', environment.backendServices.apiGateway.baseUrl);
+console.log('Modo Backend:', environment.backendMode);
+console.log('URL API Gateway:', environment.backendServices.apiGateway.baseUrl);
 ```
 
-### Network Tab
+### Pestaña de Red
 
-Watch the Network tab in browser DevTools:
+Observa la pestaña Network en DevTools del navegador:
 
-- **Mock mode**: No HTTP requests to backend services
-- **Local mode**: Requests to `localhost:8000` or `/api` (proxied to localhost)
-- **Cloud mode**: Requests to `/api` (proxied to Heroku) or direct Heroku URL
+- **Modo mock**: Sin peticiones HTTP a servicios backend
+- **Modo local**: Peticiones a `localhost:8000` o `/api` (proxy a localhost)
+- **Modo cloud**: Peticiones a `/api` (proxy a Heroku) o URL directa de Heroku
 
 ---
 
-## Production Builds
+## Builds de Producción
 
-Production builds always use cloud/Heroku backend:
+Los builds de producción siempre usan el backend cloud/Heroku:
 
 ```bash
-# Production build
-npm run build:prod  # Always uses cloud mode
+# Build de producción
+npm run build:prod  # Siempre usa modo cloud
 
-# Mobile builds (always production)
+# Builds móviles (siempre producción)
 npm run mobile:sync
 npm run mobile:build
 ```
 
-Production is configured in `src/environments/environment.prod.ts` with `production: true` and cloud backend URLs.
+La producción se configura en `src/environments/environment.prod.ts` con `production: true` y URLs del backend cloud.
 
 ---
 
-## Testing Configuration
+## Configuración de Pruebas
 
-### Unit Tests
+### Pruebas Unitarias
 
-Unit tests (Jest) should always use mock mode to avoid hitting real APIs. This is configured in the test environment.
+Las pruebas unitarias (Jest) siempre deben usar modo mock para evitar llamar a APIs reales. Esto se configura en el entorno de pruebas.
 
 ```bash
-npm test              # Uses mock mode
-npm run test:watch    # Uses mock mode
-npm run test:coverage # Uses mock mode
+npm test              # Usa modo mock
+npm run test:watch    # Usa modo mock
+npm run test:coverage # Usa modo mock
 ```
 
-### Integration Tests
+### Pruebas de Integración
 
-Integration tests may use any backend mode:
+Las pruebas de integración pueden usar cualquier modo de backend:
 
 ```bash
-# Integration tests against cloud backend
+# Pruebas de integración contra backend cloud
 ENV=cloud npm run test:integration
 
-# Integration tests against local backend
+# Pruebas de integración contra backend local
 ENV=local npm run test:integration
 ```
 
-### E2E Tests
+### Pruebas E2E
 
-E2E tests (Playwright) can be configured to use any backend:
+Las pruebas E2E (Playwright) se pueden configurar para usar cualquier backend:
 
 ```bash
-# E2E with mock backend
+# E2E con backend mock
 ENV=mock npm run test:e2e
 
-# E2E with local backend (Docker must be running)
+# E2E con backend local (Docker debe estar corriendo)
 ENV=local npm run test:e2e
 
-# E2E with cloud backend
+# E2E con backend cloud
 ENV=cloud npm run test:e2e
 ```
 
 ---
 
-## Common Scenarios
+## Escenarios Comunes
 
-### Scenario 1: Offline Development
+### Escenario 1: Desarrollo Offline
 
-**Goal**: Develop without internet or backend
+**Objetivo**: Desarrollar sin internet ni backend
 
-**Solution**:
+**Solución**:
 
 ```bash
 npm run start:mock
 ```
 
-All data is in-memory. Changes are lost on refresh.
+Todos los datos están en memoria. Los cambios se pierden al refrescar.
 
-### Scenario 2: Full-Stack Development
+### Escenario 2: Desarrollo Full-Stack
 
-**Goal**: Test frontend + backend together locally
+**Objetivo**: Probar frontend + backend juntos localmente
 
-**Prerequisites**: Docker Compose running with extServices
+**Prerrequisitos**: Docker Compose corriendo con extServices
 
-**Solution**:
+**Solución**:
 
 ```bash
-# Terminal 1: Start Docker backend
+# Terminal 1: Iniciar backend Docker
 cd ../extServices
 docker-compose up
 
-# Terminal 2: Start frontend in local mode
+# Terminal 2: Iniciar frontend en modo local
 npm run start:local
 ```
 
-### Scenario 3: Testing Against Production API
+### Escenario 3: Pruebas Contra API de Producción
 
-**Goal**: Validate integration with Heroku before deployment
+**Objetivo**: Validar integración con Heroku antes de desplegar
 
-**Solution**:
+**Solución**:
 
 ```bash
 npm run start:cloud
 ```
 
-**Warning**: This uses real production data. Be careful with test accounts.
+**Advertencia**: Esto usa datos reales de producción. Ten cuidado con las cuentas de prueba.
 
-### Scenario 4: Mobile Development
+### Escenario 4: Desarrollo Móvil
 
-**Goal**: Build and test mobile app
+**Objetivo**: Compilar y probar la aplicación móvil
 
-**Solution**:
+**Solución**:
 
 ```bash
-# Build web app + sync to Capacitor
+# Compilar app web + sincronizar con Capacitor
 npm run mobile:sync
 
-# Open in Android Studio
+# Abrir en Android Studio
 npm run android:open
 
-# Or quick build + install
+# O compilación rápida + instalación
 cd android && ./quick-build.sh
 ```
 
-Mobile builds always use production environment (cloud mode).
+Los builds móviles siempre usan el entorno de producción (modo cloud).
 
 ---
 
-## Troubleshooting
+## Resolución de Problemas
 
-### Issue: "Cannot connect to backend"
+### Problema: "No se puede conectar al backend"
 
-**Symptoms**: Network errors, "Failed to load readings"
+**Síntomas**: Errores de red, "Error al cargar lecturas"
 
-**Solutions**:
+**Soluciones**:
 
-1. **Mock mode**: Should work offline. If failing, check browser console for errors.
+1. **Modo mock**: Debería funcionar offline. Si falla, revisa la consola del navegador.
 
-2. **Local mode**:
-   - Verify Docker backend is running: `docker ps`
-   - Check backend health: `curl http://localhost:8000/health`
-   - For Android emulator: Ensure app uses `http://10.0.2.2:8000`
+2. **Modo local**:
+   - Verifica que el backend Docker está corriendo: `docker ps`
+   - Comprueba la salud del backend: `curl http://localhost:8000/health`
+   - Para emulador Android: Asegúrate de que la app usa `http://10.0.2.2:8000`
 
-3. **Cloud mode**:
-   - Check internet connection
-   - Verify Heroku API is up: `curl https://diabetactic-api-gateway-37949d6f182f.herokuapp.com/health`
-   - Check for Heroku maintenance windows
+3. **Modo cloud**:
+   - Verifica la conexión a internet
+   - Comprueba que la API de Heroku está funcionando: `curl https://diabetactic-api-gateway-37949d6f182f.herokuapp.com/health`
+   - Verifica si hay ventanas de mantenimiento de Heroku
 
-### Issue: "Wrong backend mode active"
+### Problema: "Modo de backend incorrecto activo"
 
-**Symptoms**: Expected mock but hitting real API (or vice versa)
+**Síntomas**: Esperaba mock pero está usando API real (o viceversa)
 
-**Solutions**:
+**Soluciones**:
 
-1. Check terminal output when starting dev server
-2. Verify `ENV` variable: `echo $ENV`
-3. Kill and restart dev server
-4. Clear browser cache and refresh
+1. Verifica la salida de la terminal al iniciar el servidor de desarrollo
+2. Verifica la variable `ENV`: `echo $ENV`
+3. Mata y reinicia el servidor de desarrollo
+4. Limpia la caché del navegador y refresca
 
-### Issue: "ENV variable not working"
+### Problema: "La variable ENV no funciona"
 
-**Symptoms**: Setting `ENV=mock` but still using cloud backend
+**Síntomas**: Estableces `ENV=mock` pero sigue usando backend cloud
 
-**Solutions**:
+**Soluciones**:
 
-1. Use npm scripts instead: `npm run start:mock`
-2. Check shell syntax:
+1. Usa scripts npm en su lugar: `npm run start:mock`
+2. Verifica la sintaxis del shell:
    - Bash/Zsh: `ENV=mock npm start`
    - Windows CMD: `set ENV=mock && npm start`
    - Windows PowerShell: `$env:ENV="mock"; npm start`
-3. Verify `scripts/start-with-env.mjs` is being called
+3. Verifica que `scripts/start-with-env.mjs` está siendo ejecutado
 
 ---
 
-## Advanced Configuration
+## Configuración Avanzada
 
-### Overriding API URLs
+### Sobrescribir URLs de API
 
-You can override the default URLs using environment variables:
+Puedes sobrescribir las URLs por defecto usando variables de entorno:
 
 ```bash
-# Custom local backend URL
+# URL personalizada de backend local
 LOCAL_API_GATEWAY_URL=http://192.168.1.100:8000 npm run start:local
 
-# Custom Heroku URL (different deployment)
+# URL personalizada de Heroku (diferente despliegue)
 HEROKU_API_BASE_URL=https://my-custom-api.herokuapp.com npm run start:cloud
 
-# Mock mode with custom URL (unusual)
+# Modo mock con URL personalizada (inusual)
 MOCK_API_GATEWAY_URL=http://localhost:3000 npm run start:mock
 ```
 
-### Creating Custom Configurations
+### Crear Configuraciones Personalizadas
 
-You can add new Angular configurations in `angular.json`:
+Puedes agregar nuevas configuraciones de Angular en `angular.json`:
 
 ```json
 "configurations": {
@@ -373,34 +373,34 @@ You can add new Angular configurations in `angular.json`:
 }
 ```
 
-Then create `src/environments/environment.staging.ts` with staging-specific settings.
+Luego crea `src/environments/environment.staging.ts` con configuraciones específicas de staging.
 
 ---
 
-## Summary
+## Resumen
 
-### Quick Reference
+### Referencia Rápida
 
-| Mode  | Command               | Backend        | Data Persistence | Tidepool |
-| ----- | --------------------- | -------------- | ---------------- | -------- |
-| Mock  | `npm run start:mock`  | None           | No (in-memory)   | Mock     |
-| Local | `npm run start:local` | localhost:8000 | Yes (local DB)   | Optional |
-| Cloud | `npm run start:cloud` | Heroku         | Yes (cloud DB)   | Yes      |
+| Modo  | Comando               | Backend        | Persistencia de Datos | Tidepool |
+| ----- | --------------------- | -------------- | --------------------- | -------- |
+| Mock  | `npm run start:mock`  | Ninguno        | No (en memoria)       | Mock     |
+| Local | `npm run start:local` | localhost:8000 | Sí (BD local)         | Opcional |
+| Cloud | `npm run start:cloud` | Heroku         | Sí (BD cloud)         | Sí       |
 
-### Best Practices
+### Mejores Prácticas
 
-1. **Use npm scripts** instead of raw ENV variables (clearer, platform-agnostic)
-2. **Start with mock mode** for rapid development
-3. **Test with local mode** before pushing backend changes
-4. **Validate with cloud mode** before deploying to production
-5. **Never commit hardcoded URLs** - use environment configuration
-6. **Check console logs** to verify active mode
-7. **Use mock mode for unit tests** to avoid external dependencies
+1. **Usa scripts npm** en lugar de variables ENV directas (más claro, agnóstico de plataforma)
+2. **Comienza con modo mock** para desarrollo rápido
+3. **Prueba con modo local** antes de subir cambios de backend
+4. **Valida con modo cloud** antes de desplegar a producción
+5. **Nunca hagas commit de URLs hardcodeadas** - usa configuración de entorno
+6. **Verifica los logs de consola** para confirmar el modo activo
+7. **Usa modo mock para pruebas unitarias** para evitar dependencias externas
 
 ---
 
-**Related Documentation**:
+**Documentación Relacionada**:
 
-- [Android Quick Start](ANDROID_QUICK_START.md) - Mobile development setup
-- [User Guide](USER_GUIDE.md) - App usage for end users
-- [CLAUDE.md](../CLAUDE.md) - Full project documentation
+- [Desarrollo Android](ANDROID_DEVELOPMENT.md) - Configuración de desarrollo móvil
+- [Guía de Usuario](USER_GUIDE.md) - Uso de la aplicación para usuarios finales
+- [CLAUDE.md](../CLAUDE.md) - Documentación completa del proyecto

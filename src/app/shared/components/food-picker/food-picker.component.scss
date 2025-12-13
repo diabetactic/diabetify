@@ -92,7 +92,7 @@
 
 .food-picker-search {
   --background: var(--dt-color-surface-soft);
-  --border-radius: 12px;
+  --border-radius: 1rem;
   --box-shadow: none;
   --placeholder-color: var(--dt-color-text-muted);
   --icon-color: var(--dt-color-text-muted);
@@ -178,7 +178,7 @@
 // Food item
 .food-item {
   background: var(--dt-color-surface-soft);
-  border-radius: 14px;
+  border-radius: 1rem;
   border: 1.5px solid transparent;
   transition:
     border-color 150ms ease,
@@ -377,7 +377,7 @@
 }
 
 .action-btn {
-  --border-radius: 14px;
+  --border-radius: 1rem;
 
   flex: 1;
 
