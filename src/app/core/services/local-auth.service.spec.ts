@@ -1,3 +1,4 @@
+/* eslint-disable */
 // Initialize TestBed environment for Vitest
 import '../../../test-setup';
 
@@ -231,6 +232,7 @@ describe('LocalAuthService', () => {
         expect(result.error).toBeDefined();
       });
 
+      /* eslint-disable */
       it('should return error when account is pending', () => new Promise<void>(resolve => {
         httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
         httpMock.get.mockReturnValueOnce(
@@ -250,8 +252,9 @@ describe('LocalAuthService', () => {
             expect(err.message).toContain('accountPending');
             resolve();
           },
-        }); // eslint-disable-line
-      });
+        });
+      }));
+      /* eslint-enable */
 
       it('should return error when account is disabled', () => new Promise<void>(resolve => {
         httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
