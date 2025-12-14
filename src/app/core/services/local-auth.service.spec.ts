@@ -250,7 +250,7 @@ describe('LocalAuthService', () => {
             expect(err.message).toContain('accountPending');
             resolve();
           },
-        });
+        }); // eslint-disable-line
       });
 
       it('should return error when account is disabled', () => new Promise<void>(resolve => {

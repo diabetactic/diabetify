@@ -717,6 +717,7 @@ console.warn = (...args: unknown[]) => {
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { forwardRef, Directive, Provider } from '@angular/core';
 
+// eslint-disable-next-line @angular-eslint/directive-selector
 @Directive({
   selector: 'ion-input, ion-select, ion-checkbox, ion-toggle, ion-textarea, ion-radio, ion-range, ion-searchbar, ion-segment, ion-datetime',
   standalone: true,
