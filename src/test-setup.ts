@@ -369,6 +369,7 @@ vi.mock('@ionic/angular', async () => {
     ModalController: MockModalController,
     ActionSheetController: MockActionSheetController,
     MenuController: MockMenuController,
+
     IonRouterOutlet: Directive({ selector: 'ion-router-outlet', standalone: true })(class {}),
     // Re-export common Ionic standalone components as empty stubs
     IonApp: Component({
@@ -427,6 +428,7 @@ vi.mock('@ionic/angular/standalone', async () => {
     await vi.importActual<typeof import('@angular/core')>('@angular/core');
 
   // Create empty standalone components and directives
+
   const IonRouterOutlet = Directive({ selector: 'ion-router-outlet', standalone: true })(class {});
 
   return {
