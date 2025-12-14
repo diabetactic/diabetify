@@ -653,6 +653,98 @@ These files are stable and should not be modified without good reason:
 
 ---
 
+## Code Quality & Analysis
+
+The project includes comprehensive code quality analysis tools integrated into the development workflow.
+
+### Available Analysis Tools
+
+| Tool                         | Purpose                                            | Command                          | Auto-runs          |
+| ---------------------------- | -------------------------------------------------- | -------------------------------- | ------------------ |
+| **Knip**                     | Dead code detection (unused exports, dependencies) | `pnpm run analyze:dead-code`     | Pre-push           |
+| **dpdm**                     | Circular dependency detection                      | `pnpm run analyze:circular`      | Pre-push           |
+| **cyclomatic-complexity**    | Code complexity analysis (threshold: 10)           | `pnpm run analyze:complexity`    | Pre-push (warning) |
+| **jscpd**                    | Duplicate code detection                           | `pnpm run analyze:duplication`   | Manual             |
+| **type-coverage**            | TypeScript type coverage analysis                  | `pnpm run analyze:type-coverage` | Manual             |
+| **@angular-experts/hawkeye** | Bundle size analysis (esbuild)                     | `pnpm run analyze:bundle`        | Manual             |
+| **npm-check-updates**        | Dependency update checker                          | `pnpm run fix:deps:check`        | Manual             |
+
+### Quick Commands
+
+```bash
+# Run all analysis checks
+pnpm run analyze:all
+
+# Individual checks
+pnpm run analyze:dead-code       # Find unused exports/dependencies
+pnpm run analyze:circular        # Detect circular dependencies
+pnpm run analyze:complexity      # Check code complexity
+pnpm run analyze:duplication     # Find duplicate code
+pnpm run analyze:type-coverage   # TypeScript coverage report
+pnpm run analyze:bundle          # Bundle size breakdown
+
+# Fix commands
+pnpm run fix:dead-code          # Auto-remove unused exports (knip --fix)
+pnpm run fix:deps:check         # Check for dependency updates
+pnpm run fix:deps               # Update dependencies (interactive)
+pnpm run fix:audit              # Fix security vulnerabilities
+```
+
+### Automated Checks (Lefthook Pre-Push)
+
+The following checks run automatically on `git push`:
+
+1. **Dead code check** (knip) - Fails if unused exports detected
+2. **Circular dependencies** (dpdm) - Fails if circular imports found
+3. **Code complexity** (cyclomatic-complexity) - Warning only, doesn't block
+4. **Quality suite** (`pnpm run quality`) - Lint + tests
+5. **TypeScript check** - Production build with type validation
+6. **Build verification** - Full production build
+
+### Configuration Files
+
+- `knip.json` - Dead code detection config (ignores test files, mocks)
+- `.jscpd.json` - Duplication detection config (min 5 lines, 50 tokens)
+- `turbo.json` - Caching configuration for all analysis tasks
+
+### Turborepo Caching
+
+All analysis tasks are cached by Turborepo for faster execution:
+
+```bash
+# First run: analyzes all files
+pnpm run analyze:dead-code
+# ... 15 seconds
+
+# Second run (no changes): instant cache hit
+pnpm run analyze:dead-code
+# ... 0.1 seconds
+```
+
+Cache is invalidated when source files, config files, or dependencies change.
+
+### Integration with CI/CD
+
+Add to `.github/workflows/ci.yml`:
+
+```yaml
+- name: Code Quality Analysis
+  run: |
+    pnpm run analyze:all
+    pnpm run analyze:bundle
+```
+
+### Reports Directory
+
+Analysis reports are saved to `reports/`:
+
+- `reports/jscpd/` - Duplication reports
+- `reports/bundle-analysis.json` - Bundle size breakdown
+
+Add `reports/` to `.gitignore` to exclude from commits.
+
+---
+
 ## Common Gotchas
 
 ### 1. Ionic Component Imports

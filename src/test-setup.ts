@@ -1,4 +1,3 @@
- 
 /**
  * Angular TestBed setup helper for Vitest
  *
@@ -718,7 +717,7 @@ vi.mock('@ionic/angular/standalone', async () => {
       template: '<ng-content></ng-content>',
       standalone: true,
     })(class {}),
-    // eslint-disable-next-line @angular-eslint/directive-selector
+
     IonInfiniteScrollContent: Component({
       selector: 'ion-infinite-scroll-content',
       template: '',

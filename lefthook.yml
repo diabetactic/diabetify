@@ -173,12 +173,26 @@ pre-push:
       run: pnpm run quality
       fail_text: "Quality checks failed. Run 'pnpm run quality' to see details."
 
-    # Verify TypeScript types
-    typecheck:
-      run: npx ng build --configuration=production --aot 2>&1 | head -50 || true
-      fail_text: 'TypeScript errors detected!'
+    # NOTE: Heavy checks (typecheck, build-check) removed from pre-push
+    # Run these manually or let CI handle them:
+    #   pnpm run build:prod  (before major pushes)
+    # They're too slow for every push (2-5 min each)
 
-    # Verify build passes (production build validates types)
-    build-check:
-      run: pnpm run build:prod
-      fail_text: 'Production build failed! Fix errors before pushing.'
+    # Code quality analysis
+    dead-code-check:
+      run: pnpm run analyze:dead-code
+      fail_text: 'Dead code detected! Run "pnpm run fix:dead-code" to remove unused exports.'
+
+    # Check for circular dependencies
+    circular-deps:
+      run: pnpm run analyze:circular
+      fail_text: 'Circular dependencies detected! Review and refactor to remove cycles.'
+
+    # Check code complexity (warning only)
+    complexity-check:
+      run: |
+        if ! pnpm run analyze:complexity 2>&1 | grep -q "No files matched"; then
+          echo "⚠️  High complexity detected. Consider refactoring complex functions."
+        fi
+        # Warning only - don't block
+        exit 0
