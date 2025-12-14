@@ -90,24 +90,27 @@ async function detectBackend() {
   }
 
   return new Promise(resolve => {
-    const req = http.request({
-      hostname: 'localhost',
-      port: 8000,
-      path: '/docs',
-      method: 'GET',
-      timeout: 2000
-    }, res => {
-      if (res.statusCode === 200 || res.statusCode === 404) {
-        console.error('✓ Docker backend detected (localhost:8000/8001)');
-        API_URL = DOCKER_API;
-        BACKOFFICE_URL = DOCKER_BACKOFFICE;
-      } else {
-        console.error('⚠ Using Heroku backend');
-        API_URL = HEROKU_API;
-        BACKOFFICE_URL = HEROKU_BACKOFFICE;
+    const req = http.request(
+      {
+        hostname: 'localhost',
+        port: 8000,
+        path: '/docs',
+        method: 'GET',
+        timeout: 2000,
+      },
+      res => {
+        if (res.statusCode === 200 || res.statusCode === 404) {
+          console.error('✓ Docker backend detected (localhost:8000/8001)');
+          API_URL = DOCKER_API;
+          BACKOFFICE_URL = DOCKER_BACKOFFICE;
+        } else {
+          console.error('⚠ Using Heroku backend');
+          API_URL = HEROKU_API;
+          BACKOFFICE_URL = HEROKU_BACKOFFICE;
+        }
+        resolve();
       }
-      resolve();
-    });
+    );
 
     req.on('error', () => {
       console.error('⚠ Docker not available, using Heroku');
@@ -142,7 +145,7 @@ function request(baseUrl, path, method = 'GET', body = null, token = null) {
       port: url.port || (isHttps ? 443 : 80),
       path: url.pathname + url.search,
       method,
-      headers: {}
+      headers: {},
     };
 
     if (token) options.headers['Authorization'] = `Bearer ${token}`;
@@ -161,7 +164,7 @@ function request(baseUrl, path, method = 'GET', body = null, token = null) {
 
     const req = httpModule.request(options, res => {
       let data = '';
-      res.on('data', chunk => data += chunk);
+      res.on('data', chunk => (data += chunk));
       res.on('end', () => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           try {
@@ -186,7 +189,12 @@ function request(baseUrl, path, method = 'GET', body = null, token = null) {
  */
 async function getAdminToken() {
   if (process.env.ADMIN_TOKEN) return process.env.ADMIN_TOKEN;
-  const result = await request(BACKOFFICE_URL, '/token', 'POST', `username=${ADMIN_USER}&password=${ADMIN_PASS}`);
+  const result = await request(
+    BACKOFFICE_URL,
+    '/token',
+    'POST',
+    `username=${ADMIN_USER}&password=${ADMIN_PASS}`
+  );
   return result.access_token;
 }
 
@@ -211,7 +219,7 @@ const actions = {
       surname: options.surname,
       password: options.password,
       blocked: false,
-      hospital_account: options.hospital || 'HOSP001'
+      hospital_account: options.hospital || 'HOSP001',
     };
     return request(BACKOFFICE_URL, '/users/', 'POST', userData, token);
   },
@@ -227,12 +235,17 @@ const actions = {
   },
 
   // Authentication
-  async 'login'() {
+  async login() {
     return request(API_URL, '/token', 'POST', `username=${options.user}&password=${options.pass}`);
   },
 
   async 'admin-login'() {
-    return request(BACKOFFICE_URL, '/token', 'POST', `username=${ADMIN_USER}&password=${ADMIN_PASS}`);
+    return request(
+      BACKOFFICE_URL,
+      '/token',
+      'POST',
+      `username=${ADMIN_USER}&password=${ADMIN_PASS}`
+    );
   },
 
   // Glucose Readings
@@ -270,13 +283,13 @@ const actions = {
     return request(BACKOFFICE_URL, '/appointments/pending', 'GET', null, token);
   },
 
-  async 'accept'() {
+  async accept() {
     const token = await getAdminToken();
     const placement = options.placement || '0';
     return request(BACKOFFICE_URL, `/appointments/accept/${placement}`, 'PUT', null, token);
   },
 
-  async 'deny'() {
+  async deny() {
     const token = await getAdminToken();
     const placement = options.placement || '0';
     return request(BACKOFFICE_URL, `/appointments/deny/${placement}`, 'PUT', null, token);
@@ -289,7 +302,13 @@ const actions = {
     if (!pending || pending.length === 0) return { message: 'Queue already empty' };
 
     for (const apt of pending) {
-      await request(BACKOFFICE_URL, `/appointments/deny/${apt.queue_placement}`, 'PUT', null, token);
+      await request(
+        BACKOFFICE_URL,
+        `/appointments/deny/${apt.queue_placement}`,
+        'PUT',
+        null,
+        token
+      );
     }
     return { message: `Cleared ${pending.length} appointments` };
   },
@@ -320,13 +339,13 @@ const actions = {
       sensitivity: 50,
       pump_type: 'None',
       control_data: 'Weekly',
-      motive: ['AJUSTE']
+      motive: ['AJUSTE'],
     };
     return request(API_URL, '/appointments/create', 'POST', data, token);
   },
 
   // Help
-  async 'help'() {
+  async help() {
     console.log(`
 Diabetify API Helper - Unified script for all backend operations
 
@@ -360,7 +379,7 @@ ENVIRONMENT VARIABLES:
   API_URL, BACKOFFICE_URL, USER_TOKEN, ADMIN_TOKEN
 `);
     return {};
-  }
+  },
 };
 
 // Main

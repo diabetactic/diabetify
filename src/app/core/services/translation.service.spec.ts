@@ -199,33 +199,36 @@ describe('TranslationService', () => {
   });
 
   describe('observable translation', () => {
-    it('should get translation observable', () => new Promise<void>(resolve => {
-      service.get('test.key').subscribe(translation => {
-        expect(translateService.get).toHaveBeenCalledWith('test.key', undefined);
-        expect(translation).toBe('translated text');
-        resolve();
-      });
-    }));
+    it('should get translation observable', () =>
+      new Promise<void>(resolve => {
+        service.get('test.key').subscribe(translation => {
+          expect(translateService.get).toHaveBeenCalledWith('test.key', undefined);
+          expect(translation).toBe('translated text');
+          resolve();
+        });
+      }));
 
-    it('should get translation with parameters', () => new Promise<void>(resolve => {
-      const params = { count: 5 };
+    it('should get translation with parameters', () =>
+      new Promise<void>(resolve => {
+        const params = { count: 5 };
 
-      service.get('items.count', params).subscribe(() => {
-        expect(translateService.get).toHaveBeenCalledWith('items.count', params);
-        resolve();
-      });
-    }));
+        service.get('items.count', params).subscribe(() => {
+          expect(translateService.get).toHaveBeenCalledWith('items.count', params);
+          resolve();
+        });
+      }));
 
-    it('should get multiple translations', () => new Promise<void>(resolve => {
-      const keys = ['key1', 'key2'];
-      translateService.get.mockReturnValue(of({ key1: 'value1', key2: 'value2' }));
+    it('should get multiple translations', () =>
+      new Promise<void>(resolve => {
+        const keys = ['key1', 'key2'];
+        translateService.get.mockReturnValue(of({ key1: 'value1', key2: 'value2' }));
 
-      service.getMultiple(keys).subscribe(translations => {
-        expect(translateService.get).toHaveBeenCalledWith(keys, undefined);
-        expect(translations).toEqual({ key1: 'value1', key2: 'value2' });
-        resolve();
-      });
-    }));
+        service.getMultiple(keys).subscribe(translations => {
+          expect(translateService.get).toHaveBeenCalledWith(keys, undefined);
+          expect(translations).toEqual({ key1: 'value1', key2: 'value2' });
+          resolve();
+        });
+      }));
   });
 
   describe('formatDate', () => {

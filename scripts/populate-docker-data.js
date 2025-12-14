@@ -37,9 +37,10 @@ async function request(path, method = 'GET', body = null, token = null) {
 
     if (body) {
       const postData = typeof body === 'string' ? body : JSON.stringify(body);
-      options.headers['Content-Type'] = method === 'POST' && path.includes('token')
-        ? 'application/x-www-form-urlencoded'
-        : 'application/json';
+      options.headers['Content-Type'] =
+        method === 'POST' && path.includes('token')
+          ? 'application/x-www-form-urlencoded'
+          : 'application/json';
       options.headers['Content-Length'] = Buffer.byteLength(postData);
     }
 
@@ -131,7 +132,7 @@ async function createReading(token, glucoseLevel, readingType, context = 'genera
   const params = new URLSearchParams({
     glucose_level: glucoseLevel.toString(),
     reading_type: readingType,
-    measurement_context: context
+    measurement_context: context,
   });
 
   return await request(`/glucose/create?${params}`, 'POST', null, token);
@@ -155,7 +156,7 @@ function generateReadings(days = 30) {
       { hour: 7, type: 'DESAYUNO', context: 'before_breakfast' },
       { hour: 12, type: 'ALMUERZO', context: 'before_lunch' },
       { hour: 16, type: 'MERIENDA', context: 'afternoon_snack' },
-      { hour: 20, type: 'CENA', context: 'before_dinner' }
+      { hour: 20, type: 'CENA', context: 'before_dinner' },
     ];
 
     for (const { hour, type, context } of mealTypes) {
@@ -170,7 +171,7 @@ function generateReadings(days = 30) {
         time,
         value,
         context,
-        type // Spanish meal type enum
+        type, // Spanish meal type enum
       });
     }
   }
@@ -246,7 +247,7 @@ async function acceptAppointmentViaBackoffice() {
   try {
     execSync('ACTION=accept node maestro/scripts/backoffice-api.js', {
       stdio: 'pipe',
-      cwd: process.cwd()
+      cwd: process.cwd(),
     });
     return true;
   } catch (err) {

@@ -277,11 +277,9 @@ import * as crypto from 'crypto';
 // This is the simplest approach that works with Vitest's architecture
 (() => {
   try {
-    TestBed.initTestEnvironment(
-      BrowserTestingModule,
-      platformBrowserTesting(),
-      { teardown: { destroyAfterEach: true } }
-    );
+    TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting(), {
+      teardown: { destroyAfterEach: true },
+    });
   } catch {
     // Already initialized, which is fine
   }
@@ -719,21 +717,30 @@ import { forwardRef, Directive, Provider } from '@angular/core';
 
 // eslint-disable-next-line @angular-eslint/directive-selector
 @Directive({
-  selector: 'ion-input, ion-select, ion-checkbox, ion-toggle, ion-textarea, ion-radio, ion-range, ion-searchbar, ion-segment, ion-datetime',
+  selector:
+    'ion-input, ion-select, ion-checkbox, ion-toggle, ion-textarea, ion-radio, ion-range, ion-searchbar, ion-segment, ion-datetime',
   standalone: true,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => MockIonicValueAccessor),
-    multi: true,
-  }],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => MockIonicValueAccessor),
+      multi: true,
+    },
+  ],
 })
 export class MockIonicValueAccessor implements ControlValueAccessor {
   value: any = null;
   onChange: any = () => {};
   onTouched: any = () => {};
-  writeValue(value: any) { this.value = value; }
-  registerOnChange(fn: any) { this.onChange = fn; }
-  registerOnTouched(fn: any) { this.onTouched = fn; }
+  writeValue(value: any) {
+    this.value = value;
+  }
+  registerOnChange(fn: any) {
+    this.onChange = fn;
+  }
+  registerOnTouched(fn: any) {
+    this.onTouched = fn;
+  }
   setDisabledState() {}
 }
 

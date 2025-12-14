@@ -43,9 +43,9 @@ export default defineConfig({
       },
     },
     setupFiles: [
-      'src/setup-polyfills.ts',  // MUST be first - polyfills for jsdom
+      'src/setup-polyfills.ts', // MUST be first - polyfills for jsdom
       '@analogjs/vitest-angular/setup-zone',
-      'src/setup-vitest.ts'  // TestBed init + mocks + Jasmine compatibility
+      'src/setup-vitest.ts', // TestBed init + mocks + Jasmine compatibility
     ],
     include: ['src/**/*.spec.ts'],
     reporters: ['default', 'html'],
@@ -73,12 +73,7 @@ export default defineConfig({
   },
   // Pre-bundle ionic to handle directory imports
   optimizeDeps: {
-    include: [
-      '@ionic/angular',
-      '@ionic/core',
-      '@ionic/core/loader',
-      '@ionic/core/components',
-    ],
+    include: ['@ionic/angular', '@ionic/core', '@ionic/core/loader', '@ionic/core/components'],
     esbuildOptions: {
       // Resolve directory imports
       mainFields: ['module', 'main'],
@@ -90,14 +85,32 @@ export default defineConfig({
       { find: '@core', replacement: fileURLToPath(new URL('./src/app/core', import.meta.url)) },
       { find: '@shared', replacement: fileURLToPath(new URL('./src/app/shared', import.meta.url)) },
       { find: '@env', replacement: fileURLToPath(new URL('./src/environments', import.meta.url)) },
-      { find: '@services', replacement: fileURLToPath(new URL('./src/app/core/services', import.meta.url)) },
-      { find: '@models', replacement: fileURLToPath(new URL('./src/app/core/models', import.meta.url)) },
-      { find: '@guards', replacement: fileURLToPath(new URL('./src/app/core/guards', import.meta.url)) },
-      { find: '@interceptors', replacement: fileURLToPath(new URL('./src/app/core/interceptors', import.meta.url)) },
+      {
+        find: '@services',
+        replacement: fileURLToPath(new URL('./src/app/core/services', import.meta.url)),
+      },
+      {
+        find: '@models',
+        replacement: fileURLToPath(new URL('./src/app/core/models', import.meta.url)),
+      },
+      {
+        find: '@guards',
+        replacement: fileURLToPath(new URL('./src/app/core/guards', import.meta.url)),
+      },
+      {
+        find: '@interceptors',
+        replacement: fileURLToPath(new URL('./src/app/core/interceptors', import.meta.url)),
+      },
       // Redirect ALL Stencil imports (including subpaths) to mock - use regex to catch all subpaths
-      { find: /^@stencil\/core(.*)$/, replacement: fileURLToPath(new URL('./src/mocks/stencil-core.mock.ts', import.meta.url)) },
+      {
+        find: /^@stencil\/core(.*)$/,
+        replacement: fileURLToPath(new URL('./src/mocks/stencil-core.mock.ts', import.meta.url)),
+      },
       // Redirect ALL Ionic Core imports (except @ionic/angular) to mock
-      { find: /^@ionic\/core(.*)$/, replacement: fileURLToPath(new URL('./src/mocks/ionic-core.mock.ts', import.meta.url)) },
+      {
+        find: /^@ionic\/core(.*)$/,
+        replacement: fileURLToPath(new URL('./src/mocks/ionic-core.mock.ts', import.meta.url)),
+      },
     ],
     // Enable directory index resolution for Ionic ESM imports
     mainFields: ['module', 'jsnext:main', 'jsnext', 'main'],

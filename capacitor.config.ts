@@ -9,11 +9,7 @@ const config: CapacitorConfig = {
     cleartext: true,
     androidScheme: 'https',
     // Whitelist allowed navigation targets for security
-    allowNavigation: [
-      'https://api.tidepool.org',
-      'https://*.herokuapp.com',
-      'diabetactic://*',
-    ],
+    allowNavigation: ['https://api.tidepool.org', 'https://*.herokuapp.com', 'diabetactic://*'],
   },
   plugins: {
     SecureStorage: {

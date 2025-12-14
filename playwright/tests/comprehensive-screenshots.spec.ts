@@ -32,27 +32,27 @@ async function getTokens(): Promise<{ userToken: string; adminToken: string }> {
   const userResp = await fetch(`${API_URL}/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `username=${TEST_USER}&password=${TEST_PASS}`
+    body: `username=${TEST_USER}&password=${TEST_PASS}`,
   });
   const userData = await userResp.json();
 
   const adminResp = await fetch(`${BACKOFFICE_URL}/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'username=admin&password=admin'
+    body: 'username=admin&password=admin',
   });
   const adminData = await adminResp.json();
 
   return {
     userToken: userData.access_token,
-    adminToken: adminData.access_token
+    adminToken: adminData.access_token,
   };
 }
 
 // Helper: API calls
 async function apiGet(url: string, token: string) {
   const resp = await fetch(url, {
-    headers: { 'Authorization': `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
   });
   return resp.json();
 }
@@ -61,10 +61,10 @@ async function apiPost(url: string, token: string, body?: any) {
   const resp = await fetch(url, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     },
-    body: body ? JSON.stringify(body) : undefined
+    body: body ? JSON.stringify(body) : undefined,
   });
   return resp.json();
 }
@@ -80,7 +80,7 @@ async function screenshot(page: Page, name: string, theme: 'light' | 'dark' = 'l
 
 // Helper: Set theme
 async function setTheme(page: Page, theme: 'light' | 'dark') {
-  await page.evaluate((t) => {
+  await page.evaluate(t => {
     document.documentElement.setAttribute('data-theme', t);
     localStorage.setItem('theme', t);
   }, theme);
@@ -123,8 +123,10 @@ async function logout(page: Page) {
   await page.waitForTimeout(1500);
 
   // If there's a confirmation dialog, accept it
-  const confirmBtn = page.locator('ion-alert button:has-text("Aceptar"), ion-alert button:has-text("OK"), ion-alert button:has-text("Yes")');
-  if (await confirmBtn.count() > 0) {
+  const confirmBtn = page.locator(
+    'ion-alert button:has-text("Aceptar"), ion-alert button:has-text("OK"), ion-alert button:has-text("Yes")'
+  );
+  if ((await confirmBtn.count()) > 0) {
     await confirmBtn.first().click();
     await page.waitForTimeout(500);
   }
@@ -194,7 +196,7 @@ test.describe('Readings Flow - Complete Coverage', () => {
     // Open add reading modal - target the primary FAB button specifically
     // On readings page, there may be two FABs: scroll-to-top (light) and add-reading (primary)
     const fabButton = page.locator('ion-fab-button[color="primary"]');
-    if (await fabButton.count() > 0) {
+    if ((await fabButton.count()) > 0) {
       // Use JavaScript click for Ionic FAB buttons (fixed positioned)
       await page.evaluate(() => {
         const fab = document.querySelector('ion-fab-button[color="primary"]') as HTMLElement;
@@ -211,27 +213,33 @@ test.describe('Readings Flow - Complete Coverage', () => {
 
       // Fill the form - glucose value
       const glucoseInput = page.locator('input[type="number"], ion-input[type="number"] input');
-      if (await glucoseInput.count() > 0) {
+      if ((await glucoseInput.count()) > 0) {
         await glucoseInput.first().fill('125');
         await screenshot(page, '06-add-reading-modal-filled', 'light');
 
         // Select reading type - required field for form validation
         const typeSelect = page.locator('ion-select');
-        if (await typeSelect.count() > 0) {
+        if ((await typeSelect.count()) > 0) {
           await typeSelect.first().click();
           await page.waitForTimeout(500);
           await screenshot(page, '07-add-reading-type-selector', 'light');
 
           // Click on a radio/option in the Ionic alert
-          const alertOption = page.locator('ion-alert button.alert-radio-button, ion-select-popover ion-item, ion-radio-group ion-item').first();
-          if (await alertOption.count() > 0) {
+          const alertOption = page
+            .locator(
+              'ion-alert button.alert-radio-button, ion-select-popover ion-item, ion-radio-group ion-item'
+            )
+            .first();
+          if ((await alertOption.count()) > 0) {
             await alertOption.click();
             await page.waitForTimeout(300);
           }
 
           // Confirm the selection (OK button in ion-alert)
-          const okButton = page.locator('ion-alert button:has-text("OK"), ion-alert button:has-text("Aceptar")');
-          if (await okButton.count() > 0) {
+          const okButton = page.locator(
+            'ion-alert button:has-text("OK"), ion-alert button:has-text("Aceptar")'
+          );
+          if ((await okButton.count()) > 0) {
             await okButton.click();
             await page.waitForTimeout(300);
           }
@@ -239,15 +247,17 @@ test.describe('Readings Flow - Complete Coverage', () => {
 
         // Add notes if field exists
         const notesField = page.locator('textarea, ion-textarea');
-        if (await notesField.count() > 0) {
+        if ((await notesField.count()) > 0) {
           await notesField.first().fill('Test reading from Playwright');
         }
 
         await screenshot(page, '08-add-reading-complete-form', 'light');
 
         // Submit - check if button is enabled first
-        const submitBtn = page.locator('ion-button:has-text("Guardar"), ion-button:has-text("Save"), button[type="submit"]');
-        if (await submitBtn.count() > 0) {
+        const submitBtn = page.locator(
+          'ion-button:has-text("Guardar"), ion-button:has-text("Save"), button[type="submit"]'
+        );
+        if ((await submitBtn.count()) > 0) {
           const isDisabled = await submitBtn.first().isDisabled();
           if (!isDisabled) {
             await submitBtn.first().click();
@@ -319,8 +329,10 @@ test.describe('Appointments Flow - Full State Machine', () => {
     await setTheme(page, 'light');
     await goToTab(page, 'appointments');
 
-    const requestBtn = page.locator('ion-button:has-text("Solicitar"), ion-button:has-text("Request"), button:has-text("Solicitar")');
-    if (await requestBtn.count() > 0) {
+    const requestBtn = page.locator(
+      'ion-button:has-text("Solicitar"), ion-button:has-text("Request"), button:has-text("Solicitar")'
+    );
+    if ((await requestBtn.count()) > 0) {
       await screenshot(page, '13-appointments-before-request', 'light');
       await requestBtn.first().click();
       await page.waitForTimeout(1000);
@@ -341,7 +353,7 @@ test.describe('Appointments Flow - Full State Machine', () => {
         const placement = pending[0].queue_placement;
         await fetch(`${BACKOFFICE_URL}/appointments/accept/${placement}`, {
           method: 'PUT',
-          headers: { 'Authorization': `Bearer ${adminToken}` }
+          headers: { Authorization: `Bearer ${adminToken}` },
         });
         console.log(`✅ Accepted appointment at placement ${placement}`);
       }
@@ -356,8 +368,10 @@ test.describe('Appointments Flow - Full State Machine', () => {
     await screenshot(page, '16-appointments-accepted-state', 'light');
 
     // Try to create appointment (fill form)
-    const createFormBtn = page.locator('ion-button:has-text("Crear"), ion-button:has-text("Create")');
-    if (await createFormBtn.count() > 0) {
+    const createFormBtn = page.locator(
+      'ion-button:has-text("Crear"), ion-button:has-text("Create")'
+    );
+    if ((await createFormBtn.count()) > 0) {
       await createFormBtn.first().click();
       await page.waitForTimeout(500);
       await screenshot(page, '17-appointments-create-form', 'light');
@@ -380,8 +394,10 @@ test.describe('Profile Flow - Edit and Persistence', () => {
 
     // Edit mode
     await setTheme(page, 'light');
-    const editBtn = page.locator('ion-button:has-text("Editar"), ion-button:has-text("Edit"), ion-icon[name="pencil"]');
-    if (await editBtn.count() > 0) {
+    const editBtn = page.locator(
+      'ion-button:has-text("Editar"), ion-button:has-text("Edit"), ion-icon[name="pencil"]'
+    );
+    if ((await editBtn.count()) > 0) {
       // Scroll to edit button and click
       await editBtn.first().scrollIntoViewIfNeeded();
       await editBtn.first().click();
@@ -390,7 +406,7 @@ test.describe('Profile Flow - Edit and Persistence', () => {
 
       // Make a change
       const nameInput = page.locator('ion-input[formControlName="name"] input, input[name="name"]');
-      if (await nameInput.count() > 0) {
+      if ((await nameInput.count()) > 0) {
         await nameInput.first().scrollIntoViewIfNeeded();
         const currentValue = await nameInput.first().inputValue();
         await nameInput.first().fill(currentValue + ' (edited)');
@@ -399,7 +415,7 @@ test.describe('Profile Flow - Edit and Persistence', () => {
 
       // Save - use JavaScript click for Ionic buttons inside ion-content
       const saveBtn = page.locator('ion-button:has-text("Guardar"), ion-button:has-text("Save")');
-      if (await saveBtn.count() > 0) {
+      if ((await saveBtn.count()) > 0) {
         // Scroll ion-content to bottom and click via JavaScript
         await page.evaluate(() => {
           const ionContent = document.querySelector('ion-content');
@@ -407,8 +423,9 @@ test.describe('Profile Flow - Edit and Persistence', () => {
             ionContent.scrollToBottom(300);
           }
           setTimeout(() => {
-            const btn = document.querySelector('ion-button:nth-of-type(2)') as HTMLElement ||
-                        document.querySelector('[color="primary"] ion-button') as HTMLElement;
+            const btn =
+              (document.querySelector('ion-button:nth-of-type(2)') as HTMLElement) ||
+              (document.querySelector('[color="primary"] ion-button') as HTMLElement);
             if (btn) btn.click();
           }, 400);
         });
@@ -441,7 +458,7 @@ test.describe('Settings - All Options', () => {
 
       // Language settings if available
       const langBtn = page.locator('ion-item:has-text("Idioma"), ion-item:has-text("Language")');
-      if (await langBtn.count() > 0) {
+      if ((await langBtn.count()) > 0) {
         await langBtn.first().click();
         await page.waitForTimeout(300);
         await screenshot(page, '24-settings-language', theme);
@@ -450,14 +467,18 @@ test.describe('Settings - All Options', () => {
       }
 
       // Theme toggle
-      const themeToggle = page.locator('ion-toggle, ion-item:has-text("Tema"), ion-item:has-text("Theme")');
-      if (await themeToggle.count() > 0) {
+      const themeToggle = page.locator(
+        'ion-toggle, ion-item:has-text("Tema"), ion-item:has-text("Theme")'
+      );
+      if ((await themeToggle.count()) > 0) {
         await screenshot(page, '25-settings-theme-option', theme);
       }
 
       // Notifications if available
-      const notifItem = page.locator('ion-item:has-text("Notificaciones"), ion-item:has-text("Notifications")');
-      if (await notifItem.count() > 0) {
+      const notifItem = page.locator(
+        'ion-item:has-text("Notificaciones"), ion-item:has-text("Notifications")'
+      );
+      if ((await notifItem.count()) > 0) {
         await notifItem.first().click();
         await page.waitForTimeout(300);
         await screenshot(page, '26-settings-notifications', theme);
@@ -478,8 +499,10 @@ test.describe('Settings - All Options', () => {
       await screenshot(page, '26b-settings-advanced', theme);
 
       // Clear data button
-      const clearDataBtn = page.locator('ion-button:has-text("Borrar"), ion-button:has-text("Clear")');
-      if (await clearDataBtn.count() > 0) {
+      const clearDataBtn = page.locator(
+        'ion-button:has-text("Borrar"), ion-button:has-text("Clear")'
+      );
+      if ((await clearDataBtn.count()) > 0) {
         await screenshot(page, '26c-settings-cleardata-option', theme);
       }
     }
@@ -515,21 +538,27 @@ test.describe('Appointment Detail with Resolution', () => {
         await screenshot(page, '17b-appointment-detail', theme);
 
         // Check for resolution card
-        const resolutionCard = page.locator('ion-card:has-text("Resolución"), ion-card:has-text("Resolution"), ion-card:has-text("Treatment")');
-        if (await resolutionCard.count() > 0) {
+        const resolutionCard = page.locator(
+          'ion-card:has-text("Resolución"), ion-card:has-text("Resolution"), ion-card:has-text("Treatment")'
+        );
+        if ((await resolutionCard.count()) > 0) {
           await screenshot(page, '17c-appointment-resolution', theme);
           console.log(`✅ Resolution card found in ${theme} theme`);
 
           // Check for emergency flag
-          const emergencyFlag = page.locator(':has-text("Emergencia"), :has-text("Emergency Care"), .text-red-500');
-          if (await emergencyFlag.count() > 0) {
+          const emergencyFlag = page.locator(
+            ':has-text("Emergencia"), :has-text("Emergency Care"), .text-red-500'
+          );
+          if ((await emergencyFlag.count()) > 0) {
             await screenshot(page, '17d-appointment-emergency-flag', theme);
             console.log(`🚨 Emergency flag found in ${theme} theme`);
           }
 
           // Check for physical appointment flag
-          const physicalFlag = page.locator(':has-text("física"), :has-text("Physical"), .text-amber-500');
-          if (await physicalFlag.count() > 0) {
+          const physicalFlag = page.locator(
+            ':has-text("física"), :has-text("Physical"), .text-amber-500'
+          );
+          if ((await physicalFlag.count()) > 0) {
             await screenshot(page, '17e-appointment-physical-flag', theme);
             console.log(`📅 Physical appointment flag found in ${theme} theme`);
           }
@@ -556,15 +585,19 @@ test.describe('Trends Page', () => {
       await screenshot(page, '27-trends-main', theme);
 
       // Different time ranges if available
-      const weekBtn = page.locator('ion-segment-button:has-text("Semana"), ion-segment-button:has-text("Week")');
-      if (await weekBtn.count() > 0) {
+      const weekBtn = page.locator(
+        'ion-segment-button:has-text("Semana"), ion-segment-button:has-text("Week")'
+      );
+      if ((await weekBtn.count()) > 0) {
         await weekBtn.first().click();
         await page.waitForTimeout(500);
         await screenshot(page, '28-trends-week', theme);
       }
 
-      const monthBtn = page.locator('ion-segment-button:has-text("Mes"), ion-segment-button:has-text("Month")');
-      if (await monthBtn.count() > 0) {
+      const monthBtn = page.locator(
+        'ion-segment-button:has-text("Mes"), ion-segment-button:has-text("Month")'
+      );
+      if ((await monthBtn.count()) > 0) {
         await monthBtn.first().click();
         await page.waitForTimeout(500);
         await screenshot(page, '29-trends-month', theme);
@@ -587,21 +620,27 @@ test.describe('Bolus Calculator', () => {
       await screenshot(page, '30-bolus-calculator-empty', theme);
 
       // Fill values
-      const glucoseInput = page.locator('ion-input[type="number"] input, input[type="number"]').first();
-      if (await glucoseInput.count() > 0) {
+      const glucoseInput = page
+        .locator('ion-input[type="number"] input, input[type="number"]')
+        .first();
+      if ((await glucoseInput.count()) > 0) {
         await glucoseInput.fill('180');
         await screenshot(page, '31-bolus-calculator-with-glucose', theme);
       }
 
-      const carbsInput = page.locator('ion-input[type="number"] input, input[type="number"]').nth(1);
-      if (await carbsInput.count() > 0) {
+      const carbsInput = page
+        .locator('ion-input[type="number"] input, input[type="number"]')
+        .nth(1);
+      if ((await carbsInput.count()) > 0) {
         await carbsInput.fill('45');
         await screenshot(page, '32-bolus-calculator-with-carbs', theme);
       }
 
       // Calculate button
-      const calcBtn = page.locator('ion-button:has-text("Calcular"), ion-button:has-text("Calculate")');
-      if (await calcBtn.count() > 0) {
+      const calcBtn = page.locator(
+        'ion-button:has-text("Calcular"), ion-button:has-text("Calculate")'
+      );
+      if ((await calcBtn.count()) > 0) {
         await calcBtn.first().click();
         await page.waitForTimeout(500);
         await screenshot(page, '33-bolus-calculator-result', theme);
@@ -624,7 +663,7 @@ test.describe('Tips Page', () => {
 
       // Expand a tip if possible
       const tipItem = page.locator('ion-item, ion-card').first();
-      if (await tipItem.count() > 0) {
+      if ((await tipItem.count()) > 0) {
         await tipItem.click();
         await page.waitForTimeout(300);
         await screenshot(page, '35-tips-expanded', theme);

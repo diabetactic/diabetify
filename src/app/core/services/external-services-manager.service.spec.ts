@@ -88,26 +88,28 @@ describe('ExternalServicesManager', () => {
       expect(service).toBeTruthy();
     });
 
-    it('should initialize circuit breakers for all services', () => new Promise<void>(resolve => {
-      service.state.subscribe(state => {
-        expect(state.circuitBreakers.size).toBeGreaterThan(0);
-        expect(state.circuitBreakers.has(ExternalService.GLUCOSERVER)).toBe(true);
-        expect(state.circuitBreakers.has(ExternalService.TIDEPOOL)).toBe(true);
-        resolve();
-      });
-    }));
+    it('should initialize circuit breakers for all services', () =>
+      new Promise<void>(resolve => {
+        service.state.subscribe(state => {
+          expect(state.circuitBreakers.size).toBeGreaterThan(0);
+          expect(state.circuitBreakers.has(ExternalService.GLUCOSERVER)).toBe(true);
+          expect(state.circuitBreakers.has(ExternalService.TIDEPOOL)).toBe(true);
+          resolve();
+        });
+      }));
 
     it('should set up network monitoring', () => {
       expect(Network.getStatus).toHaveBeenCalled();
       expect(Network.addListener).toHaveBeenCalledWith('networkStatusChange', expect.any(Function));
     });
 
-    it('should initialize with online state', () => new Promise<void>(resolve => {
-      service.state.subscribe(state => {
-        expect(state.isOnline).toBe(true);
-        resolve();
-      });
-    }));
+    it('should initialize with online state', () =>
+      new Promise<void>(resolve => {
+        service.state.subscribe(state => {
+          expect(state.isOnline).toBe(true);
+          resolve();
+        });
+      }));
   });
 
   describe('isServiceAvailable', () => {

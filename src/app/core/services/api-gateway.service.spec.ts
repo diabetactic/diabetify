@@ -327,21 +327,22 @@ describe('ApiGatewayService', () => {
       req.flush([]);
     });
 
-    it('should throw error if authentication required but no token available', () => new Promise<void>((resolve, reject) => {
-      mockLocalAuth.getAccessToken.mockReturnValue(Promise.resolve(null));
+    it('should throw error if authentication required but no token available', () =>
+      new Promise<void>((resolve, reject) => {
+        mockLocalAuth.getAccessToken.mockReturnValue(Promise.resolve(null));
 
-      service.request('glucoserver.readings.list').subscribe({
-        next: () => {
-          reject(new Error('should have thrown error'));
-        },
-        error: err => {
-          expect(err).toBeDefined();
-          // The service throws a plain Error for authentication failures
-          expect(err.message || err).toContain('Authentication required');
-          resolve();
-        },
-      });
-    }));
+        service.request('glucoserver.readings.list').subscribe({
+          next: () => {
+            reject(new Error('should have thrown error'));
+          },
+          error: err => {
+            expect(err).toBeDefined();
+            // The service throws a plain Error for authentication failures
+            expect(err.message || err).toContain('Authentication required');
+            resolve();
+          },
+        });
+      }));
   });
 
   describe('Platform-Specific Base URLs', () => {
@@ -418,106 +419,112 @@ describe('ApiGatewayService', () => {
       );
     };
 
-    it('should map 400 BAD_REQUEST error', () => new Promise<void>((resolve, reject) => {
-      invokeHandleError(400).subscribe({
-        next: () => {
-          reject(new Error('should have thrown error'));
-        },
-        error: (err: any) => {
-          expect(err).toBeDefined();
-          expect(err.error.code).toBe('BAD_REQUEST');
-          resolve();
-        },
-      });
-    }));
-
-    it('should map 403 FORBIDDEN error', () => new Promise<void>((resolve, reject) => {
-      invokeHandleError(403).subscribe({
-        next: () => {
-          reject(new Error('should have thrown error'));
-        },
-        error: (err: any) => {
-          expect(err).toBeDefined();
-          expect(err.error.code).toBe('FORBIDDEN');
-          resolve();
-        },
-      });
-    }));
-
-    it('should map other HTTP status codes correctly', () => new Promise<void>((resolve, reject) => {
-      const testCases = [
-        { status: 409, expectedCode: 'CONFLICT' },
-        { status: 422, expectedCode: 'VALIDATION_ERROR' },
-        { status: 429, expectedCode: 'RATE_LIMITED' },
-        { status: 502, expectedCode: 'BAD_GATEWAY' },
-        { status: 503, expectedCode: 'SERVICE_UNAVAILABLE' },
-        { status: 504, expectedCode: 'GATEWAY_TIMEOUT' },
-      ];
-
-      let completed = 0;
-
-      testCases.forEach(({ status, expectedCode }) => {
-        invokeHandleError(status).subscribe({
+    it('should map 400 BAD_REQUEST error', () =>
+      new Promise<void>((resolve, reject) => {
+        invokeHandleError(400).subscribe({
           next: () => {
             reject(new Error('should have thrown error'));
           },
           error: (err: any) => {
             expect(err).toBeDefined();
-            expect(err.error.code).toBe(expectedCode);
-            completed++;
-            if (completed === testCases.length) {
-              resolve();
-            }
+            expect(err.error.code).toBe('BAD_REQUEST');
+            resolve();
           },
         });
-      });
-    }));
+      }));
 
-    it('should identify network error (0) as retryable', () => new Promise<void>((resolve, reject) => {
-      invokeHandleError(0).subscribe({
-        next: () => {
-          reject(new Error('should have thrown error'));
-        },
-        error: (err: any) => {
-          expect(err).toBeDefined();
-          expect(err.error.retryable).toBe(true);
-          resolve();
-        },
-      });
-    }));
+    it('should map 403 FORBIDDEN error', () =>
+      new Promise<void>((resolve, reject) => {
+        invokeHandleError(403).subscribe({
+          next: () => {
+            reject(new Error('should have thrown error'));
+          },
+          error: (err: any) => {
+            expect(err).toBeDefined();
+            expect(err.error.code).toBe('FORBIDDEN');
+            resolve();
+          },
+        });
+      }));
 
-    it('should identify 500 server error as retryable', () => new Promise<void>((resolve, reject) => {
-      invokeHandleError(500).subscribe({
-        next: () => {
-          reject(new Error('should have thrown error'));
-        },
-        error: (err: any) => {
-          expect(err).toBeDefined();
-          expect(err.error.retryable).toBe(true);
-          resolve();
-        },
-      });
-    }));
+    it('should map other HTTP status codes correctly', () =>
+      new Promise<void>((resolve, reject) => {
+        const testCases = [
+          { status: 409, expectedCode: 'CONFLICT' },
+          { status: 422, expectedCode: 'VALIDATION_ERROR' },
+          { status: 429, expectedCode: 'RATE_LIMITED' },
+          { status: 502, expectedCode: 'BAD_GATEWAY' },
+          { status: 503, expectedCode: 'SERVICE_UNAVAILABLE' },
+          { status: 504, expectedCode: 'GATEWAY_TIMEOUT' },
+        ];
 
-    it('should identify other retryable errors correctly', () => new Promise<void>((resolve, reject) => {
-      const retryableStatuses = [408, 429, 502, 503, 504];
-      let completed = 0;
+        let completed = 0;
 
-      retryableStatuses.forEach(status => {
-        invokeHandleError(status).subscribe({
+        testCases.forEach(({ status, expectedCode }) => {
+          invokeHandleError(status).subscribe({
+            next: () => {
+              reject(new Error('should have thrown error'));
+            },
+            error: (err: any) => {
+              expect(err).toBeDefined();
+              expect(err.error.code).toBe(expectedCode);
+              completed++;
+              if (completed === testCases.length) {
+                resolve();
+              }
+            },
+          });
+        });
+      }));
+
+    it('should identify network error (0) as retryable', () =>
+      new Promise<void>((resolve, reject) => {
+        invokeHandleError(0).subscribe({
           next: () => {
             reject(new Error('should have thrown error'));
           },
           error: (err: any) => {
             expect(err).toBeDefined();
             expect(err.error.retryable).toBe(true);
-            completed++;
-            if (completed === retryableStatuses.length) {
-              resolve();
-            }
+            resolve();
           },
         });
-      });
-    }));
+      }));
+
+    it('should identify 500 server error as retryable', () =>
+      new Promise<void>((resolve, reject) => {
+        invokeHandleError(500).subscribe({
+          next: () => {
+            reject(new Error('should have thrown error'));
+          },
+          error: (err: any) => {
+            expect(err).toBeDefined();
+            expect(err.error.retryable).toBe(true);
+            resolve();
+          },
+        });
+      }));
+
+    it('should identify other retryable errors correctly', () =>
+      new Promise<void>((resolve, reject) => {
+        const retryableStatuses = [408, 429, 502, 503, 504];
+        let completed = 0;
+
+        retryableStatuses.forEach(status => {
+          invokeHandleError(status).subscribe({
+            next: () => {
+              reject(new Error('should have thrown error'));
+            },
+            error: (err: any) => {
+              expect(err).toBeDefined();
+              expect(err.error.retryable).toBe(true);
+              completed++;
+              if (completed === retryableStatuses.length) {
+                resolve();
+              }
+            },
+          });
+        });
+      }));
   });
 });

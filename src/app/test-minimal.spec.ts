@@ -24,7 +24,7 @@ describe('Minimal Angular Test', () => {
     TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
 
     TestBed.configureTestingModule({
-      providers: [SimpleService]
+      providers: [SimpleService],
     });
   });
 

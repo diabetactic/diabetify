@@ -73,14 +73,15 @@ describe('BiometricAuthService', () => {
       expect(service).toBeTruthy();
     });
 
-    it('should have default config', () => new Promise<void>(resolve => {
-      service.biometricConfig$.subscribe(config => {
-        expect(config.enabled).toBe(false);
-        expect(config.enrolled).toBe(false);
-        expect(config.biometryType).toBe('none');
-        resolve();
-      });
-    }));
+    it('should have default config', () =>
+      new Promise<void>(resolve => {
+        service.biometricConfig$.subscribe(config => {
+          expect(config.enabled).toBe(false);
+          expect(config.enrolled).toBe(false);
+          expect(config.biometryType).toBe('none');
+          resolve();
+        });
+      }));
   });
 
   describe('isBiometricAvailable', () => {

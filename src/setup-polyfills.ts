@@ -60,7 +60,9 @@ if (typeof window !== 'undefined') {
 
   // Polyfill IntersectionObserver if not present
   if (!window.IntersectionObserver) {
-    (window as unknown as { IntersectionObserver: typeof IntersectionObserver }).IntersectionObserver = class {
+    (
+      window as unknown as { IntersectionObserver: typeof IntersectionObserver }
+    ).IntersectionObserver = class {
       readonly root: Element | null = null;
       readonly rootMargin = '';
       readonly thresholds: ReadonlyArray<number> = [];

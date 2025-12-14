@@ -99,7 +99,13 @@
       }
     ],
     "no-descending-specificity": null,
-    "keyframes-name-pattern": "[a-z0-9-]+"
+    "keyframes-name-pattern": "[a-z0-9-]+",
+    "declaration-property-value-no-unknown": [
+      true,
+      {
+        "message": "Avoid hardcoded text in CSS. Use HTML data-* attributes or translate in template instead."
+      }
+    ]
   },
   "ignoreFiles": [
     "node_modules/**/*",

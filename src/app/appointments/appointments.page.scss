@@ -42,40 +42,7 @@
   }
 }
 
-// Dark mode queue card enhancements
-:host-context(.dark),
-:host-context(.ion-palette-dark),
-:host-context([data-theme='dark']) {
-  .queue-card {
-    // Enhanced visibility with elevated background and stronger border
-    background: rgb(15 23 42 / 80%) !important;
-    border: 1px solid rgb(71 85 105 / 60%);
-    box-shadow:
-      0 4px 6px -1px rgb(0 0 0 / 30%),
-      0 2px 4px -1px rgb(0 0 0 / 18%);
-
-    // Preserve state-based left borders with brighter colors in dark mode
-    &[data-queue-state='PENDING'] {
-      border-left-color: var(--ion-color-warning-shade);
-      --background: rgba(var(--ion-color-warning-rgb), 0.12);
-    }
-
-    &[data-queue-state='ACCEPTED'] {
-      border-left-color: var(--ion-color-success-shade);
-      --background: rgba(var(--ion-color-success-rgb), 0.12);
-    }
-
-    &[data-queue-state='DENIED'] {
-      border-left-color: var(--ion-color-danger-shade);
-      --background: rgba(var(--ion-color-danger-rgb), 0.12);
-    }
-
-    &[data-queue-state='CREATED'] {
-      border-left-color: var(--ion-color-primary-shade);
-      --background: rgba(var(--ion-color-primary-rgb), 0.12);
-    }
-  }
-}
+// Dark mode queue card styles moved to main dark mode block below (line 296)
 
 h2.section-title {
   display: inline-flex;
@@ -294,6 +261,39 @@ ion-button {
 :host-context([data-theme='dark']) {
   .appointments-content {
     --background: oklch(var(--b1));
+  }
+
+  // Queue card enhancements
+  .queue-card {
+    // Enhanced visibility with elevated background and stronger border
+    background: var(--ion-color-step-50);
+    border: 1px solid var(--ion-color-step-200);
+    box-shadow: var(--ion-box-shadow-medium);
+
+    // Preserve state-based left borders with brighter colors in dark mode
+    &[data-queue-state='PENDING'] {
+      --background: rgba(var(--ion-color-warning-rgb), 0.12);
+
+      border-left-color: var(--ion-color-warning-shade);
+    }
+
+    &[data-queue-state='ACCEPTED'] {
+      --background: rgba(var(--ion-color-success-rgb), 0.12);
+
+      border-left-color: var(--ion-color-success-shade);
+    }
+
+    &[data-queue-state='DENIED'] {
+      --background: rgba(var(--ion-color-danger-rgb), 0.12);
+
+      border-left-color: var(--ion-color-danger-shade);
+    }
+
+    &[data-queue-state='CREATED'] {
+      --background: rgba(var(--ion-color-primary-rgb), 0.12);
+
+      border-left-color: var(--ion-color-primary-shade);
+    }
   }
 
   // All cards - elevated with border for distinction

@@ -193,14 +193,14 @@ export class ReadingsService implements OnDestroy {
   private async initializeNetworkMonitoring(): Promise<void> {
     // Helper to add timeout to network calls
     const withTimeout = <T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> =>
-      Promise.race([
-        promise,
-        new Promise<T>(resolve => setTimeout(() => resolve(fallback), ms)),
-      ]);
+      Promise.race([promise, new Promise<T>(resolve => setTimeout(() => resolve(fallback), ms))]);
 
     try {
       // Get initial network status with timeout (5s)
-      const status = await withTimeout(Network.getStatus(), 5000, { connected: true, connectionType: 'unknown' });
+      const status = await withTimeout(Network.getStatus(), 5000, {
+        connected: true,
+        connectionType: 'unknown',
+      });
       this.isOnline = status.connected;
       this.logger?.info(
         'Network',

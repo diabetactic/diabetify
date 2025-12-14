@@ -32,14 +32,12 @@ export class PlatformDetectorService {
           defaultUrl.startsWith('https://') ||
           (defaultUrl.startsWith('http') && !defaultUrl.includes('localhost'))
         ) {
-          console.log('🌐 [PLATFORM] Using cloud backend for Android:', defaultUrl);
           return defaultUrl;
         }
 
         // For local development: Check if it's an emulator
         // Android emulator needs 10.0.2.2 to access host machine
         if (this.isAndroidEmulator()) {
-          console.log('🔧 [PLATFORM] Android emulator detected, using localhost redirect');
           return 'http://10.0.2.2:8000';
         }
 
@@ -63,7 +61,6 @@ export class PlatformDetectorService {
     // When running on localhost in dev mode, use /api prefix so requests
     // go through Angular dev server proxy (avoids CORS issues)
     if (this.isWebDevMode() && defaultUrl.includes('localhost')) {
-      console.log('🔧 [PLATFORM] Web dev mode detected, using /api proxy');
       return '/api';
     }
 
@@ -153,16 +150,19 @@ export class PlatformDetectorService {
   }
 
   /**
-   * Log platform information for debugging
+   * Log platform information for debugging (disabled in production)
    */
   logPlatformInfo(): void {
-    const config = this.getPlatformConfig();
-    console.log('Platform Configuration:', {
-      ...config,
-      userAgent: navigator.userAgent,
-      hostname: window.location.hostname,
-      protocol: window.location.protocol,
-      port: window.location.port,
-    });
+    if (!environment.production) {
+      const config = this.getPlatformConfig();
+
+      console.log('Platform Configuration:', {
+        ...config,
+        userAgent: navigator.userAgent,
+        hostname: window.location.hostname,
+        protocol: window.location.protocol,
+        port: window.location.port,
+      });
+    }
   }
 }

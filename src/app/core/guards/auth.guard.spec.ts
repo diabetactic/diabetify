@@ -102,7 +102,9 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
+      const result = await firstValueFrom(
+        guard.canActivate(route, state) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(result).toBe(true);
@@ -126,7 +128,9 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
+      const result = await firstValueFrom(
+        guard.canActivate(route, state) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(result).toBe(true);
@@ -164,7 +168,9 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
+      const result = await firstValueFrom(
+        guard.canActivate(route, state) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(result).toBe(urlTree);
@@ -230,7 +236,9 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
+      const result = await firstValueFrom(
+        guard.canActivate(route, state) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(result).toBe(true);
@@ -256,7 +264,9 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
+      const result = await firstValueFrom(
+        guard.canActivate(route, state) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(result).toBe(urlTree);
@@ -283,7 +293,9 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
+      const result = await firstValueFrom(
+        guard.canActivate(route, state) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(result).toBe(urlTree);
@@ -309,7 +321,9 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
+      const result = await firstValueFrom(
+        guard.canActivate(route, state) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(result).toBe(true);
@@ -334,7 +348,9 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
+      const result = await firstValueFrom(
+        guard.canActivate(route, state) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(result).toBe(true);
@@ -367,7 +383,9 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
+      const result = await firstValueFrom(
+        guard.canActivate(route, state) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(result).toBe(urlTree);
@@ -401,7 +419,9 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
+      const result = await firstValueFrom(
+        guard.canActivate(route, state) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       // Should allow access since no accountState to check
@@ -466,7 +486,7 @@ describe('AuthGuard', () => {
       const result$ = guard.canActivate(route, state) as Observable<boolean | UrlTree>;
 
       // Subscribe with complete callback
-      const promise = new Promise<void>((resolve) => {
+      const promise = new Promise<void>(resolve => {
         result$.subscribe({
           next: () => {
             // Should receive value
@@ -518,7 +538,7 @@ describe('AuthGuard', () => {
       const result$ = guard.canActivate(route, state) as Observable<boolean | UrlTree>;
 
       // Use a promise to track subscription behavior
-      const promise = new Promise<void>((resolve) => {
+      const promise = new Promise<void>(resolve => {
         result$.subscribe(() => {
           callCount++;
 

@@ -75,7 +75,7 @@ interface StorageStats {
 
 const BACKOFFICE_BASE_URL = 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com';
 const BACKOFFICE_ADMIN_USER = 'admin';
-const BACKOFFICE_ADMIN_PASSWORD = 'admin';
+const BACKOFFICE_ADMIN_PASSWORD = 'admin'; // Public test credentials, not a real secret
 
 @Component({
   selector: 'app-debug-panel',
@@ -172,14 +172,17 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
   async loadDebugInfo() {
     // Helper to add timeout to plugin calls
     const withTimeout = <T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> =>
-      Promise.race([
-        promise,
-        new Promise<T>(resolve => setTimeout(() => resolve(fallback), ms)),
-      ]);
+      Promise.race([promise, new Promise<T>(resolve => setTimeout(() => resolve(fallback), ms))]);
 
     // Get device info and network status with timeouts
-    const deviceInfo = await withTimeout(Device.getInfo(), 5000, { model: 'Unknown', osVersion: 'Unknown' } as any);
-    const networkStatus = await withTimeout(Network.getStatus(), 5000, { connected: true, connectionType: 'unknown' });
+    const deviceInfo = await withTimeout(Device.getInfo(), 5000, {
+      model: 'Unknown',
+      osVersion: 'Unknown',
+    } as any);
+    const networkStatus = await withTimeout(Network.getStatus(), 5000, {
+      connected: true,
+      connectionType: 'unknown',
+    });
 
     this.debugInfo = {
       platform: Capacitor.getPlatform(),

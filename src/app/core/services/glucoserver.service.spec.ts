@@ -123,21 +123,22 @@ describe('GlucoserverService', () => {
       expect(typeof observable.subscribe).toBe('function');
     });
 
-    it('should handle errors after retries', () => new Promise<void>(resolve => {
-      const error = new HttpErrorResponse({ status: 500, statusText: 'Server Error' });
-      httpClient.get.mockReturnValue(throwError(() => error));
+    it('should handle errors after retries', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({ status: 500, statusText: 'Server Error' });
+        httpClient.get.mockReturnValue(throwError(() => error));
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      service.getReadings().subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err.message).toContain('Server error');
-          consoleSpy.mockRestore();
-          resolve();
-        },
-      });
-    }));
+        service.getReadings().subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err.message).toContain('Server error');
+            consoleSpy.mockRestore();
+            resolve();
+          },
+        });
+      }));
   });
 
   describe('getReading', () => {
@@ -157,21 +158,22 @@ describe('GlucoserverService', () => {
       expect(httpClient.get).toHaveBeenCalledWith(`${mockFullUrl}/readings/123`);
     });
 
-    it('should handle 404 not found error', () => new Promise<void>(resolve => {
-      const error = new HttpErrorResponse({ status: 404 });
-      httpClient.get.mockReturnValue(throwError(() => error));
+    it('should handle 404 not found error', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({ status: 404 });
+        httpClient.get.mockReturnValue(throwError(() => error));
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      service.getReading('nonexistent').subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err.message).toContain('Resource not found');
-          consoleSpy.mockRestore();
-          resolve();
-        },
-      });
-    }));
+        service.getReading('nonexistent').subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err.message).toContain('Resource not found');
+            consoleSpy.mockRestore();
+            resolve();
+          },
+        });
+      }));
   });
 
   describe('createReading', () => {
@@ -197,22 +199,23 @@ describe('GlucoserverService', () => {
       expect(httpClient.post).toHaveBeenCalledWith(`${mockFullUrl}/readings`, newReading);
     });
 
-    it('should handle validation errors', () => new Promise<void>(resolve => {
-      const error = new HttpErrorResponse({
-        status: 400,
-        statusText: 'Bad Request',
-        error: { message: 'Invalid glucose value' },
-      });
-      httpClient.post.mockReturnValue(throwError(() => error));
+    it('should handle validation errors', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({
+          status: 400,
+          statusText: 'Bad Request',
+          error: { message: 'Invalid glucose value' },
+        });
+        httpClient.post.mockReturnValue(throwError(() => error));
 
-      service.createReading(newReading).subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err).toBeDefined();
-          resolve();
-        },
-      });
-    }));
+        service.createReading(newReading).subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err).toBeDefined();
+            resolve();
+          },
+        });
+      }));
   });
 
   describe('updateReading', () => {
@@ -238,18 +241,19 @@ describe('GlucoserverService', () => {
       expect(httpClient.put).toHaveBeenCalledWith(`${mockFullUrl}/readings/123`, updates);
     });
 
-    it('should handle unauthorized error', () => new Promise<void>(resolve => {
-      const error = new HttpErrorResponse({ status: 401 });
-      httpClient.put.mockReturnValue(throwError(() => error));
+    it('should handle unauthorized error', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({ status: 401 });
+        httpClient.put.mockReturnValue(throwError(() => error));
 
-      service.updateReading('123', updates).subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err.message).toContain('Unauthorized');
-          resolve();
-        },
-      });
-    }));
+        service.updateReading('123', updates).subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err.message).toContain('Unauthorized');
+            resolve();
+          },
+        });
+      }));
   });
 
   describe('deleteReading', () => {
@@ -260,18 +264,19 @@ describe('GlucoserverService', () => {
       expect(httpClient.delete).toHaveBeenCalledWith(`${mockFullUrl}/readings/123`);
     });
 
-    it('should handle deletion errors', () => new Promise<void>(resolve => {
-      const error = new HttpErrorResponse({ status: 403, statusText: 'Forbidden' });
-      httpClient.delete.mockReturnValue(throwError(() => error));
+    it('should handle deletion errors', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({ status: 403, statusText: 'Forbidden' });
+        httpClient.delete.mockReturnValue(throwError(() => error));
 
-      service.deleteReading('123').subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err).toBeDefined();
-          resolve();
-        },
-      });
-    }));
+        service.deleteReading('123').subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err).toBeDefined();
+            resolve();
+          },
+        });
+      }));
   });
 
   describe('bulkUpload', () => {
@@ -496,76 +501,81 @@ describe('GlucoserverService', () => {
   });
 
   describe('error handling', () => {
-    it('should handle client-side errors', () => new Promise<void>(resolve => {
-      const clientError = {
-        error: new ErrorEvent('Network error', { message: 'Connection lost' }),
-      };
-      httpClient.get.mockReturnValue(throwError(() => clientError));
+    it('should handle client-side errors', () =>
+      new Promise<void>(resolve => {
+        const clientError = {
+          error: new ErrorEvent('Network error', { message: 'Connection lost' }),
+        };
+        httpClient.get.mockReturnValue(throwError(() => clientError));
 
-      service.getReadings().subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err.message).toContain('Error:');
-          resolve();
-        },
-      });
-    }));
+        service.getReadings().subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err.message).toContain('Error:');
+            resolve();
+          },
+        });
+      }));
 
-    it('should handle 401 Unauthorized error', () => new Promise<void>(resolve => {
-      const error = new HttpErrorResponse({ status: 401 });
-      httpClient.get.mockReturnValue(throwError(() => error));
+    it('should handle 401 Unauthorized error', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({ status: 401 });
+        httpClient.get.mockReturnValue(throwError(() => error));
 
-      service.getReadings().subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err.message).toContain('Unauthorized');
-          resolve();
-        },
-      });
-    }));
+        service.getReadings().subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err.message).toContain('Unauthorized');
+            resolve();
+          },
+        });
+      }));
 
-    it('should handle 404 Not Found error', () => new Promise<void>(resolve => {
-      const error = new HttpErrorResponse({ status: 404 });
-      httpClient.get.mockReturnValue(throwError(() => error));
+    it('should handle 404 Not Found error', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({ status: 404 });
+        httpClient.get.mockReturnValue(throwError(() => error));
 
-      service.getReadings().subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err.message).toContain('Resource not found');
-          resolve();
-        },
-      });
-    }));
+        service.getReadings().subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err.message).toContain('Resource not found');
+            resolve();
+          },
+        });
+      }));
 
-    it('should handle 500 Server Error', () => new Promise<void>(resolve => {
-      const error = new HttpErrorResponse({ status: 500 });
-      httpClient.get.mockReturnValue(throwError(() => error));
+    it('should handle 500 Server Error', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({ status: 500 });
+        httpClient.get.mockReturnValue(throwError(() => error));
 
-      service.getReadings().subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err.message).toContain('Server error');
-          resolve();
-        },
-      });
-    }));
+        service.getReadings().subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err.message).toContain('Server error');
+            resolve();
+          },
+        });
+      }));
 
-    it('should log errors to console', () => new Promise<void>(resolve => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      const error = new HttpErrorResponse({ status: 500 });
-      httpClient.get.mockReturnValue(throwError(() => error));
+    it('should log errors to console', () =>
+      new Promise<void>(resolve => {
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+        const error = new HttpErrorResponse({ status: 500 });
+        httpClient.get.mockReturnValue(throwError(() => error));
 
-      service.getReadings().subscribe({
-        next: () => fail('should have failed'),
-        error: () => {
-          expect(consoleSpy).toHaveBeenCalledWith(
-            'GlucoserverService Error:',
-            expect.stringContaining('Server error')
-          );
-          consoleSpy.mockRestore();
-          resolve();
-        },
-      });
-    }));
+        service.getReadings().subscribe({
+          next: () => fail('should have failed'),
+          error: () => {
+            expect(consoleSpy).toHaveBeenCalledWith(
+              'GlucoserverService Error:',
+              expect.stringContaining('Server error')
+            );
+            consoleSpy.mockRestore();
+            resolve();
+          },
+        });
+      }));
   });
 });

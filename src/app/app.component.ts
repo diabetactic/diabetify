@@ -111,8 +111,11 @@ export class AppComponent implements OnInit, OnDestroy {
     return Promise.race([
       promise,
       new Promise<T>((resolve, reject) =>
-        setTimeout(() => fallback !== undefined ? resolve(fallback) : reject(new Error('Timeout')), ms)
-      )
+        setTimeout(
+          () => (fallback !== undefined ? resolve(fallback) : reject(new Error('Timeout'))),
+          ms
+        )
+      ),
     ]);
   }
 }

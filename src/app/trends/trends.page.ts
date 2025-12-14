@@ -1,4 +1,10 @@
-import { Component, ChangeDetectionStrategy, OnInit, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  OnInit,
+  signal,
+  CUSTOM_ELEMENTS_SCHEMA,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader,
@@ -83,7 +89,7 @@ export class TrendsPage implements OnInit {
       },
       tooltip: {
         callbacks: {
-          label: (context) => {
+          label: context => {
             const label = context.label || '';
             const value = context.parsed || 0;
             return `${label}: ${value.toFixed(1)}%`;

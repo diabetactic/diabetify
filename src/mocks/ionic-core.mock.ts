@@ -73,78 +73,85 @@ export const menuController = {
 
 // Action sheet, alert, toast, etc. controller mocks
 export const actionSheetController = {
-  create: () => Promise.resolve({
-    present: () => Promise.resolve(),
-    dismiss: () => Promise.resolve(),
-    onDidDismiss: () => Promise.resolve({ role: 'cancel' }),
-    onWillDismiss: () => Promise.resolve({ role: 'cancel' }),
-  }),
+  create: () =>
+    Promise.resolve({
+      present: () => Promise.resolve(),
+      dismiss: () => Promise.resolve(),
+      onDidDismiss: () => Promise.resolve({ role: 'cancel' }),
+      onWillDismiss: () => Promise.resolve({ role: 'cancel' }),
+    }),
   dismiss: () => Promise.resolve(),
   getTop: () => Promise.resolve(null),
 };
 
 export const alertController = {
-  create: () => Promise.resolve({
-    present: () => Promise.resolve(),
-    dismiss: () => Promise.resolve(),
-    onDidDismiss: () => Promise.resolve({ role: 'cancel' }),
-    onWillDismiss: () => Promise.resolve({ role: 'cancel' }),
-  }),
+  create: () =>
+    Promise.resolve({
+      present: () => Promise.resolve(),
+      dismiss: () => Promise.resolve(),
+      onDidDismiss: () => Promise.resolve({ role: 'cancel' }),
+      onWillDismiss: () => Promise.resolve({ role: 'cancel' }),
+    }),
   dismiss: () => Promise.resolve(),
   getTop: () => Promise.resolve(null),
 };
 
 export const loadingController = {
-  create: () => Promise.resolve({
-    present: () => Promise.resolve(),
-    dismiss: () => Promise.resolve(),
-    onDidDismiss: () => Promise.resolve(),
-    onWillDismiss: () => Promise.resolve(),
-  }),
+  create: () =>
+    Promise.resolve({
+      present: () => Promise.resolve(),
+      dismiss: () => Promise.resolve(),
+      onDidDismiss: () => Promise.resolve(),
+      onWillDismiss: () => Promise.resolve(),
+    }),
   dismiss: () => Promise.resolve(),
   getTop: () => Promise.resolve(null),
 };
 
 export const modalController = {
-  create: () => Promise.resolve({
-    present: () => Promise.resolve(),
-    dismiss: () => Promise.resolve(),
-    onDidDismiss: () => Promise.resolve({ data: null, role: 'cancel' }),
-    onWillDismiss: () => Promise.resolve({ data: null, role: 'cancel' }),
-  }),
+  create: () =>
+    Promise.resolve({
+      present: () => Promise.resolve(),
+      dismiss: () => Promise.resolve(),
+      onDidDismiss: () => Promise.resolve({ data: null, role: 'cancel' }),
+      onWillDismiss: () => Promise.resolve({ data: null, role: 'cancel' }),
+    }),
   dismiss: () => Promise.resolve(),
   getTop: () => Promise.resolve(null),
 };
 
 export const pickerController = {
-  create: () => Promise.resolve({
-    present: () => Promise.resolve(),
-    dismiss: () => Promise.resolve(),
-    onDidDismiss: () => Promise.resolve(),
-    onWillDismiss: () => Promise.resolve(),
-  }),
+  create: () =>
+    Promise.resolve({
+      present: () => Promise.resolve(),
+      dismiss: () => Promise.resolve(),
+      onDidDismiss: () => Promise.resolve(),
+      onWillDismiss: () => Promise.resolve(),
+    }),
   dismiss: () => Promise.resolve(),
   getTop: () => Promise.resolve(null),
 };
 
 export const popoverController = {
-  create: () => Promise.resolve({
-    present: () => Promise.resolve(),
-    dismiss: () => Promise.resolve(),
-    onDidDismiss: () => Promise.resolve({ data: null, role: 'cancel' }),
-    onWillDismiss: () => Promise.resolve({ data: null, role: 'cancel' }),
-  }),
+  create: () =>
+    Promise.resolve({
+      present: () => Promise.resolve(),
+      dismiss: () => Promise.resolve(),
+      onDidDismiss: () => Promise.resolve({ data: null, role: 'cancel' }),
+      onWillDismiss: () => Promise.resolve({ data: null, role: 'cancel' }),
+    }),
   dismiss: () => Promise.resolve(),
   getTop: () => Promise.resolve(null),
 };
 
 export const toastController = {
-  create: () => Promise.resolve({
-    present: () => Promise.resolve(),
-    dismiss: () => Promise.resolve(),
-    onDidDismiss: () => Promise.resolve(),
-    onWillDismiss: () => Promise.resolve(),
-  }),
+  create: () =>
+    Promise.resolve({
+      present: () => Promise.resolve(),
+      dismiss: () => Promise.resolve(),
+      onDidDismiss: () => Promise.resolve(),
+      onWillDismiss: () => Promise.resolve(),
+    }),
   dismiss: () => Promise.resolve(),
   getTop: () => Promise.resolve(null),
 };

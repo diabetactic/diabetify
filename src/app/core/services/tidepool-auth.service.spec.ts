@@ -321,20 +321,21 @@ describe('TidepoolAuthService', () => {
   });
 
   describe('auth state observable', () => {
-    it('should emit auth state changes', () => new Promise<void>(resolve => {
-      let emissionCount = 0;
+    it('should emit auth state changes', () =>
+      new Promise<void>(resolve => {
+        let emissionCount = 0;
 
-      service.authState.subscribe(state => {
-        emissionCount++;
-        if (emissionCount === 2) {
-          // Initial + after login
-          expect(state.isAuthenticated).toBeDefined();
-          resolve();
-        }
-      });
+        service.authState.subscribe(state => {
+          emissionCount++;
+          if (emissionCount === 2) {
+            // Initial + after login
+            expect(state.isAuthenticated).toBeDefined();
+            resolve();
+          }
+        });
 
-      // Trigger state change
-      service['updateAuthState']({ isAuthenticated: true });
-    }));
+        // Trigger state change
+        service['updateAuthState']({ isAuthenticated: true });
+      }));
   });
 });

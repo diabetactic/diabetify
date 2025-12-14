@@ -22,12 +22,16 @@ import { join } from 'path';
 const USE_DOCKER = process.env.USE_DOCKER === 'true' || process.env.API_URL?.includes('localhost');
 const TEST_USER_ID = process.env.E2E_TEST_USERNAME || 'julian'; // Julian's account
 const TEST_USER_PASSWORD = process.env.E2E_TEST_PASSWORD || 'tuvieja';
-const API_GATEWAY_URL = process.env.API_URL || (USE_DOCKER
-  ? 'http://localhost:8000'
-  : 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com');
-const BACKOFFICE_URL = process.env.BACKOFFICE_URL || (USE_DOCKER
-  ? 'http://localhost:8001'
-  : 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com');
+const API_GATEWAY_URL =
+  process.env.API_URL ||
+  (USE_DOCKER
+    ? 'http://localhost:8000'
+    : 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com');
+const BACKOFFICE_URL =
+  process.env.BACKOFFICE_URL ||
+  (USE_DOCKER
+    ? 'http://localhost:8001'
+    : 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com');
 const BACKOFFICE_USER = 'admin';
 const BACKOFFICE_PASS = 'admin';
 
@@ -67,8 +71,8 @@ function ensureDirectories() {
 
 // Helper: Capture IndexedDB state
 async function captureIndexedDBState(page: Page, tableName: string): Promise<unknown[]> {
-  return await page.evaluate(async (table) => {
-    return new Promise((resolve) => {
+  return await page.evaluate(async table => {
+    return new Promise(resolve => {
       const request = indexedDB.open('DiabetacticDB');
       request.onerror = () => resolve([]);
       request.onsuccess = () => {
@@ -95,8 +99,12 @@ async function captureIndexedDBState(page: Page, tableName: string): Promise<unk
 function setupNetworkLogging(page: Page, logs: NetworkLog[]) {
   page.on('request', req => {
     const url = req.url();
-    if (url.includes('/glucose') || url.includes('/appointments') ||
-        url.includes('/token') || url.includes('/users')) {
+    if (
+      url.includes('/glucose') ||
+      url.includes('/appointments') ||
+      url.includes('/token') ||
+      url.includes('/users')
+    ) {
       logs.push({
         timestamp: new Date().toISOString(),
         type: 'request',
@@ -108,8 +116,12 @@ function setupNetworkLogging(page: Page, logs: NetworkLog[]) {
 
   page.on('response', async resp => {
     const url = resp.url();
-    if (url.includes('/glucose') || url.includes('/appointments') ||
-        url.includes('/token') || url.includes('/users')) {
+    if (
+      url.includes('/glucose') ||
+      url.includes('/appointments') ||
+      url.includes('/token') ||
+      url.includes('/users')
+    ) {
       let body: unknown = null;
       try {
         body = await resp.json();
@@ -152,18 +164,21 @@ async function login(page: Page): Promise<string | null> {
   await page.waitForTimeout(500);
   await page.waitForSelector('form', { state: 'visible', timeout: 15000 });
 
-  await page.waitForSelector('input[placeholder*="DNI"], input[placeholder*="email"]', { timeout: 10000 });
+  await page.waitForSelector('input[placeholder*="DNI"], input[placeholder*="email"]', {
+    timeout: 10000,
+  });
   await page.fill('input[placeholder*="DNI"], input[placeholder*="email"]', TEST_USER_ID);
   await page.fill('input[type="password"]', TEST_USER_PASSWORD);
 
   // Capture token from login response
   let authToken: string | null = null;
-  const loginResponsePromise = page.waitForResponse(
-    resp => resp.url().includes('/token'),
-    { timeout: 20000 }
-  );
+  const loginResponsePromise = page.waitForResponse(resp => resp.url().includes('/token'), {
+    timeout: 20000,
+  });
 
-  await page.waitForSelector('button:has-text("Iniciar"), button:has-text("Sign In")', { timeout: 10000 });
+  await page.waitForSelector('button:has-text("Iniciar"), button:has-text("Sign In")', {
+    timeout: 10000,
+  });
   await page.click('button:has-text("Iniciar"), button:has-text("Sign In")');
 
   try {
@@ -185,7 +200,7 @@ async function login(page: Page): Promise<string | null> {
 
 // Helper: Set theme
 async function setTheme(page: Page, theme: 'light' | 'dark') {
-  await page.evaluate((t) => {
+  await page.evaluate(t => {
     document.documentElement.setAttribute('data-theme', t);
     localStorage.setItem('theme', t);
   }, theme);
@@ -252,16 +267,30 @@ test.describe('Screenshot Capture - All Screens', () => {
       await page.goto('/tabs/readings');
       await page.waitForLoadState('networkidle');
 
-      const addButton = page.locator('ion-fab-button, ion-button:has-text("Agregar"), ion-button:has-text("Add")');
-      if (await addButton.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+      const addButton = page.locator(
+        'ion-fab-button, ion-button:has-text("Agregar"), ion-button:has-text("Add")'
+      );
+      if (
+        await addButton
+          .first()
+          .isVisible({ timeout: 5000 })
+          .catch(() => false)
+      ) {
         await addButton.first().click();
         await page.waitForTimeout(1000);
         await takeScreenshot(page, `add-reading-modal-${theme}`, evidence);
         console.log(`  ✓ add-reading-modal-${theme}.png`);
 
         // Close modal
-        const closeBtn = page.locator('ion-button:has-text("Cancelar"), ion-button:has-text("Cancel"), ion-back-button');
-        if (await closeBtn.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+        const closeBtn = page.locator(
+          'ion-button:has-text("Cancelar"), ion-button:has-text("Cancel"), ion-back-button'
+        );
+        if (
+          await closeBtn
+            .first()
+            .isVisible({ timeout: 2000 })
+            .catch(() => false)
+        ) {
           await closeBtn.first().click();
         } else {
           await page.goBack();
@@ -282,7 +311,10 @@ test.describe('Screenshot Capture - All Screens', () => {
 test.describe('Readings Sync Flow Proof', () => {
   test.setTimeout(120000);
 
-  test('add reading → sync → verify in backend → persist after restart', async ({ page, context }) => {
+  test('add reading → sync → verify in backend → persist after restart', async ({
+    page,
+    context,
+  }) => {
     ensureDirectories();
     const evidence: Evidence = { networkLogs: [], indexedDBSnapshots: [], screenshots: [] };
     setupNetworkLogging(page, evidence.networkLogs);
@@ -307,9 +339,16 @@ test.describe('Readings Sync Flow Proof', () => {
 
     // Step 4: Add a new reading
     const testGlucoseValue = Math.floor(Math.random() * 50) + 100; // 100-150
-    const addButton = page.locator('ion-fab-button, ion-button:has-text("Agregar"), ion-button:has-text("Add")');
+    const addButton = page.locator(
+      'ion-fab-button, ion-button:has-text("Agregar"), ion-button:has-text("Add")'
+    );
 
-    if (await addButton.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+    if (
+      await addButton
+        .first()
+        .isVisible({ timeout: 5000 })
+        .catch(() => false)
+    ) {
       await addButton.first().click();
       await page.waitForTimeout(1000);
       await takeScreenshot(page, 'readings-03-add-modal', evidence);
@@ -321,7 +360,9 @@ test.describe('Readings Sync Flow Proof', () => {
         await takeScreenshot(page, 'readings-04-filled-form', evidence);
 
         // Save and capture network
-        const saveBtn = page.locator('ion-button:has-text("Guardar"), ion-button:has-text("Save"), [data-testid="add-reading-save-btn"]');
+        const saveBtn = page.locator(
+          'ion-button:has-text("Guardar"), ion-button:has-text("Save"), [data-testid="add-reading-save-btn"]'
+        );
         await saveBtn.first().click();
 
         // Wait for sync
@@ -343,8 +384,8 @@ test.describe('Readings Sync Flow Proof', () => {
     console.log(`✅ Step 5: IndexedDB after - ${indexedDBAfter.length} readings`);
 
     // Step 6: Verify new reading has synced flag
-    const newReading = indexedDBAfter.find((r: any) =>
-      r.value === testGlucoseValue || r.glucoseValue === testGlucoseValue
+    const newReading = indexedDBAfter.find(
+      (r: any) => r.value === testGlucoseValue || r.glucoseValue === testGlucoseValue
     );
     if (newReading) {
       console.log(`✅ Step 6: Reading found in IndexedDB:`, JSON.stringify(newReading, null, 2));
@@ -364,8 +405,8 @@ test.describe('Readings Sync Flow Proof', () => {
 
         if (response.ok()) {
           const readings = await response.json();
-          const foundInBackend = readings.find((r: any) =>
-            r.value === testGlucoseValue || r.glucoseValue === testGlucoseValue
+          const foundInBackend = readings.find(
+            (r: any) => r.value === testGlucoseValue || r.glucoseValue === testGlucoseValue
           );
           if (foundInBackend) {
             console.log('✅ Step 7: Reading verified in backend API');
@@ -385,8 +426,15 @@ test.describe('Readings Sync Flow Proof', () => {
     await takeScreenshot(page, 'readings-06-settings-before-logout', evidence);
 
     // Find and click logout
-    const logoutBtn = page.locator('ion-button:has-text("Cerrar sesión"), ion-button:has-text("Logout"), ion-button:has-text("Salir")');
-    if (await logoutBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+    const logoutBtn = page.locator(
+      'ion-button:has-text("Cerrar sesión"), ion-button:has-text("Logout"), ion-button:has-text("Salir")'
+    );
+    if (
+      await logoutBtn
+        .first()
+        .isVisible({ timeout: 5000 })
+        .catch(() => false)
+    ) {
       await logoutBtn.first().click();
       await page.waitForTimeout(2000);
 
@@ -404,8 +452,8 @@ test.describe('Readings Sync Flow Proof', () => {
         records: indexedDBAfterRelogin,
       });
 
-      const stillExists = indexedDBAfterRelogin.find((r: any) =>
-        r.value === testGlucoseValue || r.glucoseValue === testGlucoseValue
+      const stillExists = indexedDBAfterRelogin.find(
+        (r: any) => r.value === testGlucoseValue || r.glucoseValue === testGlucoseValue
       );
       if (stillExists) {
         console.log('✅ Step 8: Reading persisted after logout/login');
@@ -418,7 +466,9 @@ test.describe('Readings Sync Flow Proof', () => {
     saveEvidence(evidence, 'readings-sync-flow');
 
     // Log network summary
-    const postRequests = evidence.networkLogs.filter(l => l.method === 'POST' && l.url.includes('/glucose'));
+    const postRequests = evidence.networkLogs.filter(
+      l => l.method === 'POST' && l.url.includes('/glucose')
+    );
     console.log(`\n📊 Network Summary:`);
     console.log(`   Total logs: ${evidence.networkLogs.length}`);
     console.log(`   POST /glucose: ${postRequests.length}`);
@@ -453,7 +503,7 @@ test.describe('Appointments State Machine Proof', () => {
 
       // Perform action
       let endpoint = '';
-      let method = 'POST';
+      const method = 'POST';
 
       switch (action) {
         case 'accept':
@@ -505,8 +555,15 @@ test.describe('Appointments State Machine Proof', () => {
     console.log('✅ Step 2: Appointments page - NONE state');
 
     // Step 3: Request appointment (NONE → PENDING)
-    const requestBtn = page.locator('ion-button:has-text("Solicitar"), ion-button:has-text("Request"), ion-button:has-text("Pedir")');
-    if (await requestBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+    const requestBtn = page.locator(
+      'ion-button:has-text("Solicitar"), ion-button:has-text("Request"), ion-button:has-text("Pedir")'
+    );
+    if (
+      await requestBtn
+        .first()
+        .isVisible({ timeout: 5000 })
+        .catch(() => false)
+    ) {
       await requestBtn.first().click();
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(2000);
@@ -532,8 +589,15 @@ test.describe('Appointments State Machine Proof', () => {
     }
 
     // Step 5: Create appointment (ACCEPTED → CREATED)
-    const createBtn = page.locator('ion-button:has-text("Crear"), ion-button:has-text("Create"), ion-button:has-text("Nueva")');
-    if (await createBtn.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+    const createBtn = page.locator(
+      'ion-button:has-text("Crear"), ion-button:has-text("Create"), ion-button:has-text("Nueva")'
+    );
+    if (
+      await createBtn
+        .first()
+        .isVisible({ timeout: 5000 })
+        .catch(() => false)
+    ) {
       await createBtn.first().click();
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1000);
@@ -544,8 +608,15 @@ test.describe('Appointments State Machine Proof', () => {
       if (await symptomsInput.isVisible({ timeout: 3000 }).catch(() => false)) {
         await symptomsInput.fill('Test symptoms for sync proof');
 
-        const submitBtn = page.locator('ion-button:has-text("Enviar"), ion-button:has-text("Submit"), ion-button:has-text("Guardar")');
-        if (await submitBtn.first().isVisible({ timeout: 3000 }).catch(() => false)) {
+        const submitBtn = page.locator(
+          'ion-button:has-text("Enviar"), ion-button:has-text("Submit"), ion-button:has-text("Guardar")'
+        );
+        if (
+          await submitBtn
+            .first()
+            .isVisible({ timeout: 3000 })
+            .catch(() => false)
+        ) {
           await submitBtn.first().click();
           await page.waitForLoadState('networkidle');
           await page.waitForTimeout(2000);
@@ -561,8 +632,15 @@ test.describe('Appointments State Machine Proof', () => {
     await navigateToTab(page, 'appointments');
     await page.waitForTimeout(1000);
 
-    const resolutionBtn = page.locator('ion-button:has-text("Ver resolución"), ion-button:has-text("Resolution"), ion-button:has-text("Recomendaciones")');
-    if (await resolutionBtn.first().isVisible({ timeout: 3000 }).catch(() => false)) {
+    const resolutionBtn = page.locator(
+      'ion-button:has-text("Ver resolución"), ion-button:has-text("Resolution"), ion-button:has-text("Recomendaciones")'
+    );
+    if (
+      await resolutionBtn
+        .first()
+        .isVisible({ timeout: 3000 })
+        .catch(() => false)
+    ) {
       await resolutionBtn.first().click();
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1000);
@@ -603,7 +681,11 @@ test.describe('Profile Sync Proof', () => {
     await takeScreenshot(page, 'profile-01-initial', evidence);
 
     // Try to edit profile
-    const editBtn = page.locator('ion-button:has-text("Editar"), ion-button:has-text("Edit"), lucide-icon[name="pencil"]').first();
+    const editBtn = page
+      .locator(
+        'ion-button:has-text("Editar"), ion-button:has-text("Edit"), lucide-icon[name="pencil"]'
+      )
+      .first();
     if (await editBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
       await editBtn.click();
       await page.waitForTimeout(1000);
@@ -620,7 +702,12 @@ test.describe('Profile Sync Proof', () => {
 
         // Save
         const saveBtn = page.locator('ion-button:has-text("Guardar"), ion-button:has-text("Save")');
-        if (await saveBtn.first().isVisible({ timeout: 3000 }).catch(() => false)) {
+        if (
+          await saveBtn
+            .first()
+            .isVisible({ timeout: 3000 })
+            .catch(() => false)
+        ) {
           await saveBtn.first().click();
           await page.waitForLoadState('networkidle');
           await page.waitForTimeout(2000);
