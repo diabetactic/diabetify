@@ -2,6 +2,9 @@
  * Integration tests for ReadingsService with real IndexedDB
  * Tests actual database operations without mocks
  */
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { ReadingsService } from '@services/readings.service';
 import { db } from '@services/database.service';
@@ -338,7 +341,7 @@ describe('ReadingsService Integration Tests', () => {
       expect(summary.statistics.average).toBeCloseTo(108.6, 1);
       expect(summary.statistics.minimum).toBe(100);
       expect(summary.statistics.maximum).toBeCloseTo(117.1, 1);
-      expect(summary.readings.every(r => r.status)).toBeTrue();
+      expect(summary.readings.every(r => r.status)).toBe(true);
     });
 
     it('should prefer earliest reading unit and convert subsequent values', async () => {

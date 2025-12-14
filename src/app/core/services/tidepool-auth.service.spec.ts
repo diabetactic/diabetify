@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
@@ -50,11 +53,11 @@ describe('TidepoolAuthService', () => {
 
     tokenStorageMock = {
       storeAuth: jest.fn().mockResolvedValue(undefined),
-      getAccessToken: jest.fn().mockResolvedValue('mock-token'),
-      getRefreshToken: jest.fn().mockResolvedValue('mock-refresh-token'),
-      getAuthData: jest.fn().mockResolvedValue(mockAuthData),
-      hasValidAccessToken: jest.fn().mockResolvedValue(true),
-      hasRefreshToken: jest.fn().mockResolvedValue(true),
+      getAccessToken: jest.fn().mockResolvedValue(null), // Start with no token
+      getRefreshToken: jest.fn().mockResolvedValue(null), // Start with no token
+      getAuthData: jest.fn().mockResolvedValue(null), // Start with no auth data
+      hasValidAccessToken: jest.fn().mockResolvedValue(false), // Not authenticated by default
+      hasRefreshToken: jest.fn().mockResolvedValue(false), // No refresh token by default
       clearAll: jest.fn().mockResolvedValue(undefined),
     } as any;
 
@@ -318,7 +321,7 @@ describe('TidepoolAuthService', () => {
   });
 
   describe('auth state observable', () => {
-    it('should emit auth state changes', done => {
+    it('should emit auth state changes', () => new Promise<void>(resolve => {
       let emissionCount = 0;
 
       service.authState.subscribe(state => {
@@ -326,12 +329,12 @@ describe('TidepoolAuthService', () => {
         if (emissionCount === 2) {
           // Initial + after login
           expect(state.isAuthenticated).toBeDefined();
-          done();
+          resolve();
         }
       });
 
       // Trigger state change
       service['updateAuthState']({ isAuthenticated: true });
-    });
+    }));
   });
 });

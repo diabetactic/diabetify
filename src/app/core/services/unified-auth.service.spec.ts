@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { of, BehaviorSubject, throwError } from 'rxjs';
 import { UnifiedAuthService } from '@services/unified-auth.service';
@@ -92,16 +95,16 @@ describe('UnifiedAuthService', () => {
   });
 
   describe('Authentication State Management', () => {
-    it('should initialize with unauthenticated state', done => {
+    it('should initialize with unauthenticated state', () => new Promise<void>(resolve => {
       service.authState$.subscribe(state => {
         expect(state.isAuthenticated).toBe(false);
         expect(state.provider).toBeNull();
         expect(state.user).toBeNull();
-        done();
+        resolve();
       });
-    });
+    }));
 
-    it('should update state when local auth succeeds', done => {
+    it('should update state when local auth succeeds', () => new Promise<void>(resolve => {
       const mockUser = {
         id: 'user123',
         email: 'test@example.com',
@@ -126,12 +129,12 @@ describe('UnifiedAuthService', () => {
           expect(state.provider).toBe('local');
           expect(state.user?.email).toBe('test@example.com');
           expect(state.user?.provider).toBe('local');
-          done();
+          resolve();
         }
       });
-    });
+    }));
 
-    it('should update state when Tidepool auth succeeds', done => {
+    it('should update state when Tidepool auth succeeds', () => new Promise<void>(resolve => {
       mockTidepoolAuthState.next({
         isAuthenticated: true,
         isLoading: false,
@@ -146,12 +149,12 @@ describe('UnifiedAuthService', () => {
           expect(state.provider).toBe('tidepool');
           expect(state.user?.email).toBe('tidepool@example.com');
           expect(state.user?.provider).toBe('tidepool');
-          done();
+          resolve();
         }
       });
-    });
+    }));
 
-    it('should handle both providers authenticated', done => {
+    it('should handle both providers authenticated', () => new Promise<void>(resolve => {
       const mockLocalUser = {
         id: 'user123',
         email: 'test@example.com',
@@ -184,14 +187,14 @@ describe('UnifiedAuthService', () => {
           expect(state.provider).toBe('both');
           expect(state.user?.tidepoolUserId).toBe('tidepool-user-123');
           expect(state.user?.email).toBe('test@example.com'); // Local takes precedence
-          done();
+          resolve();
         }
       });
-    });
+    }));
   });
 
   describe('Login Methods', () => {
-    it('should login with local backend', done => {
+    it('should login with local backend', () => new Promise<void>(resolve => {
       const loginRequest: LoginRequest = {
         email: 'test@example.com',
         password: 'password123',
@@ -232,11 +235,11 @@ describe('UnifiedAuthService', () => {
           loginRequest.password,
           loginRequest.rememberMe || false
         );
-        done();
+        resolve();
       });
-    });
+    }));
 
-    it('should handle local login failure', done => {
+    it('should handle local login failure', () => new Promise<void>(resolve => {
       const loginRequest: LoginRequest = {
         email: 'test@example.com',
         password: 'wrong-password',
@@ -250,9 +253,9 @@ describe('UnifiedAuthService', () => {
 
       service.loginLocal(loginRequest).subscribe(state => {
         expect(state.isAuthenticated).toBe(false);
-        done();
+        resolve();
       });
-    });
+    }));
 
     it('should login with Tidepool', () => {
       tidepoolAuthSpy.login.mockReturnValue(Promise.resolve());
@@ -264,7 +267,7 @@ describe('UnifiedAuthService', () => {
   });
 
   describe('Register Method', () => {
-    it('should register new user with local backend', done => {
+    it('should register new user with local backend', () => new Promise<void>(resolve => {
       const registerRequest: RegisterRequest = {
         email: 'new@example.com',
         password: 'password123',
@@ -305,9 +308,9 @@ describe('UnifiedAuthService', () => {
         expect(state.isAuthenticated).toBe(true);
         expect(state.user?.firstName).toBe('Jane');
         expect(localAuthSpy.register).toHaveBeenCalledWith(registerRequest);
-        done();
+        resolve();
       });
-    });
+    }));
   });
 
   describe('Logout Methods', () => {
@@ -360,7 +363,7 @@ describe('UnifiedAuthService', () => {
   });
 
   describe('Token Management', () => {
-    it('should get access token from local auth when available', done => {
+    it('should get access token from local auth when available', () => new Promise<void>(resolve => {
       mockLocalAuthState.next({
         isAuthenticated: true,
         user: null,
@@ -371,11 +374,11 @@ describe('UnifiedAuthService', () => {
 
       service.getAccessToken().subscribe(token => {
         expect(token).toBe('local-access-token');
-        done();
+        resolve();
       });
-    });
+    }));
 
-    it('should fallback to Tidepool token when local not available', done => {
+    it('should fallback to Tidepool token when local not available', () => new Promise<void>(resolve => {
       mockTidepoolAuthState.next({
         isAuthenticated: true,
         isLoading: false,
@@ -388,18 +391,18 @@ describe('UnifiedAuthService', () => {
 
       service.getAccessToken().subscribe(token => {
         expect(token).toBe('tidepool-access-token');
-        done();
+        resolve();
       });
-    });
+    }));
 
-    it('should return null when not authenticated', done => {
+    it('should return null when not authenticated', () => new Promise<void>(resolve => {
       service.getAccessToken().subscribe(token => {
         expect(token).toBeNull();
-        done();
+        resolve();
       });
-    });
+    }));
 
-    it('should get provider-specific token', done => {
+    it('should get provider-specific token', () => new Promise<void>(resolve => {
       localAuthSpy.getAccessToken.mockReturnValue(Promise.resolve('local-token'));
       tidepoolAuthSpy.getAccessToken.mockReturnValue(Promise.resolve('tidepool-token'));
 
@@ -411,13 +414,13 @@ describe('UnifiedAuthService', () => {
       service.getProviderToken('tidepool').subscribe(token => {
         expect(token).toBe('tidepool-token');
         expect(tidepoolAuthSpy.getAccessToken).toHaveBeenCalled();
-        done();
+        resolve();
       });
-    });
+    }));
   });
 
   describe('Token Refresh', () => {
-    it('should refresh tokens for active providers', done => {
+    it('should refresh tokens for active providers', () => new Promise<void>(resolve => {
       mockLocalAuthState.next({
         isAuthenticated: true,
         user: null,
@@ -448,11 +451,11 @@ describe('UnifiedAuthService', () => {
       service.refreshTokens().subscribe(() => {
         expect(localAuthSpy.refreshAccessToken).toHaveBeenCalled();
         expect(tidepoolAuthSpy.refreshAccessToken).toHaveBeenCalled();
-        done();
+        resolve();
       });
-    });
+    }));
 
-    it('should handle refresh failures gracefully', done => {
+    it('should handle refresh failures gracefully', () => new Promise<void>(resolve => {
       mockLocalAuthState.next({
         isAuthenticated: true,
         user: null,
@@ -468,9 +471,9 @@ describe('UnifiedAuthService', () => {
       service.refreshTokens().subscribe(state => {
         // Should not throw, just log warning
         expect(state).toBeDefined();
-        done();
+        resolve();
       });
-    });
+    }));
   });
 
   describe('Provider Checks', () => {
@@ -551,7 +554,7 @@ describe('UnifiedAuthService', () => {
   });
 
   describe('User Preferences', () => {
-    it('should update preferences for local user', done => {
+    it('should update preferences for local user', () => new Promise<void>(resolve => {
       mockLocalAuthState.next({
         isAuthenticated: true,
         user: {
@@ -588,9 +591,9 @@ describe('UnifiedAuthService', () => {
 
       service.updatePreferences(preferences).subscribe(() => {
         expect(localAuthSpy.updatePreferences).toHaveBeenCalledWith(preferences);
-        done();
+        resolve();
       });
-    });
+    }));
   });
 
   describe('User Management', () => {

@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../test-setup';
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { IonicModule } from '@ionic/angular';

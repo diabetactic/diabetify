@@ -1,4 +1,9 @@
 # Docker Compose v2+ (no version key needed)
+#
+# Usage:
+#   Full Playwright (all browsers):  docker compose -f docker/docker-compose.e2e.yml up --build
+#   Slim (Chromium only):            E2E_SLIM=1 docker compose -f docker/docker-compose.e2e.yml up --build
+#
 services:
   # ============================================================================
   # App Server - Serves the built Angular application
@@ -24,10 +29,11 @@ services:
   # ============================================================================
   # Playwright - Runs E2E tests against the app server
   # ============================================================================
+  # Use E2E_SLIM=1 to use the slim Chromium-only image (~800MB vs 2.4GB)
   playwright:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.e2e
+      dockerfile: docker/${E2E_DOCKERFILE:-Dockerfile.e2e}
     container_name: diabetactic-playwright
     depends_on:
       app:
@@ -49,7 +55,7 @@ services:
     networks:
       - e2e-network
     working_dir: /e2e
-    command: npx playwright test --reporter=html,list,json
+    command: npx playwright test --reporter=html,list,json ${E2E_SLIM:+--project=chromium}
 
   # ============================================================================
   # Mock Backend (Optional) - For local backend testing

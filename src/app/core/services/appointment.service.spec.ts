@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
@@ -107,7 +110,7 @@ describe('AppointmentService', () => {
 
   describe('getAppointments()', () => {
     describe('Success Cases', () => {
-      it('should fetch appointments successfully', done => {
+      it('should fetch appointments successfully', () => new Promise<void>((resolve, reject) => {
         const response: ApiResponse<Appointment[]> = {
           success: true,
           data: mockAppointments,
@@ -120,13 +123,13 @@ describe('AppointmentService', () => {
             expect(appointments).toEqual(mockAppointments);
             expect(appointments.length).toBe(2);
             expect(apiGateway.request).toHaveBeenCalledWith('extservices.appointments.mine');
-            done();
+            resolve();
           },
-          error: () => fail('should not have errored'),
+          error: () => reject(new Error('should not have errored')),
         });
-      });
+      }));
 
-      it('should update appointments$ observable', done => {
+      it('should update appointments$ observable', () => new Promise<void>(resolve => {
         const response: ApiResponse<Appointment[]> = {
           success: true,
           data: mockAppointments,
@@ -138,14 +141,14 @@ describe('AppointmentService', () => {
         service.appointments$.subscribe(appointments => {
           if (appointments.length > 0) {
             expect(appointments).toEqual(mockAppointments);
-            done();
+            resolve();
           }
         });
 
         service.getAppointments().subscribe();
-      });
+      }));
 
-      it('should return empty array when no appointments exist', done => {
+      it('should return empty array when no appointments exist', () => new Promise<void>((resolve, reject) => {
         const response: ApiResponse<Appointment[]> = {
           success: true,
           data: [],
@@ -157,12 +160,12 @@ describe('AppointmentService', () => {
           next: appointments => {
             expect(appointments).toEqual([]);
             expect(appointments.length).toBe(0);
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should fetch appointments with all optional fields populated', done => {
+      it('should fetch appointments with all optional fields populated', () => new Promise<void>((resolve, reject) => {
         const fullAppointment: Appointment = {
           ...mockAppointment1,
           appointment_id: 3,
@@ -181,12 +184,12 @@ describe('AppointmentService', () => {
           next: appointments => {
             expect(appointments[0].other_motive).toBe('Unusual spike in readings');
             expect(appointments[0].another_treatment).toBe('Metformin 1000mg');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should handle appointments with multiple motives', done => {
+      it('should handle appointments with multiple motives', () => new Promise<void>((resolve, reject) => {
         const multiMotiveAppointment: Appointment = {
           ...mockAppointment1,
           motive: ['control_routine', 'follow_up', 'adjustment', 'emergency'],
@@ -203,14 +206,14 @@ describe('AppointmentService', () => {
           next: appointments => {
             expect(appointments[0].motive.length).toBe(4);
             expect(appointments[0].motive).toContain('emergency');
-            done();
+            resolve();
           },
         });
-      });
+      }));
     });
 
     describe('Error Cases', () => {
-      it('should handle API error response with message', done => {
+      it('should handle API error response with message', () => new Promise<void>((resolve, reject) => {
         const errorResponse: ApiResponse<Appointment[]> = {
           success: false,
           error: {
@@ -223,15 +226,15 @@ describe('AppointmentService', () => {
         apiGateway.request.mockReturnValue(of(errorResponse));
 
         service.getAppointments().subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('Internal server error');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should handle API error without message', done => {
+      it('should handle API error without message', () => new Promise<void>((resolve, reject) => {
         const errorResponse: ApiResponse<Appointment[]> = {
           success: false,
         };
@@ -239,15 +242,15 @@ describe('AppointmentService', () => {
         apiGateway.request.mockReturnValue(of(errorResponse));
 
         service.getAppointments().subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('Failed to fetch appointments');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should handle network error', done => {
+      it('should handle network error', () => new Promise<void>((resolve, reject) => {
         const networkError = {
           error: {
             code: 'NETWORK_ERROR',
@@ -261,18 +264,18 @@ describe('AppointmentService', () => {
         translationService.instant.mockReturnValue('Network error occurred');
 
         service.getAppointments().subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('Network error occurred');
             expect(translationService.instant).toHaveBeenCalledWith(
               'appointments.errors.networkError'
             );
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should handle UNAUTHORIZED error', done => {
+      it('should handle UNAUTHORIZED error', () => new Promise<void>((resolve, reject) => {
         const unauthorizedError = {
           error: {
             code: 'UNAUTHORIZED',
@@ -286,18 +289,18 @@ describe('AppointmentService', () => {
         translationService.instant.mockReturnValue('Unauthorized access');
 
         service.getAppointments().subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('Unauthorized access');
             expect(translationService.instant).toHaveBeenCalledWith(
               'appointments.errors.unauthorized'
             );
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should handle NOT_FOUND error', done => {
+      it('should handle NOT_FOUND error', () => new Promise<void>((resolve, reject) => {
         const notFoundError = {
           error: {
             code: 'NOT_FOUND',
@@ -311,16 +314,16 @@ describe('AppointmentService', () => {
         translationService.instant.mockReturnValue('Not found');
 
         service.getAppointments().subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('Not found');
             expect(translationService.instant).toHaveBeenCalledWith('appointments.errors.notFound');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should handle SERVICE_UNAVAILABLE error', done => {
+      it('should handle SERVICE_UNAVAILABLE error', () => new Promise<void>((resolve, reject) => {
         const serviceUnavailableError = {
           error: {
             code: 'SERVICE_UNAVAILABLE',
@@ -334,18 +337,18 @@ describe('AppointmentService', () => {
         translationService.instant.mockReturnValue('Service unavailable');
 
         service.getAppointments().subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('Service unavailable');
             expect(translationService.instant).toHaveBeenCalledWith(
               'appointments.errors.serviceUnavailable'
             );
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should handle error with only error.message', done => {
+      it('should handle error with only error.message', () => new Promise<void>((resolve, reject) => {
         const simpleError = {
           message: 'Simple error message',
         };
@@ -353,37 +356,37 @@ describe('AppointmentService', () => {
         apiGateway.request.mockReturnValue(throwError(() => simpleError));
 
         service.getAppointments().subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('Simple error message');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should handle string error', done => {
+      it('should handle string error', () => new Promise<void>((resolve, reject) => {
         apiGateway.request.mockReturnValue(throwError(() => 'String error'));
 
         service.getAppointments().subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('String error');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should handle unknown error format', done => {
+      it('should handle unknown error format', () => new Promise<void>((resolve, reject) => {
         apiGateway.request.mockReturnValue(throwError(() => ({ unknown: 'format' })));
 
         service.getAppointments().subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('An error occurred');
-            done();
+            resolve();
           },
         });
-      });
+      }));
     });
   });
 
@@ -397,71 +400,71 @@ describe('AppointmentService', () => {
     });
 
     describe('Success Cases', () => {
-      it('should get appointment by id', done => {
+      it('should get appointment by id', () => new Promise<void>((resolve, reject) => {
         service.getAppointment(1).subscribe({
           next: appointment => {
             expect(appointment).toEqual(mockAppointment1);
             expect(appointment.appointment_id).toBe(1);
-            done();
+            resolve();
           },
-          error: () => fail('should not have errored'),
+          error: () => reject(new Error('should not have errored')),
         });
-      });
+      }));
 
-      it('should get appointment with id 2', done => {
+      it('should get appointment with id 2', () => new Promise<void>((resolve, reject) => {
         service.getAppointment(2).subscribe({
           next: appointment => {
             expect(appointment).toEqual(mockAppointment2);
             expect(appointment.insulin_type).toBe('long');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should call getAppointments internally', done => {
+      it('should call getAppointments internally', () => new Promise<void>((resolve, reject) => {
         jest.spyOn(service, 'getAppointments');
 
         service.getAppointment(1).subscribe({
           next: () => {
             expect(service.getAppointments).toHaveBeenCalled();
-            done();
+            resolve();
           },
         });
-      });
+      }));
     });
 
     describe('Error Cases', () => {
-      it('should throw error when appointment not found', done => {
+      it('should throw error when appointment not found', () => new Promise<void>((resolve, reject) => {
         service.getAppointment(999).subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('Appointment not found');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should throw error when appointment id is 0', done => {
+      it('should throw error when appointment id is 0', () => new Promise<void>((resolve, reject) => {
         service.getAppointment(0).subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('Appointment not found');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should throw error when appointment id is negative', done => {
+      it('should throw error when appointment id is negative', () => new Promise<void>((resolve, reject) => {
         service.getAppointment(-1).subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('Appointment not found');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should propagate getAppointments errors', done => {
+      it('should propagate getAppointments errors', () => new Promise<void>((resolve, reject) => {
         const errorResponse: ApiResponse<Appointment[]> = {
           success: false,
           error: {
@@ -474,13 +477,13 @@ describe('AppointmentService', () => {
         apiGateway.request.mockReturnValue(of(errorResponse));
 
         service.getAppointment(1).subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBeTruthy();
-            done();
+            resolve();
           },
         });
-      });
+      }));
     });
   });
 
@@ -509,7 +512,7 @@ describe('AppointmentService', () => {
     };
 
     describe('Success Cases', () => {
-      it('should create appointment successfully', done => {
+      it('should create appointment successfully', () => new Promise<void>((resolve, reject) => {
         const response: ApiResponse<Appointment> = {
           success: true,
           data: createdAppointment,
@@ -534,13 +537,13 @@ describe('AppointmentService', () => {
             expect(apiGateway.request).toHaveBeenCalledWith('extservices.appointments.create', {
               body: createRequest,
             });
-            done();
+            resolve();
           },
-          error: () => fail('should not have errored'),
+          error: () => reject(new Error('should not have errored')),
         });
-      });
+      }));
 
-      it('should create appointment with optional fields', done => {
+      it('should create appointment with optional fields', () => new Promise<void>((resolve, reject) => {
         const fullRequest: CreateAppointmentRequest = {
           ...createRequest,
           other_motive: 'Custom reason',
@@ -566,12 +569,12 @@ describe('AppointmentService', () => {
           next: appointment => {
             expect(appointment.other_motive).toBe('Custom reason');
             expect(appointment.another_treatment).toBe('Glimepiride 2mg');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should create appointment with multiple motives', done => {
+      it('should create appointment with multiple motives', () => new Promise<void>((resolve, reject) => {
         const multiMotiveRequest: CreateAppointmentRequest = {
           ...createRequest,
           motive: ['control_routine', 'follow_up', 'adjustment'],
@@ -598,12 +601,12 @@ describe('AppointmentService', () => {
           next: appointment => {
             expect(appointment.motive.length).toBe(3);
             expect(appointment.motive).toContain('adjustment');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should refresh appointments after creation', done => {
+      it('should refresh appointments after creation', () => new Promise<void>((resolve, reject) => {
         const createResponse: ApiResponse<Appointment> = {
           success: true,
           data: createdAppointment,
@@ -624,13 +627,13 @@ describe('AppointmentService', () => {
             setTimeout(() => {
               expect(apiGateway.request).toHaveBeenCalledTimes(2);
               expect(apiGateway.request).toHaveBeenCalledWith('extservices.appointments.mine');
-              done();
+              resolve();
             }, 100);
           },
         });
-      });
+      }));
 
-      it('should update appointments$ observable after creation', done => {
+      it('should update appointments$ observable after creation', () => new Promise<void>((resolve, reject) => {
         const createResponse: ApiResponse<Appointment> = {
           success: true,
           data: createdAppointment,
@@ -651,16 +654,16 @@ describe('AppointmentService', () => {
           if (updateCount === 2) {
             // After refresh
             expect(appointments.length).toBe(3);
-            done();
+            resolve();
           }
         });
 
         service.createAppointment(createRequest).subscribe();
-      });
+      }));
     });
 
     describe('Error Cases', () => {
-      it('should handle creation error with message', done => {
+      it('should handle creation error with message', () => new Promise<void>((resolve, reject) => {
         const errorResponse: ApiResponse<Appointment> = {
           success: false,
           error: {
@@ -673,15 +676,15 @@ describe('AppointmentService', () => {
         apiGateway.request.mockReturnValue(of(errorResponse));
 
         service.createAppointment(createRequest).subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('Invalid glucose objective');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should handle creation error without message', done => {
+      it('should handle creation error without message', () => new Promise<void>((resolve, reject) => {
         const errorResponse: ApiResponse<Appointment> = {
           success: false,
         };
@@ -689,15 +692,15 @@ describe('AppointmentService', () => {
         apiGateway.request.mockReturnValue(of(errorResponse));
 
         service.createAppointment(createRequest).subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('Failed to create appointment');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should handle network error during creation', done => {
+      it('should handle network error during creation', () => new Promise<void>((resolve, reject) => {
         const networkError = {
           error: {
             code: 'NETWORK_ERROR',
@@ -711,15 +714,15 @@ describe('AppointmentService', () => {
         translationService.instant.mockReturnValue('Network error');
 
         service.createAppointment(createRequest).subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('Network error');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should handle unauthorized error during creation', done => {
+      it('should handle unauthorized error during creation', () => new Promise<void>((resolve, reject) => {
         const unauthorizedError = {
           error: {
             code: 'UNAUTHORIZED',
@@ -733,15 +736,15 @@ describe('AppointmentService', () => {
         translationService.instant.mockReturnValue('Not authorized');
 
         service.createAppointment(createRequest).subscribe({
-          next: () => fail('should have errored'),
+          next: () => reject(new Error('should have errored')),
           error: error => {
             expect(error.message).toBe('Not authorized');
-            done();
+            resolve();
           },
         });
-      });
+      }));
 
-      it('should not fail if refresh fails after successful creation', done => {
+      it('should not fail if refresh fails after successful creation', () => new Promise<void>((resolve, reject) => {
         const createResponse: ApiResponse<Appointment> = {
           success: true,
           data: createdAppointment,
@@ -769,17 +772,17 @@ describe('AppointmentService', () => {
             // Give time for refresh to fail
             setTimeout(() => {
               expect(console.error).toHaveBeenCalled();
-              done();
+              resolve();
             }, 100);
           },
-          error: () => fail('should not error on successful creation even if refresh fails'),
+          error: () => reject(new Error('should not error on successful creation even if refresh fails')),
         });
-      });
+      }));
     });
   });
 
   describe('getQueueState()', () => {
-    it('should return queue state when successful', done => {
+    it('should return queue state when successful', () => new Promise<void>((resolve, reject) => {
       const response: ApiResponse<AppointmentQueueStateResponse> = {
         success: true,
         data: { state: 'PENDING' as AppointmentQueueState, position: 1 },
@@ -791,13 +794,13 @@ describe('AppointmentService', () => {
         next: state => {
           expect(state.state).toBe('PENDING');
           expect(state.position).toBe(1);
-          done();
+          resolve();
         },
-        error: () => fail('should not have errored'),
+        error: () => reject(new Error('should not have errored')),
       });
-    });
+    }));
 
-    it('should return NONE state on 404 error (ApiError format)', done => {
+    it('should return NONE state on 404 error (ApiError format)', () => new Promise<void>((resolve, reject) => {
       // Simulate ApiGatewayService error structure
       const errorResponse: ApiResponse<AppointmentQueueStateResponse> = {
         success: false,
@@ -815,13 +818,13 @@ describe('AppointmentService', () => {
       service.getQueueState().subscribe({
         next: state => {
           expect(state.state).toBe('NONE');
-          done();
+          resolve();
         },
         error: err => fail(`should not have errored, got: ${err}`),
       });
-    });
+    }));
 
-    it('should return NONE state on 404 status code in ApiError', done => {
+    it('should return NONE state on 404 status code in ApiError', () => new Promise<void>((resolve, reject) => {
       const errorResponse: ApiResponse<AppointmentQueueStateResponse> = {
         success: false,
         error: {
@@ -837,13 +840,13 @@ describe('AppointmentService', () => {
       service.getQueueState().subscribe({
         next: state => {
           expect(state.state).toBe('NONE');
-          done();
+          resolve();
         },
-        error: () => fail('should not have errored'),
+        error: () => reject(new Error('should not have errored')),
       });
-    });
+    }));
 
-    it('should throw error for other errors', done => {
+    it('should throw error for other errors', () => new Promise<void>((resolve, reject) => {
       const errorResponse: ApiResponse<AppointmentQueueStateResponse> = {
         success: false,
         error: {
@@ -857,26 +860,26 @@ describe('AppointmentService', () => {
       apiGateway.request.mockReturnValue(throwError(() => errorResponse));
 
       service.getQueueState().subscribe({
-        next: () => fail('should have errored'),
+        next: () => reject(new Error('should have errored')),
         error: error => {
           expect(error.message).toBe('Internal Error');
-          done();
+          resolve();
         },
       });
-    });
+    }));
   });
 
   describe('appointments$ Observable', () => {
-    it('should emit initial empty array', done => {
+    it('should emit initial empty array', () => new Promise<void>((resolve, reject) => {
       service.appointments$.subscribe({
         next: appointments => {
           expect(appointments).toEqual([]);
-          done();
+          resolve();
         },
       });
-    });
+    }));
 
-    it('should emit updated appointments after getAppointments', done => {
+    it('should emit updated appointments after getAppointments', () => new Promise<void>((resolve, reject) => {
       const response: ApiResponse<Appointment[]> = {
         success: true,
         data: mockAppointments,
@@ -890,14 +893,14 @@ describe('AppointmentService', () => {
         if (emissionCount === 2) {
           // Skip initial emission
           expect(appointments).toEqual(mockAppointments);
-          done();
+          resolve();
         }
       });
 
       service.getAppointments().subscribe();
-    });
+    }));
 
-    it('should allow multiple subscribers', done => {
+    it('should allow multiple subscribers', () => new Promise<void>((resolve, reject) => {
       const response: ApiResponse<Appointment[]> = {
         success: true,
         data: mockAppointments,
@@ -924,16 +927,16 @@ describe('AppointmentService', () => {
 
       function checkBothReceived() {
         if (subscriber1Received && subscriber2Received) {
-          done();
+          resolve();
         }
       }
 
       service.getAppointments().subscribe();
-    });
+    }));
   });
 
   describe('Edge Cases', () => {
-    it('should handle appointment with zero values', done => {
+    it('should handle appointment with zero values', () => new Promise<void>((resolve, reject) => {
       const zeroValueAppointment: Appointment = {
         ...mockAppointment1,
         glucose_objective: 0,
@@ -954,12 +957,12 @@ describe('AppointmentService', () => {
         next: appointments => {
           expect(appointments[0].dose).toBe(0);
           expect(appointments[0].glucose_objective).toBe(0);
-          done();
+          resolve();
         },
       });
-    });
+    }));
 
-    it('should handle appointment with empty motive array', done => {
+    it('should handle appointment with empty motive array', () => new Promise<void>((resolve, reject) => {
       const emptyMotiveAppointment: Appointment = {
         ...mockAppointment1,
         motive: [],
@@ -976,12 +979,12 @@ describe('AppointmentService', () => {
         next: appointments => {
           expect(appointments[0].motive).toEqual([]);
           expect(appointments[0].motive.length).toBe(0);
-          done();
+          resolve();
         },
       });
-    });
+    }));
 
-    it('should handle very large appointment list', done => {
+    it('should handle very large appointment list', () => new Promise<void>((resolve, reject) => {
       const largeList: Appointment[] = Array.from({ length: 1000 }, (_, i) => ({
         ...mockAppointment1,
         appointment_id: i + 1,
@@ -998,12 +1001,12 @@ describe('AppointmentService', () => {
         next: appointments => {
           expect(appointments.length).toBe(1000);
           expect(appointments[999].appointment_id).toBe(1000);
-          done();
+          resolve();
         },
       });
-    });
+    }));
 
-    it('should handle appointment with very long string fields', done => {
+    it('should handle appointment with very long string fields', () => new Promise<void>((resolve, reject) => {
       const longStringAppointment: Appointment = {
         ...mockAppointment1,
         control_data: 'A'.repeat(10000),
@@ -1022,14 +1025,14 @@ describe('AppointmentService', () => {
         next: appointments => {
           expect(appointments[0].control_data!.length).toBe(10000);
           expect(appointments[0].other_motive!.length).toBe(5000);
-          done();
+          resolve();
         },
       });
-    });
+    }));
   });
 
   describe('Concurrent Operations', () => {
-    it('should handle multiple simultaneous getAppointments calls', done => {
+    it('should handle multiple simultaneous getAppointments calls', () => new Promise<void>((resolve, reject) => {
       const response: ApiResponse<Appointment[]> = {
         success: true,
         data: mockAppointments,
@@ -1041,21 +1044,21 @@ describe('AppointmentService', () => {
 
       service.getAppointments().subscribe(() => {
         callsCompleted++;
-        if (callsCompleted === 3) done();
+        if (callsCompleted === 3) resolve();
       });
 
       service.getAppointments().subscribe(() => {
         callsCompleted++;
-        if (callsCompleted === 3) done();
+        if (callsCompleted === 3) resolve();
       });
 
       service.getAppointments().subscribe(() => {
         callsCompleted++;
-        if (callsCompleted === 3) done();
+        if (callsCompleted === 3) resolve();
       });
-    });
+    }));
 
-    it('should handle getAppointment and createAppointment concurrently', done => {
+    it('should handle getAppointment and createAppointment concurrently', () => new Promise<void>((resolve, reject) => {
       const getResponse: ApiResponse<Appointment[]> = {
         success: true,
         data: mockAppointments,
@@ -1078,7 +1081,7 @@ describe('AppointmentService', () => {
 
       service.getAppointments().subscribe(() => {
         getCompleted = true;
-        if (createCompleted) done();
+        if (createCompleted) resolve();
       });
 
       service
@@ -1096,8 +1099,8 @@ describe('AppointmentService', () => {
         })
         .subscribe(() => {
           createCompleted = true;
-          if (getCompleted) done();
+          if (getCompleted) resolve();
         });
-    });
+    }));
   });
 });

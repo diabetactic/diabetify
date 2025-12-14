@@ -111,6 +111,10 @@ export class ReadingsService implements OnDestroy {
     lastError?: string | null;
   }> | null = null;
 
+  // Fetch mutex to prevent concurrent fetch operations causing duplicates
+  private fetchInProgress = false;
+  private fetchPromise: Promise<{ fetched: number; merged: number }> | null = null;
+
   // Backend reading types: DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO
   // App now uses backend values directly (no mapping needed)
 
@@ -187,9 +191,16 @@ export class ReadingsService implements OnDestroy {
    * Auto-syncs when coming back online
    */
   private async initializeNetworkMonitoring(): Promise<void> {
+    // Helper to add timeout to network calls
+    const withTimeout = <T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> =>
+      Promise.race([
+        promise,
+        new Promise<T>(resolve => setTimeout(() => resolve(fallback), ms)),
+      ]);
+
     try {
-      // Get initial network status
-      const status = await Network.getStatus();
+      // Get initial network status with timeout (5s)
+      const status = await withTimeout(Network.getStatus(), 5000, { connected: true, connectionType: 'unknown' });
       this.isOnline = status.connected;
       this.logger?.info(
         'Network',
@@ -838,8 +849,15 @@ export class ReadingsService implements OnDestroy {
 
   /**
    * Fetch readings from Heroku backend and merge with local storage
+   * Uses mutex to prevent concurrent fetches causing duplicates
    */
   async fetchFromBackend(): Promise<{ fetched: number; merged: number }> {
+    // Mutex: Return existing promise if fetch already in progress
+    if (this.fetchInProgress && this.fetchPromise) {
+      this.logger?.debug('Sync', 'Fetch already in progress, returning existing promise');
+      return this.fetchPromise;
+    }
+
     // Skip in mock mode
     if (this.isMockBackend) {
       this.logger?.debug('Sync', 'Skipping fetch in mock mode');
@@ -854,6 +872,27 @@ export class ReadingsService implements OnDestroy {
 
     if (!this.apiGateway) {
       this.logger?.warn('Sync', 'ApiGatewayService not available, skipping fetch');
+      return { fetched: 0, merged: 0 };
+    }
+
+    // Set mutex and create promise
+    this.fetchInProgress = true;
+    this.fetchPromise = this._doFetchFromBackend();
+
+    try {
+      return await this.fetchPromise;
+    } finally {
+      this.fetchInProgress = false;
+      this.fetchPromise = null;
+    }
+  }
+
+  /**
+   * Internal fetch implementation (called by mutex-protected fetchFromBackend)
+   */
+  private async _doFetchFromBackend(): Promise<{ fetched: number; merged: number }> {
+    // apiGateway is already checked in fetchFromBackend, but TypeScript needs the assertion
+    if (!this.apiGateway) {
       return { fetched: 0, merged: 0 };
     }
 
@@ -885,7 +924,7 @@ export class ReadingsService implements OnDestroy {
           // This prevents duplicates when sync hasn't completed yet (timezone race condition)
           const backendValue = backendReading.glucose_level;
           const backendTime = this.parseBackendTimestamp(backendReading.created_at);
-          const FOUR_HOURS_MS = 4 * 60 * 60 * 1000; // Tolerance for timezone differences
+          const THIRTY_MINUTES_MS = 30 * 60 * 1000; // Tolerance for minor timezone drift
 
           const existingByValueTime = await this.db.readings
             .filter(r => {
@@ -896,7 +935,7 @@ export class ReadingsService implements OnDestroy {
               // Must be within time tolerance window
               const localTime = new Date(r.time).getTime();
               const timeDiff = Math.abs(localTime - backendTime);
-              return timeDiff <= FOUR_HOURS_MS;
+              return timeDiff <= THIRTY_MINUTES_MS;
             })
             .toArray();
 
@@ -998,7 +1037,7 @@ export class ReadingsService implements OnDestroy {
           // This prevents duplicates when sync hasn't completed yet (timezone race condition)
           const backendValue = backendReading.glucose_level;
           const backendTime = this.parseBackendTimestamp(backendReading.created_at);
-          const FOUR_HOURS_MS = 4 * 60 * 60 * 1000; // Tolerance for timezone differences
+          const THIRTY_MINUTES_MS = 30 * 60 * 1000; // Tolerance for minor timezone drift
 
           const existingByValueTime = await this.db.readings
             .filter(r => {
@@ -1009,7 +1048,7 @@ export class ReadingsService implements OnDestroy {
               // Must be within time tolerance window
               const localTime = new Date(r.time).getTime();
               const timeDiff = Math.abs(localTime - backendTime);
-              return timeDiff <= FOUR_HOURS_MS;
+              return timeDiff <= THIRTY_MINUTES_MS;
             })
             .toArray();
 
@@ -1093,18 +1132,18 @@ export class ReadingsService implements OnDestroy {
   private parseBackendTimestamp(createdAt: string): number {
     const [datePart, timePart] = createdAt.split(' ');
     const [day, month, year] = datePart.split('/');
-    // Parse as local time (backend returns Argentina time)
-    return new Date(`${year}-${month}-${day}T${timePart}`).getTime();
+    // BUG FIX: Add -03:00 timezone suffix to parse as Argentina time (UTC-3)
+    return new Date(`${year}-${month}-${day}T${timePart}-03:00`).getTime();
   }
 
   /**
    * Map backend reading to local format
    */
   private mapBackendToLocal(backend: BackendGlucoseReading): LocalGlucoseReading {
-    // Parse backend date format "DD/MM/YYYY HH:mm:ss"
+    // Parse backend date format "DD/MM/YYYY HH:mm:ss" with Argentina timezone (UTC-3)
     const [datePart, timePart] = backend.created_at.split(' ');
     const [day, month, year] = datePart.split('/');
-    const isoDate = new Date(`${year}-${month}-${day}T${timePart}`).toISOString();
+    const isoDate = new Date(`${year}-${month}-${day}T${timePart}-03:00`).toISOString();
 
     const localReading: LocalGlucoseReading = {
       id: `backend_${backend.id}`,

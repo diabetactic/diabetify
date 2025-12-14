@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+www/
+dist/
+.angular/
+
+# IDE and editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Docker
+docker/
+Dockerfile*
+
+# Mobile builds
+android/app/build/
+android/.gradle/
+ios/App/build/
+ios/Pods/
+
+# Test artifacts
+coverage/
+playwright-report/
+playwright/artifacts/
+junit.xml
+test-results/
+
+# Environment
+.env
+.env.*
+*.local
+
+# Misc
+*.log
+*.tmp
+.DS_Store
+Thumbs.db

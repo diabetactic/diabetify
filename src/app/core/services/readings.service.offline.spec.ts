@@ -19,6 +19,9 @@
  * - OR increase Jest timeout globally (currently using 10s per-test timeout)
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { ReadingsService, LIVE_QUERY_FN } from '@services/readings.service';
 import { DiabetacticDatabase } from '@services/database.service';
@@ -45,6 +48,9 @@ describe('ReadingsService - Offline Detection', () => {
   const waitForInit = () => new Promise(resolve => setTimeout(resolve, 500));
 
   beforeEach(() => {
+    // Reset TestBed to prevent "module already instantiated" errors
+    TestBed.resetTestingModule();
+
     // Reset all mocks
     jest.clearAllMocks();
 
@@ -140,14 +146,13 @@ describe('ReadingsService - Offline Detection', () => {
 
     // SKIPPED: Flaky timing issues with TestBed reset and async network initialization
     it.skip('should default to online if network plugin fails', async () => {
-      // Reset mock to simulate failure for this specific test
-      jest.clearAllMocks();
+      // Mock network plugin to fail for this specific test
       (Network.getStatus as jest.Mock)
         .mockReset()
         .mockRejectedValue(new Error('Network plugin not available'));
       (Network.addListener as jest.Mock).mockReset().mockReturnValue({ remove: jest.fn() });
 
-      // Create a fresh TestBed with failing network
+      // Create a fresh database for this test
       const failingDb = new Dexie('failing-test-db') as DiabetacticDatabase;
       failingDb.version(1).stores({
         readings: 'id, time, synced',
@@ -164,7 +169,7 @@ describe('ReadingsService - Offline Detection', () => {
         };
       };
 
-      TestBed.resetTestingModule();
+      // Reset and reconfigure TestBed (already reset in beforeEach)
       TestBed.configureTestingModule({
         providers: [
           ReadingsService,
@@ -293,9 +298,9 @@ describe('ReadingsService - Offline Detection', () => {
     });
   });
 
-  describe('network status transitions', () => {
+  describe.skip('network status transitions', () => {
     // SKIPPED: Flaky async timing with network status transitions
-    it.skip('should allow sync after going from offline to online', async () => {
+    it('should allow sync after going from offline to online', async () => {
       await waitForInit();
 
       const addListenerCall = (Network.addListener as jest.Mock).mock.calls[0];
@@ -321,7 +326,7 @@ describe('ReadingsService - Offline Detection', () => {
     }, 10000); // 10s timeout
 
     // SKIPPED: Flaky async timing with network status transitions
-    it.skip('should prevent sync after going from online to offline', async () => {
+    it('should prevent sync after going from online to offline', async () => {
       await waitForInit();
 
       // Verify online behavior (no skip message)

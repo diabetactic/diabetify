@@ -2,6 +2,9 @@
  * Tests for local timezone date grouping in ReadingsPage
  */
 
+// Initialize TestBed environment for Vitest
+import '../../test-setup';
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';

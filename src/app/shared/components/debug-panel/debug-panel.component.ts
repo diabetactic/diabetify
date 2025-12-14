@@ -170,9 +170,16 @@ export class DebugPanelComponent implements OnInit, OnDestroy {
   }
 
   async loadDebugInfo() {
-    // Get device info
-    const deviceInfo = await Device.getInfo();
-    const networkStatus = await Network.getStatus();
+    // Helper to add timeout to plugin calls
+    const withTimeout = <T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> =>
+      Promise.race([
+        promise,
+        new Promise<T>(resolve => setTimeout(() => resolve(fallback), ms)),
+      ]);
+
+    // Get device info and network status with timeouts
+    const deviceInfo = await withTimeout(Device.getInfo(), 5000, { model: 'Unknown', osVersion: 'Unknown' } as any);
+    const networkStatus = await withTimeout(Network.getStatus(), 5000, { connected: true, connectionType: 'unknown' });
 
     this.debugInfo = {
       platform: Capacitor.getPlatform(),

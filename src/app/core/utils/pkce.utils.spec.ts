@@ -3,6 +3,9 @@
  * Tests RFC 7636 implementation for OAuth2 PKCE
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import {
   generateRandomString,
   generateState,

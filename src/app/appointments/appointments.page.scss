@@ -42,6 +42,41 @@
   }
 }
 
+// Dark mode queue card enhancements
+:host-context(.dark),
+:host-context(.ion-palette-dark),
+:host-context([data-theme='dark']) {
+  .queue-card {
+    // Enhanced visibility with elevated background and stronger border
+    background: rgb(15 23 42 / 80%) !important;
+    border: 1px solid rgb(71 85 105 / 60%);
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 30%),
+      0 2px 4px -1px rgb(0 0 0 / 18%);
+
+    // Preserve state-based left borders with brighter colors in dark mode
+    &[data-queue-state='PENDING'] {
+      border-left-color: var(--ion-color-warning-shade);
+      --background: rgba(var(--ion-color-warning-rgb), 0.12);
+    }
+
+    &[data-queue-state='ACCEPTED'] {
+      border-left-color: var(--ion-color-success-shade);
+      --background: rgba(var(--ion-color-success-rgb), 0.12);
+    }
+
+    &[data-queue-state='DENIED'] {
+      border-left-color: var(--ion-color-danger-shade);
+      --background: rgba(var(--ion-color-danger-rgb), 0.12);
+    }
+
+    &[data-queue-state='CREATED'] {
+      border-left-color: var(--ion-color-primary-shade);
+      --background: rgba(var(--ion-color-primary-rgb), 0.12);
+    }
+  }
+}
+
 h2.section-title {
   display: inline-flex;
   align-items: center;

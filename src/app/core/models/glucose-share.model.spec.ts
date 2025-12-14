@@ -3,6 +3,9 @@
  * Tests interfaces and type definitions for sharing functionality
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import {
   GlucoseReadingSummary,
   GlucoseShareRequest,

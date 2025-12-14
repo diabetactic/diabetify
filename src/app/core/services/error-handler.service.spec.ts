@@ -8,9 +8,13 @@
  * - User message sanitization
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ErrorHandlerService, AppError, ErrorCategory } from '@services/error-handler.service';
+import { firstValueFrom } from 'rxjs';
 
 describe('ErrorHandlerService', () => {
   let service: ErrorHandlerService;
@@ -27,41 +31,43 @@ describe('ErrorHandlerService', () => {
   });
 
   describe('handleError', () => {
-    it('should return Observable that throws AppError', done => {
+    it('should return Observable that throws AppError', async () => {
       const httpError = new HttpErrorResponse({
         status: 500,
         statusText: 'Internal Server Error',
         url: '/api/test',
       });
 
-      service.handleError(httpError).subscribe({
-        error: (error: AppError) => {
-          expect(error.message).toBe('Server error. Please try again later.');
-          expect(error.code).toBe('INTERNAL_SERVER_ERROR');
-          expect(error.statusCode).toBe(500);
-          expect(error.timestamp).toBeDefined();
-          done();
-        },
-      });
+      try {
+        await firstValueFrom(service.handleError(httpError));
+        fail('Expected error to be thrown');
+      } catch (error) {
+        const appError = error as AppError;
+        expect(appError.message).toBe('Server error. Please try again later.');
+        expect(appError.code).toBe('INTERNAL_SERVER_ERROR');
+        expect(appError.statusCode).toBe(500);
+        expect(appError.timestamp).toBeDefined();
+      }
     });
 
-    it('should handle network errors (status 0)', done => {
+    it('should handle network errors (status 0)', async () => {
       const httpError = new HttpErrorResponse({
         status: 0,
         statusText: 'Unknown Error',
         url: '/api/test',
       });
 
-      service.handleError(httpError).subscribe({
-        error: (error: AppError) => {
-          expect(error.code).toBe('CONNECTION_ERROR');
-          expect(error.message).toContain('Unable to connect');
-          done();
-        },
-      });
+      try {
+        await firstValueFrom(service.handleError(httpError));
+        fail('Expected error to be thrown');
+      } catch (error) {
+        const appError = error as AppError;
+        expect(appError.code).toBe('CONNECTION_ERROR');
+        expect(appError.message).toContain('Unable to connect');
+      }
     });
 
-    it('should handle client-side ErrorEvent', done => {
+    it('should handle client-side ErrorEvent', async () => {
       const errorEvent = new ErrorEvent('NetworkError', {
         message: 'Failed to fetch',
       });
@@ -71,13 +77,14 @@ describe('ErrorHandlerService', () => {
         statusText: 'Unknown Error',
       });
 
-      service.handleError(httpError).subscribe({
-        error: (error: AppError) => {
-          expect(error.code).toBe('NETWORK_ERROR');
-          expect(error.message).toContain('Network error');
-          done();
-        },
-      });
+      try {
+        await firstValueFrom(service.handleError(httpError));
+        fail('Expected error to be thrown');
+      } catch (error) {
+        const appError = error as AppError;
+        expect(appError.code).toBe('NETWORK_ERROR');
+        expect(appError.message).toContain('Network error');
+      }
     });
   });
 
@@ -98,84 +105,89 @@ describe('ErrorHandlerService', () => {
     ];
 
     testCases.forEach(({ status, expectedCode, expectedMessage }) => {
-      it(`should handle HTTP ${status} with code ${expectedCode}`, done => {
+      it(`should handle HTTP ${status} with code ${expectedCode}`, async () => {
         const httpError = new HttpErrorResponse({
           status,
           statusText: 'Error',
           url: '/api/test',
         });
 
-        service.handleError(httpError).subscribe({
-          error: (error: AppError) => {
-            expect(error.code).toBe(expectedCode);
-            expect(error.message.toLowerCase()).toContain(expectedMessage.toLowerCase());
-            expect(error.statusCode).toBe(status);
-            done();
-          },
-        });
+        try {
+          await firstValueFrom(service.handleError(httpError));
+          fail('Expected error to be thrown');
+        } catch (error) {
+          const appError = error as AppError;
+          expect(appError.code).toBe(expectedCode);
+          expect(appError.message.toLowerCase()).toContain(expectedMessage.toLowerCase());
+          expect(appError.statusCode).toBe(status);
+        }
       });
     });
   });
 
   describe('Server Message Extraction', () => {
-    it('should extract message from error.message field', done => {
+    it('should extract message from error.message field', async () => {
       const httpError = new HttpErrorResponse({
         status: 400,
         error: { message: 'Custom server error message' },
         url: '/api/test',
       });
 
-      service.handleError(httpError).subscribe({
-        error: (error: AppError) => {
-          expect(error.message).toBe('Custom server error message');
-          done();
-        },
-      });
+      try {
+        await firstValueFrom(service.handleError(httpError));
+        fail('Expected error to be thrown');
+      } catch (error) {
+        const appError = error as AppError;
+        expect(appError.message).toBe('Custom server error message');
+      }
     });
 
-    it('should extract message from error.error string field', done => {
+    it('should extract message from error.error string field', async () => {
       const httpError = new HttpErrorResponse({
         status: 400,
         error: { error: 'Nested error message' },
         url: '/api/test',
       });
 
-      service.handleError(httpError).subscribe({
-        error: (error: AppError) => {
-          expect(error.message).toBe('Nested error message');
-          done();
-        },
-      });
+      try {
+        await firstValueFrom(service.handleError(httpError));
+        fail('Expected error to be thrown');
+      } catch (error) {
+        const appError = error as AppError;
+        expect(appError.message).toBe('Nested error message');
+      }
     });
 
-    it('should extract first message from error.errors array', done => {
+    it('should extract first message from error.errors array', async () => {
       const httpError = new HttpErrorResponse({
         status: 422,
         error: { errors: [{ message: 'Field validation failed' }] },
         url: '/api/test',
       });
 
-      service.handleError(httpError).subscribe({
-        error: (error: AppError) => {
-          expect(error.message).toBe('Field validation failed');
-          done();
-        },
-      });
+      try {
+        await firstValueFrom(service.handleError(httpError));
+        fail('Expected error to be thrown');
+      } catch (error) {
+        const appError = error as AppError;
+        expect(appError.message).toBe('Field validation failed');
+      }
     });
 
-    it('should handle string error body', done => {
+    it('should handle string error body', async () => {
       const httpError = new HttpErrorResponse({
         status: 400,
         error: 'Plain text error message',
         url: '/api/test',
       });
 
-      service.handleError(httpError).subscribe({
-        error: (error: AppError) => {
-          expect(error.message).toBe('Plain text error message');
-          done();
-        },
-      });
+      try {
+        await firstValueFrom(service.handleError(httpError));
+        fail('Expected error to be thrown');
+      } catch (error) {
+        const appError = error as AppError;
+        expect(appError.message).toBe('Plain text error message');
+      }
     });
   });
 
@@ -528,7 +540,7 @@ describe('ErrorHandlerService', () => {
       expect(items[1]['id']).toBe(2);
     });
 
-    it('should not expose glucose values in error logging', done => {
+    it('should not expose glucose values in error logging', async () => {
       // This test verifies that PHI is not logged
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
@@ -541,80 +553,84 @@ describe('ErrorHandlerService', () => {
         url: '/api/glucose',
       });
 
-      service.handleError(httpError).subscribe({
-        error: () => {
-          // If logging is enabled, verify PHI is redacted
-          if (consoleSpy.mock.calls.length > 0) {
-            const loggedData = JSON.stringify(consoleSpy.mock.calls[0]);
-            expect(loggedData).not.toContain('145');
-            expect(loggedData).toContain('[REDACTED]');
-          }
-          consoleSpy.mockRestore();
-          done();
-        },
-      });
+      try {
+        await firstValueFrom(service.handleError(httpError));
+        fail('Expected error to be thrown');
+      } catch {
+        // If logging is enabled, verify PHI is redacted
+        if (consoleSpy.mock.calls.length > 0) {
+          const loggedData = JSON.stringify(consoleSpy.mock.calls[0]);
+          expect(loggedData).not.toContain('145');
+          expect(loggedData).toContain('[REDACTED]');
+        }
+        consoleSpy.mockRestore();
+      }
     });
   });
 
   describe('Edge Cases', () => {
-    it('should handle unknown status codes', done => {
+    it('should handle unknown status codes', async () => {
       const httpError = new HttpErrorResponse({
         status: 418, // I'm a teapot
         statusText: "I'm a teapot",
         url: '/api/test',
       });
 
-      service.handleError(httpError).subscribe({
-        error: (error: AppError) => {
-          expect(error.code).toBe('UNKNOWN_ERROR');
-          expect(error.statusCode).toBe(418);
-          done();
-        },
-      });
+      try {
+        await firstValueFrom(service.handleError(httpError));
+        fail('Expected error to be thrown');
+      } catch (error) {
+        const appError = error as AppError;
+        expect(appError.code).toBe('UNKNOWN_ERROR');
+        expect(appError.statusCode).toBe(418);
+      }
     });
 
-    it('should handle null error body', done => {
+    it('should handle null error body', async () => {
       const httpError = new HttpErrorResponse({
         status: 500,
         error: null,
         url: '/api/test',
       });
 
-      service.handleError(httpError).subscribe({
-        error: (error: AppError) => {
-          expect(error.message).toBe('Server error. Please try again later.');
-          done();
-        },
-      });
+      try {
+        await firstValueFrom(service.handleError(httpError));
+        fail('Expected error to be thrown');
+      } catch (error) {
+        const appError = error as AppError;
+        expect(appError.message).toBe('Server error. Please try again later.');
+      }
     });
 
-    it('should handle empty error object', done => {
+    it('should handle empty error object', async () => {
       const httpError = new HttpErrorResponse({
         status: 400,
         error: {},
         url: '/api/test',
       });
 
-      service.handleError(httpError).subscribe({
-        error: (error: AppError) => {
-          expect(error.message).toBe('Invalid request. Please check your input.');
-          done();
-        },
-      });
+      try {
+        await firstValueFrom(service.handleError(httpError));
+        fail('Expected error to be thrown');
+      } catch (error) {
+        const appError = error as AppError;
+        expect(appError.message).toBe('Invalid request. Please check your input.');
+      }
     });
 
-    it('should include timestamp in ISO format', done => {
+    it('should include timestamp in ISO format', async () => {
       const httpError = new HttpErrorResponse({
         status: 500,
         url: '/api/test',
       });
 
-      service.handleError(httpError).subscribe({
-        error: (error: AppError) => {
-          expect(error.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
-          done();
-        },
-      });
+      try {
+        await firstValueFrom(service.handleError(httpError));
+        fail('Expected error to be thrown');
+      } catch (error) {
+        const appError = error as AppError;
+        expect(appError.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+      }
     });
   });
 });

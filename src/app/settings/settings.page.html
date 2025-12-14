@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/dashboard"></ion-back-button>
     </ion-buttons>
@@ -126,7 +126,7 @@
           [(ngModel)]="preferences.theme"
           (ionChange)="onThemeChange($event)"
           interface="popover"
-          class="max-w-[50%]"
+          class="max-w-[70%]"
         >
           <ion-select-option value="light">
             {{ 'settings.appearance.themeLight' | translate }}
@@ -146,7 +146,7 @@
           [(ngModel)]="preferences.language"
           (ionChange)="onLanguageChange($event)"
           interface="popover"
-          class="max-w-[50%]"
+          class="max-w-[70%]"
         >
           <ion-select-option value="es">
             {{ 'settings.language.es' | translate }}

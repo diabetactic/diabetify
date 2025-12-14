@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { SecureStorage } from '@aparajita/capacitor-secure-storage';
 

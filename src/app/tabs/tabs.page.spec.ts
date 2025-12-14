@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../test-setup';
+
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';

@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';

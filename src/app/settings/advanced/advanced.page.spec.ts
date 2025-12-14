@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AdvancedPage } from './advanced.page';
 import { UnifiedAuthService } from '@core/services/unified-auth.service';

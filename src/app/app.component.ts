@@ -98,12 +98,21 @@ export class AppComponent implements OnInit, OnDestroy {
 
     if (this.platform.is('capacitor')) {
       try {
-        await StatusBar.setStyle({ style: Style.Default });
-        await SplashScreen.hide();
+        await this.withTimeout(StatusBar.setStyle({ style: Style.Default }), 5000);
+        await this.withTimeout(SplashScreen.hide(), 5000);
         this.logger.info('Init', 'Native plugins initialized successfully');
       } catch (err) {
-        this.logger.error('Init', 'Error initializing native plugins', err);
+        this.logger.error('Init', 'Native plugin timeout or error', err);
       }
     }
+  }
+
+  private withTimeout<T>(promise: Promise<T>, ms: number, fallback?: T): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<T>((resolve, reject) =>
+        setTimeout(() => fallback !== undefined ? resolve(fallback) : reject(new Error('Timeout')), ms)
+      )
+    ]);
   }
 }

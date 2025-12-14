@@ -409,7 +409,23 @@
     "analysisTitle": "Trend Analysis",
     "comingSoon": "Coming Soon",
     "inDevelopment": "Feature in development",
-    "seeStatsIn": "See statistics in"
+    "seeStatsIn": "See statistics in",
+    "period": {
+      "week": "Week",
+      "month": "Month",
+      "all": "All Time"
+    },
+    "estimatedA1c": "Est. A1C",
+    "averageGlucose": "Average",
+    "timeInRange": "Time in Range",
+    "inRange": "In Range",
+    "aboveRange": "Above Range",
+    "belowRange": "Below Range",
+    "totalReadings": "Total Readings",
+    "standardDeviation": "Std Dev",
+    "cv": "CV%",
+    "noData": "No Data Available",
+    "noDataMessage": "Add glucose readings to see your trends and statistics"
   },
   "addReading": {
     "title": "Add Reading",

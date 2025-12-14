@@ -3,6 +3,9 @@
  * Tests configuration interfaces and preset configurations
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import {
   MockAdapterConfig,
   DEFAULT_MOCK_ADAPTER_CONFIG,

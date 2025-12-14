@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import {
   ActivatedRouteSnapshot,
@@ -52,7 +55,7 @@ describe('OnboardingGuard', () => {
       { url: '/tabs/dashboard' } as RouterStateSnapshot
     );
 
-    expect(result).toBeTrue();
+    expect(result).toBe(true);
     expect(router.createUrlTree).not.toHaveBeenCalled();
   });
 

@@ -1,0 +1,108 @@
+# =============================================================================
+# Slim Playwright E2E Dockerfile (Chromium Only)
+# =============================================================================
+# ~800MB instead of 2.4GB - only installs Chromium browser
+#
+# Build: docker build -f docker/Dockerfile.e2e-slim -t diabetactic:e2e-slim .
+# Run:   docker run --rm diabetactic:e2e-slim npx playwright test
+# =============================================================================
+
+# syntax=docker/dockerfile:1.4
+
+# ============================================================================
+# Stage 1: Build Angular Application
+# ============================================================================
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files first (better layer caching)
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies with cache mount for faster rebuilds
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+
+# Copy source code
+COPY . .
+
+# Build Angular app with mock configuration
+RUN pnpm run build:mock
+
+# ============================================================================
+# Stage 2: Slim Playwright Runner (Chromium Only)
+# ============================================================================
+FROM node:20-slim AS runner
+
+# Install dependencies for Chromium
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Chromium dependencies
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libdbus-1-3 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    libpango-1.0-0 \
+    libcairo2 \
+    libatspi2.0-0 \
+    libxshmfence1 \
+    # Fonts
+    fonts-liberation \
+    fonts-noto-color-emoji \
+    # Utils
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /e2e
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies (without scripts to skip lefthook)
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+
+# Install only Chromium browser
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN npx playwright install chromium
+
+# Copy Playwright config and tests
+COPY playwright.config.ts ./
+COPY playwright/ ./playwright/
+
+# Copy built Angular app from builder
+COPY --from=builder /app/www ./www
+
+# Create directories for test artifacts
+RUN mkdir -p playwright/artifacts playwright-report
+
+# Environment variables
+ENV E2E_HOST=localhost \
+    E2E_PORT=4200 \
+    E2E_BASE_URL=http://localhost:4200 \
+    CI=true
+
+# Expose port
+EXPOSE 4200
+
+# Health check
+HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=5 \
+    CMD curl -f http://localhost:4200 || exit 1
+
+# Default command
+CMD ["npx", "playwright", "test", "--project=chromium"]

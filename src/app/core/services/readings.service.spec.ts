@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { ReadingsService, LIVE_QUERY_FN } from '@services/readings.service';
 import { DiabetacticDatabase } from '@services/database.service';

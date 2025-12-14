@@ -1,6 +1,9 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 
 import { AuthGuard } from './auth.guard';
 import {
@@ -82,7 +85,7 @@ describe('AuthGuard', () => {
   });
 
   describe('Tidepool Authentication', () => {
-    it('should allow access when user is authenticated via Tidepool', done => {
+    it('should allow access when user is authenticated via Tidepool', async () => {
       // Arrange
       tidepoolAuthStateSubject.next({
         isAuthenticated: true,
@@ -99,25 +102,14 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = guard.canActivate(route, state);
+      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
 
       // Assert
-      if (result instanceof Promise) {
-        result.then(canActivate => {
-          expect(canActivate).toBeTrue();
-          expect(router.createUrlTree).not.toHaveBeenCalled();
-          done();
-        });
-      } else if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBeTrue();
-          expect(router.createUrlTree).not.toHaveBeenCalled();
-          done();
-        });
-      }
+      expect(result).toBe(true);
+      expect(router.createUrlTree).not.toHaveBeenCalled();
     });
 
-    it('should not check local auth when Tidepool auth is active', done => {
+    it('should not check local auth when Tidepool auth is active', async () => {
       // Arrange
       tidepoolAuthStateSubject.next({
         isAuthenticated: true,
@@ -134,17 +126,12 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = guard.canActivate(route, state);
+      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
 
       // Assert
-      if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBeTrue();
-          // Local auth state subject should not be consumed
-          expect(localAuthStateSubject.observers.length).toBe(0);
-          done();
-        });
-      }
+      expect(result).toBe(true);
+      // Local auth state subject should not be consumed
+      expect(localAuthStateSubject.observers.length).toBe(0);
     });
   });
 
@@ -163,7 +150,7 @@ describe('AuthGuard', () => {
       });
     });
 
-    it('should redirect to login when user is not authenticated', done => {
+    it('should redirect to login when user is not authenticated', async () => {
       // Arrange
       localAuthStateSubject.next({
         isAuthenticated: false,
@@ -177,21 +164,16 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = guard.canActivate(route, state);
+      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
 
       // Assert
-      if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBe(urlTree);
-          expect(router.createUrlTree).toHaveBeenCalledWith(['/tabs'], {
-            queryParams: { returnUrl: '/dashboard' },
-          });
-          done();
-        });
-      }
+      expect(result).toBe(urlTree);
+      expect(router.createUrlTree).toHaveBeenCalledWith(['/welcome'], {
+        queryParams: { returnUrl: '/dashboard' },
+      });
     });
 
-    it('should preserve returnUrl in redirect query params', done => {
+    it('should preserve returnUrl in redirect query params', async () => {
       // Arrange
       localAuthStateSubject.next({
         isAuthenticated: false,
@@ -205,17 +187,12 @@ describe('AuthGuard', () => {
       const state = { url: '/profile/settings' } as RouterStateSnapshot;
 
       // Act
-      const result = guard.canActivate(route, state);
+      await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
 
       // Assert
-      if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(() => {
-          expect(router.createUrlTree).toHaveBeenCalledWith(['/tabs'], {
-            queryParams: { returnUrl: '/profile/settings' },
-          });
-          done();
-        });
-      }
+      expect(router.createUrlTree).toHaveBeenCalledWith(['/welcome'], {
+        queryParams: { returnUrl: '/profile/settings' },
+      });
     });
   });
 
@@ -234,7 +211,7 @@ describe('AuthGuard', () => {
       });
     });
 
-    it('should allow access for ACTIVE accounts', done => {
+    it('should allow access for ACTIVE accounts', async () => {
       // Arrange
       localAuthStateSubject.next({
         isAuthenticated: true,
@@ -253,19 +230,14 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = guard.canActivate(route, state);
+      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
 
       // Assert
-      if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBeTrue();
-          expect(router.createUrlTree).not.toHaveBeenCalled();
-          done();
-        });
-      }
+      expect(result).toBe(true);
+      expect(router.createUrlTree).not.toHaveBeenCalled();
     });
 
-    it('should redirect PENDING accounts to account-pending page', done => {
+    it('should redirect PENDING accounts to account-pending page', async () => {
       // Arrange
       localAuthStateSubject.next({
         isAuthenticated: true,
@@ -284,20 +256,15 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = guard.canActivate(route, state);
+      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
 
       // Assert
-      if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBe(urlTree);
-          expect(router.createUrlTree).toHaveBeenCalledWith(['/account-pending']);
-          expect(localAuthService.logout).not.toHaveBeenCalled();
-          done();
-        });
-      }
+      expect(result).toBe(urlTree);
+      expect(router.createUrlTree).toHaveBeenCalledWith(['/account-pending']);
+      expect(localAuthService.logout).not.toHaveBeenCalled();
     });
 
-    it('should logout and redirect DISABLED accounts to welcome page', done => {
+    it('should logout and redirect DISABLED accounts to welcome page', async () => {
       // Arrange
       localAuthStateSubject.next({
         isAuthenticated: true,
@@ -316,20 +283,15 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = guard.canActivate(route, state);
+      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
 
       // Assert
-      if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBe(urlTree);
-          expect(localAuthService.logout).toHaveBeenCalled();
-          expect(router.createUrlTree).toHaveBeenCalledWith(['/welcome']);
-          done();
-        });
-      }
+      expect(result).toBe(urlTree);
+      expect(localAuthService.logout).toHaveBeenCalled();
+      expect(router.createUrlTree).toHaveBeenCalledWith(['/welcome']);
     });
 
-    it('should allow access when accountState is missing (backwards compatibility)', done => {
+    it('should allow access when accountState is missing (backwards compatibility)', async () => {
       // Arrange
       localAuthStateSubject.next({
         isAuthenticated: true,
@@ -347,19 +309,14 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = guard.canActivate(route, state);
+      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
 
       // Assert
-      if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBeTrue();
-          expect(router.createUrlTree).not.toHaveBeenCalled();
-          done();
-        });
-      }
+      expect(result).toBe(true);
+      expect(router.createUrlTree).not.toHaveBeenCalled();
     });
 
-    it('should allow access when user has no preferences object', done => {
+    it('should allow access when user has no preferences object', async () => {
       // Arrange
       localAuthStateSubject.next({
         isAuthenticated: true,
@@ -377,20 +334,15 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = guard.canActivate(route, state);
+      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
 
       // Assert
-      if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBeTrue();
-          done();
-        });
-      }
+      expect(result).toBe(true);
     });
   });
 
   describe('Edge Cases', () => {
-    it('should handle both auth services being unauthenticated', done => {
+    it('should handle both auth services being unauthenticated', async () => {
       // Arrange
       tidepoolAuthStateSubject.next({
         isAuthenticated: false,
@@ -415,21 +367,16 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = guard.canActivate(route, state);
+      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
 
       // Assert
-      if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          expect(canActivate).toBe(urlTree);
-          expect(router.createUrlTree).toHaveBeenCalledWith(['/tabs'], {
-            queryParams: { returnUrl: '/dashboard' },
-          });
-          done();
-        });
-      }
+      expect(result).toBe(urlTree);
+      expect(router.createUrlTree).toHaveBeenCalledWith(['/welcome'], {
+        queryParams: { returnUrl: '/dashboard' },
+      });
     });
 
-    it('should handle null user in local auth state', done => {
+    it('should handle null user in local auth state', async () => {
       // Arrange
       tidepoolAuthStateSubject.next({
         isAuthenticated: false,
@@ -454,19 +401,14 @@ describe('AuthGuard', () => {
       const state = { url: '/dashboard' } as RouterStateSnapshot;
 
       // Act
-      const result = guard.canActivate(route, state);
+      const result = await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
 
       // Assert
-      if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(canActivate => {
-          // Should allow access since no accountState to check
-          expect(canActivate).toBeTrue();
-          done();
-        });
-      }
+      // Should allow access since no accountState to check
+      expect(result).toBe(true);
     });
 
-    it('should handle empty returnUrl', done => {
+    it('should handle empty returnUrl', async () => {
       // Arrange
       tidepoolAuthStateSubject.next({
         isAuthenticated: false,
@@ -491,22 +433,17 @@ describe('AuthGuard', () => {
       const state = { url: '' } as RouterStateSnapshot;
 
       // Act
-      const result = guard.canActivate(route, state);
+      await firstValueFrom(guard.canActivate(route, state) as Observable<boolean | UrlTree>);
 
       // Assert
-      if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(() => {
-          expect(router.createUrlTree).toHaveBeenCalledWith(['/tabs'], {
-            queryParams: { returnUrl: '' },
-          });
-          done();
-        });
-      }
+      expect(router.createUrlTree).toHaveBeenCalledWith(['/welcome'], {
+        queryParams: { returnUrl: '' },
+      });
     });
   });
 
   describe('Observable Behavior', () => {
-    it('should complete after taking first value from auth states', done => {
+    it('should complete after taking first value from auth states', async () => {
       // Arrange
       tidepoolAuthStateSubject.next({
         isAuthenticated: true,
@@ -526,24 +463,28 @@ describe('AuthGuard', () => {
       let subscriptionCompleted = false;
 
       // Act
-      const result = guard.canActivate(route, state);
+      const result$ = guard.canActivate(route, state) as Observable<boolean | UrlTree>;
 
-      // Assert
-      if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe({
+      // Subscribe with complete callback
+      const promise = new Promise<void>((resolve) => {
+        result$.subscribe({
           next: () => {
             // Should receive value
           },
           complete: () => {
             subscriptionCompleted = true;
-            expect(subscriptionCompleted).toBeTrue();
-            done();
+            resolve();
           },
         });
-      }
+      });
+
+      await promise;
+
+      // Assert
+      expect(subscriptionCompleted).toBe(true);
     });
 
-    it('should not react to subsequent auth state changes', done => {
+    it('should not react to subsequent auth state changes', async () => {
       // Arrange
       tidepoolAuthStateSubject.next({
         isAuthenticated: false,
@@ -574,11 +515,11 @@ describe('AuthGuard', () => {
       let callCount = 0;
 
       // Act
-      const result = guard.canActivate(route, state);
+      const result$ = guard.canActivate(route, state) as Observable<boolean | UrlTree>;
 
-      // Assert
-      if (typeof result === 'object' && 'subscribe' in result) {
-        result.subscribe(() => {
+      // Use a promise to track subscription behavior
+      const promise = new Promise<void>((resolve) => {
+        result$.subscribe(() => {
           callCount++;
 
           // Emit new values
@@ -603,11 +544,15 @@ describe('AuthGuard', () => {
 
           // Should only be called once due to take(1)
           setTimeout(() => {
-            expect(callCount).toBe(1);
-            done();
+            resolve();
           }, 100);
         });
-      }
+      });
+
+      await promise;
+
+      // Assert
+      expect(callCount).toBe(1);
     });
   });
 });

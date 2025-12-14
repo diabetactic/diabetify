@@ -9,9 +9,13 @@
  * Flow: Add Reading → Local Storage → Sync Queue → Backend Sync → Verification
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
+import { vi, type Mock } from 'vitest';
 import { ReadingsService } from '@core/services/readings.service';
 import { ApiGatewayService, ApiResponse } from '@core/services/api-gateway.service';
 import { ExternalServicesManager } from '@core/services/external-services-manager.service';
@@ -28,8 +32,9 @@ import { Network } from '@capacitor/network';
 
 describe('Readings Sync Integration Tests', () => {
   let readingsService: ReadingsService;
-  let mockHttpClient: jasmine.SpyObj<HttpClient>;
-  let mockLocalAuth: jasmine.SpyObj<LocalAuthService>;
+  let apiGatewayService: ApiGatewayService;
+  let mockHttpClient: { get: Mock; post: Mock; put: Mock; delete: Mock; patch: Mock };
+  let mockLocalAuth: { getAccessToken: Mock; getCurrentUser: Mock; waitForInitialization: Mock };
 
   const createMockReading = (
     overrides?: Partial<LocalGlucoseReading>
@@ -55,28 +60,31 @@ describe('Readings Sync Integration Tests', () => {
     await db.syncQueue.clear();
 
     // Create HttpClient mock (services now use HttpClient directly with Capacitor auto-patching)
-    mockHttpClient = jasmine.createSpyObj('HttpClient', ['get', 'post', 'put', 'delete', 'patch']);
+    mockHttpClient = {
+      get: vi.fn(),
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
+      patch: vi.fn(),
+    };
 
-    mockLocalAuth = jasmine.createSpyObj('LocalAuthService', [
-      'getAccessToken',
-      'getCurrentUser',
-      'waitForInitialization',
-    ]);
-    mockLocalAuth.getAccessToken.and.resolveTo('test_token');
-    mockLocalAuth.waitForInitialization.and.resolveTo();
+    mockLocalAuth = {
+      getAccessToken: vi.fn().mockResolvedValue('test_token'),
+      getCurrentUser: vi.fn(),
+      waitForInitialization: vi.fn().mockResolvedValue(undefined),
+    };
+
+    const mockExternalServicesObj = {
+      isServiceAvailable: vi.fn().mockReturnValue(true),
+      getServiceStatus: vi.fn(),
+    };
 
     TestBed.configureTestingModule({
       providers: [
         ReadingsService,
         ApiGatewayService,
         { provide: HttpClient, useValue: mockHttpClient },
-        {
-          provide: ExternalServicesManager,
-          useValue: jasmine.createSpyObj('ExternalServicesManager', [
-            'isServiceAvailable',
-            'getServiceStatus',
-          ]),
-        },
+        { provide: ExternalServicesManager, useValue: mockExternalServicesObj },
         {
           provide: PlatformDetectorService,
           useValue: { getApiBaseUrl: () => 'http://localhost:8000' },
@@ -87,14 +95,14 @@ describe('Readings Sync Integration Tests', () => {
         },
         {
           provide: LoggerService,
-          useValue: jasmine.createSpyObj('LoggerService', [
-            'info',
-            'debug',
-            'warn',
-            'error',
-            'getRequestId',
-            'setRequestId',
-          ]),
+          useValue: {
+            info: vi.fn(),
+            debug: vi.fn(),
+            warn: vi.fn(),
+            error: vi.fn(),
+            getRequestId: vi.fn(),
+            setRequestId: vi.fn(),
+          },
         },
         {
           provide: MockAdapterService,
@@ -102,11 +110,11 @@ describe('Readings Sync Integration Tests', () => {
         },
         {
           provide: MockDataService,
-          useValue: jasmine.createSpyObj('MockDataService', ['getStats']),
+          useValue: { getStats: vi.fn() },
         },
         {
           provide: TidepoolAuthService,
-          useValue: jasmine.createSpyObj('TidepoolAuthService', ['getAccessToken']),
+          useValue: { getAccessToken: vi.fn() },
         },
         { provide: LocalAuthService, useValue: mockLocalAuth },
       ],
@@ -115,20 +123,14 @@ describe('Readings Sync Integration Tests', () => {
     readingsService = TestBed.inject(ReadingsService);
     apiGatewayService = TestBed.inject(ApiGatewayService);
 
-    // Mock ExternalServicesManager to return true for service availability
-    const mockExternalServices = TestBed.inject(
-      ExternalServicesManager
-    ) as jasmine.SpyObj<ExternalServicesManager>;
-    mockExternalServices.isServiceAvailable.and.returnValue(true);
-
     // Mock Network to be online
-    (Network.getStatus as jest.Mock).mockResolvedValue({ connected: true });
+    vi.mocked(Network.getStatus).mockResolvedValue({ connected: true, connectionType: 'wifi' });
   });
 
   afterEach(async () => {
     await db.readings.clear();
     await db.syncQueue.clear();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Add Reading Flow', () => {
@@ -143,7 +145,7 @@ describe('Readings Sync Integration Tests', () => {
       expect(addedReading).toBeDefined();
       expect(addedReading.id).toBeTruthy();
       expect(addedReading.value).toBe(150);
-      expect(addedReading.synced).toBeFalse();
+      expect(addedReading.synced).toBe(false);
 
       // Verify reading is in database
       const dbReading = await db.readings.get(addedReading.id);
@@ -200,7 +202,7 @@ describe('Readings Sync Integration Tests', () => {
           created_at: '06/12/2025 10:00:00',
         },
       };
-      mockHttpClient.post.and.returnValue(of(backendResponse.data));
+      mockHttpClient.post.mockReturnValue(of(backendResponse.data));
 
       // ACT: Process sync queue
       const syncResult = await readingsService.syncPendingReadings();
@@ -216,7 +218,7 @@ describe('Readings Sync Integration Tests', () => {
 
       // Verify reading marked as synced
       const syncedReading = await db.readings.get(reading.id);
-      expect(syncedReading?.synced).toBeTrue();
+      expect(syncedReading?.synced).toBe(true);
       expect(syncedReading?.backendId).toBe(999);
 
       // Verify sync queue is empty
@@ -229,7 +231,7 @@ describe('Readings Sync Integration Tests', () => {
       const reading = await readingsService.addReading(createMockReading({ value: 180 }));
 
       // Setup backend to fail
-      mockHttpClient.post.and.returnValue(
+      mockHttpClient.post.mockReturnValue(
         throwError(() => ({ status: 500, message: 'Server error' }))
       );
 
@@ -246,7 +248,7 @@ describe('Readings Sync Integration Tests', () => {
 
       // Verify reading still not synced
       const unsyncedReading = await db.readings.get(reading.id);
-      expect(unsyncedReading?.synced).toBeFalse();
+      expect(unsyncedReading?.synced).toBe(false);
     });
 
     it('should remove from queue after max retries', async () => {
@@ -254,7 +256,7 @@ describe('Readings Sync Integration Tests', () => {
       await readingsService.addReading(createMockReading({ value: 160 }));
 
       // Setup backend to always fail
-      mockHttpClient.post.and.returnValue(
+      mockHttpClient.post.mockReturnValue(
         throwError(() => ({ status: 500, message: 'Server error' }))
       );
 
@@ -276,7 +278,7 @@ describe('Readings Sync Integration Tests', () => {
 
       // Setup backend responses (return unique IDs)
       let backendId = 100;
-      mockHttpClient.post.and.callFake(() =>
+      mockHttpClient.post.mockImplementation(() =>
         of({
           id: backendId++,
           user_id: 1,
@@ -299,7 +301,7 @@ describe('Readings Sync Integration Tests', () => {
       // Verify all readings marked as synced
       const allReadings = await db.readings.toArray();
       const allSynced = allReadings.every(r => r.synced);
-      expect(allSynced).toBeTrue();
+      expect(allSynced).toBe(true);
 
       // Verify queue is empty
       const queueItems = await db.syncQueue.toArray();
@@ -327,7 +329,7 @@ describe('Readings Sync Integration Tests', () => {
           },
         ],
       };
-      mockHttpClient.get.and.returnValue(of(backendReadings));
+      mockHttpClient.get.mockReturnValue(of(backendReadings));
 
       // ACT: Fetch from backend
       const fetchResult = await readingsService.fetchFromBackend();
@@ -376,7 +378,7 @@ describe('Readings Sync Integration Tests', () => {
           },
         ],
       };
-      mockHttpClient.get.and.returnValue(of(backendReadings));
+      mockHttpClient.get.mockReturnValue(of(backendReadings));
 
       // ACT: Fetch and merge
       await readingsService.fetchFromBackend();
@@ -439,7 +441,7 @@ describe('Readings Sync Integration Tests', () => {
   describe('Offline Behavior', () => {
     it('should queue readings when offline and sync when online', async () => {
       // ARRANGE: Simulate offline
-      (Network.getStatus as jest.Mock).mockResolvedValue({ connected: false });
+      vi.mocked(Network.getStatus).mockResolvedValue({ connected: false });
 
       // ACT: Add reading while offline
       const reading = await readingsService.addReading(createMockReading({ value: 160 }));
@@ -456,10 +458,10 @@ describe('Readings Sync Integration Tests', () => {
       expect(queueItems.length).toBe(1);
 
       // Simulate going online
-      (Network.getStatus as jest.Mock).mockResolvedValue({ connected: true });
+      vi.mocked(Network.getStatus).mockResolvedValue({ connected: true });
 
       // Setup backend response
-      mockHttpClient.post.and.returnValue(
+      mockHttpClient.post.mockReturnValue(
         of({
           id: 777,
           user_id: 1,
@@ -481,7 +483,7 @@ describe('Readings Sync Integration Tests', () => {
 
       // Reading marked as synced
       const syncedReading = await db.readings.get(reading.id);
-      expect(syncedReading?.synced).toBeTrue();
+      expect(syncedReading?.synced).toBe(true);
     });
   });
 
@@ -491,7 +493,7 @@ describe('Readings Sync Integration Tests', () => {
       await readingsService.addReading(createMockReading({ value: 140, mealContext: 'DESAYUNO' }));
 
       // Setup backend responses
-      mockHttpClient.post.and.returnValue(
+      mockHttpClient.post.mockReturnValue(
         of({
           id: 600,
           user_id: 1,
@@ -501,7 +503,7 @@ describe('Readings Sync Integration Tests', () => {
         })
       );
 
-      mockHttpClient.get.and.returnValue(
+      mockHttpClient.get.mockReturnValue(
         of({
           readings: [
             {
@@ -529,7 +531,7 @@ describe('Readings Sync Integration Tests', () => {
 
       // All readings synced
       const allSynced = allReadings.every(r => r.synced);
-      expect(allSynced).toBeTrue();
+      expect(allSynced).toBe(true);
     });
   });
 });

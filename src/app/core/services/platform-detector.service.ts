@@ -59,8 +59,26 @@ export class PlatformDetectorService {
       }
     }
 
-    // Web platform - use default URL
+    // Web platform - check if we should use the dev proxy
+    // When running on localhost in dev mode, use /api prefix so requests
+    // go through Angular dev server proxy (avoids CORS issues)
+    if (this.isWebDevMode() && defaultUrl.includes('localhost')) {
+      console.log('🔧 [PLATFORM] Web dev mode detected, using /api proxy');
+      return '/api';
+    }
+
     return defaultUrl;
+  }
+
+  /**
+   * Check if running in web development mode (Angular dev server)
+   */
+  private isWebDevMode(): boolean {
+    return (
+      typeof window !== 'undefined' &&
+      window.location.hostname === 'localhost' &&
+      window.location.port === '4200'
+    );
   }
 
   /**

@@ -2,6 +2,9 @@
  * Logger Service Tests
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { LoggerService } from '@services/logger.service';
 

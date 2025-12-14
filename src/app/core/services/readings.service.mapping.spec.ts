@@ -16,6 +16,9 @@
  * - OTRO (other/unspecified)
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { Observable } from 'rxjs';
 import { ReadingsService, LIVE_QUERY_FN } from '@services/readings.service';

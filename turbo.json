@@ -67,7 +67,7 @@
     },
     "test": {
       "outputs": ["coverage/**"],
-      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
+      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "vitest.config.ts", "src/setup-vitest.ts"]
     },
     "test:watch": {
       "cache": false,
@@ -75,9 +75,25 @@
     },
     "test:coverage": {
       "outputs": ["coverage/**"],
-      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
+      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "vitest.config.ts", "src/setup-vitest.ts"]
+    },
+    "test:ui": {
+      "cache": false,
+      "persistent": true
     },
     "test:ci": {
+      "outputs": ["coverage/**", "test-results/**", "junit.xml"],
+      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "vitest.config.ts", "src/setup-vitest.ts"]
+    },
+    "test:jest": {
+      "outputs": ["coverage/**"],
+      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
+    },
+    "test:jest:coverage": {
+      "outputs": ["coverage/**"],
+      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
+    },
+    "test:jest:ci": {
       "outputs": ["coverage/**", "test-results/**"],
       "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
     },

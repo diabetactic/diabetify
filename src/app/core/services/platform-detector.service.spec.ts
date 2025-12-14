@@ -1,3 +1,7 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
@@ -5,20 +9,24 @@ import { PlatformDetectorService } from '@services/platform-detector.service';
 import { API_GATEWAY_BASE_URL, getApiGatewayOverride } from '@shared/config/api-base-url';
 
 // Mock Capacitor
-jest.mock('@capacitor/core');
+vi.mock('@capacitor/core', () => ({
+  Capacitor: {
+    isNativePlatform: vi.fn(() => false),
+    getPlatform: vi.fn(() => 'web'),
+  },
+}));
 
 // Mock api-base-url
-jest.mock('../../shared/config/api-base-url', () => ({
+vi.mock('../../shared/config/api-base-url', () => ({
   API_GATEWAY_BASE_URL: 'http://localhost:8000',
-  getApiGatewayOverride: jest.fn(),
+  getApiGatewayOverride: vi.fn(() => null),
 }));
 
 describe('PlatformDetectorService', () => {
   let service: PlatformDetectorService;
-  let platform: jest.Mocked<Platform>;
 
   const mockPlatform = {
-    is: jest.fn(),
+    is: vi.fn(),
   };
 
   beforeEach(() => {
@@ -27,11 +35,10 @@ describe('PlatformDetectorService', () => {
     });
 
     service = TestBed.inject(PlatformDetectorService);
-    platform = TestBed.inject(Platform) as jest.Mocked<Platform>;
 
     // Reset mocks
-    jest.clearAllMocks();
-    (getApiGatewayOverride as jest.Mock).mockReturnValue(null);
+    vi.clearAllMocks();
+    vi.mocked(getApiGatewayOverride).mockReturnValue(null);
   });
 
   describe('initialization', () => {
@@ -44,7 +51,7 @@ describe('PlatformDetectorService', () => {
     describe('with override', () => {
       it('should use override URL when provided', () => {
         const overrideUrl = 'https://override.example.com';
-        (getApiGatewayOverride as jest.Mock).mockReturnValue(overrideUrl);
+        vi.mocked(getApiGatewayOverride).mockReturnValue(overrideUrl);
 
         const url = service.getApiBaseUrl();
 
@@ -54,7 +61,7 @@ describe('PlatformDetectorService', () => {
 
     describe('web platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+        vi.mocked(Capacitor.isNativePlatform).mockReturnValue(false);
       });
 
       it('should return default URL for web', () => {
@@ -73,12 +80,12 @@ describe('PlatformDetectorService', () => {
 
     describe('Android platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-        (Capacitor.getPlatform as jest.Mock).mockReturnValue('android');
+        vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+        vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
       });
 
       it('should use cloud URL directly for HTTPS URLs', () => {
-        const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+        const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
         const cloudUrl = 'https://api.example.com';
 
         const url = service.getApiBaseUrl(cloudUrl);
@@ -100,7 +107,7 @@ describe('PlatformDetectorService', () => {
       });
 
       it('should use 10.0.2.2 for emulator with localhost', () => {
-        const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+        const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
 
         // Mock Android emulator detection
         Object.defineProperty(navigator, 'userAgent', {
@@ -118,7 +125,7 @@ describe('PlatformDetectorService', () => {
       });
 
       it('should warn for real device with localhost', () => {
-        const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation();
 
         // Mock real Android device (non-emulator)
         Object.defineProperty(navigator, 'userAgent', {
@@ -137,8 +144,8 @@ describe('PlatformDetectorService', () => {
 
     describe('iOS platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-        (Capacitor.getPlatform as jest.Mock).mockReturnValue('ios');
+        vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+        vi.mocked(Capacitor.getPlatform).mockReturnValue('ios');
       });
 
       it('should use localhost for iOS simulator', () => {
@@ -176,7 +183,7 @@ describe('PlatformDetectorService', () => {
 
   describe('getPlatformConfig', () => {
     it('should return web platform config', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(false);
       platform.is.mockImplementation((platformName: string) => platformName === 'desktop');
 
       const config = service.getPlatformConfig();
@@ -189,8 +196,8 @@ describe('PlatformDetectorService', () => {
     });
 
     it('should return Android platform config', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('android');
+      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+      vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
       platform.is.mockImplementation((platformName: string) => platformName === 'mobile');
 
       const config = service.getPlatformConfig();
@@ -203,8 +210,8 @@ describe('PlatformDetectorService', () => {
     });
 
     it('should return iOS platform config', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('ios');
+      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+      vi.mocked(Capacitor.getPlatform).mockReturnValue('ios');
       platform.is.mockImplementation((platformName: string) => platformName === 'mobile');
 
       const config = service.getPlatformConfig();
@@ -215,7 +222,7 @@ describe('PlatformDetectorService', () => {
     });
 
     it('should include base URL in config', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(false);
 
       const config = service.getPlatformConfig();
 
@@ -226,8 +233,8 @@ describe('PlatformDetectorService', () => {
 
   describe('logPlatformInfo', () => {
     it('should log platform configuration', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
+      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(false);
 
       service.logPlatformInfo();
 
@@ -247,8 +254,8 @@ describe('PlatformDetectorService', () => {
 
   describe('isAndroidEmulator detection', () => {
     beforeEach(() => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('android');
+      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+      vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
     });
 
     it('should detect SDK in user agent', () => {
@@ -289,8 +296,8 @@ describe('PlatformDetectorService', () => {
 
   describe('isIOSSimulator detection', () => {
     beforeEach(() => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('ios');
+      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+      vi.mocked(Capacitor.getPlatform).mockReturnValue('ios');
     });
 
     it('should detect simulator keyword', () => {

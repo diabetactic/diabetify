@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
@@ -196,33 +199,33 @@ describe('TranslationService', () => {
   });
 
   describe('observable translation', () => {
-    it('should get translation observable', done => {
+    it('should get translation observable', () => new Promise<void>(resolve => {
       service.get('test.key').subscribe(translation => {
         expect(translateService.get).toHaveBeenCalledWith('test.key', undefined);
         expect(translation).toBe('translated text');
-        done();
+        resolve();
       });
-    });
+    }));
 
-    it('should get translation with parameters', done => {
+    it('should get translation with parameters', () => new Promise<void>(resolve => {
       const params = { count: 5 };
 
       service.get('items.count', params).subscribe(() => {
         expect(translateService.get).toHaveBeenCalledWith('items.count', params);
-        done();
+        resolve();
       });
-    });
+    }));
 
-    it('should get multiple translations', done => {
+    it('should get multiple translations', () => new Promise<void>(resolve => {
       const keys = ['key1', 'key2'];
       translateService.get.mockReturnValue(of({ key1: 'value1', key2: 'value2' }));
 
       service.getMultiple(keys).subscribe(translations => {
         expect(translateService.get).toHaveBeenCalledWith(keys, undefined);
         expect(translations).toEqual({ key1: 'value1', key2: 'value2' });
-        done();
+        resolve();
       });
-    });
+    }));
   });
 
   describe('formatDate', () => {

@@ -13,10 +13,10 @@ function getBaseUrl(): string {
     if (platform === 'android') {
       return 'http://10.0.2.2:8000';
     } else if (platform === 'ios') {
-      return 'http://localhost:8000';
+      return 'http://localhost:8004';
     }
   }
-  return 'http://localhost:8000';
+  return 'http://localhost:8004';
 }
 
 /**

@@ -14,6 +14,9 @@
  * - Race conditions in concurrent sync
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { ReadingsService, LIVE_QUERY_FN } from '@services/readings.service';

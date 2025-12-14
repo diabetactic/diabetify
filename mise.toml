@@ -9,7 +9,6 @@ _.path = [
   "{{env.ANDROID_HOME}}/cmdline-tools/latest/bin"
 ]
 JAVA_HOME = "{{exec(command='mise where java')}}"
-ANDROID_HOME = "/home/julito/Android/Sdk"
 JAVA_TOOL_OPTIONS = "-XX:+IgnoreUnrecognizedVMOptions --add-opens java.base/sun.misc=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED"
 
 [tasks]
