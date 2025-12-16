@@ -153,7 +153,7 @@
     "@angular-eslint/builder": "^19.0.0",
     "@angular-eslint/eslint-plugin": "^19.0.0",
     "@angular-eslint/eslint-plugin-template": "^19.0.0",
-    "@angular-eslint/schematics": "^19.0.0",
+    "@angular-eslint/schematics": "^21.1.0",
     "@angular-eslint/template-parser": "^19.0.0",
     "@angular-experts/hawkeye": "^1.7.2",
     "@angular/cli": "^21.0.3",
