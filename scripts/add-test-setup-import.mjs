@@ -63,7 +63,8 @@ for (const testFile of testFiles) {
     }
 
     // Insert the import
-    const newContent = content.slice(0, insertPosition) + importStatement + content.slice(insertPosition);
+    const newContent =
+      content.slice(0, insertPosition) + importStatement + content.slice(insertPosition);
 
     writeFileSync(testFile, newContent);
     updated++;
