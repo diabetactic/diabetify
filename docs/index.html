@@ -186,7 +186,9 @@
         background: rgba(0, 0, 0, 0.9);
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.3s, visibility 0.3s;
+        transition:
+          opacity 0.3s,
+          visibility 0.3s;
       }
       #lightbox.active {
         opacity: 1;
@@ -196,11 +198,11 @@
         max-width: 90vw;
         max-height: 90vh;
         border-radius: 1rem;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
       }
       #lightbox button {
         position: absolute;
-        background: rgba(255,255,255,0.1);
+        background: rgba(255, 255, 255, 0.1);
         border: none;
         color: white;
         width: 48px;
@@ -211,18 +213,33 @@
         transition: background 0.2s;
       }
       #lightbox button:hover {
-        background: rgba(255,255,255,0.2);
+        background: rgba(255, 255, 255, 0.2);
       }
-      #lightbox .lb-close { top: 1rem; right: 1rem; }
-      #lightbox .lb-prev { left: 1rem; top: 50%; transform: translateY(-50%); }
-      #lightbox .lb-next { right: 1rem; top: 50%; transform: translateY(-50%); }
-      .screenshot-card { cursor: pointer; }
+      #lightbox .lb-close {
+        top: 1rem;
+        right: 1rem;
+      }
+      #lightbox .lb-prev {
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      #lightbox .lb-next {
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .screenshot-card {
+        cursor: pointer;
+      }
 
       /* Reveal on scroll */
       [data-reveal] {
         opacity: 0;
         transform: translateY(20px);
-        transition: opacity 0.6s ease, transform 0.6s ease;
+        transition:
+          opacity 0.6s ease,
+          transform 0.6s ease;
       }
       [data-reveal].revealed {
         opacity: 1;
@@ -1271,10 +1288,10 @@
       <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <div class="mb-16 text-center">
           <div
-            class="mb-4 inline-flex items-center space-x-2 rounded-full bg-primary-100 px-4 py-2 dark:bg-primary-900/30"
+            class="bg-primary-100 dark:bg-primary-900/30 mb-4 inline-flex items-center space-x-2 rounded-full px-4 py-2"
           >
-            <i data-lucide="help-circle" class="h-4 w-4 text-primary-600 dark:text-primary-400"></i>
-            <span class="text-sm font-medium text-primary-600 dark:text-primary-300"
+            <i data-lucide="help-circle" class="text-primary-600 dark:text-primary-400 h-4 w-4"></i>
+            <span class="text-primary-600 dark:text-primary-300 text-sm font-medium"
               >Preguntas Frecuentes</span
             >
           </div>
@@ -1304,8 +1321,9 @@
               <p>
                 Diabetactic es una aplicación móvil desarrollada como Trabajo Profesional de
                 Ingeniería en Informática (FIUBA) para facilitar el manejo de diabetes tipo 1. Está
-                diseñada para pacientes pediátricos del Hospital Garrahan y sus familias, permitiendo
-                el registro de glucosa, gestión de citas médicas, y cálculo de dosis de insulina.
+                diseñada para pacientes pediátricos del Hospital Garrahan y sus familias,
+                permitiendo el registro de glucosa, gestión de citas médicas, y cálculo de dosis de
+                insulina.
               </p>
             </div>
           </details>
@@ -1325,10 +1343,11 @@
             </summary>
             <div class="mt-4 text-gray-600 dark:text-gray-400">
               <p>
-                Sí, Diabetactic utiliza una arquitectura <strong>offline-first</strong> con IndexedDB
-                (Dexie). Todas las lecturas de glucosa, citas y configuraciones se guardan localmente
-                en tu dispositivo y se sincronizan automáticamente cuando recuperas la conexión. Esto
-                garantiza que siempre puedas registrar tus datos sin depender de internet.
+                Sí, Diabetactic utiliza una arquitectura <strong>offline-first</strong> con
+                IndexedDB (Dexie). Todas las lecturas de glucosa, citas y configuraciones se guardan
+                localmente en tu dispositivo y se sincronizan automáticamente cuando recuperas la
+                conexión. Esto garantiza que siempre puedas registrar tus datos sin depender de
+                internet.
               </p>
             </div>
           </details>
@@ -1378,9 +1397,9 @@
               <p>
                 Sí, Diabetactic implementa múltiples capas de seguridad: almacenamiento cifrado con
                 <strong>@aparajita/capacitor-secure-storage</strong> para credenciales sensibles,
-                autenticación biométrica opcional (huella digital/Face ID), y comunicación encriptada
-                HTTPS con el backend. Los datos se almacenan localmente en tu dispositivo y solo se
-                sincronizan con el servidor del Hospital Garrahan cuando tienes conexión.
+                autenticación biométrica opcional (huella digital/Face ID), y comunicación
+                encriptada HTTPS con el backend. Los datos se almacenan localmente en tu dispositivo
+                y solo se sincronizan con el servidor del Hospital Garrahan cuando tienes conexión.
               </p>
             </div>
           </details>
@@ -1400,12 +1419,13 @@
             </summary>
             <div class="mt-4 text-gray-600 dark:text-gray-400">
               <p>
-                Diabetactic está construida con tecnologías web modernas: <strong>Angular 20</strong>
-                como framework principal, <strong>Ionic 8</strong> para la UI móvil,
-                <strong>Capacitor 6</strong> como puente nativo, <strong>Tailwind CSS</strong> y
-                <strong>DaisyUI</strong> para estilos, <strong>Dexie</strong> para almacenamiento
-                offline, y <strong>Playwright + Maestro</strong> para testing. El backend está
-                desplegado en Heroku y utiliza FastAPI (Python).
+                Diabetactic está construida con tecnologías web modernas:
+                <strong>Angular 20</strong> como framework principal, <strong>Ionic 8</strong> para
+                la UI móvil, <strong>Capacitor 6</strong> como puente nativo,
+                <strong>Tailwind CSS</strong> y <strong>DaisyUI</strong> para estilos,
+                <strong>Dexie</strong> para almacenamiento offline, y
+                <strong>Playwright + Maestro</strong> para testing. El backend está desplegado en
+                Heroku y utiliza FastAPI (Python).
               </p>
             </div>
           </details>
@@ -1425,11 +1445,12 @@
             </summary>
             <div class="mt-4 text-gray-600 dark:text-gray-400">
               <p>
-                La calculadora de bolos es una <strong>herramienta de asistencia educativa</strong>
-                que ayuda a estimar dosis de insulina basándose en carbohidratos, factor de
-                sensibilidad y glucosa actual. <strong>NO reemplaza el criterio médico</strong>.
-                Siempre consulta con tu equipo de salud antes de ajustar dosis de insulina y usa los
-                valores configurados por tus profesionales.
+                La calculadora de bolos es una
+                <strong>herramienta de asistencia educativa</strong> que ayuda a estimar dosis de
+                insulina basándose en carbohidratos, factor de sensibilidad y glucosa actual.
+                <strong>NO reemplaza el criterio médico</strong>. Siempre consulta con tu equipo de
+                salud antes de ajustar dosis de insulina y usa los valores configurados por tus
+                profesionales.
               </p>
             </div>
           </details>
@@ -1450,8 +1471,8 @@
             <div class="mt-4 text-gray-600 dark:text-gray-400">
               <p>
                 Actualmente, todos los datos se sincronizan automáticamente con el backend del
-                Hospital Garrahan cuando tienes conexión. Los profesionales de salud pueden acceder a
-                estos datos a través del <strong>backoffice web</strong>. Estamos trabajando en
+                Hospital Garrahan cuando tienes conexión. Los profesionales de salud pueden acceder
+                a estos datos a través del <strong>backoffice web</strong>. Estamos trabajando en
                 funcionalidades de exportación (PDF, CSV) para que puedas compartir tus reportes
                 directamente desde la aplicación móvil.
               </p>
@@ -1489,7 +1510,7 @@
             <a
               href="https://github.com/diabetactic/diabetify/issues"
               target="_blank"
-              class="text-primary-600 dark:text-primary-400 hover:underline font-medium"
+              class="text-primary-600 dark:text-primary-400 font-medium hover:underline"
               >Abre un issue en GitHub</a
             >
           </p>
@@ -1728,12 +1749,12 @@
         closeBtn.addEventListener('click', closeLightbox);
         prevBtn.addEventListener('click', showPrev);
         nextBtn.addEventListener('click', showNext);
-        lightbox.addEventListener('click', (e) => {
+        lightbox.addEventListener('click', e => {
           if (e.target === lightbox) closeLightbox();
         });
 
         // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', e => {
           if (!lightbox.classList.contains('active')) return;
 
           if (e.key === 'Escape') closeLightbox();
@@ -1749,17 +1770,20 @@
       (function () {
         const revealElements = document.querySelectorAll('[data-reveal]');
 
-        const revealOnScroll = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('revealed');
-              revealOnScroll.unobserve(entry.target);
-            }
-          });
-        }, {
-          threshold: 0.1,
-          rootMargin: '0px 0px -50px 0px'
-        });
+        const revealOnScroll = new IntersectionObserver(
+          entries => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                revealOnScroll.unobserve(entry.target);
+              }
+            });
+          },
+          {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px',
+          }
+        );
 
         revealElements.forEach(el => {
           revealOnScroll.observe(el);

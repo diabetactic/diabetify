@@ -314,6 +314,20 @@ export class AppIconComponent {
     flame: 'flame',
     'ribbon-outline': 'award',
     ribbon: 'award',
+    // Tips page icons
+    'bulb-outline': 'lightbulb',
+    bulb: 'lightbulb',
+    'walk-outline': 'footprints',
+    walk: 'footprints',
+    'happy-outline': 'smile',
+    happy: 'smile',
+    'footsteps-outline': 'footprints',
+    footsteps: 'footprints',
+    'people-outline': 'users',
+    'nutrition-outline': 'apple',
+    nutrition: 'apple',
+    'fitness-outline': 'dumbbell',
+    fitness: 'dumbbell',
   };
 
   get mappedName(): string {

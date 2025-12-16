@@ -1,4 +1,7 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+// Initialize TestBed environment for Vitest
+import '../../../../test-setup';
+
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { ReadingItemComponent } from './reading-item.component';
 import { TranslationService } from '@services/translation.service';
@@ -22,8 +25,8 @@ describe('ReadingItemComponent', () => {
   let component: ReadingItemComponent;
   let fixture: ComponentFixture<ReadingItemComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [ReadingItemComponent, TranslateModule.forRoot()],
       providers: [{ provide: TranslationService, useClass: TranslationServiceStub }],
     }).compileComponents();
@@ -43,7 +46,7 @@ describe('ReadingItemComponent', () => {
     };
     component.reading = reading;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

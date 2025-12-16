@@ -43,6 +43,7 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'appointments',
+    canMatch: [OnboardingGuard],
     loadChildren: () =>
       import('./appointments/appointments.module').then(m => m.AppointmentsPageModule),
   },

@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../test-setup';
+
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -72,7 +75,7 @@ describe('BolusCalculatorPage', () => {
         { provide: FoodService, useValue: mockFoodService },
         { provide: LoggerService, useValue: mockLoggerService },
       ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BolusCalculatorPage);

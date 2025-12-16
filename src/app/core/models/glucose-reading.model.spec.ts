@@ -3,6 +3,9 @@
  * Tests type definitions, interfaces, and constants
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import {
   GlucoseUnit,
   TrendRateUnit,

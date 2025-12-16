@@ -958,7 +958,7 @@ export class ApiGatewayService {
           );
         }
       ),
-      shareReplay(1) // Share the observable for multiple subscribers
+      shareReplay({ bufferSize: 1, refCount: true }) // Share observable with automatic cleanup
     );
   }
 

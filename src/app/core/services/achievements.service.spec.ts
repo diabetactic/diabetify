@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { AchievementsService } from '@services/achievements.service';

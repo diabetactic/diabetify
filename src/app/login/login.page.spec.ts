@@ -1,10 +1,13 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+// Initialize TestBed environment for Vitest
+import '../../test-setup';
+
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoadingController, ToastController, AlertController } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of, throwError, BehaviorSubject } from 'rxjs';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 
 import { LoginPage } from './login.page';
 import { LocalAuthService, LocalUser, AccountState } from '@core/services/local-auth.service';
@@ -124,7 +127,7 @@ describe('LoginPage', () => {
         TranslateService,
         { provide: LoggerService, useValue: logger },
       ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginPage);
@@ -168,7 +171,7 @@ describe('LoginPage', () => {
     });
 
     // Skip: Navigation for authenticated users is handled by route guards
-    it.skip('should navigate to dashboard if user is already authenticated', waitForAsync(async () => {
+    it.skip('should navigate to dashboard if user is already authenticated', async () => {
       // Recreate component for clean state
       router.navigate.mockClear();
       isAuthenticatedSubject = new BehaviorSubject<boolean>(true);
@@ -187,9 +190,9 @@ describe('LoginPage', () => {
       await new Promise(resolve => setTimeout(resolve, 10));
 
       expect(router.navigate).toHaveBeenCalledWith([ROUTES.TABS_DASHBOARD], { replaceUrl: true });
-    }));
+    });
 
-    it('should not navigate if user is already on tabs route', waitForAsync(async () => {
+    it('should not navigate if user is already on tabs route', async () => {
       // Recreate component for clean state
       router.navigate.mockClear();
       isAuthenticatedSubject = new BehaviorSubject<boolean>(true);
@@ -208,7 +211,7 @@ describe('LoginPage', () => {
       await new Promise(resolve => setTimeout(resolve, 10));
 
       expect(router.navigate).not.toHaveBeenCalled();
-    }));
+    });
   });
 
   describe('Form Validation', () => {
@@ -287,16 +290,16 @@ describe('LoginPage', () => {
   });
 
   describe('Login Submission - Validation', () => {
-    it('should prevent submission if form is invalid', waitForAsync(async () => {
+    it('should prevent submission if form is invalid', async () => {
       component.loginForm.patchValue({ username: '', password: '' });
 
       await component.onSubmit();
 
       expect(authService.login).not.toHaveBeenCalled();
       expect(loadingCtrl.create).not.toHaveBeenCalled();
-    }));
+    });
 
-    it('should prevent duplicate submissions when already loading', waitForAsync(async () => {
+    it('should prevent duplicate submissions when already loading', async () => {
       component.isLoading = true;
       component.loginForm.patchValue({
         username: 'test@example.com',
@@ -306,9 +309,9 @@ describe('LoginPage', () => {
       await component.onSubmit();
 
       expect(authService.login).not.toHaveBeenCalled();
-    }));
+    });
 
-    it('should mark all fields as touched on invalid submit', waitForAsync(async () => {
+    it('should mark all fields as touched on invalid submit', async () => {
       component.loginForm.patchValue({
         username: '',
         password: '',
@@ -318,7 +321,7 @@ describe('LoginPage', () => {
 
       expect(component.loginForm.get('username')?.touched).toBe(true);
       expect(component.loginForm.get('password')?.touched).toBe(true);
-    }));
+    });
   });
 
   describe('Login Submission - Success Flow', () => {
@@ -330,7 +333,7 @@ describe('LoginPage', () => {
       });
     });
 
-    it('should call authService.login with correct credentials', waitForAsync(async () => {
+    it('should call authService.login with correct credentials', async () => {
       authService.login.mockReturnValue(
         of({
           success: true,
@@ -341,9 +344,9 @@ describe('LoginPage', () => {
       await component.onSubmit();
 
       expect(authService.login).toHaveBeenCalledWith('test@example.com', 'password123', false);
-    }));
+    });
 
-    it('should show loading spinner during login', waitForAsync(async () => {
+    it('should show loading spinner during login', async () => {
       authService.login.mockReturnValue(
         of({
           success: true,
@@ -360,9 +363,9 @@ describe('LoginPage', () => {
       expect(mockLoading.present).toHaveBeenCalled();
 
       await submitPromise;
-    }));
+    });
 
-    it('should handle rememberMe flag', waitForAsync(async () => {
+    it('should handle rememberMe flag', async () => {
       component.loginForm.patchValue({ rememberMe: true });
       authService.login.mockReturnValue(
         of({
@@ -374,7 +377,7 @@ describe('LoginPage', () => {
       await component.onSubmit();
 
       expect(authService.login).toHaveBeenCalledWith('test@example.com', 'password123', true);
-    }));
+    });
   });
 
   describe('Login Submission - Error Handling', () => {
@@ -385,7 +388,7 @@ describe('LoginPage', () => {
       });
     });
 
-    it('should handle invalid credentials (401)', waitForAsync(async () => {
+    it('should handle invalid credentials (401)', async () => {
       const error = new Error('Unauthorized') as any;
       error.status = 401;
       authService.login.mockReturnValue(throwError(() => error));
@@ -397,9 +400,9 @@ describe('LoginPage', () => {
           message: 'login.messages.invalidCredentials',
         })
       );
-    }));
+    });
 
-    it('should handle validation error (422)', waitForAsync(async () => {
+    it('should handle validation error (422)', async () => {
       const error = new Error('Validation failed') as any;
       error.status = 422;
       authService.login.mockReturnValue(throwError(() => error));
@@ -411,9 +414,9 @@ describe('LoginPage', () => {
           message: 'login.messages.invalidData',
         })
       );
-    }));
+    });
 
-    it('should handle connection error (status 0)', waitForAsync(async () => {
+    it('should handle connection error (status 0)', async () => {
       const error = new Error('Network error') as any;
       error.status = 0;
       authService.login.mockReturnValue(throwError(() => error));
@@ -425,17 +428,17 @@ describe('LoginPage', () => {
           message: 'login.messages.connectionError',
         })
       );
-    }));
+    });
 
-    it('should handle timeout error', waitForAsync(async () => {
+    it('should handle timeout error', async () => {
       authService.login.mockReturnValue(throwError(() => new Error('Login API call timed out')));
 
       await component.onSubmit();
 
       expect(alertCtrl.create).toHaveBeenCalled();
-    }));
+    });
 
-    it('should handle login success:false response', waitForAsync(async () => {
+    it('should handle login success:false response', async () => {
       authService.login.mockReturnValue(
         of({
           success: false,
@@ -446,9 +449,9 @@ describe('LoginPage', () => {
       await component.onSubmit();
 
       expect(alertCtrl.create).toHaveBeenCalled();
-    }));
+    });
 
-    it('should reset form password after error', waitForAsync(async () => {
+    it('should reset form password after error', async () => {
       authService.login.mockReturnValue(
         throwError(() => ({
           status: 401,
@@ -460,9 +463,9 @@ describe('LoginPage', () => {
       await new Promise(resolve => setTimeout(resolve, 10));
 
       expect(component.loginForm.get('password')?.value).toBe('');
-    }));
+    });
 
-    it('should dismiss loading spinner after error', waitForAsync(async () => {
+    it('should dismiss loading spinner after error', async () => {
       authService.login.mockReturnValue(
         throwError(() => ({
           status: 401,
@@ -472,7 +475,7 @@ describe('LoginPage', () => {
       await component.onSubmit();
 
       expect(mockLoading.dismiss).toHaveBeenCalled();
-    }));
+    });
   });
 
   describe('Logger Integration', () => {
@@ -481,7 +484,7 @@ describe('LoginPage', () => {
       expect(logger.info).toHaveBeenCalledWith('Init', 'LoginPage initialized');
     });
 
-    it('should log form validation errors', waitForAsync(async () => {
+    it('should log form validation errors', async () => {
       component.loginForm.patchValue({ username: '', password: '' });
       await component.onSubmit();
 
@@ -490,9 +493,9 @@ describe('LoginPage', () => {
         'Login form invalid',
         component.loginForm.errors
       );
-    }));
+    });
 
-    it('should log errors during login', waitForAsync(async () => {
+    it('should log errors during login', async () => {
       const error = new Error('Network error');
       authService.login.mockReturnValue(throwError(() => error));
       component.loginForm.patchValue({
@@ -503,7 +506,7 @@ describe('LoginPage', () => {
       await component.onSubmit();
 
       expect(logger.error).toHaveBeenCalledWith('Auth', 'Error during login process', error);
-    }));
+    });
   });
 
   describe('ensureOnboardingProfile (private method behavior)', () => {
@@ -514,7 +517,7 @@ describe('LoginPage', () => {
       });
     });
 
-    it('should create profile when none exists', waitForAsync(async () => {
+    it('should create profile when none exists', async () => {
       authService.login.mockReturnValue(
         of({
           success: true,
@@ -536,9 +539,9 @@ describe('LoginPage', () => {
           hasCompletedOnboarding: true,
         })
       );
-    }));
+    });
 
-    it('should update profile if email changed', waitForAsync(async () => {
+    it('should update profile if email changed', async () => {
       authService.login.mockReturnValue(
         of({
           success: true,
@@ -566,9 +569,9 @@ describe('LoginPage', () => {
         email: 'test@example.com',
         hasCompletedOnboarding: true,
       });
-    }));
+    });
 
-    it('should not update profile if email unchanged and onboarding complete', waitForAsync(async () => {
+    it('should not update profile if email unchanged and onboarding complete', async () => {
       authService.login.mockReturnValue(
         of({
           success: true,
@@ -593,11 +596,11 @@ describe('LoginPage', () => {
       await new Promise(resolve => setTimeout(resolve, 200));
 
       expect(profileService.updateProfile).not.toHaveBeenCalled();
-    }));
+    });
   });
 
   describe('Edge Cases', () => {
-    it('should handle non-Error thrown objects', waitForAsync(async () => {
+    it('should handle non-Error thrown objects', async () => {
       authService.login.mockReturnValue(throwError(() => 'string error'));
       component.loginForm.patchValue({
         username: 'test@example.com',
@@ -607,9 +610,9 @@ describe('LoginPage', () => {
       await component.onSubmit();
 
       expect(alertCtrl.create).toHaveBeenCalled();
-    }));
+    });
 
-    it('should use email as name if firstName and lastName are empty', waitForAsync(async () => {
+    it('should use email as name if firstName and lastName are empty', async () => {
       const userWithNoName = { ...mockUser, firstName: '', lastName: '' };
       authService.login.mockReturnValue(
         of({
@@ -628,6 +631,6 @@ describe('LoginPage', () => {
           name: 'test@example.com',
         })
       );
-    }));
+    });
   });
 });

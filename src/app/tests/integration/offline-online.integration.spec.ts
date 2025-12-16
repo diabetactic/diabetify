@@ -10,9 +10,13 @@
  * Flow: Offline Queue → Network Detection → Auto Sync → Conflict Resolution
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
+import { vi, type Mock } from 'vitest';
 import { ReadingsService } from '@core/services/readings.service';
 import { ApiGatewayService } from '@core/services/api-gateway.service';
 // CapacitorHttpService removed - services now use HttpClient directly with Capacitor auto-patching
@@ -30,8 +34,9 @@ import { Network } from '@capacitor/network';
 
 describe('Offline-Online Integration Tests', () => {
   let readingsService: ReadingsService;
-  let mockHttpClient: jasmine.SpyObj<HttpClient>;
-  let mockLocalAuth: jasmine.SpyObj<LocalAuthService>;
+  let apiGatewayService: ApiGatewayService;
+  let mockHttpClient: { get: Mock; post: Mock; put: Mock; delete: Mock; patch: Mock };
+  let mockLocalAuth: { getAccessToken: Mock; getCurrentUser: Mock; waitForInitialization: Mock };
 
   const createMockReading = (
     overrides?: Partial<LocalGlucoseReading>
@@ -52,14 +57,14 @@ describe('Offline-Online Integration Tests', () => {
   });
 
   const simulateOffline = () => {
-    (Network.getStatus as jest.Mock).mockResolvedValue({
+    vi.mocked(Network.getStatus).mockResolvedValue({
       connected: false,
       connectionType: 'none',
     });
   };
 
   const simulateOnline = () => {
-    (Network.getStatus as jest.Mock).mockResolvedValue({ connected: true, connectionType: 'wifi' });
+    vi.mocked(Network.getStatus).mockResolvedValue({ connected: true, connectionType: 'wifi' });
   };
 
   beforeEach(async () => {
@@ -68,28 +73,31 @@ describe('Offline-Online Integration Tests', () => {
     await db.syncQueue.clear();
 
     // Create mocks
-    mockHttpClient = jasmine.createSpyObj('HttpClient', ['get', 'post', 'put', 'delete', 'patch']);
+    mockHttpClient = {
+      get: vi.fn(),
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
+      patch: vi.fn(),
+    };
 
-    mockLocalAuth = jasmine.createSpyObj('LocalAuthService', [
-      'getAccessToken',
-      'getCurrentUser',
-      'waitForInitialization',
-    ]);
-    mockLocalAuth.getAccessToken.and.resolveTo('test_token');
-    mockLocalAuth.waitForInitialization.and.resolveTo();
+    mockLocalAuth = {
+      getAccessToken: vi.fn().mockResolvedValue('test_token'),
+      getCurrentUser: vi.fn(),
+      waitForInitialization: vi.fn().mockResolvedValue(undefined),
+    };
+
+    const mockExternalServicesObj = {
+      isServiceAvailable: vi.fn().mockReturnValue(true),
+      getServiceStatus: vi.fn(),
+    };
 
     TestBed.configureTestingModule({
       providers: [
         ReadingsService,
         ApiGatewayService,
         { provide: HttpClient, useValue: mockHttpClient },
-        {
-          provide: ExternalServicesManager,
-          useValue: jasmine.createSpyObj('ExternalServicesManager', [
-            'isServiceAvailable',
-            'getServiceStatus',
-          ]),
-        },
+        { provide: ExternalServicesManager, useValue: mockExternalServicesObj },
         {
           provide: PlatformDetectorService,
           useValue: { getApiBaseUrl: () => 'http://localhost:8000' },
@@ -100,14 +108,14 @@ describe('Offline-Online Integration Tests', () => {
         },
         {
           provide: LoggerService,
-          useValue: jasmine.createSpyObj('LoggerService', [
-            'info',
-            'debug',
-            'warn',
-            'error',
-            'getRequestId',
-            'setRequestId',
-          ]),
+          useValue: {
+            info: vi.fn(),
+            debug: vi.fn(),
+            warn: vi.fn(),
+            error: vi.fn(),
+            getRequestId: vi.fn(),
+            setRequestId: vi.fn(),
+          },
         },
         {
           provide: MockAdapterService,
@@ -115,11 +123,11 @@ describe('Offline-Online Integration Tests', () => {
         },
         {
           provide: MockDataService,
-          useValue: jasmine.createSpyObj('MockDataService', ['getStats']),
+          useValue: { getStats: vi.fn() },
         },
         {
           provide: TidepoolAuthService,
-          useValue: jasmine.createSpyObj('TidepoolAuthService', ['getAccessToken']),
+          useValue: { getAccessToken: vi.fn() },
         },
         { provide: LocalAuthService, useValue: mockLocalAuth },
       ],
@@ -128,11 +136,6 @@ describe('Offline-Online Integration Tests', () => {
     readingsService = TestBed.inject(ReadingsService);
     apiGatewayService = TestBed.inject(ApiGatewayService);
 
-    const mockExternalServices = TestBed.inject(
-      ExternalServicesManager
-    ) as jasmine.SpyObj<ExternalServicesManager>;
-    mockExternalServices.isServiceAvailable.and.returnValue(true);
-
     // Default to online
     simulateOnline();
   });
@@ -140,7 +143,7 @@ describe('Offline-Online Integration Tests', () => {
   afterEach(async () => {
     await db.readings.clear();
     await db.syncQueue.clear();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Offline Reading Creation', () => {
@@ -164,14 +167,14 @@ describe('Offline-Online Integration Tests', () => {
       expect(allReadings.length).toBe(3);
 
       // All readings marked as unsynced
-      expect(reading1.synced).toBeFalse();
-      expect(reading2.synced).toBeFalse();
-      expect(reading3.synced).toBeFalse();
+      expect(reading1.synced).toBe(false);
+      expect(reading2.synced).toBe(false);
+      expect(reading3.synced).toBe(false);
 
       // All readings in sync queue
       const queueItems = await db.syncQueue.toArray();
       expect(queueItems.length).toBe(3);
-      expect(queueItems.every(item => item.operation === 'create')).toBeTrue();
+      expect(queueItems.every(item => item.operation === 'create')).toBe(true);
     });
 
     it('should not attempt sync when offline', async () => {
@@ -226,7 +229,7 @@ describe('Offline-Online Integration Tests', () => {
 
       // Setup backend responses
       let backendId = 1000;
-      mockHttpClient.post.and.callFake(() =>
+      mockHttpClient.post.mockImplementation(() =>
         of({
           id: backendId++,
           user_id: 1,
@@ -250,7 +253,7 @@ describe('Offline-Online Integration Tests', () => {
 
       // All readings marked as synced
       const allReadings = await db.readings.toArray();
-      expect(allReadings.every(r => r.synced)).toBeTrue();
+      expect(allReadings.every(r => r.synced)).toBe(true);
     });
 
     it('should handle partial sync failures gracefully', async () => {
@@ -262,7 +265,7 @@ describe('Offline-Online Integration Tests', () => {
 
       // Setup backend to fail on second call
       let callCount = 0;
-      mockHttpClient.post.and.callFake(() => {
+      mockHttpClient.post.mockImplementation(() => {
         callCount++;
         if (callCount === 2) {
           return throwError(() => ({ status: 500, message: 'Server error' }));
@@ -303,7 +306,7 @@ describe('Offline-Online Integration Tests', () => {
 
       // Simulate network drop mid-sync
       let syncAttempts = 0;
-      mockHttpClient.post.and.callFake(() => {
+      mockHttpClient.post.mockImplementation(() => {
         syncAttempts++;
         if (syncAttempts === 2) {
           // Network drops on second reading
@@ -328,7 +331,7 @@ describe('Offline-Online Integration Tests', () => {
 
       // Restore network
       simulateOnline();
-      mockHttpClient.post.and.returnValue(
+      mockHttpClient.post.mockReturnValue(
         of({
           id: 2000,
           user_id: 1,
@@ -346,7 +349,7 @@ describe('Offline-Online Integration Tests', () => {
 
       // All readings synced
       const allReadings = await db.readings.toArray();
-      expect(allReadings.every(r => r.synced)).toBeTrue();
+      expect(allReadings.every(r => r.synced)).toBe(true);
     });
 
     it('should detect network status changes', async () => {
@@ -355,7 +358,7 @@ describe('Offline-Online Integration Tests', () => {
       await readingsService.addReading(createMockReading({ value: 100 }));
 
       // Setup backend
-      mockHttpClient.post.and.returnValue(
+      mockHttpClient.post.mockReturnValue(
         of({
           id: 1000,
           user_id: 1,
@@ -389,7 +392,7 @@ describe('Offline-Online Integration Tests', () => {
       await readingsService.addReading(createMockReading({ value: 150 }));
 
       // Setup backend with delay
-      mockHttpClient.post.and.returnValue(
+      mockHttpClient.post.mockReturnValue(
         of({
           id: 1000,
           user_id: 1,
@@ -411,7 +414,7 @@ describe('Offline-Online Integration Tests', () => {
 
       // Reading synced only once
       const reading = await db.readings.toArray();
-      expect(reading[0].synced).toBeTrue();
+      expect(reading[0].synced).toBe(true);
 
       // Queue empty
       const queueItems = await db.syncQueue.toArray();
@@ -422,7 +425,7 @@ describe('Offline-Online Integration Tests', () => {
       // ARRANGE: Add and sync reading
       const reading = await readingsService.addReading(createMockReading({ value: 100 }));
 
-      mockHttpClient.post.and.returnValue(
+      mockHttpClient.post.mockReturnValue(
         of({
           id: 5000,
           user_id: 1,
@@ -503,9 +506,9 @@ describe('Offline-Online Integration Tests', () => {
 
       // ASSERT: Only today's and yesterday's readings
       expect(readings.length).toBe(2);
-      expect(readings.some(r => r.value === 100)).toBeFalse(); // Two days ago excluded
-      expect(readings.some(r => r.value === 150)).toBeTrue();
-      expect(readings.some(r => r.value === 120)).toBeTrue();
+      expect(readings.some(r => r.value === 100)).toBe(false); // Two days ago excluded
+      expect(readings.some(r => r.value === 150)).toBe(true);
+      expect(readings.some(r => r.value === 120)).toBe(true);
     });
   });
 
@@ -536,11 +539,11 @@ describe('Offline-Online Integration Tests', () => {
       expect(allReadings.length).toBe(daysOffline * readingsPerDay);
 
       // All unsynced
-      expect(allReadings.every(r => !r.synced)).toBeTrue();
+      expect(allReadings.every(r => !r.synced)).toBe(true);
 
       // Setup backend for batch sync
       let backendId = 10000;
-      mockHttpClient.post.and.callFake(() =>
+      mockHttpClient.post.mockImplementation(() =>
         of({
           id: backendId++,
           user_id: 1,
@@ -571,7 +574,7 @@ describe('Offline-Online Integration Tests', () => {
       await readingsService.addReading(createMockReading({ value: 140, mealContext: 'DESAYUNO' }));
 
       // Setup backend responses
-      mockHttpClient.post.and.returnValue(
+      mockHttpClient.post.mockReturnValue(
         of({
           id: 6000,
           user_id: 1,
@@ -582,7 +585,7 @@ describe('Offline-Online Integration Tests', () => {
       );
 
       // Backend has new readings too
-      mockHttpClient.get.and.returnValue(
+      mockHttpClient.get.mockReturnValue(
         of({
           readings: [
             {
@@ -617,7 +620,7 @@ describe('Offline-Online Integration Tests', () => {
       expect(allReadings.length).toBe(3);
 
       // All synced
-      expect(allReadings.every(r => r.synced)).toBeTrue();
+      expect(allReadings.every(r => r.synced)).toBe(true);
     });
   });
 });

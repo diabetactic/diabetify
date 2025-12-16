@@ -6,6 +6,9 @@
  * Backend source: appointments/app/schemas/appointment_schema.py
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import {
   Appointment,
   CreateAppointmentRequest,

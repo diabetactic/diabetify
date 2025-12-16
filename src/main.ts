@@ -103,6 +103,7 @@ import {
 import { APP_ROUTES } from './app/app-routing.module';
 import { LucideAngularModule } from 'lucide-angular';
 import { appIcons } from './app/shared/icons/lucide-icons';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 // Ensure Ionic web components can resolve their asset path (icons, etc.)
 setAssetPath(window.document.baseURI ?? '/');
@@ -125,6 +126,7 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular(),
     provideRouter(APP_ROUTES, withPreloading(PreloadAllModules)),
     provideHttpClient(),
+    provideCharts(withDefaultRegisterables()),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: LOCALE_ID, useValue: 'es' }, // Set default locale to Spanish
     { provide: HTTP_INTERCEPTORS, useClass: RequestIdInterceptor, multi: true },

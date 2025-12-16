@@ -137,8 +137,15 @@ export class ExternalServicesManager implements OnDestroy {
    * Set up network connectivity monitoring
    */
   private async setupNetworkMonitoring(): Promise<void> {
-    // Get initial network status
-    const status = await Network.getStatus();
+    // Helper to add timeout to network calls
+    const withTimeout = <T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> =>
+      Promise.race([promise, new Promise<T>(resolve => setTimeout(() => resolve(fallback), ms))]);
+
+    // Get initial network status with timeout
+    const status = await withTimeout(Network.getStatus(), 5000, {
+      connected: true,
+      connectionType: 'unknown',
+    });
     this.updateState({ isOnline: status.connected });
 
     // Listen for network changes
@@ -181,9 +188,6 @@ export class ExternalServicesManager implements OnDestroy {
   private setupServiceMonitoring(): void {
     // Monitoring removed to prevent circular dependencies
     // Services will report errors through the public API methods
-    console.debug(
-      'ExternalServicesManager: Service monitoring disabled to prevent circular dependencies'
-    );
   }
 
   /**

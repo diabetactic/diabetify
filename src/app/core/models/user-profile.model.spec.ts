@@ -3,6 +3,9 @@
  * Tests enums, constants, and type definitions
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import {
   AccountState,
   DEFAULT_USER_PREFERENCES,

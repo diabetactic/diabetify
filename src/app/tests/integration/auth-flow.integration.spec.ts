@@ -9,9 +9,13 @@
  * Flow: Login → Profile Fetch → Token Refresh → Logout
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
+import { vi, type Mock } from 'vitest';
 import { LocalAuthService, LocalUser, AccountState } from '@core/services/local-auth.service';
 import { ProfileService } from '@core/services/profile.service';
 import { ApiGatewayService } from '@core/services/api-gateway.service';
@@ -24,12 +28,21 @@ import { MockDataService } from '@core/services/mock-data.service';
 import { TidepoolAuthService } from '@core/services/tidepool-auth.service';
 import { Preferences } from '@capacitor/preferences';
 
+// Helper to create mock objects with Vitest
+function createMockObj<T>(methods: string[]): { [K in keyof T]?: Mock } {
+  const mock: any = {};
+  methods.forEach(method => {
+    mock[method] = vi.fn();
+  });
+  return mock;
+}
+
 describe('Auth Flow Integration Tests', () => {
   let localAuthService: LocalAuthService;
   let profileService: ProfileService;
   let apiGatewayService: ApiGatewayService;
-  let mockHttpClient: jasmine.SpyObj<HttpClient>;
-  let mockExternalServices: jasmine.SpyObj<ExternalServicesManager>;
+  let mockHttpClient: { get: Mock; post: Mock; put: Mock; delete: Mock; patch: Mock };
+  let mockExternalServices: { isServiceAvailable: Mock; getServiceStatus: Mock };
 
   const mockUser: LocalUser = {
     id: '1000',
@@ -71,14 +84,19 @@ describe('Auth Flow Integration Tests', () => {
 
   beforeEach(() => {
     // Create HttpClient mock (services now use HttpClient directly with Capacitor auto-patching)
-    mockHttpClient = jasmine.createSpyObj('HttpClient', ['get', 'post', 'put', 'delete', 'patch']);
+    mockHttpClient = {
+      get: vi.fn(),
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
+      patch: vi.fn(),
+    };
 
     // Create ExternalServicesManager mock
-    mockExternalServices = jasmine.createSpyObj('ExternalServicesManager', [
-      'isServiceAvailable',
-      'getServiceStatus',
-    ]);
-    mockExternalServices.isServiceAvailable.and.returnValue(true);
+    mockExternalServices = {
+      isServiceAvailable: vi.fn().mockReturnValue(true),
+      getServiceStatus: vi.fn(),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -97,14 +115,14 @@ describe('Auth Flow Integration Tests', () => {
         },
         {
           provide: LoggerService,
-          useValue: jasmine.createSpyObj('LoggerService', [
-            'info',
-            'debug',
-            'warn',
-            'error',
-            'getRequestId',
-            'setRequestId',
-          ]),
+          useValue: {
+            info: vi.fn(),
+            debug: vi.fn(),
+            warn: vi.fn(),
+            error: vi.fn(),
+            getRequestId: vi.fn(),
+            setRequestId: vi.fn(),
+          },
         },
         {
           provide: MockAdapterService,
@@ -112,11 +130,11 @@ describe('Auth Flow Integration Tests', () => {
         },
         {
           provide: MockDataService,
-          useValue: jasmine.createSpyObj('MockDataService', ['getStats']),
+          useValue: { getStats: vi.fn() },
         },
         {
           provide: TidepoolAuthService,
-          useValue: jasmine.createSpyObj('TidepoolAuthService', ['getAccessToken']),
+          useValue: { getAccessToken: vi.fn() },
         },
       ],
     });
@@ -126,26 +144,26 @@ describe('Auth Flow Integration Tests', () => {
     apiGatewayService = TestBed.inject(ApiGatewayService);
 
     // Reset Preferences mock for each test
-    (Preferences.get as jest.Mock).mockResolvedValue({ value: null });
-    (Preferences.set as jest.Mock).mockResolvedValue(undefined);
-    (Preferences.remove as jest.Mock).mockResolvedValue(undefined);
+    vi.mocked(Preferences.get).mockResolvedValue({ value: null });
+    vi.mocked(Preferences.set).mockResolvedValue();
+    vi.mocked(Preferences.remove).mockResolvedValue();
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Complete Login Flow', () => {
     it('should complete login → profile fetch → token storage flow', async () => {
       // ARRANGE: Setup HTTP responses
-      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
-      mockHttpClient.get.and.returnValue(of(mockGatewayUser));
+      mockHttpClient.post.mockReturnValue(of(mockTokenResponse));
+      mockHttpClient.get.mockReturnValue(of(mockGatewayUser));
 
       // ACT: Execute login
       const loginResult = await localAuthService.login('1000', 'password').toPromise();
 
       // ASSERT: Login succeeded
-      expect(loginResult?.success).toBeTrue();
+      expect(loginResult?.success).toBe(true);
       expect(loginResult?.user).toBeDefined();
       expect(loginResult?.user?.id).toBe('1000');
 
@@ -154,13 +172,13 @@ describe('Auth Flow Integration Tests', () => {
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
 
       // Verify token endpoint was called
-      const postCall = mockHttpClient.post.calls.mostRecent();
-      expect(postCall.args[0]).toContain('/token');
+      const postCall = mockHttpClient.post.mock.calls[mockHttpClient.post.mock.calls.length - 1];
+      expect(postCall[0]).toContain('/token');
 
       // Verify profile endpoint was called with auth header
-      const getCall = mockHttpClient.get.calls.mostRecent();
-      expect(getCall.args[0]).toContain('/users/me');
-      expect(getCall.args[1]?.headers?.Authorization).toBe('Bearer mock_access_token_12345');
+      const getCall = mockHttpClient.get.mock.calls[mockHttpClient.get.mock.calls.length - 1];
+      expect(getCall[0]).toContain('/users/me');
+      expect(getCall[1]?.headers?.Authorization).toBe('Bearer mock_access_token_12345');
 
       // Verify tokens were stored
       expect(Preferences.set).toHaveBeenCalledWith({
@@ -169,7 +187,7 @@ describe('Auth Flow Integration Tests', () => {
       });
 
       // Verify user data was stored
-      const userSetCall = (Preferences.set as jest.Mock).mock.calls.find(
+      const userSetCall = (Preferences.set as Mock).mock.calls.find(
         (call: any) => call[0]?.key === 'local_user'
       );
       expect(userSetCall).toBeDefined();
@@ -179,7 +197,7 @@ describe('Auth Flow Integration Tests', () => {
 
       // Verify auth state is updated
       const authState = await localAuthService.authState$.toPromise();
-      expect(authState?.isAuthenticated).toBeTrue();
+      expect(authState?.isAuthenticated).toBe(true);
       expect(authState?.user?.id).toBe('1000');
       expect(authState?.accessToken).toBe('mock_access_token_12345');
     });
@@ -187,18 +205,18 @@ describe('Auth Flow Integration Tests', () => {
     it('should handle account pending state during login', async () => {
       // ARRANGE: User with pending account
       const pendingUser = { ...mockGatewayUser, state: 'pending' as const };
-      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
-      mockHttpClient.get.and.returnValue(of(pendingUser));
+      mockHttpClient.post.mockReturnValue(of(mockTokenResponse));
+      mockHttpClient.get.mockReturnValue(of(pendingUser));
 
       // ACT: Execute login
       const loginResult = await localAuthService.login('1000', 'password').toPromise();
 
       // ASSERT: Login rejected due to pending state
-      expect(loginResult?.success).toBeFalse();
+      expect(loginResult?.success).toBe(false);
       expect(loginResult?.error).toContain('accountPending');
 
       // Verify tokens were NOT stored (account not active)
-      const tokenSetCalls = (Preferences.set as jest.Mock).mock.calls.filter(
+      const tokenSetCalls = (Preferences.set as Mock).mock.calls.filter(
         (call: any) => call[0]?.key === 'local_access_token'
       );
       expect(tokenSetCalls.length).toBe(0);
@@ -207,14 +225,14 @@ describe('Auth Flow Integration Tests', () => {
     it('should handle account disabled state during login', async () => {
       // ARRANGE: User with disabled account
       const disabledUser = { ...mockGatewayUser, state: 'disabled' as const };
-      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
-      mockHttpClient.get.and.returnValue(of(disabledUser));
+      mockHttpClient.post.mockReturnValue(of(mockTokenResponse));
+      mockHttpClient.get.mockReturnValue(of(disabledUser));
 
       // ACT: Execute login
       const loginResult = await localAuthService.login('1000', 'password').toPromise();
 
       // ASSERT: Login rejected due to disabled state
-      expect(loginResult?.success).toBeFalse();
+      expect(loginResult?.success).toBe(false);
       expect(loginResult?.error).toContain('accountDisabled');
     });
   });
@@ -222,12 +240,12 @@ describe('Auth Flow Integration Tests', () => {
   describe('Profile Sync After Login', () => {
     it('should create local profile after successful login', async () => {
       // ARRANGE
-      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
-      mockHttpClient.get.and.returnValue(of(mockGatewayUser));
+      mockHttpClient.post.mockReturnValue(of(mockTokenResponse));
+      mockHttpClient.get.mockReturnValue(of(mockGatewayUser));
 
       // ACT: Login and create profile
       const loginResult = await localAuthService.login('1000', 'password').toPromise();
-      expect(loginResult?.success).toBeTrue();
+      expect(loginResult?.success).toBe(true);
 
       // Create local profile from backend data
       await profileService.createProfile({
@@ -246,8 +264,8 @@ describe('Auth Flow Integration Tests', () => {
 
     it('should update profile preferences after login', async () => {
       // ARRANGE: Login first
-      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
-      mockHttpClient.get.and.returnValue(of(mockGatewayUser));
+      mockHttpClient.post.mockReturnValue(of(mockTokenResponse));
+      mockHttpClient.get.mockReturnValue(of(mockGatewayUser));
 
       await localAuthService.login('1000', 'password').toPromise();
       await profileService.createProfile({
@@ -270,12 +288,12 @@ describe('Auth Flow Integration Tests', () => {
 
     it('should store gamification fields from backend user', async () => {
       // ARRANGE
-      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
-      mockHttpClient.get.and.returnValue(of(mockGatewayUser));
+      mockHttpClient.post.mockReturnValue(of(mockTokenResponse));
+      mockHttpClient.get.mockReturnValue(of(mockGatewayUser));
 
       // ACT
       const loginResult = await localAuthService.login('1000', 'password').toPromise();
-      expect(loginResult?.success).toBeTrue();
+      expect(loginResult?.success).toBe(true);
 
       // ASSERT: auth state contains streak fields
       const authState = await localAuthService.authState$.toPromise();
@@ -289,7 +307,7 @@ describe('Auth Flow Integration Tests', () => {
     it('should refresh expired token and maintain session', async () => {
       // ARRANGE: Setup initial auth state with expired token
       const expiredTime = Date.now() - 1000; // 1 second ago
-      (Preferences.get as jest.Mock).mockImplementation(({ key }: { key: string }) => {
+      (Preferences.get as Mock).mockImplementation(({ key }: { key: string }) => {
         if (key === 'local_access_token') {
           return Promise.resolve({ value: 'expired_token' });
         }
@@ -311,20 +329,20 @@ describe('Auth Flow Integration Tests', () => {
         token_type: 'bearer',
         expires_in: 1800,
       };
-      mockHttpClient.post.and.returnValue(of(newTokenResponse));
+      mockHttpClient.post.mockReturnValue(of(newTokenResponse));
 
       // ACT: Trigger token refresh
       const refreshedState = await localAuthService.refreshAccessToken().toPromise();
 
       // ASSERT: Token refreshed successfully
       expect(refreshedState?.accessToken).toBe('new_access_token_99999');
-      expect(refreshedState?.isAuthenticated).toBeTrue();
+      expect(refreshedState?.isAuthenticated).toBe(true);
 
       // Verify refresh endpoint was called
-      const postCall = mockHttpClient.post.calls.mostRecent();
-      expect(postCall.args[0]).toContain('/token');
-      expect(postCall.args[1]).toContain('grant_type=refresh_token');
-      expect(postCall.args[1]).toContain('refresh_token=valid_refresh_token');
+      const postCall = mockHttpClient.post.mock.calls[mockHttpClient.post.mock.calls.length - 1];
+      expect(postCall[0]).toContain('/token');
+      expect(postCall[1]).toContain('grant_type=refresh_token');
+      expect(postCall[1]).toContain('refresh_token=valid_refresh_token');
 
       // Verify new token was stored
       expect(Preferences.set).toHaveBeenCalledWith({
@@ -335,7 +353,7 @@ describe('Auth Flow Integration Tests', () => {
 
     it('should handle refresh token failure and clear session', async () => {
       // ARRANGE: Setup auth state with refresh token
-      (Preferences.get as jest.Mock).mockImplementation(({ key }: { key: string }) => {
+      (Preferences.get as Mock).mockImplementation(({ key }: { key: string }) => {
         if (key === 'local_refresh_token') {
           return Promise.resolve({ value: 'invalid_refresh_token' });
         }
@@ -343,14 +361,14 @@ describe('Auth Flow Integration Tests', () => {
       });
 
       // Setup failure response
-      mockHttpClient.post.and.returnValue(
+      mockHttpClient.post.mockReturnValue(
         throwError(() => ({ status: 401, message: 'Invalid refresh token' }))
       );
 
       // ACT & ASSERT: Refresh should fail
       try {
         await localAuthService.refreshAccessToken().toPromise();
-        fail('Should have thrown error');
+        expect.fail('Should have thrown error');
       } catch (error: any) {
         expect(error.message).toContain('Token refresh failed');
       }
@@ -363,8 +381,8 @@ describe('Auth Flow Integration Tests', () => {
   describe('Logout Flow', () => {
     it('should clear all auth data and profile on logout', async () => {
       // ARRANGE: Setup authenticated state
-      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
-      mockHttpClient.get.and.returnValue(of(mockGatewayUser));
+      mockHttpClient.post.mockReturnValue(of(mockTokenResponse));
+      mockHttpClient.get.mockReturnValue(of(mockGatewayUser));
 
       await localAuthService.login('1000', 'password').toPromise();
       await profileService.createProfile({
@@ -375,14 +393,14 @@ describe('Auth Flow Integration Tests', () => {
 
       // Verify authenticated
       const authStateBefore = await localAuthService.authState$.toPromise();
-      expect(authStateBefore?.isAuthenticated).toBeTrue();
+      expect(authStateBefore?.isAuthenticated).toBe(true);
 
       // ACT: Logout
       await localAuthService.logout();
 
       // ASSERT: Auth state cleared
       const authStateAfter = await localAuthService.authState$.toPromise();
-      expect(authStateAfter?.isAuthenticated).toBeFalse();
+      expect(authStateAfter?.isAuthenticated).toBe(false);
       expect(authStateAfter?.user).toBeNull();
       expect(authStateAfter?.accessToken).toBeNull();
 
@@ -397,7 +415,7 @@ describe('Auth Flow Integration Tests', () => {
   describe('Error Handling', () => {
     it('should handle network errors during login', async () => {
       // ARRANGE: Simulate network error
-      mockHttpClient.post.and.returnValue(
+      mockHttpClient.post.mockReturnValue(
         throwError(() => ({ status: 0, message: 'Network error' }))
       );
 
@@ -405,11 +423,11 @@ describe('Auth Flow Integration Tests', () => {
       const loginResult = await localAuthService.login('1000', 'password').toPromise();
 
       // ASSERT: Login failed with error message
-      expect(loginResult?.success).toBeFalse();
+      expect(loginResult?.success).toBe(false);
       expect(loginResult?.error).toBeTruthy();
 
       // Verify no tokens were stored
-      const tokenSetCalls = (Preferences.set as jest.Mock).mock.calls.filter(
+      const tokenSetCalls = (Preferences.set as Mock).mock.calls.filter(
         (call: any) => call[0]?.key === 'local_access_token'
       );
       expect(tokenSetCalls.length).toBe(0);
@@ -417,7 +435,7 @@ describe('Auth Flow Integration Tests', () => {
 
     it('should handle invalid credentials during login', async () => {
       // ARRANGE: Simulate 401 unauthorized
-      mockHttpClient.post.and.returnValue(
+      mockHttpClient.post.mockReturnValue(
         throwError(() => ({ status: 401, message: 'Invalid credentials' }))
       );
 
@@ -425,14 +443,14 @@ describe('Auth Flow Integration Tests', () => {
       const loginResult = await localAuthService.login('1000', 'wrong_password').toPromise();
 
       // ASSERT: Login failed
-      expect(loginResult?.success).toBeFalse();
+      expect(loginResult?.success).toBe(false);
       expect(loginResult?.error).toContain('Credenciales incorrectas');
     });
 
     it('should handle profile fetch failure after successful token', async () => {
       // ARRANGE: Token succeeds but profile fetch fails
-      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
-      mockHttpClient.get.and.returnValue(
+      mockHttpClient.post.mockReturnValue(of(mockTokenResponse));
+      mockHttpClient.get.mockReturnValue(
         throwError(() => ({ status: 500, message: 'Server error' }))
       );
 
@@ -440,11 +458,11 @@ describe('Auth Flow Integration Tests', () => {
       const loginResult = await localAuthService.login('1000', 'password').toPromise();
 
       // ASSERT: Login failed even though token was obtained
-      expect(loginResult?.success).toBeFalse();
+      expect(loginResult?.success).toBe(false);
       expect(loginResult?.error).toBeTruthy();
 
       // Verify tokens were NOT persisted (full flow must succeed)
-      const tokenSetCalls = (Preferences.set as jest.Mock).mock.calls.filter(
+      const tokenSetCalls = (Preferences.set as Mock).mock.calls.filter(
         (call: any) => call[0]?.key === 'local_access_token'
       );
       expect(tokenSetCalls.length).toBe(0);
@@ -454,8 +472,8 @@ describe('Auth Flow Integration Tests', () => {
   describe('Concurrent Request Handling', () => {
     it('should handle concurrent authenticated requests with single token', async () => {
       // ARRANGE: Login first
-      mockHttpClient.post.and.returnValue(of(mockTokenResponse));
-      mockHttpClient.get.and.returnValue(of(mockGatewayUser));
+      mockHttpClient.post.mockReturnValue(of(mockTokenResponse));
+      mockHttpClient.get.mockReturnValue(of(mockGatewayUser));
 
       await localAuthService.login('1000', 'password').toPromise();
 
@@ -463,7 +481,7 @@ describe('Auth Flow Integration Tests', () => {
       const mockReadingsResponse = { readings: [] };
       const mockAppointmentsResponse = { appointments: [] };
 
-      mockHttpClient.get.and.callFake((url: string) => {
+      mockHttpClient.get.mockImplementation((url: string) => {
         if (url.includes('/glucose/mine')) {
           return of(mockReadingsResponse);
         }
@@ -480,13 +498,13 @@ describe('Auth Flow Integration Tests', () => {
       ]);
 
       // ASSERT: Both requests succeeded with same token
-      expect(readingsResult?.success).toBeTrue();
-      expect(appointmentsResult?.success).toBeTrue();
+      expect(readingsResult?.success).toBe(true);
+      expect(appointmentsResult?.success).toBe(true);
 
       // Verify both requests used the access token
-      const calls = mockHttpClient.get.calls.all();
+      const calls = mockHttpClient.get.mock.calls;
       const authenticatedCalls = calls.filter((call: any) =>
-        call.args[1]?.headers?.Authorization?.includes('mock_access_token_12345')
+        call[1]?.headers?.Authorization?.includes('mock_access_token_12345')
       );
       expect(authenticatedCalls.length).toBe(2);
     });

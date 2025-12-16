@@ -5,13 +5,13 @@
  *
  * Usage:
  *   npm run start:mock   # or ENV=mock npm start   - In-memory mock data, no backend
- *   npm run start:local  # or ENV=local npm start  - Local Docker (http://localhost:8000)
+ *   npm run start:local  # or ENV=local npm start  - Local Docker (http://localhost:8004)
  *   npm run start:cloud  # or ENV=cloud npm start  - Heroku production API
  *
  * ENV values: mock | local | cloud (alias: heroku)
  *
  * Override URLs via environment variables:
- *   LOCAL_API_GATEWAY_URL   - for local mode
+ *   LOCAL_API_GATEWAY_URL   - for local mode (default: http://localhost:8004)
  *   HEROKU_API_BASE_URL     - for cloud/heroku mode
  */
 
@@ -33,8 +33,8 @@ switch (envMode) {
     proxyConfig = 'proxy.conf.json'; // Heroku proxy
     break;
   case 'local':
-    // Local Docker / backend
-    apiGatewayUrl = process.env.LOCAL_API_GATEWAY_URL || 'http://localhost:8000';
+    // Local Docker / backend (container-managing uses port 8004)
+    apiGatewayUrl = process.env.LOCAL_API_GATEWAY_URL || 'http://localhost:8004';
     configName = 'local';
     proxyConfig = 'proxy.conf.local.json'; // Local Docker proxy
     break;

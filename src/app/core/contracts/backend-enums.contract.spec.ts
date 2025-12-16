@@ -13,6 +13,9 @@
  * 3. Run these tests to verify alignment
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import {
   BACKEND_READING_TYPES,
   BACKEND_APPOINTMENT_MOTIVES,

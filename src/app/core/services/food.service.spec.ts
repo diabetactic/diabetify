@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { FoodService } from '@services/food.service';
 import { FoodCategory } from '@models/food.model';

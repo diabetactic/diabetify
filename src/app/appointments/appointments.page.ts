@@ -492,6 +492,27 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Get DaisyUI badge classes based on queue state (larger badges for status display)
+   */
+  getQueueStateBadgeClass(state: AppointmentQueueState | null | undefined): string {
+    const normalized = state || 'NONE';
+    switch (normalized) {
+      case 'PENDING':
+        return 'badge badge-warning badge-lg';
+      case 'ACCEPTED':
+        return 'badge badge-info badge-lg';
+      case 'CREATED':
+        return 'badge badge-success badge-lg';
+      case 'DENIED':
+      case 'BLOCKED':
+        return 'badge badge-error badge-lg';
+      case 'NONE':
+      default:
+        return 'badge badge-ghost badge-lg';
+    }
+  }
+
   // ========== Queue Methods ==========
 
   /**

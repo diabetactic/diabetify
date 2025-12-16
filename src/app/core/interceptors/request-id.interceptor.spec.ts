@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { HTTP_INTERCEPTORS, HttpClient } from '@angular/common/http';
@@ -40,7 +43,7 @@ describe('RequestIdInterceptor', () => {
       });
 
       const req = httpMock.expectOne(testUrl);
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       const requestId = req.request.headers.get('X-Request-Id');
       expect(requestId).toBeTruthy();
@@ -128,7 +131,7 @@ describe('RequestIdInterceptor', () => {
 
       const req = httpMock.expectOne(testUrl);
       expect(req.request.method).toBe('GET');
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush({ data: 'success' });
     });
@@ -141,7 +144,7 @@ describe('RequestIdInterceptor', () => {
       const req = httpMock.expectOne(testUrl);
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(postData);
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush({ success: true });
     });
@@ -153,7 +156,7 @@ describe('RequestIdInterceptor', () => {
 
       const req = httpMock.expectOne(testUrl);
       expect(req.request.method).toBe('PUT');
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush({ success: true });
     });
@@ -165,7 +168,7 @@ describe('RequestIdInterceptor', () => {
 
       const req = httpMock.expectOne(testUrl);
       expect(req.request.method).toBe('PATCH');
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush({ success: true });
     });
@@ -175,7 +178,7 @@ describe('RequestIdInterceptor', () => {
 
       const req = httpMock.expectOne(testUrl);
       expect(req.request.method).toBe('DELETE');
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush({ success: true });
     });
@@ -185,7 +188,7 @@ describe('RequestIdInterceptor', () => {
 
       const req = httpMock.expectOne(testUrl);
       expect(req.request.method).toBe('HEAD');
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush(null);
     });
@@ -195,7 +198,7 @@ describe('RequestIdInterceptor', () => {
 
       const req = httpMock.expectOne(testUrl);
       expect(req.request.method).toBe('OPTIONS');
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush({ allowed: ['GET', 'POST'] });
     });
@@ -219,7 +222,7 @@ describe('RequestIdInterceptor', () => {
       expect(req.request.headers.get('Custom-Header')).toBe('custom-value');
 
       // Request ID should be added
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush({ data: 'success' });
     });
@@ -268,7 +271,7 @@ describe('RequestIdInterceptor', () => {
       expect(req.request.body).toEqual(postBody);
 
       // Request ID should be added
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush({ success: true });
     });
@@ -286,7 +289,7 @@ describe('RequestIdInterceptor', () => {
 
       const req = httpMock.expectOne(testUrl);
       expect(req.request.body).toEqual(putBody);
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush({ success: true });
     });
@@ -296,7 +299,7 @@ describe('RequestIdInterceptor', () => {
 
       const req = httpMock.expectOne(testUrl);
       expect(req.request.body).toBeNull();
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush({ success: true });
     });
@@ -310,7 +313,7 @@ describe('RequestIdInterceptor', () => {
 
       const req = httpMock.expectOne(testUrl);
       expect(req.request.body).toEqual(formData);
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush({ success: true });
     });
@@ -324,7 +327,7 @@ describe('RequestIdInterceptor', () => {
 
       const req = httpMock.expectOne(queryUrl);
       expect(req.request.urlWithParams).toBe(queryUrl);
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush({ data: 'success' });
     });
@@ -336,7 +339,7 @@ describe('RequestIdInterceptor', () => {
 
       const req = httpMock.expectOne(complexUrl);
       expect(req.request.url).toBe(complexUrl);
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush({ data: 'success' });
     });
@@ -348,7 +351,7 @@ describe('RequestIdInterceptor', () => {
 
       const req = httpMock.expectOne(absoluteUrl);
       expect(req.request.url).toBe(absoluteUrl);
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush({ data: 'success' });
     });
@@ -414,7 +417,7 @@ describe('RequestIdInterceptor', () => {
       });
 
       const req = httpMock.expectOne(testUrl);
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush('Server Error', { status: 500, statusText: 'Internal Server Error' });
     });
@@ -428,7 +431,7 @@ describe('RequestIdInterceptor', () => {
       });
 
       const req = httpMock.expectOne(testUrl);
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
     });
@@ -442,7 +445,7 @@ describe('RequestIdInterceptor', () => {
       });
 
       const req = httpMock.expectOne(testUrl);
-      expect(req.request.headers.has('X-Request-Id')).toBeTrue();
+      expect(req.request.headers.has('X-Request-Id')).toBe(true);
 
       req.error(new ProgressEvent('error'), { statusText: 'Network error' });
     });

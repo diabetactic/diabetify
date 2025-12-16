@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import Dexie, { Table } from 'dexie';
 import 'fake-indexeddb/auto';
 import FDBFactory from 'fake-indexeddb/lib/FDBFactory';
@@ -74,26 +77,26 @@ describe('DiabetacticDatabase', () => {
     it('should have correct table schema for readings', async () => {
       const schema = database.table('readings').schema;
       expect(schema.primKey.name).toBe('id');
-      expect(schema.indexes.some(idx => idx.name === 'time')).toBeTrue();
-      expect(schema.indexes.some(idx => idx.name === 'type')).toBeTrue();
-      expect(schema.indexes.some(idx => idx.name === 'userId')).toBeTrue();
-      expect(schema.indexes.some(idx => idx.name === 'synced')).toBeTrue();
+      expect(schema.indexes.some(idx => idx.name === 'time')).toBe(true);
+      expect(schema.indexes.some(idx => idx.name === 'type')).toBe(true);
+      expect(schema.indexes.some(idx => idx.name === 'userId')).toBe(true);
+      expect(schema.indexes.some(idx => idx.name === 'synced')).toBe(true);
     });
 
     it('should have correct table schema for syncQueue', async () => {
       const schema = database.table('syncQueue').schema;
       expect(schema.primKey.name).toBe('id');
-      expect(schema.primKey.auto).toBeTrue();
-      expect(schema.indexes.some(idx => idx.name === 'timestamp')).toBeTrue();
-      expect(schema.indexes.some(idx => idx.name === 'operation')).toBeTrue();
+      expect(schema.primKey.auto).toBe(true);
+      expect(schema.indexes.some(idx => idx.name === 'timestamp')).toBe(true);
+      expect(schema.indexes.some(idx => idx.name === 'operation')).toBe(true);
     });
 
     it('should have correct table schema for appointments', async () => {
       const schema = database.table('appointments').schema;
       expect(schema.primKey.name).toBe('id');
-      expect(schema.indexes.some(idx => idx.name === 'userId')).toBeTrue();
-      expect(schema.indexes.some(idx => idx.name === 'dateTime')).toBeTrue();
-      expect(schema.indexes.some(idx => idx.name === 'status')).toBeTrue();
+      expect(schema.indexes.some(idx => idx.name === 'userId')).toBe(true);
+      expect(schema.indexes.some(idx => idx.name === 'dateTime')).toBe(true);
+      expect(schema.indexes.some(idx => idx.name === 'status')).toBe(true);
     });
   });
 
@@ -377,7 +380,7 @@ describe('DiabetacticDatabase', () => {
 
         const retrieved = await database.readings.get('reading-123');
         expect(retrieved!.value).toBe(150);
-        expect(retrieved!.synced).toBeTrue();
+        expect(retrieved!.synced).toBe(true);
       });
 
       it('should update reading with update method', async () => {
@@ -385,7 +388,7 @@ describe('DiabetacticDatabase', () => {
 
         const retrieved = await database.readings.get('reading-123');
         expect(retrieved!.value).toBe(140);
-        expect(retrieved!.synced).toBeTrue();
+        expect(retrieved!.synced).toBe(true);
       });
 
       it('should bulk update readings', async () => {
@@ -1158,7 +1161,7 @@ describe('DiabetacticDatabase', () => {
       ]);
 
       const readings = await database.readings.toArray();
-      expect(readings.every(r => r.synced)).toBeTrue();
+      expect(readings.every(r => r.synced)).toBe(true);
       expect(readings.find(r => r.id === 'update-1')!.value).toBe(101);
       expect(readings.find(r => r.id === 'update-2')!.value).toBe(111);
       expect(readings.find(r => r.id === 'update-3')!.value).toBe(121);
@@ -1233,7 +1236,7 @@ describe('DiabetacticDatabase', () => {
       const all = await database.readings.toArray();
       expect(all.length).toBe(2);
       expect(all.find(r => r.id === 'integrity-1')).toBeUndefined();
-      expect(all.find(r => r.id === 'integrity-2')!.synced).toBeTrue();
+      expect(all.find(r => r.id === 'integrity-2')!.synced).toBe(true);
       expect(all.find(r => r.id === 'integrity-3')!.value).toBe(120);
     });
   });

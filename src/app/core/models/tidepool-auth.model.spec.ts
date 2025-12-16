@@ -3,6 +3,9 @@
  * Tests OAuth2/PKCE type definitions and interfaces
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import {
   TokenType,
   GrantType,

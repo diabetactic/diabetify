@@ -29,7 +29,7 @@ Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar e
 ## Requisitos Previos
 
 - Node.js 20+
-- npm 10+
+- pnpm 10+ (recomendado) o npm 10+
 - Android Studio (para compilación Android)
 - Java 21
 
@@ -38,8 +38,14 @@ Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar e
 ```bash
 git clone https://github.com/diabetactic/diabetify.git
 cd diabetify
+
+# Con pnpm (recomendado - 3x más rápido)
+pnpm install
+pnpm run start:mock  # Sin backend (recomendado para desarrollo)
+
+# O con npm
 npm install
-npm run start:mock  # Sin backend (recomendado para desarrollo)
+npm run start:mock
 ```
 
 La aplicación estará disponible en `http://localhost:4200`
