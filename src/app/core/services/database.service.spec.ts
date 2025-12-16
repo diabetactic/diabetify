@@ -1257,7 +1257,8 @@ describe('DiabetacticDatabase', () => {
       }));
 
       // Should handle large bulk inserts gracefully
-      await expect(database.readings.bulkAdd(largeArray)).resolves.not.toThrow();
+      await database.readings.bulkAdd(largeArray);
+      expect(await database.readings.count()).toBe(largeArray.length);
     });
 
     it('should handle constraint violation on duplicate primary key', async () => {
