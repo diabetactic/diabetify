@@ -196,7 +196,9 @@ describe('Auth Flow Integration Tests', () => {
       expect(storedUser.email).toBe('test@example.com');
 
       // Verify auth state is updated
-      const authState = await localAuthService.authState$.toPromise();
+      const authState = await new Promise(resolve => {
+        localAuthService.authState$.subscribe(state => resolve(state));
+      });
       expect(authState?.isAuthenticated).toBe(true);
       expect(authState?.user?.id).toBe('1000');
       expect(authState?.accessToken).toBe('mock_access_token_12345');
@@ -213,7 +215,8 @@ describe('Auth Flow Integration Tests', () => {
 
       // ASSERT: Login rejected due to pending state
       expect(loginResult?.success).toBe(false);
-      expect(loginResult?.error).toContain('accountPending');
+      // Error message is translated by formatErrorMessage
+      expect(loginResult?.error).toContain('pendiente');
 
       // Verify tokens were NOT stored (account not active)
       const tokenSetCalls = (Preferences.set as Mock).mock.calls.filter(
@@ -233,7 +236,8 @@ describe('Auth Flow Integration Tests', () => {
 
       // ASSERT: Login rejected due to disabled state
       expect(loginResult?.success).toBe(false);
-      expect(loginResult?.error).toContain('accountDisabled');
+      // Error message is translated by formatErrorMessage
+      expect(loginResult?.error).toContain('deshabilitada');
     });
   });
 

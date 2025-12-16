@@ -495,7 +495,7 @@ describe('ProfileService', () => {
       it('should throw error when no profile exists', async () => {
         await service.deleteProfile();
 
-        await expectAsync(service.updateProfile({ name: 'Test' })).toBeRejectedWithError(
+        await expect(service.updateProfile({ name: 'Test' })).rejects.toThrow(
           'No profile found. Create a profile first.'
         );
       });
@@ -591,7 +591,7 @@ describe('ProfileService', () => {
       it('should throw error when no profile exists', async () => {
         await service.deleteProfile();
 
-        await expectAsync(service.updatePreferences({ language: 'en' })).toBeRejectedWithError(
+        await expect(service.updatePreferences({ language: 'en' })).rejects.toThrow(
           'No profile found. Create a profile first.'
         );
       });
@@ -712,7 +712,7 @@ describe('ProfileService', () => {
         const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
         (SecureStorage.set as jest.Mock).mockReturnValue(Promise.reject(new Error('Storage full')));
 
-        await expectAsync(service.setTidepoolCredentials(mockTidepoolAuth)).toBeRejectedWithError(
+        await expect(service.setTidepoolCredentials(mockTidepoolAuth)).rejects.toThrow(
           'Failed to save authentication credentials'
         );
       });
@@ -939,7 +939,7 @@ describe('ProfileService', () => {
       it('should throw error when no profile exists', async () => {
         await service.deleteProfile();
 
-        await expectAsync(service.exportProfile()).toBeRejectedWithError('No profile to export');
+        await expect(service.exportProfile()).rejects.toThrow('No profile to export');
       });
     });
 
@@ -992,18 +992,14 @@ describe('ProfileService', () => {
       });
 
       it('should throw error on invalid JSON', async () => {
-        await expectAsync(service.importProfile('invalid json')).toBeRejectedWithError(
-          'Invalid profile data'
-        );
+        await expect(service.importProfile('invalid json')).rejects.toThrow('Invalid profile data');
       });
 
       it('should throw error on missing required fields', async () => {
         const invalidProfile = JSON.stringify({ age: 10 }); // Missing name
 
         // The service throws generic "Invalid profile data" on validation failure
-        await expectAsync(service.importProfile(invalidProfile)).toBeRejectedWithError(
-          'Invalid profile data'
-        );
+        await expect(service.importProfile(invalidProfile)).rejects.toThrow('Invalid profile data');
       });
     });
   });

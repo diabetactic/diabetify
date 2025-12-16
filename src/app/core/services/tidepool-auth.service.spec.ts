@@ -196,6 +196,7 @@ describe('TidepoolAuthService', () => {
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMTIzIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIn0.test',
       };
 
+      tokenStorageMock.getRefreshToken.mockResolvedValue('old-refresh-token');
       httpMock.post.mockReturnValue(of(mockTokenResponse));
 
       const newToken = await service.refreshAccessToken();
@@ -236,6 +237,7 @@ describe('TidepoolAuthService', () => {
     it('should refresh token if expired', async () => {
       tokenStorageMock.hasValidAccessToken.mockResolvedValue(false);
       tokenStorageMock.hasRefreshToken.mockResolvedValue(true);
+      tokenStorageMock.getRefreshToken.mockResolvedValue('old-refresh-token');
 
       const mockTokenResponse = {
         access_token: 'refreshed-token',

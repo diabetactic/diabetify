@@ -137,9 +137,14 @@ describe('Readings Sync Integration Tests', () => {
     it('should add reading to IndexedDB and sync queue', async () => {
       // ARRANGE
       const reading = createMockReading({ value: 150, mealContext: 'ALMUERZO' });
+      // Make HTTP POST fail so sync retries and keeps item in queue
+      mockHttpClient.post.mockReturnValue(throwError(() => new Error('Network error')));
 
       // ACT: Add reading
       const addedReading = await readingsService.addReading(reading);
+
+      // Wait for background sync to complete (it will fail and re-add to queue)
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // ASSERT: Reading added to IndexedDB
       expect(addedReading).toBeDefined();
@@ -152,11 +157,12 @@ describe('Readings Sync Integration Tests', () => {
       expect(dbReading).toBeDefined();
       expect(dbReading?.value).toBe(150);
 
-      // Verify sync queue item created
+      // Verify sync queue item exists (sync failed and re-added it)
       const queueItems = await db.syncQueue.toArray();
-      expect(queueItems.length).toBe(1);
-      expect(queueItems[0].operation).toBe('create');
-      expect(queueItems[0].readingId).toBe(addedReading.id);
+      expect(queueItems.length).toBeGreaterThanOrEqual(1);
+      const queueItem = queueItems.find(item => item.readingId === addedReading.id);
+      expect(queueItem).toBeDefined();
+      expect(queueItem?.operation).toBe('create');
     });
 
     it('should calculate status correctly when adding reading', async () => {

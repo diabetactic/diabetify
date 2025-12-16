@@ -424,8 +424,10 @@ vi.mock('@ionic/angular', async () => {
 
 // Also mock @ionic/angular/standalone to prevent the standalone entry point from loading @ionic/core/components
 vi.mock('@ionic/angular/standalone', async () => {
-  const { Component, Directive } =
+  const { Component, Directive, forwardRef } =
     await vi.importActual<typeof import('@angular/core')>('@angular/core');
+  const { NG_VALUE_ACCESSOR } =
+    await vi.importActual<typeof import('@angular/forms')>('@angular/forms');
 
   // Create empty standalone components and directives
 

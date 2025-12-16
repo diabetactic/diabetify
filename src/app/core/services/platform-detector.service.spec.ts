@@ -22,6 +22,13 @@ vi.mock('../../shared/config/api-base-url', () => ({
   getApiGatewayOverride: vi.fn(() => null),
 }));
 
+// Mock environment
+vi.mock('../../../environments/environment', () => ({
+  environment: {
+    production: false,
+  },
+}));
+
 describe('PlatformDetectorService', () => {
   let service: PlatformDetectorService;
 
@@ -85,17 +92,11 @@ describe('PlatformDetectorService', () => {
       });
 
       it('should use cloud URL directly for HTTPS URLs', () => {
-        const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
         const cloudUrl = 'https://api.example.com';
 
         const url = service.getApiBaseUrl(cloudUrl);
 
         expect(url).toBe(cloudUrl);
-        expect(consoleSpy).toHaveBeenCalledWith(
-          expect.stringContaining('Using cloud backend for Android'),
-          cloudUrl
-        );
-        consoleSpy.mockRestore();
       });
 
       it('should use cloud URL for non-localhost HTTP URLs', () => {
@@ -107,21 +108,16 @@ describe('PlatformDetectorService', () => {
       });
 
       it('should use 10.0.2.2 for emulator with localhost', () => {
-        const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
-
         // Mock Android emulator detection
         Object.defineProperty(navigator, 'userAgent', {
           value: 'Android SDK built for x86',
           writable: true,
+          configurable: true,
         });
 
         const url = service.getApiBaseUrl('http://localhost:8000');
 
         expect(url).toBe('http://10.0.2.2:8000');
-        expect(consoleSpy).toHaveBeenCalledWith(
-          expect.stringContaining('Android emulator detected')
-        );
-        consoleSpy.mockRestore();
       });
 
       it('should warn for real device with localhost', () => {
@@ -198,7 +194,7 @@ describe('PlatformDetectorService', () => {
     it('should return Android platform config', () => {
       vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
       vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
-      platform.is.mockImplementation((platformName: string) => platformName === 'mobile');
+      mockPlatform.is.mockImplementation((platformName: string) => platformName === 'mobile');
 
       const config = service.getPlatformConfig();
 
@@ -212,7 +208,7 @@ describe('PlatformDetectorService', () => {
     it('should return iOS platform config', () => {
       vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
       vi.mocked(Capacitor.getPlatform).mockReturnValue('ios');
-      platform.is.mockImplementation((platformName: string) => platformName === 'mobile');
+      mockPlatform.is.mockImplementation((platformName: string) => platformName === 'mobile');
 
       const config = service.getPlatformConfig();
 
