@@ -1,5 +1,5 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-title>{{ 'trends.title' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -11,16 +11,120 @@
     </ion-toolbar>
   </ion-header>
 
-  <div class="page-shell flex min-h-[60vh] flex-col items-center justify-center text-center">
-    <span class="material-symbols-outlined text-primary mb-4 text-6xl"> trending_up </span>
-    <h2 class="text-base-content mb-3 text-2xl font-semibold">
-      {{ 'trends.analysisTitle' | translate }}
-    </h2>
-    <p class="text-base-content/60 mb-2 max-w-md text-base">
-      {{ 'trends.inDevelopment' | translate }}
-    </p>
-    <p class="text-base-content/50 max-w-md text-sm italic">
-      {{ 'trends.comingSoon' | translate }}
-    </p>
+  <div class="page-shell">
+    <!-- Period Selector -->
+    <ion-segment [value]="selectedPeriod()" (ionChange)="onPeriodChange($event)" class="mb-4">
+      <ion-segment-button value="week">
+        <ion-label>{{ 'trends.period.week' | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="month">
+        <ion-label>{{ 'trends.period.month' | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="all">
+        <ion-label>{{ 'trends.period.all' | translate }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    @if (loading()) {
+      <div class="flex items-center justify-center py-12">
+        <ion-spinner name="circular"></ion-spinner>
+      </div>
+    } @else if (statistics() && statistics()!.totalReadings > 0) {
+      <!-- Statistics Cards -->
+      <div class="mb-6 grid grid-cols-2 gap-4">
+        <!-- A1C Card -->
+        <ion-card class="m-0">
+          <ion-card-content class="p-4">
+            <div class="mb-1 text-sm text-gray-500">{{ 'trends.estimatedA1c' | translate }}</div>
+            <div class="text-primary text-2xl font-bold">{{ statistics()!.estimatedA1C }}%</div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Average Glucose Card -->
+        <ion-card class="m-0">
+          <ion-card-content class="p-4">
+            <div class="mb-1 text-sm text-gray-500">{{ 'trends.averageGlucose' | translate }}</div>
+            <div class="text-primary text-2xl font-bold">
+              {{ statistics()!.average }}
+              <span class="text-sm font-normal">mg/dL</span>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Time in Range Chart -->
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>{{ 'trends.timeInRange' | translate }}</ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="flex flex-col items-center">
+          <div class="w-full max-w-xs">
+            <canvas
+              baseChart
+              [data]="doughnutChartData"
+              [type]="doughnutChartType"
+              [options]="doughnutChartOptions"
+            ></canvas>
+          </div>
+
+          <!-- Legend with percentages -->
+          <div class="mt-4 w-full space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="h-4 w-4 rounded-full bg-green-500"></div>
+                <span class="text-sm">{{ 'trends.inRange' | translate }}</span>
+              </div>
+              <span class="text-sm font-semibold">{{ statistics()!.timeInRange.toFixed(1) }}%</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="h-4 w-4 rounded-full bg-yellow-500"></div>
+                <span class="text-sm">{{ 'trends.aboveRange' | translate }}</span>
+              </div>
+              <span class="text-sm font-semibold"
+                >{{ statistics()!.timeAboveRange.toFixed(1) }}%</span
+              >
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="h-4 w-4 rounded-full bg-red-500"></div>
+                <span class="text-sm">{{ 'trends.belowRange' | translate }}</span>
+              </div>
+              <span class="text-sm font-semibold"
+                >{{ statistics()!.timeBelowRange.toFixed(1) }}%</span
+              >
+            </div>
+          </div>
+
+          <!-- Additional Stats -->
+          <div class="mt-6 w-full space-y-3 border-t border-gray-200 pt-4 dark:border-gray-700">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">{{ 'trends.totalReadings' | translate }}</span>
+              <span class="font-semibold">{{ statistics()!.totalReadings }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">{{ 'trends.standardDeviation' | translate }}</span>
+              <span class="font-semibold">{{ statistics()!.standardDeviation }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">{{ 'trends.cv' | translate }}</span>
+              <span class="font-semibold"
+                >{{ statistics()!.coefficientOfVariation.toFixed(1) }}%</span
+              >
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    } @else {
+      <div class="flex min-h-[50vh] flex-col items-center justify-center text-center">
+        <app-icon name="trending_up" size="xl" class="text-primary mb-4"></app-icon>
+        <h2 class="text-base-content mb-3 text-2xl font-semibold">
+          {{ 'trends.noData' | translate }}
+        </h2>
+        <p class="text-base-content/60 max-w-md text-base">
+          {{ 'trends.noDataMessage' | translate }}
+        </p>
+      </div>
+    }
   </div>
 </ion-content>

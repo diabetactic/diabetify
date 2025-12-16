@@ -3,6 +3,9 @@
  * Tests enums, interfaces, and type definitions
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import {
   DataProvenance,
   TherapyField,

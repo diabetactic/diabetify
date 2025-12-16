@@ -1,0 +1,10 @@
+# Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+# Secrets & credentials (extra layer beyond .gitignore)
+**/*.key
+**/*.pem
+**/id_rsa
+**/secrets.json
+**/credentials.json
+android/keystore.properties
+android/release-keystore.jks
+tidepool.personal.postman_environment.json

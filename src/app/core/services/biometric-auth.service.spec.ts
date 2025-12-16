@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { BiometricAuthService, BiometricConfig } from '@services/biometric-auth.service';
 import { LoggerService } from '@services/logger.service';
@@ -70,14 +73,15 @@ describe('BiometricAuthService', () => {
       expect(service).toBeTruthy();
     });
 
-    it('should have default config', done => {
-      service.biometricConfig$.subscribe(config => {
-        expect(config.enabled).toBe(false);
-        expect(config.enrolled).toBe(false);
-        expect(config.biometryType).toBe('none');
-        done();
-      });
-    });
+    it('should have default config', () =>
+      new Promise<void>(resolve => {
+        service.biometricConfig$.subscribe(config => {
+          expect(config.enabled).toBe(false);
+          expect(config.enrolled).toBe(false);
+          expect(config.biometryType).toBe('none');
+          resolve();
+        });
+      }));
   });
 
   describe('isBiometricAvailable', () => {

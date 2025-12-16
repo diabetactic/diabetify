@@ -41,6 +41,8 @@
             >
           </ion-card-title>
           <ion-card-subtitle class="mt-2 flex flex-wrap items-center gap-2 text-sm">
+            <!-- Online/Offline indicator hidden for screenshots -->
+            <!--
             <span
               *ngIf="servicesState.isOnline"
               class="inline-flex items-center gap-1 text-green-600 dark:text-green-400"
@@ -54,6 +56,7 @@
               <app-icon name="cloud-offline"></app-icon> {{ 'serviceMonitor.offline' | translate }}
             </span>
             <span class="text-base-content/40 mx-2">|</span>
+            -->
             <span class="text-base-content/60"
               >{{ 'serviceMonitor.lastCheck' | translate }}:
               {{ formatDate(servicesState.lastFullCheck) }}</span

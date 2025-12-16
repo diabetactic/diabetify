@@ -4,7 +4,10 @@
  * Comprehensive test suite for ApiGatewayService with 95%+ coverage
  */
 
-import { TestBed, waitForAsync } from '@angular/core/testing';
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
+import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 // Observable removed - no longer needed after CapacitorHttpService cleanup
@@ -108,7 +111,7 @@ describe('ApiGatewayService', () => {
   });
 
   describe('request() - GET method', () => {
-    it('should make GET request to correct endpoint', waitForAsync(async () => {
+    it('should make GET request to correct endpoint', async () => {
       const mockData = { readings: [] };
       let response: any;
 
@@ -128,9 +131,9 @@ describe('ApiGatewayService', () => {
       expect(response.data).toEqual(mockData);
       expect(response.metadata?.service).toBe(ExternalService.GLUCOSERVER);
       expect(response.metadata?.cached).toBe(false);
-    }));
+    });
 
-    it('should include query parameters in GET request', waitForAsync(async () => {
+    it('should include query parameters in GET request', async () => {
       const params = { limit: '10', offset: '0' };
 
       service
@@ -145,9 +148,9 @@ describe('ApiGatewayService', () => {
       expect(req.request.method).toBe('GET');
 
       req.flush({ readings: [] });
-    }));
+    });
 
-    it('should cache GET requests when cache is enabled', waitForAsync(async () => {
+    it('should cache GET requests when cache is enabled', async () => {
       const mockData = { statistics: { average: 120 } };
 
       // First request - should hit server
@@ -170,11 +173,11 @@ describe('ApiGatewayService', () => {
       expect(cachedResponse.success).toBe(true);
       expect(cachedResponse.data).toEqual(mockData);
       expect(cachedResponse.metadata?.cached).toBe(true);
-    }));
+    });
   });
 
   describe('request() - POST method', () => {
-    it('should make POST request with body', waitForAsync(async () => {
+    it('should make POST request with body', async () => {
       const requestBody = { value: 120, units: 'mg/dL', timestamp: '2024-01-15T10:00:00Z' };
       const mockResponse = { id: '123', ...requestBody };
 
@@ -192,9 +195,9 @@ describe('ApiGatewayService', () => {
       expect(req.request.headers.get('Content-Type')).toBe('application/json');
 
       req.flush(mockResponse);
-    }));
+    });
 
-    it('should transform request body if transform is defined', waitForAsync(async () => {
+    it('should transform request body if transform is defined', async () => {
       const requestBody = {
         value: 120,
         timestamp: new Date('2024-01-15T10:00:00Z'),
@@ -208,9 +211,9 @@ describe('ApiGatewayService', () => {
       expect(req.request.body.timestamp).toBe('2024-01-15T10:00:00Z');
 
       req.flush({ id: '123' });
-    }));
+    });
 
-    it('should handle appointment glucose sharing with privacy transform', waitForAsync(async () => {
+    it('should handle appointment glucose sharing with privacy transform', async () => {
       const requestBody = {
         days: 30,
         manualReadingsSummary: { count: 10, average: 120 },
@@ -231,9 +234,9 @@ describe('ApiGatewayService', () => {
       expect(req.request.body.readings).toBeDefined();
 
       req.flush({ success: true });
-    }));
+    });
 
-    it('should exclude raw readings without consent in glucose sharing', waitForAsync(async () => {
+    it('should exclude raw readings without consent in glucose sharing', async () => {
       const requestBody = {
         days: 30,
         manualReadingsSummary: { count: 10, average: 120 },
@@ -252,11 +255,11 @@ describe('ApiGatewayService', () => {
       expect(req.request.body.readings).toBeUndefined();
 
       req.flush({ success: true });
-    }));
+    });
   });
 
   describe('request() - PUT method', () => {
-    it('should make PUT request to update reading', waitForAsync(async () => {
+    it('should make PUT request to update reading', async () => {
       const updateData = { value: 130, notes: 'Updated' };
 
       service
@@ -270,11 +273,11 @@ describe('ApiGatewayService', () => {
       expect(req.request.body).toEqual(updateData);
 
       req.flush({ id: 'reading123', ...updateData });
-    }));
+    });
   });
 
   describe('request() - DELETE method', () => {
-    it('should make DELETE request', waitForAsync(async () => {
+    it('should make DELETE request', async () => {
       service.request('glucoserver.readings.delete', {}, { id: 'reading123' }).subscribe();
 
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -283,11 +286,11 @@ describe('ApiGatewayService', () => {
       expect(req.request.method).toBe('DELETE');
 
       req.flush({ success: true });
-    }));
+    });
   });
 
   describe('Authentication', () => {
-    it('should add Bearer token for authenticated endpoints', waitForAsync(async () => {
+    it('should add Bearer token for authenticated endpoints', async () => {
       mockLocalAuth.getAccessToken.mockReturnValue(Promise.resolve('test-token-123'));
 
       service.request('glucoserver.readings.list').subscribe();
@@ -298,9 +301,9 @@ describe('ApiGatewayService', () => {
       expect(req.request.headers.get('Authorization')).toBe('Bearer test-token-123');
 
       req.flush([]);
-    }));
+    });
 
-    it('should use Tidepool token for Tidepool endpoints', waitForAsync(async () => {
+    it('should use Tidepool token for Tidepool endpoints', async () => {
       mockTidepoolAuth.getAccessToken.mockReturnValue(Promise.resolve('tidepool-token'));
 
       service.request('tidepool.user.profile', {}, { userId: 'user123' }).subscribe();
@@ -311,9 +314,9 @@ describe('ApiGatewayService', () => {
       expect(req.request.headers.get('Authorization')).toBe('Bearer tidepool-token');
 
       req.flush({ profile: {} });
-    }));
+    });
 
-    it('should not add Authorization header for unauthenticated endpoints', waitForAsync(async () => {
+    it('should not add Authorization header for unauthenticated endpoints', async () => {
       service.request('appointments.doctors.list').subscribe();
 
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -322,28 +325,28 @@ describe('ApiGatewayService', () => {
       expect(req.request.headers.has('Authorization')).toBe(false);
 
       req.flush([]);
-    }));
-
-    it('should throw error if authentication required but no token available', (done: jest.DoneCallback) => {
-      mockLocalAuth.getAccessToken.mockReturnValue(Promise.resolve(null));
-
-      service.request('glucoserver.readings.list').subscribe({
-        next: () => {
-          fail('should have thrown error');
-          done();
-        },
-        error: err => {
-          expect(err).toBeDefined();
-          // The service throws a plain Error for authentication failures
-          expect(err.message || err).toContain('Authentication required');
-          done();
-        },
-      });
     });
+
+    it('should throw error if authentication required but no token available', () =>
+      new Promise<void>((resolve, reject) => {
+        mockLocalAuth.getAccessToken.mockReturnValue(Promise.resolve(null));
+
+        service.request('glucoserver.readings.list').subscribe({
+          next: () => {
+            reject(new Error('should have thrown error'));
+          },
+          error: err => {
+            expect(err).toBeDefined();
+            // The service throws a plain Error for authentication failures
+            expect(err.message || err).toContain('Authentication required');
+            resolve();
+          },
+        });
+      }));
   });
 
   describe('Platform-Specific Base URLs', () => {
-    it('should use platform detector for API Gateway base URL', waitForAsync(async () => {
+    it('should use platform detector for API Gateway base URL', async () => {
       mockPlatformDetector.getApiBaseUrl.mockReturnValue('http://10.0.2.2:8000');
 
       service.request('glucoserver.readings.list').subscribe();
@@ -354,9 +357,9 @@ describe('ApiGatewayService', () => {
       expect(req.request.method).toBe('GET');
 
       req.flush([]);
-    }));
+    });
 
-    it('should use Tidepool base URL for Tidepool service', waitForAsync(async () => {
+    it('should use Tidepool base URL for Tidepool service', async () => {
       service.request('tidepool.user.profile', {}, { userId: 'user123' }).subscribe();
 
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -365,7 +368,7 @@ describe('ApiGatewayService', () => {
       expect(req.request.method).toBe('GET');
 
       req.flush({});
-    }));
+    });
   });
 
   describe('Endpoint Management', () => {
@@ -416,112 +419,112 @@ describe('ApiGatewayService', () => {
       );
     };
 
-    it('should map 400 BAD_REQUEST error', (done: jest.DoneCallback) => {
-      invokeHandleError(400).subscribe({
-        next: () => {
-          fail('should have thrown error');
-          done();
-        },
-        error: (err: any) => {
-          expect(err).toBeDefined();
-          expect(err.error.code).toBe('BAD_REQUEST');
-          done();
-        },
-      });
-    });
-
-    it('should map 403 FORBIDDEN error', (done: jest.DoneCallback) => {
-      invokeHandleError(403).subscribe({
-        next: () => {
-          fail('should have thrown error');
-          done();
-        },
-        error: (err: any) => {
-          expect(err).toBeDefined();
-          expect(err.error.code).toBe('FORBIDDEN');
-          done();
-        },
-      });
-    });
-
-    it('should map other HTTP status codes correctly', (done: jest.DoneCallback) => {
-      const testCases = [
-        { status: 409, expectedCode: 'CONFLICT' },
-        { status: 422, expectedCode: 'VALIDATION_ERROR' },
-        { status: 429, expectedCode: 'RATE_LIMITED' },
-        { status: 502, expectedCode: 'BAD_GATEWAY' },
-        { status: 503, expectedCode: 'SERVICE_UNAVAILABLE' },
-        { status: 504, expectedCode: 'GATEWAY_TIMEOUT' },
-      ];
-
-      let completed = 0;
-
-      testCases.forEach(({ status, expectedCode }) => {
-        invokeHandleError(status).subscribe({
+    it('should map 400 BAD_REQUEST error', () =>
+      new Promise<void>((resolve, reject) => {
+        invokeHandleError(400).subscribe({
           next: () => {
-            fail('should have thrown error');
-            done();
+            reject(new Error('should have thrown error'));
           },
           error: (err: any) => {
             expect(err).toBeDefined();
-            expect(err.error.code).toBe(expectedCode);
-            completed++;
-            if (completed === testCases.length) {
-              done();
-            }
+            expect(err.error.code).toBe('BAD_REQUEST');
+            resolve();
           },
         });
-      });
-    });
+      }));
 
-    it('should identify network error (0) as retryable', (done: jest.DoneCallback) => {
-      invokeHandleError(0).subscribe({
-        next: () => {
-          fail('should have thrown error');
-          done();
-        },
-        error: (err: any) => {
-          expect(err).toBeDefined();
-          expect(err.error.retryable).toBe(true);
-          done();
-        },
-      });
-    });
-
-    it('should identify 500 server error as retryable', (done: jest.DoneCallback) => {
-      invokeHandleError(500).subscribe({
-        next: () => {
-          fail('should have thrown error');
-          done();
-        },
-        error: (err: any) => {
-          expect(err).toBeDefined();
-          expect(err.error.retryable).toBe(true);
-          done();
-        },
-      });
-    });
-
-    it('should identify other retryable errors correctly', (done: jest.DoneCallback) => {
-      const retryableStatuses = [408, 429, 502, 503, 504];
-      let completed = 0;
-
-      retryableStatuses.forEach(status => {
-        invokeHandleError(status).subscribe({
+    it('should map 403 FORBIDDEN error', () =>
+      new Promise<void>((resolve, reject) => {
+        invokeHandleError(403).subscribe({
           next: () => {
-            fail('should have thrown error');
-            done();
+            reject(new Error('should have thrown error'));
+          },
+          error: (err: any) => {
+            expect(err).toBeDefined();
+            expect(err.error.code).toBe('FORBIDDEN');
+            resolve();
+          },
+        });
+      }));
+
+    it('should map other HTTP status codes correctly', () =>
+      new Promise<void>((resolve, reject) => {
+        const testCases = [
+          { status: 409, expectedCode: 'CONFLICT' },
+          { status: 422, expectedCode: 'VALIDATION_ERROR' },
+          { status: 429, expectedCode: 'RATE_LIMITED' },
+          { status: 502, expectedCode: 'BAD_GATEWAY' },
+          { status: 503, expectedCode: 'SERVICE_UNAVAILABLE' },
+          { status: 504, expectedCode: 'GATEWAY_TIMEOUT' },
+        ];
+
+        let completed = 0;
+
+        testCases.forEach(({ status, expectedCode }) => {
+          invokeHandleError(status).subscribe({
+            next: () => {
+              reject(new Error('should have thrown error'));
+            },
+            error: (err: any) => {
+              expect(err).toBeDefined();
+              expect(err.error.code).toBe(expectedCode);
+              completed++;
+              if (completed === testCases.length) {
+                resolve();
+              }
+            },
+          });
+        });
+      }));
+
+    it('should identify network error (0) as retryable', () =>
+      new Promise<void>((resolve, reject) => {
+        invokeHandleError(0).subscribe({
+          next: () => {
+            reject(new Error('should have thrown error'));
           },
           error: (err: any) => {
             expect(err).toBeDefined();
             expect(err.error.retryable).toBe(true);
-            completed++;
-            if (completed === retryableStatuses.length) {
-              done();
-            }
+            resolve();
           },
         });
-      });
-    });
+      }));
+
+    it('should identify 500 server error as retryable', () =>
+      new Promise<void>((resolve, reject) => {
+        invokeHandleError(500).subscribe({
+          next: () => {
+            reject(new Error('should have thrown error'));
+          },
+          error: (err: any) => {
+            expect(err).toBeDefined();
+            expect(err.error.retryable).toBe(true);
+            resolve();
+          },
+        });
+      }));
+
+    it('should identify other retryable errors correctly', () =>
+      new Promise<void>((resolve, reject) => {
+        const retryableStatuses = [408, 429, 502, 503, 504];
+        let completed = 0;
+
+        retryableStatuses.forEach(status => {
+          invokeHandleError(status).subscribe({
+            next: () => {
+              reject(new Error('should have thrown error'));
+            },
+            error: (err: any) => {
+              expect(err).toBeDefined();
+              expect(err.error.retryable).toBe(true);
+              completed++;
+              if (completed === retryableStatuses.length) {
+                resolve();
+              }
+            },
+          });
+        });
+      }));
   });
 });

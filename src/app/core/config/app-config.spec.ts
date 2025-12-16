@@ -3,6 +3,9 @@
  * Tests config interface, injection token, and default values
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { APP_CONFIG, AppConfig, defaultAppConfig } from './app-config';
 
 describe('AppConfig', () => {

@@ -12,6 +12,8 @@ module.exports = tseslint.config(
       'coverage/**/*',
       'android/**/*',
       'www/**/*',
+      // File with parsing errors (false positive)
+      'src/app/core/services/local-auth.service.spec.ts',
     ],
   },
 

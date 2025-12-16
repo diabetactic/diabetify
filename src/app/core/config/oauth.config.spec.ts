@@ -3,6 +3,9 @@
  * Tests OAuth config interface, constants, and factory function
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { OAUTH_CONSTANTS, OAuthConfig, getOAuthConfig } from './oauth.config';
 
 describe('OAuthConfig', () => {

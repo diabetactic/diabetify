@@ -67,7 +67,7 @@
     },
     "test": {
       "outputs": ["coverage/**"],
-      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
+      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "vitest.config.ts", "src/setup-vitest.ts"]
     },
     "test:watch": {
       "cache": false,
@@ -75,9 +75,25 @@
     },
     "test:coverage": {
       "outputs": ["coverage/**"],
-      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
+      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "vitest.config.ts", "src/setup-vitest.ts"]
+    },
+    "test:ui": {
+      "cache": false,
+      "persistent": true
     },
     "test:ci": {
+      "outputs": ["coverage/**", "test-results/**", "junit.xml"],
+      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "vitest.config.ts", "src/setup-vitest.ts"]
+    },
+    "test:jest": {
+      "outputs": ["coverage/**"],
+      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
+    },
+    "test:jest:coverage": {
+      "outputs": ["coverage/**"],
+      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
+    },
+    "test:jest:ci": {
       "outputs": ["coverage/**", "test-results/**"],
       "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
     },
@@ -136,6 +152,60 @@
     "quality": {
       "dependsOn": ["lint", "test"],
       "outputs": []
+    },
+    "analyze:dead-code": {
+      "outputs": [],
+      "inputs": ["src/**/*.ts", "knip.json", "tsconfig*.json"]
+    },
+    "analyze:circular": {
+      "outputs": [],
+      "inputs": ["src/**/*.ts", "tsconfig*.json"]
+    },
+    "analyze:complexity": {
+      "outputs": [],
+      "inputs": ["src/**/*.ts", "!src/**/*.spec.ts"]
+    },
+    "analyze:duplication": {
+      "outputs": ["reports/jscpd/**"],
+      "inputs": ["src/**/*.ts", "src/**/*.js", ".jscpd.json"]
+    },
+    "analyze:type-coverage": {
+      "outputs": [],
+      "inputs": ["src/**/*.ts", "tsconfig*.json"]
+    },
+    "analyze:bundle": {
+      "dependsOn": ["build:prod"],
+      "outputs": ["reports/bundle-analysis.json"],
+      "inputs": ["dist/diabetify/browser/stats.json"]
+    },
+    "analyze:all": {
+      "dependsOn": [
+        "analyze:dead-code",
+        "analyze:circular",
+        "analyze:complexity",
+        "analyze:duplication",
+        "analyze:type-coverage"
+      ],
+      "outputs": []
+    },
+    "fix:dead-code": {
+      "cache": false,
+      "outputs": [],
+      "inputs": ["src/**/*.ts", "knip.json"]
+    },
+    "fix:deps": {
+      "cache": false,
+      "outputs": ["package.json", "pnpm-lock.yaml"],
+      "inputs": ["package.json"]
+    },
+    "fix:deps:check": {
+      "outputs": [],
+      "inputs": ["package.json"]
+    },
+    "fix:audit": {
+      "cache": false,
+      "outputs": ["pnpm-lock.yaml"],
+      "inputs": ["package.json", "pnpm-lock.yaml"]
     },
     "i18n:check": {
       "outputs": [],

@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { RendererFactory2 } from '@angular/core';
 import { ThemeService } from '@services/theme.service';
@@ -106,12 +109,13 @@ describe('ThemeService', () => {
     expect(mockProfileService.updatePreferences).toHaveBeenCalled();
   });
 
-  it('should emit theme changes via observable', done => {
-    service.isDark$.pipe(skip(1), take(1)).subscribe(isDark => {
-      expect(typeof isDark).toBe('boolean');
-      done();
-    });
+  it('should emit theme changes via observable', () =>
+    new Promise<void>(resolve => {
+      service.isDark$.pipe(skip(1), take(1)).subscribe(isDark => {
+        expect(typeof isDark).toBe('boolean');
+        resolve();
+      });
 
-    service.setThemeMode('dark');
-  });
+      service.setThemeMode('dark');
+    }));
 });

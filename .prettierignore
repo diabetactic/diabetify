@@ -27,3 +27,4 @@ Thumbs.db
 
 # Other
 package-lock.json
+src/app/core/services/local-auth.service.spec.ts

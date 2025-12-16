@@ -78,7 +78,7 @@ export class AuthGuard implements CanActivate {
               map(localAuthState => {
                 if (!localAuthState.isAuthenticated) {
                   const returnUrl = state.url;
-                  return this.router.createUrlTree([ROUTES.TABS], {
+                  return this.router.createUrlTree([ROUTES.WELCOME], {
                     queryParams: { returnUrl },
                   });
                 }

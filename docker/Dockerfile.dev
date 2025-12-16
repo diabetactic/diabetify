@@ -4,13 +4,15 @@
 # Based on Microsoft Playwright image with Chromium browsers pre-installed
 # Supports: Unit tests (Jest), E2E tests (Playwright), Dev server, Production builds
 #
-# Build: docker build -f docker/Dockerfile.dev -t diabetactic:dev .
+# Build: DOCKER_BUILDKIT=1 docker build -f docker/Dockerfile.dev -t diabetactic:dev .
 # Run tests: docker run --rm diabetactic:dev npm test
 # Run E2E: docker run --rm -p 4200:4200 diabetactic:dev npm run test:e2e
 # Dev server: docker run --rm -p 4200:4200 -v $(pwd):/app diabetactic:dev npm start
 # =============================================================================
 
-FROM mcr.microsoft.com/playwright:v1.48.0-jammy
+# syntax=docker/dockerfile:1.4
+
+FROM mcr.microsoft.com/playwright:v1.50.0-jammy
 
 # =============================================================================
 # Stage 1: Base Setup
@@ -42,14 +44,16 @@ WORKDIR /app
 # =============================================================================
 
 # Copy package files first (for better layer caching)
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies with production optimizations
-# - Clean install (ci) for reproducible builds
-# - Disable progress bars to reduce logs in CI
-# - Use cache mount to speed up rebuilds
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci --prefer-offline --no-audit --no-fund --loglevel=error
+# Install pnpm and dependencies
+# - Install pnpm via npm (corepack has signature issues in some Docker images)
+# - Frozen lockfile for reproducible builds
+# - --ignore-scripts to skip lefthook install (requires git repo)
+# - BuildKit cache mount for faster rebuilds
+RUN npm install -g pnpm
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
 # =============================================================================
 # Stage 3: Application Code

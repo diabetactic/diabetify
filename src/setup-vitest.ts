@@ -4,26 +4,300 @@
 (globalThis as { __DIABETACTIC_API_BASE_URL?: string }).__DIABETACTIC_API_BASE_URL =
   'http://localhost:8000';
 
-// Import zone.js for Angular support
-import 'zone.js';
-import 'zone.js/testing';
+// ============================================================================
+// CRITICAL: Polyfill adoptedStyleSheets BEFORE any imports
+// Ionic Core checks for this during initialization and jsdom doesn't support it
+// This MUST happen before zone.js or any @ionic imports
+// ============================================================================
+if (typeof document !== 'undefined') {
+  // Polyfill adoptedStyleSheets if it doesn't exist (jsdom doesn't support it)
+  if (!document.adoptedStyleSheets) {
+    Object.defineProperty(document, 'adoptedStyleSheets', {
+      value: [],
+      writable: true,
+      configurable: true,
+    });
+  }
+
+  // Also polyfill CSSStyleSheet.replaceSync
+  if (typeof CSSStyleSheet !== 'undefined' && !CSSStyleSheet.prototype.replaceSync) {
+    CSSStyleSheet.prototype.replaceSync = function () {
+      return this;
+    };
+    CSSStyleSheet.prototype.replace = function () {
+      return Promise.resolve(this);
+    };
+  }
+}
+
+// Note: zone.js is handled by @analogjs/vitest-angular/setup-zone
+// which is configured in vitest.config.ts setupFiles
 
 import { vi } from 'vitest';
+
+// ============================================================================
+// CRITICAL: Mock Ionic/Stencil FIRST before ANY other imports
+// This prevents Stencil initialization errors in the test environment
+// ============================================================================
+
+// Mock @stencil/core to prevent initialization errors in tests
+vi.mock('@stencil/core', () => ({
+  Component: vi.fn(),
+  Prop: vi.fn(),
+  State: vi.fn(),
+  Watch: vi.fn(),
+  Element: vi.fn(),
+  Event: vi.fn(),
+  Listen: vi.fn(),
+  Method: vi.fn(),
+  Host: vi.fn(),
+  h: vi.fn(),
+  Build: { isDev: false, isBrowser: true, isTesting: true },
+}));
+
+// Mock @stencil/core/internal/client to prevent runtime errors
+vi.mock('@stencil/core/internal/client', () => ({
+  BUILD: { isDev: false, isBrowser: true, isTesting: true },
+  doc: globalThis.document,
+  win: globalThis.window,
+  plt: {},
+  supportsShadow: false,
+  h: vi.fn(),
+  createEvent: vi.fn(() => ({ emit: vi.fn() })),
+  forceUpdate: vi.fn(),
+  getRenderingRef: vi.fn(),
+  registerInstance: vi.fn(),
+  Host: vi.fn(),
+}));
+
+// Mock @stencil/core/internal/client/index.js (the actual path being imported)
+vi.mock('@stencil/core/internal/client/index.js', () => ({
+  BUILD: { isDev: false, isBrowser: true, isTesting: true },
+  doc: globalThis.document,
+  win: globalThis.window,
+  plt: {},
+  supportsShadow: false,
+  h: vi.fn(),
+  createEvent: vi.fn(() => ({ emit: vi.fn() })),
+  forceUpdate: vi.fn(),
+  getRenderingRef: vi.fn(),
+  registerInstance: vi.fn(),
+  Host: vi.fn(),
+}));
+
+// Mock the entire @ionic/core package to avoid Stencil initialization issues
+vi.mock('@ionic/core', () => ({
+  isPlatform: vi.fn().mockReturnValue(false),
+  getPlatforms: vi.fn().mockReturnValue(['web']),
+  getMode: vi.fn().mockReturnValue('md'),
+}));
+
+// Mock @ionic/core/components to avoid Stencil ESM issues
+vi.mock('@ionic/core/components', async () => {
+  return {
+    setAssetPath: vi.fn(),
+    isPlatform: vi.fn().mockReturnValue(false),
+    getPlatforms: vi.fn().mockReturnValue(['web']),
+    // Lifecycle constants required by @ionic/angular
+    LIFECYCLE_WILL_ENTER: 'ionViewWillEnter',
+    LIFECYCLE_DID_ENTER: 'ionViewDidEnter',
+    LIFECYCLE_WILL_LEAVE: 'ionViewWillLeave',
+    LIFECYCLE_DID_LEAVE: 'ionViewDidLeave',
+    LIFECYCLE_WILL_UNLOAD: 'ionViewWillUnload',
+  };
+});
+
+// Mock @ionic/core/loader to prevent Stencil initialization errors
+vi.mock('@ionic/core/loader', async () => {
+  return {
+    defineCustomElements: vi.fn().mockResolvedValue(undefined),
+    setAssetPath: vi.fn(),
+    setNonce: vi.fn(),
+  };
+});
+
+// Mock the specific CJS files that are being loaded (hashed filenames)
+// These are the actual internal files that @ionic/angular imports
+vi.mock('@ionic/core/dist/cjs/index-D6Wc6v08.js', () => ({
+  BUILD: { isDev: false, isBrowser: true, isTesting: true },
+  doc: globalThis.document,
+  win: globalThis.window,
+  plt: {},
+  supportsShadow: false,
+}));
+
+vi.mock('@ionic/core/dist/cjs/animation-Bt3H9L1C.js', () => ({
+  createAnimation: vi.fn(() => ({
+    addElement: vi.fn().mockReturnThis(),
+    duration: vi.fn().mockReturnThis(),
+    fromTo: vi.fn().mockReturnThis(),
+    play: vi.fn().mockResolvedValue(undefined),
+    onFinish: vi.fn().mockReturnThis(),
+  })),
+}));
+
+// Mock Capacitor core - MUST come first before other Capacitor plugin mocks
+vi.mock('@capacitor/core', () => ({
+  Capacitor: {
+    isNativePlatform: vi.fn().mockReturnValue(false),
+    getPlatform: vi.fn().mockReturnValue('web'),
+    isPluginAvailable: vi.fn().mockReturnValue(true),
+    convertFileSrc: vi.fn((filePath: string) => filePath),
+    registerPlugin: vi.fn(),
+  },
+  registerPlugin: vi.fn(),
+}));
+
+// Mock Capacitor plugins
+vi.mock('@capacitor/preferences', () => ({
+  Preferences: {
+    get: vi.fn().mockResolvedValue({ value: null }),
+    set: vi.fn().mockResolvedValue(undefined),
+    remove: vi.fn().mockResolvedValue(undefined),
+    clear: vi.fn().mockResolvedValue(undefined),
+    keys: vi.fn().mockResolvedValue({ keys: [] }),
+  },
+}));
+
+vi.mock('@capacitor/device', () => ({
+  Device: {
+    getInfo: vi.fn().mockResolvedValue({
+      platform: 'web',
+      operatingSystem: 'unknown',
+      osVersion: 'unknown',
+      model: 'unknown',
+      manufacturer: 'unknown',
+      isVirtual: false,
+      webViewVersion: 'unknown',
+    }),
+    getId: vi.fn().mockResolvedValue({ identifier: 'test-device-id' }),
+    getBatteryInfo: vi.fn().mockResolvedValue({ batteryLevel: 1, isCharging: false }),
+    getLanguageCode: vi.fn().mockResolvedValue({ value: 'en' }),
+  },
+}));
+
+vi.mock('@capacitor/network', () => ({
+  Network: {
+    getStatus: vi.fn().mockResolvedValue({ connected: true, connectionType: 'wifi' }),
+    addListener: vi.fn().mockResolvedValue({ remove: vi.fn() }),
+  },
+}));
+
+vi.mock('@capacitor/keyboard', () => ({
+  Keyboard: {
+    addListener: vi.fn().mockResolvedValue({ remove: vi.fn() }),
+    hide: vi.fn().mockResolvedValue(undefined),
+    show: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+vi.mock('@capacitor/haptics', () => ({
+  Haptics: {
+    impact: vi.fn().mockResolvedValue(undefined),
+    notification: vi.fn().mockResolvedValue(undefined),
+    vibrate: vi.fn().mockResolvedValue(undefined),
+    selectionChanged: vi.fn().mockResolvedValue(undefined),
+  },
+  ImpactStyle: {
+    Light: 'LIGHT',
+    Medium: 'MEDIUM',
+    Heavy: 'HEAVY',
+  },
+  NotificationType: {
+    Success: 'SUCCESS',
+    Warning: 'WARNING',
+    Error: 'ERROR',
+  },
+}));
+
+vi.mock('@capacitor/status-bar', () => ({
+  StatusBar: {
+    setStyle: vi.fn().mockResolvedValue(undefined),
+    setBackgroundColor: vi.fn().mockResolvedValue(undefined),
+    show: vi.fn().mockResolvedValue(undefined),
+    hide: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+vi.mock('@capacitor/splash-screen', () => ({
+  SplashScreen: {
+    show: vi.fn().mockResolvedValue(undefined),
+    hide: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+vi.mock('@capacitor/browser', () => ({
+  Browser: {
+    open: vi.fn().mockResolvedValue(undefined),
+    close: vi.fn().mockResolvedValue(undefined),
+    addListener: vi.fn().mockResolvedValue({ remove: vi.fn() }),
+  },
+}));
+
+vi.mock('@aparajita/capacitor-secure-storage', () => ({
+  SecureStorage: {
+    get: vi.fn().mockResolvedValue({ value: null }),
+    set: vi.fn().mockResolvedValue(undefined),
+    remove: vi.fn().mockResolvedValue(undefined),
+    clear: vi.fn().mockResolvedValue(undefined),
+    keys: vi.fn().mockResolvedValue({ keys: [] }),
+  },
+}));
+
+vi.mock('@capacitor/local-notifications', () => ({
+  LocalNotifications: {
+    requestPermissions: vi.fn().mockResolvedValue({ display: 'granted' }),
+    checkPermissions: vi.fn().mockResolvedValue({ display: 'granted' }),
+    schedule: vi.fn().mockResolvedValue({ notifications: [] }),
+    cancel: vi.fn().mockResolvedValue(undefined),
+    getPending: vi.fn().mockResolvedValue({ notifications: [] }),
+    addListener: vi.fn().mockResolvedValue({ remove: vi.fn() }),
+  },
+}));
+
+// Mock @capawesome-team/capacitor-biometrics (premium plugin not in public npm)
+vi.mock('@capawesome-team/capacitor-biometrics', () => ({
+  BiometricAuth: {
+    isAvailable: vi.fn().mockResolvedValue({ isAvailable: false, biometryType: 'NONE' }),
+    authenticate: vi.fn().mockResolvedValue({ success: false }),
+  },
+}));
+
+// ============================================================================
+// END OF MOCKS - Now safe to import Angular and other dependencies
+// ============================================================================
+
+// TestBed initialization for Angular tests
 import { TestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { TextEncoder, TextDecoder } from 'util';
 import * as crypto from 'crypto';
 
-// Initialize Angular testing environment
-TestBed.initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting(), {
-  teardown: { destroyAfterEach: true },
-});
+// Initialize Angular TestBed ONCE at module load time
+// This is the simplest approach that works with Vitest's architecture
+(() => {
+  try {
+    TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting(), {
+      teardown: { destroyAfterEach: true },
+    });
+  } catch {
+    // Already initialized, which is fine
+  }
+})();
 
 // Alias Jest as vi globally for compatibility with tests that use jest.fn() directly
-(global as typeof globalThis & { jest: typeof vi }).jest = vi;
+// Also add mock/spyOn methods so jest.mock() and jest.spyOn() work
+const jestCompat = {
+  ...vi,
+  mock: vi.mock,
+  spyOn: vi.spyOn,
+  fn: vi.fn,
+  clearAllMocks: vi.clearAllMocks,
+  resetAllMocks: vi.resetAllMocks,
+  restoreAllMocks: vi.restoreAllMocks,
+  Mock: vi.fn().constructor,
+};
+(global as typeof globalThis & { jest: typeof jestCompat }).jest = jestCompat;
 
 // Vitest compatibility layer for easier migration from Jest/Jasmine
 // Provides jasmine.SpyObj and jasmine.createSpyObj with .and.returnValue() support
@@ -378,128 +652,6 @@ Object.defineProperty(global, 'crypto', {
   },
 });
 
-// Mock Capacitor plugins
-vi.mock('@capacitor/preferences', () => ({
-  Preferences: {
-    get: vi.fn().mockResolvedValue({ value: null }),
-    set: vi.fn().mockResolvedValue(undefined),
-    remove: vi.fn().mockResolvedValue(undefined),
-    clear: vi.fn().mockResolvedValue(undefined),
-    keys: vi.fn().mockResolvedValue({ keys: [] }),
-  },
-}));
-
-vi.mock('@capacitor/device', () => ({
-  Device: {
-    getInfo: vi.fn().mockResolvedValue({
-      platform: 'web',
-      operatingSystem: 'unknown',
-      osVersion: 'unknown',
-      model: 'unknown',
-      manufacturer: 'unknown',
-      isVirtual: false,
-      webViewVersion: 'unknown',
-    }),
-    getId: vi.fn().mockResolvedValue({ identifier: 'test-device-id' }),
-    getBatteryInfo: vi.fn().mockResolvedValue({ batteryLevel: 1, isCharging: false }),
-    getLanguageCode: vi.fn().mockResolvedValue({ value: 'en' }),
-  },
-}));
-
-vi.mock('@capacitor/network', () => ({
-  Network: {
-    getStatus: vi.fn().mockResolvedValue({ connected: true, connectionType: 'wifi' }),
-    addListener: vi.fn().mockResolvedValue({ remove: vi.fn() }),
-  },
-}));
-
-vi.mock('@capacitor/keyboard', () => ({
-  Keyboard: {
-    addListener: vi.fn().mockResolvedValue({ remove: vi.fn() }),
-    hide: vi.fn().mockResolvedValue(undefined),
-    show: vi.fn().mockResolvedValue(undefined),
-  },
-}));
-
-vi.mock('@capacitor/haptics', () => ({
-  Haptics: {
-    impact: vi.fn().mockResolvedValue(undefined),
-    notification: vi.fn().mockResolvedValue(undefined),
-    vibrate: vi.fn().mockResolvedValue(undefined),
-    selectionChanged: vi.fn().mockResolvedValue(undefined),
-  },
-  ImpactStyle: {
-    Light: 'LIGHT',
-    Medium: 'MEDIUM',
-    Heavy: 'HEAVY',
-  },
-  NotificationType: {
-    Success: 'SUCCESS',
-    Warning: 'WARNING',
-    Error: 'ERROR',
-  },
-}));
-
-vi.mock('@capacitor/status-bar', () => ({
-  StatusBar: {
-    setStyle: vi.fn().mockResolvedValue(undefined),
-    setBackgroundColor: vi.fn().mockResolvedValue(undefined),
-    show: vi.fn().mockResolvedValue(undefined),
-    hide: vi.fn().mockResolvedValue(undefined),
-  },
-}));
-
-vi.mock('@capacitor/splash-screen', () => ({
-  SplashScreen: {
-    show: vi.fn().mockResolvedValue(undefined),
-    hide: vi.fn().mockResolvedValue(undefined),
-  },
-}));
-
-vi.mock('@capacitor/browser', () => ({
-  Browser: {
-    open: vi.fn().mockResolvedValue(undefined),
-    close: vi.fn().mockResolvedValue(undefined),
-    addListener: vi.fn().mockResolvedValue({ remove: vi.fn() }),
-  },
-}));
-
-vi.mock('@aparajita/capacitor-secure-storage', () => ({
-  SecureStorage: {
-    get: vi.fn().mockResolvedValue({ value: null }),
-    set: vi.fn().mockResolvedValue(undefined),
-    remove: vi.fn().mockResolvedValue(undefined),
-    clear: vi.fn().mockResolvedValue(undefined),
-    keys: vi.fn().mockResolvedValue({ keys: [] }),
-  },
-}));
-
-vi.mock('@capacitor/local-notifications', () => ({
-  LocalNotifications: {
-    requestPermissions: vi.fn().mockResolvedValue({ display: 'granted' }),
-    checkPermissions: vi.fn().mockResolvedValue({ display: 'granted' }),
-    schedule: vi.fn().mockResolvedValue({ notifications: [] }),
-    cancel: vi.fn().mockResolvedValue(undefined),
-    getPending: vi.fn().mockResolvedValue({ notifications: [] }),
-    addListener: vi.fn().mockResolvedValue({ remove: vi.fn() }),
-  },
-}));
-
-// Mock @capawesome-team/capacitor-biometrics (premium plugin not in public npm)
-vi.mock('@capawesome-team/capacitor-biometrics', () => ({
-  BiometricAuth: {
-    isAvailable: vi.fn().mockResolvedValue({ isAvailable: false, biometryType: 'NONE' }),
-    authenticate: vi.fn().mockResolvedValue({ success: false }),
-  },
-}));
-
-// Mock @ionic/core/components to avoid Stencil ESM issues
-vi.mock('@ionic/core/components', () => ({
-  setAssetPath: vi.fn(),
-  isPlatform: vi.fn().mockReturnValue(false),
-  getPlatforms: vi.fn().mockReturnValue(['web']),
-}));
-
 // Mock IndexedDB for Dexie
 import 'fake-indexeddb/auto';
 
@@ -554,3 +706,44 @@ console.warn = (...args: unknown[]) => {
   }
   originalConsoleWarn.apply(console, args);
 };
+
+// ============================================================================
+// Global Mock Value Accessor for Ionic Form Components
+// ============================================================================
+// This provides a fallback NG_VALUE_ACCESSOR for any Ionic form components
+// that don't have one explicitly registered
+import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
+import { forwardRef, Directive, Provider } from '@angular/core';
+
+/* eslint-disable @angular-eslint/directive-selector */
+@Directive({
+  selector:
+    'ion-input, ion-select, ion-checkbox, ion-toggle, ion-textarea, ion-radio, ion-range, ion-searchbar, ion-segment, ion-datetime',
+  standalone: true,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => MockIonicValueAccessor),
+      multi: true,
+    },
+  ],
+})
+/* eslint-enable @angular-eslint/directive-selector */
+export class MockIonicValueAccessor implements ControlValueAccessor {
+  value: any = null;
+  onChange: any = () => {};
+  onTouched: any = () => {};
+  writeValue(value: any) {
+    this.value = value;
+  }
+  registerOnChange(fn: any) {
+    this.onChange = fn;
+  }
+  registerOnTouched(fn: any) {
+    this.onTouched = fn;
+  }
+  setDisabledState() {}
+}
+
+// Export for test modules to import
+(globalThis as any).MockIonicValueAccessor = MockIonicValueAccessor;

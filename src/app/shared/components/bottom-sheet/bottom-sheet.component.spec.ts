@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../../test-setup';
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BottomSheetComponent } from './bottom-sheet.component';

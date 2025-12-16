@@ -1,8 +1,11 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { HTTP_INTERCEPTORS, HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { of, throwError, BehaviorSubject, timer } from 'rxjs';
+import { of, throwError, BehaviorSubject, timer, firstValueFrom } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
 import { AuthInterceptor } from './auth.interceptor';
@@ -104,7 +107,7 @@ describe('AuthInterceptor', () => {
   });
 
   describe('401 Unauthorized Error Handling', () => {
-    it('should intercept 401 errors and attempt token refresh', done => {
+    it('should intercept 401 errors and attempt token refresh', async () => {
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
         user: { id: 'user-123', email: 'user@example.com' } as any,
@@ -117,11 +120,7 @@ describe('AuthInterceptor', () => {
 
       const mockResponse = { data: 'success after refresh' };
 
-      httpClient.get(testUrl).subscribe(response => {
-        expect(response).toEqual(mockResponse);
-        expect(authService.refreshAccessToken).toHaveBeenCalled();
-        done();
-      });
+      const promise = firstValueFrom(httpClient.get(testUrl));
 
       // First request returns 401
       const req1 = httpMock.expectOne(testUrl);
@@ -131,9 +130,13 @@ describe('AuthInterceptor', () => {
       const req2 = httpMock.expectOne(testUrl);
       expect(req2.request.headers.get('Authorization')).toBe('Bearer new-access-token');
       req2.flush(mockResponse);
+
+      const response = await promise;
+      expect(response).toEqual(mockResponse);
+      expect(authService.refreshAccessToken).toHaveBeenCalled();
     });
 
-    it('should add Bearer token to retried request', done => {
+    it('should add Bearer token to retried request', async () => {
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
         user: { id: 'user-123', email: 'user@example.com' } as any,
@@ -144,9 +147,7 @@ describe('AuthInterceptor', () => {
 
       authService.refreshAccessToken.mockReturnValue(of(newAuthState));
 
-      httpClient.get(testUrl).subscribe(() => {
-        done();
-      });
+      const promise = firstValueFrom(httpClient.get(testUrl));
 
       const req1 = httpMock.expectOne(testUrl);
       req1.flush(null, { status: 401, statusText: 'Unauthorized' });
@@ -154,32 +155,29 @@ describe('AuthInterceptor', () => {
       const req2 = httpMock.expectOne(testUrl);
       expect(req2.request.headers.get('Authorization')).toBe('Bearer fresh-token-abc');
       req2.flush({ data: 'success' });
+
+      await promise;
     });
 
-    it('should logout and redirect on refresh failure', done => {
+    it('should logout and redirect on refresh failure', async () => {
       authService.refreshAccessToken.mockReturnValue(
         throwError(() => new Error('Refresh token expired'))
       );
 
-      httpClient.get(testUrl).subscribe({
-        next: () => fail('should have failed'),
-        error: error => {
-          expect(error.message).toBe('Refresh token expired');
-          expect(authService.logout).toHaveBeenCalled();
-
-          // Wait for async logout to complete
-          setTimeout(() => {
-            expect(router.navigate).toHaveBeenCalledWith(['/welcome']);
-            done();
-          }, 50);
-        },
-      });
+      const promise = firstValueFrom(httpClient.get(testUrl));
 
       const req = httpMock.expectOne(testUrl);
       req.flush(null, { status: 401, statusText: 'Unauthorized' });
+
+      await expect(promise).rejects.toThrow('Refresh token expired');
+      expect(authService.logout).toHaveBeenCalled();
+
+      // Wait for async logout to complete
+      await new Promise(resolve => setTimeout(resolve, 50));
+      expect(router.navigate).toHaveBeenCalledWith(['/welcome']);
     });
 
-    it('should handle missing access token after refresh', done => {
+    it('should handle missing access token after refresh', async () => {
       const authStateWithoutToken: LocalAuthState = {
         isAuthenticated: false,
         user: null,
@@ -190,21 +188,17 @@ describe('AuthInterceptor', () => {
 
       authService.refreshAccessToken.mockReturnValue(of(authStateWithoutToken));
 
-      httpClient.get(testUrl).subscribe({
-        next: () => fail('should have failed'),
-        error: error => {
-          expect(error.message).toBe('No access token after refresh');
-          done();
-        },
-      });
+      const promise = firstValueFrom(httpClient.get(testUrl));
 
       const req = httpMock.expectOne(testUrl);
       req.flush(null, { status: 401, statusText: 'Unauthorized' });
+
+      await expect(promise).rejects.toThrow('No access token after refresh');
     });
   });
 
   describe('Request Queuing During Token Refresh', () => {
-    it('should queue multiple requests while refresh is in progress', done => {
+    it('should queue multiple requests while refresh is in progress', async () => {
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
         user: { id: 'user-123', email: 'user@example.com' } as any,
@@ -216,32 +210,10 @@ describe('AuthInterceptor', () => {
       // Add delay to refresh to simulate slow network
       authService.refreshAccessToken.mockReturnValue(of(newAuthState).pipe(delay(100)));
 
-      let completedRequests = 0;
-
       // Make three requests simultaneously
-      httpClient.get(`${testUrl}/1`).subscribe(() => {
-        completedRequests++;
-        if (completedRequests === 3) {
-          expect(authService.refreshAccessToken).toHaveBeenCalledTimes(1);
-          done();
-        }
-      });
-
-      httpClient.get(`${testUrl}/2`).subscribe(() => {
-        completedRequests++;
-        if (completedRequests === 3) {
-          expect(authService.refreshAccessToken).toHaveBeenCalledTimes(1);
-          done();
-        }
-      });
-
-      httpClient.get(`${testUrl}/3`).subscribe(() => {
-        completedRequests++;
-        if (completedRequests === 3) {
-          expect(authService.refreshAccessToken).toHaveBeenCalledTimes(1);
-          done();
-        }
-      });
+      const promise1 = firstValueFrom(httpClient.get(`${testUrl}/1`));
+      const promise2 = firstValueFrom(httpClient.get(`${testUrl}/2`));
+      const promise3 = firstValueFrom(httpClient.get(`${testUrl}/3`));
 
       // All three initial requests return 401
       const req1 = httpMock.expectOne(`${testUrl}/1`);
@@ -253,23 +225,26 @@ describe('AuthInterceptor', () => {
       req3.flush(null, { status: 401, statusText: 'Unauthorized' });
 
       // After refresh completes, all three should retry
-      setTimeout(() => {
-        const retryReq1 = httpMock.expectOne(`${testUrl}/1`);
-        const retryReq2 = httpMock.expectOne(`${testUrl}/2`);
-        const retryReq3 = httpMock.expectOne(`${testUrl}/3`);
+      await new Promise(resolve => setTimeout(resolve, 150));
 
-        // All should have the same new token
-        expect(retryReq1.request.headers.get('Authorization')).toBe('Bearer shared-new-token');
-        expect(retryReq2.request.headers.get('Authorization')).toBe('Bearer shared-new-token');
-        expect(retryReq3.request.headers.get('Authorization')).toBe('Bearer shared-new-token');
+      const retryReq1 = httpMock.expectOne(`${testUrl}/1`);
+      const retryReq2 = httpMock.expectOne(`${testUrl}/2`);
+      const retryReq3 = httpMock.expectOne(`${testUrl}/3`);
 
-        retryReq1.flush({ data: '1' });
-        retryReq2.flush({ data: '2' });
-        retryReq3.flush({ data: '3' });
-      }, 150);
+      // All should have the same new token
+      expect(retryReq1.request.headers.get('Authorization')).toBe('Bearer shared-new-token');
+      expect(retryReq2.request.headers.get('Authorization')).toBe('Bearer shared-new-token');
+      expect(retryReq3.request.headers.get('Authorization')).toBe('Bearer shared-new-token');
+
+      retryReq1.flush({ data: '1' });
+      retryReq2.flush({ data: '2' });
+      retryReq3.flush({ data: '3' });
+
+      await Promise.all([promise1, promise2, promise3]);
+      expect(authService.refreshAccessToken).toHaveBeenCalledTimes(1);
     });
 
-    it('should prevent token refresh stampede', done => {
+    it('should prevent token refresh stampede', async () => {
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
         user: { id: 'user-123', email: 'user@example.com' } as any,
@@ -281,8 +256,9 @@ describe('AuthInterceptor', () => {
       authService.refreshAccessToken.mockReturnValue(of(newAuthState).pipe(delay(50)));
 
       // Rapidly fire multiple requests
+      const promises = [];
       for (let i = 0; i < 5; i++) {
-        httpClient.get(`${testUrl}/req${i}`).subscribe();
+        promises.push(firstValueFrom(httpClient.get(`${testUrl}/req${i}`)));
       }
 
       // All return 401
@@ -291,18 +267,18 @@ describe('AuthInterceptor', () => {
         req.flush(null, { status: 401, statusText: 'Unauthorized' });
       }
 
-      setTimeout(() => {
-        // Refresh should be called only once
-        expect(authService.refreshAccessToken).toHaveBeenCalledTimes(1);
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-        // Clear retries
-        for (let i = 0; i < 5; i++) {
-          const retry = httpMock.expectOne(`${testUrl}/req${i}`);
-          retry.flush({ data: `retry${i}` });
-        }
+      // Refresh should be called only once
+      expect(authService.refreshAccessToken).toHaveBeenCalledTimes(1);
 
-        done();
-      }, 100);
+      // Clear retries
+      for (let i = 0; i < 5; i++) {
+        const retry = httpMock.expectOne(`${testUrl}/req${i}`);
+        retry.flush({ data: `retry${i}` });
+      }
+
+      await Promise.all(promises);
     });
   });
 
@@ -434,7 +410,7 @@ describe('AuthInterceptor', () => {
   });
 
   describe('POST/PUT/DELETE Requests', () => {
-    it('should handle POST requests with 401 error', done => {
+    it('should handle POST requests with 401 error', async () => {
       const postData = { name: 'Test' };
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
@@ -446,24 +422,24 @@ describe('AuthInterceptor', () => {
 
       authService.refreshAccessToken.mockReturnValue(of(newAuthState));
 
-      httpClient.post(testUrl, postData).subscribe(() => {
-        done();
-      });
+      const promise = firstValueFrom(httpClient.post(testUrl, postData));
 
       const req1 = httpMock.expectOne(testUrl);
       expect(req1.request.method).toBe('POST');
       expect(req1.request.body).toEqual(postData);
       req1.flush(null, { status: 401, statusText: 'Unauthorized' });
 
-      setTimeout(() => {
-        const req2 = httpMock.expectOne(testUrl);
-        expect(req2.request.body).toEqual(postData);
-        expect(req2.request.headers.get('Authorization')).toBe('Bearer post-token');
-        req2.flush({ success: true });
-      }, 100);
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const req2 = httpMock.expectOne(testUrl);
+      expect(req2.request.body).toEqual(postData);
+      expect(req2.request.headers.get('Authorization')).toBe('Bearer post-token');
+      req2.flush({ success: true });
+
+      await promise;
     });
 
-    it('should handle PUT requests with 401 error', done => {
+    it('should handle PUT requests with 401 error', async () => {
       const putData = { id: '123', name: 'Updated' };
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
@@ -475,22 +451,22 @@ describe('AuthInterceptor', () => {
 
       authService.refreshAccessToken.mockReturnValue(of(newAuthState));
 
-      httpClient.put(testUrl, putData).subscribe(() => {
-        done();
-      });
+      const promise = firstValueFrom(httpClient.put(testUrl, putData));
 
       const req1 = httpMock.expectOne(testUrl);
       expect(req1.request.method).toBe('PUT');
       req1.flush(null, { status: 401, statusText: 'Unauthorized' });
 
-      setTimeout(() => {
-        const req2 = httpMock.expectOne(testUrl);
-        expect(req2.request.headers.get('Authorization')).toBe('Bearer put-token');
-        req2.flush({ success: true });
-      }, 100);
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const req2 = httpMock.expectOne(testUrl);
+      expect(req2.request.headers.get('Authorization')).toBe('Bearer put-token');
+      req2.flush({ success: true });
+
+      await promise;
     });
 
-    it('should handle DELETE requests with 401 error', done => {
+    it('should handle DELETE requests with 401 error', async () => {
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
         user: { id: 'user-123', email: 'user@example.com' } as any,
@@ -501,24 +477,24 @@ describe('AuthInterceptor', () => {
 
       authService.refreshAccessToken.mockReturnValue(of(newAuthState));
 
-      httpClient.delete(testUrl).subscribe(() => {
-        done();
-      });
+      const promise = firstValueFrom(httpClient.delete(testUrl));
 
       const req1 = httpMock.expectOne(testUrl);
       expect(req1.request.method).toBe('DELETE');
       req1.flush(null, { status: 401, statusText: 'Unauthorized' });
 
-      setTimeout(() => {
-        const req2 = httpMock.expectOne(testUrl);
-        expect(req2.request.headers.get('Authorization')).toBe('Bearer delete-token');
-        req2.flush({ success: true });
-      }, 100);
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const req2 = httpMock.expectOne(testUrl);
+      expect(req2.request.headers.get('Authorization')).toBe('Bearer delete-token');
+      req2.flush({ success: true });
+
+      await promise;
     });
   });
 
   describe('Edge Cases', () => {
-    it('should handle empty token string', done => {
+    it('should handle empty token string', async () => {
       const authStateWithEmptyToken: LocalAuthState = {
         isAuthenticated: true,
         user: { id: 'user-123', email: 'user@example.com' } as any,
@@ -529,19 +505,15 @@ describe('AuthInterceptor', () => {
 
       authService.refreshAccessToken.mockReturnValue(of(authStateWithEmptyToken));
 
-      httpClient.get(testUrl).subscribe({
-        next: () => fail('should have failed with empty token'),
-        error: error => {
-          expect(error.message).toBe('No access token after refresh');
-          done();
-        },
-      });
+      const promise = firstValueFrom(httpClient.get(testUrl));
 
       const req = httpMock.expectOne(testUrl);
       req.flush(null, { status: 401, statusText: 'Unauthorized' });
+
+      await expect(promise).rejects.toThrow('No access token after refresh');
     });
 
-    it('should handle concurrent 401 errors from different endpoints', done => {
+    it('should handle concurrent 401 errors from different endpoints', async () => {
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
         user: { id: 'user-123', email: 'user@example.com' } as any,
@@ -552,15 +524,8 @@ describe('AuthInterceptor', () => {
 
       authService.refreshAccessToken.mockReturnValue(of(newAuthState).pipe(delay(50)));
 
-      let completedCount = 0;
-
-      httpClient.get('/api/endpoint1').subscribe(() => {
-        if (++completedCount === 2) done();
-      });
-
-      httpClient.get('/api/endpoint2').subscribe(() => {
-        if (++completedCount === 2) done();
-      });
+      const promise1 = firstValueFrom(httpClient.get('/api/endpoint1'));
+      const promise2 = firstValueFrom(httpClient.get('/api/endpoint2'));
 
       const req1 = httpMock.expectOne('/api/endpoint1');
       const req2 = httpMock.expectOne('/api/endpoint2');
@@ -568,15 +533,17 @@ describe('AuthInterceptor', () => {
       req1.flush(null, { status: 401, statusText: 'Unauthorized' });
       req2.flush(null, { status: 401, statusText: 'Unauthorized' });
 
-      setTimeout(() => {
-        expect(authService.refreshAccessToken).toHaveBeenCalledTimes(1);
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-        const retryReq1 = httpMock.expectOne('/api/endpoint1');
-        const retryReq2 = httpMock.expectOne('/api/endpoint2');
+      expect(authService.refreshAccessToken).toHaveBeenCalledTimes(1);
 
-        retryReq1.flush({ data: '1' });
-        retryReq2.flush({ data: '2' });
-      }, 100);
+      const retryReq1 = httpMock.expectOne('/api/endpoint1');
+      const retryReq2 = httpMock.expectOne('/api/endpoint2');
+
+      retryReq1.flush({ data: '1' });
+      retryReq2.flush({ data: '2' });
+
+      await Promise.all([promise1, promise2]);
     });
   });
 });

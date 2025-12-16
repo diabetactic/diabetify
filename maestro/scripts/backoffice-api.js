@@ -8,14 +8,14 @@
  * - open: Open the appointment queue
  * - close: Close the appointment queue
  *
- * Auto-detects Docker backend (localhost:8001) if running.
+ * Auto-detects Docker backend (localhost:8006) if running.
  */
 
 const https = require('https');
 const http = require('http');
 
 const HEROKU_URL = 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com';
-const LOCAL_URL = 'http://localhost:8001';
+const LOCAL_URL = 'http://localhost:8006'; // container-managing uses port 8006
 
 // Will be set after auto-detection
 let BACKOFFICE_URL = process.env.BACKOFFICE_API_URL || null;
@@ -37,14 +37,14 @@ async function detectBackend() {
     const req = http.request(
       {
         hostname: 'localhost',
-        port: 8001,
+        port: 8006, // container-managing uses port 8006
         path: '/docs',
         method: 'GET',
         timeout: 2000,
       },
       res => {
         if (res.statusCode === 200) {
-          console.log('✓ Docker backend detected (localhost:8001)');
+          console.log('✓ Docker backend detected (localhost:8006)');
           resolve(LOCAL_URL);
         } else {
           console.log('⚠ Docker not available, using Heroku');
@@ -69,11 +69,12 @@ async function detectBackend() {
 }
 
 /**
- * Make HTTPS request
+ * Make HTTP/HTTPS request based on URL
  */
-function request(options, postData = null) {
+function request(options, postData = null, useHttp = false) {
   return new Promise((resolve, reject) => {
-    const req = https.request(options, res => {
+    const httpModule = useHttp ? http : https;
+    const req = httpModule.request(options, res => {
       let data = '';
       res.on('data', chunk => (data += chunk));
       res.on('end', () => {
@@ -96,17 +97,23 @@ function request(options, postData = null) {
   });
 }
 
+// Check if using local Docker (HTTP) or Heroku (HTTPS)
+function isLocalDocker() {
+  return BACKOFFICE_URL && BACKOFFICE_URL.startsWith('http://');
+}
+
 /**
  * Get admin authentication token
  */
 async function getAdminToken() {
   const url = new URL(BACKOFFICE_URL);
+  const useHttp = isLocalDocker();
   const postData = `username=${ADMIN_USERNAME}&password=${ADMIN_PASSWORD}`;
 
   const data = await request(
     {
       hostname: url.hostname,
-      port: 443,
+      port: url.port || (useHttp ? 80 : 443),
       path: '/token',
       method: 'POST',
       headers: {
@@ -114,7 +121,8 @@ async function getAdminToken() {
         'Content-Length': Buffer.byteLength(postData),
       },
     },
-    postData
+    postData,
+    useHttp
   );
 
   return data.access_token;
@@ -125,14 +133,19 @@ async function getAdminToken() {
  */
 async function getPendingAppointments(token) {
   const url = new URL(BACKOFFICE_URL);
+  const useHttp = isLocalDocker();
 
-  const data = await request({
-    hostname: url.hostname,
-    port: 443,
-    path: '/appointments/pending',
-    method: 'GET',
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const data = await request(
+    {
+      hostname: url.hostname,
+      port: url.port || (useHttp ? 80 : 443),
+      path: '/appointments/pending',
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    },
+    null,
+    useHttp
+  );
 
   return Array.isArray(data) ? data : [];
 }
@@ -142,14 +155,19 @@ async function getPendingAppointments(token) {
  */
 async function updateAppointment(token, queuePlacement, action) {
   const url = new URL(BACKOFFICE_URL);
+  const useHttp = isLocalDocker();
 
-  return await request({
-    hostname: url.hostname,
-    port: 443,
-    path: `/appointments/${action}/${queuePlacement}`,
-    method: 'PUT',
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  return await request(
+    {
+      hostname: url.hostname,
+      port: url.port || (useHttp ? 80 : 443),
+      path: `/appointments/${action}/${queuePlacement}`,
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}` },
+    },
+    null,
+    useHttp
+  );
 }
 
 /**
@@ -157,15 +175,20 @@ async function updateAppointment(token, queuePlacement, action) {
  */
 async function clearQueue(token) {
   const url = new URL(BACKOFFICE_URL);
+  const useHttp = isLocalDocker();
 
   try {
-    await request({
-      hostname: url.hostname,
-      port: 443,
-      path: '/appointments',
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await request(
+      {
+        hostname: url.hostname,
+        port: url.port || (useHttp ? 80 : 443),
+        path: '/appointments',
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      },
+      null,
+      useHttp
+    );
     return true;
   } catch (e) {
     // 404 means already empty, which is fine
@@ -179,13 +202,19 @@ async function clearQueue(token) {
  */
 async function openQueue(token) {
   const url = new URL(BACKOFFICE_URL);
-  await request({
-    hostname: url.hostname,
-    port: 443,
-    path: '/appointments/queue/open',
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const useHttp = isLocalDocker();
+
+  await request(
+    {
+      hostname: url.hostname,
+      port: url.port || (useHttp ? 80 : 443),
+      path: '/appointments/queue/open',
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    },
+    null,
+    useHttp
+  );
 }
 
 /**
@@ -193,13 +222,19 @@ async function openQueue(token) {
  */
 async function closeQueue(token) {
   const url = new URL(BACKOFFICE_URL);
-  await request({
-    hostname: url.hostname,
-    port: 443,
-    path: '/appointments/queue/close',
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const useHttp = isLocalDocker();
+
+  await request(
+    {
+      hostname: url.hostname,
+      port: url.port || (useHttp ? 80 : 443),
+      path: '/appointments/queue/close',
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    },
+    null,
+    useHttp
+  );
 }
 
 /**

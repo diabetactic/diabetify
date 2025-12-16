@@ -16,7 +16,7 @@ function getLocalBaseUrl(): string {
     }
     return 'http://localhost:8000'; // iOS
   }
-  return 'http://localhost:8000'; // Web
+  return 'http://localhost:8000'; // Web (Docker API gateway)
 }
 
 export const environment = {

@@ -42,6 +42,8 @@
   }
 }
 
+// Dark mode queue card styles moved to main dark mode block below (line 296)
+
 h2.section-title {
   display: inline-flex;
   align-items: center;
@@ -259,6 +261,39 @@ ion-button {
 :host-context([data-theme='dark']) {
   .appointments-content {
     --background: oklch(var(--b1));
+  }
+
+  // Queue card enhancements
+  .queue-card {
+    // Enhanced visibility with elevated background and stronger border
+    background: var(--ion-color-step-50);
+    border: 1px solid var(--ion-color-step-200);
+    box-shadow: var(--ion-box-shadow-medium);
+
+    // Preserve state-based left borders with brighter colors in dark mode
+    &[data-queue-state='PENDING'] {
+      --background: rgba(var(--ion-color-warning-rgb), 0.12);
+
+      border-left-color: var(--ion-color-warning-shade);
+    }
+
+    &[data-queue-state='ACCEPTED'] {
+      --background: rgba(var(--ion-color-success-rgb), 0.12);
+
+      border-left-color: var(--ion-color-success-shade);
+    }
+
+    &[data-queue-state='DENIED'] {
+      --background: rgba(var(--ion-color-danger-rgb), 0.12);
+
+      border-left-color: var(--ion-color-danger-shade);
+    }
+
+    &[data-queue-state='CREATED'] {
+      --background: rgba(var(--ion-color-primary-rgb), 0.12);
+
+      border-left-color: var(--ion-color-primary-shade);
+    }
   }
 
   // All cards - elevated with border for distinction

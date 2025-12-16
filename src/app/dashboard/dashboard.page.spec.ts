@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../test-setup';
+
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { provideRouter } from '@angular/router';

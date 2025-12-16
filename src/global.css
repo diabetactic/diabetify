@@ -202,13 +202,13 @@
 }
 
 :root[data-theme='dark'] {
-  /* Bridge DaisyUI primary to Ionic primary (Desaturated/Lighter for Dark Mode - Blue-400) */
-  --ion-color-primary: #60a5fa;
-  --ion-color-primary-rgb: 96, 165, 250;
-  --ion-color-primary-contrast: #000;
-  --ion-color-primary-contrast-rgb: 0, 0, 0;
-  --ion-color-primary-shade: #3b82f6;
-  --ion-color-primary-tint: #93c5fd;
+  /* Bridge DaisyUI primary to Ionic primary (Darker blue for better toolbar contrast) */
+  --ion-color-primary: #3b82f6;
+  --ion-color-primary-rgb: 59, 130, 246;
+  --ion-color-primary-contrast: #fff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #2563eb;
+  --ion-color-primary-tint: #60a5fa;
 
   /* Bridge DaisyUI secondary to Ionic secondary (Desaturated/Lighter - Teal-400) */
   --ion-color-secondary: #2dd4bf;

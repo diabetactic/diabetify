@@ -1,47 +1,110 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Project Overview
-
-Diabetactic is an Ionic/Angular mobile app for diabetes glucose management. Built with Angular 20.3.14, Ionic 8.7.11, Capacitor 6.2.1, and Tailwind CSS v3.4.13 + DaisyUI 5.5.5.
-
-**Architecture Note**: Tidepool integration is "auth-only" - used only for user authentication/ID, not for glucose data sync. Glucose data comes from Diabetactic backend.
+> **Diabetify** - Angular 21/Ionic 8 mobile app for diabetes glucose management.
+> Offline-first with Dexie IndexedDB, syncs to Heroku backend.
 
 ---
 
-## IMPORTANT: Key Rules
+## CRITICAL RULES (YOU MUST FOLLOW)
 
-**YOU MUST follow these rules:**
-
-1. **All API requests go through `ApiGatewayService`** - Never make direct HTTP calls
-2. **Use `CUSTOM_ELEMENTS_SCHEMA`** in all standalone components for Ionic web components
-3. **Translations required in both `en.json` AND `es.json`** for any user-facing text
-4. **Prefer editing existing files** over creating new ones
-5. **Never save files to root folder** - use appropriate subdirectories
-6. **Run `pnpm test` before committing** - ensure tests pass
-7. **Offline-first**: Data stored in IndexedDB (Dexie), synced when online
-8. **Lefthook git hooks** are configured with lint-staged for pre-commit quality checks
-9. **Use pnpm instead of npm** - 3x faster installs, better caching with Turborepo
+1. **All API requests through `ApiGatewayService`** - Never direct HTTP calls
+2. **`CUSTOM_ELEMENTS_SCHEMA`** required in ALL standalone components
+3. **Translations in BOTH `en.json` AND `es.json`** - always
+4. **Run `pnpm test` before committing**
+5. **Use pnpm** (not npm) - 3x faster with Turborepo caching
+6. **Offline-first**: Local IndexedDB first, sync when online
 
 ---
 
-## Test Credentials (Quick Reference)
+## File Boundaries
+
+### Safe to Modify
+
+- `src/app/**/*.ts` - Application code
+- `src/assets/i18n/*.json` - Translations
+- `.claude/skills/*.md` - Skills documentation
+
+### DO NOT MODIFY (without good reason)
+
+- `src/test-setup.ts` - Central test setup, carefully tuned
+- `vitest.config.ts` - Pool forks config required for isolation
+- `capacitor.config.ts` - Native bridge configuration
+
+---
+
+## Quick Commands
+
+```bash
+pnpm start:mock          # Development (RECOMMENDED)
+pnpm test                # Run unit tests
+pnpm run quality         # Lint + test (pre-commit)
+/deploy                  # Deploy to Android (slash command)
+/test                    # Run tests (slash command)
+```
+
+---
+
+## Skills Reference
+
+Skills auto-trigger on keywords. See `.claude/skills/README.md` for full list:
+
+- **vitest** - Testing patterns (triggers: test, mock, spec)
+- **angular-signals-migration** - Signals patterns (triggers: signal, toSignal)
+- **dexie-offline** - Database patterns (triggers: dexie, offline, sync)
+
+---
+
+## Test Credentials (Dev Environment)
 
 | System             | Username/ID  | Password               | URL                                                            |
 | ------------------ | ------------ | ---------------------- | -------------------------------------------------------------- |
-| **Mobile App**     | `1000`       | `tuvieja`              | N/A (app login)                                                |
+| **Mobile App**     | `julian`     | `tuvieja`              | N/A (app login) - Julian's personal account                    |
+| **Mobile App**     | `1000`       | `tuvieja`              | N/A (app login) - Test user (Nacho Scocco)                     |
 | **Backoffice API** | `admin`      | `admin`                | `https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com` |
 | **Main API**       | Bearer token | (from /token endpoint) | `https://diabetactic-api-gateway-37949d6f182f.herokuapp.com`   |
 
-**Backoffice API Actions** (used by Maestro appointment tests):
+**Julian's Account** (primary dev/test account):
+
+- **DNI/Username**: `julian`
+- **Email**: `juliancrespo15@gmail.com`
+- **Password**: `tuvieja`
+- **User ID**: `4` (Docker), may differ in Heroku
+- **Hospital Account**: `HOSP001`
+
+### Unified API Helper Script
+
+Use `scripts/diabetify-api.js` for all backend operations (auto-detects Docker vs Heroku):
 
 ```bash
-# Accept/Deny/Clear appointment queue for user
-ACTION=accept USER_ID=1000 node maestro/scripts/backoffice-api.js
-ACTION=deny USER_ID=1000 node maestro/scripts/backoffice-api.js
-ACTION=clear node maestro/scripts/backoffice-api.js
+# User Management
+node scripts/diabetify-api.js list-users
+node scripts/diabetify-api.js create-user --dni=X --email=X --name=X --surname=X --password=X
+
+# Authentication
+node scripts/diabetify-api.js login --user=julian --pass=tuvieja
+node scripts/diabetify-api.js admin-login
+
+# Glucose Readings (set USER_TOKEN first)
+export USER_TOKEN=$(node scripts/diabetify-api.js login --user=julian --pass=tuvieja | jq -r .access_token)
+node scripts/diabetify-api.js add-reading --level=95 --type=DESAYUNO --notes="Fasting"
+node scripts/diabetify-api.js list-readings
+
+# Appointment Queue (admin)
+node scripts/diabetify-api.js open-queue
+node scripts/diabetify-api.js pending-appointments
+node scripts/diabetify-api.js accept --placement=0
+node scripts/diabetify-api.js deny --placement=0
+node scripts/diabetify-api.js clear-queue
+
+# User Appointments
+node scripts/diabetify-api.js submit-to-queue
+node scripts/diabetify-api.js appointment-state
 ```
+
+**Legacy scripts** (deprecated, use unified script above):
+
+- `maestro/scripts/backoffice-api.js` - Uses wrong port (8006)
+- `scripts/appointments/*.sh` - Heroku only, shell scripts
 
 ---
 
@@ -51,18 +114,12 @@ ACTION=clear node maestro/scripts/backoffice-api.js
 
 The following MCP servers are configured and can be used for enhanced capabilities:
 
-| Server       | Purpose                           | Key Tools                                                          |
-| ------------ | --------------------------------- | ------------------------------------------------------------------ |
-| **zen**      | Multi-model AI collaboration      | `chat`, `thinkdeep`, `codereview`, `debug`, `analyze`, `consensus` |
-| **context7** | Library documentation lookup      | `resolve-library-id`, `get-library-docs`                           |
-| **tavily**   | Web search and content extraction | `tavily-search`, `tavily-extract`, `tavily-crawl`                  |
-| **github**   | GitHub repository management      | `list_issues`, `create_pull_request`, `get_file_contents`          |
-
-**Zen MCP Models Available:**
-
-- OpenAI: `gpt-5.1`, `gpt-5.1-codex`, `gpt-5-pro`, `o3`, `o3-mini`, `o4-mini`
-- Google: `gemini-2.5-pro`, `gemini-3-pro-preview`, `gemini-2.5-flash`
-- Use aliases like `pro`, `flash`, `codex`, `gpt5` for convenience
+| Server                  | Purpose                             | Key Tools                                                       |
+| ----------------------- | ----------------------------------- | --------------------------------------------------------------- |
+| **claude-flow@alpha**   | Swarm orchestration, memory, agents | `swarm_init`, `agent_spawn`, `task_orchestrate`, `memory_usage` |
+| **context7**            | Library documentation lookup        | `resolve-library-id`, `get-library-docs`                        |
+| **sequential-thinking** | Complex problem solving             | `sequentialthinking`                                            |
+| **angular-toolkit**     | Angular/DS component analysis       | (project-specific)                                              |
 
 ### Subagents (Task Tool)
 
@@ -79,25 +136,41 @@ Use these specialized agents for complex tasks:
 | `frontend-developer` | React/Angular components, UI implementation                            |
 | `mobile-developer`   | React Native, Flutter, native mobile apps                              |
 
-### Skills Available
+### Skills Available (Project-Specific)
 
-| Skill                           | When to Use                               |
-| ------------------------------- | ----------------------------------------- |
-| `document-skills:xlsx`          | Working with spreadsheets                 |
-| `document-skills:pdf`           | PDF manipulation                          |
-| `example-skills:webapp-testing` | Testing web apps with Playwright          |
-| `python-development:*`          | Python testing, packaging, async patterns |
-| `superpowers:brainstorming`     | Before coding - refine ideas into designs |
-| `superpowers:defense-in-depth`  | Validation at multiple system layers      |
+These skills are auto-triggered by keywords in your queries. You can also invoke them directly.
+
+| Skill                       | Triggers                                            | Description                                                   |
+| --------------------------- | --------------------------------------------------- | ------------------------------------------------------------- |
+| `vitest`                    | test, spec, mock, vi.mock, TestBed, waitForAsync    | Vitest 4.0 + Angular TestBed patterns, mocking, async testing |
+| `angular-signals-migration` | signal, BehaviorSubject, toSignal, computed, effect | Migrate BehaviorSubject to Signals, rxResource patterns       |
+| `dexie-offline`             | dexie, IndexedDB, offline, sync, encryption, HIPAA  | Offline-first patterns, PHI encryption, sync queue            |
+| `diabetify-architecture`    | architecture, structure, folder, patterns           | Tech stack, folder structure, data flow diagrams              |
+| `diabetify-testing`         | testing, spec, playwright, maestro                  | Testing strategy, E2E patterns, mobile testing                |
+| `diabetify-api`             | api, endpoint, backend, gateway                     | API Gateway patterns, endpoint registry                       |
+| `diabetify-services`        | service, readings, profile, auth                    | Core services documentation                                   |
+| `diabetify-docker`          | docker, compose, local, backend                     | Docker backend setup, networking                              |
+| `diabetify-deploy`          | deploy, android, apk, mobile                        | Mobile deployment workflow                                    |
+| `playwright-testing`        | playwright, e2e, accessibility, visual              | E2E testing with Playwright                                   |
+| `maestro-mobile`            | maestro, mobile test, flow                          | Mobile E2E testing with Maestro                               |
+| `capacitor-6`               | capacitor, native, plugin                           | Capacitor 6 patterns and plugins                              |
+
+**How triggers work**: When your query contains trigger keywords, Claude Code automatically loads the relevant skill context.
 
 ### Slash Commands
 
-- `/superpowers:brainstorm` - Interactive design refinement
-- `/superpowers:execute-plan` - Execute plan with review checkpoints
-- `/superpowers:write-plan` - Create detailed implementation plan
-- `/episodic-memory:search-conversations` - Search previous conversations
+- `/test` - Run tests with various options
+- `/dev` - Start development server with backend mode selection
+- `/deploy` - Deploy to Android device or build APK
+- `/doctor` - Check project health and common issues
 
 ---
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     DETAILED REFERENCE SECTIONS BELOW
+     The sections above (Critical Rules, File Boundaries, Quick Commands) are
+     the most important. Sections below are comprehensive reference material.
+     ═══════════════════════════════════════════════════════════════════════════ -->
 
 ## Essential Commands
 
@@ -143,13 +216,13 @@ npm run deploy:local          # Same as mobile:install
 npm run deploy:device         # Build and force reinstall APK
 npm run deploy:apk            # Build and show APK path
 
-# Testing (Jest + Playwright)
-npm test                      # Run all unit tests (Jest)
+# Testing (Vitest + Playwright)
+npm test                      # Run all unit tests (Vitest)
 npm run test:unit             # Run unit tests (same as test)
 npm run test:watch            # Watch mode for unit tests
 npm run test:coverage         # Unit tests with coverage report
 npm run test:integration      # Integration tests (separate config)
-npm test -- --testPathPattern="profile"  # Run specific test file
+npm test -- profile           # Run specific test file (Vitest pattern)
 npm run test:e2e              # Playwright E2E tests (headless)
 npm run test:e2e:headed       # E2E with browser visible
 npm run test:a11y             # Accessibility audit tests
@@ -178,11 +251,11 @@ npm run cap:update            # Update Capacitor plugins
 
 ### Core Framework
 
-- **Angular**: 20.3.14 (standalone components, signals, provideRouter)
-- **Ionic**: 8.7.11 (UI components, web components)
-- **Capacitor**: 6.2.1 (native bridge, plugins)
-- **TypeScript**: 5.8.0
-- **RxJS**: 7.8.0 (reactive state management)
+- **Angular**: 21.0.5 (standalone components, signals, provideRouter)
+- **Ionic**: 8.0.0+ (UI components, web components)
+- **Capacitor**: 6.1.0+ (native bridge, plugins)
+- **TypeScript**: 5.9.3
+- **RxJS**: 7.8.0 (reactive state management, migrating to signals)
 
 ### Styling & UI
 
@@ -199,8 +272,9 @@ npm run cap:update            # Update Capacitor plugins
 
 ### Testing & Quality
 
-- **Jest**: 29.7.0 (unit tests)
-- **jest-junit**: For CI test results (visible in GitHub Actions)
+- **Vitest**: 4.0.15 (unit tests - migrated from Jest Dec 2025)
+- **@analogjs/vitest-angular**: Angular integration for Vitest
+- **jsdom**: Test environment with custom Ionic polyfills
 - **Playwright**: 1.48.0 (E2E tests)
 - **@axe-core/playwright**: 4.11.0 (accessibility)
 - **ESLint**: 9.0.0 + TypeScript ESLint 8.0.0
@@ -210,7 +284,7 @@ npm run cap:update            # Update Capacitor plugins
 ### Internationalization
 
 - **@ngx-translate/core**: 17.0.0 (i18n framework)
-- **@angular/localize**: 20.3.7
+- **@angular/localize**: 21.0.5
 
 ### Development Tools
 
@@ -310,7 +384,7 @@ import { SharedComponent } from '@app/shared/component';
 // @shared/*     → src/app/shared/*
 ```
 
-**Note**: Jest and Angular are configured to resolve these aliases automatically.
+**Note**: Vitest and Angular are configured to resolve these aliases automatically.
 
 ### Migration Notes
 
@@ -426,19 +500,38 @@ All pages use Angular standalone components with Ionic standalone imports:
 
 ### Test Suite Status
 
-- **2060+ tests** across 69 test suites
-- Unit tests (Jest) + E2E tests (Playwright) + Mobile tests (Maestro)
+- **2066 tests passing** (237 failing) across 70 test suites - 89.7% pass rate
+- **Vitest migration**: Completed December 2025, migrated from Jest
+- Unit tests (Vitest) + E2E tests (Playwright) + Mobile tests (Maestro)
 
-### Unit Tests (Jest 29.7.0)
+### Unit Tests (Vitest 4.0.15)
 
-- **Framework**: Jest with Jasmine compatibility layer via `jest-preset-angular`
-- **Configuration**: `setup-jest.ts` with comprehensive Capacitor mocks
-- **Patterns**: Use Jest (`jest.fn()`, `jest.spyOn()`) or Jasmine (`jasmine.createSpyObj()`)
-- **Capacitor mocks**: Pre-configured for all plugins (Preferences, SecureStorage, Network, etc.)
+- **Framework**: Vitest with `@analogjs/vitest-angular` for Angular TestBed integration
+- **Configuration**: `vitest.config.ts` with pool forks for test isolation
+- **IMPORTANT**: Every test file must import `test-setup.ts` at the top:
+  ```typescript
+  import '../../../test-setup'; // Path varies by file location
+  ```
+- **Setup files** (in order):
+  1. `src/setup-polyfills.ts` - jsdom polyfills for Ionic
+  2. `@analogjs/vitest-angular/setup-zone` - Zone.js for Angular
+  3. `src/setup-vitest.ts` - Additional mocks and cleanup hooks
+- **Mocks provided in `test-setup.ts`**:
+  - Capacitor plugins (Preferences, Device, Network, SecureStorage, etc.)
+  - Ionic Angular (Platform, NavController, AlertController, all standalone components)
+  - Jest compatibility layer (`jest.fn()`, `jest.spyOn()`, `jest.mock()`)
+  - Jasmine compatibility (`jasmine.createSpyObj()`)
 - **Test location**: Spec files alongside source (`*.spec.ts`)
-- **Coverage**: Run `npm run test:coverage` for HTML reports in `coverage/`
+- **Coverage**: Run `pnpm run test:coverage` for HTML reports in `coverage/`
 - **Fake IndexedDB**: `fake-indexeddb` package for Dexie testing
-- **CI Results**: jest-junit configured for GitHub Actions test visibility
+
+### Known Issues (Vitest)
+
+| Issue                         | Count | Workaround                           |
+| ----------------------------- | ----- | ------------------------------------ |
+| `done()` callback deprecation | ~50   | Use async/await instead of done()    |
+| Missing ControlValueAccessor  | ~30   | Add mock NG_VALUE_ACCESSOR providers |
+| Translation key warnings      | ~20   | Non-blocking, translations work      |
 
 ### E2E Tests (Playwright 1.48.0)
 
@@ -554,7 +647,101 @@ These files are stable and should not be modified without good reason:
 
 - `src/app/core/services/database.service.spec.ts` - Complex Dexie setup with fresh DB per test
 - `src/app/core/services/profile.service.spec.ts` - State pollution fixes carefully applied
-- `setup-jest.ts` - Carefully configured Capacitor mocks for all plugins
+- `src/test-setup.ts` - Central test setup with Capacitor/Ionic mocks, TestBed init, Jest compat
+- `src/setup-vitest.ts` - Vitest-specific setup with cleanup hooks
+- `vitest.config.ts` - Pool forks config required for test isolation
+
+---
+
+## Code Quality & Analysis
+
+The project includes comprehensive code quality analysis tools integrated into the development workflow.
+
+### Available Analysis Tools
+
+| Tool                         | Purpose                                            | Command                          | Auto-runs          |
+| ---------------------------- | -------------------------------------------------- | -------------------------------- | ------------------ |
+| **Knip**                     | Dead code detection (unused exports, dependencies) | `pnpm run analyze:dead-code`     | Pre-push           |
+| **dpdm**                     | Circular dependency detection                      | `pnpm run analyze:circular`      | Pre-push           |
+| **cyclomatic-complexity**    | Code complexity analysis (threshold: 10)           | `pnpm run analyze:complexity`    | Pre-push (warning) |
+| **jscpd**                    | Duplicate code detection                           | `pnpm run analyze:duplication`   | Manual             |
+| **type-coverage**            | TypeScript type coverage analysis                  | `pnpm run analyze:type-coverage` | Manual             |
+| **@angular-experts/hawkeye** | Bundle size analysis (esbuild)                     | `pnpm run analyze:bundle`        | Manual             |
+| **npm-check-updates**        | Dependency update checker                          | `pnpm run fix:deps:check`        | Manual             |
+
+### Quick Commands
+
+```bash
+# Run all analysis checks
+pnpm run analyze:all
+
+# Individual checks
+pnpm run analyze:dead-code       # Find unused exports/dependencies
+pnpm run analyze:circular        # Detect circular dependencies
+pnpm run analyze:complexity      # Check code complexity
+pnpm run analyze:duplication     # Find duplicate code
+pnpm run analyze:type-coverage   # TypeScript coverage report
+pnpm run analyze:bundle          # Bundle size breakdown
+
+# Fix commands
+pnpm run fix:dead-code          # Auto-remove unused exports (knip --fix)
+pnpm run fix:deps:check         # Check for dependency updates
+pnpm run fix:deps               # Update dependencies (interactive)
+pnpm run fix:audit              # Fix security vulnerabilities
+```
+
+### Automated Checks (Lefthook Pre-Push)
+
+The following checks run automatically on `git push`:
+
+1. **Dead code check** (knip) - Fails if unused exports detected
+2. **Circular dependencies** (dpdm) - Fails if circular imports found
+3. **Code complexity** (cyclomatic-complexity) - Warning only, doesn't block
+4. **Quality suite** (`pnpm run quality`) - Lint + tests
+5. **TypeScript check** - Production build with type validation
+6. **Build verification** - Full production build
+
+### Configuration Files
+
+- `knip.json` - Dead code detection config (ignores test files, mocks)
+- `.jscpd.json` - Duplication detection config (min 5 lines, 50 tokens)
+- `turbo.json` - Caching configuration for all analysis tasks
+
+### Turborepo Caching
+
+All analysis tasks are cached by Turborepo for faster execution:
+
+```bash
+# First run: analyzes all files
+pnpm run analyze:dead-code
+# ... 15 seconds
+
+# Second run (no changes): instant cache hit
+pnpm run analyze:dead-code
+# ... 0.1 seconds
+```
+
+Cache is invalidated when source files, config files, or dependencies change.
+
+### Integration with CI/CD
+
+Add to `.github/workflows/ci.yml`:
+
+```yaml
+- name: Code Quality Analysis
+  run: |
+    pnpm run analyze:all
+    pnpm run analyze:bundle
+```
+
+### Reports Directory
+
+Analysis reports are saved to `reports/`:
+
+- `reports/jscpd/` - Duplication reports
+- `reports/bundle-analysis.json` - Bundle size breakdown
+
+Add `reports/` to `.gitignore` to exclude from commits.
 
 ---
 
@@ -772,6 +959,28 @@ npx cap run android           # Build and run on device/emulator
 
 ## Current Status
 
+### Work in Progress (2025-12-13)
+
+**Sync Proof & Screenshots**:
+
+- Created comprehensive Playwright test: `playwright/tests/sync-proof-comprehensive.spec.ts`
+- Captured 27 screenshots in `docs/assets/screenshots/sync-proof/`
+- All screens in light + dark themes
+- Generated `docs/SYNC_PROOF.md` documentation
+
+**Docker Local Backend**:
+
+- Docker networking requires system reboot (kernel module issue)
+- Running kernel 6.12.60-1-lts but modules updated to 6.12.61-1-lts
+- After reboot: `cd docker && docker-compose -f docker-compose.local.yml up -d`
+
+**Files to Cleanup** (optional):
+
+- `.aider*` - Aider AI tool artifacts (77KB)
+- `package-lock.json` - Obsolete, using pnpm-lock.yaml now
+- `.hive-mind/` - Old swarm data (400KB)
+- `html/` - Landing page artifacts
+
 ### Lint Status
 
 Current lint warnings (non-blocking):
@@ -780,7 +989,7 @@ Current lint warnings (non-blocking):
 - `@angular-eslint/prefer-standalone` - 3 legacy non-standalone components
 - `@angular-eslint/template/click-events-have-key-events` - 4 accessibility warnings
 - Stylelint: 4 browser compatibility warnings for experimental CSS features
-- Run `npm run lint:fix` to auto-fix most issues
+- Run `pnpm run lint:fix` to auto-fix most issues
 
 ### Tidepool "Auth-Only" Architecture
 
@@ -806,8 +1015,18 @@ Tidepool integration has been simplified to auth-only (completed 2025-12-04):
 ### Start Development
 
 ```bash
-pnpm run start:mock      # Best for offline development
+pnpm run start:mock      # Best for offline development (no backend)
+pnpm run start:local     # Local Docker backend (localhost:8000)
 pnpm run start:cloud     # Test against Heroku backend
+```
+
+### Start Docker Backend
+
+```bash
+cd docker
+docker-compose -f docker-compose.local.yml up -d    # Start all services
+docker-compose -f docker-compose.local.yml logs -f  # View logs
+docker-compose -f docker-compose.local.yml down     # Stop all
 ```
 
 ### Before Committing
@@ -844,20 +1063,21 @@ pnpm run build:analyze   # Analyze bundle size
 
 ## Key Files
 
-| File                                              | Purpose                              |
-| ------------------------------------------------- | ------------------------------------ |
-| `src/environments/environment.ts`                 | Environment config and backend modes |
-| `src/app/core/services/api-gateway.service.ts`    | API endpoint registry                |
-| `src/app/core/services/capacitor-http.service.ts` | Hybrid HTTP abstraction              |
-| `src/app/core/services/local-auth.service.ts`     | Authentication service               |
-| `setup-jest.ts`                                   | Jest config with Capacitor mocks     |
-| `jest.config.js`                                  | Jest configuration with jest-junit   |
-| `tailwind.config.js`                              | Tailwind and DaisyUI theme config    |
-| `angular.json`                                    | Angular build configurations         |
-| `capacitor.config.ts`                             | Capacitor native bridge config       |
-| `playwright.config.ts`                            | E2E test configuration               |
-| `.github/workflows/ci.yml`                        | CI/CD pipeline configuration         |
+| File                                              | Purpose                                     |
+| ------------------------------------------------- | ------------------------------------------- |
+| `src/environments/environment.ts`                 | Environment config and backend modes        |
+| `src/app/core/services/api-gateway.service.ts`    | API endpoint registry                       |
+| `src/app/core/services/capacitor-http.service.ts` | Hybrid HTTP abstraction                     |
+| `src/app/core/services/local-auth.service.ts`     | Authentication service                      |
+| `src/test-setup.ts`                               | Central test setup (mocks, TestBed, compat) |
+| `src/setup-vitest.ts`                             | Vitest setup with cleanup hooks             |
+| `vitest.config.ts`                                | Vitest configuration with pool forks        |
+| `tailwind.config.js`                              | Tailwind and DaisyUI theme config           |
+| `angular.json`                                    | Angular build configurations                |
+| `capacitor.config.ts`                             | Capacitor native bridge config              |
+| `playwright.config.ts`                            | E2E test configuration                      |
+| `.github/workflows/ci.yml`                        | CI/CD pipeline configuration                |
 
 ---
 
-_Last updated: 2025-12-12_
+_Last updated: 2025-12-13_

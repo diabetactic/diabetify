@@ -1,6 +1,10 @@
 # Multi-stage Dockerfile for Playwright E2E Testing
 # Stage 1: Build Angular app
 # Stage 2: Run Playwright tests
+#
+# Build: DOCKER_BUILDKIT=1 docker build -f docker/Dockerfile.e2e -t diabetactic:e2e .
+
+# syntax=docker/dockerfile:1.4
 
 # ============================================================================
 # Stage 1: Build Angular Application
@@ -9,33 +13,32 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm ci --prefer-offline --no-audit
+# Install pnpm for faster installs
+RUN npm install -g pnpm
+
+# Copy package files and install dependencies with cache
+COPY package.json pnpm-lock.yaml ./
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
 # Copy source code
 COPY . .
 
 # Build Angular app with mock configuration (no backend required for E2E)
-# Using mock configuration to ensure tests are self-contained
-RUN npm run build:mock
+RUN pnpm run build:mock
 
 # ============================================================================
 # Stage 2: Playwright Test Runner
 # ============================================================================
-FROM mcr.microsoft.com/playwright:v1.48.0-jammy
+FROM mcr.microsoft.com/playwright:v1.50.0-jammy
 
 WORKDIR /e2e
 
-# Install Node.js 20 (Playwright image comes with older Node)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm ci --prefer-offline --no-audit
+# Copy package files and install dependencies with cache
+COPY package.json pnpm-lock.yaml ./
+RUN npm install -g pnpm
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
 # Copy Playwright configuration and tests
 COPY playwright.config.ts ./
@@ -44,8 +47,7 @@ COPY playwright/ ./playwright/
 # Copy built Angular app from builder stage
 COPY --from=builder /app/www ./www
 
-# Install serve for serving the static app
-RUN npm install -g serve@14.2.1
+# Install serve for serving the static app (already in devDeps, skip global install)
 
 # Create directories for test artifacts
 RUN mkdir -p playwright/artifacts playwright-report

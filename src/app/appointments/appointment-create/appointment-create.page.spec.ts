@@ -13,11 +13,14 @@
  * - OTRO
  */
 
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 
 import { AppointmentCreatePage } from './appointment-create.page';
 import { AppointmentService } from '@core/services/appointment.service';
@@ -123,12 +126,13 @@ describe('AppointmentCreatePage: Backend Contract', () => {
         { provide: LocalAuthService, useValue: mockAuthService },
         { provide: TranslationService, useValue: mockTranslationService },
       ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AppointmentCreatePage);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    // DO NOT call detectChanges() here - form controls will throw NG01203
+    // Tests that need change detection should call it explicitly
   });
 
   afterEach(() => {

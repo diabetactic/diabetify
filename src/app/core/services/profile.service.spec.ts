@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { ProfileService } from '@services/profile.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
@@ -313,7 +316,7 @@ describe('ProfileService', () => {
       it('should set Tidepool connection to disconnected by default', async () => {
         const profile = await service.createProfile(createInput);
 
-        expect(profile.tidepoolConnection.connected).toBeFalse();
+        expect(profile.tidepoolConnection.connected).toBe(false);
       });
 
       it('should allow custom Tidepool connection', async () => {
@@ -328,14 +331,14 @@ describe('ProfileService', () => {
 
         const profile = await service.createProfile(input);
 
-        expect(profile.tidepoolConnection.connected).toBeTrue();
+        expect(profile.tidepoolConnection.connected).toBe(true);
         expect(profile.tidepoolConnection.userId).toBe('tidepool-123');
       });
 
       it('should set hasCompletedOnboarding from input', async () => {
         const profile = await service.createProfile(createInput);
 
-        expect(profile.hasCompletedOnboarding).toBeFalse();
+        expect(profile.hasCompletedOnboarding).toBe(false);
       });
 
       it('should create profile with optional fields', async () => {
@@ -361,21 +364,22 @@ describe('ProfileService', () => {
         expect(profile.notes).toBe('Allergic to penicillin');
       });
 
-      it('should update profile$ observable', done => {
-        let emissionCount = 0;
+      it('should update profile$ observable', () =>
+        new Promise<void>(resolve => {
+          let emissionCount = 0;
 
-        service.profile$.subscribe(profile => {
-          emissionCount++;
-          if (emissionCount === 2) {
-            // Skip initial null emission
-            expect(profile).toBeTruthy();
-            expect(profile!.name).toBe('New User');
-            done();
-          }
-        });
+          service.profile$.subscribe(profile => {
+            emissionCount++;
+            if (emissionCount === 2) {
+              // Skip initial null emission
+              expect(profile).toBeTruthy();
+              expect(profile!.name).toBe('New User');
+              resolve();
+            }
+          });
 
-        service.createProfile(createInput);
-      });
+          service.createProfile(createInput);
+        }));
 
       it('should generate unique user IDs', async () => {
         const profile1 = await service.createProfile(createInput);
@@ -471,19 +475,20 @@ describe('ProfileService', () => {
         expect(updatedProfile.notes).toBe('Updated notes');
       });
 
-      it('should update profile$ observable', done => {
-        let emissionCount = 0;
+      it('should update profile$ observable', () =>
+        new Promise<void>(resolve => {
+          let emissionCount = 0;
 
-        service.profile$.subscribe(profile => {
-          emissionCount++;
-          if (emissionCount === 2) {
-            expect(profile!.name).toBe('Updated via Observable');
-            done();
-          }
-        });
+          service.profile$.subscribe(profile => {
+            emissionCount++;
+            if (emissionCount === 2) {
+              expect(profile!.name).toBe('Updated via Observable');
+              resolve();
+            }
+          });
 
-        service.updateProfile({ name: 'Updated via Observable' });
-      });
+          service.updateProfile({ name: 'Updated via Observable' });
+        }));
     });
 
     describe('Error Cases', () => {
@@ -565,9 +570,9 @@ describe('ProfileService', () => {
           autoSync: false,
         });
 
-        expect(updatedProfile.preferences.notificationsEnabled).toBeFalse();
-        expect(updatedProfile.preferences.soundEnabled).toBeFalse();
-        expect(updatedProfile.preferences.autoSync).toBeFalse();
+        expect(updatedProfile.preferences.notificationsEnabled).toBe(false);
+        expect(updatedProfile.preferences.soundEnabled).toBe(false);
+        expect(updatedProfile.preferences.autoSync).toBe(false);
       });
 
       it('should update updatedAt timestamp', async () => {
@@ -622,34 +627,36 @@ describe('ProfileService', () => {
       expect(auth).toBeNull();
     });
 
-    it('should update profile$ observable to null', done => {
-      let emissionCount = 0;
+    it('should update profile$ observable to null', () =>
+      new Promise<void>(resolve => {
+        let emissionCount = 0;
 
-      service.profile$.subscribe(profile => {
-        emissionCount++;
-        if (emissionCount === 2) {
-          expect(profile).toBeNull();
-          done();
-        }
-      });
+        service.profile$.subscribe(profile => {
+          emissionCount++;
+          if (emissionCount === 2) {
+            expect(profile).toBeNull();
+            resolve();
+          }
+        });
 
-      service.deleteProfile();
-    });
+        service.deleteProfile();
+      }));
 
-    it('should update tidepoolConnected$ observable to false', done => {
-      let emissionCount = 0;
+    it('should update tidepoolConnected$ observable to false', () =>
+      new Promise<void>(resolve => {
+        let emissionCount = 0;
 
-      service.tidepoolConnected$.subscribe(connected => {
-        emissionCount++;
-        if (emissionCount === 3) {
-          // Skip initial emissions
-          expect(connected).toBeFalse();
-          done();
-        }
-      });
+        service.tidepoolConnected$.subscribe(connected => {
+          emissionCount++;
+          if (emissionCount === 3) {
+            // Skip initial emissions
+            expect(connected).toBe(false);
+            resolve();
+          }
+        });
 
-      service.deleteProfile();
-    });
+        service.deleteProfile();
+      }));
   });
 
   // Tidepool Credentials tests - state pollution fixed with TestBed.resetTestingModule()
@@ -670,7 +677,7 @@ describe('ProfileService', () => {
       it('should store credentials securely', async () => {
         await service.setTidepoolCredentials(mockTidepoolAuth);
 
-        expect(mockSecureStorage.has('diabetactic_tidepool_auth')).toBeTrue();
+        expect(mockSecureStorage.has('diabetactic_tidepool_auth')).toBe(true);
       });
 
       it('should update profile connection status', async () => {
@@ -678,25 +685,26 @@ describe('ProfileService', () => {
 
         const profile = await service.getProfile();
 
-        expect(profile!.tidepoolConnection.connected).toBeTrue();
+        expect(profile!.tidepoolConnection.connected).toBe(true);
         expect(profile!.tidepoolConnection.userId).toBe(mockTidepoolAuth.userId);
         expect(profile!.tidepoolConnection.email).toBe(mockTidepoolAuth.email);
         expect(profile!.tidepoolConnection.connectedAt).toBeTruthy();
       });
 
-      it('should update tidepoolConnected$ observable', done => {
-        let emissionCount = 0;
+      it('should update tidepoolConnected$ observable', () =>
+        new Promise<void>(resolve => {
+          let emissionCount = 0;
 
-        service.tidepoolConnected$.subscribe(connected => {
-          emissionCount++;
-          if (emissionCount === 2) {
-            expect(connected).toBeTrue();
-            done();
-          }
-        });
+          service.tidepoolConnected$.subscribe(connected => {
+            emissionCount++;
+            if (emissionCount === 2) {
+              expect(connected).toBe(true);
+              resolve();
+            }
+          });
 
-        service.setTidepoolCredentials(mockTidepoolAuth);
-      });
+          service.setTidepoolCredentials(mockTidepoolAuth);
+        }));
 
       it('should handle storage error', async () => {
         jest.spyOn(console, 'error');
@@ -767,7 +775,7 @@ describe('ProfileService', () => {
       it('should remove credentials from secure storage', async () => {
         await service.clearTidepoolCredentials();
 
-        expect(mockSecureStorage.has('diabetactic_tidepool_auth')).toBeFalse();
+        expect(mockSecureStorage.has('diabetactic_tidepool_auth')).toBe(false);
       });
 
       it('should update profile connection status', async () => {
@@ -775,23 +783,24 @@ describe('ProfileService', () => {
 
         const profile = await service.getProfile();
 
-        expect(profile!.tidepoolConnection.connected).toBeFalse();
+        expect(profile!.tidepoolConnection.connected).toBe(false);
       });
 
-      it('should update tidepoolConnected$ observable', done => {
-        let emissionCount = 0;
+      it('should update tidepoolConnected$ observable', () =>
+        new Promise<void>(resolve => {
+          let emissionCount = 0;
 
-        service.tidepoolConnected$.subscribe(connected => {
-          emissionCount++;
-          if (emissionCount === 3) {
-            // Initial, set, then clear
-            expect(connected).toBeFalse();
-            done();
-          }
-        });
+          service.tidepoolConnected$.subscribe(connected => {
+            emissionCount++;
+            if (emissionCount === 3) {
+              // Initial, set, then clear
+              expect(connected).toBe(false);
+              resolve();
+            }
+          });
 
-        service.clearTidepoolCredentials();
-      });
+          service.clearTidepoolCredentials();
+        }));
     });
 
     describe('updateLastSyncTime()', () => {
@@ -824,14 +833,14 @@ describe('ProfileService', () => {
     describe('isTidepoolConnected()', () => {
       it('should return false when no credentials exist', async () => {
         const connected = await service.isTidepoolConnected();
-        expect(connected).toBeFalse();
+        expect(connected).toBe(false);
       });
 
       it('should return true when valid credentials exist', async () => {
         await service.setTidepoolCredentials(mockTidepoolAuth);
 
         const connected = await service.isTidepoolConnected();
-        expect(connected).toBeTrue();
+        expect(connected).toBe(true);
       });
 
       it('should return false when token is expired', async () => {
@@ -843,7 +852,7 @@ describe('ProfileService', () => {
         mockSecureStorage.set('diabetactic_tidepool_auth', expiredAuth);
 
         const connected = await service.isTidepoolConnected();
-        expect(connected).toBeFalse();
+        expect(connected).toBe(false);
       });
 
       it('should consider token expired with 5 minute buffer', async () => {
@@ -855,7 +864,7 @@ describe('ProfileService', () => {
         mockSecureStorage.set('diabetactic_tidepool_auth', soonToExpireAuth);
 
         const connected = await service.isTidepoolConnected();
-        expect(connected).toBeFalse(); // Should be false due to 5 min buffer
+        expect(connected).toBe(false); // Should be false due to 5 min buffer
       });
 
       it('should return true when token has long expiry', async () => {
@@ -867,7 +876,7 @@ describe('ProfileService', () => {
         mockSecureStorage.set('diabetactic_tidepool_auth', authWithLongExpiry);
 
         const connected = await service.isTidepoolConnected();
-        expect(connected).toBeTrue();
+        expect(connected).toBe(true);
       });
     });
   });
@@ -876,7 +885,7 @@ describe('ProfileService', () => {
   describe('hasProfile()', () => {
     it('should return false when no profile exists', async () => {
       const has = await service.hasProfile();
-      expect(has).toBeFalse();
+      expect(has).toBe(false);
     });
 
     it('should return true when profile exists', async () => {
@@ -891,7 +900,7 @@ describe('ProfileService', () => {
       });
 
       const has = await service.hasProfile();
-      expect(has).toBeTrue();
+      expect(has).toBe(true);
     });
   });
 
@@ -923,7 +932,7 @@ describe('ProfileService', () => {
         const exported = await service.exportProfile();
         const exportedData = JSON.parse(exported);
 
-        expect(exportedData.tidepoolConnection.connected).toBeFalse();
+        expect(exportedData.tidepoolConnection.connected).toBe(false);
         expect(exportedData.tidepoolConnection.userId).toBeUndefined();
       });
 
@@ -979,7 +988,7 @@ describe('ProfileService', () => {
 
         const imported = await service.importProfile(exported);
 
-        expect(imported.tidepoolConnection.connected).toBeFalse();
+        expect(imported.tidepoolConnection.connected).toBe(false);
       });
 
       it('should throw error on invalid JSON', async () => {
@@ -1044,41 +1053,44 @@ describe('ProfileService', () => {
   });
 
   describe('Observables', () => {
-    it('profile$ should emit current profile state', done => {
-      service.profile$.subscribe(profile => {
-        // Profile can be null or a profile object depending on stored state
-        expect(profile === null || typeof profile === 'object').toBeTrue();
-        done();
-      });
-    });
+    it('profile$ should emit current profile state', () =>
+      new Promise<void>(resolve => {
+        service.profile$.subscribe(profile => {
+          // Profile can be null or a profile object depending on stored state
+          expect(profile === null || typeof profile === 'object').toBe(true);
+          resolve();
+        });
+      }));
 
-    it('tidepoolConnected$ should emit boolean value', done => {
-      service.tidepoolConnected$.subscribe(connected => {
-        expect(typeof connected).toBe('boolean');
-        done();
-      });
-    });
+    it('tidepoolConnected$ should emit boolean value', () =>
+      new Promise<void>(resolve => {
+        service.tidepoolConnected$.subscribe(connected => {
+          expect(typeof connected).toBe('boolean');
+          resolve();
+        });
+      }));
 
-    it('should allow multiple subscribers to profile$', done => {
-      let subscriber1 = false;
-      let subscriber2 = false;
+    it('should allow multiple subscribers to profile$', () =>
+      new Promise<void>(resolve => {
+        let subscriber1 = false;
+        let subscriber2 = false;
 
-      service.profile$.subscribe(() => {
-        subscriber1 = true;
-        checkBoth();
-      });
+        service.profile$.subscribe(() => {
+          subscriber1 = true;
+          checkBoth();
+        });
 
-      service.profile$.subscribe(() => {
-        subscriber2 = true;
-        checkBoth();
-      });
+        service.profile$.subscribe(() => {
+          subscriber2 = true;
+          checkBoth();
+        });
 
-      function checkBoth() {
-        if (subscriber1 && subscriber2) {
-          done();
+        function checkBoth() {
+          if (subscriber1 && subscriber2) {
+            resolve();
+          }
         }
-      }
-    });
+      }));
   });
 
   describe('updateProfileOnBackend', () => {

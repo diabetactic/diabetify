@@ -1,6 +1,9 @@
+// Initialize TestBed environment for Vitest
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
-import { of, throwError } from 'rxjs';
+import { of, throwError, firstValueFrom } from 'rxjs';
 import {
   GlucoserverService,
   GlucoseReading,
@@ -79,36 +82,32 @@ describe('GlucoserverService', () => {
       },
     ];
 
-    it('should get readings with default parameters', done => {
+    it('should get readings with default parameters', async () => {
       httpClient.get.mockReturnValue(of(mockReadings));
 
-      service.getReadings().subscribe(readings => {
-        expect(readings).toEqual(mockReadings);
-        expect(httpClient.get).toHaveBeenCalledWith(`${mockFullUrl}/readings`, {
-          params: expect.any(HttpParams),
-        });
-
-        const params = httpClient.get.mock.calls[0][1]?.params as HttpParams;
-        expect(params.get('limit')).toBe('100');
-        expect(params.get('offset')).toBe('0');
-        done();
+      const readings = await firstValueFrom(service.getReadings());
+      expect(readings).toEqual(mockReadings);
+      expect(httpClient.get).toHaveBeenCalledWith(`${mockFullUrl}/readings`, {
+        params: expect.any(HttpParams),
       });
+
+      const params = httpClient.get.mock.calls[0][1]?.params as HttpParams;
+      expect(params.get('limit')).toBe('100');
+      expect(params.get('offset')).toBe('0');
     });
 
-    it('should get readings with date filters', done => {
+    it('should get readings with date filters', async () => {
       const startDate = new Date('2024-01-01');
       const endDate = new Date('2024-01-31');
 
       httpClient.get.mockReturnValue(of(mockReadings));
 
-      service.getReadings(startDate, endDate, 50, 10).subscribe(() => {
-        const params = httpClient.get.mock.calls[0][1]?.params as HttpParams;
-        expect(params.get('start_date')).toBe(startDate.toISOString());
-        expect(params.get('end_date')).toBe(endDate.toISOString());
-        expect(params.get('limit')).toBe('50');
-        expect(params.get('offset')).toBe('10');
-        done();
-      });
+      await firstValueFrom(service.getReadings(startDate, endDate, 50, 10));
+      const params = httpClient.get.mock.calls[0][1]?.params as HttpParams;
+      expect(params.get('start_date')).toBe(startDate.toISOString());
+      expect(params.get('end_date')).toBe(endDate.toISOString());
+      expect(params.get('limit')).toBe('50');
+      expect(params.get('offset')).toBe('10');
     });
 
     it('should use retry operator for resilience', () => {
@@ -124,21 +123,22 @@ describe('GlucoserverService', () => {
       expect(typeof observable.subscribe).toBe('function');
     });
 
-    it('should handle errors after retries', done => {
-      const error = new HttpErrorResponse({ status: 500, statusText: 'Server Error' });
-      httpClient.get.mockReturnValue(throwError(() => error));
+    it('should handle errors after retries', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({ status: 500, statusText: 'Server Error' });
+        httpClient.get.mockReturnValue(throwError(() => error));
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      service.getReadings().subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err.message).toContain('Server error');
-          consoleSpy.mockRestore();
-          done();
-        },
-      });
-    });
+        service.getReadings().subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err.message).toContain('Server error');
+            consoleSpy.mockRestore();
+            resolve();
+          },
+        });
+      }));
   });
 
   describe('getReading', () => {
@@ -150,31 +150,30 @@ describe('GlucoserverService', () => {
       timestamp: '2024-01-01T12:00:00Z',
     };
 
-    it('should get single reading by ID', done => {
+    it('should get single reading by ID', async () => {
       httpClient.get.mockReturnValue(of(mockReading));
 
-      service.getReading('123').subscribe(reading => {
-        expect(reading).toEqual(mockReading);
-        expect(httpClient.get).toHaveBeenCalledWith(`${mockFullUrl}/readings/123`);
-        done();
-      });
+      const reading = await firstValueFrom(service.getReading('123'));
+      expect(reading).toEqual(mockReading);
+      expect(httpClient.get).toHaveBeenCalledWith(`${mockFullUrl}/readings/123`);
     });
 
-    it('should handle 404 not found error', done => {
-      const error = new HttpErrorResponse({ status: 404 });
-      httpClient.get.mockReturnValue(throwError(() => error));
+    it('should handle 404 not found error', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({ status: 404 });
+        httpClient.get.mockReturnValue(throwError(() => error));
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
-      service.getReading('nonexistent').subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err.message).toContain('Resource not found');
-          consoleSpy.mockRestore();
-          done();
-        },
-      });
-    });
+        service.getReading('nonexistent').subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err.message).toContain('Resource not found');
+            consoleSpy.mockRestore();
+            resolve();
+          },
+        });
+      }));
   });
 
   describe('createReading', () => {
@@ -192,32 +191,31 @@ describe('GlucoserverService', () => {
       ...newReading,
     };
 
-    it('should create new reading', done => {
+    it('should create new reading', async () => {
       httpClient.post.mockReturnValue(of(createdReading));
 
-      service.createReading(newReading).subscribe(reading => {
-        expect(reading).toEqual(createdReading);
-        expect(httpClient.post).toHaveBeenCalledWith(`${mockFullUrl}/readings`, newReading);
-        done();
-      });
+      const reading = await firstValueFrom(service.createReading(newReading));
+      expect(reading).toEqual(createdReading);
+      expect(httpClient.post).toHaveBeenCalledWith(`${mockFullUrl}/readings`, newReading);
     });
 
-    it('should handle validation errors', done => {
-      const error = new HttpErrorResponse({
-        status: 400,
-        statusText: 'Bad Request',
-        error: { message: 'Invalid glucose value' },
-      });
-      httpClient.post.mockReturnValue(throwError(() => error));
+    it('should handle validation errors', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({
+          status: 400,
+          statusText: 'Bad Request',
+          error: { message: 'Invalid glucose value' },
+        });
+        httpClient.post.mockReturnValue(throwError(() => error));
 
-      service.createReading(newReading).subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err).toBeDefined();
-          done();
-        },
-      });
-    });
+        service.createReading(newReading).subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err).toBeDefined();
+            resolve();
+          },
+        });
+      }));
   });
 
   describe('updateReading', () => {
@@ -235,52 +233,50 @@ describe('GlucoserverService', () => {
       notes: 'Updated notes',
     };
 
-    it('should update reading', done => {
+    it('should update reading', async () => {
       httpClient.put.mockReturnValue(of(updatedReading));
 
-      service.updateReading('123', updates).subscribe(reading => {
-        expect(reading).toEqual(updatedReading);
-        expect(httpClient.put).toHaveBeenCalledWith(`${mockFullUrl}/readings/123`, updates);
-        done();
-      });
+      const reading = await firstValueFrom(service.updateReading('123', updates));
+      expect(reading).toEqual(updatedReading);
+      expect(httpClient.put).toHaveBeenCalledWith(`${mockFullUrl}/readings/123`, updates);
     });
 
-    it('should handle unauthorized error', done => {
-      const error = new HttpErrorResponse({ status: 401 });
-      httpClient.put.mockReturnValue(throwError(() => error));
+    it('should handle unauthorized error', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({ status: 401 });
+        httpClient.put.mockReturnValue(throwError(() => error));
 
-      service.updateReading('123', updates).subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err.message).toContain('Unauthorized');
-          done();
-        },
-      });
-    });
+        service.updateReading('123', updates).subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err.message).toContain('Unauthorized');
+            resolve();
+          },
+        });
+      }));
   });
 
   describe('deleteReading', () => {
-    it('should delete reading', done => {
+    it('should delete reading', async () => {
       httpClient.delete.mockReturnValue(of(undefined));
 
-      service.deleteReading('123').subscribe(() => {
-        expect(httpClient.delete).toHaveBeenCalledWith(`${mockFullUrl}/readings/123`);
-        done();
-      });
+      await firstValueFrom(service.deleteReading('123'));
+      expect(httpClient.delete).toHaveBeenCalledWith(`${mockFullUrl}/readings/123`);
     });
 
-    it('should handle deletion errors', done => {
-      const error = new HttpErrorResponse({ status: 403, statusText: 'Forbidden' });
-      httpClient.delete.mockReturnValue(throwError(() => error));
+    it('should handle deletion errors', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({ status: 403, statusText: 'Forbidden' });
+        httpClient.delete.mockReturnValue(throwError(() => error));
 
-      service.deleteReading('123').subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err).toBeDefined();
-          done();
-        },
-      });
-    });
+        service.deleteReading('123').subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err).toBeDefined();
+            resolve();
+          },
+        });
+      }));
   });
 
   describe('bulkUpload', () => {
@@ -304,25 +300,21 @@ describe('GlucoserverService', () => {
       ...r,
     }));
 
-    it('should bulk upload readings', done => {
+    it('should bulk upload readings', async () => {
       httpClient.post.mockReturnValue(of(uploadedReadings));
 
-      service.bulkUpload(bulkReadings).subscribe(readings => {
-        expect(readings).toEqual(uploadedReadings);
-        expect(httpClient.post).toHaveBeenCalledWith(`${mockFullUrl}/readings/bulk`, {
-          readings: bulkReadings,
-        });
-        done();
+      const readings = await firstValueFrom(service.bulkUpload(bulkReadings));
+      expect(readings).toEqual(uploadedReadings);
+      expect(httpClient.post).toHaveBeenCalledWith(`${mockFullUrl}/readings/bulk`, {
+        readings: bulkReadings,
       });
     });
 
-    it('should handle empty array', done => {
+    it('should handle empty array', async () => {
       httpClient.post.mockReturnValue(of([]));
 
-      service.bulkUpload([]).subscribe(readings => {
-        expect(readings).toEqual([]);
-        done();
-      });
+      const readings = await firstValueFrom(service.bulkUpload([]));
+      expect(readings).toEqual([]);
     });
   });
 
@@ -347,20 +339,18 @@ describe('GlucoserverService', () => {
       },
     };
 
-    it('should get statistics for date range', done => {
+    it('should get statistics for date range', async () => {
       const startDate = new Date('2024-01-01');
       const endDate = new Date('2024-01-31');
 
       httpClient.get.mockReturnValue(of(mockStats));
 
-      service.getStatistics(startDate, endDate).subscribe(stats => {
-        expect(stats).toEqual(mockStats);
+      const stats = await firstValueFrom(service.getStatistics(startDate, endDate));
+      expect(stats).toEqual(mockStats);
 
-        const params = httpClient.get.mock.calls[0][1]?.params as HttpParams;
-        expect(params.get('start_date')).toBe(startDate.toISOString());
-        expect(params.get('end_date')).toBe(endDate.toISOString());
-        done();
-      });
+      const params = httpClient.get.mock.calls[0][1]?.params as HttpParams;
+      expect(params.get('start_date')).toBe(startDate.toISOString());
+      expect(params.get('end_date')).toBe(endDate.toISOString());
     });
   });
 
@@ -373,80 +363,64 @@ describe('GlucoserverService', () => {
       ],
     };
 
-    it('should get trends with default date', done => {
+    it('should get trends with default date', async () => {
       httpClient.get.mockReturnValue(of(mockTrends));
 
-      service.getTrends('week').subscribe(trends => {
-        expect(trends).toEqual(mockTrends);
+      const trends = await firstValueFrom(service.getTrends('week'));
+      expect(trends).toEqual(mockTrends);
 
-        const params = httpClient.get.mock.calls[0][1]?.params as HttpParams;
-        expect(params.get('period')).toBe('week');
-        expect(params.get('date')).toBeTruthy();
-        done();
-      });
+      const params = httpClient.get.mock.calls[0][1]?.params as HttpParams;
+      expect(params.get('period')).toBe('week');
+      expect(params.get('date')).toBeTruthy();
     });
 
-    it('should get trends with custom date', done => {
+    it('should get trends with custom date', async () => {
       const customDate = new Date('2024-01-15');
       httpClient.get.mockReturnValue(of(mockTrends));
 
-      service.getTrends('month', customDate).subscribe(() => {
-        const params = httpClient.get.mock.calls[0][1]?.params as HttpParams;
-        expect(params.get('period')).toBe('month');
-        expect(params.get('date')).toBe(customDate.toISOString());
-        done();
-      });
+      await firstValueFrom(service.getTrends('month', customDate));
+      const params = httpClient.get.mock.calls[0][1]?.params as HttpParams;
+      expect(params.get('period')).toBe('month');
+      expect(params.get('date')).toBe(customDate.toISOString());
     });
 
-    it('should support all period types', done => {
+    it('should support all period types', async () => {
       const periods: ('day' | 'week' | 'month' | 'year')[] = ['day', 'week', 'month', 'year'];
       httpClient.get.mockReturnValue(of(mockTrends));
 
-      let count = 0;
-      periods.forEach(period => {
-        service.getTrends(period).subscribe(() => {
-          count++;
-          if (count === periods.length) {
-            expect(httpClient.get).toHaveBeenCalledTimes(periods.length);
-            done();
-          }
-        });
-      });
+      await Promise.all(periods.map(period => firstValueFrom(service.getTrends(period))));
+      expect(httpClient.get).toHaveBeenCalledTimes(periods.length);
     });
   });
 
   describe('exportData', () => {
     const mockBlob = new Blob(['glucose data'], { type: 'text/csv' });
 
-    it('should export data as CSV', done => {
+    it('should export data as CSV', async () => {
       const startDate = new Date('2024-01-01');
       const endDate = new Date('2024-01-31');
 
       httpClient.get.mockReturnValue(of(mockBlob));
 
-      service.exportData('csv', startDate, endDate).subscribe(blob => {
-        expect(blob).toEqual(mockBlob);
+      const blob = await firstValueFrom(service.exportData('csv', startDate, endDate));
+      expect(blob).toEqual(mockBlob);
 
-        const params = httpClient.get.mock.calls[0][1]?.params as HttpParams;
-        expect(params.get('format')).toBe('csv');
-        expect(httpClient.get.mock.calls[0][1]?.responseType).toBe('blob');
-        done();
-      });
+      const params = httpClient.get.mock.calls[0][1]?.params as HttpParams;
+      expect(params.get('format')).toBe('csv');
+      expect(httpClient.get.mock.calls[0][1]?.responseType).toBe('blob');
     });
 
-    it('should export data as PDF', done => {
+    it('should export data as PDF', async () => {
       const startDate = new Date('2024-01-01');
       const endDate = new Date('2024-01-31');
 
       httpClient.get.mockReturnValue(of(mockBlob));
 
-      service.exportData('pdf', startDate, endDate).subscribe(blob => {
-        expect(blob).toBeDefined();
+      const blob = await firstValueFrom(service.exportData('pdf', startDate, endDate));
+      expect(blob).toBeDefined();
 
-        const params = httpClient.get.mock.calls[0][1]?.params as HttpParams;
-        expect(params.get('format')).toBe('pdf');
-        done();
-      });
+      const params = httpClient.get.mock.calls[0][1]?.params as HttpParams;
+      expect(params.get('format')).toBe('pdf');
     });
   });
 
@@ -462,7 +436,7 @@ describe('GlucoserverService', () => {
       },
     ];
 
-    it('should sync readings successfully', done => {
+    it('should sync readings successfully', async () => {
       const syncResponse = {
         synced: 10,
         failed: 0,
@@ -471,15 +445,13 @@ describe('GlucoserverService', () => {
 
       httpClient.post.mockReturnValue(of(syncResponse));
 
-      service.syncReadings(localReadings).subscribe(result => {
-        expect(result.synced).toBe(10);
-        expect(result.failed).toBe(0);
-        expect(result.conflicts).toEqual([]);
-        done();
-      });
+      const result = await firstValueFrom(service.syncReadings(localReadings));
+      expect(result.synced).toBe(10);
+      expect(result.failed).toBe(0);
+      expect(result.conflicts).toEqual([]);
     });
 
-    it('should handle partial sync with failures', done => {
+    it('should handle partial sync with failures', async () => {
       const syncResponse = {
         synced: 8,
         failed: 2,
@@ -488,14 +460,12 @@ describe('GlucoserverService', () => {
 
       httpClient.post.mockReturnValue(of(syncResponse));
 
-      service.syncReadings(localReadings).subscribe(result => {
-        expect(result.synced).toBe(8);
-        expect(result.failed).toBe(2);
-        done();
-      });
+      const result = await firstValueFrom(service.syncReadings(localReadings));
+      expect(result.synced).toBe(8);
+      expect(result.failed).toBe(2);
     });
 
-    it('should handle conflicts', done => {
+    it('should handle conflicts', async () => {
       const conflictReading: GlucoseReading = {
         id: 'conflict-1',
         userId: 'user123',
@@ -512,99 +482,100 @@ describe('GlucoserverService', () => {
 
       httpClient.post.mockReturnValue(of(syncResponse));
 
-      service.syncReadings(localReadings).subscribe(result => {
-        expect(result.conflicts.length).toBe(1);
-        expect(result.conflicts[0]).toEqual(conflictReading);
-        done();
-      });
+      const result = await firstValueFrom(service.syncReadings(localReadings));
+      expect(result.conflicts.length).toBe(1);
+      expect(result.conflicts[0]).toEqual(conflictReading);
     });
 
-    it('should use default values for missing response fields', done => {
+    it('should use default values for missing response fields', async () => {
       // Server sends incomplete response
       const syncResponse = {};
 
       httpClient.post.mockReturnValue(of(syncResponse));
 
-      service.syncReadings(localReadings).subscribe(result => {
-        expect(result.synced).toBe(0);
-        expect(result.failed).toBe(0);
-        expect(result.conflicts).toEqual([]);
-        done();
-      });
+      const result = await firstValueFrom(service.syncReadings(localReadings));
+      expect(result.synced).toBe(0);
+      expect(result.failed).toBe(0);
+      expect(result.conflicts).toEqual([]);
     });
   });
 
   describe('error handling', () => {
-    it('should handle client-side errors', done => {
-      const clientError = {
-        error: new ErrorEvent('Network error', { message: 'Connection lost' }),
-      };
-      httpClient.get.mockReturnValue(throwError(() => clientError));
+    it('should handle client-side errors', () =>
+      new Promise<void>(resolve => {
+        const clientError = {
+          error: new ErrorEvent('Network error', { message: 'Connection lost' }),
+        };
+        httpClient.get.mockReturnValue(throwError(() => clientError));
 
-      service.getReadings().subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err.message).toContain('Error:');
-          done();
-        },
-      });
-    });
+        service.getReadings().subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err.message).toContain('Error:');
+            resolve();
+          },
+        });
+      }));
 
-    it('should handle 401 Unauthorized error', done => {
-      const error = new HttpErrorResponse({ status: 401 });
-      httpClient.get.mockReturnValue(throwError(() => error));
+    it('should handle 401 Unauthorized error', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({ status: 401 });
+        httpClient.get.mockReturnValue(throwError(() => error));
 
-      service.getReadings().subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err.message).toContain('Unauthorized');
-          done();
-        },
-      });
-    });
+        service.getReadings().subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err.message).toContain('Unauthorized');
+            resolve();
+          },
+        });
+      }));
 
-    it('should handle 404 Not Found error', done => {
-      const error = new HttpErrorResponse({ status: 404 });
-      httpClient.get.mockReturnValue(throwError(() => error));
+    it('should handle 404 Not Found error', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({ status: 404 });
+        httpClient.get.mockReturnValue(throwError(() => error));
 
-      service.getReadings().subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err.message).toContain('Resource not found');
-          done();
-        },
-      });
-    });
+        service.getReadings().subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err.message).toContain('Resource not found');
+            resolve();
+          },
+        });
+      }));
 
-    it('should handle 500 Server Error', done => {
-      const error = new HttpErrorResponse({ status: 500 });
-      httpClient.get.mockReturnValue(throwError(() => error));
+    it('should handle 500 Server Error', () =>
+      new Promise<void>(resolve => {
+        const error = new HttpErrorResponse({ status: 500 });
+        httpClient.get.mockReturnValue(throwError(() => error));
 
-      service.getReadings().subscribe({
-        next: () => fail('should have failed'),
-        error: err => {
-          expect(err.message).toContain('Server error');
-          done();
-        },
-      });
-    });
+        service.getReadings().subscribe({
+          next: () => fail('should have failed'),
+          error: err => {
+            expect(err.message).toContain('Server error');
+            resolve();
+          },
+        });
+      }));
 
-    it('should log errors to console', done => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      const error = new HttpErrorResponse({ status: 500 });
-      httpClient.get.mockReturnValue(throwError(() => error));
+    it('should log errors to console', () =>
+      new Promise<void>(resolve => {
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+        const error = new HttpErrorResponse({ status: 500 });
+        httpClient.get.mockReturnValue(throwError(() => error));
 
-      service.getReadings().subscribe({
-        next: () => fail('should have failed'),
-        error: () => {
-          expect(consoleSpy).toHaveBeenCalledWith(
-            'GlucoserverService Error:',
-            expect.stringContaining('Server error')
-          );
-          consoleSpy.mockRestore();
-          done();
-        },
-      });
-    });
+        service.getReadings().subscribe({
+          next: () => fail('should have failed'),
+          error: () => {
+            expect(consoleSpy).toHaveBeenCalledWith(
+              'GlucoserverService Error:',
+              expect.stringContaining('Server error')
+            );
+            consoleSpy.mockRestore();
+            resolve();
+          },
+        });
+      }));
   });
 });
