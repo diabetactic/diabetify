@@ -16,12 +16,12 @@ import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helpe
 const mockAppointmentService = {
   appointments$: of([]),
   upcomingAppointment$: of(null),
-  getAppointments: jest.fn().mockReturnValue(of([])),
-  shareGlucoseData: jest.fn(),
-  getQueueState: jest.fn().mockReturnValue(of({ state: 'NONE', position: null })),
-  checkQueueOpen: jest.fn().mockReturnValue(of(true)),
-  getQueuePosition: jest.fn().mockReturnValue(of(null)),
-  requestAppointment: jest.fn().mockReturnValue(of({ state: 'PENDING', position: 1 })),
+  getAppointments: vi.fn().mockReturnValue(of([])),
+  shareGlucoseData: vi.fn(),
+  getQueueState: vi.fn().mockReturnValue(of({ state: 'NONE', position: null })),
+  checkQueueOpen: vi.fn().mockReturnValue(of(true)),
+  getQueuePosition: vi.fn().mockReturnValue(of(null)),
+  requestAppointment: vi.fn().mockReturnValue(of({ state: 'PENDING', position: 1 })),
 };
 
 describe('AppointmentsPage', () => {
@@ -30,7 +30,7 @@ describe('AppointmentsPage', () => {
 
   beforeEach(async () => {
     // Reset mocks before each test
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     await TestBed.configureTestingModule({
       imports: [

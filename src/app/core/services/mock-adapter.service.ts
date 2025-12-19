@@ -54,6 +54,11 @@ export class MockAdapterService {
 
   private config: MockAdapterConfig;
 
+  /** Helper seguro para acceder a localStorage en entornos de prueba */
+  private get storage(): Storage | null {
+    return typeof window !== 'undefined' && window.localStorage ? window.localStorage : null;
+  }
+
   constructor(private demoDataService: DemoDataService) {
     // Faker locale configured via import
 
@@ -80,6 +85,10 @@ export class MockAdapterService {
    * Generates random readings, appointments, and a user profile using Faker.
    */
   private async initializeMockData(): Promise<void> {
+    // Cache storage reference to avoid getter being called multiple times during async operations
+    const localStorage = this.storage;
+    if (!localStorage) return;
+
     if (!localStorage.getItem(this.READINGS_STORAGE_KEY)) {
       const readings = await this.demoDataService.generateGlucoseReadings(30);
       localStorage.setItem(this.READINGS_STORAGE_KEY, JSON.stringify(readings));
@@ -166,7 +175,7 @@ export class MockAdapterService {
    * @returns Promise<PaginatedReadings>
    */
   async mockGetAllReadings(offset = 0, limit = 100): Promise<PaginatedReadings> {
-    const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
+    const stored = this.storage?.getItem(this.READINGS_STORAGE_KEY);
     const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
     const paginatedReadings = allReadings
       .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
@@ -189,7 +198,7 @@ export class MockAdapterService {
    * @returns Promise<LocalGlucoseReading> - The created reading with ID.
    */
   async mockAddReading(reading: Omit<LocalGlucoseReading, 'id'>): Promise<LocalGlucoseReading> {
-    const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
+    const stored = this.storage?.getItem(this.READINGS_STORAGE_KEY);
     const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
 
     const newReading: LocalGlucoseReading = {
@@ -201,7 +210,7 @@ export class MockAdapterService {
     } as LocalGlucoseReading;
 
     allReadings.push(newReading);
-    localStorage.setItem(this.READINGS_STORAGE_KEY, JSON.stringify(allReadings));
+    this.storage?.setItem(this.READINGS_STORAGE_KEY, JSON.stringify(allReadings));
 
     return this.delay(newReading);
   }
@@ -214,7 +223,7 @@ export class MockAdapterService {
     id: string,
     updates: Partial<LocalGlucoseReading>
   ): Promise<LocalGlucoseReading> {
-    const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
+    const stored = this.storage?.getItem(this.READINGS_STORAGE_KEY);
     const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
 
     const index = allReadings.findIndex(r => r.id === id);
@@ -223,7 +232,7 @@ export class MockAdapterService {
     }
 
     allReadings[index] = { ...allReadings[index], ...updates };
-    localStorage.setItem(this.READINGS_STORAGE_KEY, JSON.stringify(allReadings));
+    this.storage?.setItem(this.READINGS_STORAGE_KEY, JSON.stringify(allReadings));
 
     return this.delay(allReadings[index]);
   }
@@ -233,11 +242,11 @@ export class MockAdapterService {
    * Removes reading from localStorage.
    */
   async mockDeleteReading(id: string): Promise<void> {
-    const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
+    const stored = this.storage?.getItem(this.READINGS_STORAGE_KEY);
     const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
 
     const filtered = allReadings.filter(r => r.id !== id);
-    localStorage.setItem(this.READINGS_STORAGE_KEY, JSON.stringify(filtered));
+    this.storage?.setItem(this.READINGS_STORAGE_KEY, JSON.stringify(filtered));
 
     return this.delay(undefined);
   }
@@ -246,7 +255,7 @@ export class MockAdapterService {
    * Mock: Get reading by ID.
    */
   async mockGetReadingById(id: string): Promise<LocalGlucoseReading> {
-    const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
+    const stored = this.storage?.getItem(this.READINGS_STORAGE_KEY);
     const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
 
     const reading = allReadings.find(r => r.id === id);
@@ -263,7 +272,7 @@ export class MockAdapterService {
    * Adds artificial delay.
    */
   async mockSyncReadings(): Promise<{ synced: number; failed: number }> {
-    const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
+    const stored = this.storage?.getItem(this.READINGS_STORAGE_KEY);
     const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
 
     // Mark all unsynced readings as synced
@@ -276,7 +285,7 @@ export class MockAdapterService {
       return r;
     });
 
-    localStorage.setItem(this.READINGS_STORAGE_KEY, JSON.stringify(updated));
+    this.storage?.setItem(this.READINGS_STORAGE_KEY, JSON.stringify(updated));
 
     // Simulate longer sync delay
     return new Promise(resolve =>
@@ -305,13 +314,13 @@ export class MockAdapterService {
       (emailOrDni === 'demo@diabetactic.com' || emailOrDni === '1000') && password === 'demo123';
 
     if (validCredentials) {
-      const stored = localStorage.getItem(this.PROFILE_STORAGE_KEY);
+      const stored = this.storage?.getItem(this.PROFILE_STORAGE_KEY);
       const profile: UserProfile = stored
         ? JSON.parse(stored)
         : this.demoDataService.generateUserProfile();
 
       const token = `mock_token_${Date.now()}`;
-      localStorage.setItem('diabetactic_mock_token', token);
+      this.storage?.setItem('diabetactic_mock_token', token);
 
       return this.delay({
         token,
@@ -378,7 +387,7 @@ export class MockAdapterService {
    * Removes mock token.
    */
   async mockLogout(): Promise<void> {
-    localStorage.removeItem('diabetactic_mock_token');
+    this.storage?.removeItem('diabetactic_mock_token');
     return this.delay(undefined);
   }
 
@@ -387,7 +396,7 @@ export class MockAdapterService {
    * Uses stored profile or generates a new one via Faker if missing.
    */
   async mockGetProfile(): Promise<UserProfile> {
-    const stored = localStorage.getItem(this.PROFILE_STORAGE_KEY);
+    const stored = this.storage?.getItem(this.PROFILE_STORAGE_KEY);
     if (stored) {
       return this.delay(JSON.parse(stored));
     }
@@ -446,7 +455,7 @@ export class MockAdapterService {
       hasCompletedOnboarding: true,
     } as UserProfile;
 
-    localStorage.setItem(this.PROFILE_STORAGE_KEY, JSON.stringify(profile));
+    this.storage?.setItem(this.PROFILE_STORAGE_KEY, JSON.stringify(profile));
     return this.delay(profile);
   }
 
@@ -455,7 +464,7 @@ export class MockAdapterService {
    * Merges updates into stored profile.
    */
   async mockUpdateProfile(updates: Partial<UserProfile>): Promise<UserProfile> {
-    const stored = localStorage.getItem(this.PROFILE_STORAGE_KEY);
+    const stored = this.storage?.getItem(this.PROFILE_STORAGE_KEY);
     const existing: UserProfile = stored
       ? JSON.parse(stored)
       : this.demoDataService.generateUserProfile();
@@ -466,7 +475,7 @@ export class MockAdapterService {
       updatedAt: new Date().toISOString(),
     };
 
-    localStorage.setItem(this.PROFILE_STORAGE_KEY, JSON.stringify(updated));
+    this.storage?.setItem(this.PROFILE_STORAGE_KEY, JSON.stringify(updated));
 
     return this.delay(updated);
   }
@@ -487,7 +496,7 @@ export class MockAdapterService {
   async mockRefreshToken(oldToken: string): Promise<string> {
     if (await this.mockVerifyToken(oldToken)) {
       const newToken = `mock_token_${Date.now()}`;
-      localStorage.setItem('diabetactic_mock_token', newToken);
+      this.storage?.setItem('diabetactic_mock_token', newToken);
       return this.delay(newToken);
     }
     throw new Error('Invalid token');
@@ -499,7 +508,7 @@ export class MockAdapterService {
    * @param days - Lookback window in days.
    */
   async mockGetStatistics(days: number = 30): Promise<GlucoseStatistics> {
-    const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
+    const stored = this.storage?.getItem(this.READINGS_STORAGE_KEY);
     const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
 
     const cutoffDate = new Date();
@@ -573,7 +582,7 @@ export class MockAdapterService {
     await this.delay(undefined);
 
     // Calculate streak from readings
-    const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
+    const stored = this.storage?.getItem(this.READINGS_STORAGE_KEY);
     const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
 
     // Simple streak calculation based on readings per day
@@ -616,7 +625,7 @@ export class MockAdapterService {
     await this.delay(undefined);
 
     // Get reading count for progress calculation
-    const stored = localStorage.getItem(this.READINGS_STORAGE_KEY);
+    const stored = this.storage?.getItem(this.READINGS_STORAGE_KEY);
     const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
     const totalReadings = allReadings.length;
 
@@ -677,11 +686,11 @@ export class MockAdapterService {
    * Removes all app-specific keys from localStorage.
    */
   clearAllMockData(): void {
-    localStorage.removeItem(this.READINGS_STORAGE_KEY);
-    localStorage.removeItem(this.APPOINTMENTS_STORAGE_KEY);
-    localStorage.removeItem(this.PROFILE_STORAGE_KEY);
-    localStorage.removeItem('diabetactic_mock_token');
-    localStorage.removeItem('demoMode');
+    this.storage?.removeItem(this.READINGS_STORAGE_KEY);
+    this.storage?.removeItem(this.APPOINTMENTS_STORAGE_KEY);
+    this.storage?.removeItem(this.PROFILE_STORAGE_KEY);
+    this.storage?.removeItem('diabetactic_mock_token');
+    this.storage?.removeItem('demoMode');
     console.log('✅ All mock data cleared');
   }
 
@@ -691,7 +700,7 @@ export class MockAdapterService {
     let config: MockAdapterConfig | null = null;
 
     try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
+      const stored = this.storage?.getItem(this.STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         config = this.validateConfig(parsed);
@@ -722,7 +731,7 @@ export class MockAdapterService {
 
   private saveConfig(): void {
     try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.config));
+      this.storage?.setItem(this.STORAGE_KEY, JSON.stringify(this.config));
     } catch (error) {
       console.error('Failed to save mock adapter config:', error);
     }

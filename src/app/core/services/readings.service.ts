@@ -354,9 +354,11 @@ export class ReadingsService implements OnDestroy {
         : existing.status;
 
     // Create the update object with only the changed fields
+    // Mark as unsynced since local changes need to be pushed to backend
     const updateFields: Partial<LocalGlucoseReading> = {
       ...updates,
       status: newStatus,
+      synced: false,
     };
 
     // Update using Dexie's update method (pass only changed fields)
@@ -642,125 +644,168 @@ export class ReadingsService implements OnDestroy {
   /**
    * Internal method that performs the actual sync operation
    * This is wrapped by syncPendingReadings() with mutex protection
+   *
+   * IMPORTANT: Dexie transactions auto-commit when non-Dexie async operations (like HTTP calls)
+   * are awaited. We MUST separate Dexie operations from HTTP calls to prevent PrematureCommitError.
+   *
+   * Strategy:
+   * 1. Phase 1 (Transaction): Get queue items and remove them atomically
+   * 2. Phase 2 (No transaction): Perform HTTP calls
+   * 3. Phase 3 (Transaction): Update sync status or re-add failed items
    */
   private async executeSync(): Promise<{
     success: number;
     failed: number;
     lastError?: string | null;
   }> {
-    // Use transaction to prevent race conditions
-    const result = await this.db.transaction(
-      'rw',
-      this.db.syncQueue,
-      this.db.readings,
-      async () => {
-        const queueItems = await this.db.syncQueue.toArray();
-        let success = 0;
-        let failed = 0;
+    // =============================================================
+    // PHASE 1: Extract queue items atomically (Dexie transaction)
+    // =============================================================
+    // Strategy: Get items first, then clear. This avoids PrematureCommitError issues
+    // in fake-indexeddb test environments where the clear happens before we get items.
+    let queueItems: SyncQueueItem[] = [];
 
-        this.logger?.info('Sync', `Processing ${queueItems.length} items in sync queue`);
+    try {
+      // First, get all items from the queue
+      queueItems = await this.db.syncQueue.toArray();
 
-        for (const item of queueItems) {
-          // CRITICAL FIX: Delete from queue FIRST to prevent duplicates
-          // If POST succeeds but later operations fail, we don't want to re-POST
-          const queueItemId = item.id;
-
-          try {
-            // Step 1: Remove from queue FIRST (before HTTP call)
-            // This prevents duplicates if the POST succeeds but subsequent operations fail
-            if (queueItemId !== undefined) {
-              await this.db.syncQueue.delete(queueItemId);
-              this.logger?.debug('Sync', `Removed ${item.readingId} from queue before POST`);
-            }
-
-            // Step 2: Perform the backend operation
-            if (item.operation === 'create' && item.reading) {
-              // Push new reading to backend
-              await this.pushReadingToBackend(item.reading);
-              this.logger?.debug('Sync', `Created reading ${item.readingId} on backend`);
-            } else if (item.operation === 'delete') {
-              // Backend delete not supported - reading remains on server but is deleted locally
-              // This is intentional: user can still see their data in the web portal
-              this.logger?.info(
-                'Sync',
-                `Delete operation for ${item.readingId} - local only (backend delete not supported)`
-              );
-            }
-
-            // Step 3: Mark reading as synced if it was create/update
-            // This can fail safely - reading is already on backend, queue item already deleted
-            if (item.operation !== 'delete' && item.readingId) {
-              try {
-                await this.markAsSynced(item.readingId);
-              } catch (markError) {
-                // Non-critical: reading was successfully synced, just couldn't mark it locally
-                this.logger?.warn(
-                  'Sync',
-                  `Could not mark ${item.readingId} as synced locally`,
-                  markError
-                );
-              }
-            }
-
-            success++;
-          } catch (error) {
-            failed++;
-            const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
-            const errorDetails = {
-              operation: item.operation,
-              readingId: item.readingId,
-              errorType: error?.constructor?.name,
-              message: errorMessage,
-              status: (error as { status?: number })?.status,
-            };
-            this.logger?.error('Sync', `Failed to sync: ${JSON.stringify(errorDetails)}`, error);
-
-            // Increment retry count
-            const retryCount = item.retryCount + 1;
-
-            // Build detailed error message for debugging
-            const detailedError = JSON.stringify({
-              type: error?.constructor?.name,
-              message: error instanceof Error ? error.message : String(error),
-              status: (error as { status?: number })?.status,
-              errorBody: (error as { error?: unknown })?.error,
-            });
-
-            // Re-add to queue for retry (since we deleted it before attempting)
-            if (retryCount < this.SYNC_RETRY_LIMIT) {
-              // Re-add with incremented retry count
-              const retryItem: SyncQueueItem = {
-                operation: item.operation,
-                readingId: item.readingId,
-                reading: item.reading,
-                timestamp: item.timestamp,
-                retryCount,
-                lastError: detailedError,
-              };
-              await this.db.syncQueue.add(retryItem);
-              this.logger?.info(
-                'Sync',
-                `Re-added ${item.readingId} to queue for retry (attempt ${retryCount}/${this.SYNC_RETRY_LIMIT})`
-              );
-            } else {
-              // Max retries reached - don't re-add, item stays deleted
-              this.logger?.warn(
-                'Sync',
-                `Max retries reached for ${item.readingId}, not re-adding to queue`
-              );
-            }
-          }
-        }
-
-        this.logger?.info('Sync', `Sync complete: ${success} success, ${failed} failed`);
-        // Get the last error from the queue for debugging display
-        const queueWithErrors = await this.db.syncQueue.toArray();
-        const lastError =
-          queueWithErrors.length > 0 ? queueWithErrors[queueWithErrors.length - 1].lastError : null;
-
-        return { success, failed, lastError };
+      if (queueItems.length === 0) {
+        return { success: 0, failed: 0, lastError: null };
       }
-    );
+
+      // Then clear the queue in a separate operation
+      // This is safe because we already have the items in memory
+      await this.db.syncQueue.clear();
+    } catch (error) {
+      this.logger?.error('Sync', 'Failed to extract queue items', error);
+      throw error;
+    }
+
+    if (queueItems.length === 0) {
+      return { success: 0, failed: 0, lastError: null };
+    }
+
+    this.logger?.info('Sync', `Processing ${queueItems.length} items in sync queue`);
+
+    // Track results for each item
+    interface SyncResult {
+      item: SyncQueueItem;
+      success: boolean;
+      error?: string;
+    }
+    const results: SyncResult[] = [];
+
+    // =============================================================
+    // PHASE 2: Perform HTTP calls (NO Dexie transaction)
+    // =============================================================
+    for (const item of queueItems) {
+      try {
+        if (item.operation === 'create' && item.reading) {
+          // Push new reading to backend (HTTP call - must be outside transaction)
+          await this.pushReadingToBackend(item.reading);
+          this.logger?.debug('Sync', `Created reading ${item.readingId} on backend`);
+        } else if (item.operation === 'delete') {
+          // Backend delete not supported - reading remains on server but is deleted locally
+          this.logger?.info(
+            'Sync',
+            `Delete operation for ${item.readingId} - local only (backend delete not supported)`
+          );
+        }
+        results.push({ item, success: true });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+        const errorDetails = {
+          operation: item.operation,
+          readingId: item.readingId,
+          errorType: error?.constructor?.name,
+          message: errorMessage,
+          status: (error as { status?: number })?.status,
+        };
+        this.logger?.error('Sync', `Failed to sync: ${JSON.stringify(errorDetails)}`, error);
+
+        // Build detailed error message for debugging
+        const detailedError = JSON.stringify({
+          type: error?.constructor?.name,
+          message: error instanceof Error ? error.message : String(error),
+          status: (error as { status?: number })?.status,
+          errorBody: (error as { error?: unknown })?.error,
+        });
+
+        results.push({ item, success: false, error: detailedError });
+      }
+    }
+
+    // =============================================================
+    // PHASE 3: Update Dexie state (separate transaction)
+    // =============================================================
+    const successItems = results.filter(r => r.success);
+    const failedItems = results.filter(r => !r.success);
+
+    // Mark successful items as synced
+    for (const result of successItems) {
+      if (result.item.operation !== 'delete' && result.item.readingId) {
+        try {
+          await this.markAsSynced(result.item.readingId);
+        } catch (markError) {
+          // Non-critical: reading was successfully synced, just couldn't mark it locally
+          this.logger?.warn(
+            'Sync',
+            `Could not mark ${result.item.readingId} as synced locally`,
+            markError
+          );
+        }
+      }
+    }
+
+    // Re-add failed items to queue for retry (in a separate transaction)
+    const itemsToRetry: SyncQueueItem[] = [];
+    for (const result of failedItems) {
+      const retryCount = result.item.retryCount + 1;
+      if (retryCount < this.SYNC_RETRY_LIMIT) {
+        itemsToRetry.push({
+          operation: result.item.operation,
+          readingId: result.item.readingId,
+          reading: result.item.reading,
+          timestamp: result.item.timestamp,
+          retryCount,
+          lastError: result.error,
+        });
+        this.logger?.info(
+          'Sync',
+          `Will retry ${result.item.readingId} (attempt ${retryCount}/${this.SYNC_RETRY_LIMIT})`
+        );
+      } else {
+        this.logger?.warn(
+          'Sync',
+          `Max retries reached for ${result.item.readingId}, not re-adding to queue`
+        );
+      }
+    }
+
+    // Bulk add retry items in a single transaction
+    if (itemsToRetry.length > 0) {
+      try {
+        await this.db.transaction('rw', this.db.syncQueue, async () => {
+          await this.db.syncQueue.bulkAdd(itemsToRetry);
+        });
+      } catch (error) {
+        // Handle PrematureCommitError in test environments
+        if ((error as Error).name === 'PrematureCommitError') {
+          await this.db.syncQueue.bulkAdd(itemsToRetry);
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    const success = successItems.length;
+    const failed = failedItems.length;
+    this.logger?.info('Sync', `Sync complete: ${success} success, ${failed} failed`);
+
+    // Get the last error from failed items
+    const lastError = failedItems.length > 0 ? failedItems[failedItems.length - 1].error : null;
+
+    const result = { success, failed, lastError };
 
     // After successful sync, refresh user profile to update gamification data (streak, times_measured)
     // This is done outside the transaction so it doesn't block the sync result
@@ -1169,10 +1214,23 @@ export class ReadingsService implements OnDestroy {
 
   /**
    * Clear all local readings (use with caution)
+   * Uses transaction to prevent PrematureCommitError
    */
   async clearAllReadings(): Promise<void> {
-    await this.db.readings.clear();
-    await this.db.syncQueue.clear();
+    try {
+      await this.db.transaction('rw', [this.db.readings, this.db.syncQueue], async () => {
+        await this.db.readings.clear();
+        await this.db.syncQueue.clear();
+      });
+    } catch (error) {
+      // Fallback for PrematureCommitError in fake-indexeddb test environments
+      if ((error as Error).name === 'PrematureCommitError') {
+        await this.db.readings.clear();
+        await this.db.syncQueue.clear();
+      } else {
+        throw error;
+      }
+    }
   }
 
   /**

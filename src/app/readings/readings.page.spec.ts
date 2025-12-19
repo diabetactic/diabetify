@@ -6,7 +6,7 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideRouter } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 
 import { ReadingsPage } from './readings.page';
 import { ReadingsPageModule } from './readings.module';
@@ -104,15 +104,17 @@ class MockReadingItemComponent {
   @Input() reading: any;
 }
 
+import { vi } from 'vitest';
+
 describe('ReadingsPage', () => {
   let component: ReadingsPage;
   let fixture: ComponentFixture<ReadingsPage>;
 
   beforeEach(async () => {
     const mockModalController = {
-      create: jest.fn().mockResolvedValue({
-        present: jest.fn().mockResolvedValue(undefined),
-        onDidDismiss: jest.fn().mockResolvedValue({ data: null }),
+      create: vi.fn().mockResolvedValue({
+        present: vi.fn().mockResolvedValue(undefined),
+        onDidDismiss: vi.fn().mockResolvedValue({ data: null }),
       }),
     };
 
@@ -131,7 +133,7 @@ describe('ReadingsPage', () => {
         { provide: ModalController, useValue: mockModalController },
         { provide: LoggerService, useClass: LoggerServiceStub },
       ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
     })
       .overrideModule(ReadingsPageModule, {
         remove: { imports: [AppIconComponent, EmptyStateComponent, ReadingItemComponent] },
@@ -141,7 +143,8 @@ describe('ReadingsPage', () => {
 
     fixture = TestBed.createComponent(ReadingsPage);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    // DO NOT call fixture.detectChanges() as it triggers template rendering
+    // which requires Ionic's ControlValueAccessor for ion-searchbar
   });
 
   it('should create', () => {

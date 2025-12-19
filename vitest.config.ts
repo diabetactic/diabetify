@@ -42,10 +42,15 @@ export default defineConfig({
         isolate: true,
       },
     },
+    // Run tests within each file sequentially to prevent IndexedDB race conditions
+    // Files still run in parallel for speed, but tests within each file are sequential
+    sequence: {
+      concurrent: false, // Tests within a file run sequentially
+    },
     setupFiles: [
       'src/setup-polyfills.ts', // MUST be first - polyfills for jsdom
       '@analogjs/vitest-angular/setup-zone',
-      'src/setup-vitest.ts', // TestBed init + mocks + Jasmine compatibility
+      'src/test-setup/index.ts', // TestBed init + mocks + Jasmine compatibility
     ],
     include: ['src/**/*.spec.ts'],
     reporters: ['default', 'html'],
@@ -106,7 +111,21 @@ export default defineConfig({
         find: /^@stencil\/core(.*)$/,
         replacement: fileURLToPath(new URL('./src/mocks/stencil-core.mock.ts', import.meta.url)),
       },
-      // Redirect ALL Ionic Core imports (except @ionic/angular) to mock
+      // Redirect @ionic/angular to mock (more specific paths MUST be first)
+      {
+        find: '@ionic/angular/standalone',
+        replacement: fileURLToPath(new URL('./src/mocks/ionic-angular.mock.ts', import.meta.url)),
+      },
+      {
+        find: '@ionic/angular',
+        replacement: fileURLToPath(new URL('./src/mocks/ionic-angular.mock.ts', import.meta.url)),
+      },
+      // Redirect @ionic/core/loader specifically (MUST be before regex)
+      {
+        find: '@ionic/core/loader',
+        replacement: fileURLToPath(new URL('./src/mocks/ionic-core.mock.ts', import.meta.url)),
+      },
+      // Redirect ALL Ionic Core imports to mock
       {
         find: /^@ionic\/core(.*)$/,
         replacement: fileURLToPath(new URL('./src/mocks/ionic-core.mock.ts', import.meta.url)),

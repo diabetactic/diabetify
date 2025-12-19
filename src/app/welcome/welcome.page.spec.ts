@@ -15,11 +15,11 @@ describe('WelcomePage', () => {
 
   beforeEach(async () => {
     const mockRouter = {
-      navigate: jest.fn().mockResolvedValue(true),
-      events: { pipe: jest.fn().mockReturnValue({ subscribe: jest.fn() }) },
+      navigate: vi.fn().mockResolvedValue(true),
+      events: { pipe: vi.fn().mockReturnValue({ subscribe: vi.fn() }) },
     };
-    const mockProfileService = { getProfile: jest.fn().mockResolvedValue(null) };
-    const mockThemeService = { isDark$: { subscribe: jest.fn() } };
+    const mockProfileService = { getProfile: vi.fn().mockResolvedValue(null) };
+    const mockThemeService = { isDark$: { subscribe: vi.fn() } };
 
     await TestBed.configureTestingModule({
       imports: [WelcomePage, TranslateModule.forRoot()],

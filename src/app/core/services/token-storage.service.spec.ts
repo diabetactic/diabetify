@@ -8,13 +8,13 @@ import { TokenStorageService } from '@services/token-storage.service';
 import { TidepoolAuth } from '@models/tidepool-auth.model';
 import { OAUTH_CONSTANTS } from '@core/config/oauth.config';
 
-// Mock SecureStorage - already mocked in setup-jest.ts but we need to control it per test
-jest.mock('@aparajita/capacitor-secure-storage', () => ({
+// Mock SecureStorage - already mocked in setup-vitest.ts but we need to control it per test
+vi.mock('@aparajita/capacitor-secure-storage', () => ({
   SecureStorage: {
-    get: jest.fn(),
-    set: jest.fn(),
-    remove: jest.fn(),
-    clear: jest.fn(),
+    get: vi.fn(),
+    set: vi.fn(),
+    remove: vi.fn(),
+    clear: vi.fn(),
   },
 }));
 
@@ -34,13 +34,13 @@ describe('TokenStorageService', () => {
 
   beforeEach(() => {
     // Reset all mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Default SecureStorage mocks - no stored data
-    (SecureStorage.get as jest.Mock).mockResolvedValue(null);
-    (SecureStorage.set as jest.Mock).mockResolvedValue(undefined);
-    (SecureStorage.remove as jest.Mock).mockResolvedValue(undefined);
-    (SecureStorage.clear as jest.Mock).mockResolvedValue(undefined);
+    (SecureStorage.get as Mock).mockResolvedValue(null);
+    (SecureStorage.set as Mock).mockResolvedValue(undefined);
+    (SecureStorage.remove as Mock).mockResolvedValue(undefined);
+    (SecureStorage.clear as Mock).mockResolvedValue(undefined);
 
     TestBed.configureTestingModule({
       providers: [TokenStorageService],
@@ -50,7 +50,7 @@ describe('TokenStorageService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('initialization', () => {
@@ -72,7 +72,7 @@ describe('TokenStorageService', () => {
       expect(accessToken).toBe('test-access-token-abc123');
 
       // Verify SecureStorage.set was NOT called with access token
-      const setCalls = (SecureStorage.set as jest.Mock).mock.calls;
+      const setCalls = (SecureStorage.set as Mock).mock.calls;
       const accessTokenStored = setCalls.some(call => call[0] === 'tidepool_access_token');
       expect(accessTokenStored).toBe(false);
     });
@@ -104,7 +104,7 @@ describe('TokenStorageService', () => {
       );
 
       // Verify metadata structure
-      const metadataCall = (SecureStorage.set as jest.Mock).mock.calls.find(
+      const metadataCall = (SecureStorage.set as Mock).mock.calls.find(
         call => call[0] === 'tidepool_token_metadata'
       );
 
@@ -121,21 +121,21 @@ describe('TokenStorageService', () => {
       await service.storeAuth(authWithoutRefresh);
 
       // Should not attempt to store empty refresh token
-      const refreshTokenCalls = (SecureStorage.set as jest.Mock).mock.calls.filter(
+      const refreshTokenCalls = (SecureStorage.set as Mock).mock.calls.filter(
         call => call[0] === 'tidepool_refresh_token_encrypted'
       );
       expect(refreshTokenCalls).toHaveLength(0);
     });
 
     it('should throw error when SecureStorage.set fails', async () => {
-      (SecureStorage.set as jest.Mock).mockRejectedValueOnce(new Error('Storage error'));
+      (SecureStorage.set as Mock).mockRejectedValueOnce(new Error('Storage error'));
 
       await expect(service.storeAuth(mockAuth)).rejects.toThrow('Token storage failed');
     });
 
     it('should suppress error details in error message (security)', async () => {
       const sensitiveError = new Error('Encryption key not found');
-      (SecureStorage.set as jest.Mock).mockRejectedValueOnce(sensitiveError);
+      (SecureStorage.set as Mock).mockRejectedValueOnce(sensitiveError);
 
       try {
         await service.storeAuth(mockAuth);
@@ -207,7 +207,7 @@ describe('TokenStorageService', () => {
 
   describe('getRefreshToken', () => {
     it('should retrieve refresh token from SecureStorage', async () => {
-      (SecureStorage.get as jest.Mock).mockResolvedValueOnce('stored-refresh-token');
+      (SecureStorage.get as Mock).mockResolvedValueOnce('stored-refresh-token');
 
       const token = await service.getRefreshToken();
 
@@ -216,7 +216,7 @@ describe('TokenStorageService', () => {
     });
 
     it('should return null when no refresh token stored', async () => {
-      (SecureStorage.get as jest.Mock).mockResolvedValueOnce(null);
+      (SecureStorage.get as Mock).mockResolvedValueOnce(null);
 
       const token = await service.getRefreshToken();
 
@@ -224,7 +224,7 @@ describe('TokenStorageService', () => {
     });
 
     it('should return null when SecureStorage.get returns empty string', async () => {
-      (SecureStorage.get as jest.Mock).mockResolvedValueOnce('');
+      (SecureStorage.get as Mock).mockResolvedValueOnce('');
 
       const token = await service.getRefreshToken();
 
@@ -232,7 +232,7 @@ describe('TokenStorageService', () => {
     });
 
     it('should handle SecureStorage errors gracefully', async () => {
-      (SecureStorage.get as jest.Mock).mockRejectedValueOnce(new Error('Storage error'));
+      (SecureStorage.get as Mock).mockRejectedValueOnce(new Error('Storage error'));
 
       const token = await service.getRefreshToken();
 
@@ -240,8 +240,8 @@ describe('TokenStorageService', () => {
     });
 
     it('should suppress error logging details (security)', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-      (SecureStorage.get as jest.Mock).mockRejectedValueOnce(new Error('Decryption failed'));
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation();
+      (SecureStorage.get as Mock).mockRejectedValueOnce(new Error('Decryption failed'));
 
       await service.getRefreshToken();
 
@@ -253,7 +253,7 @@ describe('TokenStorageService', () => {
 
   describe('getAuthData', () => {
     it('should retrieve and parse auth data from SecureStorage', async () => {
-      (SecureStorage.get as jest.Mock).mockResolvedValueOnce(JSON.stringify(mockAuth));
+      (SecureStorage.get as Mock).mockResolvedValueOnce(JSON.stringify(mockAuth));
 
       const authData = await service.getAuthData();
 
@@ -262,7 +262,7 @@ describe('TokenStorageService', () => {
     });
 
     it('should return null when no auth data stored', async () => {
-      (SecureStorage.get as jest.Mock).mockResolvedValueOnce(null);
+      (SecureStorage.get as Mock).mockResolvedValueOnce(null);
 
       const authData = await service.getAuthData();
 
@@ -270,7 +270,7 @@ describe('TokenStorageService', () => {
     });
 
     it('should handle malformed JSON gracefully', async () => {
-      (SecureStorage.get as jest.Mock).mockResolvedValueOnce('invalid json {');
+      (SecureStorage.get as Mock).mockResolvedValueOnce('invalid json {');
 
       const authData = await service.getAuthData();
 
@@ -278,7 +278,7 @@ describe('TokenStorageService', () => {
     });
 
     it('should handle SecureStorage errors gracefully', async () => {
-      (SecureStorage.get as jest.Mock).mockRejectedValueOnce(new Error('Storage error'));
+      (SecureStorage.get as Mock).mockRejectedValueOnce(new Error('Storage error'));
 
       const authData = await service.getAuthData();
 
@@ -286,7 +286,7 @@ describe('TokenStorageService', () => {
     });
 
     it('should handle empty string from SecureStorage', async () => {
-      (SecureStorage.get as jest.Mock).mockResolvedValueOnce('');
+      (SecureStorage.get as Mock).mockResolvedValueOnce('');
 
       const authData = await service.getAuthData();
 
@@ -390,14 +390,14 @@ describe('TokenStorageService', () => {
     });
 
     it('should throw error if SecureStorage.remove fails', async () => {
-      (SecureStorage.remove as jest.Mock).mockRejectedValueOnce(new Error('Remove failed'));
+      (SecureStorage.remove as Mock).mockRejectedValueOnce(new Error('Remove failed'));
 
       await expect(service.clearAll()).rejects.toThrow('Remove failed');
     });
 
     it('should propagate original error when clearing fails', async () => {
       const originalError = new Error('Storage unavailable');
-      (SecureStorage.remove as jest.Mock).mockRejectedValueOnce(originalError);
+      (SecureStorage.remove as Mock).mockRejectedValueOnce(originalError);
 
       try {
         await service.clearAll();
@@ -482,7 +482,7 @@ describe('TokenStorageService', () => {
 
   describe('hasRefreshToken', () => {
     it('should return true when refresh token exists', async () => {
-      (SecureStorage.get as jest.Mock).mockResolvedValueOnce('refresh-token-abc');
+      (SecureStorage.get as Mock).mockResolvedValueOnce('refresh-token-abc');
 
       const hasToken = await service.hasRefreshToken();
 
@@ -490,7 +490,7 @@ describe('TokenStorageService', () => {
     });
 
     it('should return false when refresh token does not exist', async () => {
-      (SecureStorage.get as jest.Mock).mockResolvedValueOnce(null);
+      (SecureStorage.get as Mock).mockResolvedValueOnce(null);
 
       const hasToken = await service.hasRefreshToken();
 
@@ -498,7 +498,7 @@ describe('TokenStorageService', () => {
     });
 
     it('should return false when SecureStorage returns empty string', async () => {
-      (SecureStorage.get as jest.Mock).mockResolvedValueOnce('');
+      (SecureStorage.get as Mock).mockResolvedValueOnce('');
 
       const hasToken = await service.hasRefreshToken();
 
@@ -506,7 +506,7 @@ describe('TokenStorageService', () => {
     });
 
     it('should return false when getRefreshToken fails', async () => {
-      (SecureStorage.get as jest.Mock).mockRejectedValueOnce(new Error('Storage error'));
+      (SecureStorage.get as Mock).mockRejectedValueOnce(new Error('Storage error'));
 
       const hasToken = await service.hasRefreshToken();
 
@@ -532,7 +532,7 @@ describe('TokenStorageService', () => {
     });
 
     it('should return valid=true when only refresh token exists', async () => {
-      (SecureStorage.get as jest.Mock).mockResolvedValueOnce('refresh-token');
+      (SecureStorage.get as Mock).mockResolvedValueOnce('refresh-token');
 
       const validation = await service.validateToken();
 
@@ -542,7 +542,7 @@ describe('TokenStorageService', () => {
     });
 
     it('should return valid=false when no tokens exist', async () => {
-      (SecureStorage.get as jest.Mock).mockResolvedValueOnce(null);
+      (SecureStorage.get as Mock).mockResolvedValueOnce(null);
 
       const validation = await service.validateToken();
 
@@ -737,7 +737,7 @@ describe('TokenStorageService', () => {
     it('should never persist access token to SecureStorage', async () => {
       await service.storeAuth(mockAuth);
 
-      const setCalls = (SecureStorage.set as jest.Mock).mock.calls;
+      const setCalls = (SecureStorage.set as Mock).mock.calls;
       const accessTokenCalls = setCalls.filter(call => call[0].toLowerCase().includes('access'));
 
       // Auth data contains access token, but no dedicated access token key
@@ -768,9 +768,9 @@ describe('TokenStorageService', () => {
     });
 
     it('should not log sensitive token values in errors', async () => {
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation();
 
-      (SecureStorage.set as jest.Mock).mockRejectedValueOnce(new Error('Encryption failed'));
+      (SecureStorage.set as Mock).mockRejectedValueOnce(new Error('Encryption failed'));
 
       try {
         await service.storeAuth(mockAuth);

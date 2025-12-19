@@ -10,41 +10,42 @@ import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { getTranslateModuleForTesting } from '@core/../tests/helpers/translate-test.helper';
 import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helper';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('AdvancedPage', () => {
   let component: AdvancedPage;
   let fixture: ComponentFixture<AdvancedPage>;
-  let mockAuthService: jest.Mocked<UnifiedAuthService>;
-  let mockAlertController: jest.Mocked<AlertController>;
-  let mockToastController: jest.Mocked<ToastController>;
-  let mockRouter: jest.Mocked<Router>;
-  let mockTranslationService: jest.Mocked<TranslationService>;
+  let mockAuthService: vi.Mocked<UnifiedAuthService>;
+  let mockAlertController: vi.Mocked<AlertController>;
+  let mockToastController: vi.Mocked<ToastController>;
+  let mockRouter: vi.Mocked<Router>;
+  let mockTranslationService: vi.Mocked<TranslationService>;
 
   beforeEach(async () => {
-    mockAuthService = { logout: jest.fn() } as any;
-    mockAlertController = { create: jest.fn() } as any;
-    mockToastController = { create: jest.fn() } as any;
+    mockAuthService = { logout: vi.fn() } as any;
+    mockAlertController = { create: vi.fn() } as any;
+    mockToastController = { create: vi.fn() } as any;
     mockRouter = {
-      navigate: jest.fn(),
-      navigateByUrl: jest.fn(),
+      navigate: vi.fn(),
+      navigateByUrl: vi.fn(),
       events: new Subject(),
       url: '/',
     } as any;
-    mockTranslationService = { instant: jest.fn() } as any;
+    mockTranslationService = { instant: vi.fn() } as any;
 
     // Mock the alert and toast controllers' create methods
     mockAlertController.create.mockResolvedValue({
-      present: jest.fn().mockResolvedValue(undefined),
+      present: vi.fn().mockResolvedValue(undefined),
     } as any);
 
     mockToastController.create.mockResolvedValue({
-      present: jest.fn().mockResolvedValue(undefined),
+      present: vi.fn().mockResolvedValue(undefined),
     } as any);
 
     await TestBed.configureTestingModule({
       imports: [
         AdvancedPage,
-        IonicModule,
+        IonicModule.forRoot(),
         getTranslateModuleForTesting(),
         getLucideIconsForTesting(),
       ],
@@ -55,11 +56,12 @@ describe('AdvancedPage', () => {
         { provide: Router, useValue: mockRouter },
         { provide: TranslationService, useValue: mockTranslationService },
       ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AdvancedPage);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    // Don't call detectChanges() in beforeEach to avoid template binding issues
   });
 
   it('should create', () => {

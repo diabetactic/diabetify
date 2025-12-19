@@ -12,13 +12,13 @@ import {
 } from '@services/external-services-manager.service';
 import { Network } from '@capacitor/network';
 import { environment } from '@env/environment';
+import type { Mock } from 'vitest';
 
-// Mock Capacitor Network
-jest.mock('@capacitor/network');
+// Note: @capacitor/network is already mocked in test-setup/index.ts
 
 describe('ExternalServicesManager', () => {
   let service: ExternalServicesManager;
-  let httpClient: jest.Mocked<HttpClient>;
+  let httpClient: Mock<HttpClient>;
   let injector: Injector;
 
   const mockNetworkStatus = { connected: true, connectionType: 'wifi' };
@@ -62,25 +62,25 @@ describe('ExternalServicesManager', () => {
     };
 
     const httpClientMock = {
-      get: jest.fn(),
-      head: jest.fn(),
-      post: jest.fn(),
+      get: vi.fn(),
+      head: vi.fn(),
+      post: vi.fn(),
     };
 
-    (Network.getStatus as jest.Mock).mockResolvedValue(mockNetworkStatus);
-    (Network.addListener as jest.Mock).mockImplementation(() => ({ remove: jest.fn() }));
+    (Network.getStatus as Mock).mockResolvedValue(mockNetworkStatus);
+    (Network.addListener as Mock).mockImplementation(() => ({ remove: vi.fn() }));
 
     TestBed.configureTestingModule({
       providers: [ExternalServicesManager, { provide: HttpClient, useValue: httpClientMock }],
     });
 
     service = TestBed.inject(ExternalServicesManager);
-    httpClient = TestBed.inject(HttpClient) as jest.Mocked<HttpClient>;
+    httpClient = TestBed.inject(HttpClient) as Mock<HttpClient>;
     injector = TestBed.inject(Injector);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('initialization', () => {
@@ -239,7 +239,7 @@ describe('ExternalServicesManager', () => {
   describe('executeRequest', () => {
     it('should execute request when service is available', async () => {
       const mockResult = { data: 'test' };
-      const requestFn = jest.fn().mockResolvedValue(mockResult);
+      const requestFn = vi.fn().mockResolvedValue(mockResult);
 
       const result = await service.executeRequest(ExternalService.GLUCOSERVER, requestFn);
 
@@ -254,7 +254,7 @@ describe('ExternalServicesManager', () => {
         failureCount: 5,
       });
 
-      const requestFn = jest.fn();
+      const requestFn = vi.fn();
 
       await expect(service.executeRequest(ExternalService.GLUCOSERVER, requestFn)).rejects.toThrow(
         'Service GLUCOSERVER is not available'
@@ -268,8 +268,8 @@ describe('ExternalServicesManager', () => {
       });
 
       const fallbackData = { data: 'fallback' };
-      const requestFn = jest.fn();
-      const fallbackFn = jest.fn().mockReturnValue(fallbackData);
+      const requestFn = vi.fn();
+      const fallbackFn = vi.fn().mockReturnValue(fallbackData);
 
       const result = await service.executeRequest(ExternalService.GLUCOSERVER, requestFn, {
         fallback: fallbackFn,
@@ -281,7 +281,7 @@ describe('ExternalServicesManager', () => {
 
     it('should return cached data when available', async () => {
       const mockResult = { data: 'test' };
-      const requestFn = jest.fn().mockResolvedValue(mockResult);
+      const requestFn = vi.fn().mockResolvedValue(mockResult);
 
       // First call - should execute request
       await service.executeRequest(ExternalService.GLUCOSERVER, requestFn, {
@@ -299,7 +299,7 @@ describe('ExternalServicesManager', () => {
 
     it('should skip cache when forceRefresh is true', async () => {
       const mockResult = { data: 'test' };
-      const requestFn = jest.fn().mockResolvedValue(mockResult);
+      const requestFn = vi.fn().mockResolvedValue(mockResult);
 
       // First call
       await service.executeRequest(ExternalService.GLUCOSERVER, requestFn, {
@@ -322,7 +322,7 @@ describe('ExternalServicesManager', () => {
         failureCount: 2,
       });
 
-      const requestFn = jest.fn().mockResolvedValue({ data: 'test' });
+      const requestFn = vi.fn().mockResolvedValue({ data: 'test' });
       await service.executeRequest(ExternalService.GLUCOSERVER, requestFn);
 
       const circuitBreaker = service.getCircuitBreakerState(ExternalService.GLUCOSERVER);
@@ -330,9 +330,9 @@ describe('ExternalServicesManager', () => {
     });
 
     it('should use fallback on request failure', async () => {
-      const requestFn = jest.fn().mockRejectedValue(new Error('Request failed'));
+      const requestFn = vi.fn().mockRejectedValue(new Error('Request failed'));
       const fallbackData = { data: 'fallback' };
-      const fallbackFn = jest.fn().mockReturnValue(fallbackData);
+      const fallbackFn = vi.fn().mockReturnValue(fallbackData);
 
       const result = await service.executeRequest(ExternalService.GLUCOSERVER, requestFn, {
         fallback: fallbackFn,
@@ -344,7 +344,7 @@ describe('ExternalServicesManager', () => {
 
   describe('cache management', () => {
     it('should cache data with service prefix', async () => {
-      const requestFn = jest.fn().mockResolvedValue({ data: 'test' });
+      const requestFn = vi.fn().mockResolvedValue({ data: 'test' });
 
       await service.executeRequest(ExternalService.GLUCOSERVER, requestFn, {
         cacheKey: 'test-key',
@@ -361,7 +361,7 @@ describe('ExternalServicesManager', () => {
         config.cacheDuration = 100;
       }
 
-      const requestFn = jest.fn().mockResolvedValue({ data: 'test' });
+      const requestFn = vi.fn().mockResolvedValue({ data: 'test' });
 
       await service.executeRequest(ExternalService.GLUCOSERVER, requestFn, {
         cacheKey: 'test-key',
@@ -379,7 +379,7 @@ describe('ExternalServicesManager', () => {
     });
 
     it('should clear cache for specific service', async () => {
-      const requestFn = jest.fn().mockResolvedValue({ data: 'test' });
+      const requestFn = vi.fn().mockResolvedValue({ data: 'test' });
 
       await service.executeRequest(ExternalService.GLUCOSERVER, requestFn, {
         cacheKey: 'test-key',
@@ -392,7 +392,7 @@ describe('ExternalServicesManager', () => {
     });
 
     it('should clear all cache when no service specified', async () => {
-      const requestFn = jest.fn().mockResolvedValue({ data: 'test' });
+      const requestFn = vi.fn().mockResolvedValue({ data: 'test' });
 
       await service.executeRequest(ExternalService.GLUCOSERVER, requestFn, {
         cacheKey: 'key1',
@@ -408,7 +408,7 @@ describe('ExternalServicesManager', () => {
 
   describe('network monitoring', () => {
     it('should update state when network status changes', () => {
-      const listener = (Network.addListener as jest.Mock).mock.calls[0][1];
+      const listener = (Network.addListener as Mock).mock.calls[0][1];
 
       listener({ connected: false });
 
@@ -417,8 +417,8 @@ describe('ExternalServicesManager', () => {
     });
 
     it('should perform health check when network reconnects', () => {
-      const performHealthCheckSpy = jest.spyOn(service, 'performHealthCheck');
-      const listener = (Network.addListener as jest.Mock).mock.calls[0][1];
+      const performHealthCheckSpy = vi.spyOn(service, 'performHealthCheck');
+      const listener = (Network.addListener as Mock).mock.calls[0][1];
 
       listener({ connected: true });
 
@@ -426,7 +426,7 @@ describe('ExternalServicesManager', () => {
     });
 
     it('should mark all services unhealthy when network disconnects', () => {
-      const listener = (Network.addListener as jest.Mock).mock.calls[0][1];
+      const listener = (Network.addListener as Mock).mock.calls[0][1];
 
       listener({ connected: false });
 
@@ -503,7 +503,7 @@ describe('ExternalServicesManager', () => {
 
   describe('ngOnDestroy', () => {
     it('should clean up subscriptions', () => {
-      const stopSpy = jest.spyOn(service as any, 'stopHealthCheckInterval');
+      const stopSpy = vi.spyOn(service as any, 'stopHealthCheckInterval');
 
       service.ngOnDestroy();
 

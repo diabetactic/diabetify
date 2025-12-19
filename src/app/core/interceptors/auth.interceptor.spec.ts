@@ -14,8 +14,8 @@ import { LocalAuthService, LocalAuthState } from '@services/local-auth.service';
 describe('AuthInterceptor', () => {
   let httpClient: HttpClient;
   let httpMock: HttpTestingController;
-  let authService: jest.Mocked<LocalAuthService>;
-  let router: jest.Mocked<Router>;
+  let authService: Mock<LocalAuthService>;
+  let router: Mock<Router>;
   let interceptor: AuthInterceptor;
 
   const testUrl = '/api/test-endpoint';
@@ -23,13 +23,13 @@ describe('AuthInterceptor', () => {
 
   beforeEach(() => {
     const authServiceSpy = {
-      refreshAccessToken: jest.fn(),
-      logout: jest.fn(),
-    } as unknown as jest.Mocked<LocalAuthService>;
+      refreshAccessToken: vi.fn(),
+      logout: vi.fn(),
+    } as unknown as Mock<LocalAuthService>;
 
     const routerSpy = {
-      navigate: jest.fn(),
-    } as unknown as jest.Mocked<Router>;
+      navigate: vi.fn(),
+    } as unknown as Mock<Router>;
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -47,8 +47,8 @@ describe('AuthInterceptor', () => {
 
     httpClient = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);
-    authService = TestBed.inject(LocalAuthService) as jest.Mocked<LocalAuthService>;
-    router = TestBed.inject(Router) as jest.Mocked<Router>;
+    authService = TestBed.inject(LocalAuthService) as Mock<LocalAuthService>;
+    router = TestBed.inject(Router) as Mock<Router>;
     interceptor = TestBed.inject(AuthInterceptor);
 
     // Default logout behavior
@@ -306,7 +306,7 @@ describe('AuthInterceptor', () => {
   describe('5xx Server Error Retry with Exponential Backoff', () => {
     // Spy on calculateBackoffDelay to return timer(0) for instant retries in tests
     beforeEach(() => {
-      jest.spyOn(interceptor as any, 'calculateBackoffDelay').mockReturnValue(timer(0));
+      vi.spyOn(interceptor as any, 'calculateBackoffDelay').mockReturnValue(timer(0));
     });
 
     it('should retry on 500 Internal Server Error', fakeAsync(() => {

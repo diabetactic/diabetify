@@ -86,11 +86,25 @@ export class DiabetacticDatabase extends Dexie {
 
   /**
    * Clear all data (for testing/debugging)
+   * Uses a transaction to prevent PrematureCommitError in tests
    */
   async clearAllData(): Promise<void> {
-    await this.readings.clear();
-    await this.syncQueue.clear();
-    await this.appointments.clear();
+    try {
+      await this.transaction('rw', [this.readings, this.syncQueue, this.appointments], async () => {
+        await this.readings.clear();
+        await this.syncQueue.clear();
+        await this.appointments.clear();
+      });
+    } catch (error) {
+      // Fallback for PrematureCommitError in fake-indexeddb test environments
+      if ((error as Error).name === 'PrematureCommitError') {
+        await this.readings.clear();
+        await this.syncQueue.clear();
+        await this.appointments.clear();
+      } else {
+        throw error;
+      }
+    }
   }
 
   /**

@@ -103,7 +103,11 @@ import {
 import { APP_ROUTES } from './app/app-routing.module';
 import { LucideAngularModule } from 'lucide-angular';
 import { appIcons } from './app/shared/icons/lucide-icons';
-import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
+import { provideCharts } from 'ng2-charts';
+import { Chart, DoughnutController, ArcElement, Legend, Tooltip } from 'chart.js';
+
+// Optimize Chart.js bundle - only register used components
+Chart.register(DoughnutController, ArcElement, Legend, Tooltip);
 
 // Ensure Ionic web components can resolve their asset path (icons, etc.)
 setAssetPath(window.document.baseURI ?? '/');
@@ -126,7 +130,8 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular(),
     provideRouter(APP_ROUTES, withPreloading(PreloadAllModules)),
     provideHttpClient(),
-    provideCharts(withDefaultRegisterables()),
+    // Optimized chart config - no default registerables
+    provideCharts(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: LOCALE_ID, useValue: 'es' }, // Set default locale to Spanish
     { provide: HTTP_INTERCEPTORS, useClass: RequestIdInterceptor, multi: true },

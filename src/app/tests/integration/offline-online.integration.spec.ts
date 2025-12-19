@@ -29,7 +29,7 @@ import { MockDataService } from '@core/services/mock-data.service';
 import { TidepoolAuthService } from '@core/services/tidepool-auth.service';
 import { LocalAuthService } from '@core/services/local-auth.service';
 import { LocalGlucoseReading, GlucoseUnit } from '@core/models/glucose-reading.model';
-import { db } from '@core/services/database.service';
+import { db, DiabetacticDatabase } from '@core/services/database.service';
 import { Network } from '@capacitor/network';
 
 describe('Offline-Online Integration Tests', () => {
@@ -56,6 +56,26 @@ describe('Offline-Online Integration Tests', () => {
     ...overrides,
   });
 
+  // Helper to set service offline state (both Network mock and internal state)
+  const setServiceOffline = () => {
+    vi.mocked(Network.getStatus).mockResolvedValue({
+      connected: false,
+      connectionType: 'none',
+    });
+    if (readingsService) {
+      (readingsService as unknown as { isOnline: boolean }).isOnline = false;
+    }
+  };
+
+  // Helper to set service online state (both Network mock and internal state)
+  const setServiceOnline = () => {
+    vi.mocked(Network.getStatus).mockResolvedValue({ connected: true, connectionType: 'wifi' });
+    if (readingsService) {
+      (readingsService as unknown as { isOnline: boolean }).isOnline = true;
+    }
+  };
+
+  // Legacy helper - only mocks Network, doesn't change service state
   const simulateOffline = () => {
     vi.mocked(Network.getStatus).mockResolvedValue({
       connected: false,
@@ -63,14 +83,26 @@ describe('Offline-Online Integration Tests', () => {
     });
   };
 
+  // Legacy helper - only mocks Network, doesn't change service state
   const simulateOnline = () => {
     vi.mocked(Network.getStatus).mockResolvedValue({ connected: true, connectionType: 'wifi' });
   };
 
   beforeEach(async () => {
-    // Clear database
-    await db.readings.clear();
-    await db.syncQueue.clear();
+    // Clear database - handle PrematureCommitError in fake-indexeddb
+    try {
+      await db.transaction('rw', [db.readings, db.syncQueue], async () => {
+        await db.readings.clear();
+        await db.syncQueue.clear();
+      });
+    } catch (error) {
+      if ((error as Error).name === 'PrematureCommitError') {
+        await db.readings.clear();
+        await db.syncQueue.clear();
+      } else {
+        throw error;
+      }
+    }
 
     // Create mocks
     mockHttpClient = {
@@ -85,6 +117,7 @@ describe('Offline-Online Integration Tests', () => {
       getAccessToken: vi.fn().mockResolvedValue('test_token'),
       getCurrentUser: vi.fn(),
       waitForInitialization: vi.fn().mockResolvedValue(undefined),
+      refreshUserProfile: vi.fn().mockResolvedValue(undefined),
     };
 
     const mockExternalServicesObj = {
@@ -92,10 +125,15 @@ describe('Offline-Online Integration Tests', () => {
       getServiceStatus: vi.fn(),
     };
 
+    // Mock Network.getStatus BEFORE service creation to prevent race condition
+    // initializeNetworkMonitoring() runs async in constructor and calls Network.getStatus
+    vi.mocked(Network.getStatus).mockResolvedValue({ connected: false, connectionType: 'none' });
+
     TestBed.configureTestingModule({
       providers: [
         ReadingsService,
         ApiGatewayService,
+        { provide: DiabetacticDatabase, useValue: db }, // Ensure same db instance
         { provide: HttpClient, useValue: mockHttpClient },
         { provide: ExternalServicesManager, useValue: mockExternalServicesObj },
         {
@@ -136,13 +174,29 @@ describe('Offline-Online Integration Tests', () => {
     readingsService = TestBed.inject(ReadingsService);
     apiGatewayService = TestBed.inject(ApiGatewayService);
 
-    // Default to online
-    simulateOnline();
+    // Wait for async initializeNetworkMonitoring() to complete
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Set internal state for tests - start offline to prevent background sync race conditions
+    const serviceInternal = readingsService as unknown as { isOnline: boolean; isMockBackend: boolean };
+    serviceInternal.isOnline = false;
+    serviceInternal.isMockBackend = false;
   });
 
   afterEach(async () => {
-    await db.readings.clear();
-    await db.syncQueue.clear();
+    try {
+      await db.transaction('rw', [db.readings, db.syncQueue], async () => {
+        await db.readings.clear();
+        await db.syncQueue.clear();
+      });
+    } catch (error) {
+      if ((error as Error).name === 'PrematureCommitError') {
+        await db.readings.clear();
+        await db.syncQueue.clear();
+      } else {
+        throw error;
+      }
+    }
     vi.clearAllMocks();
   });
 
@@ -240,7 +294,7 @@ describe('Offline-Online Integration Tests', () => {
       );
 
       // ACT: Come online and sync
-      simulateOnline();
+      setServiceOnline();
       const syncResult = await readingsService.syncPendingReadings();
 
       // ASSERT: All readings synced
@@ -280,7 +334,7 @@ describe('Offline-Online Integration Tests', () => {
       });
 
       // ACT: Come online and sync
-      simulateOnline();
+      setServiceOnline();
       const syncResult = await readingsService.syncPendingReadings();
 
       // ASSERT: Partial sync
@@ -300,7 +354,7 @@ describe('Offline-Online Integration Tests', () => {
 
   describe('Intermittent Connectivity', () => {
     it('should handle network drops during sync', async () => {
-      // ARRANGE: Add readings
+      // ARRANGE: Add readings (while offline - no background sync race)
       await readingsService.addReading(createMockReading({ value: 100 }));
       await readingsService.addReading(createMockReading({ value: 140 }));
 
@@ -310,7 +364,7 @@ describe('Offline-Online Integration Tests', () => {
         syncAttempts++;
         if (syncAttempts === 2) {
           // Network drops on second reading
-          simulateOffline();
+          setServiceOffline();
           return throwError(() => ({ status: 0, message: 'Network error' }));
         }
         return of({
@@ -322,7 +376,8 @@ describe('Offline-Online Integration Tests', () => {
         });
       });
 
-      // ACT: Start sync
+      // ACT: Go online and start sync
+      setServiceOnline();
       const syncResult1 = await readingsService.syncPendingReadings();
 
       // ASSERT: First reading synced, second failed
@@ -330,7 +385,7 @@ describe('Offline-Online Integration Tests', () => {
       expect(syncResult1.failed).toBe(1);
 
       // Restore network
-      simulateOnline();
+      setServiceOnline();
       mockHttpClient.post.mockReturnValue(
         of({
           id: 2000,
@@ -353,8 +408,7 @@ describe('Offline-Online Integration Tests', () => {
     });
 
     it('should detect network status changes', async () => {
-      // ARRANGE: Start online
-      simulateOnline();
+      // ARRANGE: Add reading while offline (no background sync race)
       await readingsService.addReading(createMockReading({ value: 100 }));
 
       // Setup backend
@@ -368,12 +422,13 @@ describe('Offline-Online Integration Tests', () => {
         })
       );
 
-      // ACT: Sync while online (should work)
+      // ACT: Go online and sync (should work)
+      setServiceOnline();
       const onlineSync = await readingsService.syncPendingReadings();
       expect(onlineSync.success).toBe(1);
 
       // Go offline
-      simulateOffline();
+      setServiceOffline();
       await readingsService.addReading(createMockReading({ value: 140 }));
 
       // Try to sync (should skip)
@@ -388,7 +443,7 @@ describe('Offline-Online Integration Tests', () => {
 
   describe('Data Consistency During Sync', () => {
     it('should prevent duplicate syncs with transaction locking', async () => {
-      // ARRANGE: Add reading
+      // ARRANGE: Add reading (while offline - no background sync race)
       await readingsService.addReading(createMockReading({ value: 150 }));
 
       // Setup backend with delay
@@ -402,19 +457,26 @@ describe('Offline-Online Integration Tests', () => {
         })
       );
 
-      // ACT: Trigger concurrent syncs
+      // ACT: Go online and trigger concurrent syncs
+      setServiceOnline();
       const [sync1, sync2] = await Promise.all([
         readingsService.syncPendingReadings(),
         readingsService.syncPendingReadings(),
       ]);
 
-      // ASSERT: Only one sync succeeded (transactions prevent duplicates)
-      const totalSuccess = sync1.success + sync2.success;
-      expect(totalSuccess).toBeLessThanOrEqual(1);
+      // ASSERT: Both calls resolve (due to mutex, they return same promise)
+      // When mutex is active, second call gets same promise as first,
+      // so both have same result (both show success=1 for the 1 reading synced)
+      expect(sync1.success).toBe(1);
+      expect(sync2.success).toBe(1); // Same promise, same result
 
       // Reading synced only once
       const reading = await db.readings.toArray();
+      expect(reading.length).toBe(1);
       expect(reading[0].synced).toBe(true);
+
+      // HTTP POST was called only once (mutex prevents duplicate calls)
+      expect(mockHttpClient.post).toHaveBeenCalledTimes(1);
 
       // Queue empty
       const queueItems = await db.syncQueue.toArray();
@@ -422,7 +484,7 @@ describe('Offline-Online Integration Tests', () => {
     });
 
     it('should maintain data integrity across offline updates', async () => {
-      // ARRANGE: Add and sync reading
+      // ARRANGE: Add reading (while offline - no background sync race)
       const reading = await readingsService.addReading(createMockReading({ value: 100 }));
 
       mockHttpClient.post.mockReturnValue(
@@ -434,10 +496,12 @@ describe('Offline-Online Integration Tests', () => {
           created_at: '06/12/2025 10:00:00',
         })
       );
+      // Go online to sync
+      setServiceOnline();
       await readingsService.syncPendingReadings();
 
       // Go offline
-      simulateOffline();
+      setServiceOffline();
 
       // Update reading offline
       await readingsService.updateReading(reading.id, {
@@ -554,7 +618,7 @@ describe('Offline-Online Integration Tests', () => {
       );
 
       // Come online and sync
-      simulateOnline();
+      setServiceOnline();
       const syncResult = await readingsService.syncPendingReadings();
 
       // ASSERT: All readings synced
@@ -607,7 +671,7 @@ describe('Offline-Online Integration Tests', () => {
       );
 
       // ACT: Come online and perform full sync
-      simulateOnline();
+      setServiceOnline();
       const fullSync = await readingsService.performFullSync();
 
       // ASSERT: Bidirectional sync completed

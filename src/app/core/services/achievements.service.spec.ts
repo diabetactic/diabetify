@@ -10,8 +10,8 @@ import { StreakData, Achievement } from '@models/achievements.model';
 
 describe('AchievementsService', () => {
   let service: AchievementsService;
-  let mockApiGateway: { request: jest.Mock };
-  let mockLogger: { debug: jest.Mock; info: jest.Mock; error: jest.Mock; warn: jest.Mock };
+  let mockApiGateway: { request: Mock };
+  let mockLogger: { debug: Mock; info: Mock; error: Mock; warn: Mock };
 
   const mockStreakData: StreakData = {
     streak: 7,
@@ -49,14 +49,14 @@ describe('AchievementsService', () => {
 
   beforeEach(() => {
     mockApiGateway = {
-      request: jest.fn(),
+      request: vi.fn(),
     };
 
     mockLogger = {
-      debug: jest.fn(),
-      info: jest.fn(),
-      error: jest.fn(),
-      warn: jest.fn(),
+      debug: vi.fn(),
+      info: vi.fn(),
+      error: vi.fn(),
+      warn: vi.fn(),
     };
 
     TestBed.configureTestingModule({
@@ -71,7 +71,7 @@ describe('AchievementsService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be created', () => {
@@ -460,11 +460,11 @@ describe('AchievementsService', () => {
 
   describe('cache expiration', () => {
     beforeEach(() => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
     });
 
     afterEach(() => {
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('should invalidate cache after TTL expires', async () => {
@@ -474,7 +474,7 @@ describe('AchievementsService', () => {
       mockApiGateway.request.mockClear();
 
       // Advance time beyond TTL (60 seconds)
-      jest.advanceTimersByTime(61000);
+      vi.advanceTimersByTime(61000);
 
       mockApiGateway.request.mockReturnValue(of({ success: true, data: mockStreakData }));
       await service.fetchStreak();
@@ -489,7 +489,7 @@ describe('AchievementsService', () => {
       mockApiGateway.request.mockClear();
 
       // Advance time but stay within TTL
-      jest.advanceTimersByTime(30000);
+      vi.advanceTimersByTime(30000);
 
       await service.fetchStreak();
 

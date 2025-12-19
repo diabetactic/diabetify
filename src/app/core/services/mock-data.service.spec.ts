@@ -562,7 +562,7 @@ describe('MockDataService', () => {
 
   describe('Debug Logging', () => {
     it('should only log in mock mode', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
 
       // Call a method that logs
       firstValueFrom(service.getReadings());

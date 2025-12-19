@@ -19,8 +19,8 @@ import {
  * Mock NotificationService for testing
  */
 class MockNotificationService {
-  scheduleAppointmentReminder = jest.fn().mockResolvedValue(undefined);
-  cancelNotification = jest.fn().mockResolvedValue(undefined);
+  scheduleAppointmentReminder = vi.fn().mockResolvedValue(undefined);
+  cancelNotification = vi.fn().mockResolvedValue(undefined);
 }
 
 /**
@@ -29,8 +29,8 @@ class MockNotificationService {
  */
 describe('AppointmentService', () => {
   let service: AppointmentService;
-  let apiGateway: jest.Mocked<ApiGatewayService>;
-  let translationService: jest.Mocked<TranslationService>;
+  let apiGateway: Mock<ApiGatewayService>;
+  let translationService: Mock<TranslationService>;
 
   // Mock appointments
   const mockAppointment1: Appointment = {
@@ -71,11 +71,11 @@ describe('AppointmentService', () => {
 
   beforeEach(() => {
     const apiGatewaySpy = {
-      request: jest.fn(),
-    } as unknown as jest.Mocked<ApiGatewayService>;
+      request: vi.fn(),
+    } as unknown as Mock<ApiGatewayService>;
     const translationSpy = {
-      instant: jest.fn(),
-    } as unknown as jest.Mocked<TranslationService>;
+      instant: vi.fn(),
+    } as unknown as Mock<TranslationService>;
 
     TestBed.configureTestingModule({
       providers: [
@@ -90,8 +90,8 @@ describe('AppointmentService', () => {
     // Force non-mock mode to test API gateway calls
     (service as any).isMockMode = false;
 
-    apiGateway = TestBed.inject(ApiGatewayService) as jest.Mocked<ApiGatewayService>;
-    translationService = TestBed.inject(TranslationService) as jest.Mocked<TranslationService>;
+    apiGateway = TestBed.inject(ApiGatewayService) as Mock<ApiGatewayService>;
+    translationService = TestBed.inject(TranslationService) as Mock<TranslationService>;
 
     // Default translation behavior
     translationService.instant.mockImplementation((key: string) => key);
@@ -441,7 +441,7 @@ describe('AppointmentService', () => {
 
       it('should call getAppointments internally', () =>
         new Promise<void>((resolve, reject) => {
-          jest.spyOn(service, 'getAppointments');
+          vi.spyOn(service, 'getAppointments');
 
           service.getAppointment(1).subscribe({
             next: () => {
@@ -797,7 +797,7 @@ describe('AppointmentService', () => {
             .mockReturnValueOnce(of(refreshError));
 
           // Spy on console.error to verify it logs but doesn't throw
-          jest.spyOn(console, 'error');
+          vi.spyOn(console, 'error');
 
           service.createAppointment(createRequest).subscribe({
             next: appointment => {

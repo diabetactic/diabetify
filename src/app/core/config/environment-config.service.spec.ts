@@ -10,10 +10,10 @@ import {
 import { environment } from '@env/environment';
 
 // Mock Capacitor
-jest.mock('@capacitor/core', () => ({
+vi.mock('@capacitor/core', () => ({
   Capacitor: {
-    isNativePlatform: jest.fn(() => false),
-    getPlatform: jest.fn(() => 'web'),
+    isNativePlatform: vi.fn(() => false),
+    getPlatform: vi.fn(() => 'web'),
   },
 }));
 
@@ -29,8 +29,8 @@ describe('EnvironmentConfigService', () => {
     service = TestBed.inject(EnvironmentConfigService);
 
     // Reset Capacitor mocks
-    (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
-    (Capacitor.getPlatform as jest.Mock).mockReturnValue('web');
+    (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
+    (Capacitor.getPlatform as Mock).mockReturnValue('web');
   });
 
   describe('initialization', () => {
@@ -140,21 +140,21 @@ describe('EnvironmentConfigService', () => {
 
   describe('platform detection', () => {
     it('should return isNativePlatform from Capacitor', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
       expect(service.isNativePlatform).toBe(false);
 
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
       expect(service.isNativePlatform).toBe(true);
     });
 
     it('should return platform from Capacitor', () => {
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('web');
+      (Capacitor.getPlatform as Mock).mockReturnValue('web');
       expect(service.platform).toBe('web');
 
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('android');
+      (Capacitor.getPlatform as Mock).mockReturnValue('android');
       expect(service.platform).toBe('android');
 
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('ios');
+      (Capacitor.getPlatform as Mock).mockReturnValue('ios');
       expect(service.platform).toBe('ios');
     });
   });
@@ -188,7 +188,7 @@ describe('EnvironmentConfigService', () => {
     });
 
     it('should call service.initialize() when factory is executed', async () => {
-      const initSpy = jest.spyOn(service, 'initialize');
+      const initSpy = vi.spyOn(service, 'initialize');
       const factory = initializeEnvironmentConfig(service);
 
       await factory();

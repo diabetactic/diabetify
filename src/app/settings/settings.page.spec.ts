@@ -20,16 +20,16 @@ describe('SettingsPage', () => {
   let fixture: ComponentFixture<SettingsPage>;
 
   // Mocked services
-  let mockRouter: jest.Mocked<Router>;
-  let mockAlertController: jest.Mocked<AlertController>;
-  let mockLoadingController: jest.Mocked<LoadingController>;
-  let mockToastController: jest.Mocked<ToastController>;
-  let mockProfileService: jest.Mocked<ProfileService>;
-  let mockThemeService: jest.Mocked<ThemeService>;
-  let mockAuthService: jest.Mocked<LocalAuthService>;
-  let mockDemoDataService: jest.Mocked<DemoDataService>;
-  let mockNotificationService: jest.Mocked<NotificationService>;
-  let mockTranslateService: jest.Mocked<TranslateService>;
+  let mockRouter: vi.Mocked<Router>;
+  let mockAlertController: vi.Mocked<AlertController>;
+  let mockLoadingController: vi.Mocked<LoadingController>;
+  let mockToastController: vi.Mocked<ToastController>;
+  let mockProfileService: vi.Mocked<ProfileService>;
+  let mockThemeService: vi.Mocked<ThemeService>;
+  let mockAuthService: vi.Mocked<LocalAuthService>;
+  let mockDemoDataService: vi.Mocked<DemoDataService>;
+  let mockNotificationService: vi.Mocked<NotificationService>;
+  let mockTranslateService: vi.Mocked<TranslateService>;
 
   // Mock data
   const mockUser: LocalUser = {
@@ -63,81 +63,91 @@ describe('SettingsPage', () => {
   let mockLoading: any;
   let mockToast: any;
 
+  // Storage mock holder - needs to be accessible across tests
+  let localStorageMock: Record<string, string>;
+  let getItemSpy: any;
+  let setItemSpy: any;
+  let removeItemSpy: any;
+
   beforeEach(async () => {
     // Setup localStorage mock
-    const localStorageMock: Record<string, string> = {};
-    Storage.prototype.getItem = jest.fn((key: string) => localStorageMock[key] || null);
-    Storage.prototype.setItem = jest.fn((key: string, value: string) => {
+    localStorageMock = {};
+    getItemSpy = vi.fn((key: string) => localStorageMock[key] || null);
+    setItemSpy = vi.fn((key: string, value: string) => {
       localStorageMock[key] = value;
     });
-    Storage.prototype.removeItem = jest.fn((key: string) => {
+    removeItemSpy = vi.fn((key: string) => {
       delete localStorageMock[key];
     });
 
+    Storage.prototype.getItem = getItemSpy;
+    Storage.prototype.setItem = setItemSpy;
+    Storage.prototype.removeItem = removeItemSpy;
+
     // Mock alert, loading, toast
     mockAlert = {
-      present: jest.fn().mockResolvedValue(undefined),
-      onDidDismiss: jest.fn().mockResolvedValue({ role: 'confirm' }),
+      present: vi.fn().mockResolvedValue(undefined),
+      onDidDismiss: vi.fn().mockResolvedValue({ role: 'confirm' }),
     };
 
     mockLoading = {
-      present: jest.fn().mockResolvedValue(undefined),
-      dismiss: jest.fn().mockResolvedValue(true),
+      present: vi.fn().mockResolvedValue(undefined),
+      dismiss: vi.fn().mockResolvedValue(true),
     };
 
     mockToast = {
-      present: jest.fn().mockResolvedValue(undefined),
+      present: vi.fn().mockResolvedValue(undefined),
     };
 
     // Mock services
     const routerEventsSubject = new Subject();
     mockRouter = {
-      navigate: jest.fn().mockResolvedValue(true),
+      navigate: vi.fn().mockResolvedValue(true),
       events: routerEventsSubject.asObservable(),
       url: '/settings',
     } as any;
 
     mockAlertController = {
-      create: jest.fn().mockResolvedValue(mockAlert),
+      create: vi.fn().mockResolvedValue(mockAlert),
     } as any;
 
     mockLoadingController = {
-      create: jest.fn().mockResolvedValue(mockLoading),
+      create: vi.fn().mockResolvedValue(mockLoading),
     } as any;
 
     mockToastController = {
-      create: jest.fn().mockResolvedValue(mockToast),
+      create: vi.fn().mockResolvedValue(mockToast),
     } as any;
 
     mockProfileService = {
-      getProfile: jest.fn(),
-      updatePreferences: jest.fn(),
+      getProfile: vi.fn(),
+      updatePreferences: vi.fn(),
     } as any;
 
     mockThemeService = {
-      setThemeMode: jest.fn().mockResolvedValue(undefined),
+      setThemeMode: vi.fn().mockResolvedValue(undefined),
       isDark$: new BehaviorSubject(false),
     } as any;
 
     mockAuthService = {
-      getCurrentUser: jest.fn().mockReturnValue(mockUser),
-      logout: jest.fn().mockResolvedValue(undefined),
+      getCurrentUser: vi.fn().mockReturnValue(mockUser),
+      logout: vi.fn().mockResolvedValue(undefined),
     } as any;
 
     mockDemoDataService = {
-      isDemoMode: jest.fn().mockReturnValue(false),
+      isDemoMode: vi.fn().mockReturnValue(false),
     } as any;
 
     mockNotificationService = {
-      checkPermissions: jest.fn().mockResolvedValue(true),
-      requestPermissions: jest.fn().mockResolvedValue(true),
-      scheduleReadingReminder: jest.fn().mockResolvedValue(undefined),
-      cancelReadingReminder: jest.fn().mockResolvedValue(undefined),
-      showImmediateNotification: jest.fn().mockResolvedValue(undefined),
+      checkPermissions: vi.fn().mockResolvedValue(true),
+      requestPermissions: vi.fn().mockResolvedValue(true),
+      scheduleReadingReminder: vi.fn().mockResolvedValue(undefined),
+      cancelReadingReminder: vi.fn().mockResolvedValue(undefined),
+      showImmediateNotification: vi.fn().mockResolvedValue(undefined),
     } as any;
 
     mockTranslateService = {
-      instant: jest.fn((key: string) => {
+      instant: vi.fn((key: string) => {
         const translations: Record<string, string> = {
           'settings.notifications.morningCheck': 'Morning Check',
           'settings.notifications.lunchCheck': 'Lunch Check',
@@ -145,7 +155,7 @@ describe('SettingsPage', () => {
         };
         return translations[key] || key;
       }),
-      use: jest.fn(),
+      use: vi.fn(),
       currentLang: 'es',
     } as any;
 
@@ -174,7 +184,7 @@ describe('SettingsPage', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Initialization', () => {
@@ -308,7 +318,7 @@ describe('SettingsPage', () => {
       mockAlert.onDidDismiss.mockResolvedValue({ role: 'confirm' });
 
       const mockAlertWithHandler = {
-        present: jest.fn().mockResolvedValue(undefined),
+        present: vi.fn().mockResolvedValue(undefined),
         buttons: [] as any[],
       };
 
@@ -366,8 +376,11 @@ describe('SettingsPage', () => {
     });
 
     it('should handle save errors gracefully', async () => {
-      const setItemSpy = jest.spyOn(Storage.prototype, 'setItem');
-      setItemSpy.mockImplementation(() => {
+      // Ensure hasChanges is true
+      component.hasChanges = true;
+
+      // Spy on localStorage.setItem directly to throw error
+      const setItemErrorSpy = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
         throw new Error('Storage error');
       });
 
@@ -380,12 +393,16 @@ describe('SettingsPage', () => {
         })
       );
 
-      setItemSpy.mockRestore();
+      // Restore original mock
+      setItemErrorSpy.mockRestore();
     });
 
     it('should dismiss loading on save error', async () => {
-      const setItemSpy = jest.spyOn(Storage.prototype, 'setItem');
-      setItemSpy.mockImplementation(() => {
+      // Ensure hasChanges is true
+      component.hasChanges = true;
+
+      // Spy on localStorage.setItem directly to throw error
+      const setItemErrorSpy = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
         throw new Error('Storage error');
       });
 
@@ -393,7 +410,8 @@ describe('SettingsPage', () => {
 
       expect(mockLoading.dismiss).toHaveBeenCalled();
 
-      setItemSpy.mockRestore();
+      // Restore original mock
+      setItemErrorSpy.mockRestore();
     });
   });
 
@@ -426,7 +444,7 @@ describe('SettingsPage', () => {
 
     it('should logout and navigate to login on confirmation', async () => {
       const mockAlertWithHandler = {
-        present: jest.fn().mockResolvedValue(undefined),
+        present: vi.fn().mockResolvedValue(undefined),
         buttons: [] as any[],
       };
 
@@ -639,8 +657,8 @@ describe('SettingsPage', () => {
 
   describe('Component Lifecycle', () => {
     it('should cleanup on destroy', () => {
-      const destroySpy = jest.spyOn(component['destroy$'], 'next');
-      const completeSpy = jest.spyOn(component['destroy$'], 'complete');
+      const destroySpy = vi.spyOn(component['destroy$'], 'next');
+      const completeSpy = vi.spyOn(component['destroy$'], 'complete');
 
       fixture.destroy();
 

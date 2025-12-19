@@ -10,20 +10,20 @@ import { LoggerService } from '@services/logger.service';
 
 describe('LoggerService', () => {
   let service: LoggerService;
-  let consoleDebugSpy: jest.SpyInstance;
-  let consoleLogSpy: jest.SpyInstance;
-  let consoleWarnSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleDebugSpy: MockInstance;
+  let consoleLogSpy: MockInstance;
+  let consoleWarnSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(LoggerService);
 
     // Spy on console methods with return values
-    consoleDebugSpy = jest.spyOn(console, 'debug').mockReturnValue(undefined);
-    consoleLogSpy = jest.spyOn(console, 'log').mockReturnValue(undefined);
-    consoleWarnSpy = jest.spyOn(console, 'warn').mockReturnValue(undefined);
-    consoleErrorSpy = jest.spyOn(console, 'error').mockReturnValue(undefined);
+    consoleDebugSpy = vi.spyOn(console, 'debug').mockReturnValue(undefined);
+    consoleLogSpy = vi.spyOn(console, 'log').mockReturnValue(undefined);
+    consoleWarnSpy = vi.spyOn(console, 'warn').mockReturnValue(undefined);
+    consoleErrorSpy = vi.spyOn(console, 'error').mockReturnValue(undefined);
   });
 
   it('should be created', () => {

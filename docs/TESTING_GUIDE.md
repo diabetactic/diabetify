@@ -1,225 +1,273 @@
-# Guía de Testing - Diabetactic
+# Guia de Testing - Diabetactic
 
-Referencia rápida para escribir tests en este proyecto.
+Referencia rapida para escribir tests en este proyecto.
+
+---
+
+## Arquitectura de Tests
+
+Este proyecto sigue el patron **Testing Trophy**:
+
+| Nivel       | Framework  | Ubicacion                    | Proporcion |
+| ----------- | ---------- | ---------------------------- | ---------- |
+| Unit        | Vitest     | `*.spec.ts` junto al codigo  | 70%        |
+| Integration | Vitest     | `src/app/tests/integration/` | 25%        |
+| E2E         | Playwright | `playwright/tests/`          | 5%         |
+
+### Estadisticas Actuales
+
+- **82 archivos de test** pasando
+- **2401 tests unitarios** ejecutandose en ~45s
+- **14 tests E2E** para flujos criticos
 
 ---
 
 ## Quick Start
 
-### Run Tests
+### Ejecutar Tests
 
 ```bash
-# All tests
-npm test
+# Todos los tests unitarios
+pnpm test
 
-# Watch mode (for TDD)
-npm run test:watch
+# Modo watch (para TDD)
+pnpm run test:watch
 
-# Specific test file
-npm test -- --testPathPattern="profile.service"
+# Archivo especifico
+pnpm exec vitest run --testPathPattern="profile.service"
 
-# With coverage
-npm run test:coverage
+# Con coverage
+pnpm run test:coverage
 
-# E2E tests
-npm run test:e2e
+# Tests E2E
+pnpm run test:e2e
+
+# Tests de integracion
+pnpm exec vitest run --config vitest.integration.config.ts
 ```
 
-### Test File Structure
+### Estructura de Archivos
 
 ```
 src/app/
 ├── core/
 │   ├── services/
 │   │   ├── my.service.ts
-│   │   └── my.service.spec.ts  ← Place here
-│   ├── models/
-│   │   ├── my.model.ts
-│   │   └── my.model.spec.ts    ← Place here
+│   │   └── my.service.spec.ts  <- Aqui
 │   └── guards/
 │       ├── auth.guard.ts
-│       └── auth.guard.spec.ts  ← Place here
-└── features/
-    └── dashboard/
-        ├── dashboard.page.ts
-        └── dashboard.page.spec.ts  ← Place here
+│       └── auth.guard.spec.ts  <- Aqui
+├── features/
+│   └── dashboard/
+│       ├── dashboard.page.ts
+│       └── dashboard.page.spec.ts  <- Aqui
+└── tests/
+    └── integration/              <- Tests de integracion
+        ├── auth-flow.integration.spec.ts
+        └── readings-sync.integration.spec.ts
 ```
 
 ---
 
-## Common Test Patterns
+## Patron de Test Unitario
 
-### Service Tests
-
-**Basic service test template:**
+### Template Basico (Vitest)
 
 ```typescript
+// IMPORTANTE: Importar test-setup primero
+import '../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { MyService } from './my.service';
-import { MockFactory } from '../tests/helpers/mock-factory';
-import { resetBehaviorSubject, clearServiceCache } from '../tests/helpers/test-isolation.helper';
+import { vi } from 'vitest';
 
 describe('MyService', () => {
   let service: MyService;
-  let mockHttp = MockFactory.createHttpClientMock();
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [MyService, { provide: HttpClient, useValue: mockHttp }],
+      providers: [MyService, { provide: HttpClient, useValue: { get: vi.fn() } }],
     });
 
     service = TestBed.inject(MyService);
-
-    // Reset state between tests
-    clearServiceCache(service);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
-  describe('initialization', () => {
-    it('should create the service', () => {
-      expect(service).toBeTruthy();
-    });
+  it('should create', () => {
+    expect(service).toBeTruthy();
   });
 
-  describe('main functionality', () => {
-    it('should do something', async () => {
-      // Arrange
-      mockHttp.get.mockReturnValue(of({ data: 'test' }));
-
-      // Act
+  describe('getData', () => {
+    it('should return data from API', async () => {
+      // Arrange - Act - Assert pattern
       const result = await service.getData();
-
-      // Assert
-      expect(result.data).toBe('test');
+      expect(result).toBeDefined();
     });
   });
 });
 ```
 
-### Component Tests
+### Mocks de Capacitor
 
-**Basic component test template:**
+Los mocks de Capacitor estan centralizados en `src/test-setup/index.ts`.
 
 ```typescript
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MyComponent } from './my.component';
+// NO HACER - esto sobreescribe los mocks centralizados:
+// vi.mock('@capacitor/network');
 
-describe('MyComponent', () => {
-  let component: MyComponent;
-  let fixture: ComponentFixture<MyComponent>;
+// HACER - importar y usar el mock existente:
+import { Network } from '@capacitor/network';
+import type { Mock } from 'vitest';
+
+// En el test:
+(Network.getStatus as Mock).mockResolvedValue({ connected: true });
+```
+
+---
+
+## Tests de Componentes Ionic
+
+### Template con CUSTOM_ELEMENTS_SCHEMA
+
+```typescript
+import '../../test-setup';
+
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { IonicModule } from '@ionic/angular';
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
+import { MyPage } from './my.page';
+
+describe('MyPage', () => {
+  let component: MyPage;
+  let fixture: ComponentFixture<MyPage>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MyComponent],
+      imports: [MyPage, IonicModule.forRoot()],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(MyComponent);
+    fixture = TestBed.createComponent(MyPage);
     component = fixture.componentInstance;
+    // Evitar detectChanges() si causa problemas con ControlValueAccessor
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+});
+```
 
-  describe('rendering', () => {
-    it('should display input value', () => {
-      component.value = 'Test';
-      fixture.detectChanges();
+---
 
-      const compiled = fixture.nativeElement;
-      expect(compiled.textContent).toContain('Test');
+## Validacion de Formularios
+
+### Ejemplo: Limites de Glucosa
+
+```typescript
+describe('Form Validation', () => {
+  beforeEach(() => {
+    component.ngOnInit(); // Inicializar el formulario
+  });
+
+  describe('mg/dL unit', () => {
+    beforeEach(() => {
+      component.currentUnit = 'mg/dL';
+      component.updateValidatorsForUnit('mg/dL');
+    });
+
+    it('should reject glucose below minimum (19)', () => {
+      component.readingForm.controls.value.setValue(19);
+      expect(component.readingForm.controls.value.errors?.['min']).toBeTruthy();
+    });
+
+    it('should accept glucose at minimum boundary (20)', () => {
+      component.readingForm.controls.value.setValue(20);
+      expect(component.readingForm.controls.value.errors?.['min']).toBeFalsy();
     });
   });
 });
+```
+
+---
+
+## Tests E2E (Playwright)
+
+### Archivos Criticos
+
+| Archivo                            | Proposito                                              |
+| ---------------------------------- | ------------------------------------------------------ |
+| `e2e-flow.spec.ts`                 | Flujo usuario completo: Login -> Dashboard -> Lecturas |
+| `appointment-full-flow.spec.ts`    | Maquina de estados de citas                            |
+| `sync-proof-comprehensive.spec.ts` | Sincronizacion offline/online                          |
+| `docker-backend-e2e.spec.ts`       | Integracion con backend real                           |
+
+### Ejecutar E2E
+
+```bash
+# Con UI interactiva
+pnpm exec playwright test --ui
+
+# En modo headless
+pnpm exec playwright test
+
+# Solo tests de appointments
+pnpm exec playwright test appointment
 ```
 
 ---
 
 ## Best Practices
 
-### 1. Use async/await (NOT done callbacks)
+### 1. Usar vi.fn() (NO jest.fn())
 
 ```typescript
-// ✅ PREFER: async/await
-it('should work', async () => {
-  const result = await service.doSomething();
-  expect(result).toBeDefined();
-});
+// CORRECTO (Vitest)
+const mockFn = vi.fn().mockReturnValue('test');
+vi.spyOn(service, 'method');
+
+// INCORRECTO (Jest - no usar)
+// const mockFn = jest.fn();
 ```
 
-### 2. Test Both Happy and Error Paths
+### 2. Importar test-setup
 
 ```typescript
-describe('addReading', () => {
-  it('should add valid reading', async () => {
-    const reading = { value: 120, time: new Date() };
-    await service.addReading(reading);
-    expect(mockDb.readings.add).toHaveBeenCalled();
-  });
-
-  it('should reject invalid reading', async () => {
-    const reading = { value: -10, time: new Date() };
-    try {
-      await service.addReading(reading);
-      fail('Should have thrown');
-    } catch (error) {
-      expect(error.message).toContain('invalid');
-    }
-  });
-});
+// Primera linea de cada spec.ts
+import '../../test-setup';
 ```
 
-### 3. Use Descriptive Test Names
+### 3. Evitar detectChanges() con ion-input
 
 ```typescript
-// ✅ CLEAR: What is being tested and expected?
-it('should return average glucose reading for 30-day period', () => { ... });
-it('should throw error when date range is invalid', () => { ... });
+// Si el componente usa ion-input con formControlName:
+fixture = TestBed.createComponent(MyPage);
+component = fixture.componentInstance;
+// NO llamar fixture.detectChanges() aqui
+// En su lugar, llamar ngOnInit() manualmente si necesario
 ```
 
----
-
-## Helper Functions
-
-### Test Isolation
+### 4. Usar Mock tipado
 
 ```typescript
-import {
-  resetBehaviorSubject,
-  clearServiceCache,
-  TestDataFactory,
-} from '../tests/helpers/test-isolation.helper';
+import type { Mock } from 'vitest';
 
-// Reset state
-resetBehaviorSubject(service.state$, initialValue);
-clearServiceCache(service);
-
-// Create test data
-const user = TestDataFactory.mockLocalUser();
-const reading = TestDataFactory.mockGlucoseReading();
-const response = TestDataFactory.mockApiResponse({ data: [] });
-```
-
-### Mock Factory
-
-```typescript
-import { MockFactory } from '../tests/helpers/mock-factory';
-
-const mockHttp = MockFactory.createHttpClientMock();
-const mockDb = MockFactory.createDatabaseMock();
-const mockAuth = MockFactory.createLocalAuthMock();
+// Tipar el mock
+const mockService = {
+  getData: vi.fn(),
+} as unknown as Mock<MyService>;
 ```
 
 ---
 
 ## Recursos
 
-- **Configuración Jest**: `setup-jest.ts`
-- **Helpers de test**: `/src/app/tests/helpers/`
-- **Ejemplos**: Specs existentes en `/src/app/core/services/`
-- **Tests E2E**: `playwright/tests/` y `maestro/tests/`
+- **Configuracion Vitest**: `vitest.config.ts`
+- **Setup global**: `src/test-setup/index.ts`
+- **Mocks Capacitor**: `src/test-setup/capacitor-mocks.ts`
+- **Tests E2E**: `playwright/tests/`
 
-**Última actualización**: Diciembre 2025
+**Ultima actualizacion**: Diciembre 2025

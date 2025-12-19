@@ -542,7 +542,7 @@ describe('ErrorHandlerService', () => {
 
     it('should not expose glucose values in error logging', async () => {
       // This test verifies that PHI is not logged
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
 
       const httpError = new HttpErrorResponse({
         status: 500,

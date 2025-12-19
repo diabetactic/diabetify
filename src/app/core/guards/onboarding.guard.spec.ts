@@ -17,8 +17,8 @@ import { UserProfile } from '@core/models';
 
 describe('OnboardingGuard', () => {
   let guard: OnboardingGuard;
-  let profileService: jest.Mocked<ProfileService>;
-  let router: jest.Mocked<Router>;
+  let profileService: Mock<ProfileService>;
+  let router: Mock<Router>;
   let urlTree: UrlTree;
 
   const makeSegment = (path: string): UrlSegment =>
@@ -27,12 +27,12 @@ describe('OnboardingGuard', () => {
   beforeEach(() => {
     urlTree = {} as UrlTree;
     const routerSpy = {
-      createUrlTree: jest.fn().mockReturnValue(urlTree),
-    } as unknown as jest.Mocked<Router>;
+      createUrlTree: vi.fn().mockReturnValue(urlTree),
+    } as unknown as Mock<Router>;
 
     const profileSpy = {
-      getProfile: jest.fn(),
-    } as unknown as jest.Mocked<ProfileService>;
+      getProfile: vi.fn(),
+    } as unknown as Mock<ProfileService>;
 
     TestBed.configureTestingModule({
       providers: [
@@ -43,8 +43,8 @@ describe('OnboardingGuard', () => {
     });
 
     guard = TestBed.inject(OnboardingGuard);
-    profileService = TestBed.inject(ProfileService) as jest.Mocked<ProfileService>;
-    router = TestBed.inject(Router) as jest.Mocked<Router>;
+    profileService = TestBed.inject(ProfileService) as Mock<ProfileService>;
+    router = TestBed.inject(Router) as Mock<Router>;
   });
 
   it('allows activation when onboarding is complete', async () => {

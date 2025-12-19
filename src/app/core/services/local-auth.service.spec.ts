@@ -2,6 +2,7 @@
 // Initialize TestBed environment for Vitest
 import '../../../test-setup';
 
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of, throwError, firstValueFrom } from 'rxjs';
@@ -19,22 +20,22 @@ import { MockDataService } from '@services/mock-data.service';
 import { MockAdapterService } from '@services/mock-adapter.service';
 import { HttpClient } from '@angular/common/http';
 
-// Mock Preferences - already mocked in setup-jest.ts but we need to control it per test
-jest.mock('@capacitor/preferences', () => ({
+// Mock Preferences for Vitest
+vi.mock('@capacitor/preferences', () => ({
   Preferences: {
-    get: jest.fn(),
-    set: jest.fn(),
-    remove: jest.fn(),
+    get: vi.fn(),
+    set: vi.fn(),
+    remove: vi.fn(),
   },
 }));
 
 describe('LocalAuthService', () => {
   let service: LocalAuthService;
-  let platformDetector: jest.Mocked<PlatformDetectorService>;
-  let logger: jest.Mocked<LoggerService>;
-  let mockData: jest.Mocked<MockDataService>;
-  let mockAdapter: jest.Mocked<MockAdapterService>;
-  let httpMock: jest.Mocked<HttpClient>;
+  let platformDetector: PlatformDetectorService;
+  let logger: LoggerService;
+  let mockData: MockDataService;
+  let mockAdapter: MockAdapterService;
+  let httpMock: HttpClient;
 
   const mockUser: LocalUser = {
     id: 'test-user-123',
@@ -64,39 +65,39 @@ describe('LocalAuthService', () => {
 
   beforeEach(async () => {
     // Reset all mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Default Preferences mock - no stored data
-    (Preferences.get as jest.Mock).mockResolvedValue({ value: null });
-    (Preferences.set as jest.Mock).mockResolvedValue(undefined);
-    (Preferences.remove as jest.Mock).mockResolvedValue(undefined);
+    vi.mocked(Preferences.get).mockResolvedValue({ value: null });
+    vi.mocked(Preferences.set).mockResolvedValue(undefined);
+    vi.mocked(Preferences.remove).mockResolvedValue(undefined);
 
     // Create mock services
     platformDetector = {
-      getApiBaseUrl: jest.fn().mockReturnValue('http://test-api.example.com'),
-      isNativePlatform: jest.fn().mockReturnValue(false),
-      isWebPlatform: jest.fn().mockReturnValue(true),
-    } as unknown as jest.Mocked<PlatformDetectorService>;
+      getApiBaseUrl: vi.fn().mockReturnValue('http://test-api.example.com'),
+      isNativePlatform: vi.fn().mockReturnValue(false),
+      isWebPlatform: vi.fn().mockReturnValue(true),
+    } as unknown as PlatformDetectorService;
 
     logger = {
-      info: jest.fn(),
-      debug: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn(),
-    } as unknown as jest.Mocked<LoggerService>;
+      info: vi.fn(),
+      debug: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    } as unknown as LoggerService;
 
-    mockData = {} as jest.Mocked<MockDataService>;
+    mockData = {} as MockDataService;
 
     mockAdapter = {
-      isServiceMockEnabled: jest.fn().mockReturnValue(false),
-    } as unknown as jest.Mocked<MockAdapterService>;
+      isServiceMockEnabled: vi.fn().mockReturnValue(false),
+    } as unknown as MockAdapterService;
 
     httpMock = {
-      get: jest.fn(),
-      post: jest.fn(),
-      put: jest.fn(),
-      delete: jest.fn(),
-    } as unknown as jest.Mocked<HttpClient>;
+      get: vi.fn(),
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
+    } as unknown as HttpClient;
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -117,7 +118,7 @@ describe('LocalAuthService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('initialization', () => {
@@ -140,7 +141,7 @@ describe('LocalAuthService', () => {
       const storedUser = JSON.stringify(mockUser);
       const futureExpiry = (Date.now() + 3600000).toString(); // 1 hour from now
 
-      (Preferences.get as jest.Mock).mockImplementation(({ key }: { key: string }) => {
+      vi.mocked(Preferences.get).mockImplementation(({ key }: { key: string }) => {
         switch (key) {
           case 'local_access_token':
             return Promise.resolve({ value: 'stored-token' });
@@ -276,7 +277,7 @@ describe('LocalAuthService', () => {
             resolve();
           },
         });
-      });
+      }));
 
       it('should update authState$ on successful login', () => new Promise<void>(resolve => {
         httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
@@ -289,7 +290,7 @@ describe('LocalAuthService', () => {
             resolve();
           });
         });
-      });
+      }));
 
       it('should store tokens when login succeeds', () => new Promise<void>(resolve => {
         httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
@@ -304,7 +305,7 @@ describe('LocalAuthService', () => {
           );
           resolve();
         });
-      });
+      }));
     });
   });
 
@@ -354,8 +355,8 @@ describe('LocalAuthService', () => {
 
     it('should clear IndexedDB to remove PHI data', async () => {
       // Mock the database service import and clearAllData method
-      const mockClearAllData = jest.fn().mockResolvedValue(undefined);
-      jest.doMock('./database.service', () => ({
+      const mockClearAllData = vi.fn().mockResolvedValue(undefined);
+      vi.doMock('./database.service', () => ({
         db: {
           clearAllData: mockClearAllData,
         },
@@ -370,7 +371,7 @@ describe('LocalAuthService', () => {
 
   describe('refreshAccessToken', () => {
     it('should refresh token when refresh token exists', () => new Promise<void>(resolve => {
-      (Preferences.get as jest.Mock).mockResolvedValueOnce({ value: 'stored-refresh-token' });
+      vi.mocked(Preferences.get).mockResolvedValueOnce({ value: 'stored-refresh-token' });
 
       httpMock.post.mockReturnValueOnce(
         of({
@@ -393,10 +394,10 @@ describe('LocalAuthService', () => {
         expect(state.isAuthenticated).toBe(true);
         resolve();
       });
-    });
+    }));
 
     it('should throw error when no refresh token available', () => new Promise<void>(resolve => {
-      (Preferences.get as jest.Mock).mockResolvedValueOnce({ value: null });
+      vi.mocked(Preferences.get).mockResolvedValueOnce({ value: null });
 
       service.refreshAccessToken().subscribe({
         error: error => {
@@ -404,10 +405,10 @@ describe('LocalAuthService', () => {
           resolve();
         },
       });
-    });
+    }));
 
     it('should throw error when refresh fails', () => new Promise<void>(resolve => {
-      (Preferences.get as jest.Mock).mockResolvedValueOnce({ value: 'stored-refresh-token' });
+      vi.mocked(Preferences.get).mockResolvedValueOnce({ value: 'stored-refresh-token' });
 
       httpMock.post.mockReturnValueOnce(
         throwError(() => ({
@@ -422,7 +423,7 @@ describe('LocalAuthService', () => {
           resolve();
         },
       });
-    });
+    }));
   });
 
   describe('getAccessToken', () => {
@@ -475,7 +476,7 @@ describe('LocalAuthService', () => {
         refreshToken: null,
         expiresAt: null,
       });
-    });
+    }));
   });
 
   describe('error handling', () => {
@@ -489,7 +490,7 @@ describe('LocalAuthService', () => {
         expect(result.error).toBeDefined();
         resolve();
       });
-    });
+    }));
 
     it('should handle malformed responses', () => new Promise<void>(resolve => {
       mockAdapter.isServiceMockEnabled.mockReturnValue(false);
@@ -500,7 +501,7 @@ describe('LocalAuthService', () => {
         expect(result.success).toBe(false);
         resolve();
       });
-    });
+    }));
   });
 
   describe('extractErrorMessage (via login error handling)', () => {
@@ -522,7 +523,7 @@ describe('LocalAuthService', () => {
         expect(result.error).toContain('tardó demasiado');
         resolve();
       });
-    });
+    }));
 
     it('should return specific message for 401 status', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(
@@ -536,7 +537,7 @@ describe('LocalAuthService', () => {
         expect(result.error).toContain('Credenciales incorrectas');
         resolve();
       });
-    });
+    }));
 
     it('should return specific message for 403 status', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(
@@ -551,7 +552,7 @@ describe('LocalAuthService', () => {
         expect(result.error).toContain('Credenciales incorrectas');
         resolve();
       });
-    });
+    }));
 
     it('should return specific message for 409 conflict', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(
@@ -565,7 +566,7 @@ describe('LocalAuthService', () => {
         expect(result.error).toContain('ya existe');
         resolve();
       });
-    });
+    }));
 
     it('should return specific message for 422 validation error', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(
@@ -579,7 +580,7 @@ describe('LocalAuthService', () => {
         expect(result.error).toContain('Datos inválidos');
         resolve();
       });
-    });
+    }));
 
     it('should return specific message for 500 server error', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(
@@ -593,7 +594,7 @@ describe('LocalAuthService', () => {
         expect(result.error).toContain('Error del servidor');
         resolve();
       });
-    });
+    }));
 
     it('should return connection error message for status 0', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(
@@ -607,7 +608,7 @@ describe('LocalAuthService', () => {
         expect(result.error).toContain('Error de conexión');
         resolve();
       });
-    });
+    }));
 
     it('should handle nested error.detail array', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(
@@ -628,7 +629,7 @@ describe('LocalAuthService', () => {
         expect(result.error).toContain('Invalid format');
         resolve();
       });
-    });
+    }));
 
     it('should handle nested error.detail string', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(
@@ -645,7 +646,7 @@ describe('LocalAuthService', () => {
         expect(result.error).toBe('Invalid credentials provided');
         resolve();
       });
-    });
+    }));
 
     it('should handle null/undefined error gracefully', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(throwError(() => null));
@@ -655,7 +656,7 @@ describe('LocalAuthService', () => {
         expect(result.error).toBeDefined();
         resolve();
       });
-    });
+    }));
 
     it('should handle string error', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(throwError(() => 'Simple error message'));
@@ -665,7 +666,7 @@ describe('LocalAuthService', () => {
         expect(result.error).toBe('Simple error message');
         resolve();
       });
-    });
+    }));
   });
 
   describe('account state transitions', () => {
@@ -687,7 +688,7 @@ describe('LocalAuthService', () => {
         expect(currentUser?.accountState).toBe(AccountState.ACTIVE);
         resolve();
       });
-    });
+    }));
 
     it('should default to ACTIVE when backend returns no state', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
@@ -703,7 +704,7 @@ describe('LocalAuthService', () => {
         expect(currentUser?.accountState).toBe(AccountState.ACTIVE);
         resolve();
       });
-    });
+    }));
 
     it('should reject login for pending accounts with specific error', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
@@ -724,7 +725,7 @@ describe('LocalAuthService', () => {
           resolve();
         },
       });
-    });
+    }));
 
     it('should reject login for disabled accounts with specific error', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
@@ -745,7 +746,7 @@ describe('LocalAuthService', () => {
           resolve();
         },
       });
-    });
+    }));
 
     it('should NOT update auth state for pending accounts', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
@@ -770,7 +771,7 @@ describe('LocalAuthService', () => {
           resolve();
         },
       });
-    });
+    }));
   });
 
   describe('isAuthenticated observable', () => {
@@ -787,7 +788,7 @@ describe('LocalAuthService', () => {
         expect(isAuth).toBe(false);
         resolve();
       });
-    });
+    }));
 
     it('should emit true when authenticated with token', () => new Promise<void>(resolve => {
       (service as any).authStateSubject.next({
@@ -802,7 +803,7 @@ describe('LocalAuthService', () => {
         expect(isAuth).toBe(true);
         resolve();
       });
-    });
+    }));
 
     it('should emit false when isAuthenticated is true but no token', () => new Promise<void>(resolve => {
       (service as any).authStateSubject.next({
@@ -817,6 +818,6 @@ describe('LocalAuthService', () => {
         expect(isAuth).toBe(false);
         resolve();
       });
-    });
+    }));
   });
 });

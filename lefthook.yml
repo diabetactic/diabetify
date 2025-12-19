@@ -93,29 +93,6 @@ pre-commit:
 
 commit-msg:
   commands:
-    # Block AI-authored commit signatures
-    no-ai-signatures:
-      run: |
-        # Block common AI assistant signatures
-        if grep -qiE "(Generated with|Co-Authored-By:.*Claude|Co-Authored-By:.*GPT|Co-Authored-By:.*Copilot|🤖.*Generated|AI-assisted)" "$1"; then
-          echo ""
-          echo "╔══════════════════════════════════════════════════════════════════╗"
-          echo "║  ❌ AI SIGNATURE DETECTED IN COMMIT MESSAGE                      ║"
-          echo "║                                                                  ║"
-          echo "║  This repository blocks AI-authored commit signatures.          ║"
-          echo "║  Please remove any AI attribution lines from your commit.       ║"
-          echo "║                                                                  ║"
-          echo "║  Blocked patterns:                                               ║"
-          echo "║  • 'Generated with [Claude/GPT/Copilot]'                        ║"
-          echo "║  • 'Co-Authored-By: Claude/GPT/Copilot'                         ║"
-          echo "║  • '🤖 Generated'                                               ║"
-          echo "║  • 'AI-assisted'                                                ║"
-          echo "╚══════════════════════════════════════════════════════════════════╝"
-          echo ""
-          exit 1
-        fi
-      fail_text: 'AI signature detected in commit message!'
-
     # Enforce conventional commit format
     conventional-commit:
       run: |

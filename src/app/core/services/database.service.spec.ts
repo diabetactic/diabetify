@@ -34,20 +34,50 @@ describe('DiabetacticDatabase', () => {
     // Use the exported singleton for consistency
     database = db;
 
-    // Clear all tables to ensure test isolation without deleting the database
-    await db.readings.clear();
-    await db.syncQueue.clear();
-    await db.appointments.clear();
+    // Ensure database is open before clearing
+    if (!db.isOpen()) {
+      await db.open();
+    }
+
+    // Clear all tables - use try/catch to handle PrematureCommitError in fake-indexeddb
+    try {
+      await db.transaction('rw', [db.readings, db.syncQueue, db.appointments], async () => {
+        await db.readings.clear();
+        await db.syncQueue.clear();
+        await db.appointments.clear();
+      });
+    } catch (error) {
+      // Fallback: clear individually if transaction fails
+      if ((error as Error).name === 'PrematureCommitError') {
+        await db.readings.clear();
+        await db.syncQueue.clear();
+        await db.appointments.clear();
+      } else {
+        throw error;
+      }
+    }
   });
 
   afterEach(async () => {
     if (skipMainHooks) return;
 
-    // Clear all tables to ensure test isolation without deleting the database
-    // Closing the database is not necessary as we are using the singleton
-    await db.readings.clear();
-    await db.syncQueue.clear();
-    await db.appointments.clear();
+    // Clear all tables - use try/catch to handle PrematureCommitError in fake-indexeddb
+    try {
+      await db.transaction('rw', [db.readings, db.syncQueue, db.appointments], async () => {
+        await db.readings.clear();
+        await db.syncQueue.clear();
+        await db.appointments.clear();
+      });
+    } catch (error) {
+      // Fallback: clear individually if transaction fails (likely already committed)
+      if ((error as Error).name === 'PrematureCommitError') {
+        await db.readings.clear();
+        await db.syncQueue.clear();
+        await db.appointments.clear();
+      } else {
+        throw error;
+      }
+    }
   });
 
   describe('Database Initialization', () => {

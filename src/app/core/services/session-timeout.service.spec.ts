@@ -10,25 +10,25 @@ import { LoggerService } from '@services/logger.service';
 
 describe('SessionTimeoutService', () => {
   let service: SessionTimeoutService;
-  let authService: jest.Mocked<LocalAuthService>;
-  let _router: jest.Mocked<Router>;
-  let logger: jest.Mocked<LoggerService>;
+  let authService: Mock<LocalAuthService>;
+  let _router: Mock<Router>;
+  let logger: Mock<LoggerService>;
   let _ngZone: NgZone;
 
   beforeEach(() => {
     const mockAuthService = {
-      logout: jest.fn().mockResolvedValue(undefined),
+      logout: vi.fn().mockResolvedValue(undefined),
     };
 
     const mockRouter = {
-      navigate: jest.fn().mockResolvedValue(true),
+      navigate: vi.fn().mockResolvedValue(true),
     };
 
     const mockLogger = {
-      info: jest.fn(),
-      debug: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn(),
+      info: vi.fn(),
+      debug: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
     };
 
     TestBed.configureTestingModule({
@@ -41,9 +41,9 @@ describe('SessionTimeoutService', () => {
     });
 
     service = TestBed.inject(SessionTimeoutService);
-    authService = TestBed.inject(LocalAuthService) as jest.Mocked<LocalAuthService>;
-    _router = TestBed.inject(Router) as jest.Mocked<Router>;
-    logger = TestBed.inject(LoggerService) as jest.Mocked<LoggerService>;
+    authService = TestBed.inject(LocalAuthService) as Mock<LocalAuthService>;
+    _router = TestBed.inject(Router) as Mock<Router>;
+    logger = TestBed.inject(LoggerService) as Mock<LoggerService>;
     _ngZone = TestBed.inject(NgZone);
   });
 
@@ -76,17 +76,17 @@ describe('SessionTimeoutService', () => {
 
     it('should setup event listeners for user activity', () => {
       service.startMonitoring();
-      jest.useFakeTimers();
+      vi.useFakeTimers();
 
       // Simulate click event
       const clickEvent = new MouseEvent('click');
       document.dispatchEvent(clickEvent);
 
-      jest.advanceTimersByTime(1000); // Wait for debounce
+      vi.advanceTimersByTime(1000); // Wait for debounce
 
       expect(logger.debug).toHaveBeenCalledWith('SessionTimeout', 'Activity timer reset (30min)');
 
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
   });
 
@@ -111,105 +111,105 @@ describe('SessionTimeoutService', () => {
 
   describe('session timeout', () => {
     it('should start timeout timer when monitoring starts', () => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
 
       service.startMonitoring();
 
       // Verify timeout was set (by checking pending timers)
-      expect(jest.getTimerCount()).toBeGreaterThan(0);
+      expect(vi.getTimerCount()).toBeGreaterThan(0);
 
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('should track active timer count', () => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
 
       service.startMonitoring();
-      const initialTimerCount = jest.getTimerCount();
+      const initialTimerCount = vi.getTimerCount();
 
       expect(initialTimerCount).toBeGreaterThan(0);
 
       service.stopMonitoring();
 
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('should reset timer on keypress', () => {
       service.startMonitoring();
-      jest.useFakeTimers();
+      vi.useFakeTimers();
 
       // Fast-forward 29 minutes
-      jest.advanceTimersByTime(29 * 60 * 1000);
+      vi.advanceTimersByTime(29 * 60 * 1000);
 
       // Simulate keypress
       const keyEvent = new KeyboardEvent('keypress');
       document.dispatchEvent(keyEvent);
-      jest.advanceTimersByTime(1000); // Wait for debounce
+      vi.advanceTimersByTime(1000); // Wait for debounce
 
       // Should not have logged out yet
       expect(authService.logout).not.toHaveBeenCalled();
 
       // Fast-forward another 29 minutes
-      jest.advanceTimersByTime(29 * 60 * 1000);
+      vi.advanceTimersByTime(29 * 60 * 1000);
 
       // Still should not have logged out
       expect(authService.logout).not.toHaveBeenCalled();
 
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('should reset timer on mousemove', () => {
       service.startMonitoring();
-      jest.useFakeTimers();
+      vi.useFakeTimers();
 
       // Fast-forward 29 minutes
-      jest.advanceTimersByTime(29 * 60 * 1000);
+      vi.advanceTimersByTime(29 * 60 * 1000);
 
       // Simulate mouse move
       const mouseEvent = new MouseEvent('mousemove');
       document.dispatchEvent(mouseEvent);
-      jest.advanceTimersByTime(1000); // Wait for debounce
+      vi.advanceTimersByTime(1000); // Wait for debounce
 
       // Should not have logged out yet
       expect(authService.logout).not.toHaveBeenCalled();
 
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('should reset timer on touchstart', () => {
       service.startMonitoring();
-      jest.useFakeTimers();
+      vi.useFakeTimers();
 
       // Fast-forward 29 minutes
-      jest.advanceTimersByTime(29 * 60 * 1000);
+      vi.advanceTimersByTime(29 * 60 * 1000);
 
       // Simulate touch
       const touchEvent = new TouchEvent('touchstart');
       document.dispatchEvent(touchEvent);
-      jest.advanceTimersByTime(1000); // Wait for debounce
+      vi.advanceTimersByTime(1000); // Wait for debounce
 
       // Should not have logged out yet
       expect(authService.logout).not.toHaveBeenCalled();
 
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
   });
 
   describe('activity debouncing', () => {
     it('should debounce activity events by 1 second', () => {
       service.startMonitoring();
-      jest.useFakeTimers();
+      vi.useFakeTimers();
       logger.debug.mockClear();
 
       // Simulate rapid clicks
       for (let i = 0; i < 10; i++) {
         const clickEvent = new MouseEvent('click');
         document.dispatchEvent(clickEvent);
-        jest.advanceTimersByTime(100); // 100ms between clicks
+        vi.advanceTimersByTime(100); // 100ms between clicks
       }
 
       // Should only reset timer once after debounce
-      jest.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1000);
 
       // Verify only one timer reset occurred
       const resetCalls = logger.debug.mock.calls.filter(call =>
@@ -217,7 +217,7 @@ describe('SessionTimeoutService', () => {
       );
       expect(resetCalls.length).toBeLessThanOrEqual(2); // At most 2 resets (initial + debounced)
 
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
   });
 

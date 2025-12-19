@@ -6,10 +6,10 @@ import { EnvironmentDetectorService } from '@services/environment-detector.servi
 import { Capacitor } from '@capacitor/core';
 
 // Mock Capacitor
-jest.mock('@capacitor/core', () => ({
+vi.mock('@capacitor/core', () => ({
   Capacitor: {
-    isNativePlatform: jest.fn(),
-    getPlatform: jest.fn(),
+    isNativePlatform: vi.fn(),
+    getPlatform: vi.fn(),
   },
 }));
 
@@ -17,13 +17,13 @@ describe('EnvironmentDetectorService', () => {
   let service: EnvironmentDetectorService;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Web Platform', () => {
     beforeEach(() => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('web');
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
+      (Capacitor.getPlatform as Mock).mockReturnValue('web');
 
       TestBed.configureTestingModule({
         providers: [EnvironmentDetectorService],
@@ -82,8 +82,8 @@ describe('EnvironmentDetectorService', () => {
 
   describe('Android Platform', () => {
     beforeEach(() => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('android');
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+      (Capacitor.getPlatform as Mock).mockReturnValue('android');
 
       TestBed.configureTestingModule({
         providers: [EnvironmentDetectorService],
@@ -154,8 +154,8 @@ describe('EnvironmentDetectorService', () => {
 
   describe('iOS Platform', () => {
     beforeEach(() => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('ios');
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+      (Capacitor.getPlatform as Mock).mockReturnValue('ios');
 
       TestBed.configureTestingModule({
         providers: [EnvironmentDetectorService],
@@ -190,8 +190,8 @@ describe('EnvironmentDetectorService', () => {
 
   describe('URL Conversion Edge Cases', () => {
     beforeEach(() => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('android');
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+      (Capacitor.getPlatform as Mock).mockReturnValue('android');
 
       TestBed.configureTestingModule({
         providers: [EnvironmentDetectorService],
@@ -259,8 +259,8 @@ describe('EnvironmentDetectorService', () => {
 
   describe('Service URLs', () => {
     it('should use different ports for different services', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('web');
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
+      (Capacitor.getPlatform as Mock).mockReturnValue('web');
 
       TestBed.configureTestingModule({
         providers: [EnvironmentDetectorService],
@@ -281,8 +281,8 @@ describe('EnvironmentDetectorService', () => {
 
   describe('Platform Detection Consistency', () => {
     it('should maintain consistent platform detection', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('android');
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+      (Capacitor.getPlatform as Mock).mockReturnValue('android');
 
       TestBed.configureTestingModule({
         providers: [EnvironmentDetectorService],
@@ -297,8 +297,8 @@ describe('EnvironmentDetectorService', () => {
     });
 
     it('should have mutually exclusive platform checks', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('ios');
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+      (Capacitor.getPlatform as Mock).mockReturnValue('ios');
 
       TestBed.configureTestingModule({
         providers: [EnvironmentDetectorService],
@@ -315,8 +315,8 @@ describe('EnvironmentDetectorService', () => {
 
   describe('Real-world Scenarios', () => {
     it('should handle development server URL on Android', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('android');
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+      (Capacitor.getPlatform as Mock).mockReturnValue('android');
 
       TestBed.configureTestingModule({
         providers: [EnvironmentDetectorService],
@@ -329,8 +329,8 @@ describe('EnvironmentDetectorService', () => {
     });
 
     it('should handle production API URL on Android', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('android');
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+      (Capacitor.getPlatform as Mock).mockReturnValue('android');
 
       TestBed.configureTestingModule({
         providers: [EnvironmentDetectorService],
@@ -343,8 +343,8 @@ describe('EnvironmentDetectorService', () => {
     });
 
     it('should handle ngrok URLs on Android', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as jest.Mock).mockReturnValue('android');
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+      (Capacitor.getPlatform as Mock).mockReturnValue('android');
 
       TestBed.configureTestingModule({
         providers: [EnvironmentDetectorService],

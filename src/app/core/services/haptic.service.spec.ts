@@ -5,10 +5,9 @@ import { TestBed } from '@angular/core/testing';
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { Capacitor } from '@capacitor/core';
 import { HapticService } from '@services/haptic.service';
+import type { Mock } from 'vitest';
 
-// Mock Capacitor
-jest.mock('@capacitor/core');
-jest.mock('@capacitor/haptics');
+// Note: @capacitor/core and @capacitor/haptics are already mocked in test-setup/index.ts
 
 describe('HapticService', () => {
   let service: HapticService;
@@ -21,7 +20,7 @@ describe('HapticService', () => {
     service = TestBed.inject(HapticService);
 
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('initialization', () => {
@@ -30,14 +29,14 @@ describe('HapticService', () => {
     });
 
     it('should detect native platform on init', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
       const newService = new HapticService();
 
       expect(newService.isAvailable).toBe(true);
     });
 
     it('should detect web platform on init', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
       const newService = new HapticService();
 
       expect(newService.isAvailable).toBe(false);
@@ -46,14 +45,14 @@ describe('HapticService', () => {
 
   describe('isAvailable', () => {
     it('should return true on native platform', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
       const newService = new HapticService();
 
       expect(newService.isAvailable).toBe(true);
     });
 
     it('should return false on web platform', () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
       const newService = new HapticService();
 
       expect(newService.isAvailable).toBe(false);
@@ -63,9 +62,9 @@ describe('HapticService', () => {
   describe('impact', () => {
     describe('on native platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
+        (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
         service = new HapticService();
-        (Haptics.impact as jest.Mock).mockResolvedValue(undefined);
+        (Haptics.impact as Mock).mockResolvedValue(undefined);
       });
 
       it('should trigger light impact by default', async () => {
@@ -93,7 +92,7 @@ describe('HapticService', () => {
       });
 
       it('should handle errors silently', async () => {
-        (Haptics.impact as jest.Mock).mockRejectedValue(new Error('Not supported'));
+        (Haptics.impact as Mock).mockRejectedValue(new Error('Not supported'));
 
         await expect(service.impact()).resolves.not.toThrow();
       });
@@ -101,7 +100,7 @@ describe('HapticService', () => {
 
     describe('on web platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+        (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
         service = new HapticService();
       });
 
@@ -120,9 +119,9 @@ describe('HapticService', () => {
   describe('success', () => {
     describe('on native platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
+        (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
         service = new HapticService();
-        (Haptics.notification as jest.Mock).mockResolvedValue(undefined);
+        (Haptics.notification as Mock).mockResolvedValue(undefined);
       });
 
       it('should trigger success notification', async () => {
@@ -132,7 +131,7 @@ describe('HapticService', () => {
       });
 
       it('should handle errors silently', async () => {
-        (Haptics.notification as jest.Mock).mockRejectedValue(new Error('Not supported'));
+        (Haptics.notification as Mock).mockRejectedValue(new Error('Not supported'));
 
         await expect(service.success()).resolves.not.toThrow();
       });
@@ -140,7 +139,7 @@ describe('HapticService', () => {
 
     describe('on web platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+        (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
         service = new HapticService();
       });
 
@@ -155,9 +154,9 @@ describe('HapticService', () => {
   describe('warning', () => {
     describe('on native platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
+        (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
         service = new HapticService();
-        (Haptics.notification as jest.Mock).mockResolvedValue(undefined);
+        (Haptics.notification as Mock).mockResolvedValue(undefined);
       });
 
       it('should trigger warning notification', async () => {
@@ -167,7 +166,7 @@ describe('HapticService', () => {
       });
 
       it('should handle errors silently', async () => {
-        (Haptics.notification as jest.Mock).mockRejectedValue(new Error('Not supported'));
+        (Haptics.notification as Mock).mockRejectedValue(new Error('Not supported'));
 
         await expect(service.warning()).resolves.not.toThrow();
       });
@@ -175,7 +174,7 @@ describe('HapticService', () => {
 
     describe('on web platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+        (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
         service = new HapticService();
       });
 
@@ -190,9 +189,9 @@ describe('HapticService', () => {
   describe('error', () => {
     describe('on native platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
+        (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
         service = new HapticService();
-        (Haptics.notification as jest.Mock).mockResolvedValue(undefined);
+        (Haptics.notification as Mock).mockResolvedValue(undefined);
       });
 
       it('should trigger error notification', async () => {
@@ -202,7 +201,7 @@ describe('HapticService', () => {
       });
 
       it('should handle errors silently', async () => {
-        (Haptics.notification as jest.Mock).mockRejectedValue(new Error('Not supported'));
+        (Haptics.notification as Mock).mockRejectedValue(new Error('Not supported'));
 
         await expect(service.error()).resolves.not.toThrow();
       });
@@ -210,7 +209,7 @@ describe('HapticService', () => {
 
     describe('on web platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+        (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
         service = new HapticService();
       });
 
@@ -225,9 +224,9 @@ describe('HapticService', () => {
   describe('selection', () => {
     describe('on native platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
+        (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
         service = new HapticService();
-        (Haptics.selectionChanged as jest.Mock).mockResolvedValue(undefined);
+        (Haptics.selectionChanged as Mock).mockResolvedValue(undefined);
       });
 
       it('should trigger selection changed', async () => {
@@ -237,7 +236,7 @@ describe('HapticService', () => {
       });
 
       it('should handle errors silently', async () => {
-        (Haptics.selectionChanged as jest.Mock).mockRejectedValue(new Error('Not supported'));
+        (Haptics.selectionChanged as Mock).mockRejectedValue(new Error('Not supported'));
 
         await expect(service.selection()).resolves.not.toThrow();
       });
@@ -245,7 +244,7 @@ describe('HapticService', () => {
 
     describe('on web platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+        (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
         service = new HapticService();
       });
 
@@ -260,9 +259,9 @@ describe('HapticService', () => {
   describe('vibrate', () => {
     describe('on native platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
+        (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
         service = new HapticService();
-        (Haptics.vibrate as jest.Mock).mockResolvedValue(undefined);
+        (Haptics.vibrate as Mock).mockResolvedValue(undefined);
       });
 
       it('should vibrate with default duration', async () => {
@@ -278,7 +277,7 @@ describe('HapticService', () => {
       });
 
       it('should handle errors silently', async () => {
-        (Haptics.vibrate as jest.Mock).mockRejectedValue(new Error('Not supported'));
+        (Haptics.vibrate as Mock).mockRejectedValue(new Error('Not supported'));
 
         await expect(service.vibrate()).resolves.not.toThrow();
       });
@@ -286,7 +285,7 @@ describe('HapticService', () => {
 
     describe('on web platform', () => {
       beforeEach(() => {
-        (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+        (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
         service = new HapticService();
       });
 
@@ -300,18 +299,18 @@ describe('HapticService', () => {
 
   describe('error handling', () => {
     beforeEach(() => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
       service = new HapticService();
     });
 
     it('should handle impact errors gracefully', async () => {
-      (Haptics.impact as jest.Mock).mockRejectedValue(new Error('Device not supported'));
+      (Haptics.impact as Mock).mockRejectedValue(new Error('Device not supported'));
 
       await expect(service.impact()).resolves.toBeUndefined();
     });
 
     it('should handle notification errors gracefully', async () => {
-      (Haptics.notification as jest.Mock).mockRejectedValue(new Error('Not available'));
+      (Haptics.notification as Mock).mockRejectedValue(new Error('Not available'));
 
       await expect(service.success()).resolves.toBeUndefined();
       await expect(service.warning()).resolves.toBeUndefined();
@@ -319,20 +318,20 @@ describe('HapticService', () => {
     });
 
     it('should handle selection errors gracefully', async () => {
-      (Haptics.selectionChanged as jest.Mock).mockRejectedValue(new Error('Not supported'));
+      (Haptics.selectionChanged as Mock).mockRejectedValue(new Error('Not supported'));
 
       await expect(service.selection()).resolves.toBeUndefined();
     });
 
     it('should handle vibrate errors gracefully', async () => {
-      (Haptics.vibrate as jest.Mock).mockRejectedValue(new Error('Permission denied'));
+      (Haptics.vibrate as Mock).mockRejectedValue(new Error('Permission denied'));
 
       await expect(service.vibrate()).resolves.toBeUndefined();
     });
 
     it('should not log errors to console', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      (Haptics.impact as jest.Mock).mockRejectedValue(new Error('Test error'));
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
+      (Haptics.impact as Mock).mockRejectedValue(new Error('Test error'));
 
       await service.impact();
 

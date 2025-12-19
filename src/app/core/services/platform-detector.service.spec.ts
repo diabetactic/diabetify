@@ -180,7 +180,7 @@ describe('PlatformDetectorService', () => {
   describe('getPlatformConfig', () => {
     it('should return web platform config', () => {
       vi.mocked(Capacitor.isNativePlatform).mockReturnValue(false);
-      platform.is.mockImplementation((platformName: string) => platformName === 'desktop');
+      mockPlatform.is.mockImplementation((platformName: string) => platformName === 'desktop');
 
       const config = service.getPlatformConfig();
 

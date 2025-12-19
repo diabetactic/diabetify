@@ -32,69 +32,76 @@ class MockSyncDatabase {
   private readingsStore: LocalGlucoseReading[] = [];
 
   readings = {
-    toArray: jest.fn().mockImplementation(() => Promise.resolve(this.readingsStore)),
-    where: jest.fn().mockReturnValue({
-      between: jest.fn().mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([]),
+    toArray: vi.fn().mockImplementation(() => Promise.resolve(this.readingsStore)),
+    where: vi.fn().mockReturnValue({
+      between: vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([]),
       }),
-      equals: jest.fn().mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([]),
+      equals: vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([]),
       }),
     }),
-    get: jest.fn().mockResolvedValue(undefined),
-    add: jest.fn().mockImplementation((reading: LocalGlucoseReading) => {
+    get: vi.fn().mockResolvedValue(undefined),
+    add: vi.fn().mockImplementation((reading: LocalGlucoseReading) => {
       this.readingsStore.push(reading);
       return Promise.resolve(reading.id);
     }),
-    update: jest.fn().mockImplementation((id: string, updates: Partial<LocalGlucoseReading>) => {
+    update: vi.fn().mockImplementation((id: string, updates: Partial<LocalGlucoseReading>) => {
       const index = this.readingsStore.findIndex(r => r.id === id);
       if (index >= 0) {
         this.readingsStore[index] = { ...this.readingsStore[index], ...updates };
       }
       return Promise.resolve(1);
     }),
-    delete: jest.fn().mockResolvedValue(undefined),
-    orderBy: jest.fn().mockReturnValue({
-      reverse: jest.fn().mockReturnValue({
-        toArray: jest.fn().mockImplementation(() => Promise.resolve(this.readingsStore)),
-        limit: jest.fn().mockReturnValue({
-          toArray: jest.fn().mockImplementation(() => Promise.resolve(this.readingsStore)),
+    delete: vi.fn().mockResolvedValue(undefined),
+    orderBy: vi.fn().mockReturnValue({
+      reverse: vi.fn().mockReturnValue({
+        toArray: vi.fn().mockImplementation(() => Promise.resolve(this.readingsStore)),
+        limit: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockImplementation(() => Promise.resolve(this.readingsStore)),
         }),
       }),
-      toArray: jest.fn().mockImplementation(() => Promise.resolve(this.readingsStore)),
+      toArray: vi.fn().mockImplementation(() => Promise.resolve(this.readingsStore)),
     }),
-    filter: jest.fn().mockImplementation((predicate: (r: LocalGlucoseReading) => boolean) => ({
+    filter: vi.fn().mockImplementation((predicate: (r: LocalGlucoseReading) => boolean) => ({
       toArray: jest
         .fn()
         .mockImplementation(() => Promise.resolve(this.readingsStore.filter(predicate))),
     })),
-    count: jest.fn().mockImplementation(() => Promise.resolve(this.readingsStore.length)),
-    toCollection: jest.fn().mockReturnValue({
-      toArray: jest.fn().mockResolvedValue([]),
+    count: vi.fn().mockImplementation(() => Promise.resolve(this.readingsStore.length)),
+    toCollection: vi.fn().mockReturnValue({
+      toArray: vi.fn().mockResolvedValue([]),
     }),
   };
 
   syncQueue = {
-    add: jest.fn().mockImplementation((item: SyncQueueItem) => {
+    add: vi.fn().mockImplementation((item: SyncQueueItem) => {
       const id = Date.now();
       this.syncQueueItems.push({ ...item, id });
       return Promise.resolve(id);
     }),
-    toArray: jest.fn().mockImplementation(() => Promise.resolve([...this.syncQueueItems])),
-    delete: jest.fn().mockImplementation((id: number) => {
+    toArray: vi.fn().mockImplementation(() => Promise.resolve([...this.syncQueueItems])),
+    delete: vi.fn().mockImplementation((id: number) => {
       this.syncQueueItems = this.syncQueueItems.filter(i => i.id !== id);
       return Promise.resolve();
     }),
-    update: jest.fn().mockImplementation((id: number, updates: Partial<SyncQueueItem>) => {
+    update: vi.fn().mockImplementation((id: number, updates: Partial<SyncQueueItem>) => {
       const index = this.syncQueueItems.findIndex(i => i.id === id);
       if (index >= 0) {
         this.syncQueueItems[index] = { ...this.syncQueueItems[index], ...updates };
       }
       return Promise.resolve(1);
     }),
-    count: jest.fn().mockImplementation(() => Promise.resolve(this.syncQueueItems.length)),
-    clear: jest.fn().mockImplementation(() => {
+    count: vi.fn().mockImplementation(() => Promise.resolve(this.syncQueueItems.length)),
+    clear: vi.fn().mockImplementation(() => {
       this.syncQueueItems = [];
+      return Promise.resolve();
+    }),
+    bulkAdd: vi.fn().mockImplementation((items: SyncQueueItem[]) => {
+      for (const item of items) {
+        const id = Date.now() + Math.random();
+        this.syncQueueItems.push({ ...item, id });
+      }
       return Promise.resolve();
     }),
   };
@@ -123,7 +130,7 @@ class MockSyncDatabase {
   }
 
   // Mock transaction method - executes callback immediately
-  transaction = jest.fn().mockImplementation(async (mode: string, ...args: unknown[]) => {
+  transaction = vi.fn().mockImplementation(async (mode: string, ...args: unknown[]) => {
     // The last argument is the callback function
     const callback = args[args.length - 1] as () => Promise<unknown>;
     return await callback();
@@ -132,15 +139,15 @@ class MockSyncDatabase {
 
 // Mock ApiGatewayService
 class MockApiGatewayService {
-  request = jest.fn();
+  request = vi.fn();
 }
 
 // Mock LoggerService
 class MockLoggerService {
-  debug = jest.fn();
-  info = jest.fn();
-  warn = jest.fn();
-  error = jest.fn();
+  debug = vi.fn();
+  info = vi.fn();
+  warn = vi.fn();
+  error = vi.fn();
 }
 
 describe('ReadingsService - Sync Queue Logic', () => {
@@ -176,7 +183,7 @@ describe('ReadingsService - Sync Queue Logic', () => {
 
   afterEach(() => {
     mockDb.clearAll();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('syncPendingReadings()', () => {
@@ -227,7 +234,7 @@ describe('ReadingsService - Sync Queue Logic', () => {
       );
     });
 
-    it('should delete queue item after successful sync', async () => {
+    it('should clear queue and process items on successful sync', async () => {
       const queueItem = createQueueItem();
       mockDb.addQueueItem(queueItem);
 
@@ -240,7 +247,8 @@ describe('ReadingsService - Sync Queue Logic', () => {
 
       await service.syncPendingReadings();
 
-      expect(mockDb.syncQueue.delete).toHaveBeenCalled();
+      // New 3-phase pattern: clear() is called first, then items are processed
+      expect(mockDb.syncQueue.clear).toHaveBeenCalled();
     });
 
     it('should re-add item with incremented retryCount on network error', async () => {
@@ -251,14 +259,14 @@ describe('ReadingsService - Sync Queue Logic', () => {
 
       await service.syncPendingReadings();
 
-      // Delete-first pattern: item deleted before POST, re-added on failure
-      expect(mockDb.syncQueue.delete).toHaveBeenCalled();
-      expect(mockDb.syncQueue.add).toHaveBeenCalledWith(
+      // 3-phase pattern: clear() first, then bulkAdd() for failed items
+      expect(mockDb.syncQueue.clear).toHaveBeenCalled();
+      expect(mockDb.syncQueue.bulkAdd).toHaveBeenCalledWith([
         expect.objectContaining({
           retryCount: 1,
           lastError: expect.stringContaining('Network error'),
-        })
-      );
+        }),
+      ]);
     });
 
     it('should remove from queue after MAX_RETRIES (3)', async () => {
@@ -269,7 +277,9 @@ describe('ReadingsService - Sync Queue Logic', () => {
 
       await service.syncPendingReadings();
 
-      expect(mockDb.syncQueue.delete).toHaveBeenCalled();
+      // 3-phase pattern: clear() first, item NOT re-added because max retries reached
+      expect(mockDb.syncQueue.clear).toHaveBeenCalled();
+      // bulkAdd should NOT be called with this item since it exceeded retry limit
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'Sync',
         expect.stringContaining('Max retries reached')
@@ -339,7 +349,8 @@ describe('ReadingsService - Sync Queue Logic', () => {
       const result = await service.syncPendingReadings();
 
       // Delete operations are processed but no API call for delete
-      expect(mockDb.syncQueue.delete).toHaveBeenCalled();
+      // 3-phase pattern: clear() first, then items are processed
+      expect(mockDb.syncQueue.clear).toHaveBeenCalled();
       expect(result.success).toBe(1);
     });
 
@@ -407,8 +418,8 @@ describe('ReadingsService - Sync Queue Logic', () => {
       );
 
       // Setup filter mock to find existing reading
-      mockDb.readings.filter = jest.fn().mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([{ backendId: 100 }]),
+      mockDb.readings.filter = vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([{ backendId: 100 }]),
       });
 
       const result = await service.fetchFromBackend();
@@ -435,8 +446,8 @@ describe('ReadingsService - Sync Queue Logic', () => {
       );
 
       // No existing readings with this backendId
-      mockDb.readings.filter = jest.fn().mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([]),
+      mockDb.readings.filter = vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([]),
       });
 
       const result = await service.fetchFromBackend();
@@ -469,13 +480,13 @@ describe('ReadingsService - Sync Queue Logic', () => {
         })
       );
 
-      mockDb.readings.filter = jest.fn().mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([]),
+      mockDb.readings.filter = vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([]),
       });
 
       await service.fetchFromBackend();
 
-      const addedReading = (mockDb.readings.add as jest.Mock).mock.calls[0][0];
+      const addedReading = (mockDb.readings.add as Mock).mock.calls[0][0];
       const parsedDate = new Date(addedReading.time);
 
       expect(parsedDate.getFullYear()).toBe(2024);
@@ -527,12 +538,12 @@ describe('ReadingsService - Sync Queue Logic', () => {
     it('should push before pull (order matters)', async () => {
       const callOrder: string[] = [];
 
-      jest.spyOn(service, 'syncPendingReadings').mockImplementation(async () => {
+      vi.spyOn(service, 'syncPendingReadings').mockImplementation(async () => {
         callOrder.push('push');
         return { success: 0, failed: 0 };
       });
 
-      jest.spyOn(service, 'fetchFromBackend').mockImplementation(async () => {
+      vi.spyOn(service, 'fetchFromBackend').mockImplementation(async () => {
         callOrder.push('fetch');
         return { fetched: 0, merged: 0 };
       });
@@ -543,12 +554,12 @@ describe('ReadingsService - Sync Queue Logic', () => {
     });
 
     it('should continue fetch even if push partially fails', async () => {
-      jest.spyOn(service, 'syncPendingReadings').mockResolvedValue({
+      vi.spyOn(service, 'syncPendingReadings').mockResolvedValue({
         success: 2,
         failed: 1,
       });
 
-      jest.spyOn(service, 'fetchFromBackend').mockResolvedValue({
+      vi.spyOn(service, 'fetchFromBackend').mockResolvedValue({
         fetched: 5,
         merged: 3,
       });
@@ -561,12 +572,12 @@ describe('ReadingsService - Sync Queue Logic', () => {
     });
 
     it('should return combined results', async () => {
-      jest.spyOn(service, 'syncPendingReadings').mockResolvedValue({
+      vi.spyOn(service, 'syncPendingReadings').mockResolvedValue({
         success: 5,
         failed: 0,
       });
 
-      jest.spyOn(service, 'fetchFromBackend').mockResolvedValue({
+      vi.spyOn(service, 'fetchFromBackend').mockResolvedValue({
         fetched: 10,
         merged: 8,
       });

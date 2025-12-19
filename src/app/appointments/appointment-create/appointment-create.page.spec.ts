@@ -70,40 +70,40 @@ const EXPECTED_MOTIVE_OPTIONS = [
 // ============================================================================
 
 const mockRouter = {
-  navigate: jest.fn(),
+  navigate: vi.fn(),
 };
 
 const mockAlertController = {
-  create: jest.fn().mockResolvedValue({
-    present: jest.fn(),
-    onDidDismiss: jest.fn().mockResolvedValue({ role: 'cancel' }),
+  create: vi.fn().mockResolvedValue({
+    present: vi.fn(),
+    onDidDismiss: vi.fn().mockResolvedValue({ role: 'cancel' }),
   }),
 };
 
 const mockLoadingController = {
-  create: jest.fn().mockResolvedValue({
-    present: jest.fn(),
-    dismiss: jest.fn(),
+  create: vi.fn().mockResolvedValue({
+    present: vi.fn(),
+    dismiss: vi.fn(),
   }),
 };
 
 const mockToastController = {
-  create: jest.fn().mockResolvedValue({
-    present: jest.fn(),
+  create: vi.fn().mockResolvedValue({
+    present: vi.fn(),
   }),
 };
 
 const mockAppointmentService = {
-  getQueueState: jest.fn().mockReturnValue(of({ state: 'ACCEPTED' })),
-  createAppointment: jest.fn().mockReturnValue(of({ appointment_id: 1 })),
+  getQueueState: vi.fn().mockReturnValue(of({ state: 'ACCEPTED' })),
+  createAppointment: vi.fn().mockReturnValue(of({ appointment_id: 1 })),
 };
 
 const mockAuthService = {
-  getUserId: jest.fn().mockReturnValue(1),
+  getUserId: vi.fn().mockReturnValue(1),
 };
 
 const mockTranslationService = {
-  instant: jest.fn((key: string) => key),
+  instant: vi.fn((key: string) => key),
 };
 
 // ============================================================================
@@ -136,7 +136,7 @@ describe('AppointmentCreatePage: Backend Contract', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Motive Options Configuration', () => {

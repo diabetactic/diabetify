@@ -8,6 +8,7 @@ import { LoadingController, ToastController, AlertController } from '@ionic/angu
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of, throwError, BehaviorSubject } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
+import { vi } from 'vitest';
 
 import { LoginPage } from './login.page';
 import { LocalAuthService, LocalUser, AccountState } from '@core/services/local-auth.service';
@@ -18,21 +19,21 @@ import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helpe
 import { DEFAULT_USER_PREFERENCES } from '@core/models/user-profile.model';
 
 class LoggerServiceStub {
-  info = jest.fn();
-  warn = jest.fn();
-  error = jest.fn();
-  debug = jest.fn();
+  info = vi.fn();
+  warn = vi.fn();
+  error = vi.fn();
+  debug = vi.fn();
 }
 
 describe('LoginPage', () => {
   let component: LoginPage;
   let fixture: ComponentFixture<LoginPage>;
-  let authService: jest.Mocked<LocalAuthService>;
-  let profileService: jest.Mocked<ProfileService>;
-  let router: jest.Mocked<Router>;
-  let loadingCtrl: jest.Mocked<LoadingController>;
-  let toastCtrl: jest.Mocked<ToastController>;
-  let alertCtrl: jest.Mocked<AlertController>;
+  let authService: any;
+  let profileService: any;
+  let router: any;
+  let loadingCtrl: any;
+  let toastCtrl: any;
+  let alertCtrl: any;
   let _translate: TranslateService;
   let logger: LoggerServiceStub;
   let mockLoading: any;
@@ -56,22 +57,22 @@ describe('LoginPage', () => {
     isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
 
     mockLoading = {
-      present: jest.fn().mockResolvedValue(undefined),
-      dismiss: jest.fn().mockResolvedValue(undefined),
+      present: vi.fn().mockResolvedValue(undefined),
+      dismiss: vi.fn().mockResolvedValue(undefined),
     };
 
     mockToast = {
-      present: jest.fn().mockResolvedValue(undefined),
+      present: vi.fn().mockResolvedValue(undefined),
     };
 
     mockAlert = {
-      present: jest.fn().mockResolvedValue(undefined),
+      present: vi.fn().mockResolvedValue(undefined),
     };
 
     authService = {
-      login: jest.fn(),
-      isAuthenticated: jest.fn().mockReturnValue(isAuthenticatedSubject.asObservable()),
-      logout: jest.fn(),
+      login: vi.fn(),
+      isAuthenticated: vi.fn().mockReturnValue(isAuthenticatedSubject.asObservable()),
+      logout: vi.fn(),
       authState$: of({
         isAuthenticated: false,
         user: null,
@@ -82,14 +83,14 @@ describe('LoginPage', () => {
     } as any;
 
     profileService = {
-      getProfile: jest.fn().mockResolvedValue(null),
-      createProfile: jest.fn().mockResolvedValue(undefined),
-      updateProfile: jest.fn().mockResolvedValue(undefined),
+      getProfile: vi.fn().mockResolvedValue(null),
+      createProfile: vi.fn().mockResolvedValue(undefined),
+      updateProfile: vi.fn().mockResolvedValue(undefined),
       profile$: of(null),
     } as any;
 
     router = {
-      navigate: jest.fn().mockResolvedValue(true),
+      navigate: vi.fn().mockResolvedValue(true),
     } as any;
     Object.defineProperty(router, 'url', {
       writable: true,
@@ -97,15 +98,15 @@ describe('LoginPage', () => {
     });
 
     loadingCtrl = {
-      create: jest.fn().mockResolvedValue(mockLoading),
+      create: vi.fn().mockResolvedValue(mockLoading),
     } as any;
 
     toastCtrl = {
-      create: jest.fn().mockResolvedValue(mockToast),
+      create: vi.fn().mockResolvedValue(mockToast),
     } as any;
 
     alertCtrl = {
-      create: jest.fn().mockResolvedValue(mockAlert),
+      create: vi.fn().mockResolvedValue(mockAlert),
     } as any;
 
     logger = new LoggerServiceStub();
@@ -136,7 +137,7 @@ describe('LoginPage', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should create', () => {
@@ -175,9 +176,7 @@ describe('LoginPage', () => {
       // Recreate component for clean state
       router.navigate.mockClear();
       isAuthenticatedSubject = new BehaviorSubject<boolean>(true);
-      (authService.isAuthenticated as jest.Mock).mockReturnValue(
-        isAuthenticatedSubject.asObservable()
-      );
+      authService.isAuthenticated.mockReturnValue(isAuthenticatedSubject.asObservable());
       Object.defineProperty(router, 'url', { writable: true, value: '/login' });
 
       const newFixture = TestBed.createComponent(LoginPage);
@@ -196,9 +195,7 @@ describe('LoginPage', () => {
       // Recreate component for clean state
       router.navigate.mockClear();
       isAuthenticatedSubject = new BehaviorSubject<boolean>(true);
-      (authService.isAuthenticated as jest.Mock).mockReturnValue(
-        isAuthenticatedSubject.asObservable()
-      );
+      authService.isAuthenticated.mockReturnValue(isAuthenticatedSubject.asObservable());
       Object.defineProperty(router, 'url', { writable: true, value: '/tabs/dashboard' });
 
       const newFixture = TestBed.createComponent(LoginPage);
@@ -621,6 +618,10 @@ describe('LoginPage', () => {
         })
       );
       profileService.getProfile.mockResolvedValue(null);
+      component.loginForm.patchValue({
+        username: 'test@example.com',
+        password: 'password123',
+      });
 
       await component.onSubmit();
       // Wait for profile creation
