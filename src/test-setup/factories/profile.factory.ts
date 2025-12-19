@@ -163,15 +163,12 @@ export const createMockTidepoolConnection = (
  * });
  * ```
  */
-export const createMockAvatar = (
-  id?: string,
-  overrides?: Partial<Avatar>
-): Avatar => {
+export const createMockAvatar = (id?: string, overrides?: Partial<Avatar>): Avatar => {
   if (!id) {
     return SAMPLE_AVATARS[0];
   }
 
-  const sample = SAMPLE_AVATARS.find((a) => a.id === id);
+  const sample = SAMPLE_AVATARS.find(a => a.id === id);
   if (sample) {
     return { ...sample, ...overrides };
   }
@@ -210,9 +207,7 @@ export const createMockAvatar = (
  * });
  * ```
  */
-export const createMockUserProfile = (
-  overrides?: Partial<UserProfile>
-): UserProfile => {
+export const createMockUserProfile = (overrides?: Partial<UserProfile>): UserProfile => {
   const now = new Date();
   const createdAt = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000); // 90 días atrás
 
@@ -245,9 +240,7 @@ export const createMockUserProfile = (
  * const disabled = createProfileWithAccountState('DISABLED');
  * ```
  */
-export const createProfileWithAccountState = (
-  accountState: AccountState
-): UserProfile => {
+export const createProfileWithAccountState = (accountState: AccountState): UserProfile => {
   const hasCompletedOnboarding = accountState === 'ACTIVE';
 
   return createMockUserProfile({
@@ -407,9 +400,7 @@ export const createProfileWithEmergencyContact = (
  * const newUser = createProfileWithoutOnboarding();
  * ```
  */
-export const createProfileWithoutOnboarding = (
-  overrides?: Partial<UserProfile>
-): UserProfile => {
+export const createProfileWithoutOnboarding = (overrides?: Partial<UserProfile>): UserProfile => {
   return createMockUserProfile({
     hasCompletedOnboarding: false,
     tidepoolConnection: createMockTidepoolConnection(false),

@@ -433,7 +433,9 @@ describe('BottomSheetComponent Integration Tests', () => {
       const backdrop = workflowFixture.nativeElement.querySelector('.bottom-sheet-backdrop');
       expect(backdrop).toBeTruthy();
 
-      const bodyContent = workflowFixture.nativeElement.querySelector('[data-testid="body-content"]');
+      const bodyContent = workflowFixture.nativeElement.querySelector(
+        '[data-testid="body-content"]'
+      );
       expect(bodyContent.textContent).toContain('Test Body Content');
 
       const closeButton = workflowFixture.nativeElement.querySelector('.bottom-sheet__close');

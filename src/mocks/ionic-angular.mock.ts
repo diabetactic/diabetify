@@ -258,16 +258,28 @@ export class IonLabel {}
 @Component({ selector: 'ion-list-header', template: '<ng-content></ng-content>', standalone: true })
 export class IonListHeader {}
 
-@Component({ selector: 'ion-item-divider', template: '<ng-content></ng-content>', standalone: true })
+@Component({
+  selector: 'ion-item-divider',
+  template: '<ng-content></ng-content>',
+  standalone: true,
+})
 export class IonItemDivider {}
 
 @Component({ selector: 'ion-item-group', template: '<ng-content></ng-content>', standalone: true })
 export class IonItemGroup {}
 
-@Component({ selector: 'ion-item-sliding', template: '<ng-content></ng-content>', standalone: true })
+@Component({
+  selector: 'ion-item-sliding',
+  template: '<ng-content></ng-content>',
+  standalone: true,
+})
 export class IonItemSliding {}
 
-@Component({ selector: 'ion-item-options', template: '<ng-content></ng-content>', standalone: true })
+@Component({
+  selector: 'ion-item-options',
+  template: '<ng-content></ng-content>',
+  standalone: true,
+})
 export class IonItemOptions {}
 
 @Component({ selector: 'ion-item-option', template: '<ng-content></ng-content>', standalone: true })
@@ -288,7 +300,9 @@ export class IonInput extends MockValueAccessor {
   selector: 'ion-textarea',
   template: '<textarea></textarea>',
   standalone: true,
-  providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => IonTextarea), multi: true }],
+  providers: [
+    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => IonTextarea), multi: true },
+  ],
 })
 export class IonTextarea extends MockValueAccessor {}
 
@@ -296,7 +310,9 @@ export class IonTextarea extends MockValueAccessor {}
   selector: 'ion-checkbox',
   template: '',
   standalone: true,
-  providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => IonCheckbox), multi: true }],
+  providers: [
+    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => IonCheckbox), multi: true },
+  ],
 })
 export class IonCheckbox extends MockValueAccessor {}
 
@@ -312,7 +328,9 @@ export class IonRadio extends MockValueAccessor {}
   selector: 'ion-radio-group',
   template: '<ng-content></ng-content>',
   standalone: true,
-  providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => IonRadioGroup), multi: true }],
+  providers: [
+    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => IonRadioGroup), multi: true },
+  ],
 })
 export class IonRadioGroup extends MockValueAccessor {}
 
@@ -320,7 +338,9 @@ export class IonRadioGroup extends MockValueAccessor {}
   selector: 'ion-toggle',
   template: '',
   standalone: true,
-  providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => IonToggle), multi: true }],
+  providers: [
+    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => IonToggle), multi: true },
+  ],
 })
 export class IonToggle extends MockValueAccessor {}
 
@@ -328,11 +348,17 @@ export class IonToggle extends MockValueAccessor {}
   selector: 'ion-select',
   template: '<ng-content></ng-content>',
   standalone: true,
-  providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => IonSelect), multi: true }],
+  providers: [
+    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => IonSelect), multi: true },
+  ],
 })
 export class IonSelect extends MockValueAccessor {}
 
-@Component({ selector: 'ion-select-option', template: '<ng-content></ng-content>', standalone: true })
+@Component({
+  selector: 'ion-select-option',
+  template: '<ng-content></ng-content>',
+  standalone: true,
+})
 export class IonSelectOption {}
 
 @Component({
@@ -347,14 +373,20 @@ export class IonRange extends MockValueAccessor {}
   selector: 'ion-searchbar',
   template: '<input>',
   standalone: true,
-  providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => IonSearchbar), multi: true }],
+  providers: [
+    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => IonSearchbar), multi: true },
+  ],
 })
 export class IonSearchbar extends MockValueAccessor {}
 
 @Component({ selector: 'ion-segment', template: '<ng-content></ng-content>', standalone: true })
 export class IonSegment {}
 
-@Component({ selector: 'ion-segment-button', template: '<ng-content></ng-content>', standalone: true })
+@Component({
+  selector: 'ion-segment-button',
+  template: '<ng-content></ng-content>',
+  standalone: true,
+})
 export class IonSegmentButton {}
 
 @Component({ selector: 'ion-datetime', template: '', standalone: true })
@@ -372,10 +404,18 @@ export class IonCardHeader {}
 @Component({ selector: 'ion-card-title', template: '<ng-content></ng-content>', standalone: true })
 export class IonCardTitle {}
 
-@Component({ selector: 'ion-card-subtitle', template: '<ng-content></ng-content>', standalone: true })
+@Component({
+  selector: 'ion-card-subtitle',
+  template: '<ng-content></ng-content>',
+  standalone: true,
+})
 export class IonCardSubtitle {}
 
-@Component({ selector: 'ion-card-content', template: '<ng-content></ng-content>', standalone: true })
+@Component({
+  selector: 'ion-card-content',
+  template: '<ng-content></ng-content>',
+  standalone: true,
+})
 export class IonCardContent {}
 
 @Component({ selector: 'ion-grid', template: '<ng-content></ng-content>', standalone: true })
@@ -447,7 +487,11 @@ export class IonRefresher {
 @Component({ selector: 'ion-refresher-content', template: '', standalone: true })
 export class IonRefresherContent {}
 
-@Component({ selector: 'ion-infinite-scroll', template: '<ng-content></ng-content>', standalone: true })
+@Component({
+  selector: 'ion-infinite-scroll',
+  template: '<ng-content></ng-content>',
+  standalone: true,
+})
 export class IonInfiniteScroll {
   complete = () => Promise.resolve();
   disabled = false;
@@ -477,22 +521,38 @@ export class IonPopover {}
 @Component({ selector: 'ion-picker', template: '<ng-content></ng-content>', standalone: true })
 export class IonPicker {}
 
-@Component({ selector: 'ion-picker-column', template: '<ng-content></ng-content>', standalone: true })
+@Component({
+  selector: 'ion-picker-column',
+  template: '<ng-content></ng-content>',
+  standalone: true,
+})
 export class IonPickerColumn {}
 
-@Component({ selector: 'ion-picker-column-option', template: '<ng-content></ng-content>', standalone: true })
+@Component({
+  selector: 'ion-picker-column-option',
+  template: '<ng-content></ng-content>',
+  standalone: true,
+})
 export class IonPickerColumnOption {}
 
 @Component({ selector: 'ion-reorder', template: '<ng-content></ng-content>', standalone: true })
 export class IonReorder {}
 
-@Component({ selector: 'ion-reorder-group', template: '<ng-content></ng-content>', standalone: true })
+@Component({
+  selector: 'ion-reorder-group',
+  template: '<ng-content></ng-content>',
+  standalone: true,
+})
 export class IonReorderGroup {}
 
 @Component({ selector: 'ion-accordion', template: '<ng-content></ng-content>', standalone: true })
 export class IonAccordion {}
 
-@Component({ selector: 'ion-accordion-group', template: '<ng-content></ng-content>', standalone: true })
+@Component({
+  selector: 'ion-accordion-group',
+  template: '<ng-content></ng-content>',
+  standalone: true,
+})
 export class IonAccordionGroup {}
 
 @Component({ selector: 'ion-breadcrumb', template: '<ng-content></ng-content>', standalone: true })
@@ -501,7 +561,11 @@ export class IonBreadcrumb {}
 @Component({ selector: 'ion-breadcrumbs', template: '<ng-content></ng-content>', standalone: true })
 export class IonBreadcrumbs {}
 
-@Component({ selector: 'ion-virtual-scroll', template: '<ng-content></ng-content>', standalone: true })
+@Component({
+  selector: 'ion-virtual-scroll',
+  template: '<ng-content></ng-content>',
+  standalone: true,
+})
 export class IonVirtualScroll {}
 
 @Component({ selector: 'ion-nav', template: '<ng-content></ng-content>', standalone: true })
@@ -510,7 +574,11 @@ export class IonNav {}
 @Directive({ selector: '[ionNavLink]', standalone: true })
 export class IonNavLink {}
 
-@Component({ selector: 'ion-action-sheet', template: '<ng-content></ng-content>', standalone: true })
+@Component({
+  selector: 'ion-action-sheet',
+  template: '<ng-content></ng-content>',
+  standalone: true,
+})
 export class IonActionSheet {}
 
 @Component({ selector: 'ion-alert', template: '<ng-content></ng-content>', standalone: true })

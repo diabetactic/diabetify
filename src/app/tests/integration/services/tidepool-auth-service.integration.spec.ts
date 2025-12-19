@@ -21,7 +21,11 @@ import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { vi, type Mock } from 'vitest';
-import { TidepoolAuthService, AuthState, AuthErrorCode } from '@core/services/tidepool-auth.service';
+import {
+  TidepoolAuthService,
+  AuthState,
+  AuthErrorCode,
+} from '@core/services/tidepool-auth.service';
 import { TokenStorageService } from '@core/services/token-storage.service';
 import { LoggerService } from '@core/services/logger.service';
 import { Browser } from '@capacitor/browser';
@@ -60,7 +64,8 @@ describe('TidepoolAuthService Integration Tests', () => {
     token_type: 'Bearer',
     expires_in: 3600,
     scope: 'data:read data:write profile:read',
-    id_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QHRpZGVwb29sLm9yZyIsImlhdCI6MTUxNjIzOTAyMn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+    id_token:
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QHRpZGVwb29sLm9yZyIsImlhdCI6MTUxNjIzOTAyMn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
   };
 
   beforeEach(() => {
@@ -303,9 +308,9 @@ describe('TidepoolAuthService Integration Tests', () => {
 
       // Trigger the deep link handler manually (normally called by Capacitor)
       // We need to access the private handler, so we'll trigger via App listener
-      const appListener = vi.mocked(App.addListener).mock.calls.find(
-        call => call[0] === 'appUrlOpen'
-      );
+      const appListener = vi
+        .mocked(App.addListener)
+        .mock.calls.find(call => call[0] === 'appUrlOpen');
       expect(appListener).toBeDefined();
 
       const handler = appListener![1] as (event: { url: string }) => void;
@@ -330,9 +335,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       await service.login();
 
       // ACT - Simulate callback
-      const appListener = vi.mocked(App.addListener).mock.calls.find(
-        call => call[0] === 'appUrlOpen'
-      );
+      const appListener = vi
+        .mocked(App.addListener)
+        .mock.calls.find(call => call[0] === 'appUrlOpen');
       const handler = appListener![1] as (event: { url: string }) => void;
       handler({ url: 'diabetactic://oauth-callback?code=auth_code_456&state=test_state' });
 
@@ -358,9 +363,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       await service.login();
 
       // ACT
-      const appListener = vi.mocked(App.addListener).mock.calls.find(
-        call => call[0] === 'appUrlOpen'
-      );
+      const appListener = vi
+        .mocked(App.addListener)
+        .mock.calls.find(call => call[0] === 'appUrlOpen');
       const handler = appListener![1] as (event: { url: string }) => void;
       handler({ url: 'diabetactic://oauth-callback?code=code_789&state=test_state' });
 
@@ -531,9 +536,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       await service.login();
 
       // ACT
-      const appListener = vi.mocked(App.addListener).mock.calls.find(
-        call => call[0] === 'appUrlOpen'
-      );
+      const appListener = vi
+        .mocked(App.addListener)
+        .mock.calls.find(call => call[0] === 'appUrlOpen');
       const handler = appListener![1] as (event: { url: string }) => void;
       handler({ url: 'diabetactic://oauth-callback?code=parsed_code_123&state=test_state' });
 
@@ -554,9 +559,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       const validState = authUrl.searchParams.get('state');
 
       // ACT - Use invalid state
-      const appListener = vi.mocked(App.addListener).mock.calls.find(
-        call => call[0] === 'appUrlOpen'
-      );
+      const appListener = vi
+        .mocked(App.addListener)
+        .mock.calls.find(call => call[0] === 'appUrlOpen');
       const handler = appListener![1] as (event: { url: string }) => void;
       handler({ url: `diabetactic://oauth-callback?code=code_123&state=invalid_state` });
 
@@ -580,9 +585,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       await service.login();
 
       // ACT
-      const appListener = vi.mocked(App.addListener).mock.calls.find(
-        call => call[0] === 'appUrlOpen'
-      );
+      const appListener = vi
+        .mocked(App.addListener)
+        .mock.calls.find(call => call[0] === 'appUrlOpen');
       const handler = appListener![1] as (event: { url: string }) => void;
       handler({
         url: 'diabetactic://oauth-callback?error=access_denied&error_description=User%20cancelled',

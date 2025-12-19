@@ -655,15 +655,24 @@ describe('OnboardingGuard Integration Tests', () => {
 
       // ACT: Llamadas concurrentes
       const results = await Promise.all([
-        guard.canActivate({} as ActivatedRouteSnapshot, {
-          url: '/tabs/dashboard',
-        } as RouterStateSnapshot),
-        guard.canActivate({} as ActivatedRouteSnapshot, {
-          url: '/tabs/readings',
-        } as RouterStateSnapshot),
-        guard.canActivate({} as ActivatedRouteSnapshot, {
-          url: '/tabs/profile',
-        } as RouterStateSnapshot),
+        guard.canActivate(
+          {} as ActivatedRouteSnapshot,
+          {
+            url: '/tabs/dashboard',
+          } as RouterStateSnapshot
+        ),
+        guard.canActivate(
+          {} as ActivatedRouteSnapshot,
+          {
+            url: '/tabs/readings',
+          } as RouterStateSnapshot
+        ),
+        guard.canActivate(
+          {} as ActivatedRouteSnapshot,
+          {
+            url: '/tabs/profile',
+          } as RouterStateSnapshot
+        ),
       ]);
 
       // ASSERT: Todas deben permitir acceso
@@ -681,12 +690,18 @@ describe('OnboardingGuard Integration Tests', () => {
 
       // ACT
       const results = await Promise.all([
-        guard.canActivate({} as ActivatedRouteSnapshot, {
-          url: '/tabs/dashboard',
-        } as RouterStateSnapshot),
-        guard.canActivate({} as ActivatedRouteSnapshot, {
-          url: '/tabs/readings',
-        } as RouterStateSnapshot),
+        guard.canActivate(
+          {} as ActivatedRouteSnapshot,
+          {
+            url: '/tabs/dashboard',
+          } as RouterStateSnapshot
+        ),
+        guard.canActivate(
+          {} as ActivatedRouteSnapshot,
+          {
+            url: '/tabs/readings',
+          } as RouterStateSnapshot
+        ),
       ]);
 
       // ASSERT: Resultados diferentes

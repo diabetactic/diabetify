@@ -267,15 +267,9 @@ export const createReadingWithStatus = (
 export const createReadingsWithAllStatuses = (
   type: GlucoseType = 'smbg'
 ): LocalGlucoseReading[] => {
-  const statuses: GlucoseStatus[] = [
-    'critical-low',
-    'low',
-    'normal',
-    'high',
-    'critical-high',
-  ];
+  const statuses: GlucoseStatus[] = ['critical-low', 'low', 'normal', 'high', 'critical-high'];
 
-  return statuses.map((status) => createReadingWithStatus(status, type));
+  return statuses.map(status => createReadingWithStatus(status, type));
 };
 
 /**
@@ -290,9 +284,7 @@ export const createReadingsWithAllStatuses = (
  * // Retorna lecturas a las 7am, 12pm, 7pm, 10pm con valores realistas
  * ```
  */
-export const createDailyGlucosePattern = (
-  date: Date = new Date()
-): LocalGlucoseReading[] => {
+export const createDailyGlucosePattern = (date: Date = new Date()): LocalGlucoseReading[] => {
   const readings: LocalGlucoseReading[] = [];
   const times = [
     { hour: 7, minute: 0, value: randomGlucoseValue(90, 130), context: 'before-breakfast' },

@@ -303,17 +303,25 @@ describe('ProfilePage Integration Tests', () => {
       expect(alertConfig.inputs[1].type).toBe('password');
 
       // Simulate user entering credentials and clicking connect
-      const connectButton = alertConfig.buttons.find((b: any) => b.text === 'profile.tidepoolLoginDialog.connect');
+      const connectButton = alertConfig.buttons.find(
+        (b: any) => b.text === 'profile.tidepoolLoginDialog.connect'
+      );
       expect(connectButton).toBeDefined();
 
       // Call handler with credentials
-      const handlerResult = connectButton.handler({ email: 'test@tidepool.org', password: 'password123' });
+      const handlerResult = connectButton.handler({
+        email: 'test@tidepool.org',
+        password: 'password123',
+      });
       expect(handlerResult).toBe(true); // Dialog should close
 
       tick(200); // Wait for async login
 
       // ASSERT: Login called
-      expect(mockTidepoolAuthService.loginWithCredentials).toHaveBeenCalledWith('test@tidepool.org', 'password123');
+      expect(mockTidepoolAuthService.loginWithCredentials).toHaveBeenCalledWith(
+        'test@tidepool.org',
+        'password123'
+      );
     }));
 
     it('should prevent empty credentials submission', fakeAsync(() => {
@@ -329,7 +337,9 @@ describe('ProfilePage Integration Tests', () => {
 
       // Get connect button handler
       const alertConfig = mockAlertController.create.mock.calls[0][0];
-      const connectButton = alertConfig.buttons.find((b: any) => b.text === 'profile.tidepoolLoginDialog.connect');
+      const connectButton = alertConfig.buttons.find(
+        (b: any) => b.text === 'profile.tidepoolLoginDialog.connect'
+      );
 
       // Simulate empty credentials
       const handlerResult = connectButton.handler({ email: '', password: '' });
@@ -341,7 +351,9 @@ describe('ProfilePage Integration Tests', () => {
 
     it('should show error on failed Tidepool login', fakeAsync(() => {
       // ARRANGE: Mock failed login
-      mockTidepoolAuthService.loginWithCredentials.mockRejectedValue(new Error('Invalid credentials'));
+      mockTidepoolAuthService.loginWithCredentials.mockRejectedValue(
+        new Error('Invalid credentials')
+      );
 
       const mockAlert = {
         present: vi.fn().mockResolvedValue(undefined),
@@ -351,14 +363,18 @@ describe('ProfilePage Integration Tests', () => {
       const mockErrorAlert = {
         present: vi.fn().mockResolvedValue(undefined),
       };
-      mockAlertController.create.mockResolvedValueOnce(mockAlert).mockResolvedValueOnce(mockErrorAlert);
+      mockAlertController.create
+        .mockResolvedValueOnce(mockAlert)
+        .mockResolvedValueOnce(mockErrorAlert);
 
       // ACT: Trigger connection and simulate login
       component.onToggleTidepoolConnection();
       tick();
 
       const alertConfig = mockAlertController.create.mock.calls[0][0];
-      const connectButton = alertConfig.buttons.find((b: any) => b.text === 'profile.tidepoolLoginDialog.connect');
+      const connectButton = alertConfig.buttons.find(
+        (b: any) => b.text === 'profile.tidepoolLoginDialog.connect'
+      );
       connectButton.handler({ email: 'test@tidepool.org', password: 'wrong' });
       tick(200);
 
@@ -433,7 +449,9 @@ describe('ProfilePage Integration Tests', () => {
       tick();
 
       // ACT: Change language to Spanish
-      const event = { detail: { value: 'es' as 'en' | 'es' } } as CustomEvent<{ value: 'en' | 'es' }>;
+      const event = { detail: { value: 'es' as 'en' | 'es' } } as CustomEvent<{
+        value: 'en' | 'es';
+      }>;
       component.onLanguageChange(event);
       tick();
 
@@ -450,7 +468,9 @@ describe('ProfilePage Integration Tests', () => {
       component.currentLanguage = 'es';
 
       // ACT: Change to English
-      const event = { detail: { value: 'en' as 'en' | 'es' } } as CustomEvent<{ value: 'en' | 'es' }>;
+      const event = { detail: { value: 'en' as 'en' | 'es' } } as CustomEvent<{
+        value: 'en' | 'es';
+      }>;
       component.onLanguageChange(event);
       tick();
 

@@ -201,7 +201,9 @@ describe('AuthGuard - Integration Tests', () => {
       } as RouterStateSnapshot;
 
       // Act
-      await firstValueFrom(guard.canActivate(mockRoute, mockState) as Observable<boolean | UrlTree>);
+      await firstValueFrom(
+        guard.canActivate(mockRoute, mockState) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
@@ -398,7 +400,6 @@ describe('AuthGuard - Integration Tests', () => {
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.ACCOUNT_PENDING]);
       expect(mockLocalAuthService.logout).not.toHaveBeenCalled();
     });
-
   });
 
   describe('Escenario 5: Usuario local con estado DISABLED', () => {
@@ -453,7 +454,6 @@ describe('AuthGuard - Integration Tests', () => {
       expect(mockLocalAuthService.logout).toHaveBeenCalled();
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME]);
     });
-
   });
 
   describe('Escenario 6: Espera de inicialización', () => {
@@ -1024,7 +1024,9 @@ describe('AuthGuard - Integration Tests', () => {
       } as RouterStateSnapshot;
 
       // Act
-      await firstValueFrom(guard.canActivate(mockRoute, mockState) as Observable<boolean | UrlTree>);
+      await firstValueFrom(
+        guard.canActivate(mockRoute, mockState) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
@@ -1039,7 +1041,9 @@ describe('AuthGuard - Integration Tests', () => {
       mockState = { url: '/tabs/profile#settings' } as RouterStateSnapshot;
 
       // Act
-      await firstValueFrom(guard.canActivate(mockRoute, mockState) as Observable<boolean | UrlTree>);
+      await firstValueFrom(
+        guard.canActivate(mockRoute, mockState) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
@@ -1052,7 +1056,9 @@ describe('AuthGuard - Integration Tests', () => {
       mockState = { url: '' } as RouterStateSnapshot;
 
       // Act
-      await firstValueFrom(guard.canActivate(mockRoute, mockState) as Observable<boolean | UrlTree>);
+      await firstValueFrom(
+        guard.canActivate(mockRoute, mockState) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
@@ -1088,7 +1094,9 @@ describe('AuthGuard - Integration Tests', () => {
       mockState = { url: '/tabs/appointments/appointment-detail/789' } as RouterStateSnapshot;
 
       // Act
-      await firstValueFrom(guard.canActivate(mockRoute, mockState) as Observable<boolean | UrlTree>);
+      await firstValueFrom(
+        guard.canActivate(mockRoute, mockState) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
@@ -1101,7 +1109,9 @@ describe('AuthGuard - Integration Tests', () => {
       mockState = { url: '/add-reading?glucose=120&type=fasting' } as RouterStateSnapshot;
 
       // Act
-      await firstValueFrom(guard.canActivate(mockRoute, mockState) as Observable<boolean | UrlTree>);
+      await firstValueFrom(
+        guard.canActivate(mockRoute, mockState) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
@@ -1114,7 +1124,9 @@ describe('AuthGuard - Integration Tests', () => {
       mockState = { url: '/bolus-calculator?carbs=45' } as RouterStateSnapshot;
 
       // Act
-      await firstValueFrom(guard.canActivate(mockRoute, mockState) as Observable<boolean | UrlTree>);
+      await firstValueFrom(
+        guard.canActivate(mockRoute, mockState) as Observable<boolean | UrlTree>
+      );
 
       // Assert
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {

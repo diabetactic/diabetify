@@ -176,7 +176,11 @@ describe('TrendsPage Integration Tests', () => {
       await component.ngOnInit();
 
       expect(component.doughnutChartData.datasets[0].data).toEqual([65, 25, 10]);
-      expect(component.doughnutChartData.labels).toEqual(['In Range', 'Above Range', 'Below Range']);
+      expect(component.doughnutChartData.labels).toEqual([
+        'In Range',
+        'Above Range',
+        'Below Range',
+      ]);
     });
 
     it('debe actualizar gráfico cuando cambian las estadísticas', async () => {
@@ -331,7 +335,7 @@ describe('TrendsPage Integration Tests', () => {
     it('debe establecer loading=true durante la carga inicial', async () => {
       const stats = createMockStatistics();
       let resolvePromise: (value: GlucoseStatistics) => void;
-      const promise = new Promise<GlucoseStatistics>((resolve) => {
+      const promise = new Promise<GlucoseStatistics>(resolve => {
         resolvePromise = resolve;
       });
 
@@ -355,7 +359,7 @@ describe('TrendsPage Integration Tests', () => {
       const monthStats = createMockStatistics();
 
       let resolveMonthPromise: (value: GlucoseStatistics) => void;
-      const monthPromise = new Promise<GlucoseStatistics>((resolve) => {
+      const monthPromise = new Promise<GlucoseStatistics>(resolve => {
         resolveMonthPromise = resolve;
       });
 
@@ -389,10 +393,7 @@ describe('TrendsPage Integration Tests', () => {
       await component.ngOnInit();
 
       expect(component.loading()).toBe(false);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Failed to load statistics:',
-        expect.any(Error)
-      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to load statistics:', expect.any(Error));
 
       consoleErrorSpy.mockRestore();
     });

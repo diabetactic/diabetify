@@ -180,11 +180,9 @@ describe('ExternalServicesManager Integration Tests', () => {
       const mockData = { test: 'data' };
 
       // ACT: First request (cache miss)
-      const firstRequest = manager.executeRequest(
-        ExternalService.TIDEPOOL,
-        async () => mockData,
-        { cacheKey }
-      );
+      const firstRequest = manager.executeRequest(ExternalService.TIDEPOOL, async () => mockData, {
+        cacheKey,
+      });
 
       const firstResult = await firstRequest;
 
@@ -219,9 +217,13 @@ describe('ExternalServicesManager Integration Tests', () => {
       manager.clearCache(ExternalService.TIDEPOOL);
 
       // Second request after cache cleared
-      const result = await manager.executeRequest(ExternalService.TIDEPOOL, async () => secondData, {
-        cacheKey,
-      });
+      const result = await manager.executeRequest(
+        ExternalService.TIDEPOOL,
+        async () => secondData,
+        {
+          cacheKey,
+        }
+      );
 
       // ASSERT: Should get new data
       expect(result).toEqual(secondData);
@@ -248,9 +250,13 @@ describe('ExternalServicesManager Integration Tests', () => {
 
     it('should clear cache for specific service', async () => {
       // ARRANGE: Cache data for multiple services
-      await manager.executeRequest(ExternalService.TIDEPOOL, async () => ({ service: 'tidepool' }), {
-        cacheKey: 'key1',
-      });
+      await manager.executeRequest(
+        ExternalService.TIDEPOOL,
+        async () => ({ service: 'tidepool' }),
+        {
+          cacheKey: 'key1',
+        }
+      );
       await manager.executeRequest(
         ExternalService.GLUCOSERVER,
         async () => ({ service: 'glucoserver' }),
@@ -298,7 +304,9 @@ describe('ExternalServicesManager Integration Tests', () => {
       const tidepoolReq = httpMock.expectOne(req => req.url.includes('tidepool'));
       tidepoolReq.flush({ status: 'ok' });
 
-      const glucoserverReq = httpMock.expectOne(req => req.url.includes('glucoserver') || req.url.includes('/api'));
+      const glucoserverReq = httpMock.expectOne(
+        req => req.url.includes('glucoserver') || req.url.includes('/api')
+      );
       glucoserverReq.flush({ status: 'ok' });
 
       await Promise.all([tidepoolPromise, glucoserverPromise]);
@@ -321,11 +329,15 @@ describe('ExternalServicesManager Integration Tests', () => {
       tidepoolReq.flush({ status: 'ok' });
 
       // GLUCOSERVER fails (first attempt)
-      const glucoserverReq1 = httpMock.expectOne(req => req.url.includes('glucoserver') || req.url.includes('/api'));
+      const glucoserverReq1 = httpMock.expectOne(
+        req => req.url.includes('glucoserver') || req.url.includes('/api')
+      );
       glucoserverReq1.flush('Error', { status: 500, statusText: 'Error' });
 
       // GLUCOSERVER fails (retry)
-      const glucoserverReq2 = httpMock.expectOne(req => req.url.includes('glucoserver') || req.url.includes('/api'));
+      const glucoserverReq2 = httpMock.expectOne(
+        req => req.url.includes('glucoserver') || req.url.includes('/api')
+      );
       glucoserverReq2.flush('Error', { status: 500, statusText: 'Error' });
 
       await Promise.all([tidepoolCheck, glucoserverCheck]);

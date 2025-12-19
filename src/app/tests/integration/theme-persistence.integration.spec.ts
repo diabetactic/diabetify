@@ -147,19 +147,13 @@ describe('Theme Persistence Integration Tests', () => {
     it('should add dark class to body when dark mode is set', async () => {
       await themeService.setThemeMode('dark');
 
-      expect(mockRenderer.addClass).toHaveBeenCalledWith(
-        expect.anything(),
-        'dark'
-      );
+      expect(mockRenderer.addClass).toHaveBeenCalledWith(expect.anything(), 'dark');
     });
 
     it('should add light class to body when light mode is set', async () => {
       await themeService.setThemeMode('light');
 
-      expect(mockRenderer.addClass).toHaveBeenCalledWith(
-        expect.anything(),
-        'light'
-      );
+      expect(mockRenderer.addClass).toHaveBeenCalledWith(expect.anything(), 'light');
     });
 
     it('should set data-theme attribute for DaisyUI', async () => {
@@ -222,10 +216,7 @@ describe('Theme Persistence Integration Tests', () => {
     it('should add palette class to body', async () => {
       await themeService.setColorPalette('ocean');
 
-      expect(mockRenderer.addClass).toHaveBeenCalledWith(
-        expect.anything(),
-        'palette-ocean'
-      );
+      expect(mockRenderer.addClass).toHaveBeenCalledWith(expect.anything(), 'palette-ocean');
     });
   });
 
@@ -244,10 +235,7 @@ describe('Theme Persistence Integration Tests', () => {
     it('should add high-contrast class when enabled', async () => {
       await themeService.toggleHighContrast();
 
-      expect(mockRenderer.addClass).toHaveBeenCalledWith(
-        expect.anything(),
-        'high-contrast'
-      );
+      expect(mockRenderer.addClass).toHaveBeenCalledWith(expect.anything(), 'high-contrast');
     });
 
     it('should emit high contrast changes via observable', async () => {

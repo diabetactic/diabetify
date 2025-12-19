@@ -598,9 +598,7 @@ describe('AchievementsPage Integration Tests', () => {
       const delayedPromise = new Promise(resolve => {
         resolvePromise = resolve;
       });
-      vi.spyOn(achievementsService, 'fetchAll').mockReturnValue(
-        delayedPromise as Promise<any>
-      );
+      vi.spyOn(achievementsService, 'fetchAll').mockReturnValue(delayedPromise as Promise<any>);
 
       // ACT
       const loadPromise = component.loadData();
@@ -645,9 +643,7 @@ describe('AchievementsPage Integration Tests', () => {
   describe('10. Error state handling', () => {
     it('should handle service error and set error message', async () => {
       // ARRANGE
-      vi.spyOn(achievementsService, 'fetchAll').mockRejectedValue(
-        new Error('Service unavailable')
-      );
+      vi.spyOn(achievementsService, 'fetchAll').mockRejectedValue(new Error('Service unavailable'));
 
       // ACT
       await component.loadData();

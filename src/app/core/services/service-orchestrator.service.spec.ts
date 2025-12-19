@@ -103,9 +103,7 @@ describe('ServiceOrchestrator', () => {
     });
 
     service = TestBed.inject(ServiceOrchestrator);
-    _externalServices = TestBed.inject(
-      ExternalServicesManager
-    ) as Mock<ExternalServicesManager>;
+    _externalServices = TestBed.inject(ExternalServicesManager) as Mock<ExternalServicesManager>;
     unifiedAuth = TestBed.inject(UnifiedAuthService) as Mock<UnifiedAuthService>;
     glucoserver = TestBed.inject(GlucoserverService) as Mock<GlucoserverService>;
     appointments = TestBed.inject(AppointmentService) as Mock<AppointmentService>;

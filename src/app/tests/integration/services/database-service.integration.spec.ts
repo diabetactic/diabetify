@@ -346,24 +346,14 @@ describe('Database Service Integration Tests', () => {
       await expect(db.clearAllData()).resolves.not.toThrow();
 
       // ASSERT: Datos deben estar limpios
-      const counts = await Promise.all([
-        db.readings.count(),
-        db.syncQueue.count(),
-      ]);
+      const counts = await Promise.all([db.readings.count(), db.syncQueue.count()]);
       expect(counts).toEqual([0, 0]);
     });
 
     it('should return accurate stats for all tables', async () => {
       // ARRANGE
-      await db.readings.bulkAdd([
-        createTestReading(),
-        createTestReading(),
-        createTestReading(),
-      ]);
-      await db.syncQueue.bulkAdd([
-        createTestSyncQueueItem(),
-        createTestSyncQueueItem(),
-      ]);
+      await db.readings.bulkAdd([createTestReading(), createTestReading(), createTestReading()]);
+      await db.syncQueue.bulkAdd([createTestSyncQueueItem(), createTestSyncQueueItem()]);
       await db.appointments.add(createTestAppointment());
 
       // ACT
@@ -486,14 +476,12 @@ describe('Database Service Integration Tests', () => {
       const reading = createTestReading();
 
       // Mock para lanzar error que NO es QuotaExceededError
-      const spyAdd = vi.spyOn(db.readings, 'add').mockRejectedValue(
-        new Error('Database connection error')
-      );
+      const spyAdd = vi
+        .spyOn(db.readings, 'add')
+        .mockRejectedValue(new Error('Database connection error'));
 
       // ACT & ASSERT
-      await expect(db.safeAdd(db.readings, reading)).rejects.toThrow(
-        'Database connection error'
-      );
+      await expect(db.safeAdd(db.readings, reading)).rejects.toThrow('Database connection error');
 
       // Verificar que solo intentó una vez (no retry en errores no-quota)
       expect(spyAdd).toHaveBeenCalledTimes(1);

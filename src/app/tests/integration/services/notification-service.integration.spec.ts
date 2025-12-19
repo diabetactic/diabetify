@@ -441,10 +441,7 @@ describe('NotificationService Integration Tests', () => {
       // ASSERT
       expect(ngZone.run).toHaveBeenCalledTimes(1);
       expect(router.navigate).toHaveBeenCalledWith([ROUTES.ADD_READING]);
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        'Notifications',
-        'User tapped reading reminder'
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith('Notifications', 'User tapped reading reminder');
     });
 
     it('debe limpiar listeners en ngOnDestroy() para prevenir memory leaks', async () => {

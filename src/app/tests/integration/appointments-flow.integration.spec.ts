@@ -107,9 +107,7 @@ describe('Appointments Flow Integration Tests', () => {
 
   describe('Estado NONE - Sin cita en cola', () => {
     it('debe retornar estado NONE cuando el usuario no tiene cita en cola', async () => {
-      mockApiGateway.request.mockReturnValue(
-        of({ success: true, data: 'NONE' })
-      );
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: 'NONE' }));
 
       const state = await appointmentService.getQueueState().toPromise();
 
@@ -134,9 +132,7 @@ describe('Appointments Flow Integration Tests', () => {
     });
 
     it('debe permitir verificar si la cola está abierta', async () => {
-      mockApiGateway.request.mockReturnValue(
-        of({ success: true, data: true })
-      );
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: true }));
 
       const isOpen = await appointmentService.checkQueueOpen().toPromise();
 
@@ -145,9 +141,7 @@ describe('Appointments Flow Integration Tests', () => {
     });
 
     it('debe retornar false cuando cola está cerrada', async () => {
-      mockApiGateway.request.mockReturnValue(
-        of({ success: true, data: false })
-      );
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: false }));
 
       const isOpen = await appointmentService.checkQueueOpen().toPromise();
 
@@ -158,9 +152,7 @@ describe('Appointments Flow Integration Tests', () => {
   describe('Estado PENDING - Cita solicitada', () => {
     it('debe transicionar de NONE a PENDING al solicitar cita', async () => {
       // Backend returns position in queue (0-indexed, converted by service)
-      mockApiGateway.request.mockReturnValue(
-        of({ success: true, data: 2 })
-      );
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: 2 }));
 
       const result = await appointmentService.requestAppointment().toPromise();
 
@@ -172,9 +164,7 @@ describe('Appointments Flow Integration Tests', () => {
 
     it('debe obtener posición en cola cuando está en PENDING', async () => {
       // Backend returns 0-indexed, service converts to 1-indexed
-      mockApiGateway.request.mockReturnValue(
-        of({ success: true, data: 1 })
-      );
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: 1 }));
 
       const position = await appointmentService.getQueuePosition().toPromise();
 
@@ -183,9 +173,7 @@ describe('Appointments Flow Integration Tests', () => {
     });
 
     it('debe retornar -1 si usuario no está en cola', async () => {
-      mockApiGateway.request.mockReturnValue(
-        throwError(() => ({ status: 404 }))
-      );
+      mockApiGateway.request.mockReturnValue(throwError(() => ({ status: 404 })));
 
       const position = await appointmentService.getQueuePosition().toPromise();
 
@@ -231,9 +219,7 @@ describe('Appointments Flow Integration Tests', () => {
 
   describe('Estado ACCEPTED - Cita aceptada', () => {
     it('debe obtener estado ACCEPTED cuando backend acepta cita', async () => {
-      mockApiGateway.request.mockReturnValue(
-        of({ success: true, data: 'ACCEPTED' })
-      );
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: 'ACCEPTED' }));
 
       const state = await appointmentService.getQueueState().toPromise();
 
@@ -251,9 +237,7 @@ describe('Appointments Flow Integration Tests', () => {
         appointment_id: 100,
       });
 
-      mockApiGateway.request.mockReturnValue(
-        of({ success: true, data: createdAppointment })
-      );
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: createdAppointment }));
 
       const scheduledDate = new Date('2025-12-25T10:00:00');
       const appointment = await appointmentService
@@ -280,9 +264,7 @@ describe('Appointments Flow Integration Tests', () => {
         state: 'ACCEPTED',
       };
 
-      mockApiGateway.request.mockReturnValue(
-        of({ success: true, data: resolutionData })
-      );
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: resolutionData }));
 
       const resolution = await appointmentService.getResolution(100).toPromise();
 
@@ -305,9 +287,7 @@ describe('Appointments Flow Integration Tests', () => {
         }),
       ];
 
-      mockApiGateway.request.mockReturnValue(
-        of({ success: true, data: appointments })
-      );
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: appointments }));
 
       const result = await appointmentService.getAppointments().toPromise();
 
@@ -322,9 +302,7 @@ describe('Appointments Flow Integration Tests', () => {
         createMockAppointment({ appointment_id: 202, control_data: 'Otra cita' }),
       ];
 
-      mockApiGateway.request.mockReturnValue(
-        of({ success: true, data: appointments })
-      );
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: appointments }));
 
       const appointment = await appointmentService.getAppointment(201).toPromise();
 
@@ -333,9 +311,7 @@ describe('Appointments Flow Integration Tests', () => {
     });
 
     it('debe lanzar error si cita no existe', async () => {
-      mockApiGateway.request.mockReturnValue(
-        of({ success: true, data: [] })
-      );
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: [] }));
 
       try {
         await appointmentService.getAppointment(999).toPromise();
@@ -348,9 +324,7 @@ describe('Appointments Flow Integration Tests', () => {
 
   describe('Estado DENIED - Cita rechazada', () => {
     it('debe obtener estado DENIED cuando backend rechaza cita', async () => {
-      mockApiGateway.request.mockReturnValue(
-        of({ success: true, data: 'DENIED' })
-      );
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: 'DENIED' }));
 
       const state = await appointmentService.getQueueState().toPromise();
 
@@ -363,9 +337,7 @@ describe('Appointments Flow Integration Tests', () => {
       const request = createMockRequest();
       const createdAppointment = createMockAppointment({ ...request, appointment_id: 300 });
 
-      mockApiGateway.request.mockReturnValue(
-        of({ success: true, data: createdAppointment })
-      );
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: createdAppointment }));
 
       const scheduledDate = new Date('2025-12-25T14:00:00');
       await appointmentService.createAppointment(request, scheduledDate, 60).toPromise();
@@ -490,9 +462,7 @@ describe('Appointments Flow Integration Tests', () => {
     it('debe actualizar BehaviorSubject al obtener citas', async () => {
       const appointments = [createMockAppointment({ appointment_id: 1 })];
 
-      mockApiGateway.request.mockReturnValue(
-        of({ success: true, data: appointments })
-      );
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: appointments }));
 
       let emittedAppointments: Appointment[] = [];
       const subscription = appointmentService.appointments$.subscribe(appts => {

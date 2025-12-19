@@ -41,7 +41,9 @@ describe('Token Storage Lifecycle Integration Tests', () => {
 
     // Reset SecureStorage mock with Map-based storage
     secureStorage = new Map<string, string>();
-    (SecureStorage.get as Mock).mockImplementation(async (key: string) => secureStorage.get(key) ?? null);
+    (SecureStorage.get as Mock).mockImplementation(
+      async (key: string) => secureStorage.get(key) ?? null
+    );
     (SecureStorage.set as Mock).mockImplementation(async (key: string, value: string) => {
       secureStorage.set(key, typeof value === 'object' ? JSON.stringify(value) : value);
     });

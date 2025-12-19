@@ -178,7 +178,10 @@ describe('Offline-Online Integration Tests', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Set internal state for tests - start offline to prevent background sync race conditions
-    const serviceInternal = readingsService as unknown as { isOnline: boolean; isMockBackend: boolean };
+    const serviceInternal = readingsService as unknown as {
+      isOnline: boolean;
+      isMockBackend: boolean;
+    };
     serviceInternal.isOnline = false;
     serviceInternal.isMockBackend = false;
   });

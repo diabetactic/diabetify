@@ -208,7 +208,9 @@ describe('LocalAuthService Integration Tests', () => {
 
       // ASSERT
       expect(profileReq.request.method).toBe('GET');
-      expect(profileReq.request.headers.get('Authorization')).toBe('Bearer mock_access_token_12345');
+      expect(profileReq.request.headers.get('Authorization')).toBe(
+        'Bearer mock_access_token_12345'
+      );
 
       profileReq.flush(mockGatewayUser);
       await loginPromise;

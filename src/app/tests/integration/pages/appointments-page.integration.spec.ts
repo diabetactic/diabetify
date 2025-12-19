@@ -141,10 +141,7 @@ describe('AppointmentsPage Integration Tests', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [
-        AppointmentsPage,
-        TranslateModule.forRoot(),
-      ],
+      imports: [AppointmentsPage, TranslateModule.forRoot()],
       providers: [
         { provide: AppointmentService, useValue: mockAppointmentService },
         { provide: Router, useValue: mockRouter },
@@ -765,7 +762,9 @@ describe('AppointmentsPage Integration Tests', () => {
     it('debe formatear motivos correctamente (mapeo ES → EN)', () => {
       const formatted = component.formatMotive(['AJUSTE', 'HIPOGLUCEMIA']);
 
-      expect(mockTranslationService.instant).toHaveBeenCalledWith('appointments.motives.adjustment');
+      expect(mockTranslationService.instant).toHaveBeenCalledWith(
+        'appointments.motives.adjustment'
+      );
       expect(mockTranslationService.instant).toHaveBeenCalledWith(
         'appointments.motives.hypoglycemia'
       );
@@ -788,7 +787,9 @@ describe('AppointmentsPage Integration Tests', () => {
 
       const formatted = component.formatInsulinType('RAPIDA');
 
-      expect(mockTranslationService.instant).toHaveBeenCalledWith('appointments.insulinTypes.rapid');
+      expect(mockTranslationService.instant).toHaveBeenCalledWith(
+        'appointments.insulinTypes.rapid'
+      );
     });
 
     it('debe retornar "-" para insulina vacía', () => {

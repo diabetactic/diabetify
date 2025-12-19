@@ -125,7 +125,7 @@ describe('Language Switcher Integration Tests', () => {
       get: vi.fn((key: string | string[]) => {
         if (Array.isArray(key)) {
           const result: any = {};
-          key.forEach(k => result[k] = k);
+          key.forEach(k => (result[k] = k));
           return of(result);
         }
         return of(key);
@@ -142,7 +142,7 @@ describe('Language Switcher Integration Tests', () => {
       stream: vi.fn((key: string | string[]) => {
         if (Array.isArray(key)) {
           const result: any = {};
-          key.forEach(k => result[k] = k);
+          key.forEach(k => (result[k] = k));
           return of(result);
         }
         return of(key);
@@ -158,7 +158,7 @@ describe('Language Switcher Integration Tests', () => {
         if (typeof key === 'string') return key;
         if (Array.isArray(key)) {
           const result: any = {};
-          key.forEach(k => result[k] = k);
+          key.forEach(k => (result[k] = k));
           return result;
         }
         return key;
@@ -673,7 +673,7 @@ describe('Language Popover Component Integration Tests', () => {
       get: vi.fn((key: string | string[]) => {
         if (Array.isArray(key)) {
           const result: any = {};
-          key.forEach(k => result[k] = k);
+          key.forEach(k => (result[k] = k));
           return of(result);
         }
         return of(key);
@@ -690,7 +690,7 @@ describe('Language Popover Component Integration Tests', () => {
       stream: vi.fn((key: string | string[]) => {
         if (Array.isArray(key)) {
           const result: any = {};
-          key.forEach(k => result[k] = k);
+          key.forEach(k => (result[k] = k));
           return of(result);
         }
         return of(key);
@@ -706,7 +706,7 @@ describe('Language Popover Component Integration Tests', () => {
         if (typeof key === 'string') return key;
         if (Array.isArray(key)) {
           const result: any = {};
-          key.forEach(k => result[k] = k);
+          key.forEach(k => (result[k] = k));
           return result;
         }
         return key;

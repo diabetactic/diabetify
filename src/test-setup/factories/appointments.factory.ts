@@ -64,9 +64,7 @@ const DEFAULT_APPOINTMENT_CONFIG = {
  * });
  * ```
  */
-export const createMockAppointment = (
-  overrides?: Partial<Appointment>
-): Appointment => {
+export const createMockAppointment = (overrides?: Partial<Appointment>): Appointment => {
   return {
     appointment_id: generateAppointmentId(),
     user_id: DEFAULT_APPOINTMENT_CONFIG.userId,
@@ -313,9 +311,7 @@ export const createMockResolutionResponse = (
  * const emergency = createEmergencyResolution(123);
  * ```
  */
-export const createEmergencyResolution = (
-  appointmentId: number
-): AppointmentResolutionResponse => {
+export const createEmergencyResolution = (appointmentId: number): AppointmentResolutionResponse => {
   return createMockResolutionResponse(appointmentId, {
     emergency_care: true,
     needed_physical_appointment: true,

@@ -18,10 +18,7 @@ import '../../../../test-setup';
 
 import { TestBed } from '@angular/core/testing';
 import { HttpClient, HTTP_INTERCEPTORS, HttpErrorResponse } from '@angular/common/http';
-import {
-  HttpTestingController,
-  provideHttpClientTesting,
-} from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { of, throwError, BehaviorSubject } from 'rxjs';

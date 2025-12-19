@@ -285,8 +285,12 @@ describe('Settings Page Flows Integration Tests', () => {
       });
 
       expect(currentProfile).toEqual(updatedProfile);
-      expect((currentProfile as unknown as { preferences: { themeMode: string } }).preferences.themeMode).toBe('dark');
-      expect((currentProfile as unknown as { preferences: { language: string } }).preferences.language).toBe('en');
+      expect(
+        (currentProfile as unknown as { preferences: { themeMode: string } }).preferences.themeMode
+      ).toBe('dark');
+      expect(
+        (currentProfile as unknown as { preferences: { language: string } }).preferences.language
+      ).toBe('en');
     });
 
     it('should persist multiple preference changes atomically', async () => {

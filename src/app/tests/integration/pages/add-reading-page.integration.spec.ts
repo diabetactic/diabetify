@@ -111,10 +111,13 @@ describe('AddReadingPage Integration Tests', () => {
       instant: vi.fn((key: string, params?: any) => {
         // Simular traducciones
         if (key === 'addReading.toast.success') return 'Lectura guardada correctamente';
-        if (key === 'addReading.toast.error') return `Error: ${params?.message || 'Error desconocido'}`;
+        if (key === 'addReading.toast.error')
+          return `Error: ${params?.message || 'Error desconocido'}`;
         if (key === 'addReading.validation.required') return 'Campo requerido';
-        if (key === 'addReading.validation.minValue') return `Valor mínimo: ${params?.value} ${params?.unit}`;
-        if (key === 'addReading.validation.maxValue') return `Valor máximo: ${params?.value} ${params?.unit}`;
+        if (key === 'addReading.validation.minValue')
+          return `Valor mínimo: ${params?.value} ${params?.unit}`;
+        if (key === 'addReading.validation.maxValue')
+          return `Valor máximo: ${params?.value} ${params?.unit}`;
         if (key === 'glucose.status.veryLow') return 'Muy bajo';
         if (key === 'glucose.status.low') return 'Bajo';
         if (key === 'glucose.status.normal') return 'Normal';
@@ -140,11 +143,7 @@ describe('AddReadingPage Integration Tests', () => {
 
     // Configurar TestBed
     await TestBed.configureTestingModule({
-      imports: [
-        AddReadingPage,
-        ReactiveFormsModule,
-        TranslateModule.forRoot(),
-      ],
+      imports: [AddReadingPage, ReactiveFormsModule, TranslateModule.forRoot()],
       providers: [
         { provide: ReadingsService, useValue: mockReadingsService },
         { provide: ProfileService, useValue: mockProfileService },
@@ -561,11 +560,7 @@ describe('AddReadingPage Integration Tests', () => {
       expect(component.readingForm.get('value')?.touched).toBe(true);
 
       // Logger debe registrar warning (form.errors es null cuando hay errores en controls)
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        'UI',
-        'AddReading form invalid',
-        null
-      );
+      expect(mockLogger.warn).toHaveBeenCalledWith('UI', 'AddReading form invalid', null);
     });
   });
 

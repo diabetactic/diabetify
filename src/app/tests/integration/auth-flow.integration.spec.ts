@@ -380,7 +380,9 @@ describe('Auth Flow Integration Tests', () => {
 
       // Verify refresh endpoint was called
       const postCalls = mockHttpClient.post.mock.calls;
-      const refreshCall = postCalls.find((call: any) => call[1]?.includes('grant_type=refresh_token'));
+      const refreshCall = postCalls.find((call: any) =>
+        call[1]?.includes('grant_type=refresh_token')
+      );
       expect(refreshCall).toBeDefined();
 
       // Verify new token was stored

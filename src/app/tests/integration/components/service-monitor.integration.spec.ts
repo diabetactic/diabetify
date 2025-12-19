@@ -268,9 +268,7 @@ describe('ServiceMonitorComponent - Integration Tests', () => {
 
     it('debe actualizar workflows después de verificar servicios', async () => {
       vi.mocked(mockServiceOrchestrator.getActiveWorkflows).mockReturnValue([activeWorkflow]);
-      vi.mocked(mockServiceOrchestrator.getCompletedWorkflows).mockReturnValue([
-        completedWorkflow,
-      ]);
+      vi.mocked(mockServiceOrchestrator.getCompletedWorkflows).mockReturnValue([completedWorkflow]);
 
       fixture.detectChanges();
 
@@ -500,9 +498,7 @@ describe('ServiceMonitorComponent - Integration Tests', () => {
   describe('11. Loading state', () => {
     it('debe cargar workflows en ngOnInit', fakeAsync(() => {
       vi.mocked(mockServiceOrchestrator.getActiveWorkflows).mockReturnValue([activeWorkflow]);
-      vi.mocked(mockServiceOrchestrator.getCompletedWorkflows).mockReturnValue([
-        completedWorkflow,
-      ]);
+      vi.mocked(mockServiceOrchestrator.getCompletedWorkflows).mockReturnValue([completedWorkflow]);
 
       fixture.detectChanges();
       tick();

@@ -27,11 +27,7 @@ import { LocalAuthService, LocalUser, AccountState } from '@core/services/local-
 import { ProfileService } from '@core/services/profile.service';
 import { LoggerService } from '@core/services/logger.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import {
-  LoadingController,
-  ToastController,
-  AlertController,
-} from '@ionic/angular/standalone';
+import { LoadingController, ToastController, AlertController } from '@ionic/angular/standalone';
 import { ROUTES } from '@core/constants';
 import { Preferences } from '@capacitor/preferences';
 import { provideHttpClient } from '@angular/common/http';

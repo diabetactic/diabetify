@@ -38,11 +38,7 @@ describe('Bolus Calculator Flow Integration Tests', () => {
     };
 
     TestBed.configureTestingModule({
-      providers: [
-        MockDataService,
-        FormBuilder,
-        { provide: LoggerService, useValue: mockLogger },
-      ],
+      providers: [MockDataService, FormBuilder, { provide: LoggerService, useValue: mockLogger }],
     });
 
     mockDataService = TestBed.inject(MockDataService);

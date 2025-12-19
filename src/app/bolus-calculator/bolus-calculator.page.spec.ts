@@ -547,7 +547,9 @@ describe('BolusCalculatorPage', () => {
   describe('Input Change Handler', () => {
     it('should update form value from ion-input event', () => {
       // Mock detectChanges to prevent rendering and template errors
-      const detectChangesSpy = vi.spyOn(component['cdr'], 'detectChanges').mockImplementation(() => {});
+      const detectChangesSpy = vi
+        .spyOn(component['cdr'], 'detectChanges')
+        .mockImplementation(() => {});
 
       const event = {
         detail: { value: '150' },

@@ -112,7 +112,7 @@ describe('ReadingsPage - Integration Tests', () => {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
       });
     }),
   };
@@ -757,13 +757,15 @@ describe('ReadingsPage - Integration Tests', () => {
     }));
 
     it('debe mostrar toast de error al fallar sincronización manual', async () => {
-      vi.mocked(mockReadingsService.performFullSync).mockRejectedValue(
-        new Error('Network error')
-      );
+      vi.mocked(mockReadingsService.performFullSync).mockRejectedValue(new Error('Network error'));
 
       await component.syncWithBackend();
 
-      expect(mockLoggerService.error).toHaveBeenCalledWith('Sync', 'Sync failed', expect.any(Error));
+      expect(mockLoggerService.error).toHaveBeenCalledWith(
+        'Sync',
+        'Sync failed',
+        expect.any(Error)
+      );
       expect(mockToastController.create).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Error al sincronizar',

@@ -22,7 +22,11 @@ import { ApiGatewayService } from '@core/services/api-gateway.service';
 import { LoggerService } from '@core/services/logger.service';
 import { Preferences } from '@capacitor/preferences';
 import { SecureStorage } from '@aparajita/capacitor-secure-storage';
-import { UserProfile, DEFAULT_USER_PREFERENCES, AccountState } from '@core/models/user-profile.model';
+import {
+  UserProfile,
+  DEFAULT_USER_PREFERENCES,
+  AccountState,
+} from '@core/models/user-profile.model';
 import { TidepoolAuth } from '@core/models/tidepool-auth.model';
 
 // Note: Capacitor plugins are already mocked in test-setup/index.ts
@@ -76,7 +80,9 @@ describe('Profile Preferences Integration Tests', () => {
 
     // Reset SecureStorage mock
     const secureStorage = new Map<string, string>();
-    (SecureStorage.get as Mock).mockImplementation(async (key: string) => secureStorage.get(key) ?? null);
+    (SecureStorage.get as Mock).mockImplementation(
+      async (key: string) => secureStorage.get(key) ?? null
+    );
     (SecureStorage.set as Mock).mockImplementation(async (key: string, value: string) => {
       secureStorage.set(key, value);
     });

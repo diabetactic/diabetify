@@ -24,7 +24,12 @@ import { ProfileService } from '@services/profile.service';
 import { LoggerService } from '@services/logger.service';
 import { TranslationService } from '@services/translation.service';
 import { ThemeService } from '@services/theme.service';
-import { LocalGlucoseReading, GlucoseStatistics, GlucoseUnit, GlucoseStatus } from '@models/glucose-reading.model';
+import {
+  LocalGlucoseReading,
+  GlucoseStatistics,
+  GlucoseUnit,
+  GlucoseStatus,
+} from '@models/glucose-reading.model';
 import { ROUTES } from '@core/constants';
 import { NgZone, ChangeDetectorRef } from '@angular/core';
 
@@ -264,12 +269,7 @@ describe('Dashboard Page Integration Tests', () => {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // ASSERT
-      expect(mockReadingsService.getStatistics).toHaveBeenCalledWith(
-        'month',
-        70,
-        180,
-        'mg/dL'
-      );
+      expect(mockReadingsService.getStatistics).toHaveBeenCalledWith('month', 70, 180, 'mg/dL');
       expect(mockReadingsService.getAllReadings).toHaveBeenCalledWith(5);
       expect(component.statistics).toEqual(mockStatistics);
       expect(component.recentReadings).toEqual(mockReadings);
@@ -319,9 +319,7 @@ describe('Dashboard Page Integration Tests', () => {
   describe('2. Backend Sync Failure Handling', () => {
     it('should show cached data when backend sync fails', async () => {
       // ARRANGE
-      mockReadingsService.fetchLatestFromBackend.mockRejectedValue(
-        new Error('Network error')
-      );
+      mockReadingsService.fetchLatestFromBackend.mockRejectedValue(new Error('Network error'));
       (component as any).isMockMode = false;
 
       // ACT
@@ -341,9 +339,7 @@ describe('Dashboard Page Integration Tests', () => {
 
     it('should handle statistics fetch failure gracefully', async () => {
       // ARRANGE
-      mockReadingsService.getStatistics.mockRejectedValue(
-        new Error('Database error')
-      );
+      mockReadingsService.getStatistics.mockRejectedValue(new Error('Database error'));
 
       // ACT
       component.ngOnInit();
@@ -361,9 +357,7 @@ describe('Dashboard Page Integration Tests', () => {
 
     it('should handle readings fetch failure gracefully', async () => {
       // ARRANGE
-      mockReadingsService.getAllReadings.mockRejectedValue(
-        new Error('Database error')
-      );
+      mockReadingsService.getAllReadings.mockRejectedValue(new Error('Database error'));
 
       // ACT
       component.ngOnInit();
@@ -403,9 +397,7 @@ describe('Dashboard Page Integration Tests', () => {
 
     it('should show error toast when refresh fails', async () => {
       // ARRANGE
-      mockReadingsService.performFullSync.mockRejectedValue(
-        new Error('Sync error')
-      );
+      mockReadingsService.performFullSync.mockRejectedValue(new Error('Sync error'));
 
       const mockRefresher = {
         target: {
@@ -481,9 +473,7 @@ describe('Dashboard Page Integration Tests', () => {
 
     it('should show error toast when manual sync fails', async () => {
       // ARRANGE
-      mockReadingsService.performFullSync.mockRejectedValue(
-        new Error('Sync error')
-      );
+      mockReadingsService.performFullSync.mockRejectedValue(new Error('Sync error'));
 
       // ACT
       await component.onSync();
@@ -525,12 +515,7 @@ describe('Dashboard Page Integration Tests', () => {
 
       // ASSERT
       expect(component.preferredGlucoseUnit).toBe('mmol/L');
-      expect(mockReadingsService.getStatistics).toHaveBeenCalledWith(
-        'month',
-        70,
-        180,
-        'mmol/L'
-      );
+      expect(mockReadingsService.getStatistics).toHaveBeenCalledWith('month', 70, 180, 'mmol/L');
       expect(mockChangeDetectorRef.markForCheck).toHaveBeenCalled();
     });
   });
@@ -763,12 +748,8 @@ describe('Dashboard Page Integration Tests', () => {
 
     it('should handle error in loadDashboardData gracefully', async () => {
       // ARRANGE
-      mockReadingsService.getStatistics.mockRejectedValue(
-        new Error('Critical error')
-      );
-      mockReadingsService.getAllReadings.mockRejectedValue(
-        new Error('Critical error')
-      );
+      mockReadingsService.getStatistics.mockRejectedValue(new Error('Critical error'));
+      mockReadingsService.getAllReadings.mockRejectedValue(new Error('Critical error'));
 
       // ACT
       component.ngOnInit();

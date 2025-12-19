@@ -16,12 +16,7 @@ import '../../../../test-setup';
 import { TestBed, ComponentFixture, fakeAsync, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import {
-  AlertController,
-  LoadingController,
-  ToastController,
-  Platform,
-} from '@ionic/angular';
+import { AlertController, LoadingController, ToastController, Platform } from '@ionic/angular';
 import { vi, type Mock } from 'vitest';
 import { of, BehaviorSubject } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';

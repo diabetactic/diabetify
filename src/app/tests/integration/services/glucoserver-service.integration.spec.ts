@@ -45,7 +45,11 @@ import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { vi } from 'vitest';
-import { GlucoserverService, GlucoseReading, GlucoseStatistics } from '@core/services/glucoserver.service';
+import {
+  GlucoserverService,
+  GlucoseReading,
+  GlucoseStatistics,
+} from '@core/services/glucoserver.service';
 
 describe('Glucoserver Service Integration Tests', () => {
   let service: GlucoserverService;
@@ -57,11 +61,7 @@ describe('Glucoserver Service Integration Tests', () => {
     TestBed.resetTestingModule();
 
     TestBed.configureTestingModule({
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        GlucoserverService,
-      ],
+      providers: [provideHttpClient(), provideHttpClientTesting(), GlucoserverService],
     });
 
     service = TestBed.inject(GlucoserverService);
@@ -180,7 +180,10 @@ describe('Glucoserver Service Integration Tests', () => {
         createTestReading({ value: 140 }),
         createTestReading({ value: 125 }),
       ];
-      const mockResponse: GlucoseReading[] = readingsToUpload.map((r, i) => ({ ...r, id: `bulk-${i}` }));
+      const mockResponse: GlucoseReading[] = readingsToUpload.map((r, i) => ({
+        ...r,
+        id: `bulk-${i}`,
+      }));
       let response: GlucoseReading[] | undefined;
 
       // ACT
@@ -406,7 +409,9 @@ describe('Glucoserver Service Integration Tests', () => {
       // ARRANGE
       const startDate = new Date('2024-01-01');
       const endDate = new Date('2024-01-31');
-      const mockCsvBlob = new Blob(['id,value,timestamp\n1,120,2024-01-15T10:00:00Z'], { type: 'text/csv' });
+      const mockCsvBlob = new Blob(['id,value,timestamp\n1,120,2024-01-15T10:00:00Z'], {
+        type: 'text/csv',
+      });
       let response: Blob | undefined;
 
       // ACT

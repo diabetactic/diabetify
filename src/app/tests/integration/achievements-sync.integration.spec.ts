@@ -35,7 +35,13 @@ describe('Achievements Sync Integration Tests', () => {
   });
 
   const createMockAchievements = (): Achievement[] => [
-    { id: '1', name: 'First Reading', description: 'Log your first reading', got: true, date: '2024-01-15' },
+    {
+      id: '1',
+      name: 'First Reading',
+      description: 'Log your first reading',
+      got: true,
+      date: '2024-01-15',
+    },
     { id: '2', name: 'Week Streak', description: '7 day streak', got: true, date: '2024-01-20' },
     { id: '3', name: 'Month Master', description: '30 day streak', got: false, date: null },
     { id: '4', name: 'Data Hero', description: '100 readings', got: false, date: null },
@@ -69,10 +75,12 @@ describe('Achievements Sync Integration Tests', () => {
   describe('Streak Fetching', () => {
     it('should fetch streak data from backend', async () => {
       const streakData = createMockStreakData();
-      mockApiGateway.request.mockReturnValue(of({
-        success: true,
-        data: streakData,
-      }));
+      mockApiGateway.request.mockReturnValue(
+        of({
+          success: true,
+          data: streakData,
+        })
+      );
 
       const result = await achievementsService.fetchStreak();
 
@@ -82,10 +90,12 @@ describe('Achievements Sync Integration Tests', () => {
 
     it('should update streak signal after fetch', async () => {
       const streakData = createMockStreakData({ streak: 7 });
-      mockApiGateway.request.mockReturnValue(of({
-        success: true,
-        data: streakData,
-      }));
+      mockApiGateway.request.mockReturnValue(
+        of({
+          success: true,
+          data: streakData,
+        })
+      );
 
       await achievementsService.fetchStreak();
 
@@ -94,10 +104,12 @@ describe('Achievements Sync Integration Tests', () => {
 
     it('should use cached streak data when valid', async () => {
       const streakData = createMockStreakData();
-      mockApiGateway.request.mockReturnValue(of({
-        success: true,
-        data: streakData,
-      }));
+      mockApiGateway.request.mockReturnValue(
+        of({
+          success: true,
+          data: streakData,
+        })
+      );
 
       // First fetch - hits backend
       await achievementsService.fetchStreak();
@@ -111,10 +123,12 @@ describe('Achievements Sync Integration Tests', () => {
 
     it('should bypass cache when forceRefresh is true', async () => {
       const streakData = createMockStreakData();
-      mockApiGateway.request.mockReturnValue(of({
-        success: true,
-        data: streakData,
-      }));
+      mockApiGateway.request.mockReturnValue(
+        of({
+          success: true,
+          data: streakData,
+        })
+      );
 
       // First fetch
       await achievementsService.fetchStreak();
@@ -135,10 +149,12 @@ describe('Achievements Sync Integration Tests', () => {
     });
 
     it('should handle unsuccessful response from backend', async () => {
-      mockApiGateway.request.mockReturnValue(of({
-        success: false,
-        error: { message: 'Server error' },
-      }));
+      mockApiGateway.request.mockReturnValue(
+        of({
+          success: false,
+          error: { message: 'Server error' },
+        })
+      );
 
       const result = await achievementsService.fetchStreak();
 
@@ -150,10 +166,12 @@ describe('Achievements Sync Integration Tests', () => {
   describe('Achievements Fetching', () => {
     it('should fetch achievements list from backend', async () => {
       const achievements = createMockAchievements();
-      mockApiGateway.request.mockReturnValue(of({
-        success: true,
-        data: achievements,
-      }));
+      mockApiGateway.request.mockReturnValue(
+        of({
+          success: true,
+          data: achievements,
+        })
+      );
 
       const result = await achievementsService.fetchAchievements();
 
@@ -163,10 +181,12 @@ describe('Achievements Sync Integration Tests', () => {
 
     it('should update achievements signal after fetch', async () => {
       const achievements = createMockAchievements();
-      mockApiGateway.request.mockReturnValue(of({
-        success: true,
-        data: achievements,
-      }));
+      mockApiGateway.request.mockReturnValue(
+        of({
+          success: true,
+          data: achievements,
+        })
+      );
 
       await achievementsService.fetchAchievements();
 
@@ -175,10 +195,12 @@ describe('Achievements Sync Integration Tests', () => {
 
     it('should calculate earned count correctly', async () => {
       const achievements = createMockAchievements();
-      mockApiGateway.request.mockReturnValue(of({
-        success: true,
-        data: achievements,
-      }));
+      mockApiGateway.request.mockReturnValue(
+        of({
+          success: true,
+          data: achievements,
+        })
+      );
 
       await achievementsService.fetchAchievements();
 
@@ -189,10 +211,12 @@ describe('Achievements Sync Integration Tests', () => {
 
     it('should use cached achievements when valid', async () => {
       const achievements = createMockAchievements();
-      mockApiGateway.request.mockReturnValue(of({
-        success: true,
-        data: achievements,
-      }));
+      mockApiGateway.request.mockReturnValue(
+        of({
+          success: true,
+          data: achievements,
+        })
+      );
 
       await achievementsService.fetchAchievements();
       await achievementsService.fetchAchievements();
@@ -304,10 +328,12 @@ describe('Achievements Sync Integration Tests', () => {
   describe('Computed Signals', () => {
     it('should compute currentStreak from streak signal', async () => {
       const streakData = createMockStreakData({ streak: 15 });
-      mockApiGateway.request.mockReturnValue(of({
-        success: true,
-        data: streakData,
-      }));
+      mockApiGateway.request.mockReturnValue(
+        of({
+          success: true,
+          data: streakData,
+        })
+      );
 
       await achievementsService.fetchStreak();
 
@@ -316,10 +342,12 @@ describe('Achievements Sync Integration Tests', () => {
 
     it('should compute maxStreak from streak signal', async () => {
       const streakData = createMockStreakData({ max_streak: 30 });
-      mockApiGateway.request.mockReturnValue(of({
-        success: true,
-        data: streakData,
-      }));
+      mockApiGateway.request.mockReturnValue(
+        of({
+          success: true,
+          data: streakData,
+        })
+      );
 
       await achievementsService.fetchStreak();
 
@@ -328,10 +356,12 @@ describe('Achievements Sync Integration Tests', () => {
 
     it('should compute measurementsToday from streak signal', async () => {
       const streakData = createMockStreakData({ four_times_today: 3 });
-      mockApiGateway.request.mockReturnValue(of({
-        success: true,
-        data: streakData,
-      }));
+      mockApiGateway.request.mockReturnValue(
+        of({
+          success: true,
+          data: streakData,
+        })
+      );
 
       await achievementsService.fetchStreak();
 

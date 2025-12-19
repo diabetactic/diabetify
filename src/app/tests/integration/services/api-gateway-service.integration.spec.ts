@@ -317,9 +317,7 @@ describe('API Gateway Service Integration Tests', () => {
     it('should route to MockAdapter when mock enabled', async () => {
       // ARRANGE
       mockMockAdapter.isServiceMockEnabled.mockReturnValue(true);
-      mockMockAdapter.mockGetAllReadings.mockResolvedValue([
-        { id: 'mock-1', value: 100 },
-      ]);
+      mockMockAdapter.mockGetAllReadings.mockResolvedValue([{ id: 'mock-1', value: 100 }]);
 
       let response: any;
 
@@ -393,7 +391,9 @@ describe('API Gateway Service Integration Tests', () => {
   describe('Path Parameter Substitution', () => {
     it('should replace {id} in path with provided parameter', async () => {
       // ACT
-      service.request('glucoserver.readings.update', { body: { value: 140 } }, { id: 'reading-456' }).subscribe();
+      service
+        .request('glucoserver.readings.update', { body: { value: 140 } }, { id: 'reading-456' })
+        .subscribe();
       await new Promise(resolve => setTimeout(resolve, 0));
 
       const req = httpMock.expectOne('http://localhost:8000/v1/readings/reading-456');
@@ -457,10 +457,9 @@ describe('API Gateway Service Integration Tests', () => {
       // Wait for request to be initiated
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      httpMock.expectOne('http://localhost:8000/v1/readings').flush(
-        { message: 'Unauthorized' },
-        { status: 401, statusText: 'Unauthorized' }
-      );
+      httpMock
+        .expectOne('http://localhost:8000/v1/readings')
+        .flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
 
       // ASSERT
       try {
@@ -479,10 +478,9 @@ describe('API Gateway Service Integration Tests', () => {
       // Wait for request to be initiated
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      httpMock.expectOne('http://localhost:8000/v1/readings').flush(
-        { message: 'Not found' },
-        { status: 404, statusText: 'Not Found' }
-      );
+      httpMock
+        .expectOne('http://localhost:8000/v1/readings')
+        .flush({ message: 'Not found' }, { status: 404, statusText: 'Not Found' });
 
       // ASSERT
       try {
@@ -501,10 +499,9 @@ describe('API Gateway Service Integration Tests', () => {
       // Wait for request to be initiated
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      httpMock.expectOne('http://localhost:8000/v1/readings').flush(
-        { message: 'Internal error' },
-        { status: 500, statusText: 'Internal Server Error' }
-      );
+      httpMock
+        .expectOne('http://localhost:8000/v1/readings')
+        .flush({ message: 'Internal error' }, { status: 500, statusText: 'Internal Server Error' });
 
       // ASSERT
       try {
@@ -525,10 +522,12 @@ describe('API Gateway Service Integration Tests', () => {
       // Wait for request to be initiated
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      httpMock.expectOne('http://localhost:8000/v1/readings').flush(
-        { message: 'Service unavailable' },
-        { status: 503, statusText: 'Service Unavailable' }
-      );
+      httpMock
+        .expectOne('http://localhost:8000/v1/readings')
+        .flush(
+          { message: 'Service unavailable' },
+          { status: 503, statusText: 'Service Unavailable' }
+        );
 
       // ASSERT
       try {
@@ -547,10 +546,9 @@ describe('API Gateway Service Integration Tests', () => {
       // Wait for request to be initiated
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      httpMock.expectOne('http://localhost:8000/v1/readings').flush(
-        { message: 'Bad request' },
-        { status: 400, statusText: 'Bad Request' }
-      );
+      httpMock
+        .expectOne('http://localhost:8000/v1/readings')
+        .flush({ message: 'Bad request' }, { status: 400, statusText: 'Bad Request' });
 
       // ASSERT
       try {

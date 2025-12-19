@@ -133,7 +133,9 @@ describe('ErrorHandlerService Integration Tests', () => {
         expect.fail('Expected error but got success');
       } catch (error) {
         const appError = error as AppError;
-        expect(appError.message).toBe("Access denied. You don't have permission to perform this action.");
+        expect(appError.message).toBe(
+          "Access denied. You don't have permission to perform this action."
+        );
         expect(appError.code).toBe('FORBIDDEN');
         expect(appError.statusCode).toBe(403);
       }
@@ -327,7 +329,9 @@ describe('ErrorHandlerService Integration Tests', () => {
         expect.fail('Expected error but got success');
       } catch (error) {
         const appError = error as AppError;
-        expect(appError.message).toBe('Unable to connect to server. Please check your internet connection.');
+        expect(appError.message).toBe(
+          'Unable to connect to server. Please check your internet connection.'
+        );
         expect(appError.code).toBe('CONNECTION_ERROR');
         expect(appError.statusCode).toBe(0);
       }
@@ -890,7 +894,9 @@ describe('ErrorHandlerService Integration Tests', () => {
       const userMessage = service.getUserMessage(error);
 
       // ASSERT
-      expect(userMessage).toBe('Detailed technical error: Database connection pool exhausted at line 42');
+      expect(userMessage).toBe(
+        'Detailed technical error: Database connection pool exhausted at line 42'
+      );
     });
 
     it('should return simplified network message in production', async () => {

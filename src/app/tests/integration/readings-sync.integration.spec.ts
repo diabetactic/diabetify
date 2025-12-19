@@ -54,7 +54,6 @@ describe('Readings Sync Integration Tests', () => {
     ...overrides,
   });
 
-
   beforeEach(async () => {
     // Clear database before each test - handle PrematureCommitError in fake-indexeddb
     try {
@@ -148,7 +147,10 @@ describe('Readings Sync Integration Tests', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Set internal state for tests
-    const serviceInternal = readingsService as unknown as { isOnline: boolean; isMockBackend: boolean };
+    const serviceInternal = readingsService as unknown as {
+      isOnline: boolean;
+      isMockBackend: boolean;
+    };
     serviceInternal.isOnline = false;
     serviceInternal.isMockBackend = false;
   });
@@ -238,12 +240,24 @@ describe('Readings Sync Integration Tests', () => {
 
       // Verify reading is in queue
       const queueItems = await db.syncQueue.toArray();
-      console.log('[DEBUG] Queue items after add:', queueItems.length, queueItems.map(q => q.operation));
+      console.log(
+        '[DEBUG] Queue items after add:',
+        queueItems.length,
+        queueItems.map(q => q.operation)
+      );
       expect(queueItems.length).toBe(1);
 
       // Debug service state before going online
-      const svc = readingsService as unknown as { isOnline: boolean; isMockBackend: boolean; apiGateway: unknown };
-      console.log('[DEBUG] Before going online:', { isOnline: svc.isOnline, isMockBackend: svc.isMockBackend, hasApiGateway: !!svc.apiGateway });
+      const svc = readingsService as unknown as {
+        isOnline: boolean;
+        isMockBackend: boolean;
+        apiGateway: unknown;
+      };
+      console.log('[DEBUG] Before going online:', {
+        isOnline: svc.isOnline,
+        isMockBackend: svc.isMockBackend,
+        hasApiGateway: !!svc.apiGateway,
+      });
 
       // Setup success response and go online
       const backendResponse: ApiResponse<any> = {
