@@ -130,13 +130,13 @@ echo "  - Username: 1000"
 echo "  - Password: tuvieja"
 echo ""
 echo "Useful Commands:"
-echo "  npm run docker:logs       # View backend logs"
-echo "  npm run docker:seed       # Re-seed test data"
-echo "  npm run docker:reset      # Reset database"
-echo "  npm run test:e2e:local    # Run Playwright tests"
+echo "  pnpm run docker:logs      # View backend logs"
+echo "  pnpm run docker:seed      # Re-seed test data"
+echo "  pnpm run docker:reset     # Reset database"
+echo "  pnpm run test:e2e:local   # Run Playwright tests"
 echo ""
 echo -e "${YELLOW}Starting Angular dev server with local backend...${NC}"
 echo ""
 
 cd "$PROJECT_DIR"
-ENV=local npm start
+ENV=local pnpm start

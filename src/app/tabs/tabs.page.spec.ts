@@ -16,18 +16,18 @@ describe('TabsPage', () => {
   let fixture: ComponentFixture<TabsPage>;
 
   const mockAppointmentService = {
-    getQueueState: jest.fn().mockReturnValue(of({ state: 'NONE' })),
+    getQueueState: vi.fn().mockReturnValue(of({ state: 'NONE' })),
   };
 
   const mockTranslationService = {
-    instant: jest.fn((key: string) => key),
+    instant: vi.fn((key: string) => key),
     currentLang: 'en',
     onLangChange: of({ lang: 'en' }),
   };
 
   const mockToastController = {
-    create: jest.fn().mockResolvedValue({
-      present: jest.fn().mockResolvedValue(undefined),
+    create: vi.fn().mockResolvedValue({
+      present: vi.fn().mockResolvedValue(undefined),
     }),
   };
 

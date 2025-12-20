@@ -39,11 +39,11 @@ Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar e
 git clone https://github.com/diabetactic/diabetify.git
 cd diabetify
 
-# Con pnpm (recomendado - 3x más rápido)
+# Con pnpm (recomendado)
 pnpm install
 pnpm run start:mock  # Sin backend (recomendado para desarrollo)
 
-# O con npm
+# O con npm (si no tienes pnpm)
 npm install
 npm run start:mock
 ```
@@ -55,35 +55,35 @@ La aplicación estará disponible en `http://localhost:4200`
 ### Desarrollo
 
 ```bash
-npm start              # Servidor de desarrollo
-npm run build          # Compilación desarrollo
-npm run build:prod     # Compilación producción
+pnpm start             # Servidor de desarrollo
+pnpm run build         # Compilación desarrollo
+pnpm run build:prod    # Compilación producción
 ```
 
 ### Testing
 
 ```bash
-npm run test:unit      # Tests unitarios
-npm run test:ci        # Tests para CI (headless)
-npm run test:coverage  # Tests con reporte de cobertura
-npm run test:e2e       # Tests E2E con Playwright
+pnpm run test:unit     # Tests unitarios
+pnpm run test:ci       # Tests para CI (headless)
+pnpm run test:coverage # Tests con reporte de cobertura
+pnpm run test:e2e      # Tests E2E con Playwright
 ```
 
 ### Calidad de Código
 
 ```bash
-npm run lint           # Análisis estático (ESLint)
-npm run lint:fix       # Corrección automática
-npm run format         # Formateo (Prettier)
-npm run format:check   # Verificar formato
+pnpm run lint          # Análisis estático (ESLint)
+pnpm run lint:fix      # Corrección automática
+pnpm run format        # Formateo (Prettier)
+pnpm run format:check  # Verificar formato
 ```
 
 ### Compilación Móvil
 
 ```bash
-npm run cap:sync       # Sincronizar assets con plataformas nativas
-npm run cap:android    # Abrir proyecto en Android Studio
-npm run cap:run:android # Compilar y ejecutar en dispositivo
+pnpm run cap:sync      # Sincronizar assets con plataformas nativas
+pnpm run cap:android   # Abrir proyecto en Android Studio
+pnpm run cap:run:android # Compilar y ejecutar en dispositivo
 ```
 
 ## Estructura del Proyecto
@@ -129,9 +129,9 @@ La aplicación sigue una arquitectura modular con los siguientes principios:
 Ejecutados con Jest:
 
 ```bash
-npm test              # Ejecutar tests
-npm run test:watch    # Modo watch
-npm run test:coverage # Con reporte de cobertura
+pnpm test             # Ejecutar tests
+pnpm run test:watch   # Modo watch
+pnpm run test:coverage # Con reporte de cobertura
 ```
 
 ### Tests E2E
@@ -139,7 +139,7 @@ npm run test:coverage # Con reporte de cobertura
 Ejecutados con Playwright:
 
 ```bash
-npm run test:e2e
+pnpm run test:e2e
 ```
 
 Los tests se encuentran en `playwright/tests/`

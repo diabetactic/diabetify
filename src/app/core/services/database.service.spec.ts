@@ -34,20 +34,50 @@ describe('DiabetacticDatabase', () => {
     // Use the exported singleton for consistency
     database = db;
 
-    // Clear all tables to ensure test isolation without deleting the database
-    await db.readings.clear();
-    await db.syncQueue.clear();
-    await db.appointments.clear();
+    // Ensure database is open before clearing
+    if (!db.isOpen()) {
+      await db.open();
+    }
+
+    // Clear all tables - use try/catch to handle PrematureCommitError in fake-indexeddb
+    try {
+      await db.transaction('rw', [db.readings, db.syncQueue, db.appointments], async () => {
+        await db.readings.clear();
+        await db.syncQueue.clear();
+        await db.appointments.clear();
+      });
+    } catch (error) {
+      // Fallback: clear individually if transaction fails
+      if ((error as Error).name === 'PrematureCommitError') {
+        await db.readings.clear();
+        await db.syncQueue.clear();
+        await db.appointments.clear();
+      } else {
+        throw error;
+      }
+    }
   });
 
   afterEach(async () => {
     if (skipMainHooks) return;
 
-    // Clear all tables to ensure test isolation without deleting the database
-    // Closing the database is not necessary as we are using the singleton
-    await db.readings.clear();
-    await db.syncQueue.clear();
-    await db.appointments.clear();
+    // Clear all tables - use try/catch to handle PrematureCommitError in fake-indexeddb
+    try {
+      await db.transaction('rw', [db.readings, db.syncQueue, db.appointments], async () => {
+        await db.readings.clear();
+        await db.syncQueue.clear();
+        await db.appointments.clear();
+      });
+    } catch (error) {
+      // Fallback: clear individually if transaction fails (likely already committed)
+      if ((error as Error).name === 'PrematureCommitError') {
+        await db.readings.clear();
+        await db.syncQueue.clear();
+        await db.appointments.clear();
+      } else {
+        throw error;
+      }
+    }
   });
 
   describe('Database Initialization', () => {
@@ -248,7 +278,7 @@ describe('DiabetacticDatabase', () => {
       it('should fail to add reading with duplicate id', async () => {
         await database.readings.add(mockReading);
 
-        await expectAsync(database.readings.add(mockReading)).toBeRejected();
+        await expect(database.readings.add(mockReading)).rejects.toThrow();
       });
 
       it('should add reading with all optional fields', async () => {
@@ -1257,7 +1287,8 @@ describe('DiabetacticDatabase', () => {
       }));
 
       // Should handle large bulk inserts gracefully
-      await expectAsync(database.readings.bulkAdd(largeArray)).toBeResolved();
+      await database.readings.bulkAdd(largeArray);
+      expect(await database.readings.count()).toBe(largeArray.length);
     });
 
     it('should handle constraint violation on duplicate primary key', async () => {
@@ -1273,7 +1304,7 @@ describe('DiabetacticDatabase', () => {
       await database.readings.add(reading);
 
       // Attempting to add same id should fail
-      await expectAsync(database.readings.add(reading)).toBeRejected();
+      await expect(database.readings.add(reading)).rejects.toThrow();
     });
 
     it('should handle database connection errors gracefully', async () => {
@@ -1291,7 +1322,7 @@ describe('DiabetacticDatabase', () => {
       await testDb.close();
 
       // Attempting operations on closed database should fail
-      await expectAsync(
+      await expect(
         testDb.table('readings').add({
           id: 'test',
           type: 'smbg',
@@ -1300,7 +1331,7 @@ describe('DiabetacticDatabase', () => {
           units: 'mg/dL',
           synced: false,
         })
-      ).toBeRejected();
+      ).rejects.toThrow();
 
       // Cleanup
       await Dexie.delete(testDbName);
@@ -1327,7 +1358,7 @@ describe('DiabetacticDatabase', () => {
       ];
 
       // Bulk operation should fail due to duplicate
-      await expectAsync(database.readings.bulkAdd(invalidReadings)).toBeRejected();
+      await expect(database.readings.bulkAdd(invalidReadings)).rejects.toThrow();
     });
   });
 });

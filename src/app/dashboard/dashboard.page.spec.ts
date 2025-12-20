@@ -24,6 +24,7 @@ import { StatCardComponent } from '@shared/components/stat-card/stat-card.compon
 import { ReadingItemComponent } from '@shared/components/reading-item/reading-item.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
+import { vi } from 'vitest';
 // StreakCardComponent imported by DashboardPage - not used directly in tests
 
 class LoggerServiceStub {
@@ -229,8 +230,8 @@ class ProfileServiceStub {
   });
 
   profile$ = this.profileSubject.asObservable();
-  getProfile = jest.fn().mockImplementation(async () => this.profileSubject.value);
-  updatePreferences = jest.fn().mockResolvedValue({});
+  getProfile = vi.fn().mockImplementation(async () => this.profileSubject.value);
+  updatePreferences = vi.fn().mockResolvedValue({});
 }
 
 describe('DashboardPage', () => {
@@ -242,9 +243,9 @@ describe('DashboardPage', () => {
 
   let component: DashboardPage;
   let fixture: ComponentFixture<DashboardPage>;
-  let readingsServiceSpy: jest.Mocked<ReadingsService>;
-  let appointmentServiceSpy: jest.Mocked<AppointmentService>;
-  let toastControllerSpy: jest.Mocked<ToastController>;
+  let readingsServiceSpy: any;
+  let appointmentServiceSpy: any;
+  let toastControllerSpy: any;
   let translationServiceStub: TranslationServiceStub;
   let profileServiceStub: ProfileServiceStub;
   let localAuthServiceStub: LocalAuthServiceStub;
@@ -322,20 +323,20 @@ describe('DashboardPage', () => {
     mockReadingsSubject = new BehaviorSubject<LocalGlucoseReading[]>(mockRecentReadings);
 
     readingsServiceSpy = {
-      getStatistics: jest.fn(),
-      getAllReadings: jest.fn(),
-      performFullSync: jest.fn(),
-      fetchFromBackend: jest.fn(),
+      getStatistics: vi.fn(),
+      getAllReadings: vi.fn(),
+      performFullSync: vi.fn(),
+      fetchFromBackend: vi.fn(),
       readings$: mockReadingsSubject.asObservable(),
     } as any;
 
     appointmentServiceSpy = {
-      getAppointments: jest.fn(),
+      getAppointments: vi.fn(),
       appointments$: of([mockAppointment]),
     } as any;
 
     toastControllerSpy = {
-      create: jest.fn(),
+      create: vi.fn(),
     } as any;
 
     // Set up spy return values
@@ -352,7 +353,7 @@ describe('DashboardPage', () => {
     appointmentServiceSpy.getAppointments.mockReturnValue(of([mockAppointment]));
 
     const mockToast = {
-      present: jest.fn(),
+      present: vi.fn(),
     };
     toastControllerSpy.create.mockResolvedValue(mockToast as any);
 
@@ -432,10 +433,6 @@ describe('DashboardPage', () => {
     expect(component.timesMeasured).toBe(0);
   });
 
-  describe('Component Initialization', () => {
-    // ...
-  });
-
   describe('User Interactions', () => {
     it('should not show success alert when Time in Range <= 70%', fakeAsync(() => {
       const lowTIRStats = { ...mockStatistics, timeInRange: 65 };
@@ -451,7 +448,7 @@ describe('DashboardPage', () => {
     }));
 
     it('should handle pull-to-refresh', async () => {
-      const completeSpy = jest.fn();
+      const completeSpy = vi.fn();
       const mockRefreshEvent = {
         target: {
           complete: completeSpy,

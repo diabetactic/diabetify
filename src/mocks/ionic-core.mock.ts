@@ -174,6 +174,9 @@ export const setNonce = () => {};
 // Render utilities (from stencil)
 export const render = () => {};
 
+// Loader utilities (for @ionic/core/loader)
+export const defineCustomElements = () => Promise.resolve();
+
 // Default export
 export default {
   isPlatform,
@@ -199,4 +202,5 @@ export default {
   setNonce,
   render,
   setPlatformOptions,
+  defineCustomElements,
 };

@@ -246,14 +246,14 @@ describe('UiBadgeComponent', () => {
   describe('onDismiss method', () => {
     it('should set isDismissed to true', () => {
       const event = new Event('click');
-      jest.spyOn(event, 'stopPropagation');
+      vi.spyOn(event, 'stopPropagation');
       component.onDismiss(event);
       expect(component.isDismissed).toBe(true);
     });
 
     it('should stop event propagation', () => {
       const event = new Event('click');
-      const stopPropSpy = jest.spyOn(event, 'stopPropagation');
+      const stopPropSpy = vi.spyOn(event, 'stopPropagation');
       component.onDismiss(event);
       expect(stopPropSpy).toHaveBeenCalled();
     });

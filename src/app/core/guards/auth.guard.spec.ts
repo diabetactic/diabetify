@@ -15,8 +15,8 @@ import { AccountState } from '@models/user-profile.model';
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;
-  let localAuthService: jest.Mocked<LocalAuthService>;
-  let router: jest.Mocked<Router>;
+  let localAuthService: Mock<LocalAuthService>;
+  let router: Mock<Router>;
   let urlTree: UrlTree;
 
   // Auth state subjects for testing
@@ -48,18 +48,18 @@ describe('AuthGuard', () => {
 
     // Create spies
     const routerSpy = {
-      createUrlTree: jest.fn().mockReturnValue(urlTree),
-    } as unknown as jest.Mocked<Router>;
+      createUrlTree: vi.fn().mockReturnValue(urlTree),
+    } as unknown as Mock<Router>;
 
     const tidepoolSpy = {
       authState: tidepoolAuthStateSubject.asObservable(),
-    } as unknown as jest.Mocked<TidepoolAuthService>;
+    } as unknown as Mock<TidepoolAuthService>;
 
     const localSpy = {
-      logout: jest.fn(),
-      waitForInitialization: jest.fn().mockResolvedValue(undefined),
+      logout: vi.fn(),
+      waitForInitialization: vi.fn().mockResolvedValue(undefined),
       authState$: localAuthStateSubject.asObservable(),
-    } as unknown as jest.Mocked<LocalAuthService>;
+    } as unknown as Mock<LocalAuthService>;
 
     TestBed.configureTestingModule({
       providers: [
@@ -71,8 +71,8 @@ describe('AuthGuard', () => {
     });
 
     guard = TestBed.inject(AuthGuard);
-    localAuthService = TestBed.inject(LocalAuthService) as jest.Mocked<LocalAuthService>;
-    router = TestBed.inject(Router) as jest.Mocked<Router>;
+    localAuthService = TestBed.inject(LocalAuthService) as Mock<LocalAuthService>;
+    router = TestBed.inject(Router) as Mock<Router>;
   });
 
   afterEach(() => {

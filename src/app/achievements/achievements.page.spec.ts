@@ -57,10 +57,10 @@ const mockAchievements: Achievement[] = [
 ];
 
 const mockAchievementsService = {
-  fetchAll: jest.fn().mockResolvedValue({ streak: mockStreakData, achievements: mockAchievements }),
-  fetchStreak: jest.fn().mockResolvedValue(mockStreakData),
-  fetchAchievements: jest.fn().mockResolvedValue(mockAchievements),
-  clearCache: jest.fn(),
+  fetchAll: vi.fn().mockResolvedValue({ streak: mockStreakData, achievements: mockAchievements }),
+  fetchStreak: vi.fn().mockResolvedValue(mockStreakData),
+  fetchAchievements: vi.fn().mockResolvedValue(mockAchievements),
+  clearCache: vi.fn(),
 };
 
 describe('AchievementsPage', () => {
@@ -69,7 +69,7 @@ describe('AchievementsPage', () => {
   let router: Router;
 
   beforeEach(async () => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockAchievementsService.fetchAll.mockResolvedValue({
       streak: mockStreakData,
       achievements: mockAchievements,
@@ -108,15 +108,15 @@ describe('AchievementsPage', () => {
   });
 
   it('should call loadData on ngOnInit', () => {
-    const loadDataSpy = jest.spyOn(component, 'loadData');
+    const loadDataSpy = vi.spyOn(component, 'loadData');
     component.ngOnInit();
     expect(loadDataSpy).toHaveBeenCalled();
   });
 
   it('should complete destroy$ on ngOnDestroy', () => {
     const destroySubject = (component as any).destroy$;
-    const nextSpy = jest.spyOn(destroySubject, 'next');
-    const completeSpy = jest.spyOn(destroySubject, 'complete');
+    const nextSpy = vi.spyOn(destroySubject, 'next');
+    const completeSpy = vi.spyOn(destroySubject, 'complete');
     component.ngOnDestroy();
     expect(nextSpy).toHaveBeenCalled();
     expect(completeSpy).toHaveBeenCalled();
@@ -158,7 +158,7 @@ describe('AchievementsPage', () => {
 
   describe('handleRefresh', () => {
     it('should refresh and complete', async () => {
-      const mockRefresher = { complete: jest.fn() };
+      const mockRefresher = { complete: vi.fn() };
       const event = { target: mockRefresher } as unknown as CustomEvent;
       await component.handleRefresh(event);
       expect(mockAchievementsService.fetchAll).toHaveBeenCalledWith(true);
@@ -168,7 +168,7 @@ describe('AchievementsPage', () => {
 
   describe('goBack', () => {
     it('should navigate to profile', () => {
-      const navigateSpy = jest.spyOn(router, 'navigate');
+      const navigateSpy = vi.spyOn(router, 'navigate');
       component.goBack();
       expect(navigateSpy).toHaveBeenCalledWith(['/tabs/profile']);
     });

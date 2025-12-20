@@ -19,25 +19,25 @@ import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helpe
 describe('BolusCalculatorPage', () => {
   let component: BolusCalculatorPage;
   let fixture: ComponentFixture<BolusCalculatorPage>;
-  let mockDataService: jest.Mocked<MockDataService>;
-  let mockNavController: jest.Mocked<NavController>;
-  let mockFoodService: jest.Mocked<FoodService>;
-  let mockLoggerService: jest.Mocked<LoggerService>;
+  let mockDataService: vi.Mocked<MockDataService>;
+  let mockNavController: vi.Mocked<NavController>;
+  let mockFoodService: vi.Mocked<FoodService>;
+  let mockLoggerService: vi.Mocked<LoggerService>;
 
   beforeEach(async () => {
     mockDataService = {
-      calculateBolus: jest.fn(),
+      calculateBolus: vi.fn(),
     } as any;
 
     mockLoggerService = {
-      error: jest.fn(),
-      warn: jest.fn(),
-      info: jest.fn(),
-      debug: jest.fn(),
+      error: vi.fn(),
+      warn: vi.fn(),
+      info: vi.fn(),
+      debug: vi.fn(),
     } as any;
 
     mockNavController = {
-      navigateBack: jest.fn(),
+      navigateBack: vi.fn(),
     } as any;
 
     // Create signals for mock FoodService
@@ -47,14 +47,14 @@ describe('BolusCalculatorPage', () => {
     );
 
     mockFoodService = {
-      clearSelection: jest.fn(),
-      getSortedCategories: jest
+      clearSelection: vi.fn(),
+      getSortedCategories: vi
         .fn()
         .mockReturnValue([
           { key: 'fruits', nameKey: 'foodPicker.categories.fruits', emoji: '🍎', order: 1 },
         ]),
-      searchFoods: jest.fn().mockReturnValue([]),
-      getFoodsByCategory: jest.fn().mockReturnValue([]),
+      searchFoods: vi.fn().mockReturnValue([]),
+      getFoodsByCategory: vi.fn().mockReturnValue([]),
       selectedFoods: selectedFoodsSignal.asReadonly(),
       totalCarbs: totalCarbsComputed,
     } as any;
@@ -75,7 +75,7 @@ describe('BolusCalculatorPage', () => {
         { provide: FoodService, useValue: mockFoodService },
         { provide: LoggerService, useValue: mockLoggerService },
       ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BolusCalculatorPage);
@@ -546,8 +546,10 @@ describe('BolusCalculatorPage', () => {
 
   describe('Input Change Handler', () => {
     it('should update form value from ion-input event', () => {
-      // Spy on detectChanges to prevent rendering
-      const detectChangesSpy = jest.spyOn(component['cdr'], 'detectChanges');
+      // Mock detectChanges to prevent rendering and template errors
+      const detectChangesSpy = vi
+        .spyOn(component['cdr'], 'detectChanges')
+        .mockImplementation(() => {});
 
       const event = {
         detail: { value: '150' },
@@ -560,8 +562,8 @@ describe('BolusCalculatorPage', () => {
     });
 
     it('should mark field as touched', () => {
-      // Spy on detectChanges to prevent rendering
-      jest.spyOn(component['cdr'], 'detectChanges');
+      // Mock detectChanges to prevent rendering and template errors
+      vi.spyOn(component['cdr'], 'detectChanges').mockImplementation(() => {});
 
       const event = {
         detail: { value: '60' },

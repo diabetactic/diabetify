@@ -18,33 +18,33 @@ else
 fi
 
 # Install Node.js dependencies
-echo "📦 Installing npm dependencies..."
-npm install
+echo "📦 Installing pnpm dependencies..."
+pnpm install
 
 # Verify critical packages
 echo "✅ Verifying installations..."
 npx -v > /dev/null && echo "  ✓ npx available"
-npm list @angular/cli > /dev/null 2>&1 && echo "  ✓ Angular CLI installed"
-npm list @ionic/angular > /dev/null 2>&1 && echo "  ✓ Ionic installed"
+pnpm list @angular/cli > /dev/null 2>&1 && echo "  ✓ Angular CLI installed"
+pnpm list @ionic/angular > /dev/null 2>&1 && echo "  ✓ Ionic installed"
 
 # Run tests to verify setup
 echo "🧪 Running tests to verify setup..."
-npm run test:ci
+pnpm run test:ci
 
 # Check code quality
 echo "🔍 Checking code quality..."
-npm run lint
+pnpm run lint
 
 # Show success message
 echo ""
 echo "✅ Environment setup complete!"
 echo ""
 echo "📋 Available commands:"
-echo "  npm start              - Start dev server"
-echo "  npm run test           - Run unit tests"
-echo "  npm run test:e2e       - Run E2E tests"
-echo "  npm run lint           - Check code quality"
-echo "  npm run build          - Build for production"
+echo "  pnpm start             - Start dev server"
+echo "  pnpm run test          - Run unit tests"
+echo "  pnpm run test:e2e      - Run E2E tests"
+echo "  pnpm run lint          - Check code quality"
+echo "  pnpm run build         - Build for production"
 echo ""
 
 exit 0

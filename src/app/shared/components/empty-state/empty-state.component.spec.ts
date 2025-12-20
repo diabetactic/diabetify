@@ -12,7 +12,7 @@ describe('EmptyStateComponent', () => {
 
   const mockThemeService = {
     isDark$: of(false),
-    isDarkTheme: jest.fn().mockReturnValue(false),
+    isDarkTheme: vi.fn().mockReturnValue(false),
   };
 
   beforeEach(async () => {

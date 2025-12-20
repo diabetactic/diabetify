@@ -102,7 +102,7 @@ describe('ErrorBannerComponent', () => {
 
   describe('onDismiss method', () => {
     it('should emit dismissed event', () => {
-      const dismissedSpy = jest.spyOn(component.dismissed, 'emit');
+      const dismissedSpy = vi.spyOn(component.dismissed, 'emit');
       component.onDismiss();
       expect(dismissedSpy).toHaveBeenCalled();
     });
@@ -110,7 +110,7 @@ describe('ErrorBannerComponent', () => {
 
   describe('onRetry method', () => {
     it('should emit retry event', () => {
-      const retrySpy = jest.spyOn(component.retry, 'emit');
+      const retrySpy = vi.spyOn(component.retry, 'emit');
       component.onRetry();
       expect(retrySpy).toHaveBeenCalled();
     });

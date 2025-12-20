@@ -15,10 +15,10 @@ import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helpe
 describe('AppointmentDetailPage', () => {
   let component: AppointmentDetailPage;
   let fixture: ComponentFixture<AppointmentDetailPage>;
-  let appointmentServiceSpy: jest.Mocked<AppointmentService>;
+  let appointmentServiceSpy: Mock<AppointmentService>;
 
   beforeEach(() => {
-    const spy = { getAppointment: jest.fn() } as any;
+    const spy = { getAppointment: vi.fn() } as any;
 
     TestBed.configureTestingModule({
       imports: [AppointmentDetailPageModule, TranslateModule.forRoot(), getLucideIconsForTesting()],
@@ -41,7 +41,7 @@ describe('AppointmentDetailPage', () => {
       ],
     });
 
-    appointmentServiceSpy = TestBed.inject(AppointmentService) as jest.Mocked<AppointmentService>;
+    appointmentServiceSpy = TestBed.inject(AppointmentService) as Mock<AppointmentService>;
     // Mock the getAppointment to return an error (since we don't have a real appointment)
     appointmentServiceSpy.getAppointment.mockReturnValue(
       throwError(() => new Error('Appointment not found'))

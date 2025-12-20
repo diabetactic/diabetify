@@ -39,7 +39,7 @@ describe('BottomSheetComponent', () => {
 
   describe('close method', () => {
     it('should emit closed event when close is called', () => {
-      const closedSpy = jest.spyOn(component.closed, 'emit');
+      const closedSpy = vi.spyOn(component.closed, 'emit');
       component.close();
       expect(closedSpy).toHaveBeenCalled();
     });
@@ -47,7 +47,7 @@ describe('BottomSheetComponent', () => {
 
   describe('onBackdropClick', () => {
     it('should call close when backdrop is clicked', () => {
-      const closeSpy = jest.spyOn(component, 'close');
+      const closeSpy = vi.spyOn(component, 'close');
       component.onBackdropClick();
       expect(closeSpy).toHaveBeenCalled();
     });
@@ -56,14 +56,14 @@ describe('BottomSheetComponent', () => {
   describe('onEscapeKey', () => {
     it('should call close when escape is pressed and sheet is open', () => {
       component.isOpen = true;
-      const closeSpy = jest.spyOn(component, 'close');
+      const closeSpy = vi.spyOn(component, 'close');
       component.onEscapeKey();
       expect(closeSpy).toHaveBeenCalled();
     });
 
     it('should not call close when escape is pressed and sheet is closed', () => {
       component.isOpen = false;
-      const closeSpy = jest.spyOn(component, 'close');
+      const closeSpy = vi.spyOn(component, 'close');
       component.onEscapeKey();
       expect(closeSpy).not.toHaveBeenCalled();
     });
@@ -124,7 +124,7 @@ describe('BottomSheetComponent', () => {
 
   describe('close button interaction', () => {
     it('should emit closed when close button is clicked', () => {
-      const closedSpy = jest.spyOn(component.closed, 'emit');
+      const closedSpy = vi.spyOn(component.closed, 'emit');
       const closeBtn = fixture.nativeElement.querySelector('.bottom-sheet__close');
       closeBtn.click();
       expect(closedSpy).toHaveBeenCalled();
@@ -146,14 +146,14 @@ describe('BottomSheetComponent', () => {
     it('should call onBackdropClick when backdrop is clicked', () => {
       component.isOpen = true;
       fixture.detectChanges();
-      const onBackdropSpy = jest.spyOn(component, 'onBackdropClick');
+      const onBackdropSpy = vi.spyOn(component, 'onBackdropClick');
       const backdrop = fixture.nativeElement.querySelector('.bottom-sheet-backdrop');
       if (backdrop) {
         backdrop.click();
         expect(onBackdropSpy).toHaveBeenCalled();
       } else {
         // Backdrop may not render in test environment, test the method directly
-        const closedSpy = jest.spyOn(component.closed, 'emit');
+        const closedSpy = vi.spyOn(component.closed, 'emit');
         component.onBackdropClick();
         expect(closedSpy).toHaveBeenCalled();
       }

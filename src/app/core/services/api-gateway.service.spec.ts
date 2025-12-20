@@ -41,32 +41,32 @@ describe('ApiGatewayService', () => {
     // Create spies for all dependencies
     // Note: recordServiceError is private but accessed via bracket notation in the service
     mockExternalServices = {
-      isServiceAvailable: jest.fn(),
-      recordServiceError: jest.fn(),
+      isServiceAvailable: vi.fn(),
+      recordServiceError: vi.fn(),
     } as any;
     mockLocalAuth = {
-      getAccessToken: jest.fn(),
+      getAccessToken: vi.fn(),
     } as any;
     mockTidepoolAuth = {
-      getAccessToken: jest.fn(),
+      getAccessToken: vi.fn(),
     } as any;
     mockEnvDetector = {
-      isProduction: jest.fn(),
+      isProduction: vi.fn(),
     } as any;
     mockPlatformDetector = {
-      getApiBaseUrl: jest.fn(),
+      getApiBaseUrl: vi.fn(),
     } as any;
     mockAdapterService = {
-      isServiceMockEnabled: jest.fn(),
-      isMockEnabled: jest.fn(),
+      isServiceMockEnabled: vi.fn(),
+      isMockEnabled: vi.fn(),
     } as any;
     mockLogger = {
-      info: jest.fn(),
-      debug: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn(),
-      getRequestId: jest.fn(),
-      setRequestId: jest.fn(),
+      info: vi.fn(),
+      debug: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      getRequestId: vi.fn(),
+      setRequestId: vi.fn(),
     } as any;
 
     // Default spy behaviors - MUST set isServiceAvailable to true for all tests
@@ -103,11 +103,7 @@ describe('ApiGatewayService', () => {
     httpMock.verify();
     service.clearCache();
     // Reset spy call history
-    jest.clearAllMocks();
-  });
-
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+    vi.clearAllMocks();
   });
 
   describe('request() - GET method', () => {

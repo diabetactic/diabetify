@@ -1451,9 +1451,9 @@ button:focus-visible {
 :root[data-theme='dark'] ion-input .native-input,
 :root[data-theme='dark'] ion-textarea textarea,
 :root[data-theme='dark'] ion-textarea .native-textarea {
-  background-color: var(--diabetactic-surface-dark, #1e293b) !important;
-  color: #fff !important;
-  -webkit-text-fill-color: #fff !important;
+  background-color: var(--diabetactic-surface-dark, #1e293b);
+  color: #fff;
+  -webkit-text-fill-color: #fff;
 }
 
 /* Native HTML input/select/textarea elements - Dark Mode */
@@ -1466,9 +1466,9 @@ button:focus-visible {
 :root[data-theme='dark'] input:not([type='range'], [type='checkbox'], [type='radio']),
 :root[data-theme='dark'] select,
 :root[data-theme='dark'] textarea {
-  background-color: #1e293b !important;
-  color: #e5e7eb !important;
-  border-color: #475569 !important;
+  background-color: #1e293b;
+  color: #e5e7eb;
+  border-color: #475569;
 }
 
 .ion-palette-dark input::placeholder,
@@ -1477,8 +1477,8 @@ button:focus-visible {
 .dark textarea::placeholder,
 :root[data-theme='dark'] input::placeholder,
 :root[data-theme='dark'] textarea::placeholder {
-  color: #9ca3af !important;
-  opacity: 100% !important;
+  color: #9ca3af;
+  opacity: 100%;
 }
 
 /* Ion Segment - Dark Mode */
@@ -1526,9 +1526,9 @@ button:focus-visible {
 .ion-palette-dark .alert-input,
 .dark .alert-input,
 :root[data-theme='dark'] .alert-input {
-  background-color: var(--diabetactic-surface-dark, #1e293b) !important;
-  color: #e5e7eb !important;
-  border: 1px solid var(--dt-color-border-input) !important;
+  background-color: var(--diabetactic-surface-dark, #1e293b);
+  color: #e5e7eb;
+  border: 1px solid var(--dt-color-border-input);
 }
 
 .ion-palette-dark .alert-radio-label,
@@ -1569,8 +1569,8 @@ button:focus-visible {
 .ion-palette-dark ion-searchbar .searchbar-input,
 .dark ion-searchbar .searchbar-input,
 :root[data-theme='dark'] ion-searchbar .searchbar-input {
-  background: var(--diabetactic-surface-dark, #1e293b) !important;
-  color: #e5e7eb !important;
+  background: var(--diabetactic-surface-dark, #1e293b);
+  color: #e5e7eb;
   border: 1px solid var(--dt-color-border-input);
 }
 
@@ -1582,22 +1582,22 @@ button:focus-visible {
 @media (width >= 768px) {
   html,
   body {
-    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%) !important;
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
     min-height: 100vh;
     margin: 0;
     padding: 0;
   }
 
   ion-app {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    width: 375px !important;
-    max-width: 375px !important;
-    height: calc(100vh - 80px) !important;
-    max-height: 812px !important;
-    min-height: 600px !important;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 375px;
+    max-width: 375px;
+    height: calc(100vh - 80px);
+    max-height: 812px;
+    min-height: 600px;
     border-radius: 40px !important;
     overflow: hidden !important;
     box-shadow:

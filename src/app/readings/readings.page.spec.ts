@@ -1,6 +1,7 @@
 // Initialize TestBed environment for Vitest
 import '../../test-setup';
 
+import { vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
@@ -110,9 +111,9 @@ describe('ReadingsPage', () => {
 
   beforeEach(async () => {
     const mockModalController = {
-      create: jest.fn().mockResolvedValue({
-        present: jest.fn().mockResolvedValue(undefined),
-        onDidDismiss: jest.fn().mockResolvedValue({ data: null }),
+      create: vi.fn().mockResolvedValue({
+        present: vi.fn().mockResolvedValue(undefined),
+        onDidDismiss: vi.fn().mockResolvedValue({ data: null }),
       }),
     };
 
@@ -141,7 +142,8 @@ describe('ReadingsPage', () => {
 
     fixture = TestBed.createComponent(ReadingsPage);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    // DO NOT call fixture.detectChanges() as it triggers template rendering
+    // which requires Ionic's ControlValueAccessor for ion-searchbar
   });
 
   it('should create', () => {

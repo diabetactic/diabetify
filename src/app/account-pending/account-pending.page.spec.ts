@@ -1,6 +1,7 @@
 // Initialize TestBed environment for Vitest
 import '../../test-setup';
 
+import { type Mock } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
@@ -12,12 +13,12 @@ import { APP_CONFIG } from '@core/config/app-config';
 describe('AccountPendingPage', () => {
   let component: AccountPendingPage;
   let fixture: ComponentFixture<AccountPendingPage>;
-  let mockAuthService: jest.Mocked<LocalAuthService>;
-  let mockRouter: jest.Mocked<Router>;
+  let mockAuthService: Mock<LocalAuthService>;
+  let mockRouter: Mock<Router>;
 
   beforeEach(async () => {
-    mockAuthService = { logout: jest.fn() } as any;
-    mockRouter = { navigate: jest.fn() } as any;
+    mockAuthService = { logout: vi.fn() } as any;
+    mockRouter = { navigate: vi.fn() } as any;
 
     await TestBed.configureTestingModule({
       imports: [AccountPendingPage, IonicModule.forRoot(), TranslateModule.forRoot()],
@@ -61,7 +62,7 @@ describe('AccountPendingPage', () => {
 
   it('should handle sign out errors gracefully', async () => {
     mockAuthService.logout.mockRejectedValue(new Error('Logout failed'));
-    jest.spyOn(console, 'error').mockImplementation();
+    vi.spyOn(console, 'error').mockImplementation();
 
     await component.signOut();
 

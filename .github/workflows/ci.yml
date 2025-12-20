@@ -1,4 +1,4 @@
-name: CI (pnpm)
+name: CI
 
 on:
   push:
@@ -48,11 +48,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Type Check
+        run: pnpm exec tsc --noEmit -p tsconfig.build.json
+
       - name: Lint
         run: pnpm run lint
 
       - name: Unit Tests
         run: pnpm test -- --ci --coverage
+
+      - name: i18n Check
+        run: pnpm run i18n:check
 
       - name: Upload coverage to DeepSource
         if: env.DEEPSOURCE_DSN != ''
@@ -207,3 +213,15 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+  # PR Size Labeler
+  pr-labeler:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: codelytv/pr-size-labeler@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          xs_max_size: '10'
+          s_max_size: '100'
+          m_max_size: '500'

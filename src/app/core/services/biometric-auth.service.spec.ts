@@ -7,15 +7,15 @@ import { LoggerService } from '@services/logger.service';
 import { Preferences } from '@capacitor/preferences';
 
 // Create mock functions for NativeBiometric
-const mockIsAvailable = jest.fn();
-const mockVerifyIdentity = jest.fn();
-const mockSetCredentials = jest.fn();
-const mockGetCredentials = jest.fn();
-const mockDeleteCredentials = jest.fn();
-const mockIsCredentialsSaved = jest.fn();
+const mockIsAvailable = vi.fn();
+const mockVerifyIdentity = vi.fn();
+const mockSetCredentials = vi.fn();
+const mockGetCredentials = vi.fn();
+const mockDeleteCredentials = vi.fn();
+const mockIsCredentialsSaved = vi.fn();
 
 // Mock the Capgo biometric plugin
-jest.mock('@capgo/capacitor-native-biometric', () => ({
+vi.mock('@capgo/capacitor-native-biometric', () => ({
   NativeBiometric: {
     isAvailable: mockIsAvailable,
     verifyIdentity: mockVerifyIdentity,
@@ -37,7 +37,7 @@ jest.mock('@capgo/capacitor-native-biometric', () => ({
 
 describe('BiometricAuthService', () => {
   let service: BiometricAuthService;
-  let mockLogger: jest.Mocked<LoggerService>;
+  let mockLogger: Mock<LoggerService>;
 
   const mockBiometricConfig: BiometricConfig = {
     enabled: true,
@@ -48,18 +48,18 @@ describe('BiometricAuthService', () => {
 
   beforeEach(async () => {
     mockLogger = {
-      debug: jest.fn(),
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn(),
-    } as unknown as jest.Mocked<LoggerService>;
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    } as unknown as Mock<LoggerService>;
 
     // Reset all mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Reset Capacitor Preferences mocks
-    (Preferences.get as jest.Mock).mockResolvedValue({ value: null });
-    (Preferences.set as jest.Mock).mockResolvedValue(undefined);
+    (Preferences.get as Mock).mockResolvedValue({ value: null });
+    (Preferences.set as Mock).mockResolvedValue(undefined);
 
     await TestBed.configureTestingModule({
       providers: [BiometricAuthService, { provide: LoggerService, useValue: mockLogger }],
@@ -69,10 +69,6 @@ describe('BiometricAuthService', () => {
   });
 
   describe('initial state', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should have default config', () =>
       new Promise<void>(resolve => {
         service.biometricConfig$.subscribe(config => {

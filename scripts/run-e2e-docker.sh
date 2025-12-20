@@ -169,7 +169,7 @@ fi
 log_info "Building Angular app with mock configuration..."
 cd "$PROJECT_ROOT"
 
-if ! npm run build:mock; then
+if ! pnpm run build:mock; then
     log_error "Angular build failed"
     exit 1
 fi

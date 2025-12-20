@@ -4,11 +4,12 @@
  * Provides utilities to prevent test state pollution by:
  * 1. Resetting Angular TestBed between tests
  * 2. Clearing IndexedDB tables (using the singleton db instance)
- * 3. Clearing all Jest mocks
+ * 3. Clearing all Vitest mocks
  * 4. Resetting service state (BehaviorSubjects, internal state)
  */
 
 import { TestBed } from '@angular/core/testing';
+import { vi } from 'vitest';
 import { db } from '../app/core/services/database.service';
 
 /**
@@ -24,9 +25,9 @@ export async function resetAllTestState(): Promise<void> {
   // Reset Angular TestBed to force new service instances
   TestBed.resetTestingModule();
 
-  // Clear all Jest mocks
-  jest.clearAllMocks();
-  jest.restoreAllMocks();
+  // Clear all Vitest mocks
+  vi.clearAllMocks();
+  vi.restoreAllMocks();
 }
 
 /**
@@ -43,13 +44,21 @@ export async function resetAllTestState(): Promise<void> {
  */
 export async function clearDatabaseTables(): Promise<void> {
   try {
-    // Clear all tables in the singleton database
-    await db.readings.clear();
-    await db.appointments.clear();
-    await db.syncQueue.clear();
+    // Clear all tables using transaction to prevent PrematureCommitError
+    await db.transaction('rw', [db.readings, db.appointments, db.syncQueue], async () => {
+      await db.readings.clear();
+      await db.appointments.clear();
+      await db.syncQueue.clear();
+    });
   } catch (error) {
-    // Database might not be open yet - that's okay
-    console.warn('Could not clear database tables:', error);
+    // Handle PrematureCommitError in fake-indexeddb or unopened database
+    if ((error as Error).name === 'PrematureCommitError') {
+      await db.readings.clear();
+      await db.appointments.clear();
+      await db.syncQueue.clear();
+    } else {
+      console.warn('Could not clear database tables:', error);
+    }
   }
 }
 
@@ -112,22 +121,22 @@ export function resetInterceptorState<T extends { [key: string]: unknown }>(
  */
 export function createMockStorage(): {
   storage: Map<string, string>;
-  get: jest.Mock;
-  set: jest.Mock;
-  remove: jest.Mock;
+  get: ReturnType<typeof vi.fn>;
+  set: ReturnType<typeof vi.fn>;
+  remove: ReturnType<typeof vi.fn>;
   clear: () => void;
 } {
   const storage = new Map<string, string>();
 
   return {
     storage,
-    get: jest.fn(async (options: { key: string }) => ({
+    get: vi.fn(async (options: { key: string }) => ({
       value: storage.get(options.key) ?? null,
     })),
-    set: jest.fn(async (options: { key: string; value: string }) => {
+    set: vi.fn(async (options: { key: string; value: string }) => {
       storage.set(options.key, options.value);
     }),
-    remove: jest.fn(async (options: { key: string }) => {
+    remove: vi.fn(async (options: { key: string }) => {
       storage.delete(options.key);
     }),
     clear: () => storage.clear(),

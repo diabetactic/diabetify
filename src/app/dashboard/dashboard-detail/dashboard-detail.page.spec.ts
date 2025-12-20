@@ -16,7 +16,7 @@ describe('DashboardDetailPage', () => {
   let fixture: ComponentFixture<DashboardDetailPage>;
 
   const mockReadingsService = {
-    getStatistics: jest.fn().mockResolvedValue({
+    getStatistics: vi.fn().mockResolvedValue({
       average: 120,
       standardDeviation: 25,
       coefficientOfVariation: 20.8,
@@ -25,7 +25,7 @@ describe('DashboardDetailPage', () => {
       gmi: 6.8,
       readingsCount: 100,
     }),
-    performFullSync: jest.fn().mockResolvedValue({ pushed: 5, fetched: 10, failed: 0 }),
+    performFullSync: vi.fn().mockResolvedValue({ pushed: 5, fetched: 10, failed: 0 }),
   };
 
   const mockProfileService = {
@@ -35,17 +35,17 @@ describe('DashboardDetailPage', () => {
   };
 
   const mockTranslationService = {
-    getCurrentConfig: jest.fn().mockReturnValue({ glucoseUnit: 'mg/dL' }),
-    getCurrentLanguage: jest.fn().mockReturnValue('en'),
-    instant: jest.fn((key: string) => key),
+    getCurrentConfig: vi.fn().mockReturnValue({ glucoseUnit: 'mg/dL' }),
+    getCurrentLanguage: vi.fn().mockReturnValue('en'),
+    instant: vi.fn((key: string) => key),
   };
 
   const mockRouter = {
-    navigate: jest.fn(),
+    navigate: vi.fn(),
   };
 
   beforeEach(async () => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     await TestBed.configureTestingModule({
       imports: [DashboardDetailPage, TranslateModule.forRoot()],
@@ -257,8 +257,8 @@ describe('DashboardDetailPage', () => {
 
   describe('ngOnDestroy', () => {
     it('should complete destroy$ subject', () => {
-      const nextSpy = jest.spyOn(component['destroy$'], 'next');
-      const completeSpy = jest.spyOn(component['destroy$'], 'complete');
+      const nextSpy = vi.spyOn(component['destroy$'], 'next');
+      const completeSpy = vi.spyOn(component['destroy$'], 'complete');
       component.ngOnDestroy();
       expect(nextSpy).toHaveBeenCalled();
       expect(completeSpy).toHaveBeenCalled();

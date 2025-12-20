@@ -17,10 +17,6 @@ describe('MockDataService', () => {
   });
 
   describe('Service Creation', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should initialize with current user', () => {
       const user = service['currentUser'];
 
@@ -562,7 +558,7 @@ describe('MockDataService', () => {
 
   describe('Debug Logging', () => {
     it('should only log in mock mode', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
 
       // Call a method that logs
       firstValueFrom(service.getReadings());
