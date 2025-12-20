@@ -13,7 +13,7 @@ import { environment } from '@env/environment';
 
 describe('GlucoserverService', () => {
   let service: GlucoserverService;
-  let httpClient: jest.Mocked<HttpClient>;
+  let httpClient: Mock<HttpClient>;
 
   const mockBaseUrl = 'https://api.example.com';
   const mockApiPath = '/v1/glucose';
@@ -31,10 +31,10 @@ describe('GlucoserverService', () => {
     };
 
     const httpClientMock = {
-      get: jest.fn(),
-      post: jest.fn(),
-      put: jest.fn(),
-      delete: jest.fn(),
+      get: vi.fn(),
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
     };
 
     TestBed.configureTestingModule({
@@ -42,18 +42,14 @@ describe('GlucoserverService', () => {
     });
 
     service = TestBed.inject(GlucoserverService);
-    httpClient = TestBed.inject(HttpClient) as jest.Mocked<HttpClient>;
+    httpClient = TestBed.inject(HttpClient) as Mock<HttpClient>;
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('initialization', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should construct full URL from environment config', () => {
       // Access private properties for testing
       expect((service as any).baseUrl).toBe(mockBaseUrl);
@@ -128,7 +124,7 @@ describe('GlucoserverService', () => {
         const error = new HttpErrorResponse({ status: 500, statusText: 'Server Error' });
         httpClient.get.mockReturnValue(throwError(() => error));
 
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
 
         service.getReadings().subscribe({
           next: () => fail('should have failed'),
@@ -163,7 +159,7 @@ describe('GlucoserverService', () => {
         const error = new HttpErrorResponse({ status: 404 });
         httpClient.get.mockReturnValue(throwError(() => error));
 
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
 
         service.getReading('nonexistent').subscribe({
           next: () => fail('should have failed'),
@@ -561,7 +557,7 @@ describe('GlucoserverService', () => {
 
     it('should log errors to console', () =>
       new Promise<void>(resolve => {
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+        const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
         const error = new HttpErrorResponse({ status: 500 });
         httpClient.get.mockReturnValue(throwError(() => error));
 

@@ -7,28 +7,27 @@ import { of } from 'rxjs';
 import { TranslationService, Language, LanguageConfig } from '@services/translation.service';
 import { Device } from '@capacitor/device';
 import { Preferences } from '@capacitor/preferences';
+import type { Mock } from 'vitest';
 
-// Mock Capacitor plugins
-jest.mock('@capacitor/device');
-jest.mock('@capacitor/preferences');
+// Note: @capacitor/device and @capacitor/preferences are already mocked in test-setup/index.ts
 
 describe('TranslationService', () => {
   let service: TranslationService;
-  let translateService: jest.Mocked<TranslateService>;
+  let translateService: Mock<TranslateService>;
 
   beforeEach(() => {
     const translateServiceMock = {
-      addLangs: jest.fn(),
-      setDefaultLang: jest.fn(),
-      use: jest.fn().mockReturnValue(of('es')),
-      instant: jest.fn(),
-      get: jest.fn().mockReturnValue(of('translated text')),
+      addLangs: vi.fn(),
+      setDefaultLang: vi.fn(),
+      use: vi.fn().mockReturnValue(of('es')),
+      instant: vi.fn(),
+      get: vi.fn().mockReturnValue(of('translated text')),
     };
 
-    (Preferences.get as jest.Mock).mockResolvedValue({ value: null });
-    (Preferences.set as jest.Mock).mockResolvedValue(undefined);
-    (Preferences.remove as jest.Mock).mockResolvedValue(undefined);
-    (Device.getLanguageCode as jest.Mock).mockResolvedValue({ value: 'es-MX' });
+    (Preferences.get as Mock).mockResolvedValue({ value: null });
+    (Preferences.set as Mock).mockResolvedValue(undefined);
+    (Preferences.remove as Mock).mockResolvedValue(undefined);
+    (Device.getLanguageCode as Mock).mockResolvedValue({ value: 'es-MX' });
 
     TestBed.configureTestingModule({
       providers: [
@@ -38,18 +37,14 @@ describe('TranslationService', () => {
     });
 
     service = TestBed.inject(TranslationService);
-    translateService = TestBed.inject(TranslateService) as jest.Mocked<TranslateService>;
+    translateService = TestBed.inject(TranslateService) as Mock<TranslateService>;
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('initialization', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should configure TranslateService with available languages', () => {
       expect(translateService.addLangs).toHaveBeenCalledWith(['en', 'es']);
     });
@@ -66,7 +61,7 @@ describe('TranslationService', () => {
     });
 
     it('should load stored language preference on init', async () => {
-      (Preferences.get as jest.Mock).mockResolvedValue({ value: 'en' });
+      (Preferences.get as Mock).mockResolvedValue({ value: 'en' });
 
       // Create service to trigger init
       new TranslationService(translateService);
@@ -106,7 +101,7 @@ describe('TranslationService', () => {
     });
 
     it('should not set unsupported language', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
 
       await service.setLanguage('fr' as Language);
 
@@ -395,7 +390,7 @@ describe('TranslationService', () => {
 
   describe('resetToDeviceLanguage', () => {
     it('should detect and set device language', async () => {
-      (Device.getLanguageCode as jest.Mock).mockResolvedValue({ value: 'en-US' });
+      (Device.getLanguageCode as Mock).mockResolvedValue({ value: 'en-US' });
 
       await service.resetToDeviceLanguage();
 
@@ -403,7 +398,7 @@ describe('TranslationService', () => {
     });
 
     it('should map Spanish variants to ES', async () => {
-      (Device.getLanguageCode as jest.Mock).mockResolvedValue({ value: 'es-MX' });
+      (Device.getLanguageCode as Mock).mockResolvedValue({ value: 'es-MX' });
 
       await service.resetToDeviceLanguage();
 
@@ -411,7 +406,7 @@ describe('TranslationService', () => {
     });
 
     it('should fall back to browser language on error', async () => {
-      (Device.getLanguageCode as jest.Mock).mockRejectedValue(new Error('Failed'));
+      (Device.getLanguageCode as Mock).mockRejectedValue(new Error('Failed'));
 
       // Mock navigator.language
       Object.defineProperty(navigator, 'language', {
@@ -433,7 +428,7 @@ describe('TranslationService', () => {
     });
 
     it('should reset to device language after clearing', async () => {
-      (Device.getLanguageCode as jest.Mock).mockResolvedValue({ value: 'en-US' });
+      (Device.getLanguageCode as Mock).mockResolvedValue({ value: 'en-US' });
 
       await service.clearLanguagePreference();
 
@@ -441,8 +436,8 @@ describe('TranslationService', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      (Preferences.remove as jest.Mock).mockRejectedValue(new Error('Failed'));
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
+      (Preferences.remove as Mock).mockRejectedValue(new Error('Failed'));
 
       await service.clearLanguagePreference();
 

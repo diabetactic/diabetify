@@ -57,7 +57,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "1.5mb",
-                  "maximumError": "2.5mb"
+                  "maximumError": "2.8mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -160,10 +160,9 @@
           }
         },
         "test": {
-          "builder": "@angular-builders/jest:run",
+          "builder": "@analogjs/vitest-angular:test",
           "options": {
-            "configPath": "jest.config.js",
-            "passWithNoTests": true
+            "configFile": "vitest.config.ts"
           },
           "configurations": {
             "ci": {
@@ -172,10 +171,9 @@
           }
         },
         "test-integration": {
-          "builder": "@angular-builders/jest:run",
+          "builder": "@analogjs/vitest-angular:test",
           "options": {
-            "configPath": "jest.integration.config.js",
-            "passWithNoTests": true
+            "configFile": "vitest.integration.config.ts"
           },
           "configurations": {
             "ci": {

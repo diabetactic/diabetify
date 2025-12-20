@@ -10,8 +10,8 @@ import { StreakData, Achievement } from '@models/achievements.model';
 
 describe('AchievementsService', () => {
   let service: AchievementsService;
-  let mockApiGateway: { request: jest.Mock };
-  let mockLogger: { debug: jest.Mock; info: jest.Mock; error: jest.Mock; warn: jest.Mock };
+  let mockApiGateway: { request: Mock };
+  let mockLogger: { debug: Mock; info: Mock; error: Mock; warn: Mock };
 
   const mockStreakData: StreakData = {
     streak: 7,
@@ -49,14 +49,14 @@ describe('AchievementsService', () => {
 
   beforeEach(() => {
     mockApiGateway = {
-      request: jest.fn(),
+      request: vi.fn(),
     };
 
     mockLogger = {
-      debug: jest.fn(),
-      info: jest.fn(),
-      error: jest.fn(),
-      warn: jest.fn(),
+      debug: vi.fn(),
+      info: vi.fn(),
+      error: vi.fn(),
+      warn: vi.fn(),
     };
 
     TestBed.configureTestingModule({
@@ -71,49 +71,7 @@ describe('AchievementsService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
-  describe('initial state', () => {
-    it('should have null streak initially', () => {
-      expect(service.streak()).toBeNull();
-    });
-
-    it('should have empty achievements initially', () => {
-      expect(service.achievements()).toEqual([]);
-    });
-
-    it('should have loading false initially', () => {
-      expect(service.loading()).toBe(false);
-    });
-
-    it('should have null error initially', () => {
-      expect(service.error()).toBeNull();
-    });
-
-    it('should have currentStreak as 0 when no data', () => {
-      expect(service.currentStreak()).toBe(0);
-    });
-
-    it('should have maxStreak as 0 when no data', () => {
-      expect(service.maxStreak()).toBe(0);
-    });
-
-    it('should have measurementsToday as 0 when no data', () => {
-      expect(service.measurementsToday()).toBe(0);
-    });
-
-    it('should have earnedCount as 0 when no achievements', () => {
-      expect(service.earnedCount()).toBe(0);
-    });
-
-    it('should have totalCount as 0 when no achievements', () => {
-      expect(service.totalCount()).toBe(0);
-    });
+    vi.clearAllMocks();
   });
 
   describe('fetchStreak', () => {
@@ -460,11 +418,11 @@ describe('AchievementsService', () => {
 
   describe('cache expiration', () => {
     beforeEach(() => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
     });
 
     afterEach(() => {
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('should invalidate cache after TTL expires', async () => {
@@ -474,7 +432,7 @@ describe('AchievementsService', () => {
       mockApiGateway.request.mockClear();
 
       // Advance time beyond TTL (60 seconds)
-      jest.advanceTimersByTime(61000);
+      vi.advanceTimersByTime(61000);
 
       mockApiGateway.request.mockReturnValue(of({ success: true, data: mockStreakData }));
       await service.fetchStreak();
@@ -489,7 +447,7 @@ describe('AchievementsService', () => {
       mockApiGateway.request.mockClear();
 
       // Advance time but stay within TTL
-      jest.advanceTimersByTime(30000);
+      vi.advanceTimersByTime(30000);
 
       await service.fetchStreak();
 

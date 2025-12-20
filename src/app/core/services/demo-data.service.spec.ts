@@ -23,12 +23,6 @@ describe('DemoDataService', () => {
     localStorage.clear();
   });
 
-  describe('Service Creation', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-  });
-
   describe('getDoctors', () => {
     it('should return demo doctors list', async () => {
       const doctors = await firstValueFrom(service.getDoctors());

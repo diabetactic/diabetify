@@ -30,15 +30,15 @@ import { ApiGatewayService } from '@services/api-gateway.service';
 import { LoggerService } from '@services/logger.service';
 import { Network } from '@capacitor/network';
 import Dexie from 'dexie';
+import type { Mock } from 'vitest';
 
-// Mock Capacitor Network plugin
-jest.mock('@capacitor/network');
+// Note: @capacitor/network is already mocked in test-setup/index.ts
 
 describe('ReadingsService - Offline Detection', () => {
   let service: ReadingsService;
   let mockDb: DiabetacticDatabase;
-  let mockLogger: jest.Mocked<LoggerService>;
-  let mockApiGateway: jest.Mocked<ApiGatewayService>;
+  let mockLogger: Mock<LoggerService>;
+  let mockApiGateway: Mock<ApiGatewayService>;
 
   /**
    * Helper to wait for service initialization
@@ -52,7 +52,7 @@ describe('ReadingsService - Offline Detection', () => {
     TestBed.resetTestingModule();
 
     // Reset all mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Create fresh mock database
     mockDb = new Dexie('test-db') as DiabetacticDatabase;
@@ -64,16 +64,16 @@ describe('ReadingsService - Offline Detection', () => {
 
     // Mock logger
     mockLogger = {
-      info: jest.fn(),
-      debug: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn(),
-    } as unknown as jest.Mocked<LoggerService>;
+      info: vi.fn(),
+      debug: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    } as unknown as Mock<LoggerService>;
 
     // Mock API Gateway
     mockApiGateway = {
-      request: jest.fn(),
-    } as unknown as jest.Mocked<ApiGatewayService>;
+      request: vi.fn(),
+    } as unknown as Mock<ApiGatewayService>;
 
     // Mock liveQuery function
     const mockLiveQuery = (queryFn: () => Promise<unknown>) => {
@@ -86,8 +86,8 @@ describe('ReadingsService - Offline Detection', () => {
     };
 
     // Mock Network plugin - default to online (reset for each test)
-    (Network.getStatus as jest.Mock).mockReset().mockResolvedValue({ connected: true });
-    (Network.addListener as jest.Mock).mockReset().mockReturnValue({ remove: jest.fn() });
+    (Network.getStatus as Mock).mockReset().mockResolvedValue({ connected: true });
+    (Network.addListener as Mock).mockReset().mockReturnValue({ remove: vi.fn() });
 
     TestBed.configureTestingModule({
       providers: [
@@ -128,7 +128,7 @@ describe('ReadingsService - Offline Detection', () => {
       await waitForInit();
 
       // Get the listener callback
-      const addListenerCall = (Network.addListener as jest.Mock).mock.calls[0];
+      const addListenerCall = (Network.addListener as Mock).mock.calls[0];
       const statusChangeCallback = addListenerCall[1];
 
       mockLogger.info.mockClear();
@@ -147,10 +147,10 @@ describe('ReadingsService - Offline Detection', () => {
     // SKIPPED: Flaky timing issues with TestBed reset and async network initialization
     it.skip('should default to online if network plugin fails', async () => {
       // Mock network plugin to fail for this specific test
-      (Network.getStatus as jest.Mock)
+      (Network.getStatus as Mock)
         .mockReset()
         .mockRejectedValue(new Error('Network plugin not available'));
-      (Network.addListener as jest.Mock).mockReset().mockReturnValue({ remove: jest.fn() });
+      (Network.addListener as Mock).mockReset().mockReturnValue({ remove: vi.fn() });
 
       // Create a fresh database for this test
       const failingDb = new Dexie('failing-test-db') as DiabetacticDatabase;
@@ -205,7 +205,7 @@ describe('ReadingsService - Offline Detection', () => {
       await waitForInit();
 
       // Set service to offline by triggering status change
-      const addListenerCall = (Network.addListener as jest.Mock).mock.calls[0];
+      const addListenerCall = (Network.addListener as Mock).mock.calls[0];
       const statusChangeCallback = addListenerCall[1];
 
       // Simulate going offline
@@ -239,7 +239,7 @@ describe('ReadingsService - Offline Detection', () => {
       await waitForInit();
 
       // Set service to offline
-      const addListenerCall = (Network.addListener as jest.Mock).mock.calls[0];
+      const addListenerCall = (Network.addListener as Mock).mock.calls[0];
       const statusChangeCallback = addListenerCall[1];
 
       // Simulate going offline
@@ -255,7 +255,7 @@ describe('ReadingsService - Offline Detection', () => {
 
     it('should proceed with fetch when online', async () => {
       // Mock API response
-      mockApiGateway.request = jest.fn().mockReturnValue({
+      mockApiGateway.request = vi.fn().mockReturnValue({
         toPromise: () => Promise.resolve({ success: true, data: { readings: [] } }),
       });
 
@@ -276,7 +276,7 @@ describe('ReadingsService - Offline Detection', () => {
       await waitForInit();
 
       // Set service to offline
-      const addListenerCall = (Network.addListener as jest.Mock).mock.calls[0];
+      const addListenerCall = (Network.addListener as Mock).mock.calls[0];
       const statusChangeCallback = addListenerCall[1];
 
       // Simulate going offline
@@ -303,7 +303,7 @@ describe('ReadingsService - Offline Detection', () => {
     it('should allow sync after going from offline to online', async () => {
       await waitForInit();
 
-      const addListenerCall = (Network.addListener as jest.Mock).mock.calls[0];
+      const addListenerCall = (Network.addListener as Mock).mock.calls[0];
       const statusChangeCallback = addListenerCall[1];
 
       // Start offline
@@ -335,7 +335,7 @@ describe('ReadingsService - Offline Detection', () => {
       expect(mockLogger.info).not.toHaveBeenCalledWith('Sync', 'Skipping sync - device is offline');
 
       // Simulate going offline
-      const addListenerCall = (Network.addListener as jest.Mock).mock.calls[0];
+      const addListenerCall = (Network.addListener as Mock).mock.calls[0];
       const statusChangeCallback = addListenerCall[1];
       statusChangeCallback({ connected: false });
 

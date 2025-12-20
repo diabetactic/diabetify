@@ -1,18 +1,23 @@
 // Initialize TestBed environment for Vitest
 import '../../../test-setup';
 
+import { type Mock } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { RendererFactory2 } from '@angular/core';
 import { ThemeService } from '@services/theme.service';
 import { ProfileService } from '@services/profile.service';
+import { LoggerService } from '@services/logger.service';
 import { UserProfile, DEFAULT_USER_PREFERENCES, AccountState } from '@models/user-profile.model';
 import { skip, take } from 'rxjs/operators';
 
 describe('ThemeService', () => {
   let service: ThemeService;
-  let mockRenderer: { addClass: jest.Mock; removeClass: jest.Mock };
-  let mockRendererFactory: jest.Mocked<RendererFactory2>;
-  let mockProfileService: jest.Mocked<ProfileService>;
+  let mockRenderer: { addClass: Mock; removeClass: Mock };
+  let mockRendererFactory: Mock<RendererFactory2>;
+  let mockProfileService: Mock<ProfileService>;
+  let mockLoggerService: Mock<LoggerService>;
+  let mockBody: HTMLElement;
+  let mockHtml: HTMLElement;
 
   const mockUserProfile: UserProfile = {
     id: 'test-user-id',
@@ -32,38 +37,63 @@ describe('ThemeService', () => {
     // Clear localStorage before each test
     localStorage.clear();
 
+    // Mock document.body and document.documentElement
+    mockBody = document.createElement('div');
+    mockHtml = document.createElement('html');
+
+    Object.defineProperty(document, 'body', {
+      writable: true,
+      configurable: true,
+      value: mockBody,
+    });
+
+    Object.defineProperty(document, 'documentElement', {
+      writable: true,
+      configurable: true,
+      value: mockHtml,
+    });
+
     // Create mock renderer
     mockRenderer = {
-      addClass: jest.fn(),
-      removeClass: jest.fn(),
+      addClass: vi.fn((element: HTMLElement, className: string) => {
+        element.classList.add(className);
+      }),
+      removeClass: vi.fn((element: HTMLElement, className: string) => {
+        element.classList.remove(className);
+      }),
     };
 
     // Create mock renderer factory
     mockRendererFactory = {
-      createRenderer: jest.fn().mockReturnValue(mockRenderer),
-    } as unknown as jest.Mocked<RendererFactory2>;
+      createRenderer: vi.fn().mockReturnValue(mockRenderer),
+    } as unknown as Mock<RendererFactory2>;
 
     // Create mock profile service
     mockProfileService = {
-      getProfile: jest.fn(),
-      updatePreferences: jest.fn(),
-    } as unknown as jest.Mocked<ProfileService>;
+      getProfile: vi.fn(),
+      updatePreferences: vi.fn(),
+    } as unknown as Mock<ProfileService>;
     mockProfileService.getProfile.mockReturnValue(Promise.resolve(null));
     mockProfileService.updatePreferences.mockReturnValue(Promise.resolve(mockUserProfile));
+
+    // Create mock logger service
+    mockLoggerService = {
+      info: vi.fn(),
+      debug: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    } as unknown as Mock<LoggerService>;
 
     TestBed.configureTestingModule({
       providers: [
         ThemeService,
         { provide: RendererFactory2, useValue: mockRendererFactory },
         { provide: ProfileService, useValue: mockProfileService },
+        { provide: LoggerService, useValue: mockLoggerService },
       ],
     });
 
     service = TestBed.inject(ThemeService);
-  });
-
-  it('should be created', () => {
-    expect(service).toBeTruthy();
   });
 
   it('should initialize with light theme mode by default', () => {
@@ -118,4 +148,261 @@ describe('ThemeService', () => {
 
       service.setThemeMode('dark');
     }));
+
+  describe('Theme Persistence (E2E Coverage)', () => {
+    it('should apply dark theme CSS classes to document', async () => {
+      await service.setThemeMode('dark');
+
+      // Verificar que se aplicaron las clases CSS correctas
+      expect(mockBody.classList.contains('dark')).toBe(true);
+      expect(mockHtml.classList.contains('dark')).toBe(true);
+      expect(mockHtml.classList.contains('ion-palette-dark')).toBe(true);
+      expect(mockHtml.getAttribute('data-theme')).toBe('dark');
+    });
+
+    it('should apply light theme CSS classes to document', async () => {
+      // Primero aplicar dark para asegurar que se limpie
+      await service.setThemeMode('dark');
+      await service.setThemeMode('light');
+
+      // Verificar que se aplicaron las clases CSS correctas
+      expect(mockBody.classList.contains('light')).toBe(true);
+      expect(mockHtml.classList.contains('light')).toBe(true);
+      expect(mockHtml.classList.contains('ion-palette-dark')).toBe(false);
+      expect(mockHtml.getAttribute('data-theme')).toBe('diabetactic');
+    });
+
+    it('should persist dark theme to profile service', async () => {
+      await service.setThemeMode('dark');
+
+      expect(mockProfileService.updatePreferences).toHaveBeenCalledWith({
+        themeMode: 'dark',
+      });
+    });
+
+    it('should persist light theme to profile service', async () => {
+      await service.setThemeMode('light');
+
+      expect(mockProfileService.updatePreferences).toHaveBeenCalledWith({
+        themeMode: 'light',
+      });
+    });
+
+    it('should restore theme from profile on initialization', async () => {
+      // Simular perfil con tema oscuro guardado previamente
+      const profileWithDarkTheme = {
+        ...mockUserProfile,
+        preferences: {
+          ...DEFAULT_USER_PREFERENCES,
+          themeMode: 'dark' as const,
+        },
+      };
+
+      // Crear nuevo mock de ProfileService que retorne el perfil con tema oscuro
+      const newMockProfileService = {
+        getProfile: vi.fn().mockResolvedValue(profileWithDarkTheme),
+        updatePreferences: vi.fn().mockResolvedValue(mockUserProfile),
+      };
+
+      // Crear nuevo mock de LoggerService
+      const newMockLoggerService = {
+        info: vi.fn(),
+        debug: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+      };
+
+      // Configurar nuevo TestBed con el perfil que tiene tema oscuro
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          ThemeService,
+          { provide: RendererFactory2, useValue: mockRendererFactory },
+          { provide: ProfileService, useValue: newMockProfileService },
+          { provide: LoggerService, useValue: newMockLoggerService },
+        ],
+      });
+
+      // Crear nueva instancia del servicio
+      const newService = TestBed.inject(ThemeService);
+
+      // Esperar a que se complete la inicialización asíncrona
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      // Verificar que se restauró el tema desde el perfil
+      expect(newService.getCurrentThemeMode()).toBe('dark');
+    });
+
+    it('should toggle between light and dark themes', async () => {
+      // Iniciar en light (predeterminado)
+      expect(service.getCurrentThemeMode()).toBe('light');
+
+      // Cambiar a dark
+      await service.toggleTheme();
+      expect(service.getCurrentThemeMode()).toBe('dark');
+      expect(mockBody.classList.contains('dark')).toBe(true);
+
+      // Cambiar de vuelta a light
+      await service.toggleTheme();
+      expect(service.getCurrentThemeMode()).toBe('light');
+      expect(mockBody.classList.contains('light')).toBe(true);
+    });
+
+    it('should apply color palette classes to document', async () => {
+      await service.setColorPalette('candy');
+
+      expect(mockBody.classList.contains('palette-candy')).toBe(true);
+    });
+
+    it('should apply high contrast classes when enabled', async () => {
+      await service.toggleHighContrast();
+
+      expect(mockBody.classList.contains('high-contrast')).toBe(true);
+    });
+
+    it('should remove high contrast classes when disabled', async () => {
+      // Activar primero
+      await service.toggleHighContrast();
+      expect(mockBody.classList.contains('high-contrast')).toBe(true);
+
+      // Desactivar
+      await service.toggleHighContrast();
+      expect(mockBody.classList.contains('high-contrast')).toBe(false);
+    });
+
+    it('should apply CSS custom properties for color palette', async () => {
+      await service.setColorPalette('candy');
+
+      // Verificar que se aplicaron las propiedades CSS personalizadas
+      const primaryColor = mockHtml.style.getPropertyValue('--ion-color-primary');
+      const secondaryColor = mockHtml.style.getPropertyValue('--ion-color-secondary');
+
+      expect(primaryColor).toBeTruthy();
+      expect(secondaryColor).toBeTruthy();
+    });
+
+    it('should migrate legacy localStorage theme on initialization', async () => {
+      // Configurar tema legacy en localStorage
+      localStorage.setItem('diabetactic-theme', 'dark');
+
+      // Crear nuevo mock de ProfileService que no retorne perfil
+      const newMockProfileService = {
+        getProfile: vi.fn().mockResolvedValue(null),
+        updatePreferences: vi.fn().mockResolvedValue(mockUserProfile),
+      };
+
+      // Crear nuevo mock de LoggerService
+      const newMockLoggerService = {
+        info: vi.fn(),
+        debug: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+      };
+
+      // Configurar nuevo TestBed sin perfil
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          ThemeService,
+          { provide: RendererFactory2, useValue: mockRendererFactory },
+          { provide: ProfileService, useValue: newMockProfileService },
+          { provide: LoggerService, useValue: newMockLoggerService },
+        ],
+      });
+
+      // Crear nueva instancia del servicio
+      const newService = TestBed.inject(ThemeService);
+
+      // Esperar a que se complete la inicialización asíncrona
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      // Verificar que se migró el tema desde localStorage legacy
+      expect(newService.getCurrentThemeMode()).toBe('dark');
+
+      // Verificar que se eliminó el tema legacy de localStorage
+      expect(localStorage.getItem('diabetactic-theme')).toBeNull();
+    });
+  });
+
+  describe('System Theme Detection', () => {
+    let matchMediaMock: Mock;
+
+    beforeEach(() => {
+      // Mock window.matchMedia para pruebas de tema del sistema
+      matchMediaMock = vi.fn();
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        configurable: true,
+        value: matchMediaMock,
+      });
+    });
+
+    it('should detect system dark theme preference when mode is auto', async () => {
+      matchMediaMock.mockReturnValue({
+        matches: true,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      });
+
+      await service.setThemeMode('auto');
+
+      // En modo auto con preferencia oscura del sistema, debería aplicar tema oscuro
+      expect(service.isDarkTheme()).toBe(true);
+    });
+
+    it('should detect system light theme preference when mode is auto', async () => {
+      matchMediaMock.mockReturnValue({
+        matches: false,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      });
+
+      await service.setThemeMode('auto');
+
+      // En modo auto con preferencia clara del sistema, debería aplicar tema claro
+      expect(service.isDarkTheme()).toBe(false);
+    });
+
+    it('should listen for system theme changes when in auto mode', async () => {
+      const mockMediaQuery = {
+        matches: false,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      };
+
+      matchMediaMock.mockReturnValue(mockMediaQuery);
+
+      // Crear nuevo mock de ProfileService
+      const newMockProfileService = {
+        getProfile: vi.fn().mockResolvedValue(null),
+        updatePreferences: vi.fn().mockResolvedValue(mockUserProfile),
+      };
+
+      // Crear nuevo mock de LoggerService
+      const newMockLoggerService = {
+        info: vi.fn(),
+        debug: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+      };
+
+      // Reinicializar TestBed para crear un nuevo servicio
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          ThemeService,
+          { provide: RendererFactory2, useValue: mockRendererFactory },
+          { provide: ProfileService, useValue: newMockProfileService },
+          { provide: LoggerService, useValue: newMockLoggerService },
+        ],
+      });
+
+      // Crear nueva instancia del servicio que configurará el listener
+      const newService = TestBed.inject(ThemeService);
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      // Verificar que se configuró el listener para cambios en el tema del sistema
+      expect(mockMediaQuery.addEventListener).toHaveBeenCalledWith('change', expect.any(Function));
+    });
+  });
 });

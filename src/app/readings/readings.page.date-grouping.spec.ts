@@ -20,46 +20,46 @@ import { LocalGlucoseReading } from '@core/models/glucose-reading.model';
 describe('ReadingsPage - Date Grouping', () => {
   let component: ReadingsPage;
   let fixture: ComponentFixture<ReadingsPage>;
-  let mockReadingsService: jest.Mocked<ReadingsService>;
-  let mockProfileService: jest.Mocked<ProfileService>;
-  let mockTranslationService: jest.Mocked<TranslationService>;
+  let mockReadingsService: Mock<ReadingsService>;
+  let mockProfileService: Mock<ProfileService>;
+  let mockTranslationService: Mock<TranslationService>;
 
   beforeEach(async () => {
     // Mock services
     mockReadingsService = {
       readings$: of([]),
-      performFullSync: jest.fn().mockResolvedValue({ fetched: 0, pushed: 0, failed: 0 }),
-    } as unknown as jest.Mocked<ReadingsService>;
+      performFullSync: vi.fn().mockResolvedValue({ fetched: 0, pushed: 0, failed: 0 }),
+    } as unknown as Mock<ReadingsService>;
 
     mockProfileService = {
       profile$: of({ preferences: { glucoseUnit: 'mg/dL' } }),
-    } as unknown as jest.Mocked<ProfileService>;
+    } as unknown as Mock<ProfileService>;
 
     mockTranslationService = {
-      instant: jest.fn((key: string) => {
+      instant: vi.fn((key: string) => {
         const translations: Record<string, string> = {
           'common.today': 'Today',
           'common.yesterday': 'Yesterday',
         };
         return translations[key] || key;
       }),
-      getCurrentLanguage: jest.fn().mockReturnValue('en'),
-    } as unknown as jest.Mocked<TranslationService>;
+      getCurrentLanguage: vi.fn().mockReturnValue('en'),
+    } as unknown as Mock<TranslationService>;
 
     const mockLogger = {
-      info: jest.fn(),
-      debug: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn(),
+      info: vi.fn(),
+      debug: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
     };
 
     const mockRouter = {
-      navigate: jest.fn(),
+      navigate: vi.fn(),
     };
 
     const mockToastController = {
-      create: jest.fn().mockResolvedValue({
-        present: jest.fn(),
+      create: vi.fn().mockResolvedValue({
+        present: vi.fn(),
       }),
     };
 
@@ -243,7 +243,7 @@ describe('ReadingsPage - Date Grouping', () => {
 
       // Mock toLocaleDateString
       const originalToLocaleDateString = Date.prototype.toLocaleDateString;
-      Date.prototype.toLocaleDateString = jest.fn(() => 'Wednesday, January 15');
+      Date.prototype.toLocaleDateString = vi.fn(() => 'Wednesday, January 15');
 
       const formatted = (component as any).formatDateHeader(dateKey);
 

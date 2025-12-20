@@ -19,9 +19,9 @@ import { ApiGatewayService } from '@services/api-gateway.service';
 
 describe('UnifiedAuthService', () => {
   let service: UnifiedAuthService;
-  let tidepoolAuthSpy: jest.Mocked<TidepoolAuthService>;
-  let localAuthSpy: jest.Mocked<LocalAuthService>;
-  let apiGatewaySpy: jest.Mocked<Partial<ApiGatewayService>>;
+  let tidepoolAuthSpy: Mock<TidepoolAuthService>;
+  let localAuthSpy: Mock<LocalAuthService>;
+  let apiGatewaySpy: Mock<Partial<ApiGatewayService>>;
 
   // Mock auth states
   let mockTidepoolAuthState: BehaviorSubject<TidepoolAuthState>;
@@ -30,26 +30,26 @@ describe('UnifiedAuthService', () => {
   beforeEach(() => {
     // Create spy objects
     tidepoolAuthSpy = {
-      login: jest.fn(),
-      logout: jest.fn(),
-      getAccessToken: jest.fn(),
-      refreshAccessToken: jest.fn(),
-      isTokenExpired: jest.fn(),
-    } as unknown as jest.Mocked<TidepoolAuthService>;
+      login: vi.fn(),
+      logout: vi.fn(),
+      getAccessToken: vi.fn(),
+      refreshAccessToken: vi.fn(),
+      isTokenExpired: vi.fn(),
+    } as unknown as Mock<TidepoolAuthService>;
 
     localAuthSpy = {
-      login: jest.fn(),
-      register: jest.fn(),
-      logout: jest.fn(),
-      getAccessToken: jest.fn(),
-      isAuthenticated: jest.fn(),
-      refreshAccessToken: jest.fn(),
-      updatePreferences: jest.fn(),
-    } as unknown as jest.Mocked<LocalAuthService>;
+      login: vi.fn(),
+      register: vi.fn(),
+      logout: vi.fn(),
+      getAccessToken: vi.fn(),
+      isAuthenticated: vi.fn(),
+      refreshAccessToken: vi.fn(),
+      updatePreferences: vi.fn(),
+    } as unknown as Mock<LocalAuthService>;
 
     apiGatewaySpy = {
-      clearCache: jest.fn(),
-    } as jest.Mocked<Partial<ApiGatewayService>>;
+      clearCache: vi.fn(),
+    } as Mock<Partial<ApiGatewayService>>;
 
     // Initialize mock auth states
     mockTidepoolAuthState = new BehaviorSubject<TidepoolAuthState>({
@@ -88,10 +88,6 @@ describe('UnifiedAuthService', () => {
     });
 
     service = TestBed.inject(UnifiedAuthService);
-  });
-
-  it('should be created', () => {
-    expect(service).toBeTruthy();
   });
 
   describe('Authentication State Management', () => {

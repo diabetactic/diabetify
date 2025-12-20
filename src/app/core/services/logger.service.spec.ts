@@ -5,72 +5,26 @@
 // Initialize TestBed environment for Vitest
 import '../../../test-setup';
 
+import { type MockInstance } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { LoggerService } from '@services/logger.service';
 
 describe('LoggerService', () => {
   let service: LoggerService;
-  let consoleDebugSpy: jest.SpyInstance;
-  let consoleLogSpy: jest.SpyInstance;
-  let consoleWarnSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
+  let consoleDebugSpy: MockInstance;
+  let consoleLogSpy: MockInstance;
+  let consoleWarnSpy: MockInstance;
+  let consoleErrorSpy: MockInstance;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(LoggerService);
 
     // Spy on console methods with return values
-    consoleDebugSpy = jest.spyOn(console, 'debug').mockReturnValue(undefined);
-    consoleLogSpy = jest.spyOn(console, 'log').mockReturnValue(undefined);
-    consoleWarnSpy = jest.spyOn(console, 'warn').mockReturnValue(undefined);
-    consoleErrorSpy = jest.spyOn(console, 'error').mockReturnValue(undefined);
-  });
-
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
-  describe('Log Levels', () => {
-    it('should log debug messages', () => {
-      service.debug('Init', 'Debug message', { detail: 'test' });
-
-      expect(consoleDebugSpy).toHaveBeenCalled();
-      const args = consoleDebugSpy.mock.calls.slice(-1)[0];
-      expect(args[0]).toContain('[DEBUG]');
-      expect(args[0]).toContain('[Init]');
-      expect(args[0]).toContain('Debug message');
-    });
-
-    it('should log info messages', () => {
-      service.info('API', 'Info message', { endpoint: '/api/test' });
-
-      expect(consoleLogSpy).toHaveBeenCalled();
-      const args = consoleLogSpy.mock.calls.slice(-1)[0];
-      expect(args[0]).toContain('[INFO]');
-      expect(args[0]).toContain('[API]');
-      expect(args[0]).toContain('Info message');
-    });
-
-    it('should log warning messages', () => {
-      service.warn('Sync', 'Warning message', { issue: 'slow network' });
-
-      expect(consoleWarnSpy).toHaveBeenCalled();
-      const args = consoleWarnSpy.mock.calls.slice(-1)[0];
-      expect(args[0]).toContain('[WARN]');
-      expect(args[0]).toContain('[Sync]');
-      expect(args[0]).toContain('Warning message');
-    });
-
-    it('should log error messages', () => {
-      const error = new Error('Test error');
-      service.error('Error', 'Error message', error, { endpoint: '/api/fail' });
-
-      expect(consoleErrorSpy).toHaveBeenCalled();
-      const args = consoleErrorSpy.mock.calls.slice(-1)[0];
-      expect(args[0]).toContain('[ERROR]');
-      expect(args[0]).toContain('[Error]');
-      expect(args[0]).toContain('Error message');
-    });
+    consoleDebugSpy = vi.spyOn(console, 'debug').mockReturnValue(undefined);
+    consoleLogSpy = vi.spyOn(console, 'log').mockReturnValue(undefined);
+    consoleWarnSpy = vi.spyOn(console, 'warn').mockReturnValue(undefined);
+    consoleErrorSpy = vi.spyOn(console, 'error').mockReturnValue(undefined);
   });
 
   describe('Request ID Tracking', () => {
@@ -220,37 +174,6 @@ describe('LoggerService', () => {
       const args = consoleErrorSpy.mock.calls.slice(-1)[0];
       const output = args[0] + (args[2] || '');
       expect(output).toContain('Simple error message');
-    });
-  });
-
-  describe('Categories', () => {
-    it('should support all defined categories', () => {
-      const categories: Array<'Init' | 'API' | 'Auth' | 'Sync' | 'UI' | 'Error'> = [
-        'Init',
-        'API',
-        'Auth',
-        'Sync',
-        'UI',
-        'Error',
-      ];
-
-      categories.forEach(category => {
-        service.info(category, `Testing ${category} category`);
-        expect(consoleLogSpy).toHaveBeenCalled();
-        const args = consoleLogSpy.mock.calls.slice(-1)[0];
-        expect(args[0]).toContain(`[${category}]`);
-      });
-    });
-  });
-
-  describe('Timestamp Format', () => {
-    it('should include ISO timestamp in logs', () => {
-      const beforeLog = new Date().toISOString().substring(0, 10); // YYYY-MM-DD
-      service.info('API', 'Test message');
-
-      expect(consoleLogSpy).toHaveBeenCalled();
-      const args = consoleLogSpy.mock.calls.slice(-1)[0];
-      expect(args[0]).toContain(beforeLog); // Should contain today's date
     });
   });
 

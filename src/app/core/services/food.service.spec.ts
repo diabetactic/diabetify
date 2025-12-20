@@ -21,10 +21,6 @@ describe('FoodService', () => {
     service.clearSelection();
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
   describe('getAllFoods', () => {
     it('should return all foods from database', () => {
       const allFoods = service.getAllFoods();

@@ -26,16 +26,16 @@ describe('ServiceMonitorComponent', () => {
 
   const mockExternalServices = {
     state: new BehaviorSubject<ExternalServicesState>(mockState),
-    performHealthCheck: jest.fn().mockResolvedValue(undefined),
-    checkService: jest.fn().mockResolvedValue(undefined),
-    resetCircuitBreaker: jest.fn(),
-    clearCache: jest.fn(),
-    getServiceConfig: jest.fn().mockReturnValue({ name: 'Test Service' }),
+    performHealthCheck: vi.fn().mockResolvedValue(undefined),
+    checkService: vi.fn().mockResolvedValue(undefined),
+    resetCircuitBreaker: vi.fn(),
+    clearCache: vi.fn(),
+    getServiceConfig: vi.fn().mockReturnValue({ name: 'Test Service' }),
   };
 
   const mockOrchestrator = {
-    getActiveWorkflows: jest.fn().mockReturnValue([]),
-    getCompletedWorkflows: jest.fn().mockReturnValue([]),
+    getActiveWorkflows: vi.fn().mockReturnValue([]),
+    getCompletedWorkflows: vi.fn().mockReturnValue([]),
   };
 
   beforeEach(async () => {

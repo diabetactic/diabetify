@@ -12,52 +12,52 @@ import { ApiGatewayService } from '@services/api-gateway.service';
 // Mock Dexie database
 class MockDatabaseService {
   readings = {
-    toArray: jest.fn().mockResolvedValue([]),
-    where: jest.fn().mockReturnValue({
-      between: jest.fn().mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([]),
+    toArray: vi.fn().mockResolvedValue([]),
+    where: vi.fn().mockReturnValue({
+      between: vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([]),
       }),
-      equals: jest.fn().mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([]),
+      equals: vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([]),
       }),
     }),
-    filter: jest.fn().mockReturnValue({
-      toArray: jest.fn().mockResolvedValue([]),
+    filter: vi.fn().mockReturnValue({
+      toArray: vi.fn().mockResolvedValue([]),
     }),
-    get: jest.fn().mockResolvedValue(undefined),
-    add: jest.fn().mockResolvedValue('mock-id'),
-    update: jest.fn().mockResolvedValue(1),
-    delete: jest.fn().mockResolvedValue(undefined),
-    bulkAdd: jest.fn().mockResolvedValue(undefined),
-    orderBy: jest.fn().mockReturnValue({
-      reverse: jest.fn().mockReturnValue({
-        limit: jest.fn().mockReturnValue({
-          toArray: jest.fn().mockResolvedValue([]),
+    get: vi.fn().mockResolvedValue(undefined),
+    add: vi.fn().mockResolvedValue('mock-id'),
+    update: vi.fn().mockResolvedValue(1),
+    delete: vi.fn().mockResolvedValue(undefined),
+    bulkAdd: vi.fn().mockResolvedValue(undefined),
+    orderBy: vi.fn().mockReturnValue({
+      reverse: vi.fn().mockReturnValue({
+        limit: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue([]),
         }),
-        toArray: jest.fn().mockResolvedValue([]),
+        toArray: vi.fn().mockResolvedValue([]),
       }),
     }),
-    toCollection: jest.fn().mockReturnValue({
-      toArray: jest.fn().mockResolvedValue([]),
+    toCollection: vi.fn().mockReturnValue({
+      toArray: vi.fn().mockResolvedValue([]),
     }),
   };
 
   syncQueue = {
-    add: jest.fn().mockResolvedValue(undefined),
-    count: jest.fn().mockResolvedValue(0),
-    toArray: jest.fn().mockResolvedValue([]),
-    delete: jest.fn().mockResolvedValue(undefined),
-    update: jest.fn().mockResolvedValue(undefined),
-    where: jest.fn().mockReturnValue({
-      equals: jest.fn().mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([]),
-        delete: jest.fn().mockResolvedValue(undefined),
+    add: vi.fn().mockResolvedValue(undefined),
+    count: vi.fn().mockResolvedValue(0),
+    toArray: vi.fn().mockResolvedValue([]),
+    delete: vi.fn().mockResolvedValue(undefined),
+    update: vi.fn().mockResolvedValue(undefined),
+    where: vi.fn().mockReturnValue({
+      equals: vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([]),
+        delete: vi.fn().mockResolvedValue(undefined),
       }),
     }),
   };
 
   // Mock transaction method - executes callback immediately
-  transaction = jest.fn().mockImplementation(async (mode: string, ...args: unknown[]) => {
+  transaction = vi.fn().mockImplementation(async (mode: string, ...args: unknown[]) => {
     // The last argument is the callback function
     const callback = args[args.length - 1] as () => Promise<unknown>;
     return await callback();
@@ -67,13 +67,13 @@ class MockDatabaseService {
 describe('ReadingsService', () => {
   let service: ReadingsService;
   let mockDb: MockDatabaseService;
-  let mockApiGateway: jest.Mocked<ApiGatewayService>;
+  let mockApiGateway: Mock<ApiGatewayService>;
 
   beforeEach(() => {
     mockDb = new MockDatabaseService();
     mockApiGateway = {
-      request: jest.fn(),
-      clearCache: jest.fn(),
+      request: vi.fn(),
+      clearCache: vi.fn(),
     } as any;
 
     TestBed.configureTestingModule({
@@ -100,10 +100,6 @@ describe('ReadingsService', () => {
     service = TestBed.inject(ReadingsService);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
   describe('addReading', () => {
     it('should add a glucose reading with proper transformation', async () => {
       const reading: GlucoseReading = {
@@ -117,7 +113,7 @@ describe('ReadingsService', () => {
       await service.addReading(reading);
 
       expect(mockDb.readings.add).toHaveBeenCalled();
-      const addedReading = (mockDb.readings.add as jest.Mock).mock.calls.slice(-1)[0][0];
+      const addedReading = (mockDb.readings.add as Mock).mock.calls.slice(-1)[0][0];
       expect(addedReading.value).toBe(120);
       expect(addedReading.units).toBe('mg/dL');
       expect(addedReading.type).toBe('smbg');
@@ -135,7 +131,7 @@ describe('ReadingsService', () => {
 
       await service.addReading(reading);
 
-      const addedReading = (mockDb.readings.add as jest.Mock).mock.calls.slice(-1)[0][0];
+      const addedReading = (mockDb.readings.add as Mock).mock.calls.slice(-1)[0][0];
       expect(addedReading.value).toBe(6.7);
       expect(addedReading.units).toBe('mmol/L');
     });
@@ -160,7 +156,7 @@ describe('ReadingsService', () => {
 
         await service.addReading(reading);
 
-        const addedReading = (mockDb.readings.add as jest.Mock).mock.calls.slice(-1)[0][0];
+        const addedReading = (mockDb.readings.add as Mock).mock.calls.slice(-1)[0][0];
         expect(addedReading.status).toBe(testCase.expectedStatus);
       }
     });
@@ -226,9 +222,9 @@ describe('ReadingsService', () => {
         },
       ];
 
-      (mockDb.readings.where as jest.Mock).mockReturnValue({
-        between: jest.fn().mockReturnValue({
-          toArray: jest.fn().mockResolvedValue(mockReadings),
+      (mockDb.readings.where as Mock).mockReturnValue({
+        between: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue(mockReadings),
         }),
       });
 
@@ -258,9 +254,9 @@ describe('ReadingsService', () => {
         },
       ];
 
-      (mockDb.readings.where as jest.Mock).mockReturnValue({
-        between: jest.fn().mockReturnValue({
-          toArray: jest.fn().mockResolvedValue(mockReadings),
+      (mockDb.readings.where as Mock).mockReturnValue({
+        between: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue(mockReadings),
         }),
       });
 
@@ -286,9 +282,9 @@ describe('ReadingsService', () => {
         },
       ];
 
-      (mockDb.readings.where as jest.Mock).mockReturnValue({
-        between: jest.fn().mockReturnValue({
-          toArray: jest.fn().mockResolvedValue(mockReadings),
+      (mockDb.readings.where as Mock).mockReturnValue({
+        between: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue(mockReadings),
         }),
       });
 
@@ -300,9 +296,9 @@ describe('ReadingsService', () => {
     });
 
     it('should handle empty readings gracefully', async () => {
-      (mockDb.readings.where as jest.Mock).mockReturnValue({
-        between: jest.fn().mockReturnValue({
-          toArray: jest.fn().mockResolvedValue([]),
+      (mockDb.readings.where as Mock).mockReturnValue({
+        between: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue([]),
         }),
       });
 
@@ -319,7 +315,7 @@ describe('ReadingsService', () => {
     it('should update a reading and mark as unsynced', async () => {
       const updates = { value: 130, notes: 'Updated note' };
 
-      (mockDb.readings.get as jest.Mock).mockResolvedValue({
+      (mockDb.readings.get as Mock).mockResolvedValue({
         id: 'test-id',
         value: 100,
         units: 'mg/dL',
@@ -351,7 +347,7 @@ describe('ReadingsService', () => {
         type: 'smbg',
         synced: false,
       };
-      (mockDb.readings.get as jest.Mock).mockResolvedValue(existing);
+      (mockDb.readings.get as Mock).mockResolvedValue(existing);
 
       await service.updateReading('test-id', updates);
 
@@ -366,7 +362,7 @@ describe('ReadingsService', () => {
 
   describe('deleteReading', () => {
     it('should delete a reading from database', async () => {
-      (mockDb.readings.get as jest.Mock).mockResolvedValue({
+      (mockDb.readings.get as Mock).mockResolvedValue({
         id: 'test-id',
         value: 100,
         units: 'mg/dL',
@@ -380,7 +376,7 @@ describe('ReadingsService', () => {
     });
 
     it('should add delete operation to sync queue', async () => {
-      (mockDb.readings.get as jest.Mock).mockResolvedValue({
+      (mockDb.readings.get as Mock).mockResolvedValue({
         id: 'test-id',
         value: 100,
         units: 'mg/dL',
@@ -418,9 +414,9 @@ describe('ReadingsService', () => {
         },
       ];
 
-      (mockDb.readings.where as jest.Mock).mockReturnValue({
-        between: jest.fn().mockReturnValue({
-          toArray: jest.fn().mockResolvedValue(mockReadings),
+      (mockDb.readings.where as Mock).mockReturnValue({
+        between: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue(mockReadings),
         }),
       });
 
@@ -470,9 +466,9 @@ describe('ReadingsService', () => {
         },
       ];
 
-      (mockDb.readings.where as jest.Mock).mockReturnValue({
-        between: jest.fn().mockReturnValue({
-          toArray: jest.fn().mockResolvedValue(mockReadings),
+      (mockDb.readings.where as Mock).mockReturnValue({
+        between: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue(mockReadings),
         }),
       });
 
@@ -521,9 +517,9 @@ describe('ReadingsService', () => {
         },
       ];
 
-      (mockDb.readings.where as jest.Mock).mockReturnValue({
-        between: jest.fn().mockReturnValue({
-          toArray: jest.fn().mockResolvedValue(mockReadings),
+      (mockDb.readings.where as Mock).mockReturnValue({
+        between: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue(mockReadings),
         }),
       });
 
@@ -552,8 +548,8 @@ describe('ReadingsService', () => {
       };
 
       mockApiGateway.request.mockReturnValue(of(mockApiResponse));
-      (mockDb.readings.filter as jest.Mock).mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([]),
+      (mockDb.readings.filter as Mock).mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([]),
       });
 
       const result = await service.fetchLatestFromBackend();

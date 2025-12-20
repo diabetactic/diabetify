@@ -28,8 +28,8 @@ class LocalAuthServiceStub {
 }
 
 class SessionTimeoutServiceStub {
-  startMonitoring = jest.fn();
-  stopMonitoring = jest.fn();
+  startMonitoring = vi.fn();
+  stopMonitoring = vi.fn();
 }
 
 describe('AppComponent', () => {

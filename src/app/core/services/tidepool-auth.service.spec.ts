@@ -20,20 +20,14 @@ function createMockHttpResponse<T>(
   return new HttpResponse<T>({ body, headers: httpHeaders, status });
 }
 
-// Mock Capacitor modules
-jest.mock('@capacitor/browser');
-jest.mock('@capacitor/app', () => ({
-  App: {
-    addListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
-    removeAllListeners: jest.fn().mockResolvedValue(undefined),
-  },
-}));
-jest.mock('@capacitor/core');
+import type { Mock } from 'vitest';
+
+// Note: @capacitor/browser, @capacitor/app, @capacitor/core are already mocked in test-setup/index.ts
 
 describe('TidepoolAuthService', () => {
   let service: TidepoolAuthService;
-  let httpMock: jest.Mocked<HttpClient>;
-  let tokenStorageMock: jest.Mocked<TokenStorageService>;
+  let httpMock: Mock<HttpClient>;
+  let tokenStorageMock: Mock<TokenStorageService>;
 
   const mockAuthData: TidepoolAuth = {
     accessToken: 'mock-access-token',
@@ -48,23 +42,23 @@ describe('TidepoolAuthService', () => {
 
   beforeEach(() => {
     httpMock = {
-      post: jest.fn(),
+      post: vi.fn(),
     } as any;
 
     tokenStorageMock = {
-      storeAuth: jest.fn().mockResolvedValue(undefined),
-      getAccessToken: jest.fn().mockResolvedValue(null), // Start with no token
-      getRefreshToken: jest.fn().mockResolvedValue(null), // Start with no token
-      getAuthData: jest.fn().mockResolvedValue(null), // Start with no auth data
-      hasValidAccessToken: jest.fn().mockResolvedValue(false), // Not authenticated by default
-      hasRefreshToken: jest.fn().mockResolvedValue(false), // No refresh token by default
-      clearAll: jest.fn().mockResolvedValue(undefined),
+      storeAuth: vi.fn().mockResolvedValue(undefined),
+      getAccessToken: vi.fn().mockResolvedValue(null), // Start with no token
+      getRefreshToken: vi.fn().mockResolvedValue(null), // Start with no token
+      getAuthData: vi.fn().mockResolvedValue(null), // Start with no auth data
+      hasValidAccessToken: vi.fn().mockResolvedValue(false), // Not authenticated by default
+      hasRefreshToken: vi.fn().mockResolvedValue(false), // No refresh token by default
+      clearAll: vi.fn().mockResolvedValue(undefined),
     } as any;
 
     // Mock Capacitor as non-native platform by default
-    (Capacitor.isNativePlatform as jest.Mock) = jest.fn().mockReturnValue(false);
-    (Browser.open as jest.Mock) = jest.fn().mockResolvedValue(undefined);
-    (Browser.close as jest.Mock) = jest.fn().mockResolvedValue(undefined);
+    (Capacitor.isNativePlatform as Mock) = vi.fn().mockReturnValue(false);
+    (Browser.open as Mock) = vi.fn().mockResolvedValue(undefined);
+    (Browser.close as Mock) = vi.fn().mockResolvedValue(undefined);
     // App.addListener is already mocked via the factory function at module level
 
     TestBed.configureTestingModule({
@@ -153,7 +147,7 @@ describe('TidepoolAuthService', () => {
 
   describe('login (OAuth)', () => {
     it('should redirect to Tidepool web app on non-native platform', async () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
 
       await service.login();
 
@@ -164,7 +158,7 @@ describe('TidepoolAuthService', () => {
     });
 
     it('should start OAuth flow on native platform', async () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
 
       await service.login();
 
@@ -178,8 +172,8 @@ describe('TidepoolAuthService', () => {
     });
 
     it('should handle browser open errors', async () => {
-      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(true);
-      (Browser.open as jest.Mock).mockRejectedValue(new Error('Browser error'));
+      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+      (Browser.open as Mock).mockRejectedValue(new Error('Browser error'));
 
       await expect(service.login()).rejects.toThrow();
     });
@@ -196,6 +190,7 @@ describe('TidepoolAuthService', () => {
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMTIzIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIn0.test',
       };
 
+      tokenStorageMock.getRefreshToken.mockResolvedValue('old-refresh-token');
       httpMock.post.mockReturnValue(of(mockTokenResponse));
 
       const newToken = await service.refreshAccessToken();
@@ -236,6 +231,7 @@ describe('TidepoolAuthService', () => {
     it('should refresh token if expired', async () => {
       tokenStorageMock.hasValidAccessToken.mockResolvedValue(false);
       tokenStorageMock.hasRefreshToken.mockResolvedValue(true);
+      tokenStorageMock.getRefreshToken.mockResolvedValue('old-refresh-token');
 
       const mockTokenResponse = {
         access_token: 'refreshed-token',

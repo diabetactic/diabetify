@@ -94,48 +94,48 @@ const INVALID_BACKEND_VALUES = [
 
 class MockDatabaseService {
   readings = {
-    toArray: jest.fn().mockResolvedValue([]),
-    where: jest.fn().mockReturnValue({
-      between: jest.fn().mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([]),
+    toArray: vi.fn().mockResolvedValue([]),
+    where: vi.fn().mockReturnValue({
+      between: vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([]),
       }),
-      equals: jest.fn().mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([]),
-        delete: jest.fn().mockResolvedValue(undefined),
+      equals: vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([]),
+        delete: vi.fn().mockResolvedValue(undefined),
       }),
     }),
-    get: jest.fn().mockResolvedValue(undefined),
-    add: jest.fn().mockResolvedValue('mock-id'),
-    update: jest.fn().mockResolvedValue(1),
-    delete: jest.fn().mockResolvedValue(undefined),
-    bulkAdd: jest.fn().mockResolvedValue(undefined),
-    orderBy: jest.fn().mockReturnValue({
-      reverse: jest.fn().mockReturnValue({
-        limit: jest.fn().mockReturnValue({
-          toArray: jest.fn().mockResolvedValue([]),
+    get: vi.fn().mockResolvedValue(undefined),
+    add: vi.fn().mockResolvedValue('mock-id'),
+    update: vi.fn().mockResolvedValue(1),
+    delete: vi.fn().mockResolvedValue(undefined),
+    bulkAdd: vi.fn().mockResolvedValue(undefined),
+    orderBy: vi.fn().mockReturnValue({
+      reverse: vi.fn().mockReturnValue({
+        limit: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue([]),
         }),
-        toArray: jest.fn().mockResolvedValue([]),
+        toArray: vi.fn().mockResolvedValue([]),
       }),
     }),
-    toCollection: jest.fn().mockReturnValue({
-      toArray: jest.fn().mockResolvedValue([]),
+    toCollection: vi.fn().mockReturnValue({
+      toArray: vi.fn().mockResolvedValue([]),
     }),
-    filter: jest.fn().mockReturnValue({
-      toArray: jest.fn().mockResolvedValue([]),
+    filter: vi.fn().mockReturnValue({
+      toArray: vi.fn().mockResolvedValue([]),
     }),
   };
 
   syncQueue = {
-    add: jest.fn().mockResolvedValue(undefined),
-    count: jest.fn().mockResolvedValue(0),
-    toArray: jest.fn().mockResolvedValue([]),
-    delete: jest.fn().mockResolvedValue(undefined),
-    update: jest.fn().mockResolvedValue(undefined),
-    clear: jest.fn().mockResolvedValue(undefined),
-    where: jest.fn().mockReturnValue({
-      equals: jest.fn().mockReturnValue({
-        toArray: jest.fn().mockResolvedValue([]),
-        delete: jest.fn().mockResolvedValue(undefined),
+    add: vi.fn().mockResolvedValue(undefined),
+    count: vi.fn().mockResolvedValue(0),
+    toArray: vi.fn().mockResolvedValue([]),
+    delete: vi.fn().mockResolvedValue(undefined),
+    update: vi.fn().mockResolvedValue(undefined),
+    clear: vi.fn().mockResolvedValue(undefined),
+    where: vi.fn().mockReturnValue({
+      equals: vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([]),
+        delete: vi.fn().mockResolvedValue(undefined),
       }),
     }),
   };
@@ -179,7 +179,7 @@ describe('ReadingsService: Backend Mapping', () => {
         { provide: ApiGatewayService, useValue: mockApiGateway },
         {
           provide: LoggerService,
-          useValue: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+          useValue: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
         },
         {
           provide: LIVE_QUERY_FN,
@@ -215,7 +215,7 @@ describe('ReadingsService: Backend Mapping', () => {
 
           // The reading should have been stored
           expect(mockDb.readings.add).toHaveBeenCalled();
-          const addedReading = (mockDb.readings.add as jest.Mock).mock.calls.slice(-1)[0][0];
+          const addedReading = (mockDb.readings.add as Mock).mock.calls.slice(-1)[0][0];
 
           // Verify the meal context was stored correctly
           expect(addedReading.mealContext).toBe(mealContext);
@@ -362,7 +362,7 @@ describe('ReadingsService: Sync to Backend', () => {
     mockApiGateway = new MockApiGatewayService();
 
     // Set environment to not mock mode for sync tests
-    jest.resetModules();
+    vi.resetModules();
 
     TestBed.configureTestingModule({
       providers: [
@@ -372,7 +372,7 @@ describe('ReadingsService: Sync to Backend', () => {
         { provide: ApiGatewayService, useValue: mockApiGateway },
         {
           provide: LoggerService,
-          useValue: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+          useValue: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
         },
         {
           provide: LIVE_QUERY_FN,
@@ -412,7 +412,7 @@ describe('ReadingsService: Sync to Backend', () => {
 
         await service.addReading(reading);
 
-        const addedReading = (mockDb.readings.add as jest.Mock).mock.calls.slice(-1)[0][0];
+        const addedReading = (mockDb.readings.add as Mock).mock.calls.slice(-1)[0][0];
         expect(addedReading.mealContext).toBe(mealContext);
       });
     });

@@ -1,6 +1,7 @@
 // Initialize TestBed environment for Vitest
 import '../../../test-setup';
 
+import { type Mock } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ProfileService } from '@services/profile.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
@@ -63,27 +64,27 @@ describe('ProfileService', () => {
 
     // Mock Capacitor Preferences
     const PreferencesMock = {
-      get: jest.fn().mockImplementation(async (options: { key: string }) => {
+      get: vi.fn().mockImplementation(async (options: { key: string }) => {
         const value = mockStorage.get(options.key);
         return { value: value || null };
       }),
-      set: jest.fn().mockImplementation(async (options: { key: string; value: string }) => {
+      set: vi.fn().mockImplementation(async (options: { key: string; value: string }) => {
         mockStorage.set(options.key, options.value);
       }),
-      remove: jest.fn().mockImplementation(async (options: { key: string }) => {
+      remove: vi.fn().mockImplementation(async (options: { key: string }) => {
         mockStorage.delete(options.key);
       }),
     };
 
     // Mock SecureStorage
     const SecureStorageMock = {
-      get: jest.fn().mockImplementation(async (key: string) => {
+      get: vi.fn().mockImplementation(async (key: string) => {
         return mockSecureStorage.get(key) || null;
       }),
-      set: jest.fn().mockImplementation(async (key: string, value: any) => {
+      set: vi.fn().mockImplementation(async (key: string, value: any) => {
         mockSecureStorage.set(key, value);
       }),
-      remove: jest.fn().mockImplementation(async (key: string) => {
+      remove: vi.fn().mockImplementation(async (key: string) => {
         mockSecureStorage.delete(key);
       }),
     };
@@ -100,13 +101,13 @@ describe('ProfileService', () => {
     const { Preferences } = await import('@capacitor/preferences');
     const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
 
-    jest.spyOn(Preferences, 'get').mockImplementation(PreferencesMock.get);
-    jest.spyOn(Preferences, 'set').mockImplementation(PreferencesMock.set);
-    jest.spyOn(Preferences, 'remove').mockImplementation(PreferencesMock.remove);
+    vi.spyOn(Preferences, 'get').mockImplementation(PreferencesMock.get);
+    vi.spyOn(Preferences, 'set').mockImplementation(PreferencesMock.set);
+    vi.spyOn(Preferences, 'remove').mockImplementation(PreferencesMock.remove);
 
-    jest.spyOn(SecureStorage, 'get').mockImplementation(SecureStorageMock.get);
-    jest.spyOn(SecureStorage, 'set').mockImplementation(SecureStorageMock.set);
-    jest.spyOn(SecureStorage, 'remove').mockImplementation(SecureStorageMock.remove);
+    vi.spyOn(SecureStorage, 'get').mockImplementation(SecureStorageMock.get);
+    vi.spyOn(SecureStorage, 'set').mockImplementation(SecureStorageMock.set);
+    vi.spyOn(SecureStorage, 'remove').mockImplementation(SecureStorageMock.remove);
 
     TestBed.configureTestingModule({
       providers: [
@@ -114,17 +115,17 @@ describe('ProfileService', () => {
         {
           provide: ApiGatewayService,
           useValue: {
-            request: jest.fn(),
-            clearCache: jest.fn(),
+            request: vi.fn(),
+            clearCache: vi.fn(),
           },
         },
         {
           provide: LoggerService,
           useValue: {
-            info: jest.fn(),
-            debug: jest.fn(),
-            warn: jest.fn(),
-            error: jest.fn(),
+            info: vi.fn(),
+            debug: vi.fn(),
+            warn: vi.fn(),
+            error: vi.fn(),
           },
         },
       ],
@@ -141,10 +142,6 @@ describe('ProfileService', () => {
     mockSecureStorage.clear();
     // Reset TestBed to force new service instance and prevent state pollution
     TestBed.resetTestingModule();
-  });
-
-  it('should be created', () => {
-    expect(service).toBeTruthy();
   });
 
   // getProfile tests - state pollution fixed with TestBed.resetTestingModule()
@@ -232,10 +229,10 @@ describe('ProfileService', () => {
 
       it('should handle storage read error gracefully', async () => {
         const loggerService = TestBed.inject(LoggerService);
-        jest.spyOn(loggerService, 'error');
+        vi.spyOn(loggerService, 'error');
 
         const { Preferences } = await import('@capacitor/preferences');
-        (Preferences.get as jest.Mock).mockReturnValue(Promise.reject(new Error('Storage error')));
+        (Preferences.get as Mock).mockReturnValue(Promise.reject(new Error('Storage error')));
 
         const profile = await service.getProfile();
 
@@ -495,7 +492,7 @@ describe('ProfileService', () => {
       it('should throw error when no profile exists', async () => {
         await service.deleteProfile();
 
-        await expectAsync(service.updateProfile({ name: 'Test' })).toBeRejectedWithError(
+        await expect(service.updateProfile({ name: 'Test' })).rejects.toThrow(
           'No profile found. Create a profile first.'
         );
       });
@@ -591,7 +588,7 @@ describe('ProfileService', () => {
       it('should throw error when no profile exists', async () => {
         await service.deleteProfile();
 
-        await expectAsync(service.updatePreferences({ language: 'en' })).toBeRejectedWithError(
+        await expect(service.updatePreferences({ language: 'en' })).rejects.toThrow(
           'No profile found. Create a profile first.'
         );
       });
@@ -707,12 +704,12 @@ describe('ProfileService', () => {
         }));
 
       it('should handle storage error', async () => {
-        jest.spyOn(console, 'error');
+        vi.spyOn(console, 'error');
 
         const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
-        (SecureStorage.set as jest.Mock).mockReturnValue(Promise.reject(new Error('Storage full')));
+        (SecureStorage.set as Mock).mockReturnValue(Promise.reject(new Error('Storage full')));
 
-        await expectAsync(service.setTidepoolCredentials(mockTidepoolAuth)).toBeRejectedWithError(
+        await expect(service.setTidepoolCredentials(mockTidepoolAuth)).rejects.toThrow(
           'Failed to save authentication credentials'
         );
       });
@@ -741,7 +738,7 @@ describe('ProfileService', () => {
         };
 
         const loggerService = TestBed.inject(LoggerService);
-        jest.spyOn(loggerService, 'warn');
+        vi.spyOn(loggerService, 'warn');
         mockSecureStorage.set('diabetactic_tidepool_auth', expiredAuth);
 
         const auth = await service.getTidepoolCredentials();
@@ -755,10 +752,10 @@ describe('ProfileService', () => {
 
       it('should handle storage read error', async () => {
         const loggerService = TestBed.inject(LoggerService);
-        jest.spyOn(loggerService, 'error');
+        vi.spyOn(loggerService, 'error');
 
         const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
-        (SecureStorage.get as jest.Mock).mockReturnValue(Promise.reject(new Error('Read error')));
+        (SecureStorage.get as Mock).mockReturnValue(Promise.reject(new Error('Read error')));
 
         const auth = await service.getTidepoolCredentials();
 
@@ -939,7 +936,7 @@ describe('ProfileService', () => {
       it('should throw error when no profile exists', async () => {
         await service.deleteProfile();
 
-        await expectAsync(service.exportProfile()).toBeRejectedWithError('No profile to export');
+        await expect(service.exportProfile()).rejects.toThrow('No profile to export');
       });
     });
 
@@ -992,18 +989,14 @@ describe('ProfileService', () => {
       });
 
       it('should throw error on invalid JSON', async () => {
-        await expectAsync(service.importProfile('invalid json')).toBeRejectedWithError(
-          'Invalid profile data'
-        );
+        await expect(service.importProfile('invalid json')).rejects.toThrow('Invalid profile data');
       });
 
       it('should throw error on missing required fields', async () => {
         const invalidProfile = JSON.stringify({ age: 10 }); // Missing name
 
         // The service throws generic "Invalid profile data" on validation failure
-        await expectAsync(service.importProfile(invalidProfile)).toBeRejectedWithError(
-          'Invalid profile data'
-        );
+        await expect(service.importProfile(invalidProfile)).rejects.toThrow('Invalid profile data');
       });
     });
   });
@@ -1024,7 +1017,7 @@ describe('ProfileService', () => {
 
     it('should not run migrations if already at current version', async () => {
       mockStorage.set('diabetactic_schema_version', '1');
-      jest.spyOn(console, 'log');
+      vi.spyOn(console, 'log');
 
       // Service already initialized in beforeEach, just verify it works
       expect(service).toBeTruthy();
@@ -1107,15 +1100,15 @@ describe('ProfileService', () => {
       };
 
       const mockApiGateway = {
-        request: jest.fn().mockReturnValue(of(mockResponse)),
-        clearCache: jest.fn(),
+        request: vi.fn().mockReturnValue(of(mockResponse)),
+        clearCache: vi.fn(),
       };
 
       const mockLogger = {
-        info: jest.fn(),
-        debug: jest.fn(),
-        warn: jest.fn(),
-        error: jest.fn(),
+        info: vi.fn(),
+        debug: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
       };
 
       const service = new ProfileService(mockApiGateway as any, mockLogger as any);
@@ -1141,15 +1134,15 @@ describe('ProfileService', () => {
       };
 
       const mockApiGateway = {
-        request: jest.fn().mockReturnValue(of(mockErrorResponse)),
-        clearCache: jest.fn(),
+        request: vi.fn().mockReturnValue(of(mockErrorResponse)),
+        clearCache: vi.fn(),
       };
 
       const mockLogger = {
-        info: jest.fn(),
-        debug: jest.fn(),
-        warn: jest.fn(),
-        error: jest.fn(),
+        info: vi.fn(),
+        debug: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
       };
 
       const service = new ProfileService(mockApiGateway as any, mockLogger as any);
@@ -1161,15 +1154,15 @@ describe('ProfileService', () => {
       const updates = { email: 'test@example.com' };
 
       const mockApiGateway = {
-        request: jest.fn().mockReturnValue(throwError(() => new Error('Network error'))),
-        clearCache: jest.fn(),
+        request: vi.fn().mockReturnValue(throwError(() => new Error('Network error'))),
+        clearCache: vi.fn(),
       };
 
       const mockLogger = {
-        info: jest.fn(),
-        debug: jest.fn(),
-        warn: jest.fn(),
-        error: jest.fn(),
+        info: vi.fn(),
+        debug: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
       };
 
       const service = new ProfileService(mockApiGateway as any, mockLogger as any);

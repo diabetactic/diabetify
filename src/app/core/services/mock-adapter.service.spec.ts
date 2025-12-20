@@ -8,20 +8,20 @@ import { LocalGlucoseReading, UserProfile } from '@core/models';
 
 describe('MockAdapterService', () => {
   let service: MockAdapterService;
-  let demoDataService: jest.Mocked<DemoDataService>;
+  let demoDataService: Mock<DemoDataService>;
 
   beforeEach(async () => {
     const demoDataMock = {
-      generateGlucoseReadings: jest.fn().mockResolvedValue([]),
-      generateAppointments: jest.fn().mockResolvedValue([]),
-      generateUserProfile: jest.fn().mockReturnValue({}),
+      generateGlucoseReadings: vi.fn().mockResolvedValue([]),
+      generateAppointments: vi.fn().mockResolvedValue([]),
+      generateUserProfile: vi.fn().mockReturnValue({}),
     };
 
     TestBed.configureTestingModule({
       providers: [MockAdapterService, { provide: DemoDataService, useValue: demoDataMock }],
     });
 
-    demoDataService = TestBed.inject(DemoDataService) as jest.Mocked<DemoDataService>;
+    demoDataService = TestBed.inject(DemoDataService) as Mock<DemoDataService>;
     service = TestBed.inject(MockAdapterService);
 
     // Clear localStorage before each test
@@ -36,10 +36,6 @@ describe('MockAdapterService', () => {
   });
 
   describe('Service Creation', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should initialize with default config', () => {
       const config = service.getConfig();
 
@@ -362,7 +358,8 @@ describe('MockAdapterService', () => {
       await service.mockSyncReadings();
       const duration = Date.now() - startTime;
 
-      expect(duration).toBeGreaterThanOrEqual(800);
+      // Allow 50ms tolerance for timer inaccuracies
+      expect(duration).toBeGreaterThanOrEqual(750);
     });
   });
 

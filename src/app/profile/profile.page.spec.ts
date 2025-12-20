@@ -27,23 +27,23 @@ class TidepoolAuthServiceStub {
 
   authState = this.stateSubject.asObservable();
 
-  login = jest.fn().mockResolvedValue(undefined);
-  logout = jest.fn().mockResolvedValue(undefined);
+  login = vi.fn().mockResolvedValue(undefined);
+  logout = vi.fn().mockResolvedValue(undefined);
 }
 
 class ProfileServiceStub {
   private profileSubject = new BehaviorSubject<any>(null);
   profile$ = this.profileSubject.asObservable();
 
-  getProfile = jest.fn().mockResolvedValue(null);
-  updatePreferences = jest.fn().mockResolvedValue({});
-  updateProfile = jest.fn().mockResolvedValue({});
-  clearTidepoolCredentials = jest.fn().mockResolvedValue(undefined);
-  deleteProfile = jest.fn().mockResolvedValue(undefined);
+  getProfile = vi.fn().mockResolvedValue(null);
+  updatePreferences = vi.fn().mockResolvedValue({});
+  updateProfile = vi.fn().mockResolvedValue({});
+  clearTidepoolCredentials = vi.fn().mockResolvedValue(undefined);
+  deleteProfile = vi.fn().mockResolvedValue(undefined);
 }
 
 class ThemeServiceStub {
-  setThemeMode = jest.fn().mockResolvedValue(undefined);
+  setThemeMode = vi.fn().mockResolvedValue(undefined);
 }
 
 class TranslationServiceStub {
