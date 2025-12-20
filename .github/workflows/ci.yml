@@ -69,7 +69,7 @@ jobs:
           ./bin/deepsource report --analyzer test-coverage --key javascript --value-file coverage/diabetactic/lcov.info
 
       - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage
           path: coverage/
@@ -117,14 +117,14 @@ jobs:
         run: pnpm run build:prod
 
       - name: Upload www artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: www
           path: www/
           retention-days: 1
 
       - name: Upload Turbo cache
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: turbo-cache
           path: node_modules/.cache/turbo
@@ -187,7 +187,7 @@ jobs:
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-report-shard-${{ matrix.shard }}
           path: playwright-report/
