@@ -30,8 +30,8 @@ importers:
         specifier: ^21.0.5
         version: 21.0.5(@angular/common@21.0.5(@angular/core@21.0.5(@angular/compiler@21.0.5)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@21.0.5(@angular/compiler@21.0.5)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@21.0.5(@angular/animations@21.0.5(@angular/core@21.0.5(@angular/compiler@21.0.5)(rxjs@7.8.2)(zone.js@0.15.1)))(@angular/common@21.0.5(@angular/core@21.0.5(@angular/compiler@21.0.5)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@21.0.5(@angular/compiler@21.0.5)(rxjs@7.8.2)(zone.js@0.15.1)))(rxjs@7.8.2)
       '@aparajita/capacitor-secure-storage':
-        specifier: ^6.0.1
-        version: 6.0.1
+        specifier: ^7.1.6
+        version: 7.1.6
       '@aparajita/tailwind-ionic':
         specifier: ^2.3.0
         version: 2.3.0(postcss@8.5.6)(tailwindcss@3.4.19(yaml@2.8.2))
@@ -591,9 +591,9 @@ packages:
       '@angular/platform-browser': 21.0.5
       rxjs: ^6.5.3 || ^7.4.0
 
-  '@aparajita/capacitor-secure-storage@6.0.1':
-    resolution: {integrity: sha512-3enXCck7Uumg3xCvzh4EHHo4mqYAMMhVWQ1db35xDsuRCSKEGFTJVVdOMpwnrOlS6RqzmZEoGB7n5wftbRHRqQ==}
-    engines: {node: '>=16.15.1'}
+  '@aparajita/capacitor-secure-storage@7.1.6':
+    resolution: {integrity: sha512-KIfLOm/oSciUiWsOMtMv2nzlnwW3LERid0DvZ3djt7UORBQvFqpvSefiLG5kkc8D34pGkb2ZqAz0ZprrI9LiTQ==}
+    engines: {node: '>=20.0.0'}
 
   '@aparajita/tailwind-ionic@2.3.0':
     resolution: {integrity: sha512-wg5RJURik1qcmPg5IoCuO7AFSd+K+lAwkAp747SOeMbeTeGaBKgc2ZAiiMH6bbTrQKxtd8kR3ov3bcWwAkEpvg==}
@@ -1227,20 +1227,20 @@ packages:
   '@cacheable/utils@2.3.2':
     resolution: {integrity: sha512-8kGE2P+HjfY8FglaOiW+y8qxcaQAfAhVML+i66XJR3YX5FtyDqn6Txctr3K2FrbxLKixRRYYBWMbuGciOhYNDg==}
 
-  '@capacitor/android@6.2.1':
-    resolution: {integrity: sha512-8gd4CIiQO5LAIlPIfd5mCuodBRxMMdZZEdj8qG8m+dQ1sQ2xyemVpzHmRK8qSCHorsBUCg3D62j2cp6bEBAkdw==}
+  '@capacitor/android@7.4.4':
+    resolution: {integrity: sha512-y8knfV1JXNrd6XZZLZireGT+EBCN0lvOo+HZ/s7L8LkrPBu4nY5UZn0Wxz4yOezItEII9rqYJSHsS5fMJG9gdw==}
     peerDependencies:
-      '@capacitor/core': ^6.2.0
+      '@capacitor/core': ^7.4.0
 
   '@capacitor/android@8.0.0':
     resolution: {integrity: sha512-FrBSvVAC5JuLaYHNyDnwQny0/SYnP+xDQbc/KA4wInmRkMXLDv22fkx9aBJIDrxjuUVd+jsRih4SAt8FgMEzCw==}
     peerDependencies:
       '@capacitor/core': ^8.0.0
 
-  '@capacitor/app@6.0.3':
-    resolution: {integrity: sha512-4gFUCbcVz0N/YYN32OBFerocWXslIv3Nc90gDiRsBkJc0plwK6kIUT6PKa5WtW2kfhteUeCVXQbvArH2fH+0Ug==}
+  '@capacitor/app@7.1.1':
+    resolution: {integrity: sha512-H4rmMXlL6GEDs2Yds5JvYqZxz4mdp7R4XdGJ7p+oGV+YapuQ2kW38UabuhdP6qSrKfIeLde6qx+8FEX02krypA==}
     peerDependencies:
-      '@capacitor/core': ^6.0.0
+      '@capacitor/core': '>=7.0.0'
 
   '@capacitor/app@8.0.0':
     resolution: {integrity: sha512-OwzIkUs4w433Bu9WWAEbEYngXEfJXZ9Wmdb8eoaqzYBgB0W9/3Ed/mh6sAYPNBAZlpyarmewgP7Nb+d3Vrh+xA==}
@@ -1257,8 +1257,8 @@ packages:
     engines: {node: '>=22.0.0'}
     hasBin: true
 
-  '@capacitor/core@6.2.1':
-    resolution: {integrity: sha512-urZwxa7hVE/BnA18oCFAdizXPse6fCKanQyEqpmz6cBJ2vObwMpyJDG5jBeoSsgocS9+Ax+9vb4ducWJn0y2qQ==}
+  '@capacitor/core@7.4.4':
+    resolution: {integrity: sha512-xzjxpr+d2zwTpCaN0k+C6wKSZzWFAb9OVEUtmO72ihjr/NEDoLvsGl4WLfjWPcCO2zOy0b2X52tfRWjECFUjtw==}
 
   '@capacitor/core@8.0.0':
     resolution: {integrity: sha512-250HTVd/W/KdMygoqaedisvNbHbpbQTN2Hy/8ZYGm1nAqE0Fx7sGss4l0nDg33STxEdDhtVRoL2fIaaiukKseA==}
@@ -1273,10 +1273,10 @@ packages:
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
 
-  '@capacitor/ios@6.2.1':
-    resolution: {integrity: sha512-tbMlQdQjxe1wyaBvYVU1yTojKJjgluZQsJkALuJxv/6F8QTw5b6vd7X785O/O7cMpIAZfUWo/vtAHzFkRV+kXw==}
+  '@capacitor/ios@7.4.4':
+    resolution: {integrity: sha512-Xp3bGWlSQAwsZGngRMWTdoD2agdMV12Whnm+/xsYPxfQSj+Tksbr7r/8Mso7VWkpnTKO4iMlx762g3PjW+wi4w==}
     peerDependencies:
-      '@capacitor/core': ^6.2.0
+      '@capacitor/core': ^7.4.0
 
   '@capacitor/local-notifications@8.0.0':
     resolution: {integrity: sha512-Jn2IJs13vhRyOUtYni7PIPdMDYMILb4uI/rRAi7PmGg2lnaKbM5aWBmHZWt0laTYyVApYIbCWmdgBqWx/IH4dQ==}
@@ -7943,12 +7943,12 @@ snapshots:
       rxjs: 7.8.2
       tslib: 2.8.1
 
-  '@aparajita/capacitor-secure-storage@6.0.1':
+  '@aparajita/capacitor-secure-storage@7.1.6':
     dependencies:
-      '@capacitor/android': 6.2.1(@capacitor/core@6.2.1)
-      '@capacitor/app': 6.0.3(@capacitor/core@6.2.1)
-      '@capacitor/core': 6.2.1
-      '@capacitor/ios': 6.2.1(@capacitor/core@6.2.1)
+      '@capacitor/android': 7.4.4(@capacitor/core@7.4.4)
+      '@capacitor/app': 7.1.1(@capacitor/core@7.4.4)
+      '@capacitor/core': 7.4.4
+      '@capacitor/ios': 7.4.4(@capacitor/core@7.4.4)
 
   '@aparajita/tailwind-ionic@2.3.0(postcss@8.5.6)(tailwindcss@3.4.19(yaml@2.8.2))':
     dependencies:
@@ -8805,17 +8805,17 @@ snapshots:
       hashery: 1.3.0
       keyv: 5.5.5
 
-  '@capacitor/android@6.2.1(@capacitor/core@6.2.1)':
+  '@capacitor/android@7.4.4(@capacitor/core@7.4.4)':
     dependencies:
-      '@capacitor/core': 6.2.1
+      '@capacitor/core': 7.4.4
 
   '@capacitor/android@8.0.0(@capacitor/core@8.0.0)':
     dependencies:
       '@capacitor/core': 8.0.0
 
-  '@capacitor/app@6.0.3(@capacitor/core@6.2.1)':
+  '@capacitor/app@7.1.1(@capacitor/core@7.4.4)':
     dependencies:
-      '@capacitor/core': 6.2.1
+      '@capacitor/core': 7.4.4
 
   '@capacitor/app@8.0.0(@capacitor/core@8.0.0)':
     dependencies:
@@ -8847,7 +8847,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@capacitor/core@6.2.1':
+  '@capacitor/core@7.4.4':
     dependencies:
       tslib: 2.8.1
 
@@ -8863,9 +8863,9 @@ snapshots:
     dependencies:
       '@capacitor/core': 8.0.0
 
-  '@capacitor/ios@6.2.1(@capacitor/core@6.2.1)':
+  '@capacitor/ios@7.4.4(@capacitor/core@7.4.4)':
     dependencies:
-      '@capacitor/core': 6.2.1
+      '@capacitor/core': 7.4.4
 
   '@capacitor/local-notifications@8.0.0(@capacitor/core@8.0.0)':
     dependencies:
