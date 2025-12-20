@@ -48,7 +48,7 @@ pnpm exec vitest run --config vitest.integration.config.ts
 
 ### Estructura de Archivos
 
-```
+```text
 src/app/
 ├── core/
 │   ├── services/

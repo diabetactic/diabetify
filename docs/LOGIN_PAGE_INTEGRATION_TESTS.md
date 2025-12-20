@@ -237,13 +237,13 @@ AppIconComponent2 and MockAppIconComponent2
 
 ```bash
 # Run all LoginPage integration tests
-npx vitest run src/app/tests/integration/pages/login-page.integration.spec.ts
+pnpm vitest run src/app/tests/integration/pages/login-page.integration.spec.ts
 
 # Run with coverage
-npx vitest run src/app/tests/integration/pages/login-page.integration.spec.ts --coverage
+pnpm vitest run src/app/tests/integration/pages/login-page.integration.spec.ts --coverage
 
 # Run in watch mode
-npx vitest src/app/tests/integration/pages/login-page.integration.spec.ts
+pnpm vitest src/app/tests/integration/pages/login-page.integration.spec.ts
 ```
 
 ## Future Enhancements

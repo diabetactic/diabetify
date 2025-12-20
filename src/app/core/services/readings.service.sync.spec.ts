@@ -64,7 +64,7 @@ class MockSyncDatabase {
       toArray: vi.fn().mockImplementation(() => Promise.resolve(this.readingsStore)),
     }),
     filter: vi.fn().mockImplementation((predicate: (r: LocalGlucoseReading) => boolean) => ({
-      toArray: jest
+      toArray: vi
         .fn()
         .mockImplementation(() => Promise.resolve(this.readingsStore.filter(predicate))),
     })),

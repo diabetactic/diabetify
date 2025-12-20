@@ -1,6 +1,7 @@
 // Initialize TestBed environment for Vitest
 import '../../test-setup';
 
+import { type Mock } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';

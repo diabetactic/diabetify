@@ -1,6 +1,7 @@
 // Initialize TestBed environment for Vitest
 import '../../../test-setup';
 
+import { type Mock } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { EnvironmentDetectorService } from '@services/environment-detector.service';
 import { Capacitor } from '@capacitor/core';

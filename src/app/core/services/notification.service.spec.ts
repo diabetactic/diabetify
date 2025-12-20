@@ -852,9 +852,9 @@ describe('NotificationService', () => {
         { id: 3, title: 'Notification 3', body: 'Body 3' },
       ];
 
-      jest
-        .spyOn(LocalNotifications, 'getPending')
-        .mockResolvedValue({ notifications: pendingNotifications });
+      vi.spyOn(LocalNotifications, 'getPending').mockResolvedValue({
+        notifications: pendingNotifications,
+      });
       (LocalNotifications.cancel as Mock).mockResolvedValue(undefined);
 
       await service.cancelAllNotifications();
@@ -871,9 +871,9 @@ describe('NotificationService', () => {
         { id: 2, title: 'Notification 2', body: 'Body 2' },
       ];
 
-      jest
-        .spyOn(LocalNotifications, 'getPending')
-        .mockResolvedValue({ notifications: pendingNotifications });
+      vi.spyOn(LocalNotifications, 'getPending').mockResolvedValue({
+        notifications: pendingNotifications,
+      });
       (LocalNotifications.cancel as Mock).mockResolvedValue(undefined);
 
       await service.cancelAllNotifications();
@@ -928,9 +928,9 @@ describe('NotificationService', () => {
         { id: 2005, title: 'Appointment Reminder', body: 'Appointment in 30 minutes' },
       ];
 
-      jest
-        .spyOn(LocalNotifications, 'getPending')
-        .mockResolvedValue({ notifications: pendingNotifications });
+      vi.spyOn(LocalNotifications, 'getPending').mockResolvedValue({
+        notifications: pendingNotifications,
+      });
 
       const result = await service.getPendingNotifications();
 

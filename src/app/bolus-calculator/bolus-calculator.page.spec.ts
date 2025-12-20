@@ -13,7 +13,7 @@ import { LoggerService } from '@core/services/logger.service';
 import { FoodPickerResult, SelectedFood } from '@core/models/food.model';
 import { of, throwError } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA, signal, computed } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, signal, computed } from '@angular/core';
 import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helper';
 
 describe('BolusCalculatorPage', () => {
@@ -75,7 +75,7 @@ describe('BolusCalculatorPage', () => {
         { provide: FoodService, useValue: mockFoodService },
         { provide: LoggerService, useValue: mockLoggerService },
       ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BolusCalculatorPage);

@@ -554,8 +554,10 @@ describe('ErrorHandlerService', () => {
         await firstValueFrom(service.handleError(httpError));
         fail('Expected error to be thrown');
       } catch {
-        // Error was handled - verify the error handling works
-        // PHI redaction in the returned AppError is tested by redactPHI unit tests
+        // Verify error was handled (console.error was called)
+        expect(consoleSpy).toHaveBeenCalled();
+        // Note: Full PHI redaction in console output is tested separately
+        // The redactPHI function correctly redacts PHI in the AppError object
         consoleSpy.mockRestore();
       }
     });

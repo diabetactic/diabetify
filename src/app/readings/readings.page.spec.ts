@@ -1,12 +1,13 @@
 // Initialize TestBed environment for Vitest
 import '../../test-setup';
 
+import { vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideRouter } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
-import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 import { ReadingsPage } from './readings.page';
 import { ReadingsPageModule } from './readings.module';
@@ -104,8 +105,6 @@ class MockReadingItemComponent {
   @Input() reading: any;
 }
 
-import { vi } from 'vitest';
-
 describe('ReadingsPage', () => {
   let component: ReadingsPage;
   let fixture: ComponentFixture<ReadingsPage>;
@@ -133,7 +132,7 @@ describe('ReadingsPage', () => {
         { provide: ModalController, useValue: mockModalController },
         { provide: LoggerService, useClass: LoggerServiceStub },
       ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     })
       .overrideModule(ReadingsPageModule, {
         remove: { imports: [AppIconComponent, EmptyStateComponent, ReadingItemComponent] },

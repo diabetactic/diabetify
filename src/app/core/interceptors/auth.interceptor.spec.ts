@@ -1,6 +1,7 @@
 // Initialize TestBed environment for Vitest
 import '../../../test-setup';
 
+import { type Mock } from 'vitest';
 import { TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { HTTP_INTERCEPTORS, HttpClient, HttpErrorResponse } from '@angular/common/http';

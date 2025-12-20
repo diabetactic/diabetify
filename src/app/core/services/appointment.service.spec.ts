@@ -1,6 +1,7 @@
 // Initialize TestBed environment for Vitest
 import '../../../test-setup';
 
+import { type Mock } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
@@ -98,10 +99,7 @@ describe('AppointmentService', () => {
   });
 
   afterEach(() => {
-    // Ensure no pending subscriptions
-    if (service) {
-      // Clean up any active subscriptions
-    }
+    vi.clearAllMocks();
   });
 
   describe('getAppointments()', () => {

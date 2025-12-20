@@ -1,6 +1,7 @@
 // Initialize TestBed environment for Vitest
 import '../../../test-setup';
 
+import { type Mock } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ProfileService } from '@services/profile.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
