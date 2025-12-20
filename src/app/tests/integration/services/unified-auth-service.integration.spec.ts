@@ -595,10 +595,16 @@ describe('Unified Auth Service Integration Tests', () => {
         expiresAt: null,
       });
 
-      // ACT & ASSERT
-      await expect(unifiedAuthService.linkTidepoolAccount().toPromise()).rejects.toThrow(
-        'Must be logged in locally to link Tidepool account'
-      );
+      // Wait for state update
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // ACT & ASSERT - Use try/catch since error is thrown synchronously
+      try {
+        await unifiedAuthService.linkTidepoolAccount().toPromise();
+        fail('Expected error but got success');
+      } catch (error: any) {
+        expect(error.message).toBe('Must be logged in locally to link Tidepool account');
+      }
       expect(mockTidepoolAuth.login).not.toHaveBeenCalled();
     });
 

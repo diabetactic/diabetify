@@ -16,14 +16,12 @@
  * 12. Codificación de colores por estado
  */
 
-import '../../../../test-setup';
-
-import { ComponentFixture, TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { of, throwError, BehaviorSubject } from 'rxjs';
 import { vi, type Mock } from 'vitest';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService, TranslateLoader } from '@ngx-translate/core';
 import { AppointmentsPage } from '../../../appointments/appointments.page';
 import { AppointmentService } from '@core/services/appointment.service';
 import { ProfileService } from '@core/services/profile.service';
@@ -36,7 +34,14 @@ import {
   AppointmentResolutionResponse,
 } from '@core/models/appointment.model';
 import { ROUTES, appointmentDetailRoute } from '@core/constants';
-import { ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, EventEmitter } from '@angular/core';
+
+// Mock TranslateLoader
+class MockTranslateLoader implements TranslateLoader {
+  getTranslation() {
+    return of({});
+  }
+}
 
 describe('AppointmentsPage Integration Tests', () => {
   let component: AppointmentsPage;
@@ -56,6 +61,7 @@ describe('AppointmentsPage Integration Tests', () => {
   let mockLogger: { info: Mock; debug: Mock; warn: Mock; error: Mock };
   let mockProfileService: any;
   let mockCdr: { markForCheck: Mock; detectChanges: Mock };
+  let mockTranslateService: Partial<TranslateService>;
 
   const createMockAppointment = (overrides?: Partial<Appointment>): Appointment => ({
     appointment_id: 100,
@@ -77,7 +83,6 @@ describe('AppointmentsPage Integration Tests', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    vi.useFakeTimers();
 
     // Mock AppointmentService
     const appointmentsSubject = new BehaviorSubject<Appointment[]>([]);
@@ -123,6 +128,25 @@ describe('AppointmentsPage Integration Tests', () => {
       instant: vi.fn((key: string) => key),
     };
 
+    // Mock TranslateService (for Angular translation pipe)
+    mockTranslateService = {
+      currentLang: 'en',
+      defaultLang: 'en',
+      onLangChange: new EventEmitter(),
+      onTranslationChange: new EventEmitter(),
+      onDefaultLangChange: new EventEmitter(),
+      instant: vi.fn((key: string) => key),
+      get: vi.fn((key: string) => of(key)),
+      use: vi.fn(() => of({})),
+      setDefaultLang: vi.fn(),
+      addLangs: vi.fn(),
+      getLangs: vi.fn(() => ['en', 'es']),
+      getBrowserLang: vi.fn(() => 'en'),
+      getDefaultLang: vi.fn(() => 'en'),
+      setTranslation: vi.fn(),
+      getTranslation: vi.fn(() => of({})),
+    };
+
     // Mock LoggerService
     mockLogger = {
       info: vi.fn(),
@@ -141,32 +165,44 @@ describe('AppointmentsPage Integration Tests', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [AppointmentsPage, TranslateModule.forRoot()],
+      imports: [
+        AppointmentsPage,
+        TranslateModule.forRoot({
+          loader: { provide: TranslateLoader, useClass: MockTranslateLoader }
+        })
+      ],
       providers: [
         { provide: AppointmentService, useValue: mockAppointmentService },
         { provide: Router, useValue: mockRouter },
         { provide: ToastController, useValue: mockToastController },
         { provide: TranslationService, useValue: mockTranslationService },
+        { provide: TranslateService, useValue: mockTranslateService },
         { provide: LoggerService, useValue: mockLogger },
         { provide: ProfileService, useValue: mockProfileService },
-        { provide: ChangeDetectorRef, useValue: mockCdr },
       ],
-    }).compileComponents();
+    })
+    .overrideComponent(AppointmentsPage, {
+      set: {
+        template: '<div></div>', // Skip template rendering to avoid icon loading issues
+        providers: [
+          { provide: ChangeDetectorRef, useValue: mockCdr },
+        ]
+      }
+    })
+    .compileComponents();
 
     fixture = TestBed.createComponent(AppointmentsPage);
     component = fixture.componentInstance;
   });
 
   afterEach(() => {
-    vi.clearAllTimers();
-    vi.useRealTimers();
     if (fixture) {
       fixture.destroy();
     }
   });
 
   describe('1. Carga de citas y ordenamiento por ID descendente', () => {
-    it('debe cargar citas y ordenarlas por appointment_id descendente', fakeAsync(() => {
+    it('debe cargar citas y ordenarlas por appointment_id descendente', async () => {
       const appointments = [
         createMockAppointment({ appointment_id: 100 }),
         createMockAppointment({ appointment_id: 300 }),
@@ -176,24 +212,22 @@ describe('AppointmentsPage Integration Tests', () => {
       mockAppointmentService.getAppointments.mockReturnValue(of(appointments));
 
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
 
       // Trigger appointments$ subscription
       mockAppointmentService.appointments$.next(appointments);
-      tick();
+      await fixture.whenStable();
 
       expect(component.appointments.length).toBe(3);
       // Ordenadas por ID descendente: 300, 200, 100
       expect(component.appointments[0].appointment_id).toBe(300);
       expect(component.appointments[1].appointment_id).toBe(200);
       expect(component.appointments[2].appointment_id).toBe(100);
+    });
 
-      flush();
-    }));
-
-    it('debe suscribirse a appointments$ y actualizar la lista reactivamente', fakeAsync(() => {
+    it('debe suscribirse a appointments$ y actualizar la lista reactivamente', async () => {
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
 
       expect(component.appointments.length).toBe(0);
 
@@ -203,25 +237,16 @@ describe('AppointmentsPage Integration Tests', () => {
       ];
 
       mockAppointmentService.appointments$.next(newAppointments);
-      tick();
+      await fixture.whenStable();
 
       expect(component.appointments.length).toBe(2);
       expect(component.appointments[0].appointment_id).toBe(500);
       expect(component.appointments[1].appointment_id).toBe(400);
-
-      flush();
-    }));
+    });
   });
 
   describe('2. Estados de cola y visualización de badges', () => {
-    it('debe mostrar badge PENDING con clases warning', fakeAsync(() => {
-      mockAppointmentService.getQueueState.mockReturnValue(
-        of({ state: 'PENDING' as AppointmentQueueState })
-      );
-
-      component.ngOnInit();
-      tick();
-
+    it('debe mostrar badge PENDING con clases warning', () => {
       const badge = component.getQueueBadge('PENDING');
 
       expect(badge.classes).toContain('badge-warning');
@@ -229,57 +254,46 @@ describe('AppointmentsPage Integration Tests', () => {
       expect(mockTranslationService.instant).toHaveBeenCalledWith(
         'appointments.queue.labels.pending'
       );
+    });
 
-      flush();
-    }));
-
-    it('debe mostrar badge ACCEPTED con clases success', fakeAsync(() => {
-      mockAppointmentService.getQueueState.mockReturnValue(
-        of({ state: 'ACCEPTED' as AppointmentQueueState })
-      );
-
-      component.ngOnInit();
-      tick();
-
+    it('debe mostrar badge ACCEPTED con clases success', () => {
       const badge = component.getQueueBadge('ACCEPTED');
 
       expect(badge.classes).toContain('badge-success');
       expect(badge.icon).toBe('check');
+    });
 
-      flush();
-    }));
-
-    it('debe mostrar badge DENIED con clases error', fakeAsync(() => {
+    it('debe mostrar badge DENIED con clases error', () => {
       const badge = component.getQueueBadge('DENIED');
 
       expect(badge.classes).toContain('badge-error');
       expect(badge.icon).toBe('x');
-    }));
+    });
 
-    it('debe mostrar badge CREATED con clases info', fakeAsync(() => {
+    it('debe mostrar badge CREATED con clases info', () => {
       const badge = component.getQueueBadge('CREATED');
 
       expect(badge.classes).toContain('badge-info');
       expect(badge.icon).toBe('calendar-check');
-    }));
+    });
 
-    it('debe mostrar badge BLOCKED con clases error', fakeAsync(() => {
+    it('debe mostrar badge BLOCKED con clases error', () => {
       const badge = component.getQueueBadge('BLOCKED');
 
       expect(badge.classes).toContain('badge-error');
       expect(badge.icon).toBe('ban');
-    }));
+    });
 
-    it('debe mostrar badge NONE con clases ghost', fakeAsync(() => {
+    it('debe mostrar badge NONE con clases ghost', () => {
       const badge = component.getQueueBadge('NONE');
 
       expect(badge.classes).toContain('badge-ghost');
       expect(badge.icon).toBe('minus');
-    }));
+    });
   });
 
   describe('3. Solicitud de cita con actualización optimista', () => {
-    it('debe actualizar optimistamente el estado a PENDING al solicitar cita', fakeAsync(() => {
+    it('debe actualizar optimistamente el estado a PENDING al solicitar cita', async () => {
       mockAppointmentService.getQueueState.mockReturnValue(
         of({ state: 'NONE' as AppointmentQueueState })
       );
@@ -293,21 +307,19 @@ describe('AppointmentsPage Integration Tests', () => {
       );
 
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
 
       expect(component.queueState?.state).toBe('NONE');
 
-      component.onRequestAppointment();
-      tick();
+      await component.onRequestAppointment();
+      await fixture.whenStable();
 
       // Actualización optimista
       expect(component.queueState?.state).toBe('PENDING');
       expect(mockAppointmentService.requestAppointment).toHaveBeenCalled();
+    });
 
-      flush();
-    }));
-
-    it('debe mostrar toast de éxito al solicitar cita', fakeAsync(() => {
+    it('debe mostrar toast de éxito al solicitar cita', async () => {
       mockAppointmentService.requestAppointment.mockReturnValue(
         of({
           success: true,
@@ -317,10 +329,10 @@ describe('AppointmentsPage Integration Tests', () => {
       );
 
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
 
-      component.onRequestAppointment();
-      tick();
+      await component.onRequestAppointment();
+      await fixture.whenStable();
 
       expect(mockToastController.create).toHaveBeenCalledWith({
         message: 'appointments.queue.messages.submitSuccess',
@@ -328,23 +340,23 @@ describe('AppointmentsPage Integration Tests', () => {
         position: 'bottom',
         color: 'success',
       });
+    });
 
-      flush();
-    }));
-
-    it('debe prevenir múltiples solicitudes simultáneas (debouncing)', fakeAsync(() => {
+    it('debe prevenir múltiples solicitudes simultáneas (debouncing)', async () => {
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
 
-      component.onRequestAppointment();
-      component.onRequestAppointment();
-      component.onRequestAppointment();
-      tick();
+      // Llamar múltiples veces
+      const promise1 = component.onRequestAppointment();
+      const promise2 = component.onRequestAppointment();
+      const promise3 = component.onRequestAppointment();
 
+      await Promise.all([promise1, promise2, promise3]);
+      await fixture.whenStable();
+
+      // Solo debe llamarse una vez debido al flag isSubmitting
       expect(mockAppointmentService.requestAppointment).toHaveBeenCalledTimes(1);
-
-      flush();
-    }));
+    });
   });
 
   describe('4. Mecanismo de polling cada 15 segundos', () => {
@@ -360,20 +372,16 @@ describe('AppointmentsPage Integration Tests', () => {
       expect(mockAppointmentService.getQueueState).toHaveBeenCalledTimes(1);
 
       // Avanzar 15 segundos (POLLING_INTERVAL_MS)
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
 
       // Segunda llamada por polling
       expect(mockAppointmentService.getQueueState).toHaveBeenCalledTimes(2);
 
       // Avanzar otros 15 segundos
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
 
       // Tercera llamada
       expect(mockAppointmentService.getQueueState).toHaveBeenCalledTimes(3);
-
-      flush();
     }));
 
     it('debe iniciar polling cuando estado es ACCEPTED', fakeAsync(() => {
@@ -384,12 +392,9 @@ describe('AppointmentsPage Integration Tests', () => {
       component.ngOnInit();
       tick();
 
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
 
       expect(mockAppointmentService.getQueueState).toHaveBeenCalledTimes(2);
-
-      flush();
     }));
 
     it('NO debe iniciar polling cuando estado es NONE', fakeAsync(() => {
@@ -400,13 +405,10 @@ describe('AppointmentsPage Integration Tests', () => {
       component.ngOnInit();
       tick();
 
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
 
       // Solo la llamada inicial
       expect(mockAppointmentService.getQueueState).toHaveBeenCalledTimes(1);
-
-      flush();
     }));
 
     it('debe detener polling cuando estado cambia a CREATED', fakeAsync(() => {
@@ -428,18 +430,14 @@ describe('AppointmentsPage Integration Tests', () => {
       expect(mockAppointmentService.getQueueState).toHaveBeenCalledTimes(1);
 
       // Primer polling: CREATED → detiene polling
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
 
       expect(mockAppointmentService.getQueueState).toHaveBeenCalledTimes(2);
 
       // No debe haber más llamadas después de CREATED
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
 
       expect(mockAppointmentService.getQueueState).toHaveBeenCalledTimes(2);
-
-      flush();
     }));
 
     it('debe actualizar posición en cola durante polling si estado es PENDING', fakeAsync(() => {
@@ -451,13 +449,10 @@ describe('AppointmentsPage Integration Tests', () => {
       component.ngOnInit();
       tick();
 
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
 
       // Debe intentar obtener la posición actualizada
       expect(mockAppointmentService.getQueuePosition).toHaveBeenCalled();
-
-      flush();
     }));
   });
 
@@ -475,8 +470,7 @@ describe('AppointmentsPage Integration Tests', () => {
       component.ngOnInit();
       tick();
 
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
 
       expect(mockToastController.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -484,8 +478,6 @@ describe('AppointmentsPage Integration Tests', () => {
           color: 'success',
         })
       );
-
-      flush();
     }));
 
     it('debe mostrar toast de error cuando estado cambia a DENIED', fakeAsync(() => {
@@ -501,8 +493,7 @@ describe('AppointmentsPage Integration Tests', () => {
       component.ngOnInit();
       tick();
 
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
 
       expect(mockToastController.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -510,8 +501,6 @@ describe('AppointmentsPage Integration Tests', () => {
           color: 'danger',
         })
       );
-
-      flush();
     }));
 
     it('debe mostrar toast cuando estado cambia a CREATED', fakeAsync(() => {
@@ -527,8 +516,7 @@ describe('AppointmentsPage Integration Tests', () => {
       component.ngOnInit();
       tick();
 
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
 
       expect(mockToastController.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -536,8 +524,6 @@ describe('AppointmentsPage Integration Tests', () => {
           color: 'success',
         })
       );
-
-      flush();
     }));
   });
 
@@ -551,8 +537,7 @@ describe('AppointmentsPage Integration Tests', () => {
       tick();
 
       // Primer fallo
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'Queue',
@@ -561,16 +546,13 @@ describe('AppointmentsPage Integration Tests', () => {
       );
 
       // Segundo fallo
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'Queue',
         'Polling error',
         expect.objectContaining({ consecutiveFailures: 2 })
       );
-
-      flush();
     }));
 
     it('debe mostrar warning después de 3 fallos consecutivos de polling', fakeAsync(() => {
@@ -582,12 +564,9 @@ describe('AppointmentsPage Integration Tests', () => {
       tick();
 
       // 3 fallos consecutivos
-      vi.advanceTimersByTime(15000);
-      tick();
-      vi.advanceTimersByTime(15000);
-      tick();
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
+      tick(15000);
+      tick(15000);
 
       expect(mockToastController.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -595,8 +574,6 @@ describe('AppointmentsPage Integration Tests', () => {
           color: 'warning',
         })
       );
-
-      flush();
     }));
 
     it('debe resetear contador de fallos después de un polling exitoso', fakeAsync(() => {
@@ -615,14 +592,11 @@ describe('AppointmentsPage Integration Tests', () => {
       tick();
 
       // 2 fallos
-      vi.advanceTimersByTime(15000);
-      tick();
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
+      tick(15000);
 
       // Éxito → debe resetear contador
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
 
       // No debe haber warning (porque se reseteó el contador)
       expect(mockToastController.create).not.toHaveBeenCalledWith(
@@ -630,13 +604,11 @@ describe('AppointmentsPage Integration Tests', () => {
           color: 'warning',
         })
       );
-
-      flush();
     }));
   });
 
   describe('7. Expansión de citas pasadas', () => {
-    it('debe expandir citas pasadas y cargar resoluciones', fakeAsync(() => {
+    it('debe expandir citas pasadas y cargar resoluciones', async () => {
       const appointments = [
         createMockAppointment({ appointment_id: 300 }),
         createMockAppointment({ appointment_id: 200 }),
@@ -649,37 +621,33 @@ describe('AppointmentsPage Integration Tests', () => {
       );
 
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
       mockAppointmentService.appointments$.next(appointments);
-      tick();
+      await fixture.whenStable();
 
       expect(component.pastAppointmentsExpanded).toBe(false);
 
       component.togglePastAppointments();
-      tick();
+      await fixture.whenStable();
 
       expect(component.pastAppointmentsExpanded).toBe(true);
       expect(mockAppointmentService.getResolution).toHaveBeenCalled();
+    });
 
-      flush();
-    }));
-
-    it('debe contraer citas pasadas al hacer toggle nuevamente', fakeAsync(() => {
+    it('debe contraer citas pasadas al hacer toggle nuevamente', async () => {
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
 
       component.togglePastAppointments();
-      tick();
+      await fixture.whenStable();
       expect(component.pastAppointmentsExpanded).toBe(true);
 
       component.togglePastAppointments();
-      tick();
+      await fixture.whenStable();
       expect(component.pastAppointmentsExpanded).toBe(false);
+    });
 
-      flush();
-    }));
-
-    it('debe manejar citas pasadas sin resolución (404 esperado)', fakeAsync(() => {
+    it('debe manejar citas pasadas sin resolución (404 esperado)', async () => {
       const appointments = [
         createMockAppointment({ appointment_id: 100 }),
         createMockAppointment({ appointment_id: 200 }),
@@ -694,22 +662,20 @@ describe('AppointmentsPage Integration Tests', () => {
       );
 
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
       mockAppointmentService.appointments$.next(appointments);
-      tick();
+      await fixture.whenStable();
 
       component.togglePastAppointments();
-      tick();
+      await fixture.whenStable();
 
       expect(mockLogger.debug).toHaveBeenCalled();
       expect(component.resolutions.size).toBe(0);
-
-      flush();
-    }));
+    });
   });
 
   describe('8. Caché de resoluciones', () => {
-    it('debe cachear resoluciones y no volver a cargarlas', fakeAsync(() => {
+    it('debe cachear resoluciones y no volver a cargarlas', async () => {
       const appointments = [createMockAppointment({ appointment_id: 100 })];
 
       mockAppointmentService.getAppointments.mockReturnValue(of(appointments));
@@ -718,29 +684,27 @@ describe('AppointmentsPage Integration Tests', () => {
       );
 
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
       mockAppointmentService.appointments$.next(appointments);
-      tick();
+      await fixture.whenStable();
 
       // Primera expansión
       component.togglePastAppointments();
-      tick();
+      await fixture.whenStable();
 
       expect(mockAppointmentService.getResolution).toHaveBeenCalledTimes(1);
 
       // Contraer y expandir de nuevo
       component.togglePastAppointments();
-      tick();
+      await fixture.whenStable();
       component.togglePastAppointments();
-      tick();
+      await fixture.whenStable();
 
       // No debe cargar de nuevo (ya está en caché)
       expect(mockAppointmentService.getResolution).toHaveBeenCalledTimes(1);
+    });
 
-      flush();
-    }));
-
-    it('debe recuperar resolución desde caché con getResolution()', fakeAsync(() => {
+    it('debe recuperar resolución desde caché con getResolution()', () => {
       const resolution: AppointmentResolutionResponse = {
         appointment_id: 100,
         change_basal_type: 'Lantus',
@@ -755,7 +719,7 @@ describe('AppointmentsPage Integration Tests', () => {
 
       expect(cached).toEqual(resolution);
       expect(cached?.needed_physical_appointment).toBe(true);
-    }));
+    });
   });
 
   describe('9. Formateo de motivos y tipos de insulina', () => {
@@ -828,100 +792,85 @@ describe('AppointmentsPage Integration Tests', () => {
   });
 
   describe('11. Estado vacío cuando no hay citas', () => {
-    it('debe mostrar estado vacío cuando no hay citas', fakeAsync(() => {
+    it('debe mostrar estado vacío cuando no hay citas', async () => {
       mockAppointmentService.getAppointments.mockReturnValue(of([]));
 
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
 
       expect(component.appointments.length).toBe(0);
       expect(component.currentAppointment).toBeNull();
       expect(component.pastAppointments.length).toBe(0);
-
-      flush();
-    }));
+    });
   });
 
   describe('12. Estado de carga', () => {
-    it('debe mostrar loading=true mientras carga citas', fakeAsync(() => {
-      let resolvePromise: (value: Appointment[]) => void;
-      const loadingPromise = new Promise<Appointment[]>(resolve => {
-        resolvePromise = resolve;
-      });
-
+    it('debe mostrar loading=true mientras carga citas', async () => {
       mockAppointmentService.getAppointments.mockReturnValue(of([]));
 
-      component.loadAppointments();
+      const loadPromise = component.loadAppointments();
 
       expect(component.loading).toBe(true);
 
-      tick();
+      await loadPromise;
+      await fixture.whenStable();
 
       expect(component.loading).toBe(false);
+    });
 
-      flush();
-    }));
-
-    it('debe mostrar queueLoading=true mientras carga estado de cola', fakeAsync(() => {
-      component.ngOnInit();
+    it('debe mostrar queueLoading=true mientras carga estado de cola', async () => {
+      const loadPromise = component.loadQueueState();
 
       // Durante la inicialización, queueLoading debe ser true
       expect(component.queueLoading).toBe(true);
 
-      tick();
+      await loadPromise;
+      await fixture.whenStable();
 
       expect(component.queueLoading).toBe(false);
-
-      flush();
-    }));
+    });
   });
 
   describe('13. Manejo de errores', () => {
-    it('debe manejar error al cargar citas', fakeAsync(() => {
+    it('debe manejar error al cargar citas', async () => {
       mockAppointmentService.getAppointments.mockReturnValue(
         throwError(() => new Error('Network error'))
       );
 
-      component.loadAppointments();
-      tick();
+      await component.loadAppointments();
+      await fixture.whenStable();
 
       expect(component.error).toContain('Network error');
       expect(component.loading).toBe(false);
       expect(mockLogger.error).toHaveBeenCalled();
+    });
 
-      flush();
-    }));
-
-    it('debe manejar error al solicitar cita', fakeAsync(() => {
+    it('debe manejar error al solicitar cita', async () => {
       mockAppointmentService.requestAppointment.mockReturnValue(
         throwError(() => new Error('Queue full'))
       );
 
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
 
-      component.onRequestAppointment();
-      tick();
+      await component.onRequestAppointment();
+      await fixture.whenStable();
 
       expect(component.queueError).toContain('Queue full');
       expect(mockLogger.error).toHaveBeenCalled();
+    });
 
-      flush();
-    }));
-
-    it('debe manejar error al cargar estado de cola', fakeAsync(() => {
+    it('debe manejar error al cargar estado de cola', async () => {
       mockAppointmentService.getQueueState.mockReturnValue(
         throwError(() => new Error('Service unavailable'))
       );
 
-      component.loadQueueState();
-      tick();
+      await component.loadQueueState();
+      await fixture.whenStable();
 
       expect(component.queueError).toContain('Service unavailable');
       expect(mockLogger.error).toHaveBeenCalled();
-
-      flush();
-    }));
+    });
   });
 
   describe('14. Codificación de colores por estado', () => {
@@ -957,7 +906,7 @@ describe('AppointmentsPage Integration Tests', () => {
   });
 
   describe('15. Pull to refresh', () => {
-    it('debe recargar citas y estado de cola al hacer refresh', fakeAsync(() => {
+    it('debe recargar citas y estado de cola al hacer refresh', async () => {
       const mockRefresherEvent = {
         target: {
           complete: vi.fn(),
@@ -965,74 +914,64 @@ describe('AppointmentsPage Integration Tests', () => {
       } as unknown as CustomEvent;
 
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
 
       mockAppointmentService.getAppointments.mockClear();
       mockAppointmentService.getQueueState.mockClear();
 
-      component.doRefresh(mockRefresherEvent);
-      tick();
+      await component.doRefresh(mockRefresherEvent);
+      await fixture.whenStable();
 
       expect(mockAppointmentService.getAppointments).toHaveBeenCalled();
       expect(mockAppointmentService.getQueueState).toHaveBeenCalled();
       expect(mockRefresherEvent.target.complete).toHaveBeenCalled();
-
-      flush();
-    }));
+    });
   });
 
   describe('16. Getters canCreateAppointment y canRequestAppointment', () => {
-    it('canCreateAppointment debe ser true cuando estado es ACCEPTED', fakeAsync(() => {
+    it('canCreateAppointment debe ser true cuando estado es ACCEPTED', async () => {
       mockAppointmentService.getQueueState.mockReturnValue(
         of({ state: 'ACCEPTED' as AppointmentQueueState })
       );
 
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
 
       expect(component.canCreateAppointment).toBe(true);
+    });
 
-      flush();
-    }));
-
-    it('canCreateAppointment debe ser false para otros estados', fakeAsync(() => {
+    it('canCreateAppointment debe ser false para otros estados', async () => {
       mockAppointmentService.getQueueState.mockReturnValue(
         of({ state: 'PENDING' as AppointmentQueueState })
       );
 
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
 
       expect(component.canCreateAppointment).toBe(false);
+    });
 
-      flush();
-    }));
-
-    it('canRequestAppointment debe ser true cuando estado es NONE', fakeAsync(() => {
+    it('canRequestAppointment debe ser true cuando estado es NONE', async () => {
       mockAppointmentService.getQueueState.mockReturnValue(
         of({ state: 'NONE' as AppointmentQueueState })
       );
 
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
 
       expect(component.canRequestAppointment).toBe(true);
+    });
 
-      flush();
-    }));
-
-    it('canRequestAppointment debe ser false cuando estado es PENDING', fakeAsync(() => {
+    it('canRequestAppointment debe ser false cuando estado es PENDING', async () => {
       mockAppointmentService.getQueueState.mockReturnValue(
         of({ state: 'PENDING' as AppointmentQueueState })
       );
 
       component.ngOnInit();
-      tick();
+      await fixture.whenStable();
 
       expect(component.canRequestAppointment).toBe(false);
-
-      flush();
-    }));
+    });
   });
 
   describe('17. Limpieza en ngOnDestroy', () => {
@@ -1045,21 +984,17 @@ describe('AppointmentsPage Integration Tests', () => {
       tick();
 
       // Polling activo
-      vi.advanceTimersByTime(15000);
-      tick();
+      tick(15000);
       const callsBeforeDestroy = mockAppointmentService.getQueueState.mock.calls.length;
 
       component.ngOnDestroy();
       tick();
 
       // Avanzar tiempo después de destroy
-      vi.advanceTimersByTime(30000);
-      tick();
+      tick(30000);
 
       // No debe haber más llamadas
       expect(mockAppointmentService.getQueueState).toHaveBeenCalledTimes(callsBeforeDestroy);
-
-      flush();
     }));
   });
 });

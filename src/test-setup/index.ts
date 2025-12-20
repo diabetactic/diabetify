@@ -260,6 +260,268 @@ vi.mock('@capacitor/app', () => ({
   },
 }));
 
+// Mock lucide-angular - MUST be here for proper hoisting
+// Includes all 49 icons used in src/app/shared/icons/lucide-icons.ts
+vi.mock('lucide-angular', async () => {
+  const { NgModule, Component } = await import('@angular/core');
+
+  // Create a mock icon object
+  const mockIcon = { name: 'mock-icon', data: [] };
+
+  // Create a minimal mock component for lucide-icon
+  @Component({
+    selector: 'lucide-icon',
+    template: '',
+    standalone: true,
+  })
+  class MockLucideIconComponent {}
+
+  // Create a proper NgModule mock that can be used directly in imports
+  // and also has a static pick() method
+  @NgModule({
+    imports: [MockLucideIconComponent],
+    exports: [MockLucideIconComponent],
+  })
+  class MockLucideAngularModule {
+    static pick(_icons: Record<string, unknown>) {
+      return {
+        ngModule: MockLucideAngularModule,
+        providers: [],
+      };
+    }
+  }
+
+  return {
+    LucideAngularModule: MockLucideAngularModule,
+    LucideIconComponent: MockLucideIconComponent,
+    icons: {},
+    // All icons from lucide-icons.ts
+    Activity: mockIcon,
+    AlertCircle: mockIcon,
+    AlertTriangle: mockIcon,
+    Apple: mockIcon,
+    ArrowLeft: mockIcon,
+    ArrowUp: mockIcon,
+    Award: mockIcon,
+    Bell: mockIcon,
+    Bug: mockIcon,
+    Calendar: mockIcon,
+    CalendarCheck: mockIcon,
+    CalendarPlus: mockIcon,
+    Check: mockIcon,
+    CheckCircle: mockIcon,
+    ChevronDown: mockIcon,
+    ChevronRight: mockIcon,
+    Clock: mockIcon,
+    ClipboardList: mockIcon,
+    Cloud: mockIcon,
+    Contrast: mockIcon,
+    Droplet: mockIcon,
+    Dumbbell: mockIcon,
+    FilePlus: mockIcon,
+    FileText: mockIcon,
+    Filter: mockIcon,
+    Flame: mockIcon,
+    Footprints: mockIcon,
+    Heart: mockIcon,
+    Info: mockIcon,
+    Languages: mockIcon,
+    Lightbulb: mockIcon,
+    Loader: mockIcon,
+    LoaderCircle: mockIcon,
+    Lock: mockIcon,
+    LogOut: mockIcon,
+    MessageSquare: mockIcon,
+    Minus: mockIcon,
+    Moon: mockIcon,
+    Pill: mockIcon,
+    Plus: mockIcon,
+    RefreshCw: mockIcon,
+    Send: mockIcon,
+    Settings: mockIcon,
+    ShieldCheck: mockIcon,
+    Smartphone: mockIcon,
+    Smile: mockIcon,
+    Stethoscope: mockIcon,
+    Syringe: mockIcon,
+    Trash2: mockIcon,
+    TrendingUp: mockIcon,
+    Trophy: mockIcon,
+    Users: mockIcon,
+    UtensilsCrossed: mockIcon,
+    UserPlus: mockIcon,
+    Wifi: mockIcon,
+    X: mockIcon,
+    // Additional common icons that might be used
+    ChevronUp: mockIcon,
+    ChevronLeft: mockIcon,
+    Search: mockIcon,
+    Menu: mockIcon,
+    User: mockIcon,
+    TrendingDown: mockIcon,
+    Edit: mockIcon,
+    Trash: mockIcon,
+    Save: mockIcon,
+  };
+});
+
+// Mock @ngx-translate/core - MUST be here for proper hoisting
+vi.mock('@ngx-translate/core', async () => {
+  const { BehaviorSubject, of } = await import('rxjs');
+
+  class MockTranslateService {
+    currentLang = 'es';
+    defaultLang = 'es';
+    onLangChange = new BehaviorSubject({ lang: 'es', translations: {} });
+    onTranslationChange = new BehaviorSubject({ lang: 'es', translations: {} });
+    onDefaultLangChange = new BehaviorSubject({ lang: 'es', translations: {} });
+
+    private langs = ['es', 'en'];
+    private translations: Record<string, any> = {};
+
+    get(key: string | string[], interpolateParams?: any) {
+      if (Array.isArray(key)) {
+        const result: Record<string, string> = {};
+        key.forEach(k => {
+          result[k] = this.instant(k, interpolateParams);
+        });
+        return of(result);
+      }
+      return of(this.instant(key, interpolateParams));
+    }
+
+    instant(key: string | string[], interpolateParams?: any): any {
+      if (Array.isArray(key)) {
+        const result: Record<string, string> = {};
+        key.forEach(k => {
+          result[k] = this.processTranslation(k, interpolateParams);
+        });
+        return result;
+      }
+      return this.processTranslation(key, interpolateParams);
+    }
+
+    stream(key: string | string[], interpolateParams?: any) {
+      return this.get(key, interpolateParams);
+    }
+
+    use(lang: string) {
+      this.currentLang = lang;
+      this.onLangChange.next({ lang, translations: this.translations[lang] || {} });
+      return of(this.translations[lang] || {});
+    }
+
+    setDefaultLang(lang: string): void {
+      this.defaultLang = lang;
+      this.onDefaultLangChange.next({ lang, translations: this.translations[lang] || {} });
+    }
+
+    addLangs(langs: string[]): void {
+      this.langs = [...new Set([...this.langs, ...langs])];
+    }
+
+    getLangs(): string[] {
+      return this.langs;
+    }
+
+    getBrowserLang(): string {
+      return 'es';
+    }
+
+    getBrowserCultureLang(): string {
+      return 'es-ES';
+    }
+
+    setTranslation(lang: string, translations: any, shouldMerge = false): void {
+      if (shouldMerge && this.translations[lang]) {
+        this.translations[lang] = { ...this.translations[lang], ...translations };
+      } else {
+        this.translations[lang] = translations;
+      }
+      this.onTranslationChange.next({ lang, translations: this.translations[lang] });
+    }
+
+    getTranslation(lang: string) {
+      return of(this.translations[lang] || {});
+    }
+
+    reloadLang(lang: string) {
+      return of(this.translations[lang] || {});
+    }
+
+    resetLang(lang: string): void {
+      this.translations[lang] = {};
+    }
+
+    private processTranslation(key: string, interpolateParams?: any): string {
+      let translation = this.translations[this.currentLang]?.[key] || key;
+
+      if (interpolateParams && typeof translation === 'string') {
+        Object.keys(interpolateParams).forEach(param => {
+          translation = translation.replace(
+            new RegExp(`{{\\s*${param}\\s*}}`, 'g'),
+            interpolateParams[param]
+          );
+        });
+      }
+
+      return translation;
+    }
+  }
+
+  const { Pipe, NgModule, inject } = await import('@angular/core');
+
+  // Mock TranslatePipe
+  @Pipe({
+    name: 'translate',
+    standalone: true,
+    pure: false,
+  })
+  class MockTranslatePipe {
+    private translateService = inject(MockTranslateService);
+
+    transform(value: string): string {
+      return this.translateService.instant(value);
+    }
+  }
+
+  // Mock TranslateModule
+  @NgModule({
+    imports: [MockTranslatePipe],
+    exports: [MockTranslatePipe],
+    providers: [MockTranslateService],
+  })
+  class MockTranslateModule {
+    static forRoot(_config?: any) {
+      return {
+        ngModule: MockTranslateModule,
+        providers: [
+          { provide: MockTranslateService, useClass: MockTranslateService },
+          { provide: 'TranslateService', useClass: MockTranslateService },
+        ],
+      };
+    }
+
+    static forChild(_config?: any) {
+      return MockTranslateModule.forRoot(_config);
+    }
+  }
+
+  // Mock TranslateLoader
+  class MockTranslateLoader {
+    getTranslation(lang: string) {
+      return of({});
+    }
+  }
+
+  return {
+    TranslateService: MockTranslateService,
+    TranslatePipe: MockTranslatePipe,
+    TranslateModule: MockTranslateModule,
+    TranslateLoader: MockTranslateLoader,
+  };
+});
+
 // ============================================================================
 // 1. POLYFILLS (deben cargarse primero)
 // ============================================================================
@@ -276,6 +538,11 @@ import {
   jasmineMatchers,
   expectAsync,
   createSpyOn,
+  MockTranslateService,
+  MockTranslatePipe,
+  MockTranslateModule,
+  MockTranslateLoader,
+  provideTranslateServiceMock,
 } from './mocks/angular.mock';
 
 // Mock IndexedDB para Dexie
@@ -349,6 +616,15 @@ console.warn = (...args: unknown[]) => {
 
 export * from './mocks/angular.mock';
 export * from './helpers/async.helper';
+
+// Re-export para fácil acceso
+export {
+  MockTranslateService,
+  MockTranslatePipe,
+  MockTranslateModule,
+  MockTranslateLoader,
+  provideTranslateServiceMock,
+};
 
 // ============================================================================
 // DECLARACIONES TYPESCRIPT GLOBALES

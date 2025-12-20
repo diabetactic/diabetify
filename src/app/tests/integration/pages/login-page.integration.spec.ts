@@ -20,7 +20,7 @@ import '../../../../test-setup';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { FormBuilder } from '@angular/forms';
-import { of, throwError, BehaviorSubject } from 'rxjs';
+import { of, throwError, BehaviorSubject, firstValueFrom } from 'rxjs';
 import { vi, type Mock } from 'vitest';
 import { LoginPage } from '../../../login/login.page';
 import { LocalAuthService, LocalUser, AccountState } from '@core/services/local-auth.service';
@@ -32,19 +32,7 @@ import { ROUTES } from '@core/constants';
 import { Preferences } from '@capacitor/preferences';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { Component, Input, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-
-// Mock AppIconComponent to avoid lucide-angular icon provider issues
-@Component({
-  selector: 'app-icon',
-  standalone: true,
-  template: '<span>{{ name }}</span>',
-})
-class MockAppIconComponent {
-  @Input() name = '';
-  @Input() size: string = 'md';
-  @Input() class: string = '';
-}
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('LoginPage Integration Tests', () => {
   let component: LoginPage;
@@ -68,9 +56,6 @@ describe('LoginPage Integration Tests', () => {
   };
   let mockAlertCtrl: {
     create: Mock;
-  };
-  let mockTranslateService: {
-    instant: Mock;
   };
   let mockLoggerService: {
     info: Mock;
@@ -179,20 +164,6 @@ describe('LoginPage Integration Tests', () => {
       'common.support': 'Soporte',
     };
 
-    mockTranslateService = {
-      instant: vi.fn((key: string) => translations[key] || key),
-      get: vi.fn((key: string) => of(translations[key] || key)),
-      use: vi.fn().mockReturnValue(of({})),
-      setDefaultLang: vi.fn(),
-      addLangs: vi.fn(),
-      getBrowserLang: vi.fn().mockReturnValue('es'),
-      currentLang: 'es',
-      defaultLang: 'es',
-      onLangChange: new BehaviorSubject({ lang: 'es', translations: {} }),
-      onTranslationChange: new BehaviorSubject({ lang: 'es', translations: {} }),
-      onDefaultLangChange: new BehaviorSubject({ lang: 'es', translations: {} }),
-    };
-
     mockLoggerService = {
       info: vi.fn(),
       debug: vi.fn(),
@@ -218,7 +189,7 @@ describe('LoginPage Integration Tests', () => {
     });
 
     await TestBed.configureTestingModule({
-      imports: [LoginPage, TranslateModule.forRoot(), MockAppIconComponent],
+      imports: [LoginPage, TranslateModule.forRoot()],
       providers: [
         FormBuilder,
         provideHttpClient(),
@@ -231,33 +202,20 @@ describe('LoginPage Integration Tests', () => {
         { provide: AlertController, useValue: mockAlertCtrl },
         { provide: LoggerService, useValue: mockLoggerService },
       ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    })
-      .overrideComponent(LoginPage, {
-        remove: {
-          imports: [],
-        },
-        add: {
-          imports: [MockAppIconComponent],
-        },
-      })
-      .compileComponents();
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
 
-    // Get TranslateService and configure it
+    // Configure real TranslateService with translations
     const translateService = TestBed.inject(TranslateService);
     translateService.setDefaultLang('es');
-    translateService.use('es');
-
-    // Add translations
-    translateService.setTranslation('es', translations);
-
-    // Wrap instant method with spy for assertions
-    mockTranslateService = translateService as any;
-    mockTranslateService.instant = vi.fn(mockTranslateService.instant.bind(translateService));
+    translateService.setTranslation('es', translations, true); // shouldMerge = true
+    await firstValueFrom(translateService.use('es'));
 
     fixture = TestBed.createComponent(LoginPage);
     component = fixture.componentInstance;
+
     fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   afterEach(() => {
@@ -290,9 +248,8 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT: Submit login form
       await component.onSubmit();
-
-      // Wait for async operations
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // ASSERT: Login service called
       expect(mockLocalAuthService.login).toHaveBeenCalledWith('1000', 'tuvieja', false);
@@ -342,9 +299,8 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT: Submit login form
       await component.onSubmit();
-
-      // Wait for async operations
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // ASSERT: Profile created
       expect(mockProfileService.createProfile).toHaveBeenCalledWith(
@@ -381,9 +337,8 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT: Submit login form
       await component.onSubmit();
-
-      // Wait for async operations
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // ASSERT: Error alert shown
       expect(mockAlertCtrl.create).toHaveBeenCalledWith({
@@ -414,9 +369,8 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT: Submit login form
       await component.onSubmit();
-
-      // Wait for async operations
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // ASSERT: Error alert shown with invalid credentials message
       expect(mockAlertCtrl.create).toHaveBeenCalledWith({
@@ -441,7 +395,8 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT: Submit login form
       await component.onSubmit();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // ASSERT: Timeout alert shown
       expect(mockAlertCtrl.create).toHaveBeenCalledWith({
@@ -466,9 +421,8 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT: Submit login form
       await component.onSubmit();
-
-      // Wait for async operations
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // ASSERT: Connection error message shown
       expect(mockAlertCtrl.create).toHaveBeenCalledWith({
@@ -490,6 +444,7 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT: Submit form
       component.onSubmit();
+      fixture.detectChanges();
 
       // ASSERT: Form is invalid
       expect(component.loginForm.invalid).toBe(true);
@@ -515,6 +470,7 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT
       component.onSubmit();
+      fixture.detectChanges();
 
       // ASSERT
       expect(component.loginForm.invalid).toBe(true);
@@ -536,6 +492,7 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT
       component.onSubmit();
+      fixture.detectChanges();
 
       // ASSERT
       expect(component.loginForm.invalid).toBe(true);
@@ -556,6 +513,7 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT
       component.onSubmit();
+      fixture.detectChanges();
 
       // ASSERT
       expect(component.loginForm.invalid).toBe(true);
@@ -620,7 +578,8 @@ describe('LoginPage Integration Tests', () => {
 
       // Wait for completion
       await submitPromise;
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await fixture.whenStable();
+      fixture.detectChanges();
     });
   });
 
@@ -642,7 +601,8 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT
       await component.onSubmit();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // ASSERT: Password cleared
       expect(component.loginForm.value.password).toBe('');
@@ -670,7 +630,8 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT
       await component.onSubmit();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // ASSERT: rememberMe passed as true
       expect(mockLocalAuthService.login).toHaveBeenCalledWith('1000', 'tuvieja', true);
@@ -693,7 +654,8 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT
       await component.onSubmit();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // ASSERT: rememberMe passed as false
       expect(mockLocalAuthService.login).toHaveBeenCalledWith('1000', 'tuvieja', false);
@@ -711,14 +673,12 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT
       component.onSubmit();
+      fixture.detectChanges();
 
-      // ASSERT: Translation service called
-      expect(mockTranslateService.instant).toHaveBeenCalledWith(
-        'login.validation.usernameRequired'
-      );
-      expect(mockTranslateService.instant).toHaveBeenCalledWith(
-        'login.validation.passwordMinLength'
-      );
+      // ASSERT: Translation service returns translated strings
+      const translateService = TestBed.inject(TranslateService);
+      expect(translateService.instant('login.validation.usernameRequired')).toBe('Usuario requerido');
+      expect(translateService.instant('login.validation.passwordMinLength')).toBe('Mínimo 6 caracteres');
     });
 
     it('should use translated messages for server errors', async () => {
@@ -741,8 +701,9 @@ describe('LoginPage Integration Tests', () => {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // ASSERT: Error messages translated
-      expect(mockTranslateService.instant).toHaveBeenCalledWith('login.messages.loginError');
-      expect(mockTranslateService.instant).toHaveBeenCalledWith('login.messages.loggingIn');
+      const translateService = TestBed.inject(TranslateService);
+      expect(translateService.instant('login.messages.loginError')).toBe('Error de inicio de sesión');
+      expect(translateService.instant('login.messages.loggingIn')).toBe('Iniciando sesión...');
     });
   });
 
@@ -813,7 +774,8 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT
       await component.onSubmit();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // ASSERT: Loading created and presented
       expect(mockLoadingCtrl.create).toHaveBeenCalledWith({
@@ -855,7 +817,8 @@ describe('LoginPage Integration Tests', () => {
       expect(component.isLoading).toBe(true);
 
       await submitPromise;
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // Loading flag cleared (in error or success path)
       // Note: isLoading is managed in catch/finally blocks
@@ -956,7 +919,8 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT: Submit - should continue even if profile creation fails
       await component.onSubmit();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // ASSERT: Still navigates to dashboard (graceful failure)
       expect(mockRouter.navigate).toHaveBeenCalledWith([ROUTES.TABS_DASHBOARD], {
@@ -993,7 +957,8 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT
       await component.onSubmit();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // ASSERT: Profile updated with new email
       expect(mockProfileService.updateProfile).toHaveBeenCalledWith({
@@ -1010,8 +975,8 @@ describe('LoginPage Integration Tests', () => {
       // ACT: Initialize component
       component.ngOnInit();
 
-      // Wait for subscription to process
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // ASSERT: Navigate to dashboard
       expect(mockRouter.navigate).toHaveBeenCalledWith([ROUTES.TABS_DASHBOARD], {
@@ -1026,7 +991,8 @@ describe('LoginPage Integration Tests', () => {
 
       // ACT
       component.ngOnInit();
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       // ASSERT: No navigation (already on correct route)
       expect(mockRouter.navigate).not.toHaveBeenCalled();

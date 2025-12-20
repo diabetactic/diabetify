@@ -6,7 +6,8 @@ import { vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
-import { forwardRef, Directive } from '@angular/core';
+import { forwardRef, Directive, NgModule, Pipe, PipeTransform } from '@angular/core';
+import { BehaviorSubject, of, Observable } from 'rxjs';
 
 // ============================================================================
 // Inicialización de Angular TestBed
@@ -332,3 +333,184 @@ export const createSpyOn = () => {
     return spy;
   };
 };
+
+// ============================================================================
+// Mock TranslateService para @ngx-translate/core
+// ============================================================================
+
+export interface LangChangeEvent {
+  lang: string;
+  translations: any;
+}
+
+export interface TranslationChangeEvent {
+  lang: string;
+  translations: any;
+}
+
+export interface DefaultLangChangeEvent {
+  lang: string;
+  translations: any;
+}
+
+export class MockTranslateService {
+  currentLang = 'es';
+  defaultLang = 'es';
+  onLangChange = new BehaviorSubject<LangChangeEvent>({ lang: 'es', translations: {} });
+  onTranslationChange = new BehaviorSubject<TranslationChangeEvent>({
+    lang: 'es',
+    translations: {},
+  });
+  onDefaultLangChange = new BehaviorSubject<DefaultLangChangeEvent>({
+    lang: 'es',
+    translations: {},
+  });
+
+  private langs: string[] = ['es', 'en'];
+  private translations: Record<string, any> = {};
+
+  get(key: string | string[], interpolateParams?: any): Observable<any> {
+    if (Array.isArray(key)) {
+      const result: Record<string, string> = {};
+      key.forEach(k => {
+        result[k] = this.instant(k, interpolateParams);
+      });
+      return of(result);
+    }
+    return of(this.instant(key, interpolateParams));
+  }
+
+  instant(key: string | string[], interpolateParams?: any): any {
+    if (Array.isArray(key)) {
+      const result: Record<string, string> = {};
+      key.forEach(k => {
+        result[k] = this.processTranslation(k, interpolateParams);
+      });
+      return result;
+    }
+    return this.processTranslation(key, interpolateParams);
+  }
+
+  stream(key: string | string[], interpolateParams?: any): Observable<any> {
+    return this.get(key, interpolateParams);
+  }
+
+  use(lang: string): Observable<any> {
+    this.currentLang = lang;
+    this.onLangChange.next({ lang, translations: this.translations[lang] || {} });
+    return of(this.translations[lang] || {});
+  }
+
+  setDefaultLang(lang: string): void {
+    this.defaultLang = lang;
+    this.onDefaultLangChange.next({ lang, translations: this.translations[lang] || {} });
+  }
+
+  addLangs(langs: string[]): void {
+    this.langs = [...new Set([...this.langs, ...langs])];
+  }
+
+  getLangs(): string[] {
+    return this.langs;
+  }
+
+  getBrowserLang(): string {
+    return 'es';
+  }
+
+  getBrowserCultureLang(): string {
+    return 'es-ES';
+  }
+
+  setTranslation(lang: string, translations: any, shouldMerge = false): void {
+    if (shouldMerge && this.translations[lang]) {
+      this.translations[lang] = { ...this.translations[lang], ...translations };
+    } else {
+      this.translations[lang] = translations;
+    }
+    this.onTranslationChange.next({ lang, translations: this.translations[lang] });
+  }
+
+  getTranslation(lang: string): Observable<any> {
+    return of(this.translations[lang] || {});
+  }
+
+  reloadLang(lang: string): Observable<any> {
+    return of(this.translations[lang] || {});
+  }
+
+  resetLang(lang: string): void {
+    this.translations[lang] = {};
+  }
+
+  private processTranslation(key: string, interpolateParams?: any): string {
+    let translation = this.translations[this.currentLang]?.[key] || key;
+
+    if (interpolateParams && typeof translation === 'string') {
+      Object.keys(interpolateParams).forEach(param => {
+        translation = translation.replace(
+          new RegExp(`{{\\s*${param}\\s*}}`, 'g'),
+          interpolateParams[param]
+        );
+      });
+    }
+
+    return translation;
+  }
+}
+
+/**
+ * Mock TranslatePipe para pruebas
+ */
+@Pipe({
+  name: 'translate',
+  standalone: true,
+  pure: false,
+})
+export class MockTranslatePipe implements PipeTransform {
+  transform(value: string): string {
+    return value;
+  }
+}
+
+/**
+ * Mock TranslateLoader para pruebas
+ */
+export class MockTranslateLoader {
+  getTranslation(_lang: string): Observable<any> {
+    return of({});
+  }
+}
+
+/**
+ * Provider para MockTranslateService
+ * Usa un InjectionToken compatible con @ngx-translate/core
+ */
+export function provideTranslateServiceMock() {
+  return MockTranslateService;
+}
+
+/**
+ * Mock TranslateModule para importar en pruebas
+ * Compatible con la estructura de @ngx-translate/core
+ */
+@NgModule({
+  imports: [MockTranslatePipe],
+  exports: [MockTranslatePipe],
+  providers: [MockTranslateService],
+})
+export class MockTranslateModule {
+  static forRoot(_config?: any) {
+    return {
+      ngModule: MockTranslateModule,
+      providers: [MockTranslateService],
+    };
+  }
+
+  static forChild(_config?: any) {
+    return {
+      ngModule: MockTranslateModule,
+      providers: [MockTranslateService],
+    };
+  }
+}

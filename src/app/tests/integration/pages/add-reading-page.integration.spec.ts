@@ -23,10 +23,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NavController, ToastController } from '@ionic/angular';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule, TranslateService, TranslateLoader } from '@ngx-translate/core';
 import { of, throwError, BehaviorSubject } from 'rxjs';
 import { vi, type Mock } from 'vitest';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NO_ERRORS_SCHEMA, EventEmitter } from '@angular/core';
 
 import { AddReadingPage } from '../../../add-reading/add-reading.page';
 import { ReadingsService } from '../../../core/services/readings.service';
@@ -35,6 +35,15 @@ import { LoggerService } from '../../../core/services/logger.service';
 import { SMBGReading, GlucoseUnit } from '../../../core/models/glucose-reading.model';
 import { UserProfile } from '../../../core/models/user-profile.model';
 import { flushPromises } from '../../../../test-setup/helpers/async.helper';
+import { getLucideIconsForTesting } from '../../helpers/icon-test.helper';
+
+// Mock TranslateLoader para TranslateModule
+class MockTranslateLoader implements TranslateLoader {
+  getTranslation() {
+    return of({});
+  }
+}
+
 
 describe('AddReadingPage Integration Tests', () => {
   let component: AddReadingPage;
@@ -51,11 +60,7 @@ describe('AddReadingPage Integration Tests', () => {
   let mockToastController: {
     create: Mock;
   };
-  let mockTranslate: {
-    instant: Mock;
-    use: Mock;
-    setDefaultLang: Mock;
-  };
+  let mockTranslate: Partial<TranslateService>;
   let mockLogger: {
     info: Mock;
     debug: Mock;
@@ -107,31 +112,52 @@ describe('AddReadingPage Integration Tests', () => {
       create: vi.fn().mockResolvedValue(mockToast),
     };
 
+    // Mock completo de TranslateService compatible con TranslatePipe
+    // La función debe retornar traducciones basadas en la clave
+    const instantFn = (key: string | string[], params?: any): any => {
+      // Si es un array, traducir cada elemento
+      if (Array.isArray(key)) {
+        return key.reduce((acc, k) => {
+          acc[k] = instantFn(k, params);
+          return acc;
+        }, {} as Record<string, string>);
+      }
+
+      // Simular traducciones para strings individuales
+      const translations: Record<string, (params?: any) => string> = {
+        'addReading.toast.success': () => 'Lectura guardada correctamente',
+        'addReading.toast.error': (p) => `Error: ${p?.message || 'Error desconocido'}`,
+        'addReading.validation.required': () => 'Campo requerido',
+        'addReading.validation.minValue': (p) => `Valor mínimo: ${p?.value} ${p?.unit}`,
+        'addReading.validation.maxValue': (p) => `Valor máximo: ${p?.value} ${p?.unit}`,
+        'glucose.status.veryLow': () => 'Muy bajo',
+        'glucose.status.low': () => 'Bajo',
+        'glucose.status.normal': () => 'Normal',
+        'glucose.status.high': () => 'Alto',
+        'glucose.status.veryHigh': () => 'Muy alto',
+      };
+
+      const translator = translations[key];
+      return translator ? translator(params) : key;
+    };
+
     mockTranslate = {
-      instant: vi.fn((key: string, params?: any) => {
-        // Simular traducciones
-        if (key === 'addReading.toast.success') return 'Lectura guardada correctamente';
-        if (key === 'addReading.toast.error')
-          return `Error: ${params?.message || 'Error desconocido'}`;
-        if (key === 'addReading.validation.required') return 'Campo requerido';
-        if (key === 'addReading.validation.minValue')
-          return `Valor mínimo: ${params?.value} ${params?.unit}`;
-        if (key === 'addReading.validation.maxValue')
-          return `Valor máximo: ${params?.value} ${params?.unit}`;
-        if (key === 'glucose.status.veryLow') return 'Muy bajo';
-        if (key === 'glucose.status.low') return 'Bajo';
-        if (key === 'glucose.status.normal') return 'Normal';
-        if (key === 'glucose.status.high') return 'Alto';
-        if (key === 'glucose.status.veryHigh') return 'Muy alto';
-        return key;
-      }),
-      get: vi.fn((key: string, params?: any) => {
-        // Simular el mismo comportamiento que instant pero como Observable
-        const translation = mockTranslate.instant(key, params);
-        return of(translation);
-      }),
-      use: vi.fn(),
+      currentLang: 'es',
+      defaultLang: 'es',
+      onLangChange: new EventEmitter(),
+      onTranslationChange: new EventEmitter(),
+      onDefaultLangChange: new EventEmitter(),
+      instant: vi.fn(instantFn) as any,
+      get: vi.fn((key: string, params?: any) => of(instantFn(key, params))),
+      stream: vi.fn((key: string, params?: any) => of(instantFn(key, params))),
+      use: vi.fn(() => of({})),
       setDefaultLang: vi.fn(),
+      addLangs: vi.fn(),
+      getLangs: vi.fn(() => ['en', 'es']),
+      getBrowserLang: vi.fn(() => 'es'),
+      getDefaultLang: vi.fn(() => 'es'),
+      setTranslation: vi.fn(),
+      getTranslation: vi.fn(() => of({})),
     };
 
     mockLogger = {
@@ -143,7 +169,14 @@ describe('AddReadingPage Integration Tests', () => {
 
     // Configurar TestBed
     await TestBed.configureTestingModule({
-      imports: [AddReadingPage, ReactiveFormsModule, TranslateModule.forRoot()],
+      imports: [
+        AddReadingPage,
+        ReactiveFormsModule,
+        TranslateModule.forRoot({
+          loader: { provide: TranslateLoader, useClass: MockTranslateLoader },
+        }),
+        getLucideIconsForTesting(),
+      ],
       providers: [
         { provide: ReadingsService, useValue: mockReadingsService },
         { provide: ProfileService, useValue: mockProfileService },
@@ -153,11 +186,14 @@ describe('AddReadingPage Integration Tests', () => {
         { provide: TranslateService, useValue: mockTranslate },
         { provide: LoggerService, useValue: mockLogger },
       ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AddReadingPage);
     component = fixture.componentInstance;
+
+    // Asegurar que el componente use nuestro mock de translate
+    (component as any).translate = mockTranslate;
   });
 
   afterEach(() => {

@@ -15,8 +15,9 @@
 import '../../../../test-setup';
 
 import { TestBed, ComponentFixture, NO_ERRORS_SCHEMA } from '@angular/core/testing';
+import { Pipe, PipeTransform } from '@angular/core';
 import { Router } from '@angular/router';
-import { of, throwError, Subject } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { vi, Mock } from 'vitest';
 import { AchievementsPage } from '../../../achievements/achievements.page';
 import { AchievementsService } from '@services/achievements.service';
@@ -24,7 +25,15 @@ import { TranslationService } from '@services/translation.service';
 import { Achievement, StreakData } from '@models/achievements.model';
 import { ApiGatewayService } from '@services/api-gateway.service';
 import { LoggerService } from '@services/logger.service';
-import { TranslateModule, TranslateService, TranslateLoader } from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
+
+// Mock TranslatePipe
+@Pipe({ name: 'translate', standalone: true })
+class MockTranslatePipe implements PipeTransform {
+  transform(value: string): string {
+    return value;
+  }
+}
 
 describe('AchievementsPage Integration Tests', () => {
   let component: AchievementsPage;
@@ -93,11 +102,6 @@ describe('AchievementsPage Integration Tests', () => {
       currentLang: 'es',
     };
 
-    // Mock TranslateLoader para ngx-translate
-    const mockTranslateLoader = {
-      getTranslation: vi.fn().mockReturnValue(of({})),
-    };
-
     // Mock TranslateService para ngx-translate
     const onLangChange$ = new Subject();
     const onTranslationChange$ = new Subject();
@@ -125,12 +129,7 @@ describe('AchievementsPage Integration Tests', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [
-        AchievementsPage,
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useValue: mockTranslateLoader },
-        }),
-      ],
+      imports: [AchievementsPage, MockTranslatePipe],
       schemas: [NO_ERRORS_SCHEMA],
       providers: [
         AchievementsService,
@@ -155,19 +154,28 @@ describe('AchievementsPage Integration Tests', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(AchievementsPage);
-    component = fixture.componentInstance;
     achievementsService = TestBed.inject(AchievementsService);
 
-    // Spy en el servicio de achievements
+    // Spy en el servicio de achievements ANTES de crear el componente
     vi.spyOn(achievementsService, 'fetchAll').mockResolvedValue({
       streak: mockStreakData,
       achievements: mockAchievements,
     });
+
+    fixture = TestBed.createComponent(AchievementsPage);
+    component = fixture.componentInstance;
+
+    // Prevenir la llamada automática de ngOnInit
+    vi.spyOn(component, 'ngOnInit').mockImplementation(() => {});
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+    if (fixture) {
+      fixture.destroy();
+    }
+    // Reset TestBed to prevent state pollution between tests
+    TestBed.resetTestingModule();
   });
 
   describe('1. Load achievements with earned status', () => {
@@ -175,6 +183,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.achievements).toHaveLength(5);
@@ -193,6 +202,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       const earnedCount = component.getEarnedCount();
@@ -209,6 +219,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.streak).toEqual(mockStreakData);
@@ -221,6 +232,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.dailyMeasurements).toBe(2);
@@ -233,6 +245,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       // Achievement 1: 1/1 = 100%
@@ -267,6 +280,7 @@ describe('AchievementsPage Integration Tests', () => {
       await component.loadData();
       component.achievements.push(overAchievement);
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ACT & ASSERT
       expect(component.getAchievementProgress(overAchievement)).toBe(100);
@@ -278,6 +292,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       const earnedAchievement = component.achievements[0];
@@ -288,6 +303,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       // times_measured achievement
@@ -301,6 +317,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       const earnedAchievement = component.achievements[0];
@@ -311,6 +328,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       // 50% progress -> blue
@@ -330,6 +348,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       // Earned achievement -> success
@@ -363,6 +382,7 @@ describe('AchievementsPage Integration Tests', () => {
 
       // ACT
       await component.handleRefresh(mockRefresherEvent);
+      await fixture.whenStable();
 
       // ASSERT
       expect(achievementsService.fetchAll).toHaveBeenCalledWith(true); // forceRefresh = true
@@ -381,6 +401,7 @@ describe('AchievementsPage Integration Tests', () => {
 
       // ACT
       await component.handleRefresh(mockRefresherEvent);
+      await fixture.whenStable();
 
       // ASSERT
       expect(mockRefresherEvent.target.complete).toHaveBeenCalled();
@@ -403,6 +424,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.getStreakFireIcon()).toBe('flame');
@@ -423,6 +445,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.getStreakFireIcon()).toBe('flame');
@@ -443,6 +466,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.getStreakFireIcon()).toBe('flame-outline');
@@ -463,6 +487,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.getStreakFireIcon()).toBe('flame-outline');
@@ -475,6 +500,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       // 2 measurements out of 4 = 50%
@@ -495,6 +521,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.getDailyProgress()).toBe(0);
@@ -514,6 +541,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.getDailyProgress()).toBe(100);
@@ -533,6 +561,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.getDailyProgress()).toBe(125); // Component doesn't cap, so it shows 125%
@@ -544,6 +573,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.getEarnedCount()).toBe(1);
@@ -564,6 +594,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.getEarnedCount()).toBe(0);
@@ -584,6 +615,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.getEarnedCount()).toBe(5);
@@ -612,6 +644,7 @@ describe('AchievementsPage Integration Tests', () => {
         achievements: mockAchievements,
       });
       await loadPromise;
+      await fixture.whenStable();
 
       // ASSERT - Loading state should be false
       expect(component.isLoading).toBe(false);
@@ -621,6 +654,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.isLoading).toBe(false);
@@ -634,6 +668,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.error).toBeNull();
@@ -648,6 +683,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.isLoading).toBe(false);
@@ -663,6 +699,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.isLoading).toBe(false);
@@ -684,6 +721,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData(true);
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.error).toBeNull();
@@ -700,6 +738,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.streak).toBeNull();
@@ -718,6 +757,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       expect(component.achievements).toHaveLength(0);
@@ -743,6 +783,7 @@ describe('AchievementsPage Integration Tests', () => {
       // ACT
       await component.loadData();
       fixture.detectChanges();
+      await fixture.whenStable();
 
       // ASSERT
       const achievement = component.achievements[0];
