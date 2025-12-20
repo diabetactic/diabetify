@@ -59,16 +59,21 @@ const WHITELIST = [
   /^[0-9]+(\.[0-9]+)?(%|px|em|rem|vh|vw)?$/,
   // Interpolations
   /\{\{.*\}\}/,
-  // Material Icons (snake_case icon names)
-  /^[a-z]+(_[a-z]+)*$/,
   // Medical units (mg/dL, mmol/L, etc.)
   /^(mg|mmol|g|ml|L|dL|kg|lb|cm|in|%)\/[a-zA-Z]+$/,
-  /^mg\/dL$/,
-  /^mmol\/L$/,
 ];
 
+// Concrete allowlist of Material Icons used in the project
+// Add new icons here when they are added to templates
+const MATERIAL_ICONS_ALLOWLIST = new Set(['error_outline', 'medical_information']);
+
 function isWhitelisted(str) {
-  return WHITELIST.some(pattern => pattern.test(str.trim()));
+  const trimmed = str.trim();
+  // Check Material Icons allowlist first
+  if (MATERIAL_ICONS_ALLOWLIST.has(trimmed)) {
+    return true;
+  }
+  return WHITELIST.some(pattern => pattern.test(trimmed));
 }
 
 function checkFile(filePath) {
