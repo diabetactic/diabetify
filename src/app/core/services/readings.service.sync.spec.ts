@@ -819,12 +819,14 @@ describe('ReadingsService - Backend Date Parsing', () => {
       const result = mapBackend(service, backend);
       const date = new Date(result.time);
 
-      expect(date.getFullYear()).toBe(2024);
-      expect(date.getMonth()).toBe(11); // December
-      expect(date.getDate()).toBe(25);
-      expect(date.getHours()).toBe(14);
-      expect(date.getMinutes()).toBe(30);
-      expect(date.getSeconds()).toBe(45);
+      // Backend dates are in Argentina time (UTC-3), converted to UTC
+      // 14:30:45 Argentina = 17:30:45 UTC
+      expect(date.getUTCFullYear()).toBe(2024);
+      expect(date.getUTCMonth()).toBe(11); // December
+      expect(date.getUTCDate()).toBe(25);
+      expect(date.getUTCHours()).toBe(17); // 14:30 Argentina + 3h = 17:30 UTC
+      expect(date.getUTCMinutes()).toBe(30);
+      expect(date.getUTCSeconds()).toBe(45);
     });
 
     it('should preserve backend ID for deduplication', () => {
