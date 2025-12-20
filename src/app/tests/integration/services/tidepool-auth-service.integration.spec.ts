@@ -30,6 +30,20 @@ import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { NgZone } from '@angular/core';
 
+// Mock PKCE utilities to return predictable values for testing
+vi.mock('@core/utils/pkce.utils', async importOriginal => {
+  const actual = await importOriginal<typeof import('@core/utils/pkce.utils')>();
+  return {
+    ...actual,
+    generateState: vi.fn(() => 'test_state'),
+    generatePKCEChallenge: vi.fn(async () => ({
+      codeVerifier: 'test_code_verifier_123456789012345678901234567890',
+      codeChallenge: 'test_code_challenge_abc123',
+      codeChallengeMethod: 'S256',
+    })),
+  };
+});
+
 describe('TidepoolAuthService Integration Tests', () => {
   let service: TidepoolAuthService;
   let httpMock: HttpTestingController;
@@ -279,7 +293,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       expect(Browser.open).toHaveBeenCalledOnce();
       const callArgs = vi.mocked(Browser.open).mock.calls[0][0];
       // En ambiente de test usa auth.external.tidepool.org (no production)
-      expect(callArgs.url).toContain('https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/auth');
+      expect(callArgs.url).toContain(
+        'https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/auth'
+      );
       expect(callArgs.url).toContain('client_id=');
       expect(callArgs.url).toContain('redirect_uri=');
       expect(callArgs.url).toContain('code_challenge=');
@@ -297,10 +313,10 @@ describe('TidepoolAuthService Integration Tests', () => {
       expect(Browser.open).toHaveBeenCalledOnce();
       const callArgs = vi.mocked(Browser.open).mock.calls[0][0];
       const url = new URL(callArgs.url);
-      expect(url.searchParams.get('code_challenge')).toBeTruthy();
+      // PKCE challenge and state are mocked for predictable testing
+      expect(url.searchParams.get('code_challenge')).toBe('test_code_challenge_abc123');
       expect(url.searchParams.get('code_challenge_method')).toBe('S256');
-      expect(url.searchParams.get('state')).toBeTruthy();
-      expect(url.searchParams.get('state')?.length).toBeGreaterThan(20);
+      expect(url.searchParams.get('state')).toBe('test_state');
     });
 
     it('should show message for web platform (not mobile)', async () => {
@@ -351,7 +367,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       await new Promise(resolve => setTimeout(resolve, 150));
 
       // ASSERT - Token exchange request
-      const reqs = httpMock.match('https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token');
+      const reqs = httpMock.match(
+        'https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token'
+      );
       expect(reqs.length).toBeGreaterThan(0);
 
       const req = reqs[0];
@@ -376,7 +394,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       deepLinkHandler!({ url: 'diabetactic://oauth/callback?code=auth_code_456&state=test_state' });
       await new Promise(resolve => setTimeout(resolve, 150));
 
-      const reqs = httpMock.match('https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token');
+      const reqs = httpMock.match(
+        'https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token'
+      );
       expect(reqs.length).toBeGreaterThan(0);
       reqs[0].flush(mockTokenResponse);
 
@@ -403,7 +423,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       deepLinkHandler!({ url: 'diabetactic://oauth/callback?code=code_789&state=test_state' });
       await new Promise(resolve => setTimeout(resolve, 150));
 
-      const reqs = httpMock.match('https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token');
+      const reqs = httpMock.match(
+        'https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token'
+      );
       expect(reqs.length).toBeGreaterThan(0);
       reqs[0].flush(mockTokenResponse);
 
@@ -428,7 +450,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       await new Promise(resolve => setTimeout(resolve, 50));
 
       // ASSERT
-      const reqs = httpMock.match('https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token');
+      const reqs = httpMock.match(
+        'https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token'
+      );
       expect(reqs.length).toBeGreaterThan(0);
 
       const req = reqs[0];
@@ -452,7 +476,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       // Wait for HTTP request
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const reqs = httpMock.match('https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token');
+      const reqs = httpMock.match(
+        'https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token'
+      );
       expect(reqs.length).toBeGreaterThan(0);
       reqs[0].flush(mockTokenResponse);
 
@@ -478,7 +504,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       // Wait for HTTP request
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const reqs = httpMock.match('https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token');
+      const reqs = httpMock.match(
+        'https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token'
+      );
       expect(reqs.length).toBeGreaterThan(0);
       reqs[0].flush({ error: 'invalid_grant' }, { status: 401, statusText: 'Unauthorized' });
 
@@ -518,7 +546,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       await new Promise(resolve => setTimeout(resolve, 50));
 
       // ASSERT - Token refresh triggered
-      const req = httpMock.expectOne('https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token');
+      const req = httpMock.expectOne(
+        'https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token'
+      );
 
       // Flush the request
       req.flush(mockTokenResponse);
@@ -586,7 +616,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       // Wait for HTTP request
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const reqs = httpMock.match('https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token');
+      const reqs = httpMock.match(
+        'https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token'
+      );
       expect(reqs.length).toBeGreaterThan(0);
       reqs[0].flush(mockTokenResponse);
 
@@ -605,11 +637,15 @@ describe('TidepoolAuthService Integration Tests', () => {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // ACT
-      deepLinkHandler!({ url: 'diabetactic://oauth/callback?code=parsed_code_123&state=test_state' });
+      deepLinkHandler!({
+        url: 'diabetactic://oauth/callback?code=parsed_code_123&state=test_state',
+      });
       await new Promise(resolve => setTimeout(resolve, 150));
 
       // ASSERT
-      const reqs = httpMock.match('https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token');
+      const reqs = httpMock.match(
+        'https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token'
+      );
       expect(reqs.length).toBeGreaterThan(0);
       expect(reqs[0].request.body).toContain('code=parsed_code_123');
       reqs[0].flush(mockTokenResponse);
@@ -636,7 +672,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       await new Promise(resolve => setTimeout(resolve, 150));
 
       // ASSERT - No token exchange request (validation failed)
-      httpMock.expectNone('https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token');
+      httpMock.expectNone(
+        'https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token'
+      );
 
       // Error logged
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -664,7 +702,9 @@ describe('TidepoolAuthService Integration Tests', () => {
       await new Promise(resolve => setTimeout(resolve, 150));
 
       // ASSERT - No token exchange
-      httpMock.expectNone('https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token');
+      httpMock.expectNone(
+        'https://auth.external.tidepool.org/realms/integration/protocol/openid-connect/token'
+      );
 
       // Verify error logged
       expect(mockLogger.error).toHaveBeenCalledWith(

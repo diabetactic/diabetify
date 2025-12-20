@@ -120,7 +120,7 @@ services:
     volumes:
       - ./src:/app/src:ro
       - ./package.json:/app/package.json:ro
-      - ./playwright:/app/playwright:ro
+      - ./playwright:/app/playwright
       - ./playwright.config.ts:/app/playwright.config.ts:ro
       - ./angular.json:/app/angular.json:ro
       - ./playwright-report:/app/playwright-report
@@ -143,7 +143,7 @@ services:
     volumes:
       - ./src:/app/src:ro
       - ./package.json:/app/package.json:ro
-      - ./playwright:/app/playwright:ro
+      - ./playwright:/app/playwright
       - ./playwright.config.ts:/app/playwright.config.ts:ro
       - ./angular.json:/app/angular.json:ro
       - ./playwright-report:/app/playwright-report
@@ -216,7 +216,7 @@ services:
     volumes:
       - ./src:/app/src:ro
       - ./package.json:/app/package.json:ro
-      - ./playwright:/app/playwright:ro
+      - ./playwright:/app/playwright
       - ./playwright.config.ts:/app/playwright.config.ts:ro
       - ./tsconfig.json:/app/tsconfig.json:ro
       - ./tsconfig.spec.json:/app/tsconfig.spec.json:ro

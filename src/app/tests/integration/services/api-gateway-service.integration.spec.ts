@@ -177,7 +177,9 @@ describe('API Gateway Service Integration Tests', () => {
       mockExternalServices.isServiceAvailable.mockReturnValue(false);
 
       // ACT & ASSERT
-      await expect(firstValueFrom(service.request('glucoserver.readings.list'))).rejects.toMatchObject({
+      await expect(
+        firstValueFrom(service.request('glucoserver.readings.list'))
+      ).rejects.toMatchObject({
         success: false,
         error: {
           code: 'SERVICE_UNAVAILABLE',

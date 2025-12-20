@@ -50,10 +50,6 @@ describe('GlucoserverService', () => {
   });
 
   describe('initialization', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should construct full URL from environment config', () => {
       // Access private properties for testing
       expect((service as any).baseUrl).toBe(mockBaseUrl);

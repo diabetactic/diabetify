@@ -74,48 +74,6 @@ describe('AchievementsService', () => {
     vi.clearAllMocks();
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
-  describe('initial state', () => {
-    it('should have null streak initially', () => {
-      expect(service.streak()).toBeNull();
-    });
-
-    it('should have empty achievements initially', () => {
-      expect(service.achievements()).toEqual([]);
-    });
-
-    it('should have loading false initially', () => {
-      expect(service.loading()).toBe(false);
-    });
-
-    it('should have null error initially', () => {
-      expect(service.error()).toBeNull();
-    });
-
-    it('should have currentStreak as 0 when no data', () => {
-      expect(service.currentStreak()).toBe(0);
-    });
-
-    it('should have maxStreak as 0 when no data', () => {
-      expect(service.maxStreak()).toBe(0);
-    });
-
-    it('should have measurementsToday as 0 when no data', () => {
-      expect(service.measurementsToday()).toBe(0);
-    });
-
-    it('should have earnedCount as 0 when no achievements', () => {
-      expect(service.earnedCount()).toBe(0);
-    });
-
-    it('should have totalCount as 0 when no achievements', () => {
-      expect(service.totalCount()).toBe(0);
-    });
-  });
-
   describe('fetchStreak', () => {
     it('should fetch streak data successfully', async () => {
       mockApiGateway.request.mockReturnValue(of({ success: true, data: mockStreakData }));

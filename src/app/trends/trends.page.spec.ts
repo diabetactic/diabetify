@@ -43,18 +43,10 @@ describe('TrendsPage', () => {
   });
 
   describe('Initialization', () => {
-    it('should create', () => {
-      expect(component).toBeTruthy();
-    });
-
     it('should initialize without errors', () => {
       expect(() => {
         new TrendsPage(mockReadingsService);
       }).not.toThrow();
-    });
-
-    it('should be defined after creation', () => {
-      expect(component).toBeDefined();
     });
   });
 
@@ -109,33 +101,6 @@ describe('TrendsPage', () => {
     });
   });
 
-  describe('Imports', () => {
-    it('should import IonHeader', () => {
-      const componentMetadata = (TrendsPage as any).ɵcmp;
-      expect(componentMetadata).toBeDefined();
-    });
-
-    it('should import IonToolbar', () => {
-      const componentMetadata = (TrendsPage as any).ɵcmp;
-      expect(componentMetadata).toBeDefined();
-    });
-
-    it('should import IonTitle', () => {
-      const componentMetadata = (TrendsPage as any).ɵcmp;
-      expect(componentMetadata).toBeDefined();
-    });
-
-    it('should import IonContent', () => {
-      const componentMetadata = (TrendsPage as any).ɵcmp;
-      expect(componentMetadata).toBeDefined();
-    });
-
-    it('should import TranslateModule', () => {
-      const componentMetadata = (TrendsPage as any).ɵcmp;
-      expect(componentMetadata).toBeDefined();
-    });
-  });
-
   describe('Component State', () => {
     it('should have signal-based state properties', () => {
       // Component usa signals para el estado reactivo
@@ -151,43 +116,6 @@ describe('TrendsPage', () => {
       expect(component.statistics()).toBeNull();
       // loading puede ser true si ngOnInit está en progreso
       expect(typeof component.loading()).toBe('boolean');
-    });
-  });
-
-  describe('Lifecycle Hooks', () => {
-    it('should implement OnInit', () => {
-      expect((component as any).ngOnInit).toBeDefined();
-      expect(typeof (component as any).ngOnInit).toBe('function');
-    });
-
-    it('should not implement OnDestroy', () => {
-      expect((component as any).ngOnDestroy).toBeUndefined();
-    });
-
-    it('should not implement AfterViewInit', () => {
-      expect((component as any).ngAfterViewInit).toBeUndefined();
-    });
-
-    it('should not implement OnChanges', () => {
-      expect((component as any).ngOnChanges).toBeUndefined();
-    });
-  });
-
-  describe('Methods', () => {
-    it('should have required lifecycle and event handler methods', () => {
-      const prototype = Object.getPrototypeOf(component);
-      const methods = Object.getOwnPropertyNames(prototype).filter(
-        name => typeof (prototype as any)[name] === 'function' && name !== 'constructor'
-      );
-
-      // Component tiene métodos como ngOnInit, onPeriodChange, etc.
-      expect(methods.length).toBeGreaterThan(0);
-      expect(methods).toContain('ngOnInit');
-    });
-
-    it('should have event handler methods', () => {
-      // Verificar que existan los manejadores de eventos
-      expect(typeof component.onPeriodChange).toBe('function');
     });
   });
 

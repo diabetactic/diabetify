@@ -90,10 +90,6 @@ describe('UnifiedAuthService', () => {
     service = TestBed.inject(UnifiedAuthService);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
   describe('Authentication State Management', () => {
     it('should initialize with unauthenticated state', () =>
       new Promise<void>(resolve => {

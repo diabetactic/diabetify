@@ -51,10 +51,6 @@ describe('SessionTimeoutService', () => {
     service.stopMonitoring();
   });
 
-  it('should create', () => {
-    expect(service).toBeTruthy();
-  });
-
   describe('startMonitoring', () => {
     it('should start monitoring user activity', () => {
       service.startMonitoring();

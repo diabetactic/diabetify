@@ -104,10 +104,6 @@ describe('AppointmentService', () => {
     }
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
   describe('getAppointments()', () => {
     describe('Success Cases', () => {
       it('should fetch appointments successfully', () =>

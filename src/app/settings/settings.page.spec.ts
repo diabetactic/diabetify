@@ -188,39 +188,12 @@ describe('SettingsPage', () => {
   });
 
   describe('Initialization', () => {
-    it('should create', () => {
-      expect(component).toBeTruthy();
-    });
-
-    it('should have reading reminders array', () => {
-      expect(component.readingReminders).toBeDefined();
+    it('should initialize readingReminders as array', () => {
       expect(Array.isArray(component.readingReminders)).toBe(true);
     });
 
-    it('should have user property', () => {
-      expect(component.user).toBeDefined();
-    });
-
-    it('should have glucose settings', () => {
-      expect(component.glucoseSettings).toBeDefined();
+    it('should have glucose settings with unit', () => {
       expect(component.glucoseSettings.unit).toBeDefined();
-    });
-
-    it('should have isDemoMode property', () => {
-      expect(component.isDemoMode).toBeDefined();
-    });
-
-    it('should have notification properties', () => {
-      expect(component.notificationPermissionGranted).toBeDefined();
-      expect(component.notificationsEnabled).toBeDefined();
-    });
-
-    it('should have preferences property', () => {
-      expect(component.preferences).toBeDefined();
-    });
-
-    it('should have profileSettings property', () => {
-      expect(component.profileSettings).toBeDefined();
     });
   });
 

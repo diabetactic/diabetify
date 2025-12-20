@@ -106,10 +106,6 @@ describe('ApiGatewayService', () => {
     vi.clearAllMocks();
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
   describe('request() - GET method', () => {
     it('should make GET request to correct endpoint', async () => {
       const mockData = { readings: [] };

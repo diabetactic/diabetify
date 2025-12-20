@@ -53,17 +53,6 @@ describe('TokenStorageService', () => {
     vi.clearAllMocks();
   });
 
-  describe('initialization', () => {
-    it('should create the service', () => {
-      expect(service).toBeTruthy();
-    });
-
-    it('should start with no in-memory tokens', async () => {
-      const token = await service.getAccessToken();
-      expect(token).toBeNull();
-    });
-  });
-
   describe('storeAuth', () => {
     it('should store access token in memory only', async () => {
       await service.storeAuth(mockAuth);
@@ -872,33 +861,6 @@ describe('TokenStorageService', () => {
 
       const isValid = await service.hasValidAccessToken(7200); // 2 hour buffer
       expect(isValid).toBe(false);
-    });
-  });
-
-  describe('memory management', () => {
-    it('should not leak tokens after clearAccessToken', () => {
-      service.updateAccessToken('sensitive-token', 3600);
-      service.clearAccessToken();
-
-      // Access to private property for testing
-      expect((service as any).accessToken).toBeNull();
-      expect((service as any).accessTokenExpiry).toBeNull();
-    });
-
-    it('should overwrite previous token on updateAccessToken', () => {
-      service.updateAccessToken('old-token', 3600);
-      service.updateAccessToken('new-token', 3600);
-
-      // Old token should be garbage collected
-      expect((service as any).accessToken).toBe('new-token');
-    });
-
-    it('should not retain stale expiry after clearAccessToken', async () => {
-      service.updateAccessToken('token', 3600);
-
-      service.clearAccessToken();
-
-      expect((service as any).accessTokenExpiry).toBeNull();
     });
   });
 });

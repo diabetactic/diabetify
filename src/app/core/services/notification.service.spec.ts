@@ -92,12 +92,6 @@ describe('NotificationService', () => {
   });
 
   describe('Service Initialization', () => {
-    it('should be created', () => {
-      mockPlatform.is.mockReturnValue(false); // Web mode
-      service = TestBed.inject(NotificationService);
-      expect(service).toBeTruthy();
-    });
-
     it('should initialize in web mode and skip Capacitor setup', async () => {
       mockPlatform.is.mockReturnValue(false);
       service = TestBed.inject(NotificationService);

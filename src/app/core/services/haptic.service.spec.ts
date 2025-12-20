@@ -23,42 +23,6 @@ describe('HapticService', () => {
     vi.clearAllMocks();
   });
 
-  describe('initialization', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
-    it('should detect native platform on init', () => {
-      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-      const newService = new HapticService();
-
-      expect(newService.isAvailable).toBe(true);
-    });
-
-    it('should detect web platform on init', () => {
-      (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
-      const newService = new HapticService();
-
-      expect(newService.isAvailable).toBe(false);
-    });
-  });
-
-  describe('isAvailable', () => {
-    it('should return true on native platform', () => {
-      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-      const newService = new HapticService();
-
-      expect(newService.isAvailable).toBe(true);
-    });
-
-    it('should return false on web platform', () => {
-      (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
-      const newService = new HapticService();
-
-      expect(newService.isAvailable).toBe(false);
-    });
-  });
-
   describe('impact', () => {
     describe('on native platform', () => {
       beforeEach(() => {

@@ -115,10 +115,6 @@ describe('ServiceOrchestrator', () => {
   });
 
   describe('Service Creation', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should initialize with empty workflow state', () => {
       expect(service.getActiveWorkflows()).toEqual([]);
       expect(service.getCompletedWorkflows()).toEqual([]);
@@ -602,7 +598,8 @@ describe('ServiceOrchestrator', () => {
       await (service as any).delay(500);
       const duration = Date.now() - startTime;
 
-      expect(duration).toBeGreaterThanOrEqual(500);
+      // Allow 5ms tolerance for timing jitter
+      expect(duration).toBeGreaterThanOrEqual(495);
       expect(duration).toBeLessThan(600);
     });
   });

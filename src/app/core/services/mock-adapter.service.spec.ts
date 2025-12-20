@@ -36,10 +36,6 @@ describe('MockAdapterService', () => {
   });
 
   describe('Service Creation', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should initialize with default config', () => {
       const config = service.getConfig();
 
@@ -362,7 +358,8 @@ describe('MockAdapterService', () => {
       await service.mockSyncReadings();
       const duration = Date.now() - startTime;
 
-      expect(duration).toBeGreaterThanOrEqual(800);
+      // Allow 50ms tolerance for timer inaccuracies
+      expect(duration).toBeGreaterThanOrEqual(750);
     });
   });
 

@@ -5,6 +5,8 @@
  * Uses Angular decorators for TestBed compatibility.
  */
 
+/* eslint-disable @angular-eslint/component-selector, @angular-eslint/directive-selector */
+
 import { vi } from 'vitest';
 import { NgModule, Component, Directive, Injectable, forwardRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
@@ -466,7 +468,7 @@ export class IonAvatar {}
 @Component({ selector: 'ion-thumbnail', template: '<ng-content></ng-content>', standalone: true })
 export class IonThumbnail {}
 
-@Component({ selector: 'ion-img', template: '<img>', standalone: true })
+@Component({ selector: 'ion-img', template: '<img alt="">', standalone: true })
 export class IonImg {}
 
 @Component({ selector: 'ion-note', template: '<ng-content></ng-content>', standalone: true })

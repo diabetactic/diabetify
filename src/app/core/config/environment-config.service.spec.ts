@@ -34,10 +34,6 @@ describe('EnvironmentConfigService', () => {
   });
 
   describe('initialization', () => {
-    it('should create', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should not be initialized before initialize() is called', () => {
       const newService = new EnvironmentConfigService();
       expect(newService.isInitialized).toBe(false);

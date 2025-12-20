@@ -69,10 +69,6 @@ describe('BiometricAuthService', () => {
   });
 
   describe('initial state', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should have default config', () =>
       new Promise<void>(resolve => {
         service.biometricConfig$.subscribe(config => {

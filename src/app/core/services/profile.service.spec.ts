@@ -143,10 +143,6 @@ describe('ProfileService', () => {
     TestBed.resetTestingModule();
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
   // getProfile tests - state pollution fixed with TestBed.resetTestingModule()
   describe('getProfile()', () => {
     describe('Success Cases', () => {

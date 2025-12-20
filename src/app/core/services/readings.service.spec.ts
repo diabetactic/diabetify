@@ -100,10 +100,6 @@ describe('ReadingsService', () => {
     service = TestBed.inject(ReadingsService);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
   describe('addReading', () => {
     it('should add a glucose reading with proper transformation', async () => {
       const reading: GlucoseReading = {

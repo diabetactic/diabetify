@@ -122,10 +122,6 @@ describe('LocalAuthService', () => {
   });
 
   describe('initialization', () => {
-    it('should create the service', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should start with unauthenticated state when no stored data', async () => {
       const state = await new Promise<LocalAuthState>(resolve => {
         service.authState$.subscribe(s => resolve(s));

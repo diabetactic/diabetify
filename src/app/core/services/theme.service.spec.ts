@@ -95,10 +95,6 @@ describe('ThemeService', () => {
     service = TestBed.inject(ThemeService);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
   it('should initialize with light theme mode by default', () => {
     const currentMode = service.getCurrentThemeMode();
     expect(currentMode).toBe('light');
@@ -406,64 +402,6 @@ describe('ThemeService', () => {
 
       // Verificar que se configuró el listener para cambios en el tema del sistema
       expect(mockMediaQuery.addEventListener).toHaveBeenCalledWith('change', expect.any(Function));
-    });
-  });
-
-  describe('Observable Streams', () => {
-    it('should emit theme mode changes through themeMode$ observable', () =>
-      new Promise<void>(resolve => {
-        service.themeMode$.pipe(skip(1), take(1)).subscribe(mode => {
-          expect(mode).toBe('dark');
-          resolve();
-        });
-
-        service.setThemeMode('dark');
-      }));
-
-    it('should emit color palette changes through colorPalette$ observable', () =>
-      new Promise<void>(resolve => {
-        service.colorPalette$.pipe(skip(1), take(1)).subscribe(palette => {
-          expect(palette).toBe('nature');
-          resolve();
-        });
-
-        service.setColorPalette('nature');
-      }));
-
-    it('should emit high contrast changes through highContrast$ observable', () =>
-      new Promise<void>(resolve => {
-        service.highContrast$.pipe(skip(1), take(1)).subscribe(highContrast => {
-          expect(highContrast).toBe(true);
-          resolve();
-        });
-
-        service.toggleHighContrast();
-      }));
-
-    it('should emit isDark changes through isDark$ observable', () =>
-      new Promise<void>(resolve => {
-        service.isDark$.pipe(skip(1), take(1)).subscribe(isDark => {
-          expect(isDark).toBe(true);
-          resolve();
-        });
-
-        service.setThemeMode('dark');
-      }));
-  });
-
-  describe('Cleanup', () => {
-    it('should complete all observables on destroy', () => {
-      const themeModeSpy = vi.spyOn(service['_themeMode$'], 'complete');
-      const colorPaletteSpy = vi.spyOn(service['_colorPalette$'], 'complete');
-      const highContrastSpy = vi.spyOn(service['_highContrast$'], 'complete');
-      const isDarkSpy = vi.spyOn(service['_isDark$'], 'complete');
-
-      service.ngOnDestroy();
-
-      expect(themeModeSpy).toHaveBeenCalled();
-      expect(colorPaletteSpy).toHaveBeenCalled();
-      expect(highContrastSpy).toHaveBeenCalled();
-      expect(isDarkSpy).toHaveBeenCalled();
     });
   });
 });

@@ -45,10 +45,6 @@ describe('TranslationService', () => {
   });
 
   describe('initialization', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should configure TranslateService with available languages', () => {
       expect(translateService.addLangs).toHaveBeenCalledWith(['en', 'es']);
     });

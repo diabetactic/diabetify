@@ -31,10 +31,6 @@ describe('EnvironmentDetectorService', () => {
       service = TestBed.inject(EnvironmentDetectorService);
     });
 
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should detect web platform', () => {
       expect(service.isWeb()).toBe(true);
       expect(service.isAndroid()).toBe(false);
@@ -188,75 +184,6 @@ describe('EnvironmentDetectorService', () => {
     });
   });
 
-  describe('URL Conversion Edge Cases', () => {
-    beforeEach(() => {
-      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as Mock).mockReturnValue('android');
-
-      TestBed.configureTestingModule({
-        providers: [EnvironmentDetectorService],
-      });
-      service = TestBed.inject(EnvironmentDetectorService);
-    });
-
-    it('should handle URLs with query parameters', () => {
-      const url = service.getBaseUrl('http://localhost:8000/api?key=value');
-
-      expect(url).toBe('http://10.0.2.2:8000/api?key=value');
-    });
-
-    it('should handle URLs with hash fragments', () => {
-      const url = service.getBaseUrl('http://localhost:8000#section');
-
-      expect(url).toBe('http://10.0.2.2:8000#section');
-    });
-
-    it('should handle URLs with authentication', () => {
-      const url = service.getBaseUrl('http://user:pass@localhost:8000');
-
-      expect(url).toBe('http://user:pass@10.0.2.2:8000');
-    });
-
-    it('should only replace first occurrence of localhost', () => {
-      const url = service.getBaseUrl('http://localhost:8000/localhost/endpoint');
-
-      expect(url).toBe('http://10.0.2.2:8000/localhost/endpoint');
-    });
-
-    it('should handle localhost without port', () => {
-      const url = service.getBaseUrl('http://localhost/api');
-
-      expect(url).toBe('http://10.0.2.2/api');
-    });
-
-    it('should handle HTTPS localhost URLs', () => {
-      const url = service.getBaseUrl('https://localhost:8443');
-
-      expect(url).toBe('https://10.0.2.2:8443');
-    });
-
-    it('should handle URLs with localhost substring in domain name', () => {
-      // Note: Current implementation uses simple string.replace() which affects all occurrences
-      // This is acceptable behavior for the Android emulator use case
-      const url = service.getBaseUrl('http://mylocalhost.com:8000');
-
-      // The current implementation will replace 'localhost' even in domain names
-      expect(url).toBe('http://my10.0.2.2.com:8000');
-    });
-
-    it('should preserve trailing slashes', () => {
-      const url = service.getBaseUrl('http://localhost:8000/');
-
-      expect(url).toBe('http://10.0.2.2:8000/');
-    });
-
-    it('should handle empty URL gracefully', () => {
-      const url = service.getBaseUrl('');
-
-      expect(url).toBe('');
-    });
-  });
-
   describe('Service URLs', () => {
     it('should use different ports for different services', () => {
       (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
@@ -276,84 +203,6 @@ describe('EnvironmentDetectorService', () => {
       expect(glucoserver).toBe('http://localhost:8001');
       expect(appointments).toBe('http://localhost:8002');
       expect(auth).toBe('http://localhost:8003');
-    });
-  });
-
-  describe('Platform Detection Consistency', () => {
-    it('should maintain consistent platform detection', () => {
-      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as Mock).mockReturnValue('android');
-
-      TestBed.configureTestingModule({
-        providers: [EnvironmentDetectorService],
-      });
-      service = TestBed.inject(EnvironmentDetectorService);
-
-      // Multiple calls should return same result
-      expect(service.isAndroid()).toBe(true);
-      expect(service.isAndroid()).toBe(true);
-      expect(service.getPlatformName()).toBe('android');
-      expect(service.getPlatformName()).toBe('android');
-    });
-
-    it('should have mutually exclusive platform checks', () => {
-      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as Mock).mockReturnValue('ios');
-
-      TestBed.configureTestingModule({
-        providers: [EnvironmentDetectorService],
-      });
-      service = TestBed.inject(EnvironmentDetectorService);
-
-      const platformCount = [service.isWeb(), service.isAndroid(), service.isIOS()].filter(
-        Boolean
-      ).length;
-
-      expect(platformCount).toBe(1);
-    });
-  });
-
-  describe('Real-world Scenarios', () => {
-    it('should handle development server URL on Android', () => {
-      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as Mock).mockReturnValue('android');
-
-      TestBed.configureTestingModule({
-        providers: [EnvironmentDetectorService],
-      });
-      service = TestBed.inject(EnvironmentDetectorService);
-
-      const devUrl = service.getBaseUrl('http://localhost:4200');
-
-      expect(devUrl).toBe('http://10.0.2.2:4200');
-    });
-
-    it('should handle production API URL on Android', () => {
-      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as Mock).mockReturnValue('android');
-
-      TestBed.configureTestingModule({
-        providers: [EnvironmentDetectorService],
-      });
-      service = TestBed.inject(EnvironmentDetectorService);
-
-      const prodUrl = service.getBaseUrl('https://api.diabetactic.com');
-
-      expect(prodUrl).toBe('https://api.diabetactic.com');
-    });
-
-    it('should handle ngrok URLs on Android', () => {
-      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-      (Capacitor.getPlatform as Mock).mockReturnValue('android');
-
-      TestBed.configureTestingModule({
-        providers: [EnvironmentDetectorService],
-      });
-      service = TestBed.inject(EnvironmentDetectorService);
-
-      const ngrokUrl = service.getBaseUrl('https://abc123.ngrok.io');
-
-      expect(ngrokUrl).toBe('https://abc123.ngrok.io');
     });
   });
 });

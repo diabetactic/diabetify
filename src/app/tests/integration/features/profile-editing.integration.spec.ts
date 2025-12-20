@@ -3,6 +3,7 @@
  * Tests profile field updates, validation, and persistence
  */
 
+import { vi, type Mock } from 'vitest';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { provideRouter } from '@angular/router';
@@ -23,10 +24,10 @@ describe('Profile Editing Integration', () => {
   let component: SettingsPage;
   let fixture: ComponentFixture<SettingsPage>;
 
-  let profileService: jest.Mocked<ProfileService>;
-  let authService: jest.Mocked<LocalAuthService>;
-  let themeService: jest.Mocked<ThemeService>;
-  let demoDataService: jest.Mocked<DemoDataService>;
+  let profileService: Mock<ProfileService>;
+  let authService: Mock<LocalAuthService>;
+  let themeService: Mock<ThemeService>;
+  let demoDataService: Mock<DemoDataService>;
   let toastController: any;
 
   let profileSubject: BehaviorSubject<UserProfile>;
@@ -68,15 +69,15 @@ describe('Profile Editing Integration', () => {
 
     // Create service spies
     profileService = {
-      getProfile: jest.fn().mockResolvedValue(mockProfile),
-      updateProfile: jest.fn().mockResolvedValue(mockProfile),
-      updatePreferences: jest.fn().mockResolvedValue(mockProfile),
+      getProfile: vi.fn().mockResolvedValue(mockProfile),
+      updateProfile: vi.fn().mockResolvedValue(mockProfile),
+      updatePreferences: vi.fn().mockResolvedValue(mockProfile),
       profile$: profileSubject.asObservable(),
     } as any;
 
     authService = {
-      isAuthenticated: jest.fn().mockReturnValue(of(true)),
-      getCurrentUser: jest.fn().mockReturnValue({
+      isAuthenticated: vi.fn().mockReturnValue(of(true)),
+      getCurrentUser: vi.fn().mockReturnValue({
         dni: '1000',
         name: 'Test User',
         email: 'test@example.com',
@@ -84,12 +85,12 @@ describe('Profile Editing Integration', () => {
     } as any;
 
     themeService = {
-      getCurrentThemeMode: jest.fn().mockReturnValue('auto'),
-      setThemeMode: jest.fn(),
+      getCurrentThemeMode: vi.fn().mockReturnValue('auto'),
+      setThemeMode: vi.fn(),
     } as any;
 
     demoDataService = {
-      isDemoMode: jest.fn().mockReturnValue(true),
+      isDemoMode: vi.fn().mockReturnValue(true),
     } as any;
 
     toastController = createMockToastController();

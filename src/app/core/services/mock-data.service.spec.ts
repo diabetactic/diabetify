@@ -17,10 +17,6 @@ describe('MockDataService', () => {
   });
 
   describe('Service Creation', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should initialize with current user', () => {
       const user = service['currentUser'];
 

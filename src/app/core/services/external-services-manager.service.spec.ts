@@ -84,10 +84,6 @@ describe('ExternalServicesManager', () => {
   });
 
   describe('initialization', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should initialize circuit breakers for all services', () =>
       new Promise<void>(resolve => {
         service.state.subscribe(state => {

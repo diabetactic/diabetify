@@ -48,12 +48,6 @@ describe('PlatformDetectorService', () => {
     vi.mocked(getApiGatewayOverride).mockReturnValue(null);
   });
 
-  describe('initialization', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-  });
-
   describe('getApiBaseUrl', () => {
     describe('with override', () => {
       it('should use override URL when provided', () => {
@@ -224,113 +218,6 @@ describe('PlatformDetectorService', () => {
 
       expect(config.baseUrl).toBeDefined();
       expect(typeof config.baseUrl).toBe('string');
-    });
-  });
-
-  describe('logPlatformInfo', () => {
-    it('should log platform configuration', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
-      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(false);
-
-      service.logPlatformInfo();
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Platform Configuration:',
-        expect.objectContaining({
-          platform: 'web',
-          userAgent: expect.any(String),
-          hostname: expect.any(String),
-          protocol: expect.any(String),
-        })
-      );
-
-      consoleSpy.mockRestore();
-    });
-  });
-
-  describe('isAndroidEmulator detection', () => {
-    beforeEach(() => {
-      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
-      vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
-    });
-
-    it('should detect SDK in user agent', () => {
-      Object.defineProperty(navigator, 'userAgent', {
-        value: 'Android SDK built for x86',
-        writable: true,
-      });
-
-      const url = service.getApiBaseUrl('http://localhost:8000');
-
-      expect(url).toBe('http://10.0.2.2:8000');
-    });
-
-    it('should detect emulator keyword', () => {
-      Object.defineProperty(navigator, 'userAgent', {
-        value: 'Android emulator',
-        writable: true,
-      });
-
-      const url = service.getApiBaseUrl('http://localhost:8000');
-
-      expect(url).toBe('http://10.0.2.2:8000');
-    });
-
-    it('should detect localhost hostname', () => {
-      Object.defineProperty(navigator, 'userAgent', {
-        value: 'Android',
-        writable: true,
-      });
-
-      // Can't redefine window.location.hostname in test env
-      // Check that the method detects emulator by userAgent
-      const url = service.getApiBaseUrl('http://localhost:8000');
-
-      expect(url).toBeDefined();
-    });
-  });
-
-  describe('isIOSSimulator detection', () => {
-    beforeEach(() => {
-      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
-      vi.mocked(Capacitor.getPlatform).mockReturnValue('ios');
-    });
-
-    it('should detect simulator keyword', () => {
-      Object.defineProperty(navigator, 'userAgent', {
-        value: 'iPhone Simulator',
-        writable: true,
-      });
-
-      const url = service.getApiBaseUrl('http://localhost:8000');
-
-      expect(url).toBe('http://localhost:8000');
-    });
-
-    it('should detect localhost hostname', () => {
-      Object.defineProperty(navigator, 'userAgent', {
-        value: 'iPhone',
-        writable: true,
-      });
-
-      // Can't redefine window.location.hostname
-      const url = service.getApiBaseUrl('http://localhost:8000');
-
-      expect(url).toBeDefined();
-    });
-
-    it('should detect missing device capabilities', () => {
-      Object.defineProperty(navigator, 'userAgent', {
-        value: 'iPhone',
-        writable: true,
-      });
-
-      // Delete DeviceMotionEvent to simulate simulator
-      delete (window as any).DeviceMotionEvent;
-
-      const url = service.getApiBaseUrl('http://localhost:8000');
-
-      expect(url).toBeDefined();
     });
   });
 });

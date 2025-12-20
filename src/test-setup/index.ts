@@ -1,3 +1,4 @@
+import { PipeTransform } from '@angular/core';
 /**
  * Setup principal de tests para Vitest
  * Re-exporta todos los módulos de configuración
@@ -263,18 +264,26 @@ vi.mock('@capacitor/app', () => ({
 // Mock lucide-angular - MUST be here for proper hoisting
 // Includes all 49 icons used in src/app/shared/icons/lucide-icons.ts
 vi.mock('lucide-angular', async () => {
-  const { NgModule, Component } = await import('@angular/core');
+  const { NgModule, Component, Input } = await import('@angular/core');
 
   // Create a mock icon object
   const mockIcon = { name: 'mock-icon', data: [] };
 
-  // Create a minimal mock component for lucide-icon
+  // Create a minimal mock component for lucide-icon with all required inputs
   @Component({
-    selector: 'lucide-icon',
+    selector: 'lucide-icon', // eslint-disable-line @angular-eslint/component-selector
     template: '',
     standalone: true,
   })
-  class MockLucideIconComponent {}
+  class MockLucideIconComponent {
+    @Input() name: string | object = '';
+    @Input() size: number | string = 24;
+    @Input() color: string = '';
+    @Input() strokeWidth: number | string = 2;
+    @Input() absoluteStrokeWidth: boolean = false;
+    @Input() class: string = '';
+    @Input() img: object | null = null;
+  }
 
   // Create a proper NgModule mock that can be used directly in imports
   // and also has a static pick() method
@@ -477,7 +486,7 @@ vi.mock('@ngx-translate/core', async () => {
     standalone: true,
     pure: false,
   })
-  class MockTranslatePipe {
+  class MockTranslatePipe implements PipeTransform {
     private translateService = inject(MockTranslateService);
 
     transform(value: string): string {
