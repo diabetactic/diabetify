@@ -1,0 +1,15 @@
+/* Build configuration - excludes test files for type checking in CI */
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "relatedServices",
+    "src/**/*.spec.ts",
+    "src/test-setup",
+    "src/setup-vitest.ts",
+    "src/setup-polyfills.ts",
+    "src/app/tests",
+    "src/testing",
+    "src/mocks"
+  ]
+}
