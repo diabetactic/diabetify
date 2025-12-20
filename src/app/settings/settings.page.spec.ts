@@ -1,6 +1,7 @@
 // Initialize TestBed environment for Vitest
 import '../../test-setup';
 
+import { type Mock } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AlertController, LoadingController, ToastController, IonicModule } from '@ionic/angular';
@@ -20,16 +21,16 @@ describe('SettingsPage', () => {
   let fixture: ComponentFixture<SettingsPage>;
 
   // Mocked services
-  let mockRouter: vi.Mocked<Router>;
-  let mockAlertController: vi.Mocked<AlertController>;
-  let mockLoadingController: vi.Mocked<LoadingController>;
-  let mockToastController: vi.Mocked<ToastController>;
-  let mockProfileService: vi.Mocked<ProfileService>;
-  let mockThemeService: vi.Mocked<ThemeService>;
-  let mockAuthService: vi.Mocked<LocalAuthService>;
-  let mockDemoDataService: vi.Mocked<DemoDataService>;
-  let mockNotificationService: vi.Mocked<NotificationService>;
-  let mockTranslateService: vi.Mocked<TranslateService>;
+  let mockRouter: Mock<Router>;
+  let mockAlertController: Mock<AlertController>;
+  let mockLoadingController: Mock<LoadingController>;
+  let mockToastController: Mock<ToastController>;
+  let mockProfileService: Mock<ProfileService>;
+  let mockThemeService: Mock<ThemeService>;
+  let mockAuthService: Mock<LocalAuthService>;
+  let mockDemoDataService: Mock<DemoDataService>;
+  let mockNotificationService: Mock<NotificationService>;
+  let mockTranslateService: Mock<TranslateService>;
 
   // Mock data
   const mockUser: LocalUser = {

@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { fakerES as faker } from '@faker-js/faker';
 import { DemoDataService } from '@services/demo-data.service';
+import { LoggerService } from '@services/logger.service';
 import { MockAdapterConfig } from '@core/config/mock-adapter-config';
 import { LocalGlucoseReading, GlucoseStatistics } from '@models/glucose-reading.model';
 import { UserProfile, AccountState } from '@models/user-profile.model';
@@ -53,6 +54,7 @@ export class MockAdapterService {
   private readonly NETWORK_DELAY = 300; // Simulate 300ms network delay
 
   private config: MockAdapterConfig;
+  private logger = inject(LoggerService);
 
   /** Helper seguro para acceder a localStorage en entornos de prueba */
   private get storage(): Storage | null {
@@ -691,7 +693,7 @@ export class MockAdapterService {
     this.storage?.removeItem(this.PROFILE_STORAGE_KEY);
     this.storage?.removeItem('diabetactic_mock_token');
     this.storage?.removeItem('demoMode');
-    console.log('✅ All mock data cleared');
+    this.logger.info('MockAdapter', 'All mock data cleared');
   }
 
   // ==================== PRIVATE METHODS ====================
@@ -706,7 +708,7 @@ export class MockAdapterService {
         config = this.validateConfig(parsed);
       }
     } catch (error) {
-      console.warn('Failed to load mock adapter config:', error);
+      this.logger.warn('MockAdapter', 'Failed to load mock adapter config', error);
     }
 
     // Fall back to environment-aware defaults when no stored config
@@ -733,7 +735,7 @@ export class MockAdapterService {
     try {
       this.storage?.setItem(this.STORAGE_KEY, JSON.stringify(this.config));
     } catch (error) {
-      console.error('Failed to save mock adapter config:', error);
+      this.logger.error('MockAdapter', 'Failed to save mock adapter config', error);
     }
   }
 

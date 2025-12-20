@@ -1,13 +1,16 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { API_GATEWAY_BASE_URL, getApiGatewayOverride } from '@shared/config/api-base-url';
 import { environment } from '../../../environments/environment';
+import { LoggerService } from '@services/logger.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PlatformDetectorService {
+  private logger = inject(LoggerService);
+
   constructor(private platform: Platform) {}
 
   /**
@@ -43,7 +46,7 @@ export class PlatformDetectorService {
         }
 
         // Real Android device with local backend - can't access localhost
-        console.warn('⚠️ [PLATFORM] Real Android device cannot access localhost backend');
+        this.logger.warn('PlatformDetector', 'Real Android device cannot access localhost backend');
         return this.getProductionUrl() || defaultUrl;
       }
 
@@ -157,7 +160,7 @@ export class PlatformDetectorService {
     if (!environment.production) {
       const config = this.getPlatformConfig();
 
-      console.log('Platform Configuration:', {
+      this.logger.debug('PlatformDetector', 'Platform Configuration', {
         ...config,
         userAgent: navigator.userAgent,
         hostname: window.location.hostname,
