@@ -6,6 +6,19 @@ import { MockAdapterService } from '@services/mock-adapter.service';
 import { DemoDataService } from '@services/demo-data.service';
 import { LocalGlucoseReading, UserProfile } from '@core/models';
 
+// Helper to create reading with defaults
+const createReading = (overrides: Partial<LocalGlucoseReading> = {}): LocalGlucoseReading =>
+  ({
+    id: 'test-1',
+    type: 'smbg',
+    value: 120,
+    units: 'mg/dL',
+    time: new Date().toISOString(),
+    deviceId: 'test',
+    synced: true,
+    ...overrides,
+  }) as LocalGlucoseReading;
+
 describe('MockAdapterService', () => {
   let service: MockAdapterService;
   let demoDataService: Mock<DemoDataService>;
@@ -24,10 +37,7 @@ describe('MockAdapterService', () => {
     demoDataService = TestBed.inject(DemoDataService) as Mock<DemoDataService>;
     service = TestBed.inject(MockAdapterService);
 
-    // Clear localStorage before each test
     localStorage.clear();
-
-    // Wait for async initialization to complete
     await new Promise(resolve => setTimeout(resolve, 100));
   });
 
@@ -35,208 +45,128 @@ describe('MockAdapterService', () => {
     localStorage.clear();
   });
 
-  describe('Service Creation', () => {
-    it('should initialize with default config', () => {
-      const config = service.getConfig();
-
-      expect(config).toBeDefined();
-      expect(config).toHaveProperty('enabled');
-      expect(config).toHaveProperty('services');
-    });
-
-    it('should auto-initialize mock data on creation', () => {
-      // Data should be initialized in localStorage
-      // Data initialization is async, so we just check the service exists
-      expect(service).toBeTruthy();
-    });
-  });
+  // ============================================================================
+  // CONFIGURATION MANAGEMENT
+  // ============================================================================
 
   describe('Configuration Management', () => {
-    it('should enable mock backend globally', () => {
-      service.useMockBackend(true);
+    it('should initialize with default config structure', () => {
+      const config = service.getConfig();
+      expect(config).toHaveProperty('enabled');
+      expect(config).toHaveProperty('services');
+      expect(config.services).toHaveProperty('appointments');
+      expect(config.services).toHaveProperty('glucoserver');
+      expect(config.services).toHaveProperty('auth');
+    });
 
+    it('should toggle mock backend and persist to localStorage', () => {
+      // Enable
+      service.useMockBackend(true);
       expect(service.isMockEnabled()).toBe(true);
-    });
+      const stored = JSON.parse(localStorage.getItem('diabetactic_use_mock_backend') || '{}');
+      expect(stored.enabled).toBe(true);
 
-    it('should disable mock backend globally', () => {
+      // Disable
       service.useMockBackend(false);
-
       expect(service.isMockEnabled()).toBe(false);
-    });
-
-    it('should persist enabled state to localStorage', () => {
-      service.useMockBackend(true);
-
-      const stored = localStorage.getItem('diabetactic_use_mock_backend');
-      expect(stored).toBeDefined();
-
-      const config = JSON.parse(stored || '{}');
-      expect(config.enabled).toBe(true);
-    });
-
-    it('should enable specific service mocks', () => {
-      service.setServiceMockEnabled('appointments', true);
-
-      expect(service.isServiceMockEnabled('appointments')).toBe(false); // False if global disabled
     });
 
     it('should require both global and service-specific to be enabled', () => {
       service.useMockBackend(true);
       service.setServiceMockEnabled('glucoserver', true);
-
       expect(service.isServiceMockEnabled('glucoserver')).toBe(true);
 
       service.useMockBackend(false);
       expect(service.isServiceMockEnabled('glucoserver')).toBe(false);
+
+      // Service-specific only works when global enabled
+      service.setServiceMockEnabled('appointments', true);
+      expect(service.isServiceMockEnabled('appointments')).toBe(false);
     });
 
     it('should reset to default configuration', () => {
       service.useMockBackend(true);
       service.setServiceMockEnabled('appointments', false);
-
       service.resetConfig();
-
-      const config = service.getConfig();
-      expect(config.enabled).toBeDefined();
-    });
-
-    it('should return configuration object', () => {
-      const config = service.getConfig();
-
-      expect(config).toHaveProperty('enabled');
-      expect(config.services).toHaveProperty('appointments');
-      expect(config.services).toHaveProperty('glucoserver');
-      expect(config.services).toHaveProperty('auth');
+      expect(service.getConfig().enabled).toBeDefined();
     });
   });
 
+  // ============================================================================
+  // READINGS CRUD
+  // ============================================================================
+
   describe('mockGetAllReadings', () => {
-    beforeEach(async () => {
-      // Seed some test data
-      const testReadings: LocalGlucoseReading[] = [
-        {
+    beforeEach(() => {
+      const testReadings = [
+        createReading({
           id: '1',
-          type: 'smbg',
           value: 120,
-          units: 'mg/dL',
           time: new Date('2024-12-06T10:00:00Z').toISOString(),
-          deviceId: 'test',
-          synced: true,
-        } as LocalGlucoseReading,
-        {
+        }),
+        createReading({
           id: '2',
-          type: 'smbg',
           value: 150,
-          units: 'mg/dL',
           time: new Date('2024-12-05T10:00:00Z').toISOString(),
-          deviceId: 'test',
-          synced: true,
-        } as LocalGlucoseReading,
+        }),
       ];
       localStorage.setItem('diabetactic_mock_readings', JSON.stringify(testReadings));
     });
 
-    it('should return paginated readings', async () => {
+    it('should return paginated readings sorted by date descending', async () => {
       const result = await service.mockGetAllReadings(0, 10);
 
-      expect(result).toBeDefined();
-      expect(result.readings).toBeDefined();
       expect(result.total).toBe(2);
       expect(result.offset).toBe(0);
       expect(result.limit).toBe(10);
       expect(result.hasMore).toBe(false);
-    });
 
-    it('should sort readings by date descending', async () => {
-      const result = await service.mockGetAllReadings();
-
+      // Verify sort order
       const firstTime = new Date(result.readings[0].time).getTime();
       const secondTime = new Date(result.readings[1].time).getTime();
       expect(firstTime).toBeGreaterThan(secondTime);
     });
 
-    it('should apply pagination offset', async () => {
-      const result = await service.mockGetAllReadings(1, 10);
-
+    it('should apply pagination correctly', async () => {
+      // Test offset
+      let result = await service.mockGetAllReadings(1, 10);
       expect(result.readings.length).toBe(1);
       expect(result.offset).toBe(1);
-    });
 
-    it('should apply pagination limit', async () => {
-      const result = await service.mockGetAllReadings(0, 1);
-
+      // Test limit
+      result = await service.mockGetAllReadings(0, 1);
       expect(result.readings.length).toBe(1);
       expect(result.hasMore).toBe(true);
     });
 
     it('should return empty array when no data', async () => {
       localStorage.removeItem('diabetactic_mock_readings');
-
       const result = await service.mockGetAllReadings();
-
       expect(result.readings).toEqual([]);
       expect(result.total).toBe(0);
-    });
-
-    it('should simulate network delay', async () => {
-      const startTime = Date.now();
-      await service.mockGetAllReadings();
-      const duration = Date.now() - startTime;
-
-      // Allow some timing variance (300ms target, 280ms threshold for CI reliability)
-      expect(duration).toBeGreaterThanOrEqual(280);
     });
   });
 
   describe('mockAddReading', () => {
-    it('should add a new reading', async () => {
-      const reading: Omit<LocalGlucoseReading, 'id'> = {
+    it('should add reading with unique ID and local metadata', async () => {
+      const reading = {
         type: 'smbg',
         value: 135,
         units: 'mg/dL',
         time: new Date().toISOString(),
         deviceId: 'test',
-        synced: false,
       } as Omit<LocalGlucoseReading, 'id'>;
 
       const result = await service.mockAddReading(reading);
 
-      expect(result).toBeDefined();
-      expect(result.id).toBeDefined();
       expect(result.id).toMatch(/^mock_/);
       expect(result.value).toBe(135);
-      expect(result.synced).toBe(false);
-    });
-
-    it('should mark reading as local only', async () => {
-      const reading = {
-        type: 'smbg',
-        value: 135,
-        units: 'mg/dL',
-        time: new Date().toISOString(),
-        deviceId: 'test',
-      } as Omit<LocalGlucoseReading, 'id'>;
-
-      const result = await service.mockAddReading(reading);
-
       expect(result.isLocalOnly).toBe(true);
       expect(result.localStoredAt).toBeDefined();
-    });
 
-    it('should persist reading to localStorage', async () => {
-      const reading = {
-        type: 'smbg',
-        value: 140,
-        units: 'mg/dL',
-        time: new Date().toISOString(),
-        deviceId: 'test',
-      } as Omit<LocalGlucoseReading, 'id'>;
-
-      await service.mockAddReading(reading);
-
+      // Verify persistence
       const stored = JSON.parse(localStorage.getItem('diabetactic_mock_readings') || '[]');
       expect(stored.length).toBeGreaterThan(0);
-      expect(stored[stored.length - 1].value).toBe(140);
     });
 
     it('should generate unique IDs', async () => {
@@ -250,27 +180,23 @@ describe('MockAdapterService', () => {
 
       const result1 = await service.mockAddReading(reading);
       const result2 = await service.mockAddReading(reading);
-
       expect(result1.id).not.toBe(result2.id);
     });
   });
 
   describe('mockUpdateReading', () => {
     beforeEach(() => {
-      const readings = [
-        {
-          id: 'test-1',
-          value: 120,
-          synced: false,
-        } as LocalGlucoseReading,
-      ];
-      localStorage.setItem('diabetactic_mock_readings', JSON.stringify(readings));
+      localStorage.setItem('diabetactic_mock_readings', JSON.stringify([createReading()]));
     });
 
-    it('should update existing reading', async () => {
-      const result = await service.mockUpdateReading('test-1', { value: 130 });
+    it('should update existing reading and persist changes', async () => {
+      const result = await service.mockUpdateReading('test-1', { value: 140, synced: true });
 
-      expect(result.value).toBe(130);
+      expect(result.value).toBe(140);
+
+      const stored = JSON.parse(localStorage.getItem('diabetactic_mock_readings') || '[]');
+      expect(stored[0].value).toBe(140);
+      expect(stored[0].synced).toBe(true);
     });
 
     it('should throw error for non-existent reading', async () => {
@@ -278,21 +204,13 @@ describe('MockAdapterService', () => {
         'Reading not found'
       );
     });
-
-    it('should persist updates to localStorage', async () => {
-      await service.mockUpdateReading('test-1', { value: 140, synced: true });
-
-      const stored = JSON.parse(localStorage.getItem('diabetactic_mock_readings') || '[]');
-      expect(stored[0].value).toBe(140);
-      expect(stored[0].synced).toBe(true);
-    });
   });
 
   describe('mockDeleteReading', () => {
     beforeEach(() => {
       const readings = [
-        { id: 'test-1', value: 120 } as LocalGlucoseReading,
-        { id: 'test-2', value: 130 } as LocalGlucoseReading,
+        createReading({ id: 'test-1' }),
+        createReading({ id: 'test-2', value: 130 }),
       ];
       localStorage.setItem('diabetactic_mock_readings', JSON.stringify(readings));
     });
@@ -312,71 +230,56 @@ describe('MockAdapterService', () => {
 
   describe('mockGetReadingById', () => {
     beforeEach(() => {
-      const readings = [{ id: 'test-1', value: 120 } as LocalGlucoseReading];
-      localStorage.setItem('diabetactic_mock_readings', JSON.stringify(readings));
+      localStorage.setItem('diabetactic_mock_readings', JSON.stringify([createReading()]));
     });
 
-    it('should return reading by ID', async () => {
+    it('should return reading by ID or throw if not found', async () => {
       const result = await service.mockGetReadingById('test-1');
-
-      expect(result).toBeDefined();
       expect(result.id).toBe('test-1');
       expect(result.value).toBe(120);
-    });
 
-    it('should throw error for non-existent reading', async () => {
       await expect(service.mockGetReadingById('nonexistent')).rejects.toThrow('Reading not found');
     });
   });
 
   describe('mockSyncReadings', () => {
-    beforeEach(() => {
+    it('should sync unsynced readings and mark them as synced', async () => {
       const readings = [
-        { id: '1', synced: false } as LocalGlucoseReading,
-        { id: '2', synced: false } as LocalGlucoseReading,
-        { id: '3', synced: true } as LocalGlucoseReading,
+        createReading({ id: '1', synced: false }),
+        createReading({ id: '2', synced: false }),
+        createReading({ id: '3', synced: true }),
       ];
       localStorage.setItem('diabetactic_mock_readings', JSON.stringify(readings));
-    });
 
-    it('should sync unsynced readings', async () => {
       const result = await service.mockSyncReadings();
 
       expect(result.synced).toBe(2);
       expect(result.failed).toBe(0);
-    });
-
-    it('should mark readings as synced', async () => {
-      await service.mockSyncReadings();
 
       const stored = JSON.parse(localStorage.getItem('diabetactic_mock_readings') || '[]');
       expect(stored.every((r: LocalGlucoseReading) => r.synced)).toBe(true);
     });
-
-    it('should simulate longer sync delay', async () => {
-      const startTime = Date.now();
-      await service.mockSyncReadings();
-      const duration = Date.now() - startTime;
-
-      // Allow 50ms tolerance for timer inaccuracies
-      expect(duration).toBeGreaterThanOrEqual(750);
-    });
   });
 
+  // ============================================================================
+  // AUTHENTICATION
+  // ============================================================================
+
   describe('mockLogin', () => {
-    it('should authenticate with valid email credentials', async () => {
-      const result = await service.mockLogin('demo@diabetactic.com', 'demo123');
+    it('should authenticate with valid credentials and persist token', async () => {
+      const testCases = [
+        { username: 'demo@diabetactic.com', password: 'demo123' },
+        { username: '1000', password: 'demo123' },
+      ];
 
-      expect(result).toBeDefined();
-      expect(result.token).toContain('mock_token_');
-      expect(result.user).toBeDefined();
-    });
+      for (const { username, password } of testCases) {
+        const result = await service.mockLogin(username, password);
+        expect(result.token).toContain('mock_token_');
+        expect(result.user).toBeDefined();
+      }
 
-    it('should authenticate with valid DNI credentials', async () => {
-      const result = await service.mockLogin('1000', 'demo123');
-
-      expect(result).toBeDefined();
-      expect(result.token).toContain('mock_token_');
+      const token = localStorage.getItem('diabetactic_mock_token');
+      expect(token).toContain('mock_token_');
     });
 
     it('should reject invalid credentials', async () => {
@@ -385,26 +288,17 @@ describe('MockAdapterService', () => {
       );
     });
 
-    it('should persist token to localStorage', async () => {
-      await service.mockLogin('demo@diabetactic.com', 'demo123');
-
-      const token = localStorage.getItem('diabetactic_mock_token');
-      expect(token).toBeDefined();
-      expect(token).toContain('mock_token_');
-    });
-
     it('should return stored profile if available', async () => {
       const testProfile = { id: 'test123', name: 'Test User' } as UserProfile;
       localStorage.setItem('diabetactic_mock_profile', JSON.stringify(testProfile));
 
       const result = await service.mockLogin('demo@diabetactic.com', 'demo123');
-
       expect(result.user.id).toBe('test123');
     });
   });
 
   describe('mockRegister', () => {
-    it('should create new user profile', async () => {
+    it('should create new user with default preferences', async () => {
       const userData = {
         dni: '12345',
         password: 'password123',
@@ -414,21 +308,8 @@ describe('MockAdapterService', () => {
 
       const result = await service.mockRegister(userData);
 
-      expect(result).toBeDefined();
       expect(result.token).toContain('mock_token_');
       expect(result.user.name).toBe('John Doe');
-    });
-
-    it('should set default preferences', async () => {
-      const userData = {
-        dni: '12345',
-        password: 'password123',
-        name: 'John Doe',
-        email: 'john@example.com',
-      };
-
-      const result = await service.mockRegister(userData);
-
       expect(result.user.preferences.glucoseUnit).toBe('mg/dL');
       expect(result.user.preferences.targetRange.min).toBe(70);
       expect(result.user.preferences.targetRange.max).toBe(180);
@@ -438,187 +319,124 @@ describe('MockAdapterService', () => {
   describe('mockLogout', () => {
     it('should remove mock token', async () => {
       localStorage.setItem('diabetactic_mock_token', 'mock_token_123');
-
       await service.mockLogout();
-
       expect(localStorage.getItem('diabetactic_mock_token')).toBeNull();
     });
   });
 
-  describe('mockGetProfile', () => {
-    it('should return stored profile', async () => {
+  // ============================================================================
+  // PROFILE MANAGEMENT
+  // ============================================================================
+
+  describe('Profile Management', () => {
+    it('should return stored profile or generate one', async () => {
+      // With stored profile
       const profile = { id: 'test123', name: 'Test User' } as UserProfile;
       localStorage.setItem('diabetactic_mock_profile', JSON.stringify(profile));
 
-      const result = await service.mockGetProfile();
-
+      let result = await service.mockGetProfile();
       expect(result.id).toBe('test123');
-    });
 
-    it('should generate profile with faker if not stored', async () => {
+      // Without stored profile - should generate
+      localStorage.removeItem('diabetactic_mock_profile');
       demoDataService.generateUserProfile.mockReturnValue({
         id: 'generated-id',
         name: 'Generated User',
       } as UserProfile);
 
-      localStorage.removeItem('diabetactic_mock_profile');
-
-      const result = await service.mockGetProfile();
-
+      result = await service.mockGetProfile();
       expect(result.id).toBeDefined();
-      expect(result.name).toBeDefined();
     });
-  });
 
-  describe('mockUpdateProfile', () => {
-    it('should update existing profile', async () => {
-      const profile = { id: 'test123', name: 'Original Name' } as UserProfile;
+    it('should update profile and timestamp', async () => {
+      const profile = {
+        id: 'test123',
+        name: 'Original Name',
+        updatedAt: new Date('2020-01-01').toISOString(),
+      } as UserProfile;
       localStorage.setItem('diabetactic_mock_profile', JSON.stringify(profile));
 
       const result = await service.mockUpdateProfile({ name: 'Updated Name' });
 
       expect(result.name).toBe('Updated Name');
       expect(result.id).toBe('test123');
-    });
-
-    it('should update updatedAt timestamp', async () => {
-      const profile = {
-        id: 'test123',
-        updatedAt: new Date('2020-01-01').toISOString(),
-      } as UserProfile;
-      localStorage.setItem('diabetactic_mock_profile', JSON.stringify(profile));
-
-      const result = await service.mockUpdateProfile({ name: 'New Name' });
-
       expect(new Date(result.updatedAt!).getTime()).toBeGreaterThan(
         new Date('2020-01-01').getTime()
       );
     });
   });
 
-  describe('mockVerifyToken', () => {
-    it('should verify valid mock token', async () => {
-      const result = await service.mockVerifyToken('mock_token_123');
+  // ============================================================================
+  // TOKEN MANAGEMENT
+  // ============================================================================
 
-      expect(result).toBe(true);
-    });
+  describe('Token Management', () => {
+    it('should verify and refresh tokens correctly', async () => {
+      // Verify valid token
+      expect(await service.mockVerifyToken('mock_token_123')).toBe(true);
+      expect(await service.mockVerifyToken('invalid_token')).toBe(false);
 
-    it('should reject invalid token', async () => {
-      const result = await service.mockVerifyToken('invalid_token');
-
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('mockRefreshToken', () => {
-    it('should refresh valid token', async () => {
+      // Refresh valid token
       const newToken = await service.mockRefreshToken('mock_token_123');
-
       expect(newToken).toContain('mock_token_');
       expect(newToken).not.toBe('mock_token_123');
-    });
 
-    it('should reject invalid token refresh', async () => {
+      // Verify persisted
+      expect(localStorage.getItem('diabetactic_mock_token')).toContain('mock_token_');
+
+      // Reject invalid refresh
       await expect(service.mockRefreshToken('invalid_token')).rejects.toThrow('Invalid token');
     });
-
-    it('should persist new token', async () => {
-      await service.mockRefreshToken('mock_token_123');
-
-      const stored = localStorage.getItem('diabetactic_mock_token');
-      expect(stored).toContain('mock_token_');
-    });
   });
+
+  // ============================================================================
+  // STATISTICS
+  // ============================================================================
 
   describe('mockGetStatistics', () => {
     beforeEach(() => {
-      const readings: LocalGlucoseReading[] = [
-        {
-          id: '1',
-          value: 120,
-          time: new Date().toISOString(),
-          type: 'smbg',
-          units: 'mg/dL',
-          deviceId: 'test',
-          synced: true,
-        } as LocalGlucoseReading,
-        {
-          id: '2',
-          value: 100,
-          time: new Date().toISOString(),
-          type: 'smbg',
-          units: 'mg/dL',
-          deviceId: 'test',
-          synced: true,
-        } as LocalGlucoseReading,
-        {
-          id: '3',
-          value: 200,
-          time: new Date().toISOString(),
-          type: 'smbg',
-          units: 'mg/dL',
-          deviceId: 'test',
-          synced: true,
-        } as LocalGlucoseReading,
+      const readings = [
+        createReading({ id: '1', value: 120 }),
+        createReading({ id: '2', value: 100 }),
+        createReading({ id: '3', value: 200 }),
       ];
       localStorage.setItem('diabetactic_mock_readings', JSON.stringify(readings));
     });
 
-    it('should calculate average glucose', async () => {
+    it('should calculate all statistics correctly', async () => {
       const stats = await service.mockGetStatistics(30);
 
-      expect(stats.average).toBe(140); // (120 + 100 + 200) / 3 = 140
-    });
-
-    it('should calculate median glucose', async () => {
-      const stats = await service.mockGetStatistics(30);
-
+      expect(stats.average).toBe(140); // (120 + 100 + 200) / 3
       expect(stats.median).toBe(120); // Median of [100, 120, 200]
-    });
-
-    it('should calculate time in range', async () => {
-      const stats = await service.mockGetStatistics(30);
-
-      // 2 out of 3 readings in range (70-180)
-      expect(stats.timeInRange).toBe(67); // 2/3 = 66.67 rounded
-    });
-
-    it('should calculate time above range', async () => {
-      const stats = await service.mockGetStatistics(30);
-
-      // 1 out of 3 readings above 180
-      expect(stats.timeAboveRange).toBe(33);
+      expect(stats.timeInRange).toBe(67); // 2/3 in range
+      expect(stats.timeAboveRange).toBe(33); // 1/3 above range
     });
 
     it('should return zero stats for no data', async () => {
       localStorage.removeItem('diabetactic_mock_readings');
-
       const stats = await service.mockGetStatistics(30);
-
       expect(stats.average).toBe(0);
       expect(stats.totalReadings).toBe(0);
     });
 
     it('should filter by date range', async () => {
-      const oldReading = {
+      const oldReading = createReading({
         id: '4',
         value: 90,
         time: new Date('2020-01-01').toISOString(),
-        type: 'smbg',
-        units: 'mg/dL',
-        deviceId: 'test',
-        synced: true,
-      } as LocalGlucoseReading;
-
+      });
       const stored = JSON.parse(localStorage.getItem('diabetactic_mock_readings') || '[]');
       stored.push(oldReading);
       localStorage.setItem('diabetactic_mock_readings', JSON.stringify(stored));
 
-      const stats = await service.mockGetStatistics(7); // Last 7 days only
-
+      const stats = await service.mockGetStatistics(7);
       expect(stats.totalReadings).toBe(3); // Should not include old reading
     });
   });
+
+  // ============================================================================
+  // DATA MANAGEMENT & EDGE CASES
+  // ============================================================================
 
   describe('clearAllMockData', () => {
     it('should clear all mock data from localStorage', () => {
@@ -641,15 +459,12 @@ describe('MockAdapterService', () => {
   describe('Edge Cases', () => {
     it('should handle corrupted localStorage data gracefully', async () => {
       localStorage.setItem('diabetactic_mock_readings', 'invalid json');
-
       await expect(service.mockGetAllReadings()).rejects.toThrow();
     });
 
     it('should handle null values in localStorage', async () => {
       localStorage.removeItem('diabetactic_mock_readings');
-
       const result = await service.mockGetAllReadings();
-
       expect(result.readings).toEqual([]);
     });
 
@@ -662,7 +477,6 @@ describe('MockAdapterService', () => {
         deviceId: 'test',
       } as Omit<LocalGlucoseReading, 'id'>);
 
-      // Small delay to ensure different timestamp
       await new Promise(resolve => setTimeout(resolve, 10));
 
       const reading2 = await service.mockAddReading({

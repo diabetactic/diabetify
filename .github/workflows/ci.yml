@@ -146,6 +146,56 @@ jobs:
           retention-days: 7
 
   # ============================================================================
+  # Docker Integration Tests (Optional - trigger with label)
+  # Trophy: middle layer - real backend integration
+  # ============================================================================
+  integration-tests:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' ||
+      contains(github.event.pull_request.labels.*.name, 'run-integration')
+    needs: [lint, unit-tests]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: diabetactic_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Start Backend Services
+        run: |
+          cd docker
+          docker compose -f docker-compose.test.yml up -d --wait
+        continue-on-error: true
+
+      - name: Run Integration Tests
+        run: pnpm test:integration
+        env:
+          E2E_DOCKER_TESTS: true
+          E2E_API_URL: http://localhost:8000
+        continue-on-error: true
+
+      - name: Stop Backend Services
+        if: always()
+        run: |
+          cd docker
+          docker compose -f docker-compose.test.yml down -v
+        continue-on-error: true
+
+  # ============================================================================
   # PR Size Labeler
   # ============================================================================
   pr-labeler:

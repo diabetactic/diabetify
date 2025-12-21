@@ -22,10 +22,6 @@ describe('TipsPage', () => {
   });
 
   describe('Initialization', () => {
-    it('should create', () => {
-      expect(component).toBeTruthy();
-    });
-
     it('should initialize with tips array', () => {
       expect(component.tips).toBeDefined();
       expect(component.tips.length).toBeGreaterThan(0);
@@ -53,210 +49,92 @@ describe('TipsPage', () => {
   });
 
   describe('Tips Content', () => {
-    it('should have hydration tip', () => {
-      const hydrationTip = component.tips.find(t => t.icon === 'water-outline');
-      expect(hydrationTip).toBeDefined();
-      expect(hydrationTip?.title).toBe('tips.hydration.title');
-      expect(hydrationTip?.category).toBe('glucose');
-    });
+    it('should have all expected tips with correct structure', () => {
+      const expectedTips = [
+        { icon: 'water-outline', titleKey: 'tips.hydration.title', category: 'glucose' },
+        { icon: 'restaurant-outline', titleKey: 'tips.meals.title', category: 'nutrition' },
+        { icon: 'walk-outline', titleKey: 'tips.exercise.title', category: 'exercise' },
+        { icon: 'time-outline', titleKey: 'tips.monitoring.title', category: 'glucose' },
+        { icon: 'medical-outline', titleKey: 'tips.medication.title', category: 'medication' },
+        { icon: 'moon-outline', titleKey: 'tips.sleep.title', category: 'glucose' },
+        { icon: 'happy-outline', titleKey: 'tips.stress.title', category: 'wellness' },
+        { icon: 'footsteps-outline', titleKey: 'tips.footcare.title', category: 'wellness' },
+        { icon: 'warning-outline', titleKey: 'tips.emergency.title', category: 'safety' },
+        { icon: 'people-outline', titleKey: 'tips.support.title', category: 'safety' },
+      ];
 
-    it('should have meals tip', () => {
-      const mealsTip = component.tips.find(t => t.icon === 'restaurant-outline');
-      expect(mealsTip).toBeDefined();
-      expect(mealsTip?.title).toBe('tips.meals.title');
-      expect(mealsTip?.category).toBe('nutrition');
-    });
-
-    it('should have exercise tip', () => {
-      const exerciseTip = component.tips.find(t => t.icon === 'walk-outline');
-      expect(exerciseTip).toBeDefined();
-      expect(exerciseTip?.title).toBe('tips.exercise.title');
-      expect(exerciseTip?.category).toBe('exercise');
-    });
-
-    it('should have monitoring tip', () => {
-      const monitoringTip = component.tips.find(t => t.icon === 'time-outline');
-      expect(monitoringTip).toBeDefined();
-      expect(monitoringTip?.title).toBe('tips.monitoring.title');
-      expect(monitoringTip?.category).toBe('glucose');
-    });
-
-    it('should have medication tip', () => {
-      const medicationTip = component.tips.find(t => t.icon === 'medical-outline');
-      expect(medicationTip).toBeDefined();
-      expect(medicationTip?.title).toBe('tips.medication.title');
-      expect(medicationTip?.category).toBe('medication');
-    });
-
-    it('should have sleep tip', () => {
-      const sleepTip = component.tips.find(t => t.icon === 'moon-outline');
-      expect(sleepTip).toBeDefined();
-      expect(sleepTip?.title).toBe('tips.sleep.title');
-      expect(sleepTip?.category).toBe('glucose');
-    });
-
-    it('should have stress management tip', () => {
-      const stressTip = component.tips.find(t => t.icon === 'happy-outline');
-      expect(stressTip).toBeDefined();
-      expect(stressTip?.title).toBe('tips.stress.title');
-      expect(stressTip?.category).toBe('wellness');
-    });
-
-    it('should have foot care tip', () => {
-      const footcareTip = component.tips.find(t => t.icon === 'footsteps-outline');
-      expect(footcareTip).toBeDefined();
-      expect(footcareTip?.title).toBe('tips.footcare.title');
-      expect(footcareTip?.category).toBe('wellness');
-    });
-
-    it('should have emergency preparedness tip', () => {
-      const emergencyTip = component.tips.find(t => t.icon === 'warning-outline');
-      expect(emergencyTip).toBeDefined();
-      expect(emergencyTip?.title).toBe('tips.emergency.title');
-      expect(emergencyTip?.category).toBe('safety');
-    });
-
-    it('should have social support tip', () => {
-      const supportTip = component.tips.find(t => t.icon === 'people-outline');
-      expect(supportTip).toBeDefined();
-      expect(supportTip?.title).toBe('tips.support.title');
-      expect(supportTip?.category).toBe('safety');
+      expectedTips.forEach(expected => {
+        const tip = component.tips.find(t => t.icon === expected.icon);
+        expect(tip).toBeDefined();
+        expect(tip?.title).toBe(expected.titleKey);
+        expect(tip?.category).toBe(expected.category);
+      });
     });
   });
 
   describe('Category Distribution', () => {
-    it('should have multiple glucose tips', () => {
-      const glucoseTips = component.tips.filter(t => t.category === 'glucose');
-      expect(glucoseTips.length).toBeGreaterThanOrEqual(3);
-    });
+    it('should have tips distributed across all categories', () => {
+      const expectedCategories = {
+        glucose: 3,
+        nutrition: 1,
+        exercise: 1,
+        medication: 1,
+        wellness: 2,
+        safety: 2,
+      };
 
-    it('should have nutrition tip', () => {
-      const nutritionTips = component.tips.filter(t => t.category === 'nutrition');
-      expect(nutritionTips.length).toBeGreaterThanOrEqual(1);
-    });
-
-    it('should have exercise tip', () => {
-      const exerciseTips = component.tips.filter(t => t.category === 'exercise');
-      expect(exerciseTips.length).toBeGreaterThanOrEqual(1);
-    });
-
-    it('should have medication tip', () => {
-      const medicationTips = component.tips.filter(t => t.category === 'medication');
-      expect(medicationTips.length).toBeGreaterThanOrEqual(1);
-    });
-
-    it('should have wellness tips', () => {
-      const wellnessTips = component.tips.filter(t => t.category === 'wellness');
-      expect(wellnessTips.length).toBeGreaterThanOrEqual(2);
-    });
-
-    it('should have safety tips', () => {
-      const safetyTips = component.tips.filter(t => t.category === 'safety');
-      expect(safetyTips.length).toBeGreaterThanOrEqual(2);
+      Object.entries(expectedCategories).forEach(([category, minCount]) => {
+        const tips = component.tips.filter(t => t.category === category);
+        expect(tips.length).toBeGreaterThanOrEqual(minCount);
+      });
     });
   });
 
   describe('getCategoryIcon', () => {
-    it('should return analytics icon for glucose category', () => {
-      const icon = component.getCategoryIcon('glucose');
-      expect(icon).toBe('analytics-outline');
+    it('should map all categories to correct icons', () => {
+      const categoryIcons: Record<string, string> = {
+        glucose: 'analytics-outline',
+        nutrition: 'nutrition-outline',
+        exercise: 'fitness-outline',
+        medication: 'medical-outline',
+        wellness: 'heart-outline',
+        safety: 'shield-checkmark-outline',
+      };
+
+      Object.entries(categoryIcons).forEach(([category, expectedIcon]) => {
+        expect(component.getCategoryIcon(category)).toBe(expectedIcon);
+      });
     });
 
-    it('should return nutrition icon for nutrition category', () => {
-      const icon = component.getCategoryIcon('nutrition');
-      expect(icon).toBe('nutrition-outline');
-    });
-
-    it('should return fitness icon for exercise category', () => {
-      const icon = component.getCategoryIcon('exercise');
-      expect(icon).toBe('fitness-outline');
-    });
-
-    it('should return medical icon for medication category', () => {
-      const icon = component.getCategoryIcon('medication');
-      expect(icon).toBe('medical-outline');
-    });
-
-    it('should return heart icon for wellness category', () => {
-      const icon = component.getCategoryIcon('wellness');
-      expect(icon).toBe('heart-outline');
-    });
-
-    it('should return shield icon for safety category', () => {
-      const icon = component.getCategoryIcon('safety');
-      expect(icon).toBe('shield-checkmark-outline');
-    });
-
-    it('should return default icon for unknown category', () => {
-      const icon = component.getCategoryIcon('unknown');
-      expect(icon).toBe('information-circle-outline');
-    });
-
-    it('should handle empty string category', () => {
-      const icon = component.getCategoryIcon('');
-      expect(icon).toBe('information-circle-outline');
-    });
-
-    it('should handle null category', () => {
-      const icon = component.getCategoryIcon(null as any);
-      expect(icon).toBe('information-circle-outline');
-    });
-
-    it('should handle undefined category', () => {
-      const icon = component.getCategoryIcon(undefined as any);
-      expect(icon).toBe('information-circle-outline');
+    it('should return default icon for invalid inputs', () => {
+      const invalidInputs = ['unknown', '', null, undefined];
+      invalidInputs.forEach(input => {
+        expect(component.getCategoryIcon(input as any)).toBe('information-circle-outline');
+      });
     });
   });
 
   describe('getCategoryColor', () => {
-    it('should return primary color for glucose category', () => {
-      const color = component.getCategoryColor('glucose');
-      expect(color).toBe('primary');
+    it('should map all categories to correct colors', () => {
+      const categoryColors: Record<string, string> = {
+        glucose: 'primary',
+        nutrition: 'success',
+        exercise: 'warning',
+        medication: 'danger',
+        wellness: 'tertiary',
+        safety: 'secondary',
+      };
+
+      Object.entries(categoryColors).forEach(([category, expectedColor]) => {
+        expect(component.getCategoryColor(category)).toBe(expectedColor);
+      });
     });
 
-    it('should return success color for nutrition category', () => {
-      const color = component.getCategoryColor('nutrition');
-      expect(color).toBe('success');
-    });
-
-    it('should return warning color for exercise category', () => {
-      const color = component.getCategoryColor('exercise');
-      expect(color).toBe('warning');
-    });
-
-    it('should return danger color for medication category', () => {
-      const color = component.getCategoryColor('medication');
-      expect(color).toBe('danger');
-    });
-
-    it('should return tertiary color for wellness category', () => {
-      const color = component.getCategoryColor('wellness');
-      expect(color).toBe('tertiary');
-    });
-
-    it('should return secondary color for safety category', () => {
-      const color = component.getCategoryColor('safety');
-      expect(color).toBe('secondary');
-    });
-
-    it('should return medium color for unknown category', () => {
-      const color = component.getCategoryColor('unknown');
-      expect(color).toBe('medium');
-    });
-
-    it('should handle empty string category', () => {
-      const color = component.getCategoryColor('');
-      expect(color).toBe('medium');
-    });
-
-    it('should handle null category', () => {
-      const color = component.getCategoryColor(null as any);
-      expect(color).toBe('medium');
-    });
-
-    it('should handle undefined category', () => {
-      const color = component.getCategoryColor(undefined as any);
-      expect(color).toBe('medium');
+    it('should return default color for invalid inputs', () => {
+      const invalidInputs = ['unknown', '', null, undefined];
+      invalidInputs.forEach(input => {
+        expect(component.getCategoryColor(input as any)).toBe('medium');
+      });
     });
   });
 
@@ -313,62 +191,20 @@ describe('TipsPage', () => {
   });
 
   describe('Tips Data Integrity', () => {
-    it('should have unique icons for each tip', () => {
+    it('should have unique icons, titles, and descriptions for each tip', () => {
       const icons = component.tips.map(t => t.icon);
-      const uniqueIcons = new Set(icons);
-      expect(uniqueIcons.size).toBe(icons.length);
-    });
-
-    it('should have unique titles for each tip', () => {
       const titles = component.tips.map(t => t.title);
-      const uniqueTitles = new Set(titles);
-      expect(uniqueTitles.size).toBe(titles.length);
-    });
-
-    it('should have unique descriptions for each tip', () => {
       const descriptions = component.tips.map(t => t.description);
-      const uniqueDescriptions = new Set(descriptions);
-      expect(uniqueDescriptions.size).toBe(descriptions.length);
+
+      expect(new Set(icons).size).toBe(icons.length);
+      expect(new Set(titles).size).toBe(titles.length);
+      expect(new Set(descriptions).size).toBe(descriptions.length);
     });
 
-    it('should not have empty translation keys', () => {
+    it('should have non-empty translation keys', () => {
       component.tips.forEach(tip => {
         expect(tip.title.length).toBeGreaterThan(0);
         expect(tip.description.length).toBeGreaterThan(0);
-      });
-    });
-  });
-
-  describe('Category Helpers Coverage', () => {
-    it('should cover all category types with getCategoryIcon', () => {
-      const categories = ['glucose', 'nutrition', 'exercise', 'medication', 'wellness', 'safety'];
-      categories.forEach(category => {
-        const icon = component.getCategoryIcon(category);
-        expect(icon).not.toBe('information-circle-outline');
-      });
-    });
-
-    it('should cover all category types with getCategoryColor', () => {
-      const categories = ['glucose', 'nutrition', 'exercise', 'medication', 'wellness', 'safety'];
-      categories.forEach(category => {
-        const color = component.getCategoryColor(category);
-        expect(color).not.toBe('medium');
-      });
-    });
-
-    it('should map all tip categories to valid icons', () => {
-      component.tips.forEach(tip => {
-        const icon = component.getCategoryIcon(tip.category);
-        expect(icon).toBeTruthy();
-        expect(icon).not.toBe('');
-      });
-    });
-
-    it('should map all tip categories to valid colors', () => {
-      component.tips.forEach(tip => {
-        const color = component.getCategoryColor(tip.category);
-        expect(color).toBeTruthy();
-        expect(color).not.toBe('');
       });
     });
   });

@@ -43,138 +43,70 @@ describe('PlatformDetectorService', () => {
 
     service = TestBed.inject(PlatformDetectorService);
 
-    // Reset mocks
     vi.clearAllMocks();
     vi.mocked(getApiGatewayOverride).mockReturnValue(null);
   });
 
+  // ============================================================================
+  // API BASE URL TESTS
+  // ============================================================================
+
   describe('getApiBaseUrl', () => {
-    describe('with override', () => {
-      it('should use override URL when provided', () => {
-        const overrideUrl = 'https://override.example.com';
-        vi.mocked(getApiGatewayOverride).mockReturnValue(overrideUrl);
+    it('should use override URL when provided', () => {
+      const overrideUrl = 'https://override.example.com';
+      vi.mocked(getApiGatewayOverride).mockReturnValue(overrideUrl);
 
-        const url = service.getApiBaseUrl();
-
-        expect(url).toBe(overrideUrl);
-      });
+      expect(service.getApiBaseUrl()).toBe(overrideUrl);
     });
 
-    describe('web platform', () => {
-      beforeEach(() => {
-        vi.mocked(Capacitor.isNativePlatform).mockReturnValue(false);
-      });
+    it('should return correct URL for web platform', () => {
+      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(false);
 
-      it('should return default URL for web', () => {
-        const url = service.getApiBaseUrl();
-
-        expect(url).toBe(API_GATEWAY_BASE_URL);
-      });
-
-      it('should use provided default URL', () => {
-        const customDefault = 'https://custom.example.com';
-        const url = service.getApiBaseUrl(customDefault);
-
-        expect(url).toBe(customDefault);
-      });
+      expect(service.getApiBaseUrl()).toBe(API_GATEWAY_BASE_URL);
+      expect(service.getApiBaseUrl('https://custom.example.com')).toBe(
+        'https://custom.example.com'
+      );
     });
 
-    describe('Android platform', () => {
-      beforeEach(() => {
-        vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
-        vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
+    it('should handle Android platform with HTTPS and localhost URLs', () => {
+      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+      vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
+
+      // HTTPS and non-localhost URLs should pass through
+      expect(service.getApiBaseUrl('https://api.example.com')).toBe('https://api.example.com');
+      expect(service.getApiBaseUrl('http://api.example.com')).toBe('http://api.example.com');
+
+      // Android emulator detection - localhost should become 10.0.2.2
+      Object.defineProperty(navigator, 'userAgent', {
+        value: 'Android SDK built for x86',
+        writable: true,
+        configurable: true,
       });
 
-      it('should use cloud URL directly for HTTPS URLs', () => {
-        const cloudUrl = 'https://api.example.com';
-
-        const url = service.getApiBaseUrl(cloudUrl);
-
-        expect(url).toBe(cloudUrl);
-      });
-
-      it('should use cloud URL for non-localhost HTTP URLs', () => {
-        const cloudUrl = 'http://api.example.com';
-
-        const url = service.getApiBaseUrl(cloudUrl);
-
-        expect(url).toBe(cloudUrl);
-      });
-
-      it('should use 10.0.2.2 for emulator with localhost', () => {
-        // Mock Android emulator detection
-        Object.defineProperty(navigator, 'userAgent', {
-          value: 'Android SDK built for x86',
-          writable: true,
-          configurable: true,
-        });
-
-        const url = service.getApiBaseUrl('http://localhost:8000');
-
-        expect(url).toBe('http://10.0.2.2:8000');
-      });
-
-      it('should warn for real device with localhost', () => {
-        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation();
-
-        // Mock real Android device (non-emulator)
-        Object.defineProperty(navigator, 'userAgent', {
-          value: 'Mozilla/5.0 (Linux; Android 12) Mobile',
-          writable: true,
-        });
-
-        // Can't redefine window.location.hostname, so skip this assertion
-        const url = service.getApiBaseUrl('http://localhost:8000');
-
-        // Should either warn or redirect based on actual hostname
-        expect(url).toBeDefined();
-        consoleSpy.mockRestore();
-      });
+      expect(service.getApiBaseUrl('http://localhost:8000')).toBe('http://10.0.2.2:8000');
     });
 
-    describe('iOS platform', () => {
-      beforeEach(() => {
-        vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
-        vi.mocked(Capacitor.getPlatform).mockReturnValue('ios');
+    it('should handle iOS platform with localhost', () => {
+      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+      vi.mocked(Capacitor.getPlatform).mockReturnValue('ios');
+
+      Object.defineProperty(navigator, 'userAgent', {
+        value: 'iPhone Simulator',
+        writable: true,
       });
 
-      it('should use localhost for iOS simulator', () => {
-        // Mock iOS simulator detection
-        Object.defineProperty(navigator, 'userAgent', {
-          value: 'iPhone Simulator',
-          writable: true,
-        });
-
-        const url = service.getApiBaseUrl('http://localhost:8000');
-
-        expect(url).toBe('http://localhost:8000');
-      });
-
-      it('should use production URL for real iOS device', () => {
-        // Mock real iOS device (non-simulator)
-        Object.defineProperty(navigator, 'userAgent', {
-          value: 'iPhone',
-          writable: true,
-        });
-
-        // Mock DeviceMotionEvent to indicate real device
-        Object.defineProperty(window, 'DeviceMotionEvent', {
-          value: function () {},
-          writable: true,
-        });
-
-        const url = service.getApiBaseUrl('http://localhost:8000');
-
-        // Should fall back to default since getProductionUrl returns null
-        expect(url).toBeDefined();
-      });
+      expect(service.getApiBaseUrl('http://localhost:8000')).toBe('http://localhost:8000');
     });
   });
 
+  // ============================================================================
+  // PLATFORM CONFIG TESTS
+  // ============================================================================
+
   describe('getPlatformConfig', () => {
-    it('should return web platform config', () => {
+    it('should return correct config for web platform', () => {
       vi.mocked(Capacitor.isNativePlatform).mockReturnValue(false);
-      mockPlatform.is.mockImplementation((platformName: string) => platformName === 'desktop');
+      mockPlatform.is.mockImplementation((p: string) => p === 'desktop');
 
       const config = service.getPlatformConfig();
 
@@ -183,41 +115,29 @@ describe('PlatformDetectorService', () => {
       expect(config.isWeb).toBe(true);
       expect(config.isDesktop).toBe(true);
       expect(config.isMobile).toBe(false);
+      expect(config.baseUrl).toBeDefined();
     });
 
-    it('should return Android platform config', () => {
+    it('should return correct config for native platforms', () => {
+      // Android
       vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
       vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
-      mockPlatform.is.mockImplementation((platformName: string) => platformName === 'mobile');
+      mockPlatform.is.mockImplementation((p: string) => p === 'mobile');
 
-      const config = service.getPlatformConfig();
-
+      let config = service.getPlatformConfig();
       expect(config.platform).toBe('android');
       expect(config.isNative).toBe(true);
       expect(config.isWeb).toBe(false);
       expect(config.isMobile).toBe(true);
       expect(config.isDesktop).toBe(false);
-    });
 
-    it('should return iOS platform config', () => {
-      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
+      // iOS
       vi.mocked(Capacitor.getPlatform).mockReturnValue('ios');
-      mockPlatform.is.mockImplementation((platformName: string) => platformName === 'mobile');
 
-      const config = service.getPlatformConfig();
-
+      config = service.getPlatformConfig();
       expect(config.platform).toBe('ios');
       expect(config.isNative).toBe(true);
       expect(config.isMobile).toBe(true);
-    });
-
-    it('should include base URL in config', () => {
-      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(false);
-
-      const config = service.getPlatformConfig();
-
-      expect(config.baseUrl).toBeDefined();
-      expect(typeof config.baseUrl).toBe('string');
     });
   });
 });

@@ -2,8 +2,8 @@
  * Unit tests for appointment models
  * Tests interfaces, constants, and type definitions
  *
- * IMPORTANT: These tests verify alignment with backend enum values.
- * Backend source: appointments/app/schemas/appointment_schema.py
+ * IMPORTANT: Backend enum validation is handled by backend-enums.contract.spec.ts.
+ * This file tests model-specific functionality only.
  */
 
 // Initialize TestBed environment for Vitest
@@ -14,7 +14,6 @@ import {
   CreateAppointmentRequest,
   AppointmentListResponse,
   APPOINTMENT_MOTIVES,
-  AppointmentMotive,
   INSULIN_TYPES,
   InsulinType,
   PUMP_TYPES,
@@ -27,131 +26,69 @@ import {
 } from '@core/contracts/backend-enums.contract';
 
 describe('AppointmentModel', () => {
+  // ============================================================================
+  // APPOINTMENT INTERFACE TESTS
+  // ============================================================================
+
   describe('Appointment interface', () => {
-    it('should accept valid appointment', () => {
-      const appointment: Appointment = {
-        appointment_id: 1,
-        user_id: 123,
-        glucose_objective: 120,
-        insulin_type: 'rapid',
-        dose: 10,
-        fast_insulin: 'humalog',
-        fixed_dose: 8,
-        ratio: 1.5,
-        sensitivity: 50,
-        pump_type: 'medtronic',
-        control_data: '2024-01-01',
-        motive: ['AJUSTE'],
-      };
-      expect(appointment.appointment_id).toBe(1);
-      expect(appointment.user_id).toBe(123);
-      expect(appointment.glucose_objective).toBe(120);
-      expect(appointment.insulin_type).toBe('rapid');
+    const baseAppointment: Appointment = {
+      appointment_id: 1,
+      user_id: 123,
+      glucose_objective: 120,
+      insulin_type: 'rapid',
+      dose: 10,
+      fast_insulin: 'humalog',
+      fixed_dose: 8,
+      ratio: 1.5,
+      sensitivity: 50,
+      pump_type: 'medtronic',
+      control_data: '2024-01-01',
+      motive: ['AJUSTE'],
+    };
+
+    it('should accept valid appointment with required fields', () => {
+      expect(baseAppointment.appointment_id).toBe(1);
+      expect(baseAppointment.user_id).toBe(123);
+      expect(baseAppointment.glucose_objective).toBe(120);
+      expect(baseAppointment.motive).toEqual(['AJUSTE']);
     });
 
-    it('should accept appointment with optional fields', () => {
-      const appointment: Appointment = {
-        appointment_id: 1,
-        user_id: 123,
-        glucose_objective: 120,
-        insulin_type: 'rapid',
-        dose: 10,
-        fast_insulin: 'humalog',
-        fixed_dose: 8,
-        ratio: 1.5,
-        sensitivity: 50,
-        pump_type: 'medtronic',
-        control_data: '2024-01-01',
-        motive: ['AJUSTE', 'HIPOGLUCEMIA'],
+    it('should accept optional fields and null values', () => {
+      const withOptional: Appointment = {
+        ...baseAppointment,
         another_treatment: 'metformin',
         other_motive: 'Custom motive text',
       };
-      expect(appointment.another_treatment).toBe('metformin');
-      expect(appointment.other_motive).toBe('Custom motive text');
-    });
+      expect(withOptional.another_treatment).toBe('metformin');
+      expect(withOptional.other_motive).toBe('Custom motive text');
 
-    it('should accept null for optional fields', () => {
-      const appointment: Appointment = {
-        appointment_id: 1,
-        user_id: 123,
-        glucose_objective: 120,
-        insulin_type: 'rapid',
-        dose: 10,
-        fast_insulin: 'humalog',
-        fixed_dose: 8,
-        ratio: 1.5,
-        sensitivity: 50,
-        pump_type: 'medtronic',
-        control_data: '2024-01-01',
-        motive: ['AJUSTE'],
+      const withNull: Appointment = {
+        ...baseAppointment,
         another_treatment: null,
         other_motive: null,
       };
-      expect(appointment.another_treatment).toBeNull();
-      expect(appointment.other_motive).toBeNull();
+      expect(withNull.another_treatment).toBeNull();
     });
 
-    it('should accept multiple motives', () => {
-      const appointment: Appointment = {
-        appointment_id: 1,
-        user_id: 123,
-        glucose_objective: 120,
-        insulin_type: 'rapid',
-        dose: 10,
-        fast_insulin: 'humalog',
-        fixed_dose: 8,
-        ratio: 1.5,
-        sensitivity: 50,
-        pump_type: 'medtronic',
-        control_data: '2024-01-01',
+    it('should accept multiple motives and various numeric values', () => {
+      const multiMotive: Appointment = {
+        ...baseAppointment,
         motive: ['AJUSTE', 'HIPOGLUCEMIA', 'HIPERGLUCEMIA'],
-      };
-      expect(appointment.motive.length).toBe(3);
-      expect(appointment.motive).toContain('AJUSTE');
-      expect(appointment.motive).toContain('HIPOGLUCEMIA');
-      expect(appointment.motive).toContain('HIPERGLUCEMIA');
-    });
-
-    it('should accept various numeric values', () => {
-      const appointment: Appointment = {
-        appointment_id: 999,
-        user_id: 456,
-        glucose_objective: 140,
-        insulin_type: 'long',
         dose: 25.5,
-        fast_insulin: 'novolog',
-        fixed_dose: 15,
         ratio: 2.0,
         sensitivity: 40,
-        pump_type: 'none',
-        control_data: '2024-06-15',
-        motive: ['DUDAS'],
       };
-      expect(appointment.dose).toBe(25.5);
-      expect(appointment.ratio).toBe(2.0);
-      expect(appointment.sensitivity).toBe(40);
+      expect(multiMotive.motive).toHaveLength(3);
+      expect(multiMotive.dose).toBe(25.5);
     });
   });
 
-  describe('CreateAppointmentRequest interface', () => {
-    it('should accept minimal request', () => {
-      const request: CreateAppointmentRequest = {
-        glucose_objective: 120,
-        insulin_type: 'rapid',
-        dose: 10,
-        fast_insulin: 'humalog',
-        fixed_dose: 8,
-        ratio: 1.5,
-        sensitivity: 50,
-        pump_type: 'medtronic',
-        control_data: '2024-01-01',
-        motive: ['AJUSTE'],
-      };
-      expect(request.glucose_objective).toBe(120);
-      expect(request.motive).toEqual(['AJUSTE']);
-    });
+  // ============================================================================
+  // CREATE REQUEST & LIST RESPONSE TESTS
+  // ============================================================================
 
-    it('should accept request with all optional fields', () => {
+  describe('CreateAppointmentRequest interface', () => {
+    it('should accept request without server-assigned fields', () => {
       const request: CreateAppointmentRequest = {
         glucose_objective: 120,
         insulin_type: 'rapid',
@@ -166,85 +103,19 @@ describe('AppointmentModel', () => {
         other_motive: 'Custom reason',
         another_treatment: 'metformin',
       };
-      expect(request.other_motive).toBe('Custom reason');
-      expect(request.another_treatment).toBe('metformin');
-    });
 
-    it('should not have appointment_id or user_id', () => {
-      const request: CreateAppointmentRequest = {
-        glucose_objective: 120,
-        insulin_type: 'rapid',
-        dose: 10,
-        fast_insulin: 'humalog',
-        fixed_dose: 8,
-        ratio: 1.5,
-        sensitivity: 50,
-        pump_type: 'medtronic',
-        control_data: '2024-01-01',
-        motive: ['AJUSTE'],
-      };
+      expect(request.glucose_objective).toBe(120);
       expect('appointment_id' in request).toBe(false);
       expect('user_id' in request).toBe(false);
     });
   });
 
   describe('AppointmentListResponse interface', () => {
-    it('should accept empty list', () => {
-      const response: AppointmentListResponse = {
-        appointments: [],
-      };
-      expect(response.appointments.length).toBe(0);
-    });
+    it('should accept empty and populated lists with optional total', () => {
+      const empty: AppointmentListResponse = { appointments: [] };
+      expect(empty.appointments).toHaveLength(0);
 
-    it('should accept list with appointments', () => {
-      const response: AppointmentListResponse = {
-        appointments: [
-          {
-            appointment_id: 1,
-            user_id: 123,
-            glucose_objective: 120,
-            insulin_type: 'rapid',
-            dose: 10,
-            fast_insulin: 'humalog',
-            fixed_dose: 8,
-            ratio: 1.5,
-            sensitivity: 50,
-            pump_type: 'medtronic',
-            control_data: '2024-01-01',
-            motive: ['AJUSTE'],
-          },
-        ],
-      };
-      expect(response.appointments.length).toBe(1);
-      expect(response.appointments[0].appointment_id).toBe(1);
-    });
-
-    it('should accept list with total count', () => {
-      const response: AppointmentListResponse = {
-        appointments: [
-          {
-            appointment_id: 1,
-            user_id: 123,
-            glucose_objective: 120,
-            insulin_type: 'rapid',
-            dose: 10,
-            fast_insulin: 'humalog',
-            fixed_dose: 8,
-            ratio: 1.5,
-            sensitivity: 50,
-            pump_type: 'medtronic',
-            control_data: '2024-01-01',
-            motive: ['AJUSTE'],
-          },
-        ],
-        total: 10,
-      };
-      expect(response.total).toBe(10);
-      expect(response.appointments.length).toBe(1);
-    });
-
-    it('should accept multiple appointments', () => {
-      const response: AppointmentListResponse = {
+      const populated: AppointmentListResponse = {
         appointments: [
           {
             appointment_id: 1,
@@ -277,134 +148,67 @@ describe('AppointmentModel', () => {
         ],
         total: 2,
       };
-      expect(response.appointments.length).toBe(2);
-      expect(response.total).toBe(2);
+      expect(populated.appointments).toHaveLength(2);
+      expect(populated.total).toBe(2);
     });
   });
 
+  // ============================================================================
+  // CONSTANTS TESTS
+  // ============================================================================
+
   describe('APPOINTMENT_MOTIVES constant', () => {
-    it('should have all expected motives (backend-aligned)', () => {
-      expect(APPOINTMENT_MOTIVES).toEqual([
-        'AJUSTE',
-        'HIPOGLUCEMIA',
-        'HIPERGLUCEMIA',
-        'CETOSIS',
-        'DUDAS',
-        'OTRO',
-      ]);
-    });
-
-    it('should have 6 motives', () => {
-      expect(APPOINTMENT_MOTIVES.length).toBe(6);
-    });
-
-    it('should match BACKEND_APPOINTMENT_MOTIVES exactly', () => {
+    it('should match backend motives exactly and all be valid', () => {
       expect([...APPOINTMENT_MOTIVES]).toEqual([...BACKEND_APPOINTMENT_MOTIVES]);
-    });
+      expect(APPOINTMENT_MOTIVES).toHaveLength(6);
 
-    it('should all be valid backend motives', () => {
       APPOINTMENT_MOTIVES.forEach(motive => {
         expect(isValidBackendMotive(motive)).toBe(true);
       });
-    });
 
-    it('should be readonly array', () => {
-      expect(Array.isArray(APPOINTMENT_MOTIVES)).toBe(true);
-    });
-
-    it('should have unique values', () => {
-      const unique = new Set(APPOINTMENT_MOTIVES);
-      expect(unique.size).toBe(APPOINTMENT_MOTIVES.length);
-    });
-  });
-
-  describe('AppointmentMotive type', () => {
-    it('should accept all backend-aligned motives', () => {
-      const motives: AppointmentMotive[] = [
-        'AJUSTE',
-        'HIPOGLUCEMIA',
-        'HIPERGLUCEMIA',
-        'CETOSIS',
-        'DUDAS',
-        'OTRO',
-      ];
-      motives.forEach(motive => {
-        expect(APPOINTMENT_MOTIVES).toContain(motive);
-        expect(isValidBackendMotive(motive)).toBe(true);
-      });
-    });
-
-    it('should NOT accept old invalid English values', () => {
-      const invalidOldValues = [
-        'control_routine',
-        'follow_up',
-        'emergency',
-        'consultation',
-        'adjustment',
-        'other',
-      ];
-      invalidOldValues.forEach(value => {
-        expect(isValidBackendMotive(value)).toBe(false);
-        expect(APPOINTMENT_MOTIVES).not.toContain(value);
-      });
+      // Unique values
+      expect(new Set(APPOINTMENT_MOTIVES).size).toBe(APPOINTMENT_MOTIVES.length);
     });
   });
 
   describe('INSULIN_TYPES constant', () => {
-    it('should have all expected insulin types', () => {
-      expect(INSULIN_TYPES).toEqual(['rapid', 'short', 'intermediate', 'long', 'mixed', 'none']);
-    });
+    it('should have all expected unique insulin types', () => {
+      const expectedTypes: InsulinType[] = [
+        'rapid',
+        'short',
+        'intermediate',
+        'long',
+        'mixed',
+        'none',
+      ];
 
-    it('should have 6 types', () => {
-      expect(INSULIN_TYPES.length).toBe(6);
-    });
+      expect(INSULIN_TYPES).toEqual(expectedTypes);
+      expect(INSULIN_TYPES).toHaveLength(6);
+      expect(new Set(INSULIN_TYPES).size).toBe(INSULIN_TYPES.length);
 
-    it('should be readonly array', () => {
-      expect(Array.isArray(INSULIN_TYPES)).toBe(true);
-    });
-
-    it('should have unique values', () => {
-      const unique = new Set(INSULIN_TYPES);
-      expect(unique.size).toBe(INSULIN_TYPES.length);
-    });
-  });
-
-  describe('InsulinType type', () => {
-    it('should accept all defined insulin types', () => {
-      const types: InsulinType[] = ['rapid', 'short', 'intermediate', 'long', 'mixed', 'none'];
-      types.forEach(type => {
+      expectedTypes.forEach(type => {
         expect(INSULIN_TYPES).toContain(type);
       });
     });
   });
 
   describe('PUMP_TYPES constant', () => {
-    it('should have all expected pump types', () => {
-      expect(PUMP_TYPES).toEqual(['medtronic', 'omnipod', 'tandem', 'none', 'other']);
-    });
+    it('should have all expected unique pump types', () => {
+      const expectedTypes: PumpType[] = ['medtronic', 'omnipod', 'tandem', 'none', 'other'];
 
-    it('should have 5 types', () => {
-      expect(PUMP_TYPES.length).toBe(5);
-    });
+      expect(PUMP_TYPES).toEqual(expectedTypes);
+      expect(PUMP_TYPES).toHaveLength(5);
+      expect(new Set(PUMP_TYPES).size).toBe(PUMP_TYPES.length);
 
-    it('should be readonly array', () => {
-      expect(Array.isArray(PUMP_TYPES)).toBe(true);
-    });
-
-    it('should have unique values', () => {
-      const unique = new Set(PUMP_TYPES);
-      expect(unique.size).toBe(PUMP_TYPES.length);
-    });
-  });
-
-  describe('PumpType type', () => {
-    it('should accept all defined pump types', () => {
-      const types: PumpType[] = ['medtronic', 'omnipod', 'tandem', 'none', 'other'];
-      types.forEach(type => {
+      expectedTypes.forEach(type => {
         expect(PUMP_TYPES).toContain(type);
       });
     });
   });
+
+  // ============================================================================
+  // DATA CONSISTENCY TESTS
+  // ============================================================================
 
   describe('Data consistency', () => {
     it('should use same field types in Appointment and CreateAppointmentRequest', () => {
@@ -433,7 +237,7 @@ describe('AppointmentModel', () => {
       expect(appointment.motive).toEqual(createRequest.motive);
     });
 
-    it('should accept appointments created from requests', () => {
+    it('should accept appointments created from requests with optional fields', () => {
       const request: CreateAppointmentRequest = {
         glucose_objective: 110,
         insulin_type: 'long',

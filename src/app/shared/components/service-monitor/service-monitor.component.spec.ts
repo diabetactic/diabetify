@@ -61,139 +61,89 @@ describe('ServiceMonitorComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
-  describe('default values', () => {
-    it('should have null servicesState initially', () => {
+  describe('default values and configuration', () => {
+    it('should have correct default values', () => {
       expect(component.servicesState).toBeNull();
-    });
-
-    it('should have empty services array', () => {
       expect(component.services).toEqual([]);
-    });
-
-    it('should have autoRefresh disabled by default', () => {
       expect(component.autoRefresh).toBe(false);
-    });
-
-    it('should have refreshInterval of 10000ms', () => {
       expect(component.refreshInterval).toBe(10000);
     });
-  });
 
-  describe('statusColors', () => {
-    it('should have color for HEALTHY status', () => {
-      expect(component.statusColors[HealthStatus.HEALTHY]).toBe('#4CAF50');
+    it('should have correct status colors for all health statuses', () => {
+      const expectedColors = {
+        [HealthStatus.HEALTHY]: '#4CAF50',
+        [HealthStatus.DEGRADED]: '#FF9800',
+        [HealthStatus.UNHEALTHY]: '#F44336',
+        [HealthStatus.CHECKING]: '#2196F3',
+        [HealthStatus.UNKNOWN]: '#9E9E9E',
+      };
+
+      Object.entries(expectedColors).forEach(([status, color]) => {
+        expect(component.statusColors[status as HealthStatus], status).toBe(color);
+      });
     });
 
-    it('should have color for DEGRADED status', () => {
-      expect(component.statusColors[HealthStatus.DEGRADED]).toBe('#FF9800');
-    });
+    it('should have correct circuit breaker colors', () => {
+      const expectedColors = {
+        CLOSED: '#4CAF50',
+        OPEN: '#F44336',
+        HALF_OPEN: '#FF9800',
+      };
 
-    it('should have color for UNHEALTHY status', () => {
-      expect(component.statusColors[HealthStatus.UNHEALTHY]).toBe('#F44336');
-    });
-
-    it('should have color for CHECKING status', () => {
-      expect(component.statusColors[HealthStatus.CHECKING]).toBe('#2196F3');
-    });
-
-    it('should have color for UNKNOWN status', () => {
-      expect(component.statusColors[HealthStatus.UNKNOWN]).toBe('#9E9E9E');
-    });
-  });
-
-  describe('circuitBreakerColors', () => {
-    it('should have color for CLOSED state', () => {
-      expect(component.circuitBreakerColors['CLOSED']).toBe('#4CAF50');
-    });
-
-    it('should have color for OPEN state', () => {
-      expect(component.circuitBreakerColors['OPEN']).toBe('#F44336');
-    });
-
-    it('should have color for HALF_OPEN state', () => {
-      expect(component.circuitBreakerColors['HALF_OPEN']).toBe('#FF9800');
+      Object.entries(expectedColors).forEach(([state, color]) => {
+        expect(component.circuitBreakerColors[state], state).toBe(color);
+      });
     });
   });
 
   describe('formatDuration', () => {
-    it('should format milliseconds', () => {
-      expect(component.formatDuration(500)).toBe('500ms');
-    });
+    it('should format durations correctly', () => {
+      const testCases = [
+        { ms: 0, expected: '0ms' },
+        { ms: 500, expected: '500ms' },
+        { ms: 1000, expected: '1.0s' },
+        { ms: 2500, expected: '2.5s' },
+        { ms: 60000, expected: '1.0m' },
+        { ms: 90000, expected: '1.5m' },
+      ];
 
-    it('should format seconds', () => {
-      expect(component.formatDuration(2500)).toBe('2.5s');
-    });
-
-    it('should format minutes', () => {
-      expect(component.formatDuration(90000)).toBe('1.5m');
-    });
-
-    it('should handle zero', () => {
-      expect(component.formatDuration(0)).toBe('0ms');
-    });
-
-    it('should handle exactly 1000ms as seconds', () => {
-      expect(component.formatDuration(1000)).toBe('1.0s');
-    });
-
-    it('should handle exactly 60000ms as minutes', () => {
-      expect(component.formatDuration(60000)).toBe('1.0m');
+      testCases.forEach(({ ms, expected }) => {
+        expect(component.formatDuration(ms), `${ms}ms`).toBe(expected);
+      });
     });
   });
 
   describe('formatDate', () => {
-    it('should return N/A for undefined', () => {
+    it('should format dates and handle undefined', () => {
       expect(component.formatDate(undefined)).toBe('N/A');
-    });
 
-    it('should format Date object', () => {
       const date = new Date('2025-01-15T10:30:00');
       const result = component.formatDate(date);
       expect(result).toBeTruthy();
       expect(typeof result).toBe('string');
-    });
 
-    it('should format date string', () => {
-      const result = component.formatDate('2025-01-15T10:30:00');
-      expect(result).toBeTruthy();
-      expect(typeof result).toBe('string');
+      const stringResult = component.formatDate('2025-01-15T10:30:00');
+      expect(stringResult).toBeTruthy();
     });
   });
 
-  describe('getWorkflowDuration', () => {
-    it('should return N/A when no startTime', () => {
-      const workflow = { id: '1', status: 'running' } as any;
-      expect(component.getWorkflowDuration(workflow)).toBe('N/A');
-    });
+  describe('workflow methods', () => {
+    it('should handle workflow duration', () => {
+      expect(component.getWorkflowDuration({ id: '1', status: 'running' } as any)).toBe('N/A');
 
-    it('should calculate duration for completed workflow', () => {
-      const workflow = {
+      const completedWorkflow = {
         id: '1',
         status: 'completed',
         startTime: new Date(Date.now() - 5000),
         endTime: new Date(),
       } as any;
-      const result = component.getWorkflowDuration(workflow);
-      expect(result).toMatch(/^\d+(\.\d)?[ms]$/);
-    });
-  });
-
-  describe('getWorkflowProgress', () => {
-    it('should return 0 for no steps', () => {
-      const workflow = { id: '1', steps: [] } as any;
-      expect(component.getWorkflowProgress(workflow)).toBe(0);
+      expect(component.getWorkflowDuration(completedWorkflow)).toMatch(/^\d+(\.\d)?[ms]$/);
     });
 
-    it('should return 0 for undefined steps', () => {
-      const workflow = { id: '1' } as any;
-      expect(component.getWorkflowProgress(workflow)).toBe(0);
-    });
+    it('should calculate workflow progress correctly', () => {
+      expect(component.getWorkflowProgress({ id: '1', steps: [] } as any)).toBe(0);
+      expect(component.getWorkflowProgress({ id: '1' } as any)).toBe(0);
 
-    it('should calculate progress correctly', () => {
       const workflow = {
         id: '1',
         steps: [
@@ -204,71 +154,49 @@ describe('ServiceMonitorComponent', () => {
         ],
       } as any;
       expect(component.getWorkflowProgress(workflow)).toBe(50);
-    });
 
-    it('should count failed and skipped as completed', () => {
-      const workflow = {
+      const fullWorkflow = {
         id: '1',
         steps: [{ status: 'completed' }, { status: 'failed' }, { status: 'skipped' }],
       } as any;
-      expect(component.getWorkflowProgress(workflow)).toBe(100);
-    });
-  });
-
-  describe('getWorkflowStatusColor', () => {
-    it('should return green for completed', () => {
-      expect(component.getWorkflowStatusColor('completed')).toBe('#4CAF50');
+      expect(component.getWorkflowProgress(fullWorkflow)).toBe(100);
     });
 
-    it('should return blue for running', () => {
-      expect(component.getWorkflowStatusColor('running')).toBe('#2196F3');
+    it('should return correct workflow status colors', () => {
+      const colorTests = [
+        { status: 'completed', color: '#4CAF50' },
+        { status: 'running', color: '#2196F3' },
+        { status: 'failed', color: '#F44336' },
+        { status: 'compensating', color: '#FF9800' },
+        { status: 'unknown', color: '#9E9E9E' },
+      ];
+
+      colorTests.forEach(({ status, color }) => {
+        expect(component.getWorkflowStatusColor(status), status).toBe(color);
+      });
     });
 
-    it('should return red for failed', () => {
-      expect(component.getWorkflowStatusColor('failed')).toBe('#F44336');
-    });
+    it('should return correct step status icons', () => {
+      const iconTests = [
+        { status: 'completed', icon: 'checkmark-circle' },
+        { status: 'running', icon: 'sync' },
+        { status: 'failed', icon: 'close-circle' },
+        { status: 'skipped', icon: 'arrow-forward-circle' },
+        { status: 'unknown', icon: 'ellipse-outline' },
+      ];
 
-    it('should return orange for compensating', () => {
-      expect(component.getWorkflowStatusColor('compensating')).toBe('#FF9800');
-    });
-
-    it('should return gray for unknown status', () => {
-      expect(component.getWorkflowStatusColor('unknown')).toBe('#9E9E9E');
-    });
-  });
-
-  describe('getStepStatusIcon', () => {
-    it('should return checkmark for completed', () => {
-      expect(component.getStepStatusIcon('completed')).toBe('checkmark-circle');
-    });
-
-    it('should return sync for running', () => {
-      expect(component.getStepStatusIcon('running')).toBe('sync');
-    });
-
-    it('should return close for failed', () => {
-      expect(component.getStepStatusIcon('failed')).toBe('close-circle');
-    });
-
-    it('should return arrow for skipped', () => {
-      expect(component.getStepStatusIcon('skipped')).toBe('arrow-forward-circle');
-    });
-
-    it('should return ellipse for unknown', () => {
-      expect(component.getStepStatusIcon('unknown')).toBe('ellipse-outline');
+      iconTests.forEach(({ status, icon }) => {
+        expect(component.getStepStatusIcon(status), status).toBe(icon);
+      });
     });
   });
 
   describe('UI state methods', () => {
-    it('should show service details', () => {
+    it('should toggle service details visibility', () => {
       component.showServiceDetails('API_GATEWAY' as any);
       expect(component.selectedService).toBe('API_GATEWAY');
       expect(component.showDetails).toBe(true);
-    });
 
-    it('should hide service details', () => {
-      component.selectedService = 'API_GATEWAY' as any;
-      component.showDetails = true;
       component.hideServiceDetails();
       expect(component.selectedService).toBeNull();
       expect(component.showDetails).toBe(false);
@@ -284,19 +212,10 @@ describe('ServiceMonitorComponent', () => {
   });
 
   describe('trackBy functions', () => {
-    it('should track services by service property', () => {
-      const service = { service: 'API_GATEWAY' } as any;
-      expect(component.trackByService(0, service)).toBe('API_GATEWAY');
-    });
-
-    it('should track circuit breakers by service property', () => {
-      const cb = { service: 'LOGIN' } as any;
-      expect(component.trackByCircuitBreaker(0, cb)).toBe('LOGIN');
-    });
-
-    it('should track workflows by id', () => {
-      const workflow = { id: 'wf-123' } as any;
-      expect(component.trackByWorkflow(0, workflow)).toBe('wf-123');
+    it('should track by correct identifiers', () => {
+      expect(component.trackByService(0, { service: 'API_GATEWAY' } as any)).toBe('API_GATEWAY');
+      expect(component.trackByCircuitBreaker(0, { service: 'LOGIN' } as any)).toBe('LOGIN');
+      expect(component.trackByWorkflow(0, { id: 'wf-123' } as any)).toBe('wf-123');
     });
   });
 });
