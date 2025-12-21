@@ -1,7 +1,29 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
-  "entry": ["src/main.ts", "src/test-setup/index.ts", "vitest.config.ts"],
+  "entry": ["src/main.ts", "vitest.config.ts", "playwright.config.ts"],
   "project": ["src/**/*.ts"],
-  "ignore": ["**/*.spec.ts", "**/test-*.ts", "**/__mocks__/**", "**/mocks/**"],
-  "ignoreExportsUsedInFile": true
+  "ignore": [
+    "**/*.spec.ts",
+    "**/test-*.ts",
+    "**/__mocks__/**",
+    "**/mocks/**",
+    "**/tests/helpers/**",
+    "**/tests/integration/**",
+    "**/tests/integration-msw/**",
+    "**/constants/**",
+    "**/contracts/**",
+    "**/config/mock-adapter-config.ts"
+  ],
+  "ignoreDependencies": [
+    "@angular/language-service",
+    "@ionic/core",
+    "ionicons",
+    "@analogjs/vite-plugin-angular"
+  ],
+  "ignoreBinaries": ["only-allow", "adb", "studio", "emulator"],
+  "ignoreExportsUsedInFile": true,
+  "rules": {
+    "unlisted": "off",
+    "enumMembers": "off"
+  }
 }

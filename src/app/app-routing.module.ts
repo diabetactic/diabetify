@@ -1,7 +1,10 @@
-import { NgModule } from '@angular/core';
-import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { OnboardingGuard } from './core/guards';
 
+/**
+ * Application routes configuration.
+ * Used by main.ts with provideRouter().
+ */
 export const APP_ROUTES: Routes = [
   {
     path: '',
@@ -69,9 +72,3 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./achievements/achievements.page').then(m => m.AchievementsPage),
   },
 ];
-
-@NgModule({
-  imports: [RouterModule.forRoot(APP_ROUTES, { preloadingStrategy: PreloadAllModules })],
-  exports: [RouterModule],
-})
-export class AppRoutingModule {}

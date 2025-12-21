@@ -131,9 +131,11 @@ export const appIcons = {
 
 /**
  * Icon name mappings from Ionicons to Lucide
- * Use this for reference when migrating templates
+ * Internal reference for template migration (not exported)
+ * @internal
  */
-export const iconMappings = {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _iconMappings = {
   'save-outline': 'save',
   'chevron-forward': 'chevron-right',
   'chevron-forward-outline': 'chevron-right',

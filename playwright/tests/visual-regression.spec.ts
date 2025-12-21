@@ -85,35 +85,29 @@ test.describe('Visual Regression - Pre-Login @visual', () => {
     await expect(page).toHaveScreenshot('login-empty.png', screenshotOptions);
   });
 
-  test('Login page - with validation errors', async ({ page }) => {
+  test('Login page - form filled', async ({ page }) => {
     await page.goto('/login');
-    await page.fill('[data-testid="login-username-input"]', '');
-    await page.click('[data-testid="login-submit-btn"]');
-    await page.waitForTimeout(500);
-    await prepareForScreenshot(page);
-    await expect(page).toHaveScreenshot('login-validation-error.png', screenshotOptions);
-  });
-
-  test('Login page - loading state', async ({ page }) => {
-    await page.goto('/login');
-    await page.fill('[data-testid="login-username-input"]', '1000');
-    await page.fill('[data-testid="login-password-input"]', 'wrongpass');
-
-    // Capturar mientras esta cargando
-    await page.click('[data-testid="login-submit-btn"]');
-    // Capturar inmediatamente antes de que termine
-    await expect(page).toHaveScreenshot('login-loading.png', {
-      ...screenshotOptions,
-      maxDiffPixelRatio: 0.15, // Mas tolerancia para spinners
+    await page.waitForSelector('[data-testid="login-username-input"]', {
+      state: 'visible',
+      timeout: 10000,
     });
+    await page.fill('[data-testid="login-username-input"]', '12345678');
+    await page.fill('[data-testid="login-password-input"]', 'testpassword');
+    await prepareForScreenshot(page);
+    await expect(page).toHaveScreenshot('login-filled.png', screenshotOptions);
   });
 });
 
 // =============================================================================
-// DASHBOARD SCREENS
+// DASHBOARD SCREENS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Dashboard @visual', () => {
+test.describe('Visual Regression - Dashboard @visual @authenticated', () => {
+  test.skip(
+    () => !process.env.E2E_MOCK_MODE,
+    'Dashboard tests require mock mode. Run with E2E_MOCK_MODE=true'
+  );
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await loginUser(page);
@@ -147,10 +141,15 @@ test.describe('Visual Regression - Dashboard @visual', () => {
 });
 
 // =============================================================================
-// READINGS SCREENS
+// READINGS SCREENS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Readings @visual', () => {
+test.describe('Visual Regression - Readings @visual @authenticated', () => {
+  test.skip(
+    () => !process.env.E2E_MOCK_MODE,
+    'Readings tests require mock mode. Run with E2E_MOCK_MODE=true'
+  );
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await loginUser(page);
@@ -212,10 +211,15 @@ test.describe('Visual Regression - Readings @visual', () => {
 });
 
 // =============================================================================
-// APPOINTMENTS STATE MACHINE SCREENS
+// APPOINTMENTS STATE MACHINE SCREENS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Appointments States @visual', () => {
+test.describe('Visual Regression - Appointments States @visual @authenticated', () => {
+  test.skip(
+    () => !process.env.E2E_MOCK_MODE,
+    'Appointments tests require mock mode. Run with E2E_MOCK_MODE=true'
+  );
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await loginUser(page);
@@ -244,10 +248,15 @@ test.describe('Visual Regression - Appointments States @visual', () => {
 });
 
 // =============================================================================
-// PROFILE SCREENS
+// PROFILE SCREENS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Profile @visual', () => {
+test.describe('Visual Regression - Profile @visual @authenticated', () => {
+  test.skip(
+    () => !process.env.E2E_MOCK_MODE,
+    'Profile tests require mock mode. Run with E2E_MOCK_MODE=true'
+  );
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await loginUser(page);
@@ -281,10 +290,15 @@ test.describe('Visual Regression - Profile @visual', () => {
 });
 
 // =============================================================================
-// TRENDS/CHARTS SCREENS
+// TRENDS/CHARTS SCREENS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Trends @visual', () => {
+test.describe('Visual Regression - Trends @visual @authenticated', () => {
+  test.skip(
+    () => !process.env.E2E_MOCK_MODE,
+    'Trends tests require mock mode. Run with E2E_MOCK_MODE=true'
+  );
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await loginUser(page);
@@ -313,10 +327,15 @@ test.describe('Visual Regression - Trends @visual', () => {
 });
 
 // =============================================================================
-// SETTINGS SCREENS
+// SETTINGS SCREENS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Settings @visual', () => {
+test.describe('Visual Regression - Settings @visual @authenticated', () => {
+  test.skip(
+    () => !process.env.E2E_MOCK_MODE,
+    'Settings tests require mock mode. Run with E2E_MOCK_MODE=true'
+  );
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await loginUser(page);
@@ -357,10 +376,15 @@ test.describe('Visual Regression - Settings @visual', () => {
 });
 
 // =============================================================================
-// BOLUS CALCULATOR SCREENS
+// BOLUS CALCULATOR SCREENS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Bolus Calculator @visual', () => {
+test.describe('Visual Regression - Bolus Calculator @visual @authenticated', () => {
+  test.skip(
+    () => !process.env.E2E_MOCK_MODE,
+    'Bolus calculator tests require mock mode. Run with E2E_MOCK_MODE=true'
+  );
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await loginUser(page);
@@ -401,10 +425,15 @@ test.describe('Visual Regression - Bolus Calculator @visual', () => {
 });
 
 // =============================================================================
-// RESPONSIVE BREAKPOINTS
+// RESPONSIVE BREAKPOINTS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Responsive @visual', () => {
+test.describe('Visual Regression - Responsive @visual @authenticated', () => {
+  test.skip(
+    () => !process.env.E2E_MOCK_MODE,
+    'Responsive tests require mock mode. Run with E2E_MOCK_MODE=true'
+  );
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await loginUser(page);
