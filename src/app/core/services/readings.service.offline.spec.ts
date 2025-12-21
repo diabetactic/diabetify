@@ -16,7 +16,7 @@
  * TO FIX:
  * - Refactor ReadingsService to make network initialization synchronous or exposing a ready promise
  * - OR use done() callbacks instead of async/await for these specific tests
- * - OR increase Jest timeout globally (currently using 10s per-test timeout)
+ * - OR increase Vitest timeout globally (currently using 10s per-test timeout)
  */
 
 // Initialize TestBed environment for Vitest
@@ -219,7 +219,7 @@ describe('ReadingsService - Offline Detection', () => {
       expect(mockApiGateway.request).not.toHaveBeenCalled();
     });
 
-    // SKIPPED: Flaky async timing - assertion may pass but Jest reports blank error
+    // SKIPPED: Flaky async timing - assertion may pass but Vitest reports blank error
     it.skip('should proceed with sync when online', async () => {
       await waitForInit();
 

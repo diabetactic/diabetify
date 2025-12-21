@@ -6,6 +6,7 @@
  */
 
 import { BehaviorSubject } from 'rxjs';
+import { vi, type Mock } from 'vitest';
 
 /**
  * Reset BehaviorSubject to initial state
@@ -61,30 +62,30 @@ export async function resetCapacitorMocks(): Promise<void> {
     const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
 
     // Reset mocks to default behavior
-    if (jest.isMockFunction(Preferences.get)) {
-      (Preferences.get as jest.Mock).mockResolvedValue({ value: null });
+    if (vi.isMockFunction(Preferences.get)) {
+      (Preferences.get as Mock).mockResolvedValue({ value: null });
     }
-    if (jest.isMockFunction(Preferences.set)) {
-      (Preferences.set as jest.Mock).mockResolvedValue(undefined);
+    if (vi.isMockFunction(Preferences.set)) {
+      (Preferences.set as Mock).mockResolvedValue(undefined);
     }
-    if (jest.isMockFunction(Preferences.remove)) {
-      (Preferences.remove as jest.Mock).mockResolvedValue(undefined);
+    if (vi.isMockFunction(Preferences.remove)) {
+      (Preferences.remove as Mock).mockResolvedValue(undefined);
     }
-    if (jest.isMockFunction(Preferences.clear)) {
-      (Preferences.clear as jest.Mock).mockResolvedValue(undefined);
+    if (vi.isMockFunction(Preferences.clear)) {
+      (Preferences.clear as Mock).mockResolvedValue(undefined);
     }
 
-    if (jest.isMockFunction(SecureStorage.get)) {
-      (SecureStorage.get as jest.Mock).mockResolvedValue(null);
+    if (vi.isMockFunction(SecureStorage.get)) {
+      (SecureStorage.get as Mock).mockResolvedValue(null);
     }
-    if (jest.isMockFunction(SecureStorage.set)) {
-      (SecureStorage.set as jest.Mock).mockResolvedValue(undefined);
+    if (vi.isMockFunction(SecureStorage.set)) {
+      (SecureStorage.set as Mock).mockResolvedValue(undefined);
     }
-    if (jest.isMockFunction(SecureStorage.remove)) {
-      (SecureStorage.remove as jest.Mock).mockResolvedValue(undefined);
+    if (vi.isMockFunction(SecureStorage.remove)) {
+      (SecureStorage.remove as Mock).mockResolvedValue(undefined);
     }
-    if (jest.isMockFunction(SecureStorage.clear)) {
-      (SecureStorage.clear as jest.Mock).mockResolvedValue(undefined);
+    if (vi.isMockFunction(SecureStorage.clear)) {
+      (SecureStorage.clear as Mock).mockResolvedValue(undefined);
     }
   } catch {
     // Silently fail if modules not available (e.g., in some test contexts)
@@ -101,19 +102,19 @@ export async function resetCapacitorMocks(): Promise<void> {
  * });
  */
 export function resetHttpClientMock(httpMock: any): void {
-  if (jest.isMockFunction(httpMock.get)) {
+  if (vi.isMockFunction(httpMock.get)) {
     httpMock.get.mockReset();
   }
-  if (jest.isMockFunction(httpMock.post)) {
+  if (vi.isMockFunction(httpMock.post)) {
     httpMock.post.mockReset();
   }
-  if (jest.isMockFunction(httpMock.put)) {
+  if (vi.isMockFunction(httpMock.put)) {
     httpMock.put.mockReset();
   }
-  if (jest.isMockFunction(httpMock.patch)) {
+  if (vi.isMockFunction(httpMock.patch)) {
     httpMock.patch.mockReset();
   }
-  if (jest.isMockFunction(httpMock.delete)) {
+  if (vi.isMockFunction(httpMock.delete)) {
     httpMock.delete.mockReset();
   }
 }
@@ -128,8 +129,8 @@ export function resetHttpClientMock(httpMock: any): void {
  * });
  */
 export function resetAllMocks(): void {
-  jest.clearAllMocks();
-  jest.resetAllMocks();
+  vi.clearAllMocks();
+  vi.resetAllMocks();
 }
 
 /**
@@ -384,14 +385,14 @@ export class AsyncTestHelpers {
    * Useful for testing timeout and interval-based logic
    *
    * @example
-   * jest.useFakeTimers();
+   * vi.useFakeTimers();
    * service.scheduleRefresh(3600000); // 1 hour
    * await tickTimer(3600000);
    * expect(service.hasRefreshed).toBe(true);
-   * jest.useRealTimers();
+   * vi.useRealTimers();
    */
   static async tickTimer(ms: number): Promise<void> {
-    jest.advanceTimersByTime(ms);
+    vi.advanceTimersByTime(ms);
     // Allow microtasks to process
     await new Promise(resolve => setTimeout(resolve, 0));
   }

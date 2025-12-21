@@ -199,17 +199,18 @@ beforeEach(async () => {
 
 #### 4. Capacitor Plugin Mocks
 
-Network status is controlled via jest mocks:
+Network status is controlled via Vitest mocks:
 
 ```typescript
 import { Network } from '@capacitor/network';
+import { type Mock } from 'vitest';
 
 const simulateOffline = () => {
-  (Network.getStatus as jest.Mock).mockResolvedValue({ connected: false });
+  (Network.getStatus as Mock).mockResolvedValue({ connected: false });
 };
 
 const simulateOnline = () => {
-  (Network.getStatus as jest.Mock).mockResolvedValue({ connected: true });
+  (Network.getStatus as Mock).mockResolvedValue({ connected: true });
 };
 ```
 
