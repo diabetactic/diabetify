@@ -13,7 +13,7 @@ services:
       - key: NODE_VERSION
         value: 22
       - key: PNPM_VERSION
-        value: 9
+        value: 10
     headers:
       - path: /*
         name: X-Frame-Options

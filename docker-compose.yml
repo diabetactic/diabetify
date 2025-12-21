@@ -39,13 +39,13 @@ services:
   dev:
     <<: *base-service
     container_name: diabetactic-dev
-    command: npm run start:mock
+    command: pnpm run start:mock
     ports:
       - '4200:4200'
     volumes:
       - ./src:/app/src:ro
       - ./package.json:/app/package.json:ro
-      - ./package-lock.json:/app/package-lock.json:ro
+      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml:ro
       - ./tsconfig.json:/app/tsconfig.json:ro
       - ./tsconfig.app.json:/app/tsconfig.app.json:ro
       - ./angular.json:/app/angular.json:ro
@@ -62,20 +62,19 @@ services:
     restart: unless-stopped
 
   # ---------------------------------------------------------------------------
-  # Unit Tests (Jest)
+  # Unit Tests (Vitest)
   # ---------------------------------------------------------------------------
   test:
     <<: *base-service
     container_name: diabetactic-test
-    command: npm test
+    command: pnpm test
     volumes:
       - ./src:/app/src:ro
       - ./package.json:/app/package.json:ro
-      - ./package-lock.json:/app/package-lock.json:ro
+      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml:ro
       - ./tsconfig.json:/app/tsconfig.json:ro
       - ./tsconfig.spec.json:/app/tsconfig.spec.json:ro
-      - ./jest.config.js:/app/jest.config.js:ro
-      - ./setup-jest.ts:/app/setup-jest.ts:ro
+      - ./vitest.config.ts:/app/vitest.config.ts:ro
       - ./angular.json:/app/angular.json:ro
       - ./coverage:/app/coverage
       - test-cache:/app/.angular
@@ -91,14 +90,13 @@ services:
   test-watch:
     <<: *base-service
     container_name: diabetactic-test-watch
-    command: npm run test:watch
+    command: pnpm run test:watch
     volumes:
       - ./src:/app/src:ro
       - ./package.json:/app/package.json:ro
       - ./tsconfig.json:/app/tsconfig.json:ro
       - ./tsconfig.spec.json:/app/tsconfig.spec.json:ro
-      - ./jest.config.js:/app/jest.config.js:ro
-      - ./setup-jest.ts:/app/setup-jest.ts:ro
+      - ./vitest.config.ts:/app/vitest.config.ts:ro
       - ./angular.json:/app/angular.json:ro
       - ./coverage:/app/coverage
       - test-cache:/app/.angular
@@ -116,7 +114,7 @@ services:
   e2e:
     <<: *base-service
     container_name: diabetactic-e2e
-    command: npm run test:e2e
+    command: pnpm run test:e2e
     volumes:
       - ./src:/app/src:ro
       - ./package.json:/app/package.json:ro
@@ -139,7 +137,7 @@ services:
   a11y:
     <<: *base-service
     container_name: diabetactic-a11y
-    command: npm run test:a11y
+    command: pnpm run test:a11y
     volumes:
       - ./src:/app/src:ro
       - ./package.json:/app/package.json:ro
@@ -161,14 +159,13 @@ services:
   coverage:
     <<: *base-service
     container_name: diabetactic-coverage
-    command: npm run test:coverage
+    command: pnpm run test:coverage
     volumes:
       - ./src:/app/src:ro
       - ./package.json:/app/package.json:ro
       - ./tsconfig.json:/app/tsconfig.json:ro
       - ./tsconfig.spec.json:/app/tsconfig.spec.json:ro
-      - ./jest.config.js:/app/jest.config.js:ro
-      - ./setup-jest.ts:/app/setup-jest.ts:ro
+      - ./vitest.config.ts:/app/vitest.config.ts:ro
       - ./angular.json:/app/angular.json:ro
       - ./coverage:/app/coverage
       - coverage-cache:/app/.angular
@@ -184,7 +181,7 @@ services:
   lint:
     <<: *base-service
     container_name: diabetactic-lint
-    command: bash -c "npm run lint && npm run lint:styles"
+    command: bash -c "pnpm run lint && pnpm run lint:styles"
     volumes:
       - ./src:/app/src:ro
       - ./package.json:/app/package.json:ro
@@ -205,12 +202,12 @@ services:
     container_name: diabetactic-ci
     command: bash -c "
       echo '=== Running Lint ===' &&
-      npm run lint &&
-      npm run lint:styles &&
+      pnpm run lint &&
+      pnpm run lint:styles &&
       echo '=== Running Unit Tests ===' &&
-      npm run test:ci &&
+      pnpm run test:ci &&
       echo '=== Running E2E Tests ===' &&
-      npm run test:e2e &&
+      pnpm run test:e2e &&
       echo '=== CI Pipeline Complete ==='
       "
     volumes:
@@ -220,8 +217,7 @@ services:
       - ./playwright.config.ts:/app/playwright.config.ts:ro
       - ./tsconfig.json:/app/tsconfig.json:ro
       - ./tsconfig.spec.json:/app/tsconfig.spec.json:ro
-      - ./jest.config.js:/app/jest.config.js:ro
-      - ./setup-jest.ts:/app/setup-jest.ts:ro
+      - ./vitest.config.ts:/app/vitest.config.ts:ro
       - ./angular.json:/app/angular.json:ro
       - ./.eslintrc.json:/app/.eslintrc.json:ro
       - ./.stylelintrc.json:/app/.stylelintrc.json:ro
@@ -242,7 +238,7 @@ services:
   build-prod:
     <<: *base-service
     container_name: diabetactic-build-prod
-    command: npm run build:prod
+    command: pnpm run build:prod
     volumes:
       - ./src:/app/src:ro
       - ./package.json:/app/package.json:ro
@@ -288,7 +284,7 @@ services:
   i18n:
     <<: *base-service
     container_name: diabetactic-i18n
-    command: npm run i18n:check
+    command: pnpm run i18n:check
     volumes:
       - ./src:/app/src:ro
       - ./package.json:/app/package.json:ro

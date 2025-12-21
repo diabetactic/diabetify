@@ -1,6 +1,6 @@
 [tools]
 node = "22"  # LTS Jod - upgraded from 20
-java = "21"
+java = "temurin-21"
 
 [env]
 _.path = [
