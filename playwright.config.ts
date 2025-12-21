@@ -24,8 +24,10 @@ export default defineConfig({
     toHaveScreenshot: {
       maxDiffPixels: 100,
       threshold: 0.2,
+      animations: 'disabled',
     },
   },
+  snapshotPathTemplate: '{testDir}/{testFileDir}/{testFileName}-snapshots/{arg}{-projectName}{ext}',
   fullyParallel: true,
   workers: process.env.CI ? 4 : 6,
   retries: process.env.CI ? 1 : 0,
