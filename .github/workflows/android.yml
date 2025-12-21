@@ -27,7 +27,7 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
@@ -64,7 +64,7 @@ jobs:
           ./gradlew assembleDebug
 
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
@@ -84,7 +84,7 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
@@ -99,7 +99,7 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Download APK
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v4
         with:
           name: debug-apk
           path: ./
@@ -158,7 +158,7 @@ jobs:
 
       - name: Upload Maestro results
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: maestro-results
           path: maestro/
