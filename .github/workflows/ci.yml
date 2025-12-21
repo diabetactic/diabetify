@@ -127,8 +127,8 @@ jobs:
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Start static server
-        run: npx serve www -l 4200 &
+      - name: Start static server (SPA mode)
+        run: npx serve www -l 4200 -s &
 
       - name: Wait for server
         run: npx wait-on http://localhost:4200 --timeout 30000
@@ -169,8 +169,8 @@ jobs:
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Start static server
-        run: npx serve www -l 4200 &
+      - name: Start static server (SPA mode)
+        run: npx serve www -l 4200 -s &
 
       - name: Wait for server
         run: npx wait-on http://localhost:4200 --timeout 30000
