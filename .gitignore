@@ -119,6 +119,7 @@ UserInterfaceState.xcuserstate
 # =============================================================================
 .env
 .envrc
+mise.local.toml
 
 # =============================================================================
 # Android Build
@@ -159,6 +160,8 @@ android/release-keystore.jks
 maestro/debug-output/
 skills/
 hive-mind-prompt-*.txt
+AGENTS.md
+CLAUDE.md
 
 # Claude Flow
 .swarm/
