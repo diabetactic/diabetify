@@ -74,7 +74,7 @@ export class AchievementsService {
     // Check cache first
     if (!forceRefresh && this.isCacheValid(this.streakCache)) {
       this.logger.debug('Achievements', 'Using cached streak data');
-      return this.streakCache!.data;
+      return this.streakCache?.data ?? null;
     }
 
     this.loadingSignal.set(true);
@@ -127,7 +127,7 @@ export class AchievementsService {
     // Check cache first
     if (!forceRefresh && this.isCacheValid(this.achievementsCache)) {
       this.logger.debug('Achievements', 'Using cached achievements data');
-      return this.achievementsCache!.data;
+      return this.achievementsCache?.data ?? [];
     }
 
     this.loadingSignal.set(true);

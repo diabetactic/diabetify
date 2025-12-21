@@ -291,7 +291,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
         groups.set(dateKey, []);
       }
 
-      groups.get(dateKey)!.push(reading);
+      groups.get(dateKey)?.push(reading);
     });
 
     // Convert map to array and sort

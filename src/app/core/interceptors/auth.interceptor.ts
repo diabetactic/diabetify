@@ -166,9 +166,9 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
     } else {
       // Refresh already in progress, queue this request
       return this.refreshTokenSubject.pipe(
-        filter(token => token !== null),
+        filter((token): token is string => token !== null),
         take(1),
-        switchMap(token => next.handle(this.addTokenToRequest(request, token!)))
+        switchMap(token => next.handle(this.addTokenToRequest(request, token)))
       );
     }
   }

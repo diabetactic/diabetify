@@ -1033,11 +1033,12 @@ export class ApiGatewayService {
         return environment.tidepool.baseUrl;
       case ExternalService.GLUCOSERVER:
       case ExternalService.APPOINTMENTS:
-      case ExternalService.LOCAL_AUTH:
+      case ExternalService.LOCAL_AUTH: {
         // Route all backend services through the API Gateway
         // Use platform detector to get the correct URL for the current environment
         const defaultUrl = API_GATEWAY_BASE_URL;
         return this.platformDetector.getApiBaseUrl(defaultUrl);
+      }
       default:
         throw new Error(`Unknown service: ${service}`);
     }

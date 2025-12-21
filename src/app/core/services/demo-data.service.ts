@@ -1,10 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { fakerES as faker } from '@faker-js/faker';
 import { Observable, of } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { LocalGlucoseReading } from '@models/glucose-reading.model';
 import { UserProfile, AccountState } from '@models/user-profile.model';
 import { Appointment } from '@models/appointment.model';
+import { LoggerService } from '@services/logger.service';
 
 /**
  * Demo Data Service for seeding test data
@@ -14,6 +15,7 @@ import { Appointment } from '@models/appointment.model';
   providedIn: 'root',
 })
 export class DemoDataService {
+  private readonly logger = inject(LoggerService);
   /**
    * Demo doctors list
    */
@@ -478,7 +480,7 @@ export class DemoDataService {
    * Seed all demo data into local storage/IndexedDB
    */
   async seedDemoData(): Promise<void> {
-    console.log('Seeding demo data...');
+    this.logger.info('DemoData', 'Seeding demo data...');
 
     // Store demo mode flag
     localStorage.setItem('demoMode', 'true');
@@ -490,7 +492,7 @@ export class DemoDataService {
       name: 'Usuario',
       surname: 'Demo',
       email: 'demo@diabetactic.com',
-      password: 'demo123',
+      password: 'demo123', // Public test credentials
       role: 'patient',
     };
     localStorage.setItem('demoUser', JSON.stringify(demoUser));
@@ -507,8 +509,8 @@ export class DemoDataService {
     const appointments = await this.generateAppointments(5);
     localStorage.setItem('demoAppointments', JSON.stringify(appointments));
 
-    console.log('Demo data seeded successfully');
-    console.log('✅ Demo credentials: demo@diabetactic.com / demo123');
+    this.logger.info('DemoData', 'Demo data seeded successfully');
+    this.logger.info('DemoData', 'Demo credentials: demo@diabetactic.com / demo123');
   }
 
   /**
@@ -518,7 +520,7 @@ export class DemoDataService {
     localStorage.removeItem('demoMode');
     localStorage.removeItem('demoUser');
     // Clear other demo data from IndexedDB
-    console.log('Demo data cleared');
+    this.logger.info('DemoData', 'Demo data cleared');
   }
 
   /**

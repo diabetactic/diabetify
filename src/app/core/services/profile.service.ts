@@ -358,7 +358,7 @@ export class ProfileService implements OnDestroy {
    */
   async updateLastSyncTime(): Promise<void> {
     const profile = await this.getProfile();
-    if (profile && profile.tidepoolConnection.connected) {
+    if (profile?.tidepoolConnection.connected) {
       profile.tidepoolConnection.lastSyncTime = new Date().toISOString();
       await this.saveProfile(profile);
     }

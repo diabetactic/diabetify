@@ -84,6 +84,8 @@ export class EnvBadgeComponent {
         return 'LOCAL';
       case 'cloud':
         return 'CLOUD';
+      default:
+        return 'UNKNOWN';
     }
   }
 }

@@ -105,7 +105,7 @@ export class TrendsPage implements OnInit {
     private logger: LoggerService
   ) {}
 
-  async ngOnInit() {
+  async ngOnInit(): Promise<void> {
     await this.loadStatistics();
   }
 

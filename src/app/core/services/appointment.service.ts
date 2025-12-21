@@ -24,10 +24,9 @@ import {
 
 /**
  * Mock appointment for development/testing
+ * Uses type alias since interface body is empty
  */
-interface MockAppointment extends Appointment {
-  // Mock can add extra fields if needed
-}
+type MockAppointment = Appointment;
 
 @Injectable({
   providedIn: 'root',
@@ -340,12 +339,12 @@ export class AppointmentService implements OnDestroy {
         this.mockAppointments.splice(index, 1);
         this.appointmentsSubject.next([...this.mockAppointments]);
       }
-      return of(void 0);
+      return of(undefined);
     }
 
     // If backend has delete endpoint, implement here
     // For now, just cancel the notification
-    return of(void 0);
+    return of(undefined);
   }
 
   /**

@@ -472,7 +472,7 @@ export class UnifiedAuthService implements OnDestroy {
     const state = this.unifiedAuthStateSubject.value;
 
     if (!preferences || Object.keys(preferences).length === 0) {
-      return of(void 0);
+      return of(undefined);
     }
 
     if (state.localAuth?.isAuthenticated) {
@@ -499,15 +499,15 @@ export class UnifiedAuthService implements OnDestroy {
       }
 
       if (Object.keys(payload).length === 0) {
-        return of(void 0);
+        return of(undefined);
       }
 
-      return this.localAuth.updatePreferences(payload).pipe(map(() => void 0));
+      return this.localAuth.updatePreferences(payload).pipe(map(() => undefined));
     }
 
     // For Tidepool-only users, store preferences locally
     // (would need to implement local storage for Tidepool users)
-    return of(void 0);
+    return of(undefined);
   }
 
   /**
