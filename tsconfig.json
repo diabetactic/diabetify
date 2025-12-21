@@ -11,7 +11,9 @@
       "@models/*": ["src/app/core/models/*"],
       "@services/*": ["src/app/core/services/*"],
       "@guards/*": ["src/app/core/guards/*"],
-      "@interceptors/*": ["src/app/core/interceptors/*"]
+      "@interceptors/*": ["src/app/core/interceptors/*"],
+      "@mocks/*": ["src/mocks/*"],
+      "@test-setup/*": ["src/test-setup/*"]
     },
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
