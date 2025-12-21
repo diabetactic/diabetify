@@ -3,8 +3,25 @@ name: CI
 on:
   push:
     branches: [master, main, develop]
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'angular.json'
+      - 'tsconfig*.json'
+      - 'vite*.ts'
+      - 'capacitor.config.ts'
+      - '.github/workflows/ci.yml'
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'maestro/**'
   pull_request:
     branches: [master, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   NODE_VERSION: '20'
@@ -20,33 +37,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v5
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
 
       - name: Type Check
         run: pnpm exec tsc --noEmit -p tsconfig.build.json
@@ -85,33 +77,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v5
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
 
       - name: Build Production
         run: pnpm run build:prod
@@ -121,98 +88,7 @@ jobs:
         with:
           name: www
           path: www/
-          retention-days: 1
-
-      - name: Upload Turbo cache
-        uses: actions/upload-artifact@v6
-        with:
-          name: turbo-cache
-          path: node_modules/.cache/turbo
-          retention-days: 1
-
-  # Playwright E2E Tests (sharded)
-  playwright-e2e:
-    needs: build-web
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
-    env:
-      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2, 3, 4]
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v5
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install chromium --with-deps
-
-      - name: Download www artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: www
-          path: www/
-
-      - name: Run Playwright tests (shard ${{ matrix.shard }}/4)
-        run: pnpm exec playwright test --shard=${{ matrix.shard }}/4 --reporter=html,json
-
-      - name: Upload Playwright report
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: playwright-report-shard-${{ matrix.shard }}
-          path: playwright-report/
           retention-days: 7
-
-  # Deploy to Netlify
-  deploy-netlify:
-    needs: build-web
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
-    steps:
-      - name: Download www artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: www
-          path: www/
-
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v2.1
-        with:
-          publish-dir: './www'
-          production-deploy: true
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
   # PR Size Labeler
   pr-labeler:

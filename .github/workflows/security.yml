@@ -1,12 +1,18 @@
 name: Security Scan
 
 on:
-  push:
-    branches: [master, main]
+  # Only run on PRs (not on push to avoid double runs)
   pull_request:
     branches: [master, main]
+  # Weekly scheduled scan
   schedule:
     - cron: '0 0 * * 1'
+  # Manual trigger for ad-hoc scans
+  workflow_dispatch:
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   NODE_VERSION: '20'
@@ -32,19 +38,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
 
       - name: Security Audit
         run: pnpm audit --audit-level=moderate
