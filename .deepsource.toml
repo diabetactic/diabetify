@@ -1,7 +1,7 @@
 version = 1
 
 # DeepSource Configuration for Diabetify
-# Angular 20 + Ionic 8 + TypeScript 5.8 + Jest
+# Angular 21 + Ionic 8 + TypeScript 5.9 + Vitest
 
 # Test coverage reporting (uploads from CI)
 test_coverage_enabled = true
@@ -33,7 +33,7 @@ exclude_patterns = [
   "src/app/tests/**",
   "playwright/**",
   "maestro/**",
-  "setup-jest.ts",
+  "src/test-setup/**",
 
   # Dev-only debug components (not production code, don't need coverage)
   "src/app/shared/components/debug-panel/**",
@@ -68,14 +68,14 @@ name = "javascript"
 enabled = true
 
   [analyzers.meta]
-  # Angular 20 framework support
+  # Angular 21 framework support
   plugins = [
     "angular"
   ]
 
-  # Jest test environment
+  # Vitest test environment
   environment = [
-    "jest",
+    "vitest",
     "browser"
   ]
 
