@@ -210,7 +210,7 @@ describe('Backend Integration - Achievements & Gamification', () => {
 
         // Get initial streak state
         const initialStreak: StreakData = await authenticatedGet('/achievements/streak/', token);
-        const initialMeasurements = initialStreak.four_times_today;
+        const _initialMeasurements = initialStreak.four_times_today;
 
         // Submit a reading using the correct API
         const reading = {

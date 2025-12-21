@@ -14,7 +14,7 @@
  * - API verification calls
  */
 
-import { test, expect, Page, BrowserContext, request } from '@playwright/test';
+import { test, expect, Page, request } from '@playwright/test';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -313,7 +313,7 @@ test.describe('Readings Sync Flow Proof', () => {
 
   test('add reading → sync → verify in backend → persist after restart', async ({
     page,
-    context,
+    context: _context,
   }) => {
     ensureDirectories();
     const evidence: Evidence = { networkLogs: [], indexedDBSnapshots: [], screenshots: [] };

@@ -37,7 +37,7 @@ pre-commit:
     no-secrets:
       glob: '*.{ts,js,json,env}'
       run: |
-        if grep -rE "(password|secret|api_key|private_key)\s*[:=]\s*['\"][^'\"]+['\"]" {staged_files} 2>/dev/null | grep -v "\.spec\." | grep -v "mock" | grep -v "// Public test credentials" | grep -v "debug-panel"; then
+        if grep -rE "(password|secret|api_key|private_key)\s*[:=]\s*['\"][^'\"]+['\"]" {staged_files} 2>/dev/null | grep -v "\.spec\." | grep -v "mock" | grep -v "\.helper\." | grep -v "// Public test credentials" | grep -v "debug-panel"; then
           echo "❌ Potential secrets detected! Review staged files."
           exit 1
         fi

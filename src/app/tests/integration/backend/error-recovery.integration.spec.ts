@@ -16,9 +16,7 @@ import {
   TEST_USERS,
   getAuthHeadersForFetch,
   clearCachedAuthToken,
-  createGlucoseReading,
   getGlucoseReadings,
-  GlucoseReadingType,
 } from '../../helpers/backend-services.helper';
 
 // Estado de ejecución de tests
@@ -152,7 +150,7 @@ describe('Backend Integration - Error Recovery', () => {
       'should handle graceful timeout with longer delay',
       async () => {
         const token = await loginTestUser(TEST_USERS.user1);
-        const headers = await getAuthHeadersForFetch(token);
+        const _headers = await getAuthHeadersForFetch(token);
 
         const controller = new AbortController();
         const timeoutMs = 100; // 100ms timeout

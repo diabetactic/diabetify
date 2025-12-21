@@ -10,7 +10,6 @@
 import {
   waitForBackendServices,
   loginTestUser,
-  TEST_USER,
   TEST_USERS,
   authenticatedGet,
   setupAppointmentQueue,
