@@ -109,10 +109,12 @@ export class TrendsPage implements OnInit {
     await this.loadStatistics();
   }
 
-  async onPeriodChange(event: CustomEvent<{ value: 'week' | 'month' | 'all' }>) {
-    const period = event.detail.value;
-    this.selectedPeriod.set(period);
-    await this.loadStatistics();
+  async onPeriodChange(event: CustomEvent) {
+    const period = event.detail.value as 'week' | 'month' | 'all';
+    if (period) {
+      this.selectedPeriod.set(period);
+      await this.loadStatistics();
+    }
   }
 
   private async loadStatistics() {

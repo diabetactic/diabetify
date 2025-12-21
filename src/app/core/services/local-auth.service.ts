@@ -117,21 +117,6 @@ export interface TokenResponse {
   user: LocalUser;
 }
 
-/**
- * Password reset request
- */
-export interface PasswordResetRequest {
-  email: string;
-}
-
-/**
- * Password update request
- */
-export interface PasswordUpdateRequest {
-  token: string;
-  newPassword: string;
-}
-
 // Storage keys
 const STORAGE_KEYS = {
   ACCESS_TOKEN: 'local_access_token',
