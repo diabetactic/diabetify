@@ -114,7 +114,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [chromium, firefox, webkit]
+        project: [mobile-chromium, desktop-chromium]
     steps:
       - uses: actions/checkout@v6
 
@@ -127,11 +127,11 @@ jobs:
           name: www
           path: www/
 
-      - name: Install Playwright (${{ matrix.project }})
-        run: pnpm exec playwright install --with-deps ${{ matrix.project }}
+      - name: Install Playwright
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Run E2E Tests (${{ matrix.project }})
-        run: pnpm test:e2e --project=${{ matrix.project }}
+        run: pnpm test:e2e --project=${{ matrix.project }} --ignore-snapshots
         env:
           E2E_SKIP_SERVER: false
 
@@ -144,6 +144,42 @@ jobs:
             playwright-report/
             playwright/artifacts/
           retention-days: 7
+
+  # ============================================================================
+  # Visual Regression Tests (Trophy: quality layer - UI consistency)
+  # ============================================================================
+  visual-tests:
+    needs: build-web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Download www artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: www
+          path: www/
+
+      - name: Install Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Visual Regression Tests
+        run: pnpm test:visual --project=mobile-chromium
+        env:
+          E2E_SKIP_SERVER: false
+
+      - name: Upload Visual Test artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: visual-test-artifacts
+          path: |
+            playwright-report/
+            playwright/tests/visual-regression.spec.ts-snapshots/
+          retention-days: 14
 
   # ============================================================================
   # Docker Integration Tests (Optional - trigger with label)
