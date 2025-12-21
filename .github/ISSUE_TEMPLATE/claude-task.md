@@ -8,7 +8,7 @@ assignees: ''
 
 ## Repository Context
 
-**Stack**: Angular 20.3.14, Ionic 8.7.11, Capacitor 6.2.1, Tailwind CSS + DaisyUI
+**Stack**: Angular 21.0.5, Ionic 8.7.14, Capacitor 8.0.0, Tailwind CSS + DaisyUI
 
 **Backend Modes**: `mock` (offline), `local` (Docker), `cloud` (Heroku)
 

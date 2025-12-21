@@ -6,7 +6,7 @@
 
 Diabetactic is an Ionic/Angular mobile app for diabetes glucose management.
 
-**Stack**: Angular 20.3.14, Ionic 8.7.11, Capacitor 6.2.1, Tailwind CSS + DaisyUI, Jest 29.7.0, Playwright 1.48.0
+**Stack**: Angular 21.0.5, Ionic 8.7.14, Capacitor 8.0.0, Tailwind CSS + DaisyUI, Vitest 4.0.15, Playwright 1.48.0
 
 **Documentation**: See `CLAUDE.md` for comprehensive project documentation
 
@@ -15,14 +15,14 @@ Diabetactic is an Ionic/Angular mobile app for diabetes glucose management.
 ```bash
 npm install              # Install dependencies
 npm run build:prod       # Production build
-npm test                 # Run Jest unit tests
+npm test                 # Run Vitest unit tests
 npm run lint             # ESLint + Stylelint
 ```
 
 ## Test Commands
 
 ```bash
-npm run test:unit        # Jest unit tests
+npm run test:unit        # Vitest unit tests
 npm run test:e2e         # Playwright E2E tests
 npm run test:coverage    # Coverage report
 ```
@@ -49,8 +49,8 @@ npm run test:coverage    # Coverage report
 
 ### Testing
 
-- Jest 29.7.0 for unit tests (\*.spec.ts alongside source)
-- All Capacitor plugins mocked in `setup-jest.ts`
+- Vitest 4.0.15 for unit tests (\*.spec.ts alongside source)
+- All Capacitor plugins mocked in `src/test-setup/`
 - 1012 tests passing, 0 skipped, 0 failed (as of 2025-12-04)
 
 ## File Structure

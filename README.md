@@ -17,14 +17,14 @@ Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar e
 
 ## Stack Tecnológico
 
-| Componente          | Tecnología                         |
-| ------------------- | ---------------------------------- |
-| Framework Frontend  | Angular 20 + Ionic 8               |
-| Plataforma Móvil    | Capacitor 6.1                      |
-| Lenguaje            | TypeScript 5.8                     |
-| Estilos             | Tailwind CSS v3 + DaisyUI          |
-| Base de Datos Local | Dexie (IndexedDB)                  |
-| Testing             | Jest (unitarios), Playwright (E2E) |
+| Componente          | Tecnología                             |
+| ------------------- | -------------------------------------- |
+| Framework Frontend  | Angular 21 + Ionic 8                   |
+| Plataforma Móvil    | Capacitor 8.0                          |
+| Lenguaje            | TypeScript 5.9                         |
+| Estilos             | Tailwind CSS 3.4 + DaisyUI 5           |
+| Base de Datos Local | Dexie 4.2 (IndexedDB)                  |
+| Testing             | Vitest 4 (unitarios), Playwright (E2E) |
 
 ## Requisitos Previos
 
@@ -111,7 +111,7 @@ src/
 
 La aplicación sigue una arquitectura modular con los siguientes principios:
 
-- **Componentes Standalone**: Angular 20 sin NgModules
+- **Componentes Standalone**: Angular 21 sin NgModules
 - **Servicios Singleton**: Inyección de dependencias en root
 - **Offline-First**: Almacenamiento local con sincronización diferida
 - **Lazy Loading**: Carga bajo demanda de módulos
@@ -126,7 +126,7 @@ La aplicación sigue una arquitectura modular con los siguientes principios:
 
 ### Tests Unitarios
 
-Ejecutados con Jest:
+Ejecutados con Vitest:
 
 ```bash
 pnpm test             # Ejecutar tests

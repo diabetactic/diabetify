@@ -89,9 +89,9 @@ Los datos de glucosa provienen del backend Diabetactic.
 
 ## Testing
 
-- **Tests Unitarios**: Jest con jest-preset-angular para servicios y componentes
+- **Tests Unitarios**: Vitest 4.0 para servicios y componentes
 - **Tests E2E**: Playwright para flujos de usuario
-- **Tests de Integración**: Jest para verificar interacciones entre servicios
+- **Tests de Integración**: Vitest para verificar interacciones entre servicios
 - **Tests Mobile**: Maestro para pruebas E2E en dispositivos Android
 
 ## Seguridad

@@ -458,7 +458,7 @@ adb logcat | grep -i chromium
 
 **Versión de la App:** 0.0.1
 **Última Actualización:** Diciembre 2025
-**Tecnología**: Construida con Ionic 8, Angular 20, Capacitor 6 y Tailwind CSS
+**Tecnología**: Construida con Ionic 8, Angular 21, Capacitor 8 y Tailwind CSS
 
 _Diabetactic es una herramienta complementaria para el manejo de la diabetes. Siempre sigue los consejos médicos de tu proveedor de salud._
 
