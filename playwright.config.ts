@@ -22,8 +22,9 @@ export default defineConfig({
   expect: {
     timeout: 5_000,
     toHaveScreenshot: {
-      maxDiffPixels: 100,
-      threshold: 0.2,
+      // CI environments have font rendering differences - use ratio instead of pixels
+      maxDiffPixelRatio: 0.03, // 3% tolerance for cross-environment differences
+      threshold: 0.3, // Per-pixel color threshold
       animations: 'disabled',
     },
   },

@@ -137,6 +137,7 @@ jobs:
         run: pnpm test:e2e --project=${{ matrix.project }} --ignore-snapshots
         env:
           E2E_SKIP_SERVER: true
+          E2E_MOCK_MODE: true
 
       - name: Upload E2E artifacts
         if: failure()
@@ -179,6 +180,7 @@ jobs:
         run: pnpm test:visual --project=mobile-chromium
         env:
           E2E_SKIP_SERVER: true
+          E2E_MOCK_MODE: true
 
       - name: Upload Visual Test artifacts
         if: always()
