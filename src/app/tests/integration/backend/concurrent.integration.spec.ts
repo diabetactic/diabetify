@@ -14,7 +14,6 @@ import {
   waitForBackendServices,
   loginTestUser,
   TEST_USERS,
-  authenticatedDelete,
   createGlucoseReading,
   getGlucoseReadings,
   GlucoseReadingType,

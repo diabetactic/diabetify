@@ -12,13 +12,11 @@
  * Requires Docker backend: pnpm run docker:start
  */
 
-import { TestBed } from '@angular/core/testing';
 import {
   isBackendAvailable,
   waitForBackendServices,
   loginTestUser,
   TEST_USERS,
-  SERVICE_URLS,
   createGlucoseReading,
   getGlucoseReadings,
   GlucoseReadingType,

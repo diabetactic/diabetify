@@ -20,8 +20,6 @@ import {
   loginTestUser,
   TEST_USERS,
   authenticatedGet,
-  authenticatedPost,
-  setupAppointmentQueue,
   clearAppointmentQueue,
   clearCachedAuthToken,
   createGlucoseReading,

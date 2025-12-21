@@ -18,6 +18,7 @@ import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
  * Test user credentials for integration tests
  * Multiple users to avoid queue conflicts (each user can only submit to queue once)
  */
+// Public test credentials
 export const TEST_USER = {
   dni: '1000',
   password: 'tuvieja',
@@ -29,6 +30,7 @@ export const TEST_USER = {
  * Only user1 (1000/tuvieja) is guaranteed to exist in the backend.
  * All other users are aliases to user1 for backward compatibility.
  */
+// Public test credentials
 export const TEST_USERS = {
   user1: { dni: '1000', password: 'tuvieja', email: '1@example.com' },
   // Aliases to user1 for tests that reference other users
@@ -59,6 +61,7 @@ export const SERVICE_URLS = {
 /**
  * Backoffice admin credentials for queue management
  */
+// Public test credentials
 const BACKOFFICE_ADMIN = {
   username: 'admin',
   password: 'admin',
@@ -823,7 +826,7 @@ async function getUserQueueEntry(
  * This allows them to re-submit to the queue
  * @param userId - User ID to reset
  */
-async function resetUserQueuePosition(userId: number): Promise<void> {
+export async function resetUserQueuePosition(userId: number): Promise<void> {
   const entry = await getUserQueueEntry(userId);
   if (!entry) return; // User not in queue or backoffice unavailable
 
