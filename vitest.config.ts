@@ -53,6 +53,7 @@ export default defineConfig({
       'src/test-setup/index.ts', // TestBed init + mocks + Jasmine compatibility
     ],
     include: ['src/**/*.spec.ts'],
+    exclude: ['node_modules/**'],
     reporters: ['default', 'html'],
     coverage: {
       provider: 'v8',
