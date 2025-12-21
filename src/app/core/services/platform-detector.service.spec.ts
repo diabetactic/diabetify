@@ -1,7 +1,7 @@
 // Initialize TestBed environment for Vitest
 import '../../../test-setup';
 
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';

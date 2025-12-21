@@ -11,9 +11,9 @@ import { LoggerService } from '@services/logger.service';
 
 describe('LoggerService', () => {
   let service: LoggerService;
-  let consoleDebugSpy: MockInstance;
+  let _consoleDebugSpy: MockInstance;
   let consoleLogSpy: MockInstance;
-  let consoleWarnSpy: MockInstance;
+  let _consoleWarnSpy: MockInstance;
   let consoleErrorSpy: MockInstance;
 
   beforeEach(() => {
@@ -21,9 +21,9 @@ describe('LoggerService', () => {
     service = TestBed.inject(LoggerService);
 
     // Spy on console methods with return values
-    consoleDebugSpy = vi.spyOn(console, 'debug').mockReturnValue(undefined);
+    _consoleDebugSpy = vi.spyOn(console, 'debug').mockReturnValue(undefined);
     consoleLogSpy = vi.spyOn(console, 'log').mockReturnValue(undefined);
-    consoleWarnSpy = vi.spyOn(console, 'warn').mockReturnValue(undefined);
+    _consoleWarnSpy = vi.spyOn(console, 'warn').mockReturnValue(undefined);
     consoleErrorSpy = vi.spyOn(console, 'error').mockReturnValue(undefined);
   });
 

@@ -14,6 +14,7 @@ import {
   ExternalServicesManager,
   ExternalService,
 } from '@services/external-services-manager.service';
+import { LoggerService } from '@services/logger.service';
 import { UnifiedAuthService } from '@services/unified-auth.service';
 import {
   GlucoserverService,
@@ -99,7 +100,8 @@ export class ServiceOrchestrator implements OnDestroy {
     private unifiedAuth: UnifiedAuthService,
     private glucoserver: GlucoserverService,
     private appointments: AppointmentService,
-    private readings: ReadingsService
+    private readings: ReadingsService,
+    private logger: LoggerService
   ) {}
 
   /**
@@ -515,7 +517,7 @@ export class ServiceOrchestrator implements OnDestroy {
         try {
           await step.compensate();
         } catch (error) {
-          console.error(`Failed to compensate step ${step.name}:`, error);
+          this.logger.error('Orchestrator', `Failed to compensate step ${step.name}`, error);
         }
       }
     }
@@ -627,7 +629,7 @@ export class ServiceOrchestrator implements OnDestroy {
 
   private async rollbackLocalServerSync(): Promise<void> {
     // Implementation would depend on server API
-    console.log('Rolling back local server sync');
+    this.logger.debug('Orchestrator', 'Rolling back local server sync');
   }
 
   private async updateStatistics(): Promise<unknown> {
@@ -679,18 +681,21 @@ export class ServiceOrchestrator implements OnDestroy {
     const data = await this.prepareGlucoseDataForSharing(appointmentId);
     // Note: shareGlucoseData is not implemented in AppointmentService yet
     // This is a placeholder for future implementation
-    console.log(`Sharing glucose data for appointment ${appointmentId}`, data);
+    this.logger.info('Orchestrator', `Sharing glucose data for appointment ${appointmentId}`, data);
     return { shared: true, appointmentId, dataSize: Array.isArray(data) ? data.length : 0 };
   }
 
   private async revokeDataSharing(appointmentId: string): Promise<void> {
     // Implementation would depend on API
-    console.log(`Revoking data sharing for appointment ${appointmentId}`);
+    this.logger.debug('Orchestrator', `Revoking data sharing for appointment ${appointmentId}`);
   }
 
   private async sendShareConfirmation(appointmentId: string): Promise<void> {
     // Implementation for sending confirmation
-    console.log(`Sending share confirmation for appointment ${appointmentId}`);
+    this.logger.debug(
+      'Orchestrator',
+      `Sending share confirmation for appointment ${appointmentId}`
+    );
   }
 
   private async syncLatestData(): Promise<unknown> {
@@ -728,18 +733,18 @@ export class ServiceOrchestrator implements OnDestroy {
 
   private async mergeAccountData(): Promise<unknown> {
     // Implementation for merging data from both accounts
-    console.log('Merging account data');
+    this.logger.debug('Orchestrator', 'Merging account data');
     return { merged: true };
   }
 
   private async rollbackDataMerge(): Promise<void> {
     // Implementation for rolling back data merge
-    console.log('Rolling back data merge');
+    this.logger.debug('Orchestrator', 'Rolling back data merge');
   }
 
   private async updateMergedPreferences(): Promise<unknown> {
     // Implementation for updating preferences after merge
-    console.log('Updating merged preferences');
+    this.logger.debug('Orchestrator', 'Updating merged preferences');
     return { preferencesUpdated: true };
   }
 

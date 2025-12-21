@@ -9,11 +9,13 @@ import {
   GlucoseReading,
   GlucoseStatistics,
 } from '@services/glucoserver.service';
+import { LoggerService } from '@services/logger.service';
 import { environment } from '@env/environment';
 
 describe('GlucoserverService', () => {
   let service: GlucoserverService;
   let httpClient: Mock<HttpClient>;
+  let mockLogger: Mock<LoggerService>;
 
   const mockBaseUrl = 'https://api.example.com';
   const mockApiPath = '/v1/glucose';
@@ -37,8 +39,19 @@ describe('GlucoserverService', () => {
       delete: vi.fn(),
     };
 
+    mockLogger = {
+      info: vi.fn(),
+      debug: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    } as unknown as Mock<LoggerService>;
+
     TestBed.configureTestingModule({
-      providers: [GlucoserverService, { provide: HttpClient, useValue: httpClientMock }],
+      providers: [
+        GlucoserverService,
+        { provide: HttpClient, useValue: httpClientMock },
+        { provide: LoggerService, useValue: mockLogger },
+      ],
     });
 
     service = TestBed.inject(GlucoserverService);
@@ -555,20 +568,18 @@ describe('GlucoserverService', () => {
         });
       }));
 
-    it('should log errors to console', () =>
+    it('should log errors via LoggerService', () =>
       new Promise<void>(resolve => {
-        const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
         const error = new HttpErrorResponse({ status: 500 });
         httpClient.get.mockReturnValue(throwError(() => error));
 
         service.getReadings().subscribe({
           next: () => fail('should have failed'),
           error: () => {
-            expect(consoleSpy).toHaveBeenCalledWith(
-              'GlucoserverService Error:',
+            expect(mockLogger.error).toHaveBeenCalledWith(
+              'Glucoserver',
               expect.stringContaining('Server error')
             );
-            consoleSpy.mockRestore();
             resolve();
           },
         });

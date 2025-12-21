@@ -398,7 +398,7 @@ describe('ThemeService', () => {
       });
 
       // Crear nueva instancia del servicio que configurará el listener
-      const newService = TestBed.inject(ThemeService);
+      const _newService = TestBed.inject(ThemeService);
       await new Promise(resolve => setTimeout(resolve, 150));
 
       // Verificar que se configuró el listener para cambios en el tema del sistema

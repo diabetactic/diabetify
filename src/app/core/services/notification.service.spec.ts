@@ -13,7 +13,6 @@ import {
 import { LoggerService } from '@services/logger.service';
 import {
   LocalNotifications,
-  PendingLocalNotificationSchema,
   ActionPerformed,
   LocalNotificationSchema,
   PermissionStatus,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Helpers de Angular TestBed y compatibilidad Jasmine
  */

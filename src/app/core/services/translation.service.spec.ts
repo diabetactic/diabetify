@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { TranslationService, Language, LanguageConfig } from '@services/translation.service';
+import { LoggerService } from '@services/logger.service';
 import { Device } from '@capacitor/device';
 import { Preferences } from '@capacitor/preferences';
 import type { Mock } from 'vitest';
@@ -12,6 +13,7 @@ import type { Mock } from 'vitest';
 describe('TranslationService', () => {
   let service: TranslationService;
   let translateService: Mock<TranslateService>;
+  let mockLogger: Mock<LoggerService>;
 
   beforeEach(() => {
     const translateServiceMock = {
@@ -22,6 +24,13 @@ describe('TranslationService', () => {
       get: vi.fn().mockReturnValue(of('translated text')),
     };
 
+    mockLogger = {
+      info: vi.fn(),
+      debug: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    } as unknown as Mock<LoggerService>;
+
     (Preferences.get as Mock).mockResolvedValue({ value: null });
     (Preferences.set as Mock).mockResolvedValue(undefined);
     (Preferences.remove as Mock).mockResolvedValue(undefined);
@@ -31,6 +40,7 @@ describe('TranslationService', () => {
       providers: [
         TranslationService,
         { provide: TranslateService, useValue: translateServiceMock },
+        { provide: LoggerService, useValue: mockLogger },
       ],
     });
 
@@ -53,7 +63,7 @@ describe('TranslationService', () => {
 
     it('should load stored language preference on init', async () => {
       (Preferences.get as Mock).mockResolvedValue({ value: 'en' });
-      new TranslationService(translateService);
+      new TranslationService(translateService, mockLogger);
       await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(translateService.use).toHaveBeenCalledWith('en');
@@ -75,7 +85,6 @@ describe('TranslationService', () => {
     });
 
     it('should reject unsupported languages and set loading state during change', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
       let loadingState = false;
 
       service.state.subscribe(state => {
@@ -83,13 +92,11 @@ describe('TranslationService', () => {
       });
 
       await service.setLanguage('fr' as Language);
-      expect(consoleSpy).toHaveBeenCalledWith('Unsupported language: fr');
+      expect(mockLogger.warn).toHaveBeenCalledWith('Translation', 'Unsupported language: fr');
       expect(translateService.use).not.toHaveBeenCalledWith('fr');
 
       await service.setLanguage(Language.EN);
       expect(loadingState).toBe(true);
-
-      consoleSpy.mockRestore();
     });
   });
 
@@ -284,13 +291,11 @@ describe('TranslationService', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
       (Preferences.remove as Mock).mockRejectedValue(new Error('Failed'));
 
       await service.clearLanguagePreference();
 
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
+      expect(mockLogger.error).toHaveBeenCalled();
     });
   });
 

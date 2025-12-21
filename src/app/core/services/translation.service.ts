@@ -11,6 +11,7 @@ import { Device } from '@capacitor/device';
 import { Preferences } from '@capacitor/preferences';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { LoggerService } from '@services/logger.service';
 
 /**
  * Supported languages
@@ -112,7 +113,10 @@ export class TranslationService implements OnDestroy {
     map(state => this.LANGUAGES.get(state.currentLanguage)!)
   );
 
-  constructor(private translate: TranslateService) {
+  constructor(
+    private translate: TranslateService,
+    private logger: LoggerService
+  ) {
     this.initialize();
   }
 
@@ -147,16 +151,19 @@ export class TranslationService implements OnDestroy {
       // First check stored preference
       const stored = await this.getStoredLanguage();
       if (stored) {
-        console.log(`Using stored language preference: ${stored}`);
+        this.logger.debug('Translation', `Using stored language preference: ${stored}`);
         return stored;
       }
 
       // If no stored preference, use DEFAULT_LANGUAGE (Spanish)
       // User can manually change language later via language switcher
-      console.log(`No stored preference, using default language: ${this.DEFAULT_LANGUAGE}`);
+      this.logger.debug(
+        'Translation',
+        `No stored preference, using default language: ${this.DEFAULT_LANGUAGE}`
+      );
       return this.DEFAULT_LANGUAGE;
     } catch (error) {
-      console.error('Error detecting initial language:', error);
+      this.logger.error('Translation', 'Error detecting initial language', error);
       return this.DEFAULT_LANGUAGE;
     }
   }
@@ -174,7 +181,7 @@ export class TranslationService implements OnDestroy {
 
       return langCode;
     } catch (error) {
-      console.error('Error detecting device language:', error);
+      this.logger.error('Translation', 'Error detecting device language', error);
 
       // Fallback to browser language
       const browserLang = navigator.language || navigator.languages[0];
@@ -217,7 +224,7 @@ export class TranslationService implements OnDestroy {
       }
       return null;
     } catch (error) {
-      console.error('Error getting stored language:', error);
+      this.logger.error('Translation', 'Error getting stored language', error);
       return null;
     }
   }
@@ -232,7 +239,7 @@ export class TranslationService implements OnDestroy {
         value: language,
       });
     } catch (error) {
-      console.error('Error storing language preference:', error);
+      this.logger.error('Translation', 'Error storing language preference', error);
     }
   }
 
@@ -241,7 +248,7 @@ export class TranslationService implements OnDestroy {
    */
   public async setLanguage(language: Language): Promise<void> {
     if (!this.LANGUAGES.has(language)) {
-      console.error(`Unsupported language: ${language}`);
+      this.logger.warn('Translation', `Unsupported language: ${language}`);
       return;
     }
 
@@ -268,9 +275,9 @@ export class TranslationService implements OnDestroy {
       const config = this.LANGUAGES.get(language)!;
       document.documentElement.dir = config.direction;
 
-      console.log(`Language changed to: ${language}`);
+      this.logger.info('Translation', `Language changed to: ${language}`);
     } catch (error) {
-      console.error('Error setting language:', error);
+      this.logger.error('Translation', 'Error setting language', error);
       this.updateState({ isLoading: false });
     }
   }
@@ -441,7 +448,7 @@ export class TranslationService implements OnDestroy {
       await Preferences.remove({ key: this.LANGUAGE_KEY });
       await this.resetToDeviceLanguage();
     } catch (error) {
-      console.error('Error clearing language preference:', error);
+      this.logger.error('Translation', 'Error clearing language preference', error);
     }
   }
 

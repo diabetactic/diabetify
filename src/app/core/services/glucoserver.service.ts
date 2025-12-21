@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map, retry } from 'rxjs/operators';
 import { environment } from '@env/environment';
+import { LoggerService } from '@services/logger.service';
 
 /**
  * Glucose reading interface for Glucoserver API
@@ -51,7 +52,10 @@ export class GlucoserverService {
   private readonly apiPath: string;
   private readonly fullUrl: string;
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private logger: LoggerService
+  ) {
     const config = environment.backendServices.glucoserver;
     this.baseUrl = config.baseUrl;
     this.apiPath = config.apiPath;
@@ -204,11 +208,11 @@ export class GlucoserverService {
   /**
    * Handle HTTP errors
    */
-  private handleError(error: {
+  private handleError = (error: {
     error?: { message?: string };
     status?: number;
     message?: string;
-  }): Observable<never> {
+  }): Observable<never> => {
     let errorMessage = 'An error occurred';
 
     if (error.error instanceof ErrorEvent) {
@@ -227,7 +231,7 @@ export class GlucoserverService {
       }
     }
 
-    console.error('GlucoserverService Error:', errorMessage);
+    this.logger.error('Glucoserver', errorMessage);
     return throwError(() => new Error(errorMessage));
-  }
+  };
 }
