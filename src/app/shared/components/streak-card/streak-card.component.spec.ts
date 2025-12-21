@@ -22,304 +22,177 @@ describe('StreakCardComponent', () => {
     fixture.detectChanges();
   });
 
-  // Helper to trigger change detection for OnPush components
   function updateInputAndDetect(): void {
     cdr.markForCheck();
     fixture.detectChanges();
   }
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   describe('default values', () => {
-    it('should have default streak of 0', () => {
+    it('should have default values of 0 and loading false', () => {
       expect(component.streak).toBe(0);
-    });
-
-    it('should have default maxStreak of 0', () => {
       expect(component.maxStreak).toBe(0);
-    });
-
-    it('should have default timesMeasured of 0', () => {
       expect(component.timesMeasured).toBe(0);
-    });
-
-    it('should have default loading of false', () => {
       expect(component.loading).toBe(false);
     });
   });
 
   describe('currentLevel', () => {
-    it('should return starter level for streak 0', () => {
-      component.streak = 0;
-      expect(component.currentLevel.key).toBe('starter');
-      expect(component.currentLevel.emoji).toBe('💪');
-    });
+    it('should return correct level for various streak values', () => {
+      const testCases = [
+        { streak: 0, key: 'starter', emoji: '💪' },
+        { streak: 2, key: 'starter', emoji: '💪' },
+        { streak: 3, key: 'consistent', emoji: '✨' },
+        { streak: 6, key: 'consistent', emoji: '✨' },
+        { streak: 7, key: 'dedicated', emoji: '🔥' },
+        { streak: 13, key: 'dedicated', emoji: '🔥' },
+        { streak: 14, key: 'champion', emoji: '⭐' },
+        { streak: 29, key: 'champion', emoji: '⭐' },
+        { streak: 30, key: 'legend', emoji: '🏆' },
+        { streak: 100, key: 'legend', emoji: '🏆' },
+      ];
 
-    it('should return starter level for streak 2', () => {
-      component.streak = 2;
-      expect(component.currentLevel.key).toBe('starter');
-    });
-
-    it('should return consistent level for streak 3', () => {
-      component.streak = 3;
-      expect(component.currentLevel.key).toBe('consistent');
-      expect(component.currentLevel.emoji).toBe('✨');
-    });
-
-    it('should return consistent level for streak 6', () => {
-      component.streak = 6;
-      expect(component.currentLevel.key).toBe('consistent');
-    });
-
-    it('should return dedicated level for streak 7', () => {
-      component.streak = 7;
-      expect(component.currentLevel.key).toBe('dedicated');
-      expect(component.currentLevel.emoji).toBe('🔥');
-    });
-
-    it('should return dedicated level for streak 13', () => {
-      component.streak = 13;
-      expect(component.currentLevel.key).toBe('dedicated');
-    });
-
-    it('should return champion level for streak 14', () => {
-      component.streak = 14;
-      expect(component.currentLevel.key).toBe('champion');
-      expect(component.currentLevel.emoji).toBe('⭐');
-    });
-
-    it('should return champion level for streak 29', () => {
-      component.streak = 29;
-      expect(component.currentLevel.key).toBe('champion');
-    });
-
-    it('should return legend level for streak 30', () => {
-      component.streak = 30;
-      expect(component.currentLevel.key).toBe('legend');
-      expect(component.currentLevel.emoji).toBe('🏆');
-    });
-
-    it('should return legend level for streak 100', () => {
-      component.streak = 100;
-      expect(component.currentLevel.key).toBe('legend');
+      testCases.forEach(({ streak, key, emoji }) => {
+        component.streak = streak;
+        expect(component.currentLevel.key, `streak ${streak}`).toBe(key);
+        expect(component.currentLevel.emoji, `streak ${streak} emoji`).toBe(emoji);
+      });
     });
   });
 
   describe('nextLevel', () => {
-    it('should return consistent as next level for starter', () => {
-      component.streak = 0;
-      expect(component.nextLevel?.key).toBe('consistent');
-    });
+    it('should return correct next level or null at legend', () => {
+      const testCases = [
+        { streak: 0, nextKey: 'consistent' },
+        { streak: 5, nextKey: 'dedicated' },
+        { streak: 10, nextKey: 'champion' },
+        { streak: 20, nextKey: 'legend' },
+        { streak: 30, nextKey: null },
+        { streak: 365, nextKey: null },
+      ];
 
-    it('should return dedicated as next level for consistent', () => {
-      component.streak = 5;
-      expect(component.nextLevel?.key).toBe('dedicated');
-    });
-
-    it('should return champion as next level for dedicated', () => {
-      component.streak = 10;
-      expect(component.nextLevel?.key).toBe('champion');
-    });
-
-    it('should return legend as next level for champion', () => {
-      component.streak = 20;
-      expect(component.nextLevel?.key).toBe('legend');
-    });
-
-    it('should return null at legend level', () => {
-      component.streak = 30;
-      expect(component.nextLevel).toBeNull();
-    });
-
-    it('should return null for very high streak', () => {
-      component.streak = 365;
-      expect(component.nextLevel).toBeNull();
+      testCases.forEach(({ streak, nextKey }) => {
+        component.streak = streak;
+        if (nextKey) {
+          expect(component.nextLevel?.key, `streak ${streak}`).toBe(nextKey);
+        } else {
+          expect(component.nextLevel, `streak ${streak}`).toBeNull();
+        }
+      });
     });
   });
 
   describe('progressToNextLevel', () => {
-    it('should return 0 at start of level', () => {
-      component.streak = 0;
-      expect(component.progressToNextLevel).toBe(0);
-    });
+    it('should calculate progress correctly for various streaks', () => {
+      const testCases = [
+        { streak: 0, expected: 0 },
+        { streak: 5, expected: 50 }, // (5-3)/(7-3)*100 = 50
+        { streak: 6, expected: 75 }, // (6-3)/(7-3)*100 = 75
+        { streak: 30, expected: 100 }, // legend = 100%
+      ];
 
-    it('should return 100 at legend level', () => {
-      component.streak = 30;
-      expect(component.progressToNextLevel).toBe(100);
-    });
+      testCases.forEach(({ streak, expected }) => {
+        component.streak = streak;
+        expect(component.progressToNextLevel, `streak ${streak}`).toBe(expected);
+      });
 
-    it('should calculate progress correctly within consistent level', () => {
-      component.streak = 5; // 2 days into consistent (3-6), progress toward dedicated (7)
-      // currentMin = 3, nextMin = 7, streak = 5
-      // progress = ((5-3) / (7-3)) * 100 = (2/4) * 100 = 50
-      expect(component.progressToNextLevel).toBe(50);
-    });
-
-    it('should calculate progress at 75% of level', () => {
-      component.streak = 6; // 3 days into consistent (3-6)
-      // progress = ((6-3) / (7-3)) * 100 = (3/4) * 100 = 75
-      expect(component.progressToNextLevel).toBe(75);
-    });
-
-    it('should clamp progress to 0-100 range', () => {
-      component.streak = 3; // exactly at consistent start
-      const progress = component.progressToNextLevel;
-      expect(progress).toBeGreaterThanOrEqual(0);
-      expect(progress).toBeLessThanOrEqual(100);
+      // Ensure progress is clamped to 0-100
+      component.streak = 3;
+      expect(component.progressToNextLevel).toBeGreaterThanOrEqual(0);
+      expect(component.progressToNextLevel).toBeLessThanOrEqual(100);
     });
   });
 
   describe('daysToNextLevel', () => {
-    it('should return 3 days to next level from streak 0', () => {
-      component.streak = 0;
-      expect(component.daysToNextLevel).toBe(3);
-    });
+    it('should calculate days remaining to next level', () => {
+      const testCases = [
+        { streak: 0, days: 3 },
+        { streak: 5, days: 2 }, // 7 - 5 = 2
+        { streak: 30, days: 0 }, // legend
+      ];
 
-    it('should return 2 days to next level from streak 5', () => {
-      component.streak = 5;
-      expect(component.daysToNextLevel).toBe(2); // 7 - 5 = 2
-    });
-
-    it('should return 0 at legend level', () => {
-      component.streak = 30;
-      expect(component.daysToNextLevel).toBe(0);
+      testCases.forEach(({ streak, days }) => {
+        component.streak = streak;
+        expect(component.daysToNextLevel, `streak ${streak}`).toBe(days);
+      });
     });
   });
 
   describe('isNewRecord', () => {
-    it('should be false when streak is 0', () => {
-      component.streak = 0;
-      component.maxStreak = 0;
-      expect(component.isNewRecord).toBe(false);
-    });
+    it('should correctly identify new records', () => {
+      const testCases = [
+        { streak: 0, maxStreak: 0, isRecord: false },
+        { streak: 1, maxStreak: 1, isRecord: false },
+        { streak: 5, maxStreak: 5, isRecord: true },
+        { streak: 3, maxStreak: 5, isRecord: false },
+        { streak: 10, maxStreak: 10, isRecord: true },
+      ];
 
-    it('should be false when streak is 1', () => {
-      component.streak = 1;
-      component.maxStreak = 1;
-      expect(component.isNewRecord).toBe(false);
-    });
-
-    it('should be true when streak equals maxStreak and > 1', () => {
-      component.streak = 5;
-      component.maxStreak = 5;
-      expect(component.isNewRecord).toBe(true);
-    });
-
-    it('should be false when streak < maxStreak', () => {
-      component.streak = 3;
-      component.maxStreak = 5;
-      expect(component.isNewRecord).toBe(false);
-    });
-
-    it('should be true when streak equals new high maxStreak', () => {
-      component.streak = 10;
-      component.maxStreak = 10;
-      expect(component.isNewRecord).toBe(true);
+      testCases.forEach(({ streak, maxStreak, isRecord }) => {
+        component.streak = streak;
+        component.maxStreak = maxStreak;
+        expect(component.isNewRecord, `streak ${streak} max ${maxStreak}`).toBe(isRecord);
+      });
     });
   });
 
   describe('gradientClass', () => {
-    it('should return green gradient for starter level', () => {
-      component.streak = 0;
-      expect(component.gradientClass).toContain('green');
-    });
+    it('should return correct gradient class for each level', () => {
+      const testCases = [
+        { streak: 0, contains: 'green' },
+        { streak: 5, contains: 'cyan' },
+        { streak: 10, contains: 'orange' },
+        { streak: 20, contains: 'purple' },
+        { streak: 30, contains: 'amber' },
+      ];
 
-    it('should return cyan/blue gradient for consistent level', () => {
-      component.streak = 5;
-      expect(component.gradientClass).toContain('cyan');
-    });
-
-    it('should return orange/red gradient for dedicated level', () => {
-      component.streak = 10;
-      expect(component.gradientClass).toContain('orange');
-    });
-
-    it('should return purple/pink gradient for champion level', () => {
-      component.streak = 20;
-      expect(component.gradientClass).toContain('purple');
-    });
-
-    it('should return amber/yellow gradient for legend level', () => {
-      component.streak = 30;
-      expect(component.gradientClass).toContain('amber');
+      testCases.forEach(({ streak, contains }) => {
+        component.streak = streak;
+        expect(component.gradientClass, `streak ${streak}`).toContain(contains);
+      });
     });
   });
 
   describe('progressBarClass', () => {
-    it('should return progress-success for starter level', () => {
-      component.streak = 0;
-      expect(component.progressBarClass).toBe('progress-success');
-    });
+    it('should return correct progress bar class for each level', () => {
+      const testCases = [
+        { streak: 0, className: 'progress-success' },
+        { streak: 5, className: 'progress-info' },
+        { streak: 10, className: 'progress-error' },
+        { streak: 20, className: 'progress-secondary' },
+        { streak: 30, className: 'progress-warning' },
+      ];
 
-    it('should return progress-info for consistent level', () => {
-      component.streak = 5;
-      expect(component.progressBarClass).toBe('progress-info');
-    });
-
-    it('should return progress-error for dedicated level', () => {
-      component.streak = 10;
-      expect(component.progressBarClass).toBe('progress-error');
-    });
-
-    it('should return progress-secondary for champion level', () => {
-      component.streak = 20;
-      expect(component.progressBarClass).toBe('progress-secondary');
-    });
-
-    it('should return progress-warning for legend level', () => {
-      component.streak = 30;
-      expect(component.progressBarClass).toBe('progress-warning');
+      testCases.forEach(({ streak, className }) => {
+        component.streak = streak;
+        expect(component.progressBarClass, `streak ${streak}`).toBe(className);
+      });
     });
   });
 
   describe('template rendering', () => {
-    it('should display streak value', () => {
+    it('should display streak, maxStreak, and timesMeasured values', () => {
       component.streak = 7;
-      updateInputAndDetect();
-
-      const compiled = fixture.nativeElement;
-      const streakValue = compiled.querySelector('[data-testid="streak-value"]');
-      expect(streakValue?.textContent?.trim()).toBe('7');
-    });
-
-    it('should display maxStreak value', () => {
       component.maxStreak = 15;
-      updateInputAndDetect();
-
-      const compiled = fixture.nativeElement;
-      const maxStreakValue = compiled.querySelector('[data-testid="max-streak-value"]');
-      expect(maxStreakValue?.textContent?.trim()).toBe('15');
-    });
-
-    it('should display timesMeasured value', () => {
       component.timesMeasured = 42;
       updateInputAndDetect();
 
       const compiled = fixture.nativeElement;
-      const timesMeasuredValue = compiled.querySelector('[data-testid="times-measured-value"]');
-      expect(timesMeasuredValue?.textContent?.trim()).toBe('42');
+      expect(compiled.querySelector('[data-testid="streak-value"]')?.textContent?.trim()).toBe('7');
+      expect(compiled.querySelector('[data-testid="max-streak-value"]')?.textContent?.trim()).toBe(
+        '15'
+      );
+      expect(
+        compiled.querySelector('[data-testid="times-measured-value"]')?.textContent?.trim()
+      ).toBe('42');
     });
 
-    it('should show loading state when loading is true', () => {
+    it('should show loading state and hide content when loading', () => {
       component.loading = true;
       updateInputAndDetect();
 
       const compiled = fixture.nativeElement;
-      // DaisyUI loading spinner uses 'loading' class
-      const loadingSpinner = compiled.querySelector('.loading');
-      expect(loadingSpinner).toBeTruthy();
-    });
-
-    it('should hide content when loading is true', () => {
-      component.loading = true;
-      updateInputAndDetect();
-
-      const compiled = fixture.nativeElement;
-      // Content is in ng-template #content, hidden when loading
-      const streakValue = compiled.querySelector('[data-testid="streak-value"]');
-      expect(streakValue).toBeFalsy();
+      expect(compiled.querySelector('.loading')).toBeTruthy();
+      expect(compiled.querySelector('[data-testid="streak-value"]')).toBeFalsy();
     });
   });
 });

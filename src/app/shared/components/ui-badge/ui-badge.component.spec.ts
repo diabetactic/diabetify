@@ -29,158 +29,85 @@ describe('UiBadgeComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   describe('default values', () => {
-    it('should have default variant as neutral', () => {
+    it('should have correct default values', () => {
       expect(component.variant).toBe('neutral');
-    });
-
-    it('should have default size as md', () => {
       expect(component.size).toBe('md');
-    });
-
-    it('should have default badgeStyle as solid', () => {
       expect(component.badgeStyle).toBe('solid');
-    });
-
-    it('should have dismissible as false by default', () => {
       expect(component.dismissible).toBe(false);
-    });
-
-    it('should have rounded as false by default', () => {
       expect(component.rounded).toBe(false);
-    });
-
-    it('should have isDismissed as false by default', () => {
       expect(component.isDismissed).toBe(false);
-    });
-  });
-
-  describe('baseClasses getter', () => {
-    it('should return base class string', () => {
-      expect(component.baseClasses).toContain('inline-flex');
-      expect(component.baseClasses).toContain('items-center');
-      expect(component.baseClasses).toContain('font-medium');
+      expect(component.icon).toBeUndefined();
     });
   });
 
   describe('variantClasses getter', () => {
-    describe('solid style', () => {
-      beforeEach(() => {
-        component.badgeStyle = 'solid';
-      });
+    it.each([
+      { style: 'solid', variant: 'success', expectedClasses: ['bg-success'] },
+      { style: 'solid', variant: 'warning', expectedClasses: ['bg-warning'] },
+      { style: 'solid', variant: 'danger', expectedClasses: ['bg-danger'] },
+      { style: 'solid', variant: 'info', expectedClasses: ['bg-primary'] },
+      { style: 'solid', variant: 'neutral', expectedClasses: ['bg-gray-500'] },
+    ] as const)(
+      'should return correct classes for solid $variant',
+      ({ style, variant, expectedClasses }) => {
+        component.badgeStyle = style;
+        component.variant = variant;
+        expectedClasses.forEach(expectedClass => {
+          expect(component.variantClasses).toContain(expectedClass);
+        });
+      }
+    );
 
-      it('should return success classes for success variant', () => {
-        component.variant = 'success';
-        expect(component.variantClasses).toContain('bg-success');
-      });
+    it.each([
+      {
+        style: 'outlined',
+        variant: 'success',
+        expectedClasses: ['border-success', 'bg-transparent'],
+      },
+      { style: 'outlined', variant: 'warning', expectedClasses: ['border-warning'] },
+      { style: 'outlined', variant: 'danger', expectedClasses: ['border-danger'] },
+      { style: 'outlined', variant: 'info', expectedClasses: ['border-primary'] },
+      { style: 'outlined', variant: 'neutral', expectedClasses: ['border-gray-500'] },
+    ] as const)(
+      'should return correct classes for outlined $variant',
+      ({ style, variant, expectedClasses }) => {
+        component.badgeStyle = style;
+        component.variant = variant;
+        expectedClasses.forEach(expectedClass => {
+          expect(component.variantClasses).toContain(expectedClass);
+        });
+      }
+    );
 
-      it('should return warning classes for warning variant', () => {
-        component.variant = 'warning';
-        expect(component.variantClasses).toContain('bg-warning');
-      });
-
-      it('should return danger classes for danger variant', () => {
-        component.variant = 'danger';
-        expect(component.variantClasses).toContain('bg-danger');
-      });
-
-      it('should return info classes for info variant', () => {
-        component.variant = 'info';
-        expect(component.variantClasses).toContain('bg-primary');
-      });
-
-      it('should return neutral classes for neutral variant', () => {
-        component.variant = 'neutral';
-        expect(component.variantClasses).toContain('bg-gray-500');
-      });
-    });
-
-    describe('outlined style', () => {
-      beforeEach(() => {
-        component.badgeStyle = 'outlined';
-      });
-
-      it('should return outlined success classes', () => {
-        component.variant = 'success';
-        expect(component.variantClasses).toContain('border-success');
-        expect(component.variantClasses).toContain('bg-transparent');
-      });
-
-      it('should return outlined warning classes', () => {
-        component.variant = 'warning';
-        expect(component.variantClasses).toContain('border-warning');
-      });
-
-      it('should return outlined danger classes', () => {
-        component.variant = 'danger';
-        expect(component.variantClasses).toContain('border-danger');
-      });
-
-      it('should return outlined info classes', () => {
-        component.variant = 'info';
-        expect(component.variantClasses).toContain('border-primary');
-      });
-
-      it('should return outlined neutral classes', () => {
-        component.variant = 'neutral';
-        expect(component.variantClasses).toContain('border-gray-500');
-      });
-    });
-
-    describe('subtle style', () => {
-      beforeEach(() => {
-        component.badgeStyle = 'subtle';
-      });
-
-      it('should return subtle success classes', () => {
-        component.variant = 'success';
-        expect(component.variantClasses).toContain('bg-green-100');
-        expect(component.variantClasses).toContain('text-green-800');
-      });
-
-      it('should return subtle warning classes', () => {
-        component.variant = 'warning';
-        expect(component.variantClasses).toContain('bg-amber-100');
-      });
-
-      it('should return subtle danger classes', () => {
-        component.variant = 'danger';
-        expect(component.variantClasses).toContain('bg-red-100');
-      });
-
-      it('should return subtle info classes', () => {
-        component.variant = 'info';
-        expect(component.variantClasses).toContain('bg-blue-100');
-      });
-
-      it('should return subtle neutral classes', () => {
-        component.variant = 'neutral';
-        expect(component.variantClasses).toContain('bg-gray-100');
-      });
-    });
+    it.each([
+      { style: 'subtle', variant: 'success', expectedClasses: ['bg-green-100', 'text-green-800'] },
+      { style: 'subtle', variant: 'warning', expectedClasses: ['bg-amber-100'] },
+      { style: 'subtle', variant: 'danger', expectedClasses: ['bg-red-100'] },
+      { style: 'subtle', variant: 'info', expectedClasses: ['bg-blue-100'] },
+      { style: 'subtle', variant: 'neutral', expectedClasses: ['bg-gray-100'] },
+    ] as const)(
+      'should return correct classes for subtle $variant',
+      ({ style, variant, expectedClasses }) => {
+        component.badgeStyle = style;
+        component.variant = variant;
+        expectedClasses.forEach(expectedClass => {
+          expect(component.variantClasses).toContain(expectedClass);
+        });
+      }
+    );
   });
 
   describe('sizeClasses getter', () => {
-    it('should return sm classes for sm size', () => {
-      component.size = 'sm';
-      expect(component.sizeClasses).toContain('px-2');
-      expect(component.sizeClasses).toContain('text-xs');
-    });
-
-    it('should return md classes for md size', () => {
-      component.size = 'md';
-      expect(component.sizeClasses).toContain('px-2.5');
-      expect(component.sizeClasses).toContain('text-sm');
-    });
-
-    it('should return lg classes for lg size', () => {
-      component.size = 'lg';
-      expect(component.sizeClasses).toContain('px-3');
-      expect(component.sizeClasses).toContain('text-base');
+    it.each([
+      { size: 'sm', expectedClasses: ['px-2', 'text-xs'] },
+      { size: 'md', expectedClasses: ['px-2.5', 'text-sm'] },
+      { size: 'lg', expectedClasses: ['px-3', 'text-base'] },
+    ] as const)('should return correct classes for $size size', ({ size, expectedClasses }) => {
+      component.size = size;
+      expectedClasses.forEach(expectedClass => {
+        expect(component.sizeClasses).toContain(expectedClass);
+      });
     });
   });
 
@@ -196,65 +123,53 @@ describe('UiBadgeComponent', () => {
     });
   });
 
-  describe('badgeClasses getter', () => {
-    it('should combine all class getters', () => {
+  describe('class composition', () => {
+    it('should return correct base classes and combine all class getters', () => {
+      // baseClasses test
+      expect(component.baseClasses).toContain('inline-flex');
+      expect(component.baseClasses).toContain('items-center');
+      expect(component.baseClasses).toContain('font-medium');
+
+      // badgeClasses test (combines all getters)
       const classes = component.badgeClasses;
-      expect(classes).toContain('inline-flex'); // base
-      expect(classes).toContain('rounded'); // rounded
+      expect(classes).toContain('inline-flex');
+      expect(classes).toContain('rounded');
     });
   });
 
   describe('iconSizeClasses getter', () => {
-    it('should return text-xs for sm size', () => {
-      component.size = 'sm';
-      expect(component.iconSizeClasses).toBe('text-xs');
-    });
-
-    it('should return text-sm for md size', () => {
-      component.size = 'md';
-      expect(component.iconSizeClasses).toBe('text-sm');
-    });
-
-    it('should return text-base for lg size', () => {
-      component.size = 'lg';
-      expect(component.iconSizeClasses).toBe('text-base');
+    it.each([
+      { size: 'sm', expectedClass: 'text-xs' },
+      { size: 'md', expectedClass: 'text-sm' },
+      { size: 'lg', expectedClass: 'text-base' },
+    ] as const)('should return $expectedClass for $size size', ({ size, expectedClass }) => {
+      component.size = size;
+      expect(component.iconSizeClasses).toBe(expectedClass);
     });
   });
 
   describe('closeButtonClasses getter', () => {
-    it('should include base classes', () => {
-      expect(component.closeButtonClasses).toContain('ml-1');
-      expect(component.closeButtonClasses).toContain('hover:opacity-70');
-    });
-
-    it('should include size-specific classes for sm', () => {
-      component.size = 'sm';
-      expect(component.closeButtonClasses).toContain('text-xs');
-    });
-
-    it('should include size-specific classes for md', () => {
-      component.size = 'md';
-      expect(component.closeButtonClasses).toContain('text-sm');
-    });
-
-    it('should include size-specific classes for lg', () => {
-      component.size = 'lg';
-      expect(component.closeButtonClasses).toContain('text-base');
-    });
+    it.each([
+      { size: 'sm', expectedSizeClass: 'text-xs' },
+      { size: 'md', expectedSizeClass: 'text-sm' },
+      { size: 'lg', expectedSizeClass: 'text-base' },
+    ] as const)(
+      'should include base and size-specific classes for $size',
+      ({ size, expectedSizeClass }) => {
+        component.size = size;
+        expect(component.closeButtonClasses).toContain('ml-1');
+        expect(component.closeButtonClasses).toContain('hover:opacity-70');
+        expect(component.closeButtonClasses).toContain(expectedSizeClass);
+      }
+    );
   });
 
   describe('onDismiss method', () => {
-    it('should set isDismissed to true', () => {
-      const event = new Event('click');
-      vi.spyOn(event, 'stopPropagation');
-      component.onDismiss(event);
-      expect(component.isDismissed).toBe(true);
-    });
-
-    it('should stop event propagation', () => {
+    it('should set isDismissed to true and stop event propagation', () => {
       const event = new Event('click');
       const stopPropSpy = vi.spyOn(event, 'stopPropagation');
       component.onDismiss(event);
+      expect(component.isDismissed).toBe(true);
       expect(stopPropSpy).toHaveBeenCalled();
     });
   });
@@ -262,17 +177,6 @@ describe('UiBadgeComponent', () => {
   describe('hostClasses getter', () => {
     it('should return inline-block class', () => {
       expect(component.hostClasses).toContain('inline-block');
-    });
-  });
-
-  describe('icon input', () => {
-    it('should accept icon name', () => {
-      component.icon = 'check-circle';
-      expect(component.icon).toBe('check-circle');
-    });
-
-    it('should be undefined by default', () => {
-      expect(component.icon).toBeUndefined();
     });
   });
 });

@@ -18,289 +18,158 @@ describe('HapticService', () => {
     });
 
     service = TestBed.inject(HapticService);
-
-    // Reset mocks
     vi.clearAllMocks();
   });
 
-  describe('impact', () => {
-    describe('on native platform', () => {
-      beforeEach(() => {
-        (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-        service = new HapticService();
-        (Haptics.impact as Mock).mockResolvedValue(undefined);
-      });
+  it('should not call Haptics on web platform', async () => {
+    (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
+    service = new HapticService();
 
-      it('should trigger light impact by default', async () => {
-        await service.impact();
+    const webMethods = [
+      { method: 'impact', hapticFn: Haptics.impact },
+      { method: 'success', hapticFn: Haptics.notification },
+      { method: 'warning', hapticFn: Haptics.notification },
+      { method: 'error', hapticFn: Haptics.notification },
+      { method: 'selection', hapticFn: Haptics.selectionChanged },
+      { method: 'vibrate', hapticFn: Haptics.vibrate },
+    ] as const;
 
-        expect(Haptics.impact).toHaveBeenCalledWith({ style: ImpactStyle.Light });
-      });
+    for (const { method } of webMethods) {
+      await (service[method] as () => Promise<void>)();
+    }
 
-      it('should trigger light impact when specified', async () => {
-        await service.impact('light');
-
-        expect(Haptics.impact).toHaveBeenCalledWith({ style: ImpactStyle.Light });
-      });
-
-      it('should trigger medium impact', async () => {
-        await service.impact('medium');
-
-        expect(Haptics.impact).toHaveBeenCalledWith({ style: ImpactStyle.Medium });
-      });
-
-      it('should trigger heavy impact', async () => {
-        await service.impact('heavy');
-
-        expect(Haptics.impact).toHaveBeenCalledWith({ style: ImpactStyle.Heavy });
-      });
-
-      it('should handle errors silently', async () => {
-        (Haptics.impact as Mock).mockRejectedValue(new Error('Not supported'));
-
-        await expect(service.impact()).resolves.not.toThrow();
-      });
-    });
-
-    describe('on web platform', () => {
-      beforeEach(() => {
-        (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
-        service = new HapticService();
-      });
-
-      it('should not call Haptics on web', async () => {
-        await service.impact();
-
-        expect(Haptics.impact).not.toHaveBeenCalled();
-      });
-
-      it('should not throw error on web', async () => {
-        await expect(service.impact()).resolves.not.toThrow();
-      });
-    });
+    expect(Haptics.impact).not.toHaveBeenCalled();
+    expect(Haptics.notification).not.toHaveBeenCalled();
+    expect(Haptics.selectionChanged).not.toHaveBeenCalled();
+    expect(Haptics.vibrate).not.toHaveBeenCalled();
   });
 
-  describe('success', () => {
-    describe('on native platform', () => {
-      beforeEach(() => {
-        (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-        service = new HapticService();
-        (Haptics.notification as Mock).mockResolvedValue(undefined);
-      });
+  it('should trigger correct impact style on native', async () => {
+    (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+    service = new HapticService();
+    (Haptics.impact as Mock).mockResolvedValue(undefined);
 
-      it('should trigger success notification', async () => {
-        await service.success();
+    const impactStyles = [
+      { style: 'light', expected: ImpactStyle.Light },
+      { style: 'medium', expected: ImpactStyle.Medium },
+      { style: 'heavy', expected: ImpactStyle.Heavy },
+    ] as const;
 
-        expect(Haptics.notification).toHaveBeenCalledWith({ type: NotificationType.Success });
-      });
-
-      it('should handle errors silently', async () => {
-        (Haptics.notification as Mock).mockRejectedValue(new Error('Not supported'));
-
-        await expect(service.success()).resolves.not.toThrow();
-      });
-    });
-
-    describe('on web platform', () => {
-      beforeEach(() => {
-        (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
-        service = new HapticService();
-      });
-
-      it('should not call Haptics on web', async () => {
-        await service.success();
-
-        expect(Haptics.notification).not.toHaveBeenCalled();
-      });
-    });
+    for (const { style, expected } of impactStyles) {
+      vi.clearAllMocks();
+      await service.impact(style);
+      expect(Haptics.impact).toHaveBeenCalledWith({ style: expected });
+    }
   });
 
-  describe('warning', () => {
-    describe('on native platform', () => {
-      beforeEach(() => {
-        (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-        service = new HapticService();
-        (Haptics.notification as Mock).mockResolvedValue(undefined);
-      });
+  it('should trigger correct notification type on native', async () => {
+    (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+    service = new HapticService();
+    (Haptics.notification as Mock).mockResolvedValue(undefined);
 
-      it('should trigger warning notification', async () => {
-        await service.warning();
+    const notificationTypes = [
+      { method: 'success', expected: NotificationType.Success },
+      { method: 'warning', expected: NotificationType.Warning },
+      { method: 'error', expected: NotificationType.Error },
+    ] as const;
 
-        expect(Haptics.notification).toHaveBeenCalledWith({ type: NotificationType.Warning });
-      });
-
-      it('should handle errors silently', async () => {
-        (Haptics.notification as Mock).mockRejectedValue(new Error('Not supported'));
-
-        await expect(service.warning()).resolves.not.toThrow();
-      });
-    });
-
-    describe('on web platform', () => {
-      beforeEach(() => {
-        (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
-        service = new HapticService();
-      });
-
-      it('should not call Haptics on web', async () => {
-        await service.warning();
-
-        expect(Haptics.notification).not.toHaveBeenCalled();
-      });
-    });
+    for (const { method, expected } of notificationTypes) {
+      vi.clearAllMocks();
+      await service[method]();
+      expect(Haptics.notification).toHaveBeenCalledWith({ type: expected });
+    }
   });
 
-  describe('error', () => {
-    describe('on native platform', () => {
-      beforeEach(() => {
-        (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-        service = new HapticService();
-        (Haptics.notification as Mock).mockResolvedValue(undefined);
-      });
+  it('should trigger selection changed on native', async () => {
+    (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+    service = new HapticService();
+    (Haptics.selectionChanged as Mock).mockResolvedValue(undefined);
 
-      it('should trigger error notification', async () => {
-        await service.error();
+    await service.selection();
 
-        expect(Haptics.notification).toHaveBeenCalledWith({ type: NotificationType.Error });
-      });
-
-      it('should handle errors silently', async () => {
-        (Haptics.notification as Mock).mockRejectedValue(new Error('Not supported'));
-
-        await expect(service.error()).resolves.not.toThrow();
-      });
-    });
-
-    describe('on web platform', () => {
-      beforeEach(() => {
-        (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
-        service = new HapticService();
-      });
-
-      it('should not call Haptics on web', async () => {
-        await service.error();
-
-        expect(Haptics.notification).not.toHaveBeenCalled();
-      });
-    });
+    expect(Haptics.selectionChanged).toHaveBeenCalled();
   });
 
-  describe('selection', () => {
-    describe('on native platform', () => {
-      beforeEach(() => {
-        (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-        service = new HapticService();
-        (Haptics.selectionChanged as Mock).mockResolvedValue(undefined);
-      });
+  it('should vibrate with correct duration on native', async () => {
+    (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+    service = new HapticService();
+    (Haptics.vibrate as Mock).mockResolvedValue(undefined);
 
-      it('should trigger selection changed', async () => {
-        await service.selection();
+    const vibrateDurations = [
+      { duration: undefined, expected: 100 },
+      { duration: 500, expected: 500 },
+    ];
 
-        expect(Haptics.selectionChanged).toHaveBeenCalled();
-      });
-
-      it('should handle errors silently', async () => {
-        (Haptics.selectionChanged as Mock).mockRejectedValue(new Error('Not supported'));
-
-        await expect(service.selection()).resolves.not.toThrow();
-      });
-    });
-
-    describe('on web platform', () => {
-      beforeEach(() => {
-        (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
-        service = new HapticService();
-      });
-
-      it('should not call Haptics on web', async () => {
-        await service.selection();
-
-        expect(Haptics.selectionChanged).not.toHaveBeenCalled();
-      });
-    });
+    for (const { duration, expected } of vibrateDurations) {
+      vi.clearAllMocks();
+      await service.vibrate(duration);
+      expect(Haptics.vibrate).toHaveBeenCalledWith({ duration: expected });
+    }
   });
 
-  describe('vibrate', () => {
-    describe('on native platform', () => {
-      beforeEach(() => {
-        (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-        service = new HapticService();
-        (Haptics.vibrate as Mock).mockResolvedValue(undefined);
-      });
+  it('should handle all errors gracefully', async () => {
+    (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+    service = new HapticService();
 
-      it('should vibrate with default duration', async () => {
-        await service.vibrate();
+    const errorScenarios = [
+      {
+        mockFn: Haptics.impact,
+        serviceFn: () => service.impact(),
+        error: new Error('Impact not supported'),
+      },
+      {
+        mockFn: Haptics.notification,
+        serviceFn: () => service.success(),
+        error: new Error('Notification not available'),
+      },
+      {
+        mockFn: Haptics.notification,
+        serviceFn: () => service.warning(),
+        error: new Error('Notification not available'),
+      },
+      {
+        mockFn: Haptics.notification,
+        serviceFn: () => service.error(),
+        error: new Error('Notification not available'),
+      },
+      {
+        mockFn: Haptics.selectionChanged,
+        serviceFn: () => service.selection(),
+        error: new Error('Selection not supported'),
+      },
+      {
+        mockFn: Haptics.vibrate,
+        serviceFn: () => service.vibrate(),
+        error: new Error('Permission denied'),
+      },
+    ];
 
-        expect(Haptics.vibrate).toHaveBeenCalledWith({ duration: 100 });
-      });
-
-      it('should vibrate with custom duration', async () => {
-        await service.vibrate(500);
-
-        expect(Haptics.vibrate).toHaveBeenCalledWith({ duration: 500 });
-      });
-
-      it('should handle errors silently', async () => {
-        (Haptics.vibrate as Mock).mockRejectedValue(new Error('Not supported'));
-
-        await expect(service.vibrate()).resolves.not.toThrow();
-      });
-    });
-
-    describe('on web platform', () => {
-      beforeEach(() => {
-        (Capacitor.isNativePlatform as Mock).mockReturnValue(false);
-        service = new HapticService();
-      });
-
-      it('should not call Haptics on web', async () => {
-        await service.vibrate();
-
-        expect(Haptics.vibrate).not.toHaveBeenCalled();
-      });
-    });
+    for (const { mockFn, serviceFn, error } of errorScenarios) {
+      vi.clearAllMocks();
+      (mockFn as Mock).mockRejectedValue(error);
+      await expect(serviceFn()).resolves.toBeUndefined();
+    }
   });
 
-  describe('error handling', () => {
-    beforeEach(() => {
-      (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
-      service = new HapticService();
-    });
+  it('should not log errors to console', async () => {
+    (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+    service = new HapticService();
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    (Haptics.impact as Mock).mockRejectedValue(new Error('Test error'));
 
-    it('should handle impact errors gracefully', async () => {
-      (Haptics.impact as Mock).mockRejectedValue(new Error('Device not supported'));
+    await service.impact();
 
-      await expect(service.impact()).resolves.toBeUndefined();
-    });
+    expect(consoleSpy).not.toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
 
-    it('should handle notification errors gracefully', async () => {
-      (Haptics.notification as Mock).mockRejectedValue(new Error('Not available'));
+  it('should default to light impact when no style specified', async () => {
+    (Capacitor.isNativePlatform as Mock).mockReturnValue(true);
+    service = new HapticService();
+    (Haptics.impact as Mock).mockResolvedValue(undefined);
 
-      await expect(service.success()).resolves.toBeUndefined();
-      await expect(service.warning()).resolves.toBeUndefined();
-      await expect(service.error()).resolves.toBeUndefined();
-    });
+    await service.impact();
 
-    it('should handle selection errors gracefully', async () => {
-      (Haptics.selectionChanged as Mock).mockRejectedValue(new Error('Not supported'));
-
-      await expect(service.selection()).resolves.toBeUndefined();
-    });
-
-    it('should handle vibrate errors gracefully', async () => {
-      (Haptics.vibrate as Mock).mockRejectedValue(new Error('Permission denied'));
-
-      await expect(service.vibrate()).resolves.toBeUndefined();
-    });
-
-    it('should not log errors to console', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
-      (Haptics.impact as Mock).mockRejectedValue(new Error('Test error'));
-
-      await service.impact();
-
-      expect(consoleSpy).not.toHaveBeenCalled();
-      consoleSpy.mockRestore();
-    });
+    expect(Haptics.impact).toHaveBeenCalledWith({ style: ImpactStyle.Light });
   });
 });

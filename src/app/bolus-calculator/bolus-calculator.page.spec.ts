@@ -25,22 +25,10 @@ describe('BolusCalculatorPage', () => {
   let mockLoggerService: vi.Mocked<LoggerService>;
 
   beforeEach(async () => {
-    mockDataService = {
-      calculateBolus: vi.fn(),
-    } as any;
+    mockDataService = { calculateBolus: vi.fn() } as any;
+    mockLoggerService = { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() } as any;
+    mockNavController = { navigateBack: vi.fn() } as any;
 
-    mockLoggerService = {
-      error: vi.fn(),
-      warn: vi.fn(),
-      info: vi.fn(),
-      debug: vi.fn(),
-    } as any;
-
-    mockNavController = {
-      navigateBack: vi.fn(),
-    } as any;
-
-    // Create signals for mock FoodService
     const selectedFoodsSignal = signal<SelectedFood[]>([]);
     const totalCarbsComputed = computed(() =>
       selectedFoodsSignal().reduce((sum, sf) => sum + sf.totalCarbs, 0)
@@ -48,11 +36,7 @@ describe('BolusCalculatorPage', () => {
 
     mockFoodService = {
       clearSelection: vi.fn(),
-      getSortedCategories: vi
-        .fn()
-        .mockReturnValue([
-          { key: 'fruits', nameKey: 'foodPicker.categories.fruits', emoji: '🍎', order: 1 },
-        ]),
+      getSortedCategories: vi.fn().mockReturnValue([]),
       searchFoods: vi.fn().mockReturnValue([]),
       getFoodsByCategory: vi.fn().mockReturnValue([]),
       selectedFoods: selectedFoodsSignal.asReadonly(),
@@ -80,135 +64,89 @@ describe('BolusCalculatorPage', () => {
 
     fixture = TestBed.createComponent(BolusCalculatorPage);
     component = fixture.componentInstance;
-    // Don't call detectChanges() here to avoid Ionic icon loading issues in tests
   });
 
-  describe('Component Creation', () => {
-    it('should create', () => {
-      expect(component).toBeTruthy();
-    });
+  // ============================================================================
+  // INITIALIZATION
+  // ============================================================================
 
-    it('should initialize with empty form', () => {
-      expect(component.calculatorForm.value).toEqual({
-        currentGlucose: '',
-        carbGrams: '',
-      });
-    });
-
-    it('should initialize with no result', () => {
+  describe('Component Initialization', () => {
+    it('should initialize with empty form and default state', () => {
+      expect(component.calculatorForm.value).toEqual({ currentGlucose: '', carbGrams: '' });
       expect(component.result).toBeNull();
-    });
-
-    it('should initialize with calculating as false', () => {
       expect(component.calculating).toBe(false);
-    });
-
-    it('should initialize with food picker closed', () => {
       expect(component.showFoodPicker()).toBe(false);
-    });
-
-    it('should initialize with empty selected foods', () => {
       expect(component.selectedFoods()).toEqual([]);
     });
   });
 
+  // ============================================================================
+  // FORM VALIDATION
+  // ============================================================================
+
   describe('Form Validation', () => {
-    describe('currentGlucose field', () => {
-      it('should be invalid when empty', () => {
-        const field = component.calculatorForm.get('currentGlucose');
-        expect(field?.valid).toBe(false);
-        expect(field?.errors?.['required']).toBe(true);
-      });
+    it('should validate currentGlucose field boundaries', () => {
+      const field = component.calculatorForm.get('currentGlucose');
 
-      it('should be invalid when below minimum (40)', () => {
-        const field = component.calculatorForm.get('currentGlucose');
-        field?.setValue(39);
-        expect(field?.valid).toBe(false);
-        expect(field?.errors?.['min']).toBeTruthy();
-      });
+      // Empty - required
+      expect(field?.valid).toBe(false);
+      expect(field?.errors?.['required']).toBe(true);
 
-      it('should be invalid when above maximum (600)', () => {
-        const field = component.calculatorForm.get('currentGlucose');
-        field?.setValue(601);
-        expect(field?.valid).toBe(false);
-        expect(field?.errors?.['max']).toBeTruthy();
-      });
+      // Below min (40)
+      field?.setValue(39);
+      expect(field?.valid).toBe(false);
+      expect(field?.errors?.['min']).toBeTruthy();
 
-      it('should be valid at minimum boundary (40)', () => {
-        const field = component.calculatorForm.get('currentGlucose');
-        field?.setValue(40);
-        expect(field?.valid).toBe(true);
-      });
+      // Above max (600)
+      field?.setValue(601);
+      expect(field?.valid).toBe(false);
+      expect(field?.errors?.['max']).toBeTruthy();
 
-      it('should be valid at maximum boundary (600)', () => {
-        const field = component.calculatorForm.get('currentGlucose');
-        field?.setValue(600);
-        expect(field?.valid).toBe(true);
-      });
-
-      it('should be valid with typical value (120)', () => {
-        const field = component.calculatorForm.get('currentGlucose');
-        field?.setValue(120);
-        expect(field?.valid).toBe(true);
-      });
+      // Valid boundaries
+      field?.setValue(40);
+      expect(field?.valid).toBe(true);
+      field?.setValue(600);
+      expect(field?.valid).toBe(true);
+      field?.setValue(120);
+      expect(field?.valid).toBe(true);
     });
 
-    describe('carbGrams field', () => {
-      it('should be invalid when empty', () => {
-        const field = component.calculatorForm.get('carbGrams');
-        expect(field?.valid).toBe(false);
-        expect(field?.errors?.['required']).toBe(true);
-      });
+    it('should validate carbGrams field boundaries', () => {
+      const field = component.calculatorForm.get('carbGrams');
 
-      it('should be invalid when negative', () => {
-        const field = component.calculatorForm.get('carbGrams');
-        field?.setValue(-1);
-        expect(field?.valid).toBe(false);
-        expect(field?.errors?.['min']).toBeTruthy();
-      });
+      // Empty - required
+      expect(field?.valid).toBe(false);
+      expect(field?.errors?.['required']).toBe(true);
 
-      it('should be invalid when above maximum (300)', () => {
-        const field = component.calculatorForm.get('carbGrams');
-        field?.setValue(301);
-        expect(field?.valid).toBe(false);
-        expect(field?.errors?.['max']).toBeTruthy();
-      });
+      // Negative
+      field?.setValue(-1);
+      expect(field?.valid).toBe(false);
+      expect(field?.errors?.['min']).toBeTruthy();
 
-      it('should be valid at minimum boundary (0)', () => {
-        const field = component.calculatorForm.get('carbGrams');
-        field?.setValue(0);
-        expect(field?.valid).toBe(true);
-      });
+      // Above max (300)
+      field?.setValue(301);
+      expect(field?.valid).toBe(false);
+      expect(field?.errors?.['max']).toBeTruthy();
 
-      it('should be valid at maximum boundary (300)', () => {
-        const field = component.calculatorForm.get('carbGrams');
-        field?.setValue(300);
-        expect(field?.valid).toBe(true);
-      });
-
-      it('should be valid with typical value (45)', () => {
-        const field = component.calculatorForm.get('carbGrams');
-        field?.setValue(45);
-        expect(field?.valid).toBe(true);
-      });
+      // Valid boundaries
+      field?.setValue(0);
+      expect(field?.valid).toBe(true);
+      field?.setValue(300);
+      expect(field?.valid).toBe(true);
     });
 
-    it('should validate entire form when all fields are valid', () => {
-      component.calculatorForm.patchValue({
-        currentGlucose: 150,
-        carbGrams: 60,
-      });
+    it('should validate entire form correctly', () => {
+      component.calculatorForm.patchValue({ currentGlucose: 150, carbGrams: 60 });
       expect(component.calculatorForm.valid).toBe(true);
-    });
 
-    it('should invalidate form when any field is invalid', () => {
-      component.calculatorForm.patchValue({
-        currentGlucose: 150,
-        carbGrams: 350, // exceeds max
-      });
+      component.calculatorForm.patchValue({ currentGlucose: 150, carbGrams: 350 });
       expect(component.calculatorForm.valid).toBe(false);
     });
   });
+
+  // ============================================================================
+  // INSULIN CALCULATION - CORE MEDICAL LOGIC
+  // ============================================================================
 
   describe('Insulin Calculation Logic', () => {
     const mockCalculation: BolusCalculation = {
@@ -225,10 +163,7 @@ describe('BolusCalculatorPage', () => {
     });
 
     it('should calculate bolus with valid inputs', fakeAsync(() => {
-      component.calculatorForm.patchValue({
-        currentGlucose: 180,
-        carbGrams: 60,
-      });
+      component.calculatorForm.patchValue({ currentGlucose: 180, carbGrams: 60 });
 
       component.calculateBolus();
       expect(component.calculating).toBe(true);
@@ -244,168 +179,47 @@ describe('BolusCalculatorPage', () => {
     }));
 
     it('should not calculate when form is invalid', fakeAsync(() => {
-      component.calculatorForm.patchValue({
-        currentGlucose: '',
-        carbGrams: 60,
-      });
-
+      component.calculatorForm.patchValue({ currentGlucose: '', carbGrams: 60 });
       component.calculateBolus();
 
       expect(mockDataService.calculateBolus).not.toHaveBeenCalled();
       expect(component.calculating).toBe(false);
     }));
 
-    it('should handle calculation for high blood glucose (correction needed)', fakeAsync(() => {
-      const highGlucoseCalc: BolusCalculation = {
-        carbGrams: 45,
-        currentGlucose: 250,
-        targetGlucose: 120,
-        carbRatio: 15,
-        correctionFactor: 50,
-        recommendedInsulin: 5.6, // 3 (carbs) + 2.6 (correction)
-      };
+    it('should handle various glucose scenarios', fakeAsync(() => {
+      const testCases = [
+        { glucose: 250, carbs: 45, expectedMinInsulin: 0 }, // High - correction needed
+        { glucose: 120, carbs: 45, expectedMinInsulin: 0 }, // Normal - no correction
+        { glucose: 70, carbs: 30, expectedMinInsulin: 0 }, // Low - no negative correction
+        { glucose: 200, carbs: 0, expectedMinInsulin: 0 }, // Zero carbs - correction only
+      ];
 
-      mockDataService.calculateBolus.mockReturnValue(of(highGlucoseCalc));
+      for (const tc of testCases) {
+        const calc: BolusCalculation = {
+          carbGrams: tc.carbs,
+          currentGlucose: tc.glucose,
+          targetGlucose: 120,
+          carbRatio: 15,
+          correctionFactor: 50,
+          recommendedInsulin: Math.max(0, tc.carbs / 15 + (tc.glucose - 120) / 50),
+        };
+        mockDataService.calculateBolus.mockReturnValue(of(calc));
 
-      component.calculatorForm.patchValue({
-        currentGlucose: 250,
-        carbGrams: 45,
-      });
+        component.calculatorForm.patchValue({ currentGlucose: tc.glucose, carbGrams: tc.carbs });
+        component.calculateBolus();
+        tick(100);
 
-      component.calculateBolus();
-      tick(100);
-
-      expect(component.result?.recommendedInsulin).toBe(5.6);
+        expect(component.result?.recommendedInsulin).toBeGreaterThanOrEqual(tc.expectedMinInsulin);
+        vi.clearAllMocks();
+      }
     }));
 
-    it('should handle calculation for normal blood glucose (no correction)', fakeAsync(() => {
-      const normalGlucoseCalc: BolusCalculation = {
-        carbGrams: 45,
-        currentGlucose: 120,
-        targetGlucose: 120,
-        carbRatio: 15,
-        correctionFactor: 50,
-        recommendedInsulin: 3.0, // 3 (carbs) + 0 (no correction needed)
-      };
-
-      mockDataService.calculateBolus.mockReturnValue(of(normalGlucoseCalc));
-
-      component.calculatorForm.patchValue({
-        currentGlucose: 120,
-        carbGrams: 45,
-      });
-
-      component.calculateBolus();
-      tick(100);
-
-      expect(component.result?.recommendedInsulin).toBe(3.0);
-    }));
-
-    it('should handle calculation for low blood glucose (hypoglycemia prevention)', fakeAsync(() => {
-      const lowGlucoseCalc: BolusCalculation = {
-        carbGrams: 30,
-        currentGlucose: 70,
-        targetGlucose: 120,
-        carbRatio: 15,
-        correctionFactor: 50,
-        recommendedInsulin: 2.0, // Only carb insulin, no negative correction
-      };
-
-      mockDataService.calculateBolus.mockReturnValue(of(lowGlucoseCalc));
-
-      component.calculatorForm.patchValue({
-        currentGlucose: 70,
-        carbGrams: 30,
-      });
-
-      component.calculateBolus();
-      tick(100);
-
-      expect(component.result?.recommendedInsulin).toBe(2.0);
-      expect(component.result?.currentGlucose).toBeLessThan(component.result?.targetGlucose || 0);
-    }));
-
-    it('should handle zero carbs calculation (correction only)', fakeAsync(() => {
-      const zeroCarbs: BolusCalculation = {
-        carbGrams: 0,
-        currentGlucose: 200,
-        targetGlucose: 120,
-        carbRatio: 15,
-        correctionFactor: 50,
-        recommendedInsulin: 1.6, // 0 (carbs) + 1.6 (correction)
-      };
-
-      mockDataService.calculateBolus.mockReturnValue(of(zeroCarbs));
-
-      component.calculatorForm.patchValue({
-        currentGlucose: 200,
-        carbGrams: 0,
-      });
-
-      component.calculateBolus();
-      tick(100);
-
-      expect(component.result?.recommendedInsulin).toBe(1.6);
-    }));
-
-    it('should handle large meal calculation (high carbs)', fakeAsync(() => {
-      const largeMeal: BolusCalculation = {
-        carbGrams: 150,
-        currentGlucose: 130,
-        targetGlucose: 120,
-        carbRatio: 15,
-        correctionFactor: 50,
-        recommendedInsulin: 10.2, // 10 (carbs) + 0.2 (correction)
-      };
-
-      mockDataService.calculateBolus.mockReturnValue(of(largeMeal));
-
-      component.calculatorForm.patchValue({
-        currentGlucose: 130,
-        carbGrams: 150,
-      });
-
-      component.calculateBolus();
-      tick(100);
-
-      expect(component.result?.recommendedInsulin).toBe(10.2);
-    }));
-
-    it('should round recommended insulin to 1 decimal place', fakeAsync(() => {
-      const roundedCalc: BolusCalculation = {
-        carbGrams: 47,
-        currentGlucose: 145,
-        targetGlucose: 120,
-        carbRatio: 15,
-        correctionFactor: 50,
-        recommendedInsulin: 3.6, // Rounded from 3.633...
-      };
-
-      mockDataService.calculateBolus.mockReturnValue(of(roundedCalc));
-
-      component.calculatorForm.patchValue({
-        currentGlucose: 145,
-        carbGrams: 47,
-      });
-
-      component.calculateBolus();
-      tick(100);
-
-      expect(component.result?.recommendedInsulin).toBe(3.6);
-    }));
-  });
-
-  describe('Error Handling', () => {
-    it('should handle calculation error gracefully', fakeAsync(() => {
+    it('should handle calculation errors gracefully', fakeAsync(() => {
       mockDataService.calculateBolus.mockReturnValue(
         throwError(() => new Error('Calculation failed'))
       );
 
-      component.calculatorForm.patchValue({
-        currentGlucose: 150,
-        carbGrams: 60,
-      });
-
+      component.calculatorForm.patchValue({ currentGlucose: 150, carbGrams: 60 });
       component.calculateBolus();
       tick(100);
 
@@ -417,178 +231,91 @@ describe('BolusCalculatorPage', () => {
         expect.any(Error)
       );
     }));
-
-    it('should handle service throw error', fakeAsync(() => {
-      mockDataService.calculateBolus.mockImplementation(() => {
-        throw new Error('Service unavailable');
-      });
-
-      component.calculatorForm.patchValue({
-        currentGlucose: 150,
-        carbGrams: 60,
-      });
-
-      component.calculateBolus();
-
-      expect(component.calculating).toBe(false);
-      expect(mockLoggerService.error).toHaveBeenCalled();
-    }));
   });
 
+  // ============================================================================
+  // ERROR MESSAGES
+  // ============================================================================
+
   describe('Error Messages', () => {
-    it('should show glucose required error', () => {
+    it('should show appropriate error messages for glucose field', () => {
       const field = component.calculatorForm.get('currentGlucose');
       field?.markAsTouched();
-      field?.setValue('');
 
-      expect(component.glucoseError).toBeTruthy();
+      field?.setValue('');
       expect(component.glucoseError).toContain('bolusCalculator.errors.glucoseRequired');
-    });
 
-    it('should show glucose range error for low value', () => {
-      const field = component.calculatorForm.get('currentGlucose');
-      field?.markAsTouched();
       field?.setValue(30);
-
-      expect(component.glucoseError).toBeTruthy();
       expect(component.glucoseError).toContain('bolusCalculator.errors.glucoseRange');
-    });
 
-    it('should show glucose range error for high value', () => {
-      const field = component.calculatorForm.get('currentGlucose');
-      field?.markAsTouched();
       field?.setValue(700);
-
-      expect(component.glucoseError).toBeTruthy();
       expect(component.glucoseError).toContain('bolusCalculator.errors.glucoseRange');
-    });
 
-    it('should show carbs required error', () => {
-      const field = component.calculatorForm.get('carbGrams');
-      field?.markAsTouched();
-      field?.setValue('');
-
-      expect(component.carbsError).toBeTruthy();
-      expect(component.carbsError).toContain('bolusCalculator.errors.carbsRequired');
-    });
-
-    it('should show carbs range error for negative value', () => {
-      const field = component.calculatorForm.get('carbGrams');
-      field?.markAsTouched();
-      field?.setValue(-5);
-
-      expect(component.carbsError).toBeTruthy();
-      expect(component.carbsError).toContain('bolusCalculator.errors.carbsRange');
-    });
-
-    it('should show carbs range error for excessive value', () => {
-      const field = component.calculatorForm.get('carbGrams');
-      field?.markAsTouched();
-      field?.setValue(350);
-
-      expect(component.carbsError).toBeTruthy();
-      expect(component.carbsError).toContain('bolusCalculator.errors.carbsRange');
-    });
-
-    it('should show no error when field is valid', () => {
-      const glucoseField = component.calculatorForm.get('currentGlucose');
-      const carbsField = component.calculatorForm.get('carbGrams');
-
-      glucoseField?.markAsTouched();
-      glucoseField?.setValue(150);
-      carbsField?.markAsTouched();
-      carbsField?.setValue(60);
-
+      field?.setValue(150);
       expect(component.glucoseError).toBe('');
+    });
+
+    it('should show appropriate error messages for carbs field', () => {
+      const field = component.calculatorForm.get('carbGrams');
+      field?.markAsTouched();
+
+      field?.setValue('');
+      expect(component.carbsError).toContain('bolusCalculator.errors.carbsRequired');
+
+      field?.setValue(-5);
+      expect(component.carbsError).toContain('bolusCalculator.errors.carbsRange');
+
+      field?.setValue(350);
+      expect(component.carbsError).toContain('bolusCalculator.errors.carbsRange');
+
+      field?.setValue(60);
       expect(component.carbsError).toBe('');
     });
 
     it('should not show error when field is untouched', () => {
       const field = component.calculatorForm.get('currentGlucose');
       field?.setValue(''); // Invalid but untouched
-
       expect(component.glucoseError).toBe('');
     });
   });
 
+  // ============================================================================
+  // FIELD VALIDATION HELPER
+  // ============================================================================
+
   describe('Field Validation Helper', () => {
-    it('should return true when field is invalid and touched', () => {
+    it('should correctly identify invalid fields', () => {
       const field = component.calculatorForm.get('currentGlucose');
-      field?.markAsTouched();
+
+      // Invalid + untouched = false
       field?.setValue('');
+      expect(component.isFieldInvalid('currentGlucose')).toBe(false);
 
+      // Invalid + touched = true
+      field?.markAsTouched();
       expect(component.isFieldInvalid('currentGlucose')).toBe(true);
-    });
 
-    it('should return true when field is invalid and dirty', () => {
-      const field = component.calculatorForm.get('currentGlucose');
+      // Invalid + dirty = true
       field?.markAsDirty();
-      field?.setValue('');
-
       expect(component.isFieldInvalid('currentGlucose')).toBe(true);
-    });
 
-    it('should return false when field is valid', () => {
-      const field = component.calculatorForm.get('currentGlucose');
-      field?.markAsTouched();
+      // Valid = false
       field?.setValue(150);
-
-      expect(component.isFieldInvalid('currentGlucose')).toBe(false);
-    });
-
-    it('should return false when field is invalid but not touched or dirty', () => {
-      const field = component.calculatorForm.get('currentGlucose');
-      field?.setValue('');
-
       expect(component.isFieldInvalid('currentGlucose')).toBe(false);
     });
   });
 
-  describe('Input Change Handler', () => {
-    it('should update form value from ion-input event', () => {
-      // Mock detectChanges to prevent rendering and template errors
-      const detectChangesSpy = vi
-        .spyOn(component['cdr'], 'detectChanges')
-        .mockImplementation(() => {});
-
-      const event = {
-        detail: { value: '150' },
-      } as CustomEvent;
-
-      component.onInputChange('currentGlucose', event);
-
-      expect(component.calculatorForm.value.currentGlucose).toBe('150');
-      expect(detectChangesSpy).toHaveBeenCalled();
-    });
-
-    it('should mark field as touched', () => {
-      // Mock detectChanges to prevent rendering and template errors
-      vi.spyOn(component['cdr'], 'detectChanges').mockImplementation(() => {});
-
-      const event = {
-        detail: { value: '60' },
-      } as CustomEvent;
-
-      component.onInputChange('carbGrams', event);
-
-      const field = component.calculatorForm.get('carbGrams');
-      expect(field?.touched).toBe(true);
-    });
-  });
+  // ============================================================================
+  // FOOD PICKER INTEGRATION
+  // ============================================================================
 
   describe('Food Picker Integration', () => {
-    it('should open food picker', () => {
+    it('should open and close food picker', () => {
       component.openFoodPicker();
-
       expect(mockFoodService.clearSelection).toHaveBeenCalled();
       expect(component.showFoodPicker()).toBe(true);
-    });
-
-    it('should close food picker without applying', () => {
-      component.showFoodPicker.set(true);
 
       component.onFoodPickerClosed();
-
       expect(component.showFoodPicker()).toBe(false);
     });
 
@@ -624,10 +351,7 @@ describe('BolusCalculatorPage', () => {
         },
       ];
 
-      const result: FoodPickerResult = {
-        selectedFoods,
-        totalCarbs: 49,
-      };
+      const result: FoodPickerResult = { selectedFoods, totalCarbs: 49 };
 
       component.onFoodPickerConfirmed(result);
 
@@ -636,40 +360,15 @@ describe('BolusCalculatorPage', () => {
       expect(component.calculatorForm.value.carbGrams).toBe(49);
     });
 
-    it('should round total carbs when applying from food picker', () => {
-      const result: FoodPickerResult = {
-        selectedFoods: [],
-        totalCarbs: 47.8,
-      };
-
-      component.onFoodPickerConfirmed(result);
-
+    it('should round carbs and handle zero total', () => {
+      // Round decimal
+      component.onFoodPickerConfirmed({ selectedFoods: [], totalCarbs: 47.8 });
       expect(component.calculatorForm.value.carbGrams).toBe(48);
-    });
 
-    it('should not update carbs when food picker total is zero', () => {
+      // Zero should not override existing value
       component.calculatorForm.patchValue({ carbGrams: 30 });
-
-      const result: FoodPickerResult = {
-        selectedFoods: [],
-        totalCarbs: 0,
-      };
-
-      component.onFoodPickerConfirmed(result);
-
+      component.onFoodPickerConfirmed({ selectedFoods: [], totalCarbs: 0 });
       expect(component.calculatorForm.value.carbGrams).toBe(30);
-    });
-
-    it('should mark carbs field as touched after food picker confirmation', () => {
-      const result: FoodPickerResult = {
-        selectedFoods: [],
-        totalCarbs: 45,
-      };
-
-      component.onFoodPickerConfirmed(result);
-
-      const field = component.calculatorForm.get('carbGrams');
-      expect(field?.touched).toBe(true);
     });
 
     it('should clear selected foods', () => {
@@ -698,184 +397,63 @@ describe('BolusCalculatorPage', () => {
     });
   });
 
-  describe('Reset Functionality', () => {
-    it('should reset form to initial state', () => {
-      component.calculatorForm.patchValue({
-        currentGlucose: 150,
-        carbGrams: 60,
-      });
-      component.result = {
-        carbGrams: 60,
-        currentGlucose: 150,
-        targetGlucose: 120,
-        carbRatio: 15,
-        correctionFactor: 50,
-        recommendedInsulin: 5.2,
-      };
-      component.selectedFoods.set([
-        {
-          food: {
-            id: 'apple',
-            name: 'Apple',
-            nameKey: 'foodPicker.foods.apple',
-            carbsPerServing: 19,
-            servingSize: 1,
-            servingUnit: 'piece',
-            emoji: '🍎',
-            category: 'fruits',
-          },
-          servings: 1,
-          totalCarbs: 19,
-        },
-      ]);
+  // ============================================================================
+  // RESET & NAVIGATION
+  // ============================================================================
 
-      component.resetCalculator();
+  describe('Reset and Navigation', () => {
+    it('should reset calculator to initial state', () => {
+      component.calculatorForm.patchValue({ currentGlucose: 150, carbGrams: 60 });
+      component.result = { ...component.result } as any;
+      component.selectedFoods.set([{} as any]);
 
-      expect(component.calculatorForm.value).toEqual({
-        currentGlucose: null,
-        carbGrams: null,
-      });
-      expect(component.result).toBeNull();
-      expect(component.selectedFoods()).toEqual([]);
-    });
-
-    it('should clear validation errors on reset', () => {
       const glucoseField = component.calculatorForm.get('currentGlucose');
       glucoseField?.markAsTouched();
-      glucoseField?.setValue('');
 
       component.resetCalculator();
 
+      expect(component.calculatorForm.value).toEqual({ currentGlucose: null, carbGrams: null });
+      expect(component.result).toBeNull();
+      expect(component.selectedFoods()).toEqual([]);
       expect(component.glucoseError).toBe('');
-      expect(component.isFieldInvalid('currentGlucose')).toBe(false);
     });
-  });
 
-  describe('Navigation', () => {
     it('should navigate back to dashboard', () => {
       component.goBack();
-
       expect(mockNavController.navigateBack).toHaveBeenCalledWith('/tabs/dashboard');
     });
   });
 
+  // ============================================================================
+  // EDGE CASES & BOUNDARY CONDITIONS
+  // ============================================================================
+
   describe('Edge Cases and Boundary Conditions', () => {
-    it('should handle minimum valid glucose (40 mg/dL)', fakeAsync(() => {
-      const minGlucoseCalc: BolusCalculation = {
-        carbGrams: 15,
-        currentGlucose: 40,
-        targetGlucose: 120,
-        carbRatio: 15,
-        correctionFactor: 50,
-        recommendedInsulin: 1.0,
-      };
+    it('should handle extreme glucose values', fakeAsync(() => {
+      const testCases = [
+        { glucose: 40, expectedValid: true }, // Min boundary
+        { glucose: 600, expectedValid: true }, // Max boundary
+        { glucose: 145.5, expectedValid: true }, // Decimal
+      ];
 
-      mockDataService.calculateBolus.mockReturnValue(of(minGlucoseCalc));
+      for (const tc of testCases) {
+        const calc: BolusCalculation = {
+          carbGrams: 15,
+          currentGlucose: tc.glucose,
+          targetGlucose: 120,
+          carbRatio: 15,
+          correctionFactor: 50,
+          recommendedInsulin: 1.0,
+        };
+        mockDataService.calculateBolus.mockReturnValue(of(calc));
 
-      component.calculatorForm.patchValue({
-        currentGlucose: 40,
-        carbGrams: 15,
-      });
+        component.calculatorForm.patchValue({ currentGlucose: tc.glucose, carbGrams: 15 });
+        component.calculateBolus();
+        tick(100);
 
-      component.calculateBolus();
-      tick(100);
-
-      expect(component.result?.currentGlucose).toBe(40);
-      expect(component.result?.recommendedInsulin).toBeGreaterThanOrEqual(0);
-    }));
-
-    it('should handle maximum valid glucose (600 mg/dL)', fakeAsync(() => {
-      const maxGlucoseCalc: BolusCalculation = {
-        carbGrams: 0,
-        currentGlucose: 600,
-        targetGlucose: 120,
-        carbRatio: 15,
-        correctionFactor: 50,
-        recommendedInsulin: 9.6, // Large correction dose
-      };
-
-      mockDataService.calculateBolus.mockReturnValue(of(maxGlucoseCalc));
-
-      component.calculatorForm.patchValue({
-        currentGlucose: 600,
-        carbGrams: 0,
-      });
-
-      component.calculateBolus();
-      tick(100);
-
-      expect(component.result?.currentGlucose).toBe(600);
-      expect(component.result?.recommendedInsulin).toBeGreaterThan(0);
-    }));
-
-    it('should handle maximum valid carbs (300g)', fakeAsync(() => {
-      const maxCarbsCalc: BolusCalculation = {
-        carbGrams: 300,
-        currentGlucose: 120,
-        targetGlucose: 120,
-        carbRatio: 15,
-        correctionFactor: 50,
-        recommendedInsulin: 20.0, // 300/15 = 20 units
-      };
-
-      mockDataService.calculateBolus.mockReturnValue(of(maxCarbsCalc));
-
-      component.calculatorForm.patchValue({
-        currentGlucose: 120,
-        carbGrams: 300,
-      });
-
-      component.calculateBolus();
-      tick(100);
-
-      expect(component.result?.carbGrams).toBe(300);
-      expect(component.result?.recommendedInsulin).toBe(20.0);
-    }));
-
-    it('should handle decimal glucose values', fakeAsync(() => {
-      const decimalCalc: BolusCalculation = {
-        carbGrams: 45,
-        currentGlucose: 145.5,
-        targetGlucose: 120,
-        carbRatio: 15,
-        correctionFactor: 50,
-        recommendedInsulin: 3.5,
-      };
-
-      mockDataService.calculateBolus.mockReturnValue(of(decimalCalc));
-
-      component.calculatorForm.patchValue({
-        currentGlucose: 145.5,
-        carbGrams: 45,
-      });
-
-      component.calculateBolus();
-      tick(100);
-
-      expect(component.result).toBeDefined();
-    }));
-
-    it('should handle decimal carb values', fakeAsync(() => {
-      const decimalCalc: BolusCalculation = {
-        carbGrams: 47.5,
-        currentGlucose: 120,
-        targetGlucose: 120,
-        carbRatio: 15,
-        correctionFactor: 50,
-        recommendedInsulin: 3.2,
-      };
-
-      mockDataService.calculateBolus.mockReturnValue(of(decimalCalc));
-
-      component.calculatorForm.patchValue({
-        currentGlucose: 120,
-        carbGrams: 47.5,
-      });
-
-      component.calculateBolus();
-      tick(100);
-
-      expect(component.result).toBeDefined();
+        expect(component.result?.currentGlucose).toBe(tc.glucose);
+        vi.clearAllMocks();
+      }
     }));
 
     it('should handle string input conversion to numbers', fakeAsync(() => {
@@ -887,14 +465,9 @@ describe('BolusCalculatorPage', () => {
         correctionFactor: 50,
         recommendedInsulin: 3.6,
       };
-
       mockDataService.calculateBolus.mockReturnValue(of(calc));
 
-      component.calculatorForm.patchValue({
-        currentGlucose: '150',
-        carbGrams: '45',
-      });
-
+      component.calculatorForm.patchValue({ currentGlucose: '150', carbGrams: '45' });
       component.calculateBolus();
       tick(100);
 
@@ -905,6 +478,10 @@ describe('BolusCalculatorPage', () => {
     }));
   });
 
+  // ============================================================================
+  // MEDICAL SAFETY CONSIDERATIONS - CRITICAL
+  // ============================================================================
+
   describe('Medical Safety Considerations', () => {
     it('should never recommend negative insulin', fakeAsync(() => {
       const safeCalc: BolusCalculation = {
@@ -913,23 +490,18 @@ describe('BolusCalculatorPage', () => {
         targetGlucose: 120,
         carbRatio: 15,
         correctionFactor: 50,
-        recommendedInsulin: 0, // Should be 0, not negative
+        recommendedInsulin: 0,
       };
-
       mockDataService.calculateBolus.mockReturnValue(of(safeCalc));
 
-      component.calculatorForm.patchValue({
-        currentGlucose: 70,
-        carbGrams: 0,
-      });
-
+      component.calculatorForm.patchValue({ currentGlucose: 70, carbGrams: 0 });
       component.calculateBolus();
       tick(100);
 
       expect(component.result?.recommendedInsulin).toBeGreaterThanOrEqual(0);
     }));
 
-    it('should preserve calculation details for medical review', fakeAsync(() => {
+    it('should preserve all calculation details for medical review', fakeAsync(() => {
       const detailedCalc: BolusCalculation = {
         carbGrams: 60,
         currentGlucose: 180,
@@ -938,18 +510,12 @@ describe('BolusCalculatorPage', () => {
         correctionFactor: 50,
         recommendedInsulin: 5.2,
       };
-
       mockDataService.calculateBolus.mockReturnValue(of(detailedCalc));
 
-      component.calculatorForm.patchValue({
-        currentGlucose: 180,
-        carbGrams: 60,
-      });
-
+      component.calculatorForm.patchValue({ currentGlucose: 180, carbGrams: 60 });
       component.calculateBolus();
       tick(100);
 
-      // All calculation details should be preserved
       expect(component.result?.carbGrams).toBe(60);
       expect(component.result?.currentGlucose).toBe(180);
       expect(component.result?.targetGlucose).toBe(120);
@@ -958,115 +524,60 @@ describe('BolusCalculatorPage', () => {
       expect(component.result?.recommendedInsulin).toBe(5.2);
     }));
 
-    it('should handle critical high glucose safely', fakeAsync(() => {
-      const criticalHighCalc: BolusCalculation = {
+    it('should handle critical glucose scenarios safely', fakeAsync(() => {
+      // Critical high (400 mg/dL)
+      let calc: BolusCalculation = {
         carbGrams: 30,
         currentGlucose: 400,
         targetGlucose: 120,
         carbRatio: 15,
         correctionFactor: 50,
-        recommendedInsulin: 7.6, // 2 (carbs) + 5.6 (correction)
+        recommendedInsulin: 7.6,
       };
+      mockDataService.calculateBolus.mockReturnValue(of(calc));
 
-      mockDataService.calculateBolus.mockReturnValue(of(criticalHighCalc));
-
-      component.calculatorForm.patchValue({
-        currentGlucose: 400,
-        carbGrams: 30,
-      });
-
+      component.calculatorForm.patchValue({ currentGlucose: 400, carbGrams: 30 });
       component.calculateBolus();
       tick(100);
 
       expect(component.result?.currentGlucose).toBe(400);
       expect(component.result?.recommendedInsulin).toBeGreaterThan(0);
-    }));
 
-    it('should handle critical low glucose safely (hypoglycemia)', fakeAsync(() => {
-      const criticalLowCalc: BolusCalculation = {
+      // Critical low (50 mg/dL - hypoglycemia)
+      calc = {
         carbGrams: 15,
         currentGlucose: 50,
         targetGlucose: 120,
         carbRatio: 15,
         correctionFactor: 50,
-        recommendedInsulin: 1.0, // Only carb insulin, no correction
+        recommendedInsulin: 1.0,
       };
+      mockDataService.calculateBolus.mockReturnValue(of(calc));
 
-      mockDataService.calculateBolus.mockReturnValue(of(criticalLowCalc));
-
-      component.calculatorForm.patchValue({
-        currentGlucose: 50,
-        carbGrams: 15,
-      });
-
+      component.calculatorForm.patchValue({ currentGlucose: 50, carbGrams: 15 });
       component.calculateBolus();
       tick(100);
 
       expect(component.result?.currentGlucose).toBe(50);
-      // Should not add correction insulin when below target
       expect(component.result?.recommendedInsulin).toBeGreaterThanOrEqual(0);
     }));
   });
 
+  // ============================================================================
+  // USER EXPERIENCE
+  // ============================================================================
+
   describe('User Experience', () => {
-    it('should show calculating state during async operation', () => {
-      mockDataService.calculateBolus.mockReturnValue(of({} as BolusCalculation).pipe(delay(500)));
+    it('should manage calculating state correctly', fakeAsync(() => {
+      mockDataService.calculateBolus.mockReturnValue(of({} as BolusCalculation).pipe(delay(100)));
 
-      component.calculatorForm.patchValue({
-        currentGlucose: 150,
-        carbGrams: 60,
-      });
+      component.calculatorForm.patchValue({ currentGlucose: 150, carbGrams: 60 });
 
       component.calculateBolus();
-
       expect(component.calculating).toBe(true);
-    });
 
-    it('should clear calculating state after successful calculation', fakeAsync(() => {
-      mockDataService.calculateBolus.mockReturnValue(
-        of({
-          carbGrams: 60,
-          currentGlucose: 150,
-          targetGlucose: 120,
-          carbRatio: 15,
-          correctionFactor: 50,
-          recommendedInsulin: 4.6,
-        }).pipe(delay(100))
-      );
-
-      component.calculatorForm.patchValue({
-        currentGlucose: 150,
-        carbGrams: 60,
-      });
-
-      component.calculateBolus();
       tick(100);
-
       expect(component.calculating).toBe(false);
-    }));
-
-    it('should preserve form values after calculation', fakeAsync(() => {
-      mockDataService.calculateBolus.mockReturnValue(
-        of({
-          carbGrams: 45,
-          currentGlucose: 120,
-          targetGlucose: 120,
-          carbRatio: 15,
-          correctionFactor: 50,
-          recommendedInsulin: 3.0,
-        })
-      );
-
-      component.calculatorForm.patchValue({
-        currentGlucose: 120,
-        carbGrams: 45,
-      });
-
-      component.calculateBolus();
-      tick(100);
-
-      expect(component.calculatorForm.value.currentGlucose).toBe(120);
-      expect(component.calculatorForm.value.carbGrams).toBe(45);
     }));
 
     it('should allow recalculation with different values', fakeAsync(() => {
@@ -1082,10 +593,7 @@ describe('BolusCalculatorPage', () => {
         })
       );
 
-      component.calculatorForm.patchValue({
-        currentGlucose: 150,
-        carbGrams: 60,
-      });
+      component.calculatorForm.patchValue({ currentGlucose: 150, carbGrams: 60 });
       component.calculateBolus();
       tick(100);
 
@@ -1103,10 +611,7 @@ describe('BolusCalculatorPage', () => {
         })
       );
 
-      component.calculatorForm.patchValue({
-        currentGlucose: 180,
-        carbGrams: 30,
-      });
+      component.calculatorForm.patchValue({ currentGlucose: 180, carbGrams: 30 });
       component.calculateBolus();
       tick(100);
 

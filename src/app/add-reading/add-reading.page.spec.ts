@@ -77,10 +77,6 @@ describe('AddReadingPage', () => {
     // which requires Ionic's ControlValueAccessor for ion-input
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   describe('Form Validation', () => {
     // Initialize component before each validation test
     beforeEach(() => {

@@ -179,17 +179,18 @@ describe('LocalAuthService', () => {
         mockAdapter.isServiceMockEnabled.mockReturnValue(true);
       });
 
-      it('should return demo user in mock mode', async () => {
-        const result = await firstValueFrom(service.login('any@email.com', 'anypassword'));
-        expect(result.success).toBe(true);
-        expect(result.user).toBeDefined();
-        expect(result.user?.email).toBe('demo@diabetactic.com');
-        expect(result.user?.firstName).toBe('Sofia');
-      });
+      it('should return demo user and store tokens when rememberMe is true', async () => {
+        // Test without rememberMe
+        const result1 = await firstValueFrom(service.login('any@email.com', 'anypassword'));
+        expect(result1.success).toBe(true);
+        expect(result1.user).toBeDefined();
+        expect(result1.user?.email).toBe('demo@diabetactic.com');
+        expect(result1.user?.firstName).toBe('Sofia');
 
-      it('should store demo tokens when rememberMe is true', async () => {
-        const result = await firstValueFrom(service.login('any@email.com', 'anypassword', true));
-        expect(result.success).toBe(true);
+        // Test with rememberMe
+        vi.clearAllMocks();
+        const result2 = await firstValueFrom(service.login('any@email.com', 'anypassword', true));
+        expect(result2.success).toBe(true);
         expect(Preferences.set).toHaveBeenCalled();
       });
     });
@@ -199,22 +200,34 @@ describe('LocalAuthService', () => {
         mockAdapter.isServiceMockEnabled.mockReturnValue(false);
       });
 
-      it('should authenticate against backend successfully', async () => {
-        // Mock token endpoint
+      it('should authenticate successfully, update state, and store tokens', () => new Promise<void>(resolve => {
         httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
-
-        // Mock user profile endpoint
         httpMock.get.mockReturnValueOnce(of(mockGatewayUserResponse));
 
-        const result = await firstValueFrom(service.login('test@example.com', 'password123'));
-        expect(result.success).toBe(true);
-        expect(result.user).toBeDefined();
-        expect(httpMock.post).toHaveBeenCalledWith(
-          expect.stringContaining('/token'),
-          expect.any(String),
-          expect.any(Object)
-        );
-      });
+        service.login('test@example.com', 'password123', true).subscribe(() => {
+          // Verify API calls
+          expect(httpMock.post).toHaveBeenCalledWith(
+            expect.stringContaining('/token'),
+            expect.any(String),
+            expect.any(Object)
+          );
+
+          // Verify tokens stored
+          expect(Preferences.set).toHaveBeenCalledWith(
+            expect.objectContaining({
+              key: 'local_access_token',
+              value: 'test-access-token',
+            })
+          );
+
+          // Verify state updated
+          service.authState$.subscribe(state => {
+            expect(state.isAuthenticated).toBe(true);
+            expect(state.accessToken).toBe('test-access-token');
+            resolve();
+          });
+        });
+      }));
 
       it('should return error when authentication fails', async () => {
         httpMock.post.mockReturnValueOnce(
@@ -229,77 +242,27 @@ describe('LocalAuthService', () => {
         expect(result.error).toBeDefined();
       });
 
-      /* eslint-disable */
-      it('should return error when account is pending', () => new Promise<void>(resolve => {
+      it.each([
+        { state: 'pending', errorContains: 'accountPending' },
+        { state: 'disabled', errorContains: 'accountDisabled' },
+      ])('should return error when account is $state', ({ state, errorContains }) => new Promise<void>(resolve => {
         httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
         httpMock.get.mockReturnValueOnce(
           of({
             ...mockGatewayUserResponse,
-            state: 'pending',
+            state,
           })
         );
 
-        service.login('pending@example.com', 'password').subscribe({
+        service.login(`${state}@example.com`, 'password').subscribe({
           next: result => {
             expect(result.success).toBe(false);
             resolve();
           },
           error: err => {
-            // Error might bubble up instead of being caught
-            expect(err.message).toContain('accountPending');
+            expect(err.message).toContain(errorContains);
             resolve();
           },
-        });
-      }));
-      /* eslint-enable */
-
-      it('should return error when account is disabled', () => new Promise<void>(resolve => {
-        httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
-        httpMock.get.mockReturnValueOnce(
-          of({
-            ...mockGatewayUserResponse,
-            state: 'disabled',
-          })
-        );
-
-        service.login('disabled@example.com', 'password').subscribe({
-          next: result => {
-            expect(result.success).toBe(false);
-            resolve();
-          },
-          error: err => {
-            // Error might bubble up instead of being caught
-            expect(err.message).toContain('accountDisabled');
-            resolve();
-          },
-        });
-      }));
-
-      it('should update authState$ on successful login', () => new Promise<void>(resolve => {
-        httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
-        httpMock.get.mockReturnValueOnce(of(mockGatewayUserResponse));
-
-        service.login('test@example.com', 'password123').subscribe(() => {
-          service.authState$.subscribe(state => {
-            expect(state.isAuthenticated).toBe(true);
-            expect(state.accessToken).toBe('test-access-token');
-            resolve();
-          });
-        });
-      }));
-
-      it('should store tokens when login succeeds', () => new Promise<void>(resolve => {
-        httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
-        httpMock.get.mockReturnValueOnce(of(mockGatewayUserResponse));
-
-        service.login('test@example.com', 'password123', true).subscribe(() => {
-          expect(Preferences.set).toHaveBeenCalledWith(
-            expect.objectContaining({
-              key: 'local_access_token',
-              value: 'test-access-token',
-            })
-          );
-          resolve();
         });
       }));
     });
@@ -317,39 +280,25 @@ describe('LocalAuthService', () => {
       });
     });
 
-    it('should clear auth state', async () => {
+    it('should clear state and storage', async () => {
       await service.logout();
 
+      // Verify state cleared
       const state = await new Promise<LocalAuthState>(resolve => {
         service.authState$.subscribe(s => resolve(s));
       });
-
       expect(state.isAuthenticated).toBe(false);
       expect(state.user).toBeNull();
       expect(state.accessToken).toBeNull();
-    });
 
-    it('should remove tokens from storage', async () => {
-      await service.logout();
-
+      // Verify storage cleared
       expect(Preferences.remove).toHaveBeenCalledWith({ key: 'local_access_token' });
       expect(Preferences.remove).toHaveBeenCalledWith({ key: 'local_refresh_token' });
       expect(Preferences.remove).toHaveBeenCalledWith({ key: 'local_user' });
       expect(Preferences.remove).toHaveBeenCalledWith({ key: 'local_token_expires' });
     });
 
-    it('should log logout event', async () => {
-      await service.logout();
-
-      expect(logger.info).toHaveBeenCalledWith('Auth', 'Logout initiated', expect.any(Object));
-      expect(logger.info).toHaveBeenCalledWith(
-        'Auth',
-        'Logout completed - all data cleared',
-        expect.any(Object)
-      );
-    });
-
-    it('should clear IndexedDB to remove PHI data', async () => {
+    it('should log events and clear IndexedDB PHI data', async () => {
       // Mock the database service import and clearAllData method
       const mockClearAllData = vi.fn().mockResolvedValue(undefined);
       vi.doMock('./database.service', () => ({
@@ -360,7 +309,15 @@ describe('LocalAuthService', () => {
 
       await service.logout();
 
-      // Verify clearAllData was called
+      // Verify logging
+      expect(logger.info).toHaveBeenCalledWith('Auth', 'Logout initiated', expect.any(Object));
+      expect(logger.info).toHaveBeenCalledWith(
+        'Auth',
+        'Logout completed - all data cleared',
+        expect.any(Object)
+      );
+
+      // Verify IndexedDB cleared
       expect(mockClearAllData).toHaveBeenCalled();
     });
   });
@@ -423,7 +380,8 @@ describe('LocalAuthService', () => {
   });
 
   describe('getAccessToken', () => {
-    it('should return access token when authenticated', async () => {
+    it('should return token when authenticated or null when not', async () => {
+      // Test authenticated
       (service as any).authStateSubject.next({
         isAuthenticated: true,
         user: mockUser,
@@ -432,11 +390,10 @@ describe('LocalAuthService', () => {
         expiresAt: Date.now() + 3600000,
       });
 
-      const token = await service.getAccessToken();
-      expect(token).toBe('current-token');
-    });
+      const token1 = await service.getAccessToken();
+      expect(token1).toBe('current-token');
 
-    it('should return null when not authenticated', async () => {
+      // Test not authenticated
       (service as any).authStateSubject.next({
         isAuthenticated: false,
         user: null,
@@ -445,8 +402,8 @@ describe('LocalAuthService', () => {
         expiresAt: null,
       });
 
-      const token = await service.getAccessToken();
-      expect(token).toBeNull();
+      const token2 = await service.getAccessToken();
+      expect(token2).toBeNull();
     });
   });
 
@@ -476,28 +433,24 @@ describe('LocalAuthService', () => {
   });
 
   describe('error handling', () => {
-    it('should handle network errors gracefully', () => new Promise<void>(resolve => {
+    it('should handle network errors and malformed responses', async () => {
       mockAdapter.isServiceMockEnabled.mockReturnValue(false);
 
+      // Network error
       httpMock.post.mockReturnValueOnce(throwError(() => new Error('Network error')));
-
-      service.login('test@example.com', 'password').subscribe(result => {
-        expect(result.success).toBe(false);
-        expect(result.error).toBeDefined();
-        resolve();
+      const result1 = await new Promise<{ success: boolean; error?: string }>(resolve => {
+        service.login('test@example.com', 'password').subscribe(r => resolve(r));
       });
-    }));
+      expect(result1.success).toBe(false);
+      expect(result1.error).toBeDefined();
 
-    it('should handle malformed responses', () => new Promise<void>(resolve => {
-      mockAdapter.isServiceMockEnabled.mockReturnValue(false);
-
+      // Malformed response
       httpMock.post.mockReturnValueOnce(of({})); // No access_token
-
-      service.login('test@example.com', 'password').subscribe(result => {
-        expect(result.success).toBe(false);
-        resolve();
+      const result2 = await new Promise<{ success: boolean; error?: string }>(resolve => {
+        service.login('test@example.com', 'password').subscribe(r => resolve(r));
       });
-    }));
+      expect(result2.success).toBe(false);
+    });
   });
 
   describe('extractErrorMessage (via login error handling)', () => {
@@ -505,13 +458,32 @@ describe('LocalAuthService', () => {
       mockAdapter.isServiceMockEnabled.mockReturnValue(false);
     });
 
-    it('should return timeout message for timeout errors', () => new Promise<void>(resolve => {
+    // Consolidated HTTP status code error handling (GOOD - already parametrized)
+    it('should return correct error messages for all HTTP status codes', async () => {
+      const statusCases = [
+        { status: 401, expectedContains: 'Credenciales incorrectas' },
+        { status: 403, expectedContains: 'Credenciales incorrectas' }, // user-friendly
+        { status: 409, expectedContains: 'ya existe' },
+        { status: 422, expectedContains: 'Datos inválidos' },
+        { status: 500, expectedContains: 'Error del servidor' },
+        { status: 0, expectedContains: 'Error de conexión' },
+      ];
+
+      for (const { status, expectedContains } of statusCases) {
+        httpMock.post.mockReturnValueOnce(throwError(() => ({ status })));
+
+        const result = await new Promise<{ success: boolean; error?: string }>(resolve => {
+          service.login('test@example.com', 'password').subscribe(r => resolve(r));
+        });
+
+        expect(result.success, `status ${status}`).toBe(false);
+        expect(result.error, `status ${status}`).toContain(expectedContains);
+      }
+    });
+
+    it('should handle timeout errors', () => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(
-        throwError(() => ({
-          isTimeout: true,
-          status: 0,
-          message: 'Request timed out',
-        }))
+        throwError(() => ({ isTimeout: true, status: 0, message: 'Request timed out' }))
       );
 
       service.login('test@example.com', 'password').subscribe(result => {
@@ -521,148 +493,50 @@ describe('LocalAuthService', () => {
       });
     }));
 
-    it('should return specific message for 401 status', () => new Promise<void>(resolve => {
-      httpMock.post.mockReturnValueOnce(
-        throwError(() => ({
-          status: 401,
-        }))
-      );
-
-      service.login('test@example.com', 'wrongpassword').subscribe(result => {
-        expect(result.success).toBe(false);
-        expect(result.error).toContain('Credenciales incorrectas');
-        resolve();
-      });
-    }));
-
-    it('should return specific message for 403 status', () => new Promise<void>(resolve => {
-      httpMock.post.mockReturnValueOnce(
-        throwError(() => ({
-          status: 403,
-        }))
-      );
-
-      service.login('blocked@example.com', 'password').subscribe(result => {
-        expect(result.success).toBe(false);
-        // 403 during login is treated as invalid credentials (user-friendly)
-        expect(result.error).toContain('Credenciales incorrectas');
-        resolve();
-      });
-    }));
-
-    it('should return specific message for 409 conflict', () => new Promise<void>(resolve => {
-      httpMock.post.mockReturnValueOnce(
-        throwError(() => ({
-          status: 409,
-        }))
-      );
-
-      service.login('existing@example.com', 'password').subscribe(result => {
-        expect(result.success).toBe(false);
-        expect(result.error).toContain('ya existe');
-        resolve();
-      });
-    }));
-
-    it('should return specific message for 422 validation error', () => new Promise<void>(resolve => {
+    it('should handle nested error.detail (array and string)', async () => {
+      // Array detail
       httpMock.post.mockReturnValueOnce(
         throwError(() => ({
           status: 422,
+          error: { detail: [{ msg: 'Field required' }, { msg: 'Invalid format' }] },
         }))
       );
 
-      service.login('invalid', 'x').subscribe(result => {
-        expect(result.success).toBe(false);
-        expect(result.error).toContain('Datos inválidos');
-        resolve();
+      let result = await new Promise<{ success: boolean; error?: string }>(resolve => {
+        service.login('', '').subscribe(r => resolve(r));
       });
-    }));
+      expect(result.error).toContain('Field required');
+      expect(result.error).toContain('Invalid format');
 
-    it('should return specific message for 500 server error', () => new Promise<void>(resolve => {
+      // String detail
       httpMock.post.mockReturnValueOnce(
-        throwError(() => ({
-          status: 500,
-        }))
+        throwError(() => ({ status: 400, error: { detail: 'Invalid credentials provided' } }))
       );
 
-      service.login('test@example.com', 'password').subscribe(result => {
-        expect(result.success).toBe(false);
-        expect(result.error).toContain('Error del servidor');
-        resolve();
+      result = await new Promise<{ success: boolean; error?: string }>(resolve => {
+        service.login('test@example.com', 'wrong').subscribe(r => resolve(r));
       });
-    }));
+      expect(result.error).toBe('Invalid credentials provided');
+    });
 
-    it('should return connection error message for status 0', () => new Promise<void>(resolve => {
-      httpMock.post.mockReturnValueOnce(
-        throwError(() => ({
-          status: 0,
-        }))
-      );
+    it('should handle edge cases (null, undefined, string error)', async () => {
+      const edgeCases = [
+        { error: null, expectDefined: true },
+        { error: 'Simple error message', expectExact: 'Simple error message' },
+      ];
 
-      service.login('test@example.com', 'password').subscribe(result => {
+      for (const { error, expectDefined, expectExact } of edgeCases) {
+        httpMock.post.mockReturnValueOnce(throwError(() => error));
+
+        const result = await new Promise<{ success: boolean; error?: string }>(resolve => {
+          service.login('test@example.com', 'password').subscribe(r => resolve(r));
+        });
+
         expect(result.success).toBe(false);
-        expect(result.error).toContain('Error de conexión');
-        resolve();
-      });
-    }));
-
-    it('should handle nested error.detail array', () => new Promise<void>(resolve => {
-      httpMock.post.mockReturnValueOnce(
-        throwError(() => ({
-          status: 422,
-          error: {
-            detail: [
-              { msg: 'Field required', loc: ['body', 'username'] },
-              { msg: 'Invalid format', loc: ['body', 'email'] },
-            ],
-          },
-        }))
-      );
-
-      service.login('', '').subscribe(result => {
-        expect(result.success).toBe(false);
-        expect(result.error).toContain('Field required');
-        expect(result.error).toContain('Invalid format');
-        resolve();
-      });
-    }));
-
-    it('should handle nested error.detail string', () => new Promise<void>(resolve => {
-      httpMock.post.mockReturnValueOnce(
-        throwError(() => ({
-          status: 400,
-          error: {
-            detail: 'Invalid credentials provided',
-          },
-        }))
-      );
-
-      service.login('test@example.com', 'wrong').subscribe(result => {
-        expect(result.success).toBe(false);
-        expect(result.error).toBe('Invalid credentials provided');
-        resolve();
-      });
-    }));
-
-    it('should handle null/undefined error gracefully', () => new Promise<void>(resolve => {
-      httpMock.post.mockReturnValueOnce(throwError(() => null));
-
-      service.login('test@example.com', 'password').subscribe(result => {
-        expect(result.success).toBe(false);
-        expect(result.error).toBeDefined();
-        resolve();
-      });
-    }));
-
-    it('should handle string error', () => new Promise<void>(resolve => {
-      httpMock.post.mockReturnValueOnce(throwError(() => 'Simple error message'));
-
-      service.login('test@example.com', 'password').subscribe(result => {
-        expect(result.success).toBe(false);
-        expect(result.error).toBe('Simple error message');
-        resolve();
-      });
-    }));
+        if (expectDefined) expect(result.error).toBeDefined();
+        if (expectExact) expect(result.error).toBe(expectExact);
+      }
+    });
   });
 
   describe('account state transitions', () => {
@@ -670,7 +544,8 @@ describe('LocalAuthService', () => {
       mockAdapter.isServiceMockEnabled.mockReturnValue(false);
     });
 
-    it('should set user accountState from backend response', () => new Promise<void>(resolve => {
+    it('should set accountState from backend or default to ACTIVE', async () => {
+      // Test explicit ACTIVE state
       httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
       httpMock.get.mockReturnValueOnce(
         of({
@@ -679,14 +554,15 @@ describe('LocalAuthService', () => {
         })
       );
 
-      service.login('test@example.com', 'password').subscribe(() => {
-        const currentUser = service.getCurrentUser();
-        expect(currentUser?.accountState).toBe(AccountState.ACTIVE);
-        resolve();
+      await new Promise<void>(resolve => {
+        service.login('test@example.com', 'password').subscribe(() => {
+          const currentUser = service.getCurrentUser();
+          expect(currentUser?.accountState).toBe(AccountState.ACTIVE);
+          resolve();
+        });
       });
-    }));
 
-    it('should default to ACTIVE when backend returns no state', () => new Promise<void>(resolve => {
+      // Test missing state defaults to ACTIVE
       httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
       httpMock.get.mockReturnValueOnce(
         of({
@@ -695,74 +571,37 @@ describe('LocalAuthService', () => {
         })
       );
 
-      service.login('test@example.com', 'password').subscribe(() => {
-        const currentUser = service.getCurrentUser();
-        expect(currentUser?.accountState).toBe(AccountState.ACTIVE);
-        resolve();
+      await new Promise<void>(resolve => {
+        service.login('test@example.com', 'password').subscribe(() => {
+          const currentUser = service.getCurrentUser();
+          expect(currentUser?.accountState).toBe(AccountState.ACTIVE);
+          resolve();
+        });
       });
-    }));
+    });
 
-    it('should reject login for pending accounts with specific error', () => new Promise<void>(resolve => {
+    it.each([
+      { state: 'pending', errorContains: 'accountPending' },
+      { state: 'disabled', errorContains: 'accountDisabled' },
+    ])('should reject login for $state accounts without updating auth state', ({ state, errorContains }) => new Promise<void>(resolve => {
       httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
       httpMock.get.mockReturnValueOnce(
         of({
           ...mockGatewayUserResponse,
-          state: 'pending',
-        })
-      );
-
-      service.login('pending@example.com', 'password').subscribe({
-        next: result => {
-          expect(result.success).toBe(false);
-          resolve();
-        },
-        error: err => {
-          expect(err.message).toContain('accountPending');
-          resolve();
-        },
-      });
-    }));
-
-    it('should reject login for disabled accounts with specific error', () => new Promise<void>(resolve => {
-      httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
-      httpMock.get.mockReturnValueOnce(
-        of({
-          ...mockGatewayUserResponse,
-          state: 'disabled',
-        })
-      );
-
-      service.login('disabled@example.com', 'password').subscribe({
-        next: result => {
-          expect(result.success).toBe(false);
-          resolve();
-        },
-        error: err => {
-          expect(err.message).toContain('accountDisabled');
-          resolve();
-        },
-      });
-    }));
-
-    it('should NOT update auth state for pending accounts', () => new Promise<void>(resolve => {
-      httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
-      httpMock.get.mockReturnValueOnce(
-        of({
-          ...mockGatewayUserResponse,
-          state: 'pending',
+          state,
         })
       );
 
       const initialState = service.getCurrentUser();
 
-      service.login('pending@example.com', 'password').subscribe({
-        complete: () => {
-          // Auth state should not have changed
+      service.login(`${state}@example.com`, 'password').subscribe({
+        next: result => {
+          expect(result.success).toBe(false);
           expect(service.getCurrentUser()).toEqual(initialState);
           resolve();
         },
-        error: () => {
-          // Auth state should not have changed on error
+        error: err => {
+          expect(err.message).toContain(errorContains);
           expect(service.getCurrentUser()).toEqual(initialState);
           resolve();
         },
@@ -771,7 +610,8 @@ describe('LocalAuthService', () => {
   });
 
   describe('isAuthenticated observable', () => {
-    it('should emit false when not authenticated', () => new Promise<void>(resolve => {
+    it('should emit correct auth status based on state and token', async () => {
+      // Test not authenticated
       (service as any).authStateSubject.next({
         isAuthenticated: false,
         user: null,
@@ -780,13 +620,12 @@ describe('LocalAuthService', () => {
         expiresAt: null,
       });
 
-      service.isAuthenticated().subscribe(isAuth => {
-        expect(isAuth).toBe(false);
-        resolve();
+      const isAuth1 = await new Promise<boolean>(resolve => {
+        service.isAuthenticated().subscribe(isAuth => resolve(isAuth));
       });
-    }));
+      expect(isAuth1).toBe(false);
 
-    it('should emit true when authenticated with token', () => new Promise<void>(resolve => {
+      // Test authenticated with token
       (service as any).authStateSubject.next({
         isAuthenticated: true,
         user: mockUser,
@@ -795,13 +634,12 @@ describe('LocalAuthService', () => {
         expiresAt: Date.now() + 3600000,
       });
 
-      service.isAuthenticated().subscribe(isAuth => {
-        expect(isAuth).toBe(true);
-        resolve();
+      const isAuth2 = await new Promise<boolean>(resolve => {
+        service.isAuthenticated().subscribe(isAuth => resolve(isAuth));
       });
-    }));
+      expect(isAuth2).toBe(true);
 
-    it('should emit false when isAuthenticated is true but no token', () => new Promise<void>(resolve => {
+      // Test authenticated flag but no token
       (service as any).authStateSubject.next({
         isAuthenticated: true,
         user: mockUser,
@@ -810,10 +648,10 @@ describe('LocalAuthService', () => {
         expiresAt: null,
       });
 
-      service.isAuthenticated().subscribe(isAuth => {
-        expect(isAuth).toBe(false);
-        resolve();
+      const isAuth3 = await new Promise<boolean>(resolve => {
+        service.isAuthenticated().subscribe(isAuth => resolve(isAuth));
       });
-    }));
+      expect(isAuth3).toBe(false);
+    });
   });
 });

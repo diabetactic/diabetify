@@ -19,10 +19,6 @@ describe('BottomSheetComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   describe('default values', () => {
     it('should have isOpen as false by default', () => {
       expect(component.isOpen).toBe(false);

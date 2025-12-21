@@ -64,10 +64,6 @@ describe('AdvancedPage', () => {
     // Don't call detectChanges() in beforeEach to avoid template binding issues
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   it('should have dev mode enabled based on production flag', () => {
     expect(component.isDevMode).toBeDefined();
   });

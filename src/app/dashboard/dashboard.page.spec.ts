@@ -400,10 +400,6 @@ describe('DashboardPage', () => {
     localAuthServiceStub = TestBed.inject(LocalAuthService) as unknown as LocalAuthServiceStub;
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   it('should load streak data from auth state', async () => {
     fixture.detectChanges();
     await fixture.whenStable();

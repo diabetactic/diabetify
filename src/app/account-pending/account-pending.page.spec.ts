@@ -46,10 +46,6 @@ describe('AccountPendingPage', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   it('should sign out user and navigate to welcome', async () => {
     mockAuthService.logout.mockResolvedValue();
     mockRouter.navigate.mockResolvedValue(true);

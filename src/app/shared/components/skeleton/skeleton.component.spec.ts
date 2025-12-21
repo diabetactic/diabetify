@@ -18,10 +18,6 @@ describe('SkeletonComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   describe('default values', () => {
     it('should have default type as custom', () => {
       expect(component.type).toBe('custom');

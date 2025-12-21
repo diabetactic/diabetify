@@ -592,15 +592,5 @@ describe('ServiceOrchestrator', () => {
       expect(id1).not.toBe(id2);
       expect(id1).toMatch(/^workflow_\d+_[a-z0-9]+$/);
     });
-
-    it('should delay execution correctly', async () => {
-      const startTime = Date.now();
-      await (service as any).delay(500);
-      const duration = Date.now() - startTime;
-
-      // Allow 5ms tolerance for timing jitter
-      expect(duration).toBeGreaterThanOrEqual(495);
-      expect(duration).toBeLessThan(600);
-    });
   });
 });

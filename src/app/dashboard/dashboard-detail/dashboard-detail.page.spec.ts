@@ -67,10 +67,6 @@ describe('DashboardDetailPage', () => {
     component = fixture.componentInstance;
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   describe('default values', () => {
     it('should have null statistics initially', () => {
       expect(component.statistics).toBeNull();
@@ -89,55 +85,35 @@ describe('DashboardDetailPage', () => {
     });
   });
 
-  describe('gradients', () => {
-    it('should have hba1c gradient', () => {
-      expect(component.gradients.hba1c).toEqual(['#60a5fa', '#3b82f6']);
+  describe('visual configuration', () => {
+    it('should have gradients for all metric types', () => {
+      const expectedGradients = {
+        hba1c: ['#60a5fa', '#3b82f6'],
+        timeInRange: ['#c084fc', '#a855f7'],
+        avgGlucose: ['#4ade80', '#22c55e'],
+        gmi: ['#fbbf24', '#f59e0b'],
+        stdDev: ['#f87171', '#ef4444'],
+        cv: ['#fb923c', '#f97316'],
+      };
+
+      Object.entries(expectedGradients).forEach(([key, value]) => {
+        expect(component.gradients[key as keyof typeof component.gradients]).toEqual(value);
+      });
     });
 
-    it('should have timeInRange gradient', () => {
-      expect(component.gradients.timeInRange).toEqual(['#c084fc', '#a855f7']);
-    });
+    it('should have icons for all metric types', () => {
+      const expectedIcons = {
+        hba1c: 'star',
+        timeInRange: 'track_changes',
+        avgGlucose: 'favorite',
+        gmi: 'monitoring',
+        stdDev: 'analytics',
+        cv: 'trending_up',
+      };
 
-    it('should have avgGlucose gradient', () => {
-      expect(component.gradients.avgGlucose).toEqual(['#4ade80', '#22c55e']);
-    });
-
-    it('should have gmi gradient', () => {
-      expect(component.gradients.gmi).toEqual(['#fbbf24', '#f59e0b']);
-    });
-
-    it('should have stdDev gradient', () => {
-      expect(component.gradients.stdDev).toEqual(['#f87171', '#ef4444']);
-    });
-
-    it('should have cv gradient', () => {
-      expect(component.gradients.cv).toEqual(['#fb923c', '#f97316']);
-    });
-  });
-
-  describe('icons', () => {
-    it('should have hba1c icon', () => {
-      expect(component.icons.hba1c).toBe('star');
-    });
-
-    it('should have timeInRange icon', () => {
-      expect(component.icons.timeInRange).toBe('track_changes');
-    });
-
-    it('should have avgGlucose icon', () => {
-      expect(component.icons.avgGlucose).toBe('favorite');
-    });
-
-    it('should have gmi icon', () => {
-      expect(component.icons.gmi).toBe('monitoring');
-    });
-
-    it('should have stdDev icon', () => {
-      expect(component.icons.stdDev).toBe('analytics');
-    });
-
-    it('should have cv icon', () => {
-      expect(component.icons.cv).toBe('trending_up');
+      Object.entries(expectedIcons).forEach(([key, value]) => {
+        expect(component.icons[key as keyof typeof component.icons]).toBe(value);
+      });
     });
   });
 

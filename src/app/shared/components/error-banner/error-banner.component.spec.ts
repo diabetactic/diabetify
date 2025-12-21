@@ -30,10 +30,6 @@ describe('ErrorBannerComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   describe('default values', () => {
     it('should have empty message by default', () => {
       expect(component.message).toBe('');

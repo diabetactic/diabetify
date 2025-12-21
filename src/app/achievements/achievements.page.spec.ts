@@ -56,6 +56,17 @@ const mockAchievements: Achievement[] = [
   },
 ];
 
+// Helper to create achievement with specific values
+const createAchievement = (overrides: Partial<Achievement> = {}): Achievement => ({
+  ach_id: 1,
+  name: 'Test',
+  attribute: 'times_measured',
+  got: false,
+  progress: 0,
+  threshold: 100,
+  ...overrides,
+});
+
 const mockAchievementsService = {
   fetchAll: vi.fn().mockResolvedValue({ streak: mockStreakData, achievements: mockAchievements }),
   fetchStreak: vi.fn().mockResolvedValue(mockStreakData),
@@ -94,33 +105,39 @@ describe('AchievementsPage', () => {
     router = TestBed.inject(Router);
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  // ============================================================================
+  // INITIALIZATION & LIFECYCLE
+  // ============================================================================
+
+  describe('Initialization & Lifecycle', () => {
+    it('should have correct initial state', () => {
+      expect(component.streak).toBeNull();
+      expect(component.achievements).toEqual([]);
+      expect(component.isLoading).toBe(true);
+      expect(component.error).toBeNull();
+      expect(component.dailyMeasurements).toBe(0);
+      expect(component.dailyTarget).toBe(4);
+    });
+
+    it('should call loadData on ngOnInit', () => {
+      const loadDataSpy = vi.spyOn(component, 'loadData');
+      component.ngOnInit();
+      expect(loadDataSpy).toHaveBeenCalled();
+    });
+
+    it('should complete destroy$ on ngOnDestroy', () => {
+      const destroySubject = (component as any).destroy$;
+      const nextSpy = vi.spyOn(destroySubject, 'next');
+      const completeSpy = vi.spyOn(destroySubject, 'complete');
+      component.ngOnDestroy();
+      expect(nextSpy).toHaveBeenCalled();
+      expect(completeSpy).toHaveBeenCalled();
+    });
   });
 
-  it('should have correct initial state', () => {
-    expect(component.streak).toBeNull();
-    expect(component.achievements).toEqual([]);
-    expect(component.isLoading).toBe(true);
-    expect(component.error).toBeNull();
-    expect(component.dailyMeasurements).toBe(0);
-    expect(component.dailyTarget).toBe(4);
-  });
-
-  it('should call loadData on ngOnInit', () => {
-    const loadDataSpy = vi.spyOn(component, 'loadData');
-    component.ngOnInit();
-    expect(loadDataSpy).toHaveBeenCalled();
-  });
-
-  it('should complete destroy$ on ngOnDestroy', () => {
-    const destroySubject = (component as any).destroy$;
-    const nextSpy = vi.spyOn(destroySubject, 'next');
-    const completeSpy = vi.spyOn(destroySubject, 'complete');
-    component.ngOnDestroy();
-    expect(nextSpy).toHaveBeenCalled();
-    expect(completeSpy).toHaveBeenCalled();
-  });
+  // ============================================================================
+  // DATA LOADING
+  // ============================================================================
 
   describe('loadData', () => {
     it('should load data successfully', async () => {
@@ -136,17 +153,18 @@ describe('AchievementsPage', () => {
       expect(mockAchievementsService.fetchAll).toHaveBeenCalledWith(true);
     });
 
-    it('should handle error', async () => {
-      mockAchievementsService.fetchAll.mockRejectedValueOnce(new Error('Test error'));
-      await component.loadData();
-      expect(component.error).toBe('Test error');
-      expect(component.isLoading).toBe(false);
-    });
+    it('should handle various error types', async () => {
+      const errorCases = [
+        { error: new Error('Test error'), expectedMessage: 'Test error' },
+        { error: 'string error', expectedMessage: 'Unknown error' },
+      ];
 
-    it('should handle non-Error exception', async () => {
-      mockAchievementsService.fetchAll.mockRejectedValueOnce('string error');
-      await component.loadData();
-      expect(component.error).toBe('Unknown error');
+      for (const { error, expectedMessage } of errorCases) {
+        mockAchievementsService.fetchAll.mockRejectedValueOnce(error);
+        await component.loadData();
+        expect(component.error).toBe(expectedMessage);
+        expect(component.isLoading).toBe(false);
+      }
     });
 
     it('should set dailyMeasurements to 0 when streak is null', async () => {
@@ -156,7 +174,11 @@ describe('AchievementsPage', () => {
     });
   });
 
-  describe('handleRefresh', () => {
+  // ============================================================================
+  // USER ACTIONS
+  // ============================================================================
+
+  describe('User Actions', () => {
     it('should refresh and complete', async () => {
       const mockRefresher = { complete: vi.fn() };
       const event = { target: mockRefresher } as unknown as CustomEvent;
@@ -164,351 +186,185 @@ describe('AchievementsPage', () => {
       expect(mockAchievementsService.fetchAll).toHaveBeenCalledWith(true);
       expect(mockRefresher.complete).toHaveBeenCalled();
     });
-  });
 
-  describe('goBack', () => {
-    it('should navigate to profile', () => {
+    it('should navigate to profile on goBack', () => {
       const navigateSpy = vi.spyOn(router, 'navigate');
       component.goBack();
       expect(navigateSpy).toHaveBeenCalledWith(['/tabs/profile']);
     });
   });
 
+  // ============================================================================
+  // ACHIEVEMENT PROGRESS
+  // ============================================================================
+
   describe('getAchievementProgress', () => {
-    it('should return correct percentage', () => {
-      expect(
-        component.getAchievementProgress({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: false,
-          progress: 50,
-          threshold: 100,
-        })
-      ).toBe(50);
-    });
+    it('should calculate progress correctly for various scenarios', () => {
+      const testCases = [
+        { progress: 50, threshold: 100, expected: 50, desc: 'normal percentage' },
+        { progress: 150, threshold: 100, expected: 100, desc: 'capped at 100%' },
+        { progress: 0, threshold: 0, expected: 100, desc: 'zero threshold (complete)' },
+      ];
 
-    it('should cap at 100%', () => {
-      expect(
-        component.getAchievementProgress({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: true,
-          progress: 150,
-          threshold: 100,
-        })
-      ).toBe(100);
-    });
-
-    it('should return 100% for zero threshold (already complete)', () => {
-      // When threshold is 0, achievement is considered complete
-      expect(
-        component.getAchievementProgress({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: false,
-          progress: 0,
-          threshold: 0,
-        })
-      ).toBe(100);
+      for (const { progress, threshold, expected, desc } of testCases) {
+        const result = component.getAchievementProgress(createAchievement({ progress, threshold }));
+        expect(result, desc).toBe(expected);
+      }
     });
   });
 
+  // ============================================================================
+  // ACHIEVEMENT ICONS & COLORS (Parametrized)
+  // ============================================================================
+
   describe('getAchievementIcon', () => {
-    it('should return trophy for earned', () => {
-      expect(
-        component.getAchievementIcon({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: true,
-          progress: 1,
-          threshold: 1,
-        })
-      ).toBe('trophy');
-    });
-
-    it('should return water-outline for times_measured', () => {
-      expect(
-        component.getAchievementIcon({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
+    it('should return correct icon for various achievement states', () => {
+      const testCases = [
+        { got: true, attribute: 'times_measured', expected: 'trophy', desc: 'earned' },
+        {
           got: false,
-          progress: 0,
-          threshold: 1,
-        })
-      ).toBe('water-outline');
-    });
-
-    it('should return flame-outline for max_streak', () => {
-      expect(
-        component.getAchievementIcon({
-          ach_id: 1,
-          name: 'Test',
+          attribute: 'times_measured',
+          expected: 'water-outline',
+          desc: 'times_measured unearned',
+        },
+        {
+          got: false,
           attribute: 'max_streak',
-          got: false,
-          progress: 0,
-          threshold: 7,
-        })
-      ).toBe('flame-outline');
-    });
+          expected: 'flame-outline',
+          desc: 'max_streak unearned',
+        },
+        { got: false, attribute: 'other', expected: 'ribbon-outline', desc: 'unknown attribute' },
+      ];
 
-    it('should return ribbon-outline for unknown', () => {
-      expect(
-        component.getAchievementIcon({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'other' as any,
-          got: false,
-          progress: 0,
-          threshold: 1,
-        })
-      ).toBe('ribbon-outline');
+      for (const { got, attribute, expected, desc } of testCases) {
+        const result = component.getAchievementIcon(
+          createAchievement({ got, attribute: attribute as any })
+        );
+        expect(result, desc).toBe(expected);
+      }
     });
   });
 
   describe('getAchievementColor', () => {
-    it('should return amber for earned', () => {
-      expect(
-        component.getAchievementColor({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: true,
-          progress: 1,
-          threshold: 1,
-        })
-      ).toBe('text-amber-500');
-    });
+    it('should return correct color for various progress levels', () => {
+      const testCases = [
+        { got: true, progress: 100, threshold: 100, expected: 'text-amber-500', desc: 'earned' },
+        { got: false, progress: 80, threshold: 100, expected: 'text-green-500', desc: '75%+' },
+        { got: false, progress: 60, threshold: 100, expected: 'text-blue-500', desc: '50-74%' },
+        { got: false, progress: 30, threshold: 100, expected: 'text-orange-500', desc: '25-49%' },
+        { got: false, progress: 10, threshold: 100, expected: 'text-gray-400', desc: '<25%' },
+      ];
 
-    it('should return green for 75%+', () => {
-      expect(
-        component.getAchievementColor({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: false,
-          progress: 80,
-          threshold: 100,
-        })
-      ).toBe('text-green-500');
-    });
-
-    it('should return blue for 50-74%', () => {
-      expect(
-        component.getAchievementColor({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: false,
-          progress: 60,
-          threshold: 100,
-        })
-      ).toBe('text-blue-500');
-    });
-
-    it('should return orange for 25-49%', () => {
-      expect(
-        component.getAchievementColor({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: false,
-          progress: 30,
-          threshold: 100,
-        })
-      ).toBe('text-orange-500');
-    });
-
-    it('should return gray for <25%', () => {
-      expect(
-        component.getAchievementColor({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: false,
-          progress: 10,
-          threshold: 100,
-        })
-      ).toBe('text-gray-400');
+      for (const { got, progress, threshold, expected, desc } of testCases) {
+        const result = component.getAchievementColor(
+          createAchievement({ got, progress, threshold })
+        );
+        expect(result, desc).toBe(expected);
+      }
     });
   });
 
   describe('getProgressBarColor', () => {
-    it('should return success for earned', () => {
-      expect(
-        component.getProgressBarColor({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: true,
-          progress: 1,
-          threshold: 1,
-        })
-      ).toBe('success');
-    });
+    it('should return correct progress bar color for various states', () => {
+      const testCases = [
+        { got: true, progress: 100, threshold: 100, expected: 'success', desc: 'earned' },
+        { got: false, progress: 80, threshold: 100, expected: 'success', desc: '75%+' },
+        { got: false, progress: 60, threshold: 100, expected: 'primary', desc: '50-74%' },
+        { got: false, progress: 30, threshold: 100, expected: 'warning', desc: '25-49%' },
+        { got: false, progress: 10, threshold: 100, expected: 'medium', desc: '<25%' },
+      ];
 
-    it('should return success for 75%+', () => {
-      expect(
-        component.getProgressBarColor({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: false,
-          progress: 80,
-          threshold: 100,
-        })
-      ).toBe('success');
-    });
-
-    it('should return primary for 50-74%', () => {
-      expect(
-        component.getProgressBarColor({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: false,
-          progress: 60,
-          threshold: 100,
-        })
-      ).toBe('primary');
-    });
-
-    it('should return warning for 25-49%', () => {
-      expect(
-        component.getProgressBarColor({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: false,
-          progress: 30,
-          threshold: 100,
-        })
-      ).toBe('warning');
-    });
-
-    it('should return medium for <25%', () => {
-      expect(
-        component.getProgressBarColor({
-          ach_id: 1,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: false,
-          progress: 10,
-          threshold: 100,
-        })
-      ).toBe('medium');
+      for (const { got, progress, threshold, expected, desc } of testCases) {
+        const result = component.getProgressBarColor(
+          createAchievement({ got, progress, threshold })
+        );
+        expect(result, desc).toBe(expected);
+      }
     });
   });
+
+  // ============================================================================
+  // DAILY PROGRESS
+  // ============================================================================
 
   describe('getDailyProgress', () => {
-    it('should calculate percentage', () => {
-      component.dailyMeasurements = 2;
-      component.dailyTarget = 4;
-      expect(component.getDailyProgress()).toBe(50);
-    });
+    it('should calculate daily progress correctly', () => {
+      const testCases = [
+        { measurements: 2, target: 4, expected: 50, desc: '50%' },
+        { measurements: 4, target: 4, expected: 100, desc: '100%' },
+        { measurements: 0, target: 4, expected: 0, desc: '0%' },
+      ];
 
-    it('should return 100% when met', () => {
-      component.dailyMeasurements = 4;
-      component.dailyTarget = 4;
-      expect(component.getDailyProgress()).toBe(100);
-    });
-
-    it('should handle zero', () => {
-      component.dailyMeasurements = 0;
-      component.dailyTarget = 4;
-      expect(component.getDailyProgress()).toBe(0);
+      for (const { measurements, target, expected, desc } of testCases) {
+        component.dailyMeasurements = measurements;
+        component.dailyTarget = target;
+        expect(component.getDailyProgress(), desc).toBe(expected);
+      }
     });
   });
 
+  // ============================================================================
+  // STREAK DISPLAY
+  // ============================================================================
+
   describe('getStreakFireIcon', () => {
-    it('should return flame for 30+ streak', () => {
-      component.streak = { ...mockStreakData, streak: 30 };
-      expect(component.getStreakFireIcon()).toBe('flame');
-    });
+    it('should return correct icon for various streak levels', () => {
+      const testCases = [
+        { streak: 30, expected: 'flame', desc: '30+ streak' },
+        { streak: 15, expected: 'flame', desc: '7-29 streak' },
+        { streak: 3, expected: 'flame-outline', desc: '<7 streak' },
+        { streak: null, expected: 'flame-outline', desc: 'null streak' },
+      ];
 
-    it('should return flame for 7-29 streak', () => {
-      component.streak = { ...mockStreakData, streak: 15 };
-      expect(component.getStreakFireIcon()).toBe('flame');
-    });
-
-    it('should return flame-outline for <7 streak', () => {
-      component.streak = { ...mockStreakData, streak: 3 };
-      expect(component.getStreakFireIcon()).toBe('flame-outline');
-    });
-
-    it('should return flame-outline for null streak', () => {
-      component.streak = null;
-      expect(component.getStreakFireIcon()).toBe('flame-outline');
+      for (const { streak, expected, desc } of testCases) {
+        component.streak = streak !== null ? { ...mockStreakData, streak } : null;
+        expect(component.getStreakFireIcon(), desc).toBe(expected);
+      }
     });
   });
 
   describe('getStreakFireColor', () => {
-    it('should return red for 30+', () => {
-      component.streak = { ...mockStreakData, streak: 30 };
-      expect(component.getStreakFireColor()).toBe('text-red-500');
-    });
+    it('should return correct color for various streak levels', () => {
+      const testCases = [
+        { streak: 30, expected: 'text-red-500', desc: '30+ streak' },
+        { streak: 15, expected: 'text-orange-500', desc: '7-29 streak' },
+        { streak: 3, expected: 'text-amber-500', desc: '1-6 streak' },
+        { streak: 0, expected: 'text-gray-400', desc: '0 streak' },
+        { streak: null, expected: 'text-gray-400', desc: 'null streak' },
+      ];
 
-    it('should return orange for 7-29', () => {
-      component.streak = { ...mockStreakData, streak: 15 };
-      expect(component.getStreakFireColor()).toBe('text-orange-500');
-    });
-
-    it('should return amber for 1-6', () => {
-      component.streak = { ...mockStreakData, streak: 3 };
-      expect(component.getStreakFireColor()).toBe('text-amber-500');
-    });
-
-    it('should return gray for 0', () => {
-      component.streak = { ...mockStreakData, streak: 0 };
-      expect(component.getStreakFireColor()).toBe('text-gray-400');
-    });
-
-    it('should return gray for null', () => {
-      component.streak = null;
-      expect(component.getStreakFireColor()).toBe('text-gray-400');
+      for (const { streak, expected, desc } of testCases) {
+        component.streak = streak !== null ? { ...mockStreakData, streak } : null;
+        expect(component.getStreakFireColor(), desc).toBe(expected);
+      }
     });
   });
 
-  describe('getEarnedCount', () => {
-    it('should count earned achievements', async () => {
+  // ============================================================================
+  // COUNTS & TRACKING
+  // ============================================================================
+
+  describe('Counts & Tracking', () => {
+    it('should count earned achievements correctly', async () => {
       await component.loadData();
       expect(component.getEarnedCount()).toBe(2);
-    });
 
-    it('should return 0 when none earned', () => {
+      // Test with none earned
       component.achievements = mockAchievements.map(a => ({ ...a, got: false }));
       expect(component.getEarnedCount()).toBe(0);
     });
-  });
 
-  describe('getTotalCount', () => {
-    it('should return total', async () => {
+    it('should return correct total count', async () => {
       await component.loadData();
       expect(component.getTotalCount()).toBe(4);
-    });
 
-    it('should return 0 when empty', () => {
+      // Test with empty
       component.achievements = [];
       expect(component.getTotalCount()).toBe(0);
     });
-  });
 
-  describe('trackByAchievement', () => {
-    it('should return ach_id', () => {
-      expect(
-        component.trackByAchievement(0, {
-          ach_id: 42,
-          name: 'Test',
-          attribute: 'times_measured',
-          got: false,
-          progress: 0,
-          threshold: 1,
-        })
-      ).toBe(42);
+    it('should track by achievement id', () => {
+      expect(component.trackByAchievement(0, createAchievement({ ach_id: 42 }))).toBe(42);
     });
   });
 });
