@@ -1,9 +1,18 @@
 name: Android
 
 on:
-  push:
-    branches: [master, main]
+  # Manual trigger only - saves ~15-20 min per push
   workflow_dispatch:
+    inputs:
+      run_maestro:
+        description: 'Run Maestro E2E tests'
+        required: false
+        default: true
+        type: boolean
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   NODE_VERSION: '20'
@@ -11,7 +20,7 @@ env:
   JAVA_VERSION: '17'
 
 jobs:
-  # Android Build + Smoke Test (API 33)
+  # Android Build
   build-android:
     runs-on: ubuntu-latest
     env:
@@ -20,17 +29,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -40,22 +40,6 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v5
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Build Production Web
         run: pnpm run build:prod
@@ -90,6 +74,7 @@ jobs:
   maestro-tests:
     needs: build-android
     runs-on: ubuntu-latest
+    if: inputs.run_maestro == true
     env:
       TEST_USER_ID: '1000'
       TEST_USER_PASSWORD: 'tuvieja'
@@ -101,17 +86,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -121,22 +97,6 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v5
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Download APK
         uses: actions/download-artifact@v7
