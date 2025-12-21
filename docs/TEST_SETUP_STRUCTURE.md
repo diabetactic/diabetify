@@ -49,7 +49,7 @@ src/
    // 4. Imports de helpers
    import { initializeTestBed, ... } from './mocks/angular.mock';
 
-   // 5. Configuración global (TestBed, jasmine, jest, expect)
+   // 5. Configuración global (TestBed, jasmine, expect)
    ```
 
 ### `src/test-setup/polyfills.ts`
@@ -154,14 +154,13 @@ vi.mock('@ionic/angular', async () => {
 
 Esto previene que @ionic/angular intente importar @ionic/core/loader.
 
-## Compatibilidad Jasmine/Jest
+## Compatibilidad Jasmine
 
-El sistema provee compatibilidad completa con Jasmine y Jest:
+El sistema provee compatibilidad con Jasmine para facilitar migraciones:
 
 ### Globales
 
 - `jasmine.createSpyObj()`, `jasmine.createSpy()`
-- `jest.fn()`, `jest.spyOn()` (alias a vi.fn(), vi.spyOn())
 - `spyOn()` global con interfaz `.and`
 - `expectAsync()` para assertions async
 
@@ -172,7 +171,7 @@ El sistema provee compatibilidad completa con Jasmine y Jest:
 
 ### Spy Interface
 
-Los mocks creados soportan AMBAS interfaces:
+Los mocks creados soportan la interfaz Jasmine:
 
 ```typescript
 const spy = jasmine.createSpy();
@@ -181,14 +180,12 @@ const spy = jasmine.createSpy();
 spy.and.returnValue(42);
 spy.calls.mostRecent();
 
-// Interfaz Vitest
+// Interfaz Vitest (preferida)
 spy.mockReturnValue(42);
 expect(spy).toHaveBeenCalled();
 ```
 
-## Migración desde setup-vitest.ts antiguo
-
-El archivo `src/setup-vitest.ts` original (773 líneas) ha sido reducido a un wrapper de 7 líneas que re-exporta desde `src/test-setup/`.
+> **Nota**: El proyecto usa **Vitest 4.0+** exclusivamente. Usar `vi.fn()` y `vi.spyOn()` directamente.
 
 Cambios:
 
