@@ -240,8 +240,8 @@ export class AppointmentsPage implements OnInit, OnDestroy {
         // Update position even if state didn't change
         try {
           const position = await firstValueFrom(this.appointmentService.getQueuePosition());
-          if (position >= 0 && position !== this.queueState?.position) {
-            this.queueState = { ...this.queueState!, position };
+          if (position >= 0 && this.queueState && position !== this.queueState.position) {
+            this.queueState = { ...this.queueState, position };
             this.cdr.markForCheck();
           }
         } catch {

@@ -52,6 +52,17 @@ exclude_patterns = [
   # Third-party and vendor files
   "**/vendor/**",
 
+  # Mock infrastructure (intentional patterns - not production code)
+  "src/mocks/**",
+  "src/setup-polyfills.ts",
+
+  # Angular NgModules (class-as-namespace is legitimate Angular pattern)
+  "**/*.module.ts",
+
+  # Mock services (intentional mock patterns)
+  "src/app/core/services/mock-adapter.service.ts",
+  "src/app/shared/components/env-badge/**",
+
   # IDE and editor
   ".idea/**",
   ".vscode/**",

@@ -110,7 +110,10 @@ export class TranslationService implements OnDestroy {
 
   // Current language config observable
   public readonly currentConfig$: Observable<LanguageConfig> = this.state$.pipe(
-    map(state => this.LANGUAGES.get(state.currentLanguage)!)
+    map(
+      state =>
+        this.LANGUAGES.get(state.currentLanguage) ?? this.LANGUAGES.get(this.DEFAULT_LANGUAGE)!
+    )
   );
 
   constructor(

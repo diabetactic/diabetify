@@ -393,7 +393,7 @@ export class LocalAuthService {
       catchError(error => {
         this.logger.error('Auth', 'Backend stage: catchError from HTTP', {
           stage: 'http-error',
-          status: (error && error.status) || null,
+          status: error?.status ?? null,
           message: error?.message,
         });
 
@@ -402,8 +402,8 @@ export class LocalAuthService {
         this.logger.error('Auth', 'Login failed', error, {
           username,
           baseUrl: this.baseUrl,
-          status: (error && error.status) || null,
-          backendPayload: error && error.error,
+          status: error?.status ?? null,
+          backendPayload: error?.error,
         });
         return of({
           success: false,
