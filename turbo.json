@@ -85,22 +85,6 @@
       "outputs": ["coverage/**", "test-results/**", "junit.xml"],
       "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "vitest.config.ts", "src/setup-vitest.ts"]
     },
-    "test:jest": {
-      "outputs": ["coverage/**"],
-      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
-    },
-    "test:jest:coverage": {
-      "outputs": ["coverage/**"],
-      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
-    },
-    "test:jest:ci": {
-      "outputs": ["coverage/**", "test-results/**"],
-      "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "jest.config.js", "setup-jest.ts"]
-    },
-    "test:integration": {
-      "outputs": ["test-results/**"],
-      "inputs": ["src/**/*.ts", "jest.integration.config.js"]
-    },
     "test:e2e": {
       "dependsOn": ["build"],
       "outputs": ["playwright-report/**", "test-results/**", "playwright/artifacts/**"],
