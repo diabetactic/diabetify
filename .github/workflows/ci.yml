@@ -78,7 +78,7 @@ jobs:
           retention-days: 7
 
   # ============================================================================
-  # Build Production Web (required for E2E)
+  # Build Mock Web (required for E2E - uses in-memory mock data)
   # ============================================================================
   build-web:
     needs: [lint, unit-tests]
@@ -92,8 +92,8 @@ jobs:
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
 
-      - name: Build Production
-        run: pnpm run build:prod
+      - name: Build Mock Mode
+        run: pnpm run build:mock
 
       - name: Upload www artifact
         uses: actions/upload-artifact@v4
