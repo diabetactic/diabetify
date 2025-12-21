@@ -205,7 +205,7 @@ export class UnifiedAuthService implements OnDestroy {
     return this.localAuth.register(request).pipe(
       map(() => this.unifiedAuthStateSubject.value),
       catchError(error => {
-        console.error('Registration failed:', error);
+        this.logger.error('UnifiedAuth', 'Registration failed', error);
         throw error;
       })
     );

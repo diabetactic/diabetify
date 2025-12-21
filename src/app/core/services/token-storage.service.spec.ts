@@ -6,8 +6,8 @@ import { TestBed } from '@angular/core/testing';
 import { SecureStorage } from '@aparajita/capacitor-secure-storage';
 
 import { TokenStorageService } from '@services/token-storage.service';
+import { LoggerService } from '@services/logger.service';
 import { TidepoolAuth } from '@models/tidepool-auth.model';
-import { OAUTH_CONSTANTS } from '@core/config/oauth.config';
 
 // Mock SecureStorage
 vi.mock('@aparajita/capacitor-secure-storage', () => ({
@@ -21,6 +21,7 @@ vi.mock('@aparajita/capacitor-secure-storage', () => ({
 
 describe('TokenStorageService', () => {
   let service: TokenStorageService;
+  let mockLogger: Mock<LoggerService>;
 
   const mockAuth: TidepoolAuth = {
     accessToken: 'test-access-token-abc123',
@@ -40,8 +41,15 @@ describe('TokenStorageService', () => {
     (SecureStorage.remove as Mock).mockResolvedValue(undefined);
     (SecureStorage.clear as Mock).mockResolvedValue(undefined);
 
+    mockLogger = {
+      info: vi.fn(),
+      debug: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    } as unknown as Mock<LoggerService>;
+
     TestBed.configureTestingModule({
-      providers: [TokenStorageService],
+      providers: [TokenStorageService, { provide: LoggerService, useValue: mockLogger }],
     });
     service = TestBed.inject(TokenStorageService);
   });
@@ -157,11 +165,13 @@ describe('TokenStorageService', () => {
       expect(await service.getRefreshToken()).toBeNull();
 
       // Storage error
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation();
       (SecureStorage.get as Mock).mockRejectedValueOnce(new Error('Decryption failed'));
       expect(await service.getRefreshToken()).toBeNull();
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to retrieve refresh token');
-      consoleErrorSpy.mockRestore();
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'TokenStorage',
+        'Failed to retrieve refresh token',
+        expect.anything()
+      );
     });
   });
 

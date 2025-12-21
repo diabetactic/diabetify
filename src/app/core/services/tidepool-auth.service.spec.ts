@@ -29,7 +29,7 @@ describe('TidepoolAuthService', () => {
   let httpMock: Mock<HttpClient>;
   let tokenStorageMock: Mock<TokenStorageService>;
 
-  const mockAuthData: TidepoolAuth = {
+  const _mockAuthData: TidepoolAuth = {
     accessToken: 'mock-access-token',
     refreshToken: 'mock-refresh-token',
     tokenType: 'Bearer',

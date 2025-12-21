@@ -24,6 +24,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { ReadingsService } from '@services/readings.service';
+import { LoggerService } from '@services/logger.service';
 import { GlucoseStatistics } from '@models/glucose-reading.model';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
@@ -99,14 +100,17 @@ export class TrendsPage implements OnInit {
     },
   };
 
-  constructor(private readingsService: ReadingsService) {}
+  constructor(
+    private readingsService: ReadingsService,
+    private logger: LoggerService
+  ) {}
 
   async ngOnInit() {
     await this.loadStatistics();
   }
 
-  async onPeriodChange(event: any) {
-    const period = event.detail.value as 'week' | 'month' | 'all';
+  async onPeriodChange(event: CustomEvent<{ value: 'week' | 'month' | 'all' }>) {
+    const period = event.detail.value;
     this.selectedPeriod.set(period);
     await this.loadStatistics();
   }
@@ -118,7 +122,7 @@ export class TrendsPage implements OnInit {
       this.statistics.set(stats);
       this.updateChart(stats);
     } catch (error) {
-      console.error('Failed to load statistics:', error);
+      this.logger.error('TrendsPage', 'Failed to load statistics', error);
     } finally {
       this.loading.set(false);
     }

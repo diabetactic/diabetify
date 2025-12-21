@@ -24,6 +24,7 @@ import { GlucoseStatistics, GlucoseUnit } from '@models/glucose-reading.model';
 import { StatCardComponent } from '@shared/components/stat-card/stat-card.component';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { ROUTES } from '@core/constants';
+import { LoggerService } from '@services/logger.service';
 
 @Component({
   selector: 'app-dashboard-detail',
@@ -87,7 +88,8 @@ export class DashboardDetailPage implements OnInit, OnDestroy {
     private readingsService: ReadingsService,
     private router: Router,
     private translationService: TranslationService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private logger: LoggerService
   ) {
     this.preferredGlucoseUnit = this.translationService.getCurrentConfig().glucoseUnit;
   }
@@ -115,7 +117,7 @@ export class DashboardDetailPage implements OnInit, OnDestroy {
         this.preferredGlucoseUnit
       );
     } catch (error) {
-      console.error('Error loading statistics:', error);
+      this.logger.error('DashboardDetail', 'Error loading statistics', error);
     } finally {
       this.isLoading = false;
     }
@@ -130,7 +132,7 @@ export class DashboardDetailPage implements OnInit, OnDestroy {
       this.backendSyncResult = await this.readingsService.performFullSync();
       await this.loadStatistics();
     } catch (error) {
-      console.error('Error syncing data:', error);
+      this.logger.error('DashboardDetail', 'Error syncing data', error);
     } finally {
       this.isSyncing = false;
     }

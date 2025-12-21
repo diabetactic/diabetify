@@ -13,6 +13,7 @@ import { timeout, retry } from 'rxjs/operators';
 import { Network } from '@capacitor/network';
 
 import { environment } from '@env/environment';
+import { LoggerService } from '@services/logger.service';
 
 /**
  * External service types
@@ -109,7 +110,8 @@ export class ExternalServicesManager implements OnDestroy {
 
   constructor(
     private http: HttpClient,
-    private injector: Injector
+    private injector: Injector,
+    private logger: LoggerService
   ) {
     this.initialize();
   }
@@ -388,7 +390,7 @@ export class ExternalServicesManager implements OnDestroy {
    * Record service error for monitoring
    */
   private recordServiceError(service: ExternalService, error: string): void {
-    console.error(`[${service}] Error:`, error);
+    this.logger.error(service, error);
 
     // If the service does not expose a real health endpoint, don't track
     // health status or circuit breaker state. This avoids showing

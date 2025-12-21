@@ -105,7 +105,7 @@ describe('AppointmentService', () => {
   describe('getAppointments()', () => {
     describe('Success Cases', () => {
       it('should fetch appointments successfully', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const response: ApiResponse<Appointment[]> = {
             success: true,
             data: mockAppointments,
@@ -145,7 +145,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should return empty array when no appointments exist', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const response: ApiResponse<Appointment[]> = {
             success: true,
             data: [],
@@ -163,7 +163,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should fetch appointments with all optional fields populated', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const fullAppointment: Appointment = {
             ...mockAppointment1,
             appointment_id: 3,
@@ -188,7 +188,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should handle appointments with multiple motives', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const multiMotiveAppointment: Appointment = {
             ...mockAppointment1,
             motive: ['control_routine', 'follow_up', 'adjustment', 'emergency'],
@@ -213,7 +213,7 @@ describe('AppointmentService', () => {
 
     describe('Error Cases', () => {
       it('should handle API error response with message', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const errorResponse: ApiResponse<Appointment[]> = {
             success: false,
             error: {
@@ -235,7 +235,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should handle API error without message', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const errorResponse: ApiResponse<Appointment[]> = {
             success: false,
           };
@@ -252,7 +252,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should handle network error', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const networkError = {
             error: {
               code: 'NETWORK_ERROR',
@@ -278,7 +278,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should handle UNAUTHORIZED error', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const unauthorizedError = {
             error: {
               code: 'UNAUTHORIZED',
@@ -304,7 +304,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should handle NOT_FOUND error', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const notFoundError = {
             error: {
               code: 'NOT_FOUND',
@@ -330,7 +330,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should handle SERVICE_UNAVAILABLE error', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const serviceUnavailableError = {
             error: {
               code: 'SERVICE_UNAVAILABLE',
@@ -356,7 +356,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should handle error with only error.message', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const simpleError = {
             message: 'Simple error message',
           };
@@ -373,7 +373,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should handle string error', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           apiGateway.request.mockReturnValue(throwError(() => 'String error'));
 
           service.getAppointments().subscribe({
@@ -386,7 +386,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should handle unknown error format', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           apiGateway.request.mockReturnValue(throwError(() => ({ unknown: 'format' })));
 
           service.getAppointments().subscribe({
@@ -411,7 +411,7 @@ describe('AppointmentService', () => {
 
     describe('Success Cases', () => {
       it('should get appointment by id', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           service.getAppointment(1).subscribe({
             next: appointment => {
               expect(appointment).toEqual(mockAppointment1);
@@ -423,7 +423,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should get appointment with id 2', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           service.getAppointment(2).subscribe({
             next: appointment => {
               expect(appointment).toEqual(mockAppointment2);
@@ -434,7 +434,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should call getAppointments internally', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           vi.spyOn(service, 'getAppointments');
 
           service.getAppointment(1).subscribe({
@@ -448,7 +448,7 @@ describe('AppointmentService', () => {
 
     describe('Error Cases', () => {
       it('should throw error when appointment not found', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           service.getAppointment(999).subscribe({
             next: () => reject(new Error('should have errored')),
             error: error => {
@@ -459,7 +459,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should throw error when appointment id is 0', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           service.getAppointment(0).subscribe({
             next: () => reject(new Error('should have errored')),
             error: error => {
@@ -470,7 +470,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should throw error when appointment id is negative', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           service.getAppointment(-1).subscribe({
             next: () => reject(new Error('should have errored')),
             error: error => {
@@ -481,7 +481,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should propagate getAppointments errors', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const errorResponse: ApiResponse<Appointment[]> = {
             success: false,
             error: {
@@ -530,7 +530,7 @@ describe('AppointmentService', () => {
 
     describe('Success Cases', () => {
       it('should create appointment successfully', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const response: ApiResponse<Appointment> = {
             success: true,
             data: createdAppointment,
@@ -562,7 +562,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should create appointment with optional fields', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const fullRequest: CreateAppointmentRequest = {
             ...createRequest,
             other_motive: 'Custom reason',
@@ -594,7 +594,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should create appointment with multiple motives', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const multiMotiveRequest: CreateAppointmentRequest = {
             ...createRequest,
             motive: ['control_routine', 'follow_up', 'adjustment'],
@@ -627,7 +627,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should refresh appointments after creation', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const createResponse: ApiResponse<Appointment> = {
             success: true,
             data: createdAppointment,
@@ -655,7 +655,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should update appointments$ observable after creation', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const createResponse: ApiResponse<Appointment> = {
             success: true,
             data: createdAppointment,
@@ -686,7 +686,7 @@ describe('AppointmentService', () => {
 
     describe('Error Cases', () => {
       it('should handle creation error with message', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const errorResponse: ApiResponse<Appointment> = {
             success: false,
             error: {
@@ -708,7 +708,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should handle creation error without message', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const errorResponse: ApiResponse<Appointment> = {
             success: false,
           };
@@ -725,7 +725,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should handle network error during creation', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const networkError = {
             error: {
               code: 'NETWORK_ERROR',
@@ -748,7 +748,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should handle unauthorized error during creation', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const unauthorizedError = {
             error: {
               code: 'UNAUTHORIZED',
@@ -771,7 +771,7 @@ describe('AppointmentService', () => {
         }));
 
       it('should not fail if refresh fails after successful creation', () =>
-        new Promise<void>((resolve, reject) => {
+        new Promise<void>((resolve, _reject) => {
           const createResponse: ApiResponse<Appointment> = {
             success: true,
             data: createdAppointment,
@@ -811,7 +811,7 @@ describe('AppointmentService', () => {
 
   describe('getQueueState()', () => {
     it('should return queue state when successful', () =>
-      new Promise<void>((resolve, reject) => {
+      new Promise<void>((resolve, _reject) => {
         const response: ApiResponse<AppointmentQueueStateResponse> = {
           success: true,
           data: { state: 'PENDING' as AppointmentQueueState, position: 1 },
@@ -830,7 +830,7 @@ describe('AppointmentService', () => {
       }));
 
     it('should return NONE state on 404 error (ApiError format)', () =>
-      new Promise<void>((resolve, reject) => {
+      new Promise<void>((resolve, _reject) => {
         // Simulate ApiGatewayService error structure
         const errorResponse: ApiResponse<AppointmentQueueStateResponse> = {
           success: false,
@@ -855,7 +855,7 @@ describe('AppointmentService', () => {
       }));
 
     it('should return NONE state on 404 status code in ApiError', () =>
-      new Promise<void>((resolve, reject) => {
+      new Promise<void>((resolve, _reject) => {
         const errorResponse: ApiResponse<AppointmentQueueStateResponse> = {
           success: false,
           error: {
@@ -878,7 +878,7 @@ describe('AppointmentService', () => {
       }));
 
     it('should throw error for other errors', () =>
-      new Promise<void>((resolve, reject) => {
+      new Promise<void>((resolve, _reject) => {
         const errorResponse: ApiResponse<AppointmentQueueStateResponse> = {
           success: false,
           error: {
@@ -903,7 +903,7 @@ describe('AppointmentService', () => {
 
   describe('appointments$ Observable', () => {
     it('should emit initial empty array', () =>
-      new Promise<void>((resolve, reject) => {
+      new Promise<void>((resolve, _reject) => {
         service.appointments$.subscribe({
           next: appointments => {
             expect(appointments).toEqual([]);
@@ -913,7 +913,7 @@ describe('AppointmentService', () => {
       }));
 
     it('should emit updated appointments after getAppointments', () =>
-      new Promise<void>((resolve, reject) => {
+      new Promise<void>((resolve, _reject) => {
         const response: ApiResponse<Appointment[]> = {
           success: true,
           data: mockAppointments,
@@ -935,7 +935,7 @@ describe('AppointmentService', () => {
       }));
 
     it('should allow multiple subscribers', () =>
-      new Promise<void>((resolve, reject) => {
+      new Promise<void>((resolve, _reject) => {
         const response: ApiResponse<Appointment[]> = {
           success: true,
           data: mockAppointments,
@@ -972,7 +972,7 @@ describe('AppointmentService', () => {
 
   describe('Edge Cases', () => {
     it('should handle appointment with zero values', () =>
-      new Promise<void>((resolve, reject) => {
+      new Promise<void>((resolve, _reject) => {
         const zeroValueAppointment: Appointment = {
           ...mockAppointment1,
           glucose_objective: 0,
@@ -999,7 +999,7 @@ describe('AppointmentService', () => {
       }));
 
     it('should handle appointment with empty motive array', () =>
-      new Promise<void>((resolve, reject) => {
+      new Promise<void>((resolve, _reject) => {
         const emptyMotiveAppointment: Appointment = {
           ...mockAppointment1,
           motive: [],
@@ -1022,7 +1022,7 @@ describe('AppointmentService', () => {
       }));
 
     it('should handle very large appointment list', () =>
-      new Promise<void>((resolve, reject) => {
+      new Promise<void>((resolve, _reject) => {
         const largeList: Appointment[] = Array.from({ length: 1000 }, (_, i) => ({
           ...mockAppointment1,
           appointment_id: i + 1,
@@ -1045,7 +1045,7 @@ describe('AppointmentService', () => {
       }));
 
     it('should handle appointment with very long string fields', () =>
-      new Promise<void>((resolve, reject) => {
+      new Promise<void>((resolve, _reject) => {
         const longStringAppointment: Appointment = {
           ...mockAppointment1,
           control_data: 'A'.repeat(10000),
@@ -1072,7 +1072,7 @@ describe('AppointmentService', () => {
 
   describe('Concurrent Operations', () => {
     it('should handle multiple simultaneous getAppointments calls', () =>
-      new Promise<void>((resolve, reject) => {
+      new Promise<void>((resolve, _reject) => {
         const response: ApiResponse<Appointment[]> = {
           success: true,
           data: mockAppointments,
@@ -1099,7 +1099,7 @@ describe('AppointmentService', () => {
       }));
 
     it('should handle getAppointment and createAppointment concurrently', () =>
-      new Promise<void>((resolve, reject) => {
+      new Promise<void>((resolve, _reject) => {
         const getResponse: ApiResponse<Appointment[]> = {
           success: true,
           data: mockAppointments,

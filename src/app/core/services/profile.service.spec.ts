@@ -10,7 +10,6 @@ import { of, throwError } from 'rxjs';
 import {
   UserProfile,
   CreateUserProfileInput,
-  UpdateUserProfileInput,
   DEFAULT_USER_PREFERENCES,
   TidepoolAuth,
   AccountState,

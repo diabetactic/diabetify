@@ -18,6 +18,7 @@
 
 import { Injectable } from '@angular/core';
 import { SecureStorage } from '@aparajita/capacitor-secure-storage';
+import { LoggerService } from '@services/logger.service';
 import { TidepoolAuth, TokenValidation } from '@models/tidepool-auth.model';
 import { OAUTH_CONSTANTS } from '@core/config/oauth.config';
 
@@ -47,6 +48,8 @@ export class TokenStorageService {
   private accessToken: string | null = null;
   private accessTokenExpiry: number | null = null;
 
+  constructor(private logger: LoggerService) {}
+
   /**
    * Store complete authentication data securely
    *
@@ -74,8 +77,8 @@ export class TokenStorageService {
       };
 
       await SecureStorage.set(STORAGE_KEYS.TOKEN_METADATA, JSON.stringify(metadata));
-    } catch {
-      console.error('Failed to store authentication data');
+    } catch (error) {
+      this.logger.error('TokenStorage', 'Failed to store authentication data', error);
       throw new Error('Token storage failed');
     }
   }
@@ -108,8 +111,8 @@ export class TokenStorageService {
     try {
       const token = await SecureStorage.get(STORAGE_KEYS.REFRESH_TOKEN);
       return (token as string) || null;
-    } catch {
-      console.error('Failed to retrieve refresh token');
+    } catch (error) {
+      this.logger.error('TokenStorage', 'Failed to retrieve refresh token', error);
       return null;
     }
   }
@@ -126,8 +129,8 @@ export class TokenStorageService {
         return null;
       }
       return JSON.parse(data as string);
-    } catch {
-      console.error('Failed to retrieve auth data');
+    } catch (error) {
+      this.logger.error('TokenStorage', 'Failed to retrieve auth data', error);
       return null;
     }
   }
@@ -164,7 +167,7 @@ export class TokenStorageService {
       await SecureStorage.remove(STORAGE_KEYS.AUTH_DATA);
       await SecureStorage.remove(STORAGE_KEYS.TOKEN_METADATA);
     } catch (error) {
-      console.error('Failed to clear tokens');
+      this.logger.error('TokenStorage', 'Failed to clear tokens', error);
       throw error;
     }
   }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { PipeTransform } from '@angular/core';
 /**
  * Setup principal de tests para Vitest
