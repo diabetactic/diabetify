@@ -5,6 +5,7 @@ on:
     branches: [master, main, develop]
     paths:
       - 'src/**'
+      - '!src/**/*.md'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'angular.json'
@@ -12,10 +13,6 @@ on:
       - 'vite*.ts'
       - 'capacitor.config.ts'
       - '.github/workflows/ci.yml'
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - 'maestro/**'
   pull_request:
     branches: [master, main]
 
