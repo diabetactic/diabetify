@@ -6,6 +6,7 @@
 import { ComponentFixture, tick } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
+import { vi } from 'vitest';
 
 /**
  * Wait for async operations and Angular change detection
@@ -328,14 +329,14 @@ export function getFieldErrors(fixture: ComponentFixture<any>, fieldName: string
  */
 export function createMockLoadingController() {
   const loadingElement = {
-    present: jest.fn().mockResolvedValue(undefined),
-    dismiss: jest.fn().mockResolvedValue(undefined),
+    present: vi.fn().mockResolvedValue(undefined),
+    dismiss: vi.fn().mockResolvedValue(undefined),
   };
 
   return {
-    create: jest.fn().mockResolvedValue(loadingElement),
-    dismiss: jest.fn().mockResolvedValue(undefined),
-    getTop: jest.fn().mockResolvedValue(loadingElement),
+    create: vi.fn().mockResolvedValue(loadingElement),
+    dismiss: vi.fn().mockResolvedValue(undefined),
+    getTop: vi.fn().mockResolvedValue(loadingElement),
   };
 }
 
@@ -344,13 +345,13 @@ export function createMockLoadingController() {
  */
 export function createMockToastController() {
   const toastElement = {
-    present: jest.fn().mockResolvedValue(undefined),
-    dismiss: jest.fn().mockResolvedValue(undefined),
+    present: vi.fn().mockResolvedValue(undefined),
+    dismiss: vi.fn().mockResolvedValue(undefined),
   };
 
   return {
-    create: jest.fn().mockResolvedValue(toastElement),
-    dismiss: jest.fn().mockResolvedValue(undefined),
-    getTop: jest.fn().mockResolvedValue(toastElement),
+    create: vi.fn().mockResolvedValue(toastElement),
+    dismiss: vi.fn().mockResolvedValue(undefined),
+    getTop: vi.fn().mockResolvedValue(toastElement),
   };
 }

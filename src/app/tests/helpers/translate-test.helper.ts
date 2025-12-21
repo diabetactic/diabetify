@@ -6,6 +6,7 @@
 
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { Observable, of } from 'rxjs';
+import { vi } from 'vitest';
 
 /**
  * Mock Translate Loader for tests
@@ -33,7 +34,7 @@ export function getTranslateModuleForTesting() {
  */
 export function createTranslateServiceMock(): any {
   const mock = {
-    instant: jest.fn().mockImplementation((key: string | string[], _interpolateParams?: object) => {
+    instant: vi.fn().mockImplementation((key: string | string[], _interpolateParams?: object) => {
       if (Array.isArray(key)) {
         const result: any = {};
         key.forEach(k => {
@@ -43,7 +44,7 @@ export function createTranslateServiceMock(): any {
       }
       return key;
     }),
-    get: jest.fn().mockImplementation((key: string | string[], _interpolateParams?: object) => {
+    get: vi.fn().mockImplementation((key: string | string[], _interpolateParams?: object) => {
       if (Array.isArray(key)) {
         const result: any = {};
         key.forEach(k => {
@@ -53,16 +54,16 @@ export function createTranslateServiceMock(): any {
       }
       return of(key);
     }),
-    use: jest.fn().mockReturnValue(of({})),
-    addLangs: jest.fn(),
-    getLangs: jest.fn().mockReturnValue(['en', 'es']),
-    getBrowserLang: jest.fn().mockReturnValue('en'),
-    getBrowserCultureLang: jest.fn().mockReturnValue('en-US'),
-    setDefaultLang: jest.fn(),
-    getDefaultLang: jest.fn().mockReturnValue('en'),
-    resetLang: jest.fn(),
-    reloadLang: jest.fn().mockReturnValue(of({})),
-    stream: jest.fn().mockImplementation((key: string | string[]) => {
+    use: vi.fn().mockReturnValue(of({})),
+    addLangs: vi.fn(),
+    getLangs: vi.fn().mockReturnValue(['en', 'es']),
+    getBrowserLang: vi.fn().mockReturnValue('en'),
+    getBrowserCultureLang: vi.fn().mockReturnValue('en-US'),
+    setDefaultLang: vi.fn(),
+    getDefaultLang: vi.fn().mockReturnValue('en'),
+    resetLang: vi.fn(),
+    reloadLang: vi.fn().mockReturnValue(of({})),
+    stream: vi.fn().mockImplementation((key: string | string[]) => {
       if (Array.isArray(key)) {
         const result: any = {};
         key.forEach(k => {

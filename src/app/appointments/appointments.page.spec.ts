@@ -12,7 +12,7 @@ import { AppointmentService } from '@core/services/appointment.service';
 import { of } from 'rxjs';
 import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helper';
 
-// Mock AppointmentService with Jest
+// Mock AppointmentService with Vitest
 const mockAppointmentService = {
   appointments$: of([]),
   upcomingAppointment$: of(null),

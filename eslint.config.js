@@ -135,7 +135,7 @@ module.exports = tseslint.config(
     files: [
       '**/*.spec.ts',
       '**/*.test.ts',
-      '**/setup-jest.ts',
+      '**/setup-vitest.ts',
       '**/test-setup.ts',
       'e2e/**/*.ts',
       'playwright/**/*.ts',

@@ -1,8 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
-  "entry": ["src/main.ts", "src/test-setup.ts", "vitest.config.ts"],
+  "entry": ["src/main.ts", "src/test-setup/index.ts", "vitest.config.ts"],
   "project": ["src/**/*.ts"],
   "ignore": ["**/*.spec.ts", "**/test-*.ts", "**/__mocks__/**", "**/mocks/**"],
-  "ignoreDependencies": ["@ionic/angular", "@capacitor/core"],
   "ignoreExportsUsedInFile": true
 }
