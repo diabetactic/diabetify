@@ -23,10 +23,10 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginUser, waitForIonicHydration, navigateToTab } from '../helpers/test-helpers';
 
-// Configuracion comun para screenshots
+// Configuracion comun para screenshots - tolerancia alta para diferencias de renderizado entre ambientes
 const screenshotOptions = {
-  maxDiffPixelRatio: 0.05, // Tolerar 5% de diferencia
-  threshold: 0.2,
+  maxDiffPixelRatio: 0.05, // Tolerar 5% de diferencia (CI vs local tienen fonts diferentes)
+  threshold: 0.3, // Umbral de color por pixel
   animations: 'disabled' as const,
 };
 
