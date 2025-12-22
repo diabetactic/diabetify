@@ -151,7 +151,7 @@
     "zone.js": "~0.16.0"
   },
   "devDependencies": {
-    "@analogjs/vitest-angular": "^2.1.3",
+    "@analogjs/vitest-angular": "^2.2.0",
     "@angular-devkit/build-angular": "^21.0.3",
     "@angular-experts/hawkeye": "^1.7.2",
     "@angular/cli": "^21.0.3",
