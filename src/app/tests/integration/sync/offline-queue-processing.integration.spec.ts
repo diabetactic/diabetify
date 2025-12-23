@@ -212,11 +212,11 @@ describe('Integration - Offline Queue Processing', () => {
 
       await db.syncQueue.bulkAdd(items);
 
-      // Verify that se guardaron
+      // Verify data was saved
       let count = await db.syncQueue.count();
       expect(count).toBe(5);
 
-      // Cerrar base de datos
+      // Close database
       await db.close();
 
       // Reopen database (simulates app restart)
@@ -230,7 +230,7 @@ describe('Integration - Offline Queue Processing', () => {
       const persistedItems = await newDb.syncQueue.orderBy('timestamp').toArray();
       expect(persistedItems).toHaveLength(5);
 
-      // Verify integrity de datos
+      // Verify data integrity
       persistedItems.forEach((item, index) => {
         expect(item.reading?.id).toBe(`persist-${index}`);
         expect(item.reading?.value).toBe(100 + index * 10);

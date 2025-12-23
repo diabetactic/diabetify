@@ -150,12 +150,12 @@ describe('Concurrent Sync Conflicts Integration', () => {
         backendId: 456,
       });
 
-      // Local edit: solo cambiar notes
+      // Local edit: only change notes
       await readingsService.updateReading(baseReading.id, {
         notes: 'After lunch - local edit',
       });
 
-      // Servidor tiene cambios en value Y mealContext
+      // Server has changes in value AND mealContext
       server.use(
         http.get(`${API_BASE}/glucose/mine`, async () => {
           return HttpResponse.json({
@@ -163,8 +163,8 @@ describe('Concurrent Sync Conflicts Integration', () => {
               {
                 id: 456,
                 user_id: 1000,
-                glucose_level: 150, // Cambio en value
-                reading_type: 'POSTPRANDIAL', // Cambio en mealContext
+                glucose_level: 150, // Changed value
+                reading_type: 'POSTPRANDIAL', // Changed mealContext
                 created_at: '01/01/2025 12:00:00',
                 notes: 'Server version notes', // Change in notes too
               },
@@ -199,7 +199,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
         backendId: 999,
       });
 
-      // Modificar localmente (marca como unsynced)
+      // Modify locally (marks as unsynced)
       await readingsService.updateReading(reading.id, {
         value: 110,
         notes: 'Modified locally',
@@ -339,7 +339,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
 
       let attemptCount = 0;
 
-      // Mock: siempre falla
+      // Mock: always fails
       server.use(
         http.post(`${API_BASE}/glucose/create`, async () => {
           attemptCount++;
@@ -347,21 +347,21 @@ describe('Concurrent Sync Conflicts Integration', () => {
         })
       );
 
-      // Intento 1
+      // Attempt 1
       await readingsService.syncPendingReadings();
       expect(attemptCount).toBe(1);
 
-      // Intento 2
+      // Attempt 2
       await readingsService.syncPendingReadings();
       expect(attemptCount).toBe(2);
 
-      // Intento 3
+      // Attempt 3
       await readingsService.syncPendingReadings();
       expect(attemptCount).toBe(3);
 
       // Attempt 4 - should not retry (limit reached)
       await readingsService.syncPendingReadings();
-      // attemptCount sigue en 3 porque la cola ya no tiene el item
+      // attemptCount stays at 3 because the queue no longer has the item
       expect(attemptCount).toBe(3);
 
       // Sync queue should be empty (max retries reached)
@@ -457,12 +457,12 @@ describe('Concurrent Sync Conflicts Integration', () => {
         backendId: 777,
       });
 
-      // Local: cambiar solo notas
+      // Local: only change notes
       await readingsService.updateReading(reading.id, {
         notes: 'Local notes edit',
       });
 
-      // Servidor: cambiar value
+      // Server: change value
       server.use(
         http.get(`${API_BASE}/glucose/mine`, async () => {
           return HttpResponse.json({
@@ -502,12 +502,12 @@ describe('Concurrent Sync Conflicts Integration', () => {
         backendId: 888,
       });
 
-      // Local: cambiar notas
+      // Local: change notes
       await readingsService.updateReading(reading.id, {
         notes: 'Local edit: feeling good',
       });
 
-      // Servidor: notas diferentes
+      // Server: different notes
       server.use(
         http.get(`${API_BASE}/glucose/mine`, async () => {
           return HttpResponse.json({
@@ -528,7 +528,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
       await readingsService.fetchFromBackend();
 
       const merged = await readingsService.getReadingById(reading.id);
-      expect(merged!.notes).toBe('Server edit: reviewed by doctor'); // Servidor gana
+      expect(merged!.notes).toBe('Server edit: reviewed by doctor'); // Server wins
     });
 
     it('should handle mealContext conflict (server wins)', async () => {
@@ -545,12 +545,12 @@ describe('Concurrent Sync Conflicts Integration', () => {
         backendId: 555,
       });
 
-      // Local: cambiar mealContext
+      // Local: change mealContext
       await readingsService.updateReading(reading.id, {
         mealContext: 'POSTPRANDIAL',
       });
 
-      // Servidor: mantiene PREPRANDIAL
+      // Server: maintains PREPRANDIAL
       server.use(
         http.get(`${API_BASE}/glucose/mine`, async () => {
           return HttpResponse.json({
@@ -571,7 +571,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
       await readingsService.fetchFromBackend();
 
       const merged = await readingsService.getReadingById(reading.id);
-      expect(merged!.mealContext).toBe('PREPRANDIAL'); // Servidor gana
+      expect(merged!.mealContext).toBe('PREPRANDIAL'); // Server wins
     });
   });
 

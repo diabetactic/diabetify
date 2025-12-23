@@ -150,7 +150,7 @@ describe('Backend Integration - Bolus Calculator', () => {
 
       // 50g carbs / 10 = 5U
       expect(result.mealDose).toBe(5);
-      expect(result.correctionDose).toBe(0); // En objetivo
+      expect(result.correctionDose).toBe(0); // At target
       expect(result.totalDose).toBe(5);
     });
 

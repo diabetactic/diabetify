@@ -349,7 +349,7 @@ describe('Backend Integration - Trends & Statistics', () => {
       const eA1C = (average + 46.7) / 28.7;
 
       expect(eA1C).toBeGreaterThan(0);
-      expect(eA1C).toBeLessThan(20); // Rango razonable
+      expect(eA1C).toBeLessThan(20); // Reasonable range
     });
   });
 
