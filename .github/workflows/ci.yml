@@ -53,7 +53,7 @@ jobs:
         uses: ./.github/actions/setup-pnpm
 
       - name: Unit Tests
-        run: pnpm test -- --ci --coverage
+        run: pnpm exec vitest run --ci --coverage
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
