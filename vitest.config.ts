@@ -59,7 +59,14 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
       include: ['src/app/**/*.ts'],
-      exclude: ['src/app/**/*.spec.ts', 'src/app/**/*.mock.ts'],
+      exclude: [
+        'src/app/**/*.spec.ts',
+        'src/app/**/*.mock.ts',
+        'src/app/**/*.module.ts', // Angular modules - no testable logic
+        'src/app/**/index.ts', // Barrel exports
+        'src/app/**/*.model.ts', // TypeScript interfaces
+        'src/app/**/constants/**', // Constants files
+      ],
     },
     // Dependency handling for Vitest
     deps: {
