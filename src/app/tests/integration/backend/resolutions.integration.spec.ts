@@ -31,7 +31,6 @@ let shouldRun = false;
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping resolutions integration tests');
     shouldRun = false;
     return;
   }
@@ -49,7 +48,6 @@ const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) 
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -108,7 +106,6 @@ describe('Backend Integration - Appointment Resolutions', () => {
         const created = await tryCreateAppointment(appointmentData, token);
 
         if (!created) {
-          console.log('  ℹ️  Skipping: appointment creation not allowed in current state');
           return;
         }
 
@@ -118,7 +115,6 @@ describe('Backend Integration - Appointment Resolutions', () => {
         try {
           await authenticatedGet(`/appointments/${created.appointment_id}/resolution`, token);
           // If we get here, resolution exists (doctor may have resolved)
-          console.log('  ℹ️  Resolution exists (doctor may have resolved)');
         } catch (error) {
           // Expected: 404 for unresolved appointment
           expect(String(error)).toMatch(/404|not found|no resolution/i);
@@ -154,7 +150,6 @@ describe('Backend Integration - Appointment Resolutions', () => {
         const created = await tryCreateAppointment(appointmentData, token);
 
         if (!created) {
-          console.log('  ℹ️  Skipping: appointment creation not allowed in current state');
           return;
         }
 
@@ -172,7 +167,6 @@ describe('Backend Integration - Appointment Resolutions', () => {
         } catch (error) {
           // If no resolution exists yet, that's OK
           if (String(error).includes('404')) {
-            console.log('  ℹ️  No resolution available yet (pending doctor review)');
             return;
           }
           throw error;

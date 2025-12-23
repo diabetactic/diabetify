@@ -16,26 +16,24 @@ import {
   authenticatedGet,
 } from '../../helpers/backend-services.helper';
 
-// Estado de ejecución de tests
+// Test execution state
 let shouldRun = false;
 
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping auth integration tests');
     shouldRun = false;
     return;
   }
   shouldRun = true;
 }, 10000);
 
-// Helper para tests condicionales
+// Helper for conditional tests
 const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) => {
   it(
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -152,7 +150,7 @@ describe('Backend Integration - Auth', () => {
     });
 
     conditionalIt('should reject expired/invalid JWT', async () => {
-      // JWT con firma inválida
+      // JWT with invalid signature
       const fakeJwt =
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
         'eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.' +
@@ -217,7 +215,7 @@ describe('Backend Integration - Auth', () => {
       // Clear simula logout
       clearCachedAuthToken();
 
-      // Un nuevo login debería generar un token fresco
+      // A new login should generate a fresh token
       const freshToken = await loginTestUser(TEST_USER);
       expect(freshToken).toBeTruthy();
     });
@@ -235,7 +233,7 @@ describe('Backend Integration - Auth', () => {
           },
         });
 
-        // Si el endpoint existe, debería retornar 200 o 204
+        // If endpoint exists, should return 200 or 204
         if (response.ok) {
           expect([200, 204]).toContain(response.status);
         }

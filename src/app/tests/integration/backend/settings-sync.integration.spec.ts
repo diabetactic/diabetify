@@ -15,27 +15,25 @@ import {
   authenticatedPatch,
 } from '../../helpers/backend-services.helper';
 
-// Estado de ejecucion de tests
+// Test execution state
 let shouldRun = false;
 let authToken: string;
 
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping settings sync tests');
     shouldRun = false;
     return;
   }
   shouldRun = true;
 }, 10000);
 
-// Helper para tests condicionales
+// Helper for conditional tests
 const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) => {
   it(
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -60,7 +58,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
 
     beforeAll(async () => {
       if (!shouldRun) return;
-      // Guardar perfil original para restaurar
+      // Save original profile for restoration
       originalProfile = await authenticatedGet('/users/me', authToken);
     });
 
@@ -70,7 +68,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
       expect(profile).toBeDefined();
       expect(profile.dni).toBe(TEST_USER.dni);
 
-      // Campos esperados
+      // Expected fields
       expect(profile).toHaveProperty('name');
       expect(profile).toHaveProperty('surname');
     });
@@ -81,12 +79,11 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
       try {
         await authenticatedPatch('/users/me', { name: testName }, authToken);
 
-        // Verificar respuesta o leer de nuevo
+        // Verify response or read again
         const profile = await authenticatedGet('/users/me', authToken);
         expect(profile.name).toBe(testName);
       } catch {
-        // Si PATCH no esta soportado, verificar GET
-        console.log('  ⚠️ PATCH may not be supported - checking current profile');
+        // If PATCH not supported, verify GET works
         const profile = await authenticatedGet('/users/me', authToken);
         expect(profile).toBeDefined();
       }
@@ -99,14 +96,14 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
         await authenticatedPatch('/users/me', { email: testEmail }, authToken);
 
         const profile = await authenticatedGet('/users/me', authToken);
-        // Email puede o no cambiar dependiendo de validaciones del backend
+        // Email may or may not change depending on backend validations
         expect(profile.email).toBeDefined();
       } catch {
-        console.log('  ⚠️ Email update may require verification');
+        // Email update may require verification - expected behavior
       }
     });
 
-    // Restaurar perfil original
+    // Restore original profile
     afterAll(async () => {
       if (!shouldRun || !originalProfile) return;
 
@@ -121,7 +118,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
           authToken
         );
       } catch {
-        // Ignorar errores de restauracion
+        // Ignore restoration errors
       }
     });
   });
@@ -132,7 +129,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
 
   describe('GLUCOSE RANGE Preferences', () => {
     conditionalIt('should use default glucose ranges', async () => {
-      // Rangos estandar de glucosa
+      // Standard glucose ranges
       const defaultRanges = {
         veryLow: 54,
         low: 70,
@@ -140,7 +137,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
         veryHigh: 250,
       };
 
-      // Verificar que podemos categorizar lecturas
+      // Verify that we can categorize readings
       const testValues = [50, 65, 100, 200, 280];
       const categories = testValues.map(value => {
         if (value < defaultRanges.veryLow) return 'veryLow';
@@ -154,14 +151,14 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
     });
 
     conditionalIt('should allow custom target range definition', async () => {
-      // Rangos personalizados (ej: para embarazo)
+      // Custom ranges (e.g., for pregnancy)
       const customRanges = {
         low: 65,
         high: 140,
         target: 100,
       };
 
-      // Calcular si un valor esta en rango
+      // Calculate if a value is in range
       const isInRange = (value: number) => value >= customRanges.low && value <= customRanges.high;
 
       expect(isInRange(100)).toBe(true);
@@ -183,7 +180,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
         targetGlucose: 100,
       };
 
-      // Calcular dosis de correccion
+      // Calculate correction dose
       const currentGlucose = 200;
       const carbs = 45;
 
@@ -285,7 +282,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
         exponentialBackoff: true,
       };
 
-      // Calcular delay con backoff exponencial
+      // Calculate delay with exponential backoff
       const getRetryDelay = (attempt: number) => {
         if (offlineSettings.exponentialBackoff) {
           return offlineSettings.retryDelayMs * Math.pow(2, attempt);
@@ -312,11 +309,11 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
       const convertToMmolL = (mgDl: number): number => mgDl / 18.0182;
       const convertToMgDl = (mmolL: number): number => mmolL * 18.0182;
 
-      // Verificar que las unidades estan definidas
+      // Verify that units are defined
       const defaultUnit: GlucoseUnit = 'mg/dL';
       expect(glucoseUnits).toContain(defaultUnit);
 
-      // Verificar conversiones
+      // Verify conversions
       expect(convertToMmolL(180)).toBeCloseTo(9.99, 1);
       expect(convertToMgDl(10)).toBeCloseTo(180.18, 1);
     });

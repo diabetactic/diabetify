@@ -25,7 +25,6 @@ let shouldRun = false;
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping concurrent integration tests');
     shouldRun = false;
     return;
   }
@@ -37,7 +36,6 @@ const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) 
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -58,7 +56,7 @@ describe('Backend Integration - Concurrent Operations', () => {
     if (!shouldRun) return;
 
     // Limpiar lecturas creadas durante las pruebas
-    // Nota: El backend puede no soportar DELETE, así que ignoramos errores
+    // Note: Backend may not support DELETE, so we ignore errors
     createdReadingIds.length = 0;
     clearCachedAuthToken();
   });
@@ -73,7 +71,7 @@ describe('Backend Integration - Concurrent Operations', () => {
       async () => {
         const token = await loginTestUser(TEST_USERS.user1);
 
-        // Preparar 5 lecturas con valores únicos
+        // Prepare 5 readings with unique values
         const readingsData = Array.from({ length: 5 }, (_, index) => ({
           glucose_level: 100 + index * 10,
           reading_type: 'OTRO' as GlucoseReadingType,
@@ -85,13 +83,13 @@ describe('Backend Integration - Concurrent Operations', () => {
 
         const responses = await Promise.all(createPromises);
 
-        // Verificar que todas las respuestas tienen IDs únicos
+        // Verify that all responses have unique IDs
         const ids = responses.map(r => r.id);
         ids.forEach(id => createdReadingIds.push(String(id)));
 
         expect(ids.length).toBe(5);
 
-        // Verificar que NO hay IDs duplicados (sin race conditions)
+        // Verify that NO hay IDs duplicados (sin race conditions)
         const uniqueIds = new Set(ids);
         expect(uniqueIds.size).toBe(5);
 
@@ -101,7 +99,7 @@ describe('Backend Integration - Concurrent Operations', () => {
           expect(response.notes).toBe(readingsData[index].notes);
         });
 
-        // Verificar que todas las lecturas se guardaron en BD
+        // Verify that todas las lecturas se guardaron en BD
         const allReadings = await getGlucoseReadings(token);
         const createdValues = readingsData.map(r => r.glucose_level);
 
@@ -148,7 +146,7 @@ describe('Backend Integration - Concurrent Operations', () => {
 
         expect(successCount).toBe(2);
 
-        // Guardar IDs para limpieza
+        // Save IDs para limpieza
         if (result1.status === 'fulfilled') {
           createdReadingIds.push(String(result1.value.id));
         }
@@ -156,7 +154,7 @@ describe('Backend Integration - Concurrent Operations', () => {
           createdReadingIds.push(String(result2.value.id));
         }
 
-        // Verificar que ambas lecturas existen en la lista
+        // Verify that ambas lecturas existen en la lista
         const allReadings = await getGlucoseReadings(token1);
         const found1 = allReadings.find((r: any) => r.notes === 'Concurrent reading 1');
         const found2 = allReadings.find((r: any) => r.notes === 'Concurrent reading 2');
@@ -200,7 +198,7 @@ describe('Backend Integration - Concurrent Operations', () => {
         // Contar respuestas exitosas
         const successResponses = responses.filter(r => r.success);
 
-        // Guardar IDs de lecturas exitosas para limpieza
+        // Save IDs de lecturas exitosas para limpieza
         successResponses.forEach(response => {
           if (response.success && response.data?.id) {
             createdReadingIds.push(String(response.data.id));
@@ -210,13 +208,7 @@ describe('Backend Integration - Concurrent Operations', () => {
         // Al menos algunas requests deben ser exitosas
         expect(successResponses.length).toBeGreaterThan(0);
 
-        // Log de resultados
-        console.log(
-          `  ✅ Exitosas: ${successResponses.length}, ` +
-            `❌ Fallidas: ${10 - successResponses.length}`
-        );
-
-        // Verificar integridad de datos en requests exitosas
+        // Verify integrity de datos en requests exitosas
         for (const response of successResponses) {
           if (response.success) {
             expect(response.data).toHaveProperty('id');
@@ -225,7 +217,7 @@ describe('Backend Integration - Concurrent Operations', () => {
           }
         }
 
-        // Verificar que NO hay duplicados
+        // Verify that NO hay duplicados
         const uniqueIds = new Set(createdReadingIds);
         expect(uniqueIds.size).toBe(createdReadingIds.length);
       },

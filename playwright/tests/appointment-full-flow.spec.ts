@@ -6,9 +6,19 @@
  * 2. User submits appointment request → PENDING
  * 3. Admin accepts request (via backoffice API) → ACCEPTED
  * 4. User creates clinical appointment form → CREATED
+ *
+ * NOTE: This test requires the real Heroku backend and backoffice API.
+ * It is skipped in mock mode.
  */
 
 import { test, expect, request } from '@playwright/test';
+
+// Skip in mock mode - these tests require real Heroku backend
+const isMockMode = process.env.E2E_MOCK_MODE === 'true';
+test.skip(
+  () => isMockMode,
+  'Skipping in mock mode - requires real Heroku backend and backoffice API'
+);
 
 // Backoffice API for admin operations
 const BACKOFFICE_URL = 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com';

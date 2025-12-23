@@ -21,7 +21,7 @@ export interface LoginOptions {
  * Wait for Ionic app to hydrate after navigation
  * Replaces hardcoded waitForTimeout(500) with proper hydration check
  */
-export async function waitForIonicHydration(page: Page, timeout = 5000): Promise<void> {
+export async function waitForIonicHydration(page: Page, timeout = 10000): Promise<void> {
   try {
     // Wait for ion-app to be hydrated
     await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout });

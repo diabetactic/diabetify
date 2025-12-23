@@ -17,27 +17,25 @@ import {
   getGlucoseReadings,
 } from '../../helpers/backend-services.helper';
 
-// Estado de ejecucion de tests
+// Test execution state
 let shouldRun = false;
 let authToken: string;
 
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping bolus calculator tests');
     shouldRun = false;
     return;
   }
   shouldRun = true;
 }, 10000);
 
-// Helper para tests condicionales
+// Helper for conditional tests
 const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) => {
   it(
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -111,7 +109,7 @@ function calculateBolus(
   };
 }
 
-// Calcular insulina activa (IOB)
+// Calculate insulin activa (IOB)
 function calculateIOB(doses: { units: number; timestamp: Date }[], durationHours: number): number {
   const now = new Date();
   let iob = 0;
@@ -460,10 +458,8 @@ describe('Backend Integration - Bolus Calculator', () => {
           });
         }
       }
-
-      console.log(`  🧹 Cleaned up ${testReadings.length} test readings`);
-    } catch (error) {
-      console.log('  ⚠️ Cleanup failed:', error);
+    } catch {
+      // Cleanup failed silently
     }
   });
 });

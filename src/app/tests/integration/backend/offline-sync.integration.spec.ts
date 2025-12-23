@@ -29,13 +29,12 @@ let db: DiabetacticDatabase;
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping offline-sync integration tests');
     shouldRun = false;
     return;
   }
   shouldRun = true;
 
-  // Inicializar base de datos IndexedDB
+  // Initialize IndexedDB database
   db = new DiabetacticDatabase();
   await db.open();
 }, 10000);
@@ -51,7 +50,6 @@ const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) 
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -68,7 +66,7 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
 
   beforeEach(async () => {
     if (!shouldRun) return;
-    // Limpiar syncQueue antes de cada test
+    // Clear syncQueue before each test
     await db.syncQueue.clear();
   });
 
@@ -85,7 +83,7 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
     conditionalIt(
       'should store reading in syncQueue when created offline',
       async () => {
-        // Crear item en syncQueue simulando lectura offline
+        // Create item in syncQueue simulating offline reading
         const offlineReading: SyncQueueItem = {
           operation: 'create',
           reading: {
@@ -106,7 +104,7 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
 
         await db.syncQueue.add(offlineReading);
 
-        // Verificar que está en syncQueue
+        // Verify that it is in syncQueue
         const syncItems = await db.syncQueue.toArray();
         expect(syncItems).toHaveLength(1);
         expect(syncItems[0].operation).toBe('create');
@@ -117,7 +115,7 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
     );
 
     conditionalIt('should accumulate multiple offline readings', async () => {
-      // Crear múltiples lecturas offline
+      // Create multiple offline readings
       const readings: SyncQueueItem[] = Array.from({ length: 5 }, (_, i) => ({
         operation: 'create' as const,
         reading: {
@@ -141,12 +139,12 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
       const syncItems = await db.syncQueue.toArray();
       expect(syncItems).toHaveLength(5);
 
-      // Verificar que todos los timestamps están presentes (orden depende de IndexedDB)
+      // Verify that all timestamps are present (order depends on IndexedDB)
       const timestamps = syncItems.map(s => s.timestamp);
       const uniqueTimestamps = new Set(timestamps);
       expect(uniqueTimestamps.size).toBe(5);
 
-      // Para obtener ordenamiento, usar orderBy explícitamente
+      // To get ordering, use orderBy explicitly
       const orderedItems = await db.syncQueue.orderBy('timestamp').toArray();
       const orderedTimestamps = orderedItems.map(s => s.timestamp);
       const expectedOrder = [...orderedTimestamps].sort((a, b) => a - b);
@@ -164,7 +162,7 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
       async () => {
         const token = await loginTestUser(TEST_USERS.user1);
 
-        // Crear item pendiente en syncQueue
+        // Create pending item in syncQueue
         const pendingItem: SyncQueueItem = {
           operation: 'create',
           reading: {
@@ -185,7 +183,7 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
 
         await db.syncQueue.add(pendingItem);
 
-        // Simular sincronización manual al backend usando el helper
+        // Simulate manual sync to backend using helper
         const synced = await createGlucoseReading(
           {
             glucose_level: pendingItem.reading!.value,
@@ -197,10 +195,10 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
 
         expect(synced.id).toBeDefined();
 
-        // Marcar como sincronizado en syncQueue
+        // Mark as synced in syncQueue
         await db.syncQueue.clear();
 
-        // Verificar que llegó al backend
+        // Verify that it reached backend
         const readings = await getGlucoseReadings(token);
         const found = readings.find((r: any) => r.glucose_level === 135);
         expect(found).toBeDefined();
@@ -219,7 +217,7 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
       async () => {
         const token = await loginTestUser(TEST_USERS.user1);
 
-        // Crear items válidos usando el helper
+        // Create valid items using helper
         const validReading1 = {
           glucose_level: 110,
           reading_type: 'OTRO' as GlucoseReadingType,
@@ -232,7 +230,7 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
           notes: 'Valid 2',
         };
 
-        // Sincronizar items válidos usando el helper
+        // Sync valid items using helper
         const promises = [validReading1, validReading2].map(reading =>
           createGlucoseReading(reading, token)
             .then(data => ({ success: true, data }))
@@ -241,11 +239,11 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
 
         const results = await Promise.all(promises);
 
-        // Ambos válidos deberían sincronizarse
+        // Both valid should sync
         const successCount = results.filter(r => r.success).length;
         expect(successCount).toBe(2);
 
-        // Verificar en backend
+        // Verify in backend
         const readings = await getGlucoseReadings(token);
         expect(readings.find((r: any) => r.notes === 'Valid 1')).toBeDefined();
         expect(readings.find((r: any) => r.notes === 'Valid 2')).toBeDefined();
@@ -260,7 +258,7 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
 
   describe('SyncQueue Retry Logic', () => {
     conditionalIt('should increment retryCount on failed sync attempts', async () => {
-      // Crear item en syncQueue
+      // Create item in syncQueue
       const failingItem: SyncQueueItem = {
         operation: 'create',
         reading: {
@@ -271,7 +269,7 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
           type: 'smbg',
           time: new Date().toISOString(),
           synced: false,
-          userId: 'invalid-user', // Usuario inválido para forzar fallo
+          userId: 'invalid-user', // Invalid user to force failure
           status: 'normal',
           localStoredAt: new Date().toISOString(),
         },
@@ -281,18 +279,18 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
 
       const itemId = await db.syncQueue.add(failingItem);
 
-      // Simular intento de sync fallido
+      // Simulate failed sync attempt
       await db.syncQueue.update(itemId, {
         retryCount: 1,
         lastError: 'Authentication failed',
       });
 
-      // Verificar incremento
+      // Verify increment
       const updatedItem = await db.syncQueue.get(itemId);
       expect(updatedItem?.retryCount).toBe(1);
       expect(updatedItem?.lastError).toBe('Authentication failed');
 
-      // Simular segundo intento fallido
+      // Simulate second failed attempt
       await db.syncQueue.update(itemId, {
         retryCount: 2,
         lastError: 'Server unavailable',
@@ -305,7 +303,7 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
     conditionalIt('should preserve sync order by timestamp', async () => {
       const baseTime = Date.now();
 
-      // Crear items con diferentes timestamps
+      // Create items with different timestamps
       const items: SyncQueueItem[] = [
         {
           operation: 'create',
@@ -362,7 +360,7 @@ describe('Backend Integration - Offline-to-Online Sync', () => {
 
       await db.syncQueue.bulkAdd(items);
 
-      // Obtener en orden por timestamp
+      // Get items ordered by timestamp
       const orderedItems = await db.syncQueue.orderBy('timestamp').toArray();
 
       expect(orderedItems[0].reading?.id).toBe('first');

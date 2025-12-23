@@ -953,8 +953,15 @@ export class ReadingsService implements OnDestroy {
         return { fetched: 0, merged: 0 };
       }
 
-      const backendReadings = response.data.readings;
-      this.logger?.debug('Sync', `Fetched ${backendReadings.length} readings from backend`);
+      // Limit to most recent 200 readings to prevent long sync times
+      // Backend may return thousands of readings; processing all would block UI
+      const MAX_SYNC_READINGS = 200;
+      const allReadings = response.data.readings;
+      const backendReadings = allReadings.slice(0, MAX_SYNC_READINGS);
+      this.logger?.debug(
+        'Sync',
+        `Fetched ${allReadings.length} readings from backend, processing ${backendReadings.length}`
+      );
 
       let merged = 0;
 

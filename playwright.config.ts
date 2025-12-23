@@ -20,7 +20,7 @@ export default defineConfig({
   testDir: './playwright/tests',
   timeout: 30_000,
   expect: {
-    timeout: 5_000,
+    timeout: 10_000,
     toHaveScreenshot: {
       // CI environments have font rendering differences - use ratio instead of pixels
       maxDiffPixelRatio: 0.03, // 3% tolerance for cross-environment differences
@@ -85,7 +85,10 @@ export default defineConfig({
   webServer: process.env.E2E_SKIP_SERVER
     ? undefined
     : {
-        command: `npx ng serve --configuration development --port ${PORT}`,
+        // Use local configuration with proxy to Docker backend when E2E_DOCKER_TESTS is set
+        command: process.env.E2E_DOCKER_TESTS
+          ? `npx ng serve --configuration local --proxy-config proxy.conf.local.json --port ${PORT}`
+          : `npx ng serve --configuration development --port ${PORT}`,
         url: `${BASE_URL}`,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

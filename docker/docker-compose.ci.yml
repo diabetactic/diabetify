@@ -1,0 +1,124 @@
+# CI Docker Compose - Uses pre-built images from Docker Hub
+# For local development, use docker-compose.local.yml instead
+#
+# Images hosted at: hub.docker.com/u/jcresp0
+# To rebuild/push: cd ~/TPP/diabetactic && for svc in glucoserver login appointments api-gateway api-gateway-backoffice; do
+#   docker build -t jcresp0/$svc:latest ./$svc && docker push jcresp0/$svc:latest
+# done
+#
+# Usage:
+#   docker compose -f docker/docker-compose.ci.yml up -d --wait
+#   ./docker/seed-test-data.sh full
+#   E2E_DOCKER_TESTS=true pnpm test:e2e --project=mobile-chromium --grep "@docker"
+#   docker compose -f docker/docker-compose.ci.yml down -v
+
+version: '3.8'
+
+services:
+  # PostgreSQL 16 (matching local docker-compose.local.yml)
+  glucoserver_db:
+    image: postgres:16-alpine
+    container_name: diabetactic_glucoserver_db
+    environment:
+      POSTGRES_DB: glucoserver
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  users_db:
+    image: postgres:16-alpine
+    container_name: diabetactic_users_db
+    environment:
+      POSTGRES_DB: users
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  appointments_db:
+    image: postgres:16-alpine
+    container_name: diabetactic_appointments_db
+    environment:
+      POSTGRES_DB: appointments
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Backend services (pre-built images from jcresp0 Docker Hub)
+  glucoserver:
+    image: jcresp0/glucoserver:latest
+    container_name: diabetactic_glucoserver
+    depends_on:
+      glucoserver_db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@glucoserver_db:5432/glucoserver
+
+  login_service:
+    image: jcresp0/login:latest
+    container_name: diabetactic_login_service
+    depends_on:
+      users_db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@users_db:5432/users
+
+  appointments:
+    image: jcresp0/appointments:latest
+    container_name: diabetactic_appointments
+    depends_on:
+      appointments_db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@appointments_db:5432/appointments
+
+  api-gateway:
+    image: jcresp0/api-gateway:latest
+    container_name: diabetactic_api_gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - glucoserver
+      - login_service
+      - appointments
+    environment:
+      GLUCOSERVER_URL: http://glucoserver:8000
+      LOGIN_URL: http://login_service:8000
+      APPOINTMENTS_URL: http://appointments:8000
+
+  api-gateway-backoffice:
+    image: jcresp0/api-gateway-backoffice:latest
+    container_name: diabetactic_api_gateway_backoffice
+    ports:
+      - "8001:8000"
+    depends_on:
+      - login_service
+    environment:
+      LOGIN_URL: http://login_service:8000
+
+  # Test utilities (built from repo - provides user_manager.py for seeding)
+  test_utils:
+    build:
+      context: .
+      dockerfile: Dockerfile.test-utils
+    container_name: diabetactic_test_utils
+    depends_on:
+      - api-gateway
+    environment:
+      LOGIN_SERVICE_URL: http://login_service:8000
+      API_GATEWAY_URL: http://api-gateway:8000
+
+networks:
+  default:
+    name: diabetactic-ci

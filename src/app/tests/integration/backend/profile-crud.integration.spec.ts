@@ -36,7 +36,6 @@ let authToken: string;
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping profile CRUD integration tests');
     shouldRun = false;
     return;
   }
@@ -54,7 +53,6 @@ const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) 
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();

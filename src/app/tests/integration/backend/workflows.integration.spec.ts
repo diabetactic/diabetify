@@ -43,9 +43,10 @@ afterEach(async () => {
     try {
       await clearAppointmentQueue();
     } catch {
-      // Ignorar si la cola ya está vacía
+      // Ignore if queue is already empty
     }
     clearCachedAuthToken();
+    vi.clearAllMocks();
   }
 });
 
@@ -54,7 +55,6 @@ const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) 
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -137,11 +137,11 @@ describe('Flujos de trabajo multi-servicio', () => {
         const token = await loginTestUser(TEST_USERS.user1);
         expect(token).toBeTruthy();
 
-        // Verificar acceso a lecturas
+        // Verify access a lecturas
         const readings = await getGlucoseReadings(token);
         expect(Array.isArray(readings)).toBe(true);
 
-        // Verificar acceso a citas
+        // Verify access a citas
         const appointments = await authenticatedGet('/appointments/mine', token);
         expect(Array.isArray(appointments)).toBe(true);
       },
@@ -166,13 +166,13 @@ describe('Flujos de trabajo multi-servicio', () => {
         const createdReading = await createGlucoseReading(criticalReading, token);
         expect(createdReading.id).toBeDefined();
 
-        // Paso 3: Verificar que la lectura está en el sistema
+        // Step 3: Verify reading is in system
         const readings = await getGlucoseReadings(token);
         const foundReading = readings.find((r: any) => r.id === createdReading.id);
         expect(foundReading).toBeDefined();
         expect(foundReading.glucose_level).toBe(criticalReading.glucose_level);
 
-        // Paso 4: Verificar que la cita del usuario está accesible
+        // Step 4: Verify user appointment is accessible
         const appointments = await authenticatedGet('/appointments/mine', token);
         expect(Array.isArray(appointments)).toBe(true);
 

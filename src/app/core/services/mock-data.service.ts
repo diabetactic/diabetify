@@ -293,7 +293,9 @@ export class MockDataService {
     };
 
     this.debugLog('🎭 MOCK BOLUS CALCULATION:', result);
-    return of(result).pipe(delay(400));
+    // Note: Removed delay(400) as it causes issues with zone.js in E2E tests
+    // The delay isn't necessary for mock mode - it was just simulating network latency
+    return of(result);
   }
 
   // ====== APPOINTMENTS - FUNCIONALIDAD IMPORTANTE ======

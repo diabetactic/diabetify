@@ -107,6 +107,14 @@ export default defineConfig({
         find: '@interceptors',
         replacement: fileURLToPath(new URL('./src/app/core/interceptors', import.meta.url)),
       },
+      {
+        find: '@mocks',
+        replacement: fileURLToPath(new URL('./src/mocks', import.meta.url)),
+      },
+      {
+        find: '@test-setup',
+        replacement: fileURLToPath(new URL('./src/test-setup', import.meta.url)),
+      },
       // Redirect ALL Stencil imports (including subpaths) to mock - use regex to catch all subpaths
       {
         find: /^@stencil\/core(.*)$/,

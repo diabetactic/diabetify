@@ -12,9 +12,16 @@
  * - Network request/response logs
  * - IndexedDB state dumps
  * - API verification calls
+ *
+ * NOTE: This test requires the real Heroku backend and backoffice API.
+ * It is skipped in mock mode.
  */
 
 import { test, expect, Page, request } from '@playwright/test';
+
+// Skip in mock mode - these tests require real backend for sync verification
+const isMockMode = process.env.E2E_MOCK_MODE === 'true';
+test.skip(() => isMockMode, 'Skipping in mock mode - requires real backend for sync verification');
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 

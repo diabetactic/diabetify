@@ -27,15 +27,12 @@ let shouldRun = false;
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping appointments lifecycle tests');
     shouldRun = false;
     return;
   }
   // Appointment lifecycle tests require backoffice to accept users from queue
   const backofficeAvailable = await isBackofficeAvailable();
   if (!backofficeAvailable) {
-    console.log('⏭️  Backoffice not available - skipping appointments lifecycle tests');
-    console.log('   (Backoffice is needed to accept appointments from queue)');
     shouldRun = false;
     return;
   }
@@ -47,7 +44,6 @@ const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) 
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -75,7 +71,6 @@ describe('Backend Integration - Appointments Lifecycle', () => {
 
       // User might already be in queue from previous runs
       if (state) {
-        console.log(`  ℹ️  User already in state: ${state}`);
         expect([
           'NONE',
           'IN_QUEUE',
@@ -100,16 +95,10 @@ describe('Backend Integration - Appointments Lifecycle', () => {
           if (response.ok) {
             const position = await response.json();
             expect(typeof position).toBe('number');
-            console.log(`  ✅ Submitted to queue at position: ${position}`);
           } else {
-            // Already in queue is OK
-            console.log(
-              `  ℹ️  Could not submit (${response.status}) - user may already be in queue`
-            );
+            // Already in queue is OK - continue with existing state
           }
-        } catch {
-          console.log('  ℹ️  Queue submission failed - continuing with existing state');
-        }
+        } catch {}
       }
     });
 
@@ -126,10 +115,8 @@ describe('Backend Integration - Appointments Lifecycle', () => {
       if (response.ok) {
         const position = await response.json();
         expect(typeof position).toBe('number');
-        console.log(`  ✅ Queue position: ${position}`);
       } else {
         // User might not be in queue or already processed
-        console.log(`  ℹ️  No placement returned (${response.status})`);
       }
     });
   });
@@ -159,10 +146,8 @@ describe('Backend Integration - Appointments Lifecycle', () => {
 
       if (created) {
         expect(created.appointment_id).toBeDefined();
-        console.log(`  ✅ Created appointment: ${created.appointment_id}`);
       } else {
         // State doesn't allow creation - that's OK
-        console.log('  ℹ️  Could not create appointment (state issue) - skipping');
       }
     });
 
@@ -172,7 +157,6 @@ describe('Backend Integration - Appointments Lifecycle', () => {
       const appointments = await authenticatedGet('/appointments/mine', token);
 
       expect(Array.isArray(appointments)).toBe(true);
-      console.log(`  ✅ Found ${appointments.length} appointments`);
 
       if (appointments.length > 0) {
         expect(appointments[0]).toHaveProperty('appointment_id');
@@ -202,9 +186,7 @@ describe('Backend Integration - Appointments Lifecycle', () => {
           'DENIED',
           'CANCELLED',
         ]).toContain(state);
-        console.log(`  ✅ User state: ${state}`);
       } else {
-        console.log('  ℹ️  No state returned (user may have no appointment history)');
       }
     });
 
