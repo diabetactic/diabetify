@@ -195,7 +195,7 @@ describe('Backend Integration - Concurrent Operations', () => {
 
         const responses = await Promise.all(requestPromises);
 
-        // Contar respuestas exitosas
+        // Count successful responses
         const successResponses = responses.filter(r => r.success);
 
         // Save IDs of successful readings for cleanup
@@ -208,7 +208,7 @@ describe('Backend Integration - Concurrent Operations', () => {
         // At least some requests should be successful
         expect(successResponses.length).toBeGreaterThan(0);
 
-        // Verify integrity de datos en requests exitosas
+        // Verify data integrity in successful requests
         for (const response of successResponses) {
           if (response.success) {
             expect(response.data).toHaveProperty('id');

@@ -240,7 +240,7 @@ describe('Backend Integration - Trends & Statistics', () => {
         return;
       }
 
-      // Filtrar ultimos 7 dias (client-side)
+      // Filter last 7 days (client-side)
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -369,7 +369,7 @@ describe('Backend Integration - Trends & Statistics', () => {
       expect(profile).toBeDefined();
       expect(profile.dni).toBe(TEST_USER.dni);
 
-      // Verify fields de estadisticas si existen
+      // Verify statistics fields if they exist
       if (profile.streak !== undefined) {
         expect(typeof profile.streak).toBe('number');
       }

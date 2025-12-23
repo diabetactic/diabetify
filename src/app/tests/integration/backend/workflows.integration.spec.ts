@@ -3,14 +3,14 @@
  *
  * @description
  * Validates complete interaction between multiple backend services:
- * - apiGateway (8000): Punto de entrada principal
+ * - apiGateway (8000): Main entry point
  * - glucoserver (8002): Glucose readings management
  * - login (8003): Authentication and users
  * - appointments (8005): Appointments system
  *
  * @prerequisites
- * - Backend ejecutándose en Docker
- * - Todos los servicios disponibles en localhost
+ * - Backend running in Docker
+ * - All services available on localhost
  * - Database initialized with test users
  */
 

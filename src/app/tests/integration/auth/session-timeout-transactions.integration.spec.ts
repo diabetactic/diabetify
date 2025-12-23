@@ -87,7 +87,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
-      // Simulate long transaction en IndexedDB
+      // Simulate long transaction in IndexedDB
       const transactionPromise = db.transaction('rw', [db.readings, db.syncQueue], async () => {
         // Add multiple readings during transaction
         await db.readings.add({
@@ -457,7 +457,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(true);
     }));
 
-    it('should reset timeout en keypress', fakeAsync(() => {
+    it('should reset timeout on keypress', fakeAsync(() => {
       authService.login('1000', 'tuvieja', false).subscribe();
       tick();
 
@@ -478,7 +478,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(true);
     }));
 
-    it('should reset timeout en mousemove', fakeAsync(() => {
+    it('should reset timeout on mousemove', fakeAsync(() => {
       authService.login('1000', 'tuvieja', false).subscribe();
       tick();
 
@@ -499,7 +499,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(true);
     }));
 
-    it('should reset timeout en scroll', fakeAsync(() => {
+    it('should reset timeout on scroll', fakeAsync(() => {
       authService.login('1000', 'tuvieja', false).subscribe();
       tick();
 
@@ -519,7 +519,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(true);
     }));
 
-    it('should reset timeout en touchstart (mobile)', fakeAsync(() => {
+    it('should reset timeout on touchstart (mobile)', fakeAsync(() => {
       authService.login('1000', 'tuvieja', false).subscribe();
       tick();
 
@@ -539,7 +539,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(true);
     }));
 
-    it('should reset timeout en window focus', fakeAsync(() => {
+    it('should reset timeout on window focus', fakeAsync(() => {
       authService.login('1000', 'tuvieja', false).subscribe();
       tick();
 

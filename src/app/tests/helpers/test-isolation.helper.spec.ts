@@ -1,6 +1,6 @@
 /**
- * Tests para Test Isolation Helper
- * Tests state cleanup functions, factories and async helpers
+ * Test Isolation Helper Tests
+ * Tests state cleanup functions, factories, and async helpers
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -200,12 +200,12 @@ describe('Test Isolation Helper - Test Data Factory', () => {
 
       expect(user.email).toBe('custom@example.com');
       expect(user.firstName).toBe('Custom');
-      expect(user.lastName).toBe('User'); // Mantiene default
+      expect(user.lastName).toBe('User'); // Keeps default
     });
   });
 
   describe('mockUserProfile', () => {
-    it('should create perfil con preferencias completas', () => {
+    it('should create profile with complete preferences', () => {
       const profile = TestDataFactory.mockUserProfile();
 
       expect(profile.preferences).toHaveProperty('glucoseUnit', 'mg/dL');
@@ -566,9 +566,9 @@ describe('Test Isolation Helper - DOM Helpers', () => {
 });
 
 describe('Test Isolation Helper - Edge Cases', () => {
-  it.skip('should handle BehaviorSubject completado', () => {
-    // El comportamiento de RxJS con subjects completados puede variar
-    // entre versiones. Este test se salta por inconsistencias.
+  it.skip('should handle completed BehaviorSubject', () => {
+    // RxJS behavior with completed subjects may vary between versions.
+    // This test is skipped due to inconsistencies.
   });
 
   it('should handle service with null properties', () => {
@@ -584,6 +584,6 @@ describe('Test Isolation Helper - Edge Cases', () => {
     const user = TestDataFactory.mockLocalUser({ email: null as any });
 
     expect(user.email).toBeNull();
-    expect(user.firstName).toBe('Test'); // Otros valores se mantienen
+    expect(user.firstName).toBe('Test'); // Other values are preserved
   });
 });

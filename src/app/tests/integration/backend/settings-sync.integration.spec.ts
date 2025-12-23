@@ -256,7 +256,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
         realtime: 0, // Inmediato
         frequent: 5, // Every 5 minutes
         standard: 15, // Every 15 minutes
-        conservative: 60, // Cada hora
+        conservative: 60, // Every hour
         manual: -1, // Manual only
       };
 

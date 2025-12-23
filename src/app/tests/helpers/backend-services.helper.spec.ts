@@ -1,6 +1,6 @@
 /**
- * Tests para Backend Services Helper
- * Tests HTTP functions, authentication, health checks and appointment management
+ * Backend Services Helper Tests
+ * Tests HTTP functions, authentication, health checks, and appointment management
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';

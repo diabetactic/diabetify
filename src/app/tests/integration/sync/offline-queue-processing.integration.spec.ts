@@ -385,7 +385,7 @@ describe('Integration - Offline Queue Processing', () => {
           reading: createTestReading('backoff-0', 100),
           timestamp: now - 10000,
           retryCount: 0,
-          nextRetryAt: now - 5000, // Puede reintentarse ahora
+          nextRetryAt: now - 5000, // Can be retried now
         },
         {
           operation: 'create',
@@ -399,13 +399,13 @@ describe('Integration - Offline Queue Processing', () => {
           reading: createTestReading('backoff-1', 120),
           timestamp: now - 9000,
           retryCount: 1,
-          nextRetryAt: now - 1000, // Puede reintentarse ahora
+          nextRetryAt: now - 1000, // Can be retried now
         },
       ];
 
       await db.syncQueue.bulkAdd(items);
 
-      // Filtrar items que pueden procesarse ahora
+      // Filter items that can be processed now
       const allItems = (await db.syncQueue.toArray()) as ExtendedSyncQueueItem[];
       const readyToProcess = allItems.filter(item => (item.nextRetryAt ?? 0) <= now);
 

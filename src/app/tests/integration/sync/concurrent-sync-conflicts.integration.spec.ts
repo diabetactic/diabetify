@@ -370,7 +370,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
     });
 
     it('should process remaining queue after partial failure', async () => {
-      // Bloquear auto-sync primero
+      // Block auto-sync first
       server.use(
         http.post(`${API_BASE}/glucose/create`, async () => {
           return HttpResponse.json({ detail: 'Offline' }, { status: 503 });

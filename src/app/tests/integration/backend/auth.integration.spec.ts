@@ -223,7 +223,7 @@ describe('Backend Integration - Auth', () => {
     conditionalIt('should handle logout endpoint if available', async () => {
       const token = await loginTestUser(TEST_USER);
 
-      // Intentar logout via endpoint (puede no existir)
+      // Try logout via endpoint (may not exist)
       try {
         const response = await fetch(`${SERVICE_URLS.apiGateway}/logout`, {
           method: 'POST',
@@ -238,7 +238,7 @@ describe('Backend Integration - Auth', () => {
           expect([200, 204]).toContain(response.status);
         }
       } catch {
-        // Endpoint de logout puede no existir (JWT es stateless)
+        // Logout endpoint may not exist (JWT is stateless)
       }
     });
   });

@@ -63,7 +63,7 @@ describe('Token Refresh Integration (MSW)', () => {
 
   describe('Token Expiration Detection', () => {
     it('should detect when access token is expired', async () => {
-      // Login primero
+      // Login first
       const loginResult = await firstValueFrom(authService.login('1000', 'tuvieja', false));
       expect(loginResult.success).toBe(true);
 
