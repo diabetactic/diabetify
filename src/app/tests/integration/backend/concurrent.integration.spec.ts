@@ -93,7 +93,7 @@ describe('Backend Integration - Concurrent Operations', () => {
         const uniqueIds = new Set(ids);
         expect(uniqueIds.size).toBe(5);
 
-        // Verificar valores correctos
+        // Verify correct values
         responses.forEach((response, index) => {
           expect(response.glucose_level).toBe(readingsData[index].glucose_level);
           expect(response.notes).toBe(readingsData[index].notes);
@@ -120,7 +120,7 @@ describe('Backend Integration - Concurrent Operations', () => {
     conditionalIt(
       'should handle concurrent reading creations from same user',
       async () => {
-        // Usuario 1 crea lecturas concurrentes
+        // User 1 creates concurrent readings
         const token1 = await loginTestUser(TEST_USERS.user1);
 
         // Create two readings in parallel from the same user

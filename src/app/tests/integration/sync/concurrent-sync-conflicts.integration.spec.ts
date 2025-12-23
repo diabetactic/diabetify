@@ -135,7 +135,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
     });
 
     it('should handle concurrent edits to different fields (server wins all)', async () => {
-      // Lectura base sincronizada
+      // Synchronized base reading
       const baseReading = await readingsService.addReading({
         value: 100,
         units: 'mg/dL',
@@ -442,7 +442,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
 
   describe('Merge Strategy for Field Conflicts', () => {
     it('should merge server changes for value field (server wins)', async () => {
-      // Lectura base
+      // Base reading
       const reading = await readingsService.addReading({
         value: 100,
         units: 'mg/dL',

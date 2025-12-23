@@ -1,17 +1,17 @@
 /**
- * Pruebas de integración para flujos de trabajo multi-servicio
+ * Integration tests for multi-service workflows
  *
  * @description
- * Valida la interacción completa entre múltiples servicios del backend:
+ * Validates complete interaction between multiple backend services:
  * - apiGateway (8000): Punto de entrada principal
- * - glucoserver (8002): Gestión de lecturas de glucosa
- * - login (8003): Autenticación y usuarios
- * - appointments (8005): Sistema de citas
+ * - glucoserver (8002): Glucose readings management
+ * - login (8003): Authentication and users
+ * - appointments (8005): Appointments system
  *
  * @prerequisites
  * - Backend ejecutándose en Docker
  * - Todos los servicios disponibles en localhost
- * - Base de datos inicializada con usuarios de prueba
+ * - Database initialized with test users
  */
 
 import {
@@ -63,26 +63,26 @@ const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) 
   );
 };
 
-describe('Flujos de trabajo multi-servicio', () => {
-  describe('Test 1: Flujo completo de autenticación', () => {
+describe('Multi-service workflows', () => {
+  describe('Test 1: Complete authentication flow', () => {
     conditionalIt(
-      'debe realizar login → obtener perfil → verificar token en servicios',
+      'should login → get profile → verify token in services',
       async () => {
-        // Paso 1: Login exitoso - loginTestUser retorna solo el token string
+        // Step 1: Successful login - loginTestUser returns only the token string
         const token = await loginTestUser(TEST_USERS.user1);
         expect(token).toBeDefined();
         expect(token.split('.').length).toBe(3); // JWT format
 
-        // Paso 2: Verificar token en api-gateway (perfil)
+        // Step 2: Verify token in api-gateway (profile)
         const profile = await authenticatedGet('/users/me', token);
         expect(profile).toBeDefined();
         expect(profile.dni).toBe(TEST_USERS.user1.dni);
 
-        // Paso 3: Verificar token en glucoserver (lecturas)
+        // Step 3: Verify token in glucoserver (readings)
         const readings = await getGlucoseReadings(token);
         expect(Array.isArray(readings)).toBe(true);
 
-        // Paso 4: Verificar token en appointments (endpoint es /appointments/mine)
+        // Step 4: Verify token in appointments (endpoint is /appointments/mine)
         const appointments = await authenticatedGet('/appointments/mine', token);
         expect(Array.isArray(appointments)).toBe(true);
       },
@@ -90,7 +90,7 @@ describe('Flujos de trabajo multi-servicio', () => {
     );
   });
 
-  describe('Test 2: Flujo de envío de lecturas', () => {
+  describe('Test 2: Reading submission flow', () => {
     conditionalIt(
       'should login → create reading → get list → verify created reading',
       async () => {
@@ -105,7 +105,7 @@ describe('Flujos de trabajo multi-servicio', () => {
         const newReading = {
           glucose_level: 120,
           reading_type: 'OTRO' as GlucoseReadingType,
-          notes: 'Lectura de prueba de integración',
+          notes: 'Integration test reading',
         };
 
         const createdReading = await createGlucoseReading(newReading, token);

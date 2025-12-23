@@ -254,10 +254,10 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
     conditionalIt('should define sync frequency options', async () => {
       const syncOptions = {
         realtime: 0, // Inmediato
-        frequent: 5, // Cada 5 minutos
-        standard: 15, // Cada 15 minutos
+        frequent: 5, // Every 5 minutes
+        standard: 15, // Every 15 minutes
         conservative: 60, // Cada hora
-        manual: -1, // Solo manual
+        manual: -1, // Manual only
       };
 
       expect(Object.keys(syncOptions).length).toBe(5);

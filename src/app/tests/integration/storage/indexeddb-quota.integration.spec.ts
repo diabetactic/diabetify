@@ -351,7 +351,7 @@ describe('Integration - IndexedDB Quota Management', () => {
         type: 'smbg',
         time: new Date(Date.now() - i * 24 * 3600000).toISOString(),
         synced: false,
-        userId: `user-${i % 5}`, // 5 usuarios diferentes
+        userId: `user-${i % 5}`, // 5 different users
         status: 'normal',
         localStoredAt: new Date().toISOString(),
       }));

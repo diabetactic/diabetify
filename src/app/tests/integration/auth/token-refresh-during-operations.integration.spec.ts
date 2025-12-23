@@ -101,7 +101,7 @@ describe.skip('Token Refresh During Active Operations', () => {
   });
 
   describe('Token Expires During Glucose Reading Submission', () => {
-    it('debe refrescar token y completar el envío de lectura exitosamente', async () => {
+    it('should refresh token and complete reading submission successfully', async () => {
       let createAttempts = 0;
       let refreshCalled = false;
 
@@ -170,7 +170,7 @@ describe.skip('Token Refresh During Active Operations', () => {
       expect(createAttempts).toBeGreaterThanOrEqual(1);
     });
 
-    it('debe fallar si el refresh token también expiró', async () => {
+    it('should fail if refresh token also expired', async () => {
       server.use(
         http.post(`${API_BASE}/glucose/create`, () => {
           return HttpResponse.json({ detail: 'Token expired' }, { status: 401 });
@@ -199,7 +199,7 @@ describe.skip('Token Refresh During Active Operations', () => {
       expect(unsynced.length).toBeGreaterThan(0);
     });
 
-    it('debe manejar timeout durante refresh', async () => {
+    it('should handle timeout during refresh', async () => {
       vi.useFakeTimers();
 
       server.use(
@@ -238,7 +238,7 @@ describe.skip('Token Refresh During Active Operations', () => {
   });
 
   describe('Token Expires During Appointment Request', () => {
-    it('debe refrescar token y completar la solicitud de cita', async () => {
+    it('should refresh token and complete appointment request', async () => {
       let submitAttempts = 0;
       let refreshCalled = false;
 
@@ -284,7 +284,7 @@ describe.skip('Token Refresh During Active Operations', () => {
       expect(result.state).toBe('PENDING');
     });
 
-    it('debe manejar error cuando refresh falla durante solicitud de cita', async () => {
+    it('should handle error when refresh fails during appointment request', async () => {
       server.use(
         http.post(`${API_BASE}/appointments/queue/enter`, () => {
           return HttpResponse.json({ detail: 'Token expired' }, { status: 401 });
@@ -304,7 +304,7 @@ describe.skip('Token Refresh During Active Operations', () => {
   });
 
   describe('Token Expires During Batch Synchronization Operation', () => {
-    it('debe refrescar token y continuar con batch sync', async () => {
+    it('should refresh token and continue with batch sync', async () => {
       let refreshCalled = false;
       let createCallCount = 0;
 
@@ -383,7 +383,7 @@ describe.skip('Token Refresh During Active Operations', () => {
       expect(syncResult.failed).toBe(0);
     });
 
-    it('debe continuar batch sync después de refresh parcial', async () => {
+    it('should continue batch sync after partial refresh', async () => {
       let refreshCount = 0;
       let requestCount = 0;
 
@@ -440,7 +440,7 @@ describe.skip('Token Refresh During Active Operations', () => {
   });
 
   describe('Multiple Concurrent Requests When Token Expires', () => {
-    it('debe refrescar una sola vez para múltiples requests concurrentes', async () => {
+    it('should refresh only once for multiple concurrent requests', async () => {
       let refreshCallCount = 0;
       let _requestsAfterRefresh = 0;
 
@@ -518,7 +518,7 @@ describe.skip('Token Refresh During Active Operations', () => {
       expect(successfulResults.length).toBeGreaterThan(0);
     });
 
-    it('debe encolar requests hasta que refresh complete', async () => {
+    it('should queue requests hasta que refresh complete', async () => {
       vi.useFakeTimers();
       let refreshCompleted = false;
       const requestTimestamps: number[] = [];
@@ -600,7 +600,7 @@ describe.skip('Token Refresh During Active Operations', () => {
       expect(hasToken).toBe(false);
     });
 
-    it('debe limpiar datos sensibles después de logout por refresh expirado', async () => {
+    it('should clear sensitive data after logout due to expired refresh', async () => {
       // Add local reading
       await readingsService.addReading(
         {
@@ -636,7 +636,7 @@ describe.skip('Token Refresh During Active Operations', () => {
   });
 
   describe('Authorization Header Verification', () => {
-    it('debe incluir nuevo token en requests subsecuentes después de refresh', async () => {
+    it('should include new token in subsequent requests after refresh', async () => {
       let firstCall = true;
       let _secondCallHasNewToken = false;
 

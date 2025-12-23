@@ -172,7 +172,7 @@ describe('Backend Integration - Bolus Calculator', () => {
       expect(result.mealDose).toBe(5);
       expect(result.correctionDose).toBe(-0.6);
       expect(result.totalDose).toBe(4.4);
-      expect(result.warnings).toContain('Glucosa baja - considerar reducir dosis de comida');
+      expect(result.warnings).toContain('Low glucose - consider reducing meal dose');
     });
 
     conditionalIt('should handle zero carbs (correction only)', async () => {
@@ -408,7 +408,7 @@ describe('Backend Integration - Bolus Calculator', () => {
         activeInsulinDuration: 4,
       };
 
-      // Escenario: glucosa alta antes del almuerzo
+      // Scenario: high glucose before lunch
       const result = calculateBolus(250, 60, settings);
 
       // Meal: 60/12 = 5U

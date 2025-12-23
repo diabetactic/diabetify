@@ -61,7 +61,7 @@ describe('Backend Integration - Trends & Statistics', () => {
       expect(Array.isArray(readings)).toBe(true);
 
       if (readings.length > 0) {
-        // Verify structure de lectura
+        // Verify reading structure
         const reading = readings[0];
         expect(reading).toHaveProperty('glucose_level');
         expect(typeof reading.glucose_level).toBe('number');
@@ -116,7 +116,7 @@ describe('Backend Integration - Trends & Statistics', () => {
     conditionalIt('should categorize readings by glucose range', async () => {
       const readings = await getGlucoseReadings(authToken);
 
-      // Categorizar lecturas manualmente
+      // Categorize readings manually
       const categories = {
         veryLow: 0, // < 54 mg/dL
         low: 0, // 54-69 mg/dL
@@ -181,7 +181,7 @@ describe('Backend Integration - Trends & Statistics', () => {
         return;
       }
 
-      // Calculate average manualmente
+      // Calculate average manually
       const sum = readings.reduce((acc, r) => acc + r.glucose_level, 0);
       const average = sum / readings.length;
 
@@ -256,7 +256,7 @@ describe('Backend Integration - Trends & Statistics', () => {
     conditionalIt('should group readings by day for trends', async () => {
       const readings = await getGlucoseReadings(authToken);
 
-      // Agrupar por dia
+      // Group by day
       const byDay = new Map<string, number[]>();
 
       readings.forEach(r => {
@@ -289,7 +289,7 @@ describe('Backend Integration - Trends & Statistics', () => {
     conditionalIt('should group readings by meal context', async () => {
       const readings = await getGlucoseReadings(authToken);
 
-      // Agrupar por tipo de lectura
+      // Group by reading type
       const byMeal = new Map<string, number[]>();
 
       readings.forEach(r => {

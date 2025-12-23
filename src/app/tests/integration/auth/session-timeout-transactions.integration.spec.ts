@@ -82,7 +82,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
   });
 
   describe('Timeout during IndexedDB transaction', () => {
-    it('debe completar transacción activa antes de logout', async () => {
+    it('should complete active transaction before logout', async () => {
       // Initial login
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
@@ -142,7 +142,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(false);
     });
 
-    it('debe abortar transacción fallida y hacer logout', async () => {
+    it('should abort failed transaction and logout', async () => {
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
@@ -185,7 +185,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
   });
 
   describe('Timeout during active synchronization', () => {
-    it('debe completar sincronización en progreso antes de logout', async () => {
+    it('should complete sync in progress before logout', async () => {
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
@@ -246,7 +246,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(false);
     });
 
-    it('debe manejar timeout durante fallo de red en sincronización', async () => {
+    it('should handle timeout during network failure in sync', async () => {
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
@@ -258,7 +258,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
         retryCount: 0,
       });
 
-      // Mock fallo de red
+      // Mock network failure
       server.use(
         http.post(`${API_BASE}/glucose-readings`, () => {
           return HttpResponse.error();
@@ -304,7 +304,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
   });
 
   describe('Timeout during form submission', () => {
-    it('debe completar envío HTTP antes de logout', async () => {
+    it('should complete HTTP request before logout', async () => {
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
@@ -348,7 +348,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(false);
     });
 
-    it('debe prevenir envío de nuevo formulario después de timeout', async () => {
+    it('should prevent new form submission after timeout', async () => {
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
@@ -378,7 +378,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
   });
 
   describe('Grace period handling', () => {
-    it('debe mostrar advertencia 5 minutos antes de timeout', fakeAsync(() => {
+    it('should show warning 5 minutes before timeout', fakeAsync(() => {
       authService.login('1000', 'tuvieja', false).subscribe();
       tick();
 
@@ -406,7 +406,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(false);
     }));
 
-    it('debe extender sesión si hay actividad durante grace period', fakeAsync(() => {
+    it('should extend session if there is activity during grace period', fakeAsync(() => {
       authService.login('1000', 'tuvieja', false).subscribe();
       tick();
 
@@ -433,7 +433,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
   });
 
   describe('Activity detection resetting timeout', () => {
-    it('debe resetear timeout en click del usuario', fakeAsync(() => {
+    it('should reset timeout on user click', fakeAsync(() => {
       authService.login('1000', 'tuvieja', false).subscribe();
       tick();
 
@@ -457,7 +457,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(true);
     }));
 
-    it('debe resetear timeout en keypress', fakeAsync(() => {
+    it('should reset timeout en keypress', fakeAsync(() => {
       authService.login('1000', 'tuvieja', false).subscribe();
       tick();
 
@@ -478,7 +478,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(true);
     }));
 
-    it('debe resetear timeout en mousemove', fakeAsync(() => {
+    it('should reset timeout en mousemove', fakeAsync(() => {
       authService.login('1000', 'tuvieja', false).subscribe();
       tick();
 
@@ -499,7 +499,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(true);
     }));
 
-    it('debe resetear timeout en scroll', fakeAsync(() => {
+    it('should reset timeout en scroll', fakeAsync(() => {
       authService.login('1000', 'tuvieja', false).subscribe();
       tick();
 
@@ -519,7 +519,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(true);
     }));
 
-    it('debe resetear timeout en touchstart (mobile)', fakeAsync(() => {
+    it('should reset timeout en touchstart (mobile)', fakeAsync(() => {
       authService.login('1000', 'tuvieja', false).subscribe();
       tick();
 
@@ -539,7 +539,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(true);
     }));
 
-    it('debe resetear timeout en window focus', fakeAsync(() => {
+    it('should reset timeout en window focus', fakeAsync(() => {
       authService.login('1000', 'tuvieja', false).subscribe();
       tick();
 
@@ -562,7 +562,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
   });
 
   describe('Multi-tab session synchronization', () => {
-    it('debe sincronizar logout entre tabs usando Preferences', async () => {
+    it('should synchronize logout between tabs using Preferences', async () => {
       // Login in tab 1
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
@@ -589,7 +589,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(false);
     });
 
-    it('debe sincronizar renovación de sesión entre tabs', async () => {
+    it('should synchronize session renewal between tabs', async () => {
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
@@ -610,7 +610,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(isAuth).toBe(true);
     });
 
-    it('debe manejar logout simultáneo en múltiples tabs', async () => {
+    it('should handle simultaneous logout in multiple tabs', async () => {
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
 
       // Simulate simultaneous logout (idempotent)

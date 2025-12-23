@@ -503,7 +503,7 @@ describe('Integration - Offline Queue Processing', () => {
 // =========================================================================
 
 /**
- * Crea una lectura de glucosa de prueba
+ * Creates a test glucose reading
  */
 function createTestReading(id: string, value: number): LocalGlucoseReading {
   return {

@@ -1,6 +1,6 @@
 /**
  * Tests para Test Isolation Helper
- * Prueba funciones de limpieza de estado, factories y helpers async
+ * Tests state cleanup functions, factories and async helpers
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -17,7 +17,7 @@ import {
 
 describe('Test Isolation Helper - BehaviorSubject Reset', () => {
   describe('resetBehaviorSubject', () => {
-    it('debe resetear BehaviorSubject a valor inicial', () => {
+    it('should reset BehaviorSubject a valor inicial', () => {
       const subject = new BehaviorSubject<number>(0);
       subject.next(10);
 
@@ -28,7 +28,7 @@ describe('Test Isolation Helper - BehaviorSubject Reset', () => {
       expect(subject.value).toBe(0);
     });
 
-    it('debe funcionar con objetos complejos', () => {
+    it('should work con objetos complejos', () => {
       const initial = { authenticated: false, user: null };
       const subject = new BehaviorSubject(initial);
 
@@ -38,7 +38,7 @@ describe('Test Isolation Helper - BehaviorSubject Reset', () => {
       expect(subject.value).toEqual(initial);
     });
 
-    it('debe emitir nuevo valor a suscriptores', () => {
+    it('should emit new value to subscribers', () => {
       const subject = new BehaviorSubject<string>('initial');
       const values: string[] = [];
 
@@ -54,7 +54,7 @@ describe('Test Isolation Helper - BehaviorSubject Reset', () => {
 
 describe('Test Isolation Helper - Service Cache Clearing', () => {
   describe('clearServiceCache', () => {
-    it('debe limpiar Map cache', () => {
+    it('should clear Map cache', () => {
       const service = {
         cache: new Map([
           ['key1', 'value1'],
@@ -69,7 +69,7 @@ describe('Test Isolation Helper - Service Cache Clearing', () => {
       expect(service.cache.size).toBe(0);
     });
 
-    it('debe limpiar cache con método clear()', () => {
+    it('should clear cache con método clear()', () => {
       const service = {
         _cache: {
           data: { key: 'value' },
@@ -82,7 +82,7 @@ describe('Test Isolation Helper - Service Cache Clearing', () => {
       expect(service._cache.clear).toHaveBeenCalled();
     });
 
-    it('debe limpiar array cache', () => {
+    it('should clear array cache', () => {
       const service = {
         readingCache: [1, 2, 3, 4, 5],
       };
@@ -94,7 +94,7 @@ describe('Test Isolation Helper - Service Cache Clearing', () => {
       expect(service.readingCache.length).toBe(0);
     });
 
-    it('debe limpiar múltiples tipos de cache', () => {
+    it('should clear multiple cache types', () => {
       const service = {
         cache: new Map([['a', 1]]),
         _cache: { clear: vi.fn() },
@@ -108,7 +108,7 @@ describe('Test Isolation Helper - Service Cache Clearing', () => {
       expect(service.appointmentCache.length).toBe(0);
     });
 
-    it('debe manejar servicios sin cache sin errores', () => {
+    it('should handle servicios sin cache sin errores', () => {
       const service = { data: 'some data' };
 
       expect(() => clearServiceCache(service)).not.toThrow();
@@ -118,7 +118,7 @@ describe('Test Isolation Helper - Service Cache Clearing', () => {
 
 describe('Test Isolation Helper - HTTP Client Mock Reset', () => {
   describe('resetHttpClientMock', () => {
-    it('debe resetear todos los métodos HTTP', () => {
+    it('should reset todos los métodos HTTP', () => {
       const mockHttp = {
         get: vi.fn(),
         post: vi.fn(),
@@ -136,7 +136,7 @@ describe('Test Isolation Helper - HTTP Client Mock Reset', () => {
       expect(mockHttp.post).not.toHaveBeenCalled();
     });
 
-    it('debe limpiar historial de llamadas', () => {
+    it('should clear historial de llamadas', () => {
       const mockHttp = {
         get: vi.fn(),
         post: vi.fn(),
@@ -154,7 +154,7 @@ describe('Test Isolation Helper - HTTP Client Mock Reset', () => {
       expect(mockHttp.post).toHaveBeenCalledTimes(0);
     });
 
-    it('debe manejar mocks parciales', () => {
+    it('should handle partial mocks', () => {
       const mockHttp = {
         get: vi.fn(),
         customMethod: () => 'custom',
@@ -165,7 +165,7 @@ describe('Test Isolation Helper - HTTP Client Mock Reset', () => {
   });
 
   describe('resetAllMocks', () => {
-    it('debe limpiar y resetear todos los mocks de Vitest', () => {
+    it('should clear and reset all Vitest mocks', () => {
       const spy1 = vi.fn();
       const spy2 = vi.fn();
 
@@ -182,7 +182,7 @@ describe('Test Isolation Helper - HTTP Client Mock Reset', () => {
 
 describe('Test Isolation Helper - Test Data Factory', () => {
   describe('mockLocalUser', () => {
-    it('debe crear usuario con valores por defecto', () => {
+    it('should create user with default values', () => {
       const user = TestDataFactory.mockLocalUser();
 
       expect(user).toHaveProperty('id');
@@ -192,7 +192,7 @@ describe('Test Isolation Helper - Test Data Factory', () => {
       expect(user).toHaveProperty('role', 'patient');
     });
 
-    it('debe permitir sobrescribir propiedades', () => {
+    it('should allow overriding properties', () => {
       const user = TestDataFactory.mockLocalUser({
         email: 'custom@example.com',
         firstName: 'Custom',
@@ -205,7 +205,7 @@ describe('Test Isolation Helper - Test Data Factory', () => {
   });
 
   describe('mockUserProfile', () => {
-    it('debe crear perfil con preferencias completas', () => {
+    it('should create perfil con preferencias completas', () => {
       const profile = TestDataFactory.mockUserProfile();
 
       expect(profile.preferences).toHaveProperty('glucoseUnit', 'mg/dL');
@@ -215,7 +215,7 @@ describe('Test Isolation Helper - Test Data Factory', () => {
   });
 
   describe('mockGlucoseReading', () => {
-    it('debe crear lectura con valores realistas', () => {
+    it('should create reading with realistic values', () => {
       const reading = TestDataFactory.mockGlucoseReading();
 
       expect(reading).toHaveProperty('id');
@@ -225,7 +225,7 @@ describe('Test Isolation Helper - Test Data Factory', () => {
       expect(reading.synced).toBe(false);
     });
 
-    it('debe generar IDs únicos', () => {
+    it('should generate unique IDs', () => {
       const reading1 = TestDataFactory.mockGlucoseReading();
       const reading2 = TestDataFactory.mockGlucoseReading();
 
@@ -234,7 +234,7 @@ describe('Test Isolation Helper - Test Data Factory', () => {
   });
 
   describe('mockAppointment', () => {
-    it('debe crear cita con fecha futura', () => {
+    it('should create appointment with future date', () => {
       const appointment = TestDataFactory.mockAppointment();
       const appointmentDate = new Date(appointment.date_time);
       const now = new Date();
@@ -245,7 +245,7 @@ describe('Test Isolation Helper - Test Data Factory', () => {
   });
 
   describe('mockApiResponse', () => {
-    it('debe envolver data en estructura de respuesta', () => {
+    it('should wrap data in response structure', () => {
       const data = { id: 1, name: 'Test' };
       const response = TestDataFactory.mockApiResponse(data);
 
@@ -257,7 +257,7 @@ describe('Test Isolation Helper - Test Data Factory', () => {
   });
 
   describe('mockApiError', () => {
-    it('debe crear respuesta de error con código y mensaje', () => {
+    it('should create error response with code and message', () => {
       const error = TestDataFactory.mockApiError(404, 'Not found', { resource: 'user' });
 
       expect(error.success).toBe(false);
@@ -268,7 +268,7 @@ describe('Test Isolation Helper - Test Data Factory', () => {
   });
 
   describe('mockTokenResponse', () => {
-    it('debe crear respuesta OAuth2 válida', () => {
+    it('should create valid OAuth2 response', () => {
       const token = TestDataFactory.mockTokenResponse();
 
       expect(token).toHaveProperty('access_token');
@@ -279,14 +279,14 @@ describe('Test Isolation Helper - Test Data Factory', () => {
   });
 
   describe('mockReadingsForDateRange', () => {
-    it('debe crear múltiples lecturas por día', () => {
+    it('should create multiple readings per day', () => {
       const readings = TestDataFactory.mockReadingsForDateRange(7);
 
       // 7 days * 3 readings per day
       expect(readings).toHaveLength(21);
     });
 
-    it('debe distribuir lecturas en rango de fechas', () => {
+    it('should distribute readings in date range', () => {
       const readings = TestDataFactory.mockReadingsForDateRange(3);
       const dates = readings.map(r => new Date(r.time));
 
@@ -297,7 +297,7 @@ describe('Test Isolation Helper - Test Data Factory', () => {
       expect(maxDate - minDate).toBeGreaterThan(2 * 24 * 60 * 60 * 1000);
     });
 
-    it('debe generar valores en rango realista (70-190)', () => {
+    it('should generate values in realistic range (70-190)', () => {
       const readings = TestDataFactory.mockReadingsForDateRange(10);
 
       readings.forEach(reading => {
@@ -308,7 +308,7 @@ describe('Test Isolation Helper - Test Data Factory', () => {
   });
 
   describe('mockHttpErrorResponse', () => {
-    it('debe crear error HTTP con status y mensaje', () => {
+    it('should create HTTP error with status and message', () => {
       const error = TestDataFactory.mockHttpErrorResponse(401, 'Unauthorized');
 
       expect(error.status).toBe(401);
@@ -316,7 +316,7 @@ describe('Test Isolation Helper - Test Data Factory', () => {
       expect(error.error.message).toBe('Unauthorized');
     });
 
-    it('debe mapear códigos de estado comunes', () => {
+    it('should map common status codes', () => {
       const error400 = TestDataFactory.mockHttpErrorResponse(400, 'Bad Request');
       const error404 = TestDataFactory.mockHttpErrorResponse(404, 'Not Found');
       const error500 = TestDataFactory.mockHttpErrorResponse(500, 'Server Error');
@@ -330,7 +330,7 @@ describe('Test Isolation Helper - Test Data Factory', () => {
 
 describe('Test Isolation Helper - Async Helpers', () => {
   describe('AsyncTestHelpers.waitForCondition', () => {
-    it('debe esperar hasta que condición sea verdadera', async () => {
+    it('should wait until condition is true', async () => {
       let flag = false;
 
       setTimeout(() => {
@@ -342,13 +342,13 @@ describe('Test Isolation Helper - Async Helpers', () => {
       expect(flag).toBe(true);
     });
 
-    it('debe lanzar timeout si condición no se cumple', async () => {
+    it('should throw timeout if condition not met', async () => {
       await expect(AsyncTestHelpers.waitForCondition(() => false, 100, 10)).rejects.toThrow(
         'Condition not met after 100ms'
       );
     });
 
-    it('debe retornar inmediatamente si condición ya es verdadera', async () => {
+    it('should return immediately if condition already true', async () => {
       const start = Date.now();
 
       await AsyncTestHelpers.waitForCondition(() => true, 5000, 50);
@@ -359,7 +359,7 @@ describe('Test Isolation Helper - Async Helpers', () => {
   });
 
   describe('AsyncTestHelpers.waitForEmission', () => {
-    it('debe esperar primera emisión de observable', async () => {
+    it('should wait primera emisión de observable', async () => {
       const subject = new Subject<number>();
 
       setTimeout(() => subject.next(42), 50);
@@ -369,7 +369,7 @@ describe('Test Isolation Helper - Async Helpers', () => {
       expect(value).toBe(42);
     });
 
-    it('debe lanzar timeout si observable no emite', async () => {
+    it('should throw timeout if observable does not emit', async () => {
       const subject = new Subject<number>();
 
       await expect(AsyncTestHelpers.waitForEmission(subject, 100)).rejects.toThrow(
@@ -377,7 +377,7 @@ describe('Test Isolation Helper - Async Helpers', () => {
       );
     });
 
-    it('debe manejar errores de observable', async () => {
+    it('should handle errores de observable', async () => {
       const subject = new Subject<number>();
 
       setTimeout(() => subject.error(new Error('Observable error')), 50);
@@ -387,7 +387,7 @@ describe('Test Isolation Helper - Async Helpers', () => {
       );
     });
 
-    it('debe desuscribirse después de recibir valor', async () => {
+    it('should unsubscribe after receiving value', async () => {
       const subject = new BehaviorSubject<number>(1);
       let subscriptions = 0;
 
@@ -414,7 +414,7 @@ describe('Test Isolation Helper - Async Helpers', () => {
       vi.useRealTimers();
     });
 
-    it('debe avanzar timers falsos', async () => {
+    it('should advance timers falsos', async () => {
       let executed = false;
 
       setTimeout(() => {
@@ -428,7 +428,7 @@ describe('Test Isolation Helper - Async Helpers', () => {
       expect(executed).toBe(true);
     });
 
-    it.skip('debe permitir procesar microtasks', async () => {
+    it.skip('should allow procesar microtasks', async () => {
       // setImmediate not available in all test environments
       // This test must be verified manually or with specific config
     });
@@ -451,7 +451,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
     });
 
     describe('querySelector', () => {
-      it('debe retornar elemento si existe', () => {
+      it('should return elemento si existe', () => {
         const mockElement = document.createElement('div');
         mockFixture.debugElement.query.mockReturnValue({ nativeElement: mockElement });
 
@@ -460,7 +460,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
         expect(result).toBe(mockElement);
       });
 
-      it('debe retornar null si elemento no existe', () => {
+      it('should return null si elemento no existe', () => {
         mockFixture.debugElement.query.mockReturnValue(null);
 
         const result = DOMTestHelpers.querySelector(mockFixture, '.not-found');
@@ -470,7 +470,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
     });
 
     describe('querySelectorAll', () => {
-      it('debe retornar array de elementos', () => {
+      it('should return array de elementos', () => {
         const elements = [document.createElement('div'), document.createElement('span')];
         mockFixture.debugElement.queryAll.mockReturnValue(
           elements.map(el => ({ nativeElement: el }))
@@ -484,7 +484,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
     });
 
     describe('getTextContent', () => {
-      it('debe retornar texto trimmed del elemento', () => {
+      it('should return trimmed text from element', () => {
         const mockElement = document.createElement('p');
         mockElement.textContent = '  Hello World  ';
         mockFixture.debugElement.query.mockReturnValue({ nativeElement: mockElement });
@@ -494,7 +494,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
         expect(text).toBe('Hello World');
       });
 
-      it('debe retornar string vacío si elemento no existe', () => {
+      it('should return empty string if element does not exist', () => {
         mockFixture.debugElement.query.mockReturnValue(null);
 
         const text = DOMTestHelpers.getTextContent(mockFixture, '.not-found');
@@ -504,7 +504,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
     });
 
     describe('click', () => {
-      it('debe hacer click y detectar cambios', () => {
+      it('should click and detect changes', () => {
         const mockElement = document.createElement('button');
         mockElement.click = vi.fn();
         mockFixture.debugElement.query.mockReturnValue({ nativeElement: mockElement });
@@ -517,7 +517,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
     });
 
     describe('setInputValue', () => {
-      it('debe establecer valor y disparar eventos', () => {
+      it('should set value and trigger events', () => {
         const mockInput = document.createElement('input');
         mockInput.dispatchEvent = vi.fn();
         mockFixture.debugElement.query.mockReturnValue({ nativeElement: mockInput });
@@ -531,7 +531,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
     });
 
     describe('hasElement', () => {
-      it('debe retornar true si elemento existe', () => {
+      it('should return true si elemento existe', () => {
         mockFixture.debugElement.query.mockReturnValue({
           nativeElement: document.createElement('div'),
         });
@@ -539,7 +539,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
         expect(DOMTestHelpers.hasElement(mockFixture, '.exists')).toBe(true);
       });
 
-      it('debe retornar false si elemento no existe', () => {
+      it('should return false si elemento no existe', () => {
         mockFixture.debugElement.query.mockReturnValue(null);
 
         expect(DOMTestHelpers.hasElement(mockFixture, '.not-found')).toBe(false);
@@ -547,7 +547,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
     });
 
     describe('hasClass', () => {
-      it('debe retornar true si elemento tiene clase', () => {
+      it('should return true si elemento tiene clase', () => {
         const mockElement = document.createElement('div');
         mockElement.classList.add('active');
         mockFixture.debugElement.query.mockReturnValue({ nativeElement: mockElement });
@@ -555,7 +555,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
         expect(DOMTestHelpers.hasClass(mockFixture, 'div', 'active')).toBe(true);
       });
 
-      it('debe retornar false si elemento no tiene clase', () => {
+      it('should return false si elemento no tiene clase', () => {
         const mockElement = document.createElement('div');
         mockFixture.debugElement.query.mockReturnValue({ nativeElement: mockElement });
 
@@ -566,12 +566,12 @@ describe('Test Isolation Helper - DOM Helpers', () => {
 });
 
 describe('Test Isolation Helper - Edge Cases', () => {
-  it.skip('debe manejar BehaviorSubject completado', () => {
+  it.skip('should handle BehaviorSubject completado', () => {
     // El comportamiento de RxJS con subjects completados puede variar
     // entre versiones. Este test se salta por inconsistencias.
   });
 
-  it('debe manejar service con propiedades null', () => {
+  it('should handle service with null properties', () => {
     const service = {
       cache: null,
       _cache: undefined,
@@ -580,7 +580,7 @@ describe('Test Isolation Helper - Edge Cases', () => {
     expect(() => clearServiceCache(service)).not.toThrow();
   });
 
-  it('debe manejar overrides con valores null/undefined', () => {
+  it('should handle overrides with null/undefined values', () => {
     const user = TestDataFactory.mockLocalUser({ email: null as any });
 
     expect(user.email).toBeNull();
