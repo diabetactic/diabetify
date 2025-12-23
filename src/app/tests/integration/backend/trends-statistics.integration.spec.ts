@@ -94,7 +94,7 @@ describe('Backend Integration - Trends & Statistics', () => {
       const readings = await getGlucoseReadings(authToken);
 
       if (readings.length >= 2) {
-        // Verify order descendente
+        // Verify order descending
         for (let i = 0; i < readings.length - 1; i++) {
           const currentDate = new Date(readings[i].created_at || '');
           const nextDate = new Date(readings[i + 1].created_at || '');
@@ -186,7 +186,7 @@ describe('Backend Integration - Trends & Statistics', () => {
       const average = sum / readings.length;
 
       expect(average).toBeGreaterThan(0);
-      expect(average).toBeLessThan(600); // Valor maximo razonable
+      expect(average).toBeLessThan(600); // Maximum reasonable value
     });
 
     conditionalIt('should calculate standard deviation', async () => {
@@ -196,7 +196,7 @@ describe('Backend Integration - Trends & Statistics', () => {
         return;
       }
 
-      // Calculate deviation estandar
+      // Calculate standard deviation
       const values = readings.map(r => r.glucose_level);
       const mean = values.reduce((a, b) => a + b, 0) / values.length;
       const squaredDiffs = values.map(v => Math.pow(v - mean, 2));
@@ -223,7 +223,7 @@ describe('Backend Integration - Trends & Statistics', () => {
       const cv = (stdDev / mean) * 100;
 
       expect(cv).toBeGreaterThanOrEqual(0);
-      expect(cv).toBeLessThan(100); // CV > 100% seria muy inusual
+      expect(cv).toBeLessThan(100); // CV > 100% would be very unusual
     });
   });
 
@@ -270,7 +270,7 @@ describe('Backend Integration - Trends & Statistics', () => {
         byDay.get(dayKey)!.push(r.glucose_level);
       });
 
-      // Calculate average por dia
+      // Calculate average per day
       const dailyAverages = Array.from(byDay.entries()).map(([day, values]) => ({
         day,
         average: values.reduce((a, b) => a + b, 0) / values.length,
@@ -300,7 +300,7 @@ describe('Backend Integration - Trends & Statistics', () => {
         byMeal.get(mealType)!.push(r.glucose_level);
       });
 
-      // Calculate statistics por contexto
+      // Calculate statistics per context
       const mealStats = Array.from(byMeal.entries()).map(([meal, values]) => ({
         meal,
         count: values.length,
@@ -310,11 +310,6 @@ describe('Backend Integration - Trends & Statistics', () => {
       }));
 
       expect(mealStats.length).toBeGreaterThanOrEqual(0);
-
-      // Verify meal stats structure
-      mealStats.forEach(_stat => {
-        // Stats validated above
-      });
     });
 
     conditionalIt('should add readings with different meal contexts', async () => {
@@ -407,7 +402,7 @@ describe('Backend Integration - Trends & Statistics', () => {
         }
       }
     } catch {
-      // Cleanup errors are non-critical
+      // 404 if resource already deleted - non-critical
     }
   });
 });

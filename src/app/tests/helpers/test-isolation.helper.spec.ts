@@ -17,7 +17,7 @@ import {
 
 describe('Test Isolation Helper - BehaviorSubject Reset', () => {
   describe('resetBehaviorSubject', () => {
-    it('should reset BehaviorSubject a valor inicial', () => {
+    it('should reset BehaviorSubject to initial value', () => {
       const subject = new BehaviorSubject<number>(0);
       subject.next(10);
 
@@ -28,7 +28,7 @@ describe('Test Isolation Helper - BehaviorSubject Reset', () => {
       expect(subject.value).toBe(0);
     });
 
-    it('should work con objetos complejos', () => {
+    it('should work with complex objects', () => {
       const initial = { authenticated: false, user: null };
       const subject = new BehaviorSubject(initial);
 
@@ -69,7 +69,7 @@ describe('Test Isolation Helper - Service Cache Clearing', () => {
       expect(service.cache.size).toBe(0);
     });
 
-    it('should clear cache con método clear()', () => {
+    it('should clear cache with clear() method', () => {
       const service = {
         _cache: {
           data: { key: 'value' },
@@ -108,7 +108,7 @@ describe('Test Isolation Helper - Service Cache Clearing', () => {
       expect(service.appointmentCache.length).toBe(0);
     });
 
-    it('should handle servicios sin cache sin errores', () => {
+    it('should handle services without cache without throwing', () => {
       const service = { data: 'some data' };
 
       expect(() => clearServiceCache(service)).not.toThrow();
@@ -118,7 +118,7 @@ describe('Test Isolation Helper - Service Cache Clearing', () => {
 
 describe('Test Isolation Helper - HTTP Client Mock Reset', () => {
   describe('resetHttpClientMock', () => {
-    it('should reset todos los métodos HTTP', () => {
+    it('should reset all HTTP methods', () => {
       const mockHttp = {
         get: vi.fn(),
         post: vi.fn(),
@@ -136,7 +136,7 @@ describe('Test Isolation Helper - HTTP Client Mock Reset', () => {
       expect(mockHttp.post).not.toHaveBeenCalled();
     });
 
-    it('should clear historial de llamadas', () => {
+    it('should clear call history', () => {
       const mockHttp = {
         get: vi.fn(),
         post: vi.fn(),
@@ -359,7 +359,7 @@ describe('Test Isolation Helper - Async Helpers', () => {
   });
 
   describe('AsyncTestHelpers.waitForEmission', () => {
-    it('should wait primera emisión de observable', async () => {
+    it('should wait for the first emission of observable', async () => {
       const subject = new Subject<number>();
 
       setTimeout(() => subject.next(42), 50);
@@ -377,7 +377,7 @@ describe('Test Isolation Helper - Async Helpers', () => {
       );
     });
 
-    it('should handle errores de observable', async () => {
+    it('should handle observable errors', async () => {
       const subject = new Subject<number>();
 
       setTimeout(() => subject.error(new Error('Observable error')), 50);
@@ -414,21 +414,21 @@ describe('Test Isolation Helper - Async Helpers', () => {
       vi.useRealTimers();
     });
 
-    it('should advance timers falsos', async () => {
+    it('should advance fake timers', async () => {
       let executed = false;
 
       setTimeout(() => {
         executed = true;
       }, 1000);
 
-      // tickTimer usa vi.advanceTimersByTime internamente
+      // tickTimer uses vi.advanceTimersByTime internally
       vi.advanceTimersByTime(1000);
       await vi.runAllTimersAsync();
 
       expect(executed).toBe(true);
     });
 
-    it.skip('should allow procesar microtasks', async () => {
+    it.skip('should allow processing microtasks', async () => {
       // setImmediate not available in all test environments
       // This test must be verified manually or with specific config
     });
@@ -451,7 +451,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
     });
 
     describe('querySelector', () => {
-      it('should return elemento si existe', () => {
+      it('should return element if it exists', () => {
         const mockElement = document.createElement('div');
         mockFixture.debugElement.query.mockReturnValue({ nativeElement: mockElement });
 
@@ -460,7 +460,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
         expect(result).toBe(mockElement);
       });
 
-      it('should return null si elemento no existe', () => {
+      it('should return null if element does not exist', () => {
         mockFixture.debugElement.query.mockReturnValue(null);
 
         const result = DOMTestHelpers.querySelector(mockFixture, '.not-found');
@@ -470,7 +470,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
     });
 
     describe('querySelectorAll', () => {
-      it('should return array de elementos', () => {
+      it('should return array of elements', () => {
         const elements = [document.createElement('div'), document.createElement('span')];
         mockFixture.debugElement.queryAll.mockReturnValue(
           elements.map(el => ({ nativeElement: el }))
@@ -531,7 +531,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
     });
 
     describe('hasElement', () => {
-      it('should return true si elemento existe', () => {
+      it('should return true if element exists', () => {
         mockFixture.debugElement.query.mockReturnValue({
           nativeElement: document.createElement('div'),
         });
@@ -539,7 +539,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
         expect(DOMTestHelpers.hasElement(mockFixture, '.exists')).toBe(true);
       });
 
-      it('should return false si elemento no existe', () => {
+      it('should return false if element does not exist', () => {
         mockFixture.debugElement.query.mockReturnValue(null);
 
         expect(DOMTestHelpers.hasElement(mockFixture, '.not-found')).toBe(false);
@@ -547,7 +547,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
     });
 
     describe('hasClass', () => {
-      it('should return true si elemento tiene clase', () => {
+      it('should return true if element has class', () => {
         const mockElement = document.createElement('div');
         mockElement.classList.add('active');
         mockFixture.debugElement.query.mockReturnValue({ nativeElement: mockElement });
@@ -555,7 +555,7 @@ describe('Test Isolation Helper - DOM Helpers', () => {
         expect(DOMTestHelpers.hasClass(mockFixture, 'div', 'active')).toBe(true);
       });
 
-      it('should return false si elemento no tiene clase', () => {
+      it('should return false if element does not have class', () => {
         const mockElement = document.createElement('div');
         mockFixture.debugElement.query.mockReturnValue({ nativeElement: mockElement });
 
@@ -584,6 +584,6 @@ describe('Test Isolation Helper - Edge Cases', () => {
     const user = TestDataFactory.mockLocalUser({ email: null as any });
 
     expect(user.email).toBeNull();
-    expect(user.firstName).toBe('Test'); // Other values are preserved
+    expect(user.firstName).toBe('Test'); // Other values remain unchanged
   });
 });

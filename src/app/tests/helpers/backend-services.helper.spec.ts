@@ -59,7 +59,7 @@ describe('Backend Services Helper - Constants', () => {
     expect(TEST_USERS.user8.dni).toBe('1000');
   });
 
-  it('should have URLs de servicio configuradas', () => {
+  it('should have service URLs configured', () => {
     expect(SERVICE_URLS.apiGateway).toBeDefined();
     expect(SERVICE_URLS.backoffice).toBe('http://localhost:8001');
     expect(SERVICE_URLS.glucoserver).toBe('http://localhost:8002');
@@ -67,7 +67,7 @@ describe('Backend Services Helper - Constants', () => {
     expect(SERVICE_URLS.appointments).toBe('http://localhost:8005');
   });
 
-  it('should have endpoints de health check configurados', () => {
+  it('should have health check endpoints configured', () => {
     expect(HEALTH_ENDPOINTS.apiGateway).toContain('/docs');
     expect(HEALTH_ENDPOINTS.glucoserver).toContain('/docs');
   });
@@ -90,7 +90,7 @@ describe('Backend Services Helper - Health Checks', () => {
   });
 
   describe('checkServiceHealthWithRetry', () => {
-    it('should return healthy en primer intento si servicio responde OK', async () => {
+    it('should return healthy on first attempt if service responds OK', async () => {
       mockFetch.mockResolvedValueOnce({ ok: true, status: 200 });
 
       const promise = checkServiceHealthWithRetry(
@@ -110,7 +110,7 @@ describe('Backend Services Helper - Health Checks', () => {
       });
     });
 
-    it('should retry hasta max retries si servicio falla', async () => {
+    it('should retry up to max retries if service fails', async () => {
       mockFetch.mockRejectedValue(new Error('Connection refused'));
 
       const promise = checkServiceHealthWithRetry(
@@ -157,7 +157,7 @@ describe('Backend Services Helper - Health Checks', () => {
   });
 
   describe('waitForBackendServices', () => {
-    it('should verify salud de todos los servicios especificados', async () => {
+    it('should verify health of all specified services', async () => {
       vi.useRealTimers(); // Use real timers to avoid promise issues
       mockFetch.mockResolvedValue({ ok: true, status: 200 });
 
@@ -169,12 +169,12 @@ describe('Backend Services Helper - Health Checks', () => {
       vi.useFakeTimers();
     });
 
-    it.skip('should throw error si algún servicio está unhealthy', async () => {
+    it.skip('should throw error if any service is unhealthy', async () => {
       // This test has timing issues with the fetch mock and retries
       // Function waits for multiple attempts before throwing error
     });
 
-    it('should throw error para servicios desconocidos', async () => {
+    it('should throw error for unknown services', async () => {
       vi.useRealTimers();
       // Unknown services are treated as unhealthy and cause the function to throw
       await expect(waitForBackendServices(['unknownService'])).rejects.toThrow(
@@ -250,7 +250,7 @@ describe('Backend Services Helper - Authentication', () => {
       );
     });
 
-    it('should send credenciales como form data', async () => {
+    it('should send credentials as form data', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ access_token: 'token', token_type: 'Bearer' }),
@@ -263,7 +263,7 @@ describe('Backend Services Helper - Authentication', () => {
       expect(callArgs.body).toContain('password=pass');
     });
 
-    it('should throw error si login falla', async () => {
+    it('should throw error if login fails', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
@@ -282,7 +282,7 @@ describe('Backend Services Helper - Authentication', () => {
       await expect(loginTestUser()).rejects.toThrow('Login response missing access_token');
     });
 
-    it('should cache token para uso posterior', async () => {
+    it('should cache token for later use', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ access_token: 'cached-token', token_type: 'Bearer' }),
@@ -296,7 +296,7 @@ describe('Backend Services Helper - Authentication', () => {
   });
 
   describe('getAuthHeaders', () => {
-    it('should return headers con token proporcionado', async () => {
+    it('should return headers with provided token', async () => {
       const headers = await getAuthHeaders('my-token');
 
       expect(headers.get('Authorization')).toBe('Bearer my-token');
@@ -317,7 +317,7 @@ describe('Backend Services Helper - Authentication', () => {
   });
 
   describe('getAuthHeadersForFetch', () => {
-    it('should return objeto de headers para fetch API', async () => {
+    it('should return headers object for fetch API', async () => {
       const headers = await getAuthHeadersForFetch('test-token');
 
       expect(headers).toEqual({
@@ -376,7 +376,7 @@ describe('Backend Services Helper - HTTP Methods', () => {
       );
     });
 
-    it('should throw error si GET falla', async () => {
+    it('should throw error if GET fails', async () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
@@ -391,7 +391,7 @@ describe('Backend Services Helper - HTTP Methods', () => {
       await expect(authenticatedGet('/test')).rejects.toThrow('GET /test failed (404)');
     });
 
-    it('should handle URLs absolutas', async () => {
+    it('should handle absolute URLs', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ data: 'response' }),
@@ -404,7 +404,7 @@ describe('Backend Services Helper - HTTP Methods', () => {
   });
 
   describe('authenticatedPost', () => {
-    it('should do POST con body JSON', async () => {
+    it('should do POST with JSON body', async () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
@@ -425,7 +425,7 @@ describe('Backend Services Helper - HTTP Methods', () => {
   });
 
   describe('authenticatedPut', () => {
-    it('should do PUT con body JSON', async () => {
+    it('should do PUT with JSON body', async () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
@@ -444,7 +444,7 @@ describe('Backend Services Helper - HTTP Methods', () => {
   });
 
   describe('authenticatedPatch', () => {
-    it('should do PATCH con body JSON', async () => {
+    it('should do PATCH with JSON body', async () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
@@ -531,7 +531,7 @@ describe('Backend Services Helper - Glucose Readings', () => {
       expect(callUrl).toContain('notes=Test+note');
     });
 
-    it('should omit created_at si no se proporciona', async () => {
+    it('should omit created_at if not provided', async () => {
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
@@ -691,7 +691,7 @@ describe('Backend Services Helper - Appointments', () => {
       expect(state).toBe('ACCEPTED');
     });
 
-    it('should return null si request falla', async () => {
+    it('should return null if request fails', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       const state = await getAppointmentState('token');
@@ -736,7 +736,7 @@ describe('Backend Services Helper - Appointments', () => {
       expect(result).toEqual({ appointment_id: 123 });
     });
 
-    it('should return null para errores de estado (403)', async () => {
+    it('should return null for state errors (403)', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 403,
@@ -765,7 +765,7 @@ describe('Backend Services Helper - Appointments', () => {
   });
 
   describe('isBackofficeAvailable', () => {
-    it('should return true si backoffice responde', async () => {
+    it('should return true if backoffice responds', async () => {
       mockFetch.mockResolvedValueOnce({ ok: true });
 
       const available = await isBackofficeAvailable();
@@ -773,7 +773,7 @@ describe('Backend Services Helper - Appointments', () => {
       expect(available).toBe(true);
     });
 
-    it('should return false si backoffice no responde', async () => {
+    it('should return false if backoffice does not respond', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Connection refused'));
 
       const available = await isBackofficeAvailable();
@@ -790,7 +790,7 @@ describe('Backend Services Helper - Setup/Teardown', () => {
   });
 
   describe('setupBackendIntegrationTests', () => {
-    // Este test requiere backend real debido a la complejidad de waitForBackendServices
+    // This test requires real backend due to waitForBackendServices complexity
     // that uses retries and multiple health checks
     it.skip('should verify services and login (requires backend)', async () => {
       // This function calls waitForBackendServices with complex retries
@@ -799,7 +799,7 @@ describe('Backend Services Helper - Setup/Teardown', () => {
       expect(token).toBeDefined();
     });
 
-    it('should export función setupBackendIntegrationTests', () => {
+    it('should export setupBackendIntegrationTests function', () => {
       expect(typeof setupBackendIntegrationTests).toBe('function');
     });
   });
@@ -843,7 +843,7 @@ describe('Backend Services Helper - Edge Cases', () => {
     expect(result).toBe('plain text response');
   });
 
-  it('should handle timeouts en fetch', async () => {
+  it('should handle timeouts in fetch', async () => {
     vi.useRealTimers();
 
     mockFetch.mockImplementationOnce(
@@ -858,7 +858,7 @@ describe('Backend Services Helper - Edge Cases', () => {
     ).resolves.toHaveProperty('healthy', false);
   });
 
-  it('should handle URLs con caracteres especiales', async () => {
+  it('should handle URLs with special characters', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ data: 'ok' }),

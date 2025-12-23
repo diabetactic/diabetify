@@ -14,6 +14,7 @@ import {
   authenticatedGet,
   authenticatedPatch,
 } from '../../helpers/backend-services.helper';
+import { GlucoseUnit } from '../../../core/models/glucose-reading.model';
 
 // Test execution state
 let shouldRun = false;
@@ -303,8 +304,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
   describe('DISPLAY PREFERENCES', () => {
     conditionalIt('should define glucose unit preference', async () => {
       // Supported glucose units
-      const glucoseUnits = ['mg/dL', 'mmol/L'] as const;
-      type GlucoseUnit = (typeof glucoseUnits)[number];
+      const glucoseUnits: GlucoseUnit[] = ['mg/dL', 'mmol/L'];
 
       const convertToMmolL = (mgDl: number): number => mgDl / 18.0182;
       const convertToMgDl = (mmolL: number): number => mmolL * 18.0182;

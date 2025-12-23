@@ -52,7 +52,7 @@ interface InsulinSettings {
   activeInsulinDuration: number; // Active insulin duration (hours)
 }
 
-interface BolusCalculation {
+interface DetailedBolusCalculation {
   mealDose: number; // Dose for carbohydrates
   correctionDose: number; // Correction dose
   iobAdjustment: number; // Insulin on board adjustment
@@ -66,7 +66,7 @@ function calculateBolus(
   carbs: number,
   settings: InsulinSettings,
   insulinOnBoard: number = 0
-): BolusCalculation {
+): DetailedBolusCalculation {
   const warnings: string[] = [];
 
   // Dose for carbohydrates
