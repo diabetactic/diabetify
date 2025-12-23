@@ -396,8 +396,8 @@ describe('Test Isolation Helper - Async Helpers', () => {
       await AsyncTestHelpers.waitForEmission(subject, 100);
 
       // Unsubscription done in setTimeout to avoid the issue
-      // de acceder a subscription antes de que se asigne
-      // Esperar un tick para que se ejecute el setTimeout
+      // of accessing subscription before it is assigned
+      // Wait one tick for setTimeout to execute
       await new Promise(resolve => setTimeout(resolve, 10));
 
       // Should not have additional subscription

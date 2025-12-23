@@ -1,14 +1,14 @@
 /**
  * Token Refresh During Active Operations - Integration Tests
  *
- * Pruebas de integración para verificar que el token refresh funciona correctamente
- * durante operaciones activas críticas como:
- * - Envío de lecturas de glucosa
- * - Solicitudes de citas
- * - Operaciones de sincronización batch
- * - Múltiples requests concurrentes
+ * Integration tests to verify that token refresh works correctly
+ * during critical active operations such as:
+ * - Sending glucose readings
+ * - Appointment requests
+ * - Batch synchronization operations
+ * - Multiple concurrent requests
  *
- * Usa MSW para simular respuestas de red y escenarios de expiración de tokens.
+ * Uses MSW to simulate network responses and token expiration scenarios.
  */
 import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
@@ -34,8 +34,8 @@ import { NotificationService } from '@core/services/notification.service';
 
 const API_BASE = 'http://localhost:8000';
 
-// TODO: These tests require proper configuration de MSW y servicios Angular
-// Se saltan temporalmente hasta que se resuelvan los problemas de providers
+// TODO: These tests require proper configuration of MSW and Angular services
+// Skipped temporarily until provider issues are resolved
 describe.skip('Token Refresh During Active Operations', () => {
   let authService: LocalAuthService;
   let readingsService: ReadingsService;
@@ -95,23 +95,23 @@ describe.skip('Token Refresh During Active Operations', () => {
     httpClient = TestBed.inject(HttpClient);
     tokenStorage = TestBed.inject(TokenStorageService);
 
-    // Login antes de cada test
+    // Login before each test
     const loginResult = await firstValueFrom(authService.login('1000', 'tuvieja', false));
     expect(loginResult.success).toBe(true);
   });
 
-  describe('Token Expira Durante Envío de Lectura de Glucosa', () => {
+  describe('Token Expires During Glucose Reading Submission', () => {
     it('debe refrescar token y completar el envío de lectura exitosamente', async () => {
       let createAttempts = 0;
       let refreshCalled = false;
 
-      // Primera llamada: 401 (token expirado)
+      // First call: 401 (expired token)
       // Second call: success with new token
       server.use(
         http.post(`${API_BASE}/glucose/create`, async ({ request }) => {
           createAttempts++;
 
-          // Primera llamada falla con 401
+          // First call fails with 401
           if (createAttempts === 1) {
             return HttpResponse.json({ detail: 'Token expired' }, { status: 401 });
           }
@@ -121,7 +121,7 @@ describe.skip('Token Refresh During Active Operations', () => {
           expect(authHeader).toBeTruthy();
           expect(authHeader).toContain('Bearer');
 
-          // Simular respuesta exitosa
+          // Simulate successful response
           await delay(50);
           return HttpResponse.json(
             {
@@ -164,9 +164,9 @@ describe.skip('Token Refresh During Active Operations', () => {
       // Wait for sync
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      // Verify that el refresh fue llamado
+      // Verify that refresh was called
       expect(refreshCalled).toBe(true);
-      // Verify that hubo dos intentos (inicial + retry)
+      // Verify that there were two attempts (initial + retry)
       expect(createAttempts).toBeGreaterThanOrEqual(1);
     });
 
@@ -191,10 +191,10 @@ describe.skip('Token Refresh During Active Operations', () => {
 
       await readingsService.addReading(reading, '1000');
 
-      // Esperar que el sync falle
+      // Wait for sync to fail
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      // El servicio debe seguir funcionando pero con readings sin sincronizar
+      // The service should continue working but with unsynchronized readings
       const unsynced = await readingsService.getUnsyncedReadings();
       expect(unsynced.length).toBeGreaterThan(0);
     });
@@ -207,7 +207,7 @@ describe.skip('Token Refresh During Active Operations', () => {
           return HttpResponse.json({ detail: 'Token expired' }, { status: 401 });
         }),
         http.post(`${API_BASE}/token/refresh`, async () => {
-          // Simular timeout - delay muy largo
+          // Simulate timeout - very long delay
           await delay(30000);
           return HttpResponse.json({
             access_token: 'new-token',
@@ -228,7 +228,7 @@ describe.skip('Token Refresh During Active Operations', () => {
 
       const addPromise = readingsService.addReading(reading, '1000');
 
-      // Avanzar timers
+      // Advance timers
       vi.advanceTimersByTime(35000);
 
       await addPromise;
@@ -237,7 +237,7 @@ describe.skip('Token Refresh During Active Operations', () => {
     });
   });
 
-  describe('Token Expira Durante Solicitud de Cita', () => {
+  describe('Token Expires During Appointment Request', () => {
     it('debe refrescar token y completar la solicitud de cita', async () => {
       let submitAttempts = 0;
       let refreshCalled = false;
@@ -303,7 +303,7 @@ describe.skip('Token Refresh During Active Operations', () => {
     });
   });
 
-  describe('Token Expira Durante Operación de Sincronización Batch', () => {
+  describe('Token Expires During Batch Synchronization Operation', () => {
     it('debe refrescar token y continuar con batch sync', async () => {
       let refreshCalled = false;
       let createCallCount = 0;
@@ -340,7 +340,7 @@ describe.skip('Token Refresh During Active Operations', () => {
         await readingsService.addReading(reading, '1000');
       }
 
-      // Mock: primera lectura falla con 401, luego refresh, luego todas exitosas
+      // Mock: first reading fails with 401, then refresh, then all successful
       server.use(
         http.post(`${API_BASE}/glucose/create`, ({ request }) => {
           createCallCount++;
@@ -387,7 +387,7 @@ describe.skip('Token Refresh During Active Operations', () => {
       let refreshCount = 0;
       let requestCount = 0;
 
-      // Agregar 5 lecturas
+      // Add 5 readings
       for (let i = 0; i < 5; i++) {
         await readingsService.addReading(
           {
@@ -405,7 +405,7 @@ describe.skip('Token Refresh During Active Operations', () => {
       server.use(
         http.post(`${API_BASE}/glucose/create`, () => {
           requestCount++;
-          // Cada 2 requests, retornar 401
+          // Every 2 requests, return 401
           if (requestCount % 2 === 0) {
             return HttpResponse.json({ detail: 'Token expired' }, { status: 401 });
           }
@@ -434,12 +434,12 @@ describe.skip('Token Refresh During Active Operations', () => {
 
       const syncResult = await readingsService.syncPendingReadings();
 
-      // Al menos algunas deben sincronizar
+      // At least some should sync
       expect(syncResult.success + syncResult.failed).toBeGreaterThan(0);
     });
   });
 
-  describe('Múltiples Requests Concurrentes Cuando Token Expira', () => {
+  describe('Multiple Concurrent Requests When Token Expires', () => {
     it('debe refrescar una sola vez para múltiples requests concurrentes', async () => {
       let refreshCallCount = 0;
       let _requestsAfterRefresh = 0;
@@ -463,7 +463,7 @@ describe.skip('Token Refresh During Active Operations', () => {
             });
           }
 
-          // Primer token: retornar 401
+          // First token: return 401
           return HttpResponse.json({ detail: 'Token expired' }, { status: 401 });
         }),
         http.get(`${API_BASE}/glucose/mine`, ({ request }) => {
@@ -509,11 +509,11 @@ describe.skip('Token Refresh During Active Operations', () => {
         firstValueFrom(httpClient.get(`${API_BASE}/appointments/status`)),
       ]);
 
-      // Con un interceptor correcto, solo debe haber 1 refresh
+      // With correct interceptor, there should be only 1 refresh
       // (though this depends on interceptor implementation)
       expect(refreshCallCount).toBeGreaterThan(0);
 
-      // Verify that algunos requests se completaron
+      // Verify that some requests completed
       const successfulResults = results.filter(r => r.status === 'fulfilled');
       expect(successfulResults.length).toBeGreaterThan(0);
     });
@@ -565,9 +565,9 @@ describe.skip('Token Refresh During Active Operations', () => {
     });
   });
 
-  describe('Escenario: Refresh Token También Expiró', () => {
-    it('debe hacer logout automático cuando refresh token expira', async () => {
-      const _logoutTriggered = false;
+  describe('Scenario: Refresh Token Also Expired', () => {
+    it('should auto-logout when refresh token expires', async () => {
+      let _logoutTriggered = false;
 
       server.use(
         http.get(`${API_BASE}/users/me`, () => {
@@ -581,7 +581,7 @@ describe.skip('Token Refresh During Active Operations', () => {
       // Monitor auth state
       const authSub = authService.authState$.subscribe(state => {
         if (!state.isAuthenticated && state.user === null) {
-          logoutTriggered = true;
+          _logoutTriggered = true;
         }
       });
 
@@ -601,7 +601,7 @@ describe.skip('Token Refresh During Active Operations', () => {
     });
 
     it('debe limpiar datos sensibles después de logout por refresh expirado', async () => {
-      // Agregar lectura local
+      // Add local reading
       await readingsService.addReading(
         {
           time: new Date().toISOString(),
@@ -623,19 +623,19 @@ describe.skip('Token Refresh During Active Operations', () => {
         })
       );
 
-      // Intentar sync - debe fallar
+      // Try sync - should fail
       await readingsService.syncPendingReadings();
 
       // Do explicit logout
       await authService.logout();
 
-      // Verify that datos fueron limpiados
+      // Verify that data was cleaned
       const readings = await readingsService.getAllReadings();
       expect(readings.total).toBe(0);
     });
   });
 
-  describe('Verificación de Autorización en Headers', () => {
+  describe('Authorization Header Verification', () => {
     it('debe incluir nuevo token en requests subsecuentes después de refresh', async () => {
       let firstCall = true;
       let _secondCallHasNewToken = false;
@@ -649,7 +649,7 @@ describe.skip('Token Refresh During Active Operations', () => {
             return HttpResponse.json({ detail: 'Token expired' }, { status: 401 });
           }
 
-          // Verify that el segundo intento tiene el token refrescado
+          // Verify that the second attempt has the refreshed token
           if (authHeader?.includes('new-access-token')) {
             _secondCallHasNewToken = true;
             return HttpResponse.json({
@@ -680,13 +680,13 @@ describe.skip('Token Refresh During Active Operations', () => {
       try {
         await firstValueFrom(httpClient.get(`${API_BASE}/users/me`));
       } catch {
-        // Puede fallar dependiendo del interceptor
+        // May fail depending on interceptor
       }
 
       // Wait for propagation
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // Hacer segundo intento
+      // Make second attempt
       try {
         await firstValueFrom(httpClient.get(`${API_BASE}/users/me`));
       } catch {

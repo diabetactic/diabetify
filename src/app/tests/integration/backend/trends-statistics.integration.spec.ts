@@ -69,11 +69,11 @@ describe('Backend Integration - Trends & Statistics', () => {
     });
 
     conditionalIt('should calculate correct reading counts', async () => {
-      // Obtener lecturas actuales
+      // Get current readings
       const readingsBefore = await getGlucoseReadings(authToken);
       const initialCount = readingsBefore.length;
 
-      // Agregar una lectura de prueba
+      // Add a test reading
       const testReading = await createGlucoseReading(
         {
           glucose_level: 110,
@@ -85,7 +85,7 @@ describe('Backend Integration - Trends & Statistics', () => {
 
       expect(testReading).toBeDefined();
 
-      // Verify that el conteo aumento (usar >= para tolerancia a tests concurrentes)
+      // Verify that count increased (use >= for concurrent test tolerance)
       const readingsAfter = await getGlucoseReadings(authToken);
       expect(readingsAfter.length).toBeGreaterThanOrEqual(initialCount + 1);
     });
@@ -99,7 +99,7 @@ describe('Backend Integration - Trends & Statistics', () => {
           const currentDate = new Date(readings[i].created_at || '');
           const nextDate = new Date(readings[i + 1].created_at || '');
 
-          // Si ambas fechas son validas, la actual debe ser >= a la siguiente
+          // If both dates are valid, current should be >= next
           if (!isNaN(currentDate.getTime()) && !isNaN(nextDate.getTime())) {
             expect(currentDate.getTime()).toBeGreaterThanOrEqual(nextDate.getTime());
           }
@@ -134,7 +134,7 @@ describe('Backend Integration - Trends & Statistics', () => {
         else categories.veryHigh++;
       });
 
-      // Verify that la suma de categorias = total de lecturas
+      // Verify that sum of categories equals total readings
       const total =
         categories.veryLow +
         categories.low +
@@ -145,7 +145,7 @@ describe('Backend Integration - Trends & Statistics', () => {
     });
 
     conditionalIt('should add readings with different range values', async () => {
-      // Agregar lecturas en diferentes rangos
+      // Add readings in different ranges
       const testReadings = [
         { glucose_level: 45, notes: '__TIR_TEST__ Very Low' },
         { glucose_level: 65, notes: '__TIR_TEST__ Low' },
@@ -233,7 +233,7 @@ describe('Backend Integration - Trends & Statistics', () => {
 
   describe('DATE RANGE Filtering', () => {
     conditionalIt('should filter readings by date range', async () => {
-      // Obtener todas las lecturas
+      // Get all readings
       const allReadings = await getGlucoseReadings(authToken);
 
       if (allReadings.length === 0) {
@@ -249,7 +249,7 @@ describe('Backend Integration - Trends & Statistics', () => {
         return !isNaN(readingDate.getTime()) && readingDate >= sevenDaysAgo;
       });
 
-      // Debe haber menos o igual lecturas en el rango
+      // Should have less or equal readings in the range
       expect(recentReadings.length).toBeLessThanOrEqual(allReadings.length);
     });
 
@@ -388,7 +388,7 @@ describe('Backend Integration - Trends & Statistics', () => {
     if (!shouldRun) return;
 
     try {
-      // Obtener lecturas de prueba
+      // Get test readings
       const readings = await getGlucoseReadings(authToken);
       const testReadings = readings.filter(
         r =>
@@ -397,7 +397,7 @@ describe('Backend Integration - Trends & Statistics', () => {
           r.notes?.includes('__MEAL_TEST__')
       );
 
-      // Eliminar lecturas de prueba
+      // Delete test readings
       for (const reading of testReadings) {
         if (reading.id) {
           await fetch(`${SERVICE_URLS.apiGateway}/glucose/${reading.id}`, {

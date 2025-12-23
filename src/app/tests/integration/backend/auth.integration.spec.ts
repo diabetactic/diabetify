@@ -175,7 +175,7 @@ describe('Backend Integration - Auth', () => {
 
   describe('SESSION MANAGEMENT', () => {
     conditionalIt('should allow multiple login sessions for same user', async () => {
-      // Limpiar cache para asegurar tokens frescos
+      // Clear cache to ensure fresh tokens
       clearCachedAuthToken();
 
       // Login same user twice - simulates multiple browser sessions
@@ -197,7 +197,7 @@ describe('Backend Integration - Auth', () => {
     conditionalIt('should isolate sessions between users', async () => {
       const token1 = await loginTestUser(TEST_USERS.user4);
 
-      // El token de user4 solo debe acceder a datos de user4
+      // User4's token should only access user4's data
       const profile = await authenticatedGet('/users/me', token1);
       expect(profile.dni).toBe(TEST_USERS.user4.dni);
     });
@@ -209,7 +209,7 @@ describe('Backend Integration - Auth', () => {
 
   describe('LOGOUT', () => {
     conditionalIt('should clear cached token on logout', async () => {
-      // Login para obtener un token cacheado
+      // Login to get a cached token
       await loginTestUser(TEST_USER);
 
       // Clear simula logout

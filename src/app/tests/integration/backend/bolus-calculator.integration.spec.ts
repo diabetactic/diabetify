@@ -44,23 +44,23 @@ const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) 
   );
 };
 
-// Interfaces para calculos de bolus
+// Interfaces for bolus calculations
 interface InsulinSettings {
-  ratio: number; // Gramos de carbohidratos por unidad de insulina (I:C)
-  sensitivity: number; // Reduccion de glucosa por unidad (ISF)
-  targetGlucose: number; // Objetivo de glucosa
-  activeInsulinDuration: number; // Duracion de insulina activa (horas)
+  ratio: number; // Grams of carbs per insulin unit (I:C)
+  sensitivity: number; // Glucose reduction per unit (ISF)
+  targetGlucose: number; // Target glucose
+  activeInsulinDuration: number; // Active insulin duration (hours)
 }
 
 interface BolusCalculation {
-  mealDose: number; // Dosis para carbohidratos
-  correctionDose: number; // Dosis de correccion
-  iobAdjustment: number; // Ajuste por insulina activa
-  totalDose: number; // Dosis total recomendada
+  mealDose: number; // Dose for carbohydrates
+  correctionDose: number; // Correction dose
+  iobAdjustment: number; // Insulin on board adjustment
+  totalDose: number; // Total recommended dose
   warnings: string[];
 }
 
-// Calculadora de bolus
+// Bolus calculator
 function calculateBolus(
   currentGlucose: number,
   carbs: number,
@@ -69,17 +69,17 @@ function calculateBolus(
 ): BolusCalculation {
   const warnings: string[] = [];
 
-  // Dosis para carbohidratos
+  // Dose for carbohydrates
   const mealDose = carbs / settings.ratio;
 
-  // Dosis de correccion (solo si esta sobre el objetivo)
+  // Correction dose (only if above target)
   let correctionDose = 0;
   if (currentGlucose > settings.targetGlucose) {
     correctionDose = (currentGlucose - settings.targetGlucose) / settings.sensitivity;
   } else if (currentGlucose < settings.targetGlucose - 20) {
-    // Si esta bajo, podria necesitar reducir dosis
+    // If low, may need to reduce dose
     correctionDose = (currentGlucose - settings.targetGlucose) / settings.sensitivity;
-    warnings.push('Glucosa baja - considerar reducir dosis de comida');
+    warnings.push('Low glucose - consider reducing meal dose');
   }
 
   // Ajuste por insulina activa (IOB)
@@ -117,7 +117,7 @@ function calculateIOB(doses: { units: number; timestamp: Date }[], durationHours
   doses.forEach(dose => {
     const hoursAgo = (now.getTime() - dose.timestamp.getTime()) / (1000 * 60 * 60);
     if (hoursAgo < durationHours) {
-      // Modelo lineal simple de decaimiento
+      // Simple linear decay model
       const remaining = 1 - hoursAgo / durationHours;
       iob += dose.units * remaining;
     }
@@ -325,7 +325,7 @@ describe('Backend Integration - Bolus Calculator', () => {
 
   describe('INTEGRATION with Backend Data', () => {
     conditionalIt('should calculate based on current glucose reading', async () => {
-      // Crear una lectura reciente
+      // Create a recent reading
       const reading = await createGlucoseReading(
         {
           glucose_level: 180,
@@ -337,7 +337,7 @@ describe('Backend Integration - Bolus Calculator', () => {
 
       expect(reading).toBeDefined();
 
-      // Usar el valor para calcular
+      // Use the value to calculate
       const settings: InsulinSettings = {
         ratio: 10,
         sensitivity: 50,
@@ -359,8 +359,8 @@ describe('Backend Integration - Bolus Calculator', () => {
 
       expect(profile).toBeDefined();
 
-      // Los settings de insulina podrian venir del perfil
-      // Por ahora verificamos que el perfil existe
+      // Insulin settings could come from the profile
+      // For now we verify that the profile exists
       expect(profile.dni).toBe(TEST_USER.dni);
     });
   });

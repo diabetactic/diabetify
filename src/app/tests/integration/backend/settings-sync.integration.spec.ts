@@ -173,7 +173,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
 
   describe('INSULIN SETTINGS', () => {
     conditionalIt('should store insulin-to-carb ratio', async () => {
-      // Ratio tipico: 1 unidad por 10-15g carbohidratos
+      // Typical ratio: 1 unit per 10-15g carbohydrates
       const insulinSettings = {
         ratio: 12, // 1:12
         sensitivity: 50, // 1U baja 50 mg/dL
@@ -195,11 +195,11 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
     });
 
     conditionalIt('should handle time-based ratio variations', async () => {
-      // Ratios diferentes por hora del dia
+      // Different ratios by time of day
       const timeBasedRatios = {
-        morning: 10, // Mas sensible por la manana
+        morning: 10, // More sensitive in the morning
         afternoon: 12,
-        evening: 15, // Menos sensible en la noche
+        evening: 15, // Less sensitive at night
       };
 
       const getHourlyRatio = (hour: number) => {
@@ -220,7 +220,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
 
   describe('NOTIFICATION PREFERENCES', () => {
     conditionalIt('should define reminder intervals', async () => {
-      // Configuracion de recordatorios
+      // Reminder configuration
       const reminderSettings = {
         mealReminders: true,
         reminderIntervalHours: 4,
@@ -302,7 +302,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
 
   describe('DISPLAY PREFERENCES', () => {
     conditionalIt('should define glucose unit preference', async () => {
-      // Unidades de glucosa soportadas
+      // Supported glucose units
       const glucoseUnits = ['mg/dL', 'mmol/L'] as const;
       type GlucoseUnit = (typeof glucoseUnits)[number];
 
@@ -340,8 +340,8 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
         }
       };
 
-      // Usar fecha explicita para evitar problemas de timezone
-      const testDate = new Date(2025, 11, 21); // Diciembre 21, 2025 (mes 0-indexed)
+      // Use explicit date to avoid timezone issues
+      const testDate = new Date(2025, 11, 21); // December 21, 2025 (month 0-indexed)
       expect(formatDate(testDate, dateFormats.es)).toBe('21/12/2025');
       expect(formatDate(testDate, dateFormats.en)).toBe('12/21/2025');
     });
@@ -381,9 +381,9 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
     });
 
     conditionalIt('should resolve system theme preference', async () => {
-      // Simular deteccion de tema del sistema
+      // Simulate system theme detection
       const getSystemTheme = (): 'light' | 'dark' => {
-        // En tests, simular preferencia
+        // In tests, simulate preference
         return 'dark';
       };
 

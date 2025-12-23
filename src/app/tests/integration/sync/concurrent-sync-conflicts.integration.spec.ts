@@ -80,7 +80,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
 
   describe('Same Reading Edited on Multiple Devices (Server Wins)', () => {
     it('should resolve conflict with server timestamp winning', async () => {
-      // Simular lectura sincronizada previamente
+      // Simulate previously synced reading
       const baseReading = await readingsService.addReading({
         value: 100,
         units: 'mg/dL',
@@ -112,10 +112,10 @@ describe('Concurrent Sync Conflicts Integration', () => {
               {
                 id: 123, // Mismo backendId
                 user_id: 1000,
-                glucose_level: 120, // Valor diferente del servidor
+                glucose_level: 120, // Different value from server
                 reading_type: 'DESAYUNO',
-                created_at: '01/01/2025 10:00:00', // Timestamp del servidor
-                notes: 'Device 2 edit', // Notas diferentes del servidor
+                created_at: '01/01/2025 10:00:00', // Server timestamp
+                notes: 'Device 2 edit', // Different notes from server
               },
             ],
           });
@@ -129,8 +129,8 @@ describe('Concurrent Sync Conflicts Integration', () => {
       // Verify that server won (server wins)
       const updated = await readingsService.getReadingById(baseReading.id);
       expect(updated).toBeDefined();
-      expect(updated!.value).toBe(120); // Valor del servidor
-      expect(updated!.notes).toBe('Device 2 edit'); // Notas del servidor
+      expect(updated!.value).toBe(120); // Server value
+      expect(updated!.notes).toBe('Device 2 edit'); // Server notes
       expect(updated!.synced).toBe(true);
     });
 
@@ -175,7 +175,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
 
       await readingsService.fetchFromBackend();
 
-      // Verify that todos los campos del servidor ganaron
+      // Verify that all server fields won
       const updated = await readingsService.getReadingById(baseReading.id);
       expect(updated!.value).toBe(150);
       expect(updated!.mealContext).toBe('POSTPRANDIAL');
@@ -185,7 +185,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
 
   describe('Reading Deleted on Server but Modified Locally', () => {
     it('should handle local modification of server-deleted reading', async () => {
-      // Crear y sincronizar lectura
+      // Create and sync reading
       const reading = await readingsService.addReading({
         value: 100,
         units: 'mg/dL',
@@ -209,7 +209,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
       server.use(
         http.get(`${API_BASE}/glucose/mine`, async () => {
           return HttpResponse.json({
-            readings: [], // Lectura ya no existe en servidor
+            readings: [], // Reading no longer exists on server
           });
         })
       );
@@ -217,7 +217,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
       // Fetch should not delete local reading (no delete sync)
       await readingsService.fetchFromBackend();
 
-      // La lectura local debe seguir existiendo
+      // Local reading should still exist
       const local = await readingsService.getReadingById(reading.id);
       expect(local).toBeDefined();
       expect(local!.value).toBe(110);
@@ -225,7 +225,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
     });
 
     it('should keep local-only reading when server deletes original', async () => {
-      // Escenario: lectura creada offline, servidor rechaza el sync
+      // Scenario: reading created offline, server rejects the sync
       const localReading = await readingsService.addReading({
         value: 95,
         units: 'mg/dL',
@@ -234,39 +234,39 @@ describe('Concurrent Sync Conflicts Integration', () => {
         notes: 'Created offline',
       });
 
-      // Verify that es local-only
+      // Verify it's local-only
       expect(localReading.synced).toBe(false);
       expect(localReading.isLocalOnly).toBe(true);
 
-      // Servidor devuelve 404 al intentar sincronizar
+      // Server returns 404 when trying to sync
       server.use(
         http.post(`${API_BASE}/glucose/create`, async () => {
           return HttpResponse.json({ detail: 'Validation error' }, { status: 422 });
         })
       );
 
-      // Intentar sync
+      // Try sync
       await readingsService.syncPendingReadings();
 
-      // La lectura debe seguir existiendo localmente
+      // Reading should continue to exist locally
       const stillExists = await readingsService.getReadingById(localReading.id);
       expect(stillExists).toBeDefined();
       expect(stillExists!.isLocalOnly).toBe(true);
     });
   });
 
-  // TODO: Estos tests tienen timing flaky debido a la naturaleza async
+  // TODO: These tests have flaky timing due to the async nature
   // of batch sync. Must be rewritten with better timing control.
   describe.skip('Batch Sync with Partial Failures', () => {
     it('should handle some readings succeeding and some failing in batch sync', async () => {
-      // Primero bloquear auto-sync
+      // First block auto-sync
       server.use(
         http.post(`${API_BASE}/glucose/create`, async () => {
           return HttpResponse.json({ detail: 'Offline' }, { status: 503 });
         })
       );
 
-      // Crear 5 lecturas locales
+      // Create 5 local readings
       const readings = [];
       for (let i = 0; i < 5; i++) {
         const reading = await readingsService.addReading({
@@ -279,19 +279,19 @@ describe('Concurrent Sync Conflicts Integration', () => {
         readings.push(reading);
       }
 
-      // Esperar a que auto-syncs fallen
+      // Wait for auto-syncs to fail
       await new Promise(resolve => setTimeout(resolve, 150));
 
       let createCount = 0;
 
-      // Ahora configurar mock: lecturas 1, 3, 5 exitosas, lecturas 2 y 4 fallan
+      // Now configure mock: readings 1, 3, 5 succeed, readings 2 and 4 fail
       server.resetHandlers();
       server.use(
         http.post(`${API_BASE}/glucose/create`, async () => {
           createCount++;
           await delay(50);
 
-          // Fallar en lecturas 2 y 4
+          // Fail on readings 2 and 4
           if (createCount === 2 || createCount === 4) {
             return HttpResponse.json({ detail: 'Server error' }, { status: 500 });
           }
@@ -310,7 +310,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
         })
       );
 
-      // Ejecutar batch sync
+      // Execute batch sync
       const syncResult = await readingsService.syncPendingReadings();
 
       // Should report successes and failures
@@ -328,7 +328,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
     });
 
     it('should retry failed readings up to SYNC_RETRY_LIMIT (3 times)', async () => {
-      // Crear lectura local
+      // Create local reading
       await readingsService.addReading({
         value: 100,
         units: 'mg/dL',
@@ -377,7 +377,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
         })
       );
 
-      // Crear 3 lecturas
+      // Create 3 readings
       await readingsService.addReading({
         value: 100,
         units: 'mg/dL',
@@ -400,12 +400,12 @@ describe('Concurrent Sync Conflicts Integration', () => {
         notes: 'Third',
       });
 
-      // Esperar a que auto-syncs fallen
+      // Wait for auto-syncs to fail
       await new Promise(resolve => setTimeout(resolve, 150));
 
       let createCount = 0;
 
-      // Ahora configurar mock: segunda lectura falla, otras dos exitosas
+      // Now configure mock: second reading fails, other two succeed
       server.resetHandlers();
       server.use(
         http.post(`${API_BASE}/glucose/create`, async () => {
@@ -429,11 +429,11 @@ describe('Concurrent Sync Conflicts Integration', () => {
 
       const result = await readingsService.syncPendingReadings();
 
-      // 2 exitosas, 1 fallida
+      // 2 successful, 1 failed
       expect(result.success).toBe(2);
       expect(result.failed).toBe(1);
 
-      // La fallida debe estar en la cola para reintentar
+      // The failed one should be in the queue for retry
       const queueItems = await db.syncQueue.toArray();
       expect(queueItems.length).toBe(1);
       expect(queueItems[0].retryCount).toBe(1);
@@ -470,10 +470,10 @@ describe('Concurrent Sync Conflicts Integration', () => {
               {
                 id: 777,
                 user_id: 1000,
-                glucose_level: 150, // Valor del servidor
+                glucose_level: 150, // Server value
                 reading_type: 'DESAYUNO',
                 created_at: '01/01/2025 08:00:00',
-                notes: 'Original', // Notas sin cambiar en servidor
+                notes: 'Original', // Notes unchanged on server
               },
             ],
           });
@@ -483,9 +483,9 @@ describe('Concurrent Sync Conflicts Integration', () => {
       await readingsService.fetchFromBackend();
 
       const merged = await readingsService.getReadingById(reading.id);
-      // Servidor gana en todos los campos (no hay merge selectivo)
+      // Server wins on all fields (no selective merge)
       expect(merged!.value).toBe(150);
-      expect(merged!.notes).toBe('Original'); // Servidor sobrescribe
+      expect(merged!.notes).toBe('Original'); // Server overwrites
     });
 
     it('should handle notes field conflict (server wins)', async () => {
@@ -577,7 +577,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
 
   describe('Concurrent Sync Triggers (Auto + Manual)', () => {
     it('should handle manual sync while auto-sync is in progress (mutex)', async () => {
-      // Crear lectura
+      // Create reading
       await readingsService.addReading({
         value: 100,
         units: 'mg/dL',
@@ -606,7 +606,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
         })
       );
 
-      // Disparar dos syncs concurrentes
+      // Fire two concurrent syncs
       const [result1, result2] = await Promise.all([
         readingsService.syncPendingReadings(),
         readingsService.syncPendingReadings(),
@@ -641,7 +641,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
         })
       );
 
-      // Disparar dos fetches concurrentes
+      // Fire two concurrent fetches
       const [fetch1, fetch2] = await Promise.all([
         readingsService.fetchFromBackend(),
         readingsService.fetchFromBackend(),
@@ -655,7 +655,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
     });
 
     it('should handle performFullSync concurrent calls (mutex on both push and fetch)', async () => {
-      // Crear lectura local
+      // Create local reading
       await readingsService.addReading({
         value: 100,
         units: 'mg/dL',
@@ -691,7 +691,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
         })
       );
 
-      // Disparar dos fullSyncs concurrentes
+      // Fire two concurrent fullSyncs
       const [_sync1, _sync2] = await Promise.all([
         readingsService.performFullSync(),
         readingsService.performFullSync(),
@@ -763,7 +763,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
         })
       );
 
-      // Crear 20 lecturas offline
+      // Create 20 offline readings
       for (let i = 0; i < 20; i++) {
         await readingsService.addReading({
           value: 80 + i,
@@ -774,18 +774,18 @@ describe('Concurrent Sync Conflicts Integration', () => {
         });
       }
 
-      // Esperar a que los auto-syncs fallen
+      // Wait for auto-syncs to fail
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // Verify that hay items en cola (puede ser menos de 20 si algunos auto-syncs empezaron)
+      // Verify there are items in queue (may be less than 20 if some auto-syncs started)
       const queueBefore = await db.syncQueue.count();
       expect(queueBefore).toBeGreaterThan(0);
 
-      // Ahora cambiar mock a exitoso para procesar la cola
+      // Now change mock to successful to process the queue
       server.resetHandlers();
       server.use(
         http.post(`${API_BASE}/glucose/create`, async () => {
-          await delay(20); // 20ms por lectura
+          await delay(20); // 20ms per reading
           return HttpResponse.json(
             {
               id: Math.random(),
@@ -809,18 +809,18 @@ describe('Concurrent Sync Conflicts Integration', () => {
 
       // Queue should be empty or nearly empty
       const queueAfter = await db.syncQueue.count();
-      expect(queueAfter).toBeLessThanOrEqual(1); // Puede quedar alguna si hubo retry
+      expect(queueAfter).toBeLessThanOrEqual(1); // May have one remaining if there was a retry
     });
 
     it('should not duplicate readings when sync is called multiple times rapidly', async () => {
-      // Primero, bloquear auto-sync para crear la lectura sin que se sincronice
+      // First, block auto-sync to create the reading without syncing
       server.use(
         http.post(`${API_BASE}/glucose/create`, async () => {
           return HttpResponse.json({ detail: 'Blocked' }, { status: 503 });
         })
       );
 
-      // Crear una lectura
+      // Create a reading
       await readingsService.addReading({
         value: 100,
         units: 'mg/dL',
@@ -828,12 +828,12 @@ describe('Concurrent Sync Conflicts Integration', () => {
         type: 'smbg',
       });
 
-      // Esperar a que el auto-sync falle
+      // Wait for auto-sync to fail
       await new Promise(resolve => setTimeout(resolve, 100));
 
       let createCallCount = 0;
 
-      // Ahora permitir sync exitoso
+      // Now allow successful sync
       server.resetHandlers();
       server.use(
         http.post(`${API_BASE}/glucose/create`, async () => {

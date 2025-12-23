@@ -55,7 +55,7 @@ describe('Backend Integration - Concurrent Operations', () => {
   afterEach(async () => {
     if (!shouldRun) return;
 
-    // Limpiar lecturas creadas durante las pruebas
+    // Clean up readings created during tests
     // Note: Backend may not support DELETE, so we ignore errors
     createdReadingIds.length = 0;
     clearCachedAuthToken();
@@ -78,7 +78,7 @@ describe('Backend Integration - Concurrent Operations', () => {
           notes: `Parallel reading ${index + 1}`,
         }));
 
-        // Crear todas las lecturas en paralelo con Promise.all
+        // Create all readings in parallel with Promise.all
         const createPromises = readingsData.map(reading => createGlucoseReading(reading, token));
 
         const responses = await Promise.all(createPromises);
@@ -89,7 +89,7 @@ describe('Backend Integration - Concurrent Operations', () => {
 
         expect(ids.length).toBe(5);
 
-        // Verify that NO hay IDs duplicados (sin race conditions)
+        // Verify that there are NO duplicate IDs (no race conditions)
         const uniqueIds = new Set(ids);
         expect(uniqueIds.size).toBe(5);
 
@@ -99,7 +99,7 @@ describe('Backend Integration - Concurrent Operations', () => {
           expect(response.notes).toBe(readingsData[index].notes);
         });
 
-        // Verify that todas las lecturas se guardaron en BD
+        // Verify that all readings were saved to DB
         const allReadings = await getGlucoseReadings(token);
         const createdValues = readingsData.map(r => r.glucose_level);
 
@@ -123,7 +123,7 @@ describe('Backend Integration - Concurrent Operations', () => {
         // Usuario 1 crea lecturas concurrentes
         const token1 = await loginTestUser(TEST_USERS.user1);
 
-        // Crear dos lecturas en paralelo desde el mismo usuario
+        // Create two readings in parallel from the same user
         const reading1 = {
           glucose_level: 155,
           reading_type: 'ALMUERZO' as GlucoseReadingType,
@@ -141,12 +141,12 @@ describe('Backend Integration - Concurrent Operations', () => {
           createGlucoseReading(reading2, token1),
         ]);
 
-        // Ambas creaciones deben ser exitosas
+        // Both creations should be successful
         const successCount = [result1, result2].filter(r => r.status === 'fulfilled').length;
 
         expect(successCount).toBe(2);
 
-        // Save IDs para limpieza
+        // Save IDs for cleanup
         if (result1.status === 'fulfilled') {
           createdReadingIds.push(String(result1.value.id));
         }
@@ -154,7 +154,7 @@ describe('Backend Integration - Concurrent Operations', () => {
           createdReadingIds.push(String(result2.value.id));
         }
 
-        // Verify that ambas lecturas existen en la lista
+        // Verify that both readings exist in the list
         const allReadings = await getGlucoseReadings(token1);
         const found1 = allReadings.find((r: any) => r.notes === 'Concurrent reading 1');
         const found2 = allReadings.find((r: any) => r.notes === 'Concurrent reading 2');
@@ -176,7 +176,7 @@ describe('Backend Integration - Concurrent Operations', () => {
       async () => {
         const token = await loginTestUser(TEST_USERS.user1);
 
-        // Disparar 10 requests en paralelo
+        // Fire 10 requests in parallel
         const requestPromises = Array.from({ length: 10 }, (_, index) =>
           createGlucoseReading(
             {
@@ -198,14 +198,14 @@ describe('Backend Integration - Concurrent Operations', () => {
         // Contar respuestas exitosas
         const successResponses = responses.filter(r => r.success);
 
-        // Save IDs de lecturas exitosas para limpieza
+        // Save IDs of successful readings for cleanup
         successResponses.forEach(response => {
           if (response.success && response.data?.id) {
             createdReadingIds.push(String(response.data.id));
           }
         });
 
-        // Al menos algunas requests deben ser exitosas
+        // At least some requests should be successful
         expect(successResponses.length).toBeGreaterThan(0);
 
         // Verify integrity de datos en requests exitosas
@@ -217,7 +217,7 @@ describe('Backend Integration - Concurrent Operations', () => {
           }
         }
 
-        // Verify that NO hay duplicados
+        // Verify that there are NO duplicates
         const uniqueIds = new Set(createdReadingIds);
         expect(uniqueIds.size).toBe(createdReadingIds.length);
       },

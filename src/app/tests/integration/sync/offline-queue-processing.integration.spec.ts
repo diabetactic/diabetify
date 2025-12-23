@@ -20,15 +20,15 @@ describe('Integration - Offline Queue Processing', () => {
   let db: DiabetacticDatabase;
 
   beforeEach(async () => {
-    // Crear nueva instancia de base de datos
+    // Create new database instance
     db = new DiabetacticDatabase();
     await db.open();
-    // Limpiar syncQueue antes de cada test
+    // Clear syncQueue before each test
     await db.syncQueue.clear();
   });
 
   afterEach(async () => {
-    // Limpiar y cerrar
+    // Clean up and close
     try {
       await db.clearAllData();
       await db.close();
@@ -67,12 +67,12 @@ describe('Integration - Offline Queue Processing', () => {
         },
       ];
 
-      // Insertar en orden aleatorio
+      // Insert in random order
       await db.syncQueue.add(items[2]);
       await db.syncQueue.add(items[0]);
       await db.syncQueue.add(items[1]);
 
-      // Recuperar ordenado por timestamp (FIFO)
+      // Retrieve ordered by timestamp (FIFO)
       const orderedItems = await db.syncQueue.orderBy('timestamp').toArray();
 
       expect(orderedItems).toHaveLength(3);
@@ -87,7 +87,7 @@ describe('Integration - Offline Queue Processing', () => {
         const item: SyncQueueItem = {
           operation: 'create',
           reading: createTestReading(`concurrent-${i}`, 100 + i),
-          timestamp: Date.now() + i * 100, // Incrementar timestamp
+          timestamp: Date.now() + i * 100, // Increment timestamp
           retryCount: 0,
         };
         return db.syncQueue.add(item);
@@ -121,7 +121,7 @@ describe('Integration - Offline Queue Processing', () => {
 
       const itemId = await db.syncQueue.add(item);
 
-      // Simular fallo y actualizar retryCount
+      // Simulate failure and update retryCount
       await db.syncQueue.update(itemId, {
         retryCount: 1,
         lastError: 'Network timeout',
@@ -131,7 +131,7 @@ describe('Integration - Offline Queue Processing', () => {
       expect(updated?.retryCount).toBe(1);
       expect(updated?.lastError).toBe('Network timeout');
 
-      // Segundo intento fallido
+      // Second failed attempt
       await db.syncQueue.update(itemId, {
         retryCount: 2,
         lastError: 'Server error 500',
@@ -189,7 +189,7 @@ describe('Integration - Offline Queue Processing', () => {
         });
       }
 
-      // Verify that los datos originales no se corrompieron
+      // Verify that original data was not corrupted
       const finalItem = await db.syncQueue.get(itemId);
       expect(finalItem?.reading?.id).toBe(originalReading.id);
       expect(finalItem?.reading?.value).toBe(originalReading.value);
@@ -219,11 +219,11 @@ describe('Integration - Offline Queue Processing', () => {
       // Cerrar base de datos
       await db.close();
 
-      // Reabrir base de datos (simula restart de app)
+      // Reopen database (simulates app restart)
       const newDb = new DiabetacticDatabase();
       await newDb.open();
 
-      // Verify that los items persisten
+      // Verify that items persist
       count = await newDb.syncQueue.count();
       expect(count).toBe(5);
 
@@ -253,7 +253,7 @@ describe('Integration - Offline Queue Processing', () => {
       await db.syncQueue.add(item);
       await db.close();
 
-      // Reabrir
+      // Reopen
       const newDb = new DiabetacticDatabase();
       await newDb.open();
 
@@ -285,7 +285,7 @@ describe('Integration - Offline Queue Processing', () => {
 
       const itemId = await db.syncQueue.add(item);
 
-      // Simular incremento hasta MAX_RETRIES
+      // Simulate increment until MAX_RETRIES
       for (let i = 1; i <= MAX_RETRIES; i++) {
         await db.syncQueue.update(itemId, {
           retryCount: i,
@@ -297,13 +297,13 @@ describe('Integration - Offline Queue Processing', () => {
       expect(finalItem?.retryCount).toBe(MAX_RETRIES);
 
       // In production, items with retryCount >= MAX_RETRIES should move to dead letter queue
-      // Este test documenta el comportamiento esperado
+      // This test documents the expected behavior
       const shouldBeInDeadLetter = (finalItem?.retryCount ?? 0) >= MAX_RETRIES;
       expect(shouldBeInDeadLetter).toBe(true);
     });
 
     it('should filter items by retry count', async () => {
-      // Crear items con diferentes retry counts
+      // Create items with different retry counts
       const items: SyncQueueItem[] = [
         {
           operation: 'create',
@@ -333,7 +333,7 @@ describe('Integration - Offline Queue Processing', () => {
 
       await db.syncQueue.bulkAdd(items);
 
-      // Filtrar items que han excedido MAX_RETRIES
+      // Filter items that have exceeded MAX_RETRIES
       const allItems = await db.syncQueue.toArray();
       const exceededRetries = allItems.filter(item => item.retryCount > MAX_RETRIES);
       const withinRetries = allItems.filter(item => item.retryCount <= MAX_RETRIES);
@@ -350,8 +350,8 @@ describe('Integration - Offline Queue Processing', () => {
 
   describe('Exponential Backoff', () => {
     it('should calculate increasing backoff delays', () => {
-      const baseDelay = 1000; // 1 segundo
-      const maxDelay = 60000; // 1 minuto
+      const baseDelay = 1000; // 1 second
+      const maxDelay = 60000; // 1 minute
 
       // Exponential backoff function
       const calculateBackoff = (retryCount: number): number => {
@@ -359,7 +359,7 @@ describe('Integration - Offline Queue Processing', () => {
         return delay;
       };
 
-      // Verify delays crecientes
+      // Verify increasing delays
       expect(calculateBackoff(0)).toBe(1000); // 1s
       expect(calculateBackoff(1)).toBe(2000); // 2s
       expect(calculateBackoff(2)).toBe(4000); // 4s
@@ -367,14 +367,14 @@ describe('Integration - Offline Queue Processing', () => {
       expect(calculateBackoff(4)).toBe(16000); // 16s
       expect(calculateBackoff(5)).toBe(32000); // 32s
       expect(calculateBackoff(6)).toBe(60000); // max 60s
-      expect(calculateBackoff(10)).toBe(60000); // sigue en max
+      expect(calculateBackoff(10)).toBe(60000); // still at max
     });
 
     it('should process items respecting backoff timestamps', async () => {
       const _baseDelay = 1000; // Reference delay (timing is hardcoded in test items)
       const now = Date.now();
 
-      // Crear items con diferentes retry counts y next retry time
+      // Create items with different retry counts and next retry time
       interface ExtendedSyncQueueItem extends SyncQueueItem {
         nextRetryAt?: number;
       }
@@ -438,11 +438,11 @@ describe('Integration - Offline Queue Processing', () => {
 
       await db.syncQueue.bulkAdd(items);
 
-      // Verify that todas las operaciones se guardaron
+      // Verify that all operations were saved
       const allItems = await db.syncQueue.toArray();
       expect(allItems).toHaveLength(4);
 
-      // Verify operations por tipo
+      // Verify operations by type
       const createOps = await db.syncQueue.where('operation').equals('create').toArray();
       const updateOps = await db.syncQueue.where('operation').equals('update').toArray();
       const deleteOps = await db.syncQueue.where('operation').equals('delete').toArray();
@@ -464,11 +464,11 @@ describe('Integration - Offline Queue Processing', () => {
 
       await db.syncQueue.bulkAdd(items);
 
-      // Obtener el primer item para eliminarlo
+      // Get the first item to delete it
       const firstItem = await db.syncQueue.orderBy('timestamp').first();
       expect(firstItem).toBeDefined();
 
-      // Simular procesamiento exitoso del primer item
+      // Simulate successful processing of the first item
       if (firstItem?.id) {
         await db.syncQueue.delete(firstItem.id);
       }

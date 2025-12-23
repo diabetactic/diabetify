@@ -67,14 +67,14 @@ describe('Token Refresh Integration (MSW)', () => {
       const loginResult = await firstValueFrom(authService.login('1000', 'tuvieja', false));
       expect(loginResult.success).toBe(true);
 
-      // Simular token expirado en el servidor
+      // Simulate expired token on the server
       server.use(
         http.get(`${API_BASE}/users/me`, () => {
           return HttpResponse.json({ detail: 'Token expired' }, { status: 401 });
         })
       );
 
-      // El servicio debe detectar 401 como token expirado
+      // The service should detect 401 as expired token
       try {
         await firstValueFrom(httpClient.get(`${API_BASE}/users/me`));
         expect.fail('Should have thrown');
@@ -88,14 +88,14 @@ describe('Token Refresh Integration (MSW)', () => {
       // Login
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
 
-      // Simular 401 en cualquier request
+      // Simulate 401 on any request
       server.use(
         http.get(`${API_BASE}/glucose/mine`, () => {
           return HttpResponse.json({ detail: 'Token expired' }, { status: 401 });
         })
       );
 
-      // El request debe fallar con 401
+      // The request should fail with 401
       try {
         await firstValueFrom(httpClient.get(`${API_BASE}/glucose/mine`));
         expect.fail('Should have thrown');

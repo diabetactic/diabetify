@@ -1,13 +1,13 @@
 /**
  * Session Timeout Transaction Integration Tests
  *
- * Pruebas de casos límite críticos para timeout de sesión durante operaciones activas:
- * - Timeout durante transacciones IndexedDB
- * - Timeout durante sincronización activa
- * - Timeout durante envío de formularios
- * - Manejo de grace period
- * - Detección de actividad reseteando timeout
- * - Sincronización de sesión entre múltiples tabs
+ * Critical edge case tests for session timeout during active operations:
+ * - Timeout during IndexedDB transactions
+ * - Timeout during active synchronization
+ * - Timeout during form submission
+ * - Grace period handling
+ * - Activity detection resetting timeout
+ * - Session synchronization between multiple tabs
  */
 import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach, vi } from 'vitest';
 import { TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
@@ -18,7 +18,7 @@ import { server, resetMockState } from '../../../../mocks/server';
 import { http, HttpResponse } from 'msw';
 import 'fake-indexeddb/auto';
 
-// Services bajo prueba
+// Services under test
 import { SessionTimeoutService } from '@core/services/session-timeout.service';
 import { LocalAuthService } from '@core/services/local-auth.service';
 import { TokenStorageService } from '@core/services/token-storage.service';
@@ -28,8 +28,8 @@ import { db } from '@core/services/database.service';
 
 const API_BASE = 'http://localhost:8000';
 
-// TODO: These tests require proper configuration de MSW, SessionTimeoutService y IndexedDB
-// Se saltan temporalmente hasta que se resuelvan los problemas de providers
+// TODO: These tests require proper configuration of MSW, SessionTimeoutService and IndexedDB
+// Skipped temporarily until provider issues are resolved
 describe.skip('Session Timeout Transactions Integration', () => {
   let sessionTimeout: SessionTimeoutService;
   let authService: LocalAuthService;
@@ -81,9 +81,9 @@ describe.skip('Session Timeout Transactions Integration', () => {
     _router = TestBed.inject(Router);
   });
 
-  describe('Timeout durante transacción IndexedDB', () => {
+  describe('Timeout during IndexedDB transaction', () => {
     it('debe completar transacción activa antes de logout', async () => {
-      // Login inicial
+      // Initial login
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
@@ -127,14 +127,14 @@ describe.skip('Session Timeout Transactions Integration', () => {
       // Wait for transaction to complete
       await transactionPromise;
 
-      // Verify that los datos se guardaron correctamente
+      // Verify that the data was saved correctly
       const readings = await db.readings.toArray();
       expect(readings).toHaveLength(2);
 
       const syncItems = await db.syncQueue.toArray();
       expect(syncItems).toHaveLength(1);
 
-      // Flush timers para ejecutar logout
+      // Flush timers to execute logout
       await vi.runAllTimersAsync();
 
       // Verify that logout eventually occurred
@@ -178,13 +178,13 @@ describe.skip('Session Timeout Transactions Integration', () => {
       const isAuth = await firstValueFrom(authService.isAuthenticated());
       expect(isAuth).toBe(false);
 
-      // Verify that los datos no se guardaron
+      // Verify that the data was not saved
       const readings = await db.readings.toArray();
       expect(readings).toHaveLength(0);
     });
   });
 
-  describe('Timeout durante sincronización activa', () => {
+  describe('Timeout during active synchronization', () => {
     it('debe completar sincronización en progreso antes de logout', async () => {
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
@@ -224,7 +224,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       const syncPromise = (async () => {
         const items = await db.syncQueue.toArray();
         for (const item of items) {
-          // Simular procesamiento de cada item
+          // Simulate processing of each item
           await new Promise(resolve => setTimeout(resolve, 50));
           await db.syncQueue.delete(item.id!);
         }
@@ -250,7 +250,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
-      // Agregar item a sincronizar
+      // Add item to sync
       await db.syncQueue.add({
         operation: 'create',
         readingId: 'reading-1',
@@ -275,7 +275,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
         if (!response.ok) throw new Error('Sync failed');
       } catch {
         syncFailed = true;
-        // Item permanece en cola con retry incrementado
+        // Item remains in queue with incremented retry
         await db.syncQueue
           .where('readingId')
           .equals('reading-1')
@@ -287,7 +287,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
 
       expect(syncFailed).toBe(true);
 
-      // Timeout ocurre
+      // Timeout occurs
       vi.advanceTimersByTime(30 * 60 * 1000 + 1000);
       await vi.runAllTimersAsync();
 
@@ -303,7 +303,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
     });
   });
 
-  describe('Timeout durante envío de formulario', () => {
+  describe('Timeout during form submission', () => {
     it('debe completar envío HTTP antes de logout', async () => {
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
@@ -311,7 +311,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       let formSubmitted = false;
       let responseReceived = false;
 
-      // Mock endpoint de formulario con delay
+      // Mock form endpoint with delay
       server.use(
         http.post(`${API_BASE}/appointments`, async () => {
           await new Promise(resolve => setTimeout(resolve, 200));
@@ -336,7 +336,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       // Timeout occurs during submission
       vi.advanceTimersByTime(30 * 60 * 1000 + 1000);
 
-      // Esperar a que el formulario complete
+      // Wait for the form to complete
       await submitPromise;
       await vi.runAllTimersAsync();
 
@@ -352,7 +352,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
-      // Provocar timeout
+      // Trigger timeout
       vi.advanceTimersByTime(30 * 60 * 1000 + 1000);
       await vi.runAllTimersAsync();
 
@@ -384,7 +384,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
 
       sessionTimeout.startMonitoring();
 
-      // Avanzar a 25 minutos (5 minutos antes del timeout de 30)
+      // Advance to 25 minutes (5 minutes before the 30-minute timeout)
       tick(25 * 60 * 1000);
 
       // In a real implementation, we would verify warning was shown
@@ -395,7 +395,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
 
       expect(isAuth).toBe(true);
 
-      // Avanzar los 5 minutos restantes + 1 segundo
+      // Advance the remaining 5 minutes + 1 second
       tick(5 * 60 * 1000 + 1000);
       flush();
 
@@ -412,13 +412,13 @@ describe.skip('Session Timeout Transactions Integration', () => {
 
       sessionTimeout.startMonitoring();
 
-      // Avanzar a 26 minutos (grace period)
+      // Advance to 26 minutes (grace period)
       tick(26 * 60 * 1000);
 
-      // Simular actividad del usuario (click)
+      // Simulate user activity (click)
       document.dispatchEvent(new Event('click'));
 
-      // Esperar debounce de 1 segundo
+      // Wait for 1 second debounce
       tick(1000);
 
       // Advance 25 more minutes (should still be active because it was reset)
@@ -432,21 +432,21 @@ describe.skip('Session Timeout Transactions Integration', () => {
     }));
   });
 
-  describe('Detección de actividad reseteando timeout', () => {
+  describe('Activity detection resetting timeout', () => {
     it('debe resetear timeout en click del usuario', fakeAsync(() => {
       authService.login('1000', 'tuvieja', false).subscribe();
       tick();
 
       sessionTimeout.startMonitoring();
 
-      // Avanzar 20 minutos
+      // Advance 20 minutes
       tick(20 * 60 * 1000);
 
-      // Actividad del usuario
+      // User activity
       document.dispatchEvent(new Event('click'));
       tick(1000); // debounce
 
-      // Avanzar otros 25 minutos (total 45, pero reseteado en minuto 20)
+      // Advance another 25 minutes (total 45, but reset at minute 20)
       tick(25 * 60 * 1000);
 
       let isAuth = false;
@@ -463,13 +463,13 @@ describe.skip('Session Timeout Transactions Integration', () => {
 
       sessionTimeout.startMonitoring();
 
-      tick(28 * 60 * 1000); // 28 minutos
+      tick(28 * 60 * 1000); // 28 minutes
 
-      // Escribir algo
+      // Type something
       document.dispatchEvent(new KeyboardEvent('keypress', { key: 'a' }));
       tick(1000);
 
-      tick(20 * 60 * 1000); // +20 minutos = 48 total
+      tick(20 * 60 * 1000); // +20 minutes = 48 total
 
       let isAuth = false;
       authService.isAuthenticated().subscribe(val => (isAuth = val));
@@ -484,13 +484,13 @@ describe.skip('Session Timeout Transactions Integration', () => {
 
       sessionTimeout.startMonitoring();
 
-      tick(29 * 60 * 1000); // 29 minutos
+      tick(29 * 60 * 1000); // 29 minutes
 
-      // Mover mouse
+      // Move mouse
       document.dispatchEvent(new MouseEvent('mousemove'));
       tick(1000);
 
-      tick(15 * 60 * 1000); // +15 minutos = 44 total
+      tick(15 * 60 * 1000); // +15 minutes = 44 total
 
       let isAuth = false;
       authService.isAuthenticated().subscribe(val => (isAuth = val));
@@ -547,7 +547,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
 
       tick(29 * 60 * 1000);
 
-      // Usuario vuelve a la tab
+      // User returns to the tab
       window.dispatchEvent(new Event('focus'));
       tick(1000);
 
@@ -561,9 +561,9 @@ describe.skip('Session Timeout Transactions Integration', () => {
     }));
   });
 
-  describe('Sincronización de sesión múltiples tabs', () => {
+  describe('Multi-tab session synchronization', () => {
     it('debe sincronizar logout entre tabs usando Preferences', async () => {
-      // Login en tab 1
+      // Login in tab 1
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
@@ -571,14 +571,14 @@ describe.skip('Session Timeout Transactions Integration', () => {
       let isAuth = await firstValueFrom(authService.isAuthenticated());
       expect(isAuth).toBe(true);
 
-      // Simular logout desde otra tab (llamando directamente a logout)
+      // Simulate logout from another tab (by calling logout directly)
       await authService.logout();
 
-      // Verify that state was updated
+      // Verify that the state was updated
       isAuth = await firstValueFrom(authService.isAuthenticated());
       expect(isAuth).toBe(false);
 
-      // Verify that el session timeout se detiene
+      // Verify that the session timeout stops
       sessionTimeout.stopMonitoring();
 
       // Advancing time should not cause additional actions
@@ -593,10 +593,10 @@ describe.skip('Session Timeout Transactions Integration', () => {
       await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
-      // Avanzar 20 minutos en tab 1
+      // Advance 20 minutes in tab 1
       vi.advanceTimersByTime(20 * 60 * 1000);
 
-      // Simular actividad en tab 2 (que resetea el timer global)
+      // Simulate activity in tab 2 (which resets the global timer)
       // In practice this would be handled via storage events or BroadcastChannel
       // Here we simulate by resetting directly
       document.dispatchEvent(new Event('click'));
@@ -616,7 +616,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       // Simulate simultaneous logout (idempotent)
       await Promise.all([authService.logout(), authService.logout(), authService.logout()]);
 
-      // Verify state final
+      // Verify final state
       const isAuth = await firstValueFrom(authService.isAuthenticated());
       expect(isAuth).toBe(false);
 

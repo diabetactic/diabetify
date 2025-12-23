@@ -25,7 +25,7 @@ describe('Integration - IndexedDB Quota Management', () => {
   });
 
   afterEach(async () => {
-    // Clean up and close database
+    // Clean up and close the database
     try {
       await db.clearAllData();
       await db.close();
@@ -48,7 +48,7 @@ describe('Integration - IndexedDB Quota Management', () => {
         value: 80 + Math.floor(Math.random() * 120), // 80-200 mg/dL
         units: 'mg/dL',
         type: 'smbg',
-        time: new Date(Date.now() - i * 3600000).toISOString(), // Una por hora
+        time: new Date(Date.now() - i * 3600000).toISOString(), // One per hour
         synced: false,
         userId: 'test-user',
         status: 'normal',
@@ -58,11 +58,11 @@ describe('Integration - IndexedDB Quota Management', () => {
       // Bulk insert using bulkAdd (more efficient than individual add)
       await db.readings.bulkAdd(readings);
 
-      // Verify that se guardaron todas
+      // Verify that all were saved
       const count = await db.readings.count();
       expect(count).toBe(batchSize);
 
-      // Verify that se pueden recuperar por rango de tiempo
+      // Verify that readings can be retrieved by time range
       const recentReadings = await db.readings
         .where('time')
         .above(new Date(Date.now() - 24 * 3600000).toISOString())
@@ -94,7 +94,7 @@ describe('Integration - IndexedDB Quota Management', () => {
         return db.readings.bulkAdd(readings);
       });
 
-      // Insertar todos los batches en paralelo
+      // Insert all batches in parallel
       await Promise.all(allPromises);
 
       // Verify total
@@ -173,7 +173,7 @@ describe('Integration - IndexedDB Quota Management', () => {
         value: 110,
         units: 'mg/dL',
         type: 'smbg',
-        time: new Date(Date.now() - i * 3600000).toISOString(), // Last day
+        time: new Date(Date.now() - i * 3600000).toISOString(), // Last hours
         synced: false,
         userId: 'test-user',
         status: 'normal',
@@ -206,14 +206,14 @@ describe('Integration - IndexedDB Quota Management', () => {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
 
-      // Crear lecturas dentro y fuera del rango
+      // Create readings inside and outside the range
       const oldReadings: LocalGlucoseReading[] = Array.from({ length: 20 }, (_, i) => ({
         id: `old-${i}`,
         localId: `local-old-${i}`,
         value: 90,
         units: 'mg/dL',
         type: 'smbg',
-        time: new Date(cutoffDate.getTime() - (i + 2) * 24 * 3600000).toISOString(), // i+2 para estar bien fuera del rango
+        time: new Date(cutoffDate.getTime() - (i + 2) * 24 * 3600000).toISOString(), // i+2 to be well outside the range
         synced: true,
         userId: 'test-user',
         status: 'normal',
@@ -226,7 +226,7 @@ describe('Integration - IndexedDB Quota Management', () => {
         value: 110,
         units: 'mg/dL',
         type: 'smbg',
-        time: new Date(cutoffDate.getTime() + (i + 1) * 3600000).toISOString(), // i+1 para estar bien dentro del rango
+        time: new Date(cutoffDate.getTime() + (i + 1) * 3600000).toISOString(), // i+1 to be well inside the range
         synced: false,
         userId: 'test-user',
         status: 'normal',
@@ -235,12 +235,12 @@ describe('Integration - IndexedDB Quota Management', () => {
 
       await db.readings.bulkAdd([...oldReadings, ...keepReadings]);
 
-      // Ejecutar pruning
+      // Execute pruning
       const deletedCount = await db.pruneOldData(daysToKeep);
 
       expect(deletedCount).toBe(20);
 
-      // Verify that solo quedan las recientes
+      // Verify that only recent ones remain
       const remaining = await db.readings.count();
       expect(remaining).toBe(20);
     });
@@ -248,7 +248,7 @@ describe('Integration - IndexedDB Quota Management', () => {
     it('should prioritize unsynced data during cleanup', async () => {
       const cutoffDate = new Date(Date.now() - 60 * 24 * 3600000);
 
-      // Datos antiguos pero NO sincronizados (importantes)
+      // Old data but NOT synced (important)
       const unsyncedOld: LocalGlucoseReading[] = Array.from({ length: 10 }, (_, i) => ({
         id: `unsynced-old-${i}`,
         localId: `local-unsynced-${i}`,
@@ -256,13 +256,13 @@ describe('Integration - IndexedDB Quota Management', () => {
         units: 'mg/dL',
         type: 'smbg',
         time: new Date(cutoffDate.getTime() - i * 24 * 3600000).toISOString(),
-        synced: false, // NO sincronizado
+        synced: false, // NOT synced
         userId: 'test-user',
         status: 'normal',
         localStoredAt: new Date(cutoffDate.getTime() - i * 24 * 3600000).toISOString(),
       }));
 
-      // Datos antiguos y sincronizados (pueden eliminarse)
+      // Old data that is synced (can be deleted)
       const syncedOld: LocalGlucoseReading[] = Array.from({ length: 10 }, (_, i) => ({
         id: `synced-old-${i}`,
         localId: `local-synced-${i}`,
@@ -270,7 +270,7 @@ describe('Integration - IndexedDB Quota Management', () => {
         units: 'mg/dL',
         type: 'smbg',
         time: new Date(cutoffDate.getTime() - i * 24 * 3600000).toISOString(),
-        synced: true, // Sincronizado
+        synced: true, // Synced
         userId: 'test-user',
         status: 'normal',
         localStoredAt: new Date(cutoffDate.getTime() - i * 24 * 3600000).toISOString(),
@@ -307,7 +307,7 @@ describe('Integration - IndexedDB Quota Management', () => {
       const totalReadings = 200;
       const keepDays = 30;
 
-      // Crear datos distribuidos en el tiempo
+      // Create data distributed over time
       const readings: LocalGlucoseReading[] = Array.from({ length: totalReadings }, (_, i) => {
         const daysAgo = Math.floor((i / totalReadings) * 100); // 0-100 days ago
         return {
@@ -326,7 +326,7 @@ describe('Integration - IndexedDB Quota Management', () => {
 
       await db.readings.bulkAdd(readings);
 
-      // Aplicar estrategia de cleanup
+      // Apply cleanup strategy
       await db.pruneOldData(keepDays);
 
       // Verify that only the most recent remain
@@ -361,15 +361,15 @@ describe('Integration - IndexedDB Quota Management', () => {
       // Cleanup
       await db.pruneOldData(30);
 
-      // Verify integrity de datos restantes
+      // Verify integrity of remaining data
       const remaining = await db.readings.toArray();
 
-      // No debe haber IDs duplicados
+      // There should be no duplicate IDs
       const ids = remaining.map(r => r.id);
       const uniqueIds = new Set(ids);
       expect(uniqueIds.size).toBe(remaining.length);
 
-      // Todos los valores deben corresponder con sus IDs
+      // All values should correspond to their IDs
       remaining.forEach(reading => {
         const expectedValue = parseInt(reading.id.split('-')[1]);
         expect(reading.value).toBe(expectedValue);

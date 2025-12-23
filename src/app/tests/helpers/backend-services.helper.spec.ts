@@ -170,7 +170,7 @@ describe('Backend Services Helper - Health Checks', () => {
     });
 
     it.skip('debe lanzar error si algún servicio está unhealthy', async () => {
-      // Este test tiene problemas de timing con el mock de fetch y los reintentos
+      // This test has timing issues with the fetch mock and retries
       // Function waits for multiple attempts before throwing error
     });
 
@@ -187,19 +187,19 @@ describe('Backend Services Helper - Health Checks', () => {
   describe('isBackendAvailable', () => {
     // These tests are hard to run correctly because:
     // 1. Function uses module-level cache (backendAvailable)
-    // 2. El mock de fetch no se aplica antes de que el cache se establezca
-    // 3. Una vez cacheado, el resultado persiste entre tests
+    // 2. The fetch mock is not applied before the cache is established
+    // 3. Once cached, the result persists between tests
 
-    it.skip('debe retornar true si backend responde', async () => {
+    it.skip('should return true if backend responds', async () => {
       // Module-level cache prevents testing this correctly
     });
 
-    it.skip('debe retornar false si backend no responde', async () => {
+    it.skip('should return false if backend does not respond', async () => {
       // Module-level cache prevents testing this correctly
     });
 
-    it.skip('debe cachear resultado para llamadas subsecuentes', async () => {
-      // El comportamiento del cache es correcto pero no es testeable
+    it.skip('should cache result for subsequent calls', async () => {
+      // The cache behavior is correct but not testable
       // without access to clearBackendAvailableCache() function
     });
   });
@@ -207,12 +207,12 @@ describe('Backend Services Helper - Health Checks', () => {
   describe('skipIfNoBackend', () => {
     // Depends on isBackendAvailable which has module-level cache
 
-    it.skip('debe lanzar error especial si backend no disponible', async () => {
-      // Depende del cache de isBackendAvailable
+    it.skip('should throw special error if backend unavailable', async () => {
+      // Depends on isBackendAvailable cache
     });
 
-    it.skip('no debe lanzar error si backend está disponible', async () => {
-      // Depende del cache de isBackendAvailable
+    it.skip('should not throw error if backend is available', async () => {
+      // Depends on isBackendAvailable cache
     });
   });
 });
