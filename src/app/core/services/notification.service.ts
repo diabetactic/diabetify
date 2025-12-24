@@ -309,7 +309,8 @@ export class NotificationService implements OnDestroy {
    * Show an immediate notification (for testing)
    */
   private showWebNotification(title: string, body: string): void {
-    new Notification(title, { body });
+    const notification = new Notification(title, { body });
+    this.logger.debug('Notifications', 'Web notification shown', { title, id: notification.tag });
   }
 
   async showImmediateNotification(title: string, body: string): Promise<void> {

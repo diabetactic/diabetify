@@ -458,8 +458,8 @@ describe('Backend Integration - Bolus Calculator', () => {
           });
         }
       }
-    } catch {
-      // Cleanup failed silently
+    } catch (_error) {
+      // Cleanup failed silently during teardown
     }
   });
 });

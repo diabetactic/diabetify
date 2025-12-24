@@ -54,8 +54,8 @@ describe.skip('Token Refresh During Active Operations', () => {
     try {
       await tokenStorage?.clearAll();
       await readingsService?.clearAllReadings();
-    } catch {
-      // Ignore cleanup errors
+    } catch (_error) {
+      // Ignore cleanup errors during teardown
     }
     vi.clearAllTimers();
   });
@@ -587,8 +587,8 @@ describe.skip('Token Refresh During Active Operations', () => {
 
       try {
         await firstValueFrom(httpClient.get(`${API_BASE}/users/me`));
-      } catch {
-        // Expected
+      } catch (_error) {
+        // Expected - token expired
       }
 
       await new Promise(resolve => setTimeout(resolve, 200));
@@ -679,7 +679,7 @@ describe.skip('Token Refresh During Active Operations', () => {
 
       try {
         await firstValueFrom(httpClient.get(`${API_BASE}/users/me`));
-      } catch {
+      } catch (_error) {
         // May fail depending on interceptor
       }
 
@@ -689,8 +689,8 @@ describe.skip('Token Refresh During Active Operations', () => {
       // Make second attempt
       try {
         await firstValueFrom(httpClient.get(`${API_BASE}/users/me`));
-      } catch {
-        // May fail
+      } catch (_error) {
+        // May fail - depends on interceptor behavior
       }
 
       // Second call should have used new token

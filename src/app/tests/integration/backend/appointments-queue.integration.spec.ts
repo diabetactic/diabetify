@@ -171,8 +171,11 @@ describe('Backend Integration - Appointment Queue & Creation', () => {
 
         // Should get error (validation or state issue)
         if (!response.ok) {
+          // Expected - validation or state issue
         }
-      } catch {}
+      } catch (_error) {
+        // Network error is acceptable in this context
+      }
     });
 
     conditionalIt('should reject appointment creation without auth', async () => {

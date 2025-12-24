@@ -15,6 +15,7 @@
 
 - **TodoWrite**: ALWAYS batch ALL todos in ONE call (5-10+ todos minimum)
 - **Task tool (Claude Code)**: ALWAYS spawn ALL agents in ONE message with full instructions
+- **Agent Parallelization**: Don't be shy - spawn 8, 10, 16+ agents for complex tasks. More parallel agents = faster completion. Each agent works independently, so maximize concurrency!
 - **File operations**: ALWAYS batch ALL reads/writes/edits in ONE message
 - **Bash commands**: ALWAYS batch ALL terminal operations in ONE message
 - **Memory operations**: ALWAYS batch ALL memory store/retrieve in ONE message
@@ -25,12 +26,19 @@
 
 ```javascript
 // ✅ CORRECT: Use Claude Code's Task tool for parallel agent execution
-[Single Message]:
+// Don't hold back - spawn as many agents as the task needs!
+[Single Message - Aggressive Parallelization]:
   Task("Research agent", "Analyze requirements and patterns...", "researcher")
-  Task("Coder agent", "Implement core features...", "coder")
-  Task("Tester agent", "Create comprehensive tests...", "tester")
+  Task("Coder agent 1", "Implement auth module...", "coder")
+  Task("Coder agent 2", "Implement API endpoints...", "coder")
+  Task("Coder agent 3", "Implement data layer...", "coder")
+  Task("Tester agent 1", "Unit tests for auth...", "tester")
+  Task("Tester agent 2", "Unit tests for API...", "tester")
+  Task("Tester agent 3", "Integration tests...", "tester")
   Task("Reviewer agent", "Review code quality...", "reviewer")
   Task("Architect agent", "Design system architecture...", "system-architect")
+  Task("Docs agent", "Generate API documentation...", "api-docs")
+  // 10 agents working in parallel = 10x faster than sequential!
 ```
 
 **MCP tools are ONLY for coordination setup:**

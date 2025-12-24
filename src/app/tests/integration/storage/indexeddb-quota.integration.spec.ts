@@ -29,8 +29,8 @@ describe('Integration - IndexedDB Quota Management', () => {
     try {
       await db.clearAllData();
       await db.close();
-    } catch {
-      // Ignore close errors in tests
+    } catch (_error) {
+      // Ignore close errors during teardown
     }
     vi.clearAllMocks();
   });

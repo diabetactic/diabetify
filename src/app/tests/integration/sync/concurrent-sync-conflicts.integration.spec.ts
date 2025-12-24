@@ -43,13 +43,13 @@ describe('Concurrent Sync Conflicts Integration', () => {
     resetMockState();
     try {
       await tokenStorage?.clearAll();
-    } catch {
-      // Ignore errors
+    } catch (_error) {
+      // Ignore cleanup errors during teardown
     }
     try {
       await readingsService?.clearAllReadings();
-    } catch {
-      // Ignore errors
+    } catch (_error) {
+      // Ignore cleanup errors during teardown
     }
   });
 

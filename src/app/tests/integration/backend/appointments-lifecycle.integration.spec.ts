@@ -98,7 +98,9 @@ describe('Backend Integration - Appointments Lifecycle', () => {
           } else {
             // Already in queue is OK - continue with existing state
           }
-        } catch {}
+        } catch (_error) {
+          // Network error is acceptable during setup
+        }
       }
     });
 
@@ -229,7 +231,7 @@ describe('Backend Integration - Appointments Lifecycle', () => {
 
         // Should get validation error
         expect([400, 403, 422]).toContain(response.status);
-      } catch {
+      } catch (_error) {
         // Network error is also acceptable
       }
     });

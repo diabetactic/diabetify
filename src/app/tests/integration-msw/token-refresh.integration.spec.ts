@@ -34,8 +34,8 @@ describe('Token Refresh Integration (MSW)', () => {
     resetMockState();
     try {
       await tokenStorage?.clearAll();
-    } catch {
-      // Ignore errors
+    } catch (_error) {
+      // Ignore cleanup errors during teardown
     }
     vi.clearAllTimers();
   });
@@ -131,7 +131,7 @@ describe('Token Refresh Integration (MSW)', () => {
       try {
         const result = await firstValueFrom(authService.refreshAccessToken());
         expect(result).toBeDefined();
-      } catch {
+      } catch (_error) {
         // Expected in jsdom if SecureStorage doesn't persist refresh tokens
         // The important thing is the flow doesn't crash
       }
@@ -162,7 +162,7 @@ describe('Token Refresh Integration (MSW)', () => {
       // Attempt refresh
       try {
         await firstValueFrom(authService.refreshAccessToken());
-      } catch {
+      } catch (_error) {
         // Expected to fail
       }
 
@@ -204,8 +204,8 @@ describe('Token Refresh Integration (MSW)', () => {
       // The first call should fail - if interceptor exists it would retry
       try {
         await firstValueFrom(httpClient.get(`${API_BASE}/users/me`));
-      } catch {
-        // Expected
+      } catch (_error) {
+        // Expected - first call fails with 401
       }
 
       // Verify the request was made

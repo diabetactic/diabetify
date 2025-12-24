@@ -15,7 +15,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideRouter, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { server, resetMockState } from '../../../../mocks/server';
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse, delay } from 'msw';
 import 'fake-indexeddb/auto';
 
 // Services under test
@@ -46,8 +46,8 @@ describe.skip('Session Timeout Transactions Integration', () => {
     try {
       await tokenStorage?.clearAll();
       await db.clearAllData();
-    } catch {
-      // Ignore cleanup errors
+    } catch (_error) {
+      // Ignore cleanup errors during teardown
     }
     vi.clearAllTimers();
     vi.useRealTimers();
@@ -164,7 +164,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
           // Simulate transaction error
           throw new Error('Transaction error');
         });
-      } catch {
+      } catch (_error) {
         transactionFailed = true;
       }
 
@@ -211,11 +211,11 @@ describe.skip('Session Timeout Transactions Integration', () => {
         },
       ]);
 
-      // Mock sync endpoint with delay
+      // Mock sync endpoint with delay (using MSW delay for fake timer compatibility)
       server.use(
         http.post(`${API_BASE}/glucose-readings`, async () => {
-          // Simulate slow sync
-          await new Promise(resolve => setTimeout(resolve, 100));
+          // Simulate slow sync using MSW delay
+          await delay(100);
           return HttpResponse.json({ id: 'synced-reading', synced: true }, { status: 201 });
         })
       );
@@ -224,8 +224,8 @@ describe.skip('Session Timeout Transactions Integration', () => {
       const syncPromise = (async () => {
         const items = await db.syncQueue.toArray();
         for (const item of items) {
-          // Simulate processing of each item
-          await new Promise(resolve => setTimeout(resolve, 50));
+          // Simulate processing of each item using MSW delay
+          await delay(50);
           await db.syncQueue.delete(item.id!);
         }
       })();
@@ -273,7 +273,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
           body: JSON.stringify({ value: 120 }),
         });
         if (!response.ok) throw new Error('Sync failed');
-      } catch {
+      } catch (_error) {
         syncFailed = true;
         // Item remains in queue with incremented retry
         await db.syncQueue

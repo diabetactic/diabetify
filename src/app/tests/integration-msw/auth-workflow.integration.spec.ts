@@ -35,8 +35,8 @@ describe('Auth Workflow Integration (MSW)', () => {
     // Clear token storage between tests
     try {
       await tokenStorage?.clearAll();
-    } catch {
-      // Ignore errors if not initialized
+    } catch (_error) {
+      // Ignore cleanup errors if not initialized
     }
   });
 
