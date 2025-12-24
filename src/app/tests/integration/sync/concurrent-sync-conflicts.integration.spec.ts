@@ -90,7 +90,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
         notes: 'Original',
       });
 
-      // Marcar como sincronizada con backendId
+      // Mark as synced with backendId
       await db.readings.update(baseReading.id, {
         synced: true,
         backendId: 123,
@@ -110,7 +110,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
           return HttpResponse.json({
             readings: [
               {
-                id: 123, // Mismo backendId
+                id: 123, // Same backendId
                 user_id: 1000,
                 glucose_level: 120, // Different value from server
                 reading_type: 'DESAYUNO',
@@ -126,7 +126,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
       const fetchResult = await readingsService.fetchFromBackend();
       expect(fetchResult.fetched).toBe(1);
 
-      // Verify that server won (server wins)
+      // Verify that server won
       const updated = await readingsService.getReadingById(baseReading.id);
       expect(updated).toBeDefined();
       expect(updated!.value).toBe(120); // Server value
@@ -587,7 +587,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
 
       let syncCallCount = 0;
 
-      // Mock: sync tarda 200ms
+      // Mock: sync takes 200ms
       server.use(
         http.post(`${API_BASE}/glucose/create`, async () => {
           syncCallCount++;
@@ -620,7 +620,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
     });
 
     it('should handle concurrent fetchFromBackend calls (mutex)', async () => {
-      // Mock: fetch tarda 150ms
+      // Mock: fetch takes 150ms
       let fetchCallCount = 0;
       server.use(
         http.get(`${API_BASE}/glucose/mine`, async () => {

@@ -1357,7 +1357,7 @@ export class ApiGatewayService {
 
     switch (service) {
       case 'appointments':
-        return this.handleAppointmentsMockRequest(endpointKey);
+        return ApiGatewayService.handleAppointmentsMockRequest(endpointKey);
       case 'glucoserver':
         return this.handleGlucoserverMockRequest(endpointKey, params, body, pathParams);
       case 'achievements':

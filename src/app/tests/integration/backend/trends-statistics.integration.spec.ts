@@ -94,7 +94,7 @@ describe('Backend Integration - Trends & Statistics', () => {
       const readings = await getGlucoseReadings(authToken);
 
       if (readings.length >= 2) {
-        // Verify order descending
+        // Verify descending order
         for (let i = 0; i < readings.length - 1; i++) {
           const currentDate = new Date(readings[i].created_at || '');
           const nextDate = new Date(readings[i + 1].created_at || '');
@@ -300,16 +300,8 @@ describe('Backend Integration - Trends & Statistics', () => {
         byMeal.get(mealType)!.push(r.glucose_level);
       });
 
-      // Calculate statistics per context
-      const mealStats = Array.from(byMeal.entries()).map(([meal, values]) => ({
-        meal,
-        count: values.length,
-        average: values.reduce((a, b) => a + b, 0) / values.length,
-        min: Math.min(...values),
-        max: Math.max(...values),
-      }));
-
-      expect(mealStats.length).toBeGreaterThanOrEqual(0);
+      // Verify that we can group by meal context
+      expect(byMeal.size).toBeGreaterThanOrEqual(0);
     });
 
     conditionalIt('should add readings with different meal contexts', async () => {
@@ -401,8 +393,15 @@ describe('Backend Integration - Trends & Statistics', () => {
           });
         }
       }
-    } catch {
-      // 404 if resource already deleted - non-critical
+    } catch (error) {
+      // Errors during cleanup are non-critical:
+      // - 404: resource already deleted by another concurrent test
+      // - 401: token expired during long cleanup
+      // - Network: backend already stopped after completing tests
+      console.debug(
+        'Cleanup error (non-critical):',
+        error instanceof Error ? error.message : error
+      );
     }
   });
 });

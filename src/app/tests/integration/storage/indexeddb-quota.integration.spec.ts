@@ -278,15 +278,15 @@ describe('Integration - IndexedDB Quota Management', () => {
 
       await db.readings.bulkAdd([...unsyncedOld, ...syncedOld]);
 
-      // Pruning solo elimina por tiempo, NO por synced status
-      // Esto es el comportamiento actual de pruneOldData()
+      // Pruning only deletes by time, NOT by synced status
+      // This is the current behavior of pruneOldData()
       await db.pruneOldData(60);
 
       const remaining = await db.readings.toArray();
 
       // NOTE: Current implementation does not preserve unsynced data
-      // Este test documenta el comportamiento esperado vs actual
-      expect(remaining.length).toBe(0); // Ambos tipos se eliminan
+      // This test documents expected vs actual behavior
+      expect(remaining.length).toBe(0); // Both types are deleted
     });
 
     it('should handle empty database during cleanup', async () => {

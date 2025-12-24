@@ -177,7 +177,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
       // Typical ratio: 1 unit per 10-15g carbohydrates
       const insulinSettings = {
         ratio: 12, // 1:12
-        sensitivity: 50, // 1U baja 50 mg/dL
+        sensitivity: 50, // 1U reduces 50 mg/dL
         targetGlucose: 100,
       };
 
@@ -254,7 +254,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
   describe('DATA SYNC Settings', () => {
     conditionalIt('should define sync frequency options', async () => {
       const syncOptions = {
-        realtime: 0, // Inmediato
+        realtime: 0, // Immediate
         frequent: 5, // Every 5 minutes
         standard: 15, // Every 15 minutes
         conservative: 60, // Every hour

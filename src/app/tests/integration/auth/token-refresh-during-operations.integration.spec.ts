@@ -518,7 +518,7 @@ describe.skip('Token Refresh During Active Operations', () => {
       expect(successfulResults.length).toBeGreaterThan(0);
     });
 
-    it('should queue requests hasta que refresh complete', async () => {
+    it('should queue requests until refresh completes', async () => {
       vi.useFakeTimers();
       let refreshCompleted = false;
       const requestTimestamps: number[] = [];
