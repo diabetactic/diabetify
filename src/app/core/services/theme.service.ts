@@ -368,7 +368,7 @@ export class ThemeService implements OnDestroy {
   /**
    * Apply Material Design theme programmatically
    */
-  applyMaterialTheme(palette: ColorPalette, mode: ThemeMode, highContrast: boolean = false): void {
+  applyMaterialTheme(palette: ColorPalette, mode: ThemeMode, highContrast = false): void {
     this._colorPalette$.next(palette);
     this._themeMode$.next(mode);
     this._highContrast$.next(highContrast);

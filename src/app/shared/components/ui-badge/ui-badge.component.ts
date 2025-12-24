@@ -64,10 +64,10 @@ export class UiBadgeComponent {
   @Input() icon?: string;
 
   /** Dismissible badge (shows close button) */
-  @Input() dismissible: boolean = false;
+  @Input() dismissible = false;
 
   /** Rounded badge (pill shape) */
-  @Input() rounded: boolean = false;
+  @Input() rounded = false;
 
   @HostBinding('class') get hostClasses(): string {
     return 'ui-badge-host inline-block';

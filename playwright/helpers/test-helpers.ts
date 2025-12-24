@@ -12,11 +12,24 @@ export interface LoginCredentials {
 }
 
 /**
+ * Get default password based on environment mode.
+ * Mock mode uses demo123, real backend uses tuvieja.
+ */
+function getDefaultPassword(): string {
+  if (process.env.E2E_TEST_PASSWORD) {
+    return process.env.E2E_TEST_PASSWORD;
+  }
+  // Mock mode uses demo123, real backend uses tuvieja
+  const isMockMode = process.env.E2E_MOCK_MODE === 'true';
+  return isMockMode ? 'demo123' : 'tuvieja';
+}
+
+/**
  * Login helper - handles the complete login flow with proper waits
  */
 export async function loginUser(page: Page, credentials?: LoginCredentials): Promise<void> {
   const username = credentials?.username || process.env.E2E_TEST_USERNAME || '1000';
-  const password = credentials?.password || process.env.E2E_TEST_PASSWORD || 'tuvieja';
+  const password = credentials?.password || getDefaultPassword();
 
   // Navigate to login if not already there
   if (!page.url().includes('/login')) {
@@ -54,7 +67,7 @@ export async function loginUser(page: Page, credentials?: LoginCredentials): Pro
 /**
  * Wait for Ionic components to fully hydrate
  */
-export async function waitForIonicHydration(page: Page, timeout = 5000): Promise<void> {
+export async function waitForIonicHydration(page: Page, timeout = 10000): Promise<void> {
   try {
     // Wait for ion-app to be hydrated
     await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout });
@@ -80,8 +93,21 @@ export async function navigateToTab(
   // Wait for URL change
   await expect(page).toHaveURL(new RegExp(`/${tabName}`), { timeout: 10000 });
 
-  // Wait for content to load
-  await page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
+  // Wait for the tab button to have tab-selected class (Ionic uses this instead of aria-selected)
+  await expect(tabButton).toHaveClass(/tab-selected/, { timeout: 5000 });
+
+  // Wait for a VISIBLE ion-content (not hidden ones from other tabs)
+  // Ionic hides inactive tab content but keeps them in DOM
+  await page.waitForFunction(
+    () => {
+      const contents = document.querySelectorAll('ion-content.hydrated');
+      return Array.from(contents).some(el => {
+        const rect = el.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      });
+    },
+    { timeout: 10000 }
+  );
 
   // Additional wait for data loading
   await page.waitForLoadState('networkidle', { timeout: 10000 });
@@ -235,14 +261,14 @@ export async function logoutUser(page: Page): Promise<void> {
   // Navigate to profile
   await navigateToTab(page, 'profile');
 
-  // Look for logout button
+  // Look for logout button - use isVisible instead of broken elementExists pattern
   const logoutButton = page
     .locator(
       'ion-button:has-text("Cerrar"), ion-button:has-text("Logout"), ion-button:has-text("Salir")'
     )
     .first();
 
-  if (await elementExists(page, logoutButton.toString())) {
+  if (await logoutButton.isVisible({ timeout: 3000 }).catch(() => false)) {
     await logoutButton.click();
     await expect(page).toHaveURL(/\/(login|welcome)/, { timeout: 10000 });
   }

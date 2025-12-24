@@ -13,11 +13,11 @@ export type AlertType = 'success' | 'info' | 'warning';
 })
 export class AlertBannerComponent {
   @Input() type: AlertType = 'info';
-  @Input() message: string = '';
-  @Input() dismissible: boolean = false;
+  @Input() message = '';
+  @Input() dismissible = false;
   @Output() readonly dismissed = new EventEmitter<void>();
 
-  visible: boolean = true;
+  visible = true;
 
   static getIconForType(type: AlertType): string {
     switch (type) {

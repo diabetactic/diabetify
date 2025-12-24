@@ -14,28 +14,27 @@ import {
   authenticatedGet,
   authenticatedPatch,
 } from '../../helpers/backend-services.helper';
+import { GlucoseUnit } from '../../../core/models/glucose-reading.model';
 
-// Estado de ejecucion de tests
+// Test execution state
 let shouldRun = false;
 let authToken: string;
 
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping settings sync tests');
     shouldRun = false;
     return;
   }
   shouldRun = true;
 }, 10000);
 
-// Helper para tests condicionales
+// Helper for conditional tests
 const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) => {
   it(
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -60,7 +59,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
 
     beforeAll(async () => {
       if (!shouldRun) return;
-      // Guardar perfil original para restaurar
+      // Save original profile for restoration
       originalProfile = await authenticatedGet('/users/me', authToken);
     });
 
@@ -70,7 +69,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
       expect(profile).toBeDefined();
       expect(profile.dni).toBe(TEST_USER.dni);
 
-      // Campos esperados
+      // Expected fields
       expect(profile).toHaveProperty('name');
       expect(profile).toHaveProperty('surname');
     });
@@ -81,12 +80,11 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
       try {
         await authenticatedPatch('/users/me', { name: testName }, authToken);
 
-        // Verificar respuesta o leer de nuevo
+        // Verify response or read again
         const profile = await authenticatedGet('/users/me', authToken);
         expect(profile.name).toBe(testName);
-      } catch {
-        // Si PATCH no esta soportado, verificar GET
-        console.log('  ⚠️ PATCH may not be supported - checking current profile');
+      } catch (_error) {
+        // If PATCH not supported, verify GET works
         const profile = await authenticatedGet('/users/me', authToken);
         expect(profile).toBeDefined();
       }
@@ -99,14 +97,14 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
         await authenticatedPatch('/users/me', { email: testEmail }, authToken);
 
         const profile = await authenticatedGet('/users/me', authToken);
-        // Email puede o no cambiar dependiendo de validaciones del backend
+        // Email may or may not change depending on backend validations
         expect(profile.email).toBeDefined();
-      } catch {
-        console.log('  ⚠️ Email update may require verification');
+      } catch (_error) {
+        // Email update may require verification - expected behavior
       }
     });
 
-    // Restaurar perfil original
+    // Restore original profile
     afterAll(async () => {
       if (!shouldRun || !originalProfile) return;
 
@@ -120,8 +118,8 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
           },
           authToken
         );
-      } catch {
-        // Ignorar errores de restauracion
+      } catch (_error) {
+        // Ignore restoration errors during teardown
       }
     });
   });
@@ -132,7 +130,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
 
   describe('GLUCOSE RANGE Preferences', () => {
     conditionalIt('should use default glucose ranges', async () => {
-      // Rangos estandar de glucosa
+      // Standard glucose ranges
       const defaultRanges = {
         veryLow: 54,
         low: 70,
@@ -140,7 +138,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
         veryHigh: 250,
       };
 
-      // Verificar que podemos categorizar lecturas
+      // Verify that we can categorize readings
       const testValues = [50, 65, 100, 200, 280];
       const categories = testValues.map(value => {
         if (value < defaultRanges.veryLow) return 'veryLow';
@@ -154,14 +152,14 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
     });
 
     conditionalIt('should allow custom target range definition', async () => {
-      // Rangos personalizados (ej: para embarazo)
+      // Custom ranges (e.g., for pregnancy)
       const customRanges = {
         low: 65,
         high: 140,
         target: 100,
       };
 
-      // Calcular si un valor esta en rango
+      // Calculate if a value is in range
       const isInRange = (value: number) => value >= customRanges.low && value <= customRanges.high;
 
       expect(isInRange(100)).toBe(true);
@@ -176,14 +174,14 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
 
   describe('INSULIN SETTINGS', () => {
     conditionalIt('should store insulin-to-carb ratio', async () => {
-      // Ratio tipico: 1 unidad por 10-15g carbohidratos
+      // Typical ratio: 1 unit per 10-15g carbohydrates
       const insulinSettings = {
         ratio: 12, // 1:12
-        sensitivity: 50, // 1U baja 50 mg/dL
+        sensitivity: 50, // 1U reduces 50 mg/dL
         targetGlucose: 100,
       };
 
-      // Calcular dosis de correccion
+      // Calculate correction dose
       const currentGlucose = 200;
       const carbs = 45;
 
@@ -198,11 +196,11 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
     });
 
     conditionalIt('should handle time-based ratio variations', async () => {
-      // Ratios diferentes por hora del dia
+      // Different ratios by time of day
       const timeBasedRatios = {
-        morning: 10, // Mas sensible por la manana
+        morning: 10, // More sensitive in the morning
         afternoon: 12,
-        evening: 15, // Menos sensible en la noche
+        evening: 15, // Less sensitive at night
       };
 
       const getHourlyRatio = (hour: number) => {
@@ -223,7 +221,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
 
   describe('NOTIFICATION PREFERENCES', () => {
     conditionalIt('should define reminder intervals', async () => {
-      // Configuracion de recordatorios
+      // Reminder configuration
       const reminderSettings = {
         mealReminders: true,
         reminderIntervalHours: 4,
@@ -256,11 +254,11 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
   describe('DATA SYNC Settings', () => {
     conditionalIt('should define sync frequency options', async () => {
       const syncOptions = {
-        realtime: 0, // Inmediato
-        frequent: 5, // Cada 5 minutos
-        standard: 15, // Cada 15 minutos
-        conservative: 60, // Cada hora
-        manual: -1, // Solo manual
+        realtime: 0, // Immediate
+        frequent: 5, // Every 5 minutes
+        standard: 15, // Every 15 minutes
+        conservative: 60, // Every hour
+        manual: -1, // Manual only
       };
 
       expect(Object.keys(syncOptions).length).toBe(5);
@@ -285,7 +283,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
         exponentialBackoff: true,
       };
 
-      // Calcular delay con backoff exponencial
+      // Calculate delay with exponential backoff
       const getRetryDelay = (attempt: number) => {
         if (offlineSettings.exponentialBackoff) {
           return offlineSettings.retryDelayMs * Math.pow(2, attempt);
@@ -305,18 +303,17 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
 
   describe('DISPLAY PREFERENCES', () => {
     conditionalIt('should define glucose unit preference', async () => {
-      // Unidades de glucosa soportadas
-      const glucoseUnits = ['mg/dL', 'mmol/L'] as const;
-      type GlucoseUnit = (typeof glucoseUnits)[number];
+      // Supported glucose units
+      const glucoseUnits: GlucoseUnit[] = ['mg/dL', 'mmol/L'];
 
       const convertToMmolL = (mgDl: number): number => mgDl / 18.0182;
       const convertToMgDl = (mmolL: number): number => mmolL * 18.0182;
 
-      // Verificar que las unidades estan definidas
+      // Verify that units are defined
       const defaultUnit: GlucoseUnit = 'mg/dL';
       expect(glucoseUnits).toContain(defaultUnit);
 
-      // Verificar conversiones
+      // Verify conversions
       expect(convertToMmolL(180)).toBeCloseTo(9.99, 1);
       expect(convertToMgDl(10)).toBeCloseTo(180.18, 1);
     });
@@ -343,8 +340,8 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
         }
       };
 
-      // Usar fecha explicita para evitar problemas de timezone
-      const testDate = new Date(2025, 11, 21); // Diciembre 21, 2025 (mes 0-indexed)
+      // Use explicit date to avoid timezone issues
+      const testDate = new Date(2025, 11, 21); // December 21, 2025 (month 0-indexed)
       expect(formatDate(testDate, dateFormats.es)).toBe('21/12/2025');
       expect(formatDate(testDate, dateFormats.en)).toBe('12/21/2025');
     });
@@ -384,9 +381,9 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
     });
 
     conditionalIt('should resolve system theme preference', async () => {
-      // Simular deteccion de tema del sistema
+      // Simulate system theme detection
       const getSystemTheme = (): 'light' | 'dark' => {
-        // En tests, simular preferencia
+        // In tests, simulate preference
         return 'dark';
       };
 

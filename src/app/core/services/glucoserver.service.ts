@@ -119,9 +119,9 @@ export class GlucoserverService {
   /**
    * Delete a glucose reading
    */
-  deleteReading(id: string): Observable<void> {
+  deleteReading(id: string): Observable<undefined> {
     return this.http
-      .delete<void>(`${this.fullUrl}/readings/${id}`)
+      .delete<undefined>(`${this.fullUrl}/readings/${id}`)
       .pipe(retry(1), catchError(this.handleError));
   }
 

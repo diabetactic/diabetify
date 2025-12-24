@@ -43,15 +43,9 @@ test.describe('Diabetactic E2E Flow', () => {
     // --- 3. ADD READING ---
     console.log('🔹 Step 3: Add Glucose Reading');
 
-    // Try to find FAB button or navigate directly
-    const hasFab = await elementExists(page, '[data-testid="fab-add-reading"], ion-fab-button');
-
-    if (hasFab) {
-      await page.locator('[data-testid="fab-add-reading"], ion-fab-button').first().click();
-    } else {
-      // Navigate directly if FAB not found
-      await page.goto('/add-reading');
-    }
+    // Navigate directly to add-reading page (more reliable than FAB which might open calculator)
+    await page.goto('/add-reading');
+    await page.waitForLoadState('networkidle', { timeout: 10000 });
 
     // Wait for Add Reading page
     await expect(page).toHaveURL(/\/add-reading/, { timeout: 10000 });
@@ -86,13 +80,22 @@ test.describe('Diabetactic E2E Flow', () => {
     // Wait for readings to load
     await page.waitForLoadState('networkidle', { timeout: 10000 });
 
-    // Check for the new reading value
-    const hasReading = await elementExists(page, 'text=/125/');
-    if (hasReading) {
-      await expect(page.locator('body')).toContainText('125');
-      console.log('✅ Reading "125" found in list');
-    } else {
-      console.log('⚠️  Reading not immediately visible (may be in different view)');
+    // Wait for readings content to be visible
+    await waitForIonicHydration(page);
+
+    // Check for any reading content (the new reading or existing ones)
+    // Use locator.isVisible instead of fragile elementExists with regex pattern
+    const readingsList = page.locator('ion-content');
+    const hasContent = await readingsList.isVisible({ timeout: 5000 }).catch(() => false);
+
+    if (hasContent) {
+      // Check if '125' appears anywhere in the body
+      const bodyText = await page.locator('body').textContent();
+      if (bodyText && bodyText.includes('125')) {
+        console.log('✅ Reading "125" found in list');
+      } else {
+        console.log('⚠️  Reading not immediately visible (may be in different view or not synced)');
+      }
     }
 
     // --- 5. PROFILE ---
@@ -103,9 +106,9 @@ test.describe('Diabetactic E2E Flow', () => {
     // Wait for profile content to load
     await waitForIonicHydration(page);
 
-    // Verify profile content exists
-    const profileContent = page.locator('ion-content');
-    await expect(profileContent).toBeVisible();
+    // Verify profile content exists - use specific class to avoid multiple ion-content
+    const profileContent = page.locator('ion-content.profile-content');
+    await expect(profileContent).toBeVisible({ timeout: 10000 });
 
     console.log('✅ E2E Flow Completed Successfully');
   });

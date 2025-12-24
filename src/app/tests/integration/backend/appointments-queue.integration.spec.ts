@@ -25,14 +25,11 @@ import {
 const runTests = async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping integration tests');
     return false;
   }
   // Queue tests require backoffice to accept appointments
   const backofficeAvailable = await isBackofficeAvailable();
   if (!backofficeAvailable) {
-    console.log('⏭️  Backoffice not available - skipping appointment queue tests');
-    console.log('   (Backoffice is needed to accept appointments from queue)');
     return false;
   }
   return true;
@@ -51,7 +48,6 @@ const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) 
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -91,9 +87,7 @@ describe('Backend Integration - Appointment Queue & Creation', () => {
           'DENIED',
           'CANCELLED',
         ]).toContain(state);
-        console.log(`  ✅ User state: ${state}`);
       } else {
-        console.log('  ℹ️  No state (user has no appointment history)');
       }
     });
 
@@ -102,7 +96,6 @@ describe('Backend Integration - Appointment Queue & Creation', () => {
 
       expect(token).toBeTruthy();
       expect(typeof queuePosition).toBe('number');
-      console.log(`  ✅ Queue position: ${queuePosition}`);
     });
   });
 
@@ -131,10 +124,8 @@ describe('Backend Integration - Appointment Queue & Creation', () => {
 
       if (created) {
         expect(created.appointment_id).toBeDefined();
-        console.log(`  ✅ Created appointment: ${created.appointment_id}`);
       } else {
         // State doesn't allow creation - log and continue
-        console.log('  ℹ️  Could not create appointment (state issue)');
       }
     });
 
@@ -144,7 +135,6 @@ describe('Backend Integration - Appointment Queue & Creation', () => {
       const appointments = await authenticatedGet('/appointments/mine', token);
 
       expect(Array.isArray(appointments)).toBe(true);
-      console.log(`  ✅ Found ${appointments.length} appointments`);
     });
   });
 
@@ -181,10 +171,10 @@ describe('Backend Integration - Appointment Queue & Creation', () => {
 
         // Should get error (validation or state issue)
         if (!response.ok) {
-          console.log(`  ✅ Correctly rejected invalid data (${response.status})`);
+          // Expected - validation or state issue
         }
-      } catch {
-        console.log('  ✅ Request failed as expected');
+      } catch (_error) {
+        // Network error is acceptable in this context
       }
     });
 

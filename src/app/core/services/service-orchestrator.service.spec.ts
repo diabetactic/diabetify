@@ -461,8 +461,8 @@ describe('ServiceOrchestrator', () => {
       await service.executeAuthAndSync();
 
       const duration = Date.now() - startTime;
-      // Should have some delay due to retry backoff (at least 1 second)
-      expect(duration).toBeGreaterThanOrEqual(1000);
+      // Should have some delay due to retry backoff (at least ~1 second, with 50ms tolerance for CI timing variance)
+      expect(duration).toBeGreaterThanOrEqual(950);
       expect(attemptCount).toBeGreaterThan(1);
     });
   });

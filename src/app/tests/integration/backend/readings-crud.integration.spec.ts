@@ -24,11 +24,11 @@ import {
   TEST_USER,
 } from '../../helpers/backend-services.helper';
 
-// Estado de ejecución de tests
+// Test execution state
 let shouldRun = false;
 let authToken: string;
 
-// Helper para generar datos de lectura de prueba
+// Helper to generate test reading data
 function createTestReading(
   overrides: Partial<Omit<GlucoseReadingData, 'id' | 'user_id'>> = {}
 ): Omit<GlucoseReadingData, 'id' | 'user_id'> {
@@ -42,24 +42,22 @@ function createTestReading(
   };
 }
 
-// Verificar disponibilidad del backend antes de ejecutar tests
+// Check backend availability before running tests
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping readings CRUD integration tests');
     shouldRun = false;
     return;
   }
   shouldRun = true;
 }, 10000);
 
-// Helper para tests condicionales
+// Helper for conditional tests
 const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) => {
   it(
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();

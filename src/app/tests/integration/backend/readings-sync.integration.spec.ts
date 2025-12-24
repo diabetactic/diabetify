@@ -29,7 +29,7 @@ import {
 let shouldRun = false;
 let authToken: string;
 
-// Helper para generar lecturas de prueba con timestamps únicos
+// Helper to generate test readings with sequential glucose values
 function createTestReading(index: number): Omit<GlucoseReadingData, 'id' | 'user_id'> {
   const types: GlucoseReadingType[] = ['DESAYUNO', 'ALMUERZO', 'MERIENDA', 'CENA'];
   return {
@@ -42,12 +42,7 @@ function createTestReading(index: number): Omit<GlucoseReadingData, 'id' | 'user
 
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
-  if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping readings sync integration tests');
-    shouldRun = false;
-    return;
-  }
-  shouldRun = true;
+  shouldRun = backendAvailable;
 }, 10000);
 
 const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) => {
@@ -55,7 +50,6 @@ const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) 
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -139,15 +133,16 @@ describe('Backend Integration - Readings Sync Behavior', () => {
       // Create second reading
       const second = await createGlucoseReading(createTestReading(1), authToken);
       expect(second.id).toBeDefined();
+      expect(second.id).toBeGreaterThan(first.id);
 
       // Get latest - verifies the endpoint works
       const latest = await getLatestGlucoseReading(authToken);
       expect(latest.id).toBeDefined();
       expect(latest.glucose_level).toBeDefined();
 
-      // The latest should have an ID >= first (could be one we created or a concurrent one)
-      // We can't guarantee exact ID due to potential concurrent test runs
-      expect(latest.id).toBeGreaterThanOrEqual(first.id - 10); // Allow some margin
+      // Latest should be at least the second reading we created
+      // (could be newer if other tests ran concurrently)
+      expect(latest.id).toBeGreaterThanOrEqual(second.id);
     });
   });
 

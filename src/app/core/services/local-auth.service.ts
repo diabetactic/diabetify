@@ -269,7 +269,7 @@ export class LocalAuthService {
    * Login with username (DNI or email) and password
    * Updated to be simpler and match the UI requirements
    */
-  login(username: string, password: string, rememberMe: boolean = false): Observable<LoginResult> {
+  login(username: string, password: string, rememberMe = false): Observable<LoginResult> {
     const isAuthMockEnabled = this.mockAdapter.isServiceMockEnabled('auth');
     this.logger.debug('Auth', 'Login attempt', {
       stage: 'start',

@@ -40,10 +40,10 @@ export class RequestIdInterceptor implements HttpInterceptor {
    * where x is 0-f and y is 8-b
    */
   private generateUUID(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, char => {
+      const randomValue = (Math.random() * 16) | 0;
+      const hexValue = char === 'x' ? randomValue : (randomValue & 0x3) | 0x8;
+      return hexValue.toString(16);
     });
   }
 }

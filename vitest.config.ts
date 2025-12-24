@@ -59,7 +59,24 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
       include: ['src/app/**/*.ts'],
-      exclude: ['src/app/**/*.spec.ts', 'src/app/**/*.mock.ts'],
+      exclude: [
+        // Test files
+        'src/app/**/*.spec.ts',
+        'src/app/**/*.mock.ts',
+        'src/app/tests/**', // Test helpers and infrastructure
+        'src/app/testing/**', // Dev-only testing utilities
+
+        // Angular boilerplate
+        'src/app/**/*.module.ts', // Angular modules - no testable logic
+        'src/app/**/index.ts', // Barrel exports
+        'src/app/**/*.model.ts', // TypeScript interfaces
+        'src/app/**/constants/**', // Constants files
+
+        // Dev-only components (not production code)
+        'src/app/shared/components/debug-panel/**',
+        'src/app/shared/components/env-badge/**',
+        'src/app/shared/icons/**', // Static icon exports
+      ],
     },
     // Dependency handling for Vitest
     deps: {
@@ -106,6 +123,14 @@ export default defineConfig({
       {
         find: '@interceptors',
         replacement: fileURLToPath(new URL('./src/app/core/interceptors', import.meta.url)),
+      },
+      {
+        find: '@mocks',
+        replacement: fileURLToPath(new URL('./src/mocks', import.meta.url)),
+      },
+      {
+        find: '@test-setup',
+        replacement: fileURLToPath(new URL('./src/test-setup', import.meta.url)),
       },
       // Redirect ALL Stencil imports (including subpaths) to mock - use regex to catch all subpaths
       {

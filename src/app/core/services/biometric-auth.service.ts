@@ -120,7 +120,7 @@ export class BiometricAuthService {
    * Authenticate with biometric
    */
   async authenticateWithBiometric(
-    reason: string = 'Authenticate to access your account'
+    reason = 'Authenticate to access your account'
   ): Promise<BiometricAuthResult> {
     try {
       const config = this.biometricConfigSubject.value;

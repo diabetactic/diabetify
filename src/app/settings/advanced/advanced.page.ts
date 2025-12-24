@@ -56,7 +56,7 @@ import { ROUTES, TIMEOUTS } from '@core/constants';
 })
 export class AdvancedPage implements OnDestroy {
   isDevMode = !environment.production;
-  accountState: string = 'active';
+  accountState = 'active';
   private destroy$ = new Subject<void>();
 
   constructor(

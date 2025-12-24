@@ -5,13 +5,11 @@ on:
     branches: [master, main, develop]
     paths:
       - 'src/**'
-      - '!src/**/*.md'
+      - 'playwright/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'angular.json'
       - 'tsconfig*.json'
-      - 'vite*.ts'
-      - 'capacitor.config.ts'
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [master, main]
@@ -25,9 +23,10 @@ env:
   PNPM_VERSION: '10'
 
 jobs:
-  # ============================================================================
-  # Lint and Type Check (fast feedback)
-  # ============================================================================
+  # ══════════════════════════════════════════════════════════════════════════
+  # PHASE 1: Fast Feedback (parallel, ~90s total)
+  # Testing Trophy: Base layer - many fast tests for quick feedback
+  # ══════════════════════════════════════════════════════════════════════════
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -45,14 +44,8 @@ jobs:
       - name: i18n Check
         run: pnpm run i18n:check
 
-  # ============================================================================
-  # Unit Tests (Trophy: base layer - many tests, fast execution)
-  # ============================================================================
   unit-tests:
     runs-on: ubuntu-latest
-    env:
-      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
       - uses: actions/checkout@v4
 
@@ -60,15 +53,7 @@ jobs:
         uses: ./.github/actions/setup-pnpm
 
       - name: Unit Tests
-        run: pnpm test -- --ci --coverage
-
-      - name: Upload coverage to DeepSource
-        if: env.DEEPSOURCE_DSN != ''
-        env:
-          DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
-        run: |
-          curl https://deepsource.io/cli | sh
-          ./bin/deepsource report --analyzer test-coverage --key javascript --value-file coverage/diabetactic/lcov.info
+        run: pnpm exec vitest run --coverage
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
@@ -77,15 +62,19 @@ jobs:
           path: coverage/
           retention-days: 7
 
-  # ============================================================================
-  # Build Mock Web (required for E2E - uses in-memory mock data)
-  # ============================================================================
-  build-web:
+      - name: Upload coverage to DeepSource
+        uses: deepsourcelabs/test-coverage-action@master
+        with:
+          key: javascript
+          coverage-file: coverage/lcov.info
+          dsn: ${{ secrets.DEEPSOURCE_DSN }}
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # PHASE 2: Build (~60s, only if Phase 1 passes)
+  # ══════════════════════════════════════════════════════════════════════════
+  build:
     needs: [lint, unit-tests]
     runs-on: ubuntu-latest
-    env:
-      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
       - uses: actions/checkout@v4
 
@@ -100,32 +89,47 @@ jobs:
         with:
           name: www
           path: www/
-          retention-days: 7
+          retention-days: 1
 
-  # ============================================================================
-  # E2E Tests - Parallelized by browser (Trophy: top layer - full stack)
-  # ============================================================================
-  e2e-tests:
-    needs: build-web
+  # ══════════════════════════════════════════════════════════════════════════
+  # PHASE 3: UI Integration Tests (~90s)
+  # Testing Trophy: Middle layer - UI tests with mock backend
+  # Single browser (mobile-first app), Playwright cached
+  # ══════════════════════════════════════════════════════════════════════════
+  ui-tests:
+    needs: build
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        project: [mobile-chromium, desktop-chromium]
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
 
-      - name: Download www artifact
+      - name: Download build
         uses: actions/download-artifact@v4
         with:
           name: www
           path: www/
 
-      - name: Install Playwright
+      # Cache Playwright browsers (saves ~30s per run)
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(pnpm list @playwright/test --json | jq -r '.[0].devDependencies["@playwright/test"].version // "unknown"')" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright (cache miss)
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps chromium
+
+      - name: Install Playwright deps (cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
 
       - name: Start static server (SPA mode)
         run: npx serve www -l 4200 -s &
@@ -133,118 +137,95 @@ jobs:
       - name: Wait for server
         run: npx wait-on http://localhost:4200 --timeout 30000
 
-      - name: Run E2E Tests (${{ matrix.project }})
-        run: pnpm test:e2e --project=${{ matrix.project }} --ignore-snapshots
+      # SINGLE browser - mobile only (it's a mobile-first app!)
+      - name: Run UI Integration Tests
+        run: pnpm test:e2e --project=mobile-chromium --grep-invert "visual|@docker"
         env:
           E2E_SKIP_SERVER: true
           E2E_MOCK_MODE: true
 
-      - name: Upload E2E artifacts
+      - name: Upload artifacts on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-artifacts-${{ matrix.project }}
+          name: ui-test-artifacts
           path: |
             playwright-report/
             playwright/artifacts/
           retention-days: 7
 
-  # ============================================================================
-  # Visual Regression Tests (Trophy: quality layer - UI consistency)
-  # ============================================================================
-  visual-tests:
-    needs: build-web
+  # ══════════════════════════════════════════════════════════════════════════
+  # PHASE 4: Real E2E Tests (Optional - Docker backend)
+  # Testing Trophy: Top layer - few slow tests with full stack
+  # Trigger: Push to main OR PR with 'run-e2e' label
+  # ══════════════════════════════════════════════════════════════════════════
+  docker-e2e:
+    needs: build
     runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' && github.ref == 'refs/heads/main' ||
+      contains(github.event.pull_request.labels.*.name, 'run-e2e')
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
 
-      - name: Download www artifact
+      - name: Download build
         uses: actions/download-artifact@v4
         with:
           name: www
           path: www/
 
+      - name: Start Docker backend
+        run: |
+          docker compose -f docker/docker-compose.ci.yml up -d --wait
+          sleep 5
+
+      - name: Seed test data
+        run: ./docker/seed-test-data.sh full
+
+      - name: Cache Playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Start static server (SPA mode)
+      - name: Start frontend
         run: npx serve www -l 4200 -s &
 
-      - name: Wait for server
-        run: npx wait-on http://localhost:4200 --timeout 30000
-
-      - name: Run Visual Regression Tests
-        run: pnpm test:visual --project=mobile-chromium
-        env:
-          E2E_SKIP_SERVER: true
-          E2E_MOCK_MODE: true
-
-      - name: Upload Visual Test artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: visual-test-artifacts
-          path: |
-            playwright-report/
-            playwright/tests/visual-regression.spec.ts-snapshots/
-          retention-days: 14
-
-  # ============================================================================
-  # Docker Integration Tests (Optional - trigger with label)
-  # Trophy: middle layer - real backend integration
-  # ============================================================================
-  integration-tests:
-    runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'push' ||
-      contains(github.event.pull_request.labels.*.name, 'run-integration')
-    needs: [lint, unit-tests]
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: diabetactic_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: ./.github/actions/setup-pnpm
-
-      - name: Start Backend Services
+      - name: Wait for services
         run: |
-          cd docker
-          docker compose -f docker-compose.test.yml up -d --wait
-        continue-on-error: true
+          npx wait-on http://localhost:4200 --timeout 30000
+          npx wait-on http://localhost:8000/health --timeout 60000
 
-      - name: Run Integration Tests
-        run: pnpm test:integration
+      - name: Run Real E2E Tests
+        run: pnpm test:e2e --project=mobile-chromium --grep "@docker"
         env:
           E2E_DOCKER_TESTS: true
           E2E_API_URL: http://localhost:8000
-        continue-on-error: true
+          E2E_BACKOFFICE_URL: http://localhost:8001
 
-      - name: Stop Backend Services
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-e2e-artifacts
+          path: |
+            playwright-report/
+            playwright/artifacts/
+          retention-days: 7
+
+      - name: Stop Docker
         if: always()
-        run: |
-          cd docker
-          docker compose -f docker-compose.test.yml down -v
-        continue-on-error: true
+        run: docker compose -f docker/docker-compose.ci.yml down -v
 
-  # ============================================================================
-  # PR Size Labeler
-  # ============================================================================
+  # ══════════════════════════════════════════════════════════════════════════
+  # PR Utilities
+  # ══════════════════════════════════════════════════════════════════════════
   pr-labeler:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
