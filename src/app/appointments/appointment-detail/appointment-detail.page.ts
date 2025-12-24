@@ -170,7 +170,7 @@ export class AppointmentDetailPage implements OnInit {
   /**
    * Mapping from backend motive values to translation keys
    */
-  private readonly motiveMapping: Record<string, string> = {
+  private readonly motiveMapping = {
     // Spanish uppercase (backend format from MotivesEnum)
     AJUSTE: 'adjustment',
     HIPOGLUCEMIA: 'hypoglycemia',
@@ -200,7 +200,7 @@ export class AppointmentDetailPage implements OnInit {
   /**
    * Mapping from backend insulin type values to translation keys
    */
-  private readonly insulinTypeMapping: Record<string, string> = {
+  private readonly insulinTypeMapping = {
     rapida: 'rapid',
     RAPIDA: 'rapid',
     lenta: 'long',
@@ -224,7 +224,7 @@ export class AppointmentDetailPage implements OnInit {
   /**
    * Mapping from backend pump type values to translation keys
    */
-  private readonly pumpTypeMapping: Record<string, string> = {
+  private readonly pumpTypeMapping = {
     jeringa: 'none',
     JERINGA: 'none',
     pluma: 'none',

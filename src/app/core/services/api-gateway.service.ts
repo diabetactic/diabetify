@@ -1341,6 +1341,7 @@ export class ApiGatewayService {
 
   /**
    * Dispatch the mock request to the specific mock method in MockAdapter.
+   * Refactored para reducir complejidad ciclomática mediante delegación a handlers específicos.
    */
   private async executeMockRequest<T>(
     endpointKey: string,
@@ -1351,89 +1352,163 @@ export class ApiGatewayService {
     const params = options?.params as Record<string, unknown> | undefined;
     const body = options?.body;
 
-    switch (endpointKey) {
-      // Appointments endpoints - handled by AppointmentService directly
-      case 'appointments.list':
-      case 'appointments.detail':
-      case 'appointments.create':
-      case 'appointments.update':
-      case 'appointments.cancel':
-        // Appointment mock data is handled directly by AppointmentService
-        throw new Error(
-          `Mock endpoint ${endpointKey} should be handled by AppointmentService directly`
-        );
+    // Determinar el servicio basado en el prefijo del endpoint
+    const [service] = endpointKey.split('.');
 
-      // Glucoserver endpoints
-      case 'glucoserver.readings.list':
+    switch (service) {
+      case 'appointments':
+        return this.handleAppointmentsMockRequest(endpointKey);
+      case 'glucoserver':
+        return this.handleGlucoserverMockRequest(endpointKey, params, body, pathParams);
+      case 'achievements':
+        return this.handleAchievementsMockRequest(endpointKey);
+      case 'auth':
+        return this.handleAuthMockRequest(endpointKey, endpoint, body);
+      default:
+        return this.handleUnknownMockRequest(endpointKey);
+    }
+  }
+
+  /**
+   * Handler para endpoints de appointments (delegados al servicio).
+   */
+  private handleAppointmentsMockRequest<T>(endpointKey: string): Promise<T> {
+    throw new Error(
+      `Mock endpoint ${endpointKey} should be handled by AppointmentService directly`
+    );
+  }
+
+  /**
+   * Handler para endpoints de glucoserver.
+   */
+  private async handleGlucoserverMockRequest<T>(
+    endpointKey: string,
+    params?: Record<string, unknown>,
+    body?: unknown,
+    pathParams?: { [key: string]: string }
+  ): Promise<T> {
+    const action = endpointKey.split('.').slice(1).join('.');
+
+    switch (action) {
+      case 'readings.list':
         return this.mockAdapter.mockGetAllReadings(
           (params?.['offset'] as number | undefined) || 0,
           (params?.['limit'] as number | undefined) || 100
         ) as Promise<T>;
 
-      case 'glucoserver.readings.create':
+      case 'readings.create':
         return this.mockAdapter.mockAddReading(body as LocalGlucoseReading) as Promise<T>;
 
-      case 'glucoserver.readings.update':
+      case 'readings.update':
         return this.mockAdapter.mockUpdateReading(
           pathParams?.['id'] || '',
           body as Partial<LocalGlucoseReading>
         ) as Promise<T>;
 
-      case 'glucoserver.readings.delete':
+      case 'readings.delete':
         await this.mockAdapter.mockDeleteReading(pathParams?.['id'] || '');
         return { success: true } as T;
 
-      case 'glucoserver.statistics':
+      case 'statistics':
         return this.mockAdapter.mockGetStatistics(
           (params?.['days'] as number | undefined) || 30
         ) as Promise<T>;
 
-      // Achievements endpoints
-      case 'achievements.streak':
+      default:
+        throw new Error(`Mock not implemented for glucoserver endpoint: ${action}`);
+    }
+  }
+
+  /**
+   * Handler para endpoints de achievements.
+   */
+  private handleAchievementsMockRequest<T>(endpointKey: string): Promise<T> {
+    const action = endpointKey.split('.').slice(1).join('.');
+
+    switch (action) {
+      case 'streak':
         return this.mockAdapter.mockGetStreakData() as Promise<T>;
-
-      case 'achievements.list':
+      case 'list':
         return this.mockAdapter.mockGetAchievements() as Promise<T>;
+      default:
+        throw new Error(`Mock not implemented for achievements endpoint: ${action}`);
+    }
+  }
 
-      // Auth endpoints
-      case 'auth.login': {
-        const bodyObj = body as Record<string, unknown>;
-        return this.mockAdapter.mockLogin(
-          ((bodyObj['email'] as string | undefined) ||
-            (bodyObj['dni'] as string | undefined)) as string,
-          bodyObj['password'] as string
-        ) as Promise<T>;
-      }
+  /**
+   * Handler para endpoints de autenticación.
+   */
+  private async handleAuthMockRequest<T>(
+    endpointKey: string,
+    endpoint: ApiEndpoint,
+    body?: unknown
+  ): Promise<T> {
+    const action = endpointKey.split('.').slice(1).join('.');
 
-      case 'auth.register':
+    switch (action) {
+      case 'login':
+        return this.handleAuthLogin(body) as Promise<T>;
+
+      case 'register':
         return this.mockAdapter.mockRegister(
           body as { dni: string; password: string; name: string; email: string }
         ) as Promise<T>;
 
-      case 'auth.logout':
+      case 'logout':
         await this.mockAdapter.mockLogout();
         return { success: true } as T;
 
-      case 'auth.user.me':
-      case 'auth.profile.update':
-      case 'auth.preferences.update':
-        if (endpoint.method === 'GET') {
-          return this.mockAdapter.mockGetProfile() as Promise<T>;
-        } else {
-          return this.mockAdapter.mockUpdateProfile(body as Record<string, unknown>) as Promise<T>;
-        }
+      case 'user.me':
+      case 'profile.update':
+      case 'preferences.update':
+        return this.handleAuthProfile(endpoint, body) as Promise<T>;
 
-      case 'auth.refresh': {
-        const bodyObj = body as Record<string, unknown>;
-        const newToken = await this.mockAdapter.mockRefreshToken(
-          (bodyObj['token'] as string | undefined) || ''
-        );
-        return { token: newToken } as T;
-      }
+      case 'refresh':
+        return this.handleAuthRefresh(body) as Promise<T>;
 
       default:
-        this.logger.warn('API', `No mock implementation for endpoint: ${endpointKey}`);
-        throw new Error(`Mock not implemented for endpoint: ${endpointKey}`);
+        throw new Error(`Mock not implemented for auth endpoint: ${action}`);
     }
+  }
+
+  /**
+   * Helper para login con email o DNI.
+   */
+  private handleAuthLogin(body?: unknown): Promise<unknown> {
+    const bodyObj = body as Record<string, unknown>;
+    return this.mockAdapter.mockLogin(
+      ((bodyObj['email'] as string | undefined) ||
+        (bodyObj['dni'] as string | undefined)) as string,
+      bodyObj['password'] as string
+    );
+  }
+
+  /**
+   * Helper para profile (GET o UPDATE según método HTTP).
+   */
+  private handleAuthProfile(endpoint: ApiEndpoint, body?: unknown): Promise<unknown> {
+    if (endpoint.method === 'GET') {
+      return this.mockAdapter.mockGetProfile();
+    }
+    return this.mockAdapter.mockUpdateProfile(body as Record<string, unknown>);
+  }
+
+  /**
+   * Helper para refresh token.
+   */
+  private async handleAuthRefresh(body?: unknown): Promise<{ token: string }> {
+    const bodyObj = body as Record<string, unknown>;
+    const newToken = await this.mockAdapter.mockRefreshToken(
+      (bodyObj['token'] as string | undefined) || ''
+    );
+    return { token: newToken };
+  }
+
+  /**
+   * Handler para endpoints desconocidos.
+   */
+  private handleUnknownMockRequest<T>(endpointKey: string): Promise<T> {
+    this.logger.warn('API', `No mock implementation for endpoint: ${endpointKey}`);
+    throw new Error(`Mock not implemented for endpoint: ${endpointKey}`);
   }
 }

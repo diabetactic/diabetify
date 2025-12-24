@@ -27,12 +27,12 @@ interface StreakLevel {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StreakCardComponent {
-  @Input() streak: number = 0;
-  @Input() maxStreak: number = 0;
-  @Input() timesMeasured: number = 0;
-  @Input() loading: boolean = false;
+  @Input() streak = 0;
+  @Input() maxStreak = 0;
+  @Input() timesMeasured = 0;
+  @Input() loading = false;
   /** Measurements today counter (0-3, resets when hitting 4) */
-  @Input() fourTimesToday: number = 0;
+  @Input() fourTimesToday = 0;
 
   /**
    * Streak levels with emoji progression

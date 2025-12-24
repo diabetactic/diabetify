@@ -236,7 +236,7 @@ export class ReadingsService implements OnDestroy {
    * Get all readings with optional pagination
    * Uses IndexedDB for real-time reactive updates
    */
-  async getAllReadings(limit?: number, offset: number = 0): Promise<PaginatedReadings> {
+  async getAllReadings(limit?: number, offset = 0): Promise<PaginatedReadings> {
     // ALWAYS use IndexedDB for reactive updates
     // Mock data is only for initial seeding
     const total = await this.db.readings.count();
@@ -489,8 +489,8 @@ export class ReadingsService implements OnDestroy {
    */
   async getStatistics(
     period: 'day' | 'week' | 'month' | 'all',
-    targetMin: number = 70,
-    targetMax: number = 180,
+    targetMin = 70,
+    targetMax = 180,
     unit: GlucoseUnit = 'mg/dL'
   ): Promise<GlucoseStatistics> {
     if (this.isMockBackend && this.mockData) {
@@ -1246,7 +1246,7 @@ export class ReadingsService implements OnDestroy {
    *
    * @param days Window (in days) to look back from today. Defaults to 14 days.
    */
-  async exportManualReadingsSummary(days: number = 14): Promise<TeleAppointmentReadingSummary> {
+  async exportManualReadingsSummary(days = 14): Promise<TeleAppointmentReadingSummary> {
     // Anchor the window to the most recent manual SMBG reading (if any)
     // This makes tests deterministic when they insert historical fixtures
     const all = await this.db.readings.orderBy('time').toArray();

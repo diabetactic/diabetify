@@ -129,7 +129,7 @@ export class DiabetacticDatabase extends Dexie {
   /**
    * Prune old readings to free space (keeps last 90 days)
    */
-  async pruneOldData(daysToKeep: number = 90): Promise<number> {
+  async pruneOldData(daysToKeep = 90): Promise<number> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
     const cutoffTime = cutoffDate.toISOString();

@@ -288,3 +288,5 @@ tidepool.personal.postman_environment.json
 !android/**/*.xml
 !capacitor.config.xml
 !angular.json
+deepsource-export/
+scripts/deepsource-export.sh

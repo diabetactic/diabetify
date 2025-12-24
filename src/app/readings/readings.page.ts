@@ -114,25 +114,25 @@ export class ReadingsPage implements OnInit, OnDestroy {
   allReadings: LocalGlucoseReading[] = [];
   groupedReadings: GroupedReading[] = [];
   filteredReadings: LocalGlucoseReading[] = [];
-  isLoading: boolean = true;
-  isSyncing: boolean = false;
-  totalCount: number = 0;
+  isLoading = true;
+  isSyncing = false;
+  totalCount = 0;
 
   // Filters
   filters: ReadingFilters = {
     status: 'all',
   };
-  isFilterModalOpen: boolean = false;
+  isFilterModalOpen = false;
 
   // Reading detail modal
-  isDetailModalOpen: boolean = false;
+  isDetailModalOpen = false;
   selectedReading: LocalGlucoseReading | null = null;
 
   // User preferences
   preferredUnit: GlucoseUnit = 'mg/dL';
 
   // Search
-  searchTerm: string = '';
+  searchTerm = '';
   private searchSubject = new Subject<string>();
 
   // Subscriptions
@@ -483,7 +483,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
    * Backend sends: DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO
    * i18n uses: glucose.context.breakfast, glucose.context.lunch, etc.
    */
-  private readonly mealContextMap: Record<string, string> = {
+  private readonly mealContextMap = {
     DESAYUNO: 'breakfast',
     ALMUERZO: 'lunch',
     MERIENDA: 'snack',

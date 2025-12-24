@@ -314,7 +314,7 @@ export class NotificationService implements OnDestroy {
     if (!this.platform.is('capacitor')) {
       // Use Web Notification API
       if ('Notification' in window && Notification.permission === 'granted') {
-        void new Notification(title, { body });
+        new Notification(title, { body });
       }
       return;
     }

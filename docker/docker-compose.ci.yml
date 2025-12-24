@@ -24,7 +24,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -37,7 +37,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -50,7 +50,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -87,7 +87,7 @@ services:
     image: jcresp0/api-gateway:latest
     container_name: diabetactic_api_gateway
     ports:
-      - "8000:8000"
+      - '8000:8000'
     depends_on:
       - glucoserver
       - login_service
@@ -101,7 +101,7 @@ services:
     image: jcresp0/api-gateway-backoffice:latest
     container_name: diabetactic_api_gateway_backoffice
     ports:
-      - "8001:8000"
+      - '8001:8000'
     depends_on:
       - login_service
     environment:

@@ -605,12 +605,12 @@ export class FoodService {
    * Search foods by name or keywords
    */
   searchFoods(query: string): FoodItem[] {
-    const q = query.toLowerCase().trim();
-    if (!q) return [];
+    const searchQuery = query.toLowerCase().trim();
+    if (!searchQuery) return [];
 
     return this.foodDatabase.filter(food => {
-      const nameMatch = food.name.toLowerCase().includes(q);
-      const keywordMatch = food.keywords?.some(kw => kw.toLowerCase().includes(q));
+      const nameMatch = food.name.toLowerCase().includes(searchQuery);
+      const keywordMatch = food.keywords?.some(kw => kw.toLowerCase().includes(searchQuery));
       return nameMatch || keywordMatch;
     });
   }
@@ -625,7 +625,7 @@ export class FoodService {
   /**
    * Add a food to selection with specified servings
    */
-  addFood(food: FoodItem, servings: number = 1): void {
+  addFood(food: FoodItem, servings = 1): void {
     const current = this.selectedFoodsSignal();
     const existingIndex = current.findIndex(sf => sf.food.id === food.id);
 

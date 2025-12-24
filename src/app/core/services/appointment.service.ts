@@ -353,7 +353,7 @@ export class AppointmentService implements OnDestroy {
   updateAppointmentSchedule(
     appointmentId: number,
     scheduledDate: Date,
-    reminderMinutesBefore: number = 30
+    reminderMinutesBefore = 30
   ): Observable<Appointment> {
     return this.getAppointment(appointmentId).pipe(
       tap(appointment => {

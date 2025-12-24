@@ -183,7 +183,7 @@ export class TidepoolAuthService implements OnDestroy {
       // Call Tidepool's login endpoint using HttpClient with observe: 'response' to get headers
       // With CapacitorHttp auto-patching enabled, HttpClient uses native HTTP on mobile
       const httpResponse = await firstValueFrom(
-        this.http.post<Record<string, unknown>>(`https://api.tidepool.org/auth/login`, null, {
+        this.http.post<Record<string, unknown>>('https://api.tidepool.org/auth/login', null, {
           headers: new HttpHeaders({
             Authorization: `Basic ${credentials}`,
             'Content-Type': 'application/json',

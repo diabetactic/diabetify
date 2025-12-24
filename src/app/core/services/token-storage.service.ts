@@ -221,9 +221,10 @@ export class TokenStorageService {
       valid: hasAccess || hasRefresh,
       expired: !hasAccess,
       expiresIn: expiresIn ?? 0,
-      shouldRefresh: hasAccess
-        ? this.accessTokenExpiry! - Date.now() < OAUTH_CONSTANTS.TOKEN_EXPIRY_BUFFER_SECONDS * 1000
-        : false,
+      shouldRefresh:
+        hasAccess && this.accessTokenExpiry
+          ? this.accessTokenExpiry - Date.now() < OAUTH_CONSTANTS.TOKEN_EXPIRY_BUFFER_SECONDS * 1000
+          : false,
     };
   }
 

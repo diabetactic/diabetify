@@ -29,7 +29,9 @@ import { environment } from './environments/environment';
  */
 if (environment.production) {
   // Store original console methods
-  const noop = () => {};
+  const noop = () => {
+    /* No-op function to suppress verbose console output (log/debug/info) in production */
+  };
 
   // Override verbose console methods in production
   console.log = noop;

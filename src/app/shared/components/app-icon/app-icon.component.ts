@@ -20,10 +20,10 @@ import { LucideAngularModule } from 'lucide-angular';
   styles: [],
 })
 export class AppIconComponent {
-  @Input() name: string = '';
+  @Input() name = '';
   @Input() size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' = 'md';
-  @Input() class: string = '';
-  @Input() ariaLabel: string = ''; // For accessible icons that need labels
+  @Input() class = '';
+  @Input() ariaLabel = ''; // For accessible icons that need labels
 
   // Icon name mappings from Ionicons to Lucide
   private iconMappings: Record<string, string> = {

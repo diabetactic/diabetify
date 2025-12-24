@@ -22,17 +22,17 @@ import { TranslateModule } from '@ngx-translate/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StatCardComponent implements OnChanges {
-  @Input() title: string = '';
+  @Input() title = '';
   @Input() value: number | string = 0;
-  @Input() unit: string = '';
-  @Input() icon: string = 'analytics';
+  @Input() unit = '';
+  @Input() icon = 'analytics';
   @Input() gradientColors: [string, string] = ['#3b82f6', '#60a5fa'];
-  @Input() color: string = '';
+  @Input() color = '';
   @Input() trend: 'up' | 'down' | 'stable' | undefined = undefined;
   @Input() trendValue?: number;
-  @Input() loading: boolean = false;
-  @Input() error: boolean = false;
-  @Input() clickable: boolean = false;
+  @Input() loading = false;
+  @Input() error = false;
+  @Input() clickable = false;
 
   @Output() readonly cardClick = new EventEmitter<void>();
 

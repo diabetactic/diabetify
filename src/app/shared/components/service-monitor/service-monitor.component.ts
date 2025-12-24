@@ -226,8 +226,8 @@ export class ServiceMonitorComponent implements OnInit, OnDestroy {
    */
   formatDate(date: Date | string | undefined): string {
     if (!date) return 'N/A';
-    const d = new Date(date);
-    return d.toLocaleString();
+    const dateObject = new Date(date);
+    return dateObject.toLocaleString();
   }
 
   /**

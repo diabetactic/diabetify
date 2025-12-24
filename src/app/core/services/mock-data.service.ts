@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, of, delay } from 'rxjs';
 import { environment } from '@env/environment';
+import { LoggerService } from './logger.service';
 
 export interface MockUser {
   id: string;
@@ -64,6 +65,8 @@ export interface MockStats {
 
 @Injectable({ providedIn: 'root' })
 export class MockDataService {
+  private readonly logger = inject(LoggerService);
+
   private currentUser: MockUser = {
     id: 'pac001',
     username: 'demo_patient',
@@ -456,7 +459,11 @@ export class MockDataService {
 
   private debugLog(message?: unknown, ...optionalParams: unknown[]): void {
     if (this.isMockMode) {
-      console.log(message, ...optionalParams);
+      this.logger.debug(
+        'MockDataService',
+        String(message),
+        optionalParams.length > 0 ? optionalParams : undefined
+      );
     }
   }
 }
