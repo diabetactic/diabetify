@@ -98,3 +98,31 @@ enabled = true
 name = "test-coverage"
 enabled = true
 
+  [analyzers.meta]
+  # Patterns to exclude from coverage calculation
+  # These files are not production code or have no testable logic
+  exclude_patterns = [
+    # Test infrastructure (not production code)
+    "src/app/tests/**",
+    "src/app/testing/**",
+    "src/test-setup/**",
+    "src/mocks/**",
+
+    # Dev-only components
+    "src/app/shared/components/debug-panel/**",
+    "src/app/shared/components/env-badge/**",
+    "src/app/shared/icons/**",
+
+    # Angular boilerplate with no logic
+    "**/*.module.ts",
+    "**/index.ts",
+    "**/*.model.ts",
+    "**/constants/**",
+
+    # Config and setup files
+    "src/setup-polyfills.ts",
+    "src/polyfills.ts",
+    "*.config.ts",
+    "*.config.js"
+  ]
+
