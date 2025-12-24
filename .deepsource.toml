@@ -6,7 +6,16 @@ version = 1
 # Test coverage reporting (uploads from CI)
 test_coverage_enabled = true
 
-# Files to exclude from analysis
+# Files that are tests (helps DeepSource understand code structure)
+test_patterns = [
+  "src/**/*.spec.ts",
+  "src/**/*.test.ts",
+  "src/app/tests/**",
+  "playwright/**",
+  "maestro/**"
+]
+
+# Files to exclude from analysis (applies to ALL analyzers including test-coverage)
 exclude_patterns = [
   # Build outputs
   "www/**",
