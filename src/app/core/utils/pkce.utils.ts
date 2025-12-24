@@ -142,7 +142,7 @@ function base64urlEncode(input: Uint8Array): string {
   }
 
   // Convert to base64url: replace + with -, / with _, remove padding =
-  return base64.replace(/\+/g, '-').replace(/[/]/g, '_').replace(/=/g, '');
+  return base64.replace(/\+/g, '-').replace(/[/]/g, '_').replace(/[=]/g, '');
 }
 
 /**

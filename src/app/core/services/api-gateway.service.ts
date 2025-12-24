@@ -1372,7 +1372,7 @@ export class ApiGatewayService {
   /**
    * Handler para endpoints de appointments (delegados al servicio).
    */
-  private handleAppointmentsMockRequest<T>(endpointKey: string): Promise<T> {
+  private static handleAppointmentsMockRequest<T>(endpointKey: string): Promise<T> {
     throw new Error(
       `Mock endpoint ${endpointKey} should be handled by AppointmentService directly`
     );

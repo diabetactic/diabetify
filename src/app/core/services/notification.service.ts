@@ -308,13 +308,17 @@ export class NotificationService implements OnDestroy {
   /**
    * Show an immediate notification (for testing)
    */
+  private showWebNotification(title: string, body: string): void {
+    new Notification(title, { body });
+  }
+
   async showImmediateNotification(title: string, body: string): Promise<void> {
     const id = Date.now() % 100000; // Use timestamp as unique ID
 
     if (!this.platform.is('capacitor')) {
       // Use Web Notification API
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, { body });
+        this.showWebNotification(title, body);
       }
       return;
     }
