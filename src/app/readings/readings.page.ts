@@ -483,7 +483,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
    * Backend sends: DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO
    * i18n uses: glucose.context.breakfast, glucose.context.lunch, etc.
    */
-  private readonly mealContextMap = {
+  private readonly mealContextMap: Record<string, string> = {
     DESAYUNO: 'breakfast',
     ALMUERZO: 'lunch',
     MERIENDA: 'snack',
