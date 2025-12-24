@@ -59,6 +59,12 @@ exclude_patterns = [
   # Angular NgModules (class-as-namespace is legitimate Angular pattern)
   "**/*.module.ts",
 
+  # Barrel exports and type-only files (no testable logic)
+  "**/index.ts",
+  "**/*.model.ts",
+  "**/constants/**",
+  "src/app/shared/icons/**",
+
   # Mock services (intentional mock patterns)
   "src/app/core/services/mock-adapter.service.ts",
   "src/app/shared/components/env-badge/**",
@@ -97,32 +103,4 @@ enabled = true
 [[analyzers]]
 name = "test-coverage"
 enabled = true
-
-  [analyzers.meta]
-  # Patterns to exclude from coverage calculation
-  # These files are not production code or have no testable logic
-  exclude_patterns = [
-    # Test infrastructure (not production code)
-    "src/app/tests/**",
-    "src/app/testing/**",
-    "src/test-setup/**",
-    "src/mocks/**",
-
-    # Dev-only components
-    "src/app/shared/components/debug-panel/**",
-    "src/app/shared/components/env-badge/**",
-    "src/app/shared/icons/**",
-
-    # Angular boilerplate with no logic
-    "**/*.module.ts",
-    "**/index.ts",
-    "**/*.model.ts",
-    "**/constants/**",
-
-    # Config and setup files
-    "src/setup-polyfills.ts",
-    "src/polyfills.ts",
-    "*.config.ts",
-    "*.config.js"
-  ]
 
