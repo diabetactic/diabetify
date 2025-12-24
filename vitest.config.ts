@@ -60,12 +60,22 @@ export default defineConfig({
       reporter: ['text', 'html', 'lcov'],
       include: ['src/app/**/*.ts'],
       exclude: [
+        // Test files
         'src/app/**/*.spec.ts',
         'src/app/**/*.mock.ts',
+        'src/app/tests/**', // Test helpers and infrastructure
+        'src/app/testing/**', // Dev-only testing utilities
+
+        // Angular boilerplate
         'src/app/**/*.module.ts', // Angular modules - no testable logic
         'src/app/**/index.ts', // Barrel exports
         'src/app/**/*.model.ts', // TypeScript interfaces
         'src/app/**/constants/**', // Constants files
+
+        // Dev-only components (not production code)
+        'src/app/shared/components/debug-panel/**',
+        'src/app/shared/components/env-badge/**',
+        'src/app/shared/icons/**', // Static icon exports
       ],
     },
     // Dependency handling for Vitest
