@@ -28,7 +28,6 @@ let shouldRun = false;
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping achievements integration tests');
     shouldRun = false;
     return;
   }
@@ -46,7 +45,6 @@ const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) 
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -243,7 +241,6 @@ describe('Backend Integration - Achievements & Gamification', () => {
         );
 
         if (!timesMeasuredAchievement) {
-          console.log('  ℹ️  No incomplete times_measured achievement found, skipping');
           return;
         }
 

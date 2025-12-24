@@ -114,25 +114,25 @@ export class ReadingsPage implements OnInit, OnDestroy {
   allReadings: LocalGlucoseReading[] = [];
   groupedReadings: GroupedReading[] = [];
   filteredReadings: LocalGlucoseReading[] = [];
-  isLoading: boolean = true;
-  isSyncing: boolean = false;
-  totalCount: number = 0;
+  isLoading = true;
+  isSyncing = false;
+  totalCount = 0;
 
   // Filters
   filters: ReadingFilters = {
     status: 'all',
   };
-  isFilterModalOpen: boolean = false;
+  isFilterModalOpen = false;
 
   // Reading detail modal
-  isDetailModalOpen: boolean = false;
+  isDetailModalOpen = false;
   selectedReading: LocalGlucoseReading | null = null;
 
   // User preferences
   preferredUnit: GlucoseUnit = 'mg/dL';
 
   // Search
-  searchTerm: string = '';
+  searchTerm = '';
   private searchSubject = new Subject<string>();
 
   // Subscriptions

@@ -128,10 +128,19 @@ async function _getAuthToken(): Promise<string> {
 // =============================================================================
 
 test.describe('Docker Visual - Dashboard @docker-visual', () => {
-  test.skip(!isDockerTest, 'Set E2E_DOCKER_TESTS=true to run Docker visual tests');
+  // Dashboard sync now limited to 200 readings to prevent long load times
+  // See readings.service.ts MAX_SYNC_READINGS constant
 
   test.beforeEach(async ({ page }) => {
     await loginAndNavigate(page, 'dashboard');
+    // Wait for dashboard content to load (sync + render)
+    await page
+      .waitForSelector('[data-testid="stats-container"]', {
+        state: 'visible',
+        timeout: 30000,
+      })
+      .catch(() => {});
+    await page.waitForTimeout(1000);
   });
 
   test('Dashboard - main view with real data', async ({ page }) => {
@@ -346,15 +355,21 @@ test.describe('Docker Visual - Settings @docker-visual', () => {
 
   test('Settings - main view', async ({ page }) => {
     await loginAndNavigate(page);
-    await page.goto('/tabs/settings');
+    // Settings is a top-level route, not under /tabs/
+    await page.goto('/settings');
     await page.waitForLoadState('networkidle');
+    // Esperar que el contenido cargue
+    await page.waitForSelector('ion-content', { state: 'visible', timeout: 10000 });
+    await page.waitForTimeout(500);
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('docker-settings-main.png', screenshotOptions);
   });
 
   test('Settings - dark theme', async ({ page }) => {
     await loginAndNavigate(page);
-    await page.goto('/tabs/settings');
+    await page.goto('/settings');
+    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('ion-content', { state: 'visible', timeout: 10000 });
     await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
     await page.waitForTimeout(300);
     await prepareForScreenshot(page);
@@ -363,11 +378,14 @@ test.describe('Docker Visual - Settings @docker-visual', () => {
 
   test('Settings - language options', async ({ page }) => {
     await loginAndNavigate(page);
-    await page.goto('/tabs/settings');
+    await page.goto('/settings');
     await page.waitForLoadState('networkidle');
+    await page.waitForSelector('ion-content', { state: 'visible', timeout: 10000 });
 
     // Abrir selector de idioma
-    const langSelector = page.locator('[data-testid="language-selector"], text=/Idioma|Language/i');
+    const langSelector = page
+      .locator('[data-testid="language-selector"]')
+      .or(page.getByText(/Idioma|Language/i));
     if ((await langSelector.count()) > 0) {
       await langSelector.first().click();
       await page.waitForTimeout(500);
@@ -379,8 +397,10 @@ test.describe('Docker Visual - Settings @docker-visual', () => {
 
   test('Settings - advanced section', async ({ page }) => {
     await loginAndNavigate(page);
-    await page.goto('/tabs/settings/advanced');
+    await page.goto('/settings/advanced');
     await page.waitForLoadState('networkidle');
+    await page.waitForSelector('ion-content', { state: 'visible', timeout: 10000 });
+    await page.waitForTimeout(500);
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('docker-settings-advanced.png', screenshotOptions);
   });
@@ -425,21 +445,31 @@ test.describe('Docker Visual - Bolus Calculator @docker-visual', () => {
     await loginAndNavigate(page);
     await page.goto('/bolus-calculator');
     await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(500);
 
     // Llenar y calcular
     const glucoseInput = page.locator('ion-input input').first();
     if ((await glucoseInput.count()) > 0) {
       await glucoseInput.fill('180');
+      await page.waitForTimeout(100);
     }
 
     const carbsInput = page.locator('ion-input input').nth(1);
     if ((await carbsInput.count()) > 0) {
       await carbsInput.fill('45');
+      await page.waitForTimeout(100);
     }
 
     const calcBtn = page.locator('[data-testid="calculate-btn"], ion-button:has-text("Calcular")');
     if ((await calcBtn.count()) > 0) {
       await calcBtn.first().click();
+      // Esperar que aparezcan los resultados
+      await page
+        .waitForSelector('[data-testid="bolus-results"], .results-card, text=/unidades|units/i', {
+          state: 'visible',
+          timeout: 5000,
+        })
+        .catch(() => {});
       await page.waitForTimeout(500);
     }
 
@@ -539,6 +569,14 @@ test.describe('Docker Visual - Responsive @docker-visual', () => {
   test('Dashboard - tablet (768px)', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await loginAndNavigate(page, 'dashboard');
+    // Esperar contenido del dashboard
+    await page
+      .waitForSelector('[data-testid="stats-container"], app-streak-card', {
+        state: 'visible',
+        timeout: 15000,
+      })
+      .catch(() => {});
+    await page.waitForTimeout(1000);
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('docker-responsive-tablet.png', screenshotOptions);
   });
@@ -546,6 +584,13 @@ test.describe('Docker Visual - Responsive @docker-visual', () => {
   test('Dashboard - small mobile (320px)', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 568 });
     await loginAndNavigate(page, 'dashboard');
+    await page
+      .waitForSelector('[data-testid="stats-container"], app-streak-card', {
+        state: 'visible',
+        timeout: 15000,
+      })
+      .catch(() => {});
+    await page.waitForTimeout(1000);
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('docker-responsive-small.png', screenshotOptions);
   });
@@ -553,6 +598,13 @@ test.describe('Docker Visual - Responsive @docker-visual', () => {
   test('Dashboard - large mobile (428px iPhone Pro Max)', async ({ page }) => {
     await page.setViewportSize({ width: 428, height: 926 });
     await loginAndNavigate(page, 'dashboard');
+    await page
+      .waitForSelector('[data-testid="stats-container"], app-streak-card', {
+        state: 'visible',
+        timeout: 15000,
+      })
+      .catch(() => {});
+    await page.waitForTimeout(1000);
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('docker-responsive-large.png', screenshotOptions);
   });

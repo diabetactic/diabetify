@@ -19,26 +19,24 @@ import {
   getGlucoseReadings,
 } from '../../helpers/backend-services.helper';
 
-// Estado de ejecución de tests
+// Test execution state
 let shouldRun = false;
 
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping error recovery integration tests');
     shouldRun = false;
     return;
   }
   shouldRun = true;
 }, 10000);
 
-// Helper para tests condicionales
+// Helper for conditional tests
 const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) => {
   it(
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -62,7 +60,7 @@ describe('Backend Integration - Error Recovery', () => {
       const token = await loginTestUser(TEST_USERS.user1);
       const headers = await getAuthHeadersForFetch(token);
 
-      // Endpoint que no existe en la API
+      // Endpoint that does not exist in the API
       const response = await fetch(`${SERVICE_URLS.apiGateway}/invalid-endpoint-xyz`, {
         method: 'GET',
         headers,
@@ -76,7 +74,7 @@ describe('Backend Integration - Error Recovery', () => {
       const token = await loginTestUser(TEST_USERS.user1);
       const headers = await getAuthHeadersForFetch(token);
 
-      // Intentar crear una lectura con datos inválidos via query params incorrectos
+      // Try to create reading with invalid data via incorrect query params
       const params = new URLSearchParams({
         glucose_level: 'not-a-number',
         reading_type: 'INVALID_TYPE',
@@ -90,7 +88,7 @@ describe('Backend Integration - Error Recovery', () => {
         }
       );
 
-      // Puede retornar 400 (bad request) o 422 (validation error)
+      // May return 400 (bad request) or 422 (validation error)
       expect(response.ok).toBeFalse();
       expect([400, 422, 500]).toContain(response.status);
     });
@@ -99,13 +97,13 @@ describe('Backend Integration - Error Recovery', () => {
       const token = await loginTestUser(TEST_USERS.user1);
       const headers = await getAuthHeadersForFetch(token);
 
-      // Intentar DELETE en un endpoint que solo permite GET
+      // Attempt DELETE on endpoint that only allows GET
       const response = await fetch(`${SERVICE_URLS.apiGateway}/users/me`, {
         method: 'DELETE',
         headers,
       });
 
-      // Debería retornar 405 Method Not Allowed o 404
+      // Should return 405 Method Not Allowed or 404
       expect(response.ok).toBeFalse();
       expect([404, 405]).toContain(response.status);
     });
@@ -122,7 +120,7 @@ describe('Backend Integration - Error Recovery', () => {
         const token = await loginTestUser(TEST_USERS.user1);
         const headers = await getAuthHeadersForFetch(token);
 
-        // Crear un AbortController con timeout muy corto (1ms)
+        // Create AbortController with very short timeout (1ms)
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 1);
 
@@ -133,13 +131,13 @@ describe('Backend Integration - Error Recovery', () => {
             signal: controller.signal,
           });
 
-          // Si llega aquí, el timeout no funcionó
+          // If it reaches here, timeout did not work
           clearTimeout(timeoutId);
           fail('Expected timeout error but request succeeded');
         } catch (error: any) {
           clearTimeout(timeoutId);
 
-          // El error debería ser de tipo AbortError
+          // Error should be of type AbortError
           expect(error.name).toBe('AbortError');
         }
       },
@@ -157,7 +155,7 @@ describe('Backend Integration - Error Recovery', () => {
         const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
         try {
-          // Intentar una petición que debería completarse antes del timeout
+          // Try a request that should complete before timeout
           const response = await fetch(`${SERVICE_URLS.apiGateway}/docs`, {
             method: 'GET',
             signal: controller.signal,
@@ -165,10 +163,10 @@ describe('Backend Integration - Error Recovery', () => {
 
           clearTimeout(timeoutId);
 
-          // La petición de docs debería ser rápida y completarse
+          // Docs request should be fast and complete
           expect(response.ok).toBeTrue();
         } catch (error: any) {
-          // Si hay timeout, también es válido (depende de la latencia del sistema)
+          // If timeout, also valid (depends on system latency)
           clearTimeout(timeoutId);
           expect(error.name).toBe('AbortError');
         }
@@ -183,7 +181,7 @@ describe('Backend Integration - Error Recovery', () => {
 
   describe('INVALID TOKEN REJECTION', () => {
     conditionalIt('should reject expired/invalid JWT token', async () => {
-      // JWT con firma inválida (token falso)
+      // JWT with invalid signature (fake token)
       const fakeJwt =
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
         'eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.' +
@@ -207,7 +205,7 @@ describe('Backend Integration - Error Recovery', () => {
     conditionalIt('should reject malformed Authorization header', async () => {
       const response = await fetch(`${SERVICE_URLS.apiGateway}/users/me`, {
         headers: {
-          // Header sin "Bearer" prefix
+          // Header without "Bearer" prefix
           Authorization: 'invalid-token-without-bearer',
           Accept: 'application/json',
         },
@@ -230,7 +228,7 @@ describe('Backend Integration - Error Recovery', () => {
     });
 
     conditionalIt('should require authentication on protected endpoints', async () => {
-      // Petición sin Authorization header
+      // Request without Authorization header
       const response = await fetch(`${SERVICE_URLS.apiGateway}/glucose/mine`, {
         method: 'GET',
         headers: {
@@ -251,10 +249,10 @@ describe('Backend Integration - Error Recovery', () => {
     conditionalIt('should reject reading without required glucose_level', async () => {
       const token = await loginTestUser(TEST_USERS.user1);
 
-      // Enviar sin campo requerido glucose_level
+      // Send without required glucose_level field
       const params = new URLSearchParams({
         reading_type: 'OTRO',
-        // Falta glucose_level
+        // Missing glucose_level
       });
 
       const response = await fetch(
@@ -276,10 +274,10 @@ describe('Backend Integration - Error Recovery', () => {
     conditionalIt('should reject reading with missing reading_type', async () => {
       const token = await loginTestUser(TEST_USERS.user1);
 
-      // Lectura sin reading_type
+      // Reading without reading_type
       const params = new URLSearchParams({
         glucose_level: '120',
-        // Falta reading_type
+        // Missing reading_type
       });
 
       const response = await fetch(
@@ -301,7 +299,7 @@ describe('Backend Integration - Error Recovery', () => {
     conditionalIt('should reject reading with invalid data types', async () => {
       const token = await loginTestUser(TEST_USERS.user1);
 
-      // Tipos de datos incorrectos
+      // Incorrect data types
       const params = new URLSearchParams({
         glucose_level: 'not-a-number',
         reading_type: 'INVALID_TYPE',
@@ -333,7 +331,7 @@ describe('Backend Integration - Error Recovery', () => {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        // Sin query params
+        // Without query params
       });
 
       expect(response.ok).toBeFalse();
@@ -352,7 +350,7 @@ describe('Backend Integration - Error Recovery', () => {
         const token = await loginTestUser(TEST_USERS.user1);
         const headers = await getAuthHeadersForFetch(token);
 
-        // Enviar 50 peticiones rápidas para intentar activar rate limiting
+        // Send 50 fast requests to try to trigger rate limiting
         const requests = Array.from({ length: 50 }, () =>
           fetch(`${SERVICE_URLS.apiGateway}/docs`, {
             method: 'GET',
@@ -362,16 +360,14 @@ describe('Backend Integration - Error Recovery', () => {
 
         const responses = await Promise.all(requests);
 
-        // Verificar si alguna respuesta es 429 (rate limited)
+        // Check if any response is 429 (rate limited)
         const rateLimited = responses.some(r => r.status === 429);
         const allOk = responses.every(r => r.ok);
 
-        // El backend puede o no tener rate limiting implementado
+        // Backend may or may not have rate limiting implemented
         if (rateLimited) {
-          console.log('✓ Rate limiting detected (429 responses)');
           expect(rateLimited).toBeTrue();
         } else {
-          console.log('ℹ Rate limiting not implemented or threshold not reached');
           expect(allOk).toBeTrue();
         }
       },
@@ -383,30 +379,24 @@ describe('Backend Integration - Error Recovery', () => {
       async () => {
         const token = await loginTestUser(TEST_USERS.user1);
 
-        // Intentar múltiples peticiones secuenciales usando el helper
-        let rateLimitHit = false;
+        // Try multiple sequential requests using helper
+        let _rateLimitHit = false;
 
         for (let i = 0; i < 20; i++) {
           try {
             await getGlucoseReadings(token);
-          } catch (error: any) {
-            if (error.message?.includes('429')) {
-              rateLimitHit = true;
-              console.log(`Rate limit hit after ${i + 1} requests`);
+          } catch (error: unknown) {
+            if (error instanceof Error && error.message?.includes('429')) {
+              _rateLimitHit = true;
               break;
             }
           }
 
-          // Pequeña pausa entre peticiones
+          // Small pause between requests
           await new Promise(resolve => setTimeout(resolve, 50));
         }
 
-        // Si no se alcanzó rate limit, está bien (no está implementado)
-        if (!rateLimitHit) {
-          console.log('ℹ Rate limiting threshold not reached');
-        }
-
-        // El test pasa en ambos casos
+        // Test passes regardless - we're testing graceful handling
         expect(true).toBeTrue();
       },
       30000
@@ -420,7 +410,6 @@ describe('Backend Integration - Error Recovery', () => {
   afterAll(() => {
     if (shouldRun) {
       clearCachedAuthToken();
-      console.log('✅ Error recovery tests cleanup complete');
     }
   });
 });

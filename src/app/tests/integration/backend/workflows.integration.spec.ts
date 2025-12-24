@@ -1,17 +1,17 @@
 /**
- * Pruebas de integración para flujos de trabajo multi-servicio
+ * Integration tests for multi-service workflows
  *
  * @description
- * Valida la interacción completa entre múltiples servicios del backend:
- * - apiGateway (8000): Punto de entrada principal
- * - glucoserver (8002): Gestión de lecturas de glucosa
- * - login (8003): Autenticación y usuarios
- * - appointments (8005): Sistema de citas
+ * Validates complete interaction between multiple backend services:
+ * - apiGateway (8000): Main entry point
+ * - glucoserver (8002): Glucose readings management
+ * - login (8003): Authentication and users
+ * - appointments (8005): Appointments system
  *
  * @prerequisites
- * - Backend ejecutándose en Docker
- * - Todos los servicios disponibles en localhost
- * - Base de datos inicializada con usuarios de prueba
+ * - Backend running in Docker
+ * - All services available on localhost
+ * - Database initialized with test users
  */
 
 import {
@@ -42,10 +42,11 @@ afterEach(async () => {
   if (shouldRun) {
     try {
       await clearAppointmentQueue();
-    } catch {
-      // Ignorar si la cola ya está vacía
+    } catch (_error) {
+      // Ignore if queue is already empty
     }
     clearCachedAuthToken();
+    vi.clearAllMocks();
   }
 });
 
@@ -54,7 +55,6 @@ const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) 
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -63,26 +63,26 @@ const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) 
   );
 };
 
-describe('Flujos de trabajo multi-servicio', () => {
-  describe('Test 1: Flujo completo de autenticación', () => {
+describe('Multi-service workflows', () => {
+  describe('Test 1: Complete authentication flow', () => {
     conditionalIt(
-      'debe realizar login → obtener perfil → verificar token en servicios',
+      'should login → get profile → verify token in services',
       async () => {
-        // Paso 1: Login exitoso - loginTestUser retorna solo el token string
+        // Step 1: Successful login - loginTestUser returns only the token string
         const token = await loginTestUser(TEST_USERS.user1);
         expect(token).toBeDefined();
         expect(token.split('.').length).toBe(3); // JWT format
 
-        // Paso 2: Verificar token en api-gateway (perfil)
+        // Step 2: Verify token in api-gateway (profile)
         const profile = await authenticatedGet('/users/me', token);
         expect(profile).toBeDefined();
         expect(profile.dni).toBe(TEST_USERS.user1.dni);
 
-        // Paso 3: Verificar token en glucoserver (lecturas)
+        // Step 3: Verify token in glucoserver (readings)
         const readings = await getGlucoseReadings(token);
         expect(Array.isArray(readings)).toBe(true);
 
-        // Paso 4: Verificar token en appointments (endpoint es /appointments/mine)
+        // Step 4: Verify token in appointments (endpoint is /appointments/mine)
         const appointments = await authenticatedGet('/appointments/mine', token);
         expect(Array.isArray(appointments)).toBe(true);
       },
@@ -90,22 +90,22 @@ describe('Flujos de trabajo multi-servicio', () => {
     );
   });
 
-  describe('Test 2: Flujo de envío de lecturas', () => {
+  describe('Test 2: Reading submission flow', () => {
     conditionalIt(
-      'debe realizar login → crear lectura → obtener lista → verificar lectura creada',
+      'should login → create reading → get list → verify created reading',
       async () => {
-        // Paso 1: Login
+        // Step 1: Login
         const token = await loginTestUser(TEST_USERS.user1);
 
-        // Paso 2: Obtener lecturas iniciales
+        // Step 2: Get initial readings
         const initialReadings = await getGlucoseReadings(token);
         const initialCount = initialReadings.length;
 
-        // Paso 3: Crear nueva lectura de glucosa
+        // Step 3: Create new glucose reading
         const newReading = {
           glucose_level: 120,
           reading_type: 'OTRO' as GlucoseReadingType,
-          notes: 'Lectura de prueba de integración',
+          notes: 'Integration test reading',
         };
 
         const createdReading = await createGlucoseReading(newReading, token);
@@ -114,10 +114,10 @@ describe('Flujos de trabajo multi-servicio', () => {
         expect(createdReading.id).toBeDefined();
         expect(createdReading.glucose_level).toBe(newReading.glucose_level);
 
-        // Paso 4: Obtener lista actualizada de lecturas
+        // Step 4: Get updated list of readings
         const updatedReadings = await getGlucoseReadings(token);
 
-        // Paso 5: Verificar que la lectura aparece en la lista
+        // Step 5: Verify that the reading appears in the list
         expect(updatedReadings.length).toBeGreaterThan(initialCount);
 
         const foundReading = updatedReadings.find((r: any) => r.id === createdReading.id);
@@ -129,19 +129,19 @@ describe('Flujos de trabajo multi-servicio', () => {
     );
   });
 
-  describe('Test 3: Flujo de cola de citas', () => {
+  describe('Test 3: Appointments queue flow', () => {
     conditionalIt(
-      'debe realizar login → verificar lecturas → verificar citas',
+      'should login → verify readings → verify appointments',
       async () => {
-        // Login con usuario de prueba
+        // Login with test user
         const token = await loginTestUser(TEST_USERS.user1);
         expect(token).toBeTruthy();
 
-        // Verificar acceso a lecturas
+        // Verify access to readings
         const readings = await getGlucoseReadings(token);
         expect(Array.isArray(readings)).toBe(true);
 
-        // Verificar acceso a citas
+        // Verify access to appointments
         const appointments = await authenticatedGet('/appointments/mine', token);
         expect(Array.isArray(appointments)).toBe(true);
       },
@@ -149,34 +149,34 @@ describe('Flujos de trabajo multi-servicio', () => {
     );
   });
 
-  describe('Test 4: Consistencia de datos cross-servicio', () => {
+  describe('Test 4: Cross-service data consistency', () => {
     conditionalIt(
-      'debe crear lectura → verificar en lista → verificar aislamiento de datos',
+      'should create reading → verify in list → verify data isolation',
       async () => {
-        // Paso 1: Login con usuario de prueba
+        // Step 1: Login with test user
         const token = await loginTestUser(TEST_USERS.user1);
 
-        // Paso 2: Crear lectura de glucosa con valor elevado
+        // Step 2: Create glucose reading with elevated value
         const criticalReading = {
           glucose_level: 180,
           reading_type: 'ALMUERZO' as GlucoseReadingType,
-          notes: 'Valor elevado después de almuerzo',
+          notes: 'Elevated value after lunch',
         };
 
         const createdReading = await createGlucoseReading(criticalReading, token);
         expect(createdReading.id).toBeDefined();
 
-        // Paso 3: Verificar que la lectura está en el sistema
+        // Step 3: Verify reading is in system
         const readings = await getGlucoseReadings(token);
         const foundReading = readings.find((r: any) => r.id === createdReading.id);
         expect(foundReading).toBeDefined();
         expect(foundReading.glucose_level).toBe(criticalReading.glucose_level);
 
-        // Paso 4: Verificar que la cita del usuario está accesible
+        // Step 4: Verify user appointment is accessible
         const appointments = await authenticatedGet('/appointments/mine', token);
         expect(Array.isArray(appointments)).toBe(true);
 
-        // Paso 5: Verificar que la lectura pertenece al usuario
+        // Step 5: Verify that the reading belongs to the user
         const readingWithUser = readings.find((r: any) => r.id === createdReading.id);
         expect(readingWithUser).toBeDefined();
       },

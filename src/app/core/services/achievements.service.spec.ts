@@ -86,7 +86,15 @@ describe('AchievementsService', () => {
       expect(service.maxStreak()).toBe(14);
       expect(service.measurementsToday()).toBe(2);
       expect(mockApiGateway.request).toHaveBeenCalledWith('achievements.streak');
-      expect(mockLogger.info).toHaveBeenCalled();
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        'Achievements',
+        'Fetching streak data from backend'
+      );
+      expect(mockLogger.info).toHaveBeenCalledWith('Achievements', 'Streak data fetched', {
+        streak: 7,
+        maxStreak: 14,
+        measurementsToday: 2,
+      });
     });
 
     it('should set loading state during fetch', async () => {
@@ -111,7 +119,10 @@ describe('AchievementsService', () => {
 
       expect(result).toBeNull();
       expect(service.error()).toBe('API Error');
-      expect(mockLogger.error).toHaveBeenCalled();
+      expect(mockLogger.error).toHaveBeenCalledWith('Achievements', 'Failed to fetch streak', {
+        error: 'API Error',
+      });
+      expect(service.loading()).toBe(false);
     });
 
     it('should handle missing data in response', async () => {
@@ -121,6 +132,10 @@ describe('AchievementsService', () => {
 
       expect(result).toBeNull();
       expect(service.error()).toBe('Failed to fetch streak data');
+      expect(mockLogger.error).toHaveBeenCalledWith('Achievements', 'Failed to fetch streak', {
+        error: 'Failed to fetch streak data',
+      });
+      expect(service.loading()).toBe(false);
     });
 
     it('should handle thrown error', async () => {
@@ -130,6 +145,10 @@ describe('AchievementsService', () => {
 
       expect(result).toBeNull();
       expect(service.error()).toBe('Network error');
+      expect(mockLogger.error).toHaveBeenCalledWith('Achievements', 'Failed to fetch streak', {
+        error: 'Network error',
+      });
+      expect(service.loading()).toBe(false);
     });
 
     it('should handle non-Error thrown objects', async () => {
@@ -139,6 +158,10 @@ describe('AchievementsService', () => {
 
       expect(result).toBeNull();
       expect(service.error()).toBe('Unknown error fetching streak');
+      expect(mockLogger.error).toHaveBeenCalledWith('Achievements', 'Failed to fetch streak', {
+        error: 'Unknown error fetching streak',
+      });
+      expect(service.loading()).toBe(false);
     });
 
     it('should use cache when valid and not forcing refresh', async () => {
@@ -200,6 +223,14 @@ describe('AchievementsService', () => {
       expect(service.earnedCount()).toBe(2); // 2 achievements with got: true
       expect(service.totalCount()).toBe(3);
       expect(mockApiGateway.request).toHaveBeenCalledWith('achievements.list');
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        'Achievements',
+        'Fetching achievements from backend'
+      );
+      expect(mockLogger.info).toHaveBeenCalledWith('Achievements', 'Achievements fetched', {
+        total: 3,
+        earned: 2,
+      });
     });
 
     it('should set loading state during fetch', async () => {
@@ -224,6 +255,14 @@ describe('AchievementsService', () => {
 
       expect(result).toEqual([]);
       expect(service.error()).toBe('API Error');
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Achievements',
+        'Failed to fetch achievements',
+        {
+          error: 'API Error',
+        }
+      );
+      expect(service.loading()).toBe(false);
     });
 
     it('should handle missing data in response', async () => {
@@ -233,6 +272,14 @@ describe('AchievementsService', () => {
 
       expect(result).toEqual([]);
       expect(service.error()).toBe('Failed to fetch achievements');
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Achievements',
+        'Failed to fetch achievements',
+        {
+          error: 'Failed to fetch achievements',
+        }
+      );
+      expect(service.loading()).toBe(false);
     });
 
     it('should handle thrown error', async () => {
@@ -242,6 +289,14 @@ describe('AchievementsService', () => {
 
       expect(result).toEqual([]);
       expect(service.error()).toBe('Network error');
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Achievements',
+        'Failed to fetch achievements',
+        {
+          error: 'Network error',
+        }
+      );
+      expect(service.loading()).toBe(false);
     });
 
     it('should handle non-Error thrown objects', async () => {
@@ -251,6 +306,14 @@ describe('AchievementsService', () => {
 
       expect(result).toEqual([]);
       expect(service.error()).toBe('Unknown error fetching achievements');
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Achievements',
+        'Failed to fetch achievements',
+        {
+          error: 'Unknown error fetching achievements',
+        }
+      );
+      expect(service.loading()).toBe(false);
     });
 
     it('should use cache when valid', async () => {
@@ -310,6 +373,8 @@ describe('AchievementsService', () => {
 
       expect(result.streak).toEqual(mockStreakData);
       expect(result.achievements).toEqual(mockAchievements);
+      expect(mockApiGateway.request).toHaveBeenCalledWith('achievements.streak');
+      expect(mockApiGateway.request).toHaveBeenCalledWith('achievements.list');
     });
 
     it('should pass forceRefresh to both methods', async () => {
@@ -349,7 +414,7 @@ describe('AchievementsService', () => {
   });
 
   describe('clearCache', () => {
-    it('should clear all cached data', async () => {
+    it('should clear all cached data and signals', async () => {
       // Populate data
       mockApiGateway.request.mockImplementation((endpoint: string) => {
         if (endpoint === 'achievements.streak') {
@@ -361,12 +426,17 @@ describe('AchievementsService', () => {
 
       expect(service.streak()).not.toBeNull();
       expect(service.achievements().length).toBe(3);
+      expect(service.currentStreak()).toBe(7);
+      expect(service.earnedCount()).toBe(2);
 
       service.clearCache();
 
       expect(service.streak()).toBeNull();
       expect(service.achievements()).toEqual([]);
       expect(service.error()).toBeNull();
+      expect(service.currentStreak()).toBe(0);
+      expect(service.earnedCount()).toBe(0);
+      expect(service.totalCount()).toBe(0);
       expect(mockLogger.debug).toHaveBeenCalledWith('Achievements', 'Cache cleared');
     });
 
@@ -452,6 +522,118 @@ describe('AchievementsService', () => {
       await service.fetchStreak();
 
       expect(mockApiGateway.request).not.toHaveBeenCalled();
+    });
+
+    it('should invalidate achievements cache after TTL expires', async () => {
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: mockAchievements }));
+      await service.fetchAchievements();
+
+      mockApiGateway.request.mockClear();
+
+      // Advance time beyond TTL
+      vi.advanceTimersByTime(61000);
+
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: mockAchievements }));
+      await service.fetchAchievements();
+
+      expect(mockApiGateway.request).toHaveBeenCalled();
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should handle empty achievements array', async () => {
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: [] }));
+
+      const result = await service.fetchAchievements();
+
+      expect(result).toEqual([]);
+      expect(service.achievements()).toEqual([]);
+      expect(service.earnedCount()).toBe(0);
+      expect(service.totalCount()).toBe(0);
+    });
+
+    it('should handle streak data with zero values', async () => {
+      const zeroStreakData: StreakData = {
+        streak: 0,
+        max_streak: 0,
+        four_times_today: 0,
+        streak_last_date: '2025-01-15',
+      };
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: zeroStreakData }));
+
+      const result = await service.fetchStreak();
+
+      expect(result).toEqual(zeroStreakData);
+      expect(service.currentStreak()).toBe(0);
+      expect(service.maxStreak()).toBe(0);
+      expect(service.measurementsToday()).toBe(0);
+    });
+
+    it('should handle API error without error message', async () => {
+      mockApiGateway.request.mockReturnValue(of({ success: false, error: {} }));
+
+      const result = await service.fetchStreak();
+
+      expect(result).toBeNull();
+      expect(service.error()).toBe('Failed to fetch streak data');
+    });
+
+    it('should handle achievements API error without message', async () => {
+      mockApiGateway.request.mockReturnValue(of({ success: false, error: {} }));
+
+      const result = await service.fetchAchievements();
+
+      expect(result).toEqual([]);
+      expect(service.error()).toBe('Failed to fetch achievements');
+    });
+
+    it('should clear error state on successful fetch after previous error', async () => {
+      // First call - error
+      mockApiGateway.request.mockReturnValue(
+        of({ success: false, error: { message: 'Initial error' } })
+      );
+      await service.fetchAchievements();
+      expect(service.error()).toBe('Initial error');
+
+      // Second call - success
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: mockAchievements }));
+      await service.fetchAchievements(true);
+
+      expect(service.error()).toBeNull();
+    });
+
+    it('should maintain separate caches for streak and achievements', async () => {
+      // Populate streak cache
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: mockStreakData }));
+      await service.fetchStreak();
+
+      // Populate achievements cache
+      mockApiGateway.request.mockReturnValue(of({ success: true, data: mockAchievements }));
+      await service.fetchAchievements();
+
+      mockApiGateway.request.mockClear();
+
+      // Both should use cache
+      await service.fetchStreak();
+      await service.fetchAchievements();
+
+      expect(mockApiGateway.request).not.toHaveBeenCalled();
+    });
+
+    it('should handle concurrent fetchAll requests', async () => {
+      mockApiGateway.request.mockImplementation((endpoint: string) => {
+        if (endpoint === 'achievements.streak') {
+          return of({ success: true, data: mockStreakData });
+        }
+        return of({ success: true, data: mockAchievements });
+      });
+
+      const [result1, result2] = await Promise.all([service.fetchAll(), service.fetchAll()]);
+
+      expect(result1.streak).toEqual(mockStreakData);
+      expect(result2.streak).toEqual(mockStreakData);
+      expect(result1.achievements).toEqual(mockAchievements);
+      expect(result2.achievements).toEqual(mockAchievements);
     });
   });
 });

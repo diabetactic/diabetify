@@ -60,7 +60,7 @@ async function hideDynamicElements(page: Page): Promise<void> {
 // PRE-LOGIN SCREENS
 // =============================================================================
 
-test.describe('Visual Regression - Pre-Login @visual', () => {
+test.describe('Visual Regression - Pre-Login @visual-mock', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await waitForIonicHydration(page);
@@ -102,7 +102,7 @@ test.describe('Visual Regression - Pre-Login @visual', () => {
 // DASHBOARD SCREENS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Dashboard @visual @authenticated', () => {
+test.describe('Visual Regression - Dashboard @visual-mock @authenticated', () => {
   test.skip(
     () => !process.env.E2E_MOCK_MODE,
     'Dashboard tests require mock mode. Run with E2E_MOCK_MODE=true'
@@ -144,7 +144,7 @@ test.describe('Visual Regression - Dashboard @visual @authenticated', () => {
 // READINGS SCREENS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Readings @visual @authenticated', () => {
+test.describe('Visual Regression - Readings @visual-mock @authenticated', () => {
   test.skip(
     () => !process.env.E2E_MOCK_MODE,
     'Readings tests require mock mode. Run with E2E_MOCK_MODE=true'
@@ -214,7 +214,7 @@ test.describe('Visual Regression - Readings @visual @authenticated', () => {
 // APPOINTMENTS STATE MACHINE SCREENS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Appointments States @visual @authenticated', () => {
+test.describe('Visual Regression - Appointments States @visual-mock @authenticated', () => {
   test.skip(
     () => !process.env.E2E_MOCK_MODE,
     'Appointments tests require mock mode. Run with E2E_MOCK_MODE=true'
@@ -251,7 +251,7 @@ test.describe('Visual Regression - Appointments States @visual @authenticated', 
 // PROFILE SCREENS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Profile @visual @authenticated', () => {
+test.describe('Visual Regression - Profile @visual-mock @authenticated', () => {
   test.skip(
     () => !process.env.E2E_MOCK_MODE,
     'Profile tests require mock mode. Run with E2E_MOCK_MODE=true'
@@ -293,7 +293,7 @@ test.describe('Visual Regression - Profile @visual @authenticated', () => {
 // TRENDS/CHARTS SCREENS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Trends @visual @authenticated', () => {
+test.describe('Visual Regression - Trends @visual-mock @authenticated', () => {
   test.skip(
     () => !process.env.E2E_MOCK_MODE,
     'Trends tests require mock mode. Run with E2E_MOCK_MODE=true'
@@ -330,7 +330,7 @@ test.describe('Visual Regression - Trends @visual @authenticated', () => {
 // SETTINGS SCREENS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Settings @visual @authenticated', () => {
+test.describe('Visual Regression - Settings @visual-mock @authenticated', () => {
   test.skip(
     () => !process.env.E2E_MOCK_MODE,
     'Settings tests require mock mode. Run with E2E_MOCK_MODE=true'
@@ -379,7 +379,7 @@ test.describe('Visual Regression - Settings @visual @authenticated', () => {
 // BOLUS CALCULATOR SCREENS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Bolus Calculator @visual @authenticated', () => {
+test.describe('Visual Regression - Bolus Calculator @visual-mock @authenticated', () => {
   test.skip(
     () => !process.env.E2E_MOCK_MODE,
     'Bolus calculator tests require mock mode. Run with E2E_MOCK_MODE=true'
@@ -428,7 +428,7 @@ test.describe('Visual Regression - Bolus Calculator @visual @authenticated', () 
 // RESPONSIVE BREAKPOINTS (Requires Mock Mode)
 // =============================================================================
 
-test.describe('Visual Regression - Responsive @visual @authenticated', () => {
+test.describe('Visual Regression - Responsive @visual-mock @authenticated', () => {
   test.skip(
     () => !process.env.E2E_MOCK_MODE,
     'Responsive tests require mock mode. Run with E2E_MOCK_MODE=true'
@@ -460,7 +460,7 @@ test.describe('Visual Regression - Responsive @visual @authenticated', () => {
 // ERROR STATES
 // =============================================================================
 
-test.describe('Visual Regression - Error States @visual', () => {
+test.describe('Visual Regression - Error States @visual-mock', () => {
   test('Login - invalid credentials error', async ({ page }) => {
     await page.goto('/login');
     await page.fill('[data-testid="login-username-input"]', '9999');

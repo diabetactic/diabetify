@@ -20,5 +20,22 @@
   ],
   "debug.javascript.defaultRuntimeExecutable": {
     "pwa-node": "/home/julito/.local/share/mise/shims/node"
+  },
+  "files.watcherExclude": {
+    "**/.angular/**": true,
+    "**/.claude/**": true,
+    "**/.turbo/**": true,
+    "**/node_modules/**": true,
+    "**/www/**": true,
+    "**/test-results/**": true,
+    "**/playwright-report/**": true
+  },
+  "search.exclude": {
+    "**/.angular": true,
+    "**/.claude": true,
+    "**/.turbo": true,
+    "**/node_modules": true,
+    "**/www": true,
+    "**/dist": true
   }
 }

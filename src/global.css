@@ -1577,18 +1577,20 @@ button:focus-visible {
 /* ============================================
  * MOBILE PREVIEW FRAME (Desktop Web Only)
  * Shows app in phone-sized container on Vercel/web
+ * Add .no-device-frame class to html to disable for E2E testing
  * ============================================ */
 /* stylelint-disable declaration-no-important */
 @media (width >= 768px) {
-  html,
-  body {
+  /* Only apply frame styles when NOT in test mode */
+  html:not(.no-device-frame),
+  html:not(.no-device-frame) body {
     background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
     min-height: 100vh;
     margin: 0;
     padding: 0;
   }
 
-  ion-app {
+  html:not(.no-device-frame) ion-app {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -1607,7 +1609,7 @@ button:focus-visible {
   }
 
   /* Notch simulation */
-  ion-app::before {
+  html:not(.no-device-frame) ion-app::before {
     content: '';
     position: absolute;
     top: 0;
@@ -1620,25 +1622,25 @@ button:focus-visible {
     z-index: 9999;
   }
 
-  /* Dark mode background */
-  :root[data-theme='dark'] html,
-  :root[data-theme='dark'] body,
-  .dark html,
-  .dark body,
-  .ion-palette-dark html,
-  .ion-palette-dark body {
+  /* Dark mode background (also respects no-device-frame) */
+  html:not(.no-device-frame):root[data-theme='dark'],
+  html:not(.no-device-frame):root[data-theme='dark'] body,
+  html:not(.no-device-frame).dark,
+  html:not(.no-device-frame).dark body,
+  html:not(.no-device-frame).ion-palette-dark,
+  html:not(.no-device-frame).ion-palette-dark body {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
   }
 
-  :root[data-theme='dark'] ion-app,
-  .dark ion-app,
-  .ion-palette-dark ion-app {
+  html:not(.no-device-frame):root[data-theme='dark'] ion-app,
+  html:not(.no-device-frame).dark ion-app,
+  html:not(.no-device-frame).ion-palette-dark ion-app {
     border-color: #374151 !important;
   }
 
-  :root[data-theme='dark'] ion-app::before,
-  .dark ion-app::before,
-  .ion-palette-dark ion-app::before {
+  html:not(.no-device-frame):root[data-theme='dark'] ion-app::before,
+  html:not(.no-device-frame).dark ion-app::before,
+  html:not(.no-device-frame).ion-palette-dark ion-app::before {
     background: #374151;
   }
 }

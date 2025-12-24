@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, of, delay } from 'rxjs';
 import { environment } from '@env/environment';
+import { LoggerService } from './logger.service';
 
 export interface MockUser {
   id: string;
@@ -64,6 +65,8 @@ export interface MockStats {
 
 @Injectable({ providedIn: 'root' })
 export class MockDataService {
+  private readonly logger = inject(LoggerService);
+
   private currentUser: MockUser = {
     id: 'pac001',
     username: 'demo_patient',
@@ -293,7 +296,9 @@ export class MockDataService {
     };
 
     this.debugLog('🎭 MOCK BOLUS CALCULATION:', result);
-    return of(result).pipe(delay(400));
+    // Note: Removed delay(400) as it causes issues with zone.js in E2E tests
+    // The delay isn't necessary for mock mode - it was just simulating network latency
+    return of(result);
   }
 
   // ====== APPOINTMENTS - FUNCIONALIDAD IMPORTANTE ======
@@ -454,7 +459,11 @@ export class MockDataService {
 
   private debugLog(message?: unknown, ...optionalParams: unknown[]): void {
     if (this.isMockMode) {
-      console.log(message, ...optionalParams);
+      this.logger.debug(
+        'MockDataService',
+        String(message),
+        optionalParams.length > 0 ? optionalParams : undefined
+      );
     }
   }
 }

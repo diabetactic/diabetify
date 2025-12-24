@@ -107,13 +107,7 @@
     },
     "lint": {
       "outputs": [],
-      "inputs": [
-        "src/**/*.ts",
-        "src/**/*.js",
-        "src/**/*.html",
-        ".eslintrc.json",
-        "eslint.config.mjs"
-      ]
+      "inputs": ["src/**/*.ts", "src/**/*.js", "src/**/*.html", "eslint.config.js"]
     },
     "lint:styles": {
       "outputs": [],
@@ -121,17 +115,17 @@
     },
     "lint:fix": {
       "outputs": [],
-      "inputs": ["src/**/*.ts", "src/**/*.js", "src/**/*.html", ".eslintrc.json"],
+      "inputs": ["src/**/*.ts", "src/**/*.js", "src/**/*.html", "eslint.config.js"],
       "cache": false
     },
     "format": {
       "outputs": [],
-      "inputs": ["src/**", "playwright/**", "scripts/**", ".prettierrc", ".prettierignore"],
+      "inputs": ["src/**", "playwright/**", "scripts/**", ".prettierrc.json", ".prettierignore"],
       "cache": false
     },
     "format:check": {
       "outputs": [],
-      "inputs": ["src/**", "playwright/**", "scripts/**", ".prettierrc", ".prettierignore"]
+      "inputs": ["src/**", "playwright/**", "scripts/**", ".prettierrc.json", ".prettierignore"]
     },
     "quality": {
       "dependsOn": ["lint", "test"],

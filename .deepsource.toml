@@ -6,7 +6,16 @@ version = 1
 # Test coverage reporting (uploads from CI)
 test_coverage_enabled = true
 
-# Files to exclude from analysis
+# Files that are tests (helps DeepSource understand code structure)
+test_patterns = [
+  "src/**/*.spec.ts",
+  "src/**/*.test.ts",
+  "src/app/tests/**",
+  "playwright/**",
+  "maestro/**"
+]
+
+# Files to exclude from analysis (applies to ALL analyzers including test-coverage)
 exclude_patterns = [
   # Build outputs
   "www/**",
@@ -59,6 +68,12 @@ exclude_patterns = [
   # Angular NgModules (class-as-namespace is legitimate Angular pattern)
   "**/*.module.ts",
 
+  # Barrel exports and type-only files (no testable logic)
+  "**/index.ts",
+  "**/*.model.ts",
+  "**/constants/**",
+  "src/app/shared/icons/**",
+
   # Mock services (intentional mock patterns)
   "src/app/core/services/mock-adapter.service.ts",
   "src/app/shared/components/env-badge/**",
@@ -94,7 +109,14 @@ enabled = true
   dialect = "typescript"
 
 # Test Coverage Analyzer
-[[analyzers]]
-name = "test-coverage"
-enabled = true
+# DISABLED: DeepSource's exclude_patterns don't affect coverage calculation
+# correctly. Coverage is calculated against ALL source files in repo, not just
+# those matching include patterns. This causes 79% local coverage to show as
+# ~13% in DeepSource. See: https://discuss.deepsource.com/t/683
+#
+# TODO: Re-enable after configuring coverage threshold in DeepSource dashboard
+# or when DeepSource adds support for coverage-specific exclude patterns.
+# [[analyzers]]
+# name = "test-coverage"
+# enabled = true
 

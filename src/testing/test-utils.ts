@@ -176,7 +176,9 @@ export function createEmissionCounter<T>(observable: {
   const result = {
     count: 0,
     values: [] as T[],
-    unsubscribe: () => {},
+    unsubscribe: () => {
+      /* Placeholder inicializado como no-op; será sobrescrito con el método real de subscription.unsubscribe() */
+    },
   };
 
   const subscription = observable.subscribe(value => {

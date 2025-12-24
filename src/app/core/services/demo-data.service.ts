@@ -201,7 +201,7 @@ export class DemoDataService {
   /**
    * Generate demo glucose readings
    */
-  getDemoReadings(days: number = 30): Observable<LocalGlucoseReading[]> {
+  getDemoReadings(days = 30): Observable<LocalGlucoseReading[]> {
     const readings: LocalGlucoseReading[] = [];
     const now = new Date();
     // Typically 4 readings per day: Before breakfast, lunch, dinner, bedtime
@@ -251,7 +251,7 @@ export class DemoDataService {
   /**
    * Get demo manual readings summary for appointment sharing
    */
-  getDemoManualReadingsSummary(days: number = 30): Observable<Record<string, unknown>> {
+  getDemoManualReadingsSummary(days = 30): Observable<Record<string, unknown>> {
     return this.getDemoReadings(days).pipe(
       map(readings => {
         const validReadings = readings.filter(r => r.value > 0);

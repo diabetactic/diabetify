@@ -16,27 +16,25 @@ import {
   authenticatedGet,
 } from '../../helpers/backend-services.helper';
 
-// Estado de ejecucion de tests
+// Test execution state
 let shouldRun = false;
 let authToken: string;
 
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping trends integration tests');
     shouldRun = false;
     return;
   }
   shouldRun = true;
 }, 10000);
 
-// Helper para tests condicionales
+// Helper for conditional tests
 const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) => {
   it(
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -63,7 +61,7 @@ describe('Backend Integration - Trends & Statistics', () => {
       expect(Array.isArray(readings)).toBe(true);
 
       if (readings.length > 0) {
-        // Verificar estructura de lectura
+        // Verify reading structure
         const reading = readings[0];
         expect(reading).toHaveProperty('glucose_level');
         expect(typeof reading.glucose_level).toBe('number');
@@ -71,11 +69,11 @@ describe('Backend Integration - Trends & Statistics', () => {
     });
 
     conditionalIt('should calculate correct reading counts', async () => {
-      // Obtener lecturas actuales
+      // Get current readings
       const readingsBefore = await getGlucoseReadings(authToken);
       const initialCount = readingsBefore.length;
 
-      // Agregar una lectura de prueba
+      // Add a test reading
       const testReading = await createGlucoseReading(
         {
           glucose_level: 110,
@@ -87,7 +85,7 @@ describe('Backend Integration - Trends & Statistics', () => {
 
       expect(testReading).toBeDefined();
 
-      // Verificar que el conteo aumento (usar >= para tolerancia a tests concurrentes)
+      // Verify that count increased (use >= for concurrent test tolerance)
       const readingsAfter = await getGlucoseReadings(authToken);
       expect(readingsAfter.length).toBeGreaterThanOrEqual(initialCount + 1);
     });
@@ -96,12 +94,12 @@ describe('Backend Integration - Trends & Statistics', () => {
       const readings = await getGlucoseReadings(authToken);
 
       if (readings.length >= 2) {
-        // Verificar orden descendente
+        // Verify descending order
         for (let i = 0; i < readings.length - 1; i++) {
           const currentDate = new Date(readings[i].created_at || '');
           const nextDate = new Date(readings[i + 1].created_at || '');
 
-          // Si ambas fechas son validas, la actual debe ser >= a la siguiente
+          // If both dates are valid, current should be >= next
           if (!isNaN(currentDate.getTime()) && !isNaN(nextDate.getTime())) {
             expect(currentDate.getTime()).toBeGreaterThanOrEqual(nextDate.getTime());
           }
@@ -118,7 +116,7 @@ describe('Backend Integration - Trends & Statistics', () => {
     conditionalIt('should categorize readings by glucose range', async () => {
       const readings = await getGlucoseReadings(authToken);
 
-      // Categorizar lecturas manualmente
+      // Categorize readings manually
       const categories = {
         veryLow: 0, // < 54 mg/dL
         low: 0, // 54-69 mg/dL
@@ -136,7 +134,7 @@ describe('Backend Integration - Trends & Statistics', () => {
         else categories.veryHigh++;
       });
 
-      // Verificar que la suma de categorias = total de lecturas
+      // Verify that sum of categories equals total readings
       const total =
         categories.veryLow +
         categories.low +
@@ -147,7 +145,7 @@ describe('Backend Integration - Trends & Statistics', () => {
     });
 
     conditionalIt('should add readings with different range values', async () => {
-      // Agregar lecturas en diferentes rangos
+      // Add readings in different ranges
       const testReadings = [
         { glucose_level: 45, notes: '__TIR_TEST__ Very Low' },
         { glucose_level: 65, notes: '__TIR_TEST__ Low' },
@@ -180,27 +178,25 @@ describe('Backend Integration - Trends & Statistics', () => {
       const readings = await getGlucoseReadings(authToken);
 
       if (readings.length === 0) {
-        console.log('  ⚠️  No readings to calculate average');
         return;
       }
 
-      // Calcular promedio manualmente
+      // Calculate average manually
       const sum = readings.reduce((acc, r) => acc + r.glucose_level, 0);
       const average = sum / readings.length;
 
       expect(average).toBeGreaterThan(0);
-      expect(average).toBeLessThan(600); // Valor maximo razonable
+      expect(average).toBeLessThan(600); // Maximum reasonable value
     });
 
     conditionalIt('should calculate standard deviation', async () => {
       const readings = await getGlucoseReadings(authToken);
 
       if (readings.length < 2) {
-        console.log('  ⚠️  Need at least 2 readings for std dev');
         return;
       }
 
-      // Calcular desviacion estandar
+      // Calculate standard deviation
       const values = readings.map(r => r.glucose_level);
       const mean = values.reduce((a, b) => a + b, 0) / values.length;
       const squaredDiffs = values.map(v => Math.pow(v - mean, 2));
@@ -214,7 +210,6 @@ describe('Backend Integration - Trends & Statistics', () => {
       const readings = await getGlucoseReadings(authToken);
 
       if (readings.length < 2) {
-        console.log('  ⚠️  Need at least 2 readings for CV');
         return;
       }
 
@@ -228,7 +223,7 @@ describe('Backend Integration - Trends & Statistics', () => {
       const cv = (stdDev / mean) * 100;
 
       expect(cv).toBeGreaterThanOrEqual(0);
-      expect(cv).toBeLessThan(100); // CV > 100% seria muy inusual
+      expect(cv).toBeLessThan(100); // CV > 100% would be very unusual
     });
   });
 
@@ -238,15 +233,14 @@ describe('Backend Integration - Trends & Statistics', () => {
 
   describe('DATE RANGE Filtering', () => {
     conditionalIt('should filter readings by date range', async () => {
-      // Obtener todas las lecturas
+      // Get all readings
       const allReadings = await getGlucoseReadings(authToken);
 
       if (allReadings.length === 0) {
-        console.log('  ⚠️  No readings to filter');
         return;
       }
 
-      // Filtrar ultimos 7 dias (client-side)
+      // Filter last 7 days (client-side)
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -255,14 +249,14 @@ describe('Backend Integration - Trends & Statistics', () => {
         return !isNaN(readingDate.getTime()) && readingDate >= sevenDaysAgo;
       });
 
-      // Debe haber menos o igual lecturas en el rango
+      // Should have less or equal readings in the range
       expect(recentReadings.length).toBeLessThanOrEqual(allReadings.length);
     });
 
     conditionalIt('should group readings by day for trends', async () => {
       const readings = await getGlucoseReadings(authToken);
 
-      // Agrupar por dia
+      // Group by day
       const byDay = new Map<string, number[]>();
 
       readings.forEach(r => {
@@ -276,7 +270,7 @@ describe('Backend Integration - Trends & Statistics', () => {
         byDay.get(dayKey)!.push(r.glucose_level);
       });
 
-      // Calcular promedio por dia
+      // Calculate average per day
       const dailyAverages = Array.from(byDay.entries()).map(([day, values]) => ({
         day,
         average: values.reduce((a, b) => a + b, 0) / values.length,
@@ -295,7 +289,7 @@ describe('Backend Integration - Trends & Statistics', () => {
     conditionalIt('should group readings by meal context', async () => {
       const readings = await getGlucoseReadings(authToken);
 
-      // Agrupar por tipo de lectura
+      // Group by reading type
       const byMeal = new Map<string, number[]>();
 
       readings.forEach(r => {
@@ -306,22 +300,8 @@ describe('Backend Integration - Trends & Statistics', () => {
         byMeal.get(mealType)!.push(r.glucose_level);
       });
 
-      // Calcular estadisticas por contexto
-      const mealStats = Array.from(byMeal.entries()).map(([meal, values]) => ({
-        meal,
-        count: values.length,
-        average: values.reduce((a, b) => a + b, 0) / values.length,
-        min: Math.min(...values),
-        max: Math.max(...values),
-      }));
-
-      expect(mealStats.length).toBeGreaterThanOrEqual(0);
-
-      // Log para debugging
-      console.log('  📊 Meal context statistics:');
-      mealStats.forEach(s => {
-        console.log(`    ${s.meal}: ${s.count} readings, avg ${s.average.toFixed(1)} mg/dL`);
-      });
+      // Verify that we can group by meal context
+      expect(byMeal.size).toBeGreaterThanOrEqual(0);
     });
 
     conditionalIt('should add readings with different meal contexts', async () => {
@@ -351,20 +331,17 @@ describe('Backend Integration - Trends & Statistics', () => {
       const readings = await getGlucoseReadings(authToken);
 
       if (readings.length === 0) {
-        console.log('  ⚠️  No readings to calculate eA1C');
         return;
       }
 
-      // Calcular promedio
+      // Calculate average
       const average = readings.reduce((a, r) => a + r.glucose_level, 0) / readings.length;
 
       // Formula eA1C: (average_glucose + 46.7) / 28.7
       const eA1C = (average + 46.7) / 28.7;
 
       expect(eA1C).toBeGreaterThan(0);
-      expect(eA1C).toBeLessThan(20); // Rango razonable
-
-      console.log(`  📈 eA1C estimate: ${eA1C.toFixed(1)}% (from avg ${average.toFixed(1)} mg/dL)`);
+      expect(eA1C).toBeLessThan(20); // Reasonable range
     });
   });
 
@@ -379,15 +356,13 @@ describe('Backend Integration - Trends & Statistics', () => {
       expect(profile).toBeDefined();
       expect(profile.dni).toBe(TEST_USER.dni);
 
-      // Verificar campos de estadisticas si existen
+      // Verify statistics fields if they exist
       if (profile.streak !== undefined) {
         expect(typeof profile.streak).toBe('number');
-        console.log(`  🔥 User streak: ${profile.streak} days`);
       }
 
       if (profile.total_readings !== undefined) {
         expect(typeof profile.total_readings).toBe('number');
-        console.log(`  📊 Total readings: ${profile.total_readings}`);
       }
     });
   });
@@ -400,7 +375,7 @@ describe('Backend Integration - Trends & Statistics', () => {
     if (!shouldRun) return;
 
     try {
-      // Obtener lecturas de prueba
+      // Get test readings
       const readings = await getGlucoseReadings(authToken);
       const testReadings = readings.filter(
         r =>
@@ -409,7 +384,7 @@ describe('Backend Integration - Trends & Statistics', () => {
           r.notes?.includes('__MEAL_TEST__')
       );
 
-      // Eliminar lecturas de prueba
+      // Delete test readings
       for (const reading of testReadings) {
         if (reading.id) {
           await fetch(`${SERVICE_URLS.apiGateway}/glucose/${reading.id}`, {
@@ -418,10 +393,15 @@ describe('Backend Integration - Trends & Statistics', () => {
           });
         }
       }
-
-      console.log(`  🧹 Cleaned up ${testReadings.length} test readings`);
     } catch (error) {
-      console.log('  ⚠️ Cleanup failed:', error);
+      // Errors during cleanup are non-critical:
+      // - 404: resource already deleted by another concurrent test
+      // - 401: token expired during long cleanup
+      // - Network: backend already stopped after completing tests
+      console.debug(
+        'Cleanup error (non-critical):',
+        error instanceof Error ? error.message : error
+      );
     }
   });
 });

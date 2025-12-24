@@ -20,12 +20,19 @@ MODE=${1:-"full"}
 API_URL="http://localhost:8000"
 BACKOFFICE_URL="http://localhost:8001"
 
-# Test user credentials (same as Heroku seed account for consistency)
+# Test user 1 credentials (same as Heroku seed account for consistency)
 TEST_USER_DNI="1000"
 TEST_USER_PASSWORD="tuvieja"
 TEST_USER_NAME="Test"
 TEST_USER_SURNAME="User"
-TEST_USER_EMAIL="test1000@diabetactic.test"
+TEST_USER_EMAIL="test1000@diabetactic.com"
+
+# Test user 2 credentials (for multi-user E2E tests)
+TEST_USER_2_DNI="1001"
+TEST_USER_2_PASSWORD="tuvieja2"
+TEST_USER_2_NAME="Second"
+TEST_USER_2_SURNAME="Tester"
+TEST_USER_2_EMAIL="test1001@diabetactic.com"
 
 echo "🌱 Seeding test data (mode: $MODE)..."
 echo ""
@@ -42,6 +49,19 @@ if [ "$USER_EXISTS" = "0" ]; then
     ./create-user.sh "$TEST_USER_DNI" "$TEST_USER_PASSWORD" "$TEST_USER_NAME" "$TEST_USER_SURNAME" "$TEST_USER_EMAIL"
 else
     echo "   User $TEST_USER_DNI already exists, skipping creation"
+fi
+
+# Create second test user for multi-user E2E tests
+echo ""
+echo "👤 Creating second test user (for multi-user tests)..."
+USER_2_EXISTS=$(curl -s "$API_URL/users/from_dni/$TEST_USER_2_DNI" 2>/dev/null | grep -c "user_id" || echo "0")
+
+if [ "$USER_2_EXISTS" = "0" ]; then
+    ./create-user.sh "$TEST_USER_2_DNI" "$TEST_USER_2_PASSWORD" "$TEST_USER_2_NAME" "$TEST_USER_2_SURNAME" "$TEST_USER_2_EMAIL"
+    # Also accept hospital account for user 2
+    docker exec diabetactic_test_utils python3 user_manager.py update-status "$TEST_USER_2_DNI" "accepted" 2>/dev/null || true
+else
+    echo "   User $TEST_USER_2_DNI already exists, skipping creation"
 fi
 
 # -----------------------------------------------------------------------------
@@ -81,36 +101,63 @@ if [ "$MODE" = "minimal" ]; then
 fi
 
 # -----------------------------------------------------------------------------
-# Step 4: Seed glucose readings (full mode only)
+# Step 4: Clean up old test readings (prevent accumulation)
+# -----------------------------------------------------------------------------
+echo ""
+echo "🧹 Cleaning up old test readings..."
+
+# Delete ALL readings for test user to prevent accumulation from repeated runs
+# This ensures a clean slate for each test session
+docker exec diabetactic_glucoserver_db psql -U postgres -d glucoserver \
+    -c "DELETE FROM glucose_readings WHERE user_id = (SELECT user_id FROM glucose_readings gr JOIN (SELECT 1 as user_id) u ON gr.user_id = u.user_id LIMIT 1);" 2>/dev/null || true
+
+# More reliable: delete by user_id directly
+docker exec diabetactic_glucoserver_db psql -U postgres -d glucoserver \
+    -c "DELETE FROM glucose_readings WHERE user_id = 1;" 2>/dev/null || true
+
+echo "   ✓ Cleaned up old readings"
+
+# -----------------------------------------------------------------------------
+# Step 5: Seed glucose readings (full mode only)
 # -----------------------------------------------------------------------------
 echo ""
 echo "📊 Seeding glucose readings..."
 
-# Create 5 test readings with different values and times
-READINGS=(
-    '{"value": 95, "notes": "__E2E_TEST__ Morning fasting", "mealContext": "fasting"}'
-    '{"value": 140, "notes": "__E2E_TEST__ After breakfast", "mealContext": "after_meal"}'
-    '{"value": 110, "notes": "__E2E_TEST__ Before lunch", "mealContext": "before_meal"}'
-    '{"value": 85, "notes": "__E2E_TEST__ Low reading", "mealContext": "fasting"}'
-    '{"value": 180, "notes": "__E2E_TEST__ High after dinner", "mealContext": "after_meal"}'
-)
+# Create 5 test readings with different values using query params
+# API format: /glucose/create?glucose_level=X&reading_type=ENUM&notes=TEXT
+# Valid reading_type values: DESAYUNO, ALMUERZO, MERIENDA, CENA, EJERCICIO, OTRAS_COMIDAS, OTRO
 
 READINGS_CREATED=0
-for READING in "${READINGS[@]}"; do
-    RESPONSE=$(curl -s -X POST "$API_URL/glucose/create" \
-        -H "Authorization: Bearer $AUTH_TOKEN" \
-        -H "Content-Type: application/json" \
-        -d "$READING")
 
-    if echo "$RESPONSE" | grep -q '"id"'; then
-        READINGS_CREATED=$((READINGS_CREATED + 1))
-    fi
-done
+# Reading 1: Morning fasting (95 mg/dL)
+RESPONSE=$(curl -s -X POST "$API_URL/glucose/create?glucose_level=95&reading_type=DESAYUNO&notes=__E2E_TEST__%20Morning%20fasting" \
+    -H "Authorization: Bearer $AUTH_TOKEN")
+if echo "$RESPONSE" | grep -q '"id"'; then READINGS_CREATED=$((READINGS_CREATED + 1)); fi
+
+# Reading 2: After breakfast (140 mg/dL)
+RESPONSE=$(curl -s -X POST "$API_URL/glucose/create?glucose_level=140&reading_type=DESAYUNO&notes=__E2E_TEST__%20After%20breakfast" \
+    -H "Authorization: Bearer $AUTH_TOKEN")
+if echo "$RESPONSE" | grep -q '"id"'; then READINGS_CREATED=$((READINGS_CREATED + 1)); fi
+
+# Reading 3: Before lunch (110 mg/dL)
+RESPONSE=$(curl -s -X POST "$API_URL/glucose/create?glucose_level=110&reading_type=ALMUERZO&notes=__E2E_TEST__%20Before%20lunch" \
+    -H "Authorization: Bearer $AUTH_TOKEN")
+if echo "$RESPONSE" | grep -q '"id"'; then READINGS_CREATED=$((READINGS_CREATED + 1)); fi
+
+# Reading 4: Low reading (85 mg/dL)
+RESPONSE=$(curl -s -X POST "$API_URL/glucose/create?glucose_level=85&reading_type=OTRO&notes=__E2E_TEST__%20Low%20reading" \
+    -H "Authorization: Bearer $AUTH_TOKEN")
+if echo "$RESPONSE" | grep -q '"id"'; then READINGS_CREATED=$((READINGS_CREATED + 1)); fi
+
+# Reading 5: High after dinner (180 mg/dL)
+RESPONSE=$(curl -s -X POST "$API_URL/glucose/create?glucose_level=180&reading_type=CENA&notes=__E2E_TEST__%20High%20after%20dinner" \
+    -H "Authorization: Bearer $AUTH_TOKEN")
+if echo "$RESPONSE" | grep -q '"id"'; then READINGS_CREATED=$((READINGS_CREATED + 1)); fi
 
 echo "   ✓ Created $READINGS_CREATED glucose readings"
 
 # -----------------------------------------------------------------------------
-# Step 5: Clear appointment queue (full mode only)
+# Step 6: Clear appointment queue (full mode only)
 # -----------------------------------------------------------------------------
 echo ""
 echo "📅 Clearing appointment queue..."
@@ -141,14 +188,18 @@ echo "=============================================="
 echo "✅ Test data seeded successfully!"
 echo "=============================================="
 echo ""
-echo "Test User Credentials:"
+echo "Test User 1 Credentials:"
 echo "  DNI:      $TEST_USER_DNI"
 echo "  Password: $TEST_USER_PASSWORD"
 echo ""
+echo "Test User 2 Credentials (for multi-user tests):"
+echo "  DNI:      $TEST_USER_2_DNI"
+echo "  Password: $TEST_USER_2_PASSWORD"
+echo ""
 echo "Seeded Data:"
 echo "  - $READINGS_CREATED glucose readings (tagged with __E2E_TEST__)"
-echo "  - Hospital account: accepted"
-echo "  - Appointment queue: cleared"
+echo "  - Hospital accounts: accepted"
+echo "  - Appointment queues: cleared"
 echo ""
 echo "API Endpoints:"
 echo "  - Main API: $API_URL"

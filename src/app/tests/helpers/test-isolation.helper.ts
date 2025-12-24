@@ -10,7 +10,7 @@ import { vi, type Mock } from 'vitest';
 
 /**
  * Reset BehaviorSubject to initial state
- * Clears all subscribers and restarts with initial value
+ * Emits the initial value to all subscribers
  *
  * @example
  * beforeEach(() => {
@@ -87,7 +87,7 @@ export async function resetCapacitorMocks(): Promise<void> {
     if (vi.isMockFunction(SecureStorage.clear)) {
       (SecureStorage.clear as Mock).mockResolvedValue(undefined);
     }
-  } catch {
+  } catch (_error) {
     // Silently fail if modules not available (e.g., in some test contexts)
   }
 }
@@ -361,19 +361,30 @@ export class AsyncTestHelpers {
    */
   static async waitForEmission<T>(observable: any, timeout: number = 5000): Promise<T> {
     return new Promise((resolve, reject) => {
-      const timeoutHandle = setTimeout(
-        () => reject(new Error(`Observable did not emit within ${timeout}ms`)),
-        timeout
-      );
+      const subscriptionRef: { current: any } = { current: null };
+      const timeoutHandle = setTimeout(() => {
+        if (subscriptionRef.current) {
+          subscriptionRef.current.unsubscribe();
+        }
+        reject(new Error(`Observable did not emit within ${timeout}ms`));
+      }, timeout);
 
-      const subscription = observable.subscribe({
+      subscriptionRef.current = observable.subscribe({
         next: (value: T) => {
           clearTimeout(timeoutHandle);
-          subscription.unsubscribe();
+          // Use setTimeout to allow subscription assignment to complete for BehaviorSubjects
+          setTimeout(() => {
+            if (subscriptionRef.current) {
+              subscriptionRef.current.unsubscribe();
+            }
+          }, 0);
           resolve(value);
         },
         error: (error: any) => {
           clearTimeout(timeoutHandle);
+          if (subscriptionRef.current) {
+            subscriptionRef.current.unsubscribe();
+          }
           reject(error);
         },
       });

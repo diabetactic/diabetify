@@ -16,26 +16,24 @@ import {
   authenticatedGet,
 } from '../../helpers/backend-services.helper';
 
-// Estado de ejecución de tests
+// Test execution state
 let shouldRun = false;
 
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping auth integration tests');
     shouldRun = false;
     return;
   }
   shouldRun = true;
 }, 10000);
 
-// Helper para tests condicionales
+// Helper for conditional tests
 const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) => {
   it(
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -152,7 +150,7 @@ describe('Backend Integration - Auth', () => {
     });
 
     conditionalIt('should reject expired/invalid JWT', async () => {
-      // JWT con firma inválida
+      // JWT with invalid signature
       const fakeJwt =
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
         'eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.' +
@@ -177,7 +175,7 @@ describe('Backend Integration - Auth', () => {
 
   describe('SESSION MANAGEMENT', () => {
     conditionalIt('should allow multiple login sessions for same user', async () => {
-      // Limpiar cache para asegurar tokens frescos
+      // Clear cache to ensure fresh tokens
       clearCachedAuthToken();
 
       // Login same user twice - simulates multiple browser sessions
@@ -199,7 +197,7 @@ describe('Backend Integration - Auth', () => {
     conditionalIt('should isolate sessions between users', async () => {
       const token1 = await loginTestUser(TEST_USERS.user4);
 
-      // El token de user4 solo debe acceder a datos de user4
+      // User4's token should only access user4's data
       const profile = await authenticatedGet('/users/me', token1);
       expect(profile.dni).toBe(TEST_USERS.user4.dni);
     });
@@ -211,13 +209,13 @@ describe('Backend Integration - Auth', () => {
 
   describe('LOGOUT', () => {
     conditionalIt('should clear cached token on logout', async () => {
-      // Login para obtener un token cacheado
+      // Login to get a cached token
       await loginTestUser(TEST_USER);
 
       // Clear simula logout
       clearCachedAuthToken();
 
-      // Un nuevo login debería generar un token fresco
+      // A new login should generate a fresh token
       const freshToken = await loginTestUser(TEST_USER);
       expect(freshToken).toBeTruthy();
     });
@@ -225,7 +223,7 @@ describe('Backend Integration - Auth', () => {
     conditionalIt('should handle logout endpoint if available', async () => {
       const token = await loginTestUser(TEST_USER);
 
-      // Intentar logout via endpoint (puede no existir)
+      // Try logout via endpoint (may not exist)
       try {
         const response = await fetch(`${SERVICE_URLS.apiGateway}/logout`, {
           method: 'POST',
@@ -235,12 +233,12 @@ describe('Backend Integration - Auth', () => {
           },
         });
 
-        // Si el endpoint existe, debería retornar 200 o 204
+        // If endpoint exists, should return 200 or 204
         if (response.ok) {
           expect([200, 204]).toContain(response.status);
         }
-      } catch {
-        // Endpoint de logout puede no existir (JWT es stateless)
+      } catch (_error) {
+        // Logout endpoint may not exist (JWT is stateless)
       }
     });
   });

@@ -17,27 +17,25 @@ import {
   getGlucoseReadings,
 } from '../../helpers/backend-services.helper';
 
-// Estado de ejecucion de tests
+// Test execution state
 let shouldRun = false;
 let authToken: string;
 
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
   if (!backendAvailable) {
-    console.log('⏭️  Backend not available - skipping bolus calculator tests');
     shouldRun = false;
     return;
   }
   shouldRun = true;
 }, 10000);
 
-// Helper para tests condicionales
+// Helper for conditional tests
 const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) => {
   it(
     name,
     async () => {
       if (!shouldRun) {
-        console.log(`  ⏭️  Skipping: ${name}`);
         return;
       }
       await fn();
@@ -46,60 +44,60 @@ const conditionalIt = (name: string, fn: () => Promise<void>, timeout?: number) 
   );
 };
 
-// Interfaces para calculos de bolus
+// Interfaces for bolus calculations
 interface InsulinSettings {
-  ratio: number; // Gramos de carbohidratos por unidad de insulina (I:C)
-  sensitivity: number; // Reduccion de glucosa por unidad (ISF)
-  targetGlucose: number; // Objetivo de glucosa
-  activeInsulinDuration: number; // Duracion de insulina activa (horas)
+  ratio: number; // Grams of carbs per insulin unit (I:C)
+  sensitivity: number; // Glucose reduction per unit (ISF)
+  targetGlucose: number; // Target glucose
+  activeInsulinDuration: number; // Active insulin duration (hours)
 }
 
-interface BolusCalculation {
-  mealDose: number; // Dosis para carbohidratos
-  correctionDose: number; // Dosis de correccion
-  iobAdjustment: number; // Ajuste por insulina activa
-  totalDose: number; // Dosis total recomendada
+interface DetailedBolusCalculation {
+  mealDose: number; // Dose for carbohydrates
+  correctionDose: number; // Correction dose
+  iobAdjustment: number; // Insulin on board adjustment
+  totalDose: number; // Total recommended dose
   warnings: string[];
 }
 
-// Calculadora de bolus
+// Bolus calculator
 function calculateBolus(
   currentGlucose: number,
   carbs: number,
   settings: InsulinSettings,
   insulinOnBoard: number = 0
-): BolusCalculation {
+): DetailedBolusCalculation {
   const warnings: string[] = [];
 
-  // Dosis para carbohidratos
+  // Dose for carbohydrates
   const mealDose = carbs / settings.ratio;
 
-  // Dosis de correccion (solo si esta sobre el objetivo)
+  // Correction dose (only if above target)
   let correctionDose = 0;
   if (currentGlucose > settings.targetGlucose) {
     correctionDose = (currentGlucose - settings.targetGlucose) / settings.sensitivity;
   } else if (currentGlucose < settings.targetGlucose - 20) {
-    // Si esta bajo, podria necesitar reducir dosis
+    // If low, may need to reduce dose
     correctionDose = (currentGlucose - settings.targetGlucose) / settings.sensitivity;
-    warnings.push('Glucosa baja - considerar reducir dosis de comida');
+    warnings.push('Low glucose - consider reducing meal dose');
   }
 
-  // Ajuste por insulina activa (IOB)
+  // Adjustment for active insulin (IOB)
   const iobAdjustment = -insulinOnBoard;
 
-  // Total (no puede ser negativo)
+  // Total (cannot be negative)
   let totalDose = mealDose + correctionDose + iobAdjustment;
   if (totalDose < 0) {
-    warnings.push('Dosis calculada negativa - considerar no inyectar');
+    warnings.push('Negative calculated dose - consider not injecting');
     totalDose = 0;
   }
 
-  // Warnings de seguridad
+  // Safety warnings
   if (currentGlucose < 70) {
-    warnings.push('HIPOGLUCEMIA - tratar primero antes de inyectar');
+    warnings.push('HYPOGLYCEMIA - treat first before injecting');
   }
   if (totalDose > 20) {
-    warnings.push('Dosis alta - verificar carbohidratos');
+    warnings.push('High dose - verify carbohydrates');
   }
 
   return {
@@ -111,7 +109,7 @@ function calculateBolus(
   };
 }
 
-// Calcular insulina activa (IOB)
+// Calculate active insulin (IOB)
 function calculateIOB(doses: { units: number; timestamp: Date }[], durationHours: number): number {
   const now = new Date();
   let iob = 0;
@@ -119,7 +117,7 @@ function calculateIOB(doses: { units: number; timestamp: Date }[], durationHours
   doses.forEach(dose => {
     const hoursAgo = (now.getTime() - dose.timestamp.getTime()) / (1000 * 60 * 60);
     if (hoursAgo < durationHours) {
-      // Modelo lineal simple de decaimiento
+      // Simple linear decay model
       const remaining = 1 - hoursAgo / durationHours;
       iob += dose.units * remaining;
     }
@@ -152,7 +150,7 @@ describe('Backend Integration - Bolus Calculator', () => {
 
       // 50g carbs / 10 = 5U
       expect(result.mealDose).toBe(5);
-      expect(result.correctionDose).toBe(0); // En objetivo
+      expect(result.correctionDose).toBe(0); // At target
       expect(result.totalDose).toBe(5);
     });
 
@@ -174,7 +172,7 @@ describe('Backend Integration - Bolus Calculator', () => {
       expect(result.mealDose).toBe(5);
       expect(result.correctionDose).toBe(-0.6);
       expect(result.totalDose).toBe(4.4);
-      expect(result.warnings).toContain('Glucosa baja - considerar reducir dosis de comida');
+      expect(result.warnings).toContain('Low glucose - consider reducing meal dose');
     });
 
     conditionalIt('should handle zero carbs (correction only)', async () => {
@@ -193,7 +191,7 @@ describe('Backend Integration - Bolus Calculator', () => {
       // IOB adjustment: -5U
       // Total would be: 1 - 1 - 5 = -5, but capped at 0
       expect(result.totalDose).toBe(0);
-      expect(result.warnings).toContain('Dosis calculada negativa - considerar no inyectar');
+      expect(result.warnings).toContain('Negative calculated dose - consider not injecting');
     });
   });
 
@@ -205,8 +203,8 @@ describe('Backend Integration - Bolus Calculator', () => {
     conditionalIt('should calculate IOB from recent doses', async () => {
       const now = new Date();
       const doses = [
-        { units: 4, timestamp: new Date(now.getTime() - 1 * 60 * 60 * 1000) }, // 1 hora atras
-        { units: 2, timestamp: new Date(now.getTime() - 2 * 60 * 60 * 1000) }, // 2 horas atras
+        { units: 4, timestamp: new Date(now.getTime() - 1 * 60 * 60 * 1000) }, // 1 hour ago
+        { units: 2, timestamp: new Date(now.getTime() - 2 * 60 * 60 * 1000) }, // 2 hours ago
       ];
 
       const iob = calculateIOB(doses, 4);
@@ -221,7 +219,7 @@ describe('Backend Integration - Bolus Calculator', () => {
     conditionalIt('should return 0 for expired doses', async () => {
       const now = new Date();
       const doses = [
-        { units: 5, timestamp: new Date(now.getTime() - 5 * 60 * 60 * 1000) }, // 5 horas atras
+        { units: 5, timestamp: new Date(now.getTime() - 5 * 60 * 60 * 1000) }, // 5 hours ago
       ];
 
       const iob = calculateIOB(doses, 4);
@@ -265,7 +263,7 @@ describe('Backend Integration - Bolus Calculator', () => {
     conditionalIt('should warn about hypoglycemia', async () => {
       const result = calculateBolus(55, 30, settings);
 
-      expect(result.warnings).toContain('HIPOGLUCEMIA - tratar primero antes de inyectar');
+      expect(result.warnings).toContain('HYPOGLYCEMIA - treat first before injecting');
     });
 
     conditionalIt('should warn about high dose', async () => {
@@ -275,7 +273,7 @@ describe('Backend Integration - Bolus Calculator', () => {
       // Correction: (300-100)/50 = 4U
       // Total: 34U (muy alto)
       expect(result.totalDose).toBeGreaterThan(20);
-      expect(result.warnings).toContain('Dosis alta - verificar carbohidratos');
+      expect(result.warnings).toContain('High dose - verify carbohydrates');
     });
 
     conditionalIt('should handle edge case of very low glucose', async () => {
@@ -292,12 +290,12 @@ describe('Backend Integration - Bolus Calculator', () => {
 
   describe('TIME-BASED Ratio Variations', () => {
     conditionalIt('should use different ratios by time of day', async () => {
-      // Ratios tipicos por hora
+      // Typical ratios by hour
       const getRatioForHour = (hour: number): number => {
-        if (hour >= 5 && hour < 10) return 8; // Manana: mas sensible
+        if (hour >= 5 && hour < 10) return 8; // Morning: more sensitive
         if (hour >= 10 && hour < 17) return 10; // Mediodia: normal
-        if (hour >= 17 && hour < 21) return 12; // Tarde: menos sensible
-        return 10; // Noche: normal
+        if (hour >= 17 && hour < 21) return 12; // Evening: less sensitive
+        return 10; // Night: normal
       };
 
       expect(getRatioForHour(7)).toBe(8);
@@ -316,7 +314,7 @@ describe('Backend Integration - Bolus Calculator', () => {
       expect(morningDose).toBe(5); // 40/8 = 5U
       expect(eveningDose).toBeCloseTo(3.33, 1); // 40/12 = 3.33U
 
-      // La dosis de la manana es mayor
+      // Morning dose is higher
       expect(morningDose).toBeGreaterThan(eveningDose);
     });
   });
@@ -327,7 +325,7 @@ describe('Backend Integration - Bolus Calculator', () => {
 
   describe('INTEGRATION with Backend Data', () => {
     conditionalIt('should calculate based on current glucose reading', async () => {
-      // Crear una lectura reciente
+      // Create a recent reading
       const reading = await createGlucoseReading(
         {
           glucose_level: 180,
@@ -339,7 +337,7 @@ describe('Backend Integration - Bolus Calculator', () => {
 
       expect(reading).toBeDefined();
 
-      // Usar el valor para calcular
+      // Use the value to calculate
       const settings: InsulinSettings = {
         ratio: 10,
         sensitivity: 50,
@@ -361,8 +359,8 @@ describe('Backend Integration - Bolus Calculator', () => {
 
       expect(profile).toBeDefined();
 
-      // Los settings de insulina podrian venir del perfil
-      // Por ahora verificamos que el perfil existe
+      // Insulin settings could come from the profile
+      // For now we verify that the profile exists
       expect(profile.dni).toBe(TEST_USER.dni);
     });
   });
@@ -410,7 +408,7 @@ describe('Backend Integration - Bolus Calculator', () => {
         activeInsulinDuration: 4,
       };
 
-      // Escenario: glucosa alta antes del almuerzo
+      // Scenario: high glucose before lunch
       const result = calculateBolus(250, 60, settings);
 
       // Meal: 60/12 = 5U
@@ -428,7 +426,7 @@ describe('Backend Integration - Bolus Calculator', () => {
         activeInsulinDuration: 4,
       };
 
-      // Escenario: merienda con insulina activa
+      // Scenario: snack with active insulin
       const result = calculateBolus(140, 20, settings, 1.5);
 
       // Meal: 20/15 = 1.33U
@@ -460,10 +458,8 @@ describe('Backend Integration - Bolus Calculator', () => {
           });
         }
       }
-
-      console.log(`  🧹 Cleaned up ${testReadings.length} test readings`);
-    } catch (error) {
-      console.log('  ⚠️ Cleanup failed:', error);
+    } catch (_error) {
+      // Cleanup failed silently during teardown
     }
   });
 });

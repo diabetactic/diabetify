@@ -110,10 +110,14 @@ export class TranslationService implements OnDestroy {
 
   // Current language config observable
   public readonly currentConfig$: Observable<LanguageConfig> = this.state$.pipe(
-    map(
-      state =>
-        this.LANGUAGES.get(state.currentLanguage) ?? this.LANGUAGES.get(this.DEFAULT_LANGUAGE)!
-    )
+    map(state => {
+      // DEFAULT_LANGUAGE is guaranteed to exist in LANGUAGES Map
+      const defaultConfig = this.LANGUAGES.get(this.DEFAULT_LANGUAGE);
+      if (!defaultConfig) {
+        throw new Error('Default language configuration is missing');
+      }
+      return this.LANGUAGES.get(state.currentLanguage) ?? defaultConfig;
+    })
   );
 
   constructor(
@@ -275,8 +279,11 @@ export class TranslationService implements OnDestroy {
       });
 
       // Update text direction if needed
-      const config = this.LANGUAGES.get(language)!;
-      document.documentElement.dir = config.direction;
+      // Language existence already validated on line 253
+      const config = this.LANGUAGES.get(language);
+      if (config) {
+        document.documentElement.dir = config.direction;
+      }
 
       this.logger.info('Translation', `Language changed to: ${language}`);
     } catch (error) {
@@ -296,7 +303,17 @@ export class TranslationService implements OnDestroy {
    * Get current language configuration
    */
   public getCurrentConfig(): LanguageConfig {
-    return this.LANGUAGES.get(this.state$.value.currentLanguage)!;
+    // Current language is always valid as it's initialized with DEFAULT_LANGUAGE
+    const config = this.LANGUAGES.get(this.state$.value.currentLanguage);
+    if (!config) {
+      // Fallback to default language if somehow current language is invalid
+      const defaultConfig = this.LANGUAGES.get(this.DEFAULT_LANGUAGE);
+      if (!defaultConfig) {
+        throw new Error('Default language configuration is missing');
+      }
+      return defaultConfig;
+    }
+    return config;
   }
 
   /**
@@ -342,12 +359,12 @@ export class TranslationService implements OnDestroy {
    */
   public formatDate(date: Date | string): string {
     const config = this.getCurrentConfig();
-    const d = new Date(date);
+    const dateObject = new Date(date);
 
     if (config.dateFormat === 'MM/DD/YYYY') {
-      return `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}/${d.getFullYear()}`;
+      return `${(dateObject.getMonth() + 1).toString().padStart(2, '0')}/${dateObject.getDate().toString().padStart(2, '0')}/${dateObject.getFullYear()}`;
     } else {
-      return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+      return `${dateObject.getDate().toString().padStart(2, '0')}/${(dateObject.getMonth() + 1).toString().padStart(2, '0')}/${dateObject.getFullYear()}`;
     }
   }
 
@@ -356,22 +373,22 @@ export class TranslationService implements OnDestroy {
    */
   public formatTime(date: Date | string): string {
     const config = this.getCurrentConfig();
-    const d = new Date(date);
+    const dateObject = new Date(date);
 
     if (config.timeFormat === '12h') {
-      const hours = d.getHours() % 12 || 12;
-      const minutes = d.getMinutes().toString().padStart(2, '0');
-      const ampm = d.getHours() >= 12 ? 'PM' : 'AM';
+      const hours = dateObject.getHours() % 12 || 12;
+      const minutes = dateObject.getMinutes().toString().padStart(2, '0');
+      const ampm = dateObject.getHours() >= 12 ? 'PM' : 'AM';
       return `${hours}:${minutes} ${ampm}`;
     } else {
-      return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+      return `${dateObject.getHours().toString().padStart(2, '0')}:${dateObject.getMinutes().toString().padStart(2, '0')}`;
     }
   }
 
   /**
    * Format number according to current language
    */
-  public formatNumber(value: number, decimals: number = 2): string {
+  public formatNumber(value: number, decimals = 2): string {
     const config = this.getCurrentConfig();
     const parts = value.toFixed(decimals).split('.');
 

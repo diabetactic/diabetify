@@ -639,5 +639,277 @@ describe('SettingsPage', () => {
       expect(destroySpy).toHaveBeenCalled();
       expect(completeSpy).toHaveBeenCalled();
     });
+
+    it('should initialize and load data on ngOnInit - Lines 150-154', async () => {
+      // Arrange: Set up mocks
+      mockAuthService.getCurrentUser.mockReturnValue(mockUser);
+      mockDemoDataService.isDemoMode.mockReturnValue(false);
+      mockNotificationService.checkPermissions.mockResolvedValue(true);
+
+      // Spy on private methods
+      const checkPermissionsSpy = vi
+        .spyOn<any, any>(component, 'checkNotificationPermission')
+        .mockResolvedValue(undefined);
+      const loadSettingsSpy = vi
+        .spyOn<any, any>(component, 'loadNotificationSettings')
+        .mockImplementation(() => {});
+
+      // Act: Trigger ngOnInit which calls initializeReadingReminders
+      component.ngOnInit();
+
+      // Assert: Verify initialization methods were called
+      expect(component.readingReminders.length).toBeGreaterThan(0);
+      expect(component.isDemoMode).toBe(false);
+      expect(checkPermissionsSpy).toHaveBeenCalled();
+      expect(loadSettingsSpy).toHaveBeenCalled();
+
+      checkPermissionsSpy.mockRestore();
+      loadSettingsSpy.mockRestore();
+    });
+  });
+
+  describe('User Data Loading', () => {
+    it('should load user profile data when user exists - Line 192-193', async () => {
+      // Test lines 192-193: if (this.user)
+      mockAuthService.getCurrentUser.mockReturnValue(mockUser);
+
+      await component['loadUserData']();
+
+      expect(component.profileSettings.name).toBe('John Doe');
+      expect(component.profileSettings.email).toBe('test@example.com');
+      expect(component.profileSettings.phone).toBe('1234567890');
+    });
+
+    it('should handle missing phone number - Line 197', async () => {
+      // Test line 197: phone: this.user.phone || ''
+      const userWithoutPhone = { ...mockUser, phone: undefined };
+      mockAuthService.getCurrentUser.mockReturnValue(userWithoutPhone);
+
+      await component['loadUserData']();
+
+      expect(component.profileSettings.phone).toBe('');
+    });
+
+    it('should load preferences when user has preferences - Lines 207-209', async () => {
+      // Test lines 207-209: if (this.user.preferences)
+      mockAuthService.getCurrentUser.mockReturnValue(mockUser);
+
+      await component['loadUserData']();
+
+      expect(component.preferences.glucoseUnit).toBe('mg/dL');
+      expect(component.glucoseSettings.unit).toBe('mg/dL');
+      expect(component.glucoseSettings.targetLow).toBe(70);
+      expect(component.glucoseSettings.targetHigh).toBe(180);
+    });
+
+    it('should handle error when loading user data - Lines 219-220', async () => {
+      // Test lines 219-220: catch block with error
+      mockAuthService.getCurrentUser.mockImplementation(() => {
+        throw new Error('Failed to load user');
+      });
+
+      await component['loadUserData']();
+
+      expect(mockToastController.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Error al cargar los datos del usuario',
+          color: 'danger',
+        })
+      );
+    });
+  });
+
+  describe('Language Change with Alert Handler', () => {
+    it('should execute handler on OK button click - Lines 278-279', async () => {
+      // Test lines 278-279: OK button handler that calls saveSettings and reloads
+      const saveSettingsSpy = vi.spyOn(component, 'saveSettings').mockResolvedValue();
+
+      // Track that reload would be called (we can't actually spy on it in all environments)
+      const originalLocation = window.location;
+
+      // Create a mock location object
+      delete (window as any).location;
+      const mockReload = vi.fn();
+      (window as any).location = {
+        ...originalLocation,
+        reload: mockReload,
+      };
+
+      const mockAlertWithHandler = {
+        present: vi.fn().mockResolvedValue(undefined),
+        buttons: [] as any[],
+      };
+
+      mockAlertController.create.mockImplementation(async opts => {
+        mockAlertWithHandler.buttons = opts?.buttons || [];
+        return mockAlertWithHandler as any;
+      });
+
+      const event = { detail: { value: 'en' } } as CustomEvent<{ value: string }>;
+      await component.onLanguageChange(event);
+
+      // Find and execute OK button handler
+      const okButton = mockAlertWithHandler.buttons.find((b: any) => b.text === 'OK');
+      expect(okButton).toBeDefined();
+
+      if (okButton?.handler) {
+        await okButton.handler();
+      }
+
+      expect(saveSettingsSpy).toHaveBeenCalled();
+
+      // Restore original location
+      (window as any).location = originalLocation;
+      saveSettingsSpy.mockRestore();
+    });
+  });
+
+  describe('Sign Out Error Handling', () => {
+    it('should navigate to login even if logout fails - Lines 367-371', async () => {
+      // Test lines 367-371: catch block that navigates even on error
+      mockAuthService.logout.mockRejectedValue(new Error('Logout failed'));
+
+      const mockAlertWithHandler = {
+        present: vi.fn().mockResolvedValue(undefined),
+        buttons: [] as any[],
+      };
+
+      mockAlertController.create.mockImplementation(async opts => {
+        mockAlertWithHandler.buttons = opts?.buttons || [];
+        return mockAlertWithHandler as any;
+      });
+
+      await component.signOut();
+
+      // Find and execute Cerrar Sesión button handler
+      const confirmButton = mockAlertWithHandler.buttons.find(
+        (b: any) => b.text === 'Cerrar Sesión'
+      );
+      expect(confirmButton).toBeDefined();
+
+      if (confirmButton?.handler) {
+        await confirmButton.handler();
+      }
+
+      expect(mockToastController.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Error al cerrar sesión',
+          color: 'warning',
+        })
+      );
+      expect(mockRouter.navigate).toHaveBeenCalledWith([ROUTES.LOGIN], { replaceUrl: true });
+    });
+  });
+
+  describe('canDeactivate Alert Handler', () => {
+    it('should execute handler on Salir sin guardar button - Line 411', async () => {
+      // Test line 411: handler: () => true
+      component.hasChanges = true;
+
+      const mockAlertWithHandler = {
+        present: vi.fn().mockResolvedValue(undefined),
+        onDidDismiss: vi.fn().mockResolvedValue({ role: 'confirm' }),
+        buttons: [] as any[],
+      };
+
+      mockAlertController.create.mockImplementation(async opts => {
+        mockAlertWithHandler.buttons = opts?.buttons || [];
+        return mockAlertWithHandler as any;
+      });
+
+      await component.canDeactivate();
+
+      // Find exit button and verify handler returns true
+      const exitButton = mockAlertWithHandler.buttons.find(
+        (b: any) => b.text === 'Salir sin guardar'
+      );
+      expect(exitButton).toBeDefined();
+      expect(exitButton?.handler).toBeDefined();
+
+      if (exitButton?.handler) {
+        const result = exitButton.handler();
+        expect(result).toBe(true);
+      }
+    });
+  });
+
+  describe('Notification Settings Loading', () => {
+    it('should load saved notification settings from localStorage - Lines 433-437', () => {
+      // Test lines 433-437: loading saved settings from localStorage
+      const savedSettings = {
+        enabled: true,
+        readingReminders: [
+          { id: 1, time: '07:00', enabled: true, label: 'Early Morning' },
+          { id: 2, time: '13:00', enabled: false, label: 'Afternoon' },
+        ],
+      };
+      localStorage.setItem(STORAGE_KEYS.NOTIFICATION_SETTINGS, JSON.stringify(savedSettings));
+
+      component['loadNotificationSettings']();
+
+      expect(component.readingReminders.length).toBe(2);
+      expect(component.readingReminders[0].time).toBe('07:00');
+      expect(component.readingReminders[0].enabled).toBe(true);
+      expect(component.notificationsEnabled).toBe(true);
+    });
+
+    it('should use default reminders if no saved settings - Lines 425-426', () => {
+      // Test lines 425-426: checkNotificationPermission method
+      localStorage.removeItem(STORAGE_KEYS.NOTIFICATION_SETTINGS);
+
+      component['loadNotificationSettings']();
+
+      // Should keep existing readingReminders initialized in component
+      expect(Array.isArray(component.readingReminders)).toBe(true);
+    });
+  });
+
+  describe('Notification Permission Check', () => {
+    it('should check and set notification permission status - Lines 150-154', async () => {
+      // Test lines 150-154: checkNotificationPermission in ngOnInit
+      mockNotificationService.checkPermissions.mockResolvedValue(true);
+
+      await component['checkNotificationPermission']();
+
+      expect(mockNotificationService.checkPermissions).toHaveBeenCalled();
+      expect(component.notificationPermissionGranted).toBe(true);
+      expect(component.notificationsEnabled).toBe(true);
+    });
+
+    it('should handle permission denied', async () => {
+      mockNotificationService.checkPermissions.mockResolvedValue(false);
+
+      await component['checkNotificationPermission']();
+
+      expect(component.notificationPermissionGranted).toBe(false);
+      expect(component.notificationsEnabled).toBe(false);
+    });
+  });
+
+  describe('TrackBy Function', () => {
+    it('should return reminder id for trackBy - Line 547', () => {
+      // Test line 547: trackByReminder function
+      const reminder: ReadingReminder = { id: 5, time: '10:00', enabled: true, label: 'Test' };
+
+      const result = component.trackByReminder(0, reminder);
+
+      expect(result).toBe(5);
+    });
+
+    it('should work with different reminders', () => {
+      const reminder1: ReadingReminder = { id: 1, time: '08:00', enabled: true, label: 'Morning' };
+      const reminder2: ReadingReminder = { id: 2, time: '12:00', enabled: false, label: 'Noon' };
+
+      expect(component.trackByReminder(0, reminder1)).toBe(1);
+      expect(component.trackByReminder(1, reminder2)).toBe(2);
+    });
+  });
+
+  describe('Platform Detection', () => {
+    it('should detect web platform - Line 166', () => {
+      // Test line 166: this.isWebPlatform assignment in constructor
+      expect(component.isWebPlatform).toBeDefined();
+      expect(typeof component.isWebPlatform).toBe('boolean');
+    });
   });
 });

@@ -1,100 +1,459 @@
-// Initialize TestBed environment for Vitest
-import '../../../test-setup';
+/**
+ * OnboardingGuard - Unit Tests
+ * Tests para el guard que previene acceso a secciones autenticadas
+ * hasta que se complete el onboarding
+ */
 
 import { TestBed } from '@angular/core/testing';
 import {
-  ActivatedRouteSnapshot,
-  Route,
   Router,
+  ActivatedRouteSnapshot,
   RouterStateSnapshot,
   UrlSegment,
+  Route,
   UrlTree,
 } from '@angular/router';
-
 import { OnboardingGuard } from './onboarding.guard';
 import { ProfileService } from '@services/profile.service';
-import { UserProfile } from '@core/models';
+import { LoggerService } from '@services/logger.service';
+import { UserProfile } from '@models/user-profile.model';
+import { ROUTES } from '@core/constants';
 
 describe('OnboardingGuard', () => {
   let guard: OnboardingGuard;
-  let profileService: Mock<ProfileService>;
-  let router: Mock<Router>;
-  let urlTree: UrlTree;
+  let mockProfileService: {
+    getProfile: ReturnType<typeof vi.fn>;
+  };
+  let mockRouter: {
+    createUrlTree: ReturnType<typeof vi.fn>;
+  };
+  let mockLogger: {
+    error: ReturnType<typeof vi.fn>;
+  };
 
-  const makeSegment = (path: string): UrlSegment =>
-    ({ path, parameters: {} }) as unknown as UrlSegment;
+  // Helper para crear un perfil de usuario mock
+  const createMockProfile = (hasCompletedOnboarding: boolean): UserProfile =>
+    ({
+      id: '1000',
+      name: 'Test User',
+      email: 'test@example.com',
+      hasCompletedOnboarding,
+      tidepoolConnection: {
+        connected: false,
+      },
+      preferences: {
+        language: 'es',
+        notificationsEnabled: true,
+        theme: 'light',
+        glucoseUnit: 'mg/dL',
+        timeFormat: '24h',
+      },
+    }) as UserProfile;
 
   beforeEach(() => {
-    urlTree = {} as UrlTree;
-    const routerSpy = {
-      createUrlTree: vi.fn().mockReturnValue(urlTree),
-    } as unknown as Mock<Router>;
-
-    const profileSpy = {
+    // Crear mocks
+    mockProfileService = {
       getProfile: vi.fn(),
-    } as unknown as Mock<ProfileService>;
+    };
+
+    mockRouter = {
+      createUrlTree: vi.fn(),
+    };
+
+    mockLogger = {
+      error: vi.fn(),
+    };
 
     TestBed.configureTestingModule({
       providers: [
         OnboardingGuard,
-        { provide: ProfileService, useValue: profileSpy },
-        { provide: Router, useValue: routerSpy },
+        { provide: ProfileService, useValue: mockProfileService },
+        { provide: Router, useValue: mockRouter },
+        { provide: LoggerService, useValue: mockLogger },
       ],
     });
 
     guard = TestBed.inject(OnboardingGuard);
-    profileService = TestBed.inject(ProfileService) as Mock<ProfileService>;
-    router = TestBed.inject(Router) as Mock<Router>;
   });
 
-  it('allows activation when onboarding is complete', async () => {
-    profileService.getProfile.mockResolvedValue({ hasCompletedOnboarding: true } as UserProfile);
-
-    const result = await guard.canActivate(
-      {} as ActivatedRouteSnapshot,
-      { url: '/tabs/dashboard' } as RouterStateSnapshot
-    );
-
-    expect(result).toBe(true);
-    expect(router.createUrlTree).not.toHaveBeenCalled();
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
-  it('redirects to welcome when onboarding data is missing', async () => {
-    profileService.getProfile.mockResolvedValue(null);
+  describe('canActivate', () => {
+    it('debe permitir navegación cuando el usuario completó onboarding', async () => {
+      // Arrange
+      const mockProfile = createMockProfile(true);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
 
-    const targetUrl = '/tabs/dashboard';
-    const result = await guard.canActivate(
-      {} as ActivatedRouteSnapshot,
-      { url: targetUrl } as RouterStateSnapshot
-    );
+      const route = {} as ActivatedRouteSnapshot;
+      const state = { url: '/tabs/dashboard' } as RouterStateSnapshot;
 
-    expect(result).toBe(urlTree);
-    expect(router.createUrlTree).toHaveBeenCalledWith(['/welcome'], {
-      queryParams: { returnUrl: targetUrl },
+      // Act
+      const result = await guard.canActivate(route, state);
+
+      // Assert
+      expect(result).toBe(true);
+      expect(mockProfileService.getProfile).toHaveBeenCalledOnce();
+      expect(mockRouter.createUrlTree).not.toHaveBeenCalled();
+    });
+
+    it('debe redirigir a /welcome cuando el usuario NO completó onboarding', async () => {
+      // Arrange
+      const mockProfile = createMockProfile(false);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = {} as ActivatedRouteSnapshot;
+      const state = { url: '/tabs/dashboard' } as RouterStateSnapshot;
+
+      // Act
+      const result = await guard.canActivate(route, state);
+
+      // Assert
+      expect(result).toBe(mockUrlTree);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
+        queryParams: { returnUrl: '/tabs/dashboard' },
+      });
+    });
+
+    it('debe incluir returnUrl en queryParams cuando la URL intentada no es raíz', async () => {
+      // Arrange
+      const mockProfile = createMockProfile(false);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = {} as ActivatedRouteSnapshot;
+      const state = { url: '/tabs/profile' } as RouterStateSnapshot;
+
+      // Act
+      await guard.canActivate(route, state);
+
+      // Assert
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
+        queryParams: { returnUrl: '/tabs/profile' },
+      });
+    });
+
+    it('NO debe incluir returnUrl cuando la URL es raíz (/)', async () => {
+      // Arrange
+      const mockProfile = createMockProfile(false);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = {} as ActivatedRouteSnapshot;
+      const state = { url: '/' } as RouterStateSnapshot;
+
+      // Act
+      await guard.canActivate(route, state);
+
+      // Assert
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
+        queryParams: undefined,
+      });
+    });
+
+    it('NO debe incluir returnUrl cuando la URL ya es /welcome', async () => {
+      // Arrange
+      const mockProfile = createMockProfile(false);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = {} as ActivatedRouteSnapshot;
+      const state = { url: '/welcome' } as RouterStateSnapshot;
+
+      // Act
+      await guard.canActivate(route, state);
+
+      // Assert
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
+        queryParams: undefined,
+      });
+    });
+
+    it('debe manejar profile null o undefined redirigiendo a /welcome', async () => {
+      // Arrange
+      mockProfileService.getProfile.mockResolvedValue(null);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = {} as ActivatedRouteSnapshot;
+      const state = { url: '/tabs/dashboard' } as RouterStateSnapshot;
+
+      // Act
+      const result = await guard.canActivate(route, state);
+
+      // Assert
+      expect(result).toBe(mockUrlTree);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
+        queryParams: { returnUrl: '/tabs/dashboard' },
+      });
+    });
+
+    it('debe redirigir a /welcome y registrar error cuando getProfile falla', async () => {
+      // Arrange
+      const error = new Error('Network error');
+      mockProfileService.getProfile.mockRejectedValue(error);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = {} as ActivatedRouteSnapshot;
+      const state = { url: '/tabs/dashboard' } as RouterStateSnapshot;
+
+      // Act
+      const result = await guard.canActivate(route, state);
+
+      // Assert
+      expect(result).toBe(mockUrlTree);
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'OnboardingGuard',
+        'Failed to check onboarding status',
+        error
+      );
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME]);
+    });
+
+    it('debe manejar profile sin hasCompletedOnboarding como no completado', async () => {
+      // Arrange - profile sin la propiedad hasCompletedOnboarding
+      const mockProfile = createMockProfile(false);
+      delete mockProfile.hasCompletedOnboarding;
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = {} as ActivatedRouteSnapshot;
+      const state = { url: '/tabs/dashboard' } as RouterStateSnapshot;
+
+      // Act
+      const result = await guard.canActivate(route, state);
+
+      // Assert
+      expect(result).toBe(mockUrlTree);
+      expect(mockRouter.createUrlTree).toHaveBeenCalled();
     });
   });
 
-  it('computes returnUrl from matched segments', async () => {
-    profileService.getProfile.mockResolvedValue({ hasCompletedOnboarding: false } as UserProfile);
+  describe('canMatch', () => {
+    it('debe permitir match cuando el usuario completó onboarding', async () => {
+      // Arrange
+      const mockProfile = createMockProfile(true);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
 
-    const segments = [makeSegment('tabs'), makeSegment('dashboard')];
-    const result = await guard.canMatch({ path: 'tabs' } as Route, segments);
+      const route = { path: 'tabs' } as Route;
+      const segments: UrlSegment[] = [new UrlSegment('tabs', {}), new UrlSegment('dashboard', {})];
 
-    expect(result).toBe(urlTree);
-    expect(router.createUrlTree).toHaveBeenCalledWith(['/welcome'], {
-      queryParams: { returnUrl: '/tabs/dashboard' },
+      // Act
+      const result = await guard.canMatch(route, segments);
+
+      // Assert
+      expect(result).toBe(true);
+      expect(mockProfileService.getProfile).toHaveBeenCalledOnce();
+    });
+
+    it('debe redirigir a /welcome cuando el usuario NO completó onboarding', async () => {
+      // Arrange
+      const mockProfile = createMockProfile(false);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = { path: 'tabs' } as Route;
+      const segments: UrlSegment[] = [new UrlSegment('tabs', {}), new UrlSegment('dashboard', {})];
+
+      // Act
+      const result = await guard.canMatch(route, segments);
+
+      // Assert
+      expect(result).toBe(mockUrlTree);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
+        queryParams: { returnUrl: '/tabs/dashboard' },
+      });
+    });
+
+    it('debe construir correctamente la URL desde segments múltiples', async () => {
+      // Arrange
+      const mockProfile = createMockProfile(false);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = { path: '' } as Route;
+      const segments: UrlSegment[] = [
+        new UrlSegment('tabs', {}),
+        new UrlSegment('appointments', {}),
+        new UrlSegment('create', {}),
+      ];
+
+      // Act
+      await guard.canMatch(route, segments);
+
+      // Assert
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
+        queryParams: { returnUrl: '/tabs/appointments/create' },
+      });
+    });
+
+    it('debe usar route.path cuando segments está vacío', async () => {
+      // Arrange
+      const mockProfile = createMockProfile(false);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = { path: 'settings' } as Route;
+      const segments: UrlSegment[] = [];
+
+      // Act
+      await guard.canMatch(route, segments);
+
+      // Assert
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
+        queryParams: { returnUrl: '/settings' },
+      });
+    });
+
+    it('debe manejar route sin path', async () => {
+      // Arrange
+      const mockProfile = createMockProfile(false);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = {} as Route;
+      const segments: UrlSegment[] = [];
+
+      // Act
+      await guard.canMatch(route, segments);
+
+      // Assert
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
+        queryParams: undefined,
+      });
+    });
+
+    it('debe normalizar múltiples slashes en la URL', async () => {
+      // Arrange
+      const mockProfile = createMockProfile(false);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = { path: '//tabs' } as Route;
+      const segments: UrlSegment[] = [new UrlSegment('', {}), new UrlSegment('dashboard', {})];
+
+      // Act
+      await guard.canMatch(route, segments);
+
+      // Assert
+      const callArgs = mockRouter.createUrlTree.mock.calls[0];
+      const returnUrl = callArgs[1]?.queryParams?.returnUrl;
+      expect(returnUrl).toBeDefined();
+      // Verificar que no hay múltiples slashes consecutivos
+      expect(returnUrl).not.toMatch(/\/{2,}/);
+    });
+
+    it('debe filtrar segments vacíos', async () => {
+      // Arrange
+      const mockProfile = createMockProfile(false);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = { path: '' } as Route;
+      const segments: UrlSegment[] = [
+        new UrlSegment('tabs', {}),
+        new UrlSegment('', {}), // Segment vacío
+        new UrlSegment('dashboard', {}),
+      ];
+
+      // Act
+      await guard.canMatch(route, segments);
+
+      // Assert
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
+        queryParams: { returnUrl: '/tabs/dashboard' },
+      });
     });
   });
 
-  it('omits returnUrl when navigating to the welcome route', async () => {
-    profileService.getProfile.mockResolvedValue(null);
-    // Note: mockClear() clears call history but preserves mock implementation
-    router.createUrlTree.mockClear();
-    router.createUrlTree.mockReturnValue(urlTree);
+  describe('Edge Cases', () => {
+    it('debe manejar múltiples llamadas concurrentes correctamente', async () => {
+      // Arrange
+      const mockProfile = createMockProfile(true);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
 
-    const result = await guard.canMatch({ path: 'welcome' } as Route, [makeSegment('welcome')]);
+      const route = {} as ActivatedRouteSnapshot;
+      const state1 = { url: '/tabs/dashboard' } as RouterStateSnapshot;
+      const state2 = { url: '/tabs/profile' } as RouterStateSnapshot;
+      const state3 = { url: '/tabs/readings' } as RouterStateSnapshot;
 
-    expect(result).toBe(urlTree);
-    expect(router.createUrlTree).toHaveBeenCalledWith(['/welcome'], { queryParams: undefined });
+      // Act - llamadas concurrentes
+      const results = await Promise.all([
+        guard.canActivate(route, state1),
+        guard.canActivate(route, state2),
+        guard.canActivate(route, state3),
+      ]);
+
+      // Assert
+      expect(results).toEqual([true, true, true]);
+      expect(mockProfileService.getProfile).toHaveBeenCalledTimes(3);
+    });
+
+    it('debe manejar hasCompletedOnboarding = false explícitamente', async () => {
+      // Arrange - asegurar que false es tratado correctamente vs undefined
+      const mockProfile = createMockProfile(false);
+      mockProfile.hasCompletedOnboarding = false; // Explícitamente false
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = {} as ActivatedRouteSnapshot;
+      const state = { url: '/tabs/dashboard' } as RouterStateSnapshot;
+
+      // Act
+      const result = await guard.canActivate(route, state);
+
+      // Assert
+      expect(result).toBe(mockUrlTree);
+      expect(mockRouter.createUrlTree).toHaveBeenCalled();
+    });
+
+    it('debe preservar caracteres especiales en returnUrl', async () => {
+      // Arrange
+      const mockProfile = createMockProfile(false);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = {} as ActivatedRouteSnapshot;
+      const state = { url: '/tabs/readings?filter=recent&sort=desc' } as RouterStateSnapshot;
+
+      // Act
+      await guard.canActivate(route, state);
+
+      // Assert
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
+        queryParams: { returnUrl: '/tabs/readings?filter=recent&sort=desc' },
+      });
+    });
   });
 });

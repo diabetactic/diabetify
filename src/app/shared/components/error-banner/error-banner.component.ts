@@ -15,11 +15,11 @@ export type ErrorSeverity = 'error' | 'warning' | 'info';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ErrorBannerComponent {
-  @Input() message: string = '';
+  @Input() message = '';
   @Input() severity: ErrorSeverity = 'error';
-  @Input() dismissible: boolean = true;
-  @Input() retryable: boolean = false;
-  @Input() retryText: string = 'common.retry';
+  @Input() dismissible = true;
+  @Input() retryable = false;
+  @Input() retryText = 'common.retry';
   @Output() readonly dismissed = new EventEmitter<void>();
   @Output() readonly retry = new EventEmitter<void>();
 

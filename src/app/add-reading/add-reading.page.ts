@@ -78,7 +78,7 @@ export class AddReadingPage implements OnInit, OnDestroy {
 
   // Fixed max datetime to prevent wheel picker rendering issues
   // This stays constant while the form value changes during user interaction
-  maxDateTime: string = '';
+  maxDateTime = '';
 
   private destroy$ = new Subject<void>();
 

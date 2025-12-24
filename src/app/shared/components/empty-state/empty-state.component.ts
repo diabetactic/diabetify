@@ -15,10 +15,10 @@ import { ThemeService } from '@services/theme.service';
   },
 })
 export class EmptyStateComponent implements OnInit, OnDestroy {
-  @Input() illustration: string = 'inbox';
-  @Input() heading: string = 'No data yet';
-  @Input() message: string = 'Get started by adding your first item.';
-  @Input() ctaText: string = '';
+  @Input() illustration = 'inbox';
+  @Input() heading = 'No data yet';
+  @Input() message = 'Get started by adding your first item.';
+  @Input() ctaText = '';
   @Output() readonly ctaClick = new EventEmitter<void>();
 
   isDarkMode = false;
