@@ -5,8 +5,11 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
   <ion-header collapse="condense">
-    <ion-toolbar>
+    <ion-toolbar class="ion-padding-top">
       <ion-title size="large">{{ 'trends.title' | translate }}</ion-title>
     </ion-toolbar>
   </ion-header>

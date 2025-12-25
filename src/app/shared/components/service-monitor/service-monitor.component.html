@@ -1,6 +1,6 @@
 <!-- Service Monitor Component Template -->
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar class="ion-padding-top">
     <ion-title class="text-lg font-semibold">{{ 'serviceMonitor.title' | translate }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="toggleAutoRefresh()">
@@ -285,7 +285,7 @@
   <ion-modal [isOpen]="showDetails" (didDismiss)="hideServiceDetails()">
     <ng-template>
       <ion-header>
-        <ion-toolbar>
+        <ion-toolbar class="ion-padding-top">
           <ion-title class="text-lg font-semibold">{{
             selectedService ? getServiceName(selectedService) : 'Service Details'
           }}</ion-title>

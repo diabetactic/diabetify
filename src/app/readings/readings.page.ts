@@ -34,6 +34,9 @@ import {
   IonSelectOption,
   IonDatetime,
   IonDatetimeButton,
+  IonItemSliding,
+  IonItemOptions,
+  IonItemOption,
 } from '@ionic/angular/standalone';
 import { ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
@@ -104,6 +107,9 @@ interface ReadingFilters {
     AppIconComponent,
     EmptyStateComponent,
     ReadingItemComponent,
+    IonItemSliding,
+    IonItemOptions,
+    IonItemOption,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
@@ -157,6 +163,39 @@ export class ReadingsPage implements OnInit, OnDestroy {
     this.setupSearchDebounce();
     // Auto-fetch from backend when page loads (background sync)
     this.autoFetchFromBackend();
+  }
+
+  /**
+   * Delete a reading
+   */
+  async deleteReading(
+    reading: LocalGlucoseReading,
+    slidingItem: IonItemSliding
+  ): Promise<void> {
+    this.logger.info('UI', 'Delete reading initiated', { readingId: reading.id });
+
+    try {
+      await this.readingsService.deleteReading(reading.id || '');
+      this.logger.info('Readings', 'Reading deleted successfully', { readingId: reading.id });
+
+      // Show success toast
+      await this.showToast(
+        this.translationService.instant('readings.deleteSuccess'),
+        'success'
+      );
+    } catch (error) {
+      this.logger.error('Readings', 'Error deleting reading', { error, readingId: reading.id });
+
+      // Show error toast
+      await this.showToast(
+        this.translationService.instant('readings.errors.deleteFailed'),
+        'danger'
+      );
+    } finally {
+      // Close the sliding item
+      await slidingItem.close();
+      this.cdr.markForCheck();
+    }
   }
 
   /**

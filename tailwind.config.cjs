@@ -5,7 +5,20 @@ module.exports = {
   content: ['./src/**/*.{html,ts}', './src/index.html'],
   darkMode: 'class',
   theme: {
-    extend: {},
+    extend: {
+      spacing: {
+        '1': '4px',
+        '2': '8px',
+        '3': '12px',
+        '4': '16px',
+        '5': '20px',
+        '6': '24px',
+        '7': '28px',
+        '8': '32px',
+        '9': '36px',
+        '10': '40px',
+      },
+    },
   },
   plugins: [
     ionic(),

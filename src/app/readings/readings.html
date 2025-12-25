@@ -63,7 +63,7 @@
     <div
       class="bg-info/10 dark:bg-info/20 border-info/30 flex items-start gap-3 rounded-xl border px-4 py-3"
     >
-      <app-icon name="droplet" class="text-info mt-0.5 h-5 w-5 flex-shrink-0"></app-icon>
+      <app-icon name="droplet" class="text-info mt-1 h-5 w-5 flex-shrink-0"></app-icon>
       <p class="text-info dark:text-info-content m-0 text-sm leading-relaxed">
         {{ 'readings.tip' | translate }}
       </p>
@@ -189,15 +189,27 @@
           <!-- Readings in this group -->
           <div class="m-0 px-4 py-2">
             @for (reading of group.readings; track trackByReading($index, reading)) {
-              <div
-                class="cursor-pointer transition-transform duration-200 ease-in-out active:scale-[0.98]"
-                (click)="onReadingClick(reading)"
-                (keyup.enter)="onReadingClick(reading)"
-                role="button"
-                tabindex="0"
-              >
-                <app-reading-item [reading]="reading" class="block w-full"></app-reading-item>
-              </div>
+              <ion-item-sliding #slidingItem>
+                <ion-item-options side="end">
+                  <ion-item-option
+                    color="danger"
+                    (click)="deleteReading(reading, slidingItem)"
+                    [attr.aria-label]="'common.delete' | translate"
+                  >
+                    <app-icon name="trash" slot="icon-only"></app-icon>
+                  </ion-item-option>
+                </ion-item-options>
+
+                <ion-item
+                  button
+                  [detail]="false"
+                  lines="none"
+                  class="transition-transform duration-200 ease-in-out active:scale-[0.98]"
+                  (click)="onReadingClick(reading)"
+                >
+                  <app-reading-item [reading]="reading" class="block w-full"></app-reading-item>
+                </ion-item>
+              </ion-item-sliding>
             }
           </div>
         </div>
@@ -212,7 +224,7 @@
       horizontal="end"
       slot="fixed"
       class="!bottom-20"
-      style="bottom: calc(5rem + env(safe-area-inset-bottom, 0px)) !important"
+      style="bottom: calc(5rem + var(--safe-area-inset-bottom, 0px)) !important"
     >
       <ion-fab-button
         size="small"
@@ -231,7 +243,7 @@
     vertical="bottom"
     horizontal="end"
     slot="fixed"
-    style="bottom: calc(1rem + env(safe-area-inset-bottom, 0px))"
+    style="bottom: calc(1rem + var(--safe-area-inset-bottom, 0px))"
   >
     <ion-fab-button
       (click)="addReading()"
@@ -245,10 +257,16 @@
 </ion-content>
 
 <!-- Filter Modal -->
-<ion-modal [isOpen]="isFilterModalOpen" (didDismiss)="closeFilterModal()">
+<ion-modal
+  [isOpen]="isFilterModalOpen"
+  (didDismiss)="closeFilterModal()"
+  [breakpoints]="[0, 0.5, 0.8]"
+  [initialBreakpoint]="0.5"
+  handleBehavior="cycle"
+>
   <ng-template>
-    <ion-header>
-      <ion-toolbar>
+    <ion-header class="ion-no-border">
+      <ion-toolbar class="ion-padding-top">
         <ion-title>{{ 'readings.filterReadings' | translate }}</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="closeFilterModal()" [attr.aria-label]="'common.close' | translate">
@@ -398,10 +416,16 @@
 </ion-modal>
 
 <!-- Reading Detail Modal -->
-<ion-modal [isOpen]="isDetailModalOpen" (didDismiss)="closeDetailModal()">
+<ion-modal
+  [isOpen]="isDetailModalOpen"
+  (didDismiss)="closeDetailModal()"
+  [breakpoints]="[0, 0.5, 0.8]"
+  [initialBreakpoint]="0.5"
+  handleBehavior="cycle"
+>
   <ng-template>
-    <ion-header>
-      <ion-toolbar>
+    <ion-header class="ion-no-border">
+      <ion-toolbar class="ion-padding-top">
         <ion-title>{{ 'readings.reading' | translate }}</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="closeDetailModal()" [attr.aria-label]="'common.close' | translate">

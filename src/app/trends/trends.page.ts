@@ -19,6 +19,8 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonSpinner,
+  IonRefresher,
+  IonRefresherContent,
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { BaseChartDirective } from 'ng2-charts';
@@ -51,6 +53,8 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
     TranslateModule,
     BaseChartDirective,
     AppIconComponent,
+    IonRefresher,
+    IonRefresherContent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
@@ -142,5 +146,10 @@ export class TrendsPage implements OnInit {
         },
       ],
     };
+  }
+
+  async handleRefresh(event: CustomEvent) {
+    await this.loadStatistics();
+    (event.target as HTMLIonRefresherElement).complete();
   }
 }
