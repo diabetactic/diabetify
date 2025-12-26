@@ -8,7 +8,7 @@ import {
 
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { ToastController, NavController } from '@ionic/angular';
+import { ToastController, NavController, ModalController } from '@ionic/angular';
 import {
   IonHeader,
   IonToolbar,
@@ -102,7 +102,8 @@ export class AddReadingPage implements OnInit, OnDestroy {
     private toastController: ToastController,
     private translate: TranslateService,
     private logger: LoggerService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private modalController: ModalController
   ) {}
 
   ngOnInit() {
@@ -323,14 +324,10 @@ export class AddReadingPage implements OnInit, OnDestroy {
 
       await this.showSuccessToast();
 
-      // Navigate back to readings list
-
-      this.logger.debug('UI', 'Navigating back to readings');
-
-      this.navCtrl.navigateBack('/tabs/readings');
+      // Dismiss the modal
+      this.modalController.dismiss(reading, 'confirm');
     } catch (error) {
       this.logger.error('UI', 'Error saving reading', error);
-
       await this.showErrorToast(error);
     } finally {
       this.isSubmitting = false;
@@ -338,8 +335,8 @@ export class AddReadingPage implements OnInit, OnDestroy {
     }
   }
 
-  async onCancel(): Promise<void> {
-    this.navCtrl.navigateBack('/tabs/readings');
+  onCancel(): void {
+    this.modalController.dismiss(null, 'cancel');
   }
 
   private async showSuccessToast(): Promise<void> {

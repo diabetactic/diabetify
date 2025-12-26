@@ -34,8 +34,11 @@ import {
   IonSelectOption,
   IonDatetime,
   IonDatetimeButton,
+  IonItemSliding,
+  IonItemOption,
+  IonItemOptions,
 } from '@ionic/angular/standalone';
-import { ToastController } from '@ionic/angular';
+import { ModalController, ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -48,6 +51,7 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { ReadingItemComponent } from '@shared/components/reading-item/reading-item.component';
 import { ROUTES } from '@core/constants';
+import { AddReadingPage } from '../add-reading/add-reading.page';
 
 /**
  * Interface for grouped readings by date
@@ -104,6 +108,9 @@ interface ReadingFilters {
     AppIconComponent,
     EmptyStateComponent,
     ReadingItemComponent,
+    IonItemSliding,
+    IonItemOption,
+    IonItemOptions,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
@@ -146,7 +153,8 @@ export class ReadingsPage implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private logger: LoggerService,
     private toastController: ToastController,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private modalController: ModalController
   ) {
     this.logger.info('Init', 'ReadingsPage initialized');
   }
@@ -428,11 +436,39 @@ export class ReadingsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Navigate to add reading page
+   * Open the Add Reading modal as a bottom sheet
    */
-  addReading(): void {
+  async addReading(): Promise<void> {
     this.logger.info('UI', 'Add reading button clicked');
-    this.router.navigate([ROUTES.ADD_READING]);
+
+    const modal = await this.modalController.create({
+      component: AddReadingPage,
+      breakpoints: [0, 0.8, 1],
+      initialBreakpoint: 0.8,
+      cssClass: 'add-reading-modal',
+    });
+
+    await modal.present();
+  }
+
+  /**
+   * Delete a reading
+   */
+  async deleteReading(readingId: string): Promise<void> {
+    try {
+      await this.readingsService.deleteReading(readingId);
+      this.logger.info('Readings', 'Reading deleted successfully', { readingId });
+      await this.showToast(
+        this.translationService.instant('readings.deleteSuccess'),
+        'success'
+      );
+    } catch (error) {
+      this.logger.error('Readings', 'Error deleting reading', { readingId, error });
+      await this.showToast(
+        this.translationService.instant('readings.errors.deleteFailed'),
+        'danger'
+      );
+    }
   }
 
   /**
