@@ -6,20 +6,22 @@
         (click)="syncWithBackend()"
         [disabled]="isSyncing"
         [attr.aria-label]="'common.sync' | translate"
+        class="min-h-44px min-w-44px"
       >
         <app-icon
           slot="icon-only"
           [name]="isSyncing ? 'loader-circle' : 'refresh-cw'"
           [class.animate-spin]="isSyncing"
+          class="h-6 w-6"
         ></app-icon>
       </ion-button>
       <ion-button
         id="filter-button"
         (click)="openFilterModal()"
-        class="relative"
+        class="relative min-h-44px min-w-44px"
         [attr.aria-label]="'readings.filterReadings' | translate"
       >
-        <app-icon slot="icon-only" name="filter-outline"></app-icon>
+        <app-icon slot="icon-only" name="filter-outline" class="h-6 w-6"></app-icon>
         @if (getFilterCount() > 0) {
           <ion-badge
             color="danger"
@@ -204,8 +206,11 @@
                   button
                   [detail]="false"
                   lines="none"
-                  class="transition-transform duration-200 ease-in-out active:scale-[0.98]"
+                  class="cursor-pointer transition-transform duration-200 ease-in-out active:scale-[0.98]"
                   (click)="onReadingClick(reading)"
+                  (keyup.enter)="onReadingClick(reading)"
+                  role="button"
+                  tabindex="0"
                 >
                   <app-reading-item [reading]="reading" class="block w-full"></app-reading-item>
                 </ion-item>
@@ -219,39 +224,28 @@
 
   <!-- Scroll to Top Button -->
   @if (groupedReadings.length > 2) {
-    <ion-fab
-      vertical="bottom"
-      horizontal="end"
-      slot="fixed"
-      class="!bottom-20"
-      style="bottom: calc(5rem + var(--safe-area-inset-bottom, 0px)) !important"
-    >
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="safe-area-bottom !bottom-20">
       <ion-fab-button
         size="small"
         (click)="scrollToTop()"
         color="light"
-        class="shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
+        class="h-11 w-11 shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
         [attr.aria-label]="'common.scrollToTop' | translate"
       >
-        <app-icon name="arrow-up"></app-icon>
+        <app-icon name="arrow-up" class="h-6 w-6"></app-icon>
       </ion-fab-button>
     </ion-fab>
   }
 
   <!-- Add Reading FAB -->
-  <ion-fab
-    vertical="bottom"
-    horizontal="end"
-    slot="fixed"
-    style="bottom: calc(1rem + var(--safe-area-inset-bottom, 0px))"
-  >
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="safe-area-bottom">
     <ion-fab-button
       (click)="addReading()"
       color="primary"
-      class="shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
+      class="h-14 w-14 shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
       [attr.aria-label]="'readings.addReading' | translate"
     >
-      <app-icon name="add"></app-icon>
+      <app-icon name="add" class="h-8 w-8"></app-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-content>

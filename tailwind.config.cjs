@@ -7,16 +7,18 @@ module.exports = {
   theme: {
     extend: {
       spacing: {
-        '1': '4px',
-        '2': '8px',
-        '3': '12px',
-        '4': '16px',
-        '5': '20px',
-        '6': '24px',
-        '7': '28px',
-        '8': '32px',
-        '9': '36px',
-        '10': '40px',
+        // Create a 4px grid system
+        // e.g. p-1 = 4px, p-2 = 8px, etc.
+        ...Array.from({ length: 128 }, (_, i) => i * 0.25).reduce((acc, val) => {
+          acc[`${val}`.replace('.', '_')] = `${val}rem`;
+          return acc;
+        }, {}),
+      },
+      minHeight: {
+        '44px': '44px',
+      },
+      minWidth: {
+        '44px': '44px',
       },
     },
   },

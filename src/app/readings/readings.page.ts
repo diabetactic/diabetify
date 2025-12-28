@@ -38,7 +38,7 @@ import {
   IonItemOptions,
   IonItemOption,
 } from '@ionic/angular/standalone';
-import { ToastController } from '@ionic/angular';
+import { ModalController, ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -51,6 +51,7 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { ReadingItemComponent } from '@shared/components/reading-item/reading-item.component';
 import { ROUTES } from '@core/constants';
+import { AddReadingPage } from '../add-reading/add-reading.page';
 
 /**
  * Interface for grouped readings by date
@@ -152,7 +153,8 @@ export class ReadingsPage implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private logger: LoggerService,
     private toastController: ToastController,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private modalController: ModalController
   ) {
     this.logger.info('Init', 'ReadingsPage initialized');
   }
@@ -168,10 +170,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
   /**
    * Delete a reading
    */
-  async deleteReading(
-    reading: LocalGlucoseReading,
-    slidingItem: IonItemSliding
-  ): Promise<void> {
+  async deleteReading(reading: LocalGlucoseReading, slidingItem: IonItemSliding): Promise<void> {
     this.logger.info('UI', 'Delete reading initiated', { readingId: reading.id });
 
     try {
@@ -179,10 +178,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
       this.logger.info('Readings', 'Reading deleted successfully', { readingId: reading.id });
 
       // Show success toast
-      await this.showToast(
-        this.translationService.instant('readings.deleteSuccess'),
-        'success'
-      );
+      await this.showToast(this.translationService.instant('readings.deleteSuccess'), 'success');
     } catch (error) {
       this.logger.error('Readings', 'Error deleting reading', { error, readingId: reading.id });
 
@@ -467,11 +463,19 @@ export class ReadingsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Navigate to add reading page
+   * Open the Add Reading modal as a bottom sheet
    */
-  addReading(): void {
+  async addReading(): Promise<void> {
     this.logger.info('UI', 'Add reading button clicked');
-    this.router.navigate([ROUTES.ADD_READING]);
+
+    const modal = await this.modalController.create({
+      component: AddReadingPage,
+      breakpoints: [0, 0.8, 1],
+      initialBreakpoint: 0.8,
+      cssClass: 'add-reading-modal',
+    });
+
+    await modal.present();
   }
 
   /**

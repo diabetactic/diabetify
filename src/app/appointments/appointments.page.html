@@ -7,8 +7,9 @@
         (click)="createAppointment()"
         [disabled]="!canCreateAppointment"
         [attr.aria-label]="'appointments.actions.create' | translate"
+        class="min-h-44px min-w-44px"
       >
-        <app-icon slot="icon-only" name="add"></app-icon>
+        <app-icon slot="icon-only" name="add" class="h-6 w-6"></app-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -363,64 +364,84 @@
         @if (pastAppointmentsExpanded) {
           <div class="mt-4 flex flex-col gap-3">
             @for (appointment of pastAppointments; track trackByAppointment($index, appointment)) {
-              <ion-card
-                class="appointment-card bg-base-100 border-base-300 hover:border-base-content/20 !m-0 cursor-pointer rounded-xl border shadow-sm transition-all hover:shadow-md dark:border dark:border-slate-600 dark:bg-slate-900/80"
-                (click)="viewAppointment(appointment)"
-              >
-                <ion-card-header class="pb-2">
-                  <div class="flex items-start justify-between gap-2">
-                    <div>
-                      <ion-card-subtitle class="flex items-center gap-2 text-xs">
-                        <app-icon
-                          name="clipboard-list"
-                          class="text-base-content/50 dark:text-base-content/70 h-4 w-4"
-                        ></app-icon>
-                        {{ 'appointments.record' | translate }} #{{ appointment.appointment_id }}
-                      </ion-card-subtitle>
-                      <ion-card-title class="text-base">
-                        {{ formatMotive(appointment.motive) }}
-                      </ion-card-title>
-                    </div>
-                    <!-- Resolution flags badges -->
-                    <div class="flex flex-wrap gap-1">
-                      @if (hasEmergencyCare(appointment.appointment_id)) {
-                        <span
-                          class="badge badge-error badge-sm gap-1"
-                          [title]="'appointments.resolution.emergencyCare' | translate"
-                        >
-                          <app-icon name="alert-triangle" class="h-3 w-3"></app-icon>
-                          {{ 'appointments.resolution.emergencyCareShort' | translate }}
-                        </span>
-                      }
-                      @if (needsPhysicalAppointment(appointment.appointment_id)) {
-                        <span
-                          class="badge badge-warning badge-sm gap-1"
-                          [title]="'appointments.resolution.physicalAppointment' | translate"
-                        >
-                          <app-icon name="stethoscope" class="h-3 w-3"></app-icon>
-                          {{ 'appointments.resolution.physicalAppointmentShort' | translate }}
-                        </span>
-                      }
-                    </div>
-                  </div>
-                </ion-card-header>
-                <ion-card-content class="pt-0">
-                  <div class="grid grid-cols-2 gap-3 text-xs">
-                    <div class="flex flex-col">
-                      <span class="text-base-content/60 dark:text-base-content/80">
-                        {{ 'appointments.fields.glucoseObjective' | translate }}
-                      </span>
-                      <span class="font-medium">{{ appointment.glucose_objective }} mg/dL</span>
-                    </div>
-                    <div class="flex flex-col">
-                      <span class="text-base-content/60 dark:text-base-content/80">
-                        {{ 'appointments.fields.dose' | translate }}
-                      </span>
-                      <span class="font-medium">{{ appointment.dose }} U</span>
-                    </div>
-                  </div>
-                </ion-card-content>
-              </ion-card>
+              <ion-item-sliding #slidingItem>
+                <ion-item
+                  [button]="true"
+                  [detail]="false"
+                  lines="none"
+                  (click)="viewAppointment(appointment)"
+                  class="bg-transparent p-0"
+                >
+                  <ion-card
+                    class="appointment-card bg-base-100 border-base-300 hover:border-base-content/20 !m-0 w-full rounded-xl border shadow-sm transition-all hover:shadow-md dark:border dark:border-slate-600 dark:bg-slate-900/80"
+                  >
+                    <ion-card-header class="pb-2">
+                      <div class="flex items-start justify-between gap-2">
+                        <div>
+                          <ion-card-subtitle class="flex items-center gap-2 text-xs">
+                            <app-icon
+                              name="clipboard-list"
+                              class="text-base-content/50 dark:text-base-content/70 h-4 w-4"
+                            ></app-icon>
+                            {{ 'appointments.record' | translate }} #{{
+                              appointment.appointment_id
+                            }}
+                          </ion-card-subtitle>
+                          <ion-card-title class="text-base">
+                            {{ formatMotive(appointment.motive) }}
+                          </ion-card-title>
+                        </div>
+                        <!-- Resolution flags badges -->
+                        <div class="flex flex-wrap gap-1">
+                          @if (hasEmergencyCare(appointment.appointment_id)) {
+                            <span
+                              class="badge badge-error badge-sm gap-1"
+                              [title]="'appointments.resolution.emergencyCare' | translate"
+                            >
+                              <app-icon name="alert-triangle" class="h-3 w-3"></app-icon>
+                              {{ 'appointments.resolution.emergencyCareShort' | translate }}
+                            </span>
+                          }
+                          @if (needsPhysicalAppointment(appointment.appointment_id)) {
+                            <span
+                              class="badge badge-warning badge-sm gap-1"
+                              [title]="'appointments.resolution.physicalAppointment' | translate"
+                            >
+                              <app-icon name="stethoscope" class="h-3 w-3"></app-icon>
+                              {{ 'appointments.resolution.physicalAppointmentShort' | translate }}
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    </ion-card-header>
+                    <ion-card-content class="pt-0">
+                      <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div class="flex flex-col">
+                          <span class="text-base-content/60 dark:text-base-content/80">
+                            {{ 'appointments.fields.glucoseObjective' | translate }}
+                          </span>
+                          <span class="font-medium">{{ appointment.glucose_objective }} mg/dL</span>
+                        </div>
+                        <div class="flex flex-col">
+                          <span class="text-base-content/60 dark:text-base-content/80">
+                            {{ 'appointments.fields.dose' | translate }}
+                          </span>
+                          <span class="font-medium">{{ appointment.dose }} U</span>
+                        </div>
+                      </div>
+                    </ion-card-content>
+                  </ion-card>
+                </ion-item>
+                <ion-item-options side="end">
+                  <ion-item-option
+                    color="danger"
+                    (click)="deleteAppointment(appointment.appointment_id); slidingItem.close()"
+                  >
+                    <app-icon name="trash" class="mr-2"></app-icon>
+                    {{ 'common.delete' | translate }}
+                  </ion-item-option>
+                </ion-item-options>
+              </ion-item-sliding>
             }
           </div>
         }
