@@ -4,7 +4,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [~] Track: Synchronize Remote Work
+## [/] Track: Synchronize Remote Work
 
 _Link: [./conductor/tracks/sync_remote_20251226/](./conductor/tracks/sync_remote_20251226/)_
 
