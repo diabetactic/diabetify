@@ -5,7 +5,22 @@ module.exports = {
   content: ['./src/**/*.{html,ts}', './src/index.html'],
   darkMode: 'class',
   theme: {
-    extend: {},
+    extend: {
+      spacing: {
+        // Create a 4px grid system
+        // e.g. p-1 = 4px, p-2 = 8px, etc.
+        ...Array.from({ length: 128 }, (_, i) => i * 0.25).reduce((acc, val) => {
+          acc[`${val}`.replace('.', '_')] = `${val}rem`;
+          return acc;
+        }, {}),
+      },
+      minHeight: {
+        '44px': '44px',
+      },
+      minWidth: {
+        '44px': '44px',
+      },
+    },
   },
   plugins: [
     ionic(),
