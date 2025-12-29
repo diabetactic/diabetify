@@ -72,8 +72,8 @@ importers:
         specifier: ^8.0.1
         version: 8.0.1(@capacitor/core@8.0.0)
       '@ionic/angular':
-        specifier: ^8.7.14
-        version: 8.7.14(f92b80650bf0201cd2a03654177a376a)
+        specifier: ^8.7.15
+        version: 8.7.15(f92b80650bf0201cd2a03654177a376a)
       '@ngx-translate/core':
         specifier: ^17.0.0
         version: 17.0.0(@angular/common@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))
@@ -1931,8 +1931,8 @@ packages:
       '@types/node':
         optional: true
 
-  '@ionic/angular@8.7.14':
-    resolution: {integrity: sha512-a5XvqPGuNP3XrxAUQwstD9qy30GzcMoYYDfrMloVlBSdFrYD0IXCV8Sjd718ptao86ZLmzYcSJEXZmEbQ3Uuqw==}
+  '@ionic/angular@8.7.15':
+    resolution: {integrity: sha512-2FFmOCoE3CRHR/WAsx+DX084ywxCNEdqrDuqy0iUmi1jbXrYFcC3xnbvBLKRsQtN56nFLS07DkL6wLCCOY7M4A==}
     peerDependencies:
       '@angular/core': '>=16.0.0'
       '@angular/forms': '>=16.0.0'
@@ -1944,8 +1944,8 @@ packages:
     resolution: {integrity: sha512-TshtaFQsovB4NWRBydbNFawql6yul7d5bMiW1WYYf17hd99V6xdDdk3vtF51bw6sLkxON3bDQpWsnUc9/hVo3g==}
     engines: {node: '>=16.0.0'}
 
-  '@ionic/core@8.7.14':
-    resolution: {integrity: sha512-9CHfow8n19tmfSllUHj3NITqKQGrZHHEF/iyG7xPOlQ9SQ2V4bzd3rHIZ3CKVet1Z/y4HLe0uRShZnmFkSujng==}
+  '@ionic/core@8.7.15':
+    resolution: {integrity: sha512-u1w9c6dx2iuatXIW5X1JY0ighDhQPjBwOHZsrOcnpm891pktuEjJDdyhDulWFa6kKVkXw1q7khwxXBEurvKc2g==}
     engines: {node: '>= 16'}
 
   '@ionic/utils-array@2.1.6':
@@ -2929,8 +2929,8 @@ packages:
     engines: {node: '>=16.0.0', npm: '>=7.10.0'}
     hasBin: true
 
-  '@stencil/core@4.39.0':
-    resolution: {integrity: sha512-wLASFh5wecnbxY+9pEPd6bl7AZJksLmuiBd0ShvkJ0v/N1nL4HNSw/jq2+TzgFE1+XqCUhKPDeVXFpZf1uuRDw==}
+  '@stencil/core@4.40.1':
+    resolution: {integrity: sha512-cTHBvYFLf4h61TVHLibZoJcomYAoC+TNW3oi1VHcZMpWQyp/h/pHG1XQeEpzuSscQc/SJJwOYb5IvQ8vVeeCNg==}
     engines: {node: '>=16.0.0', npm: '>=7.10.0'}
     hasBin: true
 
@@ -7360,10 +7360,12 @@ packages:
   whatwg-encoding@2.0.0:
     resolution: {integrity: sha512-p41ogyeMUrw3jWclHWTQg1k05DSVXPLcVxRTYsXUk+ZooOCZLcoYgPZ/HL/D/N+uQPOtcp1me1WhBEaX02mhWg==}
     engines: {node: '>=12'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
     engines: {node: '>=18'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
@@ -9414,12 +9416,12 @@ snapshots:
     optionalDependencies:
       '@types/node': 25.0.3
 
-  '@ionic/angular@8.7.14(f92b80650bf0201cd2a03654177a376a)':
+  '@ionic/angular@8.7.15(f92b80650bf0201cd2a03654177a376a)':
     dependencies:
       '@angular/core': 21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0)
       '@angular/forms': 21.0.6(@angular/common@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.0.6(@angular/animations@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0)))(@angular/common@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2)
       '@angular/router': 21.0.6(@angular/common@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.0.6(@angular/animations@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0)))(@angular/common@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2)
-      '@ionic/core': 8.7.14
+      '@ionic/core': 8.7.15
       ionicons: 8.0.13
       jsonc-parser: 3.3.1
       rxjs: 7.8.2
@@ -9434,7 +9436,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@ionic/core@8.7.14':
+  '@ionic/core@8.7.15':
     dependencies:
       '@stencil/core': 4.38.0
       ionicons: 8.0.13
@@ -10444,7 +10446,7 @@ snapshots:
       '@rollup/rollup-win32-arm64-msvc': 4.34.9
       '@rollup/rollup-win32-x64-msvc': 4.34.9
 
-  '@stencil/core@4.39.0':
+  '@stencil/core@4.40.1':
     optionalDependencies:
       '@rollup/rollup-darwin-arm64': 4.34.9
       '@rollup/rollup-darwin-x64': 4.34.9
@@ -12686,7 +12688,7 @@ snapshots:
 
   ionicons@8.0.13:
     dependencies:
-      '@stencil/core': 4.39.0
+      '@stencil/core': 4.40.1
 
   ip-address@10.1.0: {}
 
