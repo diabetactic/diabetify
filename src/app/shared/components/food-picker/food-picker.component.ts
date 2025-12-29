@@ -10,11 +10,12 @@ import {
   HostListener,
   OnInit,
 } from '@angular/core';
+import { BarcodeScannerService } from '@services/barcode-scanner.service';
 
 import { FormsModule } from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { IonButton, IonSearchbar } from '@ionic/angular/standalone';
+import { IonButton, IonSearchbar, ToastController } from '@ionic/angular/standalone';
 import { FoodService } from '@services/food.service';
 import {
   FoodItem,
@@ -55,6 +56,11 @@ import { AppIconComponent } from '../app-icon/app-icon.component';
 export class FoodPickerComponent implements OnInit {
   private foodService = inject(FoodService);
   private translate = inject(TranslateService);
+  private barcodeScannerService = inject(BarcodeScannerService);
+  private toastController = inject(ToastController);
+  showManualEntry = false;
+  manualFoodName = '';
+  manualCarbs = null;
 
   /** Whether the picker is open */
   @Input() isOpen = false;
@@ -69,7 +75,7 @@ export class FoodPickerComponent implements OnInit {
   searchQuery = signal('');
 
   /** Selected category */
-  selectedCategory = signal<FoodCategory>('fruits');
+  selectedCategory = signal<FoodCategory | 'recent' | 'favorites'>('fruits');
 
   /** Categories for tabs */
   categories: FoodCategoryInfo[] = [];
@@ -79,6 +85,12 @@ export class FoodPickerComponent implements OnInit {
     const query = this.searchQuery().trim().toLowerCase();
     if (query.length >= 2) {
       return this.foodService.searchFoods(query);
+    }
+    if (this.selectedCategory() === 'recent') {
+      return this.foodService.getRecentFoods();
+    }
+    if (this.selectedCategory() === 'favorites') {
+      return this.foodService.getFavoriteFoods();
     }
     return this.foodService.getFoodsByCategory(this.selectedCategory());
   });
@@ -116,7 +128,7 @@ export class FoodPickerComponent implements OnInit {
 
   /** Handle category change */
   onCategoryChange(event: CustomEvent): void {
-    this.selectedCategory.set(event.detail.value as FoodCategory);
+    this.selectedCategory.set(event.detail.value as FoodCategory | 'recent' | 'favorites');
     this.searchQuery.set(''); // Clear search when changing category
   }
 
@@ -173,6 +185,44 @@ export class FoodPickerComponent implements OnInit {
   /** Clear all selections */
   clearAll(): void {
     this.foodService.clearSelection();
+  }
+
+  /** Scan a barcode */
+  async scanBarcode(): Promise<void> {
+    const barcode = await this.barcodeScannerService.scan();
+    if (barcode) {
+      this.foodService.lookupFoodByBarcode(barcode).subscribe(async foodItem => {
+        if (foodItem) {
+          this.foodService.addFood(foodItem);
+        } else {
+          const toast = await this.toastController.create({
+            message: this.translate.instant('foodPicker.barcodeNotFound'),
+            duration: 3000,
+            position: 'top',
+          });
+          toast.present();
+        }
+      });
+    }
+  }
+
+  addManualFood(): void {
+    if (this.manualFoodName && this.manualCarbs) {
+      const newFood: FoodItem = {
+        id: `manual-${Date.now()}`,
+        name: this.manualFoodName,
+        nameKey: this.manualFoodName,
+        carbsPerServing: this.manualCarbs,
+        servingSize: 1,
+        servingUnit: 'serving',
+        category: 'meals',
+        emoji: '🍽️',
+      };
+      this.foodService.addFood(newFood);
+      this.showManualEntry = false;
+      this.manualFoodName = '';
+      this.manualCarbs = null;
+    }
   }
 
   /** Get serving display text */

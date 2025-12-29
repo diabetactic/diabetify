@@ -15,7 +15,8 @@ export type FoodCategory =
   | 'snacks'
   | 'drinks'
   | 'meals'
-  | 'desserts';
+  | 'desserts'
+  | 'scanned';
 
 /**
  * Portion size unit types

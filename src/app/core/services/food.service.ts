@@ -1,4 +1,8 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { OpenFoodFactsService } from '@services/open-food-facts.service';
+import { CacheService } from '@services/cache.service';
+import { Observable, tap, from, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import {
   FoodItem,
   FoodCategory,
@@ -13,6 +17,11 @@ import {
  */
 @Injectable({ providedIn: 'root' })
 export class FoodService {
+  private openFoodFactsService = inject(OpenFoodFactsService);
+  private cacheService = inject(CacheService);
+  private recentFoods: FoodItem[] = [];
+  private favoriteFoods: FoodItem[] = [];
+
   /** Currently selected foods */
   private selectedFoodsSignal = signal<SelectedFood[]>([]);
 
@@ -626,6 +635,7 @@ export class FoodService {
    * Add a food to selection with specified servings
    */
   addFood(food: FoodItem, servings = 1): void {
+    this.addRecentFood(food);
     const current = this.selectedFoodsSignal();
     const existingIndex = current.findIndex(sf => sf.food.id === food.id);
 
@@ -700,5 +710,59 @@ export class FoodService {
    */
   getSortedCategories(): FoodCategoryInfo[] {
     return [...this.categories].sort((a, b) => a.order - b.order);
+  }
+
+  getRecentFoods(): FoodItem[] {
+    return this.recentFoods;
+  }
+
+  addRecentFood(food: FoodItem): void {
+    const index = this.recentFoods.findIndex(f => f.id === food.id);
+    if (index > -1) {
+      this.recentFoods.splice(index, 1);
+    }
+    this.recentFoods.unshift(food);
+    if (this.recentFoods.length > 20) {
+      this.recentFoods.pop();
+    }
+  }
+
+  getFavoriteFoods(): FoodItem[] {
+    return this.favoriteFoods;
+  }
+
+  addFavoriteFood(food: FoodItem): void {
+    if (!this.favoriteFoods.some(f => f.id === food.id)) {
+      this.favoriteFoods.push(food);
+    }
+  }
+
+  removeFavoriteFood(foodId: string): void {
+    this.favoriteFoods = this.favoriteFoods.filter(f => f.id !== foodId);
+  }
+
+  /**
+   * Look up a food item by barcode using OpenFoodFacts API
+   * and add it to the database if found.
+   */
+  lookupFoodByBarcode(barcode: string): Observable<FoodItem | null> {
+    return from(this.cacheService.getFoodItem(barcode)).pipe(
+      switchMap(cachedFoodItem => {
+        if (cachedFoodItem) {
+          return of(cachedFoodItem);
+        }
+        return this.openFoodFactsService.getProductByBarcode(barcode).pipe(
+          tap(foodItem => {
+            if (foodItem) {
+              this.cacheService.addFoodItem(foodItem);
+              const exists = this.foodDatabase.some(item => item.id === foodItem.id);
+              if (!exists) {
+                this.foodDatabase.push(foodItem);
+              }
+            }
+          })
+        );
+      })
+    );
   }
 }

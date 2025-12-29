@@ -1441,7 +1441,13 @@
   "foodPicker": {
     "title": "Food Picker",
     "searchPlaceholder": "Search foods...",
+    "barcodeNotFound": "Barcode not found in database",
+    "manualEntry": "Enter Manually",
+    "foodName": "Food Name",
+    "carbs": "Carbohydrates (g)",
     "categories": {
+      "recent": "Recent",
+      "favorites": "Favorites",
       "fruits": "Fruits",
       "vegetables": "Vegetables",
       "grains": "Grains",

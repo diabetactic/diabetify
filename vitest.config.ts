@@ -156,6 +156,13 @@ export default defineConfig({
         find: /^@ionic\/core(.*)$/,
         replacement: fileURLToPath(new URL('./src/mocks/ionic-core.mock.ts', import.meta.url)),
       },
+      // Redirect @capacitor-mlkit/barcode-scanning to mock
+      {
+        find: '@capacitor-mlkit/barcode-scanning',
+        replacement: fileURLToPath(
+          new URL('./src/test-setup/barcode-scanner.mock.ts', import.meta.url)
+        ),
+      },
     ],
     // Enable directory index resolution for Ionic ESM imports
     mainFields: ['module', 'jsnext:main', 'jsnext', 'main'],

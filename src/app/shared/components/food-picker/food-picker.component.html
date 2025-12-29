@@ -41,20 +41,43 @@
     </div>
 
     <!-- Search bar -->
-    <ion-searchbar
-      [placeholder]="'foodPicker.searchPlaceholder' | translate"
-      (ionInput)="onSearchChange($event)"
-      [value]="searchQuery()"
-      mode="ios"
-      class="food-picker-search"
-      debounce="300"
-    ></ion-searchbar>
+    <div class="search-container">
+      <ion-searchbar
+        [placeholder]="'foodPicker.searchPlaceholder' | translate"
+        (ionInput)="onSearchChange($event)"
+        [value]="searchQuery()"
+        mode="ios"
+        class="food-picker-search"
+        debounce="300"
+      ></ion-searchbar>
+      <ion-button (click)="scanBarcode()" fill="clear" class="scan-button">
+        <app-icon name="barcode" size="md"></app-icon>
+      </ion-button>
+    </div>
   </div>
 
   <!-- Category tabs (only when not searching) -->
   @if (searchQuery().length < 2) {
     <div class="food-picker-categories">
       <div class="category-scroll">
+        <button
+          class="category-chip"
+          [class.category-chip--active]="selectedCategory() === 'recent'"
+          (click)="selectedCategory.set('recent')"
+          type="button"
+        >
+          <span class="category-emoji">🕒</span>
+          <span class="category-name">{{ 'foodPicker.categories.recent' | translate }}</span>
+        </button>
+        <button
+          class="category-chip"
+          [class.category-chip--active]="selectedCategory() === 'favorites'"
+          (click)="selectedCategory.set('favorites')"
+          type="button"
+        >
+          <span class="category-emoji">⭐</span>
+          <span class="category-name">{{ 'foodPicker.categories.favorites' | translate }}</span>
+        </button>
         @for (cat of categories; track cat.key) {
           <button
             class="category-chip"
@@ -121,6 +144,26 @@
         <div class="food-empty">
           <span class="food-empty-icon">🔍</span>
           <p>{{ 'foodPicker.noResults' | translate }}</p>
+        </div>
+      }
+    </div>
+    <!-- Manual Entry -->
+    <div class="manual-entry">
+      <button (click)="showManualEntry = true" class="manual-entry-btn">
+        {{ 'foodPicker.manualEntry' | translate }}
+      </button>
+      @if (showManualEntry) {
+        <div class="manual-entry-form">
+          <input [(ngModel)]="manualFoodName" [placeholder]="'foodPicker.foodName' | translate" />
+          <input
+            [(ngModel)]="manualCarbs"
+            type="number"
+            [placeholder]="'foodPicker.carbs' | translate"
+          />
+          <ion-button (click)="addManualFood()">{{ 'common.add' | translate }}</ion-button>
+          <ion-button (click)="showManualEntry = false" fill="clear">
+            {{ 'common.cancel' | translate }}
+          </ion-button>
         </div>
       }
     </div>

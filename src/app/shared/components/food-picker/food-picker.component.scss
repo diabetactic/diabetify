@@ -418,3 +418,48 @@
     background: var(--ion-color-primary);
   }
 }
+
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .scan-button {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    --padding-start: 0;
+    --padding-end: 0;
+    height: 40px;
+    width: 40px;
+    z-index: 10;
+  }
+}
+
+.manual-entry {
+  padding: 16px;
+}
+
+.manual-entry-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--ion-color-light-tint);
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.manual-entry-form {
+  margin-top: 16px;
+
+  input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--ion-color-medium);
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+}

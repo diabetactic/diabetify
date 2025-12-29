@@ -670,6 +670,18 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       timeout: 15000,
     },
   ],
+
+  // OpenFoodFacts endpoint
+  [
+    'openfoodfacts.product.get',
+    {
+      service: ExternalService.OPEN_FOOD_FACTS,
+      path: '/api/v0/product/{barcode}.json',
+      method: 'GET',
+      authenticated: false,
+      timeout: 15000,
+    },
+  ],
 ]);
 
 @Injectable({

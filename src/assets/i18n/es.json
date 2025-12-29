@@ -1424,7 +1424,13 @@
   "foodPicker": {
     "title": "Selector de Alimentos",
     "searchPlaceholder": "Buscar alimentos...",
+    "barcodeNotFound": "Código de barras no encontrado en la base de datos",
+    "manualEntry": "Ingresar Manualmente",
+    "foodName": "Nombre del Alimento",
+    "carbs": "Carbohidratos (g)",
     "categories": {
+      "recent": "Recientes",
+      "favorites": "Favoritos",
       "fruits": "Frutas",
       "vegetables": "Vegetales",
       "grains": "Granos",
