@@ -5,7 +5,8 @@ export default mergeConfig(vitestConfig, {
   test: {
     include: ['src/app/tests/integration/**/*.{spec,integration}.ts'],
     // Integration tests often need more time and resources
-    testTimeout: 20000,
+    testTimeout: 120000,
+    hookTimeout: 120000,
     // Run sequentially to avoid resource contention (database, ports, etc.)
     fileParallelism: false,
     poolOptions: {

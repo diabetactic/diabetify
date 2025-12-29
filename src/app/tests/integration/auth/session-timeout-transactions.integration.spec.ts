@@ -10,7 +10,7 @@
  * - Session synchronization between multiple tabs
  */
 import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach, vi } from 'vitest';
-import { TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideRouter, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -28,9 +28,7 @@ import { db } from '@core/services/database.service';
 
 const API_BASE = 'http://localhost:8000';
 
-// TODO: These tests require proper configuration of MSW, SessionTimeoutService and IndexedDB
-// Skipped temporarily until provider issues are resolved
-describe.skip('Session Timeout Transactions Integration', () => {
+describe('Session Timeout Transactions Integration', () => {
   let sessionTimeout: SessionTimeoutService;
   let authService: LocalAuthService;
   let tokenStorage: TokenStorageService;
@@ -43,14 +41,9 @@ describe.skip('Session Timeout Transactions Integration', () => {
   afterEach(async () => {
     server.resetHandlers();
     resetMockState();
-    try {
-      await tokenStorage?.clearAll();
-      await db.clearAllData();
-    } catch (_error) {
-      // Ignore cleanup errors during teardown
-    }
     vi.clearAllTimers();
     vi.useRealTimers();
+    TestBed.resetTestingModule();
   });
 
   afterAll(() => {
@@ -58,6 +51,8 @@ describe.skip('Session Timeout Transactions Integration', () => {
   });
 
   beforeEach(async () => {
+    await db.delete();
+    await db.open();
     vi.useFakeTimers();
 
     await TestBed.configureTestingModule({
@@ -113,7 +108,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
         });
 
         // During transaction, timeout fires
-        vi.advanceTimersByTime(30 * 60 * 1000 + 1000);
+        await vi.advanceTimersByTimeAsync(30 * 60 * 1000 + 1000);
 
         // Continue with transaction
         await db.syncQueue.add({
@@ -171,7 +166,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(transactionFailed).toBe(true);
 
       // Timeout occurs after failure
-      vi.advanceTimersByTime(30 * 60 * 1000 + 1000);
+      await vi.advanceTimersByTimeAsync(30 * 60 * 1000 + 1000);
       await vi.runAllTimersAsync();
 
       // Verify logout
@@ -231,7 +226,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       })();
 
       // Timeout occurs during sync
-      vi.advanceTimersByTime(30 * 60 * 1000 + 1000);
+      await vi.advanceTimersByTimeAsync(30 * 60 * 1000 + 1000);
 
       // Wait for sync to complete
       await syncPromise;
@@ -288,7 +283,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       expect(syncFailed).toBe(true);
 
       // Timeout occurs
-      vi.advanceTimersByTime(30 * 60 * 1000 + 1000);
+      await vi.advanceTimersByTimeAsync(30 * 60 * 1000 + 1000);
       await vi.runAllTimersAsync();
 
       // Verify that item stayed in queue for later retry
@@ -314,7 +309,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       // Mock form endpoint with delay
       server.use(
         http.post(`${API_BASE}/appointments`, async () => {
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await delay(200);
           formSubmitted = true;
           return HttpResponse.json({ id: 'appointment-1' }, { status: 201 });
         })
@@ -334,7 +329,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       });
 
       // Timeout occurs during submission
-      vi.advanceTimersByTime(30 * 60 * 1000 + 1000);
+      await vi.advanceTimersByTimeAsync(30 * 60 * 1000 + 1000);
 
       // Wait for the form to complete
       await submitPromise;
@@ -353,7 +348,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       sessionTimeout.startMonitoring();
 
       // Trigger timeout
-      vi.advanceTimersByTime(30 * 60 * 1000 + 1000);
+      await vi.advanceTimersByTimeAsync(30 * 60 * 1000 + 1000);
       await vi.runAllTimersAsync();
 
       // Verify logout
@@ -378,187 +373,145 @@ describe.skip('Session Timeout Transactions Integration', () => {
   });
 
   describe('Grace period handling', () => {
-    it('should show warning 5 minutes before timeout', fakeAsync(() => {
-      authService.login('1000', 'tuvieja', false).subscribe();
-      tick();
-
+    it('should show warning 5 minutes before timeout', async () => {
+      await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
       // Advance to 25 minutes (5 minutes before the 30-minute timeout)
-      tick(25 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(25 * 60 * 1000);
 
       // In a real implementation, we would verify warning was shown
       // For now, verify session is still active
-      let isAuth = false;
-      authService.isAuthenticated().subscribe(val => (isAuth = val));
-      tick();
-
-      expect(isAuth).toBe(true);
+      const isAuthBefore = await firstValueFrom(authService.isAuthenticated());
+      expect(isAuthBefore).toBe(true);
 
       // Advance the remaining 5 minutes + 1 second
-      tick(5 * 60 * 1000 + 1000);
-      flush();
+      await vi.advanceTimersByTimeAsync(5 * 60 * 1000 + 1000);
+      await vi.runAllTimersAsync();
 
       // Should now be logged out
-      authService.isAuthenticated().subscribe(val => (isAuth = val));
-      tick();
+      const isAuthAfter = await firstValueFrom(authService.isAuthenticated());
+      expect(isAuthAfter).toBe(false);
+    });
 
-      expect(isAuth).toBe(false);
-    }));
-
-    it('should extend session if there is activity during grace period', fakeAsync(() => {
-      authService.login('1000', 'tuvieja', false).subscribe();
-      tick();
-
+    it('should extend session if there is activity during grace period', async () => {
+      await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
       // Advance to 26 minutes (grace period)
-      tick(26 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(26 * 60 * 1000);
 
       // Simulate user activity (click)
       document.dispatchEvent(new Event('click'));
 
       // Wait for 1 second debounce
-      tick(1000);
+      await vi.advanceTimersByTimeAsync(1000);
 
       // Advance 25 more minutes (should still be active because it was reset)
-      tick(25 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(25 * 60 * 1000);
 
-      let isAuth = false;
-      authService.isAuthenticated().subscribe(val => (isAuth = val));
-      tick();
-
+      const isAuth = await firstValueFrom(authService.isAuthenticated());
       expect(isAuth).toBe(true);
-    }));
+    });
   });
 
   describe('Activity detection resetting timeout', () => {
-    it('should reset timeout on user click', fakeAsync(() => {
-      authService.login('1000', 'tuvieja', false).subscribe();
-      tick();
-
+    it('should reset timeout on user click', async () => {
+      await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
       // Advance 20 minutes
-      tick(20 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(20 * 60 * 1000);
 
       // User activity
       document.dispatchEvent(new Event('click'));
-      tick(1000); // debounce
+      await vi.advanceTimersByTimeAsync(1000); // debounce
 
       // Advance another 25 minutes (total 45, but reset at minute 20)
-      tick(25 * 60 * 1000);
-
-      let isAuth = false;
-      authService.isAuthenticated().subscribe(val => (isAuth = val));
-      tick();
+      await vi.advanceTimersByTimeAsync(25 * 60 * 1000);
 
       // Should still be authenticated (20 + 25 < 20 + 30)
+      const isAuth = await firstValueFrom(authService.isAuthenticated());
       expect(isAuth).toBe(true);
-    }));
+    });
 
-    it('should reset timeout on keypress', fakeAsync(() => {
-      authService.login('1000', 'tuvieja', false).subscribe();
-      tick();
-
+    it('should reset timeout on keypress', async () => {
+      await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
-      tick(28 * 60 * 1000); // 28 minutes
+      await vi.advanceTimersByTimeAsync(28 * 60 * 1000); // 28 minutes
 
       // Type something
       document.dispatchEvent(new KeyboardEvent('keypress', { key: 'a' }));
-      tick(1000);
+      await vi.advanceTimersByTimeAsync(1000);
 
-      tick(20 * 60 * 1000); // +20 minutes = 48 total
+      await vi.advanceTimersByTimeAsync(20 * 60 * 1000); // +20 minutes = 48 total
 
-      let isAuth = false;
-      authService.isAuthenticated().subscribe(val => (isAuth = val));
-      tick();
-
+      const isAuth = await firstValueFrom(authService.isAuthenticated());
       expect(isAuth).toBe(true);
-    }));
+    });
 
-    it('should reset timeout on mousemove', fakeAsync(() => {
-      authService.login('1000', 'tuvieja', false).subscribe();
-      tick();
-
+    it('should reset timeout on mousemove', async () => {
+      await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
-      tick(29 * 60 * 1000); // 29 minutes
+      await vi.advanceTimersByTimeAsync(29 * 60 * 1000); // 29 minutes
 
       // Move mouse
       document.dispatchEvent(new MouseEvent('mousemove'));
-      tick(1000);
+      await vi.advanceTimersByTimeAsync(1000);
 
-      tick(15 * 60 * 1000); // +15 minutes = 44 total
+      await vi.advanceTimersByTimeAsync(15 * 60 * 1000); // +15 minutes = 44 total
 
-      let isAuth = false;
-      authService.isAuthenticated().subscribe(val => (isAuth = val));
-      tick();
-
+      const isAuth = await firstValueFrom(authService.isAuthenticated());
       expect(isAuth).toBe(true);
-    }));
+    });
 
-    it('should reset timeout on scroll', fakeAsync(() => {
-      authService.login('1000', 'tuvieja', false).subscribe();
-      tick();
-
+    it('should reset timeout on scroll', async () => {
+      await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
-      tick(27 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(27 * 60 * 1000);
 
       document.dispatchEvent(new Event('scroll'));
-      tick(1000);
+      await vi.advanceTimersByTimeAsync(1000);
 
-      tick(20 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(20 * 60 * 1000);
 
-      let isAuth = false;
-      authService.isAuthenticated().subscribe(val => (isAuth = val));
-      tick();
-
+      const isAuth = await firstValueFrom(authService.isAuthenticated());
       expect(isAuth).toBe(true);
-    }));
+    });
 
-    it('should reset timeout on touchstart (mobile)', fakeAsync(() => {
-      authService.login('1000', 'tuvieja', false).subscribe();
-      tick();
-
+    it('should reset timeout on touchstart (mobile)', async () => {
+      await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
-      tick(28 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(28 * 60 * 1000);
 
       document.dispatchEvent(new TouchEvent('touchstart'));
-      tick(1000);
+      await vi.advanceTimersByTimeAsync(1000);
 
-      tick(20 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(20 * 60 * 1000);
 
-      let isAuth = false;
-      authService.isAuthenticated().subscribe(val => (isAuth = val));
-      tick();
-
+      const isAuth = await firstValueFrom(authService.isAuthenticated());
       expect(isAuth).toBe(true);
-    }));
+    });
 
-    it('should reset timeout on window focus', fakeAsync(() => {
-      authService.login('1000', 'tuvieja', false).subscribe();
-      tick();
-
+    it('should reset timeout on window focus', async () => {
+      await firstValueFrom(authService.login('1000', 'tuvieja', false));
       sessionTimeout.startMonitoring();
 
-      tick(29 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(29 * 60 * 1000);
 
       // User returns to the tab
       window.dispatchEvent(new Event('focus'));
-      tick(1000);
+      await vi.advanceTimersByTimeAsync(1000);
 
-      tick(20 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(20 * 60 * 1000);
 
-      let isAuth = false;
-      authService.isAuthenticated().subscribe(val => (isAuth = val));
-      tick();
-
+      const isAuth = await firstValueFrom(authService.isAuthenticated());
       expect(isAuth).toBe(true);
-    }));
+    });
   });
 
   describe('Multi-tab session synchronization', () => {
@@ -582,7 +535,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
       sessionTimeout.stopMonitoring();
 
       // Advancing time should not cause additional actions
-      vi.advanceTimersByTime(30 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(30 * 60 * 1000);
       await vi.runAllTimersAsync();
 
       isAuth = await firstValueFrom(authService.isAuthenticated());
@@ -594,16 +547,16 @@ describe.skip('Session Timeout Transactions Integration', () => {
       sessionTimeout.startMonitoring();
 
       // Advance 20 minutes in tab 1
-      vi.advanceTimersByTime(20 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(20 * 60 * 1000);
 
       // Simulate activity in tab 2 (which resets the global timer)
       // In practice this would be handled via storage events or BroadcastChannel
       // Here we simulate by resetting directly
       document.dispatchEvent(new Event('click'));
-      vi.advanceTimersByTime(1000); // debounce
+      await vi.advanceTimersByTimeAsync(1000); // debounce
 
       // Advance 25 more minutes
-      vi.advanceTimersByTime(25 * 60 * 1000);
+      await vi.advanceTimersByTimeAsync(25 * 60 * 1000);
 
       // Session should still be active (reset at minute 20)
       const isAuth = await firstValueFrom(authService.isAuthenticated());

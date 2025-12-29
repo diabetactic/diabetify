@@ -11,7 +11,8 @@
  * Uses MSW to simulate network responses and token expiration scenarios.
  */
 import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach, vi } from 'vitest';
-import { TestBed } from '@angular/core/testing';
+import { TestBed, getTestBed } from '@angular/core/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import { provideHttpClient, HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -34,9 +35,8 @@ import { NotificationService } from '@core/services/notification.service';
 
 const API_BASE = 'http://localhost:8000';
 
-// TODO: These tests require proper configuration of MSW and Angular services
-// Skipped temporarily until provider issues are resolved
-describe.skip('Token Refresh During Active Operations', () => {
+import { MockTranslateService } from '@shared/services/mock-translate.service';
+describe('Token Refresh During Active Operations', () => {
   let authService: LocalAuthService;
   let readingsService: ReadingsService;
   let appointmentService: AppointmentService;
@@ -46,6 +46,14 @@ describe.skip('Token Refresh During Active Operations', () => {
 
   beforeAll(() => {
     server.listen({ onUnhandledRequest: 'warn' });
+    getTestBed().initTestEnvironment(
+      BrowserDynamicTestingModule,
+      platformBrowserDynamicTesting(),
+      {
+        errorOnUnknownElements: true,
+        errorOnUnknownProperties: true,
+      },
+    );
   });
 
   afterEach(async () => {
@@ -58,6 +66,7 @@ describe.skip('Token Refresh During Active Operations', () => {
       // Ignore cleanup errors during teardown
     }
     vi.clearAllTimers();
+    TestBed.resetTestingModule();
   });
 
   afterAll(() => {
@@ -83,7 +92,7 @@ describe.skip('Token Refresh During Active Operations', () => {
         PlatformDetectorService,
         MockDataService,
         MockAdapterService,
-        TranslationService,
+        { provide: TranslationService, useClass: MockTranslateService },
         NotificationService,
       ],
     }).compileComponents();
@@ -192,7 +201,7 @@ describe.skip('Token Refresh During Active Operations', () => {
       await readingsService.addReading(reading, '1000');
 
       // Wait for sync to fail
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await delay(300);
 
       // The service should continue working but with unsynchronized readings
       const unsynced = await readingsService.getUnsyncedReadings();
@@ -591,7 +600,7 @@ describe.skip('Token Refresh During Active Operations', () => {
         // Expected - token expired
       }
 
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await delay(200);
 
       authSub.unsubscribe();
 
@@ -684,7 +693,7 @@ describe.skip('Token Refresh During Active Operations', () => {
       }
 
       // Wait for propagation
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await delay(200);
 
       // Make second attempt
       try {
