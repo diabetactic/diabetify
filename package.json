@@ -193,7 +193,7 @@
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.0.11",
     "jscpd": "^4.0.5",
-    "jsdom": "^27.3.0",
+    "jsdom": "^27.4.0",
     "knip": "^5.78.0",
     "msw": "^2.12.7",
     "npm-check-updates": "^19.2.0",
