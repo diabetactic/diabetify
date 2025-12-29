@@ -139,8 +139,8 @@ importers:
         specifier: ^9.39.2
         version: 9.39.2
       '@evilmartians/lefthook':
-        specifier: ^2.0.11
-        version: 2.0.11
+        specifier: ^2.0.13
+        version: 2.0.13
       '@faker-js/faker':
         specifier: ^10.1.0
         version: 10.1.0
@@ -1753,8 +1753,8 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@evilmartians/lefthook@2.0.11':
-    resolution: {integrity: sha512-87SEpwRdnoMy0kA8vaRIaHQnRK97/5MKZhg8U6CcB1PviI7/mFtTO3rVbaMfHzSQkHn+gJJahvMA+kRYnQAbAg==}
+  '@evilmartians/lefthook@2.0.13':
+    resolution: {integrity: sha512-Kpsd8NNQw4PrxP41OqwvM0oAP8y70Fslir7uU9fUBdl6JcGGpKlFNlFj87/5OJO95VHxKm8rFvg5mbkv4cCTFw==}
     cpu: [x64, arm64, ia32]
     os: [darwin, linux, win32]
     hasBin: true
@@ -9257,7 +9257,7 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
-  '@evilmartians/lefthook@2.0.11': {}
+  '@evilmartians/lefthook@2.0.13': {}
 
   '@faker-js/faker@10.1.0': {}
 
