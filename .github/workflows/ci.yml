@@ -112,10 +112,15 @@ jobs:
         uses: ./.github/actions/setup-pnpm
 
       - name: Download build
+        if: ${{ env.ACT != 'true' }}
         uses: actions/download-artifact@v4
         with:
           name: www
           path: www/
+
+      - name: Build mock mode (act)
+        if: ${{ env.ACT == 'true' }}
+        run: pnpm run build:mock
 
       # Cache Playwright browsers (saves ~30s per run)
       - name: Get Playwright version
@@ -137,10 +142,31 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: pnpm exec playwright install-deps chromium
 
-      - name: Start static server (SPA mode)
+      - name: Verify www/ exists
+        run: |
+          if [ ! -d "www" ]; then
+            echo "::error::www/ directory not found. The build might have failed or was skipped."
+            exit 1
+          fi
+
+      - name: Start static server (act)
+        if: ${{ env.ACT == 'true' }}
+        run: |
+          nohup npx serve www -l 4200 -s > serve.log 2>&1 &
+          echo $! > serve.pid
+
+      - name: Wait for server (act)
+        if: ${{ env.ACT == 'true' }}
+        run: |
+          npx wait-on http://localhost:4200 --timeout 30000
+          cat serve.log
+
+      - name: Start static server (CI)
+        if: ${{ env.ACT != 'true' }}
         run: npx serve www -l 4200 -s &
 
-      - name: Wait for server
+      - name: Wait for server (CI)
+        if: ${{ env.ACT != 'true' }}
         run: npx wait-on http://localhost:4200 --timeout 30000
 
       # SINGLE browser - mobile only (it's a mobile-first app!)
@@ -178,10 +204,15 @@ jobs:
         uses: ./.github/actions/setup-pnpm
 
       - name: Download build
+        if: ${{ env.ACT != 'true' }}
         uses: actions/download-artifact@v4
         with:
           name: www
           path: www/
+
+      - name: Build mock mode (act)
+        if: ${{ env.ACT == 'true' }}
+        run: pnpm run build:mock
 
       - name: Start Docker backend
         run: |
@@ -200,10 +231,32 @@ jobs:
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Start frontend
+      - name: Verify www/ exists
+        run: |
+          if [ ! -d "www" ]; then
+            echo "::error::www/ directory not found. The build might have failed or was skipped."
+            exit 1
+          fi
+
+      - name: Start frontend (act)
+        if: ${{ env.ACT == 'true' }}
+        run: |
+          nohup npx serve www -l 4200 -s > serve.log 2>&1 &
+          echo $! > serve.pid
+
+      - name: Wait for services (act)
+        if: ${{ env.ACT == 'true' }}
+        run: |
+          npx wait-on http://localhost:4200 --timeout 30000
+          npx wait-on http://localhost:8000/health --timeout 60000
+          cat serve.log
+
+      - name: Start frontend (CI)
+        if: ${{ env.ACT != 'true' }}
         run: npx serve www -l 4200 -s &
 
-      - name: Wait for services
+      - name: Wait for services (CI)
+        if: ${{ env.ACT != 'true' }}
         run: |
           npx wait-on http://localhost:4200 --timeout 30000
           npx wait-on http://localhost:8000/health --timeout 60000
