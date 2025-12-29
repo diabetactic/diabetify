@@ -1,0 +1,45 @@
+<section class="profile-hero">
+  <div class="avatar-container">
+    <div class="avatar-wrapper">
+      <ion-avatar class="hero-avatar">
+        <img *ngIf="avatarUrl; else fallback" [src]="avatarUrl" [alt]="'profile.avatarAlt' | translate" />
+        <ng-template #fallback>
+          <ion-icon name="person-circle-outline" class="avatar-fallback"></ion-icon>
+        </ng-template>
+      </ion-avatar>
+    </div>
+    <input
+      #avatarInput
+      type="file"
+      accept="image/*"
+      hidden
+      (change)="onAvatarSelected($event)"
+    />
+    <ion-button
+      fill="outline"
+      size="small"
+      color="light"
+      class="change-photo-btn"
+      (click)="onTriggerAvatarUpload()"
+      data-testid="avatar-upload-btn"
+    >
+      <ion-icon name="camera-outline" slot="start"></ion-icon>
+      {{ 'profile.changePhoto' | translate }}
+    </ion-button>
+  </div>
+  <h2 class="m-0 text-2xl font-bold text-white">{{ greeting }}</h2>
+  <p class="m-0 text-sm text-white opacity-85">{{ emailText }}</p>
+  <p class="m-0 text-sm text-white opacity-85">{{ memberSinceText }}</p>
+  <ion-button
+    id="edit-profile-btn"
+    fill="outline"
+    size="small"
+    color="light"
+    (click)="onEditProfile()"
+    data-testid="edit-profile-btn"
+    class="mt-3"
+  >
+    <ion-icon name="create-outline" slot="start"></ion-icon>
+    {{ 'profile.editProfile' | translate }}
+  </ion-button>
+</section>
