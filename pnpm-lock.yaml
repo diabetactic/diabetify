@@ -87,8 +87,8 @@ importers:
         specifier: ^10.4.23
         version: 10.4.23(postcss@8.5.6)
       capacitor-widget-bridge:
-        specifier: ^7.0.0
-        version: 7.0.0(@capacitor/core@8.0.0)
+        specifier: ^8.0.0
+        version: 8.0.0(@capacitor/core@8.0.0)
       chart.js:
         specifier: ^4.5.1
         version: 4.5.1
@@ -3781,10 +3781,10 @@ packages:
   caniuse-lite@1.0.30001761:
     resolution: {integrity: sha512-JF9ptu1vP2coz98+5051jZ4PwQgd2ni8A+gYSN7EA7dPKIMf0pDlSUxhdmVOaV3/fYK5uWBkgSXJaRLr4+3A6g==}
 
-  capacitor-widget-bridge@7.0.0:
-    resolution: {integrity: sha512-KY4aNFxLKI2Y/DomvG7depel/VGK9qa/Tce1J/ILfuER1EsO8RWZLLqtorZwncP0ZMu1hRqJzJwMHNt3YRcghg==}
+  capacitor-widget-bridge@8.0.0:
+    resolution: {integrity: sha512-l7+ougWHLApvR2Slo7Fqrd5cKlwyFzVY0TEBLH8KwvP/OiJRDU3aCEkKysnDxtjTx8Pklv7AwQb6x0uOzK7xfw==}
     peerDependencies:
-      '@capacitor/core': '>=7.0.0'
+      '@capacitor/core': '>=8.0.0'
 
   chai@6.2.1:
     resolution: {integrity: sha512-p4Z49OGG5W/WBCPSS/dH3jQ73kD6tiMmUM+bckNK6Jr5JHMG3k9bg/BvKR8lKmtVBKmOiuVaV2ws8s9oSbwysg==}
@@ -11510,7 +11510,7 @@ snapshots:
 
   caniuse-lite@1.0.30001761: {}
 
-  capacitor-widget-bridge@7.0.0(@capacitor/core@8.0.0):
+  capacitor-widget-bridge@8.0.0(@capacitor/core@8.0.0):
     dependencies:
       '@capacitor/core': 8.0.0
 
