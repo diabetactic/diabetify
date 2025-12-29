@@ -109,6 +109,7 @@ describe('TipsPage', () => {
     it('should return default icon for invalid inputs', () => {
       const invalidInputs = ['unknown', '', null, undefined];
       invalidInputs.forEach(input => {
+        // SAFETY: Intentionally testing invalid inputs
         expect(component.getCategoryIcon(input as any)).toBe('information-circle-outline');
       });
     });
@@ -133,6 +134,7 @@ describe('TipsPage', () => {
     it('should return default color for invalid inputs', () => {
       const invalidInputs = ['unknown', '', null, undefined];
       invalidInputs.forEach(input => {
+        // SAFETY: Intentionally testing invalid inputs
         expect(component.getCategoryColor(input as any)).toBe('medium');
       });
     });
@@ -171,11 +173,13 @@ describe('TipsPage', () => {
   describe('Component Behavior', () => {
     it('should be a standalone component', () => {
       // Component metadata check
+      // SAFETY: Accessing private Angular metadata for testing purposes
       const componentMetadata = (TipsPage as any).ɵcmp;
       expect(componentMetadata.standalone).toBe(true);
     });
 
     it('should use OnPush change detection', () => {
+      // SAFETY: Accessing private Angular metadata for testing purposes
       const componentMetadata = (TipsPage as any).ɵcmp;
       // ChangeDetectionStrategy.OnPush = 0 (may be undefined if optimized away by Angular)
       expect(
@@ -185,6 +189,7 @@ describe('TipsPage', () => {
 
     it('should have CUSTOM_ELEMENTS_SCHEMA', () => {
       // Schema is applied at module level, component should have it in decorator
+      // SAFETY: Accessing private Angular metadata for testing purposes
       const componentMetadata = (TipsPage as any).ɵcmp;
       expect(componentMetadata.schemas).toBeDefined();
     });

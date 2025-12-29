@@ -129,7 +129,9 @@ describe('DiabetacticDatabase', () => {
     });
 
     beforeEach(async () => {
+      // SAFETY: Mocking indexedDB for testing purposes
       (global as any).indexedDB = new FDBFactory();
+      // SAFETY: Mocking indexedDB for testing purposes
       Dexie.dependencies.indexedDB = (global as any).indexedDB;
       await Dexie.delete(MIGRATION_DB_NAME);
     });

@@ -129,6 +129,7 @@ describe('ServiceMonitorComponent', () => {
 
   describe('workflow methods', () => {
     it('should handle workflow duration', () => {
+      // SAFETY: Partial mock for testing a single function
       expect(component.getWorkflowDuration({ id: '1', status: 'running' } as any)).toBe('N/A');
 
       const completedWorkflow = {
@@ -136,12 +137,17 @@ describe('ServiceMonitorComponent', () => {
         status: 'completed',
         startTime: new Date(Date.now() - 5000),
         endTime: new Date(),
-      } as any;
-      expect(component.getWorkflowDuration(completedWorkflow)).toMatch(/^\d+(\.\d)?[ms]$/);
+      };
+      // SAFETY: Partial mock for testing a single function
+      expect(component.getWorkflowDuration(completedWorkflow as any)).toMatch(
+        /^\d+(\.\d)?s$/
+      );
     });
 
     it('should calculate workflow progress correctly', () => {
+      // SAFETY: Partial mock for testing a single function
       expect(component.getWorkflowProgress({ id: '1', steps: [] } as any)).toBe(0);
+      // SAFETY: Partial mock for testing a single function
       expect(component.getWorkflowProgress({ id: '1' } as any)).toBe(0);
 
       const workflow = {
@@ -152,14 +158,16 @@ describe('ServiceMonitorComponent', () => {
           { status: 'running' },
           { status: 'pending' },
         ],
-      } as any;
-      expect(component.getWorkflowProgress(workflow)).toBe(50);
+      };
+      // SAFETY: Partial mock for testing a single function
+      expect(component.getWorkflowProgress(workflow as any)).toBe(50);
 
       const fullWorkflow = {
         id: '1',
         steps: [{ status: 'completed' }, { status: 'failed' }, { status: 'skipped' }],
-      } as any;
-      expect(component.getWorkflowProgress(fullWorkflow)).toBe(100);
+      };
+      // SAFETY: Partial mock for testing a single function
+      expect(component.getWorkflowProgress(fullWorkflow as any)).toBe(100);
     });
 
     it('should return correct workflow status colors', () => {
@@ -193,7 +201,7 @@ describe('ServiceMonitorComponent', () => {
 
   describe('UI state methods', () => {
     it('should toggle service details visibility', () => {
-      component.showServiceDetails('API_GATEWAY' as any);
+      component.showServiceDetails('API_GATEWAY');
       expect(component.selectedService).toBe('API_GATEWAY');
       expect(component.showDetails).toBe(true);
 
@@ -213,8 +221,11 @@ describe('ServiceMonitorComponent', () => {
 
   describe('trackBy functions', () => {
     it('should track by correct identifiers', () => {
+      // SAFETY: Partial mock for testing a single function
       expect(component.trackByService(0, { service: 'API_GATEWAY' } as any)).toBe('API_GATEWAY');
+      // SAFETY: Partial mock for testing a single function
       expect(component.trackByCircuitBreaker(0, { service: 'LOGIN' } as any)).toBe('LOGIN');
+      // SAFETY: Partial mock for testing a single function
       expect(component.trackByWorkflow(0, { id: 'wf-123' } as any)).toBe('wf-123');
     });
   });

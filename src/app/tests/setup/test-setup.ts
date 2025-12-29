@@ -25,7 +25,7 @@ window.addEventListener('error', event => {
   });
 
   // Store in diagnostics if available
-  const diagnostics = (window as any).currentTestDiagnostics;
+  const diagnostics = (window as { currentTestDiagnostics?: TestDiagnostics }).currentTestDiagnostics;
   if (diagnostics) {
     diagnostics.log('ERROR', 'Unhandled Error', {
       message: event.message,
@@ -45,7 +45,7 @@ window.addEventListener('unhandledrejection', event => {
   });
 
   // Store in diagnostics if available
-  const diagnostics = (window as any).currentTestDiagnostics;
+  const diagnostics = (window as { currentTestDiagnostics?: TestDiagnostics }).currentTestDiagnostics;
   if (diagnostics) {
     diagnostics.log('ERROR', 'Unhandled Promise Rejection', {
       reason: event.reason,
@@ -55,12 +55,12 @@ window.addEventListener('unhandledrejection', event => {
 });
 
 // Capture Angular zone errors
-(window as any).Zone?.current.fork({
+(window as { Zone?: any }).Zone?.current.fork({
   name: 'test-error-capture',
   onHandleError: (delegate: any, current: any, target: any, error: any) => {
     console.error('🔴 Zone Error:', error);
 
-    const diagnostics = (window as any).currentTestDiagnostics;
+    const diagnostics = (window as { currentTestDiagnostics?: TestDiagnostics }).currentTestDiagnostics;
     if (diagnostics) {
       diagnostics.log('ERROR', 'Zone Error', {
         error,
@@ -96,12 +96,12 @@ console.groupEnd();
  */
 function getAngularVersion(): string {
   try {
-    const ng = (window as any).ng;
+    const ng = (window as { ng?: any }).ng;
     if (ng?.VERSION?.full) {
       return ng.VERSION.full;
     }
     // Try from Angular core
-    const core = (window as any).require?.('@angular/core');
+    const core = (window as { require?: any }).require?.('@angular/core');
     return core?.VERSION?.full || 'Unknown';
   } catch {
     return 'Unknown';
@@ -114,12 +114,12 @@ function getAngularVersion(): string {
 function getIonicVersion(): string {
   try {
     // Check for Ionic global
-    const ionic = (window as any).Ionic;
+    const ionic = (window as { Ionic?: any }).Ionic;
     if (ionic?.version) {
       return ionic.version;
     }
     // Try from package
-    const pkg = (window as any).require?.('@ionic/angular/package.json');
+    const pkg = (window as { require?: any }).require?.('@ionic/angular/package.json');
     return pkg?.version || 'Unknown';
   } catch {
     return 'Unknown';
@@ -130,7 +130,7 @@ function getIonicVersion(): string {
  * Get memory information
  */
 function getMemoryInfo(): string {
-  const memory = (performance as any).memory;
+  const memory = (performance as Performance & { memory?: any }).memory;
   if (memory) {
     return `${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)} MB / ${(memory.totalJSHeapSize / 1024 / 1024).toFixed(2)} MB (Limit: ${(memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2)} MB)`;
   }
@@ -176,7 +176,7 @@ if ('PerformanceObserver' in window) {
 }
 
 // Global test utilities
-(window as any).testUtils = {
+(window as { testUtils?: any }).testUtils = {
   /**
    * Print current DOM state
    */
@@ -203,8 +203,8 @@ if ('PerformanceObserver' in window) {
    * Print all event listeners (if available)
    */
   printEventListeners() {
-    if ((window as any).getEventListeners) {
-      const listeners = (window as any).getEventListeners(document);
+    if ((window as { getEventListeners?: any }).getEventListeners) {
+      const listeners = (window as { getEventListeners?: any }).getEventListeners(document);
       console.log('👂 Event Listeners:', listeners);
     } else {
       console.warn('⚠️  getEventListeners() not available');
@@ -215,8 +215,8 @@ if ('PerformanceObserver' in window) {
    * Take a performance snapshot
    */
   perfSnapshot() {
-    const memory = (performance as any).memory;
-    const navigation = performance.getEntriesByType('navigation')[0] as any;
+    const memory = (performance as Performance & { memory?: any }).memory;
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
 
     console.group('⚡ Performance Snapshot');
     console.log('Time:', {

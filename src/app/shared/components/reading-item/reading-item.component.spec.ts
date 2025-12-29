@@ -104,6 +104,7 @@ describe('ReadingItemComponent', () => {
     });
 
     it('should return default emoji for unknown status', () => {
+      // SAFETY: Intentionally testing an invalid status value
       component.reading = { ...createMockReading(), status: 'unknown' as any };
       expect(component.getStatusEmoji()).toBe('😐');
     });
@@ -147,6 +148,7 @@ describe('ReadingItemComponent', () => {
     });
 
     it('should return normal text for unknown status', () => {
+      // SAFETY: Intentionally testing an invalid status value
       component.reading = { ...createMockReading(), status: 'unknown' as any };
       component.getStatusText();
       expect(translationService.instant).toHaveBeenCalledWith('glucose.status.normal');
@@ -185,6 +187,7 @@ describe('ReadingItemComponent', () => {
     });
 
     it('should return normal class for unknown status', () => {
+      // SAFETY: Intentionally testing an invalid status value
       component.reading = { ...createMockReading(), status: 'unknown' as any };
       expect(component.getStatusClass()).toBe('normal');
     });

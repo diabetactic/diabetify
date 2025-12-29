@@ -84,7 +84,8 @@ describe('ReadingsPage - Date Grouping', () => {
       // Create a date at 11:30 PM local time
       const date = new Date(2025, 0, 15, 23, 30, 0); // January 15, 2025, 11:30 PM
 
-      const dateKey = (component as any).getDateKey(date);
+      // @ts-expect-error - private method access for testing
+      const dateKey = component.getDateKey(date);
 
       // Should use local date components, not UTC
       expect(dateKey).toBe('2025-01-15');
@@ -94,7 +95,8 @@ describe('ReadingsPage - Date Grouping', () => {
       // Create a date at 11:59 PM local time on January 15
       const date = new Date(2025, 0, 15, 23, 59, 59);
 
-      const dateKey = (component as any).getDateKey(date);
+      // @ts-expect-error - private method access for testing
+      const dateKey = component.getDateKey(date);
 
       // Should still be January 15 in local timezone
       expect(dateKey).toBe('2025-01-15');
@@ -104,7 +106,8 @@ describe('ReadingsPage - Date Grouping', () => {
       // Create a date at 12:00 AM local time on January 16
       const date = new Date(2025, 0, 16, 0, 0, 0);
 
-      const dateKey = (component as any).getDateKey(date);
+      // @ts-expect-error - private method access for testing
+      const dateKey = component.getDateKey(date);
 
       // Should be January 16 in local timezone
       expect(dateKey).toBe('2025-01-16');
@@ -114,7 +117,8 @@ describe('ReadingsPage - Date Grouping', () => {
       // Create a date on January 5 (single-digit month and day)
       const date = new Date(2025, 0, 5, 12, 0, 0); // January 5, 2025
 
-      const dateKey = (component as any).getDateKey(date);
+      // @ts-expect-error - private method access for testing
+      const dateKey = component.getDateKey(date);
 
       expect(dateKey).toBe('2025-01-05');
     });
@@ -124,7 +128,8 @@ describe('ReadingsPage - Date Grouping', () => {
       // e.g., 1 AM on Jan 16 in UTC-5 is still Jan 15, 8 PM local
       const date = new Date(2025, 0, 15, 20, 0, 0); // January 15, 8 PM local
 
-      const dateKey = (component as any).getDateKey(date);
+      // @ts-expect-error - private method access for testing
+      const dateKey = component.getDateKey(date);
 
       // Should use local date (Jan 15), not UTC date
       expect(dateKey).toBe('2025-01-15');
@@ -167,7 +172,8 @@ describe('ReadingsPage - Date Grouping', () => {
         },
       ];
 
-      const grouped = (component as any).groupReadingsByDate(readings);
+      // @ts-expect-error - private method access for testing
+      const grouped = component.groupReadingsByDate(readings);
 
       // Both readings should be in the same group (same local date)
       expect(grouped.length).toBe(1);
@@ -209,7 +215,8 @@ describe('ReadingsPage - Date Grouping', () => {
         },
       ];
 
-      const grouped = (component as any).groupReadingsByDate(readings);
+      // @ts-expect-error - private method access for testing
+      const grouped = component.groupReadingsByDate(readings);
 
       // Should be in separate groups (different local dates)
       expect(grouped.length).toBe(2);
@@ -221,9 +228,11 @@ describe('ReadingsPage - Date Grouping', () => {
   describe('formatDateHeader - local timezone comparison', () => {
     it('should correctly identify "Today" using local date', () => {
       const now = new Date();
-      const todayKey = (component as any).getDateKey(now);
+      // @ts-expect-error - private method access for testing
+      const todayKey = component.getDateKey(now);
 
-      const formatted = (component as any).formatDateHeader(todayKey);
+      // @ts-expect-error - private method access for testing
+      const formatted = component.formatDateHeader(todayKey);
 
       expect(formatted).toBe('Today');
     });
@@ -231,9 +240,11 @@ describe('ReadingsPage - Date Grouping', () => {
     it('should correctly identify "Yesterday" using local date', () => {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayKey = (component as any).getDateKey(yesterday);
+      // @ts-expect-error - private method access for testing
+      const yesterdayKey = component.getDateKey(yesterday);
 
-      const formatted = (component as any).formatDateHeader(yesterdayKey);
+      // @ts-expect-error - private method access for testing
+      const formatted = component.formatDateHeader(yesterdayKey);
 
       expect(formatted).toBe('Yesterday');
     });
@@ -245,7 +256,8 @@ describe('ReadingsPage - Date Grouping', () => {
       const originalToLocaleDateString = Date.prototype.toLocaleDateString;
       Date.prototype.toLocaleDateString = vi.fn(() => 'Wednesday, January 15');
 
-      const formatted = (component as any).formatDateHeader(dateKey);
+      // @ts-expect-error - private method access for testing
+      const formatted = component.formatDateHeader(dateKey);
 
       expect(formatted).toBe('Wednesday, January 15');
 
@@ -279,7 +291,8 @@ describe('ReadingsPage - Date Grouping', () => {
 
       // Should use local date for grouping
       const date = new Date(reading.time);
-      const dateKey = (component as any).getDateKey(date);
+      // @ts-expect-error - private method access for testing
+      const dateKey = component.getDateKey(date);
 
       // The date key should match the local date, not UTC date
       const expectedYear = date.getFullYear();

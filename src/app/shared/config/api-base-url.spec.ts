@@ -32,15 +32,15 @@ describe('API Base URL Configuration', () => {
   afterEach(() => {
     // Restaurar globales
     if (originalWindow) {
-      (global as any).window = originalWindow;
+      global.window = originalWindow;
     }
-    (global as any).globalThis = originalGlobalThis;
+    globalThis = originalGlobalThis;
   });
 
   describe('Default Configuration', () => {
     it('debe usar URL del environment por defecto', async () => {
       // Asegurar que no hay override
-      (global as any).window = {};
+      global.window = {} as unknown as Window & typeof globalThis;
       vi.resetModules();
       const { API_GATEWAY_BASE_URL } = await import('./api-base-url');
 
@@ -49,7 +49,7 @@ describe('API Base URL Configuration', () => {
 
     it('debe reportar null para override cuando no hay override', async () => {
       // Asegurar que no hay override en window ni globalThis
-      (global as any).window = {};
+      global.window = {} as unknown as Window & typeof globalThis;
       // El módulo evalúa globalThis.process?.env?.API_GATEWAY_URL al cargar
       // Si process.env tiene valores, los usa como override
       vi.resetModules();
@@ -66,9 +66,9 @@ describe('API Base URL Configuration', () => {
   describe('Runtime Override via window.__DIABETACTIC_API_BASE_URL', () => {
     it('debe usar override de window si está definido', async () => {
       // Mock window global
-      (global as any).window = {
+      global.window = {
         __DIABETACTIC_API_BASE_URL: 'https://production.api.com',
-      };
+      } as unknown as Window & typeof globalThis;
 
       vi.resetModules();
       const { API_GATEWAY_BASE_URL, getApiGatewayOverride } = await import('./api-base-url');
@@ -78,9 +78,9 @@ describe('API Base URL Configuration', () => {
     });
 
     it('debe priorizar window override sobre environment', async () => {
-      (global as any).window = {
+      global.window = {
         __DIABETACTIC_API_BASE_URL: 'https://override.com',
-      };
+      } as unknown as Window & typeof globalThis;
 
       vi.resetModules();
       const { API_GATEWAY_BASE_URL } = await import('./api-base-url');
@@ -159,9 +159,9 @@ describe('API Base URL Configuration', () => {
     it('debe manejar strings vacíos en overrides', async () => {
       // Este test funciona porque window.__DIABETACTIC_API_BASE_URL
       // como string vacío es falsy y se usa el fallback
-      (global as any).window = {
+      global.window = {
         __DIABETACTIC_API_BASE_URL: '',
-      };
+      } as unknown as Window & typeof globalThis;
 
       vi.resetModules();
       const { API_GATEWAY_BASE_URL } = await import('./api-base-url');
@@ -171,9 +171,9 @@ describe('API Base URL Configuration', () => {
     });
 
     it('debe manejar valores null en overrides', async () => {
-      (global as any).window = {
+      global.window = {
         __DIABETACTIC_API_BASE_URL: null,
-      };
+      } as unknown as Window & typeof globalThis;
 
       vi.resetModules();
       const { API_GATEWAY_BASE_URL } = await import('./api-base-url');
@@ -201,9 +201,9 @@ describe('API Base URL Configuration', () => {
 
   describe('URL Validation', () => {
     it('debe aceptar URLs HTTP', async () => {
-      (global as any).window = {
+      global.window = {
         __DIABETACTIC_API_BASE_URL: 'http://api.com',
-      };
+      } as unknown as Window & typeof globalThis;
 
       vi.resetModules();
       const { API_GATEWAY_BASE_URL } = await import('./api-base-url');
@@ -212,9 +212,9 @@ describe('API Base URL Configuration', () => {
     });
 
     it('debe aceptar URLs HTTPS', async () => {
-      (global as any).window = {
+      global.window = {
         __DIABETACTIC_API_BASE_URL: 'https://secure.api.com',
-      };
+      } as unknown as Window & typeof globalThis;
 
       vi.resetModules();
       const { API_GATEWAY_BASE_URL } = await import('./api-base-url');
@@ -223,9 +223,9 @@ describe('API Base URL Configuration', () => {
     });
 
     it('debe aceptar URLs con puerto', async () => {
-      (global as any).window = {
+      global.window = {
         __DIABETACTIC_API_BASE_URL: 'http://localhost:3000',
-      };
+      } as unknown as Window & typeof globalThis;
 
       vi.resetModules();
       const { API_GATEWAY_BASE_URL } = await import('./api-base-url');
@@ -234,9 +234,9 @@ describe('API Base URL Configuration', () => {
     });
 
     it('debe aceptar URLs con path', async () => {
-      (global as any).window = {
+      global.window = {
         __DIABETACTIC_API_BASE_URL: 'https://api.com/v1',
-      };
+      } as unknown as Window & typeof globalThis;
 
       vi.resetModules();
       const { API_GATEWAY_BASE_URL } = await import('./api-base-url');
@@ -247,9 +247,9 @@ describe('API Base URL Configuration', () => {
 
   describe('getApiGatewayOverride Function', () => {
     it('debe retornar override activo', async () => {
-      (global as any).window = {
+      global.window = {
         __DIABETACTIC_API_BASE_URL: 'https://override.com',
-      };
+      } as unknown as Window & typeof globalThis;
 
       vi.resetModules();
       const { getApiGatewayOverride } = await import('./api-base-url');
@@ -279,9 +279,9 @@ describe('API Base URL Configuration', () => {
     });
 
     it('testing: debe permitir override dinámico via window', async () => {
-      (global as any).window = {
+      global.window = {
         __DIABETACTIC_API_BASE_URL: 'http://mock-server:4000',
-      };
+      } as unknown as Window & typeof globalThis;
 
       vi.resetModules();
       const { API_GATEWAY_BASE_URL } = await import('./api-base-url');

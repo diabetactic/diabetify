@@ -114,7 +114,8 @@ describe('LocalAuthService', () => {
     service = TestBed.inject(LocalAuthService);
 
     // Wait for initialization to complete
-    await (service as any).initializationPromise;
+    // @ts-expect-error - private property access for testing
+    await service.initializationPromise;
   });
 
   afterEach(() => {
@@ -161,7 +162,8 @@ describe('LocalAuthService', () => {
         mockAdapter
       );
 
-      await (newService as any).initializationPromise;
+      // @ts-expect-error - private property access for testing
+      await newService.initializationPromise;
 
       const state = await new Promise<LocalAuthState>(resolve => {
         newService.authState$.subscribe(s => resolve(s));
@@ -276,7 +278,8 @@ describe('LocalAuthService', () => {
   describe('logout', () => {
     beforeEach(async () => {
       // Setup authenticated state
-      (service as any).authStateSubject.next({
+      // @ts-expect-error - private property access for testing
+      service.authStateSubject.next({
         isAuthenticated: true,
         user: mockUser,
         accessToken: 'test-token',
@@ -340,7 +343,8 @@ describe('LocalAuthService', () => {
         );
 
         // Setup existing user in state
-        (service as any).authStateSubject.next({
+        // @ts-expect-error - private property access for testing
+        service.authStateSubject.next({
           isAuthenticated: true,
           user: mockUser,
           accessToken: 'old-token',
@@ -390,7 +394,8 @@ describe('LocalAuthService', () => {
   describe('getAccessToken', () => {
     it('should return token when authenticated or null when not', async () => {
       // Test authenticated
-      (service as any).authStateSubject.next({
+      // @ts-expect-error - private property access for testing
+      service.authStateSubject.next({
         isAuthenticated: true,
         user: mockUser,
         accessToken: 'current-token',
@@ -402,7 +407,8 @@ describe('LocalAuthService', () => {
       expect(token1).toBe('current-token');
 
       // Test not authenticated
-      (service as any).authStateSubject.next({
+      // @ts-expect-error - private property access for testing
+      service.authStateSubject.next({
         isAuthenticated: false,
         user: null,
         accessToken: null,
@@ -431,7 +437,8 @@ describe('LocalAuthService', () => {
         });
 
         // Trigger state change
-        (service as any).authStateSubject.next({
+        // @ts-expect-error - private property access for testing
+        service.authStateSubject.next({
           isAuthenticated: true,
           user: mockUser,
           accessToken: 'test-token',
@@ -626,7 +633,8 @@ describe('LocalAuthService', () => {
   describe('isAuthenticated observable', () => {
     it('should emit correct auth status based on state and token', async () => {
       // Test not authenticated
-      (service as any).authStateSubject.next({
+      // @ts-expect-error - private property access for testing
+      service.authStateSubject.next({
         isAuthenticated: false,
         user: null,
         accessToken: null,
@@ -640,7 +648,8 @@ describe('LocalAuthService', () => {
       expect(isAuth1).toBe(false);
 
       // Test authenticated with token
-      (service as any).authStateSubject.next({
+      // @ts-expect-error - private property access for testing
+      service.authStateSubject.next({
         isAuthenticated: true,
         user: mockUser,
         accessToken: 'valid-token',
@@ -654,7 +663,8 @@ describe('LocalAuthService', () => {
       expect(isAuth2).toBe(true);
 
       // Test authenticated flag but no token
-      (service as any).authStateSubject.next({
+      // @ts-expect-error - private property access for testing
+      service.authStateSubject.next({
         isAuthenticated: true,
         user: mockUser,
         accessToken: null, // No token

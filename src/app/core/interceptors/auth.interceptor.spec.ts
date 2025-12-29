@@ -56,8 +56,10 @@ describe('AuthInterceptor', () => {
     authService.logout.mockResolvedValue();
 
     // Reset interceptor state to prevent pollution
-    (interceptor as any).isRefreshing = false;
-    (interceptor as any).refreshTokenSubject = new BehaviorSubject<string | null>(null);
+    // @ts-expect-error - private property access for testing
+    interceptor.isRefreshing = false;
+    // @ts-expect-error - private property access for testing
+    interceptor.refreshTokenSubject = new BehaviorSubject<string | null>(null);
   });
 
   afterEach(() => {

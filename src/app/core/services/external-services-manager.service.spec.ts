@@ -115,7 +115,8 @@ describe('ExternalServicesManager', () => {
 
     it('should return false when circuit breaker is open', () => {
       // Manually open circuit breaker
-      (service as any).updateCircuitBreaker(ExternalService.GLUCOSERVER, {
+      // @ts-expect-error - private method access for testing
+      service.updateCircuitBreaker(ExternalService.GLUCOSERVER, {
         state: 'OPEN',
         failureCount: 5,
       });
@@ -124,14 +125,16 @@ describe('ExternalServicesManager', () => {
     });
 
     it('should return false when offline and service does not support offline', () => {
-      (service as any).updateState({ isOnline: false });
+      // @ts-expect-error - private method access for testing
+      service.updateState({ isOnline: false });
 
       // APPOINTMENTS doesn't support offline
       expect(service.isServiceAvailable(ExternalService.APPOINTMENTS)).toBe(false);
     });
 
     it('should return true when offline but service supports offline', () => {
-      (service as any).updateState({ isOnline: false });
+      // @ts-expect-error - private method access for testing
+      service.updateState({ isOnline: false });
 
       // GLUCOSERVER supports offline
       expect(service.isServiceAvailable(ExternalService.GLUCOSERVER)).toBe(true);
@@ -219,7 +222,8 @@ describe('ExternalServicesManager', () => {
     });
 
     it('should manually reset circuit breaker', () => {
-      (service as any).updateCircuitBreaker(ExternalService.GLUCOSERVER, {
+      // @ts-expect-error - private method access for testing
+      service.updateCircuitBreaker(ExternalService.GLUCOSERVER, {
         state: 'OPEN',
         failureCount: 5,
       });
@@ -245,7 +249,8 @@ describe('ExternalServicesManager', () => {
 
     it('should throw error when service is unavailable', async () => {
       // Open circuit breaker
-      (service as any).updateCircuitBreaker(ExternalService.GLUCOSERVER, {
+      // @ts-expect-error - private method access for testing
+      service.updateCircuitBreaker(ExternalService.GLUCOSERVER, {
         state: 'OPEN',
         failureCount: 5,
       });
@@ -258,7 +263,8 @@ describe('ExternalServicesManager', () => {
     });
 
     it('should use fallback when service is unavailable', async () => {
-      (service as any).updateCircuitBreaker(ExternalService.GLUCOSERVER, {
+      // @ts-expect-error - private method access for testing
+      service.updateCircuitBreaker(ExternalService.GLUCOSERVER, {
         state: 'OPEN',
         failureCount: 5,
       });
@@ -313,7 +319,8 @@ describe('ExternalServicesManager', () => {
 
     it('should reset circuit breaker on successful request', async () => {
       // Set some failures
-      (service as any).updateCircuitBreaker(ExternalService.GLUCOSERVER, {
+      // @ts-expect-error - private method access for testing
+      service.updateCircuitBreaker(ExternalService.GLUCOSERVER, {
         state: 'CLOSED',
         failureCount: 2,
       });
@@ -346,7 +353,8 @@ describe('ExternalServicesManager', () => {
         cacheKey: 'test-key',
       });
 
-      const cache = (service as any).responseCache;
+      // @ts-expect-error - private property access for testing
+      const cache = service.responseCache;
       expect(cache.has('GLUCOSERVER:test-key')).toBe(true);
     });
 
@@ -383,7 +391,8 @@ describe('ExternalServicesManager', () => {
 
       service.clearCache(ExternalService.GLUCOSERVER);
 
-      const cache = (service as any).responseCache;
+      // @ts-expect-error - private property access for testing
+      const cache = service.responseCache;
       expect(cache.has('GLUCOSERVER:test-key')).toBe(false);
     });
 
@@ -397,7 +406,8 @@ describe('ExternalServicesManager', () => {
 
       service.clearCache();
 
-      const cache = (service as any).responseCache;
+      // @ts-expect-error - private property access for testing
+      const cache = service.responseCache;
       expect(cache.size).toBe(0);
     });
   });
@@ -408,7 +418,8 @@ describe('ExternalServicesManager', () => {
 
       listener({ connected: false });
 
-      const state = (service as any).state$.value;
+      // @ts-expect-error - private property access for testing
+      const state = service.state$.value;
       expect(state.isOnline).toBe(false);
     });
 
@@ -426,7 +437,8 @@ describe('ExternalServicesManager', () => {
 
       listener({ connected: false });
 
-      const state = (service as any).state$.value;
+      // @ts-expect-error - private property access for testing
+      const state = service.state$.value;
       const glucoserverHealth = state.services.get(ExternalService.GLUCOSERVER);
       expect(glucoserverHealth?.status).toBe(HealthStatus.UNHEALTHY);
     });
@@ -499,7 +511,8 @@ describe('ExternalServicesManager', () => {
 
   describe('ngOnDestroy', () => {
     it('should clean up subscriptions', () => {
-      const stopSpy = vi.spyOn(service as any, 'stopHealthCheckInterval');
+      // @ts-expect-error - private method access for testing
+      const stopSpy = vi.spyOn(service, 'stopHealthCheckInterval');
 
       service.ngOnDestroy();
 
