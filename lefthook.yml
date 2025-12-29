@@ -146,8 +146,11 @@ pre-push:
         fi
 
     # Lint check (errors only, warnings don't block)
+    # Note: Using TURBO_LOG=error for quieter output (--quiet not supported by turbo)
     lint-errors:
-      run: pnpm run lint --quiet
+      env:
+        TURBO_LOG: error
+      run: pnpm run lint
       fail_text: "Lint errors found! Run 'pnpm run lint' to see details."
 
     # NOTE: Tests removed from pre-push (too slow, CI handles them)
