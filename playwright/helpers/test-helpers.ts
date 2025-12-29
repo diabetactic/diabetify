@@ -60,7 +60,13 @@ export async function loginUser(page: Page, credentials?: LoginCredentials): Pro
   // Wait for successful navigation to dashboard
   await expect(page).toHaveURL(/\/tabs\//, { timeout: 30000 });
 
-  // Wait for Ionic hydration
+  // Set a complete profile to bypass onboarding guard
+  await completeOnboarding(page);
+
+  // Reload the page to ensure the app recognizes the new profile
+  await page.reload();
+
+  // Wait for Ionic hydration after reload
   await waitForIonicHydration(page);
 }
 
@@ -252,6 +258,45 @@ export async function getTextContent(page: Page, selector: string): Promise<stri
  */
 export async function isLoggedIn(page: Page): Promise<boolean> {
   return page.url().includes('/tabs/');
+}
+
+/**
+ * Programmatically set a complete user profile in localStorage.
+ * This ensures the OnboardingGuard allows navigation.
+ */
+export async function completeOnboarding(page: Page, isMockMode = false): Promise<void> {
+  // A complete user profile object that satisfies the OnboardingGuard
+  const userProfile = {
+    id: 'user_12345',
+    name: 'E2E Test User',
+    email: 'e2e@test.com',
+    age: 30,
+    accountState: 'ACTIVE',
+    dateOfBirth: '1993-01-01',
+    tidepoolConnection: { connected: false },
+    preferences: {
+      useDarkTheme: false,
+      language: 'en',
+      notifications: {
+        glucoseReadings: { enabled: true, interval: 15 },
+        appointmentReminders: { enabled: true, reminderLeadTime: 60 },
+      },
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    diagnosisDate: '2020-01-01',
+    diabetesType: 'TYPE_1',
+    hasCompletedOnboarding: true, // This is the crucial flag
+  };
+
+  // Set the profile in localStorage
+  await page.evaluate(
+    profile => {
+      localStorage.setItem('diabetactic_user_profile', JSON.stringify(profile));
+      localStorage.setItem('diabetactic_schema_version', '1');
+    },
+    userProfile
+  );
 }
 
 /**

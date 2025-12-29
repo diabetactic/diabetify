@@ -65,12 +65,10 @@ async function dismissAnyModal(page: import('@playwright/test').Page): Promise<v
 
 test.describe('Bolus Calculator', () => {
   test.beforeEach(async ({ page }) => {
-    // Login and navigate to dashboard
+    // Login, complete onboarding, and navigate to dashboard
     await loginUser(page);
     await expect(page).toHaveURL(/\/tabs\/dashboard/, { timeout: 15000 });
     await waitForIonicHydration(page);
-    // Dismiss any lingering modals
-    await dismissAnyModal(page);
   });
 
   test.describe('Navigation', () => {
