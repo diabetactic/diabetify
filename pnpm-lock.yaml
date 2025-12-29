@@ -181,8 +181,8 @@ importers:
         specifier: ^1.2.5
         version: 1.2.5
       daisyui:
-        specifier: ^5.5.5
-        version: 5.5.13
+        specifier: ^5.5.14
+        version: 5.5.14
       dpdm:
         specifier: ^3.14.0
         version: 3.14.0
@@ -4105,8 +4105,8 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  daisyui@5.5.13:
-    resolution: {integrity: sha512-Y1tHPzxU3a/MsArjQ5Bw4DaOnC1IsT9O+M9Wz2NwCw08vuCGhM+xx3ScWfL6IS4YiJXZHh73qNK9GhBWMRKY6Q==}
+  daisyui@5.5.14:
+    resolution: {integrity: sha512-L47rvw7I7hK68TA97VB8Ee0woHew+/ohR6Lx6Ah/krfISOqcG4My7poNpX5Mo5/ytMxiR40fEaz6njzDi7cuSg==}
 
   data-urls@6.0.0:
     resolution: {integrity: sha512-BnBS08aLUM+DKamupXs3w2tJJoqU+AkaE/+6vQxi/G/DPmIZFJJp9Dkb1kM03AZx8ADehDUZgsNxju3mPXZYIA==}
@@ -11879,7 +11879,7 @@ snapshots:
       glob: 10.5.0
       typescript: 5.9.3
 
-  daisyui@5.5.13: {}
+  daisyui@5.5.14: {}
 
   data-urls@6.0.0:
     dependencies:
