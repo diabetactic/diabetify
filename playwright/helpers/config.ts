@@ -4,6 +4,12 @@
  * Centralizes backend URLs and test configuration
  */
 
+export const API_URL = process.env.E2E_API_URL || 'http://localhost:8000';
+export const BACKOFFICE_URL = process.env.E2E_BACKOFFICE_URL || 'http://localhost:8001';
+export const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:4200';
+export const TEST_USERNAME = process.env.E2E_TEST_USERNAME || '1000';
+export const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD || 'tuvieja';
+
 /**
  * Heroku Backend URLs
  */
@@ -40,14 +46,14 @@ export const TEST_CONFIG = {
    * Test credentials
    */
   credentials: {
-    username: process.env.E2E_TEST_USERNAME || '',
-    password: process.env.E2E_TEST_PASSWORD || '',
+    username: TEST_USERNAME,
+    password: TEST_PASSWORD,
   },
 
   /**
    * Check if credentials are available
    */
-  hasCredentials: Boolean(process.env.E2E_TEST_USERNAME) && Boolean(process.env.E2E_TEST_PASSWORD),
+  hasCredentials: Boolean(TEST_USERNAME) && Boolean(TEST_PASSWORD),
 
   /**
    * Timeouts (in milliseconds)

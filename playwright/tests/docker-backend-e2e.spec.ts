@@ -9,11 +9,6 @@
  *
  * Run with: npm run test:e2e -- --grep "@docker"
  *
- * Prerequisites:
- *   - Docker backend running: cd docker && ./start.sh
- *   - Test data seeded: cd docker && ./seed-test-data.sh
- *   - Or use orchestrator: cd docker && ./run-e2e-docker.sh
- *
  * Tags:
  *   @docker - All Docker backend tests
  *   @docker-readings - Reading-specific tests
@@ -23,14 +18,44 @@
  */
 
 import { test, expect, Page } from '@playwright/test';
+import { DockerTestManager } from '../helpers/docker-test-manager';
+import { DatabaseSeeder } from '../helpers/database-seeder';
+import {
+  API_URL,
+  BACKOFFICE_URL,
+  BASE_URL,
+  TEST_USERNAME,
+  TEST_PASSWORD,
+} from '../helpers/config';
 
-// Configuration
 const isDockerTest = process.env.E2E_DOCKER_TESTS === 'true';
-const API_URL = process.env.E2E_API_URL || 'http://localhost:8000';
-const BACKOFFICE_URL = process.env.E2E_BACKOFFICE_URL || 'http://localhost:8001';
-const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:4200';
-const TEST_USERNAME = process.env.E2E_TEST_USERNAME || '1000';
-const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD || 'tuvieja';
+
+// Global setup and teardown
+test.beforeAll(async () => {
+  if (isDockerTest) {
+    await DockerTestManager.ensureServicesHealthy(['api_gateway', 'glucoserver']);
+    await DatabaseSeeder.reset();
+    await DatabaseSeeder.seed('base');
+  }
+});
+
+test.afterAll(async () => {
+  if (isDockerTest) {
+    await DatabaseSeeder.cleanup();
+  }
+});
+
+test.beforeEach(async () => {
+  if (isDockerTest) {
+    await DatabaseSeeder.beginTransaction();
+  }
+});
+
+test.afterEach(async () => {
+  if (isDockerTest) {
+    await DatabaseSeeder.rollbackTransaction();
+  }
+});
 
 /**
  * Disable device frame for desktop viewport testing.

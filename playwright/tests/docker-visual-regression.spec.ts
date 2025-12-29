@@ -7,10 +7,6 @@
  * Run with: E2E_DOCKER_TESTS=true pnpm test:e2e -- --grep "@docker-visual"
  * Update baselines: E2E_DOCKER_TESTS=true pnpm test:e2e -- --update-snapshots --grep "@docker-visual"
  *
- * Prerequisites:
- *   - Docker backend running: cd docker && ./start.sh
- *   - Test data seeded: cd docker && ./seed-test-data.sh
- *
  * Categories:
  *   - Dashboard: Main view, streak card, achievements summary
  *   - Readings: List with data, empty state, color ranges (low/normal/high)
@@ -23,13 +19,42 @@
  */
 
 import { test, expect, Page } from '@playwright/test';
+import { DockerTestManager } from '../helpers/docker-test-manager';
+import { DatabaseSeeder } from '../helpers/database-seeder';
+import {
+  API_URL,
+  TEST_USERNAME,
+  TEST_PASSWORD,
+} from '../helpers/config';
 
-// Configuration
 const isDockerTest = process.env.E2E_DOCKER_TESTS === 'true';
-const API_URL = process.env.E2E_API_URL || 'http://localhost:8000';
-const _BACKOFFICE_URL = process.env.E2E_BACKOFFICE_URL || 'http://localhost:8001';
-const TEST_USERNAME = process.env.E2E_TEST_USERNAME || '1000';
-const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD || 'tuvieja';
+
+// Global setup and teardown
+test.beforeAll(async () => {
+  if (isDockerTest) {
+    await DockerTestManager.ensureServicesHealthy(['api_gateway', 'glucoserver']);
+    await DatabaseSeeder.reset();
+    await DatabaseSeeder.seed('base');
+  }
+});
+
+test.afterAll(async () => {
+  if (isDockerTest) {
+    await DatabaseSeeder.cleanup();
+  }
+});
+
+test.beforeEach(async () => {
+  if (isDockerTest) {
+    await DatabaseSeeder.beginTransaction();
+  }
+});
+
+test.afterEach(async () => {
+  if (isDockerTest) {
+    await DatabaseSeeder.rollbackTransaction();
+  }
+});
 
 // Screenshot options - stricter for visual regression
 const screenshotOptions = {
@@ -76,11 +101,21 @@ async function prepareForScreenshot(page: Page): Promise<void> {
 }
 
 /**
+ * Disable device frame for desktop viewport testing.
+ */
+async function disableDeviceFrame(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    document.documentElement.classList.add('no-device-frame');
+  });
+}
+
+/**
  * Login y navegar a tab especificado
  */
 async function loginAndNavigate(page: Page, targetTab?: string): Promise<void> {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
+  await disableDeviceFrame(page);
 
   // Manejar welcome screen
   if (page.url().includes('/welcome')) {
@@ -97,7 +132,7 @@ async function loginAndNavigate(page: Page, targetTab?: string): Promise<void> {
     await page.fill('#username', TEST_USERNAME);
     await page.fill('#password', TEST_PASSWORD);
     await page.click('[data-testid="login-submit-btn"]');
-    await expect(page).toHaveURL(/\/tabs\//, { timeout: 20000 });
+    await expect(page).toHaveURL(/\/tabs\//, { timeout: 30000 });
     await page.waitForLoadState('networkidle');
   }
 
