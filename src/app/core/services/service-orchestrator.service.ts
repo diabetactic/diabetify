@@ -22,8 +22,12 @@ import {
 } from '@services/glucoserver.service';
 import { AppointmentService } from '@services/appointment.service';
 import { ReadingsService } from '@services/readings.service';
+import { WidgetDataService } from '@services/widget-data.service';
 import { db } from '@services/database.service';
 import { LocalGlucoseReading } from '@models/glucose-reading.model';
+import { Capacitor } from '@capacitor/core';
+import { WidgetBridgePlugin } from 'capacitor-widget-bridge';
+import { App } from '@capacitor/app';
 
 /**
  * Workflow types
@@ -101,8 +105,21 @@ export class ServiceOrchestrator implements OnDestroy {
     private glucoserver: GlucoserverService,
     private appointments: AppointmentService,
     private readings: ReadingsService,
-    private logger: LoggerService
-  ) {}
+    private logger: LoggerService,
+    private widgetDataService: WidgetDataService
+  ) {
+    if (Capacitor.getPlatform() === 'android') {
+      WidgetBridgePlugin.setRegisteredWidgets({
+        widgets: ['io.diabetactic.app.widget.GlucoseWidgetProvider'],
+      });
+    }
+
+    App.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) {
+        this.widgetDataService.updateWidgetData();
+      }
+    });
+  }
 
   /**
    * Clean up subscriptions when service is destroyed

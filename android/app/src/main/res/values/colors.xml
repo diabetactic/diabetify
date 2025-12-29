@@ -22,6 +22,11 @@
     <color name="glucoseLow">#F59E0B</color>
     <color name="glucoseHigh">#EF4444</color>
     <color name="glucoseCritical">#DC2626</color>
+    <color name="glucose_low">#F59E0B</color>
+    <color name="glucose_normal">#22C55E</color>
+    <color name="glucose_high">#EF4444</color>
+    <color name="glucose_critical_low">#DC2626</color>
+    <color name="glucose_critical_high">#8B0000</color>
 
     <!-- Background Colors (Light Theme) -->
     <color name="colorBackground">#FFFFFF</color>
