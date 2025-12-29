@@ -124,7 +124,7 @@ describe('Backend Integration - Profile CRUD', () => {
       // Restore original name
       try {
         await authenticatedPatch('/users/me', { name: originalName }, authToken);
-      } catch (_error) {
+      } catch {
         // Ignore restoration errors during teardown
       }
     });

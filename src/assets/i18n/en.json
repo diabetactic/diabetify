@@ -51,7 +51,8 @@
     "unableToLoad": "Unable to load",
     "ok": "OK",
     "error": "Error",
-    "sync": "Sync"
+    "sync": "Sync",
+    "goBack": "Go back"
   },
   "tabs": {
     "home": "Home",
@@ -425,6 +426,7 @@
     "standardDeviation": "Std Dev",
     "cv": "CV%",
     "noData": "No Data Available",
+    "exportChart": "Export chart",
     "noDataMessage": "Add glucose readings to see your trends and statistics"
   },
   "addReading": {
@@ -1017,8 +1019,22 @@
     "uploaded": "Uploaded",
     "downloaded": "Downloaded",
     "failed": "Failed",
-    "conflicts": "Conflicts",
-    "resolveConflicts": "Resolve Conflicts",
+    "conflicts": "Sync Conflicts",
+    "resolveConflicts": "Resolve Sync Conflicts",
+    "noConflictsTitle": "No conflicts to resolve.",
+    "noConflictsDescription": "All your data is in sync.",
+    "conflictResolution": {
+      "title": "Sync Conflict Detected",
+      "yourVersion": "Your Version",
+      "serverVersion": "Server Version",
+      "valueLabel": "Value",
+      "timeLabel": "Time",
+      "notesLabel": "Notes",
+      "notAvailable": "N/A",
+      "keepMine": "Keep Mine",
+      "keepServer": "Keep Server",
+      "keepBoth": "Keep Both"
+    },
     "settings": {
       "title": "Sync Settings",
       "autoSync": "Auto Sync",
@@ -1431,6 +1447,8 @@
     "warning": "Important: This is only a recommendation. Always consult with your doctor before adjusting your dose.",
     "newCalculation": "New Calculation",
     "selectFoods": "Select foods to count carbs",
+    "clearFoods": "Clear selected foods",
+    "warningsTitle": "Safety Warnings",
     "errors": {
       "glucoseRequired": "Current glucose is required",
       "glucoseRange": "Enter a value between 40 and 600 mg/dL",

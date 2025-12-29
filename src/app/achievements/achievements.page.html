@@ -123,8 +123,13 @@
         <!-- Empty State -->
         @if (achievements.length === 0) {
           <div class="empty-state">
-            <app-icon name="ribbon-outline" class="text-5xl text-gray-400"></app-icon>
-            <p class="mt-2 text-gray-500">{{ 'achievements.noAchievements' | translate }}</p>
+            <app-icon
+              name="ribbon-outline"
+              class="text-5xl text-gray-400 dark:text-gray-500"
+            ></app-icon>
+            <p class="mt-2 text-gray-500 dark:text-gray-400">
+              {{ 'achievements.noAchievements' | translate }}
+            </p>
           </div>
         }
       </section>

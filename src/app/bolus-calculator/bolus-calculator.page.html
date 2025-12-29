@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-button (click)="goBack()">
+      <ion-button (click)="goBack()" [attr.aria-label]="'common.goBack' | translate">
         <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -78,7 +78,12 @@
                 <span class="selected-food-carbs">{{ sf.totalCarbs }}g</span>
               </div>
             }
-            <button type="button" class="clear-foods-btn" (click)="clearSelectedFoods()">
+            <button
+              type="button"
+              class="clear-foods-btn"
+              (click)="clearSelectedFoods()"
+              [attr.aria-label]="'bolusCalculator.clearFoods' | translate"
+            >
               <app-icon name="x" size="xs"></app-icon>
             </button>
           </div>

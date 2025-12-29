@@ -70,13 +70,13 @@ describe.skip('Concurrent Sync Conflicts Integration', () => {
     resetMockState();
     try {
       await tokenStorage?.clearAll();
-    } catch (_error) {
+    } catch {
       // Ignore cleanup errors during teardown
     }
     try {
       await readingsService?.clearAllReadings();
       await db.conflicts.clear();
-    } catch (_error) {
+    } catch {
       // Ignore cleanup errors during teardown
     }
   });

@@ -173,7 +173,7 @@ describe('Backend Integration - Appointment Queue & Creation', () => {
         if (!response.ok) {
           // Expected - validation or state issue
         }
-      } catch (_error) {
+      } catch {
         // Network error is acceptable in this context
       }
     });

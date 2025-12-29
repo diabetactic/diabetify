@@ -1,4 +1,14 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonButton } from '@ionic/angular/standalone';
 import { Subscription } from 'rxjs';
@@ -9,6 +19,7 @@ import { ThemeService } from '@services/theme.service';
   templateUrl: './empty-state.component.html',
   styleUrls: ['./empty-state.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, IonButton],
   host: {
     '[class.dark-theme]': 'isDarkMode',
@@ -23,12 +34,14 @@ export class EmptyStateComponent implements OnInit, OnDestroy {
 
   isDarkMode = false;
   private themeSubscription?: Subscription;
+  private cdr = inject(ChangeDetectorRef);
 
   constructor(private themeService: ThemeService) {}
 
   ngOnInit(): void {
     this.themeSubscription = this.themeService.isDark$.subscribe(isDark => {
       this.isDarkMode = isDark;
+      this.cdr.markForCheck();
     });
   }
 

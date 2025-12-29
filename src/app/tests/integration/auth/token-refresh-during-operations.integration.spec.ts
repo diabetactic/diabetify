@@ -87,7 +87,7 @@ describe.skip('Token Refresh During Active Operations', () => {
     try {
       await tokenStorage?.clearAll();
       await readingsService?.clearAllReadings();
-    } catch (_error) {
+    } catch {
       // Ignore cleanup errors during teardown
     }
     vi.clearAllTimers();
@@ -621,7 +621,7 @@ describe.skip('Token Refresh During Active Operations', () => {
 
       try {
         await firstValueFrom(httpClient.get(`${API_BASE}/users/me`));
-      } catch (_error) {
+      } catch {
         // Expected - token expired
       }
 
@@ -713,7 +713,7 @@ describe.skip('Token Refresh During Active Operations', () => {
 
       try {
         await firstValueFrom(httpClient.get(`${API_BASE}/users/me`));
-      } catch (_error) {
+      } catch {
         // May fail depending on interceptor
       }
 
@@ -723,7 +723,7 @@ describe.skip('Token Refresh During Active Operations', () => {
       // Make second attempt
       try {
         await firstValueFrom(httpClient.get(`${API_BASE}/users/me`));
-      } catch (_error) {
+      } catch {
         // May fail - depends on interceptor behavior
       }
 

@@ -1,14 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BolusCalculation } from '../../../core/services/mock-data.service';
-import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonButton,
-  IonIcon,
-} from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
@@ -18,6 +11,7 @@ import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
   templateUrl: './confirmation-modal.component.html',
   styleUrls: ['./confirmation-modal.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     TranslateModule,
@@ -28,7 +22,6 @@ import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
     IonTitle,
     IonContent,
     IonButton,
-    IonIcon,
   ],
 })
 export class ConfirmationModalComponent {

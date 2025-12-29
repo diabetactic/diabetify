@@ -16,6 +16,8 @@ import {
   IonFab,
   IonFabButton,
   IonHeader,
+  IonItem,
+  IonList,
   IonModal,
   IonRefresher,
   IonRefresherContent,
@@ -25,8 +27,8 @@ import {
   IonBadge,
   IonChip,
   IonLabel,
-  IonItemSliding,
 } from '@ionic/angular/standalone';
+import type { IonItemSliding } from '@ionic/angular/standalone';
 import { ModalController, ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
@@ -37,7 +39,6 @@ import { ProfileService } from '@services/profile.service';
 import { TranslationService } from '@services/translation.service';
 import { LoggerService } from '@services/logger.service';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
-import { ROUTES } from '@core/constants';
 import { AddReadingPage } from '../add-reading/add-reading.page';
 import {
   ReadingFilters,
@@ -74,13 +75,13 @@ import {
     IonFab,
     IonFabButton,
     IonModal,
+    IonList,
+    IonItem,
     AppIconComponent,
 
     ReadingsFilterComponent,
     ReadingsStatsComponent,
     ReadingsListComponent,
-
-    IonItemSliding,
   ],
 })
 export class ReadingsPage implements OnInit, OnDestroy {

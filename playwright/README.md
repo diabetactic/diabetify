@@ -58,6 +58,23 @@ These tests run against a local Docker backend, providing a stable and reproduci
 npm run test:e2e -- --grep "@docker"
 ```
 
+### Visual Regression Tests
+
+Visual regression tests capture screenshots and compare them against baseline images.
+
+```bash
+# Run visual regression tests
+E2E_DOCKER_TESTS=true npm run test:e2e -- --grep "@docker-visual"
+
+# Update baseline snapshots (when UI intentionally changes)
+E2E_DOCKER_TESTS=true npm run test:e2e -- --grep "@docker-visual" --update-snapshots
+
+# Update specific test snapshots
+E2E_DOCKER_TESTS=true npm run test:e2e -- --grep "Dashboard - main view" --update-snapshots
+```
+
+**Note**: Visual regression tests will fail when the UI changes. This is expected behavior. Review the diff images in `playwright/artifacts/` to verify the changes are intentional, then update snapshots.
+
 **Test Orchestration:**
 
 The Docker E2E tests are now self-contained and manage their own setup and teardown. The following utilities are used to orchestrate the test environment:

@@ -43,60 +43,58 @@
     style="padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px))"
     data-testid="readings-list"
   >
-    <ion-virtual-scroll [items]="groupedReadings" [approxItemHeight]="itemHeight()">
-      <div *virtualItem="let group">
-        <div class="mb-6 last:mb-0">
-          <!-- Date Header -->
-          <div
-            class="sticky top-0 z-10 flex items-center justify-between border-b-2 border-[var(--ion-color-primary)] bg-[var(--ion-background-color)] px-4 py-4 pb-2"
-          >
-            <ion-text>
-              <h2 class="m-0 text-lg font-semibold text-[var(--ion-color-dark)]">
-                {{ group.displayDate }}
-              </h2>
-            </ion-text>
-            <ion-text color="medium">
-              <p class="m-0 text-[13px]">
-                {{ group.readings.length }}
-                {{
-                  group.readings.length !== 1
-                    ? ('readings.readings' | translate)
-                    : ('readings.reading' | translate)
-                }}
-              </p>
-            </ion-text>
-          </div>
-          <!-- Readings in this group -->
-          <div class="m-0 px-4 py-2">
-            @for (reading of group.readings; track trackByReading($index, reading)) {
-              <ion-item-sliding #slidingItem>
-                <ion-item-options side="end">
-                  <ion-item-option
-                    color="danger"
-                    (click)="onDeleteReading(reading, slidingItem)"
-                    [attr.aria-label]="'common.delete' | translate"
-                  >
-                    <app-icon name="trash" slot="icon-only"></app-icon>
-                  </ion-item-option>
-                </ion-item-options>
-
-                <ion-item
-                  button
-                  [detail]="false"
-                  lines="none"
-                  class="cursor-pointer transition-transform duration-200 ease-in-out active:scale-[0.98]"
-                  (click)="onReadingClick(reading)"
-                  (keyup.enter)="onReadingClick(reading)"
-                  role="button"
-                  tabindex="0"
+    @for (group of groupedReadings; track trackByGroup($index, group)) {
+      <div class="mb-6 last:mb-0">
+        <!-- Date Header -->
+        <div
+          class="sticky top-0 z-10 flex items-center justify-between border-b-2 border-[var(--ion-color-primary)] bg-[var(--ion-background-color)] px-4 py-4 pb-2"
+        >
+          <ion-text>
+            <h2 class="m-0 text-lg font-semibold text-[var(--ion-color-dark)]">
+              {{ group.displayDate }}
+            </h2>
+          </ion-text>
+          <ion-text color="medium">
+            <p class="m-0 text-[13px]">
+              {{ group.readings.length }}
+              {{
+                group.readings.length !== 1
+                  ? ('readings.readings' | translate)
+                  : ('readings.reading' | translate)
+              }}
+            </p>
+          </ion-text>
+        </div>
+        <!-- Readings in this group -->
+        <div class="m-0 px-4 py-2">
+          @for (reading of group.readings; track trackByReading($index, reading)) {
+            <ion-item-sliding #slidingItem>
+              <ion-item-options side="end">
+                <ion-item-option
+                  color="danger"
+                  (click)="onDeleteReading(reading, slidingItem)"
+                  [attr.aria-label]="'common.delete' | translate"
                 >
-                  <app-reading-item [reading]="reading" class="block w-full"></app-reading-item>
-                </ion-item>
-              </ion-item-sliding>
-            }
-          </div>
+                  <app-icon name="trash" slot="icon-only"></app-icon>
+                </ion-item-option>
+              </ion-item-options>
+
+              <ion-item
+                button
+                [detail]="false"
+                lines="none"
+                class="cursor-pointer transition-transform duration-200 ease-in-out active:scale-[0.98]"
+                (click)="onReadingClick(reading)"
+                (keyup.enter)="onReadingClick(reading)"
+                role="button"
+                tabindex="0"
+              >
+                <app-reading-item [reading]="reading" class="block w-full"></app-reading-item>
+              </ion-item>
+            </ion-item-sliding>
+          }
         </div>
       </div>
-    </ion-virtual-scroll>
+    }
   </div>
 }

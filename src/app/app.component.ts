@@ -42,7 +42,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.logger.info('Init', 'AppComponent initialized');
     this.initializeApp();
     if (!environment.production) {
-      (window as any).readingsService = this.readingsService;
+      (window as unknown as Record<string, unknown>)['readingsService'] = this.readingsService;
     }
   }
 

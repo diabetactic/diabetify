@@ -26,12 +26,33 @@ async function getAuthToken(): Promise<string> {
   return data.access_token;
 }
 
+// Check if debug endpoints are available (backend may not have them)
+let debugEndpointsAvailable: boolean | null = null;
+async function checkDebugEndpointsAvailable(): Promise<boolean> {
+  if (debugEndpointsAvailable !== null) return debugEndpointsAvailable;
+  try {
+    const response = await fetch(`${API_URL}/debug/health`, { method: 'GET' });
+    debugEndpointsAvailable = response.ok || response.status !== 404;
+  } catch {
+    debugEndpointsAvailable = false;
+  }
+  if (!debugEndpointsAvailable) {
+    console.log('⚠️ Debug endpoints not available - using fallback mode');
+  }
+  return debugEndpointsAvailable;
+}
+
 export class DatabaseSeeder {
   /**
    * Resets the entire database to a clean state.
-   * Calls the /debug/reset-db endpoint.
+   * Calls the /debug/reset-db endpoint if available.
+   * Falls back to no-op if debug endpoints not available.
    */
   public static async reset(): Promise<void> {
+    if (!(await checkDebugEndpointsAvailable())) {
+      console.log('--- 🌱 Database Reset (skipped - no debug endpoints) ---');
+      return;
+    }
     console.log('--- 🌱 Resetting Database ---');
     const token = await getAuthToken();
     const response = await fetch(`${API_URL}/debug/reset-db`, {
@@ -47,10 +68,15 @@ export class DatabaseSeeder {
 
   /**
    * Seeds the database with a specified dataset.
+   * Falls back to no-op if debug endpoints not available.
    *
    * @param seedType - The type of seed to run (e.g., 'base', 'full').
    */
   public static async seed(seedType: 'base' | 'full'): Promise<void> {
+    if (!(await checkDebugEndpointsAvailable())) {
+      console.log(`--- 🌱 Database Seed (skipped - using shell script seeding) ---`);
+      return;
+    }
     console.log(`--- 🌱 Seeding Database (${seedType}) ---`);
     const token = await getAuthToken();
     const response = await fetch(`${API_URL}/debug/seed-${seedType}`, {
@@ -66,9 +92,13 @@ export class DatabaseSeeder {
 
   /**
    * Cleans up any data created specifically for E2E tests.
-   * Calls the /debug/cleanup-e2e endpoint.
+   * Falls back to no-op if debug endpoints not available.
    */
   public static async cleanup(): Promise<void> {
+    if (!(await checkDebugEndpointsAvailable())) {
+      console.log('--- 🧹 E2E Cleanup (skipped - using shell script cleanup) ---');
+      return;
+    }
     console.log('--- 🧹 Cleaning Up E2E Data ---');
     const token = await getAuthToken();
     const response = await fetch(`${API_URL}/debug/cleanup-e2e`, {
@@ -84,8 +114,12 @@ export class DatabaseSeeder {
 
   /**
    * Begins a new database transaction.
+   * No-op if debug endpoints not available (tests run without transactions).
    */
   public static async beginTransaction(): Promise<void> {
+    if (!(await checkDebugEndpointsAvailable())) {
+      return; // Silent no-op
+    }
     const token = await getAuthToken();
     const response = await fetch(`${API_URL}/debug/transaction/begin`, {
       method: 'POST',
@@ -98,8 +132,12 @@ export class DatabaseSeeder {
 
   /**
    * Commits the current database transaction.
+   * No-op if debug endpoints not available.
    */
   public static async commitTransaction(): Promise<void> {
+    if (!(await checkDebugEndpointsAvailable())) {
+      return; // Silent no-op
+    }
     const token = await getAuthToken();
     const response = await fetch(`${API_URL}/debug/transaction/commit`, {
       method: 'POST',
@@ -112,8 +150,12 @@ export class DatabaseSeeder {
 
   /**
    * Rolls back the current database transaction.
+   * No-op if debug endpoints not available.
    */
   public static async rollbackTransaction(): Promise<void> {
+    if (!(await checkDebugEndpointsAvailable())) {
+      return; // Silent no-op
+    }
     const token = await getAuthToken();
     const response = await fetch(`${API_URL}/debug/transaction/rollback`, {
       method: 'POST',

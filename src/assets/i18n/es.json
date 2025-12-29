@@ -51,7 +51,8 @@
     "unableToLoad": "No se pudo cargar",
     "ok": "OK",
     "error": "Error",
-    "sync": "Sincronizar"
+    "sync": "Sincronizar",
+    "goBack": "Volver"
   },
   "tabs": {
     "home": "Inicio",
@@ -427,6 +428,7 @@
     "standardDeviation": "Desv. Est.",
     "cv": "CV%",
     "noData": "No Hay Datos",
+    "exportChart": "Exportar gráfico",
     "noDataMessage": "Agrega lecturas de glucosa para ver tus tendencias y estadísticas"
   },
   "addReading": {
@@ -1019,8 +1021,22 @@
     "uploaded": "Subidos",
     "downloaded": "Descargados",
     "failed": "Fallidos",
-    "conflicts": "Conflictos",
-    "resolveConflicts": "Resolver Conflictos",
+    "conflicts": "Conflictos de sincronización",
+    "resolveConflicts": "Resolver conflictos de sincronización",
+    "noConflictsTitle": "No hay conflictos por resolver.",
+    "noConflictsDescription": "Todos tus datos están sincronizados.",
+    "conflictResolution": {
+      "title": "Conflicto de sincronización detectado",
+      "yourVersion": "Tu versión",
+      "serverVersion": "Versión del servidor",
+      "valueLabel": "Valor",
+      "timeLabel": "Hora",
+      "notesLabel": "Notas",
+      "notAvailable": "N/D",
+      "keepMine": "Conservar la mía",
+      "keepServer": "Conservar la del servidor",
+      "keepBoth": "Conservar ambas"
+    },
     "settings": {
       "title": "Configuración de Sincronización",
       "autoSync": "Sincronización Automática",
@@ -1415,6 +1431,8 @@
     "warning": "Importante: Esta es solo una recomendación. Siempre consulta con tu médico antes de ajustar tu dosis.",
     "newCalculation": "Nueva Calculación",
     "selectFoods": "Selecciona alimentos para contar carbos",
+    "clearFoods": "Limpiar alimentos seleccionados",
+    "warningsTitle": "Advertencias de seguridad",
     "errors": {
       "glucoseRequired": "La glucosa actual es requerida",
       "glucoseRange": "Ingresa un valor entre 40 y 600 mg/dL",

@@ -32,7 +32,7 @@ describe('Integration - Offline Queue Processing', () => {
     try {
       await db.clearAllData();
       await db.close();
-    } catch (_error) {
+    } catch {
       // Ignore close errors during teardown
     }
   });

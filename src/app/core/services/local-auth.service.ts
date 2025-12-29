@@ -9,6 +9,7 @@ import { MockDataService } from '@services/mock-data.service';
 import { MockAdapterService } from '@services/mock-adapter.service';
 import { environment } from '@env/environment';
 import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
+import { safeJsonParse, isLocalUser } from '../utils/type-guards';
 
 /**
  * Local authentication state
@@ -199,7 +200,13 @@ export class LocalAuthService {
       const hasUser = Boolean(userStr.value);
 
       if (hasAccessToken && hasUser && userStr.value) {
-        const user = JSON.parse(userStr.value) as LocalUser;
+        // Use safe JSON parsing with type validation to prevent runtime errors
+        const user = safeJsonParse<LocalUser>(userStr.value, isLocalUser);
+        if (!user) {
+          this.logger.warn('Auth', 'Stored user data is invalid, clearing tokens');
+          await this.clearStoredTokens();
+          return;
+        }
         const expiresAt = expiresAtStr.value ? parseInt(expiresAtStr.value, 10) : null;
 
         // Check if token is expired

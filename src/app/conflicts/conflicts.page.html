@@ -3,15 +3,15 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/"></ion-back-button>
     </ion-buttons>
-    <ion-title>Resolve Sync Conflicts</ion-title>
+    <ion-title>{{ 'sync.resolveConflicts' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   @if (conflicts.length === 0) {
     <div class="ion-padding ion-text-center">
-      <h2>No conflicts to resolve.</h2>
-      <p>All your data is in sync.</p>
+      <h2>{{ 'sync.noConflictsTitle' | translate }}</h2>
+      <p>{{ 'sync.noConflictsDescription' | translate }}</p>
     </div>
   }
 

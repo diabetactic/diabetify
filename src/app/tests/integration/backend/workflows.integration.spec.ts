@@ -42,7 +42,7 @@ afterEach(async () => {
   if (shouldRun) {
     try {
       await clearAppointmentQueue();
-    } catch (_error) {
+    } catch {
       // Ignore if queue is already empty
     }
     clearCachedAuthToken();

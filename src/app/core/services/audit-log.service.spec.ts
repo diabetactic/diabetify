@@ -1,7 +1,7 @@
 import Dexie from 'dexie';
 import 'fake-indexeddb/auto';
 import FDBFactory from 'fake-indexeddb/lib/FDBFactory';
-import { DiabetacticDatabase, AuditLogItem, db } from '@services/database.service';
+import { DiabetacticDatabase, AuditLogItem } from '@services/database.service';
 import { AuditLogService } from '@services/audit-log.service';
 
 describe('AuditLogService', () => {

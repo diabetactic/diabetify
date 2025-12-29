@@ -9,12 +9,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import {
-  AlertController,
-  ToastController,
-  LoadingController,
-  ModalController,
-} from '@ionic/angular';
+import { AlertController, ToastController, ModalController } from '@ionic/angular';
 import { IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';

@@ -205,7 +205,6 @@ describe('ReadingsService - Sync Queue Logic', () => {
   let mockDb: MockSyncDatabase;
   let mockApiGateway: MockApiGatewayService;
   let mockLogger: MockLoggerService;
-  let auditLogService: AuditLogService;
 
   beforeEach(() => {
     mockDb = new MockSyncDatabase();
@@ -233,7 +232,6 @@ describe('ReadingsService - Sync Queue Logic', () => {
     });
 
     service = TestBed.inject(ReadingsService);
-    auditLogService = TestBed.inject(AuditLogService);
     // Disable mock mode to test real sync logic
     (service as any).isMockBackend = false;
   });

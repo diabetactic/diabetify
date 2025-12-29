@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { TranslateModule } from '@ngx-translate/core';
 import { db, SyncConflictItem } from '@services/database.service';
 import { SyncConflictComponent } from '@shared/components/sync-conflict/sync-conflict.component';
 import { ReadingsService } from '@services/readings.service';
@@ -10,7 +11,7 @@ import { ReadingsService } from '@services/readings.service';
   templateUrl: './conflicts.page.html',
   styleUrls: ['./conflicts.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, SyncConflictComponent],
+  imports: [CommonModule, IonicModule, TranslateModule, SyncConflictComponent],
 })
 export class ConflictsPage implements OnInit {
   conflicts: SyncConflictItem[] = [];

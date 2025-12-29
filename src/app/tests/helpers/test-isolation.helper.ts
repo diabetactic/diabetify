@@ -87,7 +87,7 @@ export async function resetCapacitorMocks(): Promise<void> {
     if (vi.isMockFunction(SecureStorage.clear)) {
       (SecureStorage.clear as Mock).mockResolvedValue(undefined);
     }
-  } catch (_error) {
+  } catch {
     // Silently fail if modules not available (e.g., in some test contexts)
   }
 }

@@ -60,6 +60,8 @@ export class AppointmentService implements OnDestroy {
       motive: ['control_routine'],
       other_motive: null,
       another_treatment: null,
+      status: 'CREATED',
+      timestamps: { created_at: new Date().toISOString() },
     },
     {
       appointment_id: 2,
@@ -76,6 +78,8 @@ export class AppointmentService implements OnDestroy {
       motive: ['adjustment', 'follow_up'],
       other_motive: 'Review morning readings',
       another_treatment: 'Metformin 500mg',
+      status: 'CREATED',
+      timestamps: { created_at: new Date().toISOString() },
     },
   ];
 
@@ -137,6 +141,8 @@ export class AppointmentService implements OnDestroy {
         user_id: 1000,
         scheduled_date: scheduledDate,
         reminder_minutes_before: reminderMinutesBefore,
+        status: 'CREATED',
+        timestamps: { created_at: new Date().toISOString() },
       };
       this.mockAppointments.push(newAppointment);
       this.appointmentsSubject.next([...this.mockAppointments]);

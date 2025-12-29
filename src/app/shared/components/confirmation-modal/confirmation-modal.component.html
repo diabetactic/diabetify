@@ -5,7 +5,7 @@
 </ion-header>
 <ion-content class="ion-padding">
   <div class="modal-content">
-    <app-icon [name]="icon" [color]="color" class="modal-icon"></app-icon>
+    <app-icon [name]="icon" [class]="'modal-icon text-' + color"></app-icon>
     <p class="modal-message" [innerHTML]="message | translate | safeHtml"></p>
 
     @if (calculation) {

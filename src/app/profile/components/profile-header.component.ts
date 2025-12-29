@@ -1,16 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonAvatar,
-  IonButton,
-  IonIcon,
-} from '@ionic/angular/standalone';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
+import { IonAvatar, IonButton, IonIcon } from '@ionic/angular/standalone';
+import { TranslateModule } from '@ngx-translate/core';
 import { UserProfile } from '@models/user-profile.model';
 import { AuthState } from '@services/tidepool-auth.service';
 import { TranslationService } from '@services/translation.service';
@@ -20,18 +11,8 @@ import { TranslationService } from '@services/translation.service';
   templateUrl: './profile-header.component.html',
   styleUrls: ['./profile-header.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonContent,
-    IonAvatar,
-    IonButton,
-    IonIcon,
-    TranslateModule,
-    AppIconComponent,
-  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule, IonAvatar, IonButton, IonIcon, TranslateModule],
 })
 export class ProfileHeaderComponent {
   @Input() profile: UserProfile | null = null;

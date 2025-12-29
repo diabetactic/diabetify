@@ -237,7 +237,7 @@ describe('Backend Integration - Auth', () => {
         if (response.ok) {
           expect([200, 204]).toContain(response.status);
         }
-      } catch (_error) {
+      } catch {
         // Logout endpoint may not exist (JWT is stateless)
       }
     });

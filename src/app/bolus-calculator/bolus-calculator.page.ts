@@ -1,4 +1,12 @@
-import { Component, inject, signal, ChangeDetectorRef, DestroyRef, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  ChangeDetectorRef,
+  DestroyRef,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
@@ -32,6 +40,7 @@ import { LoggerService } from '@services/logger.service';
   templateUrl: './bolus-calculator.page.html',
   styleUrls: ['./bolus-calculator.page.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -206,7 +215,7 @@ export class BolusCalculatorPage implements OnInit {
 
     await modal.present();
 
-    const { data, role } = await modal.onWillDismiss();
+    const { role } = await modal.onWillDismiss();
 
     if (role === 'confirmed') {
       this.result = calculation;

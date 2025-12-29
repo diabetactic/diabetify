@@ -83,7 +83,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
         // Verify response or read again
         const profile = await authenticatedGet('/users/me', authToken);
         expect(profile.name).toBe(testName);
-      } catch (_error) {
+      } catch {
         // If PATCH not supported, verify GET works
         const profile = await authenticatedGet('/users/me', authToken);
         expect(profile).toBeDefined();
@@ -99,7 +99,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
         const profile = await authenticatedGet('/users/me', authToken);
         // Email may or may not change depending on backend validations
         expect(profile.email).toBeDefined();
-      } catch (_error) {
+      } catch {
         // Email update may require verification - expected behavior
       }
     });
@@ -118,7 +118,7 @@ describe('Backend Integration - Settings & Preferences Sync', () => {
           },
           authToken
         );
-      } catch (_error) {
+      } catch {
         // Ignore restoration errors during teardown
       }
     });

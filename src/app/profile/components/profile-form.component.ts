@@ -1,6 +1,5 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonIcon } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { UserProfile } from '@models/user-profile.model';
@@ -11,7 +10,7 @@ import { TranslationService } from '@services/translation.service';
   templateUrl: './profile-form.component.html',
   styleUrls: ['./profile-form.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonIcon, TranslateModule, AppIconComponent],
+  imports: [CommonModule, TranslateModule, AppIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileFormComponent {

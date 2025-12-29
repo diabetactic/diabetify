@@ -242,7 +242,7 @@ describe('ErrorHandlerService', () => {
     });
 
     it('should return SERVER for 5xx errors', () => {
-      [500, 501, 502, 503, 504].forEach(status => {
+      [500, 501, 502, 503].forEach(status => {
         const error: AppError = {
           message: 'Test',
           statusCode: status,
@@ -252,8 +252,17 @@ describe('ErrorHandlerService', () => {
       });
     });
 
-    it('should return CLIENT for 4xx errors (non-special cases)', () => {
-      [404, 405, 406, 408, 409, 410].forEach(status => {
+    it('should return TIMEOUT for 504', () => {
+      const error: AppError = {
+        message: 'Test',
+        statusCode: 504,
+        timestamp: new Date().toISOString(),
+      };
+      expect(service.getErrorCategory(error)).toBe(ErrorCategory.TIMEOUT);
+    });
+
+    it('should return CLIENT for other 4xx errors', () => {
+      [405, 406, 410].forEach(status => {
         const error: AppError = {
           message: 'Test',
           statusCode: status,
@@ -261,6 +270,12 @@ describe('ErrorHandlerService', () => {
         };
         expect(service.getErrorCategory(error)).toBe(ErrorCategory.CLIENT);
       });
+    });
+
+    it('should return granular categories for 4xx special cases', () => {
+      expect(service.getErrorCategory({ statusCode: 404 } as any)).toBe(ErrorCategory.NOT_FOUND);
+      expect(service.getErrorCategory({ statusCode: 408 } as any)).toBe(ErrorCategory.TIMEOUT);
+      expect(service.getErrorCategory({ statusCode: 409 } as any)).toBe(ErrorCategory.CONFLICT);
     });
   });
 

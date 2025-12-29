@@ -41,7 +41,8 @@ export default defineConfig({
   use: {
     baseURL: BASE_URL,
     trace: 'on-first-retry',
-    video: 'retain-on-failure',
+    // Disable video to avoid ffmpeg dependency and speed up tests
+    video: 'off',
     screenshot: 'only-on-failure',
     // Default to mobile viewport (iPhone 14 dimensions)
     viewport: { width: 390, height: 844 },

@@ -1,4 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import {
@@ -26,6 +32,7 @@ import { NetworkStatusComponent } from '@shared/components/network-status/networ
   templateUrl: 'tabs.page.html',
   styleUrls: ['tabs.page.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonTabs,
     IonTabBar,
@@ -53,7 +60,8 @@ export class TabsPage implements OnInit, OnDestroy {
     private router: Router,
     private appointmentService: AppointmentService,
     private toastController: ToastController,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -84,10 +92,12 @@ export class TabsPage implements OnInit, OnDestroy {
       .subscribe({
         next: state => {
           this.queueState = state;
+          this.cdr.markForCheck();
         },
         error: () => {
           // On error, default to NONE state (allow requesting)
           this.queueState = { state: 'NONE' };
+          this.cdr.markForCheck();
         },
       });
   }
@@ -112,6 +122,8 @@ export class TabsPage implements OnInit, OnDestroy {
       this.fabIcon = 'medkit-outline';
       this.fabLabel = 'Add Reading';
     }
+    // Mark for check since we're using OnPush change detection
+    this.cdr.markForCheck();
   }
 
   navigateToAddReading(): void {

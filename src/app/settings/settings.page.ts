@@ -43,7 +43,6 @@ import { environment } from '@env/environment';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { LoggerService } from '@services/logger.service';
 import { ROUTES, STORAGE_KEYS, TIMEOUTS } from '@core/constants';
-import { db } from '@services/database.service';
 
 @Component({
   selector: 'app-settings',
@@ -335,8 +334,15 @@ export class SettingsPage implements OnInit, OnDestroy {
       };
       localStorage.setItem(STORAGE_KEYS.USER_SETTINGS, JSON.stringify(settings));
 
-      // Save to backend API
-      await this.profileService.updatePreferences(this.preferences);
+      // Save to backend API - convert to profile service format
+      await this.profileService.updatePreferences({
+        glucoseUnit: this.preferences.glucoseUnit,
+        targetRange: {
+          min: this.glucoseSettings.targetLow,
+          max: this.glucoseSettings.targetHigh,
+          unit: this.preferences.glucoseUnit,
+        },
+      });
 
       this.hasChanges = false;
       await this.showToast('Configuración guardada exitosamente', 'success');

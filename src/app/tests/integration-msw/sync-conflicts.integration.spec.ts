@@ -40,12 +40,12 @@ describe('Sync Conflicts Integration (MSW)', () => {
     resetMockState();
     try {
       await tokenStorage?.clearAll();
-    } catch (_error) {
+    } catch {
       // Ignore cleanup errors during teardown
     }
     try {
       await readingsService?.clearAllReadings();
-    } catch (_error) {
+    } catch {
       // Ignore cleanup errors during teardown
     }
   });

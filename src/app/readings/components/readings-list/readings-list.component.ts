@@ -6,7 +6,6 @@ import {
   IonItemOptions,
   IonItemSliding,
   IonText,
-  IonVirtualScroll,
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { LocalGlucoseReading } from '@models/glucose-reading.model';
@@ -34,7 +33,6 @@ export interface GroupedReading {
     IonItemOptions,
     IonItemOption,
     IonText,
-    IonVirtualScroll,
     AppIconComponent,
     EmptyStateComponent,
     ReadingItemComponent,

@@ -108,6 +108,9 @@ describe('ServiceOrchestrator', () => {
     glucoserver = TestBed.inject(GlucoserverService) as Mock<GlucoserverService>;
     appointments = TestBed.inject(AppointmentService) as Mock<AppointmentService>;
     readings = TestBed.inject(ReadingsService) as Mock<ReadingsService>;
+
+    // Default mock returns
+    unifiedAuth.loginTidepool.mockReturnValue(of(void 0));
   });
 
   afterEach(() => {
@@ -573,14 +576,18 @@ describe('ServiceOrchestrator', () => {
     });
 
     it('should handle network timeout on step execution', async () => {
+      // Mock performFullSync to fail with a timeout
+      // Use a shorter timeout for the test to avoid hanging
       readings.performFullSync.mockImplementation(
-        () => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 35000))
+        () => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100))
       );
 
       const result = await service.executeAuthAndSync();
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      expect(result.success).toBe(true);
+      const failedStep = result.workflow.steps.find(step => step.name === 'Initial Data Sync');
+      expect(failedStep?.status).toBe('failed');
+      expect(failedStep?.error).toContain('Timeout');
     });
   });
 

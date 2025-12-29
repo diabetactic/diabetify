@@ -951,11 +951,181 @@ export class ReadingsService implements OnDestroy {
     }
   }
 
+  // ============================================================================
+  // REFACTORED: Sync Helper Methods (Extracted for reduced complexity)
+  // ============================================================================
+
+  /** Time tolerance for matching local and backend readings (30 minutes) */
+  private static readonly SYNC_TIME_TOLERANCE_MS = 30 * 60 * 1000;
+  /** Maximum readings to process per sync to prevent UI blocking */
+  private static readonly MAX_SYNC_READINGS = 200;
+
+  /**
+   * Result type for single reading sync operation (inline type alias)
+   */
+
+  /**
+   * Find local reading by backend ID
+   */
+  private async findReadingByBackendId(backendId: number): Promise<LocalGlucoseReading | null> {
+    const matches = await this.db.readings.filter(r => r.backendId === backendId).toArray();
+    return matches[0] || null;
+  }
+
+  /**
+   * Find unsynced local reading matching value and time (within tolerance)
+   */
+  private async findMatchingUnsyncedReading(
+    backendValue: number,
+    backendTime: number
+  ): Promise<LocalGlucoseReading | null> {
+    const matches = await this.db.readings
+      .filter(r => {
+        if (r.synced || r.backendId) return false;
+        if (r.value !== backendValue) return false;
+        const localTime = new Date(r.time).getTime();
+        return Math.abs(localTime - backendTime) <= ReadingsService.SYNC_TIME_TOLERANCE_MS;
+      })
+      .toArray();
+    return matches[0] || null;
+  }
+
+  /**
+   * Link a local reading to its backend counterpart
+   */
+  private async linkLocalToBackend(
+    localId: string,
+    backendId: number,
+    backendTime: number
+  ): Promise<void> {
+    await this.db.readings.update(localId, {
+      backendId,
+      synced: true,
+      time: new Date(backendTime).toISOString(),
+    });
+  }
+
+  /**
+   * Check if local and backend readings have different values
+   */
+  private hasReadingChanges(
+    local: LocalGlucoseReading,
+    backendValue: number,
+    backendNotes: string,
+    backendType?: string
+  ): boolean {
+    return (
+      local.value !== backendValue ||
+      local.notes !== backendNotes ||
+      (!!backendType && local.mealContext !== backendType)
+    );
+  }
+
+  /**
+   * Create a sync conflict record
+   */
+  private async createSyncConflict(
+    existing: LocalGlucoseReading,
+    backendReading: BackendGlucoseReading
+  ): Promise<void> {
+    const serverReading = this.mapBackendToLocal(backendReading);
+    await this.db.conflicts.add({
+      readingId: existing.id,
+      localReading: existing,
+      serverReading: serverReading,
+      status: 'pending',
+      createdAt: Date.now(),
+    });
+    this.logger?.warn('Sync', `Conflict detected for reading ${existing.id}`);
+  }
+
+  /**
+   * Update local reading from backend data
+   */
+  private async updateLocalFromBackend(
+    existingId: string,
+    backendValue: number,
+    backendNotes: string,
+    backendType: string | undefined,
+    existingContext: string | undefined
+  ): Promise<void> {
+    await this.db.readings.update(existingId, {
+      value: backendValue,
+      notes: backendNotes,
+      mealContext: backendType || existingContext,
+      synced: true,
+    });
+  }
+
+  /**
+   * Sync a single backend reading to local storage
+   * Returns the action taken for this reading
+   */
+  private async syncSingleReading(
+    backendReading: BackendGlucoseReading
+  ): Promise<{ action: 'created' | 'linked' | 'conflict' | 'updated' | 'unchanged' }> {
+    const existing = await this.findReadingByBackendId(backendReading.id);
+    const backendValue = backendReading.glucose_level;
+    const backendNotes = backendReading.notes || '';
+    const backendTime = this.parseBackendTimestamp(backendReading.created_at);
+
+    if (!existing) {
+      // No match by backendId - check for unsynced local readings with same value+time
+      const unsyncedMatch = await this.findMatchingUnsyncedReading(backendValue, backendTime);
+
+      if (unsyncedMatch) {
+        await this.linkLocalToBackend(unsyncedMatch.id, backendReading.id, backendTime);
+        this.logger?.debug(
+          'Sync',
+          `Linked local reading ${unsyncedMatch.id} to backend ${backendReading.id}`
+        );
+        return { action: 'linked' };
+      }
+
+      // Truly new reading - add to local
+      const localReading = this.mapBackendToLocal(backendReading);
+      await this.db.readings.add(localReading);
+      return { action: 'created' };
+    }
+
+    // Existing reading - handle potential conflicts
+    const hasChanges = this.hasReadingChanges(
+      existing,
+      backendValue,
+      backendNotes,
+      backendReading.reading_type
+    );
+
+    if (!existing.synced && hasChanges) {
+      await this.createSyncConflict(existing, backendReading);
+      return { action: 'conflict' };
+    }
+
+    if (!existing.synced) {
+      await this.db.readings.update(existing.id, { synced: true });
+      return { action: 'unchanged' };
+    }
+
+    if (hasChanges) {
+      await this.updateLocalFromBackend(
+        existing.id,
+        backendValue,
+        backendNotes,
+        backendReading.reading_type,
+        existing.mealContext
+      );
+      this.logger?.debug('Sync', `Updated local reading ${existing.id} from backend`);
+      return { action: 'updated' };
+    }
+
+    return { action: 'unchanged' };
+  }
+
   /**
    * Internal fetch implementation (called by mutex-protected fetchFromBackend)
+   * REFACTORED: Reduced complexity from 21 to ~6 by extracting helper methods
    */
   private async _doFetchFromBackend(): Promise<{ fetched: number; merged: number }> {
-    // apiGateway is already checked in fetchFromBackend, but TypeScript needs the assertion
     if (!this.apiGateway) {
       return { fetched: 0, merged: 0 };
     }
@@ -972,98 +1142,18 @@ export class ReadingsService implements OnDestroy {
         return { fetched: 0, merged: 0 };
       }
 
-      // Limit to most recent 200 readings to prevent long sync times
-      // Backend may return thousands of readings; processing all would block UI
-      const MAX_SYNC_READINGS = 200;
       const allReadings = response.data.readings;
-      const backendReadings = allReadings.slice(0, MAX_SYNC_READINGS);
+      const backendReadings = allReadings.slice(0, ReadingsService.MAX_SYNC_READINGS);
       this.logger?.debug(
         'Sync',
-        `Fetched ${allReadings.length} readings from backend, processing ${backendReadings.length}`
+        `Fetched ${allReadings.length} readings, processing ${backendReadings.length}`
       );
 
       let merged = 0;
-
       for (const backendReading of backendReadings) {
-        // Check if we already have this reading (by backend ID)
-        const existingByBackendId = await this.db.readings
-          .filter(r => r.backendId === backendReading.id)
-          .toArray();
-
-        if (existingByBackendId.length === 0) {
-          // No match by backendId - check for unsynced local readings with same value+time
-          // This prevents duplicates when sync hasn't completed yet (timezone race condition)
-          const backendValue = backendReading.glucose_level;
-          const backendTime = this.parseBackendTimestamp(backendReading.created_at);
-          const THIRTY_MINUTES_MS = 30 * 60 * 1000; // Tolerance for minor timezone drift
-
-          const existingByValueTime = await this.db.readings
-            .filter(r => {
-              // Only check unsynced local readings (synced ones would have backendId)
-              if (r.synced || r.backendId) return false;
-              // Must have same glucose value
-              if (r.value !== backendValue) return false;
-              // Must be within time tolerance window
-              const localTime = new Date(r.time).getTime();
-              const timeDiff = Math.abs(localTime - backendTime);
-              return timeDiff <= THIRTY_MINUTES_MS;
-            })
-            .toArray();
-
-          if (existingByValueTime.length > 0) {
-            // Found matching local reading - link it to backend instead of creating duplicate
-            const localMatch = existingByValueTime[0];
-            await this.db.readings.update(localMatch.id, {
-              backendId: backendReading.id,
-              synced: true,
-              time: new Date(backendTime).toISOString(), // Use backend time as source of truth
-            });
-            this.logger?.debug(
-              'Sync',
-              `Linked local reading ${localMatch.id} to backend ${backendReading.id} (value+time match)`
-            );
-          } else {
-            // Truly new reading from backend - add to local storage
-            const localReading = this.mapBackendToLocal(backendReading);
-            await this.db.readings.add(localReading);
-            merged++;
-          }
-        } else {
-          // Existing reading - check for conflicts
-          const existing = existingByBackendId[0];
-          const backendValue = backendReading.glucose_level;
-          const backendNotes = backendReading.notes || '';
-
-          // Conflict detection: local record has un-synced changes
-          if (!existing.synced) {
-            if (
-              existing.value !== backendValue ||
-              existing.notes !== backendNotes ||
-              (backendReading.reading_type && existing.mealContext !== backendReading.reading_type)
-            ) {
-              const serverReading = this.mapBackendToLocal(backendReading);
-              await this.db.conflicts.add({
-                readingId: existing.id,
-                localReading: existing,
-                serverReading: serverReading,
-                status: 'pending',
-                createdAt: Date.now(),
-              });
-              this.logger?.warn('Sync', `Conflict detected for reading ${existing.id}`);
-            } else {
-              // No conflict, just mark as synced
-              await this.db.readings.update(existing.id, { synced: true });
-            }
-          } else {
-            // No conflict, update local from server
-            await this.db.readings.update(existing.id, {
-              value: backendValue,
-              notes: backendNotes,
-              mealContext: backendReading.reading_type || existing.mealContext,
-              synced: true,
-            });
-            this.logger?.debug('Sync', `Updated local reading ${existing.id} from backend`);
-          }
+        const result = await this.syncSingleReading(backendReading);
+        if (result.action === 'created') {
+          merged++;
         }
       }
 
@@ -1477,7 +1567,9 @@ export class ReadingsService implements OnDestroy {
     }
 
     // Mark the conflict as resolved
-    await this.db.conflicts.update(conflict.id, { status: 'resolved' });
+    if (conflict.id !== undefined) {
+      await this.db.conflicts.update(conflict.id, { status: 'resolved' });
+    }
 
     await this.auditLogService?.logConflictResolution(conflict.readingId, resolution, {
       local: conflict.localReading,

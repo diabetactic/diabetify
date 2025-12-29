@@ -8,7 +8,7 @@ import {
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Network, PluginListenerHandle } from '@capacitor/network';
+import { Network } from '@capacitor/network';
 
 @Component({
   selector: 'app-network-status',
@@ -47,7 +47,7 @@ import { Network, PluginListenerHandle } from '@capacitor/network';
 export class NetworkStatusComponent implements OnInit, OnDestroy {
   status: 'online' | 'offline' = 'online';
   statusText: string = 'Online';
-  private networkListener: PluginListenerHandle;
+  private networkListener: Awaited<ReturnType<typeof Network.addListener>> | undefined;
   private cdr = inject(ChangeDetectorRef);
 
   constructor(private zone: NgZone) {}

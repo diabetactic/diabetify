@@ -1,15 +1,27 @@
+// Initialize TestBed environment for Vitest
+import '../../../../test-setup';
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { ReadingsListComponent } from './readings-list.component';
+import { TranslationService } from '@core/services/translation.service';
 
 describe('ReadingsListComponent', () => {
   let component: ReadingsListComponent;
   let fixture: ComponentFixture<ReadingsListComponent>;
+  let mockTranslationService: any;
 
   beforeEach(async () => {
+    mockTranslationService = {
+      instant: vi.fn((key: string) => key),
+      formatTime: vi.fn((time: string) => time),
+      getCurrentLanguage: vi.fn(() => 'es'),
+    };
+
     await TestBed.configureTestingModule({
       imports: [IonicModule.forRoot(), TranslateModule.forRoot(), ReadingsListComponent],
+      providers: [{ provide: TranslationService, useValue: mockTranslationService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ReadingsListComponent);

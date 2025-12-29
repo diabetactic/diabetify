@@ -120,7 +120,8 @@ async function loginAndNavigate(page: Page, targetTab?: string): Promise<void> {
     }
 
     // Esperar a que la URL contenga la pestaña objetivo (evita ReDoS con regex dinámicas)
-    await page.waitForURL(url => url.includes(`/tabs/${targetTab}`), { timeout: 10000 });
+    // Note: waitForURL predicate receives a URL object, so we use url.href to get the string
+    await page.waitForURL(url => url.href.includes(`/tabs/${targetTab}`), { timeout: 10000 });
     await page.waitForLoadState('networkidle');
   }
 }

@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonButton } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
@@ -9,6 +9,7 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
   templateUrl: './profile-actions.component.html',
   styleUrls: ['./profile-actions.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, IonButton, TranslateModule, AppIconComponent],
 })
 export class ProfileActionsComponent {

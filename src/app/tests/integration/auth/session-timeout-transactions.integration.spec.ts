@@ -59,7 +59,7 @@ const API_BASE = 'http://localhost:8000';
 describe.skip('Session Timeout Transactions Integration', () => {
   let sessionTimeout: SessionTimeoutService;
   let authService: LocalAuthService;
-  let tokenStorage: TokenStorageService;
+  let _tokenStorage: TokenStorageService;
   let _router: Router;
 
   beforeAll(() => {
@@ -100,7 +100,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
 
     sessionTimeout = TestBed.inject(SessionTimeoutService);
     authService = TestBed.inject(LocalAuthService);
-    tokenStorage = TestBed.inject(TokenStorageService);
+    _tokenStorage = TestBed.inject(TokenStorageService);
     _router = TestBed.inject(Router);
   });
 
@@ -187,7 +187,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
           // Simulate transaction error
           throw new Error('Transaction error');
         });
-      } catch (_error) {
+      } catch {
         transactionFailed = true;
       }
 
@@ -296,7 +296,7 @@ describe.skip('Session Timeout Transactions Integration', () => {
           body: JSON.stringify({ value: 120 }),
         });
         if (!response.ok) throw new Error('Sync failed');
-      } catch (_error) {
+      } catch {
         syncFailed = true;
         // Item remains in queue with incremented retry
         await db.syncQueue

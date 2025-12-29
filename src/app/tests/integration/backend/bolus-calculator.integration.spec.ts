@@ -280,7 +280,16 @@ describe('Backend Integration - Bolus Calculator', () => {
       const result = calculateBolus(40, 15, settings);
 
       expect(result.warnings.length).toBeGreaterThan(0);
-      expect(result.warnings.some(w => w.includes('HIPO') || w.includes('bajo'))).toBe(true);
+      // Check for hypoglycemia warning (case-insensitive, multiple languages)
+      expect(
+        result.warnings.some(
+          w =>
+            w.toUpperCase().includes('HYPO') ||
+            w.toUpperCase().includes('HIPO') ||
+            w.toLowerCase().includes('bajo') ||
+            w.toLowerCase().includes('low')
+        )
+      ).toBe(true);
     });
   });
 
@@ -458,7 +467,7 @@ describe('Backend Integration - Bolus Calculator', () => {
           });
         }
       }
-    } catch (_error) {
+    } catch {
       // Cleanup failed silently during teardown
     }
   });

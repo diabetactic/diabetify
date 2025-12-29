@@ -271,7 +271,7 @@
     <ion-list class="mb-4">
       <ion-item button routerLink="/conflicts" class="flex items-center gap-2">
         <app-icon name="sync-outline"></app-icon>
-        <ion-label>Sync Conflicts</ion-label>
+        <ion-label>{{ 'sync.conflicts' | translate }}</ion-label>
         @if (pendingConflicts > 0) {
           <ion-badge color="danger">{{ pendingConflicts }}</ion-badge>
         }

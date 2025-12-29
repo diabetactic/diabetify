@@ -1,3 +1,6 @@
+// Initialize TestBed environment for Vitest
+import '../../../../test-setup';
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
@@ -31,9 +34,9 @@ describe('ReadingsFilterComponent', () => {
   });
 
   it('should emit close event on closeModal', () => {
-    spyOn(component.close, 'emit');
+    spyOn(component.closeFilter, 'emit');
     component.closeModal();
-    expect(component.close.emit).toHaveBeenCalled();
+    expect(component.closeFilter.emit).toHaveBeenCalled();
   });
 
   it('should emit apply event on applyFilters', () => {

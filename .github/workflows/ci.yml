@@ -235,6 +235,10 @@ jobs:
   pr-labeler:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     steps:
       - uses: codelytv/pr-size-labeler@v1
         with:

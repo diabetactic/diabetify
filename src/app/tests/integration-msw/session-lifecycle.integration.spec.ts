@@ -33,7 +33,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
     resetMockState();
     try {
       await tokenStorage?.clearAll();
-    } catch (_error) {
+    } catch {
       // Ignore cleanup errors during teardown
     }
     vi.clearAllTimers();
@@ -205,7 +205,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
       let errorOccurred = false;
       try {
         await firstValueFrom(apiGateway.getMe());
-      } catch (_error) {
+      } catch {
         // Expected - session is invalid on server
         errorOccurred = true;
       }
@@ -228,7 +228,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
       try {
         await firstValueFrom(apiGateway.getMe());
         expect.fail('Should have thrown');
-      } catch (_error) {
+      } catch {
         // Expected - network error
         // Auth state should still be maintained locally
         const isAuth = await firstValueFrom(authService.isAuthenticated());

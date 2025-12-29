@@ -160,6 +160,8 @@ export class DemoDataService {
         motive: ['control_routine'],
         other_motive: null,
         another_treatment: null,
+        status: 'CREATED',
+        timestamps: { created_at: new Date().toISOString() },
       },
       {
         appointment_id: 2,
@@ -176,6 +178,8 @@ export class DemoDataService {
         motive: ['adjustment', 'follow_up'],
         other_motive: 'Revisar lecturas matutinas',
         another_treatment: 'Metformina 500mg',
+        status: 'CREATED',
+        timestamps: { created_at: new Date().toISOString() },
       },
       {
         appointment_id: 3,
@@ -192,6 +196,8 @@ export class DemoDataService {
         motive: ['consultation'],
         other_motive: null,
         another_treatment: null,
+        status: 'CREATED',
+        timestamps: { created_at: new Date().toISOString() },
       },
     ];
 

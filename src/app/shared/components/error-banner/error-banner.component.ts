@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonButton } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
@@ -11,6 +18,7 @@ export type ErrorSeverity = 'error' | 'warning' | 'info';
   templateUrl: './error-banner.component.html',
   styleUrls: ['./error-banner.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, IonButton, TranslateModule, AppIconComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

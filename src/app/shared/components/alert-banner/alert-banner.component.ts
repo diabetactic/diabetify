@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -9,6 +9,7 @@ export type AlertType = 'success' | 'info' | 'warning';
   templateUrl: './alert-banner.component.html',
   styleUrls: ['./alert-banner.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, TranslateModule],
 })
 export class AlertBannerComponent {

@@ -1,7 +1,7 @@
 // Initialize TestBed environment for Vitest
 import '../../../test-setup';
 
-import Dexie, { Table } from 'dexie';
+import Dexie from 'dexie';
 import 'fake-indexeddb/auto';
 import FDBFactory from 'fake-indexeddb/lib/FDBFactory';
 import { DiabetacticDatabase, SyncQueueItem, db } from '@services/database.service';

@@ -21,7 +21,7 @@ export class AuditLogService {
       details: {
         readingId,
         resolution,
-        ...details,
+        ...(typeof details === 'object' && details !== null ? details : { value: details }),
       },
       createdAt: Date.now(),
     };

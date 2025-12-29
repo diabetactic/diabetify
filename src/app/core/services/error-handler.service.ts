@@ -7,30 +7,15 @@ import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { environment } from '@env/environment';
+import {
+  AppError,
+  ErrorCategory,
+  extractErrorMessage,
+  getErrorCategoryFromStatus,
+} from '../models/http-error.model';
 
-/**
- * Standardized error structure
- */
-export interface AppError {
-  message: string;
-  code?: string;
-  statusCode?: number;
-  details?: Record<string, unknown>;
-  timestamp: string;
-}
-
-/**
- * Error categories for better handling
- */
-export enum ErrorCategory {
-  NETWORK = 'NETWORK',
-  AUTHENTICATION = 'AUTHENTICATION',
-  AUTHORIZATION = 'AUTHORIZATION',
-  VALIDATION = 'VALIDATION',
-  SERVER = 'SERVER',
-  CLIENT = 'CLIENT',
-  UNKNOWN = 'UNKNOWN',
-}
+// Re-export types for consumers of this service
+export { AppError, ErrorCategory } from '../models/http-error.model';
 
 @Injectable({
   providedIn: 'root',
@@ -53,7 +38,7 @@ export class ErrorHandlerService {
   /**
    * Parse HTTP error into standardized AppError
    */
-  private parseHttpError(error: HttpErrorResponse): AppError {
+  parseHttpError(error: HttpErrorResponse): AppError {
     const timestamp = new Date().toISOString();
 
     // Client-side or network error
@@ -154,62 +139,32 @@ export class ErrorHandlerService {
   }
 
   /**
-   * Extract error message from server response
+   * Extract error message from server response using type-safe extraction
    */
   private extractServerMessage(error: HttpErrorResponse): string | null {
     if (!error.error) {
       return null;
     }
 
-    // Try common error message fields
-    if (typeof error.error === 'string') {
-      return error.error;
+    // Use type-safe error extraction from http-error.model
+    const message = extractErrorMessage(error.error);
+
+    // extractErrorMessage returns a default message if nothing found
+    // Return null if we got the default to let caller use their own default
+    if (message === 'An unknown error occurred') {
+      return null;
     }
 
-    if (error.error.message) {
-      return error.error.message;
-    }
-
-    if (error.error.error) {
-      return typeof error.error.error === 'string' ? error.error.error : error.error.error.message;
-    }
-
-    if (error.error.errors && Array.isArray(error.error.errors) && error.error.errors.length > 0) {
-      return error.error.errors[0].message || error.error.errors[0];
-    }
-
-    return null;
+    return message;
   }
 
   /**
    * Get error category for additional handling logic
+   * Uses centralized category mapping from http-error.model
    */
   getErrorCategory(error: AppError): ErrorCategory {
-    if (!error.statusCode) {
-      return ErrorCategory.NETWORK;
-    }
-
-    if (error.statusCode === 401) {
-      return ErrorCategory.AUTHENTICATION;
-    }
-
-    if (error.statusCode === 403) {
-      return ErrorCategory.AUTHORIZATION;
-    }
-
-    if (error.statusCode === 400 || error.statusCode === 422) {
-      return ErrorCategory.VALIDATION;
-    }
-
-    if (error.statusCode >= 500) {
-      return ErrorCategory.SERVER;
-    }
-
-    if (error.statusCode >= 400 && error.statusCode < 500) {
-      return ErrorCategory.CLIENT;
-    }
-
-    return ErrorCategory.UNKNOWN;
+    // Use the centralized category mapping (handles all status codes)
+    return getErrorCategoryFromStatus(error.statusCode);
   }
 
   /**
@@ -247,6 +202,16 @@ export class ErrorHandlerService {
     if (environment.production && environment.features.crashReporting) {
       this.sendToErrorTracking(logData);
     }
+  }
+
+  /**
+   * Send error data to external error tracking service
+   * Placeholder for integration with services like Sentry, Bugsnag, etc.
+   */
+  private sendToErrorTracking(logData: unknown): void {
+    // TODO: Integrate with error tracking service (Sentry, Bugsnag, etc.)
+    // For now, this is a no-op placeholder
+    void logData;
   }
 
   /**

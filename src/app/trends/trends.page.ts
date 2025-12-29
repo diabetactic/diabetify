@@ -2,9 +2,12 @@ import {
   Component,
   ChangeDetectionStrategy,
   OnInit,
+  OnDestroy,
   signal,
   CUSTOM_ELEMENTS_SCHEMA,
   ViewChild,
+  ChangeDetectorRef,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -30,8 +33,10 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType, Chart } from 'chart.js';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import 'hammerjs';
+import { Subject, takeUntil } from 'rxjs';
 import { ReadingsService } from '@services/readings.service';
 import { LoggerService } from '@services/logger.service';
+import { ThemeService } from '@services/theme.service';
 import { GlucoseStatistics, LocalGlucoseReading } from '@models/glucose-reading.model';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
@@ -65,68 +70,50 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class TrendsPage implements OnInit {
+export class TrendsPage implements OnInit, OnDestroy {
   @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
+
+  private readonly destroy$ = new Subject<void>();
+  private readonly themeService = inject(ThemeService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   selectedPeriod = signal<'week' | 'month' | 'all'>('week');
   statistics = signal<GlucoseStatistics | null>(null);
   loading = signal(true);
+  isDarkMode = signal(false);
+
+  // Chart color configuration for light/dark modes
+  private readonly chartColors = {
+    light: {
+      primary: '#3880ff',
+      primaryBg: 'rgba(56, 128, 255, 0.2)',
+      text: '#1f2937',
+      grid: 'rgba(0, 0, 0, 0.1)',
+      border: 'rgba(0, 0, 0, 0.1)',
+    },
+    dark: {
+      primary: '#6ea8fe',
+      primaryBg: 'rgba(110, 168, 254, 0.2)',
+      text: '#e5e7eb',
+      grid: 'rgba(255, 255, 255, 0.1)',
+      border: 'rgba(255, 255, 255, 0.1)',
+    },
+  };
 
   public lineChartData: ChartData<'line'> = {
     datasets: [
       {
         data: [],
         label: 'Glucose Readings',
-        borderColor: 'rgba(75,192,192,1)',
-        backgroundColor: 'rgba(75,192,192,0.2)',
+        borderColor: this.chartColors.light.primary,
+        backgroundColor: this.chartColors.light.primaryBg,
         fill: true,
       },
     ],
     labels: [],
   };
   public lineChartType: ChartType = 'line';
-  public lineChartOptions: ChartConfiguration['options'] = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        type: 'time',
-        time: {
-          unit: 'day',
-        },
-        title: {
-          display: true,
-          text: 'Date',
-        },
-      },
-      y: {
-        title: {
-          display: true,
-          text: 'Glucose (mg/dL)',
-        },
-      },
-    },
-    plugins: {
-      legend: {
-        display: true,
-      },
-      zoom: {
-        pan: {
-          enabled: true,
-          mode: 'x',
-        },
-        zoom: {
-          pinch: {
-            enabled: true,
-          },
-          wheel: {
-            enabled: true,
-          },
-          mode: 'x',
-        },
-      },
-    },
-  };
+  public lineChartOptions: ChartConfiguration['options'] = this.getChartOptions(false);
 
   constructor(
     private readingsService: ReadingsService,
@@ -135,8 +122,100 @@ export class TrendsPage implements OnInit {
     Chart.register(zoomPlugin);
   }
 
+  private getChartOptions(isDark: boolean): ChartConfiguration['options'] {
+    const colors = isDark ? this.chartColors.dark : this.chartColors.light;
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          type: 'time',
+          time: {
+            unit: 'day',
+          },
+          title: {
+            display: true,
+            text: 'Date',
+            color: colors.text,
+          },
+          ticks: {
+            color: colors.text,
+          },
+          grid: {
+            color: colors.grid,
+          },
+          border: {
+            color: colors.border,
+          },
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Glucose (mg/dL)',
+            color: colors.text,
+          },
+          ticks: {
+            color: colors.text,
+          },
+          grid: {
+            color: colors.grid,
+          },
+          border: {
+            color: colors.border,
+          },
+        },
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: colors.text,
+          },
+        },
+        zoom: {
+          pan: {
+            enabled: true,
+            mode: 'x',
+          },
+          zoom: {
+            pinch: {
+              enabled: true,
+            },
+            wheel: {
+              enabled: true,
+            },
+            mode: 'x',
+          },
+        },
+      },
+    };
+  }
+
   async ngOnInit(): Promise<void> {
+    // Subscribe to theme changes
+    this.themeService.isDark$.pipe(takeUntil(this.destroy$)).subscribe(isDark => {
+      this.isDarkMode.set(isDark);
+      this.lineChartOptions = this.getChartOptions(isDark);
+      this.updateChartColors(isDark);
+      this.cdr.markForCheck();
+    });
+
     await this.loadStatistics();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private updateChartColors(isDark: boolean): void {
+    const colors = isDark ? this.chartColors.dark : this.chartColors.light;
+    if (this.lineChartData.datasets.length > 0) {
+      this.lineChartData.datasets[0].borderColor = colors.primary;
+      this.lineChartData.datasets[0].backgroundColor = colors.primaryBg;
+      this.lineChartData.datasets[0].pointBackgroundColor = colors.primary;
+    }
+    this.chart?.update();
   }
 
   async onPeriodChange(event: CustomEvent) {
@@ -176,6 +255,8 @@ export class TrendsPage implements OnInit {
   }
 
   private updateLineChart(readings: LocalGlucoseReading[]) {
+    const colors = this.isDarkMode() ? this.chartColors.dark : this.chartColors.light;
+
     if (readings && readings.length > 0) {
       const chartData = readings.map(reading => ({
         x: new Date(reading.time).getTime(),
@@ -187,11 +268,11 @@ export class TrendsPage implements OnInit {
           {
             data: chartData,
             label: 'Glucose Level',
-            borderColor: '#3880ff',
-            backgroundColor: 'rgba(56, 128, 255, 0.2)',
+            borderColor: colors.primary,
+            backgroundColor: colors.primaryBg,
             fill: true,
             pointRadius: 3,
-            pointBackgroundColor: '#3880ff',
+            pointBackgroundColor: colors.primary,
           },
         ],
       };

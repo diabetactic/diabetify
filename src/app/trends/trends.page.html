@@ -38,7 +38,9 @@
         <!-- A1C Card -->
         <ion-card class="m-0">
           <ion-card-content class="p-4">
-            <div class="mb-1 text-sm text-gray-500">{{ 'trends.estimatedA1c' | translate }}</div>
+            <div class="mb-1 text-sm text-gray-500 dark:text-gray-400">
+              {{ 'trends.estimatedA1c' | translate }}
+            </div>
             <div class="text-primary text-2xl font-bold">{{ statistics()!.estimatedA1C }}%</div>
           </ion-card-content>
         </ion-card>
@@ -46,7 +48,9 @@
         <!-- Average Glucose Card -->
         <ion-card class="m-0">
           <ion-card-content class="p-4">
-            <div class="mb-1 text-sm text-gray-500">{{ 'trends.averageGlucose' | translate }}</div>
+            <div class="mb-1 text-sm text-gray-500 dark:text-gray-400">
+              {{ 'trends.averageGlucose' | translate }}
+            </div>
             <div class="text-primary text-2xl font-bold">
               {{ statistics()!.average }}
               <span class="text-sm font-normal">mg/dL</span>
@@ -59,7 +63,7 @@
       <ion-card>
         <ion-card-header class="flex items-center justify-between">
           <ion-card-title>{{ 'trends.glucoseReadings' | translate }}</ion-card-title>
-          <ion-button (click)="exportChart()">
+          <ion-button (click)="exportChart()" [attr.aria-label]="'trends.exportChart' | translate">
             <ion-icon name="download-outline" slot="icon-only"></ion-icon>
           </ion-button>
         </ion-card-header>

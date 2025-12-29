@@ -92,7 +92,8 @@ export class FoodPickerComponent implements OnInit {
     if (this.selectedCategory() === 'favorites') {
       return this.foodService.getFavoriteFoods();
     }
-    return this.foodService.getFoodsByCategory(this.selectedCategory());
+    // At this point, we know it's a valid FoodCategory (not 'recent' or 'favorites')
+    return this.foodService.getFoodsByCategory(this.selectedCategory() as FoodCategory);
   });
 
   /** Selected foods from service */

@@ -76,7 +76,7 @@ describe('ReadingsService - Offline Detection', () => {
 
     // Mock API Gateway
     mockApiGateway = {
-      request: vi.fn(),
+      request: vi.fn().mockReturnValue(of({ success: true, data: {} })),
     } as unknown as Mock<ApiGatewayService>;
 
     // Mock liveQuery function

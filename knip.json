@@ -10,6 +10,7 @@
     "**/tests/helpers/**",
     "**/tests/integration/**",
     "**/tests/integration-msw/**",
+    "**/test-setup/**",
     "**/constants/**",
     "**/contracts/**",
     "**/config/mock-adapter-config.ts"

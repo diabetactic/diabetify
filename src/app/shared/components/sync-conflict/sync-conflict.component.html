@@ -2,7 +2,7 @@
   <ion-card-header>
     <ion-card-title>
       <ion-icon name="warning-outline" class="ion-margin-end"></ion-icon>
-      Sync Conflict Detected
+      {{ 'sync.conflictResolution.title' | translate }}
     </ion-card-title>
   </ion-card-header>
   <ion-card-content>
@@ -10,36 +10,66 @@
       <ion-row>
         <ion-col size="6">
           <div class="version-card">
-            <div class="version-header">Your Version</div>
+            <div class="version-header">
+              {{ 'sync.conflictResolution.yourVersion' | translate }}
+            </div>
             <div class="version-body">
               <p>
-                <strong>Value:</strong> {{ conflict.localReading.value }}
+                <strong>{{ 'sync.conflictResolution.valueLabel' | translate }}:</strong>
+                {{ conflict.localReading.value }}
                 {{ conflict.localReading.units }}
               </p>
-              <p><strong>Time:</strong> {{ conflict.localReading.time | date: 'short' }}</p>
-              <p><strong>Notes:</strong> {{ conflict.localReading.notes || 'N/A' }}</p>
+              <p>
+                <strong>{{ 'sync.conflictResolution.timeLabel' | translate }}:</strong>
+                {{ conflict.localReading.time | date: 'short' }}
+              </p>
+              <p>
+                <strong>{{ 'sync.conflictResolution.notesLabel' | translate }}:</strong>
+                {{
+                  conflict.localReading.notes ||
+                    ('sync.conflictResolution.notAvailable' | translate)
+                }}
+              </p>
             </div>
           </div>
         </ion-col>
         <ion-col size="6">
           <div class="version-card">
-            <div class="version-header">Server Version</div>
+            <div class="version-header">
+              {{ 'sync.conflictResolution.serverVersion' | translate }}
+            </div>
             <div class="version-body">
               <p>
-                <strong>Value:</strong> {{ conflict.serverReading.value }}
+                <strong>{{ 'sync.conflictResolution.valueLabel' | translate }}:</strong>
+                {{ conflict.serverReading.value }}
                 {{ conflict.serverReading.units }}
               </p>
-              <p><strong>Time:</strong> {{ conflict.serverReading.time | date: 'short' }}</p>
-              <p><strong>Notes:</strong> {{ conflict.serverReading.notes || 'N/A' }}</p>
+              <p>
+                <strong>{{ 'sync.conflictResolution.timeLabel' | translate }}:</strong>
+                {{ conflict.serverReading.time | date: 'short' }}
+              </p>
+              <p>
+                <strong>{{ 'sync.conflictResolution.notesLabel' | translate }}:</strong>
+                {{
+                  conflict.serverReading.notes ||
+                    ('sync.conflictResolution.notAvailable' | translate)
+                }}
+              </p>
             </div>
           </div>
         </ion-col>
       </ion-row>
     </ion-grid>
     <div class="ion-text-center ion-margin-top">
-      <ion-button fill="outline" (click)="keepMine()">Keep Mine</ion-button>
-      <ion-button fill="outline" (click)="keepServer()">Keep Server</ion-button>
-      <ion-button fill="solid" (click)="keepBoth()">Keep Both</ion-button>
+      <ion-button fill="outline" (click)="keepMine()">
+        {{ 'sync.conflictResolution.keepMine' | translate }}
+      </ion-button>
+      <ion-button fill="outline" (click)="keepServer()">
+        {{ 'sync.conflictResolution.keepServer' | translate }}
+      </ion-button>
+      <ion-button fill="solid" (click)="keepBoth()">
+        {{ 'sync.conflictResolution.keepBoth' | translate }}
+      </ion-button>
     </div>
   </ion-card-content>
 </ion-card>

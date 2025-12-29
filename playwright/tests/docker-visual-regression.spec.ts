@@ -77,21 +77,28 @@ async function prepareForScreenshot(page: Page): Promise<void> {
   await page.waitForLoadState('networkidle', { timeout: 15000 });
   await page.waitForTimeout(500);
 
-  // Ocultar elementos dinamicos
+  // Ocultar elementos dinamicos para screenshots deterministas
   await page.addStyleTag({
     content: `
-      /* Timestamps */
+      /* Timestamps y fechas */
       [data-testid="timestamp"], .timestamp, .time-ago, .relative-time { visibility: hidden !important; }
+      /* Sync status timestamps */
+      [data-testid="last-sync"], .last-sync, .sync-time { visibility: hidden !important; }
       /* Avatares dinamicos */
       .avatar-random, .avatar-generated { visibility: hidden !important; }
       /* Spinners y loading */
       ion-spinner, .loading-indicator { visibility: hidden !important; }
+      /* Network status badge (puede cambiar) */
+      [data-testid="network-status-badge"] { visibility: hidden !important; }
       /* Deshabilitar animaciones */
       *, *::before, *::after {
         animation-duration: 0s !important;
         transition-duration: 0s !important;
         animation-delay: 0s !important;
       }
+      /* Scroll bars (pueden variar entre sistemas) */
+      ::-webkit-scrollbar { display: none !important; }
+      * { scrollbar-width: none !important; }
     `,
   });
 }
@@ -107,14 +114,18 @@ async function disableDeviceFrame(page: Page): Promise<void> {
 
 /**
  * Login y navegar a tab especificado
+ * Usa multiples estrategias de seleccion para mayor robustez
  */
 async function loginAndNavigate(page: Page, targetTab?: string): Promise<void> {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
   await disableDeviceFrame(page);
 
+  // Obtener URL de forma segura
+  const currentUrl = page.url() || '';
+
   // Manejar welcome screen
-  if (page.url().includes('/welcome')) {
+  if (currentUrl.includes('/welcome')) {
     const loginBtn = page.locator('[data-testid="welcome-login-btn"]');
     if ((await loginBtn.count()) > 0) {
       await loginBtn.click();
@@ -123,7 +134,8 @@ async function loginAndNavigate(page: Page, targetTab?: string): Promise<void> {
   }
 
   // Login si es necesario
-  if (!page.url().includes('/tabs/')) {
+  const afterWelcomeUrl = page.url() || '';
+  if (!afterWelcomeUrl.includes('/tabs/')) {
     await page.waitForSelector('form', { state: 'visible', timeout: 10000 });
     await page.fill('#username', TEST_USERNAME);
     await page.fill('#password', TEST_PASSWORD);
@@ -132,9 +144,34 @@ async function loginAndNavigate(page: Page, targetTab?: string): Promise<void> {
     await page.waitForLoadState('networkidle');
   }
 
-  // Navegar a tab
+  // Navegar a tab con multiples estrategias
   if (targetTab) {
-    await page.click(`[data-testid="tab-${targetTab}"]`);
+    // Mapa de tabs a labels en espanol
+    const tabLabels: Record<string, string> = {
+      readings: 'Lecturas',
+      appointments: 'Citas',
+      profile: 'Perfil',
+      dashboard: 'Inicio',
+    };
+    const tabLabel = tabLabels[targetTab] || targetTab;
+
+    // Intentar multiples selectores
+    const tabByTestId = page.locator(`[data-testid="tab-${targetTab}"]`);
+    const tabByRole = page.getByRole('tab', { name: tabLabel });
+    const tabById = page.locator(`#tab-${targetTab}`);
+
+    // Usar el primero visible
+    if (await tabByTestId.isVisible().catch(() => false)) {
+      await tabByTestId.click();
+    } else if (await tabByRole.isVisible().catch(() => false)) {
+      await tabByRole.click();
+    } else if (await tabById.isVisible().catch(() => false)) {
+      await tabById.click();
+    } else {
+      // Fallback: navegar directamente a la URL
+      await page.goto(`/tabs/${targetTab}`);
+    }
+
     await expect(page).toHaveURL(new RegExp(`/tabs/${targetTab}`), { timeout: 10000 });
     await page.waitForLoadState('networkidle');
   }

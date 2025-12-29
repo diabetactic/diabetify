@@ -6,7 +6,7 @@ import {
   HttpRequest,
   HttpErrorResponse,
 } from '@angular/common/http';
-import { Observable, of, throwError, timer } from 'rxjs';
+import { Observable, throwError, timer } from 'rxjs';
 import { catchError, mergeMap, retryWhen } from 'rxjs/operators';
 
 import { ErrorHandlerService } from '@services/error-handler.service';

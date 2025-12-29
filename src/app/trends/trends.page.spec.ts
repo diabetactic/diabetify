@@ -1,10 +1,11 @@
 // Initialize TestBed environment for Vitest
 import '../../test-setup';
 
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { vi } from 'vitest';
+import { of } from 'rxjs';
 
 // Mock Chart.js to prevent registration errors with mock plugins
 vi.mock('chart.js', async importOriginal => {
@@ -21,14 +22,22 @@ vi.mock('chart.js', async importOriginal => {
 import { TrendsPage } from './trends.page';
 import { ReadingsService } from '@services/readings.service';
 import { LoggerService } from '@services/logger.service';
+import { ThemeService } from '@services/theme.service';
 
 describe('TrendsPage', () => {
   let component: TrendsPage;
   let fixture: ComponentFixture<TrendsPage>;
   let mockReadingsService: Partial<ReadingsService>;
   let mockLoggerService: Partial<LoggerService>;
+  let mockThemeService: any;
 
   beforeEach(async () => {
+    // Mock de ThemeService
+    mockThemeService = {
+      isDark$: of(false),
+      getChartOptions: vi.fn().mockReturnValue({}),
+    };
+
     // Mock de ReadingsService
     mockReadingsService = {
       getStatistics: vi.fn().mockResolvedValue({
@@ -56,6 +65,7 @@ describe('TrendsPage', () => {
       providers: [
         { provide: ReadingsService, useValue: mockReadingsService },
         { provide: LoggerService, useValue: mockLoggerService },
+        { provide: ThemeService, useValue: mockThemeService },
         provideCharts(withDefaultRegisterables()),
       ],
     }).compileComponents();
@@ -188,29 +198,31 @@ describe('TrendsPage', () => {
       expect(template).toBeDefined();
     });
 
-    it('should render Ionic components correctly', () => {
+    it('should render Ionic components correctly', fakeAsync(() => {
       fixture.detectChanges();
+      tick();
       const compiled = fixture.nativeElement as HTMLElement;
 
       // Should have proper Ionic structure
       expect(compiled.querySelector('ion-header ion-toolbar ion-title')).toBeTruthy();
-    });
+    }));
   });
 
   describe('Change Detection', () => {
-    it('should support manual change detection', () => {
+    it('should support manual change detection', fakeAsync(() => {
       expect(() => {
         fixture.detectChanges();
+        tick();
       }).not.toThrow();
-    });
+    }));
 
-    it('should not trigger automatic change detection', () => {
+    it('should not trigger automatic change detection', fakeAsync(() => {
       const detectChangesSpy = vi.spyOn(fixture.changeDetectorRef, 'detectChanges');
 
       // With OnPush, changes should not trigger automatically
       // This is a simplified check
       expect(detectChangesSpy).not.toHaveBeenCalled();
-    });
+    }));
   });
 
   describe('Template Compilation', () => {
@@ -290,11 +302,12 @@ describe('TrendsPage', () => {
       }).not.toThrow();
     });
 
-    it('should not throw on change detection', () => {
+    it('should not throw on change detection', fakeAsync(() => {
       expect(() => {
         fixture.detectChanges();
+        tick();
       }).not.toThrow();
-    });
+    }));
 
     it('should not throw on component access', () => {
       expect(() => {
@@ -302,12 +315,15 @@ describe('TrendsPage', () => {
       }).not.toThrow();
     });
 
-    it('should handle multiple detect changes calls', () => {
+    it('should handle multiple detect changes calls', fakeAsync(() => {
       expect(() => {
         fixture.detectChanges();
+        tick();
         fixture.detectChanges();
+        tick();
         fixture.detectChanges();
+        tick();
       }).not.toThrow();
-    });
+    }));
   });
 });
