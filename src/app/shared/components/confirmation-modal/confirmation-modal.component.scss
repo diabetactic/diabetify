@@ -1,0 +1,53 @@
+:host {
+  .modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .modal-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  .modal-message {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+  }
+
+  .calculation-details {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: var(--ion-color-light);
+  }
+
+  .details-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+
+  .details-grid {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .detail-value {
+    font-weight: bold;
+  }
+}

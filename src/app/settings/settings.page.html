@@ -229,6 +229,41 @@
       }
     </ion-list>
 
+    <!-- Safety Settings -->
+    <ion-list-header class="px-4 pb-2.5 pt-5 text-xs font-semibold uppercase tracking-wider">
+      <ion-label>{{ 'settings.safety.title' | translate }}</ion-label>
+    </ion-list-header>
+    <ion-list class="mb-4">
+      <ion-item>
+        <ion-label position="stacked">{{ 'settings.safety.maxBolus' | translate }}</ion-label>
+        <ion-range
+          [(ngModel)]="safetySettings.maxBolus"
+          (ionChange)="hasChanges = true"
+          min="5"
+          max="30"
+          step="1"
+          snaps="true"
+          pin="true"
+        >
+          <div slot="end">{{ safetySettings.maxBolus }} U</div>
+        </ion-range>
+      </ion-item>
+      <ion-item>
+        <ion-label position="stacked">{{ 'settings.safety.lowGlucose' | translate }}</ion-label>
+        <ion-range
+          [(ngModel)]="safetySettings.lowGlucoseThreshold"
+          (ionChange)="hasChanges = true"
+          min="60"
+          max="80"
+          step="5"
+          snaps="true"
+          pin="true"
+        >
+          <div slot="end">{{ safetySettings.lowGlucoseThreshold }} mg/dL</div>
+        </ion-range>
+      </ion-item>
+    </ion-list>
+
     <!-- Advanced Settings -->
     <ion-list-header class="px-4 pb-2.5 pt-5 text-xs font-semibold uppercase tracking-wider">
       <ion-label>{{ 'settings.sections.advanced' | translate }}</ion-label>

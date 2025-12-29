@@ -84,6 +84,8 @@ export class MockDataService {
     correctionFactor: 50,
     targetGlucose: 120,
     targetRange: { min: 70, max: 180 },
+    maxBolus: 15,
+    lowGlucoseThreshold: 70,
   };
 
   private readonly isMockMode = environment.backendMode === 'mock';

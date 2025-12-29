@@ -139,6 +139,21 @@
           </div>
           <div class="result-units">{{ 'bolusCalculator.units' | translate }}</div>
         </div>
+
+        @if (warnings.length > 0) {
+          <div class="warnings-section">
+            <h4 class="warnings-title">
+              <ion-icon name="alert-circle-outline" class="warning-icon"></ion-icon>
+              {{ 'bolusCalculator.warningsTitle' | translate }}
+            </h4>
+            <ul class="warnings-list">
+              @for (warning of warnings; track warning.type) {
+                <li>{{ warning.message }}</li>
+              }
+            </ul>
+          </div>
+        }
+
         <div class="divider"></div>
         <h3 class="details-title">
           <app-icon name="stats-chart-outline" aria-hidden="true"></app-icon>

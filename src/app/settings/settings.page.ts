@@ -35,10 +35,9 @@ import { Subject } from 'rxjs';
 
 import { ProfileService } from '@services/profile.service';
 import { ThemeService } from '@services/theme.service';
-import { LocalAuthService } from '@services/local-auth.service';
+import { LocalAuthService, LocalUser, UserPreferences } from '@services/local-auth.service';
 import { DemoDataService } from '@services/demo-data.service';
 import { NotificationService, ReadingReminder } from '@services/notification.service';
-import { LocalUser, UserPreferences } from '@services/local-auth.service';
 import { environment } from '@env/environment';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { LoggerService } from '@services/logger.service';
@@ -109,6 +108,11 @@ export class SettingsPage implements OnInit, OnDestroy {
     targetHigh: 180,
     hypoglycemiaThreshold: 70,
     hyperglycemiaThreshold: 180,
+  };
+
+  safetySettings = {
+    maxBolus: 15,
+    lowGlucoseThreshold: 70,
   };
 
   // UI state
@@ -210,6 +214,10 @@ export class SettingsPage implements OnInit, OnDestroy {
             hypoglycemiaThreshold: this.preferences.targetRange.low,
             hyperglycemiaThreshold: this.preferences.targetRange.high,
           };
+          this.safetySettings = {
+            maxBolus: this.preferences.maxBolus || 15,
+            lowGlucoseThreshold: this.preferences.lowGlucoseThreshold || 70,
+          };
         }
       }
     } catch (error) {
@@ -305,6 +313,8 @@ export class SettingsPage implements OnInit, OnDestroy {
           readings: true,
           reminders: true,
         },
+        maxBolus: this.safetySettings.maxBolus,
+        lowGlucoseThreshold: this.safetySettings.lowGlucoseThreshold,
       };
 
       // Save to local storage

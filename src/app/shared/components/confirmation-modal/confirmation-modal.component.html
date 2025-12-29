@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar [color]="color">
+    <ion-title>{{ title | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <div class="modal-content">
+    <app-icon [name]="icon" [color]="color" class="modal-icon"></app-icon>
+    <p class="modal-message" [innerHTML]="message | translate"></p>
+
+    @if (calculation) {
+      <div class="calculation-details">
+        <h3 class="details-title">{{ 'bolusCalculator.details' | translate }}</h3>
+        <div class="details-grid">
+          <div class="detail-row">
+            <span>{{ 'bolusCalculator.recommended' | translate }}:</span>
+            <span class="detail-value">{{ calculation.recommendedInsulin.toFixed(1) }} U</span>
+          </div>
+          <div class="detail-row">
+            <span>{{ 'bolusCalculator.currentGlucose' | translate }}:</span>
+            <span>{{ calculation.currentGlucose }} mg/dL</span>
+          </div>
+          <div class="detail-row">
+            <span>{{ 'bolusCalculator.carbohydrates' | translate }}:</span>
+            <span>{{ calculation.carbGrams }} g</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="modal-actions">
+      <ion-button (click)="onCancel()" fill="outline" color="medium">
+        {{ cancelButtonText | translate }}
+      </ion-button>
+      <ion-button (click)="onConfirm()" [color]="color">
+        {{ confirmButtonText | translate }}
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

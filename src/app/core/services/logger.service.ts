@@ -37,8 +37,19 @@ export class LoggerService {
   /**
    * Log info message
    */
-  info(context: string, message: string, data?: unknown): void {
+  public info(context: string, message: string, data?: unknown): void {
     this.writeLog('INFO', context, message, data);
+  }
+
+  public logAuditEvent(eventType: string, data: unknown): void {
+    const auditData = {
+      eventType,
+      timestamp: new Date().toISOString(),
+      data,
+    };
+    // In a real application, this would write to a separate, secure audit file.
+    // For this mock, we'll log it to the console with a specific context.
+    this.info('BolusSafetyAudit', `[AUDIT] ${eventType}`, auditData);
   }
 
   /**

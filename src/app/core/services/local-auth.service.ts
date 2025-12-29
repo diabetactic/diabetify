@@ -70,6 +70,8 @@ export interface UserPreferences {
     reminders: boolean;
   };
   theme: 'light' | 'dark' | 'auto';
+  maxBolus?: number;
+  lowGlucoseThreshold?: number;
 }
 
 /**

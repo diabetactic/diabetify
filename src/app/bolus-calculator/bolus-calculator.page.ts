@@ -1,9 +1,10 @@
-import { Component, inject, signal, ChangeDetectorRef, DestroyRef } from '@angular/core';
+import { Component, inject, signal, ChangeDetectorRef, DestroyRef, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NavController } from '@ionic/angular';
+import { NavController, ModalController } from '@ionic/angular';
 import {
   IonHeader,
   IonToolbar,
@@ -17,11 +18,20 @@ import {
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { MockDataService, BolusCalculation } from '@services/mock-data.service';
+import {
+  MockDataService,
+  BolusCalculation,
+  MockReading,
+} from '@services/mock-data.service';
+import {
+  BolusSafetyService,
+  SafetyWarning,
+} from '@services/bolus-safety.service';
 import { FoodService } from '@services/food.service';
 import { FoodPickerResult, SelectedFood } from '@models/food.model';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { FoodPickerComponent } from '@shared/components/food-picker/food-picker.component';
+import { ConfirmationModalComponent } from '@shared/components/confirmation-modal/confirmation-modal.component';
 import { LoggerService } from '@services/logger.service';
 
 @Component({
@@ -53,10 +63,15 @@ export class BolusCalculatorPage {
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   private logger = inject(LoggerService);
+  private bolusSafetyService = inject(BolusSafetyService);
+  private modalCtrl = inject(ModalController);
 
   calculatorForm: FormGroup;
   calculating = false;
   result: BolusCalculation | null = null;
+  isModalOpen = false;
+  warnings: SafetyWarning[] = [];
+  recentReadings: MockReading[] = [];
 
   /** Food picker modal state */
   showFoodPicker = signal(false);
@@ -73,6 +88,21 @@ export class BolusCalculatorPage {
       currentGlucose: ['', [Validators.required, Validators.min(40), Validators.max(600)]],
       carbGrams: ['', [Validators.required, Validators.min(0), Validators.max(300)]],
     });
+  }
+
+  ngOnInit(): void {
+    this.getRecentReadings();
+  }
+
+  getRecentReadings(): void {
+    const since = new Date();
+    since.setHours(since.getHours() - 4);
+    this.mockData
+      .getReadings(since)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(readings => {
+        this.recentReadings = readings;
+      });
   }
 
   /**
@@ -123,27 +153,36 @@ export class BolusCalculatorPage {
     }
 
     this.calculating = true;
+    this.result = null;
+    this.warnings = [];
     const { currentGlucose, carbGrams } = this.calculatorForm.value;
 
     try {
-      this.mockData
-        .calculateBolus({
+      const calculation = await firstValueFrom(
+        this.mockData.calculateBolus({
           currentGlucose: parseFloat(currentGlucose),
           carbGrams: parseFloat(carbGrams),
         })
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: result => {
-            this.result = result;
-            this.calculating = false;
-          },
-          error: error => {
-            this.logger.error('BolusCalculator', 'Error calculating bolus', error);
-            this.calculating = false;
-          },
-        });
+      );
+
+      this.warnings = this.bolusSafetyService.checkSafetyGuardrails(
+        calculation,
+        this.recentReadings
+      );
+
+      this.bolusSafetyService.logAuditEvent('Bolus Calculation', {
+        calculation,
+        warnings: this.warnings,
+      });
+
+      if (this.warnings.length > 0) {
+        await this.presentConfirmationModal(calculation);
+      } else {
+        this.result = calculation;
+      }
     } catch (error) {
       this.logger.error('BolusCalculator', 'Error calculating bolus', error);
+    } finally {
       this.calculating = false;
     }
   }
@@ -152,6 +191,40 @@ export class BolusCalculatorPage {
     this.calculatorForm.reset();
     this.result = null;
     this.selectedFoods.set([]);
+    this.warnings = [];
+  }
+
+  async presentConfirmationModal(calculation: BolusCalculation) {
+    this.isModalOpen = true;
+    const message = this.warnings.map(w => w.message).join('<br><br>');
+    const modal = await this.modalCtrl.create({
+      component: ConfirmationModalComponent,
+      componentProps: {
+        title: 'Warning',
+        message: message,
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        icon: 'alert-circle-outline',
+        color: 'warning',
+        calculation,
+      },
+      backdropDismiss: false,
+    });
+
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+
+    if (role === 'confirmed') {
+      this.result = calculation;
+      this.bolusSafetyService.logAuditEvent('Bolus Override', {
+        reason: this.warnings[0].type,
+        calculation,
+      });
+    } else {
+      this.result = null;
+    }
+    this.isModalOpen = false;
   }
 
   goBack() {

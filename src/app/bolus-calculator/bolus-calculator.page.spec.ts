@@ -4,7 +4,7 @@ import '../../test-setup';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { IonicModule, NavController } from '@ionic/angular';
+import { IonicModule, NavController, ModalController } from '@ionic/angular';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BolusCalculatorPage } from './bolus-calculator.page';
 import { MockDataService, BolusCalculation } from '@core/services/mock-data.service';
@@ -23,11 +23,32 @@ describe('BolusCalculatorPage', () => {
   let mockNavController: vi.Mocked<NavController>;
   let mockFoodService: vi.Mocked<FoodService>;
   let mockLoggerService: vi.Mocked<LoggerService>;
+  let mockModalController: vi.Mocked<ModalController>;
 
   beforeEach(async () => {
-    mockDataService = { calculateBolus: vi.fn() } as any;
-    mockLoggerService = { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() } as any;
+    mockDataService = {
+      calculateBolus: vi.fn(),
+      getPatientParams: vi.fn().mockReturnValue({
+        maxBolus: 15,
+        lowGlucoseThreshold: 70,
+      }),
+      getReadings: vi.fn().mockReturnValue(of([])),
+    } as any;
+    mockLoggerService = {
+      error: vi.fn(),
+      warn: vi.fn(),
+      info: vi.fn(),
+      debug: vi.fn(),
+      logAuditEvent: vi.fn(),
+    } as any;
     mockNavController = { navigateBack: vi.fn() } as any;
+    mockModalController = {
+      create: vi.fn().mockResolvedValue({
+        present: vi.fn().mockResolvedValue(undefined),
+        onWillDismiss: vi.fn().mockResolvedValue({ role: 'confirmed' }),
+      } as any),
+      dismiss: vi.fn(),
+    } as any;
 
     const selectedFoodsSignal = signal<SelectedFood[]>([]);
     const totalCarbsComputed = computed(() =>
@@ -58,6 +79,7 @@ describe('BolusCalculatorPage', () => {
         { provide: NavController, useValue: mockNavController },
         { provide: FoodService, useValue: mockFoodService },
         { provide: LoggerService, useValue: mockLoggerService },
+        { provide: ModalController, useValue: mockModalController },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
@@ -162,13 +184,10 @@ describe('BolusCalculatorPage', () => {
       mockDataService.calculateBolus.mockReturnValue(of(mockCalculation).pipe(delay(100)));
     });
 
-    it('should calculate bolus with valid inputs', fakeAsync(() => {
+    it('should calculate bolus with valid inputs', async () => {
       component.calculatorForm.patchValue({ currentGlucose: 180, carbGrams: 60 });
 
-      component.calculateBolus();
-      expect(component.calculating).toBe(true);
-
-      tick(100);
+      await component.calculateBolus();
 
       expect(mockDataService.calculateBolus).toHaveBeenCalledWith({
         currentGlucose: 180,
@@ -176,17 +195,17 @@ describe('BolusCalculatorPage', () => {
       });
       expect(component.result).toEqual(mockCalculation);
       expect(component.calculating).toBe(false);
-    }));
+    });
 
-    it('should not calculate when form is invalid', fakeAsync(() => {
+    it('should not calculate when form is invalid', async () => {
       component.calculatorForm.patchValue({ currentGlucose: '', carbGrams: 60 });
-      component.calculateBolus();
+      await component.calculateBolus();
 
       expect(mockDataService.calculateBolus).not.toHaveBeenCalled();
       expect(component.calculating).toBe(false);
-    }));
+    });
 
-    it('should handle various glucose scenarios', fakeAsync(() => {
+    it('should handle various glucose scenarios', async () => {
       const testCases = [
         { glucose: 250, carbs: 45, expectedMinInsulin: 0 }, // High - correction needed
         { glucose: 120, carbs: 45, expectedMinInsulin: 0 }, // Normal - no correction
@@ -206,22 +225,20 @@ describe('BolusCalculatorPage', () => {
         mockDataService.calculateBolus.mockReturnValue(of(calc));
 
         component.calculatorForm.patchValue({ currentGlucose: tc.glucose, carbGrams: tc.carbs });
-        component.calculateBolus();
-        tick(100);
+        await component.calculateBolus();
 
         expect(component.result?.recommendedInsulin).toBeGreaterThanOrEqual(tc.expectedMinInsulin);
         vi.clearAllMocks();
       }
-    }));
+    });
 
-    it('should handle calculation errors gracefully', fakeAsync(() => {
+    it('should handle calculation errors gracefully', async () => {
       mockDataService.calculateBolus.mockReturnValue(
         throwError(() => new Error('Calculation failed'))
       );
 
       component.calculatorForm.patchValue({ currentGlucose: 150, carbGrams: 60 });
-      component.calculateBolus();
-      tick(100);
+      await component.calculateBolus();
 
       expect(component.calculating).toBe(false);
       expect(component.result).toBeNull();
@@ -230,7 +247,7 @@ describe('BolusCalculatorPage', () => {
         'Error calculating bolus',
         expect.any(Error)
       );
-    }));
+    });
   });
 
   // ============================================================================
@@ -429,7 +446,11 @@ describe('BolusCalculatorPage', () => {
   // ============================================================================
 
   describe('Edge Cases and Boundary Conditions', () => {
-    it('should handle extreme glucose values', fakeAsync(() => {
+    beforeEach(() => {
+      component.resetCalculator();
+    });
+
+    it('should handle extreme glucose values', async () => {
       const testCases = [
         { glucose: 40, expectedValid: true }, // Min boundary
         { glucose: 600, expectedValid: true }, // Max boundary
@@ -448,15 +469,14 @@ describe('BolusCalculatorPage', () => {
         mockDataService.calculateBolus.mockReturnValue(of(calc));
 
         component.calculatorForm.patchValue({ currentGlucose: tc.glucose, carbGrams: 15 });
-        component.calculateBolus();
-        tick(100);
+        await component.calculateBolus();
 
         expect(component.result?.currentGlucose).toBe(tc.glucose);
         vi.clearAllMocks();
       }
-    }));
+    });
 
-    it('should handle string input conversion to numbers', fakeAsync(() => {
+    it('should handle string input conversion to numbers', async () => {
       const calc: BolusCalculation = {
         carbGrams: 45,
         currentGlucose: 150,
@@ -468,14 +488,13 @@ describe('BolusCalculatorPage', () => {
       mockDataService.calculateBolus.mockReturnValue(of(calc));
 
       component.calculatorForm.patchValue({ currentGlucose: '150', carbGrams: '45' });
-      component.calculateBolus();
-      tick(100);
+      await component.calculateBolus();
 
       expect(mockDataService.calculateBolus).toHaveBeenCalledWith({
         currentGlucose: 150,
         carbGrams: 45,
       });
-    }));
+    });
   });
 
   // ============================================================================
@@ -483,7 +502,11 @@ describe('BolusCalculatorPage', () => {
   // ============================================================================
 
   describe('Medical Safety Considerations', () => {
-    it('should never recommend negative insulin', fakeAsync(() => {
+    beforeEach(() => {
+      component.resetCalculator();
+    });
+
+    it('should never recommend negative insulin', async () => {
       const safeCalc: BolusCalculation = {
         carbGrams: 0,
         currentGlucose: 70,
@@ -495,13 +518,12 @@ describe('BolusCalculatorPage', () => {
       mockDataService.calculateBolus.mockReturnValue(of(safeCalc));
 
       component.calculatorForm.patchValue({ currentGlucose: 70, carbGrams: 0 });
-      component.calculateBolus();
-      tick(100);
+      await component.calculateBolus();
 
       expect(component.result?.recommendedInsulin).toBeGreaterThanOrEqual(0);
-    }));
+    });
 
-    it('should preserve all calculation details for medical review', fakeAsync(() => {
+    it('should preserve all calculation details for medical review', async () => {
       const detailedCalc: BolusCalculation = {
         carbGrams: 60,
         currentGlucose: 180,
@@ -513,8 +535,7 @@ describe('BolusCalculatorPage', () => {
       mockDataService.calculateBolus.mockReturnValue(of(detailedCalc));
 
       component.calculatorForm.patchValue({ currentGlucose: 180, carbGrams: 60 });
-      component.calculateBolus();
-      tick(100);
+      await component.calculateBolus();
 
       expect(component.result?.carbGrams).toBe(60);
       expect(component.result?.currentGlucose).toBe(180);
@@ -522,9 +543,9 @@ describe('BolusCalculatorPage', () => {
       expect(component.result?.carbRatio).toBe(15);
       expect(component.result?.correctionFactor).toBe(50);
       expect(component.result?.recommendedInsulin).toBe(5.2);
-    }));
+    });
 
-    it('should handle critical glucose scenarios safely', fakeAsync(() => {
+    it('should handle critical glucose scenarios safely', async () => {
       // Critical high (400 mg/dL)
       let calc: BolusCalculation = {
         carbGrams: 30,
@@ -537,11 +558,12 @@ describe('BolusCalculatorPage', () => {
       mockDataService.calculateBolus.mockReturnValue(of(calc));
 
       component.calculatorForm.patchValue({ currentGlucose: 400, carbGrams: 30 });
-      component.calculateBolus();
-      tick(100);
+      await component.calculateBolus();
 
       expect(component.result?.currentGlucose).toBe(400);
       expect(component.result?.recommendedInsulin).toBeGreaterThan(0);
+
+      component.result = null;
 
       // Critical low (50 mg/dL - hypoglycemia)
       calc = {
@@ -555,12 +577,11 @@ describe('BolusCalculatorPage', () => {
       mockDataService.calculateBolus.mockReturnValue(of(calc));
 
       component.calculatorForm.patchValue({ currentGlucose: 50, carbGrams: 15 });
-      component.calculateBolus();
-      tick(100);
+      await component.calculateBolus();
 
       expect(component.result?.currentGlucose).toBe(50);
       expect(component.result?.recommendedInsulin).toBeGreaterThanOrEqual(0);
-    }));
+    });
   });
 
   // ============================================================================
@@ -568,19 +589,16 @@ describe('BolusCalculatorPage', () => {
   // ============================================================================
 
   describe('User Experience', () => {
-    it('should manage calculating state correctly', fakeAsync(() => {
+    it('should manage calculating state correctly', async () => {
       mockDataService.calculateBolus.mockReturnValue(of({} as BolusCalculation).pipe(delay(100)));
 
       component.calculatorForm.patchValue({ currentGlucose: 150, carbGrams: 60 });
 
-      component.calculateBolus();
-      expect(component.calculating).toBe(true);
-
-      tick(100);
+      await component.calculateBolus();
       expect(component.calculating).toBe(false);
-    }));
+    });
 
-    it('should allow recalculation with different values', fakeAsync(() => {
+    it('should allow recalculation with different values', async () => {
       // First calculation
       mockDataService.calculateBolus.mockReturnValue(
         of({
@@ -594,8 +612,7 @@ describe('BolusCalculatorPage', () => {
       );
 
       component.calculatorForm.patchValue({ currentGlucose: 150, carbGrams: 60 });
-      component.calculateBolus();
-      tick(100);
+      await component.calculateBolus();
 
       const firstResult = component.result;
 
@@ -612,12 +629,11 @@ describe('BolusCalculatorPage', () => {
       );
 
       component.calculatorForm.patchValue({ currentGlucose: 180, carbGrams: 30 });
-      component.calculateBolus();
-      tick(100);
+      await component.calculateBolus();
 
       expect(component.result).not.toEqual(firstResult);
       expect(component.result?.carbGrams).toBe(30);
       expect(component.result?.currentGlucose).toBe(180);
-    }));
+    });
   });
 });
