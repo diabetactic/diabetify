@@ -27,6 +27,7 @@ import { TranslationService } from '@services/translation.service';
 import { LoggerService } from '@services/logger.service';
 import { ROUTES } from '@core/constants';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
+import { AppointmentTimelineComponent } from 'src/app/appointments/appointment-timeline/appointment-timeline.component';
 
 @Component({
   selector: 'app-appointment-detail',
@@ -37,6 +38,7 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
     FormsModule,
     TranslateModule,
     AppIconComponent,
+    AppointmentTimelineComponent,
     IonHeader,
     IonToolbar,
     IonTitle,
