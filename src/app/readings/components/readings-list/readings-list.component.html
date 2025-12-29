@@ -1,0 +1,102 @@
+<!-- Loading State -->
+@if (isLoading) {
+  <div class="flex min-h-[300px] flex-col items-center justify-center p-8">
+    <span class="loading loading-spinner loading-lg text-primary mb-4"></span>
+    <p class="text-base-content/60 dark:text-base-content/80 m-0 text-sm">
+      {{ 'readings.loadingReadings' | translate }}
+    </p>
+  </div>
+}
+
+<!-- Empty State -->
+@if (!isLoading && totalCount === 0) {
+  <div class="flex min-h-[400px] items-center justify-center p-8" data-testid="readings-empty">
+    <app-empty-state
+      illustration="description"
+      [heading]="'readings.noReadings' | translate"
+      [message]="'readings.noReadingsMessage' | translate"
+      [ctaText]="'readings.addReading' | translate"
+      (ctaClick)="onAddReading()"
+    >
+    </app-empty-state>
+  </div>
+}
+
+<!-- No Results State (after filtering) -->
+@if (!isLoading && totalCount > 0 && filteredCount === 0) {
+  <div class="flex min-h-[400px] items-center justify-center p-8">
+    <app-empty-state
+      illustration="search"
+      [heading]="'readings.noResults' | translate"
+      [message]="'readings.noResultsMessage' | translate"
+      [ctaText]="'readings.clearFilters' | translate"
+      (ctaClick)="onClearFilters()"
+    >
+    </app-empty-state>
+  </div>
+}
+
+<!-- Grouped Readings List -->
+@if (!isLoading && groupedReadings.length > 0) {
+  <div
+    class="page-shell pb-20"
+    style="padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px))"
+    data-testid="readings-list"
+  >
+    <ion-virtual-scroll [items]="groupedReadings" [approxItemHeight]="itemHeight()">
+      <div *virtualItem="let group">
+        <div class="mb-6 last:mb-0">
+          <!-- Date Header -->
+          <div
+            class="sticky top-0 z-10 flex items-center justify-between border-b-2 border-[var(--ion-color-primary)] bg-[var(--ion-background-color)] px-4 py-4 pb-2"
+          >
+            <ion-text>
+              <h2 class="m-0 text-lg font-semibold text-[var(--ion-color-dark)]">
+                {{ group.displayDate }}
+              </h2>
+            </ion-text>
+            <ion-text color="medium">
+              <p class="m-0 text-[13px]">
+                {{ group.readings.length }}
+                {{
+                  group.readings.length !== 1
+                    ? ('readings.readings' | translate)
+                    : ('readings.reading' | translate)
+                }}
+              </p>
+            </ion-text>
+          </div>
+          <!-- Readings in this group -->
+          <div class="m-0 px-4 py-2">
+            @for (reading of group.readings; track trackByReading($index, reading)) {
+              <ion-item-sliding #slidingItem>
+                <ion-item-options side="end">
+                  <ion-item-option
+                    color="danger"
+                    (click)="onDeleteReading(reading, slidingItem)"
+                    [attr.aria-label]="'common.delete' | translate"
+                  >
+                    <app-icon name="trash" slot="icon-only"></app-icon>
+                  </ion-item-option>
+                </ion-item-options>
+
+                <ion-item
+                  button
+                  [detail]="false"
+                  lines="none"
+                  class="cursor-pointer transition-transform duration-200 ease-in-out active:scale-[0.98]"
+                  (click)="onReadingClick(reading)"
+                  (keyup.enter)="onReadingClick(reading)"
+                  role="button"
+                  tabindex="0"
+                >
+                  <app-reading-item [reading]="reading" class="block w-full"></app-reading-item>
+                </ion-item>
+              </ion-item-sliding>
+            }
+          </div>
+        </div>
+      </div>
+    </ion-virtual-scroll>
+  </div>
+}
