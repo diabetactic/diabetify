@@ -17,9 +17,15 @@ import {
   GlucoseUnit,
   GlucoseStatus,
 } from '@models/glucose-reading.model';
-import { db, DiabetacticDatabase, SyncQueueItem } from '@services/database.service';
+import {
+  db,
+  DiabetacticDatabase,
+  SyncConflictItem,
+  SyncQueueItem,
+} from '@services/database.service';
 import { MockDataService, MockReading } from '@services/mock-data.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
+import { AuditLogService } from './audit-log.service';
 import { LoggerService } from '@services/logger.service';
 import { LocalAuthService } from '@services/local-auth.service';
 import { environment } from '@env/environment';
@@ -98,6 +104,10 @@ export class ReadingsService implements OnDestroy {
   private _pendingSyncCount$ = new BehaviorSubject<number>(0);
   public readonly pendingSyncCount$ = this._pendingSyncCount$.asObservable();
 
+  // Observable for conflict count
+  private _pendingConflicts$ = new BehaviorSubject<number>(0);
+  public readonly pendingConflicts$ = this._pendingConflicts$.asObservable();
+
   private readonly db: DiabetacticDatabase;
   private readonly liveQueryFn: typeof liveQuery;
   private readonly isMockBackend = environment.backendMode === 'mock';
@@ -119,18 +129,21 @@ export class ReadingsService implements OnDestroy {
   // App now uses backend values directly (no mapping needed)
 
   constructor(
-    @Optional() database?: DiabetacticDatabase,
+    @Optional() private database?: DiabetacticDatabase,
     @Optional() @Inject(LIVE_QUERY_FN) liveQueryFn?: typeof liveQuery,
     @Optional() private mockData?: MockDataService,
     @Optional() private apiGateway?: ApiGatewayService,
     @Optional() private logger?: LoggerService,
-    @Optional() private injector?: Injector
+    @Optional() private injector?: Injector,
+    private auditLogService?: AuditLogService
   ) {
-    this.db = database ?? db;
+    this.db = this.database ?? db;
     this.liveQueryFn = liveQueryFn ?? liveQuery;
     // ALWAYS initialize observables for reactive updates
     // This ensures readings update when added/modified
-    this.initializeObservables();
+    if (this.db) {
+      this.initializeObservables();
+    }
     // Initialize network status monitoring
     this.initializeNetworkMonitoring();
   }
@@ -183,6 +196,12 @@ export class ReadingsService implements OnDestroy {
       this._pendingSyncCount$.next(count)
     );
     this.liveQuerySubscriptions.push(syncQueueSub);
+
+    // Subscribe to conflicts changes with cleanup
+    const conflictsSub = this.liveQueryFn(() =>
+      this.db.conflicts.where('status').equals('pending').count()
+    ).subscribe(count => this._pendingConflicts$.next(count));
+    this.liveQuerySubscriptions.push(conflictsSub);
   }
 
   /**
@@ -1010,13 +1029,34 @@ export class ReadingsService implements OnDestroy {
             merged++;
           }
         } else {
-          // Existing reading - check for conflicts using server as source of truth
+          // Existing reading - check for conflicts
           const existing = existingByBackendId[0];
           const backendValue = backendReading.glucose_level;
           const backendNotes = backendReading.notes || '';
 
-          // Only update if there are actual differences (server wins)
-          if (existing.value !== backendValue || existing.notes !== backendNotes) {
+          // Conflict detection: local record has un-synced changes
+          if (!existing.synced) {
+            if (
+              existing.value !== backendValue ||
+              existing.notes !== backendNotes ||
+              (backendReading.reading_type &&
+                existing.mealContext !== backendReading.reading_type)
+            ) {
+              const serverReading = this.mapBackendToLocal(backendReading);
+              await this.db.conflicts.add({
+                readingId: existing.id,
+                localReading: existing,
+                serverReading: serverReading,
+                status: 'pending',
+                createdAt: Date.now(),
+              });
+              this.logger?.warn('Sync', `Conflict detected for reading ${existing.id}`);
+            } else {
+              // No conflict, just mark as synced
+              await this.db.readings.update(existing.id, { synced: true });
+            }
+          } else {
+            // No conflict, update local from server
             await this.db.readings.update(existing.id, {
               value: backendValue,
               notes: backendNotes,
@@ -1406,5 +1446,43 @@ export class ReadingsService implements OnDestroy {
       estimatedA1C: 0,
       gmi: 0,
     };
+  }
+
+  /**
+   * Resolve a sync conflict
+   */
+  async resolveConflict(
+    conflict: SyncConflictItem,
+    resolution: 'keep-mine' | 'keep-server' | 'keep-both'
+  ): Promise<void> {
+    switch (resolution) {
+      case 'keep-mine':
+        // The local reading is already in the database. We just need to ensure it's marked for sync.
+        await this.db.readings.update(conflict.localReading.id, { synced: false });
+        await this.addToSyncQueue('update', conflict.localReading);
+        break;
+      case 'keep-server':
+        // Overwrite the local reading with the server version.
+        await this.db.readings.put({ ...conflict.serverReading, synced: true });
+        break;
+      case 'keep-both':
+        // Keep the local version and add the server version as a new reading.
+        await this.db.readings.update(conflict.localReading.id, { synced: false });
+        await this.addToSyncQueue('update', conflict.localReading);
+        // Add the server version as a new, separate reading.
+        await this.addReading({
+          ...conflict.serverReading,
+          id: this.generateLocalId(), // Ensure it's a new reading
+        });
+        break;
+    }
+
+    // Mark the conflict as resolved
+    await this.db.conflicts.update(conflict.id, { status: 'resolved' });
+
+    await this.auditLogService?.logConflictResolution(conflict.readingId, resolution, {
+      local: conflict.localReading,
+      server: conflict.serverReading,
+    });
   }
 }

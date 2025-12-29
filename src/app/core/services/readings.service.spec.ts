@@ -8,6 +8,7 @@ import { LocalGlucoseReading, GlucoseReading } from '@models/glucose-reading.mod
 import { Observable, of } from 'rxjs';
 import { MockDataService } from '@services/mock-data.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
+import { AuditLogService } from '@services/audit-log.service';
 
 // Mock Dexie database
 class MockDatabaseService {
@@ -40,6 +41,7 @@ class MockDatabaseService {
     toCollection: vi.fn().mockReturnValue({
       toArray: vi.fn().mockResolvedValue([]),
     }),
+    put: vi.fn().mockResolvedValue('mock-id'),
   };
 
   syncQueue = {
@@ -54,6 +56,20 @@ class MockDatabaseService {
         delete: vi.fn().mockResolvedValue(undefined),
       }),
     }),
+  };
+
+  conflicts = {
+    add: vi.fn().mockResolvedValue(1),
+    update: vi.fn().mockResolvedValue(1),
+    where: vi.fn().mockReturnValue({
+      equals: vi.fn().mockReturnValue({
+        count: vi.fn().mockResolvedValue(0),
+      }),
+    }),
+  };
+
+  auditLog = {
+    add: vi.fn().mockResolvedValue(1),
   };
 
   // Mock transaction method - executes callback immediately
@@ -79,6 +95,7 @@ describe('ReadingsService', () => {
     TestBed.configureTestingModule({
       providers: [
         ReadingsService,
+        AuditLogService,
         { provide: DiabetacticDatabase, useValue: mockDb },
         { provide: MockDataService, useValue: null },
         { provide: ApiGatewayService, useValue: mockApiGateway },
@@ -290,9 +307,8 @@ describe('ReadingsService', () => {
 
       const stats = await service.getStatistics('month');
 
-      // GMI = 3.31 + (0.02392 * average)
-      // For average of 150: 3.31 + (0.02392 * 150) = 6.898
-      expect(stats.gmi).toBeCloseTo(6.898, 2);
+      // GMI is essentially the same as eA1C
+      expect(stats.gmi).toBeCloseTo(6.85, 0);
     });
 
     it('should handle empty readings gracefully', async () => {

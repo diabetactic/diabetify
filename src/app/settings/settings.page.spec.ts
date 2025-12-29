@@ -15,6 +15,7 @@ import { LocalAuthService, LocalUser, AccountState } from '@core/services/local-
 import { DemoDataService } from '@core/services/demo-data.service';
 import { NotificationService, ReadingReminder } from '@core/services/notification.service';
 import { ROUTES, STORAGE_KEYS } from '@core/constants';
+import { ReadingsService } from '@services/readings.service';
 
 describe('SettingsPage', () => {
   let component: SettingsPage;
@@ -31,6 +32,7 @@ describe('SettingsPage', () => {
   let mockDemoDataService: Mock<DemoDataService>;
   let mockNotificationService: Mock<NotificationService>;
   let mockTranslateService: Mock<TranslateService>;
+  let mockReadingsService: Partial<ReadingsService>;
 
   // Mock data
   const mockUser: LocalUser = {
@@ -137,6 +139,7 @@ describe('SettingsPage', () => {
 
     mockDemoDataService = {
       isDemoMode: vi.fn().mockReturnValue(false),
+      generateGlucoseReadings: vi.fn().mockResolvedValue([]),
     } as any;
 
     mockNotificationService = {
@@ -160,6 +163,10 @@ describe('SettingsPage', () => {
       currentLang: 'es',
     } as any;
 
+    mockReadingsService = {
+      pendingConflicts$: new BehaviorSubject(0),
+    };
+
     await TestBed.configureTestingModule({
       imports: [SettingsPage, IonicModule.forRoot(), TranslateModule.forRoot()],
       providers: [
@@ -173,6 +180,7 @@ describe('SettingsPage', () => {
         { provide: DemoDataService, useValue: mockDemoDataService },
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: TranslateService, useValue: mockTranslateService },
+        { provide: ReadingsService, useValue: mockReadingsService },
       ],
     }).compileComponents();
 

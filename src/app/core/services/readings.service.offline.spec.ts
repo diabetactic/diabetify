@@ -31,6 +31,8 @@ import { LoggerService } from '@services/logger.service';
 import { Network } from '@capacitor/network';
 import Dexie from 'dexie';
 import type { Mock } from 'vitest';
+import { of } from 'rxjs';
+import { AuditLogService } from '@services/audit-log.service';
 
 // Note: @capacitor/network is already mocked in test-setup/index.ts
 
@@ -60,6 +62,8 @@ describe('ReadingsService - Offline Detection', () => {
       readings: 'id, time, synced',
       syncQueue: '++id, readingId, timestamp',
       appointments: 'id, datetime, userId',
+      conflicts: '++id, readingId, status',
+      auditLog: '++id, action, createdAt',
     });
 
     // Mock logger
@@ -92,6 +96,7 @@ describe('ReadingsService - Offline Detection', () => {
     TestBed.configureTestingModule({
       providers: [
         ReadingsService,
+        AuditLogService,
         { provide: DiabetacticDatabase, useValue: mockDb },
         { provide: LIVE_QUERY_FN, useValue: mockLiveQuery },
         { provide: MockDataService, useValue: null },
@@ -255,9 +260,7 @@ describe('ReadingsService - Offline Detection', () => {
 
     it('should proceed with fetch when online', async () => {
       // Mock API response
-      mockApiGateway.request = vi.fn().mockReturnValue({
-        toPromise: () => Promise.resolve({ success: true, data: { readings: [] } }),
-      });
+      mockApiGateway.request = vi.fn().mockReturnValue(of({ success: true, data: { readings: [] } }));
 
       await waitForInit();
 

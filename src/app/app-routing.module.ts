@@ -71,4 +71,9 @@ export const APP_ROUTES: Routes = [
     canMatch: [OnboardingGuard],
     loadComponent: () => import('./achievements/achievements.page').then(m => m.AchievementsPage),
   },
+  {
+    path: 'conflicts',
+    canMatch: [OnboardingGuard],
+    loadComponent: () => import('./conflicts/conflicts.page').then(m => m.ConflictsPage),
+  },
 ];

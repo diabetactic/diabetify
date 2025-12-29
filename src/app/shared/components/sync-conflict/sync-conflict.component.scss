@@ -1,0 +1,16 @@
+.version-card {
+  border: 1px solid var(--ion-color-medium);
+  border-radius: 8px;
+  height: 100%;
+}
+
+.version-header {
+  background: var(--ion-color-light);
+  padding: 8px;
+  font-weight: bold;
+  border-bottom: 1px solid var(--ion-color-medium);
+}
+
+.version-body {
+  padding: 8px;
+}

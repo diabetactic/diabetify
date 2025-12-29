@@ -269,6 +269,13 @@
       <ion-label>{{ 'settings.sections.advanced' | translate }}</ion-label>
     </ion-list-header>
     <ion-list class="mb-4">
+      <ion-item button routerLink="/conflicts" class="flex items-center gap-2">
+        <app-icon name="sync-outline"></app-icon>
+        <ion-label>Sync Conflicts</ion-label>
+        <ion-badge color="danger" *ngIf="pendingConflicts > 0">{{ pendingConflicts }}</ion-badge>
+        <app-icon name="chevron-forward"></app-icon>
+      </ion-item>
+
       <ion-item button (click)="goToAdvancedSettings()" class="flex items-center gap-2">
         <app-icon name="settings-outline"></app-icon>
         <ion-label>{{ 'settings.debug.advancedConfig' | translate }}</ion-label>

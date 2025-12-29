@@ -31,6 +31,7 @@ import {
   isValidBackendReadingType,
 } from '@core/contracts/backend-enums.contract';
 import { GlucoseReading } from '@models/glucose-reading.model';
+import { AuditLogService } from '@services/audit-log.service';
 
 // ============================================================================
 // EXPECTED MAPPING DEFINITIONS
@@ -140,6 +141,20 @@ class MockDatabaseService {
     }),
   };
 
+  conflicts = {
+    add: vi.fn().mockResolvedValue(1),
+    update: vi.fn().mockResolvedValue(1),
+    where: vi.fn().mockReturnValue({
+      equals: vi.fn().mockReturnValue({
+        count: vi.fn().mockResolvedValue(0),
+      }),
+    }),
+  };
+
+  auditLog = {
+    add: vi.fn().mockResolvedValue(1),
+  };
+
   clear() {
     return Promise.resolve();
   }
@@ -174,6 +189,7 @@ describe('ReadingsService: Backend Mapping', () => {
     TestBed.configureTestingModule({
       providers: [
         ReadingsService,
+        AuditLogService,
         { provide: DiabetacticDatabase, useValue: mockDb },
         { provide: MockDataService, useValue: null },
         { provide: ApiGatewayService, useValue: mockApiGateway },
@@ -367,6 +383,7 @@ describe('ReadingsService: Sync to Backend', () => {
     TestBed.configureTestingModule({
       providers: [
         ReadingsService,
+        AuditLogService,
         { provide: DiabetacticDatabase, useValue: mockDb },
         { provide: MockDataService, useValue: null },
         { provide: ApiGatewayService, useValue: mockApiGateway },

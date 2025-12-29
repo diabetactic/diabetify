@@ -31,9 +31,10 @@ import {
   IonDatetime,
   IonRange,
 } from '@ionic/angular/standalone';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 
 import { ProfileService } from '@services/profile.service';
+import { ReadingsService } from '@services/readings.service';
 import { ThemeService } from '@services/theme.service';
 import { LocalAuthService, LocalUser, UserPreferences } from '@services/local-auth.service';
 import { DemoDataService } from '@services/demo-data.service';
@@ -42,6 +43,7 @@ import { environment } from '@env/environment';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { LoggerService } from '@services/logger.service';
 import { ROUTES, STORAGE_KEYS, TIMEOUTS } from '@core/constants';
+import { db } from '@services/database.service';
 
 @Component({
   selector: 'app-settings',
@@ -129,6 +131,9 @@ export class SettingsPage implements OnInit, OnDestroy {
   // Platform detection for web notification warning
   isWebPlatform = false;
 
+  public pendingConflicts = 0;
+  private pendingConflictsSubscription: Subscription | undefined;
+
   constructor(
     private router: Router,
     private alertController: AlertController,
@@ -141,7 +146,8 @@ export class SettingsPage implements OnInit, OnDestroy {
     private demoDataService: DemoDataService,
     private notificationService: NotificationService,
     private translate: TranslateService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private readingsService: ReadingsService
   ) {
     // Detect if running on web (not native)
     this.isWebPlatform = !this.platform.is('capacitor');
@@ -153,11 +159,15 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.isDemoMode = this.demoDataService.isDemoMode();
     this.checkNotificationPermission();
     this.loadNotificationSettings();
+    this.pendingConflictsSubscription = this.readingsService.pendingConflicts$.subscribe(count => {
+      this.pendingConflicts = count;
+    });
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    this.pendingConflictsSubscription?.unsubscribe();
   }
 
   /**

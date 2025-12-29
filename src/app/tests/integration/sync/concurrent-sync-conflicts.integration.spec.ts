@@ -48,6 +48,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
     }
     try {
       await readingsService?.clearAllReadings();
+      await db.conflicts.clear();
     } catch (_error) {
       // Ignore cleanup errors during teardown
     }
@@ -79,7 +80,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
   });
 
   describe('Same Reading Edited on Multiple Devices (Server Wins)', () => {
-    it('should resolve conflict with server timestamp winning', async () => {
+    it('should create a conflict when local unsynced reading differs from server', async () => {
       // Simulate previously synced reading
       const baseReading = await readingsService.addReading({
         value: 100,
@@ -122,19 +123,17 @@ describe('Concurrent Sync Conflicts Integration', () => {
         })
       );
 
-      // Execute fetchFromBackend -> should apply server changes
-      const fetchResult = await readingsService.fetchFromBackend();
-      expect(fetchResult.fetched).toBe(1);
+      // Execute fetchFromBackend -> should create a conflict
+      await readingsService.fetchFromBackend();
 
-      // Verify that server won
-      const updated = await readingsService.getReadingById(baseReading.id);
-      expect(updated).toBeDefined();
-      expect(updated!.value).toBe(120); // Server value
-      expect(updated!.notes).toBe('Device 2 edit'); // Server notes
-      expect(updated!.synced).toBe(true);
+      // Verify that a conflict was created
+      const conflicts = await db.conflicts.toArray();
+      expect(conflicts.length).toBe(1);
+      expect(conflicts[0].localReading.value).toBe(110);
+      expect(conflicts[0].serverReading.value).toBe(120);
     });
 
-    it('should handle concurrent edits to different fields (server wins all)', async () => {
+    it('should handle concurrent edits to different fields', async () => {
       // Synchronized base reading
       const baseReading = await readingsService.addReading({
         value: 100,
@@ -175,11 +174,12 @@ describe('Concurrent Sync Conflicts Integration', () => {
 
       await readingsService.fetchFromBackend();
 
-      // Verify that all server fields won
-      const updated = await readingsService.getReadingById(baseReading.id);
-      expect(updated!.value).toBe(150);
-      expect(updated!.mealContext).toBe('POSTPRANDIAL');
-      expect(updated!.notes).toBe('Server version notes');
+      // Verify that a conflict was created
+      const conflicts = await db.conflicts.toArray();
+      expect(conflicts.length).toBe(1);
+      expect(conflicts[0].localReading.notes).toBe('After lunch - local edit');
+      expect(conflicts[0].serverReading.value).toBe(150);
+      expect(conflicts[0].serverReading.mealContext).toBe('POSTPRANDIAL');
     });
   });
 
@@ -441,7 +441,7 @@ describe('Concurrent Sync Conflicts Integration', () => {
   });
 
   describe('Merge Strategy for Field Conflicts', () => {
-    it('should merge server changes for value field (server wins)', async () => {
+    it('should create a conflict when local and server values differ', async () => {
       // Base reading
       const reading = await readingsService.addReading({
         value: 100,
@@ -482,13 +482,13 @@ describe('Concurrent Sync Conflicts Integration', () => {
 
       await readingsService.fetchFromBackend();
 
-      const merged = await readingsService.getReadingById(reading.id);
-      // Server wins on all fields (no selective merge)
-      expect(merged!.value).toBe(150);
-      expect(merged!.notes).toBe('Original'); // Server overwrites
+      const conflicts = await db.conflicts.toArray();
+      expect(conflicts.length).toBe(1);
+      expect(conflicts[0].localReading.notes).toBe('Local notes edit');
+      expect(conflicts[0].serverReading.value).toBe(150);
     });
 
-    it('should handle notes field conflict (server wins)', async () => {
+    it('should create a conflict when notes differ', async () => {
       const reading = await readingsService.addReading({
         value: 100,
         units: 'mg/dL',
@@ -527,11 +527,13 @@ describe('Concurrent Sync Conflicts Integration', () => {
 
       await readingsService.fetchFromBackend();
 
-      const merged = await readingsService.getReadingById(reading.id);
-      expect(merged!.notes).toBe('Server edit: reviewed by doctor'); // Server wins
+      const conflicts = await db.conflicts.toArray();
+      expect(conflicts.length).toBe(1);
+      expect(conflicts[0].localReading.notes).toBe('Local edit: feeling good');
+      expect(conflicts[0].serverReading.notes).toBe('Server edit: reviewed by doctor');
     });
 
-    it('should handle mealContext conflict (server wins)', async () => {
+    it('should create a conflict when mealContext differs', async () => {
       const reading = await readingsService.addReading({
         value: 140,
         units: 'mg/dL',
@@ -570,8 +572,10 @@ describe('Concurrent Sync Conflicts Integration', () => {
 
       await readingsService.fetchFromBackend();
 
-      const merged = await readingsService.getReadingById(reading.id);
-      expect(merged!.mealContext).toBe('PREPRANDIAL'); // Server wins
+      const conflicts = await db.conflicts.toArray();
+      expect(conflicts.length).toBe(1);
+      expect(conflicts[0].localReading.mealContext).toBe('POSTPRANDIAL');
+      expect(conflicts[0].serverReading.mealContext).toBe('PREPRANDIAL');
     });
   });
 

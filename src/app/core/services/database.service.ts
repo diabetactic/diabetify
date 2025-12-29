@@ -11,6 +11,29 @@ import { LoggerService } from '@services/logger.service';
 import { inject } from '@angular/core';
 
 /**
+ * Sync conflict item
+ */
+export interface SyncConflictItem {
+  id?: number;
+  readingId: string;
+  localReading: LocalGlucoseReading;
+  serverReading: LocalGlucoseReading;
+  status: 'pending' | 'resolved';
+  createdAt: number;
+}
+
+/**
+ * Audit log item
+ */
+export interface AuditLogItem {
+  id?: number;
+  action: string;
+  details: unknown;
+  createdAt: number;
+}
+
+
+/**
  * Sync queue item for offline operations
  */
 export interface SyncQueueItem {
@@ -36,6 +59,8 @@ export class DiabetacticDatabase extends Dexie {
   readings!: Table<LocalGlucoseReading, string>;
   syncQueue!: Table<SyncQueueItem, number>;
   appointments!: Table<Appointment, string>;
+  conflicts!: Table<SyncConflictItem, number>;
+  auditLog!: Table<AuditLogItem, number>;
 
   constructor() {
     super('DiabetacticDB');
@@ -78,10 +103,21 @@ export class DiabetacticDatabase extends Dexie {
       appointments: 'id, userId, dateTime, status, updatedAt',
     });
 
+    // Version 4: Add conflicts and auditLog tables
+    this.version(4).stores({
+      readings: 'id, time, type, userId, synced, localStoredAt, backendId',
+      syncQueue: '++id, timestamp, operation, appointmentId',
+      appointments: 'id, userId, dateTime, status, updatedAt',
+      conflicts: '++id, readingId, status, createdAt',
+      auditLog: '++id, action, createdAt',
+    });
+
     // Map tables to TypeScript classes
     this.readings = this.table('readings');
     this.syncQueue = this.table('syncQueue');
     this.appointments = this.table('appointments');
+    this.conflicts = this.table('conflicts');
+    this.auditLog = this.table('auditLog');
   }
 
   /**
@@ -90,10 +126,12 @@ export class DiabetacticDatabase extends Dexie {
    */
   async clearAllData(): Promise<void> {
     try {
-      await this.transaction('rw', [this.readings, this.syncQueue, this.appointments], async () => {
+      await this.transaction('rw', [this.readings, this.syncQueue, this.appointments, this.conflicts, this.auditLog], async () => {
         await this.readings.clear();
         await this.syncQueue.clear();
         await this.appointments.clear();
+        await this.conflicts.clear();
+        await this.auditLog.clear();
       });
     } catch (error) {
       // Fallback for PrematureCommitError in fake-indexeddb test environments
@@ -101,6 +139,8 @@ export class DiabetacticDatabase extends Dexie {
         await this.readings.clear();
         await this.syncQueue.clear();
         await this.appointments.clear();
+        await this.conflicts.clear();
+        await this.auditLog.clear();
       } else {
         throw error;
       }
@@ -111,16 +151,21 @@ export class DiabetacticDatabase extends Dexie {
    * Get database statistics
    */
   async getStats() {
-    const [readingsCount, syncQueueCount, appointmentsCount] = await Promise.all([
-      this.readings.count(),
-      this.syncQueue.count(),
-      this.appointments.count(),
-    ]);
+    const [readingsCount, syncQueueCount, appointmentsCount, conflictsCount, auditLogCount] =
+      await Promise.all([
+        this.readings.count(),
+        this.syncQueue.count(),
+        this.appointments.count(),
+        this.conflicts.count(),
+        this.auditLog.count(),
+      ]);
 
     return {
       readingsCount,
       syncQueueCount,
       appointmentsCount,
+      conflictsCount,
+      auditLogCount,
       databaseName: this.name,
       version: this.verno,
     };

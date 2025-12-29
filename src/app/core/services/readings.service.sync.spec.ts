@@ -20,16 +20,23 @@ import '../../../test-setup';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { ReadingsService, LIVE_QUERY_FN } from '@services/readings.service';
-import { DiabetacticDatabase, SyncQueueItem } from '@services/database.service';
+import {
+  DiabetacticDatabase,
+  SyncConflictItem,
+  SyncQueueItem,
+} from '@services/database.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
 import { LoggerService } from '@services/logger.service';
 import { LocalGlucoseReading } from '@models/glucose-reading.model';
 import { Observable } from 'rxjs';
+import { AuditLogService } from '@services/audit-log.service';
 
 // Mock database with sync queue capabilities
 class MockSyncDatabase {
   private syncQueueItems: SyncQueueItem[] = [];
   private readingsStore: LocalGlucoseReading[] = [];
+  private conflictsStore: SyncConflictItem[] = [];
+  private auditLogStore: any[] = [];
 
   readings = {
     toArray: vi.fn().mockImplementation(() => Promise.resolve(this.readingsStore)),
@@ -72,6 +79,15 @@ class MockSyncDatabase {
     toCollection: vi.fn().mockReturnValue({
       toArray: vi.fn().mockResolvedValue([]),
     }),
+    put: vi.fn().mockImplementation((reading: LocalGlucoseReading) => {
+      const index = this.readingsStore.findIndex(r => r.id === reading.id);
+      if (index >= 0) {
+        this.readingsStore[index] = reading;
+      } else {
+        this.readingsStore.push(reading);
+      }
+      return Promise.resolve(reading.id);
+    }),
   };
 
   syncQueue = {
@@ -106,6 +122,43 @@ class MockSyncDatabase {
     }),
   };
 
+  conflicts = {
+    add: vi.fn().mockImplementation((item: SyncConflictItem) => {
+      const id = Date.now();
+      this.conflictsStore.push({ ...item, id });
+      return Promise.resolve(id);
+    }),
+    update: vi
+      .fn()
+      .mockImplementation((id: number, updates: Partial<SyncConflictItem>) => {
+        const index = this.conflictsStore.findIndex(c => c.id === id);
+        if (index >= 0) {
+          this.conflictsStore[index] = {
+            ...this.conflictsStore[index],
+            ...updates,
+          };
+        }
+        return Promise.resolve(1);
+      }),
+    toArray: vi.fn().mockImplementation(() => Promise.resolve(this.conflictsStore)),
+    where: vi.fn().mockReturnValue({
+      equals: vi.fn().mockReturnValue({
+        count: vi
+          .fn()
+          .mockImplementation(() =>
+            Promise.resolve(this.conflictsStore.filter(c => c.status === 'pending').length)
+          ),
+      }),
+    }),
+  };
+
+  auditLog = {
+    add: vi.fn().mockImplementation((item: any) => {
+      this.auditLogStore.push(item);
+      return Promise.resolve(Date.now());
+    }),
+  };
+
   // Helper methods for tests
   addQueueItem(item: SyncQueueItem): void {
     const id = Date.now() + Math.random();
@@ -127,6 +180,8 @@ class MockSyncDatabase {
   clearAll(): void {
     this.syncQueueItems = [];
     this.readingsStore = [];
+    this.conflictsStore = [];
+    this.auditLogStore = [];
   }
 
   // Mock transaction method - executes callback immediately
@@ -155,6 +210,7 @@ describe('ReadingsService - Sync Queue Logic', () => {
   let mockDb: MockSyncDatabase;
   let mockApiGateway: MockApiGatewayService;
   let mockLogger: MockLoggerService;
+  let auditLogService: AuditLogService;
 
   beforeEach(() => {
     mockDb = new MockSyncDatabase();
@@ -164,6 +220,7 @@ describe('ReadingsService - Sync Queue Logic', () => {
     TestBed.configureTestingModule({
       providers: [
         ReadingsService,
+        AuditLogService,
         { provide: DiabetacticDatabase, useValue: mockDb },
         { provide: ApiGatewayService, useValue: mockApiGateway },
         { provide: LoggerService, useValue: mockLogger },
@@ -179,6 +236,7 @@ describe('ReadingsService - Sync Queue Logic', () => {
     });
 
     service = TestBed.inject(ReadingsService);
+    auditLogService = TestBed.inject(AuditLogService);
   });
 
   afterEach(() => {
@@ -568,6 +626,114 @@ describe('ReadingsService - Sync Queue Logic', () => {
       expect(result.pushed).toBe(2);
       expect(result.failed).toBe(1);
       expect(result.fetched).toBe(3);
+    });
+  });
+
+  describe('Conflict Resolution', () => {
+    const localReading: LocalGlucoseReading = {
+      id: 'reading1',
+      localId: 'local_reading1',
+      backendId: 101,
+      value: 150,
+      units: 'mg/dL',
+      time: '2024-01-20T12:00:00Z',
+      type: 'smbg',
+      synced: false,
+      userId: 'user1',
+      status: 'high',
+      localStoredAt: new Date().toISOString(),
+      notes: 'Local note',
+    };
+
+    const serverReading: LocalGlucoseReading = {
+      id: 'backend_101',
+      localId: 'backend_101',
+      backendId: 101,
+      value: 155,
+      units: 'mg/dL',
+      time: '2024-01-20T12:01:00Z',
+      type: 'smbg',
+      synced: true,
+      userId: 'user1',
+      status: 'high',
+      localStoredAt: new Date().toISOString(),
+      notes: 'Server note',
+    };
+
+    const conflict: SyncConflictItem = {
+      id: 1,
+      readingId: 'reading1',
+      localReading,
+      serverReading,
+      status: 'pending',
+      createdAt: Date.now(),
+    };
+
+    it('should detect conflict when local unsynced reading differs from server', async () => {
+      mockDb.addReading(localReading);
+
+      mockApiGateway.request.mockReturnValue(
+        of({
+          success: true,
+          data: {
+            readings: [
+              {
+                id: 101,
+                user_id: 1,
+                glucose_level: 155,
+                reading_type: 'OTRO',
+                created_at: '20/01/2024 09:01:00', // UTC-3
+                notes: 'Server note',
+              },
+            ],
+          },
+        })
+      );
+
+      mockDb.readings.filter = vi.fn().mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([localReading]),
+      });
+
+      await service.fetchFromBackend();
+
+      expect(mockDb.conflicts.add).toHaveBeenCalled();
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'Sync',
+        expect.stringContaining('Conflict detected')
+      );
+    });
+
+    it('should resolve conflict with "keep-mine"', async () => {
+      await service.resolveConflict(conflict, 'keep-mine');
+      expect(mockDb.readings.update).toHaveBeenCalledWith('reading1', { synced: false });
+      expect(mockDb.syncQueue.add).toHaveBeenCalledWith(
+        expect.objectContaining({ operation: 'update' })
+      );
+      expect(mockDb.conflicts.update).toHaveBeenCalledWith(1, { status: 'resolved' });
+      expect(mockDb.auditLog.add).toHaveBeenCalled();
+    });
+
+    it('should resolve conflict with "keep-server"', async () => {
+      await service.resolveConflict(conflict, 'keep-server');
+      expect(mockDb.readings.put).toHaveBeenCalledWith({ ...serverReading, synced: true });
+      expect(mockDb.conflicts.update).toHaveBeenCalledWith(1, { status: 'resolved' });
+      expect(mockDb.auditLog.add).toHaveBeenCalled();
+    });
+
+    it('should resolve conflict with "keep-both"', async () => {
+      await service.resolveConflict(conflict, 'keep-both');
+      expect(mockDb.readings.update).toHaveBeenCalledWith('reading1', { synced: false });
+      expect(mockDb.syncQueue.add).toHaveBeenCalledWith(
+        expect.objectContaining({ operation: 'update' })
+      );
+      expect(mockDb.readings.add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          value: serverReading.value,
+          id: expect.stringMatching(/^local_/),
+        })
+      );
+      expect(mockDb.conflicts.update).toHaveBeenCalledWith(1, { status: 'resolved' });
+      expect(mockDb.auditLog.add).toHaveBeenCalled();
     });
   });
 });

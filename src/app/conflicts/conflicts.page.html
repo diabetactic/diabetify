@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Resolve Sync Conflicts</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="conflicts.length === 0" class="ion-padding ion-text-center">
+    <h2>No conflicts to resolve.</h2>
+    <p>All your data is in sync.</p>
+  </div>
+
+  <app-sync-conflict
+    *ngFor="let conflict of conflicts"
+    [conflict]="conflict"
+    (resolve)="resolveConflict($event)"
+  ></app-sync-conflict>
+</ion-content>

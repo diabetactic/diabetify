@@ -20,6 +20,7 @@ import { Observable } from 'rxjs';
 import { ReadingsService, LIVE_QUERY_FN } from '@services/readings.service';
 import { DiabetacticDatabase } from '@services/database.service';
 import { LocalGlucoseReading } from '@models/glucose-reading.model';
+import { AuditLogService } from '@services/audit-log.service';
 
 // Mock database for calculations
 class MockCalculationsDatabase {
@@ -53,6 +54,19 @@ class MockCalculationsDatabase {
     clear: vi.fn().mockResolvedValue(undefined),
   };
 
+  conflicts = {
+    count: vi.fn().mockResolvedValue(0),
+    where: vi.fn().mockReturnValue({
+      equals: vi.fn().mockReturnValue({
+        count: vi.fn().mockResolvedValue(0),
+      }),
+    }),
+  };
+
+  auditLog = {
+    add: vi.fn().mockResolvedValue(1),
+  };
+
   setReadings(readings: LocalGlucoseReading[]): void {
     this.readingsStore = readings;
     this.readings.where.mockReturnValue({
@@ -76,6 +90,7 @@ describe('ReadingsService - Medical Calculations Precision', () => {
     TestBed.configureTestingModule({
       providers: [
         ReadingsService,
+        AuditLogService,
         { provide: DiabetacticDatabase, useValue: mockDb },
         {
           provide: LIVE_QUERY_FN,

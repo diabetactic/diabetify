@@ -51,16 +51,24 @@ describe('DiabetacticDatabase', () => {
     if (!db.isOpen()) await db.open();
 
     try {
-      await db.transaction('rw', [db.readings, db.syncQueue, db.appointments], async () => {
-        await db.readings.clear();
-        await db.syncQueue.clear();
-        await db.appointments.clear();
-      });
+      await db.transaction(
+        'rw',
+        [db.readings, db.syncQueue, db.appointments, db.conflicts, db.auditLog],
+        async () => {
+          await db.readings.clear();
+          await db.syncQueue.clear();
+          await db.appointments.clear();
+          await db.conflicts.clear();
+          await db.auditLog.clear();
+        }
+      );
     } catch (error) {
       if ((error as Error).name === 'PrematureCommitError') {
         await db.readings.clear();
         await db.syncQueue.clear();
         await db.appointments.clear();
+        await db.conflicts.clear();
+        await db.auditLog.clear();
       } else throw error;
     }
   });
@@ -68,16 +76,24 @@ describe('DiabetacticDatabase', () => {
   afterEach(async () => {
     if (skipMainHooks) return;
     try {
-      await db.transaction('rw', [db.readings, db.syncQueue, db.appointments], async () => {
-        await db.readings.clear();
-        await db.syncQueue.clear();
-        await db.appointments.clear();
-      });
+      await db.transaction(
+        'rw',
+        [db.readings, db.syncQueue, db.appointments, db.conflicts, db.auditLog],
+        async () => {
+          await db.readings.clear();
+          await db.syncQueue.clear();
+          await db.appointments.clear();
+          await db.conflicts.clear();
+          await db.auditLog.clear();
+        }
+      );
     } catch (error) {
       if ((error as Error).name === 'PrematureCommitError') {
         await db.readings.clear();
         await db.syncQueue.clear();
         await db.appointments.clear();
+        await db.conflicts.clear();
+        await db.auditLog.clear();
       } else throw error;
     }
   });
@@ -89,10 +105,12 @@ describe('DiabetacticDatabase', () => {
   describe('Database Initialization', () => {
     it('should initialize with correct name, version, and tables', () => {
       expect(database.name).toBe('DiabetacticDB');
-      expect(database.verno).toBe(3);
+      expect(database.verno).toBe(4);
       expect(database.readings).toBeDefined();
       expect(database.syncQueue).toBeDefined();
       expect(database.appointments).toBeDefined();
+      expect(database.conflicts).toBeDefined();
+      expect(database.auditLog).toBeDefined();
     });
 
     it('should have correct table schemas', async () => {
@@ -111,6 +129,17 @@ describe('DiabetacticDatabase', () => {
       const apptSchema = database.table('appointments').schema;
       expect(apptSchema.primKey.name).toBe('id');
       expect(apptSchema.indexes.some(idx => idx.name === 'userId')).toBe(true);
+
+      // Conflicts schema
+      const conflictsSchema = database.table('conflicts').schema;
+      expect(conflictsSchema.primKey.name).toBe('id');
+      expect(conflictsSchema.primKey.auto).toBe(true);
+      expect(conflictsSchema.indexes.some(idx => idx.name === 'readingId')).toBe(true);
+
+      // AuditLog schema
+      const auditLogSchema = database.table('auditLog').schema;
+      expect(auditLogSchema.primKey.name).toBe('id');
+      expect(auditLogSchema.primKey.auto).toBe(true);
     });
   });
 
@@ -140,16 +169,17 @@ describe('DiabetacticDatabase', () => {
       await Dexie.delete(MIGRATION_DB_NAME);
     });
 
-    it('should migrate from v1 to v2 preserving data', async () => {
-      // Create v1 database with data
-      const dbV1 = new Dexie(MIGRATION_DB_NAME);
-      dbV1.version(1).stores({
-        readings: 'id, time, type, userId, synced, localStoredAt',
-        syncQueue: '++id, timestamp, operation',
+    it('should migrate from v3 to v4 preserving data', async () => {
+      // Create v3 database with data
+      const dbV3 = new Dexie(MIGRATION_DB_NAME);
+      dbV3.version(3).stores({
+        readings: 'id, time, type, userId, synced, localStoredAt, backendId',
+        syncQueue: '++id, timestamp, operation, appointmentId',
+        appointments: 'id, userId, dateTime, status, updatedAt',
       });
-      await dbV1.open();
+      await dbV3.open();
 
-      await dbV1.table('readings').add({
+      await dbV3.table('readings').add({
         id: 'reading-1',
         time: new Date().toISOString(),
         type: 'smbg',
@@ -157,29 +187,19 @@ describe('DiabetacticDatabase', () => {
         units: 'mg/dL',
         synced: false,
       });
-      await dbV1.table('syncQueue').add({
-        operation: 'create',
-        readingId: 'reading-1',
-        timestamp: Date.now(),
-        retryCount: 0,
-      });
-      await dbV1.close();
+      await dbV3.close();
 
-      // Open with v2 schema
-      const dbV2 = new Dexie(MIGRATION_DB_NAME);
-      dbV2.version(2).stores({
-        readings: 'id, time, type, userId, synced, localStoredAt',
-        syncQueue: '++id, timestamp, operation, appointmentId',
-        appointments: 'id, userId, dateTime, status, updatedAt',
-      });
-      await dbV2.open();
+      // Open with v4 schema
+      const dbV4 = new DiabetacticDatabase();
+      dbV4.name = MIGRATION_DB_NAME;
+      await dbV4.open();
 
-      expect(dbV2.verno).toBe(2);
-      expect(await dbV2.table('readings').count()).toBe(1);
-      expect(await dbV2.table('syncQueue').count()).toBe(1);
-      expect(dbV2.tables.map(t => t.name)).toContain('appointments');
+      expect(dbV4.verno).toBe(4);
+      expect(await dbV4.table('readings').count()).toBe(1);
+      expect(dbV4.tables.map(t => t.name)).toContain('conflicts');
+      expect(dbV4.tables.map(t => t.name)).toContain('auditLog');
 
-      await dbV2.close();
+      await dbV4.close();
     });
   });
 
@@ -265,11 +285,7 @@ describe('DiabetacticDatabase', () => {
   // ============================================================================
 
   describe('SyncQueue Table - CRUD', () => {
-    let freshDb: Dexie & {
-      readings: Table<LocalGlucoseReading, string>;
-      syncQueue: Table<SyncQueueItem, number>;
-      appointments: Table<Appointment, string>;
-    };
+    let freshDb: DiabetacticDatabase;
     let testDbName: string;
 
     beforeAll(() => {
@@ -283,14 +299,9 @@ describe('DiabetacticDatabase', () => {
       testDbName = `DiabetacticDB_SyncQueue_${Math.random().toString(36).slice(2)}`;
       await Dexie.delete(testDbName);
 
-      const testDb = new Dexie(testDbName);
-      testDb.version(2).stores({
-        readings: 'id, time, type, userId, synced, localStoredAt',
-        syncQueue: '++id, timestamp, operation, appointmentId',
-        appointments: 'id, userId, dateTime, status, updatedAt',
-      });
-      await testDb.open();
-      freshDb = testDb as typeof freshDb;
+      freshDb = new DiabetacticDatabase();
+      freshDb.name = testDbName;
+      await freshDb.open();
     });
 
     afterEach(async () => {
@@ -310,7 +321,7 @@ describe('DiabetacticDatabase', () => {
       const id2 = await freshDb.syncQueue.add(createMockSyncItem());
 
       expect(id1).toBeGreaterThan(0);
-      expect(id2).toBe(id1 + 1);
+      expect(id2).toBe(id1! + 1);
 
       const retrieved = await freshDb.syncQueue.get(id1);
       expect(retrieved!.operation).toBe('create');
@@ -344,7 +355,7 @@ describe('DiabetacticDatabase', () => {
     });
 
     it('should query and update sync items', async () => {
-      const ids: number[] = [];
+      const ids: (number | undefined)[] = [];
       const items = [
         { ...createMockSyncItem(), operation: 'create' as const, timestamp: Date.now() - 3000 },
         { ...createMockSyncItem(), operation: 'update' as const, timestamp: Date.now() - 2000 },
@@ -372,7 +383,7 @@ describe('DiabetacticDatabase', () => {
       expect(ordered[0].operation).toBe('create');
 
       // Update
-      await freshDb.syncQueue.update(ids[0], { retryCount: 3, lastError: 'Failed' });
+      await freshDb.syncQueue.update(ids[0]!, { retryCount: 3, lastError: 'Failed' });
       const updated = await freshDb.syncQueue.get(ids[0]);
       expect(updated!.retryCount).toBe(3);
       expect(updated!.lastError).toBe('Failed');
@@ -383,7 +394,7 @@ describe('DiabetacticDatabase', () => {
       await freshDb.syncQueue.add(createMockSyncItem());
       await freshDb.syncQueue.add({ ...createMockSyncItem(), operation: 'delete' });
 
-      await freshDb.syncQueue.delete(id1);
+      await freshDb.syncQueue.delete(id1!);
       expect(await freshDb.syncQueue.count()).toBe(2);
 
       await freshDb.syncQueue.where('operation').equals('create').delete();
@@ -436,13 +447,27 @@ describe('DiabetacticDatabase', () => {
       await database.readings.add({ ...mockReading, id: 'r1' });
       await database.syncQueue.add({ operation: 'create', timestamp: Date.now(), retryCount: 0 });
       await database.appointments.add({ ...mockAppointment, id: 'a1' } as TestAppointment);
+      await database.conflicts.add({
+        readingId: 'r1',
+        localReading: mockReading,
+        serverReading: mockReading,
+        status: 'pending',
+        createdAt: Date.now(),
+      });
+      await database.auditLog.add({
+        action: 'test',
+        details: {},
+        createdAt: Date.now(),
+      });
 
       let stats = await database.getStats();
       expect(stats.readingsCount).toBe(1);
       expect(stats.syncQueueCount).toBe(1);
       expect(stats.appointmentsCount).toBe(1);
+      expect(stats.conflictsCount).toBe(1);
+      expect(stats.auditLogCount).toBe(1);
       expect(stats.databaseName).toBe('DiabetacticDB');
-      expect(stats.version).toBe(3);
+      expect(stats.version).toBe(4);
 
       await database.clearAllData();
 
@@ -450,6 +475,8 @@ describe('DiabetacticDatabase', () => {
       expect(stats.readingsCount).toBe(0);
       expect(stats.syncQueueCount).toBe(0);
       expect(stats.appointmentsCount).toBe(0);
+      expect(stats.conflictsCount).toBe(0);
+      expect(stats.auditLogCount).toBe(0);
 
       // Can still add after clearing
       await database.readings.add({ ...mockReading, id: 'new' });
@@ -466,7 +493,7 @@ describe('DiabetacticDatabase', () => {
       expect(db).toBeDefined();
       expect(db).toBeInstanceOf(DiabetacticDatabase);
       expect(db.name).toBe('DiabetacticDB');
-      expect(db.verno).toBe(3);
+      expect(db.verno).toBe(4);
       expect(db.readings).toBeDefined();
     });
   });
@@ -552,12 +579,8 @@ describe('DiabetacticDatabase', () => {
 
       // Operations on closed database
       const testDbName = `DiabetacticDB_ErrorTest_${Math.random().toString(36).slice(2)}`;
-      const testDb = new Dexie(testDbName);
-      testDb.version(2).stores({
-        readings: 'id, time, type, userId, synced, localStoredAt',
-        syncQueue: '++id, timestamp, operation, appointmentId',
-        appointments: 'id, userId, dateTime, status, updatedAt',
-      });
+      const testDb = new DiabetacticDatabase();
+      testDb.name = testDbName;
       await testDb.open();
       await testDb.close();
 
