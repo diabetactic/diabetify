@@ -26,6 +26,7 @@ describe('TrendsPage', () => {
         timeBelowRange: 10,
         readingsCount: 100,
       }),
+      getReadingsByDateRange: vi.fn().mockResolvedValue([]),
     };
 
     await TestBed.configureTestingModule({

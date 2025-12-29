@@ -55,66 +55,22 @@
         </ion-card>
       </div>
 
-      <!-- Time in Range Chart -->
+      <!-- Glucose Readings Chart -->
       <ion-card>
-        <ion-card-header>
-          <ion-card-title>{{ 'trends.timeInRange' | translate }}</ion-card-title>
+        <ion-card-header class="flex items-center justify-between">
+          <ion-card-title>{{ 'trends.glucoseReadings' | translate }}</ion-card-title>
+          <ion-button (click)="exportChart()">
+            <ion-icon name="download-outline" slot="icon-only"></ion-icon>
+          </ion-button>
         </ion-card-header>
-        <ion-card-content class="flex flex-col items-center">
-          <div class="w-full max-w-xs">
+        <ion-card-content>
+          <div class="h-64 w-full">
             <canvas
               baseChart
-              [data]="doughnutChartData"
-              [type]="doughnutChartType"
-              [options]="doughnutChartOptions"
+              [data]="lineChartData"
+              [type]="lineChartType"
+              [options]="lineChartOptions"
             ></canvas>
-          </div>
-
-          <!-- Legend with percentages -->
-          <div class="mt-4 w-full space-y-2">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <div class="h-4 w-4 rounded-full bg-green-500"></div>
-                <span class="text-sm">{{ 'trends.inRange' | translate }}</span>
-              </div>
-              <span class="text-sm font-semibold">{{ statistics()!.timeInRange.toFixed(1) }}%</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <div class="h-4 w-4 rounded-full bg-yellow-500"></div>
-                <span class="text-sm">{{ 'trends.aboveRange' | translate }}</span>
-              </div>
-              <span class="text-sm font-semibold"
-                >{{ statistics()!.timeAboveRange.toFixed(1) }}%</span
-              >
-            </div>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <div class="h-4 w-4 rounded-full bg-red-500"></div>
-                <span class="text-sm">{{ 'trends.belowRange' | translate }}</span>
-              </div>
-              <span class="text-sm font-semibold"
-                >{{ statistics()!.timeBelowRange.toFixed(1) }}%</span
-              >
-            </div>
-          </div>
-
-          <!-- Additional Stats -->
-          <div class="mt-6 w-full space-y-3 border-t border-gray-200 pt-4 dark:border-gray-700">
-            <div class="flex justify-between text-sm">
-              <span class="text-gray-500">{{ 'trends.totalReadings' | translate }}</span>
-              <span class="font-semibold">{{ statistics()!.totalReadings }}</span>
-            </div>
-            <div class="flex justify-between text-sm">
-              <span class="text-gray-500">{{ 'trends.standardDeviation' | translate }}</span>
-              <span class="font-semibold">{{ statistics()!.standardDeviation }}</span>
-            </div>
-            <div class="flex justify-between text-sm">
-              <span class="text-gray-500">{{ 'trends.cv' | translate }}</span>
-              <span class="font-semibold"
-                >{{ statistics()!.coefficientOfVariation.toFixed(1) }}%</span
-              >
-            </div>
           </div>
         </ion-card-content>
       </ion-card>

@@ -1,11 +1,10 @@
 # Diabetify Sync Proof Documentation
 
-Generated: 2025-12-22T23:51:02.073Z
+Generated: 2025-12-25T09:24:13.778Z
 
 ## Overview
 
 This document provides evidence that Diabetify's offline-first architecture works correctly:
-
 - Data is stored locally in IndexedDB
 - Data syncs to backend when online
 - Data persists across app restarts
@@ -22,15 +21,15 @@ Evidence JSON: `playwright/artifacts/sync-proof-evidence/`
 
 ### Flow: Add → IndexedDB → Sync → Backend → Persist
 
-| Step | Screenshot                             | Description                           |
-| ---- | -------------------------------------- | ------------------------------------- |
-| 1    | readings-01-after-login.png            | Initial login state                   |
-| 2    | readings-02-list-before.png            | Readings list before adding           |
-| 3    | readings-03-add-modal.png              | Add reading modal                     |
-| 4    | readings-04-filled-form.png            | Form filled with glucose value        |
-| 5    | readings-05-list-after.png             | Readings list after adding            |
-| 6    | readings-06-settings-before-logout.png | Before logout                         |
-| 7    | readings-07-after-relogin.png          | After re-login (persistence verified) |
+| Step | Screenshot | Description |
+|------|------------|-------------|
+| 1 | readings-01-after-login.png | Initial login state |
+| 2 | readings-02-list-before.png | Readings list before adding |
+| 3 | readings-03-add-modal.png | Add reading modal |
+| 4 | readings-04-filled-form.png | Form filled with glucose value |
+| 5 | readings-05-list-after.png | Readings list after adding |
+| 6 | readings-06-settings-before-logout.png | Before logout |
+| 7 | readings-07-after-relogin.png | After re-login (persistence verified) |
 
 ### Evidence Verification
 
@@ -44,14 +43,14 @@ Evidence JSON: `playwright/artifacts/sync-proof-evidence/`
 
 ### Flow: NONE → PENDING → ACCEPTED → CREATED
 
-| Step | State      | Screenshot                         | Action                        |
-| ---- | ---------- | ---------------------------------- | ----------------------------- |
-| 1    | NONE       | appointments-01-none-state.png     | No appointment in queue       |
-| 2    | PENDING    | appointments-02-pending-state.png  | Requested appointment         |
-| 3    | ACCEPTED   | appointments-03-accepted-state.png | Admin accepted via backoffice |
-| 4    | FORM       | appointments-04-create-form.png    | Filling appointment details   |
-| 5    | CREATED    | appointments-05-created-state.png  | Appointment created           |
-| 6    | RESOLUTION | appointments-06-resolution.png     | Doctor's recommendations      |
+| Step | State | Screenshot | Action |
+|------|-------|------------|--------|
+| 1 | NONE | appointments-01-none-state.png | No appointment in queue |
+| 2 | PENDING | appointments-02-pending-state.png | Requested appointment |
+| 3 | ACCEPTED | appointments-03-accepted-state.png | Admin accepted via backoffice |
+| 4 | FORM | appointments-04-create-form.png | Filling appointment details |
+| 5 | CREATED | appointments-05-created-state.png | Appointment created |
+| 6 | RESOLUTION | appointments-06-resolution.png | Doctor's recommendations |
 
 ### State Machine Diagram
 
@@ -67,19 +66,18 @@ CREATED → [Resolution Available] → RESOLUTION
 
 ## 3. Profile Persistence
 
-| Step | Screenshot               | Description              |
-| ---- | ------------------------ | ------------------------ |
-| 1    | profile-01-initial.png   | Initial profile state    |
-| 2    | profile-02-edit-mode.png | Edit mode activated      |
-| 3    | profile-03-modified.png  | Field modified           |
-| 4    | profile-04-saved.png     | Changes saved and synced |
+| Step | Screenshot | Description |
+|------|------------|-------------|
+| 1 | profile-01-initial.png | Initial profile state |
+| 2 | profile-02-edit-mode.png | Edit mode activated |
+| 3 | profile-03-modified.png | Field modified |
+| 4 | profile-04-saved.png | Changes saved and synced |
 
 ---
 
 ## 4. Screenshots Captured
 
 ### Light Theme
-
 - dashboard-light.png
 - readings-light.png
 - appointments-light.png
@@ -91,7 +89,6 @@ CREATED → [Resolution Available] → RESOLUTION
 - add-reading-modal-light.png
 
 ### Dark Theme
-
 - dashboard-dark.png
 - readings-dark.png
 - appointments-dark.png

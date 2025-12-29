@@ -18,6 +18,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { ReadingsService } from '@services/readings.service';
 
 @Component({
   selector: 'app-root',
@@ -35,10 +36,14 @@ export class AppComponent implements OnInit, OnDestroy {
     private platform: Platform,
     private logger: LoggerService,
     private authService: LocalAuthService,
-    private sessionTimeout: SessionTimeoutService
+    private sessionTimeout: SessionTimeoutService,
+    private readingsService: ReadingsService
   ) {
     this.logger.info('Init', 'AppComponent initialized');
     this.initializeApp();
+    if (!environment.production) {
+      (window as any).readingsService = this.readingsService;
+    }
   }
 
   async ngOnInit(): Promise<void> {

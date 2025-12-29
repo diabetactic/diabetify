@@ -4,6 +4,7 @@ import {
   OnInit,
   signal,
   CUSTOM_ELEMENTS_SCHEMA,
+  ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -19,15 +20,19 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonSpinner,
+  IonButton,
+  IonIcon,
   IonRefresher,
   IonRefresherContent,
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { BaseChartDirective } from 'ng2-charts';
-import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
+import { ChartConfiguration, ChartData, ChartType, Chart } from 'chart.js';
+import zoomPlugin from 'chartjs-plugin-zoom';
+import 'hammerjs';
 import { ReadingsService } from '@services/readings.service';
 import { LoggerService } from '@services/logger.service';
-import { GlucoseStatistics } from '@models/glucose-reading.model';
+import { GlucoseStatistics, LocalGlucoseReading } from '@models/glucose-reading.model';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
 @Component({
@@ -53,52 +58,71 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
     TranslateModule,
     BaseChartDirective,
     AppIconComponent,
+    IonButton,
+    IonIcon,
     IonRefresher,
     IonRefresherContent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class TrendsPage implements OnInit {
+  @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
+
   selectedPeriod = signal<'week' | 'month' | 'all'>('week');
   statistics = signal<GlucoseStatistics | null>(null);
   loading = signal(true);
 
-  // Time in range donut chart configuration
-  public doughnutChartLabels: string[] = [];
-  public doughnutChartData: ChartData<'doughnut'> = {
-    labels: this.doughnutChartLabels,
+  public lineChartData: ChartData<'line'> = {
     datasets: [
       {
-        data: [0, 0, 0],
-        backgroundColor: ['#22c55e', '#fbbf24', '#ef4444'],
-        hoverBackgroundColor: ['#16a34a', '#f59e0b', '#dc2626'],
-        borderWidth: 0,
+        data: [],
+        label: 'Glucose Readings',
+        borderColor: 'rgba(75,192,192,1)',
+        backgroundColor: 'rgba(75,192,192,0.2)',
+        fill: true,
       },
     ],
+    labels: []
   };
-  public doughnutChartType: ChartType = 'doughnut';
-  public doughnutChartOptions: ChartConfiguration['options'] = {
+  public lineChartType: ChartType = 'line';
+  public lineChartOptions: ChartConfiguration['options'] = {
     responsive: true,
-    maintainAspectRatio: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          unit: 'day',
+        },
+        title: {
+          display: true,
+          text: 'Date',
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Glucose (mg/dL)',
+        },
+      },
+    },
     plugins: {
       legend: {
         display: true,
-        position: 'bottom',
-        labels: {
-          color: 'rgba(255, 255, 255, 0.87)',
-          font: {
-            size: 12,
-          },
-          padding: 15,
-        },
       },
-      tooltip: {
-        callbacks: {
-          label: context => {
-            const label = context.label || '';
-            const value = context.parsed || 0;
-            return `${label}: ${value.toFixed(1)}%`;
+      zoom: {
+        pan: {
+          enabled: true,
+          mode: 'x',
+        },
+        zoom: {
+          pinch: {
+            enabled: true,
           },
+          wheel: {
+            enabled: true,
+          },
+          mode: 'x',
         },
       },
     },
@@ -107,7 +131,9 @@ export class TrendsPage implements OnInit {
   constructor(
     private readingsService: ReadingsService,
     private logger: LoggerService
-  ) {}
+  ) {
+    Chart.register(zoomPlugin);
+  }
 
   async ngOnInit(): Promise<void> {
     await this.loadStatistics();
@@ -126,7 +152,22 @@ export class TrendsPage implements OnInit {
     try {
       const stats = await this.readingsService.getStatistics(this.selectedPeriod());
       this.statistics.set(stats);
-      this.updateChart(stats);
+      const endDate = new Date();
+      let startDate: Date;
+      switch (this.selectedPeriod()) {
+        case 'week':
+          startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'month':
+          startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case 'all':
+        default:
+          startDate = new Date(0);
+          break;
+      }
+      const readings = await this.readingsService.getReadingsByDateRange(startDate, endDate);
+      this.updateLineChart(readings);
     } catch (error) {
       this.logger.error('TrendsPage', 'Failed to load statistics', error);
     } finally {
@@ -134,18 +175,44 @@ export class TrendsPage implements OnInit {
     }
   }
 
-  private updateChart(stats: GlucoseStatistics) {
-    this.doughnutChartData = {
-      labels: ['In Range', 'Above Range', 'Below Range'],
-      datasets: [
-        {
-          data: [stats.timeInRange, stats.timeAboveRange, stats.timeBelowRange],
-          backgroundColor: ['#22c55e', '#fbbf24', '#ef4444'],
-          hoverBackgroundColor: ['#16a34a', '#f59e0b', '#dc2626'],
-          borderWidth: 0,
-        },
-      ],
-    };
+  private updateLineChart(readings: LocalGlucoseReading[]) {
+    if (readings && readings.length > 0) {
+      const chartData = readings.map(reading => ({
+        x: new Date(reading.time).getTime(),
+        y: reading.value,
+      }));
+
+      this.lineChartData = {
+        datasets: [
+          {
+            data: chartData,
+            label: 'Glucose Level',
+            borderColor: '#3880ff',
+            backgroundColor: 'rgba(56, 128, 255, 0.2)',
+            fill: true,
+            pointRadius: 3,
+            pointBackgroundColor: '#3880ff',
+          },
+        ],
+      };
+    } else {
+      this.lineChartData = {
+        datasets: [],
+        labels: []
+      };
+    }
+  }
+
+  exportChart() {
+    if (this.chart) {
+      const image = this.chart.toBase64Image();
+      if (image) {
+        const a = document.createElement('a');
+        a.href = image;
+        a.download = 'trends.png';
+        a.click();
+      }
+    }
   }
 
   async handleRefresh(event: CustomEvent) {

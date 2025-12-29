@@ -406,6 +406,7 @@
     }
   },
   "trends": {
+    "glucoseReadings": "Lecturas de Glucosa",
     "title": "Tendencias",
     "analysisTitle": "Análisis de Tendencias",
     "comingSoon": "Próximamente",

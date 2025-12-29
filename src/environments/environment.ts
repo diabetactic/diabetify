@@ -25,7 +25,7 @@ export type BackendMode = 'mock' | 'local' | 'cloud';
  *   ENV=local npm start    # Local Docker backend
  *   ENV=mock npm start     # In-memory mock (offline dev)
  */
-const DEV_BACKEND_MODE: BackendMode = 'cloud';
+const DEV_BACKEND_MODE: BackendMode = 'mock';
 
 /**
  * Get the appropriate base URL for backend services based on platform and mode.
