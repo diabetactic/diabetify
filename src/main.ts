@@ -93,6 +93,7 @@ import { AppComponent } from './app/app.component';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RequestIdInterceptor } from './app/core/interceptors/request-id.interceptor';
 import { AuthInterceptor } from './app/core/interceptors/auth.interceptor';
+import { RetryInterceptor } from './app/core/interceptors/retry.interceptor';
 import {
   TRANSLATE_HTTP_LOADER_CONFIG,
   TranslateHttpLoaderConfig,
@@ -138,6 +139,7 @@ bootstrapApplication(AppComponent, {
     { provide: LOCALE_ID, useValue: 'es' }, // Set default locale to Spanish
     { provide: HTTP_INTERCEPTORS, useClass: RequestIdInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: RetryInterceptor, multi: true },
     { provide: TRANSLATE_HTTP_LOADER_CONFIG, useValue: httpLoaderConfig },
     { provide: APP_CONFIG, useValue: defaultAppConfig },
     // Environment configuration - initialized before app bootstrap

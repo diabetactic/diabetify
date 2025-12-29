@@ -19,6 +19,7 @@ import { AppointmentQueueStateResponse } from '@models/appointment.model';
 import { environment } from '@env/environment';
 import { EnvBadgeComponent } from '@shared/components/env-badge/env-badge.component';
 import { SyncStatusComponent } from '@shared/components/sync-status/sync-status.component';
+import { NetworkStatusComponent } from '@shared/components/network-status/network-status.component';
 
 @Component({
   selector: 'app-tabs',
@@ -36,6 +37,7 @@ import { SyncStatusComponent } from '@shared/components/sync-status/sync-status.
     TranslateModule,
     EnvBadgeComponent,
     SyncStatusComponent,
+    NetworkStatusComponent,
   ],
 })
 export class TabsPage implements OnInit, OnDestroy {
