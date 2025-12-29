@@ -3,7 +3,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  color: white;
+  color: var(--ion-color-light);
   background-color: var(--ion-color-primary);
   padding: 1.5rem;
 }
@@ -16,7 +16,7 @@
 .avatar-wrapper {
   border-radius: 50%;
   padding: 4px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgb(255 255 255 / 20%);
 }
 
 .hero-avatar {

@@ -13,6 +13,8 @@ module.exports = tseslint.config(
       'android/**/*',
       'www/**/*',
       '.angular/**/*',
+      '.browser-pilot/**/*',
+      '.turbo/**/*',
       // File with parsing errors (false positive)
       'src/app/core/services/local-auth.service.spec.ts',
     ],

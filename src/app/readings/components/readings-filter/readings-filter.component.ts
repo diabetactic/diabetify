@@ -58,14 +58,14 @@ export interface ReadingFilters {
 export class ReadingsFilterComponent {
   @Input() isOpen = false;
   @Input() filters: ReadingFilters = { status: 'all' };
-  @Output() close = new EventEmitter<void>();
+  @Output() closeFilter = new EventEmitter<void>();
   @Output() apply = new EventEmitter<ReadingFilters>();
   @Output() clear = new EventEmitter<void>();
 
   @ViewChild(IonModal) modal!: IonModal;
 
   closeModal(): void {
-    this.close.emit();
+    this.closeFilter.emit();
   }
 
   applyFilters(): void {
@@ -78,7 +78,7 @@ export class ReadingsFilterComponent {
 
   clearFiltersAndClose(): void {
     this.clear.emit();
-    this.close.emit();
+    this.closeFilter.emit();
   }
 
   setFilterAllTime(): void {

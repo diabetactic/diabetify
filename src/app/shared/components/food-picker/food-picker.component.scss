@@ -425,15 +425,16 @@
   align-items: center;
 
   .scan-button {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
     --padding-start: 0;
     --padding-end: 0;
-    height: 40px;
+
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    z-index: var(--z-overlay, 10);
     width: 40px;
-    z-index: 10;
+    height: 40px;
+    transform: translateY(-50%);
   }
 }
 

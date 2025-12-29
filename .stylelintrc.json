@@ -59,8 +59,9 @@
       }
     ],
     "selector-max-specificity": null,
-    "color-function-notation": "modern",
-    "alpha-value-notation": "percentage",
+    "color-function-notation": null,
+    "color-function-alias-notation": null,
+    "alpha-value-notation": null,
     "font-family-name-quotes": "always-unless-keyword",
     "comment-empty-line-before": [
       "always",
