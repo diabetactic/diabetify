@@ -20,16 +20,13 @@ import '../../../test-setup';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { ReadingsService, LIVE_QUERY_FN } from '@services/readings.service';
-import {
-  DiabetacticDatabase,
-  SyncConflictItem,
-  SyncQueueItem,
-} from '@services/database.service';
+import { DiabetacticDatabase, SyncConflictItem, SyncQueueItem } from '@services/database.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
 import { LoggerService } from '@services/logger.service';
 import { LocalGlucoseReading } from '@models/glucose-reading.model';
 import { Observable } from 'rxjs';
 import { AuditLogService } from '@services/audit-log.service';
+import { MockDataService } from '@services/mock-data.service';
 
 // Mock database with sync queue capabilities
 class MockSyncDatabase {
@@ -128,18 +125,16 @@ class MockSyncDatabase {
       this.conflictsStore.push({ ...item, id });
       return Promise.resolve(id);
     }),
-    update: vi
-      .fn()
-      .mockImplementation((id: number, updates: Partial<SyncConflictItem>) => {
-        const index = this.conflictsStore.findIndex(c => c.id === id);
-        if (index >= 0) {
-          this.conflictsStore[index] = {
-            ...this.conflictsStore[index],
-            ...updates,
-          };
-        }
-        return Promise.resolve(1);
-      }),
+    update: vi.fn().mockImplementation((id: number, updates: Partial<SyncConflictItem>) => {
+      const index = this.conflictsStore.findIndex(c => c.id === id);
+      if (index >= 0) {
+        this.conflictsStore[index] = {
+          ...this.conflictsStore[index],
+          ...updates,
+        };
+      }
+      return Promise.resolve(1);
+    }),
     toArray: vi.fn().mockImplementation(() => Promise.resolve(this.conflictsStore)),
     where: vi.fn().mockReturnValue({
       equals: vi.fn().mockReturnValue({
@@ -224,6 +219,8 @@ describe('ReadingsService - Sync Queue Logic', () => {
         { provide: DiabetacticDatabase, useValue: mockDb },
         { provide: ApiGatewayService, useValue: mockApiGateway },
         { provide: LoggerService, useValue: mockLogger },
+        // Disable mock backend to use real calculations from test data
+        { provide: MockDataService, useValue: undefined },
         {
           provide: LIVE_QUERY_FN,
           useValue: (factory: () => Promise<any>) =>
@@ -237,6 +234,8 @@ describe('ReadingsService - Sync Queue Logic', () => {
 
     service = TestBed.inject(ReadingsService);
     auditLogService = TestBed.inject(AuditLogService);
+    // Disable mock mode to test real sync logic
+    (service as any).isMockBackend = false;
   });
 
   afterEach(() => {
@@ -749,6 +748,8 @@ describe('ReadingsService - Glucose Status Boundaries', () => {
       providers: [
         ReadingsService,
         { provide: DiabetacticDatabase, useValue: mockDb },
+        // Disable mock backend to use real calculations from test data
+        { provide: MockDataService, useValue: undefined },
         {
           provide: LIVE_QUERY_FN,
           useValue: (factory: () => Promise<any>) =>
@@ -869,6 +870,8 @@ describe('ReadingsService - Backend Date Parsing', () => {
       providers: [
         ReadingsService,
         { provide: DiabetacticDatabase, useValue: mockDb },
+        // Disable mock backend to use real calculations from test data
+        { provide: MockDataService, useValue: undefined },
         {
           provide: LIVE_QUERY_FN,
           useValue: (factory: () => Promise<any>) =>

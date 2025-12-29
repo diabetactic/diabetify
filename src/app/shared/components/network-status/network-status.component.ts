@@ -1,5 +1,12 @@
-
-import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  NgZone,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Network, PluginListenerHandle } from '@capacitor/network';
 
@@ -11,33 +18,37 @@ import { Network, PluginListenerHandle } from '@capacitor/network';
       <div class="status-text">{{ statusText }}</div>
     </div>
   `,
-  styles: [`
-    .network-status {
-      display: flex;
-      align-items: center;
-      padding: 0.5rem;
-      border-radius: 0.5rem;
-    }
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 0.5rem;
-    }
-    .network-status.online .status-dot {
-      background-color: green;
-    }
-    .network-status.offline .status-dot {
-      background-color: red;
-    }
-  `],
+  styles: [
+    `
+      .network-status {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+      }
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+      }
+      .network-status.online .status-dot {
+        background-color: green;
+      }
+      .network-status.offline .status-dot {
+        background-color: red;
+      }
+    `,
+  ],
   standalone: true,
   imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NetworkStatusComponent implements OnInit, OnDestroy {
   status: 'online' | 'offline' = 'online';
   statusText: string = 'Online';
   private networkListener: PluginListenerHandle;
+  private cdr = inject(ChangeDetectorRef);
 
   constructor(private zone: NgZone) {}
 
@@ -49,7 +60,7 @@ export class NetworkStatusComponent implements OnInit, OnDestroy {
     });
     const initialStatus = await Network.getStatus();
     this.zone.run(() => {
-        this.updateStatus(initialStatus.connected);
+      this.updateStatus(initialStatus.connected);
     });
   }
 
@@ -62,5 +73,6 @@ export class NetworkStatusComponent implements OnInit, OnDestroy {
   private updateStatus(isConnected: boolean) {
     this.status = isConnected ? 'online' : 'offline';
     this.statusText = isConnected ? 'Online' : 'Offline';
+    this.cdr.markForCheck();
   }
 }

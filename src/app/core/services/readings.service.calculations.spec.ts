@@ -21,6 +21,7 @@ import { ReadingsService, LIVE_QUERY_FN } from '@services/readings.service';
 import { DiabetacticDatabase } from '@services/database.service';
 import { LocalGlucoseReading } from '@models/glucose-reading.model';
 import { AuditLogService } from '@services/audit-log.service';
+import { MockDataService } from '@services/mock-data.service';
 
 // Mock database for calculations
 class MockCalculationsDatabase {
@@ -92,6 +93,8 @@ describe('ReadingsService - Medical Calculations Precision', () => {
         ReadingsService,
         AuditLogService,
         { provide: DiabetacticDatabase, useValue: mockDb },
+        // Disable mock backend to use real calculations from test data
+        { provide: MockDataService, useValue: undefined },
         {
           provide: LIVE_QUERY_FN,
           useValue: (factory: () => Promise<unknown>) =>

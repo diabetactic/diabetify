@@ -99,13 +99,16 @@ describe('ReadingsService - Offline Detection', () => {
         AuditLogService,
         { provide: DiabetacticDatabase, useValue: mockDb },
         { provide: LIVE_QUERY_FN, useValue: mockLiveQuery },
-        { provide: MockDataService, useValue: null },
+        // Disable mock backend to use real calculations from test data
+        { provide: MockDataService, useValue: undefined },
         { provide: ApiGatewayService, useValue: mockApiGateway },
         { provide: LoggerService, useValue: mockLogger },
       ],
     });
 
     service = TestBed.inject(ReadingsService);
+    // Disable mock mode to test real offline detection logic
+    (service as any).isMockBackend = false;
   });
 
   afterEach(async () => {
@@ -149,7 +152,18 @@ describe('ReadingsService - Offline Detection', () => {
       expect(mockLogger.info).toHaveBeenCalledWith('Network', 'Network status changed: online');
     });
 
-    // SKIPPED: Flaky timing issues with TestBed reset and async network initialization
+    /**
+     * TODO: SKIPPED - TestBed reset conflicts with async network initialization
+     *
+     * This test attempts to reconfigure TestBed mid-suite to inject a failing
+     * network mock. However, TestBed.configureTestingModule() fails because
+     * the module was already instantiated in beforeEach.
+     *
+     * Fix options:
+     * 1. Move to separate test file with its own TestBed
+     * 2. Use dependency injection overrides instead of reconfiguring
+     * 3. Test this scenario in a standalone unit test of network initialization
+     */
     it.skip('should default to online if network plugin fails', async () => {
       // Mock network plugin to fail for this specific test
       (Network.getStatus as Mock)
@@ -180,7 +194,8 @@ describe('ReadingsService - Offline Detection', () => {
           ReadingsService,
           { provide: DiabetacticDatabase, useValue: failingDb },
           { provide: LIVE_QUERY_FN, useValue: mockLiveQuery },
-          { provide: MockDataService, useValue: null },
+          // Disable mock backend to use real calculations from test data
+          { provide: MockDataService, useValue: undefined },
           { provide: ApiGatewayService, useValue: mockApiGateway },
           { provide: LoggerService, useValue: mockLogger },
         ],
@@ -224,7 +239,17 @@ describe('ReadingsService - Offline Detection', () => {
       expect(mockApiGateway.request).not.toHaveBeenCalled();
     });
 
-    // SKIPPED: Flaky async timing - assertion may pass but Vitest reports blank error
+    /**
+     * TODO: SKIPPED - Flaky timing with blank Vitest error
+     *
+     * This test passes sometimes but Vitest reports a blank error. The issue
+     * is likely related to:
+     * 1. Async network status initialization racing with test execution
+     * 2. The mockLogger.info assertion checking for absence of a call
+     *
+     * The positive case (sync skipped when offline) works reliably; this
+     * negative case has timing issues.
+     */
     it.skip('should proceed with sync when online', async () => {
       await waitForInit();
 
@@ -260,7 +285,9 @@ describe('ReadingsService - Offline Detection', () => {
 
     it('should proceed with fetch when online', async () => {
       // Mock API response
-      mockApiGateway.request = vi.fn().mockReturnValue(of({ success: true, data: { readings: [] } }));
+      mockApiGateway.request = vi
+        .fn()
+        .mockReturnValue(of({ success: true, data: { readings: [] } }));
 
       await waitForInit();
 
@@ -301,8 +328,22 @@ describe('ReadingsService - Offline Detection', () => {
     });
   });
 
+  /**
+   * TODO: SKIPPED - Network status transition timing is unreliable
+   *
+   * These tests verify behavior during network status transitions (offline->online,
+   * online->offline). The transitions work correctly in the app, but tests are
+   * flaky because:
+   *
+   * 1. The statusChangeCallback triggers async operations
+   * 2. There's no reliable way to await the status change completion
+   * 3. The service's internal isOnline state may not update before assertions
+   *
+   * The non-transitional tests (starts offline, starts online) work reliably.
+   * Transition behavior should be tested via E2E or by refactoring to expose
+   * a status change promise.
+   */
   describe.skip('network status transitions', () => {
-    // SKIPPED: Flaky async timing with network status transitions
     it('should allow sync after going from offline to online', async () => {
       await waitForInit();
 

@@ -262,6 +262,18 @@ vi.mock('@capacitor/app', () => ({
   },
 }));
 
+vi.mock('@capacitor-mlkit/barcode-scanning', () => ({
+  BarcodeScanner: {
+    scan: vi.fn(),
+    requestPermissions: vi.fn(),
+    isSupported: vi.fn(),
+    isGoogleBarcodeScannerModuleAvailable: vi.fn(),
+    installGoogleBarcodeScannerModule: vi.fn(),
+    openSettings: vi.fn(),
+    removeAllListeners: vi.fn(),
+  },
+}));
+
 // Mock lucide-angular - MUST be here for proper hoisting
 // Includes all 49 icons used in src/app/shared/icons/lucide-icons.ts
 vi.mock('lucide-angular', async () => {

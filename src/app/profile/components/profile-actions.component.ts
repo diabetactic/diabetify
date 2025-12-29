@@ -9,7 +9,7 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
   templateUrl: './profile-actions.component.html',
   styleUrls: ['./profile-actions.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonButton, TranslateModule, AppIconComponent]
+  imports: [CommonModule, IonButton, TranslateModule, AppIconComponent],
 })
 export class ProfileActionsComponent {
   @Output() signOut = new EventEmitter<void>();

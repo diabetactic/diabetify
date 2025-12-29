@@ -12,8 +12,11 @@
           <div class="version-card">
             <div class="version-header">Your Version</div>
             <div class="version-body">
-              <p><strong>Value:</strong> {{ conflict.localReading.value }} {{ conflict.localReading.units }}</p>
-              <p><strong>Time:</strong> {{ conflict.localReading.time | date:'short' }}</p>
+              <p>
+                <strong>Value:</strong> {{ conflict.localReading.value }}
+                {{ conflict.localReading.units }}
+              </p>
+              <p><strong>Time:</strong> {{ conflict.localReading.time | date: 'short' }}</p>
               <p><strong>Notes:</strong> {{ conflict.localReading.notes || 'N/A' }}</p>
             </div>
           </div>
@@ -22,8 +25,11 @@
           <div class="version-card">
             <div class="version-header">Server Version</div>
             <div class="version-body">
-              <p><strong>Value:</strong> {{ conflict.serverReading.value }} {{ conflict.serverReading.units }}</p>
-              <p><strong>Time:</strong> {{ conflict.serverReading.time | date:'short' }}</p>
+              <p>
+                <strong>Value:</strong> {{ conflict.serverReading.value }}
+                {{ conflict.serverReading.units }}
+              </p>
+              <p><strong>Time:</strong> {{ conflict.serverReading.time | date: 'short' }}</p>
               <p><strong>Notes:</strong> {{ conflict.serverReading.notes || 'N/A' }}</p>
             </div>
           </div>

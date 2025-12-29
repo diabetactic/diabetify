@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -32,9 +39,15 @@ import { LoggerService } from '@services/logger.service';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { ROUTES } from '@core/constants';
 import { AddReadingPage } from '../add-reading/add-reading.page';
-import { ReadingFilters, ReadingsFilterComponent } from './components/readings-filter/readings-filter.component';
+import {
+  ReadingFilters,
+  ReadingsFilterComponent,
+} from './components/readings-filter/readings-filter.component';
 import { ReadingsStatsComponent } from './components/readings-stats/readings-stats.component';
-import { GroupedReading, ReadingsListComponent } from './components/readings-list/readings-list.component';
+import {
+  GroupedReading,
+  ReadingsListComponent,
+} from './components/readings-list/readings-list.component';
 
 @Component({
   selector: 'app-readings',
@@ -68,7 +81,6 @@ import { GroupedReading, ReadingsListComponent } from './components/readings-lis
     ReadingsListComponent,
 
     IonItemSliding,
-
   ],
 })
 export class ReadingsPage implements OnInit, OnDestroy {
@@ -324,7 +336,6 @@ export class ReadingsPage implements OnInit, OnDestroy {
    * Open the Add Reading modal as a bottom sheet
    */
   async addReading(): Promise<void> {
-
     this.logger.info('UI', 'Add reading button clicked');
 
     const modal = await this.modalController.create({
@@ -355,7 +366,10 @@ export class ReadingsPage implements OnInit, OnDestroy {
       this.logger.info('UI', 'Readings synced and refreshed successfully');
     } catch (error) {
       this.logger.error('Readings', 'Error refreshing readings', error);
-      await this.showToast(this.translationService.instant('readings.errors.refreshFailed'), 'danger');
+      await this.showToast(
+        this.translationService.instant('readings.errors.refreshFailed'),
+        'danger'
+      );
     } finally {
       (event.target as HTMLIonRefresherElement).complete();
     }
@@ -382,7 +396,12 @@ export class ReadingsPage implements OnInit, OnDestroy {
   }
 
   private async showToast(message: string, color: 'success' | 'danger'): Promise<void> {
-    const toast = await this.toastController.create({ message, duration: 3000, color, position: 'bottom' });
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color,
+      position: 'bottom',
+    });
     await toast.present();
   }
 

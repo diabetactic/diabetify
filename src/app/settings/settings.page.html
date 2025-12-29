@@ -197,7 +197,7 @@
             {{ 'settings.notifications.readingReminders' | translate }}
           </ion-label>
         </ion-item>
-        @for (reminder of readingReminders; track trackByReminder($index, reminder)) {
+        @for (reminder of readingReminders; track reminder.id) {
           <ion-item>
             <ion-label>
               <h3 class="font-medium">{{ reminder.label }}</h3>
@@ -272,7 +272,9 @@
       <ion-item button routerLink="/conflicts" class="flex items-center gap-2">
         <app-icon name="sync-outline"></app-icon>
         <ion-label>Sync Conflicts</ion-label>
-        <ion-badge color="danger" *ngIf="pendingConflicts > 0">{{ pendingConflicts }}</ion-badge>
+        @if (pendingConflicts > 0) {
+          <ion-badge color="danger">{{ pendingConflicts }}</ion-badge>
+        }
         <app-icon name="chevron-forward"></app-icon>
       </ion-item>
 

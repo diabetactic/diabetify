@@ -25,7 +25,8 @@ window.addEventListener('error', event => {
   });
 
   // Store in diagnostics if available
-  const diagnostics = (window as { currentTestDiagnostics?: TestDiagnostics }).currentTestDiagnostics;
+  const diagnostics = (window as { currentTestDiagnostics?: TestDiagnostics })
+    .currentTestDiagnostics;
   if (diagnostics) {
     diagnostics.log('ERROR', 'Unhandled Error', {
       message: event.message,
@@ -45,7 +46,8 @@ window.addEventListener('unhandledrejection', event => {
   });
 
   // Store in diagnostics if available
-  const diagnostics = (window as { currentTestDiagnostics?: TestDiagnostics }).currentTestDiagnostics;
+  const diagnostics = (window as { currentTestDiagnostics?: TestDiagnostics })
+    .currentTestDiagnostics;
   if (diagnostics) {
     diagnostics.log('ERROR', 'Unhandled Promise Rejection', {
       reason: event.reason,
@@ -60,7 +62,8 @@ window.addEventListener('unhandledrejection', event => {
   onHandleError: (delegate: any, current: any, target: any, error: any) => {
     console.error('🔴 Zone Error:', error);
 
-    const diagnostics = (window as { currentTestDiagnostics?: TestDiagnostics }).currentTestDiagnostics;
+    const diagnostics = (window as { currentTestDiagnostics?: TestDiagnostics })
+      .currentTestDiagnostics;
     if (diagnostics) {
       diagnostics.log('ERROR', 'Zone Error', {
         error,

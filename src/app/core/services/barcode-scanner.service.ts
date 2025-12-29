@@ -3,11 +3,10 @@ import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { AlertController } from '@ionic/angular';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class BarcodeScannerService {
-
-  constructor(private alertController: AlertController) { }
+  constructor(private alertController: AlertController) {}
 
   async scan(): Promise<string | null> {
     const granted = await this.requestPermissions();
@@ -28,8 +27,9 @@ export class BarcodeScannerService {
   private async presentPermissionsAlert(): Promise<void> {
     const alert = await this.alertController.create({
       header: 'Permission Denied',
-      message: 'Camera permission is required to scan barcodes. Please grant permission in your device settings.',
-      buttons: ['OK']
+      message:
+        'Camera permission is required to scan barcodes. Please grant permission in your device settings.',
+      buttons: ['OK'],
     });
     await alert.present();
   }

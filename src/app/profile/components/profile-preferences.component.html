@@ -22,9 +22,7 @@
       aria-label="{{ 'profile.theme.title' | translate }}"
       data-testid="theme-selector"
     >
-      <ion-select-option value="light">{{
-        'profile.theme.light' | translate
-      }}</ion-select-option>
+      <ion-select-option value="light">{{ 'profile.theme.light' | translate }}</ion-select-option>
       <ion-select-option value="dark">{{ 'profile.theme.dark' | translate }}</ion-select-option>
       <ion-select-option value="auto">{{ 'profile.theme.auto' | translate }}</ion-select-option>
     </ion-select>
@@ -58,11 +56,7 @@
 
   <div class="preference-row">
     <div class="flex min-w-0 flex-1 items-center gap-3">
-      <app-icon
-        name="water-outline"
-        aria-hidden="true"
-        class="text-primary text-[26px]"
-      ></app-icon>
+      <app-icon name="water-outline" aria-hidden="true" class="text-primary text-[26px]"></app-icon>
       <div>
         <p class="text-dark m-0 text-base font-semibold">
           {{ 'profile.glucoseUnits' | translate }}
@@ -76,9 +70,11 @@
       aria-label="{{ 'profile.glucoseUnits' | translate }}"
       data-testid="glucose-units-selector"
     >
-      <ion-select-option *ngFor="let option of unitOptions; trackBy: trackByUnitOption" [value]="option.value">
-        {{ option.label }}
-      </ion-select-option>
+      @for (option of unitOptions; track option.value) {
+        <ion-select-option [value]="option.value">
+          {{ option.label }}
+        </ion-select-option>
+      }
     </ion-select>
   </div>
 

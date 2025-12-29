@@ -2,19 +2,14 @@
   <div class="avatar-container">
     <div class="avatar-wrapper">
       <ion-avatar class="hero-avatar">
-        <img *ngIf="avatarUrl; else fallback" [src]="avatarUrl" [alt]="'profile.avatarAlt' | translate" />
-        <ng-template #fallback>
+        @if (avatarUrl) {
+          <img [src]="avatarUrl" [alt]="'profile.avatarAlt' | translate" />
+        } @else {
           <ion-icon name="person-circle-outline" class="avatar-fallback"></ion-icon>
-        </ng-template>
+        }
       </ion-avatar>
     </div>
-    <input
-      #avatarInput
-      type="file"
-      accept="image/*"
-      hidden
-      (change)="onAvatarSelected($event)"
-    />
+    <input #avatarInput type="file" accept="image/*" hidden (change)="onAvatarSelected($event)" />
     <ion-button
       fill="outline"
       size="small"

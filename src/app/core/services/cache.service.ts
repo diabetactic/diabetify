@@ -3,7 +3,7 @@ import Dexie, { Table } from 'dexie';
 import { FoodItem } from '@models/food.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CacheService extends Dexie {
   foodItems!: Table<FoodItem, string>;
@@ -11,7 +11,7 @@ export class CacheService extends Dexie {
   constructor() {
     super('diabetactic-cache');
     this.version(1).stores({
-      foodItems: 'id, name'
+      foodItems: 'id, name',
     });
   }
 

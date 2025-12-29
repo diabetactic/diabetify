@@ -1,20 +1,25 @@
-<span *ngIf="!isDismissed" [class]="badgeClasses" role="status" data-testid="ui-badge">
-  <!-- Icon -->
-  <ion-icon *ngIf="icon" [name]="icon" [class]="iconSizeClasses"></ion-icon>
+@if (!isDismissed) {
+  <span [class]="badgeClasses" role="status" data-testid="ui-badge">
+    <!-- Icon -->
+    @if (icon) {
+      <ion-icon [name]="icon" [class]="iconSizeClasses"></ion-icon>
+    }
 
-  <!-- Badge content (slot) -->
-  <span>
-    <ng-content></ng-content>
+    <!-- Badge content (slot) -->
+    <span>
+      <ng-content></ng-content>
+    </span>
+
+    <!-- Dismiss button -->
+    @if (dismissible) {
+      <button
+        type="button"
+        [class]="closeButtonClasses"
+        (click)="onDismiss($event)"
+        [attr.aria-label]="'common.dismiss' | translate"
+      >
+        <app-icon name="close"></app-icon>
+      </button>
+    }
   </span>
-
-  <!-- Dismiss button -->
-  <button
-    *ngIf="dismissible"
-    type="button"
-    [class]="closeButtonClasses"
-    (click)="onDismiss($event)"
-    [attr.aria-label]="'common.dismiss' | translate"
-  >
-    <app-icon name="close"></app-icon>
-  </button>
-</span>
+}

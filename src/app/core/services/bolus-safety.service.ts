@@ -15,10 +15,7 @@ export class BolusSafetyService {
 
   private readonly INSULIN_DURATION_HOURS = 4;
 
-  checkSafetyGuardrails(
-    calculation: BolusCalculation,
-    readings: MockReading[]
-  ): SafetyWarning[] {
+  checkSafetyGuardrails(calculation: BolusCalculation, readings: MockReading[]): SafetyWarning[] {
     const warnings: SafetyWarning[] = [];
 
     // 1. Maximum Dose Warning

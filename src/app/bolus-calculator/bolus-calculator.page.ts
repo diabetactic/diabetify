@@ -18,15 +18,8 @@ import {
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import {
-  MockDataService,
-  BolusCalculation,
-  MockReading,
-} from '@services/mock-data.service';
-import {
-  BolusSafetyService,
-  SafetyWarning,
-} from '@services/bolus-safety.service';
+import { MockDataService, BolusCalculation, MockReading } from '@services/mock-data.service';
+import { BolusSafetyService, SafetyWarning } from '@services/bolus-safety.service';
 import { FoodService } from '@services/food.service';
 import { FoodPickerResult, SelectedFood } from '@models/food.model';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
@@ -57,7 +50,7 @@ import { LoggerService } from '@services/logger.service';
     IonSpinner,
   ],
 })
-export class BolusCalculatorPage {
+export class BolusCalculatorPage implements OnInit {
   private translate = inject(TranslateService);
   private foodService = inject(FoodService);
   private cdr = inject(ChangeDetectorRef);

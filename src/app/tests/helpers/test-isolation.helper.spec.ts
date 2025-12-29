@@ -428,6 +428,16 @@ describe('Test Isolation Helper - Async Helpers', () => {
       expect(executed).toBe(true);
     });
 
+    /**
+     * TODO: SKIPPED - setImmediate not available in all environments
+     *
+     * This test verifies microtask processing using setImmediate, which is:
+     * - Available in Node.js
+     * - NOT available in browser/jsdom by default
+     * - May require polyfill in Vitest
+     *
+     * The behavior is platform-specific and tested manually.
+     */
     it.skip('should allow processing microtasks', async () => {
       // setImmediate not available in all test environments
       // This test must be verified manually or with specific config
@@ -566,6 +576,13 @@ describe('Test Isolation Helper - DOM Helpers', () => {
 });
 
 describe('Test Isolation Helper - Edge Cases', () => {
+  /**
+   * TODO: SKIPPED - RxJS version-specific behavior
+   *
+   * BehaviorSubject behavior after completion varies between RxJS versions.
+   * In some versions, accessing .value throws; in others, it returns last value.
+   * This test is skipped to avoid version-specific failures.
+   */
   it.skip('should handle completed BehaviorSubject', () => {
     // RxJS behavior with completed subjects may vary between versions.
     // This test is skipped due to inconsistencies.

@@ -97,7 +97,8 @@ describe('ReadingsService', () => {
         ReadingsService,
         AuditLogService,
         { provide: DiabetacticDatabase, useValue: mockDb },
-        { provide: MockDataService, useValue: null },
+        // Disable mock backend to use real calculations from test data
+        { provide: MockDataService, useValue: undefined },
         { provide: ApiGatewayService, useValue: mockApiGateway },
         {
           provide: LIVE_QUERY_FN,
@@ -547,6 +548,9 @@ describe('ReadingsService', () => {
 
   describe('fetchLatestFromBackend', () => {
     it('should fetch latest readings from backend using new endpoint', async () => {
+      // Disable mock mode to test real fetch logic
+      (service as any).isMockBackend = false;
+
       const mockBackendReadings = [
         {
           id: 1,

@@ -6,16 +6,30 @@ import { TranslateModule } from '@ngx-translate/core';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { vi } from 'vitest';
 
+// Mock Chart.js to prevent registration errors with mock plugins
+vi.mock('chart.js', async importOriginal => {
+  const original = await importOriginal<typeof import('chart.js')>();
+  return {
+    ...original,
+    Chart: {
+      ...original.Chart,
+      register: vi.fn(), // No-op register to prevent plugin registration issues
+    },
+  };
+});
+
 import { TrendsPage } from './trends.page';
 import { ReadingsService } from '@services/readings.service';
+import { LoggerService } from '@services/logger.service';
 
 describe('TrendsPage', () => {
   let component: TrendsPage;
   let fixture: ComponentFixture<TrendsPage>;
-  let mockReadingsService: any;
+  let mockReadingsService: Partial<ReadingsService>;
+  let mockLoggerService: Partial<LoggerService>;
 
   beforeEach(async () => {
-    // Crear mock de ReadingsService
+    // Mock de ReadingsService
     mockReadingsService = {
       getStatistics: vi.fn().mockResolvedValue({
         average: 120,
@@ -29,10 +43,19 @@ describe('TrendsPage', () => {
       getReadingsByDateRange: vi.fn().mockResolvedValue([]),
     };
 
+    // Mock de LoggerService
+    mockLoggerService = {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    };
+
     await TestBed.configureTestingModule({
       imports: [TrendsPage, TranslateModule.forRoot()],
       providers: [
         { provide: ReadingsService, useValue: mockReadingsService },
+        { provide: LoggerService, useValue: mockLoggerService },
         provideCharts(withDefaultRegisterables()),
       ],
     }).compileComponents();
@@ -45,9 +68,8 @@ describe('TrendsPage', () => {
 
   describe('Initialization', () => {
     it('should initialize without errors', () => {
-      expect(() => {
-        new TrendsPage(mockReadingsService);
-      }).not.toThrow();
+      // Component should be created via TestBed without throwing
+      expect(component).toBeTruthy();
     });
   });
 
@@ -122,25 +144,22 @@ describe('TrendsPage', () => {
 
   describe('Constructor', () => {
     it('should accept ReadingsService dependency', () => {
-      // Component requiere ReadingsService
-      expect(() => {
-        new TrendsPage(mockReadingsService);
-      }).not.toThrow();
+      // Component should be created via TestBed with all dependencies
+      expect(component).toBeTruthy();
     });
 
-    it('should be a valid constructor with mock service', () => {
-      const instance = new TrendsPage(mockReadingsService);
-      expect(instance).toBeInstanceOf(TrendsPage);
+    it('should be a valid instance', () => {
+      expect(component).toBeInstanceOf(TrendsPage);
     });
 
     it('should create instances with separate signal state', () => {
-      const instance1 = new TrendsPage(mockReadingsService);
-      const instance2 = new TrendsPage(mockReadingsService);
+      const fixture2 = TestBed.createComponent(TrendsPage);
+      const instance2 = fixture2.componentInstance;
 
       // Las instancias son diferentes objetos
-      expect(instance1).not.toBe(instance2);
+      expect(component).not.toBe(instance2);
       // Cada una tiene su propio estado de signals
-      expect(instance1.selectedPeriod).not.toBe(instance2.selectedPeriod);
+      expect(component.selectedPeriod).not.toBe(instance2.selectedPeriod);
     });
   });
 

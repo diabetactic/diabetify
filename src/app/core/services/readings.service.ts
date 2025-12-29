@@ -1039,8 +1039,7 @@ export class ReadingsService implements OnDestroy {
             if (
               existing.value !== backendValue ||
               existing.notes !== backendNotes ||
-              (backendReading.reading_type &&
-                existing.mealContext !== backendReading.reading_type)
+              (backendReading.reading_type && existing.mealContext !== backendReading.reading_type)
             ) {
               const serverReading = this.mapBackendToLocal(backendReading);
               await this.db.conflicts.add({

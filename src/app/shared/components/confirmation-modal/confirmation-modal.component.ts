@@ -11,6 +11,7 @@ import {
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
+import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
 
 @Component({
   selector: 'app-confirmation-modal',
@@ -21,6 +22,7 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
     CommonModule,
     TranslateModule,
     AppIconComponent,
+    SafeHtmlPipe,
     IonHeader,
     IonToolbar,
     IonTitle,

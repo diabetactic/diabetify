@@ -32,7 +32,6 @@ export interface AuditLogItem {
   createdAt: number;
 }
 
-
 /**
  * Sync queue item for offline operations
  */
@@ -126,13 +125,17 @@ export class DiabetacticDatabase extends Dexie {
    */
   async clearAllData(): Promise<void> {
     try {
-      await this.transaction('rw', [this.readings, this.syncQueue, this.appointments, this.conflicts, this.auditLog], async () => {
-        await this.readings.clear();
-        await this.syncQueue.clear();
-        await this.appointments.clear();
-        await this.conflicts.clear();
-        await this.auditLog.clear();
-      });
+      await this.transaction(
+        'rw',
+        [this.readings, this.syncQueue, this.appointments, this.conflicts, this.auditLog],
+        async () => {
+          await this.readings.clear();
+          await this.syncQueue.clear();
+          await this.appointments.clear();
+          await this.conflicts.clear();
+          await this.auditLog.clear();
+        }
+      );
     } catch (error) {
       // Fallback for PrematureCommitError in fake-indexeddb test environments
       if ((error as Error).name === 'PrematureCommitError') {

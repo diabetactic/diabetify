@@ -70,17 +70,117 @@ jobs:
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 7
 
+  # Signed Release Build
+  #
+  # Required GitHub Secrets for signed release builds:
+  # - ANDROID_KEYSTORE_BASE64: Base64-encoded keystore file
+  #   Generate with: base64 -i your-keystore.jks | tr -d '\n'
+  # - ANDROID_KEYSTORE_PASSWORD: Password for the keystore
+  # - ANDROID_KEY_ALIAS: Alias of the signing key in the keystore
+  # - ANDROID_KEY_PASSWORD: Password for the signing key
+  #
+  # To set up secrets:
+  # 1. Go to Repository Settings > Secrets and variables > Actions
+  # 2. Click "New repository secret"
+  # 3. Add each secret with its corresponding value
+  #
+  # To generate a keystore (if you don't have one):
+  # keytool -genkey -v -keystore release-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias your-alias
+  build-release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build Production Web
+        run: pnpm run build:prod
+
+      - name: Sync Capacitor
+        run: pnpm exec cap sync android
+
+      - name: Cache Gradle
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            android/.gradle
+          key: gradle-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties', 'android/build.gradle') }}
+          restore-keys: gradle-
+
+      - name: Decode Keystore
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release-keystore.jks
+
+      - name: Build Signed Release APK
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=$PWD/app/release-keystore.jks \
+            -Pandroid.injected.signing.store.password=${{ secrets.ANDROID_KEYSTORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.ANDROID_KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - name: Build Unsigned Release APK
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 == '' }}
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: Clean up Keystore
+        if: always()
+        run: |
+          rm -f android/app/release-keystore.jks
+
+      - name: Upload Release APK artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: release-apk
+          path: android/app/build/outputs/apk/release/app-release*.apk
+          retention-days: 30
+
   # Maestro Integration Tests
+  #
+  # Required GitHub Secrets for Maestro tests:
+  # - TEST_USER_ID: Test user identifier
+  # - TEST_USER_PASSWORD: Test user password
+  # - BACKOFFICE_API_URL: Backoffice API endpoint URL
+  # - BACKOFFICE_ADMIN_USERNAME: Backoffice admin username
+  # - BACKOFFICE_ADMIN_PASSWORD: Backoffice admin password
+  #
+  # To set up secrets:
+  # 1. Go to Repository Settings > Secrets and variables > Actions
+  # 2. Click "New repository secret"
+  # 3. Add each secret with its corresponding value
   maestro-tests:
     needs: build-android
     runs-on: ubuntu-latest
     if: inputs.run_maestro == true
     env:
-      TEST_USER_ID: '1000'
-      TEST_USER_PASSWORD: 'tuvieja'
-      BACKOFFICE_API_URL: 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com'
-      BACKOFFICE_ADMIN_USERNAME: 'admin'
-      BACKOFFICE_ADMIN_PASSWORD: 'admin'
+      TEST_USER_ID: ${{ secrets.TEST_USER_ID }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      BACKOFFICE_API_URL: ${{ secrets.BACKOFFICE_API_URL }}
+      BACKOFFICE_ADMIN_USERNAME: ${{ secrets.BACKOFFICE_ADMIN_USERNAME }}
+      BACKOFFICE_ADMIN_PASSWORD: ${{ secrets.BACKOFFICE_ADMIN_PASSWORD }}
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:

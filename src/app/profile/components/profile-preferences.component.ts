@@ -11,7 +11,7 @@ import { Language } from '@services/translation.service';
   templateUrl: './profile-preferences.component.html',
   styleUrls: ['./profile-preferences.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonSelect, IonSelectOption, IonToggle, TranslateModule, AppIconComponent]
+  imports: [CommonModule, IonSelect, IonSelectOption, IonToggle, TranslateModule, AppIconComponent],
 })
 export class ProfilePreferencesComponent {
   @Input() currentTheme: ThemeMode = 'auto';

@@ -139,9 +139,7 @@ describe('ServiceMonitorComponent', () => {
         endTime: new Date(),
       };
       // SAFETY: Partial mock for testing a single function
-      expect(component.getWorkflowDuration(completedWorkflow as any)).toMatch(
-        /^\d+(\.\d)?s$/
-      );
+      expect(component.getWorkflowDuration(completedWorkflow as any)).toMatch(/^\d+(\.\d)?s$/);
     });
 
     it('should calculate workflow progress correctly', () => {

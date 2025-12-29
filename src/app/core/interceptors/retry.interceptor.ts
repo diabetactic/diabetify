@@ -1,4 +1,3 @@
-
 import { Injectable } from '@angular/core';
 import {
   HttpEvent,
@@ -42,18 +41,19 @@ export class RetryInterceptor implements HttpInterceptor {
               return throwError(() => error);
             }
 
-            // Exponential backoff
-            const delay = this.backoffDelay * Math.pow(2, i);
-            console.log(`[RetryInterceptor] Attempt ${retryAttempt}: Retrying in ${delay}ms`);
+            // Exponential backoff with jitter for better distribution
+            const baseDelay = this.backoffDelay * Math.pow(2, i);
+            const jitter = Math.random() * 0.3 * baseDelay; // 0-30% jitter
+            const delay = Math.round(baseDelay + jitter);
 
             return timer(delay);
-          }),
-        ),
+          })
+        )
       ),
       catchError((error: HttpErrorResponse) => {
         // After all retries, pass the error to the global error handler
         return this.errorHandlerService.handleError(error);
-      }),
+      })
     );
   }
 }

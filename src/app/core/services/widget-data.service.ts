@@ -4,11 +4,10 @@ import { WidgetBridgePlugin } from 'capacitor-widget-bridge';
 import { LocalGlucoseReading } from '@models/glucose-reading.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class WidgetDataService {
-
-  constructor(private readingsService: ReadingsService) { }
+  constructor(private readingsService: ReadingsService) {}
 
   async updateWidgetData() {
     const readings = await this.readingsService.getAllReadings(2);
@@ -29,9 +28,9 @@ export class WidgetDataService {
     };
 
     await WidgetBridgePlugin.setItem({
-        key: 'widgetData',
-        value: JSON.stringify(widgetData),
-        group: 'group.io.diabetactic.app'
+      key: 'widgetData',
+      value: JSON.stringify(widgetData),
+      group: 'group.io.diabetactic.app',
     });
 
     await WidgetBridgePlugin.reloadAllTimelines();

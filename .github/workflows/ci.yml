@@ -52,13 +52,19 @@ jobs:
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
 
-      - name: Unit Tests
-        run: pnpm exec vitest run --coverage
+      - name: Unit Tests with Coverage
+        run: pnpm test:coverage
+        # Coverage thresholds enforced in vitest.config.ts:
+        # - branches: 70%
+        # - functions: 75%
+        # - lines: 80%
+        # - statements: 80%
+        # Build will fail if coverage drops below these thresholds
 
       - name: Upload coverage artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
-          name: coverage
+          name: coverage-report
           path: coverage/
           retention-days: 7
 

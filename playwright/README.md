@@ -62,8 +62,8 @@ npm run test:e2e -- --grep "@docker"
 
 The Docker E2E tests are now self-contained and manage their own setup and teardown. The following utilities are used to orchestrate the test environment:
 
--   **`DockerTestManager`**: Ensures that the Docker services (`api_gateway` and `glucoserver`) are healthy before any tests are run.
--   **`DatabaseSeeder`**: Handles all database operations, including resetting the database, seeding it with test data, and cleaning up after the tests have completed.
+- **`DockerTestManager`**: Ensures that the Docker services (`api_gateway` and `glucoserver`) are healthy before any tests are run.
+- **`DatabaseSeeder`**: Handles all database operations, including resetting the database, seeding it with test data, and cleaning up after the tests have completed.
 
 Each test is run in a separate database transaction, which is rolled back after the test is complete. This ensures that each test is independent and that the database is in a clean state for every test.
 

@@ -12,158 +12,167 @@
 </div>
 
 <!-- Dev Tools Panel (sliding from bottom on mobile, sidebar on desktop) -->
-<div
-  *ngIf="isOpen"
-  class="bg-base-100 border-base-300 fixed inset-x-0 bottom-0 z-40 flex max-h-[80vh] flex-col overflow-hidden rounded-t-2xl border-t shadow-2xl backdrop-blur-none md:inset-y-0 md:left-auto md:right-0 md:max-h-full md:w-96 md:rounded-none md:rounded-l-2xl md:border-l md:border-t-0"
-  [@slideIn]
->
-  <!-- Header -->
-  <div class="border-base-300 bg-base-200 flex items-center justify-between border-b p-4">
-    <div class="flex items-center gap-2">
-      <app-icon name="bug" class="text-primary text-xl"></app-icon>
-      <div class="flex flex-col">
-        <h2 class="text-base-content text-lg font-bold">
-          {{ 'debug.devTools.title' | translate }}
-        </h2>
-        <p class="text-base-content/60 m-0 text-xs">
-          {{ 'debug.devTools.description' | translate }}
+@if (isOpen) {
+  <div
+    class="bg-base-100 border-base-300 fixed inset-x-0 bottom-0 z-40 flex max-h-[80vh] flex-col overflow-hidden rounded-t-2xl border-t shadow-2xl backdrop-blur-none md:inset-y-0 md:left-auto md:right-0 md:max-h-full md:w-96 md:rounded-none md:rounded-l-2xl md:border-l md:border-t-0"
+    [@slideIn]
+  >
+    <!-- Header -->
+    <div class="border-base-300 bg-base-200 flex items-center justify-between border-b p-4">
+      <div class="flex items-center gap-2">
+        <app-icon name="bug" class="text-primary text-xl"></app-icon>
+        <div class="flex flex-col">
+          <h2 class="text-base-content text-lg font-bold">
+            {{ 'debug.devTools.title' | translate }}
+          </h2>
+          <p class="text-base-content/60 m-0 text-xs">
+            {{ 'debug.devTools.description' | translate }}
+          </p>
+        </div>
+      </div>
+      <ion-button
+        fill="clear"
+        size="small"
+        (click)="togglePanel()"
+        class="inline-flex items-center gap-2"
+        [attr.aria-label]="'debug.closePanel' | translate"
+      >
+        <app-icon name="close" class="h-6 w-6"></app-icon>
+      </ion-button>
+    </div>
+
+    <!-- Minimal content (scrollable) -->
+    <div class="flex-1 space-y-3 overflow-y-auto p-4">
+      <!-- Environment summary -->
+      @if (debugInfo) {
+        <div class="bg-base-200 rounded-lg p-3">
+          <h3 class="text-base-content/60 mb-2 text-sm font-semibold">
+            {{ 'debug.devTools.environment' | translate }}
+          </h3>
+          <p class="text-base-content/70 m-0 text-xs">
+            {{ 'debug.devTools.mode' | translate }}:
+            <span class="text-base-content font-mono">{{ debugInfo.environment }}</span>
+          </p>
+          <p class="text-base-content/70 mt-1 text-xs">
+            {{ 'debug.devTools.api' | translate }}:
+            <span class="text-base-content break-all font-mono text-[10px]">{{
+              debugInfo.apiBaseUrl
+            }}</span>
+          </p>
+        </div>
+      }
+
+      <!-- Appointments queue tools -->
+      <div class="bg-base-200 space-y-2 rounded-lg p-3">
+        <h3 class="text-base-content/60 mb-1 text-sm font-semibold">
+          {{ 'debug.devTools.appointmentsQueue' | translate }}
+        </h3>
+        <p class="text-base-content/60 m-0 text-[11px]">
+          {{ 'debug.devTools.queueDescription' | translate }}
         </p>
+        <div class="mt-2 flex flex-col gap-2">
+          <ion-button size="small" expand="block" (click)="devAcceptNextAppointment()">
+            <app-icon name="check" class="mr-1"></app-icon>
+            {{ 'debug.devTools.acceptNextPending' | translate }}
+          </ion-button>
+          <ion-button
+            size="small"
+            expand="block"
+            color="warning"
+            (click)="devDenyNextAppointment()"
+          >
+            <app-icon name="x" class="mr-1"></app-icon>
+            {{ 'debug.devTools.denyNextPending' | translate }}
+          </ion-button>
+          <ion-button
+            size="small"
+            expand="block"
+            color="danger"
+            fill="outline"
+            (click)="devClearAppointmentQueue()"
+          >
+            <app-icon name="trash-2" class="mr-1"></app-icon>
+            {{ 'debug.devTools.clearQueue' | translate }}
+          </ion-button>
+        </div>
       </div>
-    </div>
-    <ion-button
-      fill="clear"
-      size="small"
-      (click)="togglePanel()"
-      class="inline-flex items-center gap-2"
-      [attr.aria-label]="'debug.closePanel' | translate"
-    >
-      <app-icon name="close" class="h-6 w-6"></app-icon>
-    </ion-button>
-  </div>
 
-  <!-- Minimal content (scrollable) -->
-  <div class="flex-1 space-y-3 overflow-y-auto p-4">
-    <!-- Environment summary -->
-    <div *ngIf="debugInfo" class="bg-base-200 rounded-lg p-3">
-      <h3 class="text-base-content/60 mb-2 text-sm font-semibold">
-        {{ 'debug.devTools.environment' | translate }}
-      </h3>
-      <p class="text-base-content/70 m-0 text-xs">
-        {{ 'debug.devTools.mode' | translate }}:
-        <span class="text-base-content font-mono">{{ debugInfo.environment }}</span>
-      </p>
-      <p class="text-base-content/70 mt-1 text-xs">
-        {{ 'debug.devTools.api' | translate }}:
-        <span class="text-base-content break-all font-mono text-[10px]">{{
-          debugInfo.apiBaseUrl
-        }}</span>
-      </p>
-    </div>
-
-    <!-- Appointments queue tools -->
-    <div class="bg-base-200 space-y-2 rounded-lg p-3">
-      <h3 class="text-base-content/60 mb-1 text-sm font-semibold">
-        {{ 'debug.devTools.appointmentsQueue' | translate }}
-      </h3>
-      <p class="text-base-content/60 m-0 text-[11px]">
-        {{ 'debug.devTools.queueDescription' | translate }}
-      </p>
-      <div class="mt-2 flex flex-col gap-2">
-        <ion-button size="small" expand="block" (click)="devAcceptNextAppointment()">
-          <app-icon name="check" class="mr-1"></app-icon>
-          {{ 'debug.devTools.acceptNextPending' | translate }}
+      <!-- User tools -->
+      <div class="bg-base-200 space-y-2 rounded-lg p-3">
+        <h3 class="text-base-content/60 mb-1 text-sm font-semibold">
+          {{ 'debug.devTools.usersResolutions' | translate }}
+        </h3>
+        <p class="text-base-content/60 m-0 text-[11px]">
+          {{ 'debug.devTools.usersDescription' | translate }}
+        </p>
+        <ion-button size="small" expand="block" (click)="devCreateTestUser()">
+          <app-icon name="user-plus" class="mr-1"></app-icon>
+          {{ 'debug.devTools.createTestUser' | translate }}
         </ion-button>
-        <ion-button size="small" expand="block" color="warning" (click)="devDenyNextAppointment()">
-          <app-icon name="x" class="mr-1"></app-icon>
-          {{ 'debug.devTools.denyNextPending' | translate }}
-        </ion-button>
-        <ion-button
-          size="small"
-          expand="block"
-          color="danger"
-          fill="outline"
-          (click)="devClearAppointmentQueue()"
-        >
-          <app-icon name="trash-2" class="mr-1"></app-icon>
-          {{ 'debug.devTools.clearQueue' | translate }}
+        <ion-button size="small" expand="block" fill="outline" (click)="devCreateResolution()">
+          <app-icon name="file-plus" class="mr-1"></app-icon>
+          {{ 'debug.devTools.createResolution' | translate }}
         </ion-button>
       </div>
-    </div>
 
-    <!-- User tools -->
-    <div class="bg-base-200 space-y-2 rounded-lg p-3">
-      <h3 class="text-base-content/60 mb-1 text-sm font-semibold">
-        {{ 'debug.devTools.usersResolutions' | translate }}
-      </h3>
-      <p class="text-base-content/60 m-0 text-[11px]">
-        {{ 'debug.devTools.usersDescription' | translate }}
-      </p>
-      <ion-button size="small" expand="block" (click)="devCreateTestUser()">
-        <app-icon name="user-plus" class="mr-1"></app-icon>
-        {{ 'debug.devTools.createTestUser' | translate }}
-      </ion-button>
-      <ion-button size="small" expand="block" fill="outline" (click)="devCreateResolution()">
-        <app-icon name="file-plus" class="mr-1"></app-icon>
-        {{ 'debug.devTools.createResolution' | translate }}
-      </ion-button>
-    </div>
-
-    <!-- Local data tools -->
-    <div
-      class="rounded-lg border-2 border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20"
-    >
-      <h3 class="mb-2 text-sm font-semibold text-red-900 dark:text-red-200">
-        {{ 'debug.devTools.localDangerZone' | translate }}
-      </h3>
-      <p class="mb-3 text-xs text-red-700 dark:text-red-300">
-        {{ 'debug.devTools.localDangerDescription' | translate }}
-      </p>
-      <div class="flex flex-col gap-2">
-        <ion-button
-          expand="block"
-          color="warning"
-          size="small"
-          fill="outline"
-          (click)="clearReadings()"
-          class="inline-flex items-center gap-2"
-        >
-          <app-icon name="trash-outline"></app-icon>
-          {{ 'debug.devTools.clearLocalReadings' | translate }}
-        </ion-button>
-        <ion-button
-          expand="block"
-          color="warning"
-          size="small"
-          fill="outline"
-          (click)="clearPreferences()"
-          class="inline-flex items-center gap-2"
-        >
-          <app-icon name="trash-outline"></app-icon>
-          {{ 'debug.devTools.clearPreferencesAction' | translate }}
-        </ion-button>
-        <ion-button
-          expand="block"
-          color="danger"
-          size="small"
-          (click)="clearAllData()"
-          class="inline-flex items-center gap-2"
-        >
-          <app-icon name="nuclear-outline"></app-icon>
-          {{ 'debug.devTools.clearAllLocalData' | translate }}
-        </ion-button>
+      <!-- Local data tools -->
+      <div
+        class="rounded-lg border-2 border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20"
+      >
+        <h3 class="mb-2 text-sm font-semibold text-red-900 dark:text-red-200">
+          {{ 'debug.devTools.localDangerZone' | translate }}
+        </h3>
+        <p class="mb-3 text-xs text-red-700 dark:text-red-300">
+          {{ 'debug.devTools.localDangerDescription' | translate }}
+        </p>
+        <div class="flex flex-col gap-2">
+          <ion-button
+            expand="block"
+            color="warning"
+            size="small"
+            fill="outline"
+            (click)="clearReadings()"
+            class="inline-flex items-center gap-2"
+          >
+            <app-icon name="trash-outline"></app-icon>
+            {{ 'debug.devTools.clearLocalReadings' | translate }}
+          </ion-button>
+          <ion-button
+            expand="block"
+            color="warning"
+            size="small"
+            fill="outline"
+            (click)="clearPreferences()"
+            class="inline-flex items-center gap-2"
+          >
+            <app-icon name="trash-outline"></app-icon>
+            {{ 'debug.devTools.clearPreferencesAction' | translate }}
+          </ion-button>
+          <ion-button
+            expand="block"
+            color="danger"
+            size="small"
+            (click)="clearAllData()"
+            class="inline-flex items-center gap-2"
+          >
+            <app-icon name="nuclear-outline"></app-icon>
+            {{ 'debug.devTools.clearAllLocalData' | translate }}
+          </ion-button>
+        </div>
       </div>
     </div>
   </div>
-</div>
+}
 
 <!-- Backdrop (mobile only) -->
-<div
-  *ngIf="isOpen"
-  (click)="togglePanel()"
-  (keydown.enter)="togglePanel()"
-  tabindex="0"
-  role="button"
-  [attr.aria-label]="'debug.closePanel' | translate"
-  class="fixed inset-0 z-30 bg-black/50 md:hidden"
-  [@fadeIn]
-></div>
+@if (isOpen) {
+  <div
+    (click)="togglePanel()"
+    (keydown.enter)="togglePanel()"
+    tabindex="0"
+    role="button"
+    [attr.aria-label]="'debug.closePanel' | translate"
+    class="fixed inset-0 z-30 bg-black/50 md:hidden"
+    [@fadeIn]
+  ></div>
+}

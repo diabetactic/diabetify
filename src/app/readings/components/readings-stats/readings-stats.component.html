@@ -3,7 +3,8 @@
     <ion-text color="medium">
       <p class="m-0 text-center text-[13px]">
         {{ 'readings.showing' | translate }} {{ filteredCount }} {{ 'readings.of' | translate }}
-        {{ totalCount }} {{ 'readings.readings' | translate }} @if (hasActiveFilters) {
+        {{ totalCount }} {{ 'readings.readings' | translate }}
+        @if (hasActiveFilters) {
           <span> ({{ 'readings.filtered' | translate }})</span>
         }
       </p>

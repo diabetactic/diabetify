@@ -8,10 +8,7 @@ import { Appointment } from 'src/app/core/models/appointment.model';
   template: `
     <div class="timeline-container">
       <div class="timeline">
-        <div
-          class="timeline-progress"
-          [style.width.%]="progressPercentage"
-        ></div>
+        <div class="timeline-progress" [style.width.%]="progressPercentage"></div>
         <div
           *ngFor="let state of states; let i = index"
           class="timeline-item"

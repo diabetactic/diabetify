@@ -19,33 +19,35 @@
 
     <!-- Tips list -->
     <div class="space-y-4">
-      <ion-card *ngFor="let tip of tips; trackBy: trackByTip" class="m-0">
-        <ion-card-content>
-          <div class="flex items-start gap-3">
-            <div
-              class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full"
-              [ngClass]="{
-                'bg-primary-100 dark:bg-primary-900': tip.category === 'glucose',
-                'bg-success-100 dark:bg-success-900': tip.category === 'nutrition',
-                'bg-warning-100 dark:bg-warning-900': tip.category === 'exercise',
-                'bg-danger-100 dark:bg-danger-900': tip.category === 'medication',
-              }"
-            >
-              <app-icon
-                [name]="tip.icon"
-                class="text-2xl"
-                [color]="getCategoryColor(tip.category)"
-              ></app-icon>
+      @for (tip of tips; track tip.id) {
+        <ion-card class="m-0">
+          <ion-card-content>
+            <div class="flex items-start gap-3">
+              <div
+                class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full"
+                [ngClass]="{
+                  'bg-primary-100 dark:bg-primary-900': tip.category === 'glucose',
+                  'bg-success-100 dark:bg-success-900': tip.category === 'nutrition',
+                  'bg-warning-100 dark:bg-warning-900': tip.category === 'exercise',
+                  'bg-danger-100 dark:bg-danger-900': tip.category === 'medication',
+                }"
+              >
+                <app-icon
+                  [name]="tip.icon"
+                  class="text-2xl"
+                  [color]="getCategoryColor(tip.category)"
+                ></app-icon>
+              </div>
+              <div class="prose flex-1">
+                <h3 class="mb-1 text-lg font-semibold">{{ tip.title | translate }}</h3>
+                <p class="text-base-content/60 dark:text-base-content/80 mb-0 text-sm">
+                  {{ tip.description | translate }}
+                </p>
+              </div>
             </div>
-            <div class="prose flex-1">
-              <h3 class="mb-1 text-lg font-semibold">{{ tip.title | translate }}</h3>
-              <p class="text-base-content/60 dark:text-base-content/80 mb-0 text-sm">
-                {{ tip.description | translate }}
-              </p>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
+          </ion-card-content>
+        </ion-card>
+      }
     </div>
 
     <!-- Disclaimer -->

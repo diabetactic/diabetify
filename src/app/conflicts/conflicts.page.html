@@ -8,14 +8,17 @@
 </ion-header>
 
 <ion-content>
-  <div *ngIf="conflicts.length === 0" class="ion-padding ion-text-center">
-    <h2>No conflicts to resolve.</h2>
-    <p>All your data is in sync.</p>
-  </div>
+  @if (conflicts.length === 0) {
+    <div class="ion-padding ion-text-center">
+      <h2>No conflicts to resolve.</h2>
+      <p>All your data is in sync.</p>
+    </div>
+  }
 
-  <app-sync-conflict
-    *ngFor="let conflict of conflicts"
-    [conflict]="conflict"
-    (resolve)="resolveConflict($event)"
-  ></app-sync-conflict>
+  @for (conflict of conflicts; track conflict.id) {
+    <app-sync-conflict
+      [conflict]="conflict"
+      (resolve)="resolveConflict($event)"
+    ></app-sync-conflict>
+  }
 </ion-content>

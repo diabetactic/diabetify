@@ -17,15 +17,14 @@ describe('WidgetDataService', () => {
 
   beforeEach(() => {
     readingsServiceSpy = {
-      getAllReadings: vi.fn().mockResolvedValue({ readings: [{ value: 120, units: 'mg/dL', time: new Date().toISOString() }] }),
+      getAllReadings: vi.fn().mockResolvedValue({
+        readings: [{ value: 120, units: 'mg/dL', time: new Date().toISOString() }],
+      }),
       getStatistics: vi.fn().mockResolvedValue({ timeInRange: 60 }),
     };
 
     TestBed.configureTestingModule({
-      providers: [
-        WidgetDataService,
-        { provide: ReadingsService, useValue: readingsServiceSpy }
-      ]
+      providers: [WidgetDataService, { provide: ReadingsService, useValue: readingsServiceSpy }],
     });
     service = TestBed.inject(WidgetDataService);
   });

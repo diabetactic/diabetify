@@ -57,7 +57,7 @@ export default defineConfig({
     reporters: ['default', 'html'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'html', 'lcov'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       include: ['src/app/**/*.ts'],
       exclude: [
         // Test files
@@ -77,6 +77,14 @@ export default defineConfig({
         'src/app/shared/components/env-badge/**',
         'src/app/shared/icons/**', // Static icon exports
       ],
+      thresholds: {
+        global: {
+          branches: 70,
+          functions: 75,
+          lines: 80,
+          statements: 80,
+        },
+      },
     },
     // Dependency handling for Vitest
     deps: {
@@ -162,6 +170,25 @@ export default defineConfig({
         replacement: fileURLToPath(
           new URL('./src/test-setup/barcode-scanner.mock.ts', import.meta.url)
         ),
+      },
+      // Redirect capacitor-widget-bridge to mock
+      {
+        find: 'capacitor-widget-bridge',
+        replacement: fileURLToPath(
+          new URL('./src/mocks/capacitor-widget-bridge.mock.ts', import.meta.url)
+        ),
+      },
+      // Redirect chartjs-plugin-zoom to mock
+      {
+        find: 'chartjs-plugin-zoom',
+        replacement: fileURLToPath(
+          new URL('./src/mocks/chartjs-plugin-zoom.mock.ts', import.meta.url)
+        ),
+      },
+      // Redirect hammerjs to mock
+      {
+        find: 'hammerjs',
+        replacement: fileURLToPath(new URL('./src/mocks/hammerjs.mock.ts', import.meta.url)),
       },
     ],
     // Enable directory index resolution for Ionic ESM imports

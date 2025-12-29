@@ -82,7 +82,7 @@ export class TrendsPage implements OnInit {
         fill: true,
       },
     ],
-    labels: []
+    labels: [],
   };
   public lineChartType: ChartType = 'line';
   public lineChartOptions: ChartConfiguration['options'] = {
@@ -198,7 +198,7 @@ export class TrendsPage implements OnInit {
     } else {
       this.lineChartData = {
         datasets: [],
-        labels: []
+        labels: [],
       };
     }
   }

@@ -21,11 +21,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { DockerTestManager } from '../helpers/docker-test-manager';
 import { DatabaseSeeder } from '../helpers/database-seeder';
-import {
-  API_URL,
-  TEST_USERNAME,
-  TEST_PASSWORD,
-} from '../helpers/config';
+import { API_URL, TEST_USERNAME, TEST_PASSWORD } from '../helpers/config';
 
 const isDockerTest = process.env.E2E_DOCKER_TESTS === 'true';
 

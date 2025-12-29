@@ -62,7 +62,9 @@ describe('ReadingsFilterComponent', () => {
 
   it('should set filters to last 7 days', () => {
     component.setFilterLast7Days();
-    expect(component.filters.startDate).toEqual(new Date(mockDate.getTime() - 7 * 24 * 60 * 60 * 1000));
+    expect(component.filters.startDate).toEqual(
+      new Date(mockDate.getTime() - 7 * 24 * 60 * 60 * 1000)
+    );
     expect(component.filters.endDate).toEqual(mockDate);
   });
 

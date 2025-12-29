@@ -23,262 +23,260 @@
     <!-- Header -->
     <div class="flex items-center justify-between"></div>
     <!-- Overall Status -->
-    <div
-      *ngIf="servicesState"
-      class="card bg-base-100 mb-4 shadow-xl transition-transform hover:-translate-y-0.5"
-    >
-      <div class="card-body">
-        <ion-card-header>
-          <ion-card-title class="flex items-center gap-3">
-            <ion-icon
-              [name]="statusIcons[servicesState.overallHealth]"
-              [style.color]="statusColors[servicesState.overallHealth]"
-              class="text-2xl"
-            >
-            </ion-icon>
-            <span class="text-base-content font-semibold"
-              >System Status: {{ servicesState.overallHealth }}</span
-            >
-          </ion-card-title>
-          <ion-card-subtitle class="mt-2 flex flex-wrap items-center gap-2 text-sm">
-            <!-- Online/Offline indicator hidden for screenshots -->
-            <!--
-            <span
-              *ngIf="servicesState.isOnline"
-              class="inline-flex items-center gap-1 text-green-600 dark:text-green-400"
-            >
-              <app-icon name="wifi"></app-icon> {{ 'serviceMonitor.online' | translate }}
-            </span>
-            <span
-              *ngIf="!servicesState.isOnline"
-              class="inline-flex items-center gap-1 text-red-600 dark:text-red-400"
-            >
-              <app-icon name="cloud-offline"></app-icon> {{ 'serviceMonitor.offline' | translate }}
-            </span>
-            <span class="text-base-content/40 mx-2">|</span>
-            -->
-            <span class="text-base-content/60"
-              >{{ 'serviceMonitor.lastCheck' | translate }}:
-              {{ formatDate(servicesState.lastFullCheck) }}</span
-            >
-          </ion-card-subtitle>
-        </ion-card-header>
+    @if (servicesState) {
+      <div class="card bg-base-100 mb-4 shadow-xl transition-transform hover:-translate-y-0.5">
+        <div class="card-body">
+          <ion-card-header>
+            <ion-card-title class="flex items-center gap-3">
+              <ion-icon
+                [name]="statusIcons[servicesState.overallHealth]"
+                [style.color]="statusColors[servicesState.overallHealth]"
+                class="text-2xl"
+              >
+              </ion-icon>
+              <span class="text-base-content font-semibold"
+                >System Status: {{ servicesState.overallHealth }}</span
+              >
+            </ion-card-title>
+            <ion-card-subtitle class="mt-2 flex flex-wrap items-center gap-2 text-sm">
+              <!-- Online/Offline indicator hidden for screenshots -->
+              <!--
+              @if (servicesState.isOnline) {
+                <span class="inline-flex items-center gap-1 text-green-600 dark:text-green-400">
+                  <app-icon name="wifi"></app-icon> {{ 'serviceMonitor.online' | translate }}
+                </span>
+              } @else {
+                <span class="inline-flex items-center gap-1 text-red-600 dark:text-red-400">
+                  <app-icon name="cloud-offline"></app-icon> {{ 'serviceMonitor.offline' | translate }}
+                </span>
+              }
+              <span class="text-base-content/40 mx-2">|</span>
+              -->
+              <span class="text-base-content/60"
+                >{{ 'serviceMonitor.lastCheck' | translate }}:
+                {{ formatDate(servicesState.lastFullCheck) }}</span
+              >
+            </ion-card-subtitle>
+          </ion-card-header>
+        </div>
       </div>
-    </div>
+    }
 
     <!-- Services Grid -->
     <ion-grid class="p-0 md:p-2">
       <ion-row class="gap-y-3">
-        <ion-col
-          size="12"
-          size-md="6"
-          size-lg="4"
-          *ngFor="let service of services; trackBy: trackByService"
-          class="px-1 md:px-2"
-        >
-          <div
-            (click)="showServiceDetails(service.service)"
-            (keydown.enter)="showServiceDetails(service.service)"
-            tabindex="0"
-            role="button"
-            [attr.aria-label]="'Show details for ' + getServiceName(service.service)"
-            class="card bg-base-100 mb-0 cursor-pointer shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl active:translate-y-0"
-          >
-            <div class="card-body">
-              <ion-card-header>
-                <ion-card-subtitle class="flex items-center gap-2 font-medium">
-                  <!-- Status indicator with pulse animation -->
-                  <div class="relative flex h-3 w-3">
+        @for (service of services; track service.service) {
+          <ion-col size="12" size-md="6" size-lg="4" class="px-1 md:px-2">
+            <div
+              (click)="showServiceDetails(service.service)"
+              (keydown.enter)="showServiceDetails(service.service)"
+              tabindex="0"
+              role="button"
+              [attr.aria-label]="'Show details for ' + getServiceName(service.service)"
+              class="card bg-base-100 mb-0 cursor-pointer shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl active:translate-y-0"
+            >
+              <div class="card-body">
+                <ion-card-header>
+                  <ion-card-subtitle class="flex items-center gap-2 font-medium">
+                    <!-- Status indicator with pulse animation -->
+                    <div class="relative flex h-3 w-3">
+                      <span
+                        class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+                        [ngClass]="{
+                          'bg-green-400': service.status === 'HEALTHY',
+                          'bg-yellow-400': service.status === 'DEGRADED',
+                          'bg-red-400': service.status === 'UNHEALTHY',
+                        }"
+                      ></span>
+                      <span
+                        class="relative inline-flex h-3 w-3 rounded-full"
+                        [ngClass]="{
+                          'bg-green-500': service.status === 'HEALTHY',
+                          'bg-yellow-500': service.status === 'DEGRADED',
+                          'bg-red-500': service.status === 'UNHEALTHY',
+                        }"
+                      ></span>
+                    </div>
                     <span
-                      class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+                      class="text-xs font-semibold uppercase tracking-wide"
                       [ngClass]="{
-                        'bg-green-400': service.status === 'HEALTHY',
-                        'bg-yellow-400': service.status === 'DEGRADED',
-                        'bg-red-400': service.status === 'UNHEALTHY',
-                      }"
-                    ></span>
-                    <span
-                      class="relative inline-flex h-3 w-3 rounded-full"
-                      [ngClass]="{
-                        'bg-green-500': service.status === 'HEALTHY',
-                        'bg-yellow-500': service.status === 'DEGRADED',
-                        'bg-red-500': service.status === 'UNHEALTHY',
-                      }"
-                    ></span>
-                  </div>
-                  <span
-                    class="text-xs font-semibold uppercase tracking-wide"
-                    [ngClass]="{
-                      'text-green-600 dark:text-green-400': service.status === 'HEALTHY',
-                      'text-yellow-600 dark:text-yellow-400': service.status === 'DEGRADED',
-                      'text-red-600 dark:text-red-400': service.status === 'UNHEALTHY',
-                    }"
-                  >
-                    {{ service.status }}
-                  </span>
-                </ion-card-subtitle>
-                <ion-card-title class="text-base-content mt-2 text-base font-semibold">{{
-                  getServiceName(service.service)
-                }}</ion-card-title>
-              </ion-card-header>
-
-              <ion-card-content>
-                <div class="space-y-2">
-                  <!-- Response Time -->
-                  <div class="flex items-center justify-between py-2">
-                    <span class="text-base-content/70 text-sm">{{
-                      'serviceMonitor.responseTime' | translate
-                    }}</span>
-                    <span class="text-base-content text-sm font-medium">
-                      {{
-                        service.responseTime
-                          ? formatDuration(service.responseTime)
-                          : ('serviceMonitor.notAvailable' | translate)
-                      }}
-                    </span>
-                  </div>
-
-                  <!-- Last Checked -->
-                  <div class="flex items-center justify-between py-2">
-                    <span class="text-base-content/70 text-sm">{{
-                      'serviceMonitor.lastChecked' | translate
-                    }}</span>
-                    <span class="text-base-content text-sm font-medium">
-                      {{ formatDate(service.lastChecked) }}
-                    </span>
-                  </div>
-
-                  <!-- Circuit Breaker Status -->
-                  <div *ngIf="circuitBreakers" class="flex items-center justify-between py-2">
-                    <span class="text-base-content/70 text-sm">{{
-                      'serviceMonitor.circuitBreaker' | translate
-                    }}</span>
-                    <span
-                      *ngFor="let cb of circuitBreakers; trackBy: trackByCircuitBreaker"
-                      class="text-sm font-medium"
-                      [ngClass]="{
-                        'text-green-600 dark:text-green-400':
-                          cb.service === service.service && cb.state === 'CLOSED',
-                        'text-red-600 dark:text-red-400':
-                          cb.service === service.service && cb.state === 'OPEN',
-                        'text-yellow-600 dark:text-yellow-400':
-                          cb.service === service.service && cb.state === 'HALF_OPEN',
+                        'text-green-600 dark:text-green-400': service.status === 'HEALTHY',
+                        'text-yellow-600 dark:text-yellow-400': service.status === 'DEGRADED',
+                        'text-red-600 dark:text-red-400': service.status === 'UNHEALTHY',
                       }"
                     >
-                      <span *ngIf="cb.service === service.service">
-                        {{ cb.state }}
-                      </span>
+                      {{ service.status }}
                     </span>
+                  </ion-card-subtitle>
+                  <ion-card-title class="text-base-content mt-2 text-base font-semibold">{{
+                    getServiceName(service.service)
+                  }}</ion-card-title>
+                </ion-card-header>
+
+                <ion-card-content>
+                  <div class="space-y-2">
+                    <!-- Response Time -->
+                    <div class="flex items-center justify-between py-2">
+                      <span class="text-base-content/70 text-sm">{{
+                        'serviceMonitor.responseTime' | translate
+                      }}</span>
+                      <span class="text-base-content text-sm font-medium">
+                        {{
+                          service.responseTime
+                            ? formatDuration(service.responseTime)
+                            : ('serviceMonitor.notAvailable' | translate)
+                        }}
+                      </span>
+                    </div>
+
+                    <!-- Last Checked -->
+                    <div class="flex items-center justify-between py-2">
+                      <span class="text-base-content/70 text-sm">{{
+                        'serviceMonitor.lastChecked' | translate
+                      }}</span>
+                      <span class="text-base-content text-sm font-medium">
+                        {{ formatDate(service.lastChecked) }}
+                      </span>
+                    </div>
+
+                    <!-- Circuit Breaker Status -->
+                    @if (circuitBreakers) {
+                      <div class="flex items-center justify-between py-2">
+                        <span class="text-base-content/70 text-sm">{{
+                          'serviceMonitor.circuitBreaker' | translate
+                        }}</span>
+                        @for (cb of circuitBreakers; track cb.service) {
+                          @if (cb.service === service.service) {
+                            <span
+                              class="text-sm font-medium"
+                              [ngClass]="{
+                                'text-green-600 dark:text-green-400': cb.state === 'CLOSED',
+                                'text-red-600 dark:text-red-400': cb.state === 'OPEN',
+                                'text-yellow-600 dark:text-yellow-400': cb.state === 'HALF_OPEN',
+                              }"
+                            >
+                              {{ cb.state }}
+                            </span>
+                          }
+                        }
+                      </div>
+                    }
+
+                    <!-- Error Message -->
+                    @if (service.message) {
+                      <div class="rounded-md bg-red-50 p-2 dark:bg-red-900/20">
+                        <p class="text-xs text-red-600 dark:text-red-400">{{ service.message }}</p>
+                      </div>
+                    }
                   </div>
 
-                  <!-- Error Message -->
-                  <div *ngIf="service.message" class="rounded-md bg-red-50 p-2 dark:bg-red-900/20">
-                    <p class="text-xs text-red-600 dark:text-red-400">{{ service.message }}</p>
+                  <!-- Service Actions -->
+                  <div class="mt-4 flex gap-2">
+                    <ion-button
+                      fill="clear"
+                      size="small"
+                      (click)="checkService(service.service); $event.stopPropagation()"
+                      class="flex-1 text-xs"
+                    >
+                      <app-icon name="reload" class="text-base"></app-icon>
+                      {{ 'serviceMonitor.check' | translate }}
+                    </ion-button>
+                    <ion-button
+                      fill="clear"
+                      size="small"
+                      (click)="clearServiceCache(service.service); $event.stopPropagation()"
+                      class="flex-1 text-xs"
+                    >
+                      <app-icon name="trash" class="text-base"></app-icon>
+                      {{ 'serviceMonitor.clearCache' | translate }}
+                    </ion-button>
                   </div>
-                </div>
-
-                <!-- Service Actions -->
-                <div class="mt-4 flex gap-2">
-                  <ion-button
-                    fill="clear"
-                    size="small"
-                    (click)="checkService(service.service); $event.stopPropagation()"
-                    class="flex-1 text-xs"
-                  >
-                    <app-icon name="reload" class="text-base"></app-icon>
-                    {{ 'serviceMonitor.check' | translate }}
-                  </ion-button>
-                  <ion-button
-                    fill="clear"
-                    size="small"
-                    (click)="clearServiceCache(service.service); $event.stopPropagation()"
-                    class="flex-1 text-xs"
-                  >
-                    <app-icon name="trash" class="text-base"></app-icon>
-                    {{ 'serviceMonitor.clearCache' | translate }}
-                  </ion-button>
-                </div>
-              </ion-card-content>
+                </ion-card-content>
+              </div>
             </div>
-          </div>
-        </ion-col>
+          </ion-col>
+        }
       </ion-row>
     </ion-grid>
 
     <!-- Active Workflows -->
-    <div *ngIf="activeWorkflows.length > 0" class="card bg-base-100 mb-4 shadow-xl">
-      <div class="card-body">
-        <ion-card-header>
-          <ion-card-title class="text-base-content text-base font-semibold">{{
-            'serviceMonitor.activeWorkflows' | translate
-          }}</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="space-y-3">
-            <div
-              *ngFor="let workflow of activeWorkflows; trackBy: trackByWorkflow"
-              class="bg-base-200 rounded-lg p-3"
-            >
-              <div class="flex items-start justify-between">
-                <div class="flex-1">
-                  <h3 class="text-base-content text-sm font-medium">
-                    {{ workflow.type }}
-                  </h3>
-                  <p class="text-base-content/60 mt-1 text-xs">Status: {{ workflow.status }}</p>
-                  <ion-progress-bar
-                    [value]="getWorkflowProgress(workflow) / 100"
-                    [color]="workflow.status === 'failed' ? 'danger' : 'primary'"
-                    class="mt-2 h-1 rounded-full"
-                  >
-                  </ion-progress-bar>
+    @if (activeWorkflows.length > 0) {
+      <div class="card bg-base-100 mb-4 shadow-xl">
+        <div class="card-body">
+          <ion-card-header>
+            <ion-card-title class="text-base-content text-base font-semibold">{{
+              'serviceMonitor.activeWorkflows' | translate
+            }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="space-y-3">
+              @for (workflow of activeWorkflows; track workflow.id) {
+                <div class="bg-base-200 rounded-lg p-3">
+                  <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                      <h3 class="text-base-content text-sm font-medium">
+                        {{ workflow.type }}
+                      </h3>
+                      <p class="text-base-content/60 mt-1 text-xs">Status: {{ workflow.status }}</p>
+                      <ion-progress-bar
+                        [value]="getWorkflowProgress(workflow) / 100"
+                        [color]="workflow.status === 'failed' ? 'danger' : 'primary'"
+                        class="mt-2 h-1 rounded-full"
+                      >
+                      </ion-progress-bar>
+                    </div>
+                    <span class="text-base-content/50 ml-3 text-xs font-medium">
+                      {{ getWorkflowDuration(workflow) }}
+                    </span>
+                  </div>
                 </div>
-                <span class="text-base-content/50 ml-3 text-xs font-medium">
-                  {{ getWorkflowDuration(workflow) }}
-                </span>
-              </div>
+              }
             </div>
-          </div>
-        </ion-card-content>
+          </ion-card-content>
+        </div>
       </div>
-    </div>
+    }
 
     <!-- Completed Workflows -->
-    <div *ngIf="completedWorkflows.length > 0" class="card bg-base-100 mb-4 shadow-xl">
-      <div class="card-body">
-        <ion-card-header>
-          <ion-card-title class="text-base-content text-base font-semibold">{{
-            'serviceMonitor.recentWorkflows' | translate
-          }}</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="space-y-2">
-            <div
-              *ngFor="let workflow of completedWorkflows.slice(0, 5); trackBy: trackByWorkflow"
-              class="hover:bg-base-200 flex items-start gap-3 rounded-lg p-2"
-            >
-              <ion-icon
-                [name]="workflow.status === 'completed' ? 'checkmark-circle' : 'close-circle'"
-                [color]="workflow.status === 'completed' ? 'success' : 'danger'"
-                class="text-xl"
-              >
-              </ion-icon>
-              <div class="flex-1">
-                <h3 class="text-base-content text-sm font-medium">{{ workflow.type }}</h3>
-                <p class="text-base-content/60 mt-1 text-xs">
-                  {{ formatDate(workflow.startTime) }}
-                </p>
-                <p *ngIf="workflow.error" class="mt-1 text-xs text-red-600 dark:text-red-400">
-                  {{ workflow.error }}
-                </p>
-              </div>
-              <span class="text-base-content/50 text-xs font-medium">
-                {{ getWorkflowDuration(workflow) }}
-              </span>
+    @if (completedWorkflows.length > 0) {
+      <div class="card bg-base-100 mb-4 shadow-xl">
+        <div class="card-body">
+          <ion-card-header>
+            <ion-card-title class="text-base-content text-base font-semibold">{{
+              'serviceMonitor.recentWorkflows' | translate
+            }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="space-y-2">
+              @for (workflow of completedWorkflows.slice(0, 5); track workflow.id) {
+                <div class="hover:bg-base-200 flex items-start gap-3 rounded-lg p-2">
+                  <ion-icon
+                    [name]="workflow.status === 'completed' ? 'checkmark-circle' : 'close-circle'"
+                    [color]="workflow.status === 'completed' ? 'success' : 'danger'"
+                    class="text-xl"
+                  >
+                  </ion-icon>
+                  <div class="flex-1">
+                    <h3 class="text-base-content text-sm font-medium">{{ workflow.type }}</h3>
+                    <p class="text-base-content/60 mt-1 text-xs">
+                      {{ formatDate(workflow.startTime) }}
+                    </p>
+                    @if (workflow.error) {
+                      <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+                        {{ workflow.error }}
+                      </p>
+                    }
+                  </div>
+                  <span class="text-base-content/50 text-xs font-medium">
+                    {{ getWorkflowDuration(workflow) }}
+                  </span>
+                </div>
+              }
             </div>
-          </div>
-        </ion-card-content>
+          </ion-card-content>
+        </div>
       </div>
-    </div>
+    }
   </div>
 
   <!-- Service Details Modal -->
@@ -297,195 +295,204 @@
         </ion-toolbar>
       </ion-header>
 
-      <ion-content class="ion-padding bg-base-200" *ngIf="selectedService">
-        <!-- Service Configuration -->
-        <div class="card bg-base-100 mb-4 shadow-xl">
-          <div class="card-body">
-            <ion-card-header>
-              <ion-card-title class="text-base-content text-base font-semibold">{{
-                'serviceMonitor.configuration' | translate
-              }}</ion-card-title>
-            </ion-card-header>
-            <ion-card-content *ngIf="getServiceConfig(selectedService) as config">
-              <div class="space-y-3">
-                <div class="border-base-300 flex items-center justify-between border-b py-2">
-                  <span class="text-base-content/70 text-sm">{{
-                    'serviceMonitor.config.baseUrl' | translate
-                  }}</span>
-                  <span class="text-base-content ml-2 break-all text-right text-sm font-medium">{{
-                    config.baseUrl
-                  }}</span>
-                </div>
-                <div class="border-base-300 flex items-center justify-between border-b py-2">
-                  <span class="text-base-content/70 text-sm">{{
-                    'serviceMonitor.config.healthEndpoint' | translate
-                  }}</span>
-                  <span class="text-base-content text-sm font-medium">{{
-                    config.healthEndpoint || ('serviceMonitor.notAvailable' | translate)
-                  }}</span>
-                </div>
-                <div class="border-base-300 flex items-center justify-between border-b py-2">
-                  <span class="text-base-content/70 text-sm">{{
-                    'serviceMonitor.config.timeout' | translate
-                  }}</span>
-                  <span class="text-base-content text-sm font-medium">{{
-                    formatDuration(config.timeout)
-                  }}</span>
-                </div>
-                <div class="border-base-300 flex items-center justify-between border-b py-2">
-                  <span class="text-base-content/70 text-sm">{{
-                    'serviceMonitor.config.retryAttempts' | translate
-                  }}</span>
-                  <span class="text-base-content text-sm font-medium">{{
-                    config.retryAttempts
-                  }}</span>
-                </div>
-                <div class="border-base-300 flex items-center justify-between border-b py-2">
-                  <span class="text-base-content/70 text-sm">{{
-                    'serviceMonitor.config.circuitBreakerThreshold' | translate
-                  }}</span>
-                  <span class="text-base-content text-sm font-medium">{{
-                    config.circuitBreakerThreshold
-                  }}</span>
-                </div>
-                <div class="border-base-300 flex items-center justify-between border-b py-2">
-                  <span class="text-base-content/70 text-sm">{{
-                    'serviceMonitor.config.circuitBreakerTimeout' | translate
-                  }}</span>
-                  <span class="text-base-content text-sm font-medium">{{
-                    formatDuration(config.circuitBreakerTimeout)
-                  }}</span>
-                </div>
-                <div class="border-base-300 flex items-center justify-between border-b py-2">
-                  <span class="text-base-content/70 text-sm">{{
-                    'serviceMonitor.config.cacheDuration' | translate
-                  }}</span>
-                  <span class="text-base-content text-sm font-medium">
-                    {{
-                      config.cacheDuration
-                        ? formatDuration(config.cacheDuration)
-                        : ('serviceMonitor.config.noCache' | translate)
-                    }}
-                  </span>
-                </div>
-                <div class="flex items-center justify-between py-2">
-                  <span class="text-base-content/70 text-sm">{{
-                    'serviceMonitor.config.offlineSupport' | translate
-                  }}</span>
-                  <ion-icon
-                    [name]="config.offlineSupport ? 'checkmark-circle' : 'close-circle'"
-                    [color]="config.offlineSupport ? 'success' : 'danger'"
-                    class="text-xl"
-                  ></ion-icon>
-                </div>
-              </div>
-            </ion-card-content>
-          </div>
-        </div>
-
-        <!-- Circuit Breaker Details -->
-        <div
-          *ngFor="let cb of circuitBreakers; trackBy: trackByCircuitBreaker"
-          class="card bg-base-100 mb-4 shadow-xl"
-        >
-          <div class="card-body">
-            <div *ngIf="cb.service === selectedService">
+      @if (selectedService) {
+        <ion-content class="ion-padding bg-base-200">
+          <!-- Service Configuration -->
+          <div class="card bg-base-100 mb-4 shadow-xl">
+            <div class="card-body">
               <ion-card-header>
                 <ion-card-title class="text-base-content text-base font-semibold">{{
-                  'serviceMonitor.circuitBreaker' | translate
+                  'serviceMonitor.configuration' | translate
+                }}</ion-card-title>
+              </ion-card-header>
+              @if (getServiceConfig(selectedService); as config) {
+                <ion-card-content>
+                  <div class="space-y-3">
+                    <div class="border-base-300 flex items-center justify-between border-b py-2">
+                      <span class="text-base-content/70 text-sm">{{
+                        'serviceMonitor.config.baseUrl' | translate
+                      }}</span>
+                      <span
+                        class="text-base-content ml-2 break-all text-right text-sm font-medium"
+                        >{{ config.baseUrl }}</span
+                      >
+                    </div>
+                    <div class="border-base-300 flex items-center justify-between border-b py-2">
+                      <span class="text-base-content/70 text-sm">{{
+                        'serviceMonitor.config.healthEndpoint' | translate
+                      }}</span>
+                      <span class="text-base-content text-sm font-medium">{{
+                        config.healthEndpoint || ('serviceMonitor.notAvailable' | translate)
+                      }}</span>
+                    </div>
+                    <div class="border-base-300 flex items-center justify-between border-b py-2">
+                      <span class="text-base-content/70 text-sm">{{
+                        'serviceMonitor.config.timeout' | translate
+                      }}</span>
+                      <span class="text-base-content text-sm font-medium">{{
+                        formatDuration(config.timeout)
+                      }}</span>
+                    </div>
+                    <div class="border-base-300 flex items-center justify-between border-b py-2">
+                      <span class="text-base-content/70 text-sm">{{
+                        'serviceMonitor.config.retryAttempts' | translate
+                      }}</span>
+                      <span class="text-base-content text-sm font-medium">{{
+                        config.retryAttempts
+                      }}</span>
+                    </div>
+                    <div class="border-base-300 flex items-center justify-between border-b py-2">
+                      <span class="text-base-content/70 text-sm">{{
+                        'serviceMonitor.config.circuitBreakerThreshold' | translate
+                      }}</span>
+                      <span class="text-base-content text-sm font-medium">{{
+                        config.circuitBreakerThreshold
+                      }}</span>
+                    </div>
+                    <div class="border-base-300 flex items-center justify-between border-b py-2">
+                      <span class="text-base-content/70 text-sm">{{
+                        'serviceMonitor.config.circuitBreakerTimeout' | translate
+                      }}</span>
+                      <span class="text-base-content text-sm font-medium">{{
+                        formatDuration(config.circuitBreakerTimeout)
+                      }}</span>
+                    </div>
+                    <div class="border-base-300 flex items-center justify-between border-b py-2">
+                      <span class="text-base-content/70 text-sm">{{
+                        'serviceMonitor.config.cacheDuration' | translate
+                      }}</span>
+                      <span class="text-base-content text-sm font-medium">
+                        {{
+                          config.cacheDuration
+                            ? formatDuration(config.cacheDuration)
+                            : ('serviceMonitor.config.noCache' | translate)
+                        }}
+                      </span>
+                    </div>
+                    <div class="flex items-center justify-between py-2">
+                      <span class="text-base-content/70 text-sm">{{
+                        'serviceMonitor.config.offlineSupport' | translate
+                      }}</span>
+                      <ion-icon
+                        [name]="config.offlineSupport ? 'checkmark-circle' : 'close-circle'"
+                        [color]="config.offlineSupport ? 'success' : 'danger'"
+                        class="text-xl"
+                      ></ion-icon>
+                    </div>
+                  </div>
+                </ion-card-content>
+              }
+            </div>
+          </div>
+
+          <!-- Circuit Breaker Details -->
+          @for (cb of circuitBreakers; track cb.service) {
+            @if (cb.service === selectedService) {
+              <div class="card bg-base-100 mb-4 shadow-xl">
+                <div class="card-body">
+                  <ion-card-header>
+                    <ion-card-title class="text-base-content text-base font-semibold">{{
+                      'serviceMonitor.circuitBreaker' | translate
+                    }}</ion-card-title>
+                  </ion-card-header>
+                  <ion-card-content>
+                    <div class="space-y-3">
+                      <div class="border-base-300 flex items-center justify-between border-b py-2">
+                        <span class="text-base-content/70 text-sm">{{
+                          'serviceMonitor.circuitBreakerDetails.state' | translate
+                        }}</span>
+                        <ion-badge
+                          [color]="
+                            cb.state === 'CLOSED'
+                              ? 'success'
+                              : cb.state === 'OPEN'
+                                ? 'danger'
+                                : 'warning'
+                          "
+                          class="px-2 py-1 text-xs font-semibold uppercase"
+                        >
+                          {{ cb.state }}
+                        </ion-badge>
+                      </div>
+                      <div class="border-base-300 flex items-center justify-between border-b py-2">
+                        <span class="text-base-content/70 text-sm">{{
+                          'serviceMonitor.circuitBreakerDetails.failureCount' | translate
+                        }}</span>
+                        <span class="text-base-content text-sm font-medium">{{
+                          cb.failureCount
+                        }}</span>
+                      </div>
+                      @if (cb.lastFailureTime) {
+                        <div
+                          class="border-base-300 flex items-center justify-between border-b py-2"
+                        >
+                          <span class="text-base-content/70 text-sm">{{
+                            'serviceMonitor.circuitBreakerDetails.lastFailure' | translate
+                          }}</span>
+                          <span class="text-base-content text-sm font-medium">{{
+                            formatDate(cb.lastFailureTime)
+                          }}</span>
+                        </div>
+                      }
+                      @if (cb.nextAttemptTime) {
+                        <div class="flex items-center justify-between py-2">
+                          <span class="text-base-content/70 text-sm">{{
+                            'serviceMonitor.circuitBreakerDetails.nextAttempt' | translate
+                          }}</span>
+                          <span class="text-base-content text-sm font-medium">{{
+                            formatDate(cb.nextAttemptTime)
+                          }}</span>
+                        </div>
+                      }
+                    </div>
+
+                    <ion-button
+                      expand="block"
+                      fill="outline"
+                      (click)="resetCircuitBreaker(selectedService)"
+                      [disabled]="cb.state === 'CLOSED'"
+                      class="mt-4 inline-flex items-center gap-2"
+                    >
+                      <app-icon name="refresh"></app-icon>
+                      {{ 'serviceMonitor.circuitBreakerDetails.reset' | translate }}
+                    </ion-button>
+                  </ion-card-content>
+                </div>
+              </div>
+            }
+          }
+
+          <!-- Service Actions -->
+          <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+              <ion-card-header>
+                <ion-card-title class="text-base-content text-base font-semibold">{{
+                  'serviceMonitor.actions.title' | translate
                 }}</ion-card-title>
               </ion-card-header>
               <ion-card-content>
-                <div class="space-y-3">
-                  <div class="border-base-300 flex items-center justify-between border-b py-2">
-                    <span class="text-base-content/70 text-sm">{{
-                      'serviceMonitor.circuitBreakerDetails.state' | translate
-                    }}</span>
-                    <ion-badge
-                      [color]="
-                        cb.state === 'CLOSED'
-                          ? 'success'
-                          : cb.state === 'OPEN'
-                            ? 'danger'
-                            : 'warning'
-                      "
-                      class="px-2 py-1 text-xs font-semibold uppercase"
-                    >
-                      {{ cb.state }}
-                    </ion-badge>
-                  </div>
-                  <div class="border-base-300 flex items-center justify-between border-b py-2">
-                    <span class="text-base-content/70 text-sm">{{
-                      'serviceMonitor.circuitBreakerDetails.failureCount' | translate
-                    }}</span>
-                    <span class="text-base-content text-sm font-medium">{{ cb.failureCount }}</span>
-                  </div>
-                  <div
-                    *ngIf="cb.lastFailureTime"
-                    class="border-base-300 flex items-center justify-between border-b py-2"
-                  >
-                    <span class="text-base-content/70 text-sm">{{
-                      'serviceMonitor.circuitBreakerDetails.lastFailure' | translate
-                    }}</span>
-                    <span class="text-base-content text-sm font-medium">{{
-                      formatDate(cb.lastFailureTime)
-                    }}</span>
-                  </div>
-                  <div *ngIf="cb.nextAttemptTime" class="flex items-center justify-between py-2">
-                    <span class="text-base-content/70 text-sm">{{
-                      'serviceMonitor.circuitBreakerDetails.nextAttempt' | translate
-                    }}</span>
-                    <span class="text-base-content text-sm font-medium">{{
-                      formatDate(cb.nextAttemptTime)
-                    }}</span>
-                  </div>
-                </div>
-
+                <ion-button
+                  expand="block"
+                  (click)="checkService(selectedService)"
+                  class="mb-3 inline-flex items-center gap-2"
+                >
+                  <app-icon name="medical"></app-icon>
+                  {{ 'serviceMonitor.actions.healthCheck' | translate }}
+                </ion-button>
                 <ion-button
                   expand="block"
                   fill="outline"
-                  (click)="resetCircuitBreaker(selectedService)"
-                  [disabled]="cb.state === 'CLOSED'"
-                  class="mt-4 inline-flex items-center gap-2"
+                  (click)="clearServiceCache(selectedService)"
+                  class="inline-flex items-center gap-2"
                 >
-                  <app-icon name="refresh"></app-icon>
-                  {{ 'serviceMonitor.circuitBreakerDetails.reset' | translate }}
+                  <app-icon name="trash"></app-icon>
+                  {{ 'serviceMonitor.actions.clearCache' | translate }}
                 </ion-button>
               </ion-card-content>
             </div>
           </div>
-        </div>
-
-        <!-- Service Actions -->
-        <div class="card bg-base-100 shadow-xl">
-          <div class="card-body">
-            <ion-card-header>
-              <ion-card-title class="text-base-content text-base font-semibold">{{
-                'serviceMonitor.actions.title' | translate
-              }}</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <ion-button
-                expand="block"
-                (click)="checkService(selectedService)"
-                class="mb-3 inline-flex items-center gap-2"
-              >
-                <app-icon name="medical"></app-icon>
-                {{ 'serviceMonitor.actions.healthCheck' | translate }}
-              </ion-button>
-              <ion-button
-                expand="block"
-                fill="outline"
-                (click)="clearServiceCache(selectedService)"
-                class="inline-flex items-center gap-2"
-              >
-                <app-icon name="trash"></app-icon>
-                {{ 'serviceMonitor.actions.clearCache' | translate }}
-              </ion-button>
-            </ion-card-content>
-          </div>
-        </div>
-      </ion-content>
+        </ion-content>
+      }
     </ng-template>
   </ion-modal>
 </ion-content>
