@@ -243,10 +243,10 @@ export class ErrorHandlerService {
       console.error('[HTTP Error]', logData);
     }
 
-    // TODO: Send to error tracking service in production
-    // if (environment.production && environment.features.crashReporting) {
-    //   this.sendToErrorTracking(logData);
-    // }
+    // Send to error tracking service in production
+    if (environment.production && environment.features.crashReporting) {
+      this.sendToErrorTracking(logData);
+    }
   }
 
   /**

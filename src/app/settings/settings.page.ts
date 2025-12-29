@@ -315,8 +315,8 @@ export class SettingsPage implements OnInit, OnDestroy {
       };
       localStorage.setItem(STORAGE_KEYS.USER_SETTINGS, JSON.stringify(settings));
 
-      // TODO: Save to backend when API is available
-      // await this.profileService.updatePreferences(this.preferences).toPromise();
+      // Save to backend API
+      await this.profileService.updatePreferences(this.preferences);
 
       this.hasChanges = false;
       await this.showToast('Configuración guardada exitosamente', 'success');

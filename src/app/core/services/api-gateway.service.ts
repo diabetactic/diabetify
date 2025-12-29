@@ -527,9 +527,16 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       timeout: 15000,
     },
   ],
-  // TODO: Add 'auth.tidepool.link' endpoint when backend implements PATCH /users/tidepool
-  // The User model already has the 'tidepool' field (login/app/models/user_model.py:14)
-  // but no API endpoint exists yet to update it
+  [
+    'auth.tidepool.link',
+    {
+      service: ExternalService.LOCAL_AUTH,
+      path: '/users/tidepool',
+      method: 'PATCH',
+      authenticated: true,
+      timeout: 15000,
+    },
+  ],
 
   // ExtServices-specific endpoints (Heroku backend)
   [
