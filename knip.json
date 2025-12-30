@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
-  "entry": ["src/main.ts", "vitest.config.ts", "playwright.config.ts"],
+  "entry": ["src/main.ts"],
   "project": ["src/**/*.ts"],
   "ignore": [
     "**/*.spec.ts",
@@ -13,7 +13,9 @@
     "**/test-setup/**",
     "**/constants/**",
     "**/contracts/**",
-    "**/config/mock-adapter-config.ts"
+    "**/config/mock-adapter-config.ts",
+    "**/utils/type-guards.ts",
+    "**/models/http-error.model.ts"
   ],
   "ignoreDependencies": [
     "@angular/language-service",

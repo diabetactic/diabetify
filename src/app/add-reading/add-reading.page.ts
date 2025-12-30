@@ -1,5 +1,6 @@
 import {
   Component,
+  CUSTOM_ELEMENTS_SCHEMA,
   OnInit,
   OnDestroy,
   ChangeDetectionStrategy,
@@ -46,6 +47,7 @@ interface MealContextOption {
   styleUrls: ['./add-reading.page.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     RouterModule,
     ReactiveFormsModule,
@@ -324,8 +326,14 @@ export class AddReadingPage implements OnInit, OnDestroy {
 
       await this.showSuccessToast();
 
-      // Dismiss the modal
-      this.modalController.dismiss(reading, 'confirm');
+      // Dismiss the modal when presented as one. This page can also be reached via direct routing
+      // (/add-reading) where "dismiss" might still resolve truthy due to other overlays (e.g. datetime),
+      // so use the current router URL to decide whether to navigate back.
+      const urlBeforeDismiss = this.router.url;
+      await this.modalController.dismiss(reading, 'confirm').catch(() => {});
+      if (urlBeforeDismiss.includes('/add-reading')) {
+        await this.router.navigate(['/tabs/readings']);
+      }
     } catch (error) {
       this.logger.error('UI', 'Error saving reading', error);
       await this.showErrorToast(error);
@@ -336,7 +344,15 @@ export class AddReadingPage implements OnInit, OnDestroy {
   }
 
   onCancel(): void {
-    this.modalController.dismiss(null, 'cancel');
+    const urlBeforeDismiss = this.router.url;
+    this.modalController
+      .dismiss(null, 'cancel')
+      .catch(() => {})
+      .finally(() => {
+        if (urlBeforeDismiss.includes('/add-reading')) {
+          void this.router.navigate(['/tabs/readings']);
+        }
+      });
   }
 
   private async showSuccessToast(): Promise<void> {

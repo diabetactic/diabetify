@@ -9,7 +9,12 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { loginUser, navigateToTab, waitForIonicHydration } from '../helpers/test-helpers';
+import {
+  loginUser,
+  navigateToTab,
+  waitForIonicHydration,
+  scrollAndClickIonElement,
+} from '../helpers/test-helpers';
 
 test.describe.serial('Profile Edit Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -169,7 +174,8 @@ test.describe.serial('Profile Edit Flow', () => {
       return;
     }
 
-    await settingsLink.click();
+    // Use scrollAndClickIonElement to handle ionic shadow DOM scrolling
+    await scrollAndClickIonElement(page, '[data-testid="advanced-settings-btn"]');
 
     // Wait for any UI change - could be modal, page navigation, or inline expansion
     await page.waitForTimeout(500);

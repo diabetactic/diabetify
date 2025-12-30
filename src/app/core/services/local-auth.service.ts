@@ -10,6 +10,9 @@ import { MockAdapterService } from '@services/mock-adapter.service';
 import { environment } from '@env/environment';
 import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
 import { safeJsonParse, isLocalUser } from '../utils/type-guards';
+import { AccountState } from '../models/user-profile.model';
+
+export { AccountState };
 
 /**
  * Local authentication state
@@ -20,15 +23,6 @@ export interface LocalAuthState {
   accessToken: string | null;
   refreshToken: string | null;
   expiresAt: number | null;
-}
-
-/**
- * Account state enum
- */
-export enum AccountState {
-  PENDING = 'pending',
-  ACTIVE = 'active',
-  DISABLED = 'disabled',
 }
 
 /**

@@ -228,3 +228,14 @@ export interface GlucoseStatistics {
   /** Glucose Management Indicator (GMI) */
   gmi?: number;
 }
+
+/**
+ * Result of a paginated query
+ */
+export interface PaginatedReadings {
+  readings: LocalGlucoseReading[];
+  total: number;
+  hasMore: boolean;
+  offset: number;
+  limit: number;
+}

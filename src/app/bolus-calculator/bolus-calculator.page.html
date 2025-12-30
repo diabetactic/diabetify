@@ -140,7 +140,7 @@
         </h2>
         <div class="result-value-container">
           <div class="result-value" data-testid="recommended-insulin-value">
-            {{ result.recommendedInsulin.toFixed(1) }}
+            {{ formatInsulin(result.recommendedInsulin) }}
           </div>
           <div class="result-units">{{ 'bolusCalculator.units' | translate }}</div>
         </div>

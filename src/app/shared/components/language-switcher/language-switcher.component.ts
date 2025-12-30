@@ -5,7 +5,7 @@
  * Can be displayed as a button, select dropdown, or popover.
  */
 
-import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, OnDestroy, Input } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { PopoverController } from '@ionic/angular';
@@ -30,6 +30,7 @@ import { TranslationService, Language, LanguageConfig } from '@services/translat
   templateUrl: './language-switcher.component.html',
   styleUrls: ['./language-switcher.component.scss'],
   standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [FormsModule, TranslateModule, AppIconComponent, IonButton, IonSelect, IonSelectOption],
 })
 export class LanguageSwitcherComponent implements OnInit, OnDestroy {

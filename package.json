@@ -8,6 +8,11 @@
     "node": ">=20.0.0",
     "pnpm": ">=10.0.0"
   },
+  "pnpm": {
+    "overrides": {
+      "playwright-core": "1.57.0"
+    }
+  },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "ng:help": "ng -h",
@@ -91,8 +96,10 @@
     "test:visual:mock": "E2E_MOCK_MODE=true playwright test --grep @visual-mock",
     "test:visual:mock:update": "E2E_MOCK_MODE=true playwright test --grep @visual-mock --update-snapshots",
     "test:visual:report": "playwright show-report",
+    "ci:all": "node scripts/ci-all.mjs",
+    "ci:all:docker": "CI_DOCKER=true node scripts/ci-all.mjs",
     "// === QUALITY ===": "",
-    "lint": "turbo run lint:ts:run lint:styles:run",
+    "lint": "turbo run lint:ts:run lint:styles:run analyze:dead-code analyze:circular analyze:type-coverage",
     "lint:ts": "turbo run lint:ts:run",
     "lint:ts:run": "eslint . --ext .ts,.js",
     "lint:styles": "turbo run lint:styles:run",
@@ -102,7 +109,9 @@
     "format:check": "turbo run format:check:run",
     "format:check:run": "prettier --check .",
     "typecheck": "tsc --noEmit -p tsconfig.build.json",
-    "quality": "turbo run lint:ts:run lint:styles:run format:check:run test:run",
+    "quality": "turbo run lint:ts:run lint:styles:run format:check:run analyze:dead-code analyze:circular analyze:type-coverage test:run test:integration:msw",
+    "quality:static": "turbo run lint:ts:run lint:styles:run format:check:run analyze:dead-code analyze:circular analyze:type-coverage",
+    "quality:full": "turbo run lint:ts:run lint:styles:run format:check:run analyze:dead-code analyze:circular analyze:type-coverage test:run test:integration:msw test:integration",
     "// === CODE ANALYSIS ===": "",
     "analyze:dead-code": "knip",
     "analyze:circular": "dpdm --circular ./src/main.ts",
@@ -110,7 +119,7 @@
     "analyze:duplication": "jscpd src/",
     "analyze:type-coverage": "type-coverage --detail --strict",
     "analyze:bundle": "hawkeye dist/diabetify/browser/stats.json --json > reports/bundle-analysis.json",
-    "analyze:all": "pnpm run analyze:dead-code && pnpm run analyze:circular && pnpm run analyze:complexity && pnpm run analyze:duplication && pnpm run analyze:type-coverage",
+    "analyze:all": "turbo run analyze:all",
     "fix:dead-code": "knip --fix",
     "fix:deps": "ncu -u && pnpm install",
     "fix:deps:check": "ncu",
@@ -123,7 +132,7 @@
     "cap:sync": "npx cap sync",
     "cap:update": "npx cap update",
     "// === SETUP ===": "",
-    "prepare": "lefthook install",
+    "prepare": "",
     "postinstall": "[ -d www ] && npx cap sync || echo 'Skipping cap sync (no www directory yet)'"
   },
   "private": true,
@@ -177,7 +186,6 @@
     "@axe-core/playwright": "^4.11.0",
     "@capacitor/cli": "^8.0.0",
     "@eslint/js": "^9.39.2",
-    "@evilmartians/lefthook": "^2.0.13",
     "@faker-js/faker": "^10.1.0",
     "@playwright/test": "^1.48.0",
     "@tailwindcss/forms": "^0.5.11",
@@ -200,6 +208,7 @@
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.7.2",
+    "serve": "^14.2.5",
     "stylelint": "^16.12.0",
     "stylelint-config-clean-order": "^8.0.0",
     "stylelint-config-standard-scss": "^13.1.0",
@@ -212,7 +221,8 @@
     "type-coverage": "^2.29.7",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.51.0",
-    "vitest": "^4.0.15"
+    "vitest": "^4.0.15",
+    "wait-on": "^9.0.3"
   },
   "description": "Diabetactic - Mobile app for diabetes glucose management built with Ionic/Angular",
   "browserslist": [

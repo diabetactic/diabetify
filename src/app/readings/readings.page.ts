@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  CUSTOM_ELEMENTS_SCHEMA,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -56,6 +57,7 @@ import {
   styleUrls: ['./readings.page.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     CommonModule,
     FormsModule,
@@ -384,7 +386,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
       const result = await this.readingsService.performFullSync();
       this.logger.info('Sync', 'Sync completed', result);
       await this.showToast(
-        this.translationService.instant('readings.syncComplete', result),
+        this.translationService.instant('readings.syncComplete', { ...result }),
         'success'
       );
     } catch (error) {

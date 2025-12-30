@@ -1,5 +1,6 @@
 import {
   Component,
+  CUSTOM_ELEMENTS_SCHEMA,
   OnInit,
   OnDestroy,
   ChangeDetectionStrategy,
@@ -33,6 +34,7 @@ import { NetworkStatusComponent } from '@shared/components/network-status/networ
   styleUrls: ['tabs.page.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     IonTabs,
     IonTabBar,

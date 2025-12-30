@@ -3,7 +3,7 @@
  * Provides runtime type safety for dynamic data
  */
 
-import { LocalUser } from '../services/local-auth.service';
+import { AccountState } from '../models/user-profile.model';
 
 // ============================================================================
 // Basic Type Guards
@@ -18,6 +18,7 @@ export function isObject(value: unknown): value is Record<string, unknown> {
 
 /**
  * Check if value is a non-empty string
+ * @internal Exported for potential future use in validation utilities
  */
 export function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0;
@@ -25,6 +26,7 @@ export function isNonEmptyString(value: unknown): value is string {
 
 /**
  * Check if value is a valid number (not NaN, not Infinity)
+ * @internal Exported for potential future use in validation utilities
  */
 export function isValidNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
@@ -32,6 +34,7 @@ export function isValidNumber(value: unknown): value is number {
 
 /**
  * Check if value is a valid array
+ * @internal Exported for potential future use in validation utilities
  */
 export function isArray<T = unknown>(value: unknown): value is T[] {
   return Array.isArray(value);
@@ -42,9 +45,28 @@ export function isArray<T = unknown>(value: unknown): value is T[] {
 // ============================================================================
 
 /**
+ * LocalUser interface for type guard (avoids circular dependency)
+ */
+interface LocalUserType {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: 'patient' | 'doctor' | 'admin';
+  accountState?: AccountState;
+  profileImage?: string;
+  phone?: string;
+  dateOfBirth?: string;
+  diabetesType?: '1' | '2' | 'gestational' | 'other';
+  diagnosisDate?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
  * Validate LocalUser structure from storage
  */
-export function isLocalUser(data: unknown): data is LocalUser {
+export function isLocalUser(data: unknown): data is LocalUserType {
   if (!isObject(data)) return false;
 
   // Required fields
@@ -59,6 +81,7 @@ export function isLocalUser(data: unknown): data is LocalUser {
 
 /**
  * Validate glucose reading structure
+ * @internal Exported for potential future use in data validation
  */
 export function isGlucoseReading(data: unknown): data is {
   id: string;
@@ -79,6 +102,7 @@ export function isGlucoseReading(data: unknown): data is {
 
 /**
  * Validate account state enum value
+ * @internal Exported for potential future use in auth validation
  */
 export function isValidAccountState(
   state: unknown
@@ -118,6 +142,7 @@ export function safeJsonParse<T>(
 
 /**
  * Safely parse JSON with a default value
+ * @internal Exported for potential future use in storage utilities
  */
 export function safeJsonParseWithDefault<T>(
   json: string | null | undefined,
@@ -134,6 +159,7 @@ export function safeJsonParseWithDefault<T>(
 
 /**
  * Safely get a string property from an object
+ * @internal Exported for potential future use in property access utilities
  */
 export function getStringProperty(obj: unknown, key: string): string | undefined {
   if (!isObject(obj)) return undefined;
@@ -143,6 +169,7 @@ export function getStringProperty(obj: unknown, key: string): string | undefined
 
 /**
  * Safely get a number property from an object
+ * @internal Exported for potential future use in property access utilities
  */
 export function getNumberProperty(obj: unknown, key: string): number | undefined {
   if (!isObject(obj)) return undefined;
@@ -152,6 +179,7 @@ export function getNumberProperty(obj: unknown, key: string): number | undefined
 
 /**
  * Safely get a boolean property from an object
+ * @internal Exported for potential future use in property access utilities
  */
 export function getBooleanProperty(obj: unknown, key: string): boolean | undefined {
   if (!isObject(obj)) return undefined;
@@ -161,6 +189,7 @@ export function getBooleanProperty(obj: unknown, key: string): boolean | undefin
 
 /**
  * Safely get an array property from an object
+ * @internal Exported for potential future use in property access utilities
  */
 export function getArrayProperty<T>(obj: unknown, key: string): T[] | undefined {
   if (!isObject(obj)) return undefined;

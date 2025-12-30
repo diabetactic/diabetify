@@ -1,5 +1,6 @@
 import {
   Component,
+  CUSTOM_ELEMENTS_SCHEMA,
   Input,
   Output,
   EventEmitter,
@@ -34,6 +35,7 @@ import { AppIconComponent } from '../app-icon/app-icon.component';
 @Component({
   selector: 'app-food-picker',
   standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [FormsModule, TranslateModule, AppIconComponent, IonButton, IonSearchbar],
   templateUrl: './food-picker.component.html',
   styleUrl: './food-picker.component.scss',

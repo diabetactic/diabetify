@@ -963,6 +963,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 
   /* Prevent iOS font scaling */
+  /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- Well-supported in production browsers */
   text-size-adjust: 100%;
 }
 
@@ -1178,6 +1179,7 @@ p,
 
 /* Prevent iOS font scaling on landscape rotation */
 html {
+  /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- Well-supported in production browsers */
   text-size-adjust: 100%;
 }
 

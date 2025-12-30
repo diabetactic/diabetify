@@ -1,5 +1,6 @@
 import {
   Component,
+  CUSTOM_ELEMENTS_SCHEMA,
   Input,
   Output,
   EventEmitter,
@@ -20,6 +21,7 @@ import { ThemeService } from '@services/theme.service';
   styleUrls: ['./empty-state.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [CommonModule, IonButton],
   host: {
     '[class.dark-theme]': 'isDarkMode',

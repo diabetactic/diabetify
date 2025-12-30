@@ -13,8 +13,9 @@ import { test, expect } from '@playwright/test';
 import {
   loginUser,
   navigateToTab,
+  scrollAndClickIonElement,
   waitForIonicHydration,
-  elementExists,
+  waitForElementPresence,
 } from '../helpers/test-helpers';
 // Selector helpers available: BilingualText, IonicComponents, Selectors (for future use)
 
@@ -367,15 +368,17 @@ test.describe('Readings Filtering', () => {
     // Look for search bar
     const searchBar = page.locator('ion-searchbar');
 
-    if (!(await elementExists(page, 'ion-searchbar', 3000))) {
+    if (!(await waitForElementPresence(page, 'ion-searchbar', 3000))) {
       console.log('⚠️  Search functionality not implemented - skipping test');
       test.skip();
+      return;
     }
 
     await expect(searchBar.first()).toBeVisible();
 
     // Type search term (common glucose value like "100")
-    await searchBar.first().click();
+    // Use scrollAndClickIonElement to handle ionic shadow DOM scrolling
+    await scrollAndClickIonElement(page, 'ion-searchbar');
     await page.waitForTimeout(100); // Minimal wait
 
     const searchInput = page.locator('ion-searchbar input');
@@ -429,9 +432,10 @@ test.describe('Readings Filtering', () => {
 
   test('should clear search when X button is clicked', async ({ page }) => {
     // Check if search is available
-    if (!(await elementExists(page, 'ion-searchbar', 3000))) {
+    if (!(await waitForElementPresence(page, 'ion-searchbar', 3000))) {
       console.log('⚠️  Search functionality not implemented - skipping test');
       test.skip();
+      return;
     }
 
     // Enter search term
@@ -443,8 +447,15 @@ test.describe('Readings Filtering', () => {
     const clearButton = page.locator(
       'ion-searchbar button[aria-label*="clear"], ion-searchbar .searchbar-clear-button'
     );
-    if (await elementExists(page, clearButton.toString(), 2000)) {
-      await clearButton.first().click();
+    const clearButtonVisible = await clearButton
+      .first()
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
+    if (clearButtonVisible) {
+      await scrollAndClickIonElement(
+        page,
+        'ion-searchbar button[aria-label*="clear"], ion-searchbar .searchbar-clear-button'
+      );
       await page.waitForTimeout(200); // Ionic animation
 
       // Search input should be cleared
@@ -633,7 +644,7 @@ test.describe('Readings Filtering', () => {
     }
 
     // Search for something that won't exist
-    if (await elementExists(page, 'ion-searchbar', 3000)) {
+    if (await waitForElementPresence(page, 'ion-searchbar', 3000)) {
       const searchInput = page.locator('ion-searchbar input');
       await searchInput.first().fill('xyznonexistent99999');
       await page.waitForTimeout(1500); // Debounce + render

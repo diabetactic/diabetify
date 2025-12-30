@@ -5,7 +5,7 @@
  * with emoji levels and encouraging messages.
  */
 
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -23,6 +23,7 @@ interface StreakLevel {
   templateUrl: './streak-card.component.html',
   styleUrls: ['./streak-card.component.scss'],
   standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [CommonModule, TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

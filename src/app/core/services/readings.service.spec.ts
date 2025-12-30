@@ -3,6 +3,9 @@ import '../../../test-setup';
 
 import { TestBed } from '@angular/core/testing';
 import { ReadingsService, LIVE_QUERY_FN } from '@services/readings.service';
+import { ReadingsMapperService } from '@services/readings-mapper.service';
+import { ReadingsStatisticsService } from '@services/readings-statistics.service';
+import { ReadingsSyncService } from '@services/readings-sync.service';
 import { DiabetacticDatabase } from '@services/database.service';
 import { LocalGlucoseReading, GlucoseReading } from '@models/glucose-reading.model';
 import { Observable, of } from 'rxjs';
@@ -82,6 +85,7 @@ class MockDatabaseService {
 
 describe('ReadingsService', () => {
   let service: ReadingsService;
+  let syncService: ReadingsSyncService;
   let mockDb: MockDatabaseService;
   let mockApiGateway: Mock<ApiGatewayService>;
 
@@ -95,6 +99,9 @@ describe('ReadingsService', () => {
     TestBed.configureTestingModule({
       providers: [
         ReadingsService,
+        ReadingsMapperService,
+        ReadingsStatisticsService,
+        ReadingsSyncService,
         AuditLogService,
         { provide: DiabetacticDatabase, useValue: mockDb },
         // Disable mock backend to use real calculations from test data
@@ -116,6 +123,7 @@ describe('ReadingsService', () => {
     });
 
     service = TestBed.inject(ReadingsService);
+    syncService = TestBed.inject(ReadingsSyncService);
   });
 
   describe('addReading', () => {
@@ -548,8 +556,9 @@ describe('ReadingsService', () => {
 
   describe('fetchLatestFromBackend', () => {
     it('should fetch latest readings from backend using new endpoint', async () => {
-      // Disable mock mode to test real fetch logic
+      // Disable mock mode on both services to test real fetch logic
       (service as any).isMockBackend = false;
+      (syncService as any).isMockBackend = false;
 
       const mockBackendReadings = [
         {
@@ -581,8 +590,8 @@ describe('ReadingsService', () => {
     });
 
     it('should skip fetch if offline', async () => {
-      // Set service to offline state
-      (service as any).isOnline = false;
+      // Set sync service to offline state
+      (syncService as any).isOnline = false;
 
       const result = await service.fetchLatestFromBackend();
 
@@ -592,6 +601,9 @@ describe('ReadingsService', () => {
     });
 
     it('should handle backend errors gracefully', async () => {
+      // Disable mock mode to test error handling
+      (syncService as any).isMockBackend = false;
+
       const mockErrorResponse = {
         success: false,
         error: {

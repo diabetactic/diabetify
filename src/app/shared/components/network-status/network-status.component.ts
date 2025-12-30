@@ -1,5 +1,6 @@
 import {
   Component,
+  CUSTOM_ELEMENTS_SCHEMA,
   OnInit,
   OnDestroy,
   NgZone,
@@ -41,6 +42,7 @@ import { Network } from '@capacitor/network';
     `,
   ],
   standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -3,9 +3,13 @@ import { fakerES as faker } from '@faker-js/faker';
 import { DemoDataService } from '@services/demo-data.service';
 import { LoggerService } from '@services/logger.service';
 import { MockAdapterConfig } from '@core/config/mock-adapter-config';
-import { LocalGlucoseReading, GlucoseStatistics } from '@models/glucose-reading.model';
+import {
+  LocalGlucoseReading,
+  GlucoseStatistics,
+  PaginatedReadings,
+} from '@models/glucose-reading.model';
 import { UserProfile, AccountState } from '@models/user-profile.model';
-import { PaginatedReadings } from '@services/readings.service';
+
 import { environment } from '@env/environment';
 
 /**

@@ -6,7 +6,7 @@
  * and active workflows.
  */
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, OnDestroy } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppIconComponent } from '../app-icon/app-icon.component';
@@ -27,6 +27,7 @@ import { ServiceOrchestrator, WorkflowState } from '@services/service-orchestrat
   templateUrl: './service-monitor.component.html',
   styleUrls: ['./service-monitor.component.scss'],
   standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [CommonModule, TranslateModule, AppIconComponent],
 })
 export class ServiceMonitorComponent implements OnInit, OnDestroy {

@@ -52,28 +52,37 @@ export class BolusSafetyService {
     return warnings;
   }
 
-  calculateIOB(readings: MockReading[]): number {
-    const now = new Date().getTime();
-    let iob = 0;
+  calculateIOB(readings: MockReading[], nowMs: number = Date.now()): number {
+    const durationMs = this.INSULIN_DURATION_HOURS * 60 * 60 * 1000;
 
     const recentBolusReadings = readings
-      .filter(
-        r =>
-          r.insulin &&
-          r.insulin > 0 &&
-          (now - new Date(r.date).getTime()) / (1000 * 60 * 60) < this.INSULIN_DURATION_HOURS
-      )
+      .filter(r => {
+        if (!r.insulin || r.insulin <= 0) return false;
+        const elapsedMs = nowMs - new Date(r.date).getTime();
+        // Ignore future readings and anything at/after the insulin duration window.
+        // Allow elapsedMs === 0 so "just bolused" returns full dose.
+        return elapsedMs >= 0 && elapsedMs < durationMs;
+      })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    if (recentBolusReadings.length > 0) {
-      const lastBolus = recentBolusReadings[0];
-      const hoursSinceBolus = (now - new Date(lastBolus.date).getTime()) / (1000 * 60 * 60);
-      const insulinRemaining =
-        lastBolus.insulin! * (1 - hoursSinceBolus / this.INSULIN_DURATION_HOURS);
-      iob = Math.max(0, insulinRemaining);
+    if (recentBolusReadings.length === 0) {
+      return 0;
     }
 
-    return iob;
+    const lastBolus = recentBolusReadings[0];
+    const elapsedMs = nowMs - new Date(lastBolus.date).getTime();
+    if (elapsedMs < 0 || elapsedMs >= durationMs) {
+      return 0;
+    }
+
+    const dose = lastBolus.insulin!;
+    const fractionRemaining = 1 - elapsedMs / durationMs;
+    const insulinRemaining = dose * fractionRemaining;
+
+    // Clamp and quantize to avoid tiny floating-point differences across repeated calls.
+    const clamped = Math.min(dose, Math.max(0, insulinRemaining));
+    const quantized = Math.round(clamped * 10_000) / 10_000;
+    return quantized === 0 ? 0 : quantized;
   }
 
   logAuditEvent(event: string, data: unknown): void {

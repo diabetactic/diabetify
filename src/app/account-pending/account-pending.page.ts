@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, Inject } from '@angular/core';
 import { Router } from '@angular/router';
 
 import {
@@ -24,6 +24,7 @@ import { ROUTES } from '@core/constants';
   templateUrl: './account-pending.page.html',
   styleUrls: ['./account-pending.page.scss'],
   standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     TranslateModule,
     IonHeader,

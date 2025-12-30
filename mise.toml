@@ -1,5 +1,6 @@
 [tools]
 node = "22"  # LTS Jod - upgraded from 20
+pnpm = "10.12.1"
 java = "temurin-21"
 
 [env]
@@ -60,3 +61,7 @@ cd android && JAVA_HOME=$(mise where java) ANDROID_HOME=$ANDROID_HOME ./gradlew 
 
 # Test commands - Comprehensive (all test types)
 "test:all" = "pnpm run quality && pnpm run test:e2e && pnpm run test:a11y"
+
+# CI parity (one-shot, matches .github/workflows/ci.yml intent)
+"ci:all" = "pnpm run ci:all"
+"ci:all:docker" = "CI_DOCKER=true pnpm run ci:all"

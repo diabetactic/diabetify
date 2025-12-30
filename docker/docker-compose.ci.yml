@@ -12,8 +12,6 @@
 #   E2E_DOCKER_TESTS=true pnpm test:e2e --project=mobile-chromium --grep "@docker"
 #   docker compose -f docker/docker-compose.ci.yml down -v
 
-version: '3.8'
-
 services:
   # PostgreSQL 16 (matching local docker-compose.local.yml)
   glucoserver_db:
@@ -59,6 +57,7 @@ services:
   glucoserver:
     image: jcresp0/glucoserver:latest
     container_name: diabetactic_glucoserver
+    command: python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
     depends_on:
       glucoserver_db:
         condition: service_healthy

@@ -1,5 +1,6 @@
 import {
   Component,
+  CUSTOM_ELEMENTS_SCHEMA,
   OnInit,
   OnDestroy,
   ChangeDetectionStrategy,
@@ -21,6 +22,7 @@ type SyncState = 'online' | 'offline' | 'pending';
 @Component({
   selector: 'app-sync-status',
   standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [TranslateModule],
   template: `
     <span

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy } from '@angular/core';
 
 import { environment, BackendMode } from '@env/environment';
 
@@ -10,6 +10,7 @@ import { environment, BackendMode } from '@env/environment';
 @Component({
   selector: 'app-env-badge',
   standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [],
   template: `
     @if (showBadge) {

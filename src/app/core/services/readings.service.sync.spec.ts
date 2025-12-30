@@ -20,6 +20,9 @@ import '../../../test-setup';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { ReadingsService, LIVE_QUERY_FN } from '@services/readings.service';
+import { ReadingsMapperService } from '@services/readings-mapper.service';
+import { ReadingsStatisticsService } from '@services/readings-statistics.service';
+import { ReadingsSyncService } from '@services/readings-sync.service';
 import { DiabetacticDatabase, SyncConflictItem, SyncQueueItem } from '@services/database.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
 import { LoggerService } from '@services/logger.service';
@@ -202,6 +205,7 @@ class MockLoggerService {
 
 describe('ReadingsService - Sync Queue Logic', () => {
   let service: ReadingsService;
+  let syncService: ReadingsSyncService;
   let mockDb: MockSyncDatabase;
   let mockApiGateway: MockApiGatewayService;
   let mockLogger: MockLoggerService;
@@ -214,6 +218,9 @@ describe('ReadingsService - Sync Queue Logic', () => {
     TestBed.configureTestingModule({
       providers: [
         ReadingsService,
+        ReadingsMapperService,
+        ReadingsStatisticsService,
+        ReadingsSyncService,
         AuditLogService,
         { provide: DiabetacticDatabase, useValue: mockDb },
         { provide: ApiGatewayService, useValue: mockApiGateway },
@@ -232,8 +239,10 @@ describe('ReadingsService - Sync Queue Logic', () => {
     });
 
     service = TestBed.inject(ReadingsService);
+    syncService = TestBed.inject(ReadingsSyncService);
     // Disable mock mode to test real sync logic
     (service as any).isMockBackend = false;
+    (syncService as any).isMockBackend = false;
   });
 
   afterEach(() => {
@@ -398,8 +407,9 @@ describe('ReadingsService - Sync Queue Logic', () => {
     });
 
     it('should skip sync and return zero counts when in mock mode', async () => {
-      // Access private property to set mock mode
+      // Access private property to set mock mode on both services
       (service as any).isMockBackend = true;
+      (syncService as any).isMockBackend = true;
 
       const queueItem = createQueueItem();
       mockDb.addQueueItem(queueItem);
@@ -564,6 +574,7 @@ describe('ReadingsService - Sync Queue Logic', () => {
       async ({ mockResponse, isMockMode, expectApiCall, expectWarning }) => {
         if (isMockMode) {
           (service as any).isMockBackend = true;
+          (syncService as any).isMockBackend = true;
         }
 
         if (mockResponse) {
@@ -592,12 +603,12 @@ describe('ReadingsService - Sync Queue Logic', () => {
     it('should push before pull (order matters)', async () => {
       const callOrder: string[] = [];
 
-      vi.spyOn(service, 'syncPendingReadings').mockImplementation(async () => {
+      vi.spyOn(syncService, 'syncPendingReadings').mockImplementation(async () => {
         callOrder.push('push');
         return { success: 0, failed: 0 };
       });
 
-      vi.spyOn(service, 'fetchFromBackend').mockImplementation(async () => {
+      vi.spyOn(syncService, 'fetchFromBackend').mockImplementation(async () => {
         callOrder.push('fetch');
         return { fetched: 0, merged: 0 };
       });
@@ -608,12 +619,12 @@ describe('ReadingsService - Sync Queue Logic', () => {
     });
 
     it('should continue fetch even if push partially fails and return combined results', async () => {
-      vi.spyOn(service, 'syncPendingReadings').mockResolvedValue({
+      vi.spyOn(syncService, 'syncPendingReadings').mockResolvedValue({
         success: 2,
         failed: 1,
       });
 
-      vi.spyOn(service, 'fetchFromBackend').mockResolvedValue({
+      vi.spyOn(syncService, 'fetchFromBackend').mockResolvedValue({
         fetched: 5,
         merged: 3,
       });
@@ -735,8 +746,8 @@ describe('ReadingsService - Sync Queue Logic', () => {
   });
 });
 
-describe('ReadingsService - Glucose Status Boundaries', () => {
-  let service: ReadingsService;
+describe('ReadingsMapperService - Glucose Status Boundaries', () => {
+  let mapperService: ReadingsMapperService;
   let mockDb: MockSyncDatabase;
 
   beforeEach(() => {
@@ -744,7 +755,7 @@ describe('ReadingsService - Glucose Status Boundaries', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        ReadingsService,
+        ReadingsMapperService,
         { provide: DiabetacticDatabase, useValue: mockDb },
         // Disable mock backend to use real calculations from test data
         { provide: MockDataService, useValue: undefined },
@@ -759,12 +770,12 @@ describe('ReadingsService - Glucose Status Boundaries', () => {
       ],
     });
 
-    service = TestBed.inject(ReadingsService);
+    mapperService = TestBed.inject(ReadingsMapperService);
   });
 
   describe('calculateGlucoseStatus() - all boundary and edge cases', () => {
-    const getStatus = (service: ReadingsService, value: number, unit: 'mg/dL' | 'mmol/L') => {
-      return (service as any).calculateGlucoseStatus(value, unit);
+    const getStatus = (mapper: ReadingsMapperService, value: number, unit: 'mg/dL' | 'mmol/L') => {
+      return mapper.calculateGlucoseStatus(value, unit);
     };
 
     // Consolidated mg/dL and mmol/L boundary tests
@@ -784,7 +795,7 @@ describe('ReadingsService - Glucose Status Boundaries', () => {
       ];
 
       mgdlCases.forEach(({ value, expected }) => {
-        expect(getStatus(service, value, 'mg/dL'), `${value} mg/dL`).toBe(expected);
+        expect(getStatus(mapperService, value, 'mg/dL'), `${value} mg/dL`).toBe(expected);
       });
     });
 
@@ -804,7 +815,7 @@ describe('ReadingsService - Glucose Status Boundaries', () => {
       ];
 
       mmolCases.forEach(({ value, expected }) => {
-        expect(getStatus(service, value, 'mmol/L'), `${value} mmol/L`).toBe(expected);
+        expect(getStatus(mapperService, value, 'mmol/L'), `${value} mmol/L`).toBe(expected);
       });
     });
 
@@ -816,19 +827,19 @@ describe('ReadingsService - Glucose Status Boundaries', () => {
       ];
 
       edgeCases.forEach(({ value, unit, expected }) => {
-        expect(getStatus(service, value, unit), `${value} ${unit}`).toBe(expected);
+        expect(getStatus(mapperService, value, unit), `${value} ${unit}`).toBe(expected);
       });
     });
   });
 
   describe('convertToUnit() precision', () => {
     const convert = (
-      service: ReadingsService,
+      mapper: ReadingsMapperService,
       value: number,
       from: 'mg/dL' | 'mmol/L',
       to: 'mg/dL' | 'mmol/L'
     ) => {
-      return (service as any).convertToUnit(value, from, to);
+      return mapper.convertToUnit(value, from, to);
     };
 
     it('should convert between units correctly', () => {
@@ -838,27 +849,27 @@ describe('ReadingsService - Glucose Status Boundaries', () => {
       ];
 
       conversions.forEach(({ value, from, to, expected }) => {
-        const result = convert(service, value, from, to);
+        const result = convert(mapperService, value, from, to);
         expect(result).toBeCloseTo(expected, 1);
       });
     });
 
     it('should handle same-unit and round-trip conversions', () => {
       // Same unit tests
-      expect(convert(service, 120, 'mg/dL', 'mg/dL')).toBe(120);
-      expect(convert(service, 6.7, 'mmol/L', 'mmol/L')).toBe(6.7);
+      expect(convert(mapperService, 120, 'mg/dL', 'mg/dL')).toBe(120);
+      expect(convert(mapperService, 6.7, 'mmol/L', 'mmol/L')).toBe(6.7);
 
       // Round-trip test
       const original = 120;
-      const toMmol = convert(service, original, 'mg/dL', 'mmol/L');
-      const backToMgdl = convert(service, toMmol, 'mmol/L', 'mg/dL');
+      const toMmol = convert(mapperService, original, 'mg/dL', 'mmol/L');
+      const backToMgdl = convert(mapperService, toMmol, 'mmol/L', 'mg/dL');
       expect(backToMgdl).toBeCloseTo(original, 0);
     });
   });
 });
 
-describe('ReadingsService - Backend Date Parsing', () => {
-  let service: ReadingsService;
+describe('ReadingsMapperService - Backend Date Parsing', () => {
+  let mapperService: ReadingsMapperService;
   let mockDb: MockSyncDatabase;
 
   beforeEach(() => {
@@ -866,7 +877,7 @@ describe('ReadingsService - Backend Date Parsing', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        ReadingsService,
+        ReadingsMapperService,
         { provide: DiabetacticDatabase, useValue: mockDb },
         // Disable mock backend to use real calculations from test data
         { provide: MockDataService, useValue: undefined },
@@ -881,12 +892,12 @@ describe('ReadingsService - Backend Date Parsing', () => {
       ],
     });
 
-    service = TestBed.inject(ReadingsService);
+    mapperService = TestBed.inject(ReadingsMapperService);
   });
 
   describe('mapBackendToLocal()', () => {
-    const mapBackend = (service: ReadingsService, backend: any) => {
-      return (service as any).mapBackendToLocal(backend);
+    const mapBackend = (mapper: ReadingsMapperService, backend: any) => {
+      return mapper.mapBackendToLocal(backend);
     };
 
     it('should parse "DD/MM/YYYY HH:mm:ss" format and map backend response correctly', () => {
@@ -898,7 +909,7 @@ describe('ReadingsService - Backend Date Parsing', () => {
         created_at: '25/12/2024 14:30:45',
       };
 
-      const result = mapBackend(service, backend);
+      const result = mapBackend(mapperService, backend);
       const date = new Date(result.time);
 
       // Backend dates are in Argentina time (UTC-3), converted to UTC
@@ -936,7 +947,7 @@ describe('ReadingsService - Backend Date Parsing', () => {
           created_at: '01/01/2024 00:00:00',
         };
 
-        const result = mapBackend(service, backend);
+        const result = mapBackend(mapperService, backend);
         expect(result.status).toBe(expectedStatus);
       });
     });

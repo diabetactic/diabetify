@@ -64,7 +64,7 @@
       "inputs": ["android/**", "!android/build/**", "!android/.gradle/**"]
     },
     "test:run": {
-      "outputs": ["coverage/**"],
+      "outputs": [],
       "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "vitest.config.ts", "src/setup-vitest.ts"]
     },
     "test:watch": {
@@ -74,6 +74,25 @@
     "test:coverage": {
       "outputs": ["coverage/**"],
       "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "vitest.config.ts", "src/setup-vitest.ts"]
+    },
+    "test:integration": {
+      "outputs": [],
+      "inputs": [
+        "src/app/tests/integration/**/*.ts",
+        "vitest.integration.config.ts",
+        "src/test-setup/**",
+        "src/environments/**"
+      ]
+    },
+    "test:integration:msw": {
+      "outputs": [],
+      "inputs": [
+        "src/app/tests/integration-msw/**/*.ts",
+        "vitest.msw.config.ts",
+        "src/mocks/**",
+        "src/test-setup/**",
+        "src/environments/**"
+      ]
     },
     "test:ui": {
       "cache": false,
@@ -105,7 +124,15 @@
     },
     "lint:ts:run": {
       "outputs": [],
-      "inputs": ["src/**/*.ts", "src/**/*.js", "src/**/*.html", "eslint.config.js"]
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.js",
+        "src/**/*.html",
+        "playwright/**/*.ts",
+        "scripts/**/*.js",
+        "scripts/**/*.mjs",
+        "eslint.config.js"
+      ]
     },
     "lint:styles:run": {
       "outputs": [],

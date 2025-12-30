@@ -5,6 +5,7 @@ node_modules
 dist
 www
 .angular
+html
 
 # Coverage
 coverage
@@ -27,3 +28,10 @@ Thumbs.db
 
 # Other
 package-lock.json
+playwright-report
+test-results
+pnpm-lock.yaml
+
+# Cache and artifacts
+.turbo
+playwright/artifacts

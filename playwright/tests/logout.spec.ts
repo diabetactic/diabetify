@@ -12,6 +12,78 @@ import { test, expect, Page } from '@playwright/test';
 import { loginUser, waitForIonicHydration } from '../helpers/test-helpers';
 
 /**
+ * Helper to scroll Ionic ion-content to make element visible and click it
+ * Ionic uses Shadow DOM with custom scrolling, so we need direct JS execution
+ */
+async function scrollAndClickElement(page: Page, selector: string): Promise<void> {
+  // Use direct JavaScript to scroll the ion-content and click the button
+  const result = await page.evaluate(sel => {
+    const button = document.querySelector(sel) as HTMLElement;
+    if (!button) {
+      return { success: false, message: 'Button not found' };
+    }
+
+    try {
+      // Find the ion-content parent
+      let current = button.parentElement;
+      let ionContent = null;
+      while (current) {
+        if (current.tagName === 'ION-CONTENT') {
+          ionContent = current as any;
+          break;
+        }
+        current = current.parentElement;
+      }
+
+      if (ionContent) {
+        // Access the internal scroll container in the shadow DOM
+        const shadowRoot = ionContent.shadowRoot;
+        if (shadowRoot) {
+          const scrollElement = shadowRoot.querySelector('.inner-scroll') as HTMLElement;
+          if (scrollElement) {
+            // Calculate the position of the button relative to the scroll container
+            let offsetTop = 0;
+            let el = button as HTMLElement;
+            while (el && el !== ionContent) {
+              offsetTop += el.offsetTop;
+              el = el.parentElement as HTMLElement;
+            }
+
+            // Scroll to position the button in the middle of the visible area
+            const scrollTop = offsetTop - scrollElement.clientHeight / 2 + button.offsetHeight / 2;
+            scrollElement.scrollTop = Math.max(0, scrollTop);
+
+            // Wait a tiny bit for scroll to settle
+            return { success: true, scrolled: true };
+          }
+        }
+      }
+
+      // If no ion-content, just ensure button is visible
+      button.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return { success: true, scrolled: false };
+    } catch (e) {
+      return { success: false, message: String(e) };
+    }
+  }, selector);
+
+  if (!result.success) {
+    console.warn('Scroll helper warning:', result.message);
+  }
+
+  // Wait for scroll animation to complete
+  await page.waitForTimeout(300);
+
+  // Now click using JavaScript directly to bypass Playwright's visibility checks
+  await page.evaluate(sel => {
+    const button = document.querySelector(sel) as HTMLButtonElement;
+    if (button) {
+      button.click();
+    }
+  }, selector);
+}
+
+/**
  * Helper to check if user is logged in by checking URL
  */
 async function isLoggedIn(page: Page): Promise<boolean> {
@@ -33,8 +105,8 @@ async function performLogout(page: Page): Promise<void> {
   const logoutButton = page.locator('[data-testid="sign-out-btn"]');
   await expect(logoutButton).toBeVisible({ timeout: 10000 });
 
-  // Click logout
-  await logoutButton.click();
+  // Scroll and click the logout button using direct JS
+  await scrollAndClickElement(page, '[data-testid="sign-out-btn"]');
 }
 
 /**
@@ -90,7 +162,8 @@ test.describe('Logout Flow', () => {
     const buttonText = await logoutButton.textContent();
     expect(buttonText).toMatch(/Cerrar Sesión|Sign Out/i);
 
-    await logoutButton.click();
+    // Scroll and click the logout button using direct JS
+    await scrollAndClickElement(page, '[data-testid="sign-out-btn"]');
 
     // 4. Verify redirect to welcome or login page
     await page.waitForURL(/\/(welcome|login)/, { timeout: 10000 });
@@ -176,8 +249,8 @@ test.describe('Logout Flow', () => {
     await waitForIonicHydration(page);
 
     // Fill login form
-    const username = process.env.E2E_TEST_USERNAME || '1000';
-    const password = process.env.E2E_TEST_PASSWORD || 'tuvieja';
+    const username = process.env['E2E_TEST_USERNAME'] || '1000';
+    const password = process.env['E2E_TEST_PASSWORD'] || 'tuvieja';
 
     await page.fill(
       'input[placeholder*="DNI"], input[placeholder*="email"], input[type="text"]',

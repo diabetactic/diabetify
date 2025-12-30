@@ -24,6 +24,7 @@ import { DatabaseSeeder } from '../helpers/database-seeder';
 import { API_URL, TEST_USERNAME, TEST_PASSWORD } from '../helpers/config';
 
 const isDockerTest = process.env.E2E_DOCKER_TESTS === 'true';
+test.skip(!isDockerTest, 'Set E2E_DOCKER_TESTS=true to run Docker visual tests');
 
 // Global setup and teardown
 test.beforeAll(async () => {

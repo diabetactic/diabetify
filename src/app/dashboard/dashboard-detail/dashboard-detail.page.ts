@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, OnDestroy } from '@angular/core';
 
 import { Router, RouterModule } from '@angular/router';
 import {
@@ -31,6 +31,7 @@ import { LoggerService } from '@services/logger.service';
   templateUrl: './dashboard-detail.page.html',
   styleUrls: ['./dashboard-detail.page.scss'],
   standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     RouterModule,
     TranslateModule,

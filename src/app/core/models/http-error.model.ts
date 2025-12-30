@@ -92,6 +92,7 @@ export function isString(value: unknown): value is string {
 
 /**
  * Check if value is HttpErrorBody
+ * @internal Exported for potential future use in error handling utilities
  */
 export function isHttpErrorBody(value: unknown): value is HttpErrorBody {
   if (!isObject(value)) return false;
@@ -108,6 +109,7 @@ export function isHttpErrorBody(value: unknown): value is HttpErrorBody {
 
 /**
  * Check if value is ApiErrorResponse
+ * @internal Exported for potential future use in error handling utilities
  */
 export function isApiErrorResponse(value: unknown): value is ApiErrorResponse {
   if (!isObject(value)) return false;
@@ -171,6 +173,7 @@ export function extractErrorMessage(error: unknown): string {
 
 /**
  * Safely extract HTTP status code from error
+ * @internal Exported for potential future use in error handling utilities
  */
 export function extractStatusCode(error: unknown): number | undefined {
   if (!isObject(error)) return undefined;

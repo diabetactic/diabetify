@@ -1,4 +1,10 @@
-import { Component, Input, HostBinding, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  Input,
+  HostBinding,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppIconComponent } from '../app-icon/app-icon.component';
@@ -49,6 +55,7 @@ import { AppIconComponent } from '../app-icon/app-icon.component';
   standalone: true,
   imports: [CommonModule, TranslateModule, AppIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class UiBadgeComponent {
   /** Badge variant (color scheme) */

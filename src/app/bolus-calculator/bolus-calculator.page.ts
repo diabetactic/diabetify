@@ -1,5 +1,6 @@
 import {
   Component,
+  CUSTOM_ELEMENTS_SCHEMA,
   inject,
   signal,
   ChangeDetectorRef,
@@ -12,7 +13,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NavController, ModalController } from '@ionic/angular';
+import { NavController, ModalController } from '@ionic/angular/standalone';
 import {
   IonHeader,
   IonToolbar,
@@ -41,6 +42,7 @@ import { LoggerService } from '@services/logger.service';
   styleUrls: ['./bolus-calculator.page.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -186,6 +188,7 @@ export class BolusCalculatorPage implements OnInit {
       this.logger.error('BolusCalculator', 'Error calculating bolus', error);
     } finally {
       this.calculating = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -194,6 +197,7 @@ export class BolusCalculatorPage implements OnInit {
     this.result = null;
     this.selectedFoods.set([]);
     this.warnings = [];
+    this.cdr.detectChanges();
   }
 
   async presentConfirmationModal(calculation: BolusCalculation) {
@@ -227,6 +231,7 @@ export class BolusCalculatorPage implements OnInit {
       this.result = null;
     }
     this.isModalOpen = false;
+    this.cdr.detectChanges();
   }
 
   goBack() {
@@ -262,5 +267,12 @@ export class BolusCalculatorPage implements OnInit {
   isFieldInvalid(fieldName: string): boolean {
     const field = this.calculatorForm.get(fieldName);
     return Boolean(field?.invalid && (field?.dirty || field?.touched));
+  }
+
+  formatInsulin(value: number | null | undefined): string {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value.toFixed(1);
+    }
+    return '—';
   }
 }

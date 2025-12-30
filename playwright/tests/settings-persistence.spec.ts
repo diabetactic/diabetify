@@ -8,7 +8,12 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { loginUser, navigateToTab, waitForIonicHydration } from '../helpers/test-helpers';
+import {
+  loginUser,
+  navigateToTab,
+  waitForIonicHydration,
+  scrollAndClickIonElement,
+} from '../helpers/test-helpers';
 
 test.describe.serial('Settings Persistence', () => {
   test.beforeEach(async ({ page }) => {
@@ -37,7 +42,7 @@ test.describe.serial('Settings Persistence', () => {
     console.log('Current theme:', currentTheme);
 
     // Click to open theme options
-    await themeSelector.click();
+    await scrollAndClickIonElement(page, '[data-testid="theme-selector"]');
     await page.waitForTimeout(300); // Wait for popover animation
 
     // Select the opposite theme
@@ -69,7 +74,7 @@ test.describe.serial('Settings Persistence', () => {
       await navigateToTab(page, 'profile');
       const themeReset = page.locator('[data-testid="theme-selector"]');
       if (await themeReset.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await themeReset.click();
+        await scrollAndClickIonElement(page, '[data-testid="theme-selector"]');
         await page.waitForTimeout(300);
         const resetOption = page
           .locator(`ion-select-option:has-text("${currentTheme === 'dark' ? 'Oscuro' : 'Claro'}")`)
@@ -98,7 +103,7 @@ test.describe.serial('Settings Persistence', () => {
     console.log('Current language:', currentLanguage);
 
     // Click to open language options
-    await languageSelector.click();
+    await scrollAndClickIonElement(page, '[data-testid="language-selector"]');
     await page.waitForTimeout(300); // Wait for popover animation
 
     // Select the opposite language

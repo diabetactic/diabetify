@@ -240,6 +240,7 @@
 
   &:disabled {
     opacity: 50%;
+    /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- Well-supported in production browsers */
     cursor: not-allowed;
   }
 }

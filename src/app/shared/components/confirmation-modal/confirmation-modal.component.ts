@@ -1,7 +1,22 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  Input,
+  Output,
+  EventEmitter,
+  ChangeDetectionStrategy,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BolusCalculation } from '../../../core/services/mock-data.service';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton } from '@ionic/angular/standalone';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButton,
+  ModalController,
+} from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
@@ -12,6 +27,7 @@ import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
   styleUrls: ['./confirmation-modal.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     CommonModule,
     TranslateModule,
@@ -25,6 +41,8 @@ import { SafeHtmlPipe } from '@shared/pipes/safe-html.pipe';
   ],
 })
 export class ConfirmationModalComponent {
+  private modalCtrl = inject(ModalController);
+
   @Input() title = 'Confirm';
   @Input() message = 'Are you sure?';
   @Input() confirmButtonText = 'Confirm';
@@ -38,9 +56,11 @@ export class ConfirmationModalComponent {
 
   onConfirm(): void {
     this.confirmed.emit();
+    this.modalCtrl.dismiss(null, 'confirmed');
   }
 
   onCancel(): void {
     this.cancelled.emit();
+    this.modalCtrl.dismiss(null, 'cancelled');
   }
 }

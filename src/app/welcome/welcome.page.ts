@@ -1,4 +1,10 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 import { Router, RouterModule, NavigationStart } from '@angular/router';
 import { IonContent } from '@ionic/angular/standalone';
@@ -15,6 +21,7 @@ import { ROUTES, ROUTE_SEGMENTS } from '@core/constants';
   styleUrls: ['./welcome.page.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [RouterModule, TranslateModule, IonContent],
   host: {
     '[class.dark-theme]': 'isDarkMode',

@@ -1,5 +1,6 @@
 import {
   Component,
+  CUSTOM_ELEMENTS_SCHEMA,
   Input,
   HostBinding,
   Output,
@@ -17,6 +18,7 @@ import { TranslateModule } from '@ngx-translate/core';
   templateUrl: './stat-card.component.html',
   styleUrls: ['./stat-card.component.scss'],
   standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [CommonModule, IonRippleEffect, IonSpinner, IonSkeletonText, TranslateModule],
   providers: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,

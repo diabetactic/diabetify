@@ -1,208 +1,129 @@
 #!/bin/bash
 # =============================================================================
-# Docker Helper Script for Diabetactic Development
+# Optimized Docker Helper Script for Diabetactic Development
 # =============================================================================
-# Quick commands to build, test, and run the Dockerized app
+# High-performance commands using pnpm and modern Docker features.
 #
 # Usage:
-#   ./docker/docker-helper.sh build    - Build the Docker image
+#   ./docker/docker-helper.sh build    - Build the development image
 #   ./docker/docker-helper.sh test     - Run unit tests
-#   ./docker/docker-helper.sh e2e      - Run E2E tests
-#   ./docker/docker-helper.sh dev      - Start dev server
-#   ./docker/docker-helper.sh prod     - Production build
-#   ./docker/docker-helper.sh shell    - Open interactive shell
-#   ./docker/docker-helper.sh clean    - Clean up Docker resources
+#   ./docker/docker-helper.sh e2e      - Run E2E tests with Playwright
+#   ./docker/docker-helper.sh up       - Start the full stack (Compose)
+#   ./docker/docker-helper.sh down     - Stop the full stack
+#   ./docker/docker-helper.sh clean    - Prune volumes and unused images
 # =============================================================================
 
 set -e
 
 IMAGE_NAME="diabetactic:dev"
 DOCKERFILE="docker/Dockerfile.dev"
+COMPOSE_FILE="docker/docker-compose.local.yml"
 
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Helper functions
-log_info() {
-    echo -e "${GREEN}[INFO]${NC} $1"
-}
+log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
+log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
-log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-# Check if Docker is installed
 check_docker() {
     if ! command -v docker &> /dev/null; then
-        log_error "Docker is not installed. Please install Docker first."
+        log_error "Docker is not installed."
         exit 1
     fi
 }
 
-# Build the Docker image
+# Build with BuildKit and pnpm cache optimization
 build_image() {
-    log_info "Building Docker image: $IMAGE_NAME"
-    DOCKER_BUILDKIT=1 docker build -f "$DOCKERFILE" -t "$IMAGE_NAME" .
-    log_info "Build complete!"
+    log_info "Building Docker image using BuildKit: $IMAGE_NAME"
+    DOCKER_BUILDKIT=1 docker build \
+        --build-arg BUILDKIT_INLINE_CACHE=1 \
+        -f "$DOCKERFILE" \
+        -t "$IMAGE_NAME" .
 }
 
-# Run unit tests
+# Run unit tests using pnpm
 run_tests() {
-    log_info "Running unit tests..."
-    docker run --rm "$IMAGE_NAME" npm test
+    log_info "Running unit tests inside container..."
+    docker run --rm "$IMAGE_NAME" pnpm run test:unit
 }
 
-# Run unit tests with coverage
-run_coverage() {
-    log_info "Running unit tests with coverage..."
-    docker run --rm -v "$(pwd)/coverage:/app/coverage" "$IMAGE_NAME" npm run test:coverage
-    log_info "Coverage report saved to: coverage/"
+# Start the full local stack using Compose
+stack_up() {
+    log_info "Starting full Diabetactic stack..."
+    docker compose -f "$COMPOSE_FILE" up -d
+    log_info "Stack is initializing. Check logs with: ./docker/docker-helper.sh logs"
 }
 
-# Run E2E tests
+# Stop the full stack
+stack_down() {
+    log_info "Stopping Diabetactic stack..."
+    docker compose -f "$COMPOSE_FILE" down
+}
+
+# Run Playwright E2E tests
 run_e2e() {
-    log_info "Running E2E tests..."
+    log_info "Running Playwright E2E tests..."
+    # Ensure reports directories exist locally to map volumes
+    mkdir -p playwright-report playwright/artifacts
+
     docker run --rm \
+        -e CI=true \
         -v "$(pwd)/playwright-report:/app/playwright-report" \
         -v "$(pwd)/playwright/artifacts:/app/playwright/artifacts" \
-        "$IMAGE_NAME" npm run test:e2e
-    log_info "E2E reports saved to: playwright-report/"
+        "$IMAGE_NAME" pnpm run test:e2e
 }
 
-# Start dev server
-start_dev() {
-    log_info "Starting dev server on http://localhost:4200"
-    log_warn "Press Ctrl+C to stop"
-    docker run --rm -it -p 4200:4200 \
-        -v "$(pwd)/src:/app/src" \
-        "$IMAGE_NAME" npm start
+# Show container logs
+show_logs() {
+    docker compose -f "$COMPOSE_FILE" logs -f
 }
 
-# Production build
-build_prod() {
-    log_info "Building production bundle..."
-    docker run --rm -v "$(pwd)/www:/app/www" "$IMAGE_NAME" npm run build:prod
-    log_info "Production build saved to: www/"
-}
-
-# Open interactive shell
-open_shell() {
-    log_info "Opening interactive shell..."
-    docker run --rm -it "$IMAGE_NAME" bash
-}
-
-# Run linting
-run_lint() {
-    log_info "Running ESLint..."
-    docker run --rm "$IMAGE_NAME" npm run lint
-}
-
-# Run quality checks
-run_quality() {
-    log_info "Running quality checks (lint + test)..."
-    docker run --rm "$IMAGE_NAME" npm run quality
-}
-
-# Clean up Docker resources
-clean_docker() {
-    log_info "Cleaning up Docker resources..."
-
-    # Remove containers
-    if [ "$(docker ps -aq -f ancestor=$IMAGE_NAME)" ]; then
-        log_info "Removing containers..."
-        docker rm -f $(docker ps -aq -f ancestor="$IMAGE_NAME")
+# Deep clean of Docker resources
+clean_all() {
+    log_warn "This will remove all Diabetactic containers, images, and VOLUMES."
+    read -p "Are you sure? (y/N) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        docker compose -f "$COMPOSE_FILE" down -v --rmi local
+        docker image prune -f
+        log_info "Cleanup complete."
     fi
-
-    # Remove image
-    if docker images "$IMAGE_NAME" | grep -q "$IMAGE_NAME"; then
-        log_info "Removing image: $IMAGE_NAME"
-        docker rmi "$IMAGE_NAME"
-    fi
-
-    # Prune dangling images
-    log_info "Pruning dangling images..."
-    docker image prune -f
-
-    log_info "Cleanup complete!"
 }
 
-# Show help
 show_help() {
-    echo "Docker Helper for Diabetactic"
+    echo "Diabetactic Docker Helper"
     echo ""
     echo "Usage: $0 [command]"
     echo ""
     echo "Commands:"
-    echo "  build       Build the Docker image"
-    echo "  test        Run unit tests"
-    echo "  coverage    Run unit tests with coverage report"
-    echo "  e2e         Run E2E tests with Playwright"
-    echo "  dev         Start development server (port 4200)"
-    echo "  prod        Build production bundle"
-    echo "  lint        Run ESLint"
-    echo "  quality     Run lint + tests"
-    echo "  shell       Open interactive bash shell"
-    echo "  clean       Clean up Docker resources"
-    echo "  help        Show this help message"
-    echo ""
-    echo "Examples:"
-    echo "  $0 build              # Build image"
-    echo "  $0 test               # Run tests"
-    echo "  $0 dev                # Start dev server"
+    echo "  build    Build the dev image"
+    echo "  up       Start backend services (detached)"
+    echo "  down     Stop backend services"
+    echo "  logs     Follow service logs"
+    echo "  test     Run unit tests (pnpm)"
+    echo "  e2e      Run Playwright tests"
+    echo "  shell    Enter container shell"
+    echo "  clean    Reset everything (including DB volumes)"
     echo ""
 }
 
-# Main script
-main() {
-    check_docker
-
-    case "${1:-help}" in
-        build)
-            build_image
-            ;;
-        test)
-            run_tests
-            ;;
-        coverage)
-            run_coverage
-            ;;
-        e2e)
-            run_e2e
-            ;;
-        dev)
-            start_dev
-            ;;
-        prod)
-            build_prod
-            ;;
-        lint)
-            run_lint
-            ;;
-        quality)
-            run_quality
-            ;;
-        shell)
-            open_shell
-            ;;
-        clean)
-            clean_docker
-            ;;
-        help|--help|-h)
-            show_help
-            ;;
-        *)
-            log_error "Unknown command: $1"
-            show_help
-            exit 1
-            ;;
-    esac
-}
-
-main "$@"
+case "${1:-help}" in
+    build) build_image ;;
+    up) stack_up ;;
+    down) stack_down ;;
+    logs) show_logs ;;
+    test) run_tests ;;
+    e2e) run_e2e ;;
+    shell) docker run --rm -it "$IMAGE_NAME" bash ;;
+    clean) clean_all ;;
+    help|--help|-h) show_help ;;
+    *)
+        log_error "Unknown command: $1"
+        show_help
+        exit 1
+        ;;
+esac

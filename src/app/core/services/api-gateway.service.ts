@@ -6,7 +6,7 @@
  * response transformation, and centralized error handling.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of, from } from 'rxjs';
 import { switchMap, catchError, map, timeout, retry, shareReplay } from 'rxjs/operators';
@@ -720,9 +720,9 @@ export class ApiGatewayService {
 
   constructor(
     private http: HttpClient,
+    private injector: Injector,
     private externalServices: ExternalServicesManager,
     private localAuth: LocalAuthService,
-    private tidepoolAuth: TidepoolAuthService,
     private envDetector: EnvironmentDetectorService,
     private platformDetector: PlatformDetectorService,
     private logger: LoggerService,
@@ -1070,7 +1070,8 @@ export class ApiGatewayService {
   private async getAuthToken(service: ExternalService): Promise<string | null> {
     switch (service) {
       case ExternalService.TIDEPOOL:
-        return await this.tidepoolAuth.getAccessToken();
+        // Lazily resolve TidepoolAuthService to avoid eager side-effects at app startup and in unit tests.
+        return await this.injector.get(TidepoolAuthService).getAccessToken();
       case ExternalService.GLUCOSERVER:
       case ExternalService.APPOINTMENTS:
       case ExternalService.LOCAL_AUTH:

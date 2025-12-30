@@ -1,5 +1,6 @@
 import {
   Component,
+  CUSTOM_ELEMENTS_SCHEMA,
   OnInit,
   OnDestroy,
   NgZone,
@@ -38,6 +39,7 @@ import { ROUTES } from '@core/constants';
   styleUrls: ['./login.page.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     FormsModule,
     ReactiveFormsModule,

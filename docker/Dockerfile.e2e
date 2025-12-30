@@ -1,30 +1,27 @@
-# Multi-stage Dockerfile for Playwright E2E Testing
-# Stage 1: Build Angular app
-# Stage 2: Run Playwright tests
-#
-# Build: DOCKER_BUILDKIT=1 docker build -f docker/Dockerfile.e2e -t diabetactic:e2e .
-
 # syntax=docker/dockerfile:1.4
 
 # ============================================================================
 # Stage 1: Build Angular Application
 # ============================================================================
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Install pnpm for faster installs
+# Install pnpm for efficient dependency management
 RUN npm install -g pnpm
 
-# Copy package files and install dependencies with cache
+# Copy dependency manifests first to leverage Docker layer caching
 COPY package.json pnpm-lock.yaml ./
+
+# Install all dependencies using a cache mount for the pnpm store
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
-# Copy source code
+# Copy the rest of the application source
 COPY . .
 
-# Build Angular app with mock configuration (no backend required for E2E)
+# Build the Angular application using the mock configuration
+# This ensures E2E tests can run without requiring a live backend
 RUN pnpm run build:mock
 
 # ============================================================================
@@ -34,38 +31,44 @@ FROM mcr.microsoft.com/playwright:v1.50.0-jammy
 
 WORKDIR /e2e
 
-# Copy package files and install dependencies with cache
-COPY package.json pnpm-lock.yaml ./
+# Install pnpm in the test runner stage
 RUN npm install -g pnpm
+
+# Copy package manifests to install testing dependencies
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies (including playwright and test utilities)
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
-# Copy Playwright configuration and tests
+# Copy testing configuration and test suites
 COPY playwright.config.ts ./
 COPY playwright/ ./playwright/
 
-# Copy built Angular app from builder stage
+# Copy the pre-built application from the builder stage
 COPY --from=builder /app/www ./www
 
-# Install serve for serving the static app (already in devDeps, skip global install)
+# Environment variables optimized for Docker/CI execution
+ENV CI=true \
+    E2E_HOST=0.0.0.0 \
+    E2E_PORT=4200 \
+    E2E_BASE_URL=http://localhost:4200 \
+    E2E_SKIP_SERVER=true \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+    PLAYWRIGHT_JSON_OUTPUT_NAME=results.json
 
-# Create directories for test artifacts
-RUN mkdir -p playwright/artifacts playwright-report
+# Ensure artifact directories exist with correct permissions
+RUN mkdir -p playwright/artifacts playwright-report test-results
 
-# Environment variables for E2E tests
-ENV E2E_HOST=localhost
-ENV E2E_PORT=4200
-ENV E2E_BASE_URL=http://localhost:4200
-ENV CI=true
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-
-# Expose port for the app server
+# Expose the application port (4200 is default for Angular/Ionic)
 EXPOSE 4200
 
-# Health check to ensure app is ready before tests run
+# Healthcheck to verify the web server is operational before starting tests
 HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=5 \
     CMD curl -f http://localhost:4200 || exit 1
 
-# Default command: Start app server in background and run Playwright tests
-# The app server will be managed by docker-compose
-CMD ["npx", "playwright", "test"]
+# Launch strategy:
+# 1. Start a lightweight static server (serve) in the background to host the build
+# 2. Execute the Playwright test suite
+# We use 'pnpm exec serve' which utilizes the package from devDependencies
+CMD ["sh", "-c", "pnpm exec serve -s www -l 4200 & pnpm run test:e2e"]

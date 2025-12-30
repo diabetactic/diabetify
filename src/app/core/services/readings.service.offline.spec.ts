@@ -24,6 +24,9 @@ import '../../../test-setup';
 
 import { TestBed } from '@angular/core/testing';
 import { ReadingsService, LIVE_QUERY_FN } from '@services/readings.service';
+import { ReadingsMapperService } from '@services/readings-mapper.service';
+import { ReadingsStatisticsService } from '@services/readings-statistics.service';
+import { ReadingsSyncService } from '@services/readings-sync.service';
 import { DiabetacticDatabase } from '@services/database.service';
 import { MockDataService } from '@services/mock-data.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
@@ -38,6 +41,7 @@ import { AuditLogService } from '@services/audit-log.service';
 
 describe('ReadingsService - Offline Detection', () => {
   let service: ReadingsService;
+  let syncService: ReadingsSyncService;
   let mockDb: DiabetacticDatabase;
   let mockLogger: Mock<LoggerService>;
   let mockApiGateway: Mock<ApiGatewayService>;
@@ -96,6 +100,9 @@ describe('ReadingsService - Offline Detection', () => {
     TestBed.configureTestingModule({
       providers: [
         ReadingsService,
+        ReadingsMapperService,
+        ReadingsStatisticsService,
+        ReadingsSyncService,
         AuditLogService,
         { provide: DiabetacticDatabase, useValue: mockDb },
         { provide: LIVE_QUERY_FN, useValue: mockLiveQuery },
@@ -107,8 +114,10 @@ describe('ReadingsService - Offline Detection', () => {
     });
 
     service = TestBed.inject(ReadingsService);
+    syncService = TestBed.inject(ReadingsSyncService);
     // Disable mock mode to test real offline detection logic
     (service as any).isMockBackend = false;
+    (syncService as any).isMockBackend = false;
   });
 
   afterEach(async () => {

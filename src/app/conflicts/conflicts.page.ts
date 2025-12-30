@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
@@ -11,6 +11,7 @@ import { ReadingsService } from '@services/readings.service';
   templateUrl: './conflicts.page.html',
   styleUrls: ['./conflicts.page.scss'],
   standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [CommonModule, IonicModule, TranslateModule, SyncConflictComponent],
 })
 export class ConflictsPage implements OnInit {

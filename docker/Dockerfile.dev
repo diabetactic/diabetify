@@ -19,21 +19,21 @@ FROM mcr.microsoft.com/playwright:v1.50.0-jammy
 # =============================================================================
 
 # Set environment variables
-ENV NODE_VERSION=20 \
+ENV NODE_VERSION=22 \
     NPM_CONFIG_LOGLEVEL=warn \
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
     PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium \
     DEBIAN_FRONTEND=noninteractive \
     CI=true
 
-# Install Node.js 20 (if not present) and essential tools
+# Install essential tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     git \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Verify Node.js version (Playwright image should include Node 20)
+# Verify Node.js version
 RUN node --version && npm --version
 
 # Set working directory
