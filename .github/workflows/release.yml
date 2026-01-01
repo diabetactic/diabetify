@@ -38,7 +38,7 @@ jobs:
         run: corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
