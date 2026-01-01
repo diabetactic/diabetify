@@ -30,7 +30,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
@@ -47,7 +47,7 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
@@ -76,7 +76,7 @@ jobs:
     needs: [lint, unit-tests]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
@@ -100,7 +100,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
@@ -166,7 +166,7 @@ jobs:
       github.event_name == 'push' && github.ref == 'refs/heads/main' ||
       contains(github.event.pull_request.labels.*.name, 'run-e2e')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
