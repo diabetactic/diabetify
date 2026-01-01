@@ -56,7 +56,7 @@ jobs:
         run: pnpm exec vitest run --coverage
 
       - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage
           path: coverage/
@@ -85,7 +85,7 @@ jobs:
         run: pnpm run build:mock
 
       - name: Upload www artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: www
           path: www/
@@ -146,7 +146,7 @@ jobs:
 
       - name: Upload artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ui-test-artifacts
           path: |
@@ -211,7 +211,7 @@ jobs:
 
       - name: Upload artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: docker-e2e-artifacts
           path: |
