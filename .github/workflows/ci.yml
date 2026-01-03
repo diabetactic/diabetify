@@ -128,7 +128,7 @@ jobs:
 
       - name: Download build
         if: ${{ env.ACT != 'true' }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: www
           path: www/
@@ -223,7 +223,7 @@ jobs:
 
       - name: Download build
         if: ${{ env.ACT != 'true' }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: www
           path: www/
