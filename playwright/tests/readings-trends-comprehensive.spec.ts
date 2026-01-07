@@ -41,6 +41,23 @@ async function loginAs(page: Page, dni: string, password: string): Promise<void>
   await loginUser(page, { username: dni, password });
 }
 
+async function navigateToReadings(page: Page): Promise<void> {
+  await page.click('[data-testid="tab-readings"]');
+  await expect(page).toHaveURL(/\/readings/, { timeout: 10000 });
+  await page.waitForLoadState('networkidle');
+}
+
+async function navigateToTrends(page: Page): Promise<void> {
+  const trendsTab = page.locator('[data-testid="tab-trends"], a[href*="trends"]');
+  if ((await trendsTab.count()) > 0) {
+    await trendsTab.first().click();
+  } else {
+    await page.goto('/tabs/trends');
+  }
+  await expect(page).toHaveURL(/\/trends/, { timeout: 10000 });
+  await page.waitForLoadState('networkidle');
+}
+
 async function disableDeviceFrame(page: Page): Promise<void> {
   await page.evaluate(() => {
     document.documentElement.classList.add('no-device-frame');
@@ -81,11 +98,8 @@ test.describe('Reading Detail View @readings-trends @docker', () => {
 
   test('should display reading list with data', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.click('[data-testid="tab-readings"]');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToReadings(page);
 
-    // Check for readings list
     const readingsList = page.locator('[data-testid="readings-list"], ion-list');
     await expect(readingsList.first()).toBeVisible({ timeout: 10000 });
 
@@ -98,11 +112,8 @@ test.describe('Reading Detail View @readings-trends @docker', () => {
 
   test('should click on reading to view detail', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.click('[data-testid="tab-readings"]');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToReadings(page);
 
-    // Find a reading item and click it
     const readingButton = page
       .getByRole('button')
       .filter({ hasText: /mg\/dL|mmol/i })
@@ -113,7 +124,11 @@ test.describe('Reading Detail View @readings-trends @docker', () => {
         el.scrollIntoView({ behavior: 'instant', block: 'center' });
         el.click();
       });
-      await page.waitForTimeout(1000);
+      await page
+        .locator('ion-modal')
+        .first()
+        .waitFor({ state: 'visible', timeout: 5000 })
+        .catch(() => {});
 
       // Should show detail modal or expand details
       const detailContent = page.locator('[class*="detail"], ion-modal, [class*="expanded"]');
@@ -128,9 +143,7 @@ test.describe('Reading Detail View @readings-trends @docker', () => {
 
   test('should display glucose status color coding', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.click('[data-testid="tab-readings"]');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToReadings(page);
 
     // Check for color-coded readings
     const normalReading = page.locator('[class*="normal"], [class*="success"], .text-green');
@@ -153,9 +166,7 @@ test.describe('Reading Detail View @readings-trends @docker', () => {
 
   test('should show meal context for readings', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.click('[data-testid="tab-readings"]');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToReadings(page);
 
     // Check for meal context labels
     const mealContexts = page.locator(
@@ -199,9 +210,7 @@ test.describe('Reading Edit @readings-trends @docker', () => {
 
   test('should have edit option for readings', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.click('[data-testid="tab-readings"]');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToReadings(page);
 
     // Look for edit button or swipe action
     const readingItem = page.locator('app-reading-item, ion-item-sliding');
@@ -223,7 +232,7 @@ test.describe('Reading Edit @readings-trends @docker', () => {
             await page.mouse.down();
             await page.mouse.move(box.x + 50, box.y + box.height / 2);
             await page.mouse.up();
-            await page.waitForTimeout(500);
+            await page.waitForTimeout(300);
           }
         }
       }
@@ -252,9 +261,7 @@ test.describe('Reading Delete @readings-trends @docker', () => {
     await createTestReading(token, 120, '__E2E_DELETE_TEST__');
 
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.click('[data-testid="tab-readings"]');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToReadings(page);
 
     // Find sliding item
     const slidingItem = page.locator('ion-item-sliding').first();
@@ -273,7 +280,7 @@ test.describe('Reading Delete @readings-trends @docker', () => {
         await page.mouse.down();
         await page.mouse.move(box.x + 50, box.y + box.height / 2);
         await page.mouse.up();
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(300);
 
         // Check for delete button - use separate locators
         const deleteBtnCss = page.locator('ion-item-option[color="danger"]');
@@ -290,9 +297,7 @@ test.describe('Reading Delete @readings-trends @docker', () => {
     const result = await createTestReading(token, 130, '__E2E_DELETE_CONFIRM_TEST__');
 
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.click('[data-testid="tab-readings"]');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToReadings(page);
 
     // Try to trigger delete
     const slidingItem = page.locator('ion-item-sliding').first();
@@ -310,7 +315,7 @@ test.describe('Reading Delete @readings-trends @docker', () => {
         await page.mouse.down();
         await page.mouse.move(box.x + 50, box.y + box.height / 2);
         await page.mouse.up();
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(300);
 
         const deleteBtn = page.locator('ion-item-option[color="danger"]').first();
         if ((await deleteBtn.count()) > 0) {
@@ -318,7 +323,7 @@ test.describe('Reading Delete @readings-trends @docker', () => {
             el.scrollIntoView({ behavior: 'instant', block: 'center' });
             el.click();
           });
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(300);
 
           // Should show confirmation alert
           const confirmAlert = page.locator('ion-alert');
@@ -358,8 +363,8 @@ test.describe('Trends Page @readings-trends @docker', () => {
       await page.goto('/tabs/trends');
     }
 
+    await expect(page).toHaveURL(/\/trends/, { timeout: 10000 });
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
 
     // Verify trends page loaded
     const pageContent = page.locator('app-trends, ion-content');
@@ -368,9 +373,7 @@ test.describe('Trends Page @readings-trends @docker', () => {
 
   test('should display period selector', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.goto('/tabs/trends');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToTrends(page);
 
     // Check for period selector buttons/segment
     const periodSelector = page.locator('ion-segment, [data-testid="period-selector"]');
@@ -388,9 +391,7 @@ test.describe('Trends Page @readings-trends @docker', () => {
 
   test('should change data when period is selected', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.goto('/tabs/trends');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToTrends(page);
 
     // Click on different period options
     const weekBtn = page.locator(
@@ -402,12 +403,12 @@ test.describe('Trends Page @readings-trends @docker', () => {
 
     if ((await weekBtn.count()) > 0) {
       await weekBtn.first().click();
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle');
     }
 
     if ((await monthBtn.count()) > 0) {
       await monthBtn.first().click();
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle');
     }
 
     // Page should still be visible (no error)
@@ -417,9 +418,7 @@ test.describe('Trends Page @readings-trends @docker', () => {
 
   test('should display time-in-range chart', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.goto('/tabs/trends');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToTrends(page);
 
     // Check for chart elements
     const chart = page.locator('canvas, svg, [class*="chart"]');
@@ -435,9 +434,7 @@ test.describe('Trends Page @readings-trends @docker', () => {
 
   test('should display statistics section', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.goto('/tabs/trends');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToTrends(page);
 
     // Check for statistics
     const hasAverage = (await page.locator('text=/Promedio|Average|Media/i').count()) > 0;
@@ -451,9 +448,7 @@ test.describe('Trends Page @readings-trends @docker', () => {
 
   test('should display glucose unit in statistics', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.goto('/tabs/trends');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToTrends(page);
 
     // Check for glucose unit
     const hasMgDl = (await page.locator('text=/mg\\/dL/').count()) > 0;
@@ -464,9 +459,7 @@ test.describe('Trends Page @readings-trends @docker', () => {
 
   test('should support pull-to-refresh', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.goto('/tabs/trends');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
+    await navigateToTrends(page);
 
     // Check for refresher
     const refresher = page.locator('ion-refresher');
@@ -487,9 +480,7 @@ test.describe('Trends Statistics Accuracy @readings-trends @docker', () => {
 
   test('should show correct time-in-range percentages', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.goto('/tabs/trends');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToTrends(page);
 
     // Check for percentage values
     const percentages = page.locator('text=/\\d+(\\.\\d+)?%/');
@@ -501,9 +492,7 @@ test.describe('Trends Statistics Accuracy @readings-trends @docker', () => {
 
   test('should show readings count', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.goto('/tabs/trends');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToTrends(page);
 
     // Check for readings count display
     const readingsCount = page.locator('text=/\\d+.*lecturas|\\d+.*readings/i');
@@ -529,18 +518,14 @@ test.describe('Visual Regression - Readings & Trends @readings-trends @docker @v
 
   test('Visual: Readings list', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.click('[data-testid="tab-readings"]');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToReadings(page);
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('readings-list-main.png', screenshotOptions);
   });
 
   test('Visual: Readings with filter panel', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.click('[data-testid="tab-readings"]');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
+    await navigateToReadings(page);
 
     // Open filter panel
     const filterBtn = page.locator(
@@ -548,7 +533,7 @@ test.describe('Visual Regression - Readings & Trends @readings-trends @docker @v
     );
     if ((await filterBtn.count()) > 0) {
       await filterBtn.first().click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300);
     }
 
     await prepareForScreenshot(page);
@@ -557,25 +542,21 @@ test.describe('Visual Regression - Readings & Trends @readings-trends @docker @v
 
   test('Visual: Trends main view', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.goto('/tabs/trends');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToTrends(page);
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('trends-main-view.png', screenshotOptions);
   });
 
   test('Visual: Trends week period', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.goto('/tabs/trends');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
+    await navigateToTrends(page);
 
     const weekBtn = page.locator(
       'ion-segment-button:has-text("Semana"), ion-segment-button:has-text("Week")'
     );
     if ((await weekBtn.count()) > 0) {
       await weekBtn.first().click();
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle');
     }
 
     await prepareForScreenshot(page);
@@ -584,16 +565,14 @@ test.describe('Visual Regression - Readings & Trends @readings-trends @docker @v
 
   test('Visual: Trends month period', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.goto('/tabs/trends');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
+    await navigateToTrends(page);
 
     const monthBtn = page.locator(
       'ion-segment-button:has-text("Mes"), ion-segment-button:has-text("Month")'
     );
     if ((await monthBtn.count()) > 0) {
       await monthBtn.first().click();
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle');
     }
 
     await prepareForScreenshot(page);
@@ -609,9 +588,7 @@ test.describe('Visual Regression - Readings & Trends @readings-trends @docker @v
       document.body.classList.add('dark');
     });
 
-    await page.goto('/tabs/trends');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToTrends(page);
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('trends-dark-mode.png', screenshotOptions);
   });
@@ -628,9 +605,7 @@ test.describe('Empty States @readings-trends', () => {
 
   test('should show empty state when no readings exist', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.click('[data-testid="tab-readings"]');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToReadings(page);
 
     // Check for empty state component - use separate locators
     const emptyStateCss = page.locator('[data-testid="readings-empty"], app-empty-state');
@@ -644,9 +619,7 @@ test.describe('Empty States @readings-trends', () => {
 
   test('should show empty state in trends when no data', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await page.goto('/tabs/trends');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await navigateToTrends(page);
 
     // Check for empty or no-data message
     const noDataMessage = page.locator('text=/Sin datos|No data|No hay datos/i');

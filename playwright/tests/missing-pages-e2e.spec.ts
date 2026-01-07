@@ -66,7 +66,6 @@ async function disableDeviceFrame(page: Page): Promise<void> {
  */
 async function prepareForScreenshot(page: Page): Promise<void> {
   await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(500);
   await page.addStyleTag({
     content: `
       [data-testid="timestamp"], .timestamp, .time-ago { visibility: hidden !important; }
@@ -93,8 +92,8 @@ test.describe('Achievements Page @missing-pages @achievements', () => {
 
     // Navigate to profile first
     await page.click('[data-testid="tab-profile"]');
+    await expect(page).toHaveURL(/\/profile/, { timeout: 10000 });
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
 
     // Look for achievements link/button and click it - use JavaScript click
     const achievementsLink = page.locator(
@@ -107,7 +106,6 @@ test.describe('Achievements Page @missing-pages @achievements', () => {
         el.click();
       });
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(1000);
 
       // Verify achievements page loaded
       const achievementsRoot = page.locator('app-achievements').first();
@@ -139,7 +137,6 @@ test.describe('Achievements Page @missing-pages @achievements', () => {
 
   test('should display streak information', async ({ page }) => {
     await loginAndNavigate(page, '/achievements');
-    await page.waitForTimeout(2000);
 
     // Look for streak-related content
     const streakCard = page.locator('[class*="streak"], [data-testid*="streak"]');
@@ -155,7 +152,6 @@ test.describe('Achievements Page @missing-pages @achievements', () => {
 
   test('should display achievement progress bars', async ({ page }) => {
     await loginAndNavigate(page, '/achievements');
-    await page.waitForTimeout(2000);
 
     // Check for progress indicators
     const progressBars = page.locator('ion-progress-bar');
@@ -171,7 +167,6 @@ test.describe('Achievements Page @missing-pages @achievements', () => {
 
   test('should support pull-to-refresh', async ({ page }) => {
     await loginAndNavigate(page, '/achievements');
-    await page.waitForTimeout(1000);
 
     // Check for ion-refresher component
     const refresher = page.locator('ion-refresher');
@@ -180,7 +175,6 @@ test.describe('Achievements Page @missing-pages @achievements', () => {
 
   test('should navigate back to profile', async ({ page }) => {
     await loginAndNavigate(page, '/achievements');
-    await page.waitForTimeout(1000);
 
     // Click back button - use JavaScript click
     const backButton = page.locator('ion-back-button, [data-testid="back-btn"]');
@@ -214,7 +208,6 @@ test.describe('Tips Page @missing-pages @tips', () => {
     // Navigate to profile first
     await page.click('[data-testid="tab-profile"]');
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
 
     // Look for tips link - use JavaScript click
     const tipsLink = page.locator(
@@ -372,7 +365,6 @@ test.describe('Account Pending Page @missing-pages @account-pending', () => {
     // Navigate directly to account-pending page
     await page.goto('/account-pending');
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
 
     // The page should either show pending message or redirect
     const isPendingPage = page.url().includes('account-pending');
@@ -385,7 +377,6 @@ test.describe('Account Pending Page @missing-pages @account-pending', () => {
   test('should display pending account message when applicable', async ({ page }) => {
     await page.goto('/account-pending');
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
 
     if (page.url().includes('account-pending')) {
       // Check for pending message content
@@ -402,7 +393,6 @@ test.describe('Account Pending Page @missing-pages @account-pending', () => {
   test('should have sign out button', async ({ page }) => {
     await page.goto('/account-pending');
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
 
     if (page.url().includes('account-pending')) {
       const signOutButton = page.locator('ion-button');
@@ -426,7 +416,6 @@ test.describe('Dashboard Detail Page @missing-pages @dashboard-detail', () => {
     // Click on dashboard tab
     await page.click('[data-testid="tab-dashboard"]');
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
 
     // Look for detail/more button or stat card that navigates to detail
     const detailButton = page.locator(
@@ -528,7 +517,6 @@ test.describe('Advanced Settings Page @missing-pages @advanced-settings', () => 
     // Navigate to profile
     await page.click('[data-testid="tab-profile"]');
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
 
     // Find and click settings button
     const settingsBtn = page.locator(
@@ -622,7 +610,6 @@ test.describe('Visual Regression - Missing Pages @missing-pages @visual', () => 
 
   test('Achievements page - main view', async ({ page }) => {
     await loginAndNavigate(page, '/achievements');
-    await page.waitForTimeout(2000);
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('missing-achievements-main.png', screenshotOptions);
   });
