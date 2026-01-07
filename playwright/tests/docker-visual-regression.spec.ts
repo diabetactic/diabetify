@@ -354,9 +354,23 @@ test.describe('Docker Visual - Profile @docker-visual', () => {
     await expect(page).toHaveScreenshot('docker-profile-dark.png', screenshotOptions);
   });
 
-  test('Profile - scrolled to preferences', async ({ page }) => {
-    await page.evaluate(() => window.scrollTo(0, 500));
-    await page.waitForTimeout(300);
+  test('Profile - preferences view (edit mode)', async ({ page }) => {
+    // Click edit button to show preferences/editable fields
+    const editButton = page
+      .locator('[data-testid="edit-profile-btn"]')
+      .or(page.getByRole('button', { name: /Editar Perfil|Edit Profile/i }));
+
+    if (await editButton.count() > 0) {
+      await editButton.first().click();
+      // Wait for an element that is unique to the edit mode
+      await page
+        .waitForSelector('[data-testid="profile-age-input"], .in-edit-mode', {
+          state: 'visible',
+          timeout: 5000,
+        })
+        .catch(() => {});
+    }
+
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('docker-profile-preferences.png', screenshotOptions);
   });
@@ -392,8 +406,24 @@ test.describe('Docker Visual - Trends @docker-visual', () => {
     await loginAndNavigate(page);
     await page.goto('/tabs/trends');
     await page.waitForLoadState('networkidle');
-    await page.evaluate(() => window.scrollTo(0, 600));
-    await page.waitForTimeout(500);
+
+    // Click on the statistics tab/button
+    const statsButton = page
+      .locator('[data-testid="trends-stats-btn"]')
+      .or(page.getByRole('button', { name: /Estadísticas|Statistics/i }))
+      .or(page.locator('ion-segment-button[value="stats"]'));
+
+    if (await statsButton.count() > 0) {
+      await statsButton.first().click();
+      // Wait for the statistics card to be visible (optional; don't fail test if absent)
+      await page
+        .waitForSelector('[data-testid="trends-stats-card"], .stats-view-loaded', {
+          state: 'visible',
+          timeout: 10000,
+        })
+        .catch(() => {});
+    }
+
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('docker-trends-statistics.png', screenshotOptions);
   });
