@@ -9,6 +9,7 @@ coverage
 playwright-report
 playwright/artifacts
 playwright/screenshots
+junit.xml
 
 # Tooling caches
 .angular
