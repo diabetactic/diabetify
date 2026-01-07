@@ -32,3 +32,6 @@ SECURITY_AUDIT_REPORT.md
 WARP.md
 docs/*REPORT.md
 docs/*SUMMARY.md
+
+# Temporary files
+frontend.log

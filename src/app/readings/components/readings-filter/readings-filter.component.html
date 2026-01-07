@@ -1,6 +1,6 @@
-<ion-modal [isOpen]="isOpen" (didDismiss)="closeModal()">
+<ion-modal [isOpen]="isOpen" (didDismiss)="closeModal()" class="max-w-xl">
   <ng-template>
-    <ion-header>
+    <ion-header class="ion-no-border">
       <ion-toolbar>
         <ion-title>{{ 'readings.filterReadings' | translate }}</ion-title>
         <ion-buttons slot="end">
@@ -11,20 +11,19 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="ion-padding">
-      <!-- Status Filter -->
-      <div class="mb-6">
-        <ion-list-header class="mb-2 !px-0 !pr-0">
-          <ion-label class="text-sm font-semibold uppercase text-[var(--ion-color-medium)]">{{
-            'readings.glucoseStatus' | translate
-          }}</ion-label>
-        </ion-list-header>
-        <ion-list class="!p-0">
-          <ion-item>
+    <ion-content>
+      <div class="page-shell">
+        <!-- Status Filter -->
+        <div class="card bg-base-200 mb-4 rounded-xl p-4">
+          <h3 class="mb-3 text-sm font-semibold uppercase text-base-content/60">
+            {{ 'readings.glucoseStatus' | translate }}
+          </h3>
+          <ion-item lines="none" class="rounded-lg">
             <ion-select
               [(ngModel)]="filters.status"
               [placeholder]="'readings.selectStatus' | translate"
               interface="popover"
+              class="w-full"
             >
               <ion-select-option value="all">{{
                 'readings.filter.all' | translate
@@ -32,9 +31,7 @@
               <ion-select-option value="normal">{{
                 'glucose.status.normal' | translate
               }}</ion-select-option>
-              <ion-select-option value="low">{{
-                'glucose.status.low' | translate
-              }}</ion-select-option>
+              <ion-select-option value="low">{{ 'glucose.status.low' | translate }}</ion-select-option>
               <ion-select-option value="critical-low">{{
                 'glucose.status.veryLow' | translate
               }}</ion-select-option>
@@ -46,106 +43,78 @@
               }}</ion-select-option>
             </ion-select>
           </ion-item>
-        </ion-list>
-      </div>
+        </div>
 
-      <!-- Date Range Filter -->
-      <div class="mb-6">
-        <ion-list-header class="mb-2 !px-0 !pr-0">
-          <ion-label class="text-sm font-semibold uppercase text-[var(--ion-color-medium)]">{{
-            'readings.dateRange' | translate
-          }}</ion-label>
-        </ion-list-header>
-        <ion-list class="!p-0">
-          <ion-item>
-            <ion-label position="stacked">{{ 'readings.startDate' | translate }}</ion-label>
-            <ion-datetime-button datetime="startDatetime"></ion-datetime-button>
-            <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime
-                  id="startDatetime"
-                  [(ngModel)]="filters.startDate"
-                  presentation="date"
-                  [max]="filters.endDate || undefined"
-                >
-                </ion-datetime>
-              </ng-template>
-            </ion-modal>
+        <!-- Date Range Filter -->
+        <div class="card bg-base-200 mb-4 rounded-xl p-4">
+          <h3 class="mb-3 text-sm font-semibold uppercase text-base-content/60">
+            {{ 'readings.dateRange' | translate }}
+          </h3>
+          <ion-item lines="none" class="mb-2 rounded-lg">
+            <ion-label>{{ 'readings.startDate' | translate }}</ion-label>
+            <ion-datetime-button datetime="startDatetime" slot="end"></ion-datetime-button>
           </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">{{ 'readings.endDate' | translate }}</ion-label>
-            <ion-datetime-button datetime="endDatetime"></ion-datetime-button>
-            <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime
-                  id="endDatetime"
-                  [(ngModel)]="filters.endDate"
-                  presentation="date"
-                  [min]="filters.startDate || undefined"
-                >
-                </ion-datetime>
-              </ng-template>
-            </ion-modal>
+          <ion-item lines="none" class="rounded-lg">
+            <ion-label>{{ 'readings.endDate' | translate }}</ion-label>
+            <ion-datetime-button datetime="endDatetime" slot="end"></ion-datetime-button>
           </ion-item>
-        </ion-list>
-      </div>
+        </div>
 
-      <!-- Quick Date Filters -->
-      <div class="mb-6">
-        <ion-list-header class="mb-2 !px-0 !pr-0">
-          <ion-label class="text-sm font-semibold uppercase text-[var(--ion-color-medium)]">{{
-            'readings.quickFilters' | translate
-          }}</ion-label>
-        </ion-list-header>
-        <ion-button
-          expand="block"
-          fill="outline"
-          (click)="setFilterAllTime()"
-          class="mt-2 first:mt-0"
-        >
-          {{ 'readings.filter.all' | translate }}
-        </ion-button>
-        <ion-button
-          expand="block"
-          fill="outline"
-          (click)="setFilterLast24Hours()"
-          class="mt-2 first:mt-0"
-        >
-          {{ 'readings.filter.last24Hours' | translate }}
-        </ion-button>
-        <ion-button
-          expand="block"
-          fill="outline"
-          (click)="setFilterLast7Days()"
-          class="mt-2 first:mt-0"
-        >
-          {{ 'readings.filter.last7Days' | translate }}
-        </ion-button>
-        <ion-button
-          expand="block"
-          fill="outline"
-          (click)="setFilterLast30Days()"
-          class="mt-2 first:mt-0"
-        >
-          {{ 'readings.filter.last30Days' | translate }}
-        </ion-button>
+        <!-- Quick Date Filters -->
+        <div class="card bg-base-200 mb-4 rounded-xl p-4">
+          <h3 class="mb-3 text-sm font-semibold uppercase text-base-content/60">
+            {{ 'readings.quickFilters' | translate }}
+          </h3>
+          <div class="grid grid-cols-2 gap-2">
+            <ion-button fill="outline" (click)="setFilterAllTime()">{{
+              'readings.filter.allTime' | translate
+            }}</ion-button>
+            <ion-button fill="outline" (click)="setFilterLast24Hours()">{{
+              'readings.filter.last24Hours' | translate
+            }}</ion-button>
+            <ion-button fill="outline" (click)="setFilterLast7Days()">{{
+              'readings.filter.last7Days' | translate
+            }}</ion-button>
+            <ion-button fill="outline" (click)="setFilterLast30Days()">{{
+              'readings.filter.last30Days' | translate
+            }}</ion-button>
+          </div>
+        </div>
       </div>
 
       <!-- Action Buttons -->
-      <div class="mt-8 pb-4">
-        <ion-button expand="block" (click)="applyFilters()" class="mt-3 first:mt-0">
+      <div
+        class="ion-padding safe-area-bottom sticky bottom-0 border-t border-base-300 bg-base-100"
+      >
+        <ion-button expand="block" (click)="applyFilters()">
           {{ 'readings.applyFilters' | translate }}
         </ion-button>
-        <ion-button
-          expand="block"
-          fill="clear"
-          (click)="clearFiltersAndClose()"
-          class="mt-3 first:mt-0"
-        >
+        <ion-button expand="block" fill="clear" (click)="clearFiltersAndClose()">
           {{ 'readings.clearAll' | translate }}
         </ion-button>
       </div>
+
+      <!-- Hidden Datetime Pickers -->
+      <ion-modal [keepContentsMounted]="true" class="hidden">
+        <ng-template>
+          <ion-datetime
+            id="startDatetime"
+            [(ngModel)]="filters.startDate"
+            presentation="date"
+            [max]="filters.endDate || ''"
+          ></ion-datetime>
+        </ng-template>
+      </ion-modal>
+      <ion-modal [keepContentsMounted]="true" class="hidden">
+        <ng-template>
+          <ion-datetime
+            id="endDatetime"
+            [(ngModel)]="filters.endDate"
+            presentation="date"
+            [min]="filters.startDate || ''"
+          ></ion-datetime>
+        </ng-template>
+      </ion-modal>
     </ion-content>
   </ng-template>
 </ion-modal>
