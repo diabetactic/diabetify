@@ -208,8 +208,8 @@ importers:
         specifier: ^2.12.7
         version: 2.12.7(@types/node@25.0.3)(typescript@5.9.3)
       npm-check-updates:
-        specifier: ^19.2.0
-        version: 19.2.0
+        specifier: ^19.3.0
+        version: 19.3.0
       postcss:
         specifier: ^8.5.6
         version: 8.5.6
@@ -5405,8 +5405,8 @@ packages:
     resolution: {integrity: sha512-IxaQZDMsqfQ2Lz37VvyyEtKLe8FsRZuysmedy/N06TU1RyVppYKXrO4xIhR0F+7ubIBox6Q7nir6fQI3ej39iA==}
     engines: {node: ^18.17.0 || >=20.5.0}
 
-  npm-check-updates@19.2.0:
-    resolution: {integrity: sha512-XSIuL0FNgzXPDZa4lje7+OwHjiyEt84qQm6QMsQRbixNY5EHEM9nhgOjxjlK9jIbN+ysvSqOV8DKNS0zydwbdg==}
+  npm-check-updates@19.3.0:
+    resolution: {integrity: sha512-Jn6i+eWHwOZXg6kjXDbBCuBJO4QRkLTGfLcdVKJJhQXDMI8EBS7TgSXrYdEKtgUM0SIOo5/V3OVC/XbA+QUGIw==}
     engines: {node: '>=20.0.0', npm: '>=8.12.1'}
     hasBin: true
 
@@ -12639,7 +12639,7 @@ snapshots:
     dependencies:
       npm-normalize-package-bin: 4.0.0
 
-  npm-check-updates@19.2.0: {}
+  npm-check-updates@19.3.0: {}
 
   npm-install-checks@8.0.0:
     dependencies:
