@@ -147,12 +147,7 @@ export class LoginPage implements OnInit, OnDestroy {
           this.loginForm.enable({ emitEvent: false });
           this.cdr.detectChanges();
         });
-        const alert = await this.alertCtrl.create({
-          header: this.translate.instant('login.messages.loginError'),
-          message: this.translate.instant('errors.timeout'),
-          buttons: ['OK'],
-        });
-        await alert.present();
+        await this.showErrorToast(this.translate.instant('errors.timeout'));
       } catch (e) {
         this.logger.error('Auth', 'FAILSAFE cleanup error', e);
       }
@@ -262,13 +257,8 @@ export class LoginPage implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       });
 
-      this.logger.debug('Auth', 'Showing error alert');
-      const alert = await this.alertCtrl.create({
-        header: this.translate.instant('login.messages.loginError'),
-        message: errorMessage,
-        buttons: ['OK'],
-      });
-      await alert.present();
+      this.logger.debug('Auth', 'Showing error toast');
+      await this.showErrorToast(errorMessage);
     } finally {
       // Cancel the failsafe timeout since we're handling the result normally
       clearTimeout(failsafeTimeout);
@@ -340,5 +330,21 @@ export class LoginPage implements OnInit, OnDestroy {
         hasCompletedOnboarding: true,
       });
     }
+  }
+
+  private async showErrorToast(message: string): Promise<void> {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 3500,
+      color: 'danger',
+      position: 'top',
+      buttons: [
+        {
+          icon: 'close',
+          role: 'cancel',
+        },
+      ],
+    });
+    await toast.present();
   }
 }

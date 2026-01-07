@@ -476,11 +476,8 @@ test.describe('Visual Regression - Error States @visual-mock', () => {
     await page.fill('[data-testid="login-password-input"]', 'wrongpassword');
     await page.click('[data-testid="login-submit-btn"]');
 
-    // Esperar error
-    await page.waitForSelector('text=/error|incorrecto|invalid/i', { timeout: 10000 }).catch(() => {
-      // Si no hay mensaje de error visible, continuar
-    });
-
+    // Wait for toast to appear with error
+    await page.waitForSelector('ion-toast', { timeout: 10000 });
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('login-error-invalid.png', screenshotOptions);
   });

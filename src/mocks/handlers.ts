@@ -89,7 +89,7 @@ export const handlers = [
     const password = formData.get('password');
 
     // Valid test credentials
-    if (username === '1000' && password === 'tuvieja') {
+    if (username === '1000' && password === 'demo123') {
       mockUser = { ...DEFAULT_USER };
       return HttpResponse.json({
         access_token: 'mock-access-token-' + Date.now(),

@@ -62,14 +62,14 @@ test.describe('Error Handling', () => {
     // Submit
     await page.click('[data-testid="login-submit-btn"], button:has-text("Iniciar")');
 
-    // Wait for ion-alert to appear with error message
-    // The login page uses alertCtrl.create() to show errors
-    const alert = page.locator('ion-alert');
-    await expect(alert).toBeVisible({ timeout: 15000 });
+    // Wait for ion-toast to appear with error message
+    // The login page uses toastCtrl.create() to show errors
+    const toast = page.locator('ion-toast');
+    await expect(toast).toBeVisible({ timeout: 15000 });
 
-    // Check alert contains error-related text
-    const alertMessage = page.locator('ion-alert .alert-message, ion-alert .alert-wrapper');
-    await expect(alertMessage).toBeVisible({ timeout: 5000 });
+    // Check toast contains error-related text
+    const toastMessage = page.locator('ion-toast .toast-message, ion-toast .toast-wrapper');
+    await expect(toastMessage).toBeVisible({ timeout: 5000 });
 
     // Should still be on login page
     await expect(page).toHaveURL(/\/login/, { timeout: 3000 });

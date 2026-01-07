@@ -23,10 +23,12 @@ describe('LoginPage', () => {
   let profileService: any;
   let router: any;
   let loadingCtrl: any;
+  let toastCtrl: any;
   let alertCtrl: any;
   let logger: any;
   let mockLoading: any;
   let mockAlert: any;
+  let mockToast: any;
   let isAuthenticatedSubject: BehaviorSubject<boolean>;
 
   const mockUser: LocalUser = {
@@ -49,6 +51,10 @@ describe('LoginPage', () => {
     };
 
     mockAlert = {
+      present: vi.fn().mockResolvedValue(undefined),
+    };
+
+    mockToast = {
       present: vi.fn().mockResolvedValue(undefined),
     };
 
@@ -76,6 +82,7 @@ describe('LoginPage', () => {
     Object.defineProperty(router, 'url', { writable: true, value: '/login' });
 
     loadingCtrl = { create: vi.fn().mockResolvedValue(mockLoading) } as any;
+    toastCtrl = { create: vi.fn().mockResolvedValue(mockToast) } as any;
     alertCtrl = { create: vi.fn().mockResolvedValue(mockAlert) } as any;
 
     logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };
@@ -92,10 +99,7 @@ describe('LoginPage', () => {
         { provide: ProfileService, useValue: profileService },
         { provide: Router, useValue: router },
         { provide: LoadingController, useValue: loadingCtrl },
-        {
-          provide: ToastController,
-          useValue: { create: vi.fn().mockResolvedValue({ present: vi.fn() }) },
-        },
+        { provide: ToastController, useValue: toastCtrl },
         { provide: AlertController, useValue: alertCtrl },
         TranslateService,
         { provide: LoggerService, useValue: logger },
@@ -299,6 +303,7 @@ describe('LoginPage', () => {
         vi.clearAllMocks();
         // Re-setup mocks and form after clearing (password gets reset to '' on error)
         loadingCtrl.create.mockResolvedValue(mockLoading);
+        toastCtrl.create.mockResolvedValue(mockToast);
         alertCtrl.create.mockResolvedValue(mockAlert);
         component.loginForm.patchValue({ username: 'test@example.com', password: 'password123' });
         component.isLoading = false;
@@ -309,7 +314,7 @@ describe('LoginPage', () => {
 
         await component.onSubmit();
 
-        expect(alertCtrl.create).toHaveBeenCalledWith(
+        expect(toastCtrl.create).toHaveBeenCalledWith(
           expect.objectContaining({ message: errorCase.expectedMessage })
         );
       }
@@ -320,7 +325,7 @@ describe('LoginPage', () => {
 
       await component.onSubmit();
 
-      expect(alertCtrl.create).toHaveBeenCalled();
+      expect(toastCtrl.create).toHaveBeenCalled();
     });
 
     it('should reset password and dismiss loading after error', async () => {
@@ -445,7 +450,7 @@ describe('LoginPage', () => {
 
       await component.onSubmit();
 
-      expect(alertCtrl.create).toHaveBeenCalled();
+      expect(toastCtrl.create).toHaveBeenCalled();
     });
 
     it('should use email as name if firstName and lastName are empty', async () => {
