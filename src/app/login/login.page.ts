@@ -11,7 +11,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { LoadingController, ToastController, AlertController } from '@ionic/angular';
+import { LoadingController, ToastController } from '@ionic/angular';
 import {
   IonContent,
   IonIcon,
@@ -68,7 +68,6 @@ export class LoginPage implements OnInit, OnDestroy {
     private profileService: ProfileService,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController,
     private translate: TranslateService,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef,
