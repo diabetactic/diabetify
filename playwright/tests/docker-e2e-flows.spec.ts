@@ -348,31 +348,35 @@ test.describe('E2E Flow - Reading Data Flow @docker-e2e', () => {
     // Navigate to add reading page
     await page.goto('/add-reading');
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
 
-    // Wait for the form to be visible
+    // Wait for the form to be visible and stable
     await page.waitForSelector('form', { state: 'visible', timeout: 10000 });
-
-    // Fill form - use the correct data-testid from add-reading.page.html
-    // ion-input wraps the actual input element, need to target the inner input
     const glucoseInput = page.locator('[data-testid="glucose-value-input"] input');
     await glucoseInput.waitFor({ state: 'visible', timeout: 10000 });
+    await page.waitForTimeout(500); // Small delay for async validators to settle
+
+    // Fill form
     await glucoseInput.fill(String(uniqueValue));
 
     // Screenshot: Filled form before submit
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('e2e-reading-flow-1-filled-form.png', screenshotOptions);
 
-    // Submit - use the correct data-testid from add-reading.page.html
+    // Submit
     const submitBtn = page.locator('[data-testid="add-reading-save-btn"]');
     await submitBtn.waitFor({ state: 'visible', timeout: 10000 });
     await submitBtn.click();
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
 
-    // Screenshot: After submit (should show success or redirect)
+    // Wait for success toast
+    const successToast = page.locator('ion-toast >> text="Lectura guardada correctamente"');
+    await successToast.waitFor({ state: 'visible', timeout: 15000 });
+
+    // Screenshot: After submit (showing success toast)
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('e2e-reading-flow-2-after-submit.png', screenshotOptions);
+
+    // Verify navigation occurs after toast
+    await expect(page).toHaveURL(/\/tabs\/readings/, { timeout: 10000 });
   });
 
   test('Step 2: Verify reading appears in list', async ({ page }) => {
@@ -383,7 +387,12 @@ test.describe('E2E Flow - Reading Data Flow @docker-e2e', () => {
     await readingsTab.waitFor({ state: 'visible', timeout: 10000 });
     await readingsTab.click();
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(3000); // Wait for readings to load
+
+    // Wait for list to be populated
+    const readingsList = page.locator(
+      '[data-testid="readings-list"], [data-testid="readings-empty"]'
+    );
+    await readingsList.waitFor({ state: 'visible', timeout: 10000 });
 
     // Scroll to ensure content is visible
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -392,13 +401,8 @@ test.describe('E2E Flow - Reading Data Flow @docker-e2e', () => {
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('e2e-reading-flow-3-in-list.png', screenshotOptions);
 
-    // Verify the readings list container is visible (from readings-list.component.html)
-    // The readings-list component shows data-testid="readings-list" when there are readings
-    // or data-testid="readings-empty" when empty
-    const readingsList = page.locator(
-      '[data-testid="readings-list"], [data-testid="readings-empty"]'
-    );
-    await expect(readingsList).toBeVisible({ timeout: 10000 });
+    // Verify the readings list container is visible (it was awaited earlier)
+    await expect(readingsList).toBeVisible();
 
     // If readings exist, verify ion-items are attached
     const hasReadings = await page.locator('[data-testid="readings-list"]').count();
