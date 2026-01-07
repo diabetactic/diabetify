@@ -21,7 +21,12 @@
  */
 
 import { test, expect, Page } from '@playwright/test';
-import { loginUser, waitForIonicHydration, navigateToTab } from '../helpers/test-helpers';
+import {
+  loginUser,
+  waitForIonicHydration,
+  navigateToTab,
+  confirmWarningModal,
+} from '../helpers/test-helpers';
 
 // Configuracion comun para screenshots - tolerancia alta para diferencias de renderizado entre ambientes
 const screenshotOptions = {
@@ -421,10 +426,19 @@ test.describe('Visual Regression - Bolus Calculator @visual-mock @authenticated'
       await carbs.locator('input').fill('45');
     }
 
-    // Calcular
+    // Calculate
     const calcBtn = page.locator('[data-testid="calculate-btn"], ion-button:has-text("Calcular")');
     if ((await calcBtn.count()) > 0) {
       await calcBtn.first().click();
+
+      // Handle the warning modal that might appear using the reusable helper
+      await confirmWarningModal(page);
+
+      // Wait for the result card to be visible
+      await page.waitForSelector('[data-testid="result-card"]', {
+        state: 'visible',
+        timeout: 10000,
+      });
       await page.waitForLoadState('networkidle');
     }
 
