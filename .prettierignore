@@ -35,3 +35,12 @@ pnpm-lock.yaml
 # Cache and artifacts
 .turbo
 playwright/artifacts
+
+# Agent / tool state (local-only)
+.claude
+.swarm
+.hive-mind
+.claude-flow
+memory
+coordination
+.mcp.json

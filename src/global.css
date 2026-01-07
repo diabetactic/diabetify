@@ -10,6 +10,29 @@
  */
 
 /* ============================================
+ * IONIC CSS IMPORTS (must come first)
+ * ============================================ */
+
+/* Core CSS required for Ionic components to work properly */
+@import '@ionic/angular/css/core.css';
+
+/* Basic CSS for apps built with Ionic */
+@import '@ionic/angular/css/normalize.css';
+@import '@ionic/angular/css/structure.css';
+@import '@ionic/angular/css/typography.css';
+@import '@ionic/angular/css/display.css';
+
+/* Optional CSS utils */
+@import '@ionic/angular/css/padding.css';
+@import '@ionic/angular/css/float-elements.css';
+@import '@ionic/angular/css/text-alignment.css';
+@import '@ionic/angular/css/text-transformation.css';
+@import '@ionic/angular/css/flex-utils.css';
+
+/* Ionic Dark Mode - class-based for proper theme control */
+@import '@ionic/angular/css/palettes/dark.class.css';
+
+/* ============================================
  * TAILWIND CSS V3 + DAISYUI
  * ============================================ */
 @tailwind base;
@@ -545,7 +568,7 @@
   /* ========== LAYOUT HELPERS ========== */
   .page-shell {
     width: 100%;
-    max-width: 1100px;
+    max-width: 1280px;
     margin: 0 auto;
     padding: 16px 16px 32px;
   }
@@ -914,41 +937,7 @@
   animation: skeletonFadeOut 0.2s ease-out forwards;
 }
 
-/* Material Design Theme - Import after Tailwind for proper cascade */
-
-/* @import './theme/material-theme'; */
-
-/* Removed - file doesn't exist */
-
-/* Core CSS required for Ionic components to work properly */
-@import '@ionic/angular/css/core.css';
-
-/* Basic CSS for apps built with Ionic */
-@import '@ionic/angular/css/normalize.css';
-@import '@ionic/angular/css/structure.css';
-@import '@ionic/angular/css/typography.css';
-@import '@ionic/angular/css/display.css';
-
-/* Optional CSS utils that can be commented out */
-@import '@ionic/angular/css/padding.css';
-@import '@ionic/angular/css/float-elements.css';
-@import '@ionic/angular/css/text-alignment.css';
-@import '@ionic/angular/css/text-transformation.css';
-@import '@ionic/angular/css/flex-utils.css';
-
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-
-/* Use class-based dark mode for proper theme control */
-@import '@ionic/angular/css/palettes/dark.class.css';
-
-/* @import '@ionic/angular/css/palettes/dark.system.css'; */
+/* Note: Ionic CSS imports are at the top of this file */
 
 /**
  * Global Diabetactic Styles
@@ -1198,6 +1187,13 @@ html {
 /* stylelint-enable declaration-no-important */
 
 /* ============================================
+ * UI QUALITY GUARDRAILS
+ * ============================================ */
+:where(.card, [class*='card'], ion-card) {
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================
  * ACCESSIBILITY: FOCUS INDICATORS
  * Keyboard navigation support (WCAG 2.1 AA)
  * ============================================ */
@@ -1342,27 +1338,25 @@ button:focus-visible {
   left: 50%;
   transform: translateX(-50%);
   margin-bottom: -8px;
+}
 
-  ion-fab-button {
-    --background: var(--ion-color-primary);
-    --background-activated: var(--ion-color-primary-shade);
-    --background-focused: var(--ion-color-primary-shade);
-    --background-hover: var(--ion-color-primary-tint);
-    --border-radius: 50%;
-    --box-shadow: 0 4px 12px rgb(37 175 244 / 30%);
+.center-fab ion-fab-button {
+  --background: var(--ion-color-primary);
+  --background-activated: var(--ion-color-primary-shade);
+  --background-focused: var(--ion-color-primary-shade);
+  --background-hover: var(--ion-color-primary-tint);
+  --border-radius: 50%;
+  --box-shadow: 0 4px 12px rgb(37 175 244 / 30%);
 
-    width: 64px;
-    height: 64px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+}
 
-    /* Ensure perfectly round with no square artifacts */
-    border-radius: 50%;
-    overflow: hidden;
-
-    &::part(native) {
-      border-radius: 50%;
-      overflow: hidden;
-    }
-  }
+.center-fab ion-fab-button::part(native) {
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 /* Dark mode adjustments - class-based (not media query) */
@@ -1589,21 +1583,20 @@ button:focus-visible {
 
 /* ============================================
  * MOBILE PREVIEW FRAME (Desktop Web Only)
- * Shows app in phone-sized container on Vercel/web
- * Add .no-device-frame class to html to disable for E2E testing
+ * Legacy mobile preview frame for web demos.
+ * Disabled by default; opt-in by adding `.dt-device-frame` on `<html>`.
  * ============================================ */
 /* stylelint-disable declaration-no-important */
 @media (width >= 768px) {
-  /* Only apply frame styles when NOT in test mode */
-  html:not(.no-device-frame),
-  html:not(.no-device-frame) body {
+  html.dt-device-frame,
+  html.dt-device-frame body {
     background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
     min-height: 100vh;
     margin: 0;
     padding: 0;
   }
 
-  html:not(.no-device-frame) ion-app {
+  html.dt-device-frame ion-app {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -1622,7 +1615,7 @@ button:focus-visible {
   }
 
   /* Notch simulation */
-  html:not(.no-device-frame) ion-app::before {
+  html.dt-device-frame ion-app::before {
     content: '';
     position: absolute;
     top: 0;
@@ -1635,25 +1628,25 @@ button:focus-visible {
     z-index: 9999;
   }
 
-  /* Dark mode background (also respects no-device-frame) */
-  html:not(.no-device-frame):root[data-theme='dark'],
-  html:not(.no-device-frame):root[data-theme='dark'] body,
-  html:not(.no-device-frame).dark,
-  html:not(.no-device-frame).dark body,
-  html:not(.no-device-frame).ion-palette-dark,
-  html:not(.no-device-frame).ion-palette-dark body {
+  /* Dark mode background */
+  html.dt-device-frame:root[data-theme='dark'],
+  html.dt-device-frame:root[data-theme='dark'] body,
+  html.dt-device-frame.dark,
+  html.dt-device-frame.dark body,
+  html.dt-device-frame.ion-palette-dark,
+  html.dt-device-frame.ion-palette-dark body {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
   }
 
-  html:not(.no-device-frame):root[data-theme='dark'] ion-app,
-  html:not(.no-device-frame).dark ion-app,
-  html:not(.no-device-frame).ion-palette-dark ion-app {
+  html.dt-device-frame:root[data-theme='dark'] ion-app,
+  html.dt-device-frame.dark ion-app,
+  html.dt-device-frame.ion-palette-dark ion-app {
     border-color: #374151 !important;
   }
 
-  html:not(.no-device-frame):root[data-theme='dark'] ion-app::before,
-  html:not(.no-device-frame).dark ion-app::before,
-  html:not(.no-device-frame).ion-palette-dark ion-app::before {
+  html.dt-device-frame:root[data-theme='dark'] ion-app::before,
+  html.dt-device-frame.dark ion-app::before,
+  html.dt-device-frame.ion-palette-dark ion-app::before {
     background: #374151;
   }
 }

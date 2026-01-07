@@ -566,7 +566,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   // trackBy function for reading reminders ngFor
-  trackByReminder(index: number, reminder: ReadingReminder): number {
+  trackByReminder(_index: number, reminder: ReadingReminder): number {
     return reminder.id;
   }
 }

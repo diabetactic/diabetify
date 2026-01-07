@@ -289,15 +289,15 @@ export class ServiceMonitorComponent implements OnInit, OnDestroy {
   }
 
   // trackBy functions for ngFor optimization
-  trackByService(index: number, service: ServiceHealthCheck): ExternalService {
+  trackByService(_index: number, service: ServiceHealthCheck): ExternalService {
     return service.service;
   }
 
-  trackByCircuitBreaker(index: number, cb: CircuitBreakerState): ExternalService {
+  trackByCircuitBreaker(_index: number, cb: CircuitBreakerState): ExternalService {
     return cb.service;
   }
 
-  trackByWorkflow(index: number, workflow: WorkflowState): string {
+  trackByWorkflow(_index: number, workflow: WorkflowState): string {
     return workflow.id;
   }
 }

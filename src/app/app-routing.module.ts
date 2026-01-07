@@ -76,4 +76,9 @@ export const APP_ROUTES: Routes = [
     canMatch: [OnboardingGuard],
     loadComponent: () => import('./conflicts/conflicts.page').then(m => m.ConflictsPage),
   },
+  {
+    path: 'tips',
+    canMatch: [OnboardingGuard],
+    loadComponent: () => import('./tips/tips.page').then(m => m.TipsPage),
+  },
 ];

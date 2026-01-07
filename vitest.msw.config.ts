@@ -42,11 +42,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        isolate: true,
-      },
-    },
+    isolate: true,
     sequence: {
       concurrent: false,
     },
@@ -66,18 +62,20 @@ export default defineConfig({
       include: ['src/app/**/*.ts'],
       exclude: ['src/app/**/*.spec.ts', 'src/app/**/*.mock.ts'],
     },
-    deps: {
-      inline: [
-        '@capacitor/core',
-        '@capacitor/preferences',
-        '@capacitor/device',
-        '@capacitor/network',
-        '@ngx-translate/core',
-        '@analogjs/vitest-angular',
-        /^@angular\//,
-        /^@ionic\//,
-        /^@stencil\//,
-      ],
+    server: {
+      deps: {
+        inline: [
+          '@capacitor/core',
+          '@capacitor/preferences',
+          '@capacitor/device',
+          '@capacitor/network',
+          '@ngx-translate/core',
+          '@analogjs/vitest-angular',
+          /^@angular\//,
+          /^@ionic\//,
+          /^@stencil\//,
+        ],
+      },
     },
     // Longer timeout for network-mocked tests
     testTimeout: 10000,

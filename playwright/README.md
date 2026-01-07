@@ -11,21 +11,21 @@ The configuration supports multiple test environments:
 - Mobile-optimized web testing
 - Simulates Pixel 5 device (390x844 viewport)
 - Touch events enabled
-- Default for `npm run test:e2e`
+- Default for `pnpm run test:e2e`
 
 ### 2. **desktop-chromium** (Secondary)
 
 - Desktop web testing
 - 1280x720 viewport
 - For responsive design validation
-- Run with: `npm run test:e2e -- --project=desktop-chromium`
+- Run with: `pnpm run test:e2e -- --project=desktop-chromium`
 
 ### 3. **mobile-webkit** (Optional)
 
 - iPhone 14 simulation
 - WebKit engine
 - iOS-specific testing
-- Run with: `npm run test:e2e -- --project=mobile-webkit`
+- Run with: `pnpm run test:e2e -- --project=mobile-webkit`
 
 ## Running Tests
 
@@ -33,13 +33,13 @@ The configuration supports multiple test environments:
 
 ```bash
 # Run all tests (mobile-chromium by default)
-npm run test:e2e
+pnpm run test:e2e
 
 # Run with headed browser (see UI)
-npm run test:e2e:headed
+pnpm run test:e2e:headed
 
 # Run a specific test file
-npm run test:e2e -- profile-edit.spec.ts
+pnpm run test:e2e -- profile-edit.spec.ts
 ```
 
 ### Docker Backend E2E Tests
@@ -55,7 +55,7 @@ These tests run against a local Docker backend, providing a stable and reproduci
 
 ```bash
 # Run all Docker E2E tests
-npm run test:e2e -- --grep "@docker"
+pnpm run test:e2e -- --grep "@docker"
 ```
 
 ### Visual Regression Tests
@@ -64,13 +64,13 @@ Visual regression tests capture screenshots and compare them against baseline im
 
 ```bash
 # Run visual regression tests
-E2E_DOCKER_TESTS=true npm run test:e2e -- --grep "@docker-visual"
+E2E_DOCKER_TESTS=true pnpm run test:e2e -- --grep "@docker-visual"
 
 # Update baseline snapshots (when UI intentionally changes)
-E2E_DOCKER_TESTS=true npm run test:e2e -- --grep "@docker-visual" --update-snapshots
+E2E_DOCKER_TESTS=true pnpm run test:e2e -- --grep "@docker-visual" --update-snapshots
 
 # Update specific test snapshots
-E2E_DOCKER_TESTS=true npm run test:e2e -- --grep "Dashboard - main view" --update-snapshots
+E2E_DOCKER_TESTS=true pnpm run test:e2e -- --grep "Dashboard - main view" --update-snapshots
 ```
 
 **Note**: Visual regression tests will fail when the UI changes. This is expected behavior. Review the diff images in `playwright/artifacts/` to verify the changes are intentional, then update snapshots.

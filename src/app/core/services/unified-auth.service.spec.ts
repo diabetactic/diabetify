@@ -16,12 +16,14 @@ import {
   RegisterRequest,
 } from '@services/local-auth.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
+import { TranslateService } from '@ngx-translate/core';
 
 describe('UnifiedAuthService', () => {
   let service: UnifiedAuthService;
   let tidepoolAuthSpy: Mock<TidepoolAuthService>;
   let localAuthSpy: Mock<LocalAuthService>;
   let apiGatewaySpy: Mock<Partial<ApiGatewayService>>;
+  let translateSpy: Mock<TranslateService>;
 
   // Mock auth states
   let mockTidepoolAuthState: BehaviorSubject<TidepoolAuthState>;
@@ -50,6 +52,10 @@ describe('UnifiedAuthService', () => {
     apiGatewaySpy = {
       clearCache: vi.fn(),
     } as Mock<Partial<ApiGatewayService>>;
+
+    translateSpy = {
+      instant: vi.fn((key: string) => key),
+    } as unknown as Mock<TranslateService>;
 
     // Initialize mock auth states
     mockTidepoolAuthState = new BehaviorSubject<TidepoolAuthState>({
@@ -84,6 +90,7 @@ describe('UnifiedAuthService', () => {
         { provide: TidepoolAuthService, useValue: tidepoolAuthSpy },
         { provide: LocalAuthService, useValue: localAuthSpy },
         { provide: ApiGatewayService, useValue: apiGatewaySpy },
+        { provide: TranslateService, useValue: translateSpy },
       ],
     });
 

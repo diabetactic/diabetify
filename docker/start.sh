@@ -6,6 +6,8 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+source "$SCRIPT_DIR/_runlog.sh" 2>/dev/null || true
+
 echo "🚀 Starting Diabetactic local testing environment..."
 echo ""
 
@@ -13,6 +15,14 @@ echo ""
 if ! docker info > /dev/null 2>&1; then
     echo "❌ Docker is not running. Please start Docker and try again."
     exit 1
+fi
+
+if declare -F append_jsonl >/dev/null 2>&1; then
+  append_jsonl "backend-history.jsonl" \
+    event="backend_start" \
+    compose_file="docker-compose.local.yml" \
+    cwd="$(pwd)" \
+    || true
 fi
 
 # Start services
@@ -42,6 +52,12 @@ if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
     echo ""
     echo "⚠️  Services took longer than expected to start. Check logs with:"
     echo "   docker compose -f docker-compose.local.yml logs"
+    if declare -F append_jsonl >/dev/null 2>&1; then
+      append_jsonl "backend-history.jsonl" \
+        event="backend_start_timeout" \
+        retries="$RETRY_COUNT" \
+        || true
+    fi
     exit 1
 fi
 

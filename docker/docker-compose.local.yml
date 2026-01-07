@@ -64,7 +64,11 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@glucoserver_db:5432/glucoserver
     healthcheck:
-      test: ['CMD-SHELL', "timeout 1s bash -c ':> /dev/tcp/127.0.0.1/8000' || exit 1"]
+      test:
+        [
+          'CMD-SHELL',
+          'python3 -c "import urllib.request; urllib.request.urlopen(''http://127.0.0.1:8000/health'', timeout=1)"',
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -86,7 +90,11 @@ services:
       - NOREPLY_PASSWORD=mtoj zcft rxbt pgta
       - BACKOFFICE_FRONT_URL=http://localhost:3000
     healthcheck:
-      test: ['CMD-SHELL', "timeout 1s bash -c ':> /dev/tcp/127.0.0.1/8000' || exit 1"]
+      test:
+        [
+          'CMD-SHELL',
+          'python3 -c "import urllib.request; urllib.request.urlopen(''http://127.0.0.1:8000/health'', timeout=1)"',
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -105,7 +113,11 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@appointments_db:5432/appointments
     healthcheck:
-      test: ['CMD-SHELL', "timeout 1s bash -c ':> /dev/tcp/127.0.0.1/8000' || exit 1"]
+      test:
+        [
+          'CMD-SHELL',
+          'python3 -c "import urllib.request; urllib.request.urlopen(''http://127.0.0.1:8000/health'', timeout=1)"',
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -133,7 +145,11 @@ services:
       - GLUCOSERVER_BASE_URL=http://glucoserver:8000
       - SECRET_KEY=9830e8615a20b5b145edd6cbf11ca1943cb15dac7ff72be7fd0f046d133b2740
     healthcheck:
-      test: ['CMD-SHELL', "timeout 1s bash -c ':> /dev/tcp/127.0.0.1/8000' || exit 1"]
+      test:
+        [
+          'CMD-SHELL',
+          'python3 -c "import urllib.request; urllib.request.urlopen(''http://127.0.0.1:8000/health'', timeout=1)"',
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -161,7 +177,11 @@ services:
       - GLUCOSERVER_BASE_URL=http://glucoserver:8000
       - SECRET_KEY=9830e8615a20b5b145edd6cbf11ca1943cb15dac7ff72be7fd0f046d133b2740
     healthcheck:
-      test: ['CMD-SHELL', "timeout 1s bash -c ':> /dev/tcp/127.0.0.1/8000' || exit 1"]
+      test:
+        [
+          'CMD-SHELL',
+          'python3 -c "import urllib.request; urllib.request.urlopen(''http://127.0.0.1:8000/health'', timeout=1)"',
+        ]
       interval: 10s
       timeout: 5s
       retries: 3

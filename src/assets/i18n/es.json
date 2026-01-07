@@ -52,7 +52,9 @@
     "ok": "OK",
     "error": "Error",
     "sync": "Sincronizar",
-    "goBack": "Volver"
+    "goBack": "Volver",
+    "online": "En línea",
+    "offline": "Sin conexión"
   },
   "tabs": {
     "home": "Inicio",
@@ -1331,7 +1333,10 @@
       "genericError": "Error al iniciar sesión. Por favor, intenta de nuevo.",
       "invalidCredentials": "Credenciales incorrectas. Verifica tu DNI y contraseña.",
       "invalidData": "Datos inválidos. Verifica el formato de tu DNI.",
-      "connectionError": "Error de conexión. Verifica tu conexión a internet."
+      "connectionError": "Error de conexión. Verifica tu conexión a internet.",
+      "rateLimitLockout": "Demasiados intentos fallidos. Cuenta bloqueada por {{minutes}} minutos.",
+      "rateLimitBackoff": "Por favor espera {{seconds}} segundos antes de intentar nuevamente.",
+      "rateLimitGeneric": "Demasiados intentos fallidos. Por favor intenta más tarde."
     },
     "validation": {
       "usernameRequired": "El DNI es requerido",
@@ -1433,11 +1438,17 @@
     "selectFoods": "Selecciona alimentos para contar carbos",
     "clearFoods": "Limpiar alimentos seleccionados",
     "warningsTitle": "Advertencias de seguridad",
+    "warnings": {
+      "maxDose": "La dosis recomendada de {{recommended}} unidades supera el máximo de {{max}} unidades.",
+      "iob": "Aún tienes un estimado de {{iob}} unidades de insulina activa de un bolo reciente.",
+      "lowGlucose": "Tu glucosa actual de {{glucose}} mg/dL es baja. No se recomienda un bolo."
+    },
     "errors": {
       "glucoseRequired": "La glucosa actual es requerida",
       "glucoseRange": "Ingresa un valor entre 40 y 600 mg/dL",
       "carbsRequired": "Los carbohidratos son requeridos",
-      "carbsRange": "Ingresa un valor entre 0 y 300 gramos"
+      "carbsRange": "Ingresa un valor entre 0 y 300 gramos",
+      "calculationFailed": "No se pudo calcular la dosis. Intenta de nuevo."
     }
   },
   "foodPicker": {

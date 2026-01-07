@@ -14,6 +14,7 @@
  */
 
 import { TestBed } from '@angular/core/testing';
+import { TranslateService } from '@ngx-translate/core';
 import { BolusSafetyService, SafetyWarning } from './bolus-safety.service';
 import { MockDataService, MockReading, BolusCalculation } from './mock-data.service';
 import { LoggerService } from './logger.service';
@@ -22,6 +23,16 @@ describe('BolusSafetyService - CRITICAL MEDICAL SAFETY CODE', () => {
   let service: BolusSafetyService;
   let mockDataService: jest.Mocked<MockDataService>;
   let loggerService: jest.Mocked<LoggerService>;
+  let translateService: jest.Mocked<TranslateService>;
+
+  const interpolate = (template: string, params: Record<string, unknown> = {}): string =>
+    template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => String(params[key] ?? ''));
+
+  const translationTemplates: Record<string, string> = {
+    'bolusCalculator.warnings.maxDose': 'maxDose {{recommended}} units exceeds {{max}} units',
+    'bolusCalculator.warnings.iob': 'iob {{iob}} units',
+    'bolusCalculator.warnings.lowGlucose': 'lowGlucose {{glucose}} mg/dL',
+  };
 
   // Default patient parameters for testing
   const defaultPatientParams = {
@@ -74,11 +85,18 @@ describe('BolusSafetyService - CRITICAL MEDICAL SAFETY CODE', () => {
       debug: vi.fn(),
     } as unknown as jest.Mocked<LoggerService>;
 
+    translateService = {
+      instant: vi.fn((key: string, params?: Record<string, unknown>) =>
+        interpolate(translationTemplates[key] ?? key, params ?? {})
+      ),
+    } as unknown as jest.Mocked<TranslateService>;
+
     TestBed.configureTestingModule({
       providers: [
         BolusSafetyService,
         { provide: MockDataService, useValue: mockDataService },
         { provide: LoggerService, useValue: loggerService },
+        { provide: TranslateService, useValue: translateService },
       ],
     });
 
@@ -179,32 +197,37 @@ describe('BolusSafetyService - CRITICAL MEDICAL SAFETY CODE', () => {
       });
     });
 
-    describe('Multiple Boluses - Most Recent Selection', () => {
-      // The service only considers the MOST RECENT bolus within 4 hours
+    describe('Multiple Boluses - Cumulative IOB', () => {
+      // The service sums ALL boluses within the 4-hour window
 
-      it('should use the most recent bolus when multiple exist', () => {
+      it('should sum multiple boluses within 4-hour window', () => {
         const readings: MockReading[] = [
-          createMockReading(3, 8), // 3 hours ago, 8 units (older)
-          createMockReading(1, 5), // 1 hour ago, 5 units (most recent)
+          createMockReading(3, 8), // 3 hours ago, 8 units
+          createMockReading(1, 5), // 1 hour ago, 5 units
           createMockReading(2, 6), // 2 hours ago, 6 units
         ];
 
         const result = service.calculateIOB(readings);
-        // Most recent is 1 hour ago with 5 units
-        // IOB = 5 * (1 - 1/4) = 5 * 0.75 = 3.75
-        expect(result).toBeCloseTo(3.75, 1);
+        // IOB sums all readings:
+        // 8 units at 3h: IOB = 8 * (1 - 3/4) = 2.0
+        // 5 units at 1h: IOB = 5 * (1 - 1/4) = 3.75
+        // 6 units at 2h: IOB = 6 * (1 - 2/4) = 3.0
+        // Total = 8.75, rounds to 8.8
+        expect(result).toBeCloseTo(8.8, 1);
       });
 
-      it('should ignore older boluses even if larger dose', () => {
+      it('should sum all boluses regardless of dose size', () => {
         const readings: MockReading[] = [
-          createMockReading(0.5, 2), // 30 min ago, 2 units (most recent)
-          createMockReading(1.5, 15), // 1.5 hours ago, 15 units (larger but older)
+          createMockReading(0.5, 2), // 30 min ago, 2 units
+          createMockReading(1.5, 15), // 1.5 hours ago, 15 units
         ];
 
         const result = service.calculateIOB(readings);
-        // Most recent is 0.5 hours ago with 2 units
-        // IOB = 2 * (1 - 0.5/4) = 2 * 0.875 = 1.75
-        expect(result).toBeCloseTo(1.75, 1);
+        // IOB sums all readings:
+        // 2 units at 0.5h: IOB = 2 * (1 - 0.5/4) = 1.75
+        // 15 units at 1.5h: IOB = 15 * (1 - 1.5/4) = 9.375
+        // Total = 11.125, rounds to 11.1
+        expect(result).toBeCloseTo(11.1, 1);
       });
 
       it('should handle mixed readings with and without insulin', () => {
@@ -216,9 +239,11 @@ describe('BolusSafetyService - CRITICAL MEDICAL SAFETY CODE', () => {
         ];
 
         const result = service.calculateIOB(readings);
-        // Most recent with insulin is 1 hour ago with 6 units
-        // IOB = 6 * (1 - 1/4) = 6 * 0.75 = 4.5
-        expect(result).toBeCloseTo(4.5, 1);
+        // Service sums ALL insulin readings within 4-hour window:
+        // 6 units at 1h: IOB = 6 * (1 - 1/4) = 4.5
+        // 8 units at 2h: IOB = 8 * (1 - 2/4) = 4.0
+        // Total = 8.5
+        expect(result).toBeCloseTo(8.5, 1);
       });
     });
 
@@ -229,7 +254,8 @@ describe('BolusSafetyService - CRITICAL MEDICAL SAFETY CODE', () => {
 
         const result = service.calculateIOB(readings);
         // IOB = 10 * (1 - 3.99/4) = 10 * 0.0025 = 0.025
-        expect(result).toBeCloseTo(0.025, 2);
+        // Service quantizes to 0.1 precision and returns 0 for values < 0.1
+        expect(result).toBe(0);
       });
 
       it('should handle very small insulin amounts', () => {
@@ -422,7 +448,6 @@ describe('BolusSafetyService - CRITICAL MEDICAL SAFETY CODE', () => {
         const lowGlucoseWarning = warnings.find(w => w.type === 'lowGlucose');
         expect(lowGlucoseWarning).toBeDefined();
         expect(lowGlucoseWarning?.message).toContain('65');
-        expect(lowGlucoseWarning?.message).toContain('not recommended');
       });
 
       it('should not return lowGlucose warning at exactly threshold', () => {
@@ -500,7 +525,7 @@ describe('BolusSafetyService - CRITICAL MEDICAL SAFETY CODE', () => {
 
         const iobWarning = warnings.find(w => w.type === 'iob');
         expect(iobWarning).toBeDefined();
-        expect(iobWarning?.message).toContain('insulin on board');
+        expect(iobWarning?.message).toContain('iob');
       });
 
       it('should not return IOB warning when no recent boluses', () => {
@@ -862,7 +887,7 @@ describe('BolusSafetyService - CRITICAL MEDICAL SAFETY CODE', () => {
         const lowWarning = warnings.find(w => w.type === 'lowGlucose');
         expect(lowWarning).toBeDefined();
         expect(lowWarning?.message).toContain('55');
-        expect(lowWarning?.message).toContain('not recommended');
+        expect(lowWarning?.message).toContain('lowGlucose');
       });
 
       it('Scenario: Borderline low BG - should allow bolus', () => {

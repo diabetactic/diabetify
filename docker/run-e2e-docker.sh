@@ -29,6 +29,8 @@ cd "$SCRIPT_DIR"
 FRESH_DB=false
 KEEP_DATA=false
 TEST_SUITE="all"
+DEBUG_MODE=false
+COMPOSE_FILE="$SCRIPT_DIR/docker-compose.local.yml"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -38,6 +40,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --keep-data)
             KEEP_DATA=true
+            shift
+            ;;
+        --debug)
+            DEBUG_MODE=true
             shift
             ;;
         playwright|maestro|all)
@@ -59,7 +65,21 @@ echo "Configuration:"
 echo "  Test Suite:  $TEST_SUITE"
 echo "  Fresh DB:    $FRESH_DB"
 echo "  Keep Data:   $KEEP_DATA"
+echo "  Debug Mode:  $DEBUG_MODE"
 echo ""
+
+if [ -z "${E2E_DEBUG:-}" ] && [ "$DEBUG_MODE" = true ]; then
+    export E2E_DEBUG=1
+fi
+
+dump_docker_state() {
+    echo ""
+    echo "🐳 Docker service status"
+    docker compose -f "$COMPOSE_FILE" ps || true
+    echo ""
+    echo "🐳 Docker logs (tail=200)"
+    docker compose -f "$COMPOSE_FILE" logs --tail=200 || true
+}
 
 # -----------------------------------------------------------------------------
 # Step 1: Ensure Docker backend is running
@@ -121,7 +141,7 @@ echo "🔨 Step 3: Building frontend for local backend..."
 cd "$PROJECT_DIR"
 
 # Build with local environment
-ENV=local npm run build:prod
+pnpm run build:local
 
 echo "   ✓ Frontend built for local backend"
 echo ""
@@ -144,7 +164,7 @@ if [ "$TEST_SUITE" = "all" ] || [ "$TEST_SUITE" = "playwright" ]; then
     E2E_TEST_USERNAME="1000" \
     E2E_TEST_PASSWORD="tuvieja" \
     E2E_DOCKER_TESTS="true" \
-    npm run test:e2e -- --grep "@docker" || TEST_EXIT_CODE=$?
+    pnpm run test:e2e --grep "@docker" || TEST_EXIT_CODE=$?
 
     echo ""
 fi
@@ -183,6 +203,11 @@ else
 fi
 
 echo ""
+
+if [ "$DEBUG_MODE" = true ] || [ "${E2E_DEBUG:-}" = "1" ] || [ "${E2E_DEBUG:-}" = "true" ] || [ $TEST_EXIT_CODE -ne 0 ]; then
+    dump_docker_state
+fi
+
 
 # -----------------------------------------------------------------------------
 # Summary

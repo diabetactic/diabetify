@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+
 import {
   IonButton,
   IonButtons,
@@ -108,7 +108,6 @@ export class ReadingsPage implements OnInit, OnDestroy {
 
   constructor(
     private readingsService: ReadingsService,
-    private router: Router,
     private profileService: ProfileService,
     private translationService: TranslationService,
     private logger: LoggerService,

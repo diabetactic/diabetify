@@ -1,3 +1,13 @@
 :host {
   // Component-specific styles can go here
 }
+
+.readings-list-shell {
+  width: 100%;
+}
+
+@media (width >= 1024px) {
+  .readings-list-shell {
+    max-width: 960px;
+  }
+}

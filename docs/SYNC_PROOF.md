@@ -1,6 +1,6 @@
 # Diabetify Sync Proof Documentation
 
-Generated: 2025-12-30T02:20:15.236Z
+Generated: 2026-01-02T04:44:44.360Z
 
 ## Overview
 

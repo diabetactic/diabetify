@@ -7,7 +7,7 @@ Before running Docker E2E tests, verify:
 - [ ] Docker is installed: `docker --version`
 - [ ] Docker Compose is installed: `docker-compose --version`
 - [ ] Docker daemon is running: `docker info`
-- [ ] Angular app can build: `npm run build:mock`
+- [ ] Angular app can build: `pnpm run build:mock`
 - [ ] Sufficient disk space: `df -h` (need ~5GB)
 - [ ] Sufficient memory: `free -h` (recommend 4GB free)
 
@@ -17,6 +17,7 @@ Verify all required files exist:
 
 ```bash
 # Core Docker files
+ls -lh docker/Dockerfile.e2e-runner
 ls -lh docker/Dockerfile.e2e
 ls -lh docker/docker-compose.e2e.yml
 ls -lh docker/nginx.conf
@@ -39,7 +40,7 @@ Test the Docker build process:
 
 ```bash
 # 1. Build Angular app
-npm run build:mock
+pnpm run build:mock
 
 # Verify www directory was created
 ls -lh www/index.html
@@ -156,7 +157,7 @@ chmod +x scripts/run-e2e-docker.sh
 ls -lh www/
 
 # Rebuild Angular app
-npm run build:mock
+pnpm run build:mock
 
 # Check nginx logs
 docker-compose -f docker/docker-compose.e2e.yml logs app
@@ -280,7 +281,7 @@ Once verification is complete:
 
 If Docker E2E tests cause issues:
 
-1. Revert to standard E2E: `npm run test:e2e`
+1. Revert to standard E2E: `pnpm run test:e2e`
 2. Remove Docker files: `rm -rf docker/ scripts/run-e2e-docker.sh`
 3. Remove npm scripts from package.json
 4. Document issues for future reference

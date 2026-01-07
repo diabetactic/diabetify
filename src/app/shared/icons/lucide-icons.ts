@@ -17,6 +17,7 @@ import {
   Award,
   Bell,
   Bug,
+  Calculator,
   Calendar,
   CalendarCheck,
   CalendarPlus,
@@ -48,6 +49,7 @@ import {
   Moon,
   Pill,
   Plus,
+  PlusCircle,
   RefreshCw,
   Send,
   Settings,
@@ -80,6 +82,7 @@ export const appIcons = {
   Award,
   Bell,
   Bug,
+  Calculator,
   Calendar,
   CalendarCheck,
   CalendarPlus,
@@ -111,6 +114,7 @@ export const appIcons = {
   Moon,
   Pill,
   Plus,
+  PlusCircle,
   RefreshCw,
   Send,
   Settings,
@@ -128,39 +132,3 @@ export const appIcons = {
   Wifi,
   X,
 };
-
-/**
- * Icon name mappings from Ionicons to Lucide
- * Internal reference for template migration (not exported)
- * @internal
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _iconMappings = {
-  'save-outline': 'save',
-  'chevron-forward': 'chevron-right',
-  'chevron-forward-outline': 'chevron-right',
-  'chevron-down': 'chevron-down',
-  add: 'plus',
-  'download-outline': 'download',
-  'bug-outline': 'bug',
-  bug: 'bug',
-  'settings-outline': 'settings',
-  'log-out-outline': 'log-out',
-  'trash-outline': 'trash-2',
-  trash: 'trash-2',
-  checkmark: 'check',
-  'checkmark-circle': 'check-circle',
-  'location-outline': 'map-pin',
-  star: 'star',
-  'calendar-outline': 'calendar',
-  'time-outline': 'clock',
-  'analytics-outline': 'bar-chart-3',
-  'sync-outline': 'refresh-cw',
-  'help-circle-outline': 'help-circle',
-  'person-circle-outline': 'user-circle',
-  'alert-circle-outline': 'alert-circle',
-  'flask-outline': 'flask',
-  reload: 'rotate-cw',
-  warning: 'alert-triangle',
-  close: 'x',
-} as const;

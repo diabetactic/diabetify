@@ -7,14 +7,14 @@
   position: fixed;
   top: var(--safe-area-inset-top, 8px);
   right: 8px;
-  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
-  z-index: 999;
+  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- Below modal z-index */
+  z-index: 900;
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
-  background: rgb(255 255 255 / 90%);
-  border-radius: 8px;
+  background: rgb(255 255 255 / 95%); // Solid fallback for browsers without backdrop-filter
+  border-radius: var(--radius-sm);
   /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
   box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
   backdrop-filter: blur(8px);
@@ -31,11 +31,26 @@
 }
 
 ion-tab-bar {
-  --background: #fff;
-  --border: 1px solid #e5e7eb;
+  --background: var(--ion-background-color, #fff);
+  --border: 1px solid var(--dt-color-border-subtle, #e5e7eb);
 
   /* Safe area inset for devices with notches */
   padding-bottom: var(--safe-area-inset-bottom);
+}
+
+ion-tab-button {
+  // Tab colors - hex fallback for Android WebView
+  --color: var(--ion-color-medium, #6b7280);
+  --color-selected: var(--ion-color-primary-shade, #1d4ed8);
+
+  ion-icon {
+    font-size: 24px;
+  }
+
+  ion-label {
+    font-size: 12px;
+    margin-top: 2px;
+  }
 }
 
 /* Dark mode - class-based - hex fallback for Android WebView */
@@ -46,20 +61,14 @@ ion-tab-bar {
 
     border-top: 1px solid #374151;
   }
-}
 
-ion-tab-button {
-  // Tab colors - hex fallback for Android WebView
-  --color: #6b7280;
-  --color-selected: #8b5cf6;
+  ion-tab-button {
+    --color: #9ca3af;
+    --color-selected: #a78bfa;
 
-  ion-icon {
-    font-size: 24px;
-  }
-
-  ion-label {
-    font-size: 12px;
-    margin-top: 2px;
+    ion-label {
+      color: inherit;
+    }
   }
 }
 

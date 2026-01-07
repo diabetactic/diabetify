@@ -10,6 +10,7 @@ import { existsSync } from 'fs';
 const PORT = Number(process.env.E2E_PORT ?? 4200);
 const HOST = process.env.E2E_HOST ?? 'localhost';
 const BASE_URL = process.env.E2E_BASE_URL ?? `http://${HOST}:${PORT}`;
+const E2E_DEBUG = process.env.E2E_DEBUG === 'true' || process.env.E2E_DEBUG === '1';
 
 // Browser executable resolution
 // Prefer Google Chrome stable, fallback to Chromium
@@ -39,7 +40,7 @@ if (process.env.E2E_MOCK_MODE == null) {
  * - Height: 800px (comfortable for visual regression tests)
  */
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
-const DESKTOP_VIEWPORT = { width: 1280, height: 800 };
+const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 
 export default defineConfig({
   testDir: './playwright/tests',
@@ -47,24 +48,25 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
 
+  /* Run tests in files in parallel for faster execution */
+  fullyParallel: true,
+
   /* Retries for flake mitigation on CI (max 2 retries) */
   retries: process.env.CI ? 2 : 0,
 
-  /* Worker management: Use full power on CI, half capacity locally to keep the system responsive */
-  workers: process.env.CI ? '100%' : '50%',
+  /* Worker management: Use full power on CI, 75% capacity locally for balance of speed and responsiveness */
+  workers: process.env.CI ? '100%' : '75%',
 
   /* Maximum time one test can run for */
   timeout: process.env.CI ? 60_000 : 30_000,
 
-  /* Reporter configuration: Detailed for local, compact with PR feedback for CI */
-  reporter: process.env.CI
-    ? [
-        ['github'],
-        ['list'],
-        ['html', { outputFolder: 'playwright-report', open: 'never' }],
-        ['json', { outputFile: 'playwright-report/results.json' }],
-      ]
-    : [['list'], ['html', { outputFolder: 'playwright-report', open: 'on-failure' }]],
+  /* Reporter configuration: Always produce HTML + JSON with attachments */
+  reporter: [
+    ...(process.env.CI ? ([['github']] as const) : []),
+    ['list'],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['json', { outputFile: 'playwright-report/results.json' }],
+  ],
 
   /* Directory for screenshots, videos, and trace files */
   outputDir: 'playwright/artifacts',
@@ -90,10 +92,11 @@ export default defineConfig({
     actionTimeout: 15_000,
     navigationTimeout: 30_000,
 
-    /* Debugging artifacts */
-    trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
-    video: 'retain-on-failure',
-    screenshot: 'only-on-failure',
+    /* Debugging artifacts (always-on so HTML report shows screenshots for passing tests) */
+    trace: 'on',
+    video: 'on',
+    screenshot: 'on',
+    recordHar: E2E_DEBUG ? { path: 'playwright/artifacts/har', mode: 'minimal' } : undefined,
 
     /* Primary target: Mobile-first viewport (iPhone 14/15 standard) */
     viewport: MOBILE_VIEWPORT,

@@ -19,6 +19,7 @@ import { LoggerService } from '@services/logger.service';
 import { MockDataService } from '@services/mock-data.service';
 import { MockAdapterService } from '@services/mock-adapter.service';
 import { HttpClient } from '@angular/common/http';
+import { SecureStorageService } from '@services/secure-storage.service';
 
 // Mock Preferences for Vitest
 vi.mock('@capacitor/preferences', () => ({
@@ -36,6 +37,7 @@ describe('LocalAuthService', () => {
   let mockData: MockDataService;
   let mockAdapter: MockAdapterService;
   let httpMock: HttpClient;
+  let secureStorage: Mock<SecureStorageService>;
 
   const mockUser: LocalUser = {
     id: 'test-user-123',
@@ -92,6 +94,14 @@ describe('LocalAuthService', () => {
       isServiceMockEnabled: vi.fn().mockReturnValue(false),
     } as unknown as MockAdapterService;
 
+    secureStorage = {
+      get: vi.fn().mockResolvedValue(null),
+      set: vi.fn().mockResolvedValue(undefined),
+      remove: vi.fn().mockResolvedValue(undefined),
+      migrateFromPreferences: vi.fn().mockResolvedValue(false),
+      waitForInit: vi.fn().mockResolvedValue(undefined),
+    } as unknown as Mock<SecureStorageService>;
+
     httpMock = {
       get: vi.fn(),
       post: vi.fn(),
@@ -108,6 +118,7 @@ describe('LocalAuthService', () => {
         { provide: MockDataService, useValue: mockData },
         { provide: MockAdapterService, useValue: mockAdapter },
         { provide: HttpClient, useValue: httpMock },
+        { provide: SecureStorageService, useValue: secureStorage },
       ],
     });
 
@@ -138,12 +149,19 @@ describe('LocalAuthService', () => {
       const storedUser = JSON.stringify(mockUser);
       const futureExpiry = (Date.now() + 3600000).toString(); // 1 hour from now
 
-      vi.mocked(Preferences.get).mockImplementation(({ key }: { key: string }) => {
+      vi.mocked(secureStorage.get).mockImplementation((key: string) => {
         switch (key) {
           case 'local_access_token':
-            return Promise.resolve({ value: 'stored-token' });
+            return Promise.resolve('stored-token');
           case 'local_refresh_token':
-            return Promise.resolve({ value: 'stored-refresh' });
+            return Promise.resolve('stored-refresh');
+          default:
+            return Promise.resolve(null);
+        }
+      });
+
+      vi.mocked(Preferences.get).mockImplementation(({ key }: { key: string }) => {
+        switch (key) {
           case 'local_user':
             return Promise.resolve({ value: storedUser });
           case 'local_token_expires':
@@ -158,8 +176,8 @@ describe('LocalAuthService', () => {
         httpMock,
         platformDetector,
         logger,
-        mockData,
-        mockAdapter
+        mockAdapter,
+        secureStorage
       );
 
       // @ts-expect-error - private property access for testing
@@ -193,6 +211,7 @@ describe('LocalAuthService', () => {
         vi.clearAllMocks();
         const result2 = await firstValueFrom(service.login('any@email.com', 'anypassword', true));
         expect(result2.success).toBe(true);
+        expect(secureStorage.set).toHaveBeenCalledWith('local_access_token', 'demo_access_token');
         expect(Preferences.set).toHaveBeenCalled();
       });
     });
@@ -216,11 +235,9 @@ describe('LocalAuthService', () => {
             );
 
             // Verify tokens stored
-            expect(Preferences.set).toHaveBeenCalledWith(
-              expect.objectContaining({
-                key: 'local_access_token',
-                value: 'test-access-token',
-              })
+            expect(secureStorage.set).toHaveBeenCalledWith(
+              'local_access_token',
+              'test-access-token'
             );
 
             // Verify state updated
@@ -300,8 +317,8 @@ describe('LocalAuthService', () => {
       expect(state.accessToken).toBeNull();
 
       // Verify storage cleared
-      expect(Preferences.remove).toHaveBeenCalledWith({ key: 'local_access_token' });
-      expect(Preferences.remove).toHaveBeenCalledWith({ key: 'local_refresh_token' });
+      expect(secureStorage.remove).toHaveBeenCalledWith('local_access_token');
+      expect(secureStorage.remove).toHaveBeenCalledWith('local_refresh_token');
       expect(Preferences.remove).toHaveBeenCalledWith({ key: 'local_user' });
       expect(Preferences.remove).toHaveBeenCalledWith({ key: 'local_token_expires' });
     });
@@ -321,7 +338,7 @@ describe('LocalAuthService', () => {
       expect(logger.info).toHaveBeenCalledWith('Auth', 'Logout initiated', expect.any(Object));
       expect(logger.info).toHaveBeenCalledWith(
         'Auth',
-        'Logout completed - all data cleared',
+        'Logout completed - all data cleared from secure storage',
         expect.any(Object)
       );
 
@@ -333,7 +350,7 @@ describe('LocalAuthService', () => {
   describe('refreshAccessToken', () => {
     it('should refresh token when refresh token exists', () =>
       new Promise<void>(resolve => {
-        vi.mocked(Preferences.get).mockResolvedValueOnce({ value: 'stored-refresh-token' });
+        vi.mocked(secureStorage.get).mockResolvedValueOnce('stored-refresh-token');
 
         httpMock.post.mockReturnValueOnce(
           of({
@@ -361,7 +378,7 @@ describe('LocalAuthService', () => {
 
     it('should throw error when no refresh token available', () =>
       new Promise<void>(resolve => {
-        vi.mocked(Preferences.get).mockResolvedValueOnce({ value: null });
+        vi.mocked(secureStorage.get).mockResolvedValueOnce(null);
 
         service.refreshAccessToken().subscribe({
           error: error => {
@@ -373,7 +390,7 @@ describe('LocalAuthService', () => {
 
     it('should throw error when refresh fails', () =>
       new Promise<void>(resolve => {
-        vi.mocked(Preferences.get).mockResolvedValueOnce({ value: 'stored-refresh-token' });
+        vi.mocked(secureStorage.get).mockResolvedValueOnce('stored-refresh-token');
 
         httpMock.post.mockReturnValueOnce(
           throwError(() => ({

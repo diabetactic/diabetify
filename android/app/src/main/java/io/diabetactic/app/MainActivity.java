@@ -4,7 +4,7 @@ import android.os.Bundle;
 
 import com.getcapacitor.BridgeActivity;
 
-import com.kis.capacitor.widget.bridge.WidgetBridgePlugin;
+import de.kisimedia.plugins.widgetbridgeplugin.WidgetBridgePlugin;
 
 public class MainActivity extends BridgeActivity {
     @Override

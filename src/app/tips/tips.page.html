@@ -8,7 +8,7 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div class="page-shell max-w-3xl">
+  <div class="page-shell max-w-3xl lg:max-w-none">
     <!-- Page header -->
     <div class="mb-6 text-center">
       <app-icon name="bulb-outline" class="text-primary mb-2 text-5xl"></app-icon>
@@ -19,7 +19,7 @@
 
     <!-- Tips list -->
     <div class="space-y-4">
-      @for (tip of tips; track tip.id) {
+      @for (tip of tips; track tip.title) {
         <ion-card class="m-0">
           <ion-card-content>
             <div class="flex items-start gap-3">

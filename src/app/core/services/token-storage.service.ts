@@ -229,23 +229,6 @@ export class TokenStorageService {
   }
 
   /**
-   * Get token metadata
-   *
-   * @returns Token metadata if available
-   */
-  private async getMetadata(): Promise<TokenMetadata | null> {
-    try {
-      const value = await SecureStorage.get(STORAGE_KEYS.TOKEN_METADATA);
-      if (!value) {
-        return null;
-      }
-      return JSON.parse(value as string);
-    } catch {
-      return null;
-    }
-  }
-
-  /**
    * Check if token is expired
    *
    * @param expiryTimestamp - Token expiry timestamp in milliseconds

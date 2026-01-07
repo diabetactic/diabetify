@@ -471,6 +471,23 @@ describe('ServiceOrchestrator', () => {
   });
 
   describe('Workflow State Tracking', () => {
+    beforeEach(() => {
+      unifiedAuth.isAuthenticated.mockReturnValue(true);
+      unifiedAuth.getCurrentUser.mockResolvedValue({ id: 'user123' });
+      readings.getUnsyncedReadings.mockResolvedValue([]);
+      glucoserver.syncReadings.mockReturnValue(of({ synced: 0, failed: 0, conflicts: [] }));
+      readings.getStatistics.mockResolvedValue({
+        average: 120,
+        median: 118,
+        standardDeviation: 20,
+        coefficientOfVariation: 17,
+        timeInRange: 75,
+        timeAboveRange: 15,
+        timeBelowRange: 10,
+        totalReadings: 100,
+      });
+    });
+
     it('should track workflow progress through steps', async () => {
       // Track workflow progression
       unifiedAuth.isAuthenticated.mockReturnValue(true);

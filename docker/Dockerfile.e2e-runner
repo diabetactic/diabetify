@@ -1,0 +1,38 @@
+# syntax=docker/dockerfile:1.4
+
+# =============================================================================
+# Playwright E2E Runner (no app build)
+# =============================================================================
+# This image is meant to run Playwright against the *nginx app container* in
+# `docker/docker-compose.e2e.yml`, which serves the prebuilt `www/browser` from
+# the host. Do NOT build Angular here (that is handled by `pnpm build:mock`).
+#
+# Keep `docker/Dockerfile.e2e` around for legacy/CI experimentation; compose can
+# override via `E2E_DOCKERFILE=...`.
+# =============================================================================
+
+FROM mcr.microsoft.com/playwright:v1.57.0-jammy
+
+WORKDIR /e2e
+
+USER root
+
+# Install pnpm for repo-consistent dependency resolution.
+RUN npm install -g pnpm
+
+# Install dependencies (no scripts to avoid git hooks in containers).
+COPY package.json pnpm-lock.yaml ./
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+
+# Pre-create common output dirs (will be bind-mounted in compose).
+RUN mkdir -p playwright/artifacts playwright-report test-results \
+  && chown -R pwuser:pwuser /e2e
+
+ENV CI=true \
+  PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+USER pwuser
+
+# Default (overridden by docker-compose command in most cases)
+CMD ["npx", "playwright", "test"]

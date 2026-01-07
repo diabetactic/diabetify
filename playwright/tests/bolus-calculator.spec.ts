@@ -13,26 +13,109 @@ import {
   dismissOnboardingOverlay,
   navigateToBolusCalculator,
   waitForBolusCalculatorReady,
-  confirmWarningModal,
 } from '../helpers/test-helpers';
+
+// This spec is UI-heavy and flaky when parallelized (modal overlays + Ionic hydration).
+// Run serially to keep Docker E2E stable under high worker counts.
+test.describe.configure({ mode: 'serial' });
+
+async function setIonInputValue(
+  page: import('@playwright/test').Page,
+  testId: string,
+  value: string
+): Promise<void> {
+  const ionInput = page.locator(`[data-testid="${testId}"]`).first();
+  await ionInput.evaluate((el, newValue) => {
+    // Prefer setting the component value + emitting ionInput, without clicking (avoids opening nearby modals).
+    const inputEl = el as HTMLElement & { value: string };
+    inputEl.value = newValue;
+    el.dispatchEvent(
+      new CustomEvent('ionInput', {
+        bubbles: true,
+        detail: { value: newValue },
+      })
+    );
+  }, value);
+}
+
+async function closeFoodPickerIfOpen(page: import('@playwright/test').Page): Promise<void> {
+  const foodPickerModal = page.locator('.food-picker-modal.food-picker-modal--open').first();
+  const isOpen = await foodPickerModal
+    .waitFor({ state: 'visible', timeout: 300 })
+    .then(() => true)
+    .catch(() => false);
+  if (!isOpen) return;
+
+  const closeBtn = foodPickerModal.locator('.food-picker-close').first();
+  if ((await closeBtn.count()) > 0) {
+    await closeBtn.click({ force: true, timeout: 1000 }).catch(() => {});
+  }
+
+  const backdrop = page.locator('.food-picker-backdrop.food-picker-backdrop--visible').first();
+  if ((await backdrop.count()) > 0) {
+    await backdrop.click({ force: true, timeout: 1000 }).catch(() => {});
+  }
+
+  await foodPickerModal.waitFor({ state: 'hidden', timeout: 1500 }).catch(() => {});
+}
+
+/**
+ * Helper to handle the warning confirmation modal that appears when safety checks fail.
+ * Clicks the Confirm button to proceed with the calculation result.
+ * Returns true if modal was found and confirmed, false otherwise.
+ *
+ * Note: Multiple dialogs may be open (e.g., Food Selector + Warning modal).
+ * This function specifically targets the Warning modal.
+ */
+async function confirmWarningModal(page: import('@playwright/test').Page): Promise<boolean> {
+  await closeFoodPickerIfOpen(page);
+
+  // Wait for any visible modal to appear (ignore hidden ion-modals)
+  const anyVisibleModal = page.locator('ion-modal:visible');
+  try {
+    await anyVisibleModal.first().waitFor({ state: 'visible', timeout: 3000 });
+  } catch {
+    return false;
+  }
+
+  // Prefer modals rendered by our ConfirmationModalComponent (has .modal-actions)
+  const warningModalCandidate = page
+    .locator('ion-modal:visible')
+    .filter({ has: page.locator('.modal-actions') });
+
+  const modal =
+    (await warningModalCandidate.count()) > 0
+      ? warningModalCandidate.last()
+      : anyVisibleModal.last();
+
+  // Wait for animation to complete (Ionic modals have ~300ms animation)
+  await page.waitForTimeout(350);
+
+  // Click CONFIRM/CONFIRMAR (avoid Escape/backdrop dismiss which cancels the calculation)
+  const confirmByText = modal.locator('ion-button', { hasText: /confirm/i }).last();
+  if ((await confirmByText.count()) > 0) {
+    await confirmByText.click({ force: true });
+    await modal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+    return true;
+  }
+
+  // Fallback: click second action button (usually Confirm)
+  const actionButtons = modal.locator('.modal-actions ion-button');
+  if ((await actionButtons.count()) >= 2) {
+    await actionButtons.nth(1).click({ force: true });
+    await modal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+    return true;
+  }
+
+  return false;
+}
 
 /**
  * Helper to dismiss any open modals/dialogs that might block interactions.
  * Uses Escape key as primary method (most reliable for mobile viewports).
  */
 async function dismissAnyModal(page: import('@playwright/test').Page): Promise<void> {
-  // Check for Food Picker modal first (only if it is actually open)
-  const foodPickerOpen = page.locator('.food-picker-modal--open').first();
-  if (await foodPickerOpen.isVisible().catch(() => false)) {
-    await page.keyboard.press('Escape');
-    await foodPickerOpen.waitFor({ state: 'hidden', timeout: 1000 }).catch(() => {});
-
-    if (await foodPickerOpen.isVisible().catch(() => false)) {
-      const foodPickerCloseBtn = page.locator('.food-picker-close').first();
-      await foodPickerCloseBtn.evaluate((btn: HTMLElement) => btn.click());
-      await foodPickerOpen.waitFor({ state: 'hidden', timeout: 1000 }).catch(() => {});
-    }
-  }
+  await closeFoodPickerIfOpen(page);
 
   // Check for ion-modal and dismiss it
   const modal = page.locator('ion-modal:visible');
@@ -136,28 +219,19 @@ test.describe('Bolus Calculator', () => {
       // Dismiss any modals that might be open
       await dismissAnyModal(page);
 
-      // Fill glucose input
-      const glucoseInput = page.locator('[data-testid="glucose-input"] input').first();
-      await expect(glucoseInput).toBeVisible({ timeout: 5000 });
-      await glucoseInput.fill('180');
-
-      // Dismiss any modal that might have opened
-      await dismissAnyModal(page);
-
-      // Fill carbs input - click directly on the input to avoid hitting the food picker button
-      const carbsInput = page.locator('[data-testid="carbs-input"] input').first();
-      await expect(carbsInput).toBeVisible({ timeout: 5000 });
-      // Clear first, then type to avoid any overlay issues
-      await carbsInput.click();
-      await carbsInput.fill('45');
+      await setIonInputValue(page, 'glucose-input', '180');
+      await setIonInputValue(page, 'carbs-input', '45');
 
       // Dismiss any modal that might have opened (food picker could be triggered)
       await dismissAnyModal(page);
 
-      // Click calculate button using data-testid
+      // Click calculate button using JavaScript to avoid tab bar interception
       const calculateButton = page.locator('[data-testid="calculate-btn"]');
       await expect(calculateButton).toBeEnabled({ timeout: 5000 });
-      await calculateButton.click();
+      await calculateButton.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Wait for spinner to disappear (calculation to complete)
       const spinner = page.locator('[data-testid="calculate-btn"] ion-spinner');
@@ -185,9 +259,12 @@ test.describe('Bolus Calculator', () => {
 
     test('should show calculation details in result', async ({ page }) => {
       // Perform calculation
-      await page.locator('[data-testid="glucose-input"] input').first().fill('200');
-      await page.locator('[data-testid="carbs-input"] input').first().fill('60');
-      await page.locator('[data-testid="calculate-btn"]').click();
+      await setIonInputValue(page, 'glucose-input', '200');
+      await setIonInputValue(page, 'carbs-input', '60');
+      await page.locator('[data-testid="calculate-btn"]').evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Handle warning modal if it appears
       await confirmWarningModal(page);
@@ -216,9 +293,12 @@ test.describe('Bolus Calculator', () => {
 
     test('should show warning banner in results', async ({ page }) => {
       // Perform calculation
-      await page.locator('[data-testid="glucose-input"] input').first().fill('150');
-      await page.locator('[data-testid="carbs-input"] input').first().fill('30');
-      await page.locator('[data-testid="calculate-btn"]').click();
+      await setIonInputValue(page, 'glucose-input', '150');
+      await setIonInputValue(page, 'carbs-input', '30');
+      await page.locator('[data-testid="calculate-btn"]').evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Handle warning modal if it appears
       await confirmWarningModal(page);
@@ -237,8 +317,8 @@ test.describe('Bolus Calculator', () => {
 
     test('should disable calculate button while calculating', async ({ page }) => {
       // Fill inputs
-      await page.locator('[data-testid="glucose-input"] input').first().fill('170');
-      await page.locator('[data-testid="carbs-input"] input').first().fill('40');
+      await setIonInputValue(page, 'glucose-input', '170');
+      await setIonInputValue(page, 'carbs-input', '40');
 
       const calculateButton = page
         .locator('ion-button:has-text("Calculate"), ion-button:has-text("Calcular")')
@@ -247,8 +327,11 @@ test.describe('Bolus Calculator', () => {
       // Button should be enabled before calculation
       await expect(calculateButton).toBeEnabled();
 
-      // Click and check for spinner or disabled state during processing
-      await calculateButton.click();
+      // Click using JavaScript to avoid interception
+      await calculateButton.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Handle warning modal if it appears
       await confirmWarningModal(page);
@@ -279,7 +362,10 @@ test.describe('Bolus Calculator', () => {
         )
         .first();
       await expect(foodPickerButton).toBeVisible({ timeout: 5000 });
-      await foodPickerButton.click();
+      await foodPickerButton.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Modal should be visible
       const modal = page.locator('app-food-picker, ion-modal, [class*="food-picker"]');
@@ -287,13 +373,16 @@ test.describe('Bolus Calculator', () => {
     });
 
     test('should close food picker without selecting', async ({ page }) => {
-      // Open food picker
+      // Open food picker using JavaScript to avoid interception
       const foodPickerButton = page
         .locator(
           'button:has-text("Select foods"), button:has-text("Seleccionar"), .food-picker-btn'
         )
         .first();
-      await foodPickerButton.click();
+      await foodPickerButton.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Wait for modal
       const modal = page.locator('app-food-picker, ion-modal, [class*="food-picker"]');
@@ -308,7 +397,10 @@ test.describe('Bolus Calculator', () => {
 
       // Use instant visibility check instead of blocking wait
       if (await closeButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await closeButton.click();
+        await closeButton.evaluate((el: HTMLElement) => {
+          el.scrollIntoView({ behavior: 'instant', block: 'center' });
+          el.click();
+        });
 
         // Carbs field should remain empty
         const carbsValue = await page
@@ -331,7 +423,10 @@ test.describe('Bolus Calculator', () => {
         return;
       }
 
-      await foodPickerButton.click();
+      await foodPickerButton.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Wait for modal to be fully visible
       const modal = page.locator('app-food-picker, ion-modal');
@@ -386,7 +481,10 @@ test.describe('Bolus Calculator', () => {
     test('should show selected foods display', async ({ page }) => {
       // Open food picker
       const foodPickerButton = page.locator('.food-picker-btn').first();
-      await foodPickerButton.click();
+      await foodPickerButton.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       const modal = page.locator('app-food-picker, ion-modal, [class*="food-picker"]');
       await expect(modal.first()).toBeVisible({ timeout: 5000 });
@@ -394,16 +492,22 @@ test.describe('Bolus Calculator', () => {
       // Check if foods can be selected using instant check
       const foodItem = page.locator('.food-item, ion-item').first();
       if (await foodItem.isVisible({ timeout: 3000 }).catch(() => false)) {
-        // Select a food
-        await foodItem.click();
+        // Select a food using JavaScript
+        await foodItem.evaluate((el: HTMLElement) => {
+          el.scrollIntoView({ behavior: 'instant', block: 'center' });
+          el.click();
+        });
 
-        // Confirm
+        // Confirm using JavaScript
         const confirmButton = page
           .locator('ion-button:has-text("Confirm"), ion-button:has-text("Confirmar")')
           .first();
 
         if (await confirmButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await confirmButton.click();
+          await confirmButton.evaluate((el: HTMLElement) => {
+            el.scrollIntoView({ behavior: 'instant', block: 'center' });
+            el.click();
+          });
 
           // Check for selected foods display
           const selectedFoodsList = page.locator('.selected-foods-list, [class*="selected-food"]');
@@ -433,7 +537,10 @@ test.describe('Bolus Calculator', () => {
         .catch(() => false);
 
       if (hasClearButton) {
-        await clearButton.first().click();
+        await clearButton.first().evaluate((el: HTMLElement) => {
+          el.scrollIntoView({ behavior: 'instant', block: 'center' });
+          el.click();
+        });
 
         // Carbs should be cleared
         const carbsValue = await page
@@ -455,7 +562,10 @@ test.describe('Bolus Calculator', () => {
       // Perform calculation
       await page.locator('[data-testid="glucose-input"] input').first().fill('180');
       await page.locator('[data-testid="carbs-input"] input').first().fill('45');
-      await page.locator('[data-testid="calculate-btn"]').click();
+      await page.locator('[data-testid="calculate-btn"]').evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Handle warning modal if it appears
       await confirmWarningModal(page);
@@ -466,18 +576,16 @@ test.describe('Bolus Calculator', () => {
 
     test('should show reset button after calculation', async ({ page }) => {
       // Reset button should be visible in result card
-      const resetButton = page.locator(
-        'ion-button:has-text("New Calculation"), ion-button:has-text("Nueva"), ion-button:has(ion-icon[name="refresh-outline"])'
-      );
-      await expect(resetButton.first()).toBeVisible();
+      await expect(page.locator('[data-testid="bolus-reset-btn"]').first()).toBeVisible();
     });
 
     test('should clear form when reset is clicked', async ({ page }) => {
-      // Click reset button
-      const resetButton = page.locator(
-        'ion-button:has-text("New Calculation"), ion-button:has-text("Nueva"), ion-button:has(ion-icon[name="refresh-outline"])'
-      );
-      await resetButton.first().click();
+      // Click reset button using JavaScript to avoid interception
+      const resetButton = page.locator('[data-testid="bolus-reset-btn"]').first();
+      await resetButton.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Wait for form to clear
       await expect(page.locator('[data-testid="glucose-input"] input').first()).toHaveValue('', {
@@ -500,10 +608,7 @@ test.describe('Bolus Calculator', () => {
 
     test('should hide result card after reset', async ({ page }) => {
       // Click reset button
-      const resetButton = page.locator(
-        'ion-button:has-text("New Calculation"), ion-button:has-text("Nueva"), ion-button:has(ion-icon[name="refresh-outline"])'
-      );
-      await resetButton.first().click();
+      await page.locator('[data-testid="bolus-reset-btn"]').first().click();
 
       // Wait for result card to be hidden
       await expect(page.locator('[data-testid="result-card"]')).toBeHidden({ timeout: 3000 });
@@ -515,9 +620,12 @@ test.describe('Bolus Calculator', () => {
     });
 
     test('should clear selected foods after reset', async ({ page }) => {
-      // Click reset
-      const resetButton = page.locator('ion-button:has(ion-icon[name="refresh-outline"])').first();
-      await resetButton.click();
+      // Click reset using JavaScript to avoid interception
+      const resetButton = page.locator('[data-testid="bolus-reset-btn"]').first();
+      await resetButton.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Wait for form to clear
       await expect(page.locator('[data-testid="glucose-input"] input').first()).toHaveValue('', {
@@ -531,18 +639,24 @@ test.describe('Bolus Calculator', () => {
     });
 
     test('should allow new calculation after reset', async ({ page }) => {
-      // Reset calculator
-      const resetButton = page.locator('ion-button:has(ion-icon[name="refresh-outline"])').first();
-      await resetButton.click();
+      // Reset calculator using JavaScript to avoid interception
+      const resetButton = page.locator('[data-testid="bolus-reset-btn"]').first();
+      await resetButton.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
       // Wait for form to clear
       await expect(page.locator('[data-testid="glucose-input"] input').first()).toHaveValue('', {
         timeout: 3000,
       });
 
       // Perform new calculation with different values
-      await page.locator('[data-testid="glucose-input"] input').first().fill('220');
-      await page.locator('[data-testid="carbs-input"] input').first().fill('75');
-      await page.locator('ion-button[type="submit"]').first().click();
+      await setIonInputValue(page, 'glucose-input', '220');
+      await setIonInputValue(page, 'carbs-input', '75');
+      await page.locator('[data-testid="calculate-btn"]').evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Handle warning modal if it appears
       await confirmWarningModal(page);
@@ -572,7 +686,10 @@ test.describe('Bolus Calculator', () => {
 
       const calculateButton = page.locator('ion-button[type="submit"]').first();
       await expect(calculateButton).toBeEnabled();
-      await calculateButton.click();
+      await calculateButton.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Handle warning modal if it appears
       await confirmWarningModal(page);
@@ -587,7 +704,10 @@ test.describe('Bolus Calculator', () => {
 
       const calculateButton = page.locator('ion-button[type="submit"]').first();
       await expect(calculateButton).toBeEnabled();
-      await calculateButton.click();
+      await calculateButton.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Handle warning modal if it appears
       await confirmWarningModal(page);
@@ -597,12 +717,15 @@ test.describe('Bolus Calculator', () => {
     });
 
     test('should handle zero carbs', async ({ page }) => {
-      await page.locator('[data-testid="glucose-input"] input').first().fill('180');
-      await page.locator('[data-testid="carbs-input"] input').first().fill('0');
+      await setIonInputValue(page, 'glucose-input', '180');
+      await setIonInputValue(page, 'carbs-input', '0');
 
       const calculateButton = page.locator('ion-button[type="submit"]').first();
       await expect(calculateButton).toBeEnabled();
-      await calculateButton.click();
+      await calculateButton.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Handle warning modal if it appears
       await confirmWarningModal(page);
@@ -612,11 +735,14 @@ test.describe('Bolus Calculator', () => {
     });
 
     test('should handle decimal glucose values', async ({ page }) => {
-      await page.locator('[data-testid="glucose-input"] input').first().fill('182.5');
-      await page.locator('[data-testid="carbs-input"] input').first().fill('45');
+      await setIonInputValue(page, 'glucose-input', '182.5');
+      await setIonInputValue(page, 'carbs-input', '45');
 
       const calculateButton = page.locator('ion-button[type="submit"]').first();
-      await calculateButton.click();
+      await calculateButton.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Handle warning modal if it appears
       await confirmWarningModal(page);
@@ -625,27 +751,15 @@ test.describe('Bolus Calculator', () => {
     });
 
     test('should handle large carb values', async ({ page }) => {
-      // Fill inputs using evaluate to bypass click entirely
-      await page.evaluate(() => {
-        const ng = (window as unknown as { ng?: { getComponent: (el: Element) => unknown } }).ng;
-        const appEl = document.querySelector('app-bolus-calculator');
-        if (ng && appEl) {
-          const component = ng.getComponent(appEl) as {
-            calculatorForm?: { patchValue: (v: Record<string, unknown>) => void };
-            cdr?: { detectChanges: () => void };
-          };
-          if (component?.calculatorForm) {
-            component.calculatorForm.patchValue({ currentGlucose: 150, carbGrams: 250 });
-            component.cdr?.detectChanges();
-          }
-        }
-      });
-      await page.waitForTimeout(500);
+      await setIonInputValue(page, 'glucose-input', '150');
+      await setIonInputValue(page, 'carbs-input', '250');
 
       const calculateButton = page.locator('ion-button[type="submit"]').first();
       await expect(calculateButton).toBeEnabled({ timeout: 5000 });
-      await calculateButton.click();
-      await page.waitForTimeout(500);
+      await calculateButton.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
 
       // Handle warning modal if it appears
       await confirmWarningModal(page);
@@ -673,13 +787,19 @@ test.describe('Bolus Calculator', () => {
     });
 
     test('should show error messages for screen readers', async ({ page }) => {
-      // Trigger validation errors
+      // Trigger validation errors using JavaScript to avoid interception
       const glucoseInput = page.locator('[data-testid="glucose-input"] input').first();
-      await glucoseInput.click();
+      await glucoseInput.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
       await glucoseInput.fill('1000'); // Invalid value
 
       const carbsInput = page.locator('[data-testid="carbs-input"] input').first();
-      await carbsInput.click(); // Trigger glucose validation
+      await carbsInput.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      }); // Trigger glucose validation
 
       // Error text should be visible
       const errorText = page.locator('.error-text').first();

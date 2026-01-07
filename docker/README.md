@@ -29,7 +29,7 @@ Playwright E2E tests in isolated containers:
 For E2E testing documentation, run:
 
 ```bash
-npm run test:e2e:docker
+pnpm -s run test:e2e:docker
 ```
 
 ---
@@ -56,13 +56,13 @@ All services use PostgreSQL databases with separate containers for data isolatio
 ### Prerequisites
 
 - Docker and Docker Compose installed
-- Backend repositories at `/home/julito/TPP/diabetactic/`
+- Backend repositories at `/home/julito/code/facu/diabetactic/`
 - Port 8000 available (API Gateway)
 
 ### Start Services
 
 ```bash
-cd /home/julito/TPP/diabetactic/diabetify/docker
+cd /home/julito/code/facu/diabetactic/diabetify/docker
 ./start.sh
 ```
 
@@ -295,7 +295,7 @@ docker exec -it diabetactic_appointments_db psql -U postgres -d appointments
 3. **Start frontend with local backend**:
 
    ```bash
-   cd /home/julito/TPP/diabetactic/diabetify
+   cd /home/julito/code/facu/diabetactic/diabetify
    ENV=local npm start
    ```
 
@@ -392,7 +392,7 @@ Dedicated Docker tests in `playwright/tests/docker-backend-e2e.spec.ts`:
 E2E_DOCKER_TESTS=true \
 E2E_API_URL=http://localhost:8000 \
 E2E_BACKOFFICE_URL=http://localhost:8001 \
-npm run test:e2e -- --grep "@docker"
+pnpm run test:e2e -- --grep "@docker"
 ```
 
 ### Maestro Integration

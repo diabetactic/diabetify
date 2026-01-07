@@ -24,7 +24,7 @@
   right: 0;
   z-index: var(--z-index-modal, 1000);
   background: var(--dt-color-surface);
-  border-radius: 24px 24px 0 0;
+  border-radius: var(--radius-xl, 1.5rem) var(--radius-xl, 1.5rem) 0 0; // Standardized border-radius
   box-shadow: var(--shadow-modal, 0 -4px 20px rgb(0 0 0 / 15%));
   max-height: 90vh;
   display: flex;
@@ -76,8 +76,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px; // Min 44x44
+  height: 44px; // Min 44x44
   background: transparent;
   border: none;
   border-radius: 50%;
@@ -126,10 +126,10 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 12px 18px; // Increased height
   background: var(--dt-color-surface-soft);
   border: 1.5px solid var(--dt-color-border-subtle);
-  border-radius: 20px;
+  border-radius: 24px;
   font-size: 13px;
   font-weight: 500;
   color: var(--dt-color-text-secondary);
@@ -260,8 +260,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 44px; // Min 44x44
+  height: 44px; // Min 44x44
   background: var(--ion-color-primary);
   color: var(--ion-color-primary-contrast);
   border: none;
@@ -279,10 +279,10 @@
 }
 
 .qty-value {
-  min-width: 40px;
+  min-width: 48px;
   text-align: center;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--dt-color-text-primary);
 }
 
@@ -324,7 +324,7 @@
 
 .selected-summary {
   background: var(--dt-color-surface-soft);
-  border-radius: 12px;
+  border-radius: var(--radius-md); // Standardized border-radius token
   padding: 12px;
   margin-bottom: 12px;
 }
@@ -418,6 +418,27 @@
   .qty-btn {
     background: var(--ion-color-primary);
   }
+
+  .manual-entry-btn {
+    background: var(--dt-color-surface-soft, #1e293b);
+    border-color: var(--dt-color-border-input, #475569);
+    color: var(--dt-color-text-primary, #e5e7eb);
+
+    &:hover {
+      background: var(--dt-color-surface, rgb(15 23 42 / 96%));
+      border-color: var(--ion-color-primary);
+    }
+  }
+
+  .manual-entry-form input {
+    background: var(--dt-color-surface, #1e293b);
+    color: var(--dt-color-text-primary, #e5e7eb);
+    border-color: var(--dt-color-border-input, #475569);
+
+    &::placeholder {
+      color: var(--dt-color-text-muted, #9ca3af);
+    }
+  }
 }
 
 .search-container {
@@ -446,22 +467,61 @@
 .manual-entry-btn {
   width: 100%;
   padding: 12px;
-  background: var(--ion-color-light-tint);
-  border: none;
-  border-radius: 12px;
+  background: var(--dt-color-surface-soft, #f5f7f8);
+  border: 1px dashed var(--dt-color-border-input, #d1d5db);
+  border-radius: var(--radius-md); // Standardized border-radius token
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
+  color: var(--dt-color-text-primary, #1f2937);
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
+
+  &:hover {
+    background: var(--dt-color-surface, #fff);
+    border-color: var(--ion-color-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: 2px;
+  }
 }
 
 .manual-entry-form {
   margin-top: 16px;
 
+  .form-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dt-color-text-primary);
+  }
+
   input {
     width: 100%;
     padding: 12px;
-    border: 1px solid var(--ion-color-medium);
-    border-radius: 8px;
-    margin-bottom: 8px;
+    background: var(--dt-color-surface);
+    color: var(--dt-color-text-primary);
+    border: 1px solid var(--dt-color-border-input);
+    border-radius: var(--radius-md); // Standardized border-radius token
+    margin-bottom: 4px;
+    font-size: 16px;
+
+    &::placeholder {
+      color: var(--dt-color-text-muted);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--ion-color-primary);
+      /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- Hex fallback for Android WebView */
+      box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+
+      @supports (color: oklch(0.5 0.1 100)) {
+        /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- Custom focus ring */
+        box-shadow: 0 0 0 2px oklch(var(--p) / 20%);
+      }
+    }
   }
 }

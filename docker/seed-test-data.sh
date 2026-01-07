@@ -16,9 +16,37 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+source "$SCRIPT_DIR/_runlog.sh" 2>/dev/null || true
+
 MODE=${1:-"full"}
 API_URL="http://localhost:8000"
 BACKOFFICE_URL="http://localhost:8001"
+
+RUN_ID="${SEED_RUN_ID:-${RUN_ID:-}}"
+export RUN_ID
+
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+GIT_SHA="$(git -C "$PROJECT_DIR" rev-parse --short HEAD 2>/dev/null || echo "")"
+GIT_BRANCH="$(git -C "$PROJECT_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")"
+
+if declare -F append_jsonl >/dev/null 2>&1; then
+  append_jsonl "seed-history.jsonl" \
+    event="seed_start" \
+    mode="$MODE" \
+    api_url="$API_URL" \
+    backoffice_url="$BACKOFFICE_URL" \
+    git_sha="$GIT_SHA" \
+    git_branch="$GIT_BRANCH" \
+    || true
+fi
+
+# Ensure schema exists before seeding (fresh volumes can be empty)
+echo "🧱 Ensuring database schema..."
+docker compose -f docker-compose.local.yml exec -T login_service alembic upgrade head
+docker compose -f docker-compose.local.yml exec -T glucoserver alembic upgrade head
+docker compose -f docker-compose.local.yml exec -T appointments alembic upgrade head
+echo "   ✓ Migrations applied"
+echo ""
 
 # Test user 1 credentials (same as Heroku seed account for consistency)
 TEST_USER_DNI="1000"
@@ -47,8 +75,14 @@ USER_EXISTS=$(curl -s "$API_URL/users/from_dni/$TEST_USER_DNI" 2>/dev/null | gre
 
 if [ "$USER_EXISTS" = "0" ]; then
     ./create-user.sh "$TEST_USER_DNI" "$TEST_USER_PASSWORD" "$TEST_USER_NAME" "$TEST_USER_SURNAME" "$TEST_USER_EMAIL"
+    if declare -F append_jsonl >/dev/null 2>&1; then
+      append_jsonl "seed-history.jsonl" event="user_created" dni="$TEST_USER_DNI" || true
+    fi
 else
     echo "   User $TEST_USER_DNI already exists, skipping creation"
+    if declare -F append_jsonl >/dev/null 2>&1; then
+      append_jsonl "seed-history.jsonl" event="user_exists" dni="$TEST_USER_DNI" || true
+    fi
 fi
 
 # Create second test user for multi-user E2E tests
@@ -60,8 +94,14 @@ if [ "$USER_2_EXISTS" = "0" ]; then
     ./create-user.sh "$TEST_USER_2_DNI" "$TEST_USER_2_PASSWORD" "$TEST_USER_2_NAME" "$TEST_USER_2_SURNAME" "$TEST_USER_2_EMAIL"
     # Also accept hospital account for user 2
     docker exec diabetactic_test_utils python3 user_manager.py update-status "$TEST_USER_2_DNI" "accepted" 2>/dev/null || true
+    if declare -F append_jsonl >/dev/null 2>&1; then
+      append_jsonl "seed-history.jsonl" event="user_created" dni="$TEST_USER_2_DNI" || true
+    fi
 else
     echo "   User $TEST_USER_2_DNI already exists, skipping creation"
+    if declare -F append_jsonl >/dev/null 2>&1; then
+      append_jsonl "seed-history.jsonl" event="user_exists" dni="$TEST_USER_2_DNI" || true
+    fi
 fi
 
 # -----------------------------------------------------------------------------
@@ -79,10 +119,16 @@ AUTH_TOKEN=$(echo "$TOKEN_RESPONSE" | grep -o '"access_token":"[^"]*"' | cut -d'
 if [ -z "$AUTH_TOKEN" ]; then
     echo "❌ Failed to get auth token"
     echo "   Response: $TOKEN_RESPONSE"
+    if declare -F append_jsonl >/dev/null 2>&1; then
+      append_jsonl "seed-history.jsonl" event="auth_token_failed" dni="$TEST_USER_DNI" || true
+    fi
     exit 1
 fi
 
 echo "   ✓ Got auth token"
+if declare -F append_jsonl >/dev/null 2>&1; then
+  append_jsonl "seed-history.jsonl" event="auth_token_ok" dni="$TEST_USER_DNI" || true
+fi
 
 # -----------------------------------------------------------------------------
 # Step 3: Accept hospital account (if needed)
@@ -92,12 +138,38 @@ echo "🏥 Checking hospital account status..."
 
 # Update hospital account to 'accepted' via backoffice
 docker exec diabetactic_test_utils python3 user_manager.py update-status "$TEST_USER_DNI" "accepted" 2>/dev/null || true
+if declare -F append_jsonl >/dev/null 2>&1; then
+  append_jsonl "seed-history.jsonl" event="hospital_status_set" dni="$TEST_USER_DNI" status="accepted" || true
+fi
 
 if [ "$MODE" = "minimal" ]; then
     echo ""
     echo "✅ Minimal seed complete!"
     echo "   User: $TEST_USER_DNI / $TEST_USER_PASSWORD"
+    if declare -F append_jsonl >/dev/null 2>&1; then
+      append_jsonl "seed-history.jsonl" event="seed_complete" mode="$MODE" || true
+    fi
     exit 0
+fi
+
+# Determine numeric user_id for deterministic cleanup.
+USER_JSON=$(curl -s "$API_URL/users/from_dni/$TEST_USER_DNI" 2>/dev/null || echo "")
+if command -v python3 >/dev/null 2>&1; then
+  USER_ID=$(python3 - <<'PY' 2>/dev/null <<<"$USER_JSON" || true
+import json, sys
+try:
+  data = json.load(sys.stdin)
+  print(data.get("user_id", ""))
+except Exception:
+  print("")
+PY
+  )
+else
+  USER_ID=""
+fi
+
+if [ -z "${USER_ID:-}" ]; then
+  USER_ID="1"
 fi
 
 # -----------------------------------------------------------------------------
@@ -106,14 +178,24 @@ fi
 echo ""
 echo "🧹 Cleaning up old test readings..."
 
-# Delete ALL readings for test user to prevent accumulation from repeated runs
-# This ensures a clean slate for each test session
-docker exec diabetactic_glucoserver_db psql -U postgres -d glucoserver \
-    -c "DELETE FROM glucose_readings WHERE user_id = (SELECT user_id FROM glucose_readings gr JOIN (SELECT 1 as user_id) u ON gr.user_id = u.user_id LIMIT 1);" 2>/dev/null || true
+DELETED_BEFORE=$(docker exec diabetactic_glucoserver_db psql -U postgres -d glucoserver -tA \
+    -c "SELECT COUNT(*) FROM glucose_readings WHERE user_id = $USER_ID;" 2>/dev/null || echo "")
 
-# More reliable: delete by user_id directly
+# Delete ALL readings for this test user to prevent accumulation from repeated runs.
 docker exec diabetactic_glucoserver_db psql -U postgres -d glucoserver \
-    -c "DELETE FROM glucose_readings WHERE user_id = 1;" 2>/dev/null || true
+    -c "DELETE FROM glucose_readings WHERE user_id = $USER_ID;" 2>/dev/null || true
+
+DELETED_AFTER=$(docker exec diabetactic_glucoserver_db psql -U postgres -d glucoserver -tA \
+    -c "SELECT COUNT(*) FROM glucose_readings WHERE user_id = $USER_ID;" 2>/dev/null || echo "")
+
+if declare -F append_jsonl >/dev/null 2>&1; then
+  append_jsonl "seed-history.jsonl" \
+    event="readings_cleared" \
+    user_id="$USER_ID" \
+    count_before="${DELETED_BEFORE:-}" \
+    count_after="${DELETED_AFTER:-}" \
+    || true
+fi
 
 echo "   ✓ Cleaned up old readings"
 
@@ -155,6 +237,9 @@ RESPONSE=$(curl -s -X POST "$API_URL/glucose/create?glucose_level=180&reading_ty
 if echo "$RESPONSE" | grep -q '"id"'; then READINGS_CREATED=$((READINGS_CREATED + 1)); fi
 
 echo "   ✓ Created $READINGS_CREATED glucose readings"
+if declare -F append_jsonl >/dev/null 2>&1; then
+  append_jsonl "seed-history.jsonl" event="readings_seeded" user_id="$USER_ID" created="$READINGS_CREATED" || true
+fi
 
 # -----------------------------------------------------------------------------
 # Step 6: Clear appointment queue (full mode only)
@@ -176,8 +261,14 @@ if [ -n "$ADMIN_TOKEN" ]; then
         -H "Content-Type: application/json" \
         -d "{\"user_id\": \"$TEST_USER_DNI\"}" > /dev/null 2>&1 || true
     echo "   ✓ Appointment queue cleared"
+    if declare -F append_jsonl >/dev/null 2>&1; then
+      append_jsonl "seed-history.jsonl" event="appointments_queue_cleared" dni="$TEST_USER_DNI" || true
+    fi
 else
     echo "   ⚠ Could not clear appointment queue (backoffice auth failed)"
+    if declare -F append_jsonl >/dev/null 2>&1; then
+      append_jsonl "seed-history.jsonl" event="appointments_queue_clear_failed" dni="$TEST_USER_DNI" || true
+    fi
 fi
 
 # -----------------------------------------------------------------------------
@@ -205,3 +296,12 @@ echo "API Endpoints:"
 echo "  - Main API: $API_URL"
 echo "  - Backoffice: $BACKOFFICE_URL"
 echo ""
+
+if declare -F append_jsonl >/dev/null 2>&1; then
+  append_jsonl "seed-history.jsonl" \
+    event="seed_complete" \
+    mode="$MODE" \
+    user_id="$USER_ID" \
+    readings_created="$READINGS_CREATED" \
+    || true
+fi

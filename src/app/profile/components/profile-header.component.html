@@ -22,9 +22,11 @@
       {{ 'profile.changePhoto' | translate }}
     </ion-button>
   </div>
-  <h2 class="m-0 text-2xl font-bold text-white">{{ greeting }}</h2>
-  <p class="m-0 text-sm text-white opacity-85">{{ emailText }}</p>
-  <p class="m-0 text-sm text-white opacity-85">{{ memberSinceText }}</p>
+  <h2 class="m-0 text-2xl font-bold text-white" data-testid="profile-greeting">{{ greeting }}</h2>
+  <p class="m-0 text-sm text-white opacity-85" data-testid="profile-email">{{ emailText }}</p>
+  <p class="m-0 text-sm text-white opacity-85" data-testid="profile-member-since">
+    {{ memberSinceText }}
+  </p>
   <ion-button
     id="edit-profile-btn"
     fill="outline"

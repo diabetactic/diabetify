@@ -126,7 +126,7 @@ describe('BiometricAuthService', () => {
       expect(Preferences.set).toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
         'Biometric',
-        'Enrollment successful',
+        'Enrollment successful with refresh token',
         expect.any(Object)
       );
     });

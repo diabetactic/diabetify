@@ -261,6 +261,34 @@ const mockService = {
 } as unknown as Mock<MyService>;
 ```
 
+### 5. Playwright: `isVisible({ timeout })` no espera
+
+En Playwright, `locator.isVisible({ timeout })` **no espera**; el `timeout` se ignora. Para esperar, usar:
+
+- `await locator.waitFor({ state: 'visible', timeout: 3000 })`
+- o `expect(locator).toBeVisible({ timeout: 3000 })`
+
+### 6. E2E Docker: flujo y debug rapido
+
+```bash
+# E2E en Docker (build + run + cleanup)
+pnpm -s run test:e2e:docker
+
+# Filtrar por suite
+pnpm -s run test:e2e:docker -- --grep "Bolus Calculator"
+```
+
+Artefactos utiles:
+
+- Reporte HTML: `playwright-report/index.html`
+- Traces / screenshots: `playwright/artifacts/`
+
+Nota: si los artefactos quedan con owner `root` (por Docker), corregir con:
+
+```bash
+sudo chown -R "$USER":"$USER" playwright-report playwright/artifacts
+```
+
 ---
 
 ## Recursos

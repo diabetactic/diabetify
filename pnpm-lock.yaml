@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  playwright-core: 1.57.0
-
 importers:
 
   .:
@@ -35,9 +32,6 @@ importers:
       '@aparajita/capacitor-secure-storage':
         specifier: ^7.1.6
         version: 7.1.6
-      '@aparajita/tailwind-ionic':
-        specifier: ^2.3.0
-        version: 2.3.0(postcss@8.5.6)(tailwindcss@3.4.19)
       '@capacitor-mlkit/barcode-scanning':
         specifier: ^8.0.0
         version: 8.0.0(@capacitor/core@8.0.0)
@@ -78,17 +72,14 @@ importers:
         specifier: ^8.0.1
         version: 8.0.3(@capacitor/core@8.0.0)
       '@ionic/angular':
-        specifier: ^8.7.16
-        version: 8.7.16(f92b80650bf0201cd2a03654177a376a)
+        specifier: ^8.7.15
+        version: 8.7.15(f92b80650bf0201cd2a03654177a376a)
       '@ngx-translate/core':
         specifier: ^17.0.0
         version: 17.0.0(@angular/common@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))
       '@ngx-translate/http-loader':
         specifier: ^17.0.0
         version: 17.0.0(@angular/common@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))
-      autoprefixer:
-        specifier: ^10.4.23
-        version: 10.4.23(postcss@8.5.6)
       capacitor-widget-bridge:
         specifier: ^8.0.0
         version: 8.0.0(@capacitor/core@8.0.0)
@@ -144,6 +135,9 @@ importers:
       '@angular/language-service':
         specifier: ^21.0.6
         version: 21.0.6
+      '@aparajita/tailwind-ionic':
+        specifier: ^2.3.0
+        version: 2.3.0(postcss@8.5.6)(tailwindcss@3.4.19)
       '@axe-core/playwright':
         specifier: ^4.11.0
         version: 4.11.0(playwright-core@1.57.0)
@@ -154,8 +148,11 @@ importers:
         specifier: ^9.39.2
         version: 9.39.2
       '@faker-js/faker':
-        specifier: ^10.2.0
-        version: 10.2.0
+        specifier: ^10.1.0
+        version: 10.1.0
+      '@ionic/core':
+        specifier: ^8.7.16
+        version: 8.7.16
       '@playwright/test':
         specifier: ^1.48.0
         version: 1.57.0
@@ -177,6 +174,9 @@ importers:
       angular-eslint:
         specifier: ^21.0.1
         version: 21.1.0(@angular/cli@21.0.4(@types/node@25.0.3)(chokidar@4.0.3))(chokidar@4.0.3)(eslint@9.39.2(jiti@1.21.7))(typescript-eslint@8.51.0(eslint@9.39.2(jiti@1.21.7))(typescript@5.9.3))(typescript@5.9.3)
+      autoprefixer:
+        specifier: ^10.4.23
+        version: 10.4.23(postcss@8.5.6)
       cyclomatic-complexity:
         specifier: ^1.2.5
         version: 1.2.5
@@ -195,6 +195,9 @@ importers:
       happy-dom:
         specifier: ^20.0.11
         version: 20.0.11
+      ionicons:
+        specifier: ^8.0.13
+        version: 8.0.13
       jscpd:
         specifier: ^4.0.5
         version: 4.0.5
@@ -202,14 +205,17 @@ importers:
         specifier: ^27.4.0
         version: 27.4.0
       knip:
-        specifier: ^5.80.0
-        version: 5.80.0(@types/node@25.0.3)(typescript@5.9.3)
+        specifier: ^5.78.0
+        version: 5.78.0(@types/node@25.0.3)(typescript@5.9.3)
+      monocart-coverage-reports:
+        specifier: ^2.12.9
+        version: 2.12.9
       msw:
         specifier: ^2.12.7
         version: 2.12.7(@types/node@25.0.3)(typescript@5.9.3)
       npm-check-updates:
-        specifier: ^19.3.0
-        version: 19.3.0
+        specifier: ^19.2.0
+        version: 19.2.0
       postcss:
         specifier: ^8.5.6
         version: 8.5.6
@@ -637,7 +643,7 @@ packages:
   '@axe-core/playwright@4.11.0':
     resolution: {integrity: sha512-70vBT/Ylqpm65RQz2iCG2o0JJCEG/WCNyefTr2xcOcr1CoSee60gNQYUMZZ7YukoKkFLv26I/jjlsvwwp532oQ==}
     peerDependencies:
-      playwright-core: 1.57.0
+      playwright-core: '>= 1.0.0'
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -1305,11 +1311,11 @@ packages:
   '@dual-bundle/import-meta-resolve@4.2.1':
     resolution: {integrity: sha512-id+7YRUgoUX6CgV0DtuhirQWodeeA7Lf4i2x71JS/vtA5pRb/hIGWlw+G6MeXvsM+MXrz0VAydTGElX1rAfgPg==}
 
-  '@emnapi/core@1.8.1':
-    resolution: {integrity: sha512-AvT9QFpxK0Zd8J0jopedNm+w/2fIzvtPKPjqyw9jwvBaReTTqPBk9Hixaz7KbjimP+QNz605/XnjFcDAL2pqBg==}
+  '@emnapi/core@1.7.1':
+    resolution: {integrity: sha512-o1uhUASyo921r2XtHYOHy7gdkGLge8ghBEQHMWmyJFoXlpU58kIrhhN3w26lpQb6dspetweapMn2CSNwQ8I4wg==}
 
-  '@emnapi/runtime@1.8.1':
-    resolution: {integrity: sha512-mehfKSMWjjNol8659Z8KxEMrdSJDDot5SXMq00dM8BN4o+CLNXQ0xH2V7EchNHV4RmbZLmmPdEaXZc5H2FXmDg==}
+  '@emnapi/runtime@1.7.1':
+    resolution: {integrity: sha512-PVtJr5CmLwYAU9PZDMITZoR5iAOShYREoR45EyyLrbntV50mdePTgUn4AmOw90Ifcj+x2kRjdzr1HP3RrNiHGA==}
 
   '@emnapi/wasi-threads@1.1.0':
     resolution: {integrity: sha512-WI0DdZ8xFSbgMjR1sFsKABJ/C5OnRrjT06JXbZKexJGrDuPTzZdDYfFlsgcCXCyf+suG5QU2e/y1Wo2V/OapLQ==}
@@ -1829,8 +1835,8 @@ packages:
       '@exodus/crypto':
         optional: true
 
-  '@faker-js/faker@10.2.0':
-    resolution: {integrity: sha512-rTXwAsIxpCqzUnZvrxVh3L0QA0NzToqWBLAhV+zDV3MIIwiQhAZHMdPCIaj5n/yADu/tyk12wIPgL6YHGXJP+g==}
+  '@faker-js/faker@10.1.0':
+    resolution: {integrity: sha512-C3mrr3b5dRVlKPJdfrAXS8+dq+rq8Qm5SNRazca0JKgw1HQERFmrVb0towvMmw5uu8hHKNiQasMaR/tydf3Zsg==}
     engines: {node: ^20.19.0 || ^22.13.0 || ^23.5.0 || >=24.0.0, npm: '>=10'}
 
   '@hapi/address@5.1.1':
@@ -2021,8 +2027,8 @@ packages:
       '@types/node':
         optional: true
 
-  '@ionic/angular@8.7.16':
-    resolution: {integrity: sha512-rdOQu07VvfqgnIbas/K+ebitjQI5u4OgiH7fcy/LAKdSxERzWqkDVBXpHtZIVDMOQcPlVN0cWEnaQUbnfDpTVA==}
+  '@ionic/angular@8.7.15':
+    resolution: {integrity: sha512-2FFmOCoE3CRHR/WAsx+DX084ywxCNEdqrDuqy0iUmi1jbXrYFcC3xnbvBLKRsQtN56nFLS07DkL6wLCCOY7M4A==}
     peerDependencies:
       '@angular/core': '>=16.0.0'
       '@angular/forms': '>=16.0.0'
@@ -2033,6 +2039,10 @@ packages:
   '@ionic/cli-framework-output@2.2.8':
     resolution: {integrity: sha512-TshtaFQsovB4NWRBydbNFawql6yul7d5bMiW1WYYf17hd99V6xdDdk3vtF51bw6sLkxON3bDQpWsnUc9/hVo3g==}
     engines: {node: '>=16.0.0'}
+
+  '@ionic/core@8.7.15':
+    resolution: {integrity: sha512-u1w9c6dx2iuatXIW5X1JY0ighDhQPjBwOHZsrOcnpm891pktuEjJDdyhDulWFa6kKVkXw1q7khwxXBEurvKc2g==}
+    engines: {node: '>= 16'}
 
   '@ionic/core@8.7.16':
     resolution: {integrity: sha512-+vdv/o2Z/2YfoZJIDBLnoh11eJmOOZqQdfwC0zl2MemAVRSofjGuIQlUTZqiUUNht56Rnk9oo53TvmgjNCtmDA==}
@@ -2914,8 +2924,8 @@ packages:
     engines: {node: '>=16.0.0', npm: '>=7.10.0'}
     hasBin: true
 
-  '@stencil/core@4.41.0':
-    resolution: {integrity: sha512-KDVea3bjv7qJS+Pk8GcrWqRws6kAJAKiUPIxdDqK3KYH2yWPmzCzJO2XKsVyiBWmhdm2Q2KSdlb/EMFArfREiw==}
+  '@stencil/core@4.40.1':
+    resolution: {integrity: sha512-cTHBvYFLf4h61TVHLibZoJcomYAoC+TNW3oi1VHcZMpWQyp/h/pHG1XQeEpzuSscQc/SJJwOYb5IvQ8vVeeCNg==}
     engines: {node: '>=16.0.0', npm: '>=7.10.0'}
     hasBin: true
 
@@ -3248,6 +3258,14 @@ packages:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
       acorn: ^6.0.0 || ^7.0.0 || ^8.0.0
+
+  acorn-loose@8.5.2:
+    resolution: {integrity: sha512-PPvV6g8UGMGgjrMu+n/f9E/tCSkNQ2Y97eFvuVdJfG11+xdIeDcLyNdC8SHcrHbRqkfwLASdplyR6B6sKM1U4A==}
+    engines: {node: '>=0.4.0'}
+
+  acorn-walk@8.3.4:
+    resolution: {integrity: sha512-ueEepnujpqee2o5aIYnvHU6C0A42MNdsIDeqy5BydrkuC5R1ZuUFnm27EeFJGoEHJQgn3uleRvmTXaJgfXbt4g==}
+    engines: {node: '>=0.4.0'}
 
   acorn@7.4.1:
     resolution: {integrity: sha512-nQyp0o1/mNdbTO1PO6kHkwSrmgZ0MT/jCCpNiwbUjGoRN4dlBhqJtoQuCnEOKzgTVwg0ZWiCoQy6SxMebQVh8A==}
@@ -3731,6 +3749,10 @@ packages:
     resolution: {integrity: sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA==}
     engines: {node: '>=18'}
 
+  commander@14.0.2:
+    resolution: {integrity: sha512-TywoWNNRbhoD0BXs1P3ZEScW8W5iKrnbithIl0YH+uCmBd0QpPOA8yc82DS3BIE5Ma6FnBVUsJ7wVUDz4dvOWQ==}
+    engines: {node: '>=20'}
+
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
 
@@ -3756,6 +3778,9 @@ packages:
   connect-history-api-fallback@2.0.0:
     resolution: {integrity: sha512-U73+6lQFmfiNPrYbXqr6kZ1i1wiRqXnp2nhMsINseWXO8lDau0LGEffJ8kQi4EjLZympVgRdvqjAgiZ1tgzDDA==}
     engines: {node: '>=0.8'}
+
+  console-grid@2.2.3:
+    resolution: {integrity: sha512-+mecFacaFxGl+1G31IsCx41taUXuW2FxX+4xIE0TIPhgML+Jb9JFcBWGhhWerd1/vhScubdmHqTwOhB0KCUUAg==}
 
   constantinople@4.0.1:
     resolution: {integrity: sha512-vCrqcSIq4//Gx74TXXCGnHpulY1dskqLTFGDmhrGxzeXL8lF8kvXv6mpNWlJj1uD4DW23D4ljAqbY4RRaaUZIw==}
@@ -4012,6 +4037,9 @@ packages:
 
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
+
+  eight-colors@1.3.1:
+    resolution: {integrity: sha512-7nXPYDeKh6DgJDR/mpt2G7N/hCNSGwwoPVmoI3+4TEwOb07VFN1WMPG0DFf6nMEjrkgdj8Og7l7IaEEk3VE6Zg==}
 
   electron-to-chromium@1.5.267:
     resolution: {integrity: sha512-0Drusm6MVRXSOJpGbaSVgcQsuB4hEkMpHXaVstcPmhu5LIedxs1xNK/nIxmQIU/RPC0+1/o0AVZfBTkTNJOdUw==}
@@ -4971,8 +4999,8 @@ packages:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
 
-  knip@5.80.0:
-    resolution: {integrity: sha512-K/Ga2f/SHEUXXriVdaw2GfeIUJ5muwdqusHGkCtaG/1qeMmQJiuwZj9KnPxaDbnYPAu8RWjYYh8Nyb+qlJ3d8A==}
+  knip@5.78.0:
+    resolution: {integrity: sha512-nB7i/fgiJl7WVxdv5lX4ZPfDt9/zrw/lOgZtyioy988xtFhKuFJCRdHWT1Zg9Avc0yaojvnmEuAXU8SeMblKww==}
     engines: {node: '>=18.18.0'}
     hasBin: true
     peerDependencies:
@@ -5088,6 +5116,9 @@ packages:
     peerDependencies:
       '@angular/common': 13.x - 21.x
       '@angular/core': 13.x - 21.x
+
+  lz-utils@2.1.0:
+    resolution: {integrity: sha512-CMkfimAypidTtWjNDxY8a1bc1mJdyEh04V2FfEQ5Zh8Nx4v7k850EYa+dOWGn9hKG5xOyHP5MkuduAZCTHRvJw==}
 
   magic-string@0.30.19:
     resolution: {integrity: sha512-2N21sPY9Ws53PZvsEpVtNuSW+ScYbQdp4b9qUaL+9QkHUrGFKo56Lg9Emg5s9V/qrtNBmiR01sYhUOwu3H+VOw==}
@@ -5277,6 +5308,13 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  monocart-coverage-reports@2.12.9:
+    resolution: {integrity: sha512-vtFqbC3Egl4nVa1FSIrQvMPO6HZtb9lo+3IW7/crdvrLNW2IH8lUsxaK0TsKNmMO2mhFWwqQywLV2CZelqPgwA==}
+    hasBin: true
+
+  monocart-locator@1.0.2:
+    resolution: {integrity: sha512-v8W5hJLcWMIxLCcSi/MHh+VeefI+ycFmGz23Froer9QzWjrbg4J3gFJBuI/T1VLNoYxF47bVPPxq8ZlNX4gVCw==}
+
   mrmime@2.0.1:
     resolution: {integrity: sha512-Y3wQdFg2Va6etvQ5I82yUhGdsKrcYox6p7FfL1LbK2J4V01F9TGlepTIhnK24t7koZibmg82KGglhA1XK5IsLQ==}
     engines: {node: '>=10'}
@@ -5405,8 +5443,8 @@ packages:
     resolution: {integrity: sha512-IxaQZDMsqfQ2Lz37VvyyEtKLe8FsRZuysmedy/N06TU1RyVppYKXrO4xIhR0F+7ubIBox6Q7nir6fQI3ej39iA==}
     engines: {node: ^18.17.0 || >=20.5.0}
 
-  npm-check-updates@19.3.0:
-    resolution: {integrity: sha512-Jn6i+eWHwOZXg6kjXDbBCuBJO4QRkLTGfLcdVKJJhQXDMI8EBS7TgSXrYdEKtgUM0SIOo5/V3OVC/XbA+QUGIw==}
+  npm-check-updates@19.2.0:
+    resolution: {integrity: sha512-XSIuL0FNgzXPDZa4lje7+OwHjiyEt84qQm6QMsQRbixNY5EHEM9nhgOjxjlK9jIbN+ysvSqOV8DKNS0zydwbdg==}
     engines: {node: '>=20.0.0', npm: '>=8.12.1'}
     hasBin: true
 
@@ -7208,8 +7246,8 @@ packages:
   zod@4.1.13:
     resolution: {integrity: sha512-AvvthqfqrAhNH9dnfmrfKzX5upOdjUVJYFqNSlkmGf64gRaTzlPwz99IHYnVs28qYAybvAlBV+H7pn0saFY4Ig==}
 
-  zod@4.3.5:
-    resolution: {integrity: sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==}
+  zod@4.2.1:
+    resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
 
   zone.js@0.16.0:
     resolution: {integrity: sha512-LqLPpIQANebrlxY6jKcYKdgN5DTXyyHAKnnWWjE5pPfEQ4n7j5zn7mOEEpwNZVKGqx3kKKmvplEmoBrvpgROTA==}
@@ -8550,13 +8588,13 @@ snapshots:
 
   '@dual-bundle/import-meta-resolve@4.2.1': {}
 
-  '@emnapi/core@1.8.1':
+  '@emnapi/core@1.7.1':
     dependencies:
       '@emnapi/wasi-threads': 1.1.0
       tslib: 2.8.1
     optional: true
 
-  '@emnapi/runtime@1.8.1':
+  '@emnapi/runtime@1.7.1':
     dependencies:
       tslib: 2.8.1
     optional: true
@@ -8848,7 +8886,7 @@ snapshots:
 
   '@exodus/bytes@1.7.0': {}
 
-  '@faker-js/faker@10.2.0': {}
+  '@faker-js/faker@10.1.0': {}
 
   '@hapi/address@5.1.1':
     dependencies:
@@ -9024,12 +9062,12 @@ snapshots:
     optionalDependencies:
       '@types/node': 25.0.3
 
-  '@ionic/angular@8.7.16(f92b80650bf0201cd2a03654177a376a)':
+  '@ionic/angular@8.7.15(f92b80650bf0201cd2a03654177a376a)':
     dependencies:
       '@angular/core': 21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0)
       '@angular/forms': 21.0.6(@angular/common@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.0.6(@angular/animations@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0)))(@angular/common@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2)
       '@angular/router': 21.0.6(@angular/common@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.0.6(@angular/animations@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0)))(@angular/common@21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2)
-      '@ionic/core': 8.7.16
+      '@ionic/core': 8.7.15
       ionicons: 8.0.13
       jsonc-parser: 3.3.1
       rxjs: 7.8.2
@@ -9043,6 +9081,12 @@ snapshots:
       tslib: 2.8.1
     transitivePeerDependencies:
       - supports-color
+
+  '@ionic/core@8.7.15':
+    dependencies:
+      '@stencil/core': 4.38.0
+      ionicons: 8.0.13
+      tslib: 2.8.1
 
   '@ionic/core@8.7.16':
     dependencies:
@@ -9389,8 +9433,8 @@ snapshots:
 
   '@napi-rs/wasm-runtime@1.1.1':
     dependencies:
-      '@emnapi/core': 1.8.1
-      '@emnapi/runtime': 1.8.1
+      '@emnapi/core': 1.7.1
+      '@emnapi/runtime': 1.7.1
       '@tybys/wasm-util': 0.10.1
     optional: true
 
@@ -9819,7 +9863,7 @@ snapshots:
       '@rollup/rollup-win32-arm64-msvc': 4.34.9
       '@rollup/rollup-win32-x64-msvc': 4.34.9
 
-  '@stencil/core@4.41.0':
+  '@stencil/core@4.40.1':
     optionalDependencies:
       '@rollup/rollup-darwin-arm64': 4.34.9
       '@rollup/rollup-darwin-x64': 4.34.9
@@ -10268,6 +10312,14 @@ snapshots:
       acorn: 8.15.0
 
   acorn-jsx@5.3.2(acorn@8.15.0):
+    dependencies:
+      acorn: 8.15.0
+
+  acorn-loose@8.5.2:
+    dependencies:
+      acorn: 8.15.0
+
+  acorn-walk@8.3.4:
     dependencies:
       acorn: 8.15.0
 
@@ -10791,6 +10843,8 @@ snapshots:
 
   commander@12.1.0: {}
 
+  commander@14.0.2: {}
+
   commander@2.20.3: {}
 
   commander@4.1.1: {}
@@ -10816,6 +10870,8 @@ snapshots:
   concat-map@0.0.1: {}
 
   connect-history-api-fallback@2.0.0: {}
+
+  console-grid@2.2.3: {}
 
   constantinople@4.0.1:
     dependencies:
@@ -11059,6 +11115,8 @@ snapshots:
   eastasianwidth@0.2.0: {}
 
   ee-first@1.1.1: {}
+
+  eight-colors@1.3.1: {}
 
   electron-to-chromium@1.5.267: {}
 
@@ -11896,7 +11954,7 @@ snapshots:
 
   ionicons@8.0.13:
     dependencies:
-      '@stencil/core': 4.41.0
+      '@stencil/core': 4.40.1
 
   ip-address@10.1.0: {}
 
@@ -12162,7 +12220,7 @@ snapshots:
 
   kleur@4.1.5: {}
 
-  knip@5.80.0(@types/node@25.0.3)(typescript@5.9.3):
+  knip@5.78.0(@types/node@25.0.3)(typescript@5.9.3):
     dependencies:
       '@nodelib/fs.walk': 1.2.8
       '@types/node': 25.0.3
@@ -12177,7 +12235,7 @@ snapshots:
       smol-toml: 1.6.0
       strip-json-comments: 5.0.3
       typescript: 5.9.3
-      zod: 4.3.5
+      zod: 4.2.1
 
   known-css-properties@0.37.0: {}
 
@@ -12302,6 +12360,8 @@ snapshots:
       '@angular/common': 21.0.6(@angular/core@21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2)
       '@angular/core': 21.0.6(@angular/compiler@21.0.6)(rxjs@7.8.2)(zone.js@0.16.0)
       tslib: 2.8.1
+
+  lz-utils@2.1.0: {}
 
   magic-string@0.30.19:
     dependencies:
@@ -12478,6 +12538,23 @@ snapshots:
 
   mkdirp@3.0.1: {}
 
+  monocart-coverage-reports@2.12.9:
+    dependencies:
+      acorn: 8.15.0
+      acorn-loose: 8.5.2
+      acorn-walk: 8.3.4
+      commander: 14.0.2
+      console-grid: 2.2.3
+      eight-colors: 1.3.1
+      foreground-child: 3.3.1
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-reports: 3.2.0
+      lz-utils: 2.1.0
+      monocart-locator: 1.0.2
+
+  monocart-locator@1.0.2: {}
+
   mrmime@2.0.1: {}
 
   ms@2.0.0: {}
@@ -12639,7 +12716,7 @@ snapshots:
     dependencies:
       npm-normalize-package-bin: 4.0.0
 
-  npm-check-updates@19.3.0: {}
+  npm-check-updates@19.2.0: {}
 
   npm-install-checks@8.0.0:
     dependencies:
@@ -14562,6 +14639,6 @@ snapshots:
 
   zod@4.1.13: {}
 
-  zod@4.3.5: {}
+  zod@4.2.1: {}
 
   zone.js@0.16.0: {}

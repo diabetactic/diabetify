@@ -39,7 +39,6 @@ export class StatCardComponent implements OnChanges {
   @Output() readonly cardClick = new EventEmitter<void>();
 
   valueUpdating = false;
-  private previousValue: number | string = 0;
 
   constructor(private decimalPipe: DecimalPipe) {}
 

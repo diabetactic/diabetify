@@ -254,7 +254,11 @@ export class ThemeService implements OnDestroy {
   /**
    * Update CSS custom properties
    */
-  private updateCSSProperties(palette: ColorPalette, isDark: boolean, highContrast: boolean): void {
+  private updateCSSProperties(
+    palette: ColorPalette,
+    _isDark: boolean,
+    highContrast: boolean
+  ): void {
     const paletteConfig = COLOR_PALETTES.find(p => p.id === palette);
     if (!paletteConfig) return;
 

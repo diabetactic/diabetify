@@ -365,7 +365,6 @@ test.describe('Readings Filtering', () => {
   });
 
   test('should search readings by glucose value', async ({ page }) => {
-    // Look for search bar
     const searchBar = page.locator('ion-searchbar');
 
     if (!(await waitForElementPresence(page, 'ion-searchbar', 3000))) {
@@ -376,29 +375,31 @@ test.describe('Readings Filtering', () => {
 
     await expect(searchBar.first()).toBeVisible();
 
-    // Type search term (common glucose value like "100")
-    // Use scrollAndClickIonElement to handle ionic shadow DOM scrolling
     await scrollAndClickIonElement(page, 'ion-searchbar');
-    await page.waitForTimeout(100); // Minimal wait
+    await page.waitForTimeout(100);
 
-    const searchInput = page.locator('ion-searchbar input');
-    await searchInput.first().fill('100');
-    await page.waitForTimeout(1000); // Search debounce - intentional
+    // Ionic searchbar requires ionInput event dispatch (fill() doesn't trigger it)
+    await searchBar.first().evaluate((el, searchValue) => {
+      const ionSearchbar = el as HTMLElement & { value: string };
+      ionSearchbar.value = searchValue;
+      el.dispatchEvent(
+        new CustomEvent('ionInput', {
+          bubbles: true,
+          detail: { value: searchValue },
+        })
+      );
+    }, '160');
 
-    // Verify results filtered
-    const readings = page.locator('ion-card, .reading-item, app-reading-item');
-    const readingCount = await readings.count();
+    // Wait for filtered result in readings list (avoids race condition with DOM update)
+    await expect(page.getByTestId('readings-list').getByText('160 mg/dL')).toBeVisible({
+      timeout: 5000,
+    });
 
-    if (readingCount > 0) {
-      // At least some readings should contain "100" in the value
-      const firstReading = readings.first();
-      const readingText = await firstReading.textContent();
-      expect(readingText).toContain('100');
-    }
+    // Verify filter chip shows
+    await expect(page.locator('text=/Buscar:|Search:/i')).toBeVisible();
   });
 
   test('should search readings by notes', async ({ page }) => {
-    // Check if search is available
     const searchbar = page.locator('ion-searchbar');
     if (!(await searchbar.isVisible({ timeout: 3000 }).catch(() => false))) {
       console.log('⚠️  Search functionality not implemented - skipping test');
@@ -406,10 +407,18 @@ test.describe('Readings Filtering', () => {
       return;
     }
 
-    // Search for a word that exists in mock data notes ("almuerzo" or "Cumpleaños")
-    const searchInput = page.locator('ion-searchbar input').first();
-    await searchInput.fill('almuerzo');
-    await page.waitForTimeout(1000); // Search debounce - intentional
+    // Ionic searchbar requires ionInput event dispatch (fill() doesn't trigger it)
+    await searchbar.first().evaluate((el, searchValue) => {
+      const ionSearchbar = el as HTMLElement & { value: string };
+      ionSearchbar.value = searchValue;
+      el.dispatchEvent(
+        new CustomEvent('ionInput', {
+          bubbles: true,
+          detail: { value: searchValue },
+        })
+      );
+    }, 'almuerzo');
+    await page.waitForTimeout(1000);
 
     // Results should be filtered
     const readings = page.locator('ion-card, .reading-item, app-reading-item');

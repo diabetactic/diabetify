@@ -132,7 +132,7 @@ export class TipsPage {
   }
 
   // trackBy function for tips ngFor
-  trackByTip(index: number, tip: Tip): string {
+  trackByTip(_index: number, tip: Tip): string {
     return tip.title;
   }
 }

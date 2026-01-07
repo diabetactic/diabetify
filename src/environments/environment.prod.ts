@@ -107,5 +107,7 @@ export const environment = {
     useTidepoolMock: (PROD_BACKEND_MODE as BackendMode) === 'mock',
     devTools: false, // Disable developer tools in production
     showEnvBadge: false, // Never show CLOUD/LOCAL/MOCK badge in production
+    showStatusBadges: false, // Never show floating demo badges in production
+    webDeviceFrame: false, // Desktop web should render as desktop by default
   },
 };

@@ -25,6 +25,37 @@ import { ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 
+// Type declarations for Ionic elements in test environment
+// These extend HTMLElement but may not have full type definitions when mocked
+type HTMLIonInputElement = HTMLElement & {
+  value?: string | number | null;
+  placeholder?: string;
+  required?: boolean;
+  type?: string;
+  disabled?: boolean;
+};
+
+type HTMLIonSelectElement = HTMLElement & {
+  value?: unknown;
+  placeholder?: string;
+  disabled?: boolean;
+  multiple?: boolean;
+};
+
+type HTMLIonButtonElement = HTMLElement & {
+  disabled?: boolean;
+  fill?: string;
+  color?: string;
+};
+
+// HTMLIonCheckboxElement type reserved for future checkbox harness implementation
+
+type HTMLIonToggleElement = HTMLElement & {
+  checked?: boolean;
+  disabled?: boolean;
+  value?: unknown;
+};
+
 /**
  * Query result that includes both the element and helpful methods
  */

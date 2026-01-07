@@ -1,16 +1,21 @@
+// Profile Preferences Component Styles
+// Dark mode aware using semantic CSS variables
+
 .card {
   padding: 1rem;
-  background-color: var(--ion-color-light);
-  border-radius: 0.5rem;
-  border: 1px solid var(--ion-color-medium);
+  background-color: var(--ion-card-background, var(--ion-color-light));
+  border-radius: 0.75rem;
+  border: 1px solid var(--dt-color-border-subtle, #e5e7eb);
+  box-shadow: var(--shadow-25, 0 4px 12px rgb(10 31 68 / 8%));
 }
 
 .preference-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--ion-color-medium);
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--dt-color-border-subtle, #e5e7eb);
+  color: var(--dt-color-text-primary, #1f2937);
 }
 
 .preference-row:last-child {
@@ -22,4 +27,41 @@
   background: none;
   border: none;
   cursor: pointer;
+  color: var(--dt-color-text-primary, #1f2937);
+  text-align: left;
+  font-size: inherit;
+  padding: 0;
+
+  &:hover {
+    color: var(--ion-color-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+// Dark mode - triple trigger pattern for robustness
+:host-context(.dark),
+:host-context(.ion-palette-dark) {
+  .card {
+    background-color: var(--ion-card-background, #1e293b);
+    border-color: var(--dt-color-border-subtle, #334155);
+    box-shadow: var(--shadow-08, 0 4px 12px rgb(0 0 0 / 15%));
+  }
+
+  .preference-row {
+    border-bottom-color: var(--dt-color-border-subtle, #334155);
+    color: var(--dt-color-text-primary, #e5e7eb);
+  }
+
+  .link {
+    color: var(--dt-color-text-primary, #e5e7eb);
+
+    &:hover {
+      color: var(--ion-color-primary-tint);
+    }
+  }
 }

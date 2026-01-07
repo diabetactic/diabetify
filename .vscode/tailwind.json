@@ -1,0 +1,17 @@
+{
+  "version": 1.1,
+  "atDirectives": [
+    {
+      "name": "@tailwind",
+      "description": "Use the @tailwind directive to insert Tailwind's base, components, utilities, and variants styles."
+    },
+    {
+      "name": "@apply",
+      "description": "Use @apply to inline any existing utility classes."
+    },
+    {
+      "name": "@config",
+      "description": "Use @config to specify which config file Tailwind should use."
+    }
+  ]
+}

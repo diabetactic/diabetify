@@ -13,8 +13,8 @@
 
 import { test, expect } from '@playwright/test';
 
-const hasCredentials = process.env.E2E_TEST_USERNAME && process.env.E2E_TEST_PASSWORD;
-const skipHerokuTests = !process.env.E2E_HEROKU_TESTS;
+const hasCredentials = process.env['E2E_TEST_USERNAME'] && process.env['E2E_TEST_PASSWORD'];
+const skipHerokuTests = !process.env['E2E_HEROKU_TESTS'];
 
 test.describe('Offline-First Functionality', () => {
   test.skip(skipHerokuTests, 'Set E2E_HEROKU_TESTS=true to run Heroku integration tests');
@@ -28,8 +28,8 @@ test.describe('Offline-First Functionality', () => {
     await page.goto('/login');
     await page.waitForSelector('form', { state: 'visible', timeout: 10000 });
 
-    const username = process.env.E2E_TEST_USERNAME!;
-    const password = process.env.E2E_TEST_PASSWORD!;
+    const username = process.env['E2E_TEST_USERNAME']!;
+    const password = process.env['E2E_TEST_PASSWORD']!;
 
     await page.fill('input[placeholder*="DNI"], input[placeholder*="email"]', username);
     await page.fill('input[type="password"]', password);

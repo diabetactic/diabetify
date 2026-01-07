@@ -10,10 +10,10 @@
 import { test, expect, Page } from '@playwright/test';
 
 // Configuration
-const isDockerTest = process.env.E2E_DOCKER_TESTS === 'true';
-const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:4200';
-const TEST_USERNAME = process.env.E2E_TEST_USERNAME || '1000';
-const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD || 'tuvieja';
+const isDockerTest = process.env['E2E_DOCKER_TESTS'] === 'true';
+const BASE_URL = process.env['E2E_BASE_URL'] || 'http://localhost:4200';
+const TEST_USERNAME = process.env['E2E_TEST_USERNAME'] || '1000';
+const TEST_PASSWORD = process.env['E2E_TEST_PASSWORD'] || 'tuvieja';
 
 // Screenshot directory
 const SCREENSHOT_DIR = 'playwright/artifacts/docker-proof';
@@ -112,9 +112,15 @@ async function loginAndNavigate(page: Page, targetTab?: string): Promise<void> {
     const tabByRole = page.getByRole('tab', { name: tabLabel });
 
     if (await tabByTestId.isVisible().catch(() => false)) {
-      await tabByTestId.click();
+      await tabByTestId.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
     } else if (await tabByRole.isVisible().catch(() => false)) {
-      await tabByRole.click();
+      await tabByRole.first().evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
     } else {
       await page.goto(`${BASE_URL}/tabs/${targetTab}`);
     }
@@ -144,7 +150,8 @@ test.describe('Docker Backend - Dark Mode @docker @docker-dark-mode', () => {
 
     // Verify dashboard elements are visible (use dashboard-specific elements)
     await expect(page.getByRole('tab', { name: 'Inicio' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Add Reading' })).toBeVisible();
+    const addReadingBtn = page.locator('[data-testid="fab-add-reading"], #fab-add-reading');
+    await expect(addReadingBtn.first()).toBeVisible();
   });
 
   test('dashboard renders correctly in dark mode', async ({ page }) => {
@@ -186,7 +193,7 @@ test.describe('Docker Backend - Dark Mode @docker @docker-dark-mode', () => {
 
     // Verify readings content is visible in both modes
     const readingsText = page.getByText(/Mostrando.*lecturas|Showing.*readings/i);
-    await expect(readingsText).toBeVisible({ timeout: 10000 });
+    await expect(readingsText.first()).toBeVisible({ timeout: 10000 });
   });
 
   test('appointments page in light and dark mode', async ({ page }) => {
@@ -242,10 +249,13 @@ test.describe('Docker Backend - Dark Mode @docker @docker-dark-mode', () => {
   test('add reading form in light and dark mode', async ({ page }) => {
     await loginAndNavigate(page, 'readings');
 
-    // Click add reading button
-    const addButton = page.getByRole('button', { name: 'Add Reading' });
+    // Click add reading button using JavaScript to avoid tab bar interception
+    const addButton = page.locator('[data-testid="fab-add-reading"], #fab-add-reading');
     await expect(addButton).toBeVisible({ timeout: 10000 });
-    await addButton.click();
+    await addButton.evaluate((el: HTMLElement) => {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      el.click();
+    });
     await page.waitForLoadState('networkidle');
 
     // Light mode screenshot
@@ -274,17 +284,23 @@ test.describe('Docker Backend - Dark Mode @docker @docker-dark-mode', () => {
     await enableDarkMode(page);
     expect(await verifyDarkModeActive(page)).toBe(true);
 
-    // Navigate to readings
-    const readingsTab = page.getByRole('tab', { name: 'Lecturas' });
-    await readingsTab.click();
+    // Navigate to readings using JavaScript to avoid tab bar interception
+    const readingsTab = page.getByRole('tab', { name: 'Lecturas' }).first();
+    await readingsTab.evaluate((el: HTMLElement) => {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      el.click();
+    });
     await page.waitForLoadState('networkidle');
 
     // Verify dark mode is still active
     expect(await verifyDarkModeActive(page)).toBe(true);
 
-    // Navigate to profile
-    const profileTab = page.getByRole('tab', { name: 'Perfil' });
-    await profileTab.click();
+    // Navigate to profile using JavaScript to avoid tab bar interception
+    const profileTab = page.getByRole('tab', { name: 'Perfil' }).first();
+    await profileTab.evaluate((el: HTMLElement) => {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      el.click();
+    });
     await page.waitForLoadState('networkidle');
 
     // Verify dark mode persists

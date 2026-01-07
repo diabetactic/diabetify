@@ -59,7 +59,7 @@ node scripts/diabetify-api.js accept --placement=0
 Run the integration tests (which mock the backend, unfortunately). To verify against REAL backend:
 
 1.  Start Docker services: `npm run docker:start` (in parent repo).
-2.  Run E2E: `npm run test:e2e:docker`.
+2.  Run E2E: `pnpm -s run test:e2e:docker`.
 
 ### How to verify Auth
 

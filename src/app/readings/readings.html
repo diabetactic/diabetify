@@ -72,7 +72,7 @@
 
   @if (hasActiveFilters()) {
     <div
-      class="flex items-center gap-2 overflow-x-auto whitespace-nowrap border-b border-[var(--ion-color-light-shade)] bg-[var(--ion-color-light)] px-4 py-3"
+      class="flex items-center gap-2 overflow-x-auto whitespace-nowrap border-b border-[var(--dt-color-border-subtle)] bg-[var(--dt-color-surface-soft)] px-4 py-3"
     >
       @if (filters.status && filters.status !== 'all') {
         <ion-chip (click)="clearFilters()" color="primary" class="m-0 cursor-pointer">
@@ -132,22 +132,6 @@
       </ion-fab-button>
     </ion-fab>
   }
-
-  <ion-fab
-    vertical="bottom"
-    horizontal="end"
-    slot="fixed"
-    style="bottom: calc(1rem + env(safe-area-inset-bottom, 0px))"
-  >
-    <ion-fab-button
-      (click)="addReading()"
-      color="primary"
-      class="h-14 w-14 shadow-[0_4px_12px_rgb(0_0_0_/_0.15)]"
-      [attr.aria-label]="'readings.addReading' | translate"
-    >
-      <app-icon name="add" class="h-8 w-8"></app-icon>
-    </ion-fab-button>
-  </ion-fab>
 </ion-content>
 
 <app-readings-filter

@@ -17,7 +17,7 @@ import {
 } from '@services/external-services-manager.service';
 import { LocalAuthService } from '@services/local-auth.service';
 import { TidepoolAuthService } from '@services/tidepool-auth.service';
-import { EnvironmentDetectorService } from '@services/environment-detector.service';
+
 import { PlatformDetectorService } from '@services/platform-detector.service';
 import { LoggerService } from '@services/logger.service';
 import { MockAdapterService } from '@services/mock-adapter.service';
@@ -723,7 +723,6 @@ export class ApiGatewayService {
     private injector: Injector,
     private externalServices: ExternalServicesManager,
     private localAuth: LocalAuthService,
-    private envDetector: EnvironmentDetectorService,
     private platformDetector: PlatformDetectorService,
     private logger: LoggerService,
     private mockAdapter: MockAdapterService

@@ -5,7 +5,8 @@ import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Preferences } from '@capacitor/preferences';
 import { PlatformDetectorService } from '@services/platform-detector.service';
 import { LoggerService } from '@services/logger.service';
-import { MockDataService } from '@services/mock-data.service';
+import { SecureStorageService } from '@services/secure-storage.service';
+
 import { MockAdapterService } from '@services/mock-adapter.service';
 import { environment } from '@env/environment';
 import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
@@ -114,13 +115,16 @@ export interface TokenResponse {
   user: LocalUser;
 }
 
-// Storage keys
+// Storage keys - used for both secure storage and migration from Preferences
 const STORAGE_KEYS = {
   ACCESS_TOKEN: 'local_access_token',
   REFRESH_TOKEN: 'local_refresh_token',
   USER: 'local_user',
   EXPIRES_AT: 'local_token_expires',
 };
+
+// Keys that contain sensitive data and must be stored securely
+const SECURE_STORAGE_KEYS = [STORAGE_KEYS.ACCESS_TOKEN, STORAGE_KEYS.REFRESH_TOKEN];
 
 @Injectable({
   providedIn: 'root',
@@ -147,8 +151,8 @@ export class LocalAuthService {
     private http: HttpClient,
     private platformDetector: PlatformDetectorService,
     private logger: LoggerService,
-    private mockData: MockDataService,
-    private mockAdapter: MockAdapterService
+    private mockAdapter: MockAdapterService,
+    private secureStorage: SecureStorageService
   ) {
     this.logger.info('Init', 'LocalAuthService initialized');
     // Set base URL for API calls
@@ -165,14 +169,16 @@ export class LocalAuthService {
       this.initializationResolve = resolve;
     });
 
-    // Initialize auth state from storage
+    // Initialize auth state from storage (includes migration from insecure storage)
     this.initializeAuthState();
   }
 
   /**
    * Initialize authentication state from storage
    * Resolves initializationPromise when complete
-   * NOTE: Capacitor Preferences uses localStorage on web, so we always use it
+   *
+   * SECURITY: Uses SecureStorage for tokens (hardware-backed encryption on mobile)
+   * Includes one-time migration from insecure Preferences storage
    */
   private async initializeAuthState(): Promise<void> {
     // Timeout for token refresh operations during initialization
@@ -180,17 +186,21 @@ export class LocalAuthService {
     const INIT_REFRESH_TIMEOUT_MS = 8000;
 
     try {
-      // Always try to restore from storage (works on both native and web)
-      // Capacitor Preferences uses localStorage on web platforms
+      // SECURITY: Migrate tokens from insecure Preferences to SecureStorage
+      // This is a one-time operation for existing installations
+      await this.secureStorage.migrateFromPreferences(SECURE_STORAGE_KEYS);
+
+      // Read tokens from secure storage, user data from regular storage
+      // User data (name, email, preferences) is not sensitive enough to require encryption
       const [accessToken, refreshToken, userStr, expiresAtStr] = await Promise.all([
-        Preferences.get({ key: STORAGE_KEYS.ACCESS_TOKEN }),
-        Preferences.get({ key: STORAGE_KEYS.REFRESH_TOKEN }),
+        this.secureStorage.get(STORAGE_KEYS.ACCESS_TOKEN),
+        this.secureStorage.get(STORAGE_KEYS.REFRESH_TOKEN),
         Preferences.get({ key: STORAGE_KEYS.USER }),
         Preferences.get({ key: STORAGE_KEYS.EXPIRES_AT }),
       ]);
 
-      const hasAccessToken = Boolean(accessToken.value);
-      const hasRefreshToken = Boolean(refreshToken.value);
+      const hasAccessToken = Boolean(accessToken);
+      const hasRefreshToken = Boolean(refreshToken);
       const hasUser = Boolean(userStr.value);
 
       if (hasAccessToken && hasUser && userStr.value) {
@@ -205,12 +215,12 @@ export class LocalAuthService {
 
         // Check if token is expired
         if (!expiresAt || Date.now() < expiresAt) {
-          this.logger.info('Auth', 'Auth state restored from storage', { userId: user.id });
+          this.logger.info('Auth', 'Auth state restored from secure storage', { userId: user.id });
           this.authStateSubject.next({
             isAuthenticated: true,
             user,
-            accessToken: accessToken.value,
-            refreshToken: hasRefreshToken ? refreshToken.value : null,
+            accessToken: accessToken,
+            refreshToken: hasRefreshToken ? refreshToken : null,
             expiresAt,
           });
         } else if (hasRefreshToken) {
@@ -252,17 +262,19 @@ export class LocalAuthService {
   }
 
   /**
-   * Clear stored tokens from Preferences
+   * Clear stored tokens from SecureStorage
    * Used when token refresh fails to prevent future hangs
+   *
+   * SECURITY: Clears tokens from secure storage (hardware-backed on mobile)
    */
   private async clearStoredTokens(): Promise<void> {
     try {
       await Promise.all([
-        Preferences.remove({ key: STORAGE_KEYS.ACCESS_TOKEN }),
-        Preferences.remove({ key: STORAGE_KEYS.REFRESH_TOKEN }),
+        this.secureStorage.remove(STORAGE_KEYS.ACCESS_TOKEN),
+        this.secureStorage.remove(STORAGE_KEYS.REFRESH_TOKEN),
         Preferences.remove({ key: STORAGE_KEYS.EXPIRES_AT }),
       ]);
-      this.logger.info('Auth', 'Cleared stored tokens after refresh failure');
+      this.logger.info('Auth', 'Cleared stored tokens from secure storage');
     } catch (e) {
       this.logger.error('Auth', 'Failed to clear stored tokens', e);
     }
@@ -473,7 +485,7 @@ export class LocalAuthService {
 
   /**
    * Logout the user
-   * NOTE: Always clears storage (Capacitor Preferences uses localStorage on web)
+   * SECURITY: Clears tokens from SecureStorage (hardware-backed on mobile)
    * CRITICAL: Also clears IndexedDB to remove PHI data (glucose readings, appointments)
    */
   async logout(): Promise<void> {
@@ -489,11 +501,11 @@ export class LocalAuthService {
       expiresAt: null,
     });
 
-    // Always clear storage (works on both native and web)
-    // Capacitor Preferences uses localStorage on web platforms
+    // SECURITY: Clear tokens from secure storage (hardware-backed on mobile)
+    // User data and expiry can remain in regular Preferences
     await Promise.all([
-      Preferences.remove({ key: STORAGE_KEYS.ACCESS_TOKEN }),
-      Preferences.remove({ key: STORAGE_KEYS.REFRESH_TOKEN }),
+      this.secureStorage.remove(STORAGE_KEYS.ACCESS_TOKEN),
+      this.secureStorage.remove(STORAGE_KEYS.REFRESH_TOKEN),
       Preferences.remove({ key: STORAGE_KEYS.USER }),
       Preferences.remove({ key: STORAGE_KEYS.EXPIRES_AT }),
     ]);
@@ -502,18 +514,22 @@ export class LocalAuthService {
     const { db } = await import('./database.service');
     await db.clearAllData();
 
-    this.logger.info('Auth', 'Logout completed - all data cleared', { userId: user?.id });
+    this.logger.info('Auth', 'Logout completed - all data cleared from secure storage', {
+      userId: user?.id,
+    });
   }
 
   /**
    * Refresh the access token using stored refresh token
    * Calls /token endpoint with grant_type=refresh_token
+   *
+   * SECURITY: Reads/writes tokens from SecureStorage (hardware-backed on mobile)
    */
   refreshAccessToken(): Observable<LocalAuthState> {
     this.logger.info('Auth', 'Attempting token refresh');
 
-    return from(Preferences.get({ key: STORAGE_KEYS.REFRESH_TOKEN })).pipe(
-      switchMap(({ value: refreshToken }) => {
+    return from(this.secureStorage.get(STORAGE_KEYS.REFRESH_TOKEN)).pipe(
+      switchMap(refreshToken => {
         if (!refreshToken) {
           this.logger.warn('Auth', 'No refresh token available');
           return throwError(() => new Error('No refresh token available. Please login again.'));
@@ -559,18 +575,12 @@ export class LocalAuthService {
 
               this.authStateSubject.next(newState);
 
-              // Persist new tokens
+              // SECURITY: Persist new tokens to secure storage
               return from(
                 Promise.all([
-                  Preferences.set({
-                    key: STORAGE_KEYS.ACCESS_TOKEN,
-                    value: token.access_token,
-                  }),
+                  this.secureStorage.set(STORAGE_KEYS.ACCESS_TOKEN, token.access_token),
                   token.refresh_token
-                    ? Preferences.set({
-                        key: STORAGE_KEYS.REFRESH_TOKEN,
-                        value: token.refresh_token,
-                      })
+                    ? this.secureStorage.set(STORAGE_KEYS.REFRESH_TOKEN, token.refresh_token)
                     : Promise.resolve(),
                   Preferences.set({
                     key: STORAGE_KEYS.EXPIRES_AT,
@@ -581,8 +591,8 @@ export class LocalAuthService {
             }),
             catchError(error => {
               this.logger.error('Auth', 'Token refresh failed', error);
-              // Clear invalid refresh token - properly await instead of fire-and-forget
-              return from(Preferences.remove({ key: STORAGE_KEYS.REFRESH_TOKEN })).pipe(
+              // Clear invalid refresh token from secure storage
+              return from(this.secureStorage.remove(STORAGE_KEYS.REFRESH_TOKEN)).pipe(
                 switchMap(() =>
                   throwError(() => new Error('Token refresh failed. Please login again.'))
                 )
@@ -693,7 +703,13 @@ export class LocalAuthService {
 
   /**
    * Handle authentication response
-   * NOTE: Always persists to storage (Capacitor Preferences uses localStorage on web)
+   * SECURITY: Stores tokens in SecureStorage (hardware-backed encryption on mobile)
+   *
+   * Token storage strategy:
+   * - Access token: SecureStorage (encrypted, hardware-backed)
+   * - Refresh token: SecureStorage (encrypted, hardware-backed)
+   * - User data: Regular Preferences (not sensitive enough to encrypt)
+   * - Expiry time: Regular Preferences (not sensitive)
    */
   private async handleAuthResponse(response: TokenResponse, _rememberMe: boolean): Promise<void> {
     const expiresInSeconds = response.expires_in ?? 1800; // Default 30 minutes
@@ -708,18 +724,12 @@ export class LocalAuthService {
       expiresAt,
     });
 
-    // Always store tokens and user info (works on both native and web)
-    // Capacitor Preferences uses localStorage on web platforms
+    // SECURITY: Store tokens in secure storage (hardware-backed on mobile)
+    // User data and expiry can use regular Preferences
     await Promise.all([
-      Preferences.set({
-        key: STORAGE_KEYS.ACCESS_TOKEN,
-        value: response.access_token,
-      }),
+      this.secureStorage.set(STORAGE_KEYS.ACCESS_TOKEN, response.access_token),
       response.refresh_token
-        ? Preferences.set({
-            key: STORAGE_KEYS.REFRESH_TOKEN,
-            value: response.refresh_token,
-          })
+        ? this.secureStorage.set(STORAGE_KEYS.REFRESH_TOKEN, response.refresh_token)
         : Promise.resolve(),
       Preferences.set({
         key: STORAGE_KEYS.USER,
@@ -730,6 +740,12 @@ export class LocalAuthService {
         value: expiresAt.toString(),
       }),
     ]);
+
+    this.logger.info('Auth', 'Tokens stored securely', {
+      hasAccessToken: true,
+      hasRefreshToken: Boolean(response.refresh_token),
+      expiresAt: new Date(expiresAt).toISOString(),
+    });
 
     // Schedule token expiration reminder (5 minutes before expiry)
     const reminderTime = (expiresInSeconds - 300) * 1000;

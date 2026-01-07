@@ -75,7 +75,7 @@ export async function loginToHeroku(
   await page.fill('input[type="password"]', password);
 
   // Submit form with race-condition-safe approach
-  const [response] = await Promise.all([
+  await Promise.all([
     page.waitForResponse(r => r.url().includes('/token') || r.url().includes('/login'), {
       timeout: 15000,
     }),
@@ -89,9 +89,6 @@ export async function loginToHeroku(
   if (waitForHydration) {
     await waitForIonicHydration(page);
   }
-
-  // Return response for token extraction if needed
-  return response;
 }
 
 /**

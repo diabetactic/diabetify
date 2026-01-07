@@ -55,7 +55,7 @@ export class ProfilePreferencesComponent {
     this.goToSettings.emit();
   }
 
-  trackByUnitOption(index: number, option: { value: string; label: string }): string {
+  trackByUnitOption(_index: number, option: { value: string; label: string }): string {
     return option.value;
   }
 }

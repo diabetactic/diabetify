@@ -90,9 +90,11 @@ export class MockIonicValueAccessor implements ControlValueAccessor {
 interface JasmineLikeMock<T extends (...args: any[]) => any = (...args: any[]) => any> {
   (...args: Parameters<T>): ReturnType<T>;
   mockReturnValue: (value: ReturnType<T>) => any;
+  mockReturnValueOnce: (value: ReturnType<T>) => any;
   mockResolvedValue: (value: any) => any;
   mockRejectedValue: (error: any) => any;
   mockImplementation: (fn: T) => any;
+  mockReset: () => void;
   mock: {
     calls: Parameters<T>[];
     results: Array<{ value?: ReturnType<T> }>;
@@ -137,9 +139,9 @@ function createJasmineLikeMock<T extends (...args: any[]) => any>(): JasmineLike
     },
     callThrough: () => mockFn,
     throwError: (error: any) => {
-      mockFn.mockImplementation(() => {
+      mockFn.mockImplementation((() => {
         throw error;
-      });
+      }) as unknown as T);
       return mockFn;
     },
     resolveTo: (value: any) => {

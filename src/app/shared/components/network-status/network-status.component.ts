@@ -10,13 +10,14 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Network } from '@capacitor/network';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-network-status',
   template: `
-    <div class="network-status" [ngClass]="status">
+    <div class="network-status" [ngClass]="status" data-testid="network-status">
       <div class="status-dot"></div>
-      <div class="status-text">{{ statusText }}</div>
+      <div class="status-text">{{ statusTextKey | translate }}</div>
     </div>
   `,
   styles: [
@@ -43,12 +44,12 @@ import { Network } from '@capacitor/network';
   ],
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NetworkStatusComponent implements OnInit, OnDestroy {
   status: 'online' | 'offline' = 'online';
-  statusText: string = 'Online';
+  statusTextKey: 'common.online' | 'common.offline' = 'common.online';
   private networkListener: Awaited<ReturnType<typeof Network.addListener>> | undefined;
   private cdr = inject(ChangeDetectorRef);
 
@@ -74,7 +75,7 @@ export class NetworkStatusComponent implements OnInit, OnDestroy {
 
   private updateStatus(isConnected: boolean) {
     this.status = isConnected ? 'online' : 'offline';
-    this.statusText = isConnected ? 'Online' : 'Offline';
+    this.statusTextKey = isConnected ? 'common.online' : 'common.offline';
     this.cdr.markForCheck();
   }
 }

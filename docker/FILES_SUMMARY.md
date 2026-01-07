@@ -4,25 +4,40 @@
 
 ### 1. Core Docker Infrastructure
 
-#### /home/julito/TPP/diabetactic/diabetify/docker/Dockerfile.e2e
+#### /home/julito/code/facu/diabetactic/diabetify/docker/Dockerfile.e2e-runner
+
+**Purpose**: Playwright runner image for `docker/docker-compose.e2e.yml` (no Angular build)
+
+**Key Features**:
+
+- Based on `mcr.microsoft.com/playwright:v1.57.0-jammy`
+- Installs repo dependencies via `pnpm install` (no scripts) with cache mounts
+- Designed to run against the nginx `app` service which serves `www/browser` from the host
+
+**Size**: ~1.4KB
+**Base Image**: mcr.microsoft.com/playwright:v1.57.0-jammy
+
+---
+
+#### /home/julito/code/facu/diabetactic/diabetify/docker/Dockerfile.e2e
 
 **Purpose**: Multi-stage Dockerfile for building Angular app and running Playwright tests
 
 **Key Features**:
 
-- Stage 1: Node 20 alpine builder (builds Angular app with `npm run build:mock`)
-- Stage 2: Playwright v1.48.0-jammy test runner
+- Stage 1: Node 22 alpine builder (builds Angular app with `pnpm run build:mock`)
+- Stage 2: Playwright v1.57.0-jammy test runner
 - Installs serve for static file serving
 - Pre-configured environment variables
 - Health check support
 - Playwright browsers pre-installed
 
 **Size**: ~2.1KB
-**Base Images**: node:20-alpine, mcr.microsoft.com/playwright:v1.48.0-jammy
+**Base Images**: node:22-alpine, mcr.microsoft.com/playwright:v1.57.0-jammy
 
 ---
 
-#### /home/julito/TPP/diabetactic/diabetify/docker/docker-compose.e2e.yml
+#### /home/julito/code/facu/diabetactic/diabetify/docker/docker-compose.e2e.yml
 
 **Purpose**: Orchestrates multi-container E2E testing environment
 
@@ -34,7 +49,7 @@
    - Health check every 5s
    - Volume mounts nginx.conf and www/
 
-2. **playwright** (built from Dockerfile.e2e)
+2. **playwright** (built from Dockerfile.e2e-runner by default; override via `E2E_DOCKERFILE`)
    - Runs Playwright tests
    - Depends on app service health
    - Mounts test artifacts as volumes
@@ -46,7 +61,7 @@
 
 ---
 
-#### /home/julito/TPP/diabetactic/diabetify/docker/nginx.conf
+#### /home/julito/code/facu/diabetactic/diabetify/docker/nginx.conf
 
 **Purpose**: Production-ready nginx configuration for Angular SPA
 
@@ -65,7 +80,7 @@
 
 ---
 
-#### /home/julito/TPP/diabetactic/diabetify/docker/.dockerignore
+#### /home/julito/code/facu/diabetactic/diabetify/docker/.dockerignore
 
 **Purpose**: Optimize Docker build context by excluding unnecessary files
 
@@ -88,7 +103,7 @@
 
 ### 2. Automation Scripts
 
-#### /home/julito/TPP/diabetactic/diabetify/scripts/run-e2e-docker.sh
+#### /home/julito/code/facu/diabetactic/diabetify/scripts/run-e2e-docker.sh
 
 **Purpose**: Shell script to orchestrate Docker E2E test execution
 
@@ -129,7 +144,7 @@
 
 ### 3. Documentation
 
-#### /home/julito/TPP/diabetactic/diabetify/docker/README.md
+#### /home/julito/code/facu/diabetactic/diabetify/docker/README.md
 
 **Purpose**: Quick reference guide for Docker E2E setup
 
@@ -146,7 +161,7 @@
 
 ---
 
-#### /home/julito/TPP/diabetactic/diabetify/docker/DOCKER_E2E_SETUP.md
+#### /home/julito/code/facu/diabetactic/diabetify/docker/DOCKER_E2E_SETUP.md
 
 **Purpose**: Comprehensive setup and usage guide
 
@@ -169,7 +184,7 @@
 
 ---
 
-#### /home/julito/TPP/diabetactic/diabetify/docker/VERIFICATION_CHECKLIST.md
+#### /home/julito/code/facu/diabetactic/diabetify/docker/VERIFICATION_CHECKLIST.md
 
 **Purpose**: Step-by-step verification for new setup
 
@@ -193,7 +208,7 @@
 
 ---
 
-#### /home/julito/TPP/diabetactic/diabetify/docker/circleci-job-example.yml
+#### /home/julito/code/facu/diabetactic/diabetify/docker/circleci-job-example.yml
 
 **Purpose**: Ready-to-use CircleCI job configuration
 
@@ -211,7 +226,7 @@
 
 ### 4. Package.json Changes
 
-#### Modified: /home/julito/TPP/diabetactic/diabetify/package.json
+#### Modified: /home/julito/code/facu/diabetactic/diabetify/package.json
 
 **Added Scripts**:
 
@@ -229,7 +244,7 @@
 ## File Tree
 
 ```
-/home/julito/TPP/diabetactic/diabetify/
+/home/julito/code/facu/diabetactic/diabetify/
 ├── docker/
 │   ├── .dockerignore                    # Build context optimization
 │   ├── Dockerfile.e2e                   # Multi-stage Docker image
@@ -253,8 +268,8 @@
 ### Run Tests
 
 ```bash
-# Method 1: npm script (recommended)
-npm run test:e2e:docker
+# Method 1: pnpm script (recommended)
+pnpm -s run test:e2e:docker
 
 # Method 2: shell script
 ./scripts/run-e2e-docker.sh
@@ -353,7 +368,7 @@ docker-compose -f docker/docker-compose.e2e.yml down -v --rmi all
 1. **Test Locally**
 
    ```bash
-   npm run test:e2e:docker
+   pnpm -s run test:e2e:docker
    ```
 
 2. **Review Reports**

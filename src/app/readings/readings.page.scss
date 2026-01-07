@@ -6,11 +6,6 @@
 
 // === Responsive Design ===
 @media (width >= 768px) {
-  .pb-20 {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
   .flex.items-center.justify-between.px-4.py-4.pb-2 {
     padding: 20px 24px 12px;
   }
@@ -22,23 +17,61 @@
 :host-context(.dark),
 :host-context(.ion-palette-dark) {
   .flex.items-center.gap-2.px-4.py-3 {
-    /* Hex fallback for Android WebView compatibility */
-    background: oklch(var(--b2));
-    border-bottom-color: oklch(var(--bc) / 10%);
+    /* Hex fallback for Android WebView, oklch for modern browsers */
+    background: #1e293b;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+
+    @supports (color: oklch(0.5 0.1 100)) {
+      background: oklch(var(--b2));
+      border-bottom-color: oklch(var(--bc) / 10%);
+    }
   }
 
   /* Date header */
   .sticky.top-0.z-10 {
-    /* Hex fallback for Android WebView compatibility */
-    background: oklch(var(--b1));
+    /* Hex fallback for Android WebView, oklch for modern browsers */
+    background: #0f172a;
+
+    @supports (color: oklch(0.5 0.1 100)) {
+      background: oklch(var(--b1));
+    }
   }
 
   /* Reading cards */
   ion-card {
     /* Hex fallback for Android WebView compatibility */
-    --background: oklch(var(--b2));
+    --background: #1e293b;
 
-    border: 1px solid oklch(var(--bc) / 10%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    @supports (color: oklch(0.5 0.1 100)) {
+      --background: oklch(var(--b2));
+
+      border: 1px solid oklch(var(--bc) / 10%);
+    }
+  }
+
+  /* Modal list and items - proper dark backgrounds */
+  ion-modal ion-list {
+    background: var(--ion-card-background, #1e293b);
+  }
+
+  ion-modal ion-item {
+    --background: var(--ion-card-background, #1e293b);
+    --color: var(--dt-color-text-primary, #e5e7eb);
+
+    ion-label h3 {
+      color: var(--dt-color-text-primary, #e5e7eb);
+    }
+
+    ion-label p {
+      color: var(--dt-color-text-muted, rgb(229 231 235 / 60%));
+    }
+  }
+
+  /* Reading detail modal card */
+  ion-modal .bg-base-100 {
+    background: var(--ion-card-background, #1e293b);
   }
 }
 
@@ -79,11 +112,19 @@ ion-toolbar[color='primary'] ion-searchbar {
 .dark ion-toolbar[color='primary'] ion-searchbar,
 .ion-palette-dark ion-toolbar[color='primary'] ion-searchbar {
   /* Hex fallbacks for Android WebView compatibility */
-  --background: oklch(var(--b2, 0.2 0 0));
-  --color: oklch(var(--bc, 1 0 0));
-  --placeholder-color: oklch(var(--bc, 1 0 0) / 50%);
-  --icon-color: oklch(var(--bc, 1 0 0) / 60%);
-  --clear-button-color: oklch(var(--bc, 1 0 0) / 60%);
+  --background: #1e293b;
+  --color: #f8fafc;
+  --placeholder-color: rgba(248, 250, 252, 0.5);
+  --icon-color: rgba(248, 250, 252, 0.6);
+  --clear-button-color: rgba(248, 250, 252, 0.6);
+
+  @supports (color: oklch(0.5 0.1 100)) {
+    --background: oklch(var(--b2, 0.2 0 0));
+    --color: oklch(var(--bc, 1 0 0));
+    --placeholder-color: oklch(var(--bc, 1 0 0) / 50%);
+    --icon-color: oklch(var(--bc, 1 0 0) / 60%);
+    --clear-button-color: oklch(var(--bc, 1 0 0) / 60%);
+  }
 }
 
 // Ensure proper FAB shadow rendering

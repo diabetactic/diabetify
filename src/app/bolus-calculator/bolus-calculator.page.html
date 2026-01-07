@@ -10,7 +10,7 @@
 </ion-header>
 
 <ion-content class="bolus-content">
-  <div class="page-shell max-w-xl p-4">
+  <div class="page-shell p-4">
     <!-- Info Banner -->
     <div class="info-banner mb-6">
       <ion-icon name="information-circle-outline" class="text-primary text-xl"></ion-icon>
@@ -19,190 +19,203 @@
       </span>
     </div>
 
-    <!-- Calculator Form -->
-    <form [formGroup]="calculatorForm" (ngSubmit)="calculateBolus()" class="card mb-6">
-      <h2 class="text-dark m-0 mb-4 text-lg font-bold">
-        {{ 'bolusCalculator.enterData' | translate }}
-      </h2>
+    <div class="grid gap-6 lg:grid-cols-2">
+      <!-- Calculator Form -->
+      <form
+        [formGroup]="calculatorForm"
+        (ngSubmit)="calculateBolus()"
+        class="card"
+        [ngClass]="{ 'lg:col-span-2': !result }"
+      >
+        <h2 class="text-dark m-0 mb-4 text-lg font-bold">
+          {{ 'bolusCalculator.enterData' | translate }}
+        </h2>
 
-      <!-- Current Glucose -->
-      <div class="form-field mb-4">
-        <label class="form-label" for="currentGlucose">
-          <app-icon name="water-outline" aria-hidden="true" class="text-primary"></app-icon>
-          {{ 'bolusCalculator.currentGlucose' | translate }}
-        </label>
-        <ion-input
-          id="current-glucose-input"
-          type="number"
-          formControlName="currentGlucose"
-          [placeholder]="'bolusCalculator.glucosePlaceholder' | translate"
-          [disabled]="calculating"
-          inputmode="numeric"
-          class="form-input"
-          [class.input-error]="isFieldInvalid('currentGlucose')"
-          (ionInput)="onInputChange('currentGlucose', $event)"
-          data-testid="glucose-input"
-        ></ion-input>
-        @if (glucoseError) {
-          <span class="error-text">{{ glucoseError }}</span>
-        }
-      </div>
-
-      <!-- Carbs -->
-      <div class="form-field mb-4">
-        <label class="form-label" for="carbGrams">
-          <app-icon name="restaurant-outline" aria-hidden="true" class="text-primary"></app-icon>
-          {{ 'bolusCalculator.carbGrams' | translate }}
-        </label>
-
-        <!-- Food Picker Button -->
-        <button
-          type="button"
-          class="food-picker-btn"
-          (click)="openFoodPicker()"
-          [disabled]="calculating"
-          data-testid="food-picker-btn"
-        >
-          <span class="food-picker-icon">🍽️</span>
-          <span class="food-picker-text">{{ 'bolusCalculator.selectFoods' | translate }}</span>
-          <app-icon name="chevron-right" size="sm" class="food-picker-arrow"></app-icon>
-        </button>
-
-        <!-- Selected Foods Display -->
-        @if (selectedFoods().length > 0) {
-          <div class="selected-foods-list">
-            @for (sf of selectedFoods(); track sf.food.id) {
-              <div class="selected-food-chip">
-                <span class="selected-food-emoji">{{ sf.food.emoji }}</span>
-                <span class="selected-food-name">{{ sf.food.nameKey | translate }}</span>
-                <span class="selected-food-carbs">{{ sf.totalCarbs }}g</span>
-              </div>
-            }
-            <button
-              type="button"
-              class="clear-foods-btn"
-              (click)="clearSelectedFoods()"
-              [attr.aria-label]="'bolusCalculator.clearFoods' | translate"
-            >
-              <app-icon name="x" size="xs"></app-icon>
-            </button>
-          </div>
-        }
-
-        <!-- Manual Input -->
-        <div class="carbs-input-row">
+        <!-- Current Glucose -->
+        <div class="form-field mb-4">
+          <label class="form-label" for="currentGlucose">
+            <app-icon name="water-outline" aria-hidden="true" class="text-primary"></app-icon>
+            {{ 'bolusCalculator.currentGlucose' | translate }}
+          </label>
           <ion-input
-            id="carb-grams-input"
+            id="currentGlucose"
             type="number"
-            formControlName="carbGrams"
-            [placeholder]="'bolusCalculator.carbsPlaceholder' | translate"
+            formControlName="currentGlucose"
+            [value]="calculatorForm.get('currentGlucose')?.value ?? ''"
+            [placeholder]="'bolusCalculator.glucosePlaceholder' | translate"
             [disabled]="calculating"
             inputmode="numeric"
             class="form-input"
-            [class.input-error]="isFieldInvalid('carbGrams')"
-            (ionInput)="onInputChange('carbGrams', $event)"
-            data-testid="carbs-input"
+            [class.input-error]="isFieldInvalid('currentGlucose')"
+            (ionInput)="onInputChange('currentGlucose', $event)"
+            data-testid="glucose-input"
           ></ion-input>
-          <span class="carbs-unit-label">g</span>
-        </div>
-        @if (carbsError) {
-          <span class="error-text">{{ carbsError }}</span>
-        }
-      </div>
-
-      <!-- Calculate Button -->
-      <ion-button
-        id="calculate-bolus-btn"
-        type="submit"
-        expand="block"
-        [disabled]="calculatorForm.invalid || calculating"
-        class="mt-4"
-        data-testid="calculate-btn"
-      >
-        @if (!calculating) {
-          <ion-icon slot="start" name="calculator-outline"></ion-icon>
-        }
-        @if (calculating) {
-          <ion-spinner name="crescent"></ion-spinner>
-        }
-        @if (!calculating) {
-          <span>{{ 'bolusCalculator.calculate' | translate }}</span>
-        }
-      </ion-button>
-    </form>
-
-    <!-- Result Card -->
-    @if (result) {
-      <div class="result-card animate-slide-in-up" data-testid="result-card">
-        <h2 class="result-title">
-          <app-icon name="medical-outline" aria-hidden="true"></app-icon>
-          {{ 'bolusCalculator.recommended' | translate }}
-        </h2>
-        <div class="result-value-container">
-          <div class="result-value" data-testid="recommended-insulin-value">
-            {{ formatInsulin(result.recommendedInsulin) }}
-          </div>
-          <div class="result-units">{{ 'bolusCalculator.units' | translate }}</div>
+          @if (glucoseError) {
+            <span class="error-text">{{ glucoseError }}</span>
+          }
         </div>
 
-        @if (warnings.length > 0) {
-          <div class="warnings-section">
-            <h4 class="warnings-title">
-              <ion-icon name="alert-circle-outline" class="warning-icon"></ion-icon>
-              {{ 'bolusCalculator.warningsTitle' | translate }}
-            </h4>
-            <ul class="warnings-list">
-              @for (warning of warnings; track warning.type) {
-                <li>{{ warning.message }}</li>
+        <!-- Carbs -->
+        <div class="form-field mb-4">
+          <label class="form-label" for="carbGrams">
+            <app-icon name="restaurant-outline" aria-hidden="true" class="text-primary"></app-icon>
+            {{ 'bolusCalculator.carbGrams' | translate }}
+          </label>
+
+          <!-- Food Picker Button -->
+          <button
+            type="button"
+            class="food-picker-btn"
+            (click)="openFoodPicker()"
+            [disabled]="calculating"
+            data-testid="food-picker-btn"
+          >
+            <span class="food-picker-icon">🍽️</span>
+            <span class="food-picker-text">{{ 'bolusCalculator.selectFoods' | translate }}</span>
+            <app-icon name="chevron-right" size="sm" class="food-picker-arrow"></app-icon>
+          </button>
+
+          <!-- Selected Foods Display -->
+          @if (selectedFoods().length > 0) {
+            <div class="selected-foods-list">
+              @for (sf of selectedFoods(); track sf.food.id) {
+                <div class="selected-food-chip">
+                  <span class="selected-food-emoji">{{ sf.food.emoji }}</span>
+                  <span class="selected-food-name">{{ sf.food.nameKey | translate }}</span>
+                  <span class="selected-food-carbs">{{ sf.totalCarbs }}g</span>
+                </div>
               }
-            </ul>
-          </div>
-        }
+              <button
+                type="button"
+                class="clear-foods-btn"
+                (click)="clearSelectedFoods()"
+                [attr.aria-label]="'bolusCalculator.clearFoods' | translate"
+              >
+                <app-icon name="close" size="sm"></app-icon>
+              </button>
+            </div>
+          }
 
-        <div class="divider"></div>
-        <h3 class="details-title">
-          <app-icon name="stats-chart-outline" aria-hidden="true"></app-icon>
-          {{ 'bolusCalculator.details' | translate }}
-        </h3>
-        <div class="details-grid">
-          <div class="detail-row">
-            <span class="detail-label">{{ 'bolusCalculator.currentGlucose' | translate }}:</span>
-            <span class="detail-value">{{ result.currentGlucose }} mg/dL</span>
+          <!-- Manual Input -->
+          <div class="carbs-input-row">
+            <ion-input
+              id="carbGrams"
+              type="number"
+              formControlName="carbGrams"
+              [value]="calculatorForm.get('carbGrams')?.value ?? ''"
+              [placeholder]="'bolusCalculator.carbsPlaceholder' | translate"
+              [disabled]="calculating"
+              inputmode="numeric"
+              class="form-input"
+              [class.input-error]="isFieldInvalid('carbGrams')"
+              (ionInput)="onInputChange('carbGrams', $event)"
+              data-testid="carbs-input"
+            ></ion-input>
+            <span class="carbs-unit-label">g</span>
           </div>
-          <div class="detail-row">
-            <span class="detail-label">{{ 'bolusCalculator.targetGlucose' | translate }}:</span>
-            <span class="detail-value">{{ result.targetGlucose }} mg/dL</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">{{ 'bolusCalculator.carbohydrates' | translate }}:</span>
-            <span class="detail-value">{{ result.carbGrams }} g</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">{{ 'bolusCalculator.carbRatio' | translate }}:</span>
-            <span class="detail-value">1:{{ result.carbRatio }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">{{ 'bolusCalculator.correctionFactor' | translate }}:</span>
-            <span class="detail-value">1:{{ result.correctionFactor }}</span>
-          </div>
+          @if (carbsError) {
+            <span class="error-text">{{ carbsError }}</span>
+          }
         </div>
-        <div class="warning-banner mt-4">
-          <ion-icon name="warning-outline" class="warning-icon"></ion-icon>
-          <span class="text-sm">{{ 'bolusCalculator.warning' | translate }}</span>
-        </div>
-        <!-- Reset Button -->
+
+        <!-- Calculate Button -->
         <ion-button
-          id="new-calculation-btn"
-          (click)="resetCalculator()"
-          fill="outline"
+          id="calculate-bolus-btn"
+          type="submit"
           expand="block"
+          [disabled]="calculatorForm.invalid || calculating"
+          [attr.aria-disabled]="calculatorForm.invalid || calculating ? 'true' : null"
           class="mt-4"
+          data-testid="calculate-btn"
         >
-          <ion-icon slot="start" name="refresh-outline"></ion-icon>
-          {{ 'bolusCalculator.newCalculation' | translate }}
+          @if (!calculating) {
+            <ion-icon slot="start" name="calculator-outline"></ion-icon>
+          }
+          @if (calculating) {
+            <ion-spinner name="crescent"></ion-spinner>
+          }
+          @if (!calculating) {
+            <span>{{ 'bolusCalculator.calculate' | translate }}</span>
+          }
         </ion-button>
-      </div>
-    }
+      </form>
+
+      <!-- Result Card -->
+      @if (result) {
+        <div class="result-card animate-slide-in-up" data-testid="result-card">
+          <h2 class="result-title">
+            <app-icon name="medical-outline" aria-hidden="true"></app-icon>
+            {{ 'bolusCalculator.recommended' | translate }}
+          </h2>
+          <div class="result-value-container">
+            <div class="result-value" data-testid="recommended-insulin-value">
+              {{ formatInsulin(result.recommendedInsulin) }}
+            </div>
+            <div class="result-units">{{ 'bolusCalculator.units' | translate }}</div>
+          </div>
+
+          @if (warnings.length > 0) {
+            <div class="warnings-section">
+              <h4 class="warnings-title">
+                <ion-icon name="alert-circle-outline" class="warning-icon"></ion-icon>
+                {{ 'bolusCalculator.warningsTitle' | translate }}
+              </h4>
+              <ul class="warnings-list">
+                @for (warning of warnings; track warning.type) {
+                  <li>{{ warning.message }}</li>
+                }
+              </ul>
+            </div>
+          }
+
+          <div class="divider"></div>
+          <h3 class="details-title">
+            <app-icon name="stats-chart-outline" aria-hidden="true"></app-icon>
+            {{ 'bolusCalculator.details' | translate }}
+          </h3>
+          <div class="details-grid">
+            <div class="detail-row">
+              <span class="detail-label">{{ 'bolusCalculator.currentGlucose' | translate }}:</span>
+              <span class="detail-value">{{ result.currentGlucose }} mg/dL</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">{{ 'bolusCalculator.targetGlucose' | translate }}:</span>
+              <span class="detail-value">{{ result.targetGlucose }} mg/dL</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">{{ 'bolusCalculator.carbohydrates' | translate }}:</span>
+              <span class="detail-value">{{ result.carbGrams }} g</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">{{ 'bolusCalculator.carbRatio' | translate }}:</span>
+              <span class="detail-value">1:{{ result.carbRatio }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label"
+                >{{ 'bolusCalculator.correctionFactor' | translate }}:</span
+              >
+              <span class="detail-value">1:{{ result.correctionFactor }}</span>
+            </div>
+          </div>
+          <div class="warning-banner mt-4">
+            <ion-icon name="warning-outline" class="warning-icon"></ion-icon>
+            <span class="text-sm">{{ 'bolusCalculator.warning' | translate }}</span>
+          </div>
+          <!-- Reset Button -->
+          <ion-button
+            id="new-calculation-btn"
+            (click)="resetCalculator()"
+            fill="outline"
+            expand="block"
+            class="mt-4"
+            data-testid="bolus-reset-btn"
+          >
+            <ion-icon slot="start" name="refresh-outline"></ion-icon>
+            {{ 'bolusCalculator.newCalculation' | translate }}
+          </ion-button>
+        </div>
+      }
+    </div>
   </div>
 </ion-content>
 

@@ -24,7 +24,7 @@ import { Subject, firstValueFrom } from 'rxjs';
 
 import { AppointmentService } from '@services/appointment.service';
 import { CreateAppointmentRequest, AppointmentQueueState } from '@models/appointment.model';
-import { LocalAuthService } from '@services/local-auth.service';
+
 import { TranslationService } from '@services/translation.service';
 import { LoggerService } from '@services/logger.service';
 import { ROUTES } from '@core/constants';
@@ -113,7 +113,6 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
     private loadingController: LoadingController,
     private toastController: ToastController,
     private appointmentService: AppointmentService,
-    private authService: LocalAuthService,
     private translationService: TranslationService,
     private logger: LoggerService
   ) {}
@@ -407,15 +406,15 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
   }
 
   // trackBy functions for ngFor optimization
-  trackByInsulinType(index: number, type: { value: string; label: string }): string {
+  trackByInsulinType(_index: number, type: { value: string; label: string }): string {
     return type.value;
   }
 
-  trackByPumpType(index: number, type: { value: string; label: string }): string {
+  trackByPumpType(_index: number, type: { value: string; label: string }): string {
     return type.value;
   }
 
-  trackByMotive(index: number, motive: { value: string; label: string }): string {
+  trackByMotive(_index: number, motive: { value: string; label: string }): string {
     return motive.value;
   }
 }

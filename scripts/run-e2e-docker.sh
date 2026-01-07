@@ -49,6 +49,7 @@ UI_MODE=false
 DEBUG_MODE=false
 CLEAN_VOLUMES=false
 KEEP_RUNNING=false
+TEST_EXIT_CODE=0
 
 # ============================================================================
 # Helper Functions
@@ -70,6 +71,13 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+dump_docker_state() {
+    log_info "Docker service status:"
+    docker-compose -f "$COMPOSE_FILE" ps || true
+    log_info "Docker logs (tail=200):"
+    docker-compose -f "$COMPOSE_FILE" logs --tail=200 app playwright || true
+}
+
 show_help() {
     grep '^#' "$0" | grep -v '#!/usr/bin/env' | sed 's/^# //g' | sed 's/^#//g'
 }
@@ -78,6 +86,9 @@ cleanup() {
     if [ "$KEEP_RUNNING" = true ]; then
         log_info "Containers kept running for debugging. Stop with: docker-compose -f $COMPOSE_FILE down"
     else
+        if [ "${E2E_DEBUG:-}" = "1" ] || [ "${E2E_DEBUG:-}" = "true" ] || [ $TEST_EXIT_CODE -ne 0 ]; then
+            dump_docker_state
+        fi
         log_info "Cleaning up containers..."
         docker-compose -f "$COMPOSE_FILE" down $CLEAN_FLAG 2>/dev/null || true
     fi
@@ -89,6 +100,10 @@ cleanup() {
 
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --)
+            # Argument separator (e.g. `pnpm run ... -- --clean`). Safe to ignore.
+            shift
+            ;;
         --build)
             BUILD_FLAG="--build"
             shift
@@ -130,6 +145,10 @@ done
 CLEAN_FLAG=""
 if [ "$CLEAN_VOLUMES" = true ]; then
     CLEAN_FLAG="-v"
+fi
+
+if [ -z "${E2E_DEBUG:-}" ] && [ "$DEBUG_MODE" = true ]; then
+    export E2E_DEBUG=1
 fi
 
 # ============================================================================
@@ -186,8 +205,8 @@ mkdir -p "$PROJECT_ROOT/playwright-report"
 
 # Clean old artifacts
 log_info "Cleaning old test artifacts..."
-rm -rf "$PROJECT_ROOT/playwright/artifacts/*"
-rm -rf "$PROJECT_ROOT/playwright-report/*"
+find "$PROJECT_ROOT/playwright/artifacts" -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || true
+find "$PROJECT_ROOT/playwright-report" -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || true
 
 # ============================================================================
 # Run Docker Compose
@@ -203,10 +222,11 @@ if [ -n "$BUILD_FLAG" ]; then
     log_info "Forcing rebuild of Docker images..."
 fi
 
-docker-compose -f "$COMPOSE_FILE" up $BUILD_FLAG --abort-on-container-exit --exit-code-from playwright
-
 # Capture exit code from playwright service
+set +e
+docker-compose -f "$COMPOSE_FILE" up $BUILD_FLAG --abort-on-container-exit --exit-code-from playwright
 TEST_EXIT_CODE=$?
+set -e
 
 # ============================================================================
 # Extract Test Results

@@ -52,7 +52,9 @@
     "ok": "OK",
     "error": "Error",
     "sync": "Sync",
-    "goBack": "Go back"
+    "goBack": "Go back",
+    "online": "Online",
+    "offline": "Offline"
   },
   "tabs": {
     "home": "Home",
@@ -1347,7 +1349,10 @@
       "genericError": "Login failed. Please try again.",
       "invalidCredentials": "Invalid credentials. Please check your DNI and password.",
       "invalidData": "Invalid data. Please check the format of your DNI.",
-      "connectionError": "Connection error. Please check your internet connection."
+      "connectionError": "Connection error. Please check your internet connection.",
+      "rateLimitLockout": "Too many failed attempts. Account locked for {{minutes}} minutes.",
+      "rateLimitBackoff": "Please wait {{seconds}} seconds before trying again.",
+      "rateLimitGeneric": "Too many failed attempts. Please try again later."
     },
     "validation": {
       "usernameRequired": "DNI is required",
@@ -1449,11 +1454,17 @@
     "selectFoods": "Select foods to count carbs",
     "clearFoods": "Clear selected foods",
     "warningsTitle": "Safety Warnings",
+    "warnings": {
+      "maxDose": "The recommended dose of {{recommended}} units exceeds the maximum of {{max}} units.",
+      "iob": "You still have an estimated {{iob}} units of insulin on board from a recent bolus.",
+      "lowGlucose": "Your current glucose of {{glucose}} mg/dL is low. A bolus is not recommended."
+    },
     "errors": {
       "glucoseRequired": "Current glucose is required",
       "glucoseRange": "Enter a value between 40 and 600 mg/dL",
       "carbsRequired": "Carbohydrates are required",
-      "carbsRange": "Enter a value between 0 and 300 grams"
+      "carbsRange": "Enter a value between 0 and 300 grams",
+      "calculationFailed": "Unable to calculate dose. Please try again."
     }
   },
   "foodPicker": {

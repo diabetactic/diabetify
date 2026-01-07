@@ -6,9 +6,9 @@
  * and coordinated error handling across all external services.
  */
 
-import { Injectable, Injector, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subscription, timer, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, firstValueFrom } from 'rxjs';
 import { timeout, retry } from 'rxjs/operators';
 import { Network } from '@capacitor/network';
 
@@ -103,15 +103,12 @@ export class ExternalServicesManager implements OnDestroy {
   public readonly state: Observable<ExternalServicesState> = this.state$.asObservable();
 
   private healthCheckInterval?: Subscription;
-  private readonly HEALTH_CHECK_INTERVAL = 60000; // 1 minute
-  private readonly QUICK_CHECK_INTERVAL = 10000; // 10 seconds for degraded services
 
   // Service response cache
   private responseCache = new Map<string, { data: unknown; timestamp: number }>();
 
   constructor(
     private http: HttpClient,
-    private injector: Injector,
     private logger: LoggerService
   ) {
     this.initialize();
@@ -343,18 +340,6 @@ export class ExternalServicesManager implements OnDestroy {
     }
 
     return HealthStatus.UNHEALTHY;
-  }
-
-  /**
-   * Start periodic health check interval
-   */
-  private startHealthCheckInterval(): void {
-    this.healthCheckInterval = timer(
-      this.HEALTH_CHECK_INTERVAL,
-      this.HEALTH_CHECK_INTERVAL
-    ).subscribe(() => {
-      this.performHealthCheck();
-    });
   }
 
   /**

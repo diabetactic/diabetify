@@ -80,9 +80,10 @@ diabetactic/
 
 ## Existing Docker Files (Not Modified)
 
-The following Docker files were already present and were not modified:
+The following Docker files are part of the E2E infrastructure:
 
-- `docker/Dockerfile.e2e` - E2E-specific Dockerfile
+- `docker/Dockerfile.e2e-runner` - E2E runner Dockerfile (no Angular build, default)
+- `docker/Dockerfile.e2e` - Legacy E2E Dockerfile (multi-stage, optional)
 - `docker/docker-compose.e2e.yml` - E2E-specific compose file
 - `docker/nginx.conf` - Nginx configuration
 

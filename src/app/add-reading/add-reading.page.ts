@@ -9,7 +9,7 @@ import {
 
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { ToastController, NavController, ModalController } from '@ionic/angular';
+import { ToastController, ModalController } from '@ionic/angular';
 import {
   IonHeader,
   IonToolbar,
@@ -100,7 +100,6 @@ export class AddReadingPage implements OnInit, OnDestroy {
     private readingsService: ReadingsService,
     private profileService: ProfileService,
     private router: Router,
-    private navCtrl: NavController,
     private toastController: ToastController,
     private translate: TranslateService,
     private logger: LoggerService,
@@ -292,6 +291,7 @@ export class AddReadingPage implements OnInit, OnDestroy {
         this.readingForm.get(key)?.markAsTouched();
       });
 
+      this.cdr.detectChanges();
       return;
     }
 
@@ -379,7 +379,7 @@ export class AddReadingPage implements OnInit, OnDestroy {
   }
 
   // trackBy function for meal context options ngFor
-  trackByMealContext(index: number, option: MealContextOption): string {
+  trackByMealContext(_index: number, option: MealContextOption): string {
     return option.value;
   }
 }

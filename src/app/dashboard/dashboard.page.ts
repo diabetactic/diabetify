@@ -207,7 +207,7 @@ export class DashboardPage implements OnInit, OnDestroy {
       this.logger.error('Dashboard', 'Error loading dashboard data', error);
     } finally {
       this.isLoading = false;
-      this.cdr.markForCheck();
+      this.cdr.detectChanges();
     }
   }
 
@@ -222,14 +222,20 @@ export class DashboardPage implements OnInit, OnDestroy {
 
         // Recalculate statistics when readings change
         if (!this.isLoading) {
-          this.statistics = await this.readingsService.getStatistics(
-            'month',
-            70,
-            180,
-            this.preferredGlucoseUnit
-          );
+          try {
+            this.statistics = await this.readingsService.getStatistics(
+              'month',
+              70,
+              180,
+              this.preferredGlucoseUnit
+            );
+          } catch (error) {
+            this.logger.warn('Dashboard', 'Failed to update statistics', error);
+            // Keep existing statistics on error rather than showing stale data
+          }
         }
-        this.cdr.markForCheck();
+        // Move detectChanges AFTER async operation completes
+        this.cdr.detectChanges();
       },
       error: error => {
         this.logger.error('Dashboard', 'Error subscribing to readings', error);
@@ -287,7 +293,7 @@ export class DashboardPage implements OnInit, OnDestroy {
       );
     } finally {
       this.isSyncing = false;
-      this.cdr.markForCheck();
+      this.cdr.detectChanges();
     }
   }
 
@@ -431,13 +437,13 @@ export class DashboardPage implements OnInit, OnDestroy {
         this.maxStreak = state.user.max_streak ?? 0;
         this.timesMeasured = state.user.times_measured ?? 0;
         this.isLoadingStreak = false;
-        this.cdr.markForCheck();
+        this.cdr.detectChanges();
       } else {
         this.streak = 0;
         this.maxStreak = 0;
         this.timesMeasured = 0;
         this.isLoadingStreak = false;
-        this.cdr.markForCheck();
+        this.cdr.detectChanges();
       }
     });
   }
@@ -536,7 +542,7 @@ export class DashboardPage implements OnInit, OnDestroy {
   }
 
   // trackBy function for recent readings ngFor
-  trackByReading(index: number, reading: LocalGlucoseReading): string {
+  trackByReading(_index: number, reading: LocalGlucoseReading): string {
     return reading.id;
   }
 }

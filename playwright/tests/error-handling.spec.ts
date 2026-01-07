@@ -59,8 +59,14 @@ test.describe('Error Handling', () => {
       'wrong_password'
     );
 
-    // Submit
-    await page.click('[data-testid="login-submit-btn"], button:has-text("Iniciar")');
+    // Submit using JavaScript to avoid interception
+    const submitBtn = page
+      .locator('[data-testid="login-submit-btn"], button:has-text("Iniciar")')
+      .first();
+    await submitBtn.evaluate((el: HTMLElement) => {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      el.click();
+    });
 
     // Wait for ion-toast to appear with error message
     // The login page uses toastCtrl.create() to show errors
@@ -84,12 +90,24 @@ test.describe('Error Handling', () => {
 
     await page.fill('[data-testid="login-username-input"], input[placeholder*="DNI"]', username);
     await page.fill('[data-testid="login-password-input"], input[type="password"]', password);
-    await page.click('[data-testid="login-submit-btn"], button:has-text("Iniciar")');
+    const submitBtn = page
+      .locator('[data-testid="login-submit-btn"], button:has-text("Iniciar")')
+      .first();
+    await submitBtn.evaluate((el: HTMLElement) => {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      el.click();
+    });
 
     await expect(page).toHaveURL(/\/tabs\//, { timeout: 15000 });
 
-    // Navigate to add reading
-    await page.click('[data-testid="tab-readings"], ion-tab-button[tab="readings"]');
+    // Navigate to add reading using JavaScript to avoid tab bar interception
+    const readingsTab = page
+      .locator('[data-testid="tab-readings"], ion-tab-button[tab="readings"]')
+      .first();
+    await readingsTab.evaluate((el: HTMLElement) => {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      el.click();
+    });
     await expect(page).toHaveURL(/\/readings/, { timeout: 10000 });
     await page.waitForLoadState('networkidle', { timeout: 10000 });
 
@@ -145,12 +163,24 @@ test.describe('Error Handling', () => {
 
     await page.fill('[data-testid="login-username-input"], input[placeholder*="DNI"]', username);
     await page.fill('[data-testid="login-password-input"], input[type="password"]', password);
-    await page.click('[data-testid="login-submit-btn"], button:has-text("Iniciar")');
+    const submitBtn = page
+      .locator('[data-testid="login-submit-btn"], button:has-text("Iniciar")')
+      .first();
+    await submitBtn.evaluate((el: HTMLElement) => {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      el.click();
+    });
 
     await expect(page).toHaveURL(/\/tabs\//, { timeout: 15000 });
 
-    // Navigate to add reading
-    await page.click('[data-testid="tab-readings"], ion-tab-button[tab="readings"]');
+    // Navigate to add reading using JavaScript to avoid tab bar interception
+    const readingsTab = page
+      .locator('[data-testid="tab-readings"], ion-tab-button[tab="readings"]')
+      .first();
+    await readingsTab.evaluate((el: HTMLElement) => {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      el.click();
+    });
     await expect(page).toHaveURL(/\/readings/, { timeout: 10000 });
     await page.waitForLoadState('networkidle', { timeout: 10000 });
 
@@ -234,7 +264,13 @@ test.describe('Error Handling', () => {
 
     await page.fill('[data-testid="login-username-input"], input[placeholder*="DNI"]', username);
     await page.fill('[data-testid="login-password-input"], input[type="password"]', password);
-    await page.click('[data-testid="login-submit-btn"], button:has-text("Iniciar")');
+    const submitBtn = page
+      .locator('[data-testid="login-submit-btn"], button:has-text("Iniciar")')
+      .first();
+    await submitBtn.evaluate((el: HTMLElement) => {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      el.click();
+    });
 
     await expect(page).toHaveURL(/\/tabs\//, { timeout: 15000 });
 

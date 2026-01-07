@@ -251,8 +251,8 @@ helpers/
 
 - **Quick Reference**: This file (README.md)
 - **Detailed Examples**: [USAGE_EXAMPLES.md](./USAGE_EXAMPLES.md)
-- **Full Analysis**: [/docs/PLAYWRIGHT_TEST_ANALYSIS.md](/home/julito/TPP/diabetactic/diabetify/docs/PLAYWRIGHT_TEST_ANALYSIS.md)
-- **Summary**: [/docs/PLAYWRIGHT_TEST_FIXES_SUMMARY.md](/home/julito/TPP/diabetactic/diabetify/docs/PLAYWRIGHT_TEST_FIXES_SUMMARY.md)
+- **Full Analysis**: [docs/PLAYWRIGHT_TEST_ANALYSIS.md](../../docs/PLAYWRIGHT_TEST_ANALYSIS.md)
+- **Summary**: [docs/PLAYWRIGHT_TEST_FIXES_SUMMARY.md](../../docs/PLAYWRIGHT_TEST_FIXES_SUMMARY.md)
 
 ---
 

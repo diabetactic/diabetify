@@ -2,7 +2,7 @@
 # For local development, use docker-compose.local.yml instead
 #
 # Images hosted at: hub.docker.com/u/jcresp0
-# To rebuild/push: cd ~/TPP/diabetactic && for svc in glucoserver login appointments api-gateway api-gateway-backoffice; do
+# To rebuild/push: cd /home/julito/code/facu/diabetactic && for svc in glucoserver login appointments api-gateway api-gateway-backoffice; do
 #   docker build -t jcresp0/$svc:latest ./$svc && docker push jcresp0/$svc:latest
 # done
 #
@@ -63,6 +63,15 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://postgres:postgres@glucoserver_db:5432/glucoserver
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'python3 -c "import urllib.request; urllib.request.urlopen(''http://127.0.0.1:8000/health'', timeout=1)"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   login_service:
     image: jcresp0/login:latest
@@ -72,6 +81,15 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://postgres:postgres@users_db:5432/users
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'python3 -c "import urllib.request; urllib.request.urlopen(''http://127.0.0.1:8000/health'', timeout=1)"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   appointments:
     image: jcresp0/appointments:latest
@@ -81,6 +99,15 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://postgres:postgres@appointments_db:5432/appointments
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'python3 -c "import urllib.request; urllib.request.urlopen(''http://127.0.0.1:8000/health'', timeout=1)"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   api-gateway:
     image: jcresp0/api-gateway:latest
@@ -88,13 +115,25 @@ services:
     ports:
       - '8000:8000'
     depends_on:
-      - glucoserver
-      - login_service
-      - appointments
+      glucoserver:
+        condition: service_healthy
+      login_service:
+        condition: service_healthy
+      appointments:
+        condition: service_healthy
     environment:
       GLUCOSERVER_URL: http://glucoserver:8000
       LOGIN_URL: http://login_service:8000
       APPOINTMENTS_URL: http://appointments:8000
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'python3 -c "import urllib.request; urllib.request.urlopen(''http://127.0.0.1:8000/health'', timeout=1)"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   api-gateway-backoffice:
     image: jcresp0/api-gateway-backoffice:latest
@@ -102,9 +141,19 @@ services:
     ports:
       - '8001:8000'
     depends_on:
-      - login_service
+      login_service:
+        condition: service_healthy
     environment:
       LOGIN_URL: http://login_service:8000
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'python3 -c "import urllib.request; urllib.request.urlopen(''http://127.0.0.1:8000/health'', timeout=1)"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   # Test utilities (built from repo - provides user_manager.py for seeding)
   test_utils:
@@ -113,7 +162,8 @@ services:
       dockerfile: Dockerfile.test-utils
     container_name: diabetactic_test_utils
     depends_on:
-      - api-gateway
+      api-gateway:
+        condition: service_healthy
     environment:
       LOGIN_SERVICE_URL: http://login_service:8000
       API_GATEWAY_URL: http://api-gateway:8000

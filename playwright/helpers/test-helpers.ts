@@ -54,71 +54,58 @@ export interface UserProfile {
  * @param selector - CSS selector of element to click
  */
 export async function scrollAndClickIonElement(page: Page, selector: string): Promise<void> {
-  // Use direct JavaScript to scroll the ion-content and click the button
-  const result = await page.evaluate(sel => {
-    const button = document.querySelector(sel) as HTMLElement;
-    if (!button) {
-      return { success: false, message: 'Element not found' };
-    }
+  const target = page.locator(selector).first();
 
+  // Ensure the element exists (avoid evaluate() on missing locators).
+  try {
+    await target.waitFor({ state: 'attached', timeout: 5000 });
+  } catch {
+    console.warn('Scroll helper warning: Element not found');
+    return;
+  }
+
+  // Scroll + click via direct DOM access. This supports Playwright selectors like :has-text()
+  // because the selector is resolved by Playwright, not querySelector().
+  await target.evaluate((button: HTMLElement) => {
     try {
       // Find the ion-content parent
       let current = button.parentElement;
-      let ionContent = null;
+      let ionContent: HTMLElement | null = null;
       while (current) {
         if (current.tagName === 'ION-CONTENT') {
-          ionContent = current as any;
+          ionContent = current;
           break;
         }
         current = current.parentElement;
       }
 
       if (ionContent) {
-        // Access the internal scroll container in the shadow DOM
-        const shadowRoot = ionContent.shadowRoot;
-        if (shadowRoot) {
-          const scrollElement = shadowRoot.querySelector('.inner-scroll') as HTMLElement;
-          if (scrollElement) {
-            // Calculate the position of the button relative to the scroll container
-            let offsetTop = 0;
-            let el = button as HTMLElement;
-            while (el && el !== ionContent) {
-              offsetTop += el.offsetTop;
-              el = el.parentElement as HTMLElement;
-            }
-
-            // Scroll to position the button in the middle of the visible area
-            const scrollTop = offsetTop - scrollElement.clientHeight / 2 + button.offsetHeight / 2;
-            scrollElement.scrollTop = Math.max(0, scrollTop);
-
-            // Wait a tiny bit for scroll to settle
-            return { success: true, scrolled: true };
+        const shadowRoot = (ionContent as unknown as { shadowRoot?: ShadowRoot }).shadowRoot;
+        const scrollElement = shadowRoot?.querySelector('.inner-scroll') as HTMLElement | null;
+        if (scrollElement) {
+          let offsetTop = 0;
+          let el: HTMLElement | null = button;
+          while (el && el !== ionContent) {
+            offsetTop += el.offsetTop || 0;
+            el = el.parentElement as HTMLElement | null;
           }
+          const scrollTop = offsetTop - scrollElement.clientHeight / 2 + button.offsetHeight / 2;
+          scrollElement.scrollTop = Math.max(0, scrollTop);
+        } else {
+          button.scrollIntoView({ behavior: 'instant', block: 'center' });
         }
+      } else {
+        button.scrollIntoView({ behavior: 'instant', block: 'center' });
       }
 
-      // If no ion-content, just ensure button is visible
-      button.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return { success: true, scrolled: false };
-    } catch (e) {
-      return { success: false, message: String(e) };
-    }
-  }, selector);
-
-  if (!result.success) {
-    console.warn('Scroll helper warning:', result.message);
-  }
-
-  // Wait for scroll animation to complete
-  await page.waitForTimeout(300);
-
-  // Now click using JavaScript directly to bypass Playwright's visibility checks
-  await page.evaluate(sel => {
-    const button = document.querySelector(sel) as HTMLButtonElement;
-    if (button) {
+      button.click();
+    } catch {
       button.click();
     }
-  }, selector);
+  });
+
+  // Allow Ionic scroll/animations to settle.
+  await page.waitForTimeout(250);
 }
 
 /**

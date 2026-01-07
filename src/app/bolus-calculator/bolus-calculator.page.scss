@@ -1,7 +1,7 @@
 // Bolus Calculator Styles
 
 .bolus-content {
-  --background: var(--ion-color-light);
+  --background: var(--ion-background-color, var(--ion-color-light));
 }
 
 .info-banner {
@@ -9,6 +9,7 @@
   align-items: flex-start;
   gap: 0.75rem;
   padding: 1rem;
+  background-color: rgba(139, 92, 246, 0.1); // Hex fallback for Android WebView
   background-color: oklch(var(--p) / 10%);
   border-radius: var(--radius-lg);
   border-left: 4px solid var(--ion-color-primary);
@@ -118,7 +119,7 @@
 .warnings-section {
   margin-top: 1rem;
   padding: 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm); // Standardized border-radius token
   background-color: rgb(255 255 255 / 15%);
   border: 1px solid var(--ion-color-warning);
 }
@@ -219,6 +220,14 @@
   }
 }
 
+@media (width >= 1024px) {
+  .details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 1.5rem;
+  }
+}
+
 // Food Picker Button
 .food-picker-btn {
   display: flex;
@@ -235,6 +244,7 @@
     border-color 150ms ease;
 
   &:hover {
+    background: rgba(139, 92, 246, 0.1); // Hex fallback for Android WebView
     background: oklch(var(--p) / 10%);
   }
 
@@ -269,6 +279,7 @@
   gap: 0.5rem;
   margin-top: 0.75rem;
   padding: 0.75rem;
+  background: rgba(139, 92, 246, 0.08); // Hex fallback for Android WebView
   background: oklch(var(--p) / 8%);
   border-radius: var(--radius-md);
   align-items: center;
@@ -303,8 +314,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 44px; // Increased for accessibility (min 44x44)
+  height: 44px; // Increased for accessibility (min 44x44)
   margin-left: auto;
   background: rgb(0 0 0 / 10%);
   border: none;
@@ -336,6 +347,7 @@
 :host-context(.dark),
 :host-context(.ion-palette-dark) {
   .info-banner {
+    background-color: rgba(139, 92, 246, 0.15); // Hex fallback for Android WebView
     background-color: oklch(var(--p) / 15%);
   }
 
@@ -365,6 +377,7 @@
   }
 
   .selected-foods-list {
+    background: rgba(139, 92, 246, 0.12); // Hex fallback for Android WebView
     background: oklch(var(--p) / 12%);
   }
 

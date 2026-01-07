@@ -41,6 +41,8 @@ export class AppIconComponent {
     'bug-outline': 'bug',
     'settings-outline': 'settings',
     settings: 'settings',
+    'calculator-outline': 'calculator',
+    calculator: 'calculator',
     'log-out-outline': 'log-out',
     'trash-outline': 'trash-2',
     trash: 'trash-2',

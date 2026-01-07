@@ -130,7 +130,7 @@
         [loading]="isLoadingStreak"
       ></app-streak-card>
       <!-- Stats Grid - Gradient DaisyUI stat cards (stacked vertically) -->
-      <div class="mb-6 grid grid-cols-1 gap-4" data-testid="stats-container">
+      <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2" data-testid="stats-container">
         <app-stat-card
           [title]="'dashboard.timeInRange' | translate"
           [value]="statistics?.timeInRange ?? 0"

@@ -343,7 +343,7 @@ For questions about this assessment:
 
 ## Related Documentation
 
-- **Project:** /home/julito/TPP/diabetactic/diabetify
+- **Project:** /home/julito/code/facu/diabetactic/diabetify
 - **Source Code:** src/\*_/_.ts
 - **Build Config:** angular.json
 - **Workflows:** .github/workflows/\*.yml

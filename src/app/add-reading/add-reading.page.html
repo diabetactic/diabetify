@@ -1,7 +1,11 @@
 <ion-header [translucent]="true">
   <ion-toolbar class="ion-padding-top">
     <ion-buttons slot="start">
-      <ion-button (click)="onCancel()" [attr.aria-label]="'common.cancel' | translate">
+      <ion-button
+        (click)="onCancel()"
+        [attr.aria-label]="'common.cancel' | translate"
+        class="min-h-44px min-w-44px"
+      >
         <app-icon slot="icon-only" name="close"></app-icon>
       </ion-button>
     </ion-buttons>
@@ -90,13 +94,16 @@
           class="bg-base-100 overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700"
         >
           <div class="form-control w-full py-2">
-            <label class="label" for="reading-datetime">
+            <label class="label" for="reading-datetime-btn">
               <span class="label-text text-base-content/80 font-medium">
                 {{ 'addReading.dateTimeLabel' | translate }} <span class="text-danger">*</span>
               </span>
             </label>
             <div class="px-2">
-              <ion-datetime-button datetime="reading-datetime"></ion-datetime-button>
+              <ion-datetime-button
+                id="reading-datetime-btn"
+                datetime="reading-datetime"
+              ></ion-datetime-button>
             </div>
           </div>
         </ion-item>
@@ -205,6 +212,7 @@
           expand="block"
           type="submit"
           [disabled]="readingForm.invalid || isSubmitting"
+          [attr.aria-disabled]="readingForm.invalid || isSubmitting ? 'true' : null"
           class="save-button inline-flex items-center gap-2"
           data-testid="add-reading-save-btn"
           [attr.aria-label]="'addReading.actions.save' | translate"

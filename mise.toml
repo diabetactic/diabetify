@@ -65,3 +65,12 @@ cd android && JAVA_HOME=$(mise where java) ANDROID_HOME=$ANDROID_HOME ./gradlew 
 # CI parity (one-shot, matches .github/workflows/ci.yml intent)
 "ci:all" = "pnpm run ci:all"
 "ci:all:docker" = "CI_DOCKER=true pnpm run ci:all"
+
+# Doctor / maintenance
+"doctor" = "./scripts/doctor.sh --all"
+"doctor:reset" = "./scripts/doctor.sh --reset --docker-clean --pnpm-store-prune --reinstall --all"
+
+# Docker helpers
+"docker:status" = "docker ps -a && docker network ls && docker volume ls"
+"docker:clean" = "./scripts/doctor.sh --docker-clean"
+"test:e2e:docker" = "pnpm -s run test:e2e:docker"

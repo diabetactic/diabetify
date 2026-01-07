@@ -53,6 +53,7 @@ export class TabsPage implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   fabIcon = 'medkit-outline';
   fabLabel = '';
+  readonly showStatusBadges = environment.features?.showStatusBadges ?? false;
 
   // Queue state for appointment FAB button control
   private queueState: AppointmentQueueStateResponse | null = null;
@@ -94,12 +95,12 @@ export class TabsPage implements OnInit, OnDestroy {
       .subscribe({
         next: state => {
           this.queueState = state;
-          this.cdr.markForCheck();
+          this.cdr.detectChanges();
         },
         error: () => {
           // On error, default to NONE state (allow requesting)
           this.queueState = { state: 'NONE' };
-          this.cdr.markForCheck();
+          this.cdr.detectChanges();
         },
       });
   }
@@ -119,13 +120,13 @@ export class TabsPage implements OnInit, OnDestroy {
   private updateFabContext(url: string): void {
     if (url.includes(ROUTE_SEGMENTS.APPOINTMENTS)) {
       this.fabIcon = 'calendar-outline';
-      this.fabLabel = 'Add Appointment';
+      this.fabLabel = this.translationService.instant('appointments.create.title');
     } else {
       this.fabIcon = 'medkit-outline';
-      this.fabLabel = 'Add Reading';
+      this.fabLabel = this.translationService.instant('addReading.title');
     }
     // Mark for check since we're using OnPush change detection
-    this.cdr.markForCheck();
+    this.cdr.detectChanges();
   }
 
   navigateToAddReading(): void {

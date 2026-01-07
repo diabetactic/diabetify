@@ -75,7 +75,7 @@ export class ReadingsListComponent {
     this.deleteReading.emit({ reading, slidingItem });
   }
 
-  trackByGroup(index: number, group: GroupedReading): string {
+  trackByGroup(_index: number, group: GroupedReading): string {
     return group.date;
   }
 

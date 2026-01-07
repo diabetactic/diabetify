@@ -24,7 +24,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 
 import { AchievementsService } from '@services/achievements.service';
-import { TranslationService } from '@services/translation.service';
+
 import { Achievement, StreakData, getAchievementProgress } from '@models/achievements.model';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
@@ -65,7 +65,6 @@ export class AchievementsPage implements OnInit, OnDestroy {
 
   constructor(
     private achievementsService: AchievementsService,
-    private translationService: TranslationService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}

@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diabetify - All Screenshots Review</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --bg-card: #1e293b;
+        --bg-hover: #334155;
+        --text: #f1f5f9;
+        --text-muted: #94a3b8;
+        --accent: #3b82f6;
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --error: #ef4444;
+        --purple: #8b5cf6;
+        --cyan: #06b6d4;
+        --pink: #ec4899;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+      header {
+        background: var(--bg-card);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #334155;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .subtitle {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+      }
+      .stats {
+        display: flex;
+        gap: 2rem;
+        margin: 1rem 0;
+        flex-wrap: wrap;
+      }
+      .stat {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+      }
+      .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--accent);
+      }
+      .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+      .controls {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .filter-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #475569;
+        background: var(--bg-hover);
+        color: var(--text);
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+      }
+      .filter-btn:hover,
+      .filter-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+      .search {
+        padding: 0.5rem 1rem;
+        border: 1px solid #475569;
+        background: var(--bg-hover);
+        color: var(--text);
+        border-radius: 0.5rem;
+        min-width: 200px;
+      }
+      main {
+        padding: 2rem;
+      }
+      .category {
+        margin-bottom: 3rem;
+      }
+      .category-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #334155;
+      }
+      .category-title {
+        font-size: 1.1rem;
+      }
+      .category-count {
+        background: var(--bg-hover);
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+      }
+      .list-view {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .row {
+        display: flex;
+        background: var(--bg-card);
+        border: 1px solid #334155;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        align-items: center;
+        padding: 0.5rem;
+        gap: 1rem;
+      }
+      .row:hover {
+        background: var(--bg-hover);
+      }
+      .row.duplicate {
+        border-left: 4px solid var(--warning);
+      }
+      .img-col {
+        width: 120px;
+        min-width: 120px;
+        height: 80px;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .img-col img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        cursor: zoom-in;
+      }
+      .info-col {
+        flex: 2;
+        min-width: 0;
+      }
+      .analysis-col {
+        flex: 2;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        border-left: 1px solid #334155;
+        padding-left: 1rem;
+      }
+      .fix-col {
+        flex: 2;
+        font-size: 0.85rem;
+        border-left: 1px solid #334155;
+        padding-left: 1rem;
+      }
+      .row-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+      }
+      .row-path {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+        word-break: break-all;
+      }
+      .action-text {
+        color: var(--warning);
+      }
+      .ok-text {
+        color: var(--success);
+        opacity: 0.7;
+      }
+
+      /* Hidden original grid styles if any remain */
+      .card {
+        display: none;
+      }
+      .img-container {
+        background: #000;
+        min-height: 200px;
+        max-height: 350px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .img-container img {
+        max-width: 100%;
+        max-height: 350px;
+        object-fit: contain;
+        cursor: zoom-in;
+      }
+      .card-info {
+        padding: 0.75rem;
+      }
+      .card-name {
+        font-size: 0.8rem;
+        font-weight: 500;
+        word-break: break-word;
+        margin-bottom: 0.25rem;
+      }
+      .card-path {
+        font-size: 0.65rem;
+        color: var(--text-muted);
+        word-break: break-all;
+      }
+      .tags {
+        display: flex;
+        gap: 0.25rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+      }
+      .tag {
+        padding: 0.15rem 0.4rem;
+        border-radius: 0.25rem;
+        font-size: 0.6rem;
+        font-weight: 500;
+        text-transform: uppercase;
+      }
+      .tag-e2e {
+        background: rgba(34, 197, 94, 0.2);
+        color: var(--success);
+      }
+      .tag-regression {
+        background: rgba(139, 92, 246, 0.2);
+        color: var(--purple);
+      }
+      .tag-docs {
+        background: rgba(6, 182, 212, 0.2);
+        color: var(--cyan);
+      }
+      .tag-sync {
+        background: rgba(236, 72, 153, 0.2);
+        color: var(--pink);
+      }
+      .tag-dark {
+        background: rgba(71, 85, 105, 0.5);
+        color: #e2e8f0;
+      }
+      .tag-light {
+        background: rgba(251, 191, 36, 0.2);
+        color: var(--warning);
+      }
+      .tag-mobile {
+        background: rgba(139, 92, 246, 0.2);
+        color: var(--purple);
+      }
+      .tag-desktop {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--accent);
+      }
+      .tag-duplicate {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--error);
+      }
+
+      /* Modal */
+      .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal.active {
+        display: flex;
+      }
+      .modal img {
+        max-width: 95vw;
+        max-height: 90vh;
+        object-fit: contain;
+      }
+      .modal-close {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: var(--bg-hover);
+        border: none;
+        color: white;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        cursor: pointer;
+      }
+      .modal-nav {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--bg-hover);
+        border: none;
+        color: white;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        cursor: pointer;
+      }
+      .modal-nav.prev {
+        left: 1rem;
+      }
+      .modal-nav.next {
+        right: 1rem;
+      }
+      .modal-info {
+        position: fixed;
+        bottom: 1rem;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--bg-card);
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.85rem;
+      }
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>🖼️ Diabetify - All Screenshots Review</h1>
+      <p class="subtitle">Comprehensive view of all project screenshots</p>
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-value" id="total">0</span><span class="stat-label">Total</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="e2e-count">0</span><span class="stat-label">E2E</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="regression-count">0</span
+          ><span class="stat-label">Regression</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="docs-count">0</span><span class="stat-label">Docs</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="duplicates-count">0</span
+          ><span class="stat-label">⚠️ Potential Duplicates</span>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="e2e">E2E</button>
+        <button class="filter-btn" data-filter="regression">Regression</button>
+        <button class="filter-btn" data-filter="docs">Docs</button>
+        <button class="filter-btn" data-filter="sync">Sync Proof</button>
+        <button class="filter-btn" data-filter="dark">Dark Mode</button>
+        <button class="filter-btn" data-filter="duplicate">Duplicates</button>
+        <input type="text" class="search" id="search" placeholder="Search..." />
+      </div>
+    </header>
+    <main id="main"></main>
+
+    <div class="modal" id="modal">
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <button class="modal-nav prev" onclick="prevImg()">‹</button>
+      <button class="modal-nav next" onclick="nextImg()">›</button>
+      <img id="modal-img" src="" alt="" />
+      <div class="modal-info" id="modal-info"></div>
+    </div>
+
+    <script>
+      // All screenshots organized by category
+      const data = {
+        // E2E Screenshots section removed - those 12 images were broken/cropped and have been deleted
+        'Analysis Screenshots': [
+          {
+            path: 'screenshots/analysis-add-reading-dark.png',
+            name: 'analysis-add-reading-dark.png',
+          },
+          {
+            path: 'screenshots/analysis-add-reading-filled-dark.png',
+            name: 'analysis-add-reading-filled-dark.png',
+          },
+          {
+            path: 'screenshots/analysis-appointments-pending-dark.png',
+            name: 'analysis-appointments-pending-dark.png',
+          },
+          { path: 'screenshots/analysis-dashboard-dark.png', name: 'analysis-dashboard-dark.png' },
+          {
+            path: 'screenshots/analysis-dashboard-light.png',
+            name: 'analysis-dashboard-light.png',
+          },
+          { path: 'screenshots/analysis-profile-dark.png', name: 'analysis-profile-dark.png' },
+          { path: 'screenshots/analysis-readings-dark.png', name: 'analysis-readings-dark.png' },
+          { path: 'screenshots/analysis-readings-light.png', name: 'analysis-readings-light.png' },
+          { path: 'screenshots/analysis-trends-dark.png', name: 'analysis-trends-dark.png' },
+          { path: 'screenshots/final-add-reading-dark.png', name: 'final-add-reading-dark.png' },
+          {
+            path: 'screenshots/verify-add-reading-dark-v2.png',
+            name: 'verify-add-reading-dark-v2.png',
+          },
+          { path: 'screenshots/verify-dark-mode-input.png', name: 'verify-dark-mode-input.png' },
+          { path: 'screenshots/verify-trends-dark.png', name: 'verify-trends-dark.png' },
+          { path: 'screenshots/verify-trends-rounded.png', name: 'verify-trends-rounded.png' },
+        ],
+        'Visual Regression - Mobile': [
+          {
+            path: 'snapshots/visual-regression-mobile.spec.ts-snapshots/mobile-welcome-landscape-mobile-android.png',
+            name: 'mobile-welcome-landscape-mobile-android.png',
+          },
+          {
+            path: 'snapshots/visual-regression-mobile.spec.ts-snapshots/mobile-welcome-mobile-android.png',
+            name: 'mobile-welcome-mobile-android.png',
+          },
+        ],
+        'Visual Regression - Desktop': [
+          {
+            path: 'snapshots/visual-regression.spec.ts-snapshots/login-page-chromium.png',
+            name: 'login-page-chromium.png',
+          },
+          {
+            path: 'snapshots/visual-regression.spec.ts-snapshots/login-page-dark-chromium.png',
+            name: 'login-page-dark-chromium.png',
+          },
+          {
+            path: 'snapshots/visual-regression.spec.ts-snapshots/register-page-chromium.png',
+            name: 'register-page-chromium.png',
+          },
+          {
+            path: 'snapshots/visual-regression.spec.ts-snapshots/welcome-desktop-chromium.png',
+            name: 'welcome-desktop-chromium.png',
+          },
+          {
+            path: 'snapshots/visual-regression.spec.ts-snapshots/welcome-mobile-lg-chromium.png',
+            name: 'welcome-mobile-lg-chromium.png',
+          },
+          {
+            path: 'snapshots/visual-regression.spec.ts-snapshots/welcome-mobile-md-chromium.png',
+            name: 'welcome-mobile-md-chromium.png',
+          },
+          {
+            path: 'snapshots/visual-regression.spec.ts-snapshots/welcome-mobile-sm-chromium.png',
+            name: 'welcome-mobile-sm-chromium.png',
+          },
+          {
+            path: 'snapshots/visual-regression.spec.ts-snapshots/welcome-page-chromium.png',
+            name: 'welcome-page-chromium.png',
+          },
+          {
+            path: 'snapshots/visual-regression.spec.ts-snapshots/welcome-page-dark-chromium.png',
+            name: 'welcome-page-dark-chromium.png',
+          },
+          {
+            path: 'snapshots/visual-regression.spec.ts-snapshots/welcome-tablet-chromium.png',
+            name: 'welcome-tablet-chromium.png',
+          },
+        ],
+        'Appointment Test Snapshots': [
+          {
+            path: 'tests/appointment-comprehensive.spec.ts-snapshots/appointment-form-filled-mobile-chromium.png',
+            name: 'appointment-form-filled-mobile-chromium.png',
+          },
+          {
+            path: 'tests/appointment-comprehensive.spec.ts-snapshots/appointment-queue-blocked-mobile-chromium.png',
+            name: 'appointment-queue-blocked-mobile-chromium.png',
+          },
+          {
+            path: 'tests/appointment-comprehensive.spec.ts-snapshots/appointment-state-accepted-with-button-mobile-chromium.png',
+            name: 'appointment-state-accepted-with-button-mobile-chromium.png',
+          },
+          {
+            path: 'tests/appointment-comprehensive.spec.ts-snapshots/appointment-state-created-mobile-chromium.png',
+            name: 'appointment-state-created-mobile-chromium.png',
+          },
+          {
+            path: 'tests/appointment-comprehensive.spec.ts-snapshots/appointment-visual-create-form-mobile-chromium.png',
+            name: 'appointment-visual-create-form-mobile-chromium.png',
+          },
+          {
+            path: 'tests/appointment-comprehensive.spec.ts-snapshots/appointment-visual-state-accepted-mobile-chromium.png',
+            name: 'appointment-visual-state-accepted-mobile-chromium.png',
+          },
+          {
+            path: 'tests/appointment-comprehensive.spec.ts-snapshots/appointment-visual-state-blocked-mobile-chromium.png',
+            name: 'appointment-visual-state-blocked-mobile-chromium.png',
+          },
+          {
+            path: 'tests/appointment-comprehensive.spec.ts-snapshots/appointment-visual-state-denied-mobile-chromium.png',
+            name: 'appointment-visual-state-denied-mobile-chromium.png',
+          },
+          {
+            path: 'tests/appointment-comprehensive.spec.ts-snapshots/appointment-visual-state-none-mobile-chromium.png',
+            name: 'appointment-visual-state-none-mobile-chromium.png',
+          },
+        ],
+        'Docs - Main Screenshots': [
+          { path: '../docs/assets/screenshots/add-reading.png', name: 'add-reading.png' },
+          { path: '../docs/assets/screenshots/add-reading.webp', name: 'add-reading.webp' },
+          { path: '../docs/assets/screenshots/appointments.png', name: 'appointments.png' },
+          { path: '../docs/assets/screenshots/appointments.webp', name: 'appointments.webp' },
+          { path: '../docs/assets/screenshots/bolus-calculator.png', name: 'bolus-calculator.png' },
+          {
+            path: '../docs/assets/screenshots/bolus-calculator.webp',
+            name: 'bolus-calculator.webp',
+          },
+          {
+            path: '../docs/assets/screenshots/bolus-food-picker.png',
+            name: 'bolus-food-picker.png',
+          },
+          {
+            path: '../docs/assets/screenshots/bolus-food-picker.webp',
+            name: 'bolus-food-picker.webp',
+          },
+          { path: '../docs/assets/screenshots/dashboard.png', name: 'dashboard.png' },
+          { path: '../docs/assets/screenshots/dashboard.webp', name: 'dashboard.webp' },
+          { path: '../docs/assets/screenshots/food-picker.png', name: 'food-picker.png' },
+          { path: '../docs/assets/screenshots/food-picker.webp', name: 'food-picker.webp' },
+          { path: '../docs/assets/screenshots/login.png', name: 'login.png' },
+          { path: '../docs/assets/screenshots/login.webp', name: 'login.webp' },
+          { path: '../docs/assets/screenshots/profile-dark.png', name: 'profile-dark.png' },
+          { path: '../docs/assets/screenshots/profile-dark.webp', name: 'profile-dark.webp' },
+          { path: '../docs/assets/screenshots/profile-light.png', name: 'profile-light.png' },
+          { path: '../docs/assets/screenshots/profile-light.webp', name: 'profile-light.webp' },
+          { path: '../docs/assets/screenshots/readings.png', name: 'readings.png' },
+          { path: '../docs/assets/screenshots/readings.webp', name: 'readings.webp' },
+          { path: '../docs/assets/screenshots/settings-dark.png', name: 'settings-dark.png' },
+          { path: '../docs/assets/screenshots/settings-dark.webp', name: 'settings-dark.webp' },
+        ],
+        'Docs - Sync Proof': [
+          {
+            path: '../docs/assets/screenshots/sync-proof/add-reading-modal-dark.png',
+            name: 'add-reading-modal-dark.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/add-reading-modal-light.png',
+            name: 'add-reading-modal-light.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/appointments-01-none-state.png',
+            name: 'appointments-01-none-state.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/appointments-02-pending-state.png',
+            name: 'appointments-02-pending-state.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/appointments-dark.png',
+            name: 'appointments-dark.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/appointments-light.png',
+            name: 'appointments-light.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/bolus-calculator-dark.png',
+            name: 'bolus-calculator-dark.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/bolus-calculator-light.png',
+            name: 'bolus-calculator-light.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/dashboard-dark.png',
+            name: 'dashboard-dark.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/dashboard-light.png',
+            name: 'dashboard-light.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/profile-01-initial.png',
+            name: 'profile-01-initial.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/profile-02-edit-mode.png',
+            name: 'profile-02-edit-mode.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/profile-03-modified.png',
+            name: 'profile-03-modified.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/profile-dark.png',
+            name: 'profile-dark.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/profile-light.png',
+            name: 'profile-light.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/readings-01-after-login.png',
+            name: 'readings-01-after-login.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/readings-02-list-before.png',
+            name: 'readings-02-list-before.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/readings-05-list-after.png',
+            name: 'readings-05-list-after.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/readings-06-settings-before-logout.png',
+            name: 'readings-06-settings-before-logout.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/readings-dark.png',
+            name: 'readings-dark.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/readings-light.png',
+            name: 'readings-light.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/settings-dark.png',
+            name: 'settings-dark.png',
+          },
+          {
+            path: '../docs/assets/screenshots/sync-proof/settings-light.png',
+            name: 'settings-light.png',
+          },
+          { path: '../docs/assets/screenshots/sync-proof/tips-dark.png', name: 'tips-dark.png' },
+          { path: '../docs/assets/screenshots/sync-proof/tips-light.png', name: 'tips-light.png' },
+        ],
+      };
+
+      // Analysis logic
+      function analyzeScreenshot(name, path) {
+        let analysis = 'Standard screenshot capture.';
+        let fix = '';
+        const lower = name.toLowerCase();
+
+        // Detect duplicates/redundancy
+        const ext = name.split('.').pop();
+        if (ext === 'png') {
+          const webpName = name.replace('.png', '.webp');
+          // Simple check if we might have a webp equivalent based on typical naming
+          if (path.includes('docs/assets') && !path.includes('sync-proof')) {
+            analysis = 'Legacy PNG format.';
+            fix = 'Consider converting to WebP for smaller size.';
+          }
+        }
+
+        // Feature-specific analysis
+        if (lower.includes('dark')) {
+          analysis = 'Verifies Dark Mode rendering.';
+        } else if (lower.includes('light')) {
+          analysis = 'Verifies Light Mode rendering.';
+        }
+
+        if (lower.includes('mobile')) {
+          analysis += ' Mobile viewport layout.';
+        } else if (lower.includes('desktop')) {
+          analysis += ' Desktop viewport layout.';
+        }
+
+        // Component specific
+        if (lower.includes('dashboard'))
+          analysis = 'Dashboard UI: Check stats cards, charts, and navigation.';
+        if (lower.includes('login'))
+          analysis = 'Login/Auth Flow: Verify input fields and submit buttons.';
+        if (lower.includes('appointment'))
+          analysis = 'Appointments: Verify queue states, forms, and status badges.';
+        if (lower.includes('reading'))
+          analysis = 'Readings: Verify list rendering, input forms, and error states.';
+        if (lower.includes('profile'))
+          analysis = 'Profile: Verify user data display and edit forms.';
+
+        // Specific cleanup flags
+        if (lower.includes('test-failed')) {
+          analysis = 'Captured during a failed test run.';
+          fix = 'Review error logs and delete if not needed for debugging.';
+        }
+
+        return { analysis, fix };
+      }
+
+      // Render
+      const main = document.getElementById('main');
+      let allItems = [];
+
+      Object.entries(data).forEach(([category, items]) => {
+        const section = document.createElement('section');
+        section.className = 'category';
+        section.innerHTML = `
+        <div class="category-header">
+          <h2 class="category-title">${category}</h2>
+          <span class="category-count">${items.length}</span>
+        </div>
+        <div class="list-view" id="list-${category.replace(/\s+/g, '-')}"></div>
+      `;
+        main.appendChild(section);
+
+        const list = section.querySelector('.list-view');
+        items.forEach(item => {
+          allItems.push(item);
+          const { analysis, fix } = analyzeScreenshot(item.name, item.path);
+
+          const row = document.createElement('div');
+          row.className = 'row' + (item.tags.includes('duplicate') ? ' duplicate' : '');
+          row.dataset.tags = item.tags.join(' ');
+          row.dataset.name = item.name.toLowerCase();
+
+          row.innerHTML = `
+            <div class="img-col">
+              <img src="${item.path}" alt="${item.name}" loading="lazy" onclick="openModal('${item.path}', '${item.name}')">
+            </div>
+            <div class="info-col">
+              <div class="row-name">${item.name}</div>
+              <div class="row-path">${item.path}</div>
+              <div class="tags">
+                ${item.tags.map(t => `<span class="tag tag-${t}">${t}</span>`).join('')}
+              </div>
+            </div>
+            <div class="analysis-col">
+              <strong>Analysis:</strong> ${analysis}
+            </div>
+            <div class="fix-col">
+              ${fix ? `<strong>Action:</strong> <span class="action-text">${fix}</span>` : '<span class="ok-text">No issues detected</span>'}
+            </div>
+          `;
+          list.appendChild(row);
+        });
+      });
+
+      // Stats
+      document.getElementById('total').textContent = allItems.length;
+      document.getElementById('e2e-count').textContent = allItems.filter(i =>
+        i.tags.includes('e2e')
+      ).length;
+      document.getElementById('regression-count').textContent = allItems.filter(i =>
+        i.tags.includes('regression')
+      ).length;
+      document.getElementById('docs-count').textContent = allItems.filter(i =>
+        i.tags.includes('docs')
+      ).length;
+      document.getElementById('duplicates-count').textContent = allItems.filter(i =>
+        i.tags.includes('duplicate')
+      ).length;
+
+      // Filtering
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const filter = btn.dataset.filter;
+          document.querySelectorAll('.row').forEach(row => {
+            if (filter === 'all' || row.dataset.tags.includes(filter)) {
+              row.classList.remove('hidden');
+            } else {
+              row.classList.add('hidden');
+            }
+          });
+        });
+      });
+
+      // Search
+      document.getElementById('search').addEventListener('input', e => {
+        const q = e.target.value.toLowerCase();
+        document.querySelectorAll('.row').forEach(row => {
+          row.classList.toggle('hidden', !row.dataset.name.includes(q));
+        });
+      });
+
+      // Modal
+      let currentIdx = 0;
+      function openModal(path, name) {
+        currentIdx = allItems.findIndex(i => i.path === path);
+        document.getElementById('modal-img').src = path;
+        document.getElementById('modal-info').textContent = name;
+        document.getElementById('modal').classList.add('active');
+      }
+      function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+      }
+      function prevImg() {
+        currentIdx = (currentIdx - 1 + allItems.length) % allItems.length;
+        document.getElementById('modal-img').src = allItems[currentIdx].path;
+        document.getElementById('modal-info').textContent = allItems[currentIdx].name;
+      }
+      function nextImg() {
+        currentIdx = (currentIdx + 1) % allItems.length;
+        document.getElementById('modal-img').src = allItems[currentIdx].path;
+        document.getElementById('modal-info').textContent = allItems[currentIdx].name;
+      }
+      document.addEventListener('keydown', e => {
+        if (!document.getElementById('modal').classList.contains('active')) return;
+        if (e.key === 'Escape') closeModal();
+        if (e.key === 'ArrowLeft') prevImg();
+        if (e.key === 'ArrowRight') nextImg();
+      });
+    </script>
+  </body>
+</html>

@@ -27,7 +27,6 @@ import {
   PaginatedReadings,
 } from '@models/glucose-reading.model';
 import { db, DiabetacticDatabase, SyncConflictItem } from '@services/database.service';
-import { MockDataService } from '@services/mock-data.service';
 import { LoggerService } from '@services/logger.service';
 import { ReadingsMapperService } from './readings-mapper.service';
 import { ReadingsStatisticsService } from './readings-statistics.service';
@@ -37,7 +36,6 @@ import {
   FetchResult,
   FullSyncResult,
 } from './readings-sync.service';
-import { environment } from '@env/environment';
 
 export const LIVE_QUERY_FN = new InjectionToken<typeof liveQuery>('LIVE_QUERY_FN');
 
@@ -78,7 +76,6 @@ export class ReadingsService implements OnDestroy {
 
   private readonly db: DiabetacticDatabase;
   private readonly liveQueryFn: typeof liveQuery;
-  private readonly isMockBackend = environment.backendMode === 'mock';
 
   constructor(
     private mapper: ReadingsMapperService,
@@ -86,7 +83,6 @@ export class ReadingsService implements OnDestroy {
     private syncService: ReadingsSyncService,
     @Optional() private database?: DiabetacticDatabase,
     @Optional() @Inject(LIVE_QUERY_FN) liveQueryFn?: typeof liveQuery,
-    @Optional() private mockData?: MockDataService,
     @Optional() private logger?: LoggerService
   ) {
     this.db = this.database ?? db;
@@ -374,23 +370,8 @@ export class ReadingsService implements OnDestroy {
     targetMax = 180,
     unit: GlucoseUnit = 'mg/dL'
   ): Promise<GlucoseStatistics> {
-    if (this.isMockBackend && this.mockData) {
-      const stats = await this.mockData.getStats().toPromise();
-      if (stats) {
-        return {
-          average: stats.avgGlucose,
-          median: stats.avgGlucose,
-          standardDeviation: 15,
-          coefficientOfVariation: 10,
-          timeInRange: stats.timeInRange,
-          timeAboveRange: stats.timeAboveRange,
-          timeBelowRange: stats.timeBelowRange,
-          totalReadings: stats.readingsThisWeek,
-          estimatedA1C: stats.hba1c,
-          gmi: stats.hba1c,
-        };
-      }
-    }
+    // Mock data usage moved to Dexie seeding
+    // if (this.isMockBackend && this.mockData) { ... }
 
     const now = new Date();
     let startDate: Date;

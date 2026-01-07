@@ -77,7 +77,9 @@ async function checkDockerBackend() {
   } catch (error) {
     console.error(`✗ Docker backend not reachable at ${DOCKER_URL}`);
     console.error('  Start Docker backend first:');
-    console.error('    cd /home/julito/TPP/diabetactic/container-managing && docker-compose up -d');
+    console.error(
+      '    cd /home/julito/code/facu/diabetactic/container-managing && docker-compose up -d'
+    );
     return false;
   }
 }

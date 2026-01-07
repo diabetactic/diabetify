@@ -37,11 +37,7 @@ export default defineConfig({
     environment: 'jsdom',
     // Use forks for proper test isolation - each test file gets fresh state
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        isolate: true,
-      },
-    },
+    isolate: true,
     // Run tests within each file sequentially to prevent IndexedDB race conditions
     // Files still run in parallel for speed, but tests within each file are sequential
     sequence: {
@@ -87,19 +83,21 @@ export default defineConfig({
       },
     },
     // Dependency handling for Vitest
-    deps: {
-      // Inline these packages so they're transformed properly
-      inline: [
-        '@capacitor/core',
-        '@capacitor/preferences',
-        '@capacitor/device',
-        '@capacitor/network',
-        '@ngx-translate/core',
-        '@analogjs/vitest-angular',
-        /^@angular\//,
-        /^@ionic\//,
-        /^@stencil\//,
-      ],
+    server: {
+      deps: {
+        // Inline these packages so they're transformed properly
+        inline: [
+          '@capacitor/core',
+          '@capacitor/preferences',
+          '@capacitor/device',
+          '@capacitor/network',
+          '@ngx-translate/core',
+          '@analogjs/vitest-angular',
+          /^@angular\//,
+          /^@ionic\//,
+          /^@stencil\//,
+        ],
+      },
     },
   },
   // Pre-bundle ionic to handle directory imports

@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, BehaviorSubject, combineLatest, of, from, Subject } from 'rxjs';
+import { Observable, BehaviorSubject, combineLatest, of, from, Subject, throwError } from 'rxjs';
 import { map, tap, catchError, takeUntil } from 'rxjs/operators';
 import {
   TidepoolAuthService,
@@ -14,6 +14,8 @@ import {
 } from '@services/local-auth.service';
 import { LoggerService } from '@services/logger.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
+import { LoginRateLimiterService, RateLimitResult } from '@services/login-rate-limiter.service';
+import { TranslateService } from '@ngx-translate/core';
 
 /**
  * Unified authentication provider type
@@ -95,7 +97,9 @@ export class UnifiedAuthService implements OnDestroy {
     private tidepoolAuth: TidepoolAuthService,
     private localAuth: LocalAuthService,
     private logger: LoggerService,
-    private apiGateway: ApiGatewayService
+    private apiGateway: ApiGatewayService,
+    private rateLimiter: LoginRateLimiterService,
+    private translate: TranslateService
   ) {
     this.logger.info('Init', 'UnifiedAuthService initialized');
     // Combine both authentication states
@@ -164,21 +168,92 @@ export class UnifiedAuthService implements OnDestroy {
 
   /**
    * Login with local backend
+   *
+   * SECURITY: Implements rate limiting with exponential backoff
+   * - Checks rate limit before attempting login
+   * - Records failed attempts with exponential backoff
+   * - 15-minute lockout after 5 failed attempts
+   * - Resets on successful login
    */
   loginLocal(request: LoginRequest): Observable<UnifiedAuthState> {
     const username = request.email || request.dni || '';
     this.logger.info('Auth', 'Local login initiated', { username, provider: 'local' });
 
+    // SECURITY: Check rate limit before attempting login
+    const rateLimitCheck = this.rateLimiter.checkRateLimit(username);
+    if (!rateLimitCheck.allowed) {
+      const errorMessage = this.formatRateLimitError(rateLimitCheck);
+      this.logger.warn('Auth', 'Login blocked by rate limiter', {
+        username,
+        remainingAttempts: rateLimitCheck.remainingAttempts,
+        lockoutRemaining: rateLimitCheck.lockoutRemaining,
+        waitTime: rateLimitCheck.waitTime,
+      });
+      return throwError(() => new Error(errorMessage));
+    }
+
     return this.localAuth.login(username, request.password, request.rememberMe).pipe(
-      tap(() => {
-        this.logger.info('Auth', 'Local login successful', { username, provider: 'local' });
+      tap(result => {
+        // Check if login was successful based on the result
+        if (result.success) {
+          // SECURITY: Reset rate limit on successful login
+          this.rateLimiter.recordSuccessfulLogin(username);
+          this.logger.info('Auth', 'Local login successful', { username, provider: 'local' });
+        } else {
+          // SECURITY: Record failed attempt
+          const rateLimitResult = this.rateLimiter.recordFailedAttempt(username);
+          this.logger.warn('Auth', 'Login failed, rate limit updated', {
+            username,
+            remainingAttempts: rateLimitResult.remainingAttempts,
+            waitTime: rateLimitResult.waitTime,
+          });
+        }
       }),
       map(() => this.unifiedAuthStateSubject.value),
       catchError(error => {
-        this.logger.error('Auth', 'Local login failed', error, { username, provider: 'local' });
+        // SECURITY: Record failed attempt on error
+        const rateLimitResult = this.rateLimiter.recordFailedAttempt(username);
+        this.logger.error('Auth', 'Local login failed', error, {
+          username,
+          provider: 'local',
+          remainingAttempts: rateLimitResult.remainingAttempts,
+        });
         throw error;
       })
     );
+  }
+
+  /**
+   * Format rate limit error message for user display
+   */
+  private formatRateLimitError(rateLimitResult: RateLimitResult): string {
+    if (rateLimitResult.lockoutRemaining) {
+      const minutes = Math.ceil(rateLimitResult.lockoutRemaining / 60000);
+      return this.translate.instant('login.messages.rateLimitLockout', { minutes });
+    }
+
+    if (rateLimitResult.waitTime) {
+      const seconds = Math.ceil(rateLimitResult.waitTime / 1000);
+      return this.translate.instant('login.messages.rateLimitBackoff', { seconds });
+    }
+
+    return this.translate.instant('login.messages.rateLimitGeneric');
+  }
+
+  /**
+   * Get rate limit status for a username
+   * Useful for UI to show remaining attempts or lockout timer
+   */
+  getRateLimitStatus(username: string): RateLimitResult {
+    return this.rateLimiter.checkRateLimit(username);
+  }
+
+  /**
+   * Get formatted lockout time remaining
+   * Returns MM:SS format or null if not locked
+   */
+  getLockoutTimeRemaining(username: string): string | null {
+    return this.rateLimiter.getLockoutTimeRemaining(username);
   }
 
   /**

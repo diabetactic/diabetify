@@ -9,7 +9,9 @@ coverage
 playwright-report
 playwright/artifacts
 playwright/screenshots
-junit.xml
+
+# Docker local state (run history, debug logs)
+docker/.state/
 
 # Tooling caches
 .angular
@@ -34,5 +36,40 @@ WARP.md
 docs/*REPORT.md
 docs/*SUMMARY.md
 
-# Temporary files
-frontend.log
+# Debugging artifacts
+snapshot*.txt
+dashboard_*.txt
+*.log
+
+# IDE configs (keep local)
+.cursor/
+.gemini/
+android/.idea/
+
+# Removed Windows wrapper files per user request
+hive-mind-prompt-*.txt
+
+# Claude Flow generated files
+.claude/settings.local.json
+.mcp.json
+claude-flow.config.json
+.swarm/
+.hive-mind/
+.claude-flow/
+memory/
+coordination/
+memory/claude-flow-data.json
+memory/sessions/*
+!memory/sessions/README.md
+memory/agents/*
+!memory/agents/README.md
+coordination/memory_bank/*
+coordination/subtasks/*
+coordination/orchestration/*
+*.db
+*.db-journal
+*.db-wal
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+claude-flow

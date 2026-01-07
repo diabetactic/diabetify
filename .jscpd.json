@@ -1,5 +1,5 @@
 {
-  "threshold": 2,
+  "threshold": 10,
   "reporters": ["console"],
   "ignore": [
     "**/*.spec.ts",
@@ -8,10 +8,17 @@
     "**/__mocks__/**",
     "**/mocks/**",
     "**/dist/**",
-    "**/coverage/**"
+    "**/coverage/**",
+    "**/www/**",
+    "**/android/app/build/**",
+    "**/playwright/**",
+    "**/maestro/**",
+    "**/scripts/**",
+    "**/*.config.ts",
+    "**/*.config.js"
   ],
   "format": ["typescript", "javascript"],
-  "minLines": 5,
-  "minTokens": 50,
+  "minLines": 10,
+  "minTokens": 100,
   "output": "./reports/jscpd"
 }

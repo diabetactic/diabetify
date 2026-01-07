@@ -12,15 +12,14 @@
 
 # syntax=docker/dockerfile:1.4
 
-FROM mcr.microsoft.com/playwright:v1.50.0-jammy
+FROM mcr.microsoft.com/playwright:v1.57.0-jammy
 
 # =============================================================================
 # Stage 1: Base Setup
 # =============================================================================
 
 # Set environment variables
-ENV NODE_VERSION=22 \
-    NPM_CONFIG_LOGLEVEL=warn \
+ENV NPM_CONFIG_LOGLEVEL=warn \
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
     PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium \
     DEBIAN_FRONTEND=noninteractive \

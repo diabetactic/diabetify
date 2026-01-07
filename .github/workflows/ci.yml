@@ -24,10 +24,10 @@ env:
 
 jobs:
   # ══════════════════════════════════════════════════════════════════════════
-  # PHASE 1: Fast Feedback (parallel, ~90s total)
+  # PHASE 1: Fast Feedback (parallel jobs)
   # Testing Trophy: Base layer - many fast tests for quick feedback
   # ══════════════════════════════════════════════════════════════════════════
-  lint:
+  type-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -37,16 +37,35 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           pnpm-version: ${{ env.PNPM_VERSION }}
-
       - name: Type Check
         run: pnpm exec tsc --noEmit -p tsconfig.build.json
 
+  static-analysis:
+    runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          pnpm-version: ${{ env.PNPM_VERSION }}
       - name: Lint + Static Quality Gates
         run: pnpm run quality:static
-
       - name: i18n Check
         run: pnpm run i18n:check
 
+  integration-tests-msw:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          pnpm-version: ${{ env.PNPM_VERSION }}
       - name: Integration Tests (MSW)
         run: pnpm run test:integration:msw
 
@@ -88,8 +107,11 @@ jobs:
   # PHASE 2: Build (~60s, only if Phase 1 passes)
   # ══════════════════════════════════════════════════════════════════════════
   build:
-    needs: [lint, unit-tests]
+    needs: [type-check, static-analysis, integration-tests-msw, unit-tests]
     runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
       - uses: actions/checkout@v6
 
@@ -99,11 +121,19 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           pnpm-version: ${{ env.PNPM_VERSION }}
 
+      - name: Cache Angular build assets
+        uses: actions/cache@v4
+        with:
+          path: .angular/cache
+          key: angular-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            angular-${{ runner.os }}-
+
       - name: Build Mock Mode
         run: pnpm run build:mock
 
       - name: Upload www artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: www
           path: www/
@@ -143,7 +173,7 @@ jobs:
         run: echo "version=$(pnpm list @playwright/test --json | jq -r '.[0].devDependencies["@playwright/test"].version // "unknown"')" >> $GITHUB_OUTPUT
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
@@ -193,7 +223,7 @@ jobs:
 
       - name: Upload artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: ui-test-artifacts
           path: |
@@ -244,7 +274,7 @@ jobs:
         run: ./docker/seed-test-data.sh full
 
       - name: Cache Playwright
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -291,7 +321,7 @@ jobs:
 
       - name: Upload artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: docker-e2e-artifacts
           path: |

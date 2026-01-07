@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { CommonModule } from '@angular/common';
 import { Network } from '@capacitor/network';
 import { NetworkStatus } from '@capacitor/network';
 import { vi } from 'vitest';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { NetworkStatusComponent } from './network-status.component';
 
@@ -21,7 +21,7 @@ describe('NetworkStatusComponent', () => {
     vi.spyOn(Network, 'getStatus').mockResolvedValue({ connected: true, connectionType: 'wifi' });
 
     await TestBed.configureTestingModule({
-      imports: [CommonModule, NetworkStatusComponent],
+      imports: [NetworkStatusComponent, TranslateModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NetworkStatusComponent);
@@ -45,7 +45,7 @@ describe('NetworkStatusComponent', () => {
     const statusElement = fixture.nativeElement.querySelector('.network-status');
     const statusText = fixture.nativeElement.querySelector('.status-text');
     expect(statusElement.classList.contains('online')).toBe(true);
-    expect(statusText.textContent).toBe('Online');
+    expect(statusText.textContent).toBe('common.online');
   });
 
   it('should display offline status when network is disconnected', async () => {
@@ -58,7 +58,7 @@ describe('NetworkStatusComponent', () => {
 
     // Verify component state is correct (DOM will reflect this on next change detection cycle)
     expect(component.status).toBe('offline');
-    expect(component.statusText).toBe('Offline');
+    expect(component.statusTextKey).toBe('common.offline');
   });
 
   it('should display online status when network is connected', async () => {
@@ -78,6 +78,6 @@ describe('NetworkStatusComponent', () => {
     const statusElement = fixture.nativeElement.querySelector('.network-status');
     const statusText = fixture.nativeElement.querySelector('.status-text');
     expect(statusElement.classList.contains('online')).toBe(true);
-    expect(statusText.textContent).toBe('Online');
+    expect(statusText.textContent).toBe('common.online');
   });
 });

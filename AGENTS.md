@@ -1,77 +1,155 @@
 # AGENTS.md - Diabetactic AI Agent Configuration
 
-> Universal configuration file for AI coding agents (Google Jules, OpenAI Codex, Claude Code)
+> Config for AI coding agents (Google Jules, OpenAI Codex, Claude Code)
 
 ## Project Overview
 
-Diabetactic is an Ionic/Angular mobile app for diabetes glucose management.
+**Diabetactic** - Ionic/Angular mobile app for diabetes glucose management.  
+**Stack**: Angular 21, Ionic 8, Capacitor 8, Tailwind CSS + DaisyUI, Vitest 4, Playwright 1.48
 
-**Stack**: Angular 21.0.5, Ionic 8.7.14, Capacitor 8.0.0, Tailwind CSS + DaisyUI, Vitest 4.0.15, Playwright 1.48.0
-
-**Documentation**: See `CLAUDE.md` for comprehensive project documentation
-
-## Build Commands
+## Commands
 
 ```bash
-npm install              # Install dependencies
-npm run build:prod       # Production build
-npm test                 # Run Vitest unit tests
-npm run lint             # ESLint + Stylelint
+# Build & Dev
+pnpm install              # Install deps (pnpm required)
+pnpm run start:mock       # Dev server - mock backend (RECOMMENDED)
+pnpm run start:cloud      # Dev server - Heroku production
+pnpm run build:prod       # Production build
+pnpm run lint             # ESLint + Stylelint
+pnpm run typecheck        # TypeScript check
+
+# Testing
+pnpm test                            # All unit tests
+pnpm test -- src/path/to/file.spec.ts  # Single test file
+pnpm test -- --grep "test name"      # Filter by test name
+pnpm run test:watch                  # Watch mode
+pnpm run test:coverage               # Coverage report
+pnpm run test:e2e                    # Playwright E2E (headless)
+pnpm run test:e2e:headed             # Playwright E2E (visible browser)
 ```
 
-## Test Commands
+## Code Style
 
-```bash
-npm run test:unit        # Vitest unit tests
-npm run test:e2e         # Playwright E2E tests
-npm run test:coverage    # Coverage report
+### Formatting (Prettier)
+
+- Single quotes, semicolons, 2-space indent, 100 char line width
+- Trailing commas in ES5 contexts; Arrow parens only when required: `x => x`
+
+### TypeScript
+
+- **Strict mode** - no implicit any, strict null checks
+- **NO type suppressions**: Never use `as any`, `@ts-ignore`, `@ts-expect-error`
+- Unused variables prefixed with `_`: `(_unused, value) => value`
+
+### Path Aliases (tsconfig.json)
+
+```typescript
+import { ReadingsService } from '@services/readings.service';
+import { GlucoseReading } from '@models/glucose-reading.model';
+import { environment } from '@env/environment';
+// @core/* → src/app/core/*      @shared/* → src/app/shared/*
+// @services/* → src/app/core/services/*   @models/* → src/app/core/models/*
+// @guards/* → src/app/core/guards/*       @env/* → src/environments/*
+// @mocks/* → src/mocks/*        @test-setup/* → src/test-setup/*
 ```
 
-## Coding Standards
+### Naming Conventions
+
+- **Components**: `kebab-case` selector with `app-` prefix: `app-reading-item`
+- **Directives**: `camelCase` selector with `app` prefix: `appHighlight`
+- **Files**: `kebab-case.type.ts` (e.g., `readings.service.ts`)
+- **Classes**: `PascalCase`; **Interfaces**: `PascalCase`, no `I` prefix
 
 ### Angular Components
 
-- Use standalone components (not NgModule)
-- Import Ionic components individually: `IonHeader, IonToolbar, IonTitle`
-- Always include `schemas: [CUSTOM_ELEMENTS_SCHEMA]`
+```typescript
+@Component({
+  selector: 'app-my-component',
+  templateUrl: './my-component.html',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,  // Prefer OnPush
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],                // REQUIRED for Ionic
+  imports: [
+    IonHeader, IonToolbar, IonTitle,                // Import Ionic individually
+    TranslateModule,
+  ],
+})
+```
 
 ### API Calls
 
-- ALL HTTP requests through `ApiGatewayService`
-- Never use HttpClient directly in components/services
-- Use endpoint keys: `this.apiGateway.request('readings.list', { params })`
+```typescript
+// ALWAYS use ApiGatewayService - NEVER HttpClient directly
+this.apiGateway.request('readings.list', { params });
+this.apiGateway.request('readings.create', { body: reading });
+```
+
+### Error Handling
+
+- Use `catchError` operator for Observable errors
+- Never swallow errors silently - always log or rethrow
+- Use `LoggerService` for consistent logging
 
 ### Internationalization
 
-- All user-facing text must be in both `en.json` AND `es.json`
-- Use TranslateModule for templates: `{{ 'key' | translate }}`
-- Run `npm run i18n:check` before committing
-
-### Testing
-
-- Vitest 4.0.15 for unit tests (\*.spec.ts alongside source)
-- All Capacitor plugins mocked in `src/test-setup/`
-- 1012 tests passing, 0 skipped, 0 failed (as of 2025-12-04)
+- All user-facing text in BOTH `assets/i18n/en.json` AND `es.json`
+- Template: `{{ 'READINGS.TITLE' | translate }}`
+- Run `pnpm run i18n:check` before committing
 
 ## File Structure
 
 ```
 src/app/
-├── core/services/       # Singleton services (auth, api, database)
-├── core/models/         # TypeScript interfaces
-├── shared/              # Reusable components
-├── dashboard/           # Main dashboard page
-├── readings/            # Glucose readings management
-├── appointments/        # Medical appointments
-└── profile/             # User profile and settings
+├── core/
+│   ├── services/      # Singleton services (auth, api, database)
+│   ├── models/        # TypeScript interfaces
+│   ├── guards/        # Route guards
+│   └── interceptors/  # HTTP interceptors
+├── shared/            # Reusable components
+├── dashboard/         # Main dashboard page
+├── readings/          # Glucose readings management
+├── appointments/      # Medical appointments
+└── profile/           # User profile
 ```
 
-## Branch Protection
+## Testing
 
-- **NEVER** merge directly to `master`
-- Create feature branches: `feature/[agent]/[task]`
-- All PRs require passing CI checks
-- Squash merge preferred
+- **Unit tests**: `*.spec.ts` files alongside source
+- **Mocks**: Capacitor plugins mocked in `src/test-setup/`
+- **Use `vi.fn()`** for mocks (Vitest, not Jest)
+- **Coverage thresholds**: 80% lines, 75% functions, 70% branches
+
+```typescript
+// Test file structure
+import '../../../test-setup'; // Required at top
+import { TestBed } from '@angular/core/testing';
+
+describe('MyService', () => {
+  let service: MyService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [MyService /* mocks */],
+    });
+    service = TestBed.inject(MyService);
+  });
+
+  it('should do something', () => {
+    expect(service.doSomething()).toBe(expected);
+  });
+});
+```
+
+## Key Files
+
+| File                                           | Purpose                   |
+| ---------------------------------------------- | ------------------------- |
+| `src/app/core/services/api-gateway.service.ts` | All API calls (endpoints) |
+| `src/app/core/services/local-auth.service.ts`  | Authentication            |
+| `src/app/core/services/database.service.ts`    | IndexedDB (Dexie)         |
+| `src/environments/environment.ts`              | Backend mode config       |
+| `vitest.config.ts`                             | Test config               |
+| `playwright.config.ts`                         | E2E config                |
 
 ## Test Credentials
 
@@ -80,94 +158,28 @@ src/app/
 | Mobile App | 1000     | tuvieja  |
 | Backoffice | admin    | admin    |
 
-## API Endpoints
+## Git Workflow
 
-- Main API: `https://diabetactic-api-gateway-37949d6f182f.herokuapp.com`
-- Backoffice: `https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com`
-
-## Backend Modes
-
-The app supports three backend modes controlled by `DEV_BACKEND_MODE`:
-
-- `mock` - In-memory mock adapter, no backend required
-- `local` - Local Docker backend at localhost:8000
-- `cloud` - Heroku API Gateway (production)
-
-```bash
-ENV=mock npm start      # Mock backend (offline) - RECOMMENDED
-ENV=cloud npm start     # Heroku production
-```
-
-## E2E Testing
-
-### Web E2E (Playwright 1.48.0)
-
-- **Location**: `playwright/tests/`
-- **Run**: `npm run test:e2e` (headless) or `npm run test:e2e:headed`
-- **Features**:
-  - Visual regression testing
-  - Accessibility audits with @axe-core/playwright
-  - Auto-screenshots on failure in `playwright/artifacts/`
-- **Key tests**:
-  - `accessibility-audit.spec.ts` - WCAG compliance
-  - `heroku-integration.spec.ts` - Backend integration
-  - `heroku-appointments-flow.spec.ts` - Appointments E2E
-  - `heroku-readings-crud.spec.ts` - Readings CRUD
-  - `error-handling.spec.ts` - Error scenarios
-
-### Mobile E2E (Maestro)
-
-- **Location**: `maestro/tests/`
-- **Run**: `maestro test maestro/tests/` (requires running emulator + installed APK)
-- **Backend**: Tests against real Heroku production API
-- **Test Structure**:
-  - `readings/` - List, add, edit glucose readings
-  - `appointments/` - Full appointment lifecycle (request → pending → accepted → created)
-  - `profile/` - Profile editing
-  - `settings/` - Theme and language persistence
-  - `errors/` - Network errors, invalid login, form validation
-- **Key Features**:
-  - Bilingual support (Spanish/English regex patterns)
-  - Shadow DOM bypass strategies
-  - Backoffice API integration for appointment queue management
-  - Deterministic state management with `clearState`
-
-**Backoffice API helper** (for appointment tests):
-
-```bash
-# Actions: accept, deny, clear
-ACTION=accept USER_ID=1000 node maestro/scripts/backoffice-api.js
-ACTION=clear node maestro/scripts/backoffice-api.js
-```
-
-## Key Files to Know
-
-| File                                              | Purpose                           |
-| ------------------------------------------------- | --------------------------------- |
-| `CLAUDE.md`                                       | Comprehensive project docs        |
-| `src/app/core/services/api-gateway.service.ts`    | All API calls (endpoint registry) |
-| `src/app/core/services/capacitor-http.service.ts` | Hybrid HTTP (web/native)          |
-| `src/app/core/services/local-auth.service.ts`     | Authentication                    |
-| `src/environments/environment.ts`                 | Backend mode config               |
-| `setup-jest.ts`                                   | Jest + Capacitor mocks            |
-| `playwright.config.ts`                            | Playwright E2E config             |
-| `maestro/config.yaml`                             | Maestro E2E config                |
-
-## Common Gotchas
-
-1. **CUSTOM_ELEMENTS_SCHEMA** - Required in all standalone components for Ionic
-2. **Translations** - Must add to both `en.json` AND `es.json`
-3. **ApiGatewayService** - Never use HttpClient directly
-4. **Branch protection** - Never commit to master directly
+- **NEVER** commit to `master` directly
+- Branch naming: `feature/[agent]/[task]`, `fix/[issue]`
+- All PRs require passing CI checks
+- Squash merge preferred
 
 ## Pre-Commit Checklist
 
-- [ ] `npm test` passes
-- [ ] `npm run lint` has no errors
-- [ ] Translations added to both language files
+- [ ] `pnpm test` passes
+- [ ] `pnpm run lint` clean
+- [ ] `pnpm run typecheck` clean
+- [ ] Translations in both `en.json` AND `es.json`
+- [ ] `CUSTOM_ELEMENTS_SCHEMA` in new components
 - [ ] PR targets correct branch (NOT master)
-- [ ] CUSTOM_ELEMENTS_SCHEMA included in new components
 
-## Contact
+## Common Gotchas
+
+1. **CUSTOM_ELEMENTS_SCHEMA** - Required in ALL standalone components for Ionic
+2. **ApiGatewayService** - Never use HttpClient directly in components/services
+3. **Path aliases** - Use `@services/` not `../../core/services/`
+4. **OnPush change detection** - Prefer for performance; use `ChangeDetectorRef.markForCheck()`
+5. **Test isolation** - Tests run in forks with sequential execution per file
 
 Repository: https://github.com/diabetactic/diabetify

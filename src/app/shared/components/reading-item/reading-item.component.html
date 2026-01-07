@@ -1,45 +1,44 @@
-<ion-item class="reading-item" lines="none">
-  <div
-    class="bg-base-100 dark:border-base-content/10 flex w-full cursor-pointer items-center justify-between rounded-2xl p-4 shadow-md transition-all duration-200 active:scale-[0.98] active:shadow-sm dark:border dark:shadow-black/30"
-  >
-    <!-- Left Section: Emoji + Reading Info -->
-    <div class="flex items-center gap-3">
-      <!-- Status Emoji -->
-      <span class="text-3xl leading-none">{{ getStatusEmoji() }}</span>
+<!-- Reading item content - no ion-item wrapper to avoid nested-interactive a11y violation -->
+<div
+  class="reading-item bg-base-100 dark:border-base-content/10 flex w-full items-center justify-between rounded-2xl p-4 shadow-md transition-all duration-200 dark:border dark:shadow-black/30"
+>
+  <!-- Left Section: Emoji + Reading Info -->
+  <div class="flex items-center gap-3">
+    <!-- Status Emoji -->
+    <span class="text-3xl leading-none">{{ getStatusEmoji() }}</span>
 
-      <!-- Reading Info -->
-      <div class="flex flex-col gap-1">
-        <!-- Glucose Value -->
-        <div class="flex items-baseline gap-1">
-          <span class="text-base-content text-2xl font-bold leading-none">
-            {{ reading.value }}
-          </span>
-          <span class="text-base-content/50 text-sm font-medium">
-            {{ reading.units }}
-          </span>
-        </div>
+    <!-- Reading Info -->
+    <div class="flex flex-col gap-1">
+      <!-- Glucose Value -->
+      <div class="flex items-baseline gap-1">
+        <span class="text-base-content text-2xl font-bold leading-none">
+          {{ reading.value }}
+        </span>
+        <span class="text-base-content/50 text-sm font-medium">
+          {{ reading.units }}
+        </span>
+      </div>
 
-        <!-- Date and Time -->
-        <div class="text-base-content/40 flex items-center gap-1.5 text-xs">
-          <span class="font-normal">{{ formatDate(reading.time) }}</span>
-          <span class="text-[10px]">•</span>
-          <span class="font-normal">{{ formatTime(reading.time) }}</span>
-        </div>
+      <!-- Date and Time -->
+      <div class="text-base-content/40 flex items-center gap-1.5 text-xs" data-testid="timestamp">
+        <span class="font-normal">{{ formatDate(reading.time) }}</span>
+        <span class="text-[10px]">•</span>
+        <span class="font-normal">{{ formatTime(reading.time) }}</span>
       </div>
     </div>
-
-    <!-- Right Section: Status Badge -->
-    <div class="flex items-center">
-      <span
-        class="rounded-xl px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide"
-        [ngClass]="{
-          'bg-green-500/10 text-green-600 dark:text-green-400': getStatusClass() === 'normal',
-          'bg-orange-500/10 text-orange-600 dark:text-orange-400': getStatusClass() === 'low',
-          'bg-red-500/10 text-red-600 dark:text-red-400': getStatusClass() === 'high',
-        }"
-      >
-        {{ getStatusText() }}
-      </span>
-    </div>
   </div>
-</ion-item>
+
+  <!-- Right Section: Status Badge -->
+  <div class="flex items-center">
+    <span
+      class="rounded-xl px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide"
+      [ngClass]="{
+        'bg-green-500/10 text-green-600 dark:text-green-400': getStatusClass() === 'normal',
+        'bg-orange-500/10 text-orange-600 dark:text-orange-400': getStatusClass() === 'low',
+        'bg-red-500/10 text-red-600 dark:text-red-400': getStatusClass() === 'high',
+      }"
+    >
+      {{ getStatusText() }}
+    </span>
+  </div>
+</div>

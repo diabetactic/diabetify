@@ -17,7 +17,7 @@ const isProduction = process.env['NODE_ENV'] === 'production';
 const config: CapacitorConfig = {
   appId: 'io.diabetactic.app',
   appName: 'diabetactic',
-  webDir: 'www',
+  webDir: 'www/browser',
   server: {
     // SECURITY: Cleartext HTTP disabled in production to prevent man-in-the-middle attacks
     // Only enabled in development for local API testing (e.g., localhost backends)

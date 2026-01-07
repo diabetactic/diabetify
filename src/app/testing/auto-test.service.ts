@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiGatewayService } from '@core/services/api-gateway.service';
-import { LocalAuthService } from '@core/services/local-auth.service';
+
 import { firstValueFrom } from 'rxjs';
 import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
 
@@ -36,10 +36,7 @@ export class AutoTestService {
   private results: TestResult[] = [];
   public readonly apiGatewayUrl: string;
 
-  constructor(
-    private apiGateway: ApiGatewayService,
-    private localAuth: LocalAuthService
-  ) {
+  constructor(private apiGateway: ApiGatewayService) {
     this.apiGatewayUrl = API_GATEWAY_BASE_URL;
   }
 

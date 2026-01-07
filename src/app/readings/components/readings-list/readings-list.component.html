@@ -39,7 +39,7 @@
 <!-- Grouped Readings List -->
 @if (!isLoading && groupedReadings.length > 0) {
   <div
-    class="page-shell pb-20"
+    class="page-shell readings-list-shell pb-20"
     style="padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px))"
     data-testid="readings-list"
   >
@@ -65,6 +65,15 @@
         </div>
       </div>
 
+<<<<<<< HEAD
+              <ion-item
+                button
+                [detail]="false"
+                lines="none"
+                class="cursor-pointer transition-transform duration-200 ease-in-out active:scale-[0.98]"
+                (click)="onReadingClick(reading)"
+                (keyup.enter)="onReadingClick(reading)"
+=======
       <!-- Readings in this group -->
       <div class="p-4">
         @for (reading of group.readings; track trackByReading($index, reading)) {
@@ -74,6 +83,7 @@
                 color="danger"
                 (click)="onDeleteReading(reading, slidingItem)"
                 [attr.aria-label]="'common.delete' | translate"
+>>>>>>> origin/master
               >
                 <app-icon name="trash" slot="icon-only"></app-icon>
               </ion-item-option>

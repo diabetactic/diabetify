@@ -279,7 +279,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    * Show toast notification when queue state changes
    */
   private async notifyStateChange(
-    fromState: AppointmentQueueState | undefined,
+    _fromState: AppointmentQueueState | undefined,
     toState: AppointmentQueueState
   ): Promise<void> {
     let message: string;
@@ -742,7 +742,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   }
 
   // trackBy function for past appointments ngFor
-  trackByAppointment(index: number, appointment: Appointment): number {
+  trackByAppointment(_index: number, appointment: Appointment): number {
     return appointment.appointment_id;
   }
 

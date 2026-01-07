@@ -429,7 +429,7 @@ describe('BolusCalculatorPage', () => {
 
       component.resetCalculator();
 
-      expect(component.calculatorForm.value).toEqual({ currentGlucose: null, carbGrams: null });
+      expect(component.calculatorForm.value).toEqual({ currentGlucose: '', carbGrams: '' });
       expect(component.result).toBeNull();
       expect(component.selectedFoods()).toEqual([]);
       expect(component.glucoseError).toBe('');

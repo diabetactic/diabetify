@@ -154,8 +154,20 @@
       </button>
       @if (showManualEntry) {
         <div class="manual-entry-form">
-          <input [(ngModel)]="manualFoodName" [placeholder]="'foodPicker.foodName' | translate" />
+          <label class="form-label mb-2 block" for="manual-food-name">
+            {{ 'foodPicker.foodName' | translate }}
+          </label>
           <input
+            id="manual-food-name"
+            [(ngModel)]="manualFoodName"
+            [placeholder]="'foodPicker.foodName' | translate"
+          />
+
+          <label class="form-label mb-2 mt-4 block" for="manual-carbs">
+            {{ 'foodPicker.carbs' | translate }}
+          </label>
+          <input
+            id="manual-carbs"
             [(ngModel)]="manualCarbs"
             type="number"
             [placeholder]="'foodPicker.carbs' | translate"

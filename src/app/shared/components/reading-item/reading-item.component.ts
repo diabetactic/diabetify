@@ -1,6 +1,5 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonItem } from '@ionic/angular/standalone';
 import { LocalGlucoseReading } from '@core/models/glucose-reading.model';
 import { TranslationService } from '@services/translation.service';
 
@@ -9,7 +8,7 @@ import { TranslationService } from '@services/translation.service';
   templateUrl: './reading-item.component.html',
   styleUrls: ['./reading-item.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonItem],
+  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

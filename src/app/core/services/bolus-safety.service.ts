@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { BolusCalculation, MockDataService, MockReading } from './mock-data.service';
 import { LoggerService } from './logger.service';
 
@@ -12,6 +13,7 @@ export interface SafetyWarning {
 export class BolusSafetyService {
   private logger = inject(LoggerService);
   private mockData = inject(MockDataService);
+  private translate = inject(TranslateService);
 
   private readonly INSULIN_DURATION_HOURS = 4;
 
@@ -23,9 +25,10 @@ export class BolusSafetyService {
     if (calculation.recommendedInsulin > maxBolus) {
       warnings.push({
         type: 'maxDose',
-        message: `The recommended dose of ${calculation.recommendedInsulin.toFixed(
-          1
-        )} units exceeds the maximum of ${maxBolus} units.`,
+        message: this.translate.instant('bolusCalculator.warnings.maxDose', {
+          recommended: calculation.recommendedInsulin.toFixed(1),
+          max: maxBolus,
+        }),
       });
     }
 
@@ -34,9 +37,9 @@ export class BolusSafetyService {
     if (iob > 0) {
       warnings.push({
         type: 'iob',
-        message: `You still have an estimated ${iob.toFixed(
-          1
-        )} units of insulin on board from a recent bolus.`,
+        message: this.translate.instant('bolusCalculator.warnings.iob', {
+          iob: iob.toFixed(1),
+        }),
       });
     }
 
@@ -45,7 +48,9 @@ export class BolusSafetyService {
     if (calculation.currentGlucose < lowGlucoseThreshold) {
       warnings.push({
         type: 'lowGlucose',
-        message: `Your current glucose of ${calculation.currentGlucose} mg/dL is low. A bolus is not recommended.`,
+        message: this.translate.instant('bolusCalculator.warnings.lowGlucose', {
+          glucose: calculation.currentGlucose,
+        }),
       });
     }
 
@@ -54,35 +59,33 @@ export class BolusSafetyService {
 
   calculateIOB(readings: MockReading[], nowMs: number = Date.now()): number {
     const durationMs = this.INSULIN_DURATION_HOURS * 60 * 60 * 1000;
+    let totalIOB = 0;
 
-    const recentBolusReadings = readings
-      .filter(r => {
-        if (!r.insulin || r.insulin <= 0) return false;
-        const elapsedMs = nowMs - new Date(r.date).getTime();
-        // Ignore future readings and anything at/after the insulin duration window.
-        // Allow elapsedMs === 0 so "just bolused" returns full dose.
-        return elapsedMs >= 0 && elapsedMs < durationMs;
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    readings.forEach(r => {
+      if (!r.insulin || r.insulin <= 0) return;
 
-    if (recentBolusReadings.length === 0) {
-      return 0;
-    }
+      // Validate date format - skip invalid readings with warning
+      const readingTime = new Date(r.date).getTime();
+      if (isNaN(readingTime)) {
+        this.logger.warn('IOB', `Invalid date format in reading: ${r.date}`);
+        return;
+      }
 
-    const lastBolus = recentBolusReadings[0];
-    const elapsedMs = nowMs - new Date(lastBolus.date).getTime();
-    if (elapsedMs < 0 || elapsedMs >= durationMs) {
-      return 0;
-    }
+      const elapsedMs = nowMs - readingTime;
 
-    const dose = lastBolus.insulin!;
-    const fractionRemaining = 1 - elapsedMs / durationMs;
-    const insulinRemaining = dose * fractionRemaining;
+      // Only consider readings within the insulin duration window and not in the future.
+      if (elapsedMs >= 0 && elapsedMs < durationMs) {
+        // Quantize elapsed time to the nearest second to avoid millisecond-level jitter
+        // affecting rounding at 0.1U precision (important for deterministic safety checks).
+        const elapsedMsQuantized = Math.round(elapsedMs / 1000) * 1000;
+        const fractionRemaining = Math.max(0, 1 - elapsedMsQuantized / durationMs);
+        totalIOB += r.insulin * fractionRemaining;
+      }
+    });
 
-    // Clamp and quantize to avoid tiny floating-point differences across repeated calls.
-    const clamped = Math.min(dose, Math.max(0, insulinRemaining));
-    const quantized = Math.round(clamped * 10_000) / 10_000;
-    return quantized === 0 ? 0 : quantized;
+    // Clamp and quantize to avoid tiny floating-point differences.
+    const quantized = Math.round(totalIOB * 10) / 10;
+    return quantized < 0.1 ? 0 : quantized;
   }
 
   logAuditEvent(event: string, data: unknown): void {

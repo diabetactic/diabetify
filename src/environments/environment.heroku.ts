@@ -97,5 +97,7 @@ export const environment = {
     useTidepoolMock: (DEV_BACKEND_MODE as BackendMode) === 'mock',
     devTools: true,
     showEnvBadge: false, // Show CLOUD/LOCAL/MOCK badge (set true for debugging)
+    showStatusBadges: false, // Show floating demo badges (env/sync/network)
+    webDeviceFrame: false, // Opt-in phone frame on desktop web (html.dt-device-frame)
   },
 };

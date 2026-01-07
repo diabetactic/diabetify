@@ -1,9 +1,11 @@
-<!-- Status Badges - Floating indicator for demo visibility -->
-<div class="status-badges">
-  <app-env-badge></app-env-badge>
-  <app-sync-status></app-sync-status>
-  <app-network-status></app-network-status>
-</div>
+@if (showStatusBadges) {
+  <!-- Status Badges - Floating indicator for demo visibility -->
+  <div class="status-badges">
+    <app-env-badge></app-env-badge>
+    <app-sync-status></app-sync-status>
+    <app-network-status></app-network-status>
+  </div>
+}
 
 <ion-tabs>
   <ion-tab-bar slot="bottom">

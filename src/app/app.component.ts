@@ -19,6 +19,7 @@ import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ReadingsService } from '@services/readings.service';
+import { DemoDataService } from '@services/demo-data.service';
 
 @Component({
   selector: 'app-root',
@@ -37,7 +38,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private logger: LoggerService,
     private authService: LocalAuthService,
     private sessionTimeout: SessionTimeoutService,
-    private readingsService: ReadingsService
+    private readingsService: ReadingsService,
+    private demoDataService: DemoDataService
   ) {
     this.logger.info('Init', 'AppComponent initialized');
     this.initializeApp();
@@ -47,8 +49,17 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
+    this.configureWebDeviceFrame();
+
     // Log backend configuration for visibility
     this.logBackendConfiguration();
+
+    // Seed demo data if in mock mode
+    if (environment.backendMode === 'mock') {
+      this.demoDataService.ensureSeeded().catch(err => {
+        this.logger.error('Init', 'Failed to seed demo data', err);
+      });
+    }
 
     // Translation service initializes automatically in constructor/service
     this.translationService.currentLanguage$.pipe(takeUntil(this.destroy$)).subscribe(lang => {
@@ -94,6 +105,12 @@ export class AppComponent implements OnInit, OnDestroy {
       url,
       production: isProduction,
     });
+  }
+
+  private configureWebDeviceFrame(): void {
+    if (this.platform.is('capacitor')) return;
+    const enableFrame = environment.features?.webDeviceFrame ?? false;
+    document.documentElement.classList.toggle('dt-device-frame', enableFrame);
   }
 
   private async initializeApp(): Promise<void> {

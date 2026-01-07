@@ -95,14 +95,14 @@ A complete Docker-based local development environment that replicates Heroku pro
 
 ```bash
 # 1. Start backend
-cd /home/julito/TPP/diabetactic/diabetify/docker
+cd /home/julito/code/facu/diabetactic/diabetify/docker
 ./start.sh
 
 # 2. Create test user
 ./create-user.sh 1000 tuvieja
 
 # 3. Start frontend with local backend
-cd /home/julito/TPP/diabetactic/diabetify
+cd /home/julito/code/facu/diabetactic/diabetify
 ENV=local npm start
 
 # 4. Test at http://localhost:8100
@@ -164,7 +164,7 @@ The app automatically uses the correct URL:
 1. Test the setup:
 
    ```bash
-   cd /home/julito/TPP/diabetactic/diabetify/docker
+   cd /home/julito/code/facu/diabetactic/diabetify/docker
    ./start.sh
    ./create-user.sh 1000 tuvieja
    ```
@@ -172,7 +172,7 @@ The app automatically uses the correct URL:
 2. Start frontend:
 
    ```bash
-   cd /home/julito/TPP/diabetactic/diabetify
+   cd /home/julito/code/facu/diabetactic/diabetify
    ENV=local npm start
    ```
 

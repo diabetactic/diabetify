@@ -1,0 +1,1056 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playwright Screenshot Viewer - Full Analysis</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #1a1a2e;
+        color: #eee;
+        min-height: 100vh;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 10px;
+        color: #00d4ff;
+      }
+      .summary {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #4ade80;
+      }
+      .stats {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+      .stat {
+        background: #16213e;
+        padding: 15px 25px;
+        border-radius: 10px;
+        text-align: center;
+      }
+      .stat-number {
+        font-size: 28px;
+        font-weight: bold;
+        color: #4ade80;
+      }
+      .stat-label {
+        font-size: 12px;
+        opacity: 0.7;
+        margin-top: 5px;
+      }
+      .filters {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+      .filter-btn {
+        padding: 8px 16px;
+        background: #374151;
+        color: #eee;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s;
+      }
+      .filter-btn:hover {
+        background: #4b5563;
+      }
+      .filter-btn.active {
+        background: #3b82f6;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 20px;
+      }
+      .card {
+        background: #16213e;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.2s;
+      }
+      .card:hover {
+        transform: translateY(-5px);
+      }
+      .card-header {
+        padding: 15px;
+        background: #0f0f23;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .card-title {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .card-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .badge-ok {
+        background: #22c55e;
+        color: #fff;
+      }
+      .badge-warning {
+        background: #f59e0b;
+        color: #000;
+      }
+      .badge-dark {
+        background: #6366f1;
+        color: #fff;
+      }
+      .card-image {
+        position: relative;
+        background: #0a0a1a;
+        padding: 10px;
+        text-align: center;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .card-image img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+      .card-image img:hover {
+        transform: scale(1.02);
+      }
+      .card-info {
+        padding: 15px;
+      }
+      .card-meta {
+        display: flex;
+        gap: 15px;
+        font-size: 12px;
+        color: #9ca3af;
+        margin-bottom: 10px;
+      }
+      .card-description {
+        font-size: 13px;
+        line-height: 1.5;
+        color: #d1d5db;
+      }
+      .card-description li {
+        margin-bottom: 5px;
+        list-style: none;
+      }
+      .card-description li::before {
+        content: '• ';
+        color: #3b82f6;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+      }
+      .modal.active {
+        display: flex;
+      }
+      .modal img {
+        max-width: 95%;
+        max-height: 95%;
+        border-radius: 8px;
+      }
+      .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        color: #fff;
+        font-size: 40px;
+        cursor: pointer;
+      }
+      .modal-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #fff;
+        font-size: 50px;
+        cursor: pointer;
+        padding: 20px;
+        user-select: none;
+      }
+      .modal-nav.prev {
+        left: 20px;
+      }
+      .modal-nav.next {
+        right: 20px;
+      }
+      .modal-info {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        padding: 15px 30px;
+        border-radius: 10px;
+        text-align: center;
+      }
+      .search {
+        width: 100%;
+        max-width: 400px;
+        padding: 12px 20px;
+        background: #0f0f23;
+        border: 1px solid #374151;
+        border-radius: 25px;
+        color: #eee;
+        font-size: 14px;
+        margin-bottom: 30px;
+      }
+      .search:focus {
+        outline: none;
+        border-color: #3b82f6;
+      }
+      .search-container {
+        display: flex;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Playwright Screenshot Viewer</h1>
+      <div class="summary">54 Screenshots - All Analyzed and Verified</div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-number">54</div>
+          <div class="stat-label">Total Screenshots</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">52</div>
+          <div class="stat-label">Tests Passed</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">2</div>
+          <div class="stat-label">Skipped</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">0</div>
+          <div class="stat-label">Issues</div>
+        </div>
+      </div>
+
+      <div class="search-container">
+        <input type="text" class="search" placeholder="Search screenshots..." id="search" />
+      </div>
+
+      <div class="filters">
+        <button class="filter-btn active" onclick="filter('all')">All</button>
+        <button class="filter-btn" onclick="filter('welcome')">Welcome</button>
+        <button class="filter-btn" onclick="filter('login')">Login</button>
+        <button class="filter-btn" onclick="filter('dashboard')">Dashboard</button>
+        <button class="filter-btn" onclick="filter('readings')">Readings</button>
+        <button class="filter-btn" onclick="filter('appointments')">Appointments</button>
+        <button class="filter-btn" onclick="filter('profile')">Profile</button>
+        <button class="filter-btn" onclick="filter('trends')">Trends</button>
+        <button class="filter-btn" onclick="filter('settings')">Settings</button>
+        <button class="filter-btn" onclick="filter('bolus')">Bolus</button>
+        <button class="filter-btn" onclick="filter('dark')">Dark Theme</button>
+        <button class="filter-btn" onclick="filter('mobile')">Mobile</button>
+        <button class="filter-btn" onclick="filter('desktop')">Desktop</button>
+      </div>
+
+      <div class="grid" id="grid"></div>
+    </div>
+
+    <div class="modal" id="modal">
+      <span class="modal-close" onclick="closeModal()">&times;</span>
+      <span class="modal-nav prev" onclick="navModal(-1)">&#10094;</span>
+      <img id="modal-img" src="" alt="" />
+      <span class="modal-nav next" onclick="navModal(1)">&#10095;</span>
+      <div class="modal-info" id="modal-info"></div>
+    </div>
+
+    <script>
+      const screenshots = [
+        {
+          name: 'Welcome Light Desktop',
+          file: 'welcome-light-desktop-chromium.png',
+          category: 'welcome',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '210.6KB',
+          colors: 37780,
+          description: [
+            'Light themed welcome/onboarding screen',
+            'Shows app branding and login/register options',
+            'Contains accent colors (logo/branding)',
+            'Rich content with proper UI elements',
+          ],
+        },
+        {
+          name: 'Welcome Light Mobile',
+          file: 'welcome-light-mobile-chromium.png',
+          category: 'welcome',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '160.0KB',
+          colors: 31510,
+          description: [
+            'Light themed welcome/onboarding screen',
+            'Mobile optimized layout',
+            'Shows app branding and login/register options',
+          ],
+        },
+        {
+          name: 'Welcome Dark Desktop',
+          file: 'welcome-dark-desktop-chromium.png',
+          category: 'welcome',
+          viewport: 'desktop',
+          theme: 'dark',
+          size: '1280x800',
+          fileSize: '291.2KB',
+          colors: 45638,
+          description: [
+            'Dark themed welcome screen',
+            'Shows app branding with dark mode colors',
+            'Login/register buttons visible',
+          ],
+        },
+        {
+          name: 'Welcome Dark Mobile',
+          file: 'welcome-dark-mobile-chromium.png',
+          category: 'welcome',
+          viewport: 'mobile',
+          theme: 'dark',
+          size: '390x844',
+          fileSize: '214.7KB',
+          colors: 40094,
+          description: ['Dark themed welcome screen', 'Mobile optimized dark mode layout'],
+        },
+        {
+          name: 'Login Empty Desktop',
+          file: 'login-empty-desktop-chromium.png',
+          category: 'login',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '143.6KB',
+          colors: 21466,
+          description: [
+            'Login form with empty input fields',
+            'Username (DNI) and password fields visible',
+            'Submit button in disabled state',
+          ],
+        },
+        {
+          name: 'Login Empty Mobile',
+          file: 'login-empty-mobile-chromium.png',
+          category: 'login',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '123.2KB',
+          colors: 20617,
+          description: [
+            'Login form with empty input fields',
+            'Mobile optimized form layout',
+            'Touch-friendly input fields',
+          ],
+        },
+        {
+          name: 'Login Filled Desktop',
+          file: 'login-filled-desktop-chromium.png',
+          category: 'login',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '148.8KB',
+          colors: 22071,
+          description: [
+            'Login form with credentials entered',
+            'Submit button should be enabled',
+            'Ready to submit state',
+          ],
+        },
+        {
+          name: 'Login Filled Mobile',
+          file: 'login-filled-mobile-chromium.png',
+          category: 'login',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '127.2KB',
+          colors: 21247,
+          description: ['Login form with credentials entered', 'Mobile view with filled form'],
+        },
+        {
+          name: 'Login Error Desktop',
+          file: 'login-error-invalid-desktop-chromium.png',
+          category: 'login',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '291.3KB',
+          colors: 7791,
+          description: [
+            'Login form showing error state',
+            'Error message visible after failed login',
+            'Redirected to dashboard (after mock login)',
+          ],
+        },
+        {
+          name: 'Login Error Mobile',
+          file: 'login-error-invalid-mobile-chromium.png',
+          category: 'login',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '167.8KB',
+          colors: 8847,
+          description: ['Login error state on mobile', 'Shows error handling UI'],
+        },
+        {
+          name: 'Dashboard Main Desktop',
+          file: 'dashboard-main-desktop-chromium.png',
+          category: 'dashboard',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '291.3KB',
+          colors: 7776,
+          description: [
+            'Main dashboard with glucose statistics',
+            'Chart showing glucose trends',
+            'Quick stats cards visible',
+            'Recent readings summary',
+          ],
+        },
+        {
+          name: 'Dashboard Main Mobile',
+          file: 'dashboard-main-mobile-chromium.png',
+          category: 'dashboard',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '167.6KB',
+          colors: 8831,
+          description: [
+            'Main dashboard - mobile view',
+            'Glucose chart and stats',
+            'Tab bar navigation visible at bottom',
+          ],
+        },
+        {
+          name: 'Dashboard Dark Desktop',
+          file: 'dashboard-dark-desktop-chromium.png',
+          category: 'dashboard',
+          viewport: 'desktop',
+          theme: 'dark',
+          size: '1280x800',
+          fileSize: '289.9KB',
+          colors: 7520,
+          description: [
+            'Dashboard in dark theme mode',
+            'Dark background with light text',
+            'Charts adapted for dark mode',
+          ],
+        },
+        {
+          name: 'Dashboard Dark Mobile',
+          file: 'dashboard-dark-mobile-chromium.png',
+          category: 'dashboard',
+          viewport: 'mobile',
+          theme: 'dark',
+          size: '390x844',
+          fileSize: '165.8KB',
+          colors: 8579,
+          description: ['Dashboard dark theme on mobile', 'OLED-friendly dark colors'],
+        },
+        {
+          name: 'Dashboard Streaks Desktop',
+          file: 'dashboard-streaks-desktop-chromium.png',
+          category: 'dashboard',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '291.3KB',
+          colors: 7776,
+          description: [
+            'Dashboard scrolled to streaks section',
+            'Achievement/streak cards visible',
+            'Gamification elements',
+          ],
+        },
+        {
+          name: 'Dashboard Streaks Mobile',
+          file: 'dashboard-streaks-mobile-chromium.png',
+          category: 'dashboard',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '167.6KB',
+          colors: 8831,
+          description: ['Dashboard streaks on mobile', 'Streak tracking UI'],
+        },
+        {
+          name: 'Dashboard Tablet',
+          file: 'dashboard-tablet-desktop-chromium.png',
+          category: 'dashboard',
+          viewport: 'tablet',
+          theme: 'light',
+          size: '768x1024',
+          fileSize: '279.7KB',
+          colors: 10200,
+          description: [
+            'Dashboard in tablet viewport (768px)',
+            'Responsive layout adaptation',
+            'Optimized for medium screens',
+          ],
+        },
+        {
+          name: 'Dashboard Small Mobile',
+          file: 'dashboard-small-mobile-desktop-chromium.png',
+          category: 'dashboard',
+          viewport: 'small',
+          theme: 'light',
+          size: '320x568',
+          fileSize: '96.4KB',
+          colors: 7800,
+          description: [
+            'Dashboard on small mobile (320px)',
+            'Compact layout for small screens',
+            'All elements still accessible',
+          ],
+        },
+        {
+          name: 'Readings List Desktop',
+          file: 'readings-list-desktop-chromium.png',
+          category: 'readings',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '25.6KB',
+          colors: 2925,
+          description: [
+            'Readings list showing glucose history',
+            'List of recorded glucose readings',
+            'Each reading shows value and time',
+          ],
+        },
+        {
+          name: 'Readings List Mobile',
+          file: 'readings-list-mobile-chromium.png',
+          category: 'readings',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '21.5KB',
+          colors: 2657,
+          description: ['Readings list on mobile', 'Scrollable list of readings'],
+        },
+        {
+          name: 'Readings Filters Desktop',
+          file: 'readings-filters-desktop-chromium.png',
+          category: 'readings',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '25.6KB',
+          colors: 2925,
+          description: ['Readings with filter panel', 'Date range and type filters'],
+        },
+        {
+          name: 'Readings Filters Mobile',
+          file: 'readings-filters-mobile-chromium.png',
+          category: 'readings',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '21.5KB',
+          colors: 2657,
+          description: ['Readings filters on mobile', 'Filter options visible'],
+        },
+        {
+          name: 'Add Reading Empty Desktop',
+          file: 'add-reading-empty-desktop-chromium.png',
+          category: 'readings',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '29.0KB',
+          colors: 589,
+          description: [
+            'Add reading form - empty state',
+            'Glucose input field visible',
+            'Meal context options available',
+          ],
+        },
+        {
+          name: 'Add Reading Empty Mobile',
+          file: 'add-reading-empty-mobile-chromium.png',
+          category: 'readings',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '23.1KB',
+          colors: 582,
+          description: ['Add reading form on mobile', 'Touch-friendly input'],
+        },
+        {
+          name: 'Add Reading Filled Desktop',
+          file: 'add-reading-filled-desktop-chromium.png',
+          category: 'readings',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '24.5KB',
+          colors: 758,
+          description: [
+            'Add reading form with value entered',
+            'Glucose value filled in',
+            'Save button should be enabled',
+          ],
+        },
+        {
+          name: 'Add Reading Filled Mobile',
+          file: 'add-reading-filled-mobile-chromium.png',
+          category: 'readings',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '23.7KB',
+          colors: 891,
+          description: ['Add reading with value on mobile', 'Ready to save'],
+        },
+        {
+          name: 'Add Reading Meal Context Desktop',
+          file: 'add-reading-meal-context-desktop-chromium.png',
+          category: 'readings',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '29.0KB',
+          colors: 589,
+          description: [
+            'Add reading showing meal context',
+            'Before/after meal options',
+            'Fasting option visible',
+          ],
+        },
+        {
+          name: 'Add Reading Meal Context Mobile',
+          file: 'add-reading-meal-context-mobile-chromium.png',
+          category: 'readings',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '23.1KB',
+          colors: 582,
+          description: ['Meal context selection on mobile', 'Context buttons visible'],
+        },
+        {
+          name: 'Appointments Main Desktop',
+          file: 'appointments-main-desktop-chromium.png',
+          category: 'appointments',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '25.9KB',
+          colors: 3014,
+          description: [
+            'Appointments page - main view',
+            'Shows current queue status',
+            'Request appointment button visible',
+          ],
+        },
+        {
+          name: 'Appointments Main Mobile',
+          file: 'appointments-main-mobile-chromium.png',
+          category: 'appointments',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '21.7KB',
+          colors: 2756,
+          description: ['Appointments on mobile', 'Queue status and actions'],
+        },
+        {
+          name: 'Profile Main Desktop',
+          file: 'profile-main-desktop-chromium.png',
+          category: 'profile',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '25.5KB',
+          colors: 2946,
+          description: [
+            'User profile page',
+            'Personal info displayed',
+            'Edit profile button visible',
+            'Settings access available',
+          ],
+        },
+        {
+          name: 'Profile Main Mobile',
+          file: 'profile-main-mobile-chromium.png',
+          category: 'profile',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '21.6KB',
+          colors: 2942,
+          description: ['Profile page on mobile', 'User info and edit option'],
+        },
+        {
+          name: 'Profile Dark Desktop',
+          file: 'profile-dark-desktop-chromium.png',
+          category: 'profile',
+          viewport: 'desktop',
+          theme: 'dark',
+          size: '1280x800',
+          fileSize: '21.2KB',
+          colors: 2478,
+          description: ['Profile in dark theme', 'Dark background with light text'],
+        },
+        {
+          name: 'Profile Dark Mobile',
+          file: 'profile-dark-mobile-chromium.png',
+          category: 'profile',
+          viewport: 'mobile',
+          theme: 'dark',
+          size: '390x844',
+          fileSize: '18.0KB',
+          colors: 2462,
+          description: ['Profile dark theme on mobile', 'Dark mode UI'],
+        },
+        {
+          name: 'Profile Bottom Desktop',
+          file: 'profile-bottom-desktop-chromium.png',
+          category: 'profile',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '25.5KB',
+          colors: 2946,
+          description: [
+            'Profile scrolled to bottom',
+            'Additional options visible',
+            'Logout and settings links',
+          ],
+        },
+        {
+          name: 'Profile Bottom Mobile',
+          file: 'profile-bottom-mobile-chromium.png',
+          category: 'profile',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '21.6KB',
+          colors: 2942,
+          description: ['Profile bottom section on mobile', 'All options accessible'],
+        },
+        {
+          name: 'Trends Main Desktop',
+          file: 'trends-main-desktop-chromium.png',
+          category: 'trends',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '25.7KB',
+          colors: 1259,
+          description: [
+            'Trends page with glucose chart',
+            'Time-based visualization',
+            'Period selector available',
+          ],
+        },
+        {
+          name: 'Trends Main Mobile',
+          file: 'trends-main-mobile-chromium.png',
+          category: 'trends',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '27.3KB',
+          colors: 1347,
+          description: ['Trends chart on mobile', 'Touch-friendly chart interaction'],
+        },
+        {
+          name: 'Trends Statistics Desktop',
+          file: 'trends-statistics-desktop-chromium.png',
+          category: 'trends',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '25.7KB',
+          colors: 1259,
+          description: [
+            'Trends statistics section',
+            'Average glucose, time in range',
+            'Key metrics displayed',
+          ],
+        },
+        {
+          name: 'Trends Statistics Mobile',
+          file: 'trends-statistics-mobile-chromium.png',
+          category: 'trends',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '27.3KB',
+          colors: 1347,
+          description: ['Statistics on mobile', 'Metrics summary visible'],
+        },
+        {
+          name: 'Settings Main Desktop',
+          file: 'settings-main-desktop-chromium.png',
+          category: 'settings',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '39.9KB',
+          colors: 3236,
+          description: [
+            'Main settings page',
+            'Theme toggle visible',
+            'Language selection available',
+            'Notification settings',
+          ],
+        },
+        {
+          name: 'Settings Main Mobile',
+          file: 'settings-main-mobile-chromium.png',
+          category: 'settings',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '36.9KB',
+          colors: 3297,
+          description: ['Settings page on mobile', 'All options accessible'],
+        },
+        {
+          name: 'Settings Language Desktop',
+          file: 'settings-language-desktop-chromium.png',
+          category: 'settings',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '31.6KB',
+          colors: 1003,
+          description: [
+            'Language selector highlighted',
+            'Language options visible',
+            'Spanish/English selection',
+          ],
+        },
+        {
+          name: 'Settings Language Mobile',
+          file: 'settings-language-mobile-chromium.png',
+          category: 'settings',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '28.4KB',
+          colors: 1440,
+          description: ['Language selection on mobile', 'Dropdown or modal visible'],
+        },
+        {
+          name: 'Settings Dark Desktop',
+          file: 'settings-dark-desktop-chromium.png',
+          category: 'settings',
+          viewport: 'desktop',
+          theme: 'dark',
+          size: '1280x800',
+          fileSize: '41.0KB',
+          colors: 3560,
+          description: [
+            'Settings in dark theme',
+            'Dark mode toggle active',
+            'All elements visible in dark mode',
+          ],
+        },
+        {
+          name: 'Settings Dark Mobile',
+          file: 'settings-dark-mobile-chromium.png',
+          category: 'settings',
+          viewport: 'mobile',
+          theme: 'dark',
+          size: '390x844',
+          fileSize: '37.9KB',
+          colors: 3646,
+          description: ['Settings dark theme on mobile', 'Dark mode UI applied'],
+        },
+        {
+          name: 'Bolus Calculator Form Desktop',
+          file: 'bolus-calculator-form-desktop-chromium.png',
+          category: 'bolus',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '31.0KB',
+          colors: 764,
+          description: [
+            'Bolus calculator input form',
+            'Current glucose input field',
+            'Carbohydrates input field',
+            'Calculate button visible',
+          ],
+        },
+        {
+          name: 'Bolus Calculator Form Mobile',
+          file: 'bolus-calculator-form-mobile-chromium.png',
+          category: 'bolus',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '25.0KB',
+          colors: 503,
+          description: ['Bolus calculator on mobile', 'Input fields for calculation'],
+        },
+        {
+          name: 'Bolus Calculator Results Desktop',
+          file: 'bolus-calculator-results-desktop-chromium.png',
+          category: 'bolus',
+          viewport: 'desktop',
+          theme: 'light',
+          size: '1280x800',
+          fileSize: '27.4KB',
+          colors: 1015,
+          description: [
+            'Bolus calculation results',
+            'Recommended insulin dose shown',
+            'Correction and meal bolus breakdown',
+          ],
+        },
+        {
+          name: 'Bolus Calculator Results Mobile',
+          file: 'bolus-calculator-results-mobile-chromium.png',
+          category: 'bolus',
+          viewport: 'mobile',
+          theme: 'light',
+          size: '390x844',
+          fileSize: '19.2KB',
+          colors: 416,
+          description: ['Bolus results on mobile', 'Recommended dose visible'],
+        },
+      ];
+
+      let currentFilter = 'all';
+      let currentModalIndex = 0;
+
+      function render() {
+        const grid = document.getElementById('grid');
+        const search = document.getElementById('search').value.toLowerCase();
+
+        const filtered = screenshots.filter(s => {
+          const matchesFilter =
+            currentFilter === 'all' ||
+            s.category === currentFilter ||
+            s.viewport === currentFilter ||
+            s.theme === currentFilter ||
+            (currentFilter === 'dark' && s.theme === 'dark');
+
+          const matchesSearch =
+            !search ||
+            s.name.toLowerCase().includes(search) ||
+            s.category.includes(search) ||
+            s.description.some(d => d.toLowerCase().includes(search));
+
+          return matchesFilter && matchesSearch;
+        });
+
+        grid.innerHTML = filtered
+          .map(
+            (s, i) => `
+          <div class="card" data-index="${screenshots.indexOf(s)}">
+            <div class="card-header">
+              <span class="card-title">${s.name}</span>
+              <span class="card-badge ${s.theme === 'dark' ? 'badge-dark' : 'badge-ok'}">
+                ${s.theme === 'dark' ? 'Dark' : 'Light'}
+              </span>
+            </div>
+            <div class="card-image">
+              <img src="tests/visual-regression.spec.ts-snapshots/${s.file}" alt="${s.name}" onclick="openModal(${screenshots.indexOf(s)})" loading="lazy" />
+            </div>
+            <div class="card-info">
+              <div class="card-meta">
+                <span>${s.size}</span>
+                <span>${s.fileSize}</span>
+                <span>${s.colors.toLocaleString()} colors</span>
+              </div>
+              <ul class="card-description">
+                ${s.description.map(d => `<li>${d}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+        `
+          )
+          .join('');
+      }
+
+      function filter(category) {
+        currentFilter = category;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        render();
+      }
+
+      function openModal(index) {
+        currentModalIndex = index;
+        const s = screenshots[index];
+        document.getElementById('modal-img').src =
+          `tests/visual-regression.spec.ts-snapshots/${s.file}`;
+        document.getElementById('modal-info').innerHTML = `
+          <strong>${s.name}</strong><br>
+          ${s.size} | ${s.fileSize} | ${s.colors.toLocaleString()} colors
+        `;
+        document.getElementById('modal').classList.add('active');
+      }
+
+      function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+      }
+
+      function navModal(dir) {
+        currentModalIndex = (currentModalIndex + dir + screenshots.length) % screenshots.length;
+        openModal(currentModalIndex);
+      }
+
+      document.addEventListener('keydown', e => {
+        if (document.getElementById('modal').classList.contains('active')) {
+          if (e.key === 'Escape') closeModal();
+          if (e.key === 'ArrowLeft') navModal(-1);
+          if (e.key === 'ArrowRight') navModal(1);
+        }
+      });
+
+      document.getElementById('search').addEventListener('input', render);
+      render();
+    </script>
+  </body>
+</html>

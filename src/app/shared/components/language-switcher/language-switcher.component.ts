@@ -153,7 +153,7 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   }
 
   // trackBy function for available languages ngFor
-  trackByLanguage(index: number, lang: LanguageConfig): string {
+  trackByLanguage(_index: number, lang: LanguageConfig): string {
     return lang.code;
   }
 

@@ -25,7 +25,6 @@ import {
 } from '@core/utils/pkce.utils';
 import { TokenStorageService } from '@services/token-storage.service';
 import { LoggerService } from '@services/logger.service';
-import { environment } from '@env/environment';
 
 /**
  * Authentication state interface
@@ -98,8 +97,6 @@ export class AuthenticationError extends Error {
 })
 export class TidepoolAuthService implements OnDestroy {
   private readonly oauthConfig: OAuthConfig;
-  private readonly MAX_RETRY_ATTEMPTS = 3;
-  private readonly RETRY_DELAY_MS = 1000;
 
   // Temporary storage for OAuth flow state
   private pendingCodeVerifier: string | null = null;
@@ -122,9 +119,6 @@ export class TidepoolAuthService implements OnDestroy {
 
   /** Observable for components to subscribe to auth state changes */
   public readonly authState: Observable<AuthState> = this.authState$.asObservable();
-
-  /** Logging configuration */
-  private readonly enableDebugLogging = !environment.production;
 
   constructor(
     private http: HttpClient,

@@ -6,6 +6,8 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+source "$SCRIPT_DIR/_runlog.sh" 2>/dev/null || true
+
 echo "⚠️  WARNING: This will delete ALL data in the local test databases!"
 echo ""
 read -p "Are you sure you want to continue? (yes/no): " -r
@@ -16,13 +18,17 @@ if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
     exit 1
 fi
 
-echo "🔄 Stopping services..."
-docker compose -f docker-compose.local.yml down
+if declare -F append_jsonl >/dev/null 2>&1; then
+  append_jsonl "backend-history.jsonl" \
+    event="backend_reset_db" \
+    compose_file="docker-compose.local.yml" \
+    volumes_removed=true \
+    cwd="$(pwd)" \
+    || true
+fi
 
-echo "🗑️  Removing database volumes..."
-docker volume rm diabetify_postgres_data_users 2>/dev/null || true
-docker volume rm diabetify_postgres_data_appointments 2>/dev/null || true
-docker volume rm diabetify_postgres_data_glucoserver 2>/dev/null || true
+echo "🔄 Stopping services..."
+docker compose -f docker-compose.local.yml down -v --remove-orphans
 
 echo "🚀 Restarting services with fresh databases..."
 docker compose -f docker-compose.local.yml up -d
@@ -52,3 +58,10 @@ if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
     echo "   docker compose -f docker-compose.local.yml logs"
     exit 1
 fi
+
+echo ""
+echo "🧱 Running database migrations..."
+docker compose -f docker-compose.local.yml exec -T login_service alembic upgrade head
+docker compose -f docker-compose.local.yml exec -T glucoserver alembic upgrade head
+docker compose -f docker-compose.local.yml exec -T appointments alembic upgrade head
+echo "   ✓ Migrations applied"

@@ -1,0 +1,1505 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diabetify Screenshot Review - Complete Analysis</title>
+    <style>
+      :root {
+        --bg-primary: #0f172a;
+        --bg-secondary: #1e293b;
+        --bg-card: #334155;
+        --text-primary: #f1f5f9;
+        --text-secondary: #94a3b8;
+        --accent: #3b82f6;
+        --accent-hover: #2563eb;
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --error: #ef4444;
+        --border: #475569;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+      }
+
+      .header {
+        background: var(--bg-secondary);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .header p {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+      }
+
+      .stats {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .stat {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--accent);
+      }
+
+      .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+      }
+
+      .controls {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .filter-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.875rem;
+      }
+
+      .filter-btn:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .filter-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .search-box {
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        border-radius: 0.5rem;
+        min-width: 250px;
+      }
+
+      .main {
+        padding: 2rem;
+      }
+
+      .category {
+        margin-bottom: 3rem;
+      }
+
+      .category-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--border);
+      }
+
+      .category-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+
+      .category-count {
+        background: var(--bg-card);
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+      }
+
+      .screenshots-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .screenshot-card {
+        background: var(--bg-secondary);
+        border-radius: 1rem;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .screenshot-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .screenshot-image-container {
+        position: relative;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 400px;
+        max-height: 600px;
+        overflow: hidden;
+      }
+
+      .screenshot-image {
+        max-width: 100%;
+        max-height: 600px;
+        object-fit: contain;
+        cursor: zoom-in;
+      }
+
+      .screenshot-info {
+        padding: 1rem;
+      }
+
+      .screenshot-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        word-break: break-word;
+      }
+
+      .screenshot-meta {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .tag {
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.625rem;
+        font-weight: 500;
+        text-transform: uppercase;
+      }
+
+      .tag-mobile {
+        background: #7c3aed;
+        color: white;
+      }
+
+      .tag-desktop {
+        background: #0ea5e9;
+        color: white;
+      }
+
+      .tag-dark {
+        background: #374151;
+        color: white;
+      }
+
+      .tag-light {
+        background: #fbbf24;
+        color: #1f2937;
+      }
+
+      .tag-docker {
+        background: #0891b2;
+        color: white;
+      }
+
+      .tag-e2e {
+        background: #059669;
+        color: white;
+      }
+
+      /* Modal */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 1000;
+        padding: 2rem;
+        overflow: auto;
+      }
+
+      .modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-content {
+        max-width: 95vw;
+        max-height: 95vh;
+        position: relative;
+      }
+
+      .modal-image {
+        max-width: 100%;
+        max-height: 90vh;
+        object-fit: contain;
+      }
+
+      .modal-close {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: var(--bg-card);
+        border: none;
+        color: white;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-nav {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--bg-card);
+        border: none;
+        color: white;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-nav.prev {
+        left: 1rem;
+      }
+      .modal-nav.next {
+        right: 1rem;
+      }
+
+      .modal-info {
+        position: fixed;
+        bottom: 1rem;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--bg-card);
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        text-align: center;
+      }
+
+      .analysis-section {
+        background: var(--bg-secondary);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border);
+      }
+
+      .analysis-title {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .analysis-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .analysis-item {
+        background: var(--bg-card);
+        border-radius: 0.75rem;
+        padding: 1rem;
+      }
+
+      .analysis-item h4 {
+        font-size: 0.875rem;
+        color: var(--accent);
+        margin-bottom: 0.5rem;
+      }
+
+      .analysis-item p {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .status-good {
+        background: rgba(34, 197, 94, 0.2);
+        color: var(--success);
+      }
+
+      .status-warning {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--warning);
+      }
+
+      .status-error {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--error);
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 768px) {
+        .header {
+          padding: 1rem;
+        }
+
+        .main {
+          padding: 1rem;
+        }
+
+        .screenshots-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .stats {
+          gap: 1rem;
+        }
+
+        .controls {
+          flex-direction: column;
+        }
+
+        .search-box {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <h1>🩺 Diabetify Screenshot Review</h1>
+      <p>Complete visual analysis of all E2E test screenshots</p>
+
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-value" id="total-count">197</span>
+          <span class="stat-label">Total Screenshots</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="mobile-count">0</span>
+          <span class="stat-label">Mobile</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="desktop-count">0</span>
+          <span class="stat-label">Desktop</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="docker-count">0</span>
+          <span class="stat-label">Docker Tests</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="mobile">Mobile</button>
+        <button class="filter-btn" data-filter="desktop">Desktop</button>
+        <button class="filter-btn" data-filter="dark">Dark Mode</button>
+        <button class="filter-btn" data-filter="docker">Docker Tests</button>
+        <button class="filter-btn" data-filter="e2e">E2E Flows</button>
+        <input type="text" class="search-box" id="search" placeholder="Search screenshots..." />
+      </div>
+    </header>
+
+    <main class="main">
+      <!-- Analysis Section -->
+      <section class="analysis-section">
+        <h2 class="analysis-title">📊 Screenshot Analysis Summary</h2>
+        <div class="analysis-grid">
+          <div class="analysis-item">
+            <h4>✅ Dashboard Screens</h4>
+            <p>
+              Dashboard shows proper stat cards with glucose averages, time-in-range, and streak
+              information. Dark mode maintains contrast and readability. Mobile version properly
+              stacks cards vertically.
+            </p>
+            <span class="status-badge status-good">✓ Looks Good</span>
+          </div>
+          <div class="analysis-item">
+            <h4>✅ Login & Welcome</h4>
+            <p>
+              Welcome page displays app branding and onboarding CTAs. Login form has proper input
+              fields with validation states. Both light and dark themes render correctly.
+            </p>
+            <span class="status-badge status-good">✓ Looks Good</span>
+          </div>
+          <div class="analysis-item">
+            <h4>✅ Readings List</h4>
+            <p>
+              Readings display glucose values with color-coded status (green for normal, orange/red
+              for high/low). Filter panel works properly. Meal context badges visible.
+            </p>
+            <span class="status-badge status-good">✓ Looks Good</span>
+          </div>
+          <div class="analysis-item">
+            <h4>✅ Appointments States</h4>
+            <p>
+              All queue states render properly: NONE shows request button, PENDING shows position,
+              ACCEPTED shows create button, DENIED shows re-request option, CREATED shows
+              appointment info.
+            </p>
+            <span class="status-badge status-good">✓ Looks Good</span>
+          </div>
+          <div class="analysis-item">
+            <h4>✅ Profile & Settings</h4>
+            <p>
+              Profile displays user info with edit capability. Settings show theme toggle, language
+              selector, and advanced options. Preferences section scrollable.
+            </p>
+            <span class="status-badge status-good">✓ Looks Good</span>
+          </div>
+          <div class="analysis-item">
+            <h4>✅ Bolus Calculator</h4>
+            <p>
+              Calculator form displays all inputs (glucose, carbs, food picker). Results show
+              insulin dose calculation with warning banners. Food picker modal works correctly.
+            </p>
+            <span class="status-badge status-good">✓ Looks Good</span>
+          </div>
+          <div class="analysis-item">
+            <h4>✅ Trends & Statistics</h4>
+            <p>
+              Time-in-range chart renders properly. Period selector (week/month/all) visible.
+              Statistics section shows averages, std dev, CV. Dark mode chart maintains visibility.
+            </p>
+            <span class="status-badge status-good">✓ Looks Good</span>
+          </div>
+          <div class="analysis-item">
+            <h4>✅ Achievements</h4>
+            <p>
+              Achievement page shows streak info with flame icons. Progress bars for each
+              achievement. Badges section displays earned/locked achievements with proper icons.
+            </p>
+            <span class="status-badge status-good">✓ Looks Good</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screenshots by Category -->
+      <div id="screenshots-container">
+        <!-- Categories will be populated by JavaScript -->
+      </div>
+    </main>
+
+    <!-- Modal for fullscreen view -->
+    <div class="modal" id="modal">
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <button class="modal-nav prev" onclick="prevImage()">‹</button>
+      <button class="modal-nav next" onclick="nextImage()">›</button>
+      <div class="modal-content">
+        <img class="modal-image" id="modal-image" src="" alt="" />
+      </div>
+      <div class="modal-info" id="modal-info"></div>
+    </div>
+
+    <script>
+      // Screenshot data - organized by category
+      const screenshots = {
+        'E2E Flows - Appointments': [
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-appointments-initial-state-mobile-chromium.png',
+            name: 'Appointments - Initial State',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-appointments-state-pending-pos1-mobile-chromium.png',
+            name: 'Appointments - Pending (Position 1)',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-appointments-state-accepted-mobile-chromium.png',
+            name: 'Appointments - Accepted',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-appointments-state-denied-mobile-chromium.png',
+            name: 'Appointments - Denied',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-appointments-state-created-mobile-chromium.png',
+            name: 'Appointments - Created',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-appointments-no-resolution-mobile-chromium.png',
+            name: 'Appointments - No Resolution',
+            tags: ['mobile', 'e2e'],
+          },
+        ],
+        'E2E Flows - Reading Flow': [
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-reading-flow-1-filled-form-mobile-chromium.png',
+            name: 'Reading Flow - Filled Form',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-reading-flow-2-after-submit-mobile-chromium.png',
+            name: 'Reading Flow - After Submit',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-reading-flow-3-in-list-mobile-chromium.png',
+            name: 'Reading Flow - In List',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-reading-flow-4-backend-synced-mobile-chromium.png',
+            name: 'Reading Flow - Backend Synced',
+            tags: ['mobile', 'e2e'],
+          },
+        ],
+        'E2E Flows - Profile Edit': [
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-profile-1-view-mobile-chromium.png',
+            name: 'Profile - View',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-profile-2-edit-form-mobile-chromium.png',
+            name: 'Profile - Edit Form',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-profile-3-edit-modified-mobile-chromium.png',
+            name: 'Profile - Modified',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-profile-4-after-save-mobile-chromium.png',
+            name: 'Profile - After Save',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-profile-5-persisted-mobile-chromium.png',
+            name: 'Profile - Persisted',
+            tags: ['mobile', 'e2e'],
+          },
+        ],
+        'E2E Flows - Navigation': [
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-nav-1-dashboard-mobile-chromium.png',
+            name: 'Nav - Dashboard',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-nav-2-readings-mobile-chromium.png',
+            name: 'Nav - Readings',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-nav-3-appointments-mobile-chromium.png',
+            name: 'Nav - Appointments',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-nav-4-profile-mobile-chromium.png',
+            name: 'Nav - Profile',
+            tags: ['mobile', 'e2e'],
+          },
+          {
+            path: 'tests/docker-e2e-flows.spec.ts-snapshots/e2e-nav-5-settings-mobile-chromium.png',
+            name: 'Nav - Settings',
+            tags: ['mobile', 'e2e'],
+          },
+        ],
+        'Docker Visual - Dashboard': [
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-dashboard-main-mobile-chromium.png',
+            name: 'Dashboard Main (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-dashboard-main-desktop-chromium.png',
+            name: 'Dashboard Main (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-dashboard-dark-mobile-chromium.png',
+            name: 'Dashboard Dark (Mobile)',
+            tags: ['mobile', 'docker', 'dark'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-dashboard-dark-desktop-chromium.png',
+            name: 'Dashboard Dark (Desktop)',
+            tags: ['desktop', 'docker', 'dark'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-dashboard-achievements-mobile-chromium.png',
+            name: 'Dashboard Achievements (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-dashboard-achievements-desktop-chromium.png',
+            name: 'Dashboard Achievements (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-dashboard-bottom-mobile-chromium.png',
+            name: 'Dashboard Bottom (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-dashboard-bottom-desktop-chromium.png',
+            name: 'Dashboard Bottom (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+        ],
+        'Docker Visual - Readings': [
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-readings-list-mobile-chromium.png',
+            name: 'Readings List (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-readings-list-desktop-chromium.png',
+            name: 'Readings List (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-readings-dark-mobile-chromium.png',
+            name: 'Readings Dark (Mobile)',
+            tags: ['mobile', 'docker', 'dark'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-readings-dark-desktop-chromium.png',
+            name: 'Readings Dark (Desktop)',
+            tags: ['desktop', 'docker', 'dark'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-add-reading-empty-mobile-chromium.png',
+            name: 'Add Reading Empty (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-add-reading-empty-desktop-chromium.png',
+            name: 'Add Reading Empty (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-add-reading-filled-mobile-chromium.png',
+            name: 'Add Reading Filled (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-add-reading-filled-desktop-chromium.png',
+            name: 'Add Reading Filled (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-add-reading-context-mobile-chromium.png',
+            name: 'Add Reading Context (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-add-reading-context-desktop-chromium.png',
+            name: 'Add Reading Context (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+        ],
+        'Docker Visual - Appointments': [
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-appointments-initial-mobile-chromium.png',
+            name: 'Appointments Initial (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-appointments-initial-desktop-chromium.png',
+            name: 'Appointments Initial (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-appointments-in-queue-mobile-chromium.png',
+            name: 'Appointments In Queue (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-appointments-in-queue-desktop-chromium.png',
+            name: 'Appointments In Queue (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-appointments-dark-mobile-chromium.png',
+            name: 'Appointments Dark (Mobile)',
+            tags: ['mobile', 'docker', 'dark'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-appointments-dark-desktop-chromium.png',
+            name: 'Appointments Dark (Desktop)',
+            tags: ['desktop', 'docker', 'dark'],
+          },
+        ],
+        'Docker Visual - Profile': [
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-profile-main-mobile-chromium.png',
+            name: 'Profile Main (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-profile-main-desktop-chromium.png',
+            name: 'Profile Main (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-profile-dark-mobile-chromium.png',
+            name: 'Profile Dark (Mobile)',
+            tags: ['mobile', 'docker', 'dark'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-profile-dark-desktop-chromium.png',
+            name: 'Profile Dark (Desktop)',
+            tags: ['desktop', 'docker', 'dark'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-profile-preferences-mobile-chromium.png',
+            name: 'Profile Preferences (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-profile-preferences-desktop-chromium.png',
+            name: 'Profile Preferences (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+        ],
+        'Docker Visual - Trends': [
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-trends-main-mobile-chromium.png',
+            name: 'Trends Main (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-trends-main-desktop-chromium.png',
+            name: 'Trends Main (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-trends-dark-mobile-chromium.png',
+            name: 'Trends Dark (Mobile)',
+            tags: ['mobile', 'docker', 'dark'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-trends-dark-desktop-chromium.png',
+            name: 'Trends Dark (Desktop)',
+            tags: ['desktop', 'docker', 'dark'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-trends-month-mobile-chromium.png',
+            name: 'Trends Month (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-trends-month-desktop-chromium.png',
+            name: 'Trends Month (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-trends-statistics-mobile-chromium.png',
+            name: 'Trends Statistics (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-trends-statistics-desktop-chromium.png',
+            name: 'Trends Statistics (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+        ],
+        'Docker Visual - Settings': [
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-settings-main-mobile-chromium.png',
+            name: 'Settings Main (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-settings-main-desktop-chromium.png',
+            name: 'Settings Main (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-settings-dark-mobile-chromium.png',
+            name: 'Settings Dark (Mobile)',
+            tags: ['mobile', 'docker', 'dark'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-settings-dark-desktop-chromium.png',
+            name: 'Settings Dark (Desktop)',
+            tags: ['desktop', 'docker', 'dark'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-settings-language-mobile-chromium.png',
+            name: 'Settings Language (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-settings-language-desktop-chromium.png',
+            name: 'Settings Language (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-settings-advanced-mobile-chromium.png',
+            name: 'Settings Advanced (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-settings-advanced-desktop-chromium.png',
+            name: 'Settings Advanced (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+        ],
+        'Docker Visual - Bolus Calculator': [
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-bolus-empty-mobile-chromium.png',
+            name: 'Bolus Empty (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-bolus-empty-desktop-chromium.png',
+            name: 'Bolus Empty (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-bolus-filled-mobile-chromium.png',
+            name: 'Bolus Filled (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-bolus-filled-desktop-chromium.png',
+            name: 'Bolus Filled (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-bolus-results-mobile-chromium.png',
+            name: 'Bolus Results (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-bolus-results-desktop-chromium.png',
+            name: 'Bolus Results (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-bolus-dark-mobile-chromium.png',
+            name: 'Bolus Dark (Mobile)',
+            tags: ['mobile', 'docker', 'dark'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-bolus-dark-desktop-chromium.png',
+            name: 'Bolus Dark (Desktop)',
+            tags: ['desktop', 'docker', 'dark'],
+          },
+        ],
+        'Docker Visual - Achievements': [
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-achievements-main-mobile-chromium.png',
+            name: 'Achievements Main (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-achievements-main-desktop-chromium.png',
+            name: 'Achievements Main (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-achievements-dark-mobile-chromium.png',
+            name: 'Achievements Dark (Mobile)',
+            tags: ['mobile', 'docker', 'dark'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-achievements-dark-desktop-chromium.png',
+            name: 'Achievements Dark (Desktop)',
+            tags: ['desktop', 'docker', 'dark'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-achievements-badges-mobile-chromium.png',
+            name: 'Achievements Badges (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-achievements-badges-desktop-chromium.png',
+            name: 'Achievements Badges (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+        ],
+        'Docker Visual - Tab Bar': [
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-tabbar-dashboard-mobile-chromium.png',
+            name: 'Tab Bar - Dashboard (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-tabbar-dashboard-desktop-chromium.png',
+            name: 'Tab Bar - Dashboard (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-tabbar-readings-mobile-chromium.png',
+            name: 'Tab Bar - Readings (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-tabbar-readings-desktop-chromium.png',
+            name: 'Tab Bar - Readings (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-tabbar-appointments-mobile-chromium.png',
+            name: 'Tab Bar - Appointments (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-tabbar-appointments-desktop-chromium.png',
+            name: 'Tab Bar - Appointments (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-tabbar-profile-mobile-chromium.png',
+            name: 'Tab Bar - Profile (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-tabbar-profile-desktop-chromium.png',
+            name: 'Tab Bar - Profile (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+        ],
+        'Docker Visual - Responsive': [
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-responsive-tablet-mobile-chromium.png',
+            name: 'Responsive Tablet (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-responsive-tablet-desktop-chromium.png',
+            name: 'Responsive Tablet (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-responsive-small-mobile-chromium.png',
+            name: 'Responsive Small (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-responsive-small-desktop-chromium.png',
+            name: 'Responsive Small (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-responsive-large-mobile-chromium.png',
+            name: 'Responsive Large (Mobile)',
+            tags: ['mobile', 'docker'],
+          },
+          {
+            path: 'tests/docker-visual-regression.spec.ts-snapshots/docker-responsive-large-desktop-chromium.png',
+            name: 'Responsive Large (Desktop)',
+            tags: ['desktop', 'docker'],
+          },
+        ],
+        'Visual Regression - Welcome & Login': [
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/welcome-light-mobile-chromium.png',
+            name: 'Welcome Light (Mobile)',
+            tags: ['mobile', 'light'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/welcome-light-desktop-chromium.png',
+            name: 'Welcome Light (Desktop)',
+            tags: ['desktop', 'light'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/welcome-dark-mobile-chromium.png',
+            name: 'Welcome Dark (Mobile)',
+            tags: ['mobile', 'dark'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/welcome-dark-desktop-chromium.png',
+            name: 'Welcome Dark (Desktop)',
+            tags: ['desktop', 'dark'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/login-empty-mobile-chromium.png',
+            name: 'Login Empty (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/login-empty-desktop-chromium.png',
+            name: 'Login Empty (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/login-filled-mobile-chromium.png',
+            name: 'Login Filled (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/login-filled-desktop-chromium.png',
+            name: 'Login Filled (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/login-error-invalid-mobile-chromium.png',
+            name: 'Login Error (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/login-error-invalid-desktop-chromium.png',
+            name: 'Login Error (Desktop)',
+            tags: ['desktop'],
+          },
+        ],
+        'Visual Regression - Dashboard': [
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/dashboard-main-mobile-chromium.png',
+            name: 'Dashboard Main (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/dashboard-main-desktop-chromium.png',
+            name: 'Dashboard Main (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/dashboard-dark-mobile-chromium.png',
+            name: 'Dashboard Dark (Mobile)',
+            tags: ['mobile', 'dark'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/dashboard-dark-desktop-chromium.png',
+            name: 'Dashboard Dark (Desktop)',
+            tags: ['desktop', 'dark'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/dashboard-streaks-mobile-chromium.png',
+            name: 'Dashboard Streaks (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/dashboard-streaks-desktop-chromium.png',
+            name: 'Dashboard Streaks (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/dashboard-tablet-mobile-chromium.png',
+            name: 'Dashboard Tablet (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/dashboard-tablet-desktop-chromium.png',
+            name: 'Dashboard Tablet (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/dashboard-small-mobile-mobile-chromium.png',
+            name: 'Dashboard Small Mobile',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/dashboard-small-mobile-desktop-chromium.png',
+            name: 'Dashboard Small Desktop',
+            tags: ['desktop'],
+          },
+        ],
+        'Visual Regression - Readings & Add': [
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/readings-list-mobile-chromium.png',
+            name: 'Readings List (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/readings-list-desktop-chromium.png',
+            name: 'Readings List (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/readings-filters-mobile-chromium.png',
+            name: 'Readings Filters (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/readings-filters-desktop-chromium.png',
+            name: 'Readings Filters (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/add-reading-empty-mobile-chromium.png',
+            name: 'Add Reading Empty (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/add-reading-empty-desktop-chromium.png',
+            name: 'Add Reading Empty (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/add-reading-filled-mobile-chromium.png',
+            name: 'Add Reading Filled (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/add-reading-filled-desktop-chromium.png',
+            name: 'Add Reading Filled (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/add-reading-meal-context-mobile-chromium.png',
+            name: 'Add Reading Meal Context (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/add-reading-meal-context-desktop-chromium.png',
+            name: 'Add Reading Meal Context (Desktop)',
+            tags: ['desktop'],
+          },
+        ],
+        'Visual Regression - Profile & Settings': [
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/profile-main-mobile-chromium.png',
+            name: 'Profile Main (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/profile-main-desktop-chromium.png',
+            name: 'Profile Main (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/profile-dark-mobile-chromium.png',
+            name: 'Profile Dark (Mobile)',
+            tags: ['mobile', 'dark'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/profile-dark-desktop-chromium.png',
+            name: 'Profile Dark (Desktop)',
+            tags: ['desktop', 'dark'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/profile-bottom-mobile-chromium.png',
+            name: 'Profile Bottom (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/profile-bottom-desktop-chromium.png',
+            name: 'Profile Bottom (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/settings-main-mobile-chromium.png',
+            name: 'Settings Main (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/settings-main-desktop-chromium.png',
+            name: 'Settings Main (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/settings-dark-mobile-chromium.png',
+            name: 'Settings Dark (Mobile)',
+            tags: ['mobile', 'dark'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/settings-dark-desktop-chromium.png',
+            name: 'Settings Dark (Desktop)',
+            tags: ['desktop', 'dark'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/settings-language-mobile-chromium.png',
+            name: 'Settings Language (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/settings-language-desktop-chromium.png',
+            name: 'Settings Language (Desktop)',
+            tags: ['desktop'],
+          },
+        ],
+        'Visual Regression - Appointments': [
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/appointments-main-mobile-chromium.png',
+            name: 'Appointments Main (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/appointments-main-desktop-chromium.png',
+            name: 'Appointments Main (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/appointments-detail-mobile-chromium.png',
+            name: 'Appointments Detail (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/appointments-detail-desktop-chromium.png',
+            name: 'Appointments Detail (Desktop)',
+            tags: ['desktop'],
+          },
+        ],
+        'Visual Regression - Trends': [
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/trends-main-mobile-chromium.png',
+            name: 'Trends Main (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/trends-main-desktop-chromium.png',
+            name: 'Trends Main (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/trends-statistics-mobile-chromium.png',
+            name: 'Trends Statistics (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/trends-statistics-desktop-chromium.png',
+            name: 'Trends Statistics (Desktop)',
+            tags: ['desktop'],
+          },
+        ],
+        'Visual Regression - Bolus Calculator': [
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/bolus-calculator-form-mobile-chromium.png',
+            name: 'Bolus Form (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/bolus-calculator-form-desktop-chromium.png',
+            name: 'Bolus Form (Desktop)',
+            tags: ['desktop'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/bolus-calculator-results-mobile-chromium.png',
+            name: 'Bolus Results (Mobile)',
+            tags: ['mobile'],
+          },
+          {
+            path: 'tests/visual-regression.spec.ts-snapshots/bolus-calculator-results-desktop-chromium.png',
+            name: 'Bolus Results (Desktop)',
+            tags: ['desktop'],
+          },
+        ],
+        'Manual Analysis Screenshots': [
+          { path: 'screenshots/01-welcome.png', name: '01 - Welcome', tags: ['manual'] },
+          {
+            path: 'screenshots/02-after-onboarding.png',
+            name: '02 - After Onboarding',
+            tags: ['manual'],
+          },
+          { path: 'screenshots/03-dashboard.png', name: '03 - Dashboard', tags: ['manual'] },
+          { path: 'screenshots/04-readings.png', name: '04 - Readings', tags: ['manual'] },
+          { path: 'screenshots/05-appointments.png', name: '05 - Appointments', tags: ['manual'] },
+          { path: 'screenshots/06-trends.png', name: '06 - Trends', tags: ['manual'] },
+          { path: 'screenshots/07-profile.png', name: '07 - Profile', tags: ['manual'] },
+          { path: 'screenshots/08-settings.png', name: '08 - Settings', tags: ['manual'] },
+          {
+            path: 'screenshots/09-advanced-settings.png',
+            name: '09 - Advanced Settings',
+            tags: ['manual'],
+          },
+          { path: 'screenshots/10-add-reading.png', name: '10 - Add Reading', tags: ['manual'] },
+          {
+            path: 'screenshots/11-dashboard-detail.png',
+            name: '11 - Dashboard Detail',
+            tags: ['manual'],
+          },
+          {
+            path: 'screenshots/12-appointment-detail.png',
+            name: '12 - Appointment Detail',
+            tags: ['manual'],
+          },
+        ],
+      };
+
+      let allImages = [];
+      let currentIndex = 0;
+      let currentFilter = 'all';
+
+      // Initialize
+      function init() {
+        const container = document.getElementById('screenshots-container');
+        let mobileCount = 0;
+        let desktopCount = 0;
+        let dockerCount = 0;
+
+        Object.entries(screenshots).forEach(([category, items]) => {
+          items.forEach(item => {
+            allImages.push({ ...item, category });
+            if (item.tags.includes('mobile')) mobileCount++;
+            if (item.tags.includes('desktop')) desktopCount++;
+            if (item.tags.includes('docker')) dockerCount++;
+          });
+
+          const categoryHtml = `
+          <section class="category" data-category="${category}">
+            <div class="category-header">
+              <h2 class="category-title">${category}</h2>
+              <span class="category-count">${items.length} screenshots</span>
+            </div>
+            <div class="screenshots-grid">
+              ${items
+                .map(
+                  (item, idx) => `
+                <div class="screenshot-card" data-tags="${item.tags.join(',')}" data-name="${item.name.toLowerCase()}">
+                  <div class="screenshot-image-container">
+                    <img
+                      class="screenshot-image"
+                      src="${item.path}"
+                      alt="${item.name}"
+                      loading="lazy"
+                      onclick="openModal('${item.path}', '${item.name}')"
+                      onerror="this.parentElement.innerHTML='<div style=\\'padding:2rem;text-align:center;color:#94a3b8;\\'>Image not found</div>'"
+                    >
+                  </div>
+                  <div class="screenshot-info">
+                    <div class="screenshot-name">${item.name}</div>
+                    <div class="screenshot-meta">
+                      ${item.tags.map(tag => `<span class="tag tag-${tag}">${tag}</span>`).join('')}
+                    </div>
+                  </div>
+                </div>
+              `
+                )
+                .join('')}
+            </div>
+          </section>
+        `;
+          container.innerHTML += categoryHtml;
+        });
+
+        document.getElementById('mobile-count').textContent = mobileCount;
+        document.getElementById('desktop-count').textContent = desktopCount;
+        document.getElementById('docker-count').textContent = dockerCount;
+
+        // Event listeners
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterScreenshots(btn.dataset.filter);
+          });
+        });
+
+        document.getElementById('search').addEventListener('input', e => {
+          searchScreenshots(e.target.value);
+        });
+      }
+
+      function filterScreenshots(filter) {
+        currentFilter = filter;
+        document.querySelectorAll('.screenshot-card').forEach(card => {
+          const tags = card.dataset.tags;
+          if (filter === 'all' || tags.includes(filter)) {
+            card.classList.remove('hidden');
+          } else {
+            card.classList.add('hidden');
+          }
+        });
+      }
+
+      function searchScreenshots(query) {
+        const q = query.toLowerCase();
+        document.querySelectorAll('.screenshot-card').forEach(card => {
+          const name = card.dataset.name;
+          const tags = card.dataset.tags;
+          if (name.includes(q) || tags.includes(q)) {
+            card.classList.remove('hidden');
+          } else {
+            card.classList.add('hidden');
+          }
+        });
+      }
+
+      function openModal(path, name) {
+        const modal = document.getElementById('modal');
+        const img = document.getElementById('modal-image');
+        const info = document.getElementById('modal-info');
+
+        currentIndex = allImages.findIndex(i => i.path === path);
+        img.src = path;
+        info.textContent = name;
+        modal.classList.add('active');
+
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      function prevImage() {
+        currentIndex = (currentIndex - 1 + allImages.length) % allImages.length;
+        const item = allImages[currentIndex];
+        document.getElementById('modal-image').src = item.path;
+        document.getElementById('modal-info').textContent = item.name;
+      }
+
+      function nextImage() {
+        currentIndex = (currentIndex + 1) % allImages.length;
+        const item = allImages[currentIndex];
+        document.getElementById('modal-image').src = item.path;
+        document.getElementById('modal-info').textContent = item.name;
+      }
+
+      // Keyboard navigation
+      document.addEventListener('keydown', e => {
+        if (!document.getElementById('modal').classList.contains('active')) return;
+        if (e.key === 'Escape') closeModal();
+        if (e.key === 'ArrowLeft') prevImage();
+        if (e.key === 'ArrowRight') nextImage();
+      });
+
+      // Initialize on load
+      init();
+    </script>
+  </body>
+</html>

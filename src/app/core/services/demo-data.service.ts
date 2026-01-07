@@ -6,6 +6,7 @@ import { LocalGlucoseReading } from '@models/glucose-reading.model';
 import { UserProfile, AccountState } from '@models/user-profile.model';
 import { Appointment } from '@models/appointment.model';
 import { LoggerService } from '@services/logger.service';
+import { db } from '@services/database.service';
 
 /**
  * Demo Data Service for seeding test data
@@ -475,6 +476,81 @@ export class DemoDataService {
     return this.getDemoReadings(days).toPromise() as Promise<LocalGlucoseReading[]>;
   }
 
+  private buildDeterministicReadings(): LocalGlucoseReading[] {
+    const now = new Date();
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const statusFor = (mgdl: number): LocalGlucoseReading['status'] => {
+      if (mgdl < 54) return 'critical-low';
+      if (mgdl < 70) return 'low';
+      if (mgdl > 250) return 'critical-high';
+      if (mgdl >= 180) return 'high';
+      return 'normal';
+    };
+
+    const build = (
+      baseDay: Date,
+      hour: number,
+      minute: number,
+      value: number,
+      mealContext?: string
+    ): LocalGlucoseReading => {
+      const t = new Date(baseDay);
+      t.setHours(hour, minute, 0, 0);
+      const iso = t.toISOString();
+      const id = `demo_${baseDay.getTime()}_${hour}_${minute}_${value}`;
+      return {
+        id,
+        localId: id,
+        type: 'smbg',
+        value,
+        units: 'mg/dL',
+        time: iso,
+        synced: true,
+        userId: '1000',
+        localStoredAt: iso,
+        isLocalOnly: false,
+        status: statusFor(value),
+        mealContext,
+      } as LocalGlucoseReading;
+    };
+
+    // Keep labels stable for screenshots: only use Today/Yesterday buckets.
+    return [
+      build(today, 7, 30, 92, 'beforeMeal'),
+      build(today, 10, 15, 135, 'afterMeal'),
+      build(today, 13, 0, 72, 'beforeMeal'),
+      build(today, 15, 45, 205, 'afterMeal'),
+      build(today, 18, 30, 160, 'beforeMeal'),
+      build(today, 22, 0, 58, 'bedtime'),
+      build(yesterday, 7, 20, 98, 'beforeMeal'),
+      build(yesterday, 12, 50, 175, 'afterMeal'),
+      build(yesterday, 16, 10, 250, 'afterMeal'),
+      build(yesterday, 19, 5, 68, 'beforeMeal'),
+    ];
+  }
+
+  private async seedReadingsToDexie(readings: LocalGlucoseReading[]): Promise<void> {
+    // Ensure stable demo data exists in the same storage layer used by the UI (Dexie/IndexedDB).
+    try {
+      await db.transaction('rw', [db.readings], async () => {
+        await db.readings.clear();
+        await db.readings.bulkPut(readings);
+      });
+    } catch (error) {
+      if ((error as Error).name === 'PrematureCommitError') {
+        await db.readings.clear();
+        await db.readings.bulkPut(readings);
+      } else {
+        throw error;
+      }
+    }
+  }
+
   /**
    * Generate appointments
    */
@@ -508,8 +584,9 @@ export class DemoDataService {
     localStorage.setItem('demoProfile', JSON.stringify(profile));
 
     // Store demo readings
-    const readings = await this.generateGlucoseReadings(30);
+    const readings = this.buildDeterministicReadings();
     localStorage.setItem('demoReadings', JSON.stringify(readings));
+    await this.seedReadingsToDexie(readings);
 
     // Store demo appointments
     const appointments = await this.generateAppointments(5);
@@ -527,6 +604,19 @@ export class DemoDataService {
     localStorage.removeItem('demoUser');
     // Clear other demo data from IndexedDB
     this.logger.info('DemoData', 'Demo data cleared');
+  }
+
+  /**
+   * Ensure demo data is seeded if database is empty
+   */
+  async ensureSeeded(): Promise<void> {
+    const count = await db.readings.count();
+    if (count === 0) {
+      this.logger.info('DemoData', 'Database empty in mock mode, seeding demo data...');
+      await this.seedDemoData();
+    } else {
+      this.logger.info('DemoData', 'Database already seeded', { count });
+    }
   }
 
   /**
@@ -627,17 +717,5 @@ export class DemoDataService {
   private static getRandomSlots(slots: string[], count: number): string[] {
     const shuffled = [...slots].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, count);
-  }
-
-  private static getFutureDate(days: number): string {
-    const date = new Date();
-    date.setDate(date.getDate() + days);
-    return date.toISOString().split('T')[0];
-  }
-
-  private static getPastDate(days: number): string {
-    const date = new Date();
-    date.setDate(date.getDate() - days);
-    return date.toISOString();
   }
 }

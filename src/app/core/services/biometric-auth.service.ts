@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
 import { LoggerService } from '@services/logger.service';
+import { SecureStorageService } from '@services/secure-storage.service';
 
 export interface BiometricConfig {
   enabled: boolean;
@@ -22,6 +23,10 @@ export class BiometricAuthService {
   private readonly STORAGE_KEY_BIOMETRIC_CONFIG = 'diabetactic_biometric_config';
   private readonly BIOMETRIC_CREDENTIAL_SERVER = 'io.diabetactic.app';
 
+  // SECURITY: Secure storage keys for biometric-protected tokens
+  private readonly BIOMETRIC_TOKEN_EXPIRY_KEY = 'biometric_token_expiry';
+  private readonly BIOMETRIC_USER_ID_KEY = 'biometric_user_id';
+
   private biometricConfigSubject = new BehaviorSubject<BiometricConfig>({
     enabled: false,
     enrolled: false,
@@ -31,7 +36,10 @@ export class BiometricAuthService {
 
   public biometricConfig$ = this.biometricConfigSubject.asObservable();
 
-  constructor(private logger: LoggerService) {
+  constructor(
+    private logger: LoggerService,
+    private secureStorage: SecureStorageService
+  ) {
     this.initializeBiometricConfig();
   }
 
@@ -76,21 +84,52 @@ export class BiometricAuthService {
 
   /**
    * Enroll biometric after successful password login
+   *
+   * SECURITY FIX: Stores REFRESH TOKEN instead of access token
+   * - Refresh tokens have longer validity (days/weeks vs minutes)
+   * - After biometric auth, refresh token is used to get fresh access token
+   * - This prevents storing short-lived tokens that expire between sessions
+   *
+   * @param userId User identifier for the enrollment
+   * @param refreshToken The refresh token to store (NOT the access token)
+   * @param refreshTokenExpiresAt Optional expiry timestamp for the refresh token
    */
-  async enrollBiometric(userId: string, accessToken: string): Promise<BiometricAuthResult> {
+  async enrollBiometric(
+    userId: string,
+    refreshToken: string,
+    refreshTokenExpiresAt?: number
+  ): Promise<BiometricAuthResult> {
     try {
       const isAvailable = await this.isBiometricAvailable();
       if (!isAvailable) {
         return { success: false, authenticated: false, error: 'Biometric not available' };
       }
 
-      // Store credentials using the plugin's built-in secure storage
+      if (!refreshToken) {
+        this.logger.error('Biometric', 'Cannot enroll without refresh token');
+        return { success: false, authenticated: false, error: 'No refresh token provided' };
+      }
+
+      // SECURITY: Store refresh token in native biometric secure storage
+      // This requires biometric verification to access
       const { NativeBiometric } = await import('@capgo/capacitor-native-biometric');
       await NativeBiometric.setCredentials({
         username: userId,
-        password: accessToken,
+        password: refreshToken, // SECURITY: Store REFRESH token, not access token
         server: this.BIOMETRIC_CREDENTIAL_SERVER,
       });
+
+      // Store additional metadata in SecureStorage
+      // User ID for verification, expiry for validation
+      await Promise.all([
+        this.secureStorage.set(this.BIOMETRIC_USER_ID_KEY, userId),
+        refreshTokenExpiresAt
+          ? this.secureStorage.set(
+              this.BIOMETRIC_TOKEN_EXPIRY_KEY,
+              refreshTokenExpiresAt.toString()
+            )
+          : Promise.resolve(),
+      ]);
 
       // Update config
       const biometryType = await this.getBiometryType();
@@ -107,7 +146,10 @@ export class BiometricAuthService {
       });
 
       this.biometricConfigSubject.next(config);
-      this.logger.info('Biometric', 'Enrollment successful', { biometryType });
+      this.logger.info('Biometric', 'Enrollment successful with refresh token', {
+        biometryType,
+        hasExpiry: Boolean(refreshTokenExpiresAt),
+      });
 
       return { success: true, authenticated: true, biometryType };
     } catch (error) {

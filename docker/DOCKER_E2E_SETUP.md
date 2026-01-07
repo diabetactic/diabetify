@@ -8,45 +8,49 @@ This Docker infrastructure enables running Playwright E2E tests in isolated, rep
 
 ### Core Files
 
-1. **docker/Dockerfile.e2e**
-   - Multi-stage build: Angular app builder + Playwright test runner
-   - Based on `node:20-alpine` (builder) and `mcr.microsoft.com/playwright:v1.48.0-jammy`
-   - Installs dependencies and browsers automatically
+1. **docker/Dockerfile.e2e-runner** (default)
+   - Playwright test runner only (no Angular build)
+   - Based on `mcr.microsoft.com/playwright:v1.57.0-jammy`
+   - Installs repo deps via `pnpm install` (no scripts) with cache mounts
 
-2. **docker/docker-compose.e2e.yml**
+2. **docker/Dockerfile.e2e** (legacy/optional)
+   - Multi-stage build: Angular app builder + Playwright test runner
+   - Useful for experimentation; the default flow serves `www/browser` from the host via nginx
+
+3. **docker/docker-compose.e2e.yml**
    - Orchestrates two services: `app` (nginx) and `playwright`
    - Configures networking, health checks, and volume mounts
    - Enables isolated test execution
 
-3. **docker/nginx.conf**
+4. **docker/nginx.conf**
    - Production-ready nginx config for Angular SPA
    - Handles client-side routing (try_files to index.html)
    - Gzip compression, security headers, proper caching
 
-4. **docker/.dockerignore**
+5. **docker/.dockerignore**
    - Optimizes build context by excluding unnecessary files
    - Reduces build time and image size
 
-5. **scripts/run-e2e-docker.sh**
+6. **scripts/run-e2e-docker.sh**
    - Executable shell script for running tests
    - Handles build, test execution, cleanup, and reporting
    - Multiple options for flexibility
 
-6. **docker/README.md**
+7. **docker/README.md**
    - Quick reference guide
    - Troubleshooting tips
    - CI/CD integration examples
 
 ## Quick Start
 
-### Option 1: npm script (Recommended)
+### Option 1: pnpm script (Recommended)
 
 ```bash
 # Run tests with existing images
-npm run test:e2e:docker
+pnpm -s run test:e2e:docker
 
 # Force rebuild and run
-npm run test:e2e:docker:build
+pnpm -s run test:e2e:docker:build
 ```
 
 ### Option 2: Shell script
@@ -82,12 +86,12 @@ docker-compose -f docker/docker-compose.e2e.yml down -v
 1. **Angular Build** (Stage 1)
 
    ```
-   node:20-alpine → npm ci → npm run build:mock → www/
+   node:22-alpine → pnpm install → pnpm run build:mock → www/
    ```
 
 2. **Playwright Setup** (Stage 2)
    ```
-   playwright:v1.48.0 → npm ci → copy www/ → install serve
+   playwright:v1.57.0 → pnpm install → copy www/ → pnpm exec serve
    ```
 
 ### Test Execution Flow
@@ -290,11 +294,11 @@ docker system prune -a
 
 ### Problem: Build fails with "Cannot find module"
 
-**Solution**: Ensure `package.json` is in project root and `npm ci` ran successfully.
+**Solution**: Ensure `package.json` is in project root and `pnpm install` ran successfully.
 
 ### Problem: App doesn't load (404 on all routes)
 
-**Solution**: Check that `www/` directory exists and contains `index.html`. Rebuild: `npm run build:mock`
+**Solution**: Check that `www/` directory exists and contains `index.html`. Rebuild: `pnpm run build:mock`
 
 ### Problem: Tests timeout waiting for app
 
@@ -323,15 +327,15 @@ docker system prune -a
 ### Before (local dev server)
 
 ```bash
-npm start &              # Start dev server
-npm run test:e2e         # Run tests
+pnpm start &             # Start dev server
+pnpm run test:e2e        # Run tests
 pkill -f "ng serve"      # Manual cleanup
 ```
 
 ### After (Docker)
 
 ```bash
-npm run test:e2e:docker  # Build, test, cleanup - all automated
+pnpm -s run test:e2e:docker # Build, test, cleanup - all automated
 ```
 
 ### Benefits

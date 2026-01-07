@@ -22,7 +22,10 @@ import { DockerTestManager } from '../helpers/docker-test-manager';
 import { DatabaseSeeder } from '../helpers/database-seeder';
 import { API_URL, BACKOFFICE_URL, BASE_URL, TEST_USERNAME, TEST_PASSWORD } from '../helpers/config';
 
-const isDockerTest = process.env.E2E_DOCKER_TESTS === 'true';
+// Force serial execution - Docker backend tests modify shared state
+test.describe.configure({ mode: 'serial' });
+
+const isDockerTest = process.env['E2E_DOCKER_TESTS'] === 'true';
 
 // Global setup and teardown
 test.beforeAll(async () => {
@@ -98,18 +101,27 @@ async function loginAndNavigate(page: Page, targetTab?: string): Promise<void> {
     };
     const tabLabel = tabLabels[targetTab] || targetTab;
 
-    // Try multiple selection strategies
+    // Try multiple selection strategies with JavaScript click to avoid tab bar interception
     const tabByTestId = page.locator(`[data-testid="tab-${targetTab}"]`);
     const tabByRole = page.getByRole('tab', { name: tabLabel });
     const tabById = page.locator(`#tab-${targetTab}`);
 
     // Use whichever is visible
     if (await tabByTestId.isVisible().catch(() => false)) {
-      await tabByTestId.click();
+      await tabByTestId.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
     } else if (await tabByRole.isVisible().catch(() => false)) {
-      await tabByRole.click();
+      await tabByRole.first().evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
     } else if (await tabById.isVisible().catch(() => false)) {
-      await tabById.click();
+      await tabById.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
     } else {
       // Fallback: navigate directly to URL
       await page.goto(`${BASE_URL}/tabs/${targetTab}`);
@@ -162,10 +174,13 @@ test.describe('Docker Backend - Readings @docker @docker-readings', () => {
   test('can add new reading with known value', async ({ page }) => {
     const testValue = 125;
 
-    // Click add reading FAB button (data-testid="fab-add-reading" in tabs.page.html)
-    const addButton = page.getByRole('button', { name: 'Add Reading' });
+    // Click add reading FAB button using JavaScript to avoid tab bar interception
+    const addButton = page.locator('[data-testid="fab-add-reading"], #fab-add-reading');
     await expect(addButton).toBeVisible({ timeout: 10000 });
-    await addButton.click();
+    await addButton.evaluate((el: HTMLElement) => {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      el.click();
+    });
     await page.waitForLoadState('networkidle');
 
     // Fill in the reading value (try multiple selectors)
@@ -179,9 +194,12 @@ test.describe('Docker Backend - Readings @docker @docker-readings', () => {
       await notesInput.fill('__E2E_TEST__ Added via Playwright');
     }
 
-    // Submit - look for submit button specifically (not header "Agregar Lectura")
-    const submitBtn = page.getByRole('button', { name: /Guardar lectura|Save reading/i });
-    await submitBtn.click();
+    // Submit using JavaScript to avoid interception
+    const submitBtn = page.getByRole('button', { name: /Guardar lectura|Save reading/i }).first();
+    await submitBtn.evaluate((el: HTMLElement) => {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      el.click();
+    });
     await page.waitForLoadState('networkidle');
 
     // Wait for any toast/notification to dismiss
@@ -305,14 +323,19 @@ test.describe('Docker Backend - Appointments @docker @docker-appointments', () =
 
   test('can request new appointment (NONE → PENDING)', async ({ page }) => {
     // Find request button
-    const requestBtn = page.locator('text=/Solicitar.*Cita|Request.*Appointment/i');
+    const requestBtn = page.locator('text=/Solicitar.*Cita|Request.*Appointment/i').first();
 
     if ((await requestBtn.count()) > 0) {
-      await requestBtn.click();
+      await requestBtn.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
       await page.waitForLoadState('networkidle');
 
       // Should now show pending state
-      await expect(page.locator('text=/Pendiente|Pending|En.*cola|In.*queue/i')).toBeVisible({
+      await expect(
+        page.locator('text=/Pendiente|Pending|En.*cola|In.*queue/i').first()
+      ).toBeVisible({
         timeout: 10000,
       });
     }
@@ -346,8 +369,11 @@ test.describe('Docker Backend - Appointments @docker @docker-appointments', () =
 
     // If no appointment exists, try the full flow
     if (hasRequestBtn > 0) {
-      const requestBtn = page.locator('text=/Solicitar.*Cita|Request.*Appointment/i');
-      await requestBtn.click();
+      const requestBtn = page.locator('text=/Solicitar.*Cita|Request.*Appointment/i').first();
+      await requestBtn.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
       await page.waitForLoadState('networkidle');
 
       // Accept via backoffice API
@@ -420,10 +446,13 @@ test.describe('Docker Backend - Profile @docker @docker-profile', () => {
     // Wait for profile to load
     await page.waitForLoadState('networkidle');
 
-    // Find edit button using Spanish text from UI
-    const editBtn = page.getByRole('button', { name: /Editar Perfil|Edit Profile/i });
+    // Find edit button using JavaScript to avoid viewport issues
+    const editBtn = page.getByRole('button', { name: /Editar Perfil|Edit Profile/i }).first();
     await expect(editBtn).toBeVisible({ timeout: 5000 });
-    await editBtn.click();
+    await editBtn.evaluate((el: HTMLElement) => {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      el.click();
+    });
 
     // Wait for possible navigation/modal
     await page.waitForLoadState('networkidle');
