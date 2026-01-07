@@ -7,33 +7,24 @@
  * 3. Profile Edit Flow - View -> Edit -> Save -> Verify
  * 4. Tab Navigation - All tabs accessible
  *
- * NOTE: Appointment State Machine and Detail View tests have been
- * consolidated into appointment-comprehensive.spec.ts
+ * NOTE: Uses shared helpers from ../helpers/test-helpers.ts
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import { loginUser, waitForIonicHydration, waitForNetworkIdle } from '../helpers/test-helpers';
 
-// Force serial execution - E2E flow tests modify shared state
 test.describe.configure({ mode: 'serial' });
 
 const isDockerTest = process.env['E2E_DOCKER_TESTS'] === 'true';
-
-// Test user
 const TEST_USER = { dni: '1000', password: 'tuvieja' };
-
-// API URL
 const API_URL = 'http://localhost:8000';
 
-// Screenshot options
 const screenshotOptions = {
   maxDiffPixelRatio: 0.05,
   threshold: 0.2,
   animations: 'disabled' as const,
 };
 
-/**
- * Helper: Get auth token for user
- */
 async function getAuthToken(dni: string, password: string): Promise<string> {
   const response = await fetch(`${API_URL}/token`, {
     method: 'POST',
@@ -44,9 +35,6 @@ async function getAuthToken(dni: string, password: string): Promise<string> {
   return data.access_token;
 }
 
-/**
- * Helper: Get readings from API
- */
 async function getReadingsFromAPI(
   token: string
 ): Promise<{ readings: Array<{ id: string; glucose_level: number; notes: string }> }> {
@@ -56,9 +44,6 @@ async function getReadingsFromAPI(
   return response.json();
 }
 
-/**
- * Helper: Delete all readings for a user
- */
 async function clearUserReadings(token: string): Promise<void> {
   const { readings } = await getReadingsFromAPI(token);
   for (const reading of readings) {
@@ -69,47 +54,15 @@ async function clearUserReadings(token: string): Promise<void> {
   }
 }
 
-/**
- * Helper: Login and navigate
- */
+import type { Page } from '@playwright/test';
+
 async function loginAs(page: Page, dni: string, password: string): Promise<void> {
-  await page.goto('/');
-  await page.waitForLoadState('networkidle');
-
-  // Handle welcome screen
-  if (page.url().includes('/welcome')) {
-    const loginBtn = page.locator('[data-testid="welcome-login-btn"]');
-    if ((await loginBtn.count()) > 0) {
-      await loginBtn.click();
-      await page.waitForLoadState('networkidle');
-    }
-  }
-
-  // Login
-  await page.waitForSelector('form', { state: 'visible', timeout: 10000 });
-  await page.fill('#username', dni);
-  await page.fill('#password', password);
-
-  // Use JavaScript click to bypass Ionic scroll/viewport issues
-  await page.evaluate(() => {
-    const btn = document.querySelector('[data-testid="login-submit-btn"]') as HTMLElement;
-    if (btn) {
-      btn.scrollIntoView({ behavior: 'instant', block: 'center' });
-      btn.click();
-    }
-  });
-
-  await expect(page).toHaveURL(/\/tabs\//, { timeout: 20000 });
-  await page.waitForLoadState('networkidle');
+  await loginUser(page, { username: dni, password });
 }
 
-/**
- * Helper: Prepare page for screenshot
- */
 async function prepareForScreenshot(page: Page): Promise<void> {
-  await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(500);
-  // Hide dynamic elements
+  await waitForNetworkIdle(page);
+  await waitForIonicHydration(page);
   await page.addStyleTag({
     content: `
       [data-testid="timestamp"], .timestamp, .time-ago { visibility: hidden !important; }

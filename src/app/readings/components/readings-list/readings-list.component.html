@@ -78,17 +78,23 @@
                 <app-icon name="trash" slot="icon-only"></app-icon>
               </ion-item-option>
             </ion-item-options>
-            <ion-item
-              button
-              [detail]="false"
-              lines="none"
-              class="mb-2 cursor-pointer rounded-xl shadow-sm transition-transform duration-200 ease-in-out active:scale-[0.98]"
-              (click)="onReadingClick(reading)"
-              (keyup.enter)="onReadingClick(reading)"
-              role="button"
-              tabindex="0"
-            >
-              <app-reading-item [reading]="reading" class="block w-full"></app-reading-item>
+            <ion-item [detail]="false" lines="none" class="mb-2 rounded-xl shadow-sm">
+              <div
+                class="block w-full cursor-pointer transition-transform duration-200 ease-in-out active:scale-[0.98]"
+                (click)="onReadingClick(reading)"
+                (keyup.enter)="onReadingClick(reading)"
+                role="button"
+                tabindex="0"
+                [attr.aria-label]="
+                  ('readings.glucoseReading' | translate) +
+                  ': ' +
+                  reading.value +
+                  ' ' +
+                  reading.units
+                "
+              >
+                <app-reading-item [reading]="reading" class="block w-full"></app-reading-item>
+              </div>
             </ion-item>
           </ion-item-sliding>
         }

@@ -1,19 +1,10 @@
-/**
- * Comprehensive Appointment Workflow E2E Tests
- *
- * Complete coverage for appointment lifecycle:
- * - Queue states: NONE, PENDING, ACCEPTED, DENIED, CREATED, BLOCKED
- * - Queue closed/blocked scenarios
- * - Form validation for appointment creation
- * - Resolution display and details
- * - Cancel, edit appointment flows
- * - Multi-position queue scenarios
- *
- * Run with: npm run test:e2e -- --grep "@appointment-comprehensive"
- */
-
 import { test, expect, Page } from '@playwright/test';
-import { scrollAndClickIonElement } from '../helpers/test-helpers';
+import {
+  loginUser,
+  waitForIonicHydration,
+  waitForNetworkIdle,
+  scrollAndClickIonElement,
+} from '../helpers/test-helpers';
 
 // Force serial execution - appointment tests modify shared queue state
 test.describe.configure({ mode: 'serial' });
@@ -266,63 +257,25 @@ async function setQueueStatus(isOpen: boolean): Promise<void> {
   }
 }
 
-/**
- * Helper: Login and navigate
- */
 async function loginAs(page: Page, dni: string, password: string): Promise<void> {
-  await page.goto('/');
-  await page.waitForLoadState('networkidle');
-
-  // Handle welcome screen
-  if (page.url().includes('/welcome')) {
-    const loginBtn = page.locator('[data-testid="welcome-login-btn"]');
-    if ((await loginBtn.count()) > 0) {
-      await loginBtn.click();
-      await page.waitForLoadState('networkidle');
-    }
-  }
-
-  // Login
-  await page.waitForSelector('form', { state: 'visible', timeout: 10000 });
-  await page.fill('#username', dni);
-  await page.fill('#password', password);
-
-  await page.evaluate(() => {
-    const btn = document.querySelector('[data-testid="login-submit-btn"]') as HTMLElement;
-    if (btn) {
-      btn.scrollIntoView({ behavior: 'instant', block: 'center' });
-      btn.click();
-    }
-  });
-
-  await expect(page).toHaveURL(/\/tabs\//, { timeout: 20000 });
-  await page.waitForLoadState('networkidle');
+  await loginUser(page, { username: dni, password });
 }
 
-/**
- * Helper: Navigate to appointments tab
- */
 async function goToAppointments(page: Page): Promise<void> {
   await page.click('[data-testid="tab-appointments"]');
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(2000);
 }
 
-/**
- * Helper: Disable device frame
- */
 async function disableDeviceFrame(page: Page): Promise<void> {
   await page.evaluate(() => {
     document.documentElement.classList.add('no-device-frame');
   });
 }
 
-/**
- * Helper: Prepare for screenshot
- */
 async function prepareForScreenshot(page: Page): Promise<void> {
-  await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(500);
+  await waitForNetworkIdle(page);
+  await waitForIonicHydration(page);
   await page.addStyleTag({
     content: `
       [data-testid="timestamp"], .timestamp, .time-ago { visibility: hidden !important; }

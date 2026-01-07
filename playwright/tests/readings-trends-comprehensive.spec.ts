@@ -1,30 +1,10 @@
-/**
- * Comprehensive Readings & Trends E2E Tests
- *
- * Coverage for:
- * - Reading detail view
- * - Reading edit functionality
- * - Reading delete functionality
- * - Trends page period selector
- * - Trends chart interactions
- * - Statistics display verification
- *
- * Run with: npm run test:e2e -- --grep "@readings-trends"
- */
-
 import { test, expect, Page } from '@playwright/test';
+import { loginUser, waitForIonicHydration, waitForNetworkIdle } from '../helpers/test-helpers';
 
 const isDockerTest = process.env['E2E_DOCKER_TESTS'] === 'true';
-
-// Test user credentials
 const TEST_USER = { dni: '1000', password: 'tuvieja' };
-
-// API URLs
 const API_URL = process.env['E2E_API_URL'] || 'http://localhost:8000';
 
-/**
- * Helper: Get auth token
- */
 async function getAuthToken(dni: string, password: string): Promise<string> {
   const response = await fetch(`${API_URL}/token`, {
     method: 'POST',
@@ -35,9 +15,6 @@ async function getAuthToken(dni: string, password: string): Promise<string> {
   return data.access_token;
 }
 
-/**
- * Helper: Create a test reading via API
- */
 async function createTestReading(
   token: string,
   glucoseLevel: number,
@@ -53,25 +30,6 @@ async function createTestReading(
   return response.json();
 }
 
-/**
- * Helper: Get readings from API
- * @internal Reserved for future API-level tests
- */
-async function _getReadings(
-  token: string
-): Promise<{ readings: Array<{ id: string; glucose_level: number; notes: string }> }> {
-  const response = await fetch(`${API_URL}/glucose/mine`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return response.json();
-}
-
-// Suppress unused variable warning - reserved for future API-level tests
-void _getReadings;
-
-/**
- * Helper: Delete reading via API
- */
 async function deleteReading(token: string, id: string): Promise<void> {
   await fetch(`${API_URL}/glucose/${id}`, {
     method: 'DELETE',
@@ -79,54 +37,19 @@ async function deleteReading(token: string, id: string): Promise<void> {
   }).catch(() => {});
 }
 
-/**
- * Helper: Login and navigate
- */
 async function loginAs(page: Page, dni: string, password: string): Promise<void> {
-  await page.goto('/');
-  await page.waitForLoadState('networkidle');
-
-  if (page.url().includes('/welcome')) {
-    const loginBtn = page.locator('[data-testid="welcome-login-btn"]');
-    if ((await loginBtn.count()) > 0) {
-      await loginBtn.click();
-      await page.waitForLoadState('networkidle');
-    }
-  }
-
-  if (!page.url().includes('/tabs/')) {
-    await page.waitForSelector('form', { state: 'visible', timeout: 10000 });
-    await page.fill('#username', dni);
-    await page.fill('#password', password);
-
-    await page.evaluate(() => {
-      const btn = document.querySelector('[data-testid="login-submit-btn"]') as HTMLElement;
-      if (btn) {
-        btn.scrollIntoView({ behavior: 'instant', block: 'center' });
-        btn.click();
-      }
-    });
-
-    await expect(page).toHaveURL(/\/tabs\//, { timeout: 20000 });
-    await page.waitForLoadState('networkidle');
-  }
+  await loginUser(page, { username: dni, password });
 }
 
-/**
- * Helper: Disable device frame
- */
 async function disableDeviceFrame(page: Page): Promise<void> {
   await page.evaluate(() => {
     document.documentElement.classList.add('no-device-frame');
   });
 }
 
-/**
- * Helper: Prepare for screenshot
- */
 async function prepareForScreenshot(page: Page): Promise<void> {
-  await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(500);
+  await waitForNetworkIdle(page);
+  await waitForIonicHydration(page);
   await page.addStyleTag({
     content: `
       [data-testid="timestamp"], .timestamp, .time-ago { visibility: hidden !important; }
