@@ -206,28 +206,6 @@ describe('MockAdapterService', () => {
     });
   });
 
-  describe('mockDeleteReading', () => {
-    beforeEach(() => {
-      const readings = [
-        createReading({ id: 'test-1' }),
-        createReading({ id: 'test-2', value: 130 }),
-      ];
-      localStorage.setItem('diabetactic_mock_readings', JSON.stringify(readings));
-    });
-
-    it('should delete reading by ID', async () => {
-      await service.mockDeleteReading('test-1');
-
-      const stored = JSON.parse(localStorage.getItem('diabetactic_mock_readings') || '[]');
-      expect(stored.length).toBe(1);
-      expect(stored[0].id).toBe('test-2');
-    });
-
-    it('should handle deleting non-existent reading gracefully', async () => {
-      await expect(service.mockDeleteReading('nonexistent')).resolves.not.toThrow();
-    });
-  });
-
   describe('mockGetReadingById', () => {
     beforeEach(() => {
       localStorage.setItem('diabetactic_mock_readings', JSON.stringify([createReading()]));
@@ -297,25 +275,6 @@ describe('MockAdapterService', () => {
     });
   });
 
-  describe('mockRegister', () => {
-    it('should create new user with default preferences', async () => {
-      const userData = {
-        dni: '12345',
-        password: 'password123',
-        name: 'John Doe',
-        email: 'john@example.com',
-      };
-
-      const result = await service.mockRegister(userData);
-
-      expect(result.token).toContain('mock_token_');
-      expect(result.user.name).toBe('John Doe');
-      expect(result.user.preferences.glucoseUnit).toBe('mg/dL');
-      expect(result.user.preferences.targetRange.min).toBe(70);
-      expect(result.user.preferences.targetRange.max).toBe(180);
-    });
-  });
-
   describe('mockLogout', () => {
     it('should remove mock token', async () => {
       localStorage.setItem('diabetactic_mock_token', 'mock_token_123');
@@ -371,21 +330,10 @@ describe('MockAdapterService', () => {
   // ============================================================================
 
   describe('Token Management', () => {
-    it('should verify and refresh tokens correctly', async () => {
+    it('should verify tokens correctly', async () => {
       // Verify valid token
       expect(await service.mockVerifyToken('mock_token_123')).toBe(true);
       expect(await service.mockVerifyToken('invalid_token')).toBe(false);
-
-      // Refresh valid token
-      const newToken = await service.mockRefreshToken('mock_token_123');
-      expect(newToken).toContain('mock_token_');
-      expect(newToken).not.toBe('mock_token_123');
-
-      // Verify persisted
-      expect(localStorage.getItem('diabetactic_mock_token')).toContain('mock_token_');
-
-      // Reject invalid refresh
-      await expect(service.mockRefreshToken('invalid_token')).rejects.toThrow('Invalid token');
     });
   });
 

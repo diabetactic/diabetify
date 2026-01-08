@@ -13,7 +13,6 @@ import {
   LocalAuthState,
   LoginRequest,
   LoginResult,
-  RegisterRequest,
 } from '@services/local-auth.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -273,54 +272,6 @@ describe('UnifiedAuthService', () => {
 
       expect(tidepoolAuthSpy.login).toHaveBeenCalled();
     });
-  });
-
-  describe('Register Method', () => {
-    it('should register new user with local backend', () =>
-      new Promise<void>(resolve => {
-        const registerRequest: RegisterRequest = {
-          email: 'new@example.com',
-          password: 'password123',
-          firstName: 'Jane',
-          lastName: 'Doe',
-          role: 'patient',
-          diabetesType: '1',
-        };
-
-        const mockUser = {
-          id: 'new-user',
-          email: 'new@example.com',
-          firstName: 'Jane',
-          lastName: 'Doe',
-          role: 'patient' as const,
-          diabetesType: '1' as const,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        const mockLoginResult: LoginResult = {
-          success: true,
-          user: mockUser,
-        };
-
-        const mockAuthState: LocalAuthState = {
-          isAuthenticated: true,
-          user: mockUser,
-          accessToken: 'token',
-          refreshToken: 'refresh',
-          expiresAt: Date.now() + 3600000,
-        };
-
-        localAuthSpy.register.mockReturnValue(of(mockLoginResult));
-        mockLocalAuthState.next(mockAuthState);
-
-        service.register(registerRequest).subscribe(state => {
-          expect(state.isAuthenticated).toBe(true);
-          expect(state.user?.firstName).toBe('Jane');
-          expect(localAuthSpy.register).toHaveBeenCalledWith(registerRequest);
-          resolve();
-        });
-      }));
   });
 
   describe('Logout Methods', () => {

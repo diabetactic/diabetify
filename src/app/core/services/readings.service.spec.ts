@@ -385,41 +385,6 @@ describe('ReadingsService', () => {
     });
   });
 
-  describe('deleteReading', () => {
-    it('should delete a reading from database', async () => {
-      (mockDb.readings.get as Mock).mockResolvedValue({
-        id: 'test-id',
-        value: 100,
-        units: 'mg/dL',
-        time: '2024-01-15T10:00:00Z',
-        type: 'smbg',
-        synced: true,
-      });
-      await service.deleteReading('test-id');
-
-      expect(mockDb.readings.delete).toHaveBeenCalledWith('test-id');
-    });
-
-    it('should add delete operation to sync queue', async () => {
-      (mockDb.readings.get as Mock).mockResolvedValue({
-        id: 'test-id',
-        value: 100,
-        units: 'mg/dL',
-        time: '2024-01-15T10:00:00Z',
-        type: 'smbg',
-        synced: true,
-      });
-      await service.deleteReading('test-id');
-
-      expect(mockDb.syncQueue.add).toHaveBeenCalledWith(
-        expect.objectContaining({
-          operation: 'delete',
-          readingId: 'test-id',
-        })
-      );
-    });
-  });
-
   describe('getReadingsByDateRange', () => {
     it('should retrieve readings within date range', async () => {
       const startDate = new Date('2024-01-01');

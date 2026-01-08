@@ -278,30 +278,6 @@ describe('Readings CRUD Integration (MSW)', () => {
     });
   });
 
-  describe('Delete Reading', () => {
-    it('should delete an existing reading', async () => {
-      // Arrange: Create a reading
-      const created = await readingsService.addReading({
-        value: 130,
-        units: 'mg/dL',
-        time: new Date().toISOString(),
-        type: 'smbg',
-      });
-
-      // Act: Delete
-      await readingsService.deleteReading(created.id);
-
-      // Assert: Reading should be gone
-      const result = await readingsService.getAllReadings();
-      expect(result.readings.find(r => r.id === created.id)).toBeUndefined();
-    });
-
-    it('should throw when deleting non-existent reading', async () => {
-      // Act & Assert
-      await expect(readingsService.deleteReading('non-existent-id')).rejects.toThrow();
-    });
-  });
-
   describe('Statistics', () => {
     // NOTE: In mock mode, getStatistics() uses MockDataService which returns
     // hardcoded mock data. These tests verify the statistics API works correctly.

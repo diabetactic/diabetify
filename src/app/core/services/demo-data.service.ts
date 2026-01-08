@@ -349,67 +349,6 @@ export class DemoDataService {
   }
 
   /**
-   * Get demo clinical form data
-   */
-  getDemoClinicalForm(): Observable<Record<string, unknown>> {
-    return of({
-      patientInfo: {
-        name: 'Usuario Demo',
-        dni: '1000',
-        age: 45,
-        gender: 'M',
-        diabetesType: 'Tipo 2',
-        diagnosisDate: '2020-03-15',
-      },
-      vitalSigns: {
-        bloodPressure: '120/80',
-        heartRate: 72,
-        weight: 75,
-        height: 170,
-        bmi: 25.95,
-        temperature: 36.5,
-      },
-      labResults: {
-        hba1c: 7.2,
-        fastingGlucose: 125,
-        postprandialGlucose: 165,
-        cholesterol: 190,
-        triglycerides: 150,
-        creatinine: 0.9,
-      },
-      medications: [
-        {
-          name: 'Metformina',
-          dose: '850mg',
-          frequency: 'Dos veces al día',
-          since: '2020-04-01',
-        },
-        {
-          name: 'Glimepirida',
-          dose: '2mg',
-          frequency: 'Una vez al día',
-          since: '2021-06-15',
-        },
-      ],
-      lifestyle: {
-        diet: 'Dieta balanceada, baja en carbohidratos',
-        exercise: '30 minutos de caminata, 5 días a la semana',
-        smoking: 'No fumador',
-        alcohol: 'Consumo ocasional',
-      },
-      complications: {
-        retinopathy: false,
-        nephropathy: false,
-        neuropathy: false,
-        cardiovascular: false,
-        other: '',
-      },
-      notes: 'Paciente con buen control glucémico. Continuar con plan actual.',
-      nextAppointment: '3 meses',
-    }).pipe(delay(400));
-  }
-
-  /**
    * Generate demo user profile (using faker for realistic data)
    */
   generateUserProfile(): UserProfile {

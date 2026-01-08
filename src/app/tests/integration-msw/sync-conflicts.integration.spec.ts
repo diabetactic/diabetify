@@ -316,17 +316,6 @@ describe('Sync Conflicts Integration (MSW)', () => {
         expect(httpError.status).toBe(409);
       }
     });
-
-    it('should handle deletion of non-existent item', async () => {
-      // Try to delete non-existent - should get error
-      try {
-        await readingsService.deleteReading('non-existent-id');
-        expect.fail('Should have thrown');
-      } catch (error) {
-        // Expected - reading doesn't exist
-        expect(error).toBeDefined();
-      }
-    });
   });
 
   describe('Stale Data Detection', () => {
@@ -356,35 +345,6 @@ describe('Sync Conflicts Integration (MSW)', () => {
       // Re-fetch - should have both
       const readings2 = await readingsService.getAllReadings();
       expect(readings2.readings.length).toBe(2);
-    });
-
-    it('should reflect deletions in subsequent fetches', async () => {
-      // Create two readings
-      const reading1 = await readingsService.addReading({
-        value: 100,
-        units: 'mg/dL',
-        time: new Date(Date.now() - 1000).toISOString(),
-        type: 'smbg',
-        notes: 'First',
-      });
-      await readingsService.addReading({
-        value: 110,
-        units: 'mg/dL',
-        time: new Date().toISOString(),
-        type: 'smbg',
-        notes: 'Second',
-      });
-
-      // Verify both exist
-      const readings1 = await readingsService.getAllReadings();
-      expect(readings1.readings.length).toBe(2);
-
-      // Delete first
-      await readingsService.deleteReading(reading1.id);
-
-      // Re-fetch - should have only one
-      const readings2 = await readingsService.getAllReadings();
-      expect(readings2.readings.length).toBe(1);
     });
   });
 

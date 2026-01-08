@@ -244,20 +244,6 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Delete a glucose reading.
-   * Removes reading from localStorage.
-   */
-  async mockDeleteReading(id: string): Promise<void> {
-    const stored = this.storage?.getItem(this.READINGS_STORAGE_KEY);
-    const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
-
-    const filtered = allReadings.filter(r => r.id !== id);
-    this.storage?.setItem(this.READINGS_STORAGE_KEY, JSON.stringify(filtered));
-
-    return this.delay(undefined);
-  }
-
-  /**
    * Mock: Get reading by ID.
    */
   async mockGetReadingById(id: string): Promise<LocalGlucoseReading> {
@@ -337,55 +323,6 @@ export class MockAdapterService {
     // Simulate delay before error
     await this.delay(null);
     throw new Error('Invalid credentials');
-  }
-
-  /**
-   * Mock: Register user.
-   * Creates a new profile in localStorage with default preferences.
-   */
-  async mockRegister(userData: {
-    dni: string;
-    password: string;
-    name: string;
-    email: string;
-  }): Promise<{ token: string; user: UserProfile }> {
-    const profile: UserProfile = {
-      id: Date.now().toString(),
-      name: userData.name,
-      age: 25,
-      accountState: 'active' as AccountState,
-      diabetesType: 'type1',
-      diagnosisDate: new Date().toISOString().split('T')[0],
-      tidepoolConnection: {
-        connected: false,
-      },
-      preferences: {
-        glucoseUnit: 'mg/dL',
-        colorPalette: 'default',
-        themeMode: 'auto',
-        highContrastMode: false,
-        targetRange: {
-          min: 70,
-          max: 180,
-          unit: 'mg/dL',
-          label: 'Default',
-        },
-        notificationsEnabled: true,
-        soundEnabled: true,
-        showTrendArrows: true,
-        autoSync: true,
-        syncInterval: 15,
-        language: 'en',
-        dateFormat: '12h' as '12h' | '24h',
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    return {
-      token: `mock_token_${Date.now()}`,
-      user: profile,
-    };
   }
 
   /**
@@ -491,21 +428,7 @@ export class MockAdapterService {
    * Simply checks for 'mock_token_' prefix.
    */
   async mockVerifyToken(token: string): Promise<boolean> {
-    // In mock mode, always accept tokens starting with 'mock_token_'
     return token.startsWith('mock_token_');
-  }
-
-  /**
-   * Mock: Refresh auth token.
-   * Issues a new token if old one is valid.
-   */
-  async mockRefreshToken(oldToken: string): Promise<string> {
-    if (await this.mockVerifyToken(oldToken)) {
-      const newToken = `mock_token_${Date.now()}`;
-      this.storage?.setItem('diabetactic_mock_token', newToken);
-      return this.delay(newToken);
-    }
-    throw new Error('Invalid token');
   }
 
   /**

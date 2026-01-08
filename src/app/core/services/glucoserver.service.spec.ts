@@ -265,29 +265,6 @@ describe('GlucoserverService', () => {
       }));
   });
 
-  describe('deleteReading', () => {
-    it('should delete reading', async () => {
-      httpClient.delete.mockReturnValue(of(undefined));
-
-      await firstValueFrom(service.deleteReading('123'));
-      expect(httpClient.delete).toHaveBeenCalledWith(`${mockFullUrl}/readings/123`);
-    });
-
-    it('should handle deletion errors', () =>
-      new Promise<void>(resolve => {
-        const error = new HttpErrorResponse({ status: 403, statusText: 'Forbidden' });
-        httpClient.delete.mockReturnValue(throwError(() => error));
-
-        service.deleteReading('123').subscribe({
-          next: () => fail('should have failed'),
-          error: err => {
-            expect(err).toBeDefined();
-            resolve();
-          },
-        });
-      }));
-  });
-
   describe('bulkUpload', () => {
     const bulkReadings: Omit<GlucoseReading, 'id'>[] = [
       {

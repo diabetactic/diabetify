@@ -90,21 +90,6 @@ export interface LoginResult {
 }
 
 /**
- * Registration request interface
- */
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  role?: 'patient' | 'doctor';
-  phone?: string;
-  dateOfBirth?: string;
-  diabetesType?: '1' | '2' | 'gestational' | 'other';
-  diagnosisDate?: string;
-}
-
-/**
  * Token response from server
  */
 export interface TokenResponse {
@@ -471,16 +456,6 @@ export class LocalAuthService {
         error: 'Error al iniciar sesión en modo demo',
       };
     }
-  }
-
-  /**
-   * Register a new user
-   */
-  register(_request: RegisterRequest): Observable<LoginResult> {
-    return of({
-      success: false,
-      error: 'User registration is not yet supported by the local auth service.',
-    });
   }
 
   /**

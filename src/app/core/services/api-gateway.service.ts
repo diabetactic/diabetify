@@ -110,39 +110,6 @@ export interface ApiError {
  *   - transform: optional request/response transformation functions
  */
 const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
-  // Tidepool endpoints
-  [
-    'tidepool.glucose.fetch',
-    {
-      service: ExternalService.TIDEPOOL,
-      path: '/data/v1/users/{userId}/data',
-      method: 'GET',
-      authenticated: true,
-      timeout: 60000,
-      retryAttempts: 3,
-      cache: {
-        duration: 300000, // 5 minutes
-        key: (params: Record<string, unknown>) =>
-          `glucose_${(params?.['userId'] as string | undefined) ?? 'user'}_${(params?.['startDate'] as string | undefined) ?? ''}_${(params?.['endDate'] as string | undefined) ?? ''}`,
-      },
-      transform: {
-        response: (data: unknown) => (data as Record<string, unknown>)['data'] || [],
-      },
-    },
-  ],
-  [
-    'tidepool.user.profile',
-    {
-      service: ExternalService.TIDEPOOL,
-      path: '/metadata/v1/users/{userId}/profile',
-      method: 'GET',
-      authenticated: true,
-      cache: {
-        duration: 600000, // 10 minutes
-      },
-    },
-  ],
-
   // Glucoserver endpoints
   [
     'glucoserver.readings.list',
@@ -193,28 +160,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       },
     },
   ],
-  [
-    'glucoserver.readings.update',
-    {
-      service: ExternalService.GLUCOSERVER,
-      path: '/v1/readings/{id}',
-      method: 'PUT',
-      authenticated: true,
-      timeout: 30000,
-      retryAttempts: 1,
-    },
-  ],
-  [
-    'glucoserver.readings.delete',
-    {
-      service: ExternalService.GLUCOSERVER,
-      path: '/v1/readings/{id}',
-      method: 'DELETE',
-      authenticated: true,
-      timeout: 30000,
-      retryAttempts: 1,
-    },
-  ],
+
   [
     'glucoserver.statistics',
     {
@@ -315,119 +261,6 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       timeout: 30000,
     },
   ],
-  [
-    'appointments.update',
-    {
-      service: ExternalService.APPOINTMENTS,
-      path: '/appointments/{id}',
-      method: 'PUT',
-      authenticated: true,
-      timeout: 30000,
-    },
-  ],
-  [
-    'appointments.cancel',
-    {
-      service: ExternalService.APPOINTMENTS,
-      path: '/appointments/{id}/cancel',
-      method: 'PUT',
-      authenticated: true,
-      timeout: 30000,
-    },
-  ],
-  [
-    'appointments.shareGlucose',
-    {
-      service: ExternalService.APPOINTMENTS,
-      path: '/appointments/{id}/share-glucose',
-      method: 'POST',
-      authenticated: true,
-      timeout: 60000,
-      transform: {
-        request: (data: unknown) => {
-          // Privacy-first: Strip raw readings unless explicitly enabled with consent
-          // Default to summary-only data (manual readings summary)
-          const dataObj = data as Record<string, unknown>;
-          const transformed: Record<string, unknown> = {
-            days: dataObj['days'] || 30,
-          };
-
-          // Only include manualReadingsSummary if present (privacy-compliant)
-          if (dataObj['manualReadingsSummary']) {
-            transformed['manualReadingsSummary'] = dataObj['manualReadingsSummary'];
-          }
-
-          // Only include raw readings if explicitly enabled with user consent
-          if (dataObj['includeRawReadings'] === true && dataObj['userConsent'] === true) {
-            transformed['readings'] = dataObj['readings'];
-          }
-
-          return transformed;
-        },
-      },
-    },
-  ],
-  [
-    'appointments.doctors.list',
-    {
-      service: ExternalService.APPOINTMENTS,
-      path: '/doctors',
-      method: 'GET',
-      authenticated: false,
-      cache: {
-        duration: 600000, // 10 minutes
-      },
-    },
-  ],
-  [
-    'appointments.slots.available',
-    {
-      service: ExternalService.APPOINTMENTS,
-      path: '/slots',
-      method: 'GET',
-      authenticated: false,
-      cache: {
-        duration: 300000, // 5 minutes
-        key: (params: Record<string, unknown>) =>
-          `slots_${(params?.['doctorId'] as string | undefined) ?? 'doctor'}_${(params?.['date'] as string | undefined) ?? ''}`,
-      },
-    },
-  ],
-
-  // Clinical Form endpoints
-  [
-    'clinicalForm.get',
-    {
-      service: ExternalService.APPOINTMENTS,
-      path: '/appointments/{appointmentId}/clinical-form',
-      method: 'GET',
-      authenticated: true,
-      timeout: 30000,
-      cache: {
-        duration: 300000, // 5 minutes
-      },
-    },
-  ],
-  [
-    'clinicalForm.save',
-    {
-      service: ExternalService.APPOINTMENTS,
-      path: '/appointments/{appointmentId}/clinical-form',
-      method: 'POST',
-      authenticated: true,
-      timeout: 30000,
-    },
-  ],
-  [
-    'clinicalForm.update',
-    {
-      service: ExternalService.APPOINTMENTS,
-      path: '/appointments/{appointmentId}/clinical-form',
-      method: 'PUT',
-      authenticated: true,
-      timeout: 30000,
-    },
-  ],
 
   // Auth endpoints
   [
@@ -475,28 +308,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       retryAttempts: 1,
     },
   ],
-  [
-    'auth.register',
-    {
-      service: ExternalService.LOCAL_AUTH,
-      path: '/auth/register',
-      method: 'POST',
-      authenticated: false,
-      timeout: 15000,
-      retryAttempts: 1,
-    },
-  ],
-  [
-    'auth.refresh',
-    {
-      service: ExternalService.LOCAL_AUTH,
-      path: '/auth/refresh',
-      method: 'POST',
-      authenticated: false,
-      timeout: 15000,
-      retryAttempts: 1,
-    },
-  ],
+
   [
     'auth.logout',
     {
@@ -517,16 +329,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       timeout: 15000,
     },
   ],
-  [
-    'auth.preferences.update',
-    {
-      service: ExternalService.LOCAL_AUTH,
-      path: '/auth/preferences',
-      method: 'PUT',
-      authenticated: true,
-      timeout: 15000,
-    },
-  ],
+
   [
     'auth.tidepool.link',
     {
@@ -1404,7 +1207,7 @@ export class ApiGatewayService {
     endpointKey: string,
     params?: Record<string, unknown>,
     body?: unknown,
-    pathParams?: { [key: string]: string }
+    _pathParams?: { [key: string]: string }
   ): Promise<T> {
     const action = endpointKey.split('.').slice(1).join('.');
 
@@ -1417,16 +1220,6 @@ export class ApiGatewayService {
 
       case 'readings.create':
         return this.mockAdapter.mockAddReading(body as LocalGlucoseReading) as Promise<T>;
-
-      case 'readings.update':
-        return this.mockAdapter.mockUpdateReading(
-          pathParams?.['id'] || '',
-          body as Partial<LocalGlucoseReading>
-        ) as Promise<T>;
-
-      case 'readings.delete':
-        await this.mockAdapter.mockDeleteReading(pathParams?.['id'] || '');
-        return { success: true } as T;
 
       case 'statistics':
         return this.mockAdapter.mockGetStatistics(
@@ -1468,22 +1261,13 @@ export class ApiGatewayService {
       case 'login':
         return this.handleAuthLogin(body) as Promise<T>;
 
-      case 'register':
-        return this.mockAdapter.mockRegister(
-          body as { dni: string; password: string; name: string; email: string }
-        ) as Promise<T>;
-
       case 'logout':
         await this.mockAdapter.mockLogout();
         return { success: true } as T;
 
       case 'user.me':
       case 'profile.update':
-      case 'preferences.update':
         return this.handleAuthProfile(endpoint, body) as Promise<T>;
-
-      case 'refresh':
-        return this.handleAuthRefresh(body) as Promise<T>;
 
       default:
         throw new Error(`Mock not implemented for auth endpoint: ${action}`);
@@ -1510,17 +1294,6 @@ export class ApiGatewayService {
       return this.mockAdapter.mockGetProfile();
     }
     return this.mockAdapter.mockUpdateProfile(body as Record<string, unknown>);
-  }
-
-  /**
-   * Helper para refresh token.
-   */
-  private async handleAuthRefresh(body?: unknown): Promise<{ token: string }> {
-    const bodyObj = body as Record<string, unknown>;
-    const newToken = await this.mockAdapter.mockRefreshToken(
-      (bodyObj['token'] as string | undefined) || ''
-    );
-    return { token: newToken };
   }
 
   /**

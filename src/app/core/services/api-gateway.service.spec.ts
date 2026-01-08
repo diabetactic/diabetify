@@ -208,81 +208,6 @@ describe('ApiGatewayService', () => {
 
       req.flush({ id: '123' });
     });
-
-    it('should handle appointment glucose sharing with privacy transform', async () => {
-      const requestBody = {
-        days: 30,
-        manualReadingsSummary: { count: 10, average: 120 },
-        includeRawReadings: true,
-        userConsent: true,
-        readings: [{ value: 120 }],
-      };
-
-      service
-        .request('appointments.shareGlucose', { body: requestBody }, { id: 'appt123' })
-        .subscribe();
-
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      const req = httpMock.expectOne('http://localhost:8000/appointments/appt123/share-glucose');
-      expect(req.request.body.days).toBe(30);
-      expect(req.request.body.manualReadingsSummary).toBeDefined();
-      expect(req.request.body.readings).toBeDefined();
-
-      req.flush({ success: true });
-    });
-
-    it('should exclude raw readings without consent in glucose sharing', async () => {
-      const requestBody = {
-        days: 30,
-        manualReadingsSummary: { count: 10, average: 120 },
-        includeRawReadings: true,
-        userConsent: false, // No consent
-        readings: [{ value: 120 }],
-      };
-
-      service
-        .request('appointments.shareGlucose', { body: requestBody }, { id: 'appt123' })
-        .subscribe();
-
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      const req = httpMock.expectOne('http://localhost:8000/appointments/appt123/share-glucose');
-      expect(req.request.body.readings).toBeUndefined();
-
-      req.flush({ success: true });
-    });
-  });
-
-  describe('request() - PUT method', () => {
-    it('should make PUT request to update reading', async () => {
-      const updateData = { value: 130, notes: 'Updated' };
-
-      service
-        .request('glucoserver.readings.update', { body: updateData }, { id: 'reading123' })
-        .subscribe();
-
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      const req = httpMock.expectOne('http://localhost:8000/v1/readings/reading123');
-      expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toEqual(updateData);
-
-      req.flush({ id: 'reading123', ...updateData });
-    });
-  });
-
-  describe('request() - DELETE method', () => {
-    it('should make DELETE request', async () => {
-      service.request('glucoserver.readings.delete', {}, { id: 'reading123' }).subscribe();
-
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      const req = httpMock.expectOne('http://localhost:8000/v1/readings/reading123');
-      expect(req.request.method).toBe('DELETE');
-
-      req.flush({ success: true });
-    });
   });
 
   describe('Authentication', () => {
@@ -295,30 +220,6 @@ describe('ApiGatewayService', () => {
 
       const req = httpMock.expectOne('http://localhost:8000/v1/readings');
       expect(req.request.headers.get('Authorization')).toBe('Bearer test-token-123');
-
-      req.flush([]);
-    });
-
-    it('should use Tidepool token for Tidepool endpoints', async () => {
-      mockTidepoolAuth.getAccessToken.mockReturnValue(Promise.resolve('tidepool-token'));
-
-      service.request('tidepool.user.profile', {}, { userId: 'user123' }).subscribe();
-
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      const req = httpMock.expectOne(req => req.url.includes('/metadata/v1/users/user123/profile'));
-      expect(req.request.headers.get('Authorization')).toBe('Bearer tidepool-token');
-
-      req.flush({ profile: {} });
-    });
-
-    it('should not add Authorization header for unauthenticated endpoints', async () => {
-      service.request('appointments.doctors.list').subscribe();
-
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      const req = httpMock.expectOne('http://localhost:8000/doctors');
-      expect(req.request.headers.has('Authorization')).toBe(false);
 
       req.flush([]);
     });
@@ -353,17 +254,6 @@ describe('ApiGatewayService', () => {
       expect(req.request.method).toBe('GET');
 
       req.flush([]);
-    });
-
-    it('should use Tidepool base URL for Tidepool service', async () => {
-      service.request('tidepool.user.profile', {}, { userId: 'user123' }).subscribe();
-
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      const req = httpMock.expectOne(req => req.url.startsWith('https://api.tidepool.org'));
-      expect(req.request.method).toBe('GET');
-
-      req.flush({});
     });
   });
 
@@ -675,53 +565,6 @@ describe('ApiGatewayService', () => {
       expect(mockAdapterService.mockAddReading).toHaveBeenCalled();
     });
 
-    it('should handle glucoserver.readings.update mock (lines 1402-1406)', async () => {
-      const updatedReading = {
-        id: 'reading-123',
-        value: 130,
-        notes: 'Updated',
-      };
-
-      mockAdapterService.mockUpdateReading = vi.fn().mockResolvedValue(updatedReading);
-
-      let response: any;
-      service
-        .request(
-          'glucoserver.readings.update',
-          {
-            body: { value: 130, notes: 'Updated' },
-          },
-          { id: 'reading-123' }
-        )
-        .subscribe(res => {
-          response = res;
-        });
-
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(response.success).toBe(true);
-      expect(response.data).toEqual(updatedReading);
-      expect(mockAdapterService.mockUpdateReading).toHaveBeenCalledWith('reading-123', {
-        value: 130,
-        notes: 'Updated',
-      });
-    });
-
-    it('should handle glucoserver.readings.delete mock (lines 1408-1410)', async () => {
-      mockAdapterService.mockDeleteReading = vi.fn().mockResolvedValue(undefined);
-
-      let response: any;
-      service.request('glucoserver.readings.delete', {}, { id: 'reading-123' }).subscribe(res => {
-        response = res;
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(response.success).toBe(true);
-      expect(response.data).toEqual({ success: true });
-      expect(mockAdapterService.mockDeleteReading).toHaveBeenCalledWith('reading-123');
-    });
-
     it('should handle glucoserver.statistics mock (lines 1412-1415)', async () => {
       const mockStats = { average: 125, count: 30 };
       mockAdapterService.mockGetStatistics = vi.fn().mockResolvedValue(mockStats);
@@ -817,36 +660,6 @@ describe('ApiGatewayService', () => {
       expect(errorCaught).toBe(true);
     });
 
-    it('should handle auth.register mock (lines 1452-1455)', async () => {
-      const mockUser = {
-        id: 'user-123',
-        dni: '12345678',
-        name: 'Test User',
-        email: 'test@example.com',
-      };
-      mockAdapterService.mockRegister = vi.fn().mockResolvedValue(mockUser);
-
-      let response: any;
-      service
-        .request('auth.register', {
-          body: {
-            dni: '12345678',
-            password: 'password123',
-            name: 'Test User',
-            email: 'test@example.com',
-          },
-        })
-        .subscribe(res => {
-          response = res;
-        });
-
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(response.success).toBe(true);
-      expect(response.data).toEqual(mockUser);
-      expect(mockAdapterService.mockRegister).toHaveBeenCalled();
-    });
-
     it('should handle auth.logout mock (lines 1457-1459)', async () => {
       mockAdapterService.mockLogout = vi.fn().mockResolvedValue(undefined);
 
@@ -892,39 +705,6 @@ describe('ApiGatewayService', () => {
       expect(response.success).toBe(true);
       expect(response.data).toEqual(updatedProfile);
       expect(mockAdapterService.mockUpdateProfile).toHaveBeenCalledWith({ name: 'Updated Name' });
-    });
-
-    it('should handle auth.preferences.update mock (lines 1461-1464)', async () => {
-      const updatedPrefs = { theme: 'dark', notifications: true };
-      mockAdapterService.mockUpdateProfile = vi.fn().mockResolvedValue(updatedPrefs);
-
-      let response: any;
-      service
-        .request('auth.preferences.update', { body: { theme: 'dark', notifications: true } })
-        .subscribe(res => {
-          response = res;
-        });
-
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(response.success).toBe(true);
-      expect(mockAdapterService.mockUpdateProfile).toHaveBeenCalled();
-    });
-
-    it('should handle auth.refresh mock (lines 1466-1467, 1499-1504)', async () => {
-      const newToken = 'new-refresh-token-123';
-      mockAdapterService.mockRefreshToken = vi.fn().mockResolvedValue(newToken);
-
-      let response: any;
-      service.request('auth.refresh', { body: { token: 'old-token' } }).subscribe(res => {
-        response = res;
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(response.success).toBe(true);
-      expect(response.data).toEqual({ token: newToken });
-      expect(mockAdapterService.mockRefreshToken).toHaveBeenCalledWith('old-token');
     });
 
     it('should throw error for unknown auth endpoint (lines 1469-1471)', async () => {

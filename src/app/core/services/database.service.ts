@@ -6,7 +6,6 @@
 import Dexie, { Table } from 'dexie';
 import { LocalGlucoseReading } from '@models/glucose-reading.model';
 import { Appointment } from '@models/appointment.model';
-import { GlucoseShareRequest } from '@models/glucose-share.model';
 import { LoggerService } from '@services/logger.service';
 import { inject } from '@angular/core';
 
@@ -37,11 +36,9 @@ export interface AuditLogItem {
  */
 export interface SyncQueueItem {
   id?: number;
-  operation: 'create' | 'update' | 'delete' | 'share-glucose';
+  operation: 'create' | 'update' | 'delete';
   readingId?: string;
   reading?: LocalGlucoseReading;
-  appointmentId?: string; // For share-glucose operations
-  payload?: GlucoseShareRequest; // For share-glucose payloads
   timestamp: number;
   retryCount: number;
   lastError?: string;

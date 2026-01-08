@@ -263,23 +263,6 @@ export class ReadingsService implements OnDestroy {
   }
 
   /**
-   * Delete a reading
-   */
-  async deleteReading(id: string): Promise<void> {
-    const reading = await this.db.readings.get(id);
-
-    if (!reading) {
-      throw new Error(`Reading with id ${id} not found`);
-    }
-
-    await this.db.readings.delete(id);
-
-    if (reading.synced) {
-      await this.syncService.addToSyncQueue('delete', reading);
-    }
-  }
-
-  /**
    * Get unsynced readings
    */
   async getUnsyncedReadings(): Promise<LocalGlucoseReading[]> {

@@ -265,15 +265,6 @@ export class MockDataService {
     return of(newReading).pipe(delay(500));
   }
 
-  deleteReading(id: string): Observable<boolean> {
-    const index = this.readings.findIndex(r => r.id === id);
-    if (index > -1) {
-      this.readings.splice(index, 1);
-      this.debugLog('🎭 MOCK DELETE READING:', id);
-    }
-    return of(true).pipe(delay(300));
-  }
-
   // ====== BOLUS CALCULATOR ======
 
   calculateBolus(params: {

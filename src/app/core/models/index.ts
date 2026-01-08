@@ -18,12 +18,6 @@ export * from '@models/tidepool-auth.model';
 // Appointment models
 export * from '@models/appointment.model';
 
-// Glucose sharing models
-export * from '@models/glucose-share.model';
-
-// Clinical form models
-export * from '@models/clinical-form.model';
-
 // Food models for carbohydrate counting
 export * from '@models/food.model';
 

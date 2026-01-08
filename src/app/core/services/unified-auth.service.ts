@@ -9,7 +9,6 @@ import {
   LocalAuthService,
   LocalAuthState,
   LoginRequest,
-  RegisterRequest,
   UserPreferences as LocalUserPreferences,
 } from '@services/local-auth.service';
 import { LoggerService } from '@services/logger.service';
@@ -268,19 +267,6 @@ export class UnifiedAuthService implements OnDestroy {
       }),
       catchError(error => {
         this.logger.error('Auth', 'Tidepool login failed', error, { provider: 'tidepool' });
-        throw error;
-      })
-    );
-  }
-
-  /**
-   * Register new user with local backend
-   */
-  register(request: RegisterRequest): Observable<UnifiedAuthState> {
-    return this.localAuth.register(request).pipe(
-      map(() => this.unifiedAuthStateSubject.value),
-      catchError(error => {
-        this.logger.error('UnifiedAuth', 'Registration failed', error);
         throw error;
       })
     );

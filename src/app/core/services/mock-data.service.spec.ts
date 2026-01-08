@@ -117,18 +117,6 @@ describe('MockDataService', () => {
       expect(result.type).toBe('before_meal');
       expect(result.date).toBeDefined();
     });
-
-    it('should delete reading by ID', async () => {
-      const readings = await firstValueFrom(service.getReadings());
-      const initialCount = readings.length;
-      const idToDelete = readings[0].id;
-
-      await firstValueFrom(service.deleteReading(idToDelete));
-
-      const afterDelete = await firstValueFrom(service.getReadings());
-      expect(afterDelete.length).toBe(initialCount - 1);
-      expect(afterDelete.find(r => r.id === idToDelete)).toBeUndefined();
-    });
   });
 
   // ============================================================================

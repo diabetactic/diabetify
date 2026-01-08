@@ -266,45 +266,6 @@ describe('DemoDataService', () => {
   });
 
   // ============================================================================
-  // CLINICAL FORM DATA
-  // ============================================================================
-
-  describe('getDemoClinicalForm', () => {
-    it('should return complete clinical form data', async () => {
-      const result = await firstValueFrom(service.getDemoClinicalForm());
-
-      expect(result).toHaveProperty('patientInfo');
-      expect(result).toHaveProperty('vitalSigns');
-      expect(result).toHaveProperty('labResults');
-      expect(result).toHaveProperty('medications');
-      expect(result).toHaveProperty('lifestyle');
-      expect(result).toHaveProperty('complications');
-    });
-
-    it('should include realistic vital signs', async () => {
-      const result = await firstValueFrom(service.getDemoClinicalForm());
-      const vitalSigns = result.vitalSigns as {
-        bloodPressure: string;
-        heartRate: number;
-        bmi: number;
-      };
-
-      expect(vitalSigns).toHaveProperty('bloodPressure');
-      expect(vitalSigns).toHaveProperty('heartRate');
-      expect(vitalSigns.heartRate).toBeGreaterThan(40);
-      expect(vitalSigns.heartRate).toBeLessThan(200);
-      expect(vitalSigns).toHaveProperty('bmi');
-    });
-
-    it('should include medications array', async () => {
-      const result = await firstValueFrom(service.getDemoClinicalForm());
-
-      expect(Array.isArray(result.medications)).toBe(true);
-      expect(result.medications.length).toBeGreaterThan(0);
-    });
-  });
-
-  // ============================================================================
   // USER PROFILE GENERATION (FAKER)
   // ============================================================================
 

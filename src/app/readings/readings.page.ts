@@ -29,7 +29,6 @@ import {
   IonChip,
   IonLabel,
 } from '@ionic/angular/standalone';
-import type { IonItemSliding } from '@ionic/angular/standalone';
 import { ModalController, ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
@@ -123,33 +122,6 @@ export class ReadingsPage implements OnInit, OnDestroy {
     this.loadReadings();
     this.setupSearchDebounce();
     this.autoFetchFromBackend();
-  }
-
-  /**
-   * Delete a reading
-   */
-  async deleteReading(reading: LocalGlucoseReading, slidingItem: IonItemSliding): Promise<void> {
-    this.logger.info('UI', 'Delete reading initiated', { readingId: reading.id });
-
-    try {
-      await this.readingsService.deleteReading(reading.id || '');
-      this.logger.info('Readings', 'Reading deleted successfully', { readingId: reading.id });
-
-      // Show success toast
-      await this.showToast(this.translationService.instant('readings.deleteSuccess'), 'success');
-    } catch (error) {
-      this.logger.error('Readings', 'Error deleting reading', { error, readingId: reading.id });
-
-      // Show error toast
-      await this.showToast(
-        this.translationService.instant('readings.errors.deleteFailed'),
-        'danger'
-      );
-    } finally {
-      // Close the sliding item
-      await slidingItem.close();
-      this.cdr.markForCheck();
-    }
   }
 
   /**
