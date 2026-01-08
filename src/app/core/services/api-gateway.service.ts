@@ -24,7 +24,6 @@ import { MockAdapterService } from '@services/mock-adapter.service';
 import { LRUCache } from 'lru-cache';
 import { environment } from '@env/environment';
 import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
-import { LocalGlucoseReading } from '@models/glucose-reading.model';
 
 /**
  * API endpoint configuration
@@ -110,82 +109,6 @@ export interface ApiError {
  *   - transform: optional request/response transformation functions
  */
 const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
-  // Glucoserver endpoints
-  [
-    'glucoserver.readings.list',
-    {
-      service: ExternalService.GLUCOSERVER,
-      path: '/v1/readings',
-      method: 'GET',
-      authenticated: true,
-      timeout: 30000,
-      retryAttempts: 2,
-      cache: {
-        duration: 60000, // 1 minute
-        key: (params: Record<string, unknown>) =>
-          `readings_${(params?.['limit'] as string | undefined) ?? 'all'}_${(params?.['offset'] as number | undefined) ?? 0}`,
-      },
-    },
-  ],
-  [
-    'glucoserver.readings.create',
-    {
-      service: ExternalService.GLUCOSERVER,
-      path: '/v1/readings',
-      method: 'POST',
-      authenticated: true,
-      timeout: 30000,
-      retryAttempts: 1,
-      transform: {
-        request: (data: unknown) => {
-          const dataObj = data as Record<string, unknown>;
-          if (!dataObj['timestamp']) {
-            return data;
-          }
-          // Handle both Date objects and ISO strings
-          // Remove milliseconds to match expected format (2024-01-15T10:00:00Z instead of 2024-01-15T10:00:00.000Z)
-          let timestamp: string;
-          if (dataObj['timestamp'] instanceof Date) {
-            timestamp = dataObj['timestamp'].toISOString().replace(/\.\d{3}Z$/, 'Z');
-          } else if (typeof dataObj['timestamp'] === 'string') {
-            timestamp = new Date(dataObj['timestamp']).toISOString().replace(/\.\d{3}Z$/, 'Z');
-          } else {
-            timestamp = dataObj['timestamp'] as string;
-          }
-          return {
-            ...dataObj,
-            timestamp,
-          };
-        },
-      },
-    },
-  ],
-
-  [
-    'glucoserver.statistics',
-    {
-      service: ExternalService.GLUCOSERVER,
-      path: '/v1/statistics',
-      method: 'GET',
-      authenticated: true,
-      timeout: 30000,
-      cache: {
-        duration: 300000, // 5 minutes
-      },
-    },
-  ],
-  [
-    'glucoserver.export',
-    {
-      service: ExternalService.GLUCOSERVER,
-      path: '/v1/export',
-      method: 'GET',
-      authenticated: true,
-      timeout: 60000,
-      responseType: 'blob',
-    },
-  ],
-
   // Achievements endpoints (gamification)
   [
     'achievements.streak',
@@ -216,32 +139,6 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
 
   // Appointment endpoints
   [
-    'appointments.list',
-    {
-      service: ExternalService.APPOINTMENTS,
-      path: '/appointments',
-      method: 'GET',
-      authenticated: true,
-      timeout: 30000,
-      cache: {
-        duration: 120000, // 2 minutes
-      },
-    },
-  ],
-  [
-    'appointments.detail',
-    {
-      service: ExternalService.APPOINTMENTS,
-      path: '/appointments/{id}',
-      method: 'GET',
-      authenticated: true,
-      timeout: 30000,
-      cache: {
-        duration: 60000, // 1 minute
-      },
-    },
-  ],
-  [
     'appointments.queue.open',
     {
       service: ExternalService.APPOINTMENTS,
@@ -249,16 +146,6 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
       method: 'GET',
       authenticated: true,
       timeout: 10000,
-    },
-  ],
-  [
-    'appointments.create',
-    {
-      service: ExternalService.APPOINTMENTS,
-      path: '/appointments',
-      method: 'POST',
-      authenticated: true,
-      timeout: 30000,
     },
   ],
 
@@ -282,62 +169,6 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
           return data;
         },
       },
-    },
-  ],
-  [
-    'auth.user.me',
-    {
-      service: ExternalService.LOCAL_AUTH,
-      path: '/users/me',
-      method: 'GET',
-      authenticated: true,
-      timeout: 15000,
-      cache: {
-        duration: 300000, // 5 minutes
-      },
-    },
-  ],
-  [
-    'auth.login',
-    {
-      service: ExternalService.LOCAL_AUTH,
-      path: '/auth/login',
-      method: 'POST',
-      authenticated: false,
-      timeout: 15000,
-      retryAttempts: 1,
-    },
-  ],
-
-  [
-    'auth.logout',
-    {
-      service: ExternalService.LOCAL_AUTH,
-      path: '/auth/logout',
-      method: 'POST',
-      authenticated: true,
-      timeout: 15000,
-    },
-  ],
-  [
-    'auth.profile.update',
-    {
-      service: ExternalService.LOCAL_AUTH,
-      path: '/auth/profile',
-      method: 'PUT',
-      authenticated: true,
-      timeout: 15000,
-    },
-  ],
-
-  [
-    'auth.tidepool.link',
-    {
-      service: ExternalService.LOCAL_AUTH,
-      path: '/users/tidepool',
-      method: 'PATCH',
-      authenticated: true,
-      timeout: 15000,
     },
   ],
 
@@ -1200,35 +1031,14 @@ export class ApiGatewayService {
     );
   }
 
-  /**
-   * Handler para endpoints de glucoserver.
-   */
   private async handleGlucoserverMockRequest<T>(
     endpointKey: string,
-    params?: Record<string, unknown>,
-    body?: unknown,
+    _params?: Record<string, unknown>,
+    _body?: unknown,
     _pathParams?: { [key: string]: string }
   ): Promise<T> {
     const action = endpointKey.split('.').slice(1).join('.');
-
-    switch (action) {
-      case 'readings.list':
-        return this.mockAdapter.mockGetAllReadings(
-          (params?.['offset'] as number | undefined) || 0,
-          (params?.['limit'] as number | undefined) || 100
-        ) as Promise<T>;
-
-      case 'readings.create':
-        return this.mockAdapter.mockAddReading(body as LocalGlucoseReading) as Promise<T>;
-
-      case 'statistics':
-        return this.mockAdapter.mockGetStatistics(
-          (params?.['days'] as number | undefined) || 30
-        ) as Promise<T>;
-
-      default:
-        throw new Error(`Mock not implemented for glucoserver endpoint: ${action}`);
-    }
+    throw new Error(`Mock not implemented for glucoserver endpoint: ${action}`);
   }
 
   /**
@@ -1247,53 +1057,13 @@ export class ApiGatewayService {
     }
   }
 
-  /**
-   * Handler para endpoints de autenticación.
-   */
   private async handleAuthMockRequest<T>(
     endpointKey: string,
-    endpoint: ApiEndpoint,
-    body?: unknown
+    _endpoint: ApiEndpoint,
+    _body?: unknown
   ): Promise<T> {
     const action = endpointKey.split('.').slice(1).join('.');
-
-    switch (action) {
-      case 'login':
-        return this.handleAuthLogin(body) as Promise<T>;
-
-      case 'logout':
-        await this.mockAdapter.mockLogout();
-        return { success: true } as T;
-
-      case 'user.me':
-      case 'profile.update':
-        return this.handleAuthProfile(endpoint, body) as Promise<T>;
-
-      default:
-        throw new Error(`Mock not implemented for auth endpoint: ${action}`);
-    }
-  }
-
-  /**
-   * Helper para login con email o DNI.
-   */
-  private handleAuthLogin(body?: unknown): Promise<unknown> {
-    const bodyObj = body as Record<string, unknown>;
-    return this.mockAdapter.mockLogin(
-      ((bodyObj['email'] as string | undefined) ||
-        (bodyObj['dni'] as string | undefined)) as string,
-      bodyObj['password'] as string
-    );
-  }
-
-  /**
-   * Helper para profile (GET o UPDATE según método HTTP).
-   */
-  private handleAuthProfile(endpoint: ApiEndpoint, body?: unknown): Promise<unknown> {
-    if (endpoint.method === 'GET') {
-      return this.mockAdapter.mockGetProfile();
-    }
-    return this.mockAdapter.mockUpdateProfile(body as Record<string, unknown>);
+    throw new Error(`Mock not implemented for auth endpoint: ${action}`);
   }
 
   /**
