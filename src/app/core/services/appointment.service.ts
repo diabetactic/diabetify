@@ -10,7 +10,6 @@ import { Observable, BehaviorSubject, throwError, of, Subject } from 'rxjs';
 import { catchError, map, tap, takeUntil } from 'rxjs/operators';
 import { ApiGatewayService } from '@services/api-gateway.service';
 import { TranslationService } from '@services/translation.service';
-import { NotificationService } from '@services/notification.service';
 import { LoggerService } from '@services/logger.service';
 import { environment } from '@env/environment';
 import {
@@ -85,8 +84,7 @@ export class AppointmentService implements OnDestroy {
 
   constructor(
     private apiGateway: ApiGatewayService,
-    private translationService: TranslationService,
-    private notificationService: NotificationService
+    private translationService: TranslationService
   ) {}
 
   /**
@@ -129,29 +127,17 @@ export class AppointmentService implements OnDestroy {
   /**
    * Create a new appointment with clinical data
    */
-  createAppointment(
-    formData: CreateAppointmentRequest,
-    scheduledDate?: Date,
-    reminderMinutesBefore: number = 30
-  ): Observable<Appointment> {
+  createAppointment(formData: CreateAppointmentRequest): Observable<Appointment> {
     if (this.isMockMode) {
       const newAppointment: MockAppointment = {
         ...formData,
         appointment_id: Date.now(),
         user_id: 1000,
-        scheduled_date: scheduledDate,
-        reminder_minutes_before: reminderMinutesBefore,
         status: 'CREATED',
         timestamps: { created_at: new Date().toISOString() },
       };
       this.mockAppointments.push(newAppointment);
       this.appointmentsSubject.next([...this.mockAppointments]);
-
-      // Schedule reminder if scheduled_date is provided
-      if (scheduledDate) {
-        this.scheduleReminder(newAppointment);
-      }
-
       return of(newAppointment);
     }
 
@@ -160,23 +146,11 @@ export class AppointmentService implements OnDestroy {
       .pipe(
         map(response => {
           if (response.success && response.data) {
-            // Add client-side scheduling fields
-            const appointment: Appointment = {
-              ...response.data,
-              scheduled_date: scheduledDate,
-              reminder_minutes_before: reminderMinutesBefore,
-            };
-            return appointment;
+            return response.data;
           }
           throw new Error(response.error?.message || 'Failed to create appointment');
         }),
-        tap(appointment => {
-          this.refreshAppointments();
-          // Schedule reminder if scheduled_date is provided
-          if (appointment.scheduled_date) {
-            this.scheduleReminder(appointment);
-          }
-        }),
+        tap(() => this.refreshAppointments()),
         catchError(this.handleError.bind(this))
       );
   }
@@ -330,83 +304,6 @@ export class AppointmentService implements OnDestroy {
         }),
         catchError(this.handleError.bind(this))
       );
-  }
-
-  /**
-   * Delete/cancel an appointment
-   */
-  deleteAppointment(appointmentId: number): Observable<void> {
-    // Cancel notification first
-    this.cancelAppointmentReminder(appointmentId);
-
-    if (this.isMockMode) {
-      const index = this.mockAppointments.findIndex(apt => apt.appointment_id === appointmentId);
-      if (index !== -1) {
-        this.mockAppointments.splice(index, 1);
-        this.appointmentsSubject.next([...this.mockAppointments]);
-      }
-      return of(undefined);
-    }
-
-    // If backend has delete endpoint, implement here
-    // For now, just cancel the notification
-    return of(undefined);
-  }
-
-  /**
-   * Update appointment scheduling information
-   */
-  updateAppointmentSchedule(
-    appointmentId: number,
-    scheduledDate: Date,
-    reminderMinutesBefore = 30
-  ): Observable<Appointment> {
-    return this.getAppointment(appointmentId).pipe(
-      tap(appointment => {
-        // Update scheduling fields
-        appointment.scheduled_date = scheduledDate;
-        appointment.reminder_minutes_before = reminderMinutesBefore;
-
-        // Reschedule reminder
-        this.cancelAppointmentReminder(appointmentId);
-        this.scheduleReminder(appointment);
-      })
-    );
-  }
-
-  /**
-   * Schedule a notification reminder for an appointment
-   */
-  private scheduleReminder(appointment: Appointment): void {
-    if (!appointment.scheduled_date) {
-      return;
-    }
-
-    const reminderMinutes = appointment.reminder_minutes_before ?? 30;
-
-    this.notificationService
-      .scheduleAppointmentReminder({
-        appointmentId: appointment.appointment_id.toString(),
-        appointmentDate: appointment.scheduled_date,
-        reminderMinutesBefore: reminderMinutes,
-      })
-      .catch(error => {
-        this.logger.error('Appointments', 'Failed to schedule appointment reminder', error);
-      });
-  }
-
-  /**
-   * Cancel notification reminder for an appointment
-   */
-  private cancelAppointmentReminder(appointmentId: number): void {
-    // Calculate notification ID using same logic as NotificationService
-    const APPOINTMENT_REMINDER_BASE_ID = 2000;
-    const notificationId =
-      APPOINTMENT_REMINDER_BASE_ID + parseInt(appointmentId.toString().slice(-4), 16);
-
-    this.notificationService.cancelNotification(notificationId).catch(error => {
-      this.logger.error('Appointments', 'Failed to cancel appointment reminder', error);
-    });
   }
 
   /**

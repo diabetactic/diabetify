@@ -19,18 +19,11 @@ export interface ReadingReminder {
   label?: string;
 }
 
-export interface AppointmentReminder {
-  appointmentId: string;
-  appointmentDate: Date;
-  reminderMinutesBefore: number;
-}
-
 @Injectable({
   providedIn: 'root',
 })
 export class NotificationService implements OnDestroy {
   private readonly READING_REMINDER_BASE_ID = 1000;
-  private readonly APPOINTMENT_REMINDER_BASE_ID = 2000;
   private hasPermission = false;
   private listenerHandles: PluginListenerHandle[] = [];
 
@@ -224,31 +217,6 @@ export class NotificationService implements OnDestroy {
   async cancelReadingReminder(reminderId: number): Promise<void> {
     const notificationId = this.READING_REMINDER_BASE_ID + reminderId;
     await this.cancelNotification(notificationId);
-  }
-
-  /**
-   * Schedule an appointment reminder
-   */
-  async scheduleAppointmentReminder(reminder: AppointmentReminder): Promise<void> {
-    const reminderDate = new Date(reminder.appointmentDate);
-    reminderDate.setMinutes(reminderDate.getMinutes() - reminder.reminderMinutesBefore);
-
-    // Don't schedule if reminder time has passed
-    if (reminderDate <= new Date()) {
-      this.logger.debug('Notifications', 'Appointment reminder time has passed, skipping');
-      return;
-    }
-
-    const notificationId =
-      this.APPOINTMENT_REMINDER_BASE_ID + parseInt(reminder.appointmentId.slice(-4), 16);
-
-    await this.scheduleNotification(
-      notificationId,
-      'Upcoming Appointment',
-      `You have an appointment in ${reminder.reminderMinutesBefore} minutes`,
-      reminderDate,
-      { type: 'appointment_reminder', appointmentId: reminder.appointmentId }
-    );
   }
 
   /**

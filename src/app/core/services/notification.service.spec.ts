@@ -5,11 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { NgZone } from '@angular/core';
 import { Platform } from '@ionic/angular';
-import {
-  NotificationService,
-  ReadingReminder,
-  AppointmentReminder,
-} from '@services/notification.service';
+import { NotificationService, ReadingReminder } from '@services/notification.service';
 import { LoggerService } from '@services/logger.service';
 import {
   LocalNotifications,
@@ -392,98 +388,6 @@ describe('NotificationService', () => {
   });
 
   // ============================================================================
-  // APPOINTMENT REMINDERS
-  // ============================================================================
-
-  describe('scheduleAppointmentReminder()', () => {
-    beforeEach(() => {
-      mockPlatform.is.mockReturnValue(true);
-      service = TestBed.inject(NotificationService);
-      vi.useFakeTimers();
-      vi.setSystemTime(new Date('2024-12-01T10:00:00Z'));
-    });
-
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
-    it.each([
-      {
-        appointmentDate: new Date('2024-12-01T14:00:00Z'),
-        minutesBefore: 30,
-        expectedSchedule: new Date('2024-12-01T13:30:00Z'),
-        expectedBody: 'You have an appointment in 30 minutes',
-        shouldSchedule: true,
-        scenario: 'future appointment',
-      },
-      {
-        appointmentDate: new Date('2024-12-01T15:00:00Z'),
-        minutesBefore: 60,
-        expectedSchedule: new Date('2024-12-01T14:00:00Z'),
-        expectedBody: 'You have an appointment in 60 minutes',
-        shouldSchedule: true,
-        scenario: '60 minutes before',
-      },
-      {
-        appointmentDate: new Date('2024-12-01T15:00:00Z'),
-        minutesBefore: 120,
-        expectedSchedule: new Date('2024-12-01T13:00:00Z'),
-        expectedBody: 'You have an appointment in 120 minutes',
-        shouldSchedule: true,
-        scenario: '120 minutes before',
-      },
-      {
-        appointmentDate: new Date('2024-12-01T10:15:00Z'),
-        minutesBefore: 30,
-        expectedSchedule: null,
-        expectedBody: null,
-        shouldSchedule: false,
-        scenario: 'past appointment',
-      },
-    ])(
-      'should handle $scenario correctly',
-      async ({
-        appointmentDate,
-        minutesBefore,
-        expectedSchedule,
-        expectedBody,
-        shouldSchedule,
-      }) => {
-        const reminder: AppointmentReminder = {
-          appointmentId: 'test123',
-          appointmentDate,
-          reminderMinutesBefore: minutesBefore,
-        };
-
-        await service.scheduleAppointmentReminder(reminder);
-
-        if (shouldSchedule) {
-          expect(LocalNotifications.schedule).toHaveBeenCalledWith({
-            notifications: [
-              {
-                id: expect.any(Number),
-                title: 'Upcoming Appointment',
-                body: expectedBody,
-                schedule: { at: expectedSchedule },
-                sound: 'default',
-                extra: { type: 'appointment_reminder', appointmentId: 'test123' },
-              },
-            ],
-          });
-        } else {
-          expect(LocalNotifications.schedule).not.toHaveBeenCalled();
-          expect(mockLogger.debug).toHaveBeenCalledWith(
-            'Notifications',
-            'Appointment reminder time has passed, skipping'
-          );
-        }
-
-        (LocalNotifications.schedule as Mock).mockClear();
-      }
-    );
-  });
-
-  // ============================================================================
   // CANCEL NOTIFICATIONS
   // ============================================================================
 
@@ -717,7 +621,7 @@ describe('NotificationService', () => {
   // ============================================================================
 
   describe('Notification ID Collision Prevention', () => {
-    it('should use distinct ID ranges for different notification types', async () => {
+    it('should use distinct ID range for reading reminders', async () => {
       mockPlatform.is.mockReturnValue(true);
       service = TestBed.inject(NotificationService);
 
@@ -725,19 +629,12 @@ describe('NotificationService', () => {
       vi.setSystemTime(new Date('2024-12-01T10:00:00Z'));
 
       await service.scheduleReadingReminder({ id: 50, time: '10:00', enabled: true });
-      await service.scheduleAppointmentReminder({
-        appointmentId: '0050',
-        appointmentDate: new Date('2024-12-01T15:00:00Z'),
-        reminderMinutesBefore: 30,
-      });
 
       const calls = (LocalNotifications.schedule as Mock).mock.calls;
       const readingId = calls[0][0].notifications[0].id;
-      const appointmentId = calls[1][0].notifications[0].id;
 
+      // Reading reminders use base ID 1000 + reminder.id
       expect(readingId).toBe(1050); // 1000 + 50
-      expect(appointmentId).toBe(2080); // 2000 + parseInt('0050', 16)
-      expect(readingId).not.toBe(appointmentId);
 
       vi.useRealTimers();
     });

@@ -779,60 +779,6 @@ test.describe('Appointment Actions @appointment-comprehensive @docker', () => {
     await disableDeviceFrame(page);
   });
 
-  test('should have delete option for past appointments', async ({ page }) => {
-    await setUserQueueState(TEST_USER.dni, 'CREATED');
-    await setUserQueueState(TEST_USER.dni, 'DENIED');
-
-    await loginAs(page, TEST_USER.dni, TEST_USER.password);
-    await goToAppointments(page);
-
-    // Expand past appointments - use JavaScript click
-    const pastHeader = page.getByText(/Anteriores|Past|Historial/i);
-    if ((await pastHeader.count()) > 0) {
-      await pastHeader.first().evaluate((el: HTMLElement) => {
-        el.scrollIntoView({ behavior: 'instant', block: 'center' });
-        el.click();
-      });
-      await page.waitForTimeout(500);
-    }
-
-    // Check for sliding item options (swipe to delete)
-    const slidingItem = page.locator('ion-item-sliding');
-
-    if ((await slidingItem.count()) > 0) {
-      // First scroll the item into view
-      await slidingItem.first().evaluate((el: HTMLElement) => {
-        el.scrollIntoView({ behavior: 'instant', block: 'center' });
-      });
-      await page.waitForTimeout(300);
-
-      // Swipe to reveal options
-      const firstItem = slidingItem.first();
-      const box = await firstItem.boundingBox();
-
-      if (box) {
-        // Simulate swipe left
-        await page.mouse.move(box.x + box.width - 20, box.y + box.height / 2);
-        await page.mouse.down();
-        await page.mouse.move(box.x + 50, box.y + box.height / 2);
-        await page.mouse.up();
-        await page.waitForTimeout(500);
-
-        // Check for delete button - use separate locators
-        const deleteBtnCss = page.locator('ion-item-option[color="danger"]');
-        const deleteBtnText = page.getByText(/Eliminar|Delete/i);
-        const hasDelete = (await deleteBtnCss.count()) > 0 || (await deleteBtnText.count()) > 0;
-
-        expect(hasDelete).toBe(true);
-
-        if (hasDelete) {
-          await prepareForScreenshot(page);
-          await expect(page).toHaveScreenshot('appointment-delete-option.png', screenshotOptions);
-        }
-      }
-    }
-  });
-
   test('should navigate to appointment detail on click', async ({ page }) => {
     await setUserQueueState(TEST_USER.dni, 'CREATED');
 

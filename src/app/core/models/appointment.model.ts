@@ -26,9 +26,6 @@ export interface Appointment {
   other_motive?: string | null;
   status: string;
   timestamps: { [key: string]: string };
-  // Client-side scheduling fields (not from backend)
-  scheduled_date?: Date;
-  reminder_minutes_before?: number; // Default: 30 minutes
 }
 
 /**

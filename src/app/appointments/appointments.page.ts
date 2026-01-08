@@ -23,10 +23,6 @@ import {
   IonCardTitle,
   IonCardSubtitle,
   IonCardContent,
-  IonItemSliding,
-  IonItemOption,
-  IonItemOptions,
-  IonItem,
 } from '@ionic/angular/standalone';
 import { ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
@@ -68,10 +64,6 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
     IonCardTitle,
     IonCardSubtitle,
     IonCardContent,
-    IonItemSliding,
-    IonItemOption,
-    IonItemOptions,
-    IonItem,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
@@ -342,26 +334,6 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   viewAppointment(appointment: Appointment): void {
     this.logger.info('UI', 'Appointment clicked', { appointmentId: appointment.appointment_id });
     this.router.navigate([appointmentDetailRoute(appointment.appointment_id)]);
-  }
-
-  /**
-   * Delete an appointment
-   */
-  async deleteAppointment(appointmentId: number): Promise<void> {
-    try {
-      await firstValueFrom(this.appointmentService.deleteAppointment(appointmentId));
-      this.logger.info('Appointments', 'Appointment deleted successfully', { appointmentId });
-      await this.showToast(
-        this.translationService.instant('appointments.deleteSuccess'),
-        'success'
-      );
-    } catch (error) {
-      this.logger.error('Appointments', 'Error deleting appointment', { appointmentId, error });
-      await this.showToast(
-        this.translationService.instant('appointments.errors.deleteFailed'),
-        'danger'
-      );
-    }
   }
 
   /**
