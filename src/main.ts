@@ -103,6 +103,7 @@ import {
   EnvironmentConfigService,
   initializeEnvironmentConfig,
 } from './app/core/config/environment-config.service';
+import { TranslationService } from './app/core/services/translation.service';
 import { APP_ROUTES } from './app/app-routing.module';
 import { LucideAngularModule } from 'lucide-angular';
 import { appIcons } from './app/shared/icons/lucide-icons';
@@ -147,6 +148,12 @@ bootstrapApplication(AppComponent, {
       provide: APP_INITIALIZER,
       useFactory: initializeEnvironmentConfig,
       deps: [EnvironmentConfigService],
+      multi: true,
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (translationService: TranslationService) => () => translationService.init(),
+      deps: [TranslationService],
       multi: true,
     },
     importProvidersFrom(

@@ -54,6 +54,7 @@ describe('TranslationService', () => {
 
   describe('initialization', () => {
     it('should configure TranslateService correctly', async () => {
+      await service.init();
       expect(translateService.addLangs).toHaveBeenCalledWith(['en', 'es']);
       expect(translateService.setDefaultLang).toHaveBeenCalledWith(Language.ES);
 
@@ -63,7 +64,9 @@ describe('TranslationService', () => {
 
     it('should load stored language preference on init', async () => {
       (Preferences.get as Mock).mockResolvedValue({ value: 'en' });
-      new TranslationService(translateService, mockLogger);
+
+      await service.init();
+
       await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(translateService.use).toHaveBeenCalledWith('en');

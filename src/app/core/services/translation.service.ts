@@ -120,11 +120,24 @@ export class TranslationService implements OnDestroy {
     })
   );
 
+  private initPromise: Promise<void> | null = null;
+
   constructor(
     private translate: TranslateService,
     private logger: LoggerService
   ) {
-    this.initialize();
+    // Defer initialization to be called via APP_INITIALIZER
+  }
+
+  /**
+   * Public initializer to be called by APP_INITIALIZER.
+   * Ensures initialization runs only once.
+   */
+  public init(): Promise<void> {
+    if (!this.initPromise) {
+      this.initPromise = this.initialize();
+    }
+    return this.initPromise;
   }
 
   /**
