@@ -586,6 +586,7 @@ test.describe('Visual Regression - Readings & Trends @readings-trends @docker @v
     await page.evaluate(() => {
       document.documentElement.classList.add('dark');
       document.body.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
     });
 
     await navigateToTrends(page);

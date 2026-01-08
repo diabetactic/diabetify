@@ -1,7 +1,10 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/dashboard"></ion-back-button>
+      <ion-back-button
+        defaultHref="/tabs/dashboard"
+        [text]="'common.back' | translate"
+      ></ion-back-button>
     </ion-buttons>
     <ion-title>{{ 'settings.title' | translate }}</ion-title>
     <ion-buttons slot="end">

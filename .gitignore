@@ -6,6 +6,7 @@ www
 
 # Test artifacts
 coverage
+junit.xml
 playwright-report
 playwright/artifacts
 playwright/screenshots

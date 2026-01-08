@@ -37,8 +37,8 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'account-pending',
-    loadChildren: () =>
-      import('./account-pending/account-pending.module').then(m => m.AccountPendingPageModule),
+    loadComponent: () =>
+      import('./account-pending/account-pending.page').then(m => m.AccountPendingPage),
   },
   {
     path: 'settings',

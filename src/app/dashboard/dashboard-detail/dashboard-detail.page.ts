@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, OnDestroy } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 
 import { Router, RouterModule } from '@angular/router';
 import {
@@ -90,7 +90,8 @@ export class DashboardDetailPage implements OnInit, OnDestroy {
     private router: Router,
     private translationService: TranslationService,
     private profileService: ProfileService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private cdr: ChangeDetectorRef
   ) {
     this.preferredGlucoseUnit = this.translationService.getCurrentConfig().glucoseUnit;
   }
@@ -121,6 +122,7 @@ export class DashboardDetailPage implements OnInit, OnDestroy {
       this.logger.error('DashboardDetail', 'Error loading statistics', error);
     } finally {
       this.isLoading = false;
+      this.cdr.detectChanges();
     }
   }
 

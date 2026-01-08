@@ -1,7 +1,10 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/profile"></ion-back-button>
+      <ion-back-button
+        defaultHref="/tabs/profile"
+        [text]="'common.back' | translate"
+      ></ion-back-button>
     </ion-buttons>
     <ion-title>{{ 'achievements.title' | translate }}</ion-title>
   </ion-toolbar>

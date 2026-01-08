@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader,
@@ -44,6 +44,7 @@ interface Tip {
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class TipsPage {
+  constructor(private cdr: ChangeDetectorRef) {}
   tips: Tip[] = [
     {
       icon: 'water-outline',
@@ -134,5 +135,9 @@ export class TipsPage {
   // trackBy function for tips ngFor
   trackByTip(_index: number, tip: Tip): string {
     return tip.title;
+  }
+
+  ngAfterViewInit() {
+    this.cdr.detectChanges();
   }
 }
