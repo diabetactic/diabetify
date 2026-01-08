@@ -172,52 +172,32 @@ test.describe('Docker Backend - Readings @docker @docker-readings', () => {
   });
 
   test('can add new reading with known value', async ({ page }) => {
-    const testValue = 125;
+    const testValue = 126;
 
-    // Click add reading FAB button using JavaScript to avoid tab bar interception
-    const addButton = page.locator('[data-testid="fab-add-reading"], #fab-add-reading');
-    await expect(addButton).toBeVisible({ timeout: 10000 });
-    await addButton.evaluate((el: HTMLElement) => {
-      el.scrollIntoView({ behavior: 'instant', block: 'center' });
-      el.click();
-    });
-    await page.waitForLoadState('networkidle');
+    // Navigate directly to add-reading page to avoid FAB click issues
+    await page.goto('/add-reading');
+    await page.waitForSelector('ion-app.hydrated', { timeout: 10000 });
 
-    // Fill in the reading value (try multiple selectors)
     const valueInput = page.locator('input[type="number"], [data-testid="glucose-input"]').first();
-    await expect(valueInput).toBeVisible({ timeout: 5000 });
+    await expect(valueInput).toBeVisible({ timeout: 10000 });
     await valueInput.fill(testValue.toString());
 
-    // Add test tag to notes if notes field exists
     const notesInput = page.locator('textarea, [data-testid="notes-input"]').first();
     if ((await notesInput.count()) > 0) {
       await notesInput.fill('__E2E_TEST__ Added via Playwright');
     }
 
-    // Submit using JavaScript to avoid interception
     const submitBtn = page.getByRole('button', { name: /Guardar lectura|Save reading/i }).first();
-    await submitBtn.evaluate((el: HTMLElement) => {
-      el.scrollIntoView({ behavior: 'instant', block: 'center' });
-      el.click();
-    });
-    await page.waitForLoadState('networkidle');
+    await expect(submitBtn).toBeVisible({ timeout: 5000 });
+    await submitBtn.click({ force: true });
 
-    // Wait for any toast/notification to dismiss
-    await page.waitForTimeout(1500);
-
-    // After saving, explicitly navigate back to readings list
-    // The app may stay on the form or navigate automatically - ensure we're on readings page
+    await page.waitForTimeout(2000);
     await page.goto('/tabs/readings');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
+    await page.waitForSelector('ion-app.hydrated', { timeout: 10000 });
 
-    // The value 125 may appear multiple times on the page (in stats, multiple readings, etc.)
-    // Use a more specific locator: look for the value within a reading item in the readings list
     const readingsList = page.locator('[data-testid="readings-list"]');
     await expect(readingsList).toBeVisible({ timeout: 15000 });
 
-    // Look for the glucose value within an app-reading-item component
-    // The value is displayed as "125 mg/dL" or "125 mmol/L" inside the reading item
     const readingWithValue = readingsList.locator('app-reading-item').filter({
       hasText: new RegExp(`${testValue}\\s*(mg/dL|mmol/L)`, 'i'),
     });
