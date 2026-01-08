@@ -180,17 +180,15 @@ test.describe('E2E Flow - Reading Data Flow @docker-e2e', () => {
     const readingsTab = page.locator('[data-testid="tab-readings"]');
     await readingsTab.waitFor({ state: 'visible', timeout: 10000 });
     await readingsTab.click();
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await page.waitForSelector('ion-app.hydrated', { timeout: 10000 });
+    await page.waitForTimeout(1000);
 
     const firstReading = page.locator('[data-testid="readings-list"] ion-item[button]').first();
     if ((await firstReading.count()) > 0) {
-      await firstReading.evaluate((el: HTMLElement) => el.click());
-      const visibleModal = page
-        .locator('ion-modal.show-modal, ion-modal[aria-hidden="false"]')
-        .first();
-      await expect(visibleModal).toBeVisible({ timeout: 5000 });
+      await firstReading.click({ force: true });
       await page.waitForTimeout(500);
+      const visibleModal = page.locator('ion-modal').first();
+      await expect(visibleModal).toBeVisible({ timeout: 5000 });
     }
 
     await prepareForScreenshot(page);

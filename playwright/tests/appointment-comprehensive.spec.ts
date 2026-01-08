@@ -1069,3 +1069,155 @@ test.describe('Visual Regression - All Appointment States @appointment-comprehen
     await expect(page).toHaveScreenshot('appointment-visual-create-form.png', screenshotOptions);
   });
 });
+
+// =============================================================================
+// MULTI-USER QUEUE POSITION TESTS
+// =============================================================================
+
+const TEST_USER_2 = { dni: '1001', password: 'tuvieja2' };
+
+async function submitToQueueForUser(dni: string, password: string): Promise<number | null> {
+  try {
+    const token = await getAuthToken(dni, password);
+    const resp = await fetch(`${API_URL}/appointments/submit`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!resp.ok) return null;
+    const pending = await getPendingAppointments();
+    const dniNum = parseInt(dni, 10);
+    const userAppt = pending.find(a => a.user_id === dniNum);
+    return userAppt?.queue_placement ?? null;
+  } catch {
+    return null;
+  }
+}
+
+test.describe('Multi-User Queue Position @appointment-comprehensive @docker', () => {
+  test.skip(!isDockerTest, 'Set E2E_DOCKER_TESTS=true to run');
+
+  test.beforeEach(async ({ page }) => {
+    await disableDeviceFrame(page);
+    await clearAppointmentQueue();
+    await setQueueStatus(true);
+  });
+
+  test.afterEach(async () => {
+    await clearAppointmentQueue();
+  });
+
+  test('first user gets position 1, second user gets position 2', async ({ page }) => {
+    const pos1 = await submitToQueueForUser(TEST_USER.dni, TEST_USER.password);
+    const pos2 = await submitToQueueForUser(TEST_USER_2.dni, TEST_USER_2.password);
+
+    expect(pos1).toBe(1);
+    expect(pos2).toBe(2);
+
+    await loginAs(page, TEST_USER.dni, TEST_USER.password);
+    await goToAppointments(page);
+
+    const positionText = page.locator('text=/Posición.*1|Position.*1|#1/i');
+    const hasPosition1 = (await positionText.count()) > 0;
+    expect(hasPosition1).toBe(true);
+  });
+
+  test('second user sees position 2 in queue', async ({ page }) => {
+    await submitToQueueForUser(TEST_USER.dni, TEST_USER.password);
+    await submitToQueueForUser(TEST_USER_2.dni, TEST_USER_2.password);
+
+    await loginAs(page, TEST_USER_2.dni, TEST_USER_2.password);
+    await goToAppointments(page);
+
+    const positionText = page.locator('text=/Posición.*2|Position.*2|#2/i');
+    const hasPosition2 = (await positionText.count()) > 0;
+    expect(hasPosition2).toBe(true);
+  });
+
+  test('position updates when first user is accepted', async ({ page }) => {
+    await submitToQueueForUser(TEST_USER.dni, TEST_USER.password);
+    await submitToQueueForUser(TEST_USER_2.dni, TEST_USER_2.password);
+
+    await acceptAppointmentByPlacement(1);
+
+    await loginAs(page, TEST_USER_2.dni, TEST_USER_2.password);
+    await goToAppointments(page);
+
+    const positionText = page.locator('text=/Posición.*1|Position.*1|#1/i');
+    const hasPosition1 = (await positionText.count()) > 0;
+    expect(hasPosition1).toBe(true);
+  });
+});
+
+// =============================================================================
+// RESOLVED/COMPLETED APPOINTMENT TESTS
+// =============================================================================
+
+test.describe('Appointment Resolution Flow @appointment-comprehensive @docker', () => {
+  test.skip(!isDockerTest, 'Set E2E_DOCKER_TESTS=true to run');
+
+  test.beforeEach(async ({ page }) => {
+    await disableDeviceFrame(page);
+  });
+
+  test.afterEach(async () => {
+    await resetUserQueueState(TEST_USER.dni);
+  });
+
+  test('complete flow: CREATED → resolution added → displays resolution details', async ({
+    page,
+  }) => {
+    await setUserQueueState(TEST_USER.dni, 'CREATED');
+
+    const token = await getAuthToken(TEST_USER.dni, TEST_USER.password);
+    const appointments = await getAppointmentsForUser(token);
+
+    if (appointments.length > 0) {
+      await createResolution(appointments[0].appointment_id);
+
+      await loginAs(page, TEST_USER.dni, TEST_USER.password);
+      await goToAppointments(page);
+
+      const pastSection = page.getByText(/Anteriores|Past|Historial|Completadas/i);
+      if ((await pastSection.count()) > 0) {
+        await pastSection.first().click();
+        await page.waitForTimeout(500);
+      }
+
+      const hasResolutionInfo =
+        (await page.getByText(/Resolución|Resolution/i).count()) > 0 ||
+        (await page.getByText(/Basal|Lantus|Humalog/i).count()) > 0 ||
+        (await page.getByText(/Sensibilidad|Sensitivity/i).count()) > 0 ||
+        (await page.getByText(/Ratio/i).count()) > 0;
+
+      expect(hasResolutionInfo).toBe(true);
+    }
+  });
+
+  test('resolution shows insulin recommendations', async ({ page }) => {
+    await setUserQueueState(TEST_USER.dni, 'CREATED');
+
+    const token = await getAuthToken(TEST_USER.dni, TEST_USER.password);
+    const appointments = await getAppointmentsForUser(token);
+
+    if (appointments.length > 0) {
+      await createResolution(appointments[0].appointment_id);
+
+      await loginAs(page, TEST_USER.dni, TEST_USER.password);
+      await goToAppointments(page);
+
+      const appointmentCard = page.locator(
+        'ion-card.appointment-card, [data-testid*="appointment"]'
+      );
+      if ((await appointmentCard.count()) > 0) {
+        await appointmentCard.first().click();
+        await page.waitForTimeout(1000);
+
+        const hasInsulinInfo =
+          (await page.getByText(/Lantus|Humalog|Insulina|Insulin/i).count()) > 0 ||
+          (await page.getByText(/12\s*(U|unidades|units)/i).count()) > 0;
+
+        expect(hasInsulinInfo).toBe(true);
+      }
+    }
+  });
+});
