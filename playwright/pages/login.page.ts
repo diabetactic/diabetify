@@ -72,7 +72,7 @@ export class LoginPage extends BasePage {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       diagnosisDate: '2020-01-01',
-      diabetesType: 'TYPE_1',
+      diabetesType: 'type1',
       hasCompletedOnboarding: true,
     };
 

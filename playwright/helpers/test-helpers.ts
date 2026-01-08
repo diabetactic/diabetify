@@ -36,7 +36,7 @@ export interface UserProfile {
   createdAt: string;
   updatedAt: string;
   diagnosisDate: string;
-  diabetesType: 'TYPE_1' | 'TYPE_2' | 'GESTATIONAL' | 'OTHER';
+  diabetesType: 'type1' | 'type2' | 'gestational' | 'other';
   hasCompletedOnboarding: boolean;
 }
 
@@ -440,7 +440,7 @@ export async function completeOnboarding(page: Page): Promise<void> {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     diagnosisDate: '2020-01-01',
-    diabetesType: 'TYPE_1',
+    diabetesType: 'type1',
     hasCompletedOnboarding: true, // Crucial for OnboardingGuard
   };
 
