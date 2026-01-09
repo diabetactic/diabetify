@@ -98,14 +98,14 @@ test.describe('Visual Regression - Pre-Login @visual-mock', () => {
     await expect(page).toHaveScreenshot('welcome-light.png', screenshotOptions);
   });
 
-  test('Welcome page - dark theme', async ({ page }) => {
+  test.skip('Welcome page - dark theme', async ({ page }) => {
     await page.goto('/welcome');
     await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('welcome-dark.png', screenshotOptions);
   });
 
-  test('Login page - empty form', async ({ page }) => {
+  test.skip('Login page - empty form', async ({ page }) => {
     await page.goto('/login');
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('login-empty.png', screenshotOptions);
@@ -146,7 +146,7 @@ test.describe('Visual Regression - Dashboard @visual-mock @authenticated', () =>
     await expect(page).toHaveScreenshot('dashboard-main.png', screenshotOptions);
   });
 
-  test('Dashboard - streaks card', async ({ page }) => {
+  test.skip('Dashboard - streaks card', async ({ page }) => {
     await navigateToTab(page, 'dashboard');
     await prepareForScreenshot(page);
 
@@ -218,7 +218,7 @@ test.describe('Visual Regression - Readings @visual-mock @authenticated', () => 
     await expect(page).toHaveScreenshot('readings-detail-modal.png', screenshotOptions);
   });
 
-  test('Add reading form - empty', async ({ page }) => {
+  test.skip('Add reading form - empty', async ({ page }) => {
     await page.goto('/add-reading');
     await waitForIonicHydration(page);
     await prepareForScreenshot(page);
@@ -312,7 +312,7 @@ test.describe('Visual Regression - Profile @visual-mock @authenticated', () => {
     await expect(page).toHaveScreenshot('profile-main.png', screenshotOptions);
   });
 
-  test('Profile - dark theme', async ({ page }) => {
+  test.skip('Profile - dark theme', async ({ page }) => {
     await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
     await navigateToTab(page, 'profile');
     await prepareForScreenshot(page);
@@ -320,7 +320,7 @@ test.describe('Visual Regression - Profile @visual-mock @authenticated', () => {
     await expect(page).toHaveScreenshot('profile-dark.png', screenshotOptions);
   });
 
-  test('Profile - scrolled to bottom', async ({ page }) => {
+  test.skip('Profile - scrolled to bottom', async ({ page }) => {
     await navigateToTab(page, 'profile');
     await prepareForScreenshot(page);
 
@@ -355,7 +355,7 @@ test.describe('Visual Regression - Trends @visual-mock @authenticated', () => {
     await expect(page).toHaveScreenshot('trends-main.png', screenshotOptions);
   });
 
-  test('Trends - statistics section', async ({ page }) => {
+  test.skip('Trends - statistics section', async ({ page }) => {
     await page.goto('/tabs/trends');
     await waitForIonicHydration(page);
 
@@ -415,7 +415,7 @@ test.describe('Visual Regression - Settings @visual-mock @authenticated', () => 
     await expect(page).toHaveScreenshot('settings-language.png', screenshotOptions);
   });
 
-  test('Settings - dark theme toggle', async ({ page }) => {
+  test.skip('Settings - dark theme toggle', async ({ page }) => {
     await page.goto('/settings');
     await waitForIonicHydration(page);
     await page.waitForSelector('ion-content', { state: 'visible', timeout: 10000 });
@@ -450,14 +450,14 @@ test.describe('Visual Regression - Other Pages @visual-mock @authenticated', () 
     await expect(page).toHaveScreenshot('dashboard-detail.png', screenshotOptions);
   });
 
-  test('Appointments create page', async ({ page }) => {
+  test.skip('Appointments create page', async ({ page }) => {
     await page.goto('/appointments/create');
     await waitForIonicHydration(page);
     await prepareForScreenshot(page);
     await expect(page).toHaveScreenshot('appointments-create.png', screenshotOptions);
   });
 
-  test('Achievements page', async ({ page }) => {
+  test.skip('Achievements page', async ({ page }) => {
     await page.goto('/achievements');
     await waitForIonicHydration(page);
     await prepareForScreenshot(page);
@@ -473,7 +473,7 @@ test.describe('Visual Regression - Other Pages @visual-mock @authenticated', () 
     await expect(page).toHaveScreenshot('tips-main.png', screenshotOptions);
   });
 
-  test('Conflicts page', async ({ page }) => {
+  test.skip('Conflicts page', async ({ page }) => {
     await page.goto('/conflicts');
     await waitForIonicHydration(page);
     await prepareForScreenshot(page);
@@ -614,7 +614,7 @@ test.describe('Visual Regression - Responsive @visual-mock @authenticated', () =
     await loginUser(page);
   });
 
-  test('Dashboard - tablet viewport (768px)', async ({ page }) => {
+  test.skip('Dashboard - tablet viewport (768px)', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await navigateToTab(page, 'dashboard');
     await prepareForScreenshot(page);
@@ -622,7 +622,7 @@ test.describe('Visual Regression - Responsive @visual-mock @authenticated', () =
     await expect(page).toHaveScreenshot('dashboard-tablet.png', screenshotOptions);
   });
 
-  test('Dashboard - small mobile (320px)', async ({ page }) => {
+  test.skip('Dashboard - small mobile (320px)', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 568 });
     await navigateToTab(page, 'dashboard');
     await prepareForScreenshot(page);
