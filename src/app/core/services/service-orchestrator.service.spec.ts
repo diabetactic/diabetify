@@ -12,7 +12,6 @@ import {
   ServiceHealthCheck,
 } from '@services/external-services-manager.service';
 import { UnifiedAuthService } from '@services/unified-auth.service';
-import { GlucoserverService } from '@services/glucoserver.service';
 import { AppointmentService } from '@services/appointment.service';
 import { ReadingsService } from '@services/readings.service';
 // Database service not directly used in tests
@@ -21,7 +20,6 @@ describe('ServiceOrchestrator', () => {
   let service: ServiceOrchestrator;
   let _externalServices: Mock<ExternalServicesManager>;
   let unifiedAuth: Mock<UnifiedAuthService>;
-  let glucoserver: Mock<GlucoserverService>;
   let appointments: Mock<AppointmentService>;
   let readings: Mock<ReadingsService>;
   let stateSubject: BehaviorSubject<ExternalServicesState>;
@@ -75,10 +73,6 @@ describe('ServiceOrchestrator', () => {
       unlinkTidepoolAccount: vi.fn(),
     };
 
-    const glucoserverMock = {
-      syncReadings: vi.fn(),
-    };
-
     const appointmentsMock = {
       getAppointment: vi.fn(),
     };
@@ -86,6 +80,7 @@ describe('ServiceOrchestrator', () => {
     const readingsMock = {
       getUnsyncedReadings: vi.fn(),
       performFullSync: vi.fn(),
+      syncPendingReadings: vi.fn(),
       getStatistics: vi.fn(),
       getAllReadings: vi.fn(),
       getReadingsByDateRange: vi.fn(),
@@ -96,7 +91,6 @@ describe('ServiceOrchestrator', () => {
         ServiceOrchestrator,
         { provide: ExternalServicesManager, useValue: externalServicesMock },
         { provide: UnifiedAuthService, useValue: unifiedAuthMock },
-        { provide: GlucoserverService, useValue: glucoserverMock },
         { provide: AppointmentService, useValue: appointmentsMock },
         { provide: ReadingsService, useValue: readingsMock },
       ],
@@ -105,7 +99,6 @@ describe('ServiceOrchestrator', () => {
     service = TestBed.inject(ServiceOrchestrator);
     _externalServices = TestBed.inject(ExternalServicesManager) as Mock<ExternalServicesManager>;
     unifiedAuth = TestBed.inject(UnifiedAuthService) as Mock<UnifiedAuthService>;
-    glucoserver = TestBed.inject(GlucoserverService) as Mock<GlucoserverService>;
     appointments = TestBed.inject(AppointmentService) as Mock<AppointmentService>;
     readings = TestBed.inject(ReadingsService) as Mock<ReadingsService>;
 
@@ -127,8 +120,7 @@ describe('ServiceOrchestrator', () => {
   describe('executeFullSync', () => {
     beforeEach(() => {
       unifiedAuth.isAuthenticated.mockReturnValue(true);
-      readings.getUnsyncedReadings.mockResolvedValue([]);
-      glucoserver.syncReadings.mockReturnValue(of({ synced: 0, failed: 0, conflicts: [] }));
+      readings.syncPendingReadings.mockResolvedValue({ success: 0, failed: 0 });
       readings.getStatistics.mockResolvedValue({
         average: 120,
         median: 118,
@@ -474,8 +466,7 @@ describe('ServiceOrchestrator', () => {
     beforeEach(() => {
       unifiedAuth.isAuthenticated.mockReturnValue(true);
       unifiedAuth.getCurrentUser.mockResolvedValue({ id: 'user123' });
-      readings.getUnsyncedReadings.mockResolvedValue([]);
-      glucoserver.syncReadings.mockReturnValue(of({ synced: 0, failed: 0, conflicts: [] }));
+      readings.syncPendingReadings.mockResolvedValue({ success: 0, failed: 0 });
       readings.getStatistics.mockResolvedValue({
         average: 120,
         median: 118,
@@ -584,8 +575,7 @@ describe('ServiceOrchestrator', () => {
         email: 'test@example.com',
         authSource: 'local' as const,
       });
-      readings.getUnsyncedReadings.mockResolvedValue([]);
-      glucoserver.syncReadings.mockReturnValue(of({ synced: 0, failed: 0, conflicts: [] }));
+      readings.syncPendingReadings.mockResolvedValue({ success: 0, failed: 0 });
 
       const result = await service.executeFullSync();
 

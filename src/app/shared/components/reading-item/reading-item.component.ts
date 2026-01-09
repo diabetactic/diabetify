@@ -1,5 +1,19 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, Input, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  Input,
+  Output,
+  EventEmitter,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  IonItem,
+  IonItemSliding,
+  IonItemOptions,
+  IonItemOption,
+  IonIcon,
+} from '@ionic/angular/standalone';
 import { LocalGlucoseReading } from '@core/models/glucose-reading.model';
 import { TranslationService } from '@services/translation.service';
 
@@ -8,12 +22,13 @@ import { TranslationService } from '@services/translation.service';
   templateUrl: './reading-item.component.html',
   styleUrls: ['./reading-item.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IonItem, IonItemSliding, IonItemOptions, IonItemOption, IonIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ReadingItemComponent {
   @Input() reading!: LocalGlucoseReading;
+  @Output() edit = new EventEmitter<LocalGlucoseReading>();
 
   constructor(private translationService: TranslationService) {}
 
@@ -90,5 +105,9 @@ export class ReadingItemComponent {
       const locale = this.translationService.getCurrentLanguage();
       return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
     }
+  }
+
+  onEdit(): void {
+    this.edit.emit(this.reading);
   }
 }

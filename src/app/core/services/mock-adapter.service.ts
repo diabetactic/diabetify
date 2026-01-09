@@ -3,11 +3,7 @@ import { fakerES as faker } from '@faker-js/faker';
 import { DemoDataService } from '@services/demo-data.service';
 import { LoggerService } from '@services/logger.service';
 import { MockAdapterConfig } from '@core/config/mock-adapter-config';
-import {
-  LocalGlucoseReading,
-  GlucoseStatistics,
-  PaginatedReadings,
-} from '@models/glucose-reading.model';
+import { LocalGlucoseReading, PaginatedReadings } from '@models/glucose-reading.model';
 import { UserProfile, AccountState } from '@models/user-profile.model';
 
 import { environment } from '@env/environment';
@@ -222,43 +218,6 @@ export class MockAdapterService {
   }
 
   /**
-   * Mock: Update a glucose reading.
-   * Finds reading by ID in localStorage and updates it.
-   */
-  async mockUpdateReading(
-    id: string,
-    updates: Partial<LocalGlucoseReading>
-  ): Promise<LocalGlucoseReading> {
-    const stored = this.storage?.getItem(this.READINGS_STORAGE_KEY);
-    const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
-
-    const index = allReadings.findIndex(r => r.id === id);
-    if (index === -1) {
-      throw new Error(`Reading not found: ${id}`);
-    }
-
-    allReadings[index] = { ...allReadings[index], ...updates };
-    this.storage?.setItem(this.READINGS_STORAGE_KEY, JSON.stringify(allReadings));
-
-    return this.delay(allReadings[index]);
-  }
-
-  /**
-   * Mock: Get reading by ID.
-   */
-  async mockGetReadingById(id: string): Promise<LocalGlucoseReading> {
-    const stored = this.storage?.getItem(this.READINGS_STORAGE_KEY);
-    const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
-
-    const reading = allReadings.find(r => r.id === id);
-    if (!reading) {
-      throw new Error(`Reading not found: ${id}`);
-    }
-
-    return this.delay(reading);
-  }
-
-  /**
    * Mock: Sync readings to server.
    * Simulates a sync process by marking all unsynced items in localStorage as synced.
    * Adds artificial delay.
@@ -323,15 +282,6 @@ export class MockAdapterService {
     // Simulate delay before error
     await this.delay(null);
     throw new Error('Invalid credentials');
-  }
-
-  /**
-   * Mock: Logout user.
-   * Removes mock token.
-   */
-  async mockLogout(): Promise<void> {
-    this.storage?.removeItem('diabetactic_mock_token');
-    return this.delay(undefined);
   }
 
   /**
@@ -421,79 +371,6 @@ export class MockAdapterService {
     this.storage?.setItem(this.PROFILE_STORAGE_KEY, JSON.stringify(updated));
 
     return this.delay(updated);
-  }
-
-  /**
-   * Mock: Verify token.
-   * Simply checks for 'mock_token_' prefix.
-   */
-  async mockVerifyToken(token: string): Promise<boolean> {
-    return token.startsWith('mock_token_');
-  }
-
-  /**
-   * Mock: Get glucose statistics.
-   * Calculates simple stats (average, in-range) from local storage readings.
-   * @param days - Lookback window in days.
-   */
-  async mockGetStatistics(days: number = 30): Promise<GlucoseStatistics> {
-    const stored = this.storage?.getItem(this.READINGS_STORAGE_KEY);
-    const allReadings: LocalGlucoseReading[] = stored ? JSON.parse(stored) : [];
-
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
-
-    const recentReadings = allReadings.filter(r => new Date(r.time) >= cutoffDate);
-
-    if (recentReadings.length === 0) {
-      return this.delay({
-        average: 0,
-        median: 0,
-        standardDeviation: 0,
-        coefficientOfVariation: 0,
-        timeInRange: 0,
-        timeAboveRange: 0,
-        timeBelowRange: 0,
-        totalReadings: 0,
-      });
-    }
-
-    const values = recentReadings.map(r => r.value);
-    const sum = values.reduce((acc, val) => acc + val, 0);
-    const average = Math.round(sum / values.length);
-
-    // Calculate median
-    const sortedValues = [...values].sort((a, b) => a - b);
-    const median =
-      sortedValues.length % 2 === 0
-        ? Math.round(
-            (sortedValues[sortedValues.length / 2 - 1] + sortedValues[sortedValues.length / 2]) / 2
-          )
-        : sortedValues[Math.floor(sortedValues.length / 2)];
-
-    // Calculate standard deviation
-    const squaredDiffs = values.map(v => Math.pow(v - average, 2));
-    const avgSquaredDiff = squaredDiffs.reduce((a, b) => a + b, 0) / values.length;
-    const standardDeviation = Math.round(Math.sqrt(avgSquaredDiff));
-
-    // Coefficient of variation
-    const coefficientOfVariation =
-      average > 0 ? Math.round((standardDeviation / average) * 100) : 0;
-
-    const inRange = recentReadings.filter(r => r.value >= 70 && r.value <= 180).length;
-    const above = recentReadings.filter(r => r.value > 180).length;
-    const below = recentReadings.filter(r => r.value < 70).length;
-
-    return this.delay({
-      average,
-      median,
-      standardDeviation,
-      coefficientOfVariation,
-      timeInRange: Math.round((inRange / recentReadings.length) * 100),
-      timeAboveRange: Math.round((above / recentReadings.length) * 100),
-      timeBelowRange: Math.round((below / recentReadings.length) * 100),
-      totalReadings: recentReadings.length,
-    });
   }
 
   // ==================== ACHIEVEMENTS MOCK METHODS ====================

@@ -16,10 +16,6 @@ import {
 } from '@services/external-services-manager.service';
 import { LoggerService } from '@services/logger.service';
 import { UnifiedAuthService } from '@services/unified-auth.service';
-import {
-  GlucoserverService,
-  GlucoseReading as GlucoserverReading,
-} from '@services/glucoserver.service';
 import { AppointmentService } from '@services/appointment.service';
 import { ReadingsService } from '@services/readings.service';
 import { WidgetDataService } from '@services/widget-data.service';
@@ -102,7 +98,6 @@ export class ServiceOrchestrator implements OnDestroy {
   constructor(
     private externalServices: ExternalServicesManager,
     private unifiedAuth: UnifiedAuthService,
-    private glucoserver: GlucoserverService,
     private appointments: AppointmentService,
     private readings: ReadingsService,
     private logger: LoggerService,
@@ -630,18 +625,8 @@ export class ServiceOrchestrator implements OnDestroy {
   }
 
   private async syncLocalServerData(): Promise<unknown> {
-    const user = await this.unifiedAuth.getCurrentUser();
-    const readings = await this.readings.getUnsyncedReadings();
-    // Map LocalGlucoseReading to GlucoserverReading format
-    const mappedReadings: GlucoserverReading[] = readings.map(r => ({
-      userId: user?.id || r.uploadId || 'unknown',
-      value: r.value,
-      unit: (r.units as 'mg/dL' | 'mmol/L') || 'mg/dL',
-      timestamp: r.time,
-      type: r.type as 'smbg' | 'cbg' | 'cgm' | undefined,
-      synced: Boolean(r.synced),
-    }));
-    return await firstValueFrom(this.glucoserver.syncReadings(mappedReadings));
+    // Use ReadingsService sync which properly pushes to backend via ApiGateway
+    return await this.readings.syncPendingReadings();
   }
 
   private async rollbackLocalServerSync(): Promise<void> {

@@ -184,42 +184,6 @@ describe('MockAdapterService', () => {
     });
   });
 
-  describe('mockUpdateReading', () => {
-    beforeEach(() => {
-      localStorage.setItem('diabetactic_mock_readings', JSON.stringify([createReading()]));
-    });
-
-    it('should update existing reading and persist changes', async () => {
-      const result = await service.mockUpdateReading('test-1', { value: 140, synced: true });
-
-      expect(result.value).toBe(140);
-
-      const stored = JSON.parse(localStorage.getItem('diabetactic_mock_readings') || '[]');
-      expect(stored[0].value).toBe(140);
-      expect(stored[0].synced).toBe(true);
-    });
-
-    it('should throw error for non-existent reading', async () => {
-      await expect(service.mockUpdateReading('nonexistent', { value: 100 })).rejects.toThrow(
-        'Reading not found'
-      );
-    });
-  });
-
-  describe('mockGetReadingById', () => {
-    beforeEach(() => {
-      localStorage.setItem('diabetactic_mock_readings', JSON.stringify([createReading()]));
-    });
-
-    it('should return reading by ID or throw if not found', async () => {
-      const result = await service.mockGetReadingById('test-1');
-      expect(result.id).toBe('test-1');
-      expect(result.value).toBe(120);
-
-      await expect(service.mockGetReadingById('nonexistent')).rejects.toThrow('Reading not found');
-    });
-  });
-
   describe('mockSyncReadings', () => {
     it('should sync unsynced readings and mark them as synced', async () => {
       const readings = [
@@ -275,14 +239,6 @@ describe('MockAdapterService', () => {
     });
   });
 
-  describe('mockLogout', () => {
-    it('should remove mock token', async () => {
-      localStorage.setItem('diabetactic_mock_token', 'mock_token_123');
-      await service.mockLogout();
-      expect(localStorage.getItem('diabetactic_mock_token')).toBeNull();
-    });
-  });
-
   // ============================================================================
   // PROFILE MANAGEMENT
   // ============================================================================
@@ -322,63 +278,6 @@ describe('MockAdapterService', () => {
       expect(new Date(result.updatedAt!).getTime()).toBeGreaterThan(
         new Date('2020-01-01').getTime()
       );
-    });
-  });
-
-  // ============================================================================
-  // TOKEN MANAGEMENT
-  // ============================================================================
-
-  describe('Token Management', () => {
-    it('should verify tokens correctly', async () => {
-      // Verify valid token
-      expect(await service.mockVerifyToken('mock_token_123')).toBe(true);
-      expect(await service.mockVerifyToken('invalid_token')).toBe(false);
-    });
-  });
-
-  // ============================================================================
-  // STATISTICS
-  // ============================================================================
-
-  describe('mockGetStatistics', () => {
-    beforeEach(() => {
-      const readings = [
-        createReading({ id: '1', value: 120 }),
-        createReading({ id: '2', value: 100 }),
-        createReading({ id: '3', value: 200 }),
-      ];
-      localStorage.setItem('diabetactic_mock_readings', JSON.stringify(readings));
-    });
-
-    it('should calculate all statistics correctly', async () => {
-      const stats = await service.mockGetStatistics(30);
-
-      expect(stats.average).toBe(140); // (120 + 100 + 200) / 3
-      expect(stats.median).toBe(120); // Median of [100, 120, 200]
-      expect(stats.timeInRange).toBe(67); // 2/3 in range
-      expect(stats.timeAboveRange).toBe(33); // 1/3 above range
-    });
-
-    it('should return zero stats for no data', async () => {
-      localStorage.removeItem('diabetactic_mock_readings');
-      const stats = await service.mockGetStatistics(30);
-      expect(stats.average).toBe(0);
-      expect(stats.totalReadings).toBe(0);
-    });
-
-    it('should filter by date range', async () => {
-      const oldReading = createReading({
-        id: '4',
-        value: 90,
-        time: new Date('2020-01-01').toISOString(),
-      });
-      const stored = JSON.parse(localStorage.getItem('diabetactic_mock_readings') || '[]');
-      stored.push(oldReading);
-      localStorage.setItem('diabetactic_mock_readings', JSON.stringify(stored));
-
-      const stats = await service.mockGetStatistics(7);
-      expect(stats.totalReadings).toBe(3); // Should not include old reading
     });
   });
 

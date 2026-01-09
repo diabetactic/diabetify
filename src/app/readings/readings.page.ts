@@ -40,6 +40,7 @@ import { TranslationService } from '@services/translation.service';
 import { LoggerService } from '@services/logger.service';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { AddReadingPage } from '../add-reading/add-reading.page';
+import { EditReadingPage } from '../edit-reading/edit-reading.page';
 import {
   ReadingFilters,
   ReadingsFilterComponent,
@@ -317,6 +318,22 @@ export class ReadingsPage implements OnInit, OnDestroy {
       breakpoints: [0, 0.8, 1],
       initialBreakpoint: 0.8,
       cssClass: 'add-reading-modal',
+    });
+
+    await modal.present();
+  }
+
+  async editReading(reading: LocalGlucoseReading): Promise<void> {
+    this.logger.info('UI', 'Edit reading button clicked', { readingId: reading.id });
+
+    const modal = await this.modalController.create({
+      component: EditReadingPage,
+      componentProps: {
+        reading,
+      },
+      breakpoints: [0, 0.8, 1],
+      initialBreakpoint: 0.8,
+      cssClass: 'edit-reading-modal',
     });
 
     await modal.present();

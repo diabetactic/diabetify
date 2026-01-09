@@ -65,23 +65,15 @@
         </div>
       </div>
 
-      <!-- Readings in this group -->
       <div class="p-4">
         @for (reading of group.readings; track trackByReading($index, reading)) {
-          <ion-item [detail]="false" lines="none" class="mb-2 rounded-xl shadow-sm">
-            <div
-              class="block w-full cursor-pointer transition-transform duration-200 ease-in-out active:scale-[0.98]"
-              (click)="onReadingClick(reading)"
-              (keyup.enter)="onReadingClick(reading)"
-              role="button"
-              tabindex="0"
-              [attr.aria-label]="
-                ('readings.glucoseReading' | translate) + ': ' + reading.value + ' ' + reading.units
-              "
-            >
-              <app-reading-item [reading]="reading" class="block w-full"></app-reading-item>
-            </div>
-          </ion-item>
+          <div class="mb-2">
+            <app-reading-item
+              [reading]="reading"
+              (edit)="onReadingEdit(reading)"
+              class="block w-full"
+            ></app-reading-item>
+          </div>
         }
       </div>
     }

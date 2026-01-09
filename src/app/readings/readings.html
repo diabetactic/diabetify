@@ -114,6 +114,7 @@
     [totalCount]="totalCount"
     [filteredCount]="filteredReadings.length"
     (readingClicked)="onReadingClick($event)"
+    (readingEdit)="editReading($event)"
     (addReading)="addReading()"
     (clearFilters)="clearFilters()"
   ></app-readings-list>

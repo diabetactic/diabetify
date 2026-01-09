@@ -208,39 +208,30 @@ test.describe('Reading Edit @readings-trends @docker', () => {
     }
   });
 
-  test('should have edit option for readings', async ({ page }) => {
+  test('should edit reading successfully', async ({ page }) => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
     await navigateToReadings(page);
 
-    // Look for edit button or swipe action
-    const readingItem = page.locator('app-reading-item, ion-item-sliding');
+    const readingItem = page.locator('ion-item-sliding').first();
+    await expect(readingItem).toBeVisible();
 
-    if ((await readingItem.count()) > 0) {
-      // Try to find edit button
-      const editBtn = page.locator(
-        'ion-button:has-text("Editar"), ion-button:has-text("Edit"), [data-testid="edit-reading-btn"]'
-      );
+    const editOption = page.locator('[data-testid="edit-reading-option"]').first();
+    await editOption.click();
 
-      // Or try swipe action
-      if ((await editBtn.count()) === 0) {
-        const slidingItem = page.locator('ion-item-sliding').first();
-        if ((await slidingItem.count()) > 0) {
-          const box = await slidingItem.boundingBox();
-          if (box) {
-            // Swipe to reveal options
-            await page.mouse.move(box.x + box.width - 20, box.y + box.height / 2);
-            await page.mouse.down();
-            await page.mouse.move(box.x + 50, box.y + box.height / 2);
-            await page.mouse.up();
-            await page.waitForTimeout(300);
-          }
-        }
-      }
+    await page.waitForSelector('app-edit-reading', { timeout: 5000 });
 
-      // Check for edit option
-      const hasEditOption = (await page.locator('text=/Editar|Edit/i').count()) > 0;
-      expect(hasEditOption || true).toBe(true); // Edit might not be implemented
-    }
+    const valueInput = page.locator('[data-testid="glucose-value-input"]');
+    await expect(valueInput).toBeVisible();
+
+    await valueInput.fill('150');
+
+    const saveBtn = page.locator('[data-testid="edit-reading-save-btn"]');
+    await saveBtn.click();
+
+    await page.waitForSelector('app-edit-reading', { state: 'detached', timeout: 5000 });
+
+    const updatedReading = page.locator('app-reading-item').filter({ hasText: '150' }).first();
+    await expect(updatedReading).toBeVisible();
   });
 });
 

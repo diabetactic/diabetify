@@ -41,11 +41,16 @@ export class ReadingsListComponent {
   @Input() totalCount = 0;
   @Input() filteredCount = 0;
   @Output() readingClicked = new EventEmitter<LocalGlucoseReading>();
+  @Output() readingEdit = new EventEmitter<LocalGlucoseReading>();
   @Output() addReading = new EventEmitter<void>();
   @Output() clearFilters = new EventEmitter<void>();
 
   onReadingClick(reading: LocalGlucoseReading): void {
     this.readingClicked.emit(reading);
+  }
+
+  onReadingEdit(reading: LocalGlucoseReading): void {
+    this.readingEdit.emit(reading);
   }
 
   onAddReading(): void {

@@ -1,0 +1,205 @@
+<ion-header [translucent]="true">
+  <ion-toolbar class="ion-padding-top">
+    <ion-buttons slot="start">
+      <ion-button
+        (click)="onCancel()"
+        [attr.aria-label]="'common.cancel' | translate"
+        class="min-h-44px min-w-44px"
+      >
+        <app-icon slot="icon-only" name="close"></app-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ 'readings.editReading' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="edit-reading-content">
+  <div class="edit-reading-shell safe-area-bottom mx-auto max-w-[640px] p-4">
+    <form [formGroup]="readingForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+      <div class="mb-1">
+        <ion-item
+          lines="none"
+          class="bg-base-100 overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700"
+        >
+          <div class="form-control w-full py-2">
+            <label class="label" for="glucose-value-input">
+              <span class="label-text text-base-content/80 font-medium">
+                {{ 'addReading.glucoseLabel' | translate }} <span class="text-danger">*</span>
+              </span>
+            </label>
+            <div class="input-with-unit flex items-center gap-2 px-2">
+              <ion-input
+                id="glucose-value-input"
+                formControlName="value"
+                type="number"
+                inputmode="decimal"
+                [placeholder]="'addReading.glucosePlaceholder' | translate"
+                class="glucose-input text-base-content flex-1 text-2xl font-bold"
+                [class.border-danger]="
+                  readingForm.get('value')?.invalid && readingForm.get('value')?.touched
+                "
+                data-testid="glucose-value-input"
+              ></ion-input>
+              <span
+                class="text-medium whitespace-nowrap text-lg font-medium text-gray-500 dark:text-gray-400"
+                >{{ getUnitLabel() }}</span
+              >
+            </div>
+            @if (getValidationMessage('value')) {
+              <div class="label">
+                <span class="label-text-alt text-error flex items-center gap-1.5">
+                  <ion-icon name="alert-circle" class="text-base"></ion-icon>
+                  {{ getValidationMessage('value') }}
+                </span>
+              </div>
+            }
+          </div>
+        </ion-item>
+      </div>
+
+      @if (glucoseStatus) {
+        <div class="status-preview">
+          <div class="status-badge" [attr.data-status]="glucoseStatusColor">
+            <span class="text-lg">{{ glucoseStatusEmoji }}</span>
+            <span class="text-sm">{{ getStatusLabel() }}</span>
+          </div>
+        </div>
+      }
+
+      <div class="mb-1">
+        <ion-item
+          lines="none"
+          class="bg-base-100 overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700"
+        >
+          <div class="form-control w-full py-2">
+            <label class="label" for="reading-datetime-btn">
+              <span class="label-text text-base-content/80 font-medium">
+                {{ 'addReading.dateTimeLabel' | translate }} <span class="text-danger">*</span>
+              </span>
+            </label>
+            <div class="px-2">
+              <ion-datetime-button
+                id="reading-datetime-btn"
+                datetime="reading-datetime"
+              ></ion-datetime-button>
+            </div>
+          </div>
+        </ion-item>
+
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime
+              id="reading-datetime"
+              formControlName="datetime"
+              presentation="date-time"
+              [max]="maxDateTime"
+              [preferWheel]="true"
+            ></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </div>
+
+      <div class="mb-1">
+        <ion-item
+          lines="none"
+          class="bg-base-100 overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700"
+        >
+          <div class="form-control w-full py-2">
+            <label class="label" for="meal-context-select">
+              <span class="label-text text-base-content/80 font-medium">
+                {{ 'addReading.mealContext.label' | translate }}
+              </span>
+            </label>
+            <div class="px-2">
+              <ion-select
+                id="meal-context-select"
+                formControlName="mealContext"
+                [placeholder]="'addReading.mealContext.placeholder' | translate"
+                interface="action-sheet"
+                [cancelText]="'common.cancel' | translate"
+                class="ion-select-full w-full"
+                data-testid="meal-context-select"
+              >
+                <ion-select-option [value]="null">{{
+                  'common.none' | translate
+                }}</ion-select-option>
+                @for (option of mealContextOptions; track trackByMealContext($index, option)) {
+                  <ion-select-option [value]="option.value">
+                    {{ option.labelKey | translate }}
+                  </ion-select-option>
+                }
+              </ion-select>
+            </div>
+          </div>
+        </ion-item>
+      </div>
+
+      <div class="mb-1">
+        <ion-item
+          lines="none"
+          class="bg-base-100 overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700"
+        >
+          <div class="form-control w-full py-2">
+            <label class="label" for="notes-textarea">
+              <span class="label-text text-base-content/80 font-medium">
+                {{ 'addReading.notes.label' | translate }}
+              </span>
+            </label>
+            <div class="px-2">
+              <ion-textarea
+                id="notes-textarea"
+                formControlName="notes"
+                [placeholder]="'addReading.notes.placeholder' | translate"
+                rows="4"
+                maxlength="500"
+                class="notes-textarea w-full"
+                data-testid="notes-textarea"
+              ></ion-textarea>
+            </div>
+            <div class="label">
+              <span class="label-text-alt text-gray-500">
+                {{
+                  'addReading.notes.counter'
+                    | translate: { count: readingForm.get('notes')?.value?.length || 0, max: 500 }
+                }}
+              </span>
+            </div>
+          </div>
+        </ion-item>
+      </div>
+
+      <div class="action-buttons">
+        <ion-button
+          id="edit-reading-cancel-btn"
+          expand="block"
+          color="medium"
+          fill="outline"
+          (click)="onCancel()"
+          [disabled]="isSubmitting"
+          class="cancel-button"
+          data-testid="edit-reading-cancel-btn"
+          [attr.aria-label]="'common.cancel' | translate"
+        >
+          {{ 'common.cancel' | translate }}
+        </ion-button>
+        <ion-button
+          id="edit-reading-save-btn"
+          expand="block"
+          type="submit"
+          [disabled]="readingForm.invalid || isSubmitting"
+          [attr.aria-disabled]="readingForm.invalid || isSubmitting ? 'true' : null"
+          class="save-button inline-flex items-center gap-2"
+          data-testid="edit-reading-save-btn"
+          [attr.aria-label]="'addReading.actions.save' | translate"
+        >
+          @if (isSubmitting) {
+            <app-icon name="loader" class="animate-spin"></app-icon>
+          }
+          @if (!isSubmitting) {
+            <span>{{ 'addReading.actions.save' | translate }}</span>
+          }
+        </ion-button>
+      </div>
+    </form>
+  </div>
+</ion-content>
