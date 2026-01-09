@@ -1,20 +1,19 @@
-// Initialize TestBed environment for Vitest
 import '../../test-setup';
 
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ChangeDetectorRef } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { vi } from 'vitest';
-import { of } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
-// Mock Chart.js to prevent registration errors with mock plugins
 vi.mock('chart.js', async importOriginal => {
   const original = await importOriginal<typeof import('chart.js')>();
   return {
     ...original,
     Chart: {
       ...original.Chart,
-      register: vi.fn(), // No-op register to prevent plugin registration issues
+      register: vi.fn(),
     },
   };
 });
@@ -23,6 +22,7 @@ import { TrendsPage } from './trends.page';
 import { ReadingsService } from '@services/readings.service';
 import { LoggerService } from '@services/logger.service';
 import { ThemeService } from '@services/theme.service';
+import { LocalGlucoseReading } from '@models/glucose-reading.model';
 
 describe('TrendsPage', () => {
   let component: TrendsPage;
@@ -30,29 +30,30 @@ describe('TrendsPage', () => {
   let mockReadingsService: Partial<ReadingsService>;
   let mockLoggerService: Partial<LoggerService>;
   let mockThemeService: any;
+  let themeSubject: BehaviorSubject<boolean>;
 
   beforeEach(async () => {
-    // Mock de ThemeService
+    themeSubject = new BehaviorSubject<boolean>(false);
+
     mockThemeService = {
-      isDark$: of(false),
+      isDark$: themeSubject.asObservable(),
       getChartOptions: vi.fn().mockReturnValue({}),
     };
 
-    // Mock de ReadingsService
     mockReadingsService = {
       getStatistics: vi.fn().mockResolvedValue({
         average: 120,
-        min: 70,
-        max: 180,
+        median: 115,
+        standardDeviation: 20,
+        coefficientOfVariation: 17.4,
         timeInRange: 70,
         timeAboveRange: 20,
         timeBelowRange: 10,
-        readingsCount: 100,
+        totalReadings: 100,
       }),
       getReadingsByDateRange: vi.fn().mockResolvedValue([]),
     };
 
-    // Mock de LoggerService
     mockLoggerService = {
       debug: vi.fn(),
       info: vi.fn(),
@@ -72,258 +73,566 @@ describe('TrendsPage', () => {
 
     fixture = TestBed.createComponent(TrendsPage);
     component = fixture.componentInstance;
-    // No ejecutar detectChanges() en beforeEach para evitar errores de iconos
-    // Los tests individuales lo llamarán si es necesario
   });
 
-  describe('Initialization', () => {
-    it('should initialize without errors', () => {
-      // Component should be created via TestBed without throwing
+  describe('Component Initialization', () => {
+    it('should create component', () => {
       expect(component).toBeTruthy();
     });
-  });
 
-  describe('Component Metadata', () => {
-    it('should be a standalone component', () => {
-      const componentMetadata = (TrendsPage as any).ɵcmp;
-      expect(componentMetadata.standalone).toBe(true);
+    it('should be standalone component', () => {
+      const metadata = (TrendsPage as any).ɵcmp;
+      expect(metadata.standalone).toBe(true);
     });
 
-    it('should use OnPush change detection strategy', () => {
-      const componentMetadata = (TrendsPage as any).ɵcmp;
-      // ChangeDetectionStrategy.OnPush = 0 (may be undefined if optimized away)
-      expect(
-        componentMetadata.changeDetection === 0 || componentMetadata.changeDetection === undefined
-      ).toBe(true);
+    it('should use OnPush change detection', () => {
+      const metadata = (TrendsPage as any).ɵcmp;
+      expect(metadata.changeDetection === 0 || metadata.changeDetection === undefined).toBe(true);
     });
 
     it('should have correct selector', () => {
-      const componentMetadata = (TrendsPage as any).ɵcmp;
-      expect(componentMetadata.selectors).toEqual([['app-trends']]);
-    });
-  });
-
-  describe('Template Rendering', () => {
-    it('should render without errors', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
-      expect(compiled).toBeTruthy();
+      const metadata = (TrendsPage as any).ɵcmp;
+      expect(metadata.selectors).toEqual([['app-trends']]);
     });
 
-    it('should have ion-header element', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
-      const header = compiled.querySelector('ion-header');
-      expect(header).toBeTruthy();
-    });
-
-    it('should have ion-content element', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
-      const content = compiled.querySelector('ion-content');
-      expect(content).toBeTruthy();
-    });
-
-    it('should have ion-toolbar element', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
-      const toolbar = compiled.querySelector('ion-toolbar');
-      expect(toolbar).toBeTruthy();
-    });
-
-    it('should have ion-title element', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
-      const title = compiled.querySelector('ion-title');
-      expect(title).toBeTruthy();
-    });
-  });
-
-  describe('Component State', () => {
-    it('should have signal-based state properties', () => {
-      // Component usa signals para el estado reactivo
-      expect(component.selectedPeriod).toBeDefined();
-      expect(component.statistics).toBeDefined();
-      expect(component.loading).toBeDefined();
-    });
-
-    it('should have initial state values', () => {
-      // Verificar valores iniciales de los signals
+    it('should initialize with default signal values', () => {
       expect(component.selectedPeriod()).toBe('week');
-      // statistics será null inicialmente antes de cargar datos
       expect(component.statistics()).toBeNull();
-      // loading puede ser true si ngOnInit está en progreso
       expect(typeof component.loading()).toBe('boolean');
+      expect(typeof component.isDarkMode()).toBe('boolean');
     });
   });
 
-  describe('Constructor', () => {
-    it('should accept ReadingsService dependency', () => {
-      // Component should be created via TestBed with all dependencies
-      expect(component).toBeTruthy();
-    });
-
-    it('should be a valid instance', () => {
-      expect(component).toBeInstanceOf(TrendsPage);
-    });
-
-    it('should create instances with separate signal state', () => {
-      const fixture2 = TestBed.createComponent(TrendsPage);
-      const instance2 = fixture2.componentInstance;
-
-      // Las instancias son diferentes objetos
-      expect(component).not.toBe(instance2);
-      // Cada una tiene su propio estado de signals
-      expect(component.selectedPeriod).not.toBe(instance2.selectedPeriod);
-    });
-  });
-
-  describe('Component Instance', () => {
-    it('should be unique per test', () => {
-      const fixture2 = TestBed.createComponent(TrendsPage);
-      const component2 = fixture2.componentInstance;
-
-      expect(component).not.toBe(component2);
-    });
-
-    it('should maintain isolation between instances', () => {
-      const fixture2 = TestBed.createComponent(TrendsPage);
-      const component2 = fixture2.componentInstance;
-
-      // Any changes to one should not affect the other
-      (component as any).testProp = 'test';
-
-      expect((component2 as any).testProp).toBeUndefined();
-    });
-  });
-
-  describe('Template Validation', () => {
-    it('should use translate pipe in template', () => {
-      const template = (TrendsPage as any).ɵcmp.template;
-      expect(template).toBeDefined();
-    });
-
-    it('should render Ionic components correctly', fakeAsync(() => {
+  describe('ngOnInit Lifecycle', () => {
+    it('should subscribe to theme changes', fakeAsync(() => {
+      const subscriptionCount = themeSubject.observers.length;
       fixture.detectChanges();
       tick();
-      const compiled = fixture.nativeElement as HTMLElement;
+      expect(themeSubject.observers.length).toBeGreaterThan(subscriptionCount);
+    }));
 
-      // Should have proper Ionic structure
-      expect(compiled.querySelector('ion-header ion-toolbar ion-title')).toBeTruthy();
+    it('should load statistics on init', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+      expect(mockReadingsService.getStatistics).toHaveBeenCalled();
+    }));
+
+    it('should update isDarkMode signal when theme changes', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      themeSubject.next(true);
+      tick();
+
+      expect(component.isDarkMode()).toBe(true);
+    }));
+
+    it('should update chart options when theme changes', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+      const initialOptions = component.lineChartOptions;
+
+      themeSubject.next(true);
+      tick();
+
+      expect(component.lineChartOptions).not.toBe(initialOptions);
+    }));
+
+    it('should call markForCheck when theme changes', fakeAsync(() => {
+      const cdr = fixture.debugElement.injector.get(ChangeDetectorRef);
+      const spy = vi.spyOn(cdr, 'markForCheck');
+
+      fixture.detectChanges();
+      tick();
+
+      themeSubject.next(true);
+      tick();
+
+      expect(spy).toHaveBeenCalled();
     }));
   });
 
-  describe('Change Detection', () => {
-    it('should support manual change detection', fakeAsync(() => {
+  describe('Period Selection', () => {
+    it('should change period to month', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      const event = { detail: { value: 'month' } } as CustomEvent;
+      component.onPeriodChange(event);
+
+      expect(component.selectedPeriod()).toBe('month');
+    }));
+
+    it('should change period to all', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      const event = { detail: { value: 'all' } } as CustomEvent;
+      component.onPeriodChange(event);
+
+      expect(component.selectedPeriod()).toBe('all');
+    }));
+
+    it('should reload statistics when period changes', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+      vi.clearAllMocks();
+
+      const event = { detail: { value: 'month' } } as CustomEvent;
+      component.onPeriodChange(event);
+      tick();
+
+      expect(mockReadingsService.getStatistics).toHaveBeenCalledWith('month');
+    }));
+
+    it('should set loading state during period change', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+      component.loading.set(false);
+
+      component.onPeriodChange({ detail: { value: 'month' } } as CustomEvent);
+
+      expect(component.loading()).toBe(true);
+      tick();
+    }));
+
+    it('should not change period if value is null', fakeAsync(() => {
+      component.selectedPeriod.set('week');
+      fixture.detectChanges();
+      tick();
+
+      component.onPeriodChange({ detail: { value: null } } as CustomEvent);
+
+      expect(component.selectedPeriod()).toBe('week');
+    }));
+
+    it('should not change period if value is undefined', fakeAsync(() => {
+      component.selectedPeriod.set('week');
+      fixture.detectChanges();
+      tick();
+
+      component.onPeriodChange({ detail: { value: undefined } } as CustomEvent);
+
+      expect(component.selectedPeriod()).toBe('week');
+    }));
+  });
+
+  describe('Statistics Loading', () => {
+    it('should load statistics for week period', fakeAsync(() => {
+      component.selectedPeriod.set('week');
+      fixture.detectChanges();
+      tick();
+
+      expect(mockReadingsService.getStatistics).toHaveBeenCalledWith('week');
+    }));
+
+    it('should load statistics for month period', fakeAsync(() => {
+      component.selectedPeriod.set('month');
+      fixture.detectChanges();
+      tick();
+
+      expect(mockReadingsService.getStatistics).toHaveBeenCalledWith('month');
+    }));
+
+    it('should load statistics for all period', fakeAsync(() => {
+      component.selectedPeriod.set('all');
+      fixture.detectChanges();
+      tick();
+
+      expect(mockReadingsService.getStatistics).toHaveBeenCalledWith('all');
+    }));
+
+    it('should set loading to true before loading', fakeAsync(() => {
+      fixture.detectChanges();
+      expect(component.loading()).toBe(true);
+    }));
+
+    it('should set loading to false after successful load', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+      expect(component.loading()).toBe(false);
+    }));
+
+    it('should handle loading error gracefully', fakeAsync(() => {
+      mockReadingsService.getStatistics = vi.fn().mockRejectedValue(new Error('Load error'));
+      fixture.detectChanges();
+      tick();
+
+      expect(mockLoggerService.error).toHaveBeenCalledWith(
+        'TrendsPage',
+        'Failed to load statistics',
+        expect.any(Error)
+      );
+    }));
+
+    it('should set loading to false after error', fakeAsync(() => {
+      mockReadingsService.getStatistics = vi.fn().mockRejectedValue(new Error('Load error'));
+      fixture.detectChanges();
+      tick();
+
+      expect(component.loading()).toBe(false);
+    }));
+
+    it('should update statistics signal with loaded data', fakeAsync(() => {
+      const mockStats = {
+        average: 150,
+        median: 145,
+        standardDeviation: 20,
+        coefficientOfVariation: 13.3,
+        timeInRange: 75,
+        timeAboveRange: 15,
+        timeBelowRange: 10,
+        totalReadings: 50,
+      };
+      mockReadingsService.getStatistics = vi.fn().mockResolvedValue(mockStats);
+      fixture.detectChanges();
+      tick();
+
+      expect(component.statistics()).toEqual(mockStats);
+    }));
+
+    it('should calculate date range for week period', fakeAsync(() => {
+      component.selectedPeriod.set('week');
+      fixture.detectChanges();
+      tick();
+
+      const calls = (mockReadingsService.getReadingsByDateRange as any).mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      const [startDate, endDate] = calls[calls.length - 1];
+      const daysDiff = Math.round(
+        (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      expect(daysDiff).toBe(7);
+    }));
+
+    it('should calculate date range for month period', fakeAsync(() => {
+      component.selectedPeriod.set('month');
+      fixture.detectChanges();
+      tick();
+
+      const calls = (mockReadingsService.getReadingsByDateRange as any).mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      const [startDate, endDate] = calls[calls.length - 1];
+      const daysDiff = Math.round(
+        (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      expect(daysDiff).toBe(30);
+    }));
+  });
+
+  describe('Chart Updates', () => {
+    it('should update chart with reading data', fakeAsync(() => {
+      const mockReadings: LocalGlucoseReading[] = [
+        {
+          id: '1',
+          time: '2024-01-01T10:00:00Z',
+          value: 120,
+          type: 'smbg',
+          units: 'mg/dL',
+          synced: true,
+        },
+        {
+          id: '2',
+          time: '2024-01-01T14:00:00Z',
+          value: 150,
+          type: 'smbg',
+          units: 'mg/dL',
+          synced: true,
+        },
+      ];
+      mockReadingsService.getReadingsByDateRange = vi.fn().mockResolvedValue(mockReadings);
+      fixture.detectChanges();
+      tick();
+
+      expect(component.lineChartData.datasets.length).toBeGreaterThan(0);
+      expect(component.lineChartData.datasets[0].data).toHaveLength(2);
+    }));
+
+    it('should format dates correctly for chart', fakeAsync(() => {
+      const mockReadings: LocalGlucoseReading[] = [
+        {
+          id: '1',
+          time: '2024-01-01T10:00:00Z',
+          value: 120,
+          type: 'smbg',
+          units: 'mg/dL',
+          synced: true,
+        },
+      ];
+      mockReadingsService.getReadingsByDateRange = vi.fn().mockResolvedValue(mockReadings);
+      fixture.detectChanges();
+      tick();
+
+      const chartData = component.lineChartData.datasets[0].data as any[];
+      expect(chartData[0].x).toBe(new Date('2024-01-01T10:00:00Z').getTime());
+      expect(chartData[0].y).toBe(120);
+    }));
+
+    it('should handle empty readings array', fakeAsync(() => {
+      mockReadingsService.getReadingsByDateRange = vi.fn().mockResolvedValue([]);
+      fixture.detectChanges();
+      tick();
+
+      expect(component.lineChartData.datasets).toHaveLength(0);
+    }));
+
+    it('should apply light theme colors', fakeAsync(() => {
+      themeSubject.next(false);
+      const mockReadings: LocalGlucoseReading[] = [
+        {
+          id: '1',
+          time: '2024-01-01T10:00:00Z',
+          value: 120,
+          type: 'smbg',
+          units: 'mg/dL',
+          synced: true,
+        },
+      ];
+      mockReadingsService.getReadingsByDateRange = vi.fn().mockResolvedValue(mockReadings);
+      fixture.detectChanges();
+      tick();
+
+      expect(component.lineChartData.datasets[0].borderColor).toBe('#3880ff');
+      expect(component.lineChartData.datasets[0].backgroundColor).toBe('rgba(56, 128, 255, 0.2)');
+    }));
+
+    it('should apply dark theme colors', fakeAsync(() => {
+      themeSubject.next(true);
+      const mockReadings: LocalGlucoseReading[] = [
+        {
+          id: '1',
+          time: '2024-01-01T10:00:00Z',
+          value: 120,
+          type: 'smbg',
+          units: 'mg/dL',
+          synced: true,
+        },
+      ];
+      mockReadingsService.getReadingsByDateRange = vi.fn().mockResolvedValue(mockReadings);
+      fixture.detectChanges();
+      tick();
+
+      expect(component.lineChartData.datasets[0].borderColor).toBe('#6ea8fe');
+      expect(component.lineChartData.datasets[0].backgroundColor).toBe('rgba(110, 168, 254, 0.2)');
+    }));
+
+    it('should set chart label to Glucose Level', fakeAsync(() => {
+      const mockReadings: LocalGlucoseReading[] = [
+        {
+          id: '1',
+          time: '2024-01-01T10:00:00Z',
+          value: 120,
+          type: 'smbg',
+          units: 'mg/dL',
+          synced: true,
+        },
+      ];
+      mockReadingsService.getReadingsByDateRange = vi.fn().mockResolvedValue(mockReadings);
+      fixture.detectChanges();
+      tick();
+
+      expect(component.lineChartData.datasets[0].label).toBe('Glucose Level');
+    }));
+
+    it('should have responsive chart options', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      expect(component.lineChartOptions?.responsive).toBe(true);
+      expect(component.lineChartOptions?.maintainAspectRatio).toBe(false);
+    }));
+
+    it('should configure zoom plugin', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      const zoomConfig = component.lineChartOptions?.plugins?.zoom;
+      expect(zoomConfig).toBeDefined();
+      expect(zoomConfig?.pan?.enabled).toBe(true);
+      expect(zoomConfig?.zoom?.pinch?.enabled).toBe(true);
+    }));
+  });
+
+  describe('Theme Changes', () => {
+    it('should update chart colors when switching to dark mode', fakeAsync(() => {
+      const mockReadings: LocalGlucoseReading[] = [
+        {
+          id: '1',
+          time: '2024-01-01T10:00:00Z',
+          value: 120,
+          type: 'smbg',
+          units: 'mg/dL',
+          synced: true,
+        },
+      ];
+      mockReadingsService.getReadingsByDateRange = vi.fn().mockResolvedValue(mockReadings);
+      themeSubject.next(false);
+      fixture.detectChanges();
+      tick();
+
+      themeSubject.next(true);
+      tick();
+
+      expect(component.isDarkMode()).toBe(true);
+    }));
+
+    it('should update chart instance on theme change', fakeAsync(() => {
+      const mockReadings: LocalGlucoseReading[] = [
+        {
+          id: '1',
+          time: '2024-01-01T10:00:00Z',
+          value: 120,
+          type: 'smbg',
+          units: 'mg/dL',
+          synced: true,
+        },
+      ];
+      mockReadingsService.getReadingsByDateRange = vi.fn().mockResolvedValue(mockReadings);
+      fixture.detectChanges();
+      tick();
+
+      component.chart = {
+        update: vi.fn(),
+        toBase64Image: vi.fn(),
+      } as any;
+
+      themeSubject.next(true);
+      tick();
+
+      expect(component.chart.update).toHaveBeenCalled();
+    }));
+
+    it('should not crash if chart is undefined during theme change', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      component.chart = undefined;
+
       expect(() => {
-        fixture.detectChanges();
+        themeSubject.next(true);
         tick();
       }).not.toThrow();
     }));
+  });
 
-    it('should not trigger automatic change detection', fakeAsync(() => {
-      const detectChangesSpy = vi.spyOn(fixture.changeDetectorRef, 'detectChanges');
+  describe('Chart Export', () => {
+    it('should export chart as base64 image', () => {
+      const mockBase64 = 'data:image/png;base64,mockImage';
+      component.chart = {
+        toBase64Image: vi.fn().mockReturnValue(mockBase64),
+        update: vi.fn(),
+      } as any;
 
-      // With OnPush, changes should not trigger automatically
-      // This is a simplified check
-      expect(detectChangesSpy).not.toHaveBeenCalled();
+      const createElementSpy = vi.spyOn(document, 'createElement');
+      component.exportChart();
+
+      expect(component.chart.toBase64Image).toHaveBeenCalled();
+      expect(createElementSpy).toHaveBeenCalledWith('a');
+    });
+
+    it('should trigger download with correct filename', () => {
+      const mockBase64 = 'data:image/png;base64,mockImage';
+      const mockClickFn = vi.fn();
+      component.chart = {
+        toBase64Image: vi.fn().mockReturnValue(mockBase64),
+        update: vi.fn(),
+      } as any;
+
+      const mockElement = {
+        href: '',
+        download: '',
+        click: mockClickFn,
+      };
+      vi.spyOn(document, 'createElement').mockReturnValue(mockElement as any);
+
+      component.exportChart();
+
+      expect(mockElement.href).toBe(mockBase64);
+      expect(mockElement.download).toBe('trends.png');
+      expect(mockClickFn).toHaveBeenCalled();
+    });
+
+    it('should handle missing chart instance gracefully', () => {
+      component.chart = undefined;
+      expect(() => component.exportChart()).not.toThrow();
+    });
+
+    it('should handle null base64 image', () => {
+      component.chart = {
+        toBase64Image: vi.fn().mockReturnValue(null),
+        update: vi.fn(),
+      } as any;
+
+      expect(() => component.exportChart()).not.toThrow();
+    });
+  });
+
+  describe('Pull-to-Refresh', () => {
+    it('should reload data on refresh', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+      vi.clearAllMocks();
+
+      const mockRefresher = { complete: vi.fn() };
+      const event = { target: mockRefresher } as any;
+
+      component.handleRefresh(event);
+      tick();
+
+      expect(mockReadingsService.getStatistics).toHaveBeenCalled();
+      expect(mockReadingsService.getReadingsByDateRange).toHaveBeenCalled();
+    }));
+
+    it('should complete refresher after reload', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      const mockRefresher = { complete: vi.fn() };
+      const event = { target: mockRefresher } as any;
+
+      component.handleRefresh(event);
+      tick();
+
+      expect(mockRefresher.complete).toHaveBeenCalled();
+    }));
+
+    it('should handle refresh errors gracefully', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+      mockReadingsService.getStatistics = vi.fn().mockRejectedValue(new Error('Refresh failed'));
+
+      const mockRefresher = { complete: vi.fn() };
+      const event = { target: mockRefresher } as any;
+
+      component.handleRefresh(event);
+      tick();
+
+      expect(mockRefresher.complete).toHaveBeenCalled();
+      expect(mockLoggerService.error).toHaveBeenCalled();
     }));
   });
 
-  describe('Template Compilation', () => {
-    it('should compile template without errors', () => {
-      expect(fixture).toBeTruthy();
-      expect(fixture.nativeElement).toBeTruthy();
-    });
+  describe('Component Cleanup', () => {
+    it('should unsubscribe on destroy', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
 
-    it('should have valid DOM structure', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
-      expect(compiled.children.length).toBeGreaterThan(0);
-    });
+      const destroySpy = vi.spyOn<any>(component['destroy$'], 'next');
+      const completeSpy = vi.spyOn<any>(component['destroy$'], 'complete');
 
-    it('should render ion-header as first child', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
-      const firstChild = compiled.children[0];
-      expect(firstChild.tagName.toLowerCase()).toBe('ion-header');
-    });
-  });
+      component.ngOnDestroy();
 
-  describe('Styling', () => {
-    it('should have stylesheet reference', () => {
-      const componentMetadata = (TrendsPage as any).ɵcmp;
-      expect(componentMetadata).toBeDefined();
-      // Styles are compiled into component metadata
-    });
-
-    it('should apply component styles', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
-      const header = compiled.querySelector('ion-header');
-
-      // Element should exist for styling
-      expect(header).toBeTruthy();
-    });
-  });
-
-  describe('Component Encapsulation', () => {
-    it('should use default view encapsulation', () => {
-      const componentMetadata = (TrendsPage as any).ɵcmp;
-      // Default encapsulation is Emulated (1), but Angular may optimize it
-      expect(componentMetadata.encapsulation).toBeDefined();
-    });
-
-    it('should isolate component scope', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
-      expect(compiled).toBeTruthy();
-      // In test environment, fixture.nativeElement is often a div wrapper
-      // The actual component is the first child or the fixture.debugElement
-      const hasComponentInTree =
-        fixture.debugElement.nativeElement.querySelector('ion-header') !== null;
-      expect(hasComponentInTree).toBe(true);
-    });
-  });
-
-  describe('Future Implementation Ready', () => {
-    it('should be ready for state injection', () => {
-      // Component can be extended with services later
-      expect(component.constructor).toBeDefined();
-    });
-
-    it('should be ready for method implementation', () => {
-      // Component can be extended with methods later
-      const prototype = Object.getPrototypeOf(component);
-      expect(prototype).toBeDefined();
-    });
-
-    it('should support dependency injection', () => {
-      // TestBed can inject dependencies
-      expect(TestBed.inject).toBeDefined();
-    });
-  });
-
-  describe('Error Handling', () => {
-    it('should not throw on fixture creation', () => {
-      expect(() => {
-        TestBed.createComponent(TrendsPage);
-      }).not.toThrow();
-    });
-
-    it('should not throw on change detection', fakeAsync(() => {
-      expect(() => {
-        fixture.detectChanges();
-        tick();
-      }).not.toThrow();
+      expect(destroySpy).toHaveBeenCalled();
+      expect(completeSpy).toHaveBeenCalled();
     }));
 
-    it('should not throw on component access', () => {
-      expect(() => {
-        const _ = fixture.componentInstance;
-      }).not.toThrow();
-    });
+    it('should complete destroy$ subject', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
 
-    it('should handle multiple detect changes calls', fakeAsync(() => {
-      expect(() => {
-        fixture.detectChanges();
-        tick();
-        fixture.detectChanges();
-        tick();
-        fixture.detectChanges();
-        tick();
-      }).not.toThrow();
+      component.ngOnDestroy();
+
+      expect(component['destroy$'].closed).toBe(true);
     }));
   });
 });
