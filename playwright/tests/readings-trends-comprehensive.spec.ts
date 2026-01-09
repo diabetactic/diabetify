@@ -212,25 +212,53 @@ test.describe('Reading Edit @readings-trends @docker', () => {
     await loginAs(page, TEST_USER.dni, TEST_USER.password);
     await navigateToReadings(page);
 
-    const readingItem = page.locator('ion-item-sliding').first();
-    await expect(readingItem).toBeVisible();
+    const slidingItem = page.locator('ion-item-sliding').first();
+    await expect(slidingItem).toBeVisible();
+
+    // Scroll into view first
+    await slidingItem.evaluate((el: HTMLElement) => {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+    });
+    await page.waitForTimeout(300);
+
+    const box = await slidingItem.boundingBox();
+    if (!box) throw new Error('Could not get reading item bounding box');
+
+    // Swipe left to reveal edit option
+    await page.mouse.move(box.x + box.width - 20, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 50, box.y + box.height / 2);
+    await page.mouse.up();
+    await page.waitForTimeout(300);
 
     const editOption = page.locator('[data-testid="edit-reading-option"]').first();
-    await editOption.click();
+    if ((await editOption.count()) > 0) {
+      await editOption.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
+      await page.waitForTimeout(300);
+    } else {
+      throw new Error('Edit option not found after swipe');
+    }
 
     await page.waitForSelector('app-edit-reading', { timeout: 5000 });
 
-    const valueInput = page.locator('[data-testid="glucose-value-input"]');
+    const valueInput = page.locator('[data-testid="glucose-value-input"] input').first();
     await expect(valueInput).toBeVisible();
 
-    await valueInput.fill('150');
+    await valueInput.clear();
+    await valueInput.fill('155');
 
     const saveBtn = page.locator('[data-testid="edit-reading-save-btn"]');
-    await saveBtn.click();
+    await saveBtn.evaluate((el: HTMLElement) => {
+      el.scrollIntoView({ behavior: 'instant', block: 'center' });
+      el.click();
+    });
 
     await page.waitForSelector('app-edit-reading', { state: 'detached', timeout: 5000 });
 
-    const updatedReading = page.locator('app-reading-item').filter({ hasText: '150' }).first();
+    const updatedReading = page.locator('app-reading-item').filter({ hasText: '155' }).first();
     await expect(updatedReading).toBeVisible();
   });
 });
