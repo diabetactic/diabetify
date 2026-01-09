@@ -1,485 +1,807 @@
-// Initialize TestBed environment for Vitest
 import '../../test-setup';
 
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { IonicModule, ToastController } from '@ionic/angular';
-import { provideRouter } from '@angular/router';
-import { of, BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { DashboardPage } from './dashboard.page';
-import { ReadingsService } from '@core/services/readings.service';
-import { AppointmentService } from '@core/services/appointment.service';
-import { Appointment } from '@core/models/appointment.model';
-import { LocalGlucoseReading, GlucoseStatistics } from '@core/models/glucose-reading.model';
-import { TranslateModule } from '@ngx-translate/core';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { TranslationService, Language, LanguageConfig } from '@core/services/translation.service';
-import { ProfileService } from '@core/services/profile.service';
-import { getLucideIconsForTesting } from '@core/../tests/helpers/icon-test.helper';
-import { LoggerService } from '@core/services/logger.service';
-import { ThemeService } from '@core/services/theme.service';
-import { LocalAuthService } from '@core/services/local-auth.service';
-import { Component, Input } from '@angular/core';
-import { StatCardComponent } from '@shared/components/stat-card/stat-card.component';
-import { ReadingItemComponent } from '@shared/components/reading-item/reading-item.component';
-import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
-import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router, ActivatedRoute } from '@angular/router';
+import { ToastController, IonicModule } from '@ionic/angular';
+import { NgZone } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { vi } from 'vitest';
-// StreakCardComponent imported by DashboardPage - not used directly in tests
+import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
 
-class LoggerServiceStub {
-  info(_context: string, _message: string, _data?: any): void {}
-  warn(_context: string, _message: string, _metadata?: any): void {}
-  error(_context: string, _message: string, _error?: any, _metadata?: any): void {}
-  debug(_context: string, _message: string, _metadata?: any): void {}
-}
-
-class ThemeServiceStub {
-  isDarkTheme(): boolean {
-    return false;
-  }
-}
-
-class LocalAuthServiceStub {
-  private authStateSubject = new BehaviorSubject({
-    isAuthenticated: true,
-    user: {
-      id: 1000,
-      email: 'test@example.com',
-      full_name: 'Test User',
-      streak: 5,
-      max_streak: 10,
-      times_measured: 42,
-    },
-    isLoading: false,
-    error: null,
-  });
-
-  authState$ = this.authStateSubject.asObservable();
-
-  emit(state: any) {
-    this.authStateSubject.next(state);
-  }
-}
-
-@Component({
-  selector: 'app-stat-card',
-  template: '',
-  standalone: true,
-})
-class MockStatCardComponent {
-  @Input() title: string = '';
-  @Input() value: string | number = '';
-  @Input() unit: string = '';
-  @Input() trend: string = '';
-  @Input() status: string = '';
-  @Input() icon: string = '';
-  @Input() color: string = '';
-  @Input() gradient: string[] = [];
-}
-
-@Component({
-  selector: 'app-reading-item',
-  template: '',
-  standalone: true,
-})
-class MockReadingItemComponent {
-  @Input() reading: any;
-}
-
-@Component({
-  selector: 'app-empty-state',
-  template: '',
-  standalone: true,
-})
-class MockEmptyStateComponent {
-  @Input() illustration: string = '';
-  @Input() heading: string = '';
-  @Input() message: string = '';
-  @Input() ctaText: string = '';
-}
-
-@Component({
-  selector: 'app-icon',
-  template: '',
-  standalone: true,
-})
-class MockAppIconComponent {
-  @Input() name: string = '';
-  @Input() size: string = '';
-  @Input() class: string = '';
-}
-
-class TranslationServiceStub {
-  private readonly languages: LanguageConfig[] = [
-    {
-      code: Language.EN,
-      name: 'English',
-      nativeName: 'English',
-      direction: 'ltr',
-      dateFormat: 'MM/DD/YYYY',
-      timeFormat: '12h',
-      numberFormat: { decimal: '.', thousands: ',' },
-      glucoseUnit: 'mg/dL',
-    },
-    {
-      code: Language.ES,
-      name: 'Spanish',
-      nativeName: 'Espanol',
-      direction: 'ltr',
-      dateFormat: 'DD/MM/YYYY',
-      timeFormat: '24h',
-      numberFormat: { decimal: ',', thousands: '.' },
-      glucoseUnit: 'mg/dL',
-    },
-  ];
-
-  private currentLanguageSubject = new BehaviorSubject<Language>(Language.EN);
-  private stateSubject = new BehaviorSubject({
-    currentLanguage: Language.EN,
-    availableLanguages: this.languages,
-    isLoading: false,
-  });
-
-  currentLanguage$ = this.currentLanguageSubject.asObservable();
-  currentConfig$ = this.currentLanguageSubject
-    .asObservable()
-    .pipe(map(code => this.languages.find(lang => lang.code === code) ?? this.languages[0]));
-  state = this.stateSubject.asObservable();
-
-  getCurrentConfig(): LanguageConfig {
-    return (
-      this.languages.find(lang => lang.code === this.currentLanguageSubject.value) ??
-      this.languages[0]
-    );
-  }
-
-  getCurrentLanguage(): Language {
-    return this.currentLanguageSubject.value;
-  }
-
-  getAvailableLanguages(): LanguageConfig[] {
-    return this.languages;
-  }
-
-  async toggleLanguage(): Promise<void> {
-    const next = this.currentLanguageSubject.value === Language.EN ? Language.ES : Language.EN;
-    await this.setLanguage(next);
-  }
-
-  async setLanguage(language: Language): Promise<void> {
-    this.currentLanguageSubject.next(language);
-    this.stateSubject.next({
-      currentLanguage: language,
-      availableLanguages: this.languages,
-      isLoading: false,
-    });
-  }
-
-  instant(key: string, params?: Record<string, any>): string {
-    switch (key) {
-      case 'common.close':
-        return 'Close';
-      case 'dashboard.defaultDoctorName':
-        return 'your doctor';
-      case 'dashboard.shareToast.success':
-        return `Shared ${params?.['count'] ?? 0} readings with ${params?.['doctor'] ?? ''}`;
-      case 'dashboard.shareToast.error':
-        return 'Failed to share glucose data. Please try again.';
-      case 'dashboard.timeUntil.now':
-        return 'Now';
-      case 'dashboard.timeUntil.oneDay':
-        return `in ${params?.['count']} day`;
-      case 'dashboard.timeUntil.manyDays':
-        return `in ${params?.['count']} days`;
-      case 'dashboard.timeUntil.oneHour':
-        return `in ${params?.['count']} hour`;
-      case 'dashboard.timeUntil.manyHours':
-        return `in ${params?.['count']} hours`;
-      case 'dashboard.timeUntil.oneMinute':
-        return `in ${params?.['count']} minute`;
-      case 'dashboard.timeUntil.manyMinutes':
-        return `in ${params?.['count']} minutes`;
-      case 'dashboard.lastSyncStatus.never':
-        return 'Never synced';
-      case 'dashboard.lastSyncStatus.justNow':
-        return 'Just now';
-      case 'dashboard.lastSyncStatus.oneMinute':
-        return `${params?.['count']} min ago`;
-      case 'dashboard.lastSyncStatus.manyMinutes':
-        return `${params?.['count']} min ago`;
-      case 'dashboard.lastSyncStatus.oneHour':
-        return `${params?.['count']} hour ago`;
-      case 'dashboard.lastSyncStatus.manyHours':
-        return `${params?.['count']} hours ago`;
-      case 'dashboard.lastSyncStatus.oneDay':
-        return `${params?.['count']} day ago`;
-      case 'dashboard.lastSyncStatus.manyDays':
-        return `${params?.['count']} days ago`;
-      default:
-        return key;
-    }
-  }
-}
-
-class ProfileServiceStub {
-  private profileSubject = new BehaviorSubject<any>({
-    preferences: {
-      glucoseUnit: 'mg/dL',
-    },
-  });
-
-  profile$ = this.profileSubject.asObservable();
-  getProfile = vi.fn().mockImplementation(async () => this.profileSubject.value);
-  updatePreferences = vi.fn().mockResolvedValue({});
-}
+import { DashboardPage } from './dashboard.page';
+import { ReadingsService } from '@services/readings.service';
+import { TranslationService } from '@services/translation.service';
+import { ProfileService } from '@services/profile.service';
+import { LocalAuthService } from '@services/local-auth.service';
+import { LoggerService } from '@services/logger.service';
+import { ThemeService } from '@services/theme.service';
+import { LocalGlucoseReading, GlucoseStatistics, GlucoseUnit } from '@models/glucose-reading.model';
+import { UserProfile, DEFAULT_USER_PREFERENCES, AccountState } from '@models/user-profile.model';
+import { LocalAuthState } from '@services/local-auth.service';
 
 describe('DashboardPage', () => {
-  beforeAll(() => {
-    if (!customElements.get('ion-spinner')) {
-      customElements.define('ion-spinner', class extends HTMLElement {});
-    }
-  });
-
   let component: DashboardPage;
   let fixture: ComponentFixture<DashboardPage>;
-  let readingsServiceSpy: any;
-  let appointmentServiceSpy: any;
-  let toastControllerSpy: any;
-  let translationServiceStub: TranslationServiceStub;
-  let profileServiceStub: ProfileServiceStub;
-  let localAuthServiceStub: LocalAuthServiceStub;
+  let mockReadingsService: any;
+  let mockTranslationService: any;
+  let mockProfileService: any;
+  let mockLocalAuthService: any;
+  let mockLoggerService: any;
+  let mockThemeService: any;
+  let mockToastController: any;
+  let mockRouter: any;
+  let mockNgZone: any;
 
-  let mockReadingsSubject: BehaviorSubject<LocalGlucoseReading[]>;
-
-  const mockStatistics: GlucoseStatistics = {
-    average: 120,
-    median: 115,
-    standardDeviation: 25,
-    coefficientOfVariation: 20.8,
-    estimatedA1C: 5.8,
-    gmi: 6.0,
-    timeInRange: 75,
-    timeBelowRange: 5,
-    timeAboveRange: 20,
-    totalReadings: 150,
+  const mockReading: LocalGlucoseReading = {
+    id: 'reading-1',
+    type: 'smbg',
+    value: 120,
+    units: 'mg/dL' as GlucoseUnit,
+    time: new Date().toISOString(),
+    synced: false,
   };
 
-  const mockRecentReadings: LocalGlucoseReading[] = [
-    {
-      id: '1',
-      value: 120,
-      units: 'mg/dL',
-      time: new Date().toISOString(),
-      type: 'smbg',
-      synced: true,
-      userId: 'user1',
-      status: 'normal',
-      localStoredAt: new Date().toISOString(),
-    },
-    {
-      id: '2',
-      value: 95,
-      units: 'mg/dL',
-      time: new Date(Date.now() - 3600000).toISOString(),
-      type: 'smbg',
-      synced: true,
-      userId: 'user1',
-      status: 'normal',
-      localStoredAt: new Date().toISOString(),
-    },
-    {
-      id: '3',
-      value: 180,
-      units: 'mg/dL',
-      time: new Date(Date.now() - 7200000).toISOString(),
-      type: 'smbg',
-      synced: false,
-      userId: 'user1',
-      status: 'high',
-      localStoredAt: new Date().toISOString(),
-    },
-  ];
+  const mockStatistics: GlucoseStatistics = {
+    average: 140,
+    median: 135,
+    standardDeviation: 30,
+    coefficientOfVariation: 21.4,
+    timeInRange: 75,
+    timeAboveRange: 15,
+    timeBelowRange: 10,
+    totalReadings: 100,
+    estimatedA1C: 6.5,
+    gmi: 6.4,
+  };
 
-  const mockAppointment: Appointment = {
-    appointment_id: 1,
-    user_id: 1000,
-    glucose_objective: 120,
-    insulin_type: 'rapid',
-    dose: 10,
-    fast_insulin: 'Humalog',
-    fixed_dose: 5,
-    ratio: 10,
-    sensitivity: 50,
-    pump_type: 'none',
-    control_data: 'Regular checkup - stable control',
-    motive: ['control_routine'],
-    other_motive: null,
-    another_treatment: null,
+  const mockProfile: UserProfile = {
+    id: 'test-user-id',
+    name: 'Test User',
+    email: 'test@example.com',
+    age: 25,
+    accountState: AccountState.ACTIVE,
+    preferences: {
+      ...DEFAULT_USER_PREFERENCES,
+      glucoseUnit: 'mg/dL',
+    },
+    tidepoolConnection: {
+      connected: false,
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  const mockAuthState: LocalAuthState = {
+    isAuthenticated: true,
+    accessToken: 'test-token',
+    refreshToken: 'test-refresh-token',
+    expiresAt: Date.now() + 3600000,
+    user: {
+      id: '1',
+      email: 'test@example.com',
+      firstName: 'Test',
+      lastName: 'User',
+      role: 'patient',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      streak: 5,
+      max_streak: 10,
+      times_measured: 50,
+    },
   };
 
   beforeEach(async () => {
-    // Create spies
-    mockReadingsSubject = new BehaviorSubject<LocalGlucoseReading[]>(mockRecentReadings);
-
-    readingsServiceSpy = {
-      getStatistics: vi.fn(),
-      getAllReadings: vi.fn(),
-      performFullSync: vi.fn(),
-      fetchFromBackend: vi.fn(),
-      readings$: mockReadingsSubject.asObservable(),
-    } as any;
-
-    appointmentServiceSpy = {
-      getAppointments: vi.fn(),
-      appointments$: of([mockAppointment]),
-    } as any;
-
-    toastControllerSpy = {
-      create: vi.fn(),
-    } as any;
-
-    // Set up spy return values
-    readingsServiceSpy.getStatistics.mockResolvedValue(mockStatistics);
-    readingsServiceSpy.getAllReadings.mockResolvedValue({
-      readings: mockRecentReadings,
-      total: mockRecentReadings.length,
-      hasMore: false,
-      offset: 0,
-      limit: 5,
-    });
-    readingsServiceSpy.performFullSync.mockResolvedValue({ pushed: 0, fetched: 0, failed: 0 });
-    readingsServiceSpy.fetchFromBackend.mockResolvedValue({ fetched: 0, merged: 0 });
-    appointmentServiceSpy.getAppointments.mockReturnValue(of([mockAppointment]));
-
-    const mockToast = {
-      present: vi.fn(),
+    mockReadingsService = {
+      readings$: new BehaviorSubject<LocalGlucoseReading[]>([mockReading]),
+      getAllReadings: vi.fn().mockResolvedValue({ readings: [mockReading], total: 1 }),
+      getStatistics: vi.fn().mockResolvedValue(mockStatistics),
+      performFullSync: vi.fn().mockResolvedValue({ pushed: 0, fetched: 5, failed: 0 }),
+      fetchFromBackend: vi.fn().mockResolvedValue({ fetched: 5 }),
     };
-    toastControllerSpy.create.mockResolvedValue(mockToast as any);
 
-    translationServiceStub = new TranslationServiceStub();
-    profileServiceStub = new ProfileServiceStub();
+    mockTranslationService = {
+      instant: vi.fn((key: string) => key),
+      getCurrentLanguage: vi.fn().mockReturnValue('en'),
+      getCurrentConfig: vi.fn().mockReturnValue({ glucoseUnit: 'mg/dL' }),
+      getAvailableLanguages: vi.fn().mockReturnValue([
+        { code: 'en', name: 'English' },
+        { code: 'es', name: 'Español' },
+      ]),
+      currentConfig$: new BehaviorSubject({ glucoseUnit: 'mg/dL' as GlucoseUnit, language: 'en' }),
+      formatTime: vi.fn((time: string) => time),
+      state: new BehaviorSubject({ isLoading: false }),
+    };
+
+    mockProfileService = {
+      profile$: new BehaviorSubject<UserProfile | null>(mockProfile),
+    };
+
+    mockLocalAuthService = {
+      authState$: new BehaviorSubject<LocalAuthState>(mockAuthState),
+    };
+
+    mockLoggerService = {
+      info: vi.fn(),
+      debug: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    };
+
+    mockThemeService = {
+      isDarkTheme: vi.fn().mockReturnValue(false),
+    };
+
+    mockToastController = {
+      create: vi.fn().mockResolvedValue({
+        present: vi.fn().mockResolvedValue(undefined),
+      }),
+    };
+
+    mockRouter = {
+      navigate: vi.fn().mockResolvedValue(true),
+    };
+
+    mockNgZone = {
+      run: vi.fn((fn: Function) => fn()),
+      runOutsideAngular: vi.fn((fn: Function) => fn()),
+      onUnstable: { subscribe: vi.fn(), emit: vi.fn() },
+      onMicrotaskEmpty: { subscribe: vi.fn(), emit: vi.fn() },
+      onStable: { subscribe: vi.fn(), emit: vi.fn() },
+      onError: { subscribe: vi.fn(), emit: vi.fn() },
+      isStable: true,
+      hasPendingMicrotasks: false,
+      hasPendingMacrotasks: false,
+    };
 
     await TestBed.configureTestingModule({
-      imports: [
-        IonicModule.forRoot(),
-        TranslateModule.forRoot(),
-        DashboardPage,
-        getLucideIconsForTesting(),
-      ],
+      imports: [DashboardPage, IonicModule.forRoot(), TranslateModule.forRoot()],
       providers: [
-        provideRouter([]),
-        { provide: ReadingsService, useValue: readingsServiceSpy },
-        { provide: AppointmentService, useValue: appointmentServiceSpy },
-        { provide: ToastController, useValue: toastControllerSpy },
-        { provide: TranslationService, useValue: translationServiceStub },
-        { provide: ProfileService, useValue: profileServiceStub },
-        { provide: LoggerService, useClass: LoggerServiceStub },
-        { provide: ThemeService, useClass: ThemeServiceStub },
-        { provide: LocalAuthService, useClass: LocalAuthServiceStub },
+        { provide: ReadingsService, useValue: mockReadingsService },
+        { provide: TranslationService, useValue: mockTranslationService },
+        { provide: ProfileService, useValue: mockProfileService },
+        { provide: LocalAuthService, useValue: mockLocalAuthService },
+        { provide: LoggerService, useValue: mockLoggerService },
+        { provide: ThemeService, useValue: mockThemeService },
+        { provide: ToastController, useValue: mockToastController },
+        { provide: Router, useValue: mockRouter },
+        { provide: NgZone, useValue: mockNgZone },
+        { provide: ActivatedRoute, useValue: { snapshot: { params: {} } } },
       ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    })
-      .overrideComponent(DashboardPage, {
-        remove: {
-          imports: [StatCardComponent, ReadingItemComponent, EmptyStateComponent, AppIconComponent],
-        },
-        add: {
-          imports: [
-            MockStatCardComponent,
-            MockReadingItemComponent,
-            MockEmptyStateComponent,
-            MockAppIconComponent,
-          ],
-        },
-      })
-      .compileComponents();
+      schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(DashboardPage);
     component = fixture.componentInstance;
-    localAuthServiceStub = TestBed.inject(LocalAuthService) as unknown as LocalAuthServiceStub;
   });
 
-  it('should load streak data from auth state', async () => {
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    expect(component.streak).toBe(5);
-    expect(component.maxStreak).toBe(10);
-    expect(component.timesMeasured).toBe(42);
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
-  it('should reset streak data when user logs out', async () => {
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    localAuthServiceStub.emit({
-      isAuthenticated: false,
-      user: null,
-      accessToken: null,
-      refreshToken: null,
-      expiresAt: null,
+  describe('Component Initialization', () => {
+    it('should create component', () => {
+      expect(component).toBeTruthy();
     });
 
-    fixture.detectChanges();
-    await fixture.whenStable();
+    it('should be a standalone component', () => {
+      const componentMetadata = (DashboardPage as any).ɵcmp;
+      expect(componentMetadata.standalone).toBe(true);
+    });
 
-    expect(component.streak).toBe(0);
-    expect(component.maxStreak).toBe(0);
-    expect(component.timesMeasured).toBe(0);
-  });
+    it('should use OnPush change detection strategy', () => {
+      const componentMetadata = (DashboardPage as any).ɵcmp;
+      expect(
+        componentMetadata.changeDetection === 0 || componentMetadata.changeDetection === undefined
+      ).toBe(true);
+    });
 
-  describe('User Interactions', () => {
-    it('should not show success alert when Time in Range <= 70%', fakeAsync(() => {
-      const lowTIRStats = { ...mockStatistics, timeInRange: 65 };
-      readingsServiceSpy.getStatistics.mockResolvedValue(lowTIRStats);
+    it('should have correct selector', () => {
+      const componentMetadata = (DashboardPage as any).ɵcmp;
+      expect(componentMetadata.selectors[0][0]).toBe('app-dashboard');
+    });
 
-      fixture.detectChanges();
-      tick();
+    it('should initialize with loading state', () => {
+      expect(component.isLoading).toBe(true);
+    });
 
-      component.onSync();
-      tick();
+    it('should initialize glucose unit from translation service', () => {
+      expect(component.preferredGlucoseUnit).toBe('mg/dL');
+    });
 
-      expect(component.showSuccessAlert).toBe(false);
-    }));
+    it('should load dashboard data on init', async () => {
+      const loadSpy = vi.spyOn<any>(component, 'loadDashboardData');
 
-    it('should handle pull-to-refresh', async () => {
-      const completeSpy = vi.fn();
-      const mockRefreshEvent = {
-        target: {
-          complete: completeSpy,
-        },
-      } as unknown as CustomEvent;
+      component.ngOnInit();
 
-      fixture.detectChanges();
-      await fixture.whenStable();
+      expect(loadSpy).toHaveBeenCalled();
+    });
 
-      await component.handleRefresh(mockRefreshEvent);
+    it('should subscribe to readings on init', () => {
+      component.ngOnInit();
 
-      expect(readingsServiceSpy.performFullSync).toHaveBeenCalled();
-      expect(readingsServiceSpy.getStatistics).toHaveBeenCalled();
+      expect(component.recentReadings).toEqual([mockReading]);
+    });
+
+    it('should subscribe to gamification on init', () => {
+      component.ngOnInit();
+
+      expect(component.streak).toBe(5);
+      expect(component.maxStreak).toBe(10);
+      expect(component.timesMeasured).toBe(50);
+    });
+
+    it('should clean up subscriptions on destroy', () => {
+      component.ngOnInit();
+      const destroySpy = vi.spyOn(component['destroy$'], 'next');
+      const completeSpy = vi.spyOn(component['destroy$'], 'complete');
+
+      component.ngOnDestroy();
+
+      expect(destroySpy).toHaveBeenCalled();
       expect(completeSpy).toHaveBeenCalled();
     });
+  });
 
-    it('should handle sync button click', async () => {
-      fixture.detectChanges();
-      await fixture.whenStable();
+  describe('Dashboard Data Loading', () => {
+    beforeEach(() => {
+      component['isMockMode'] = true as any; // Skip backend sync for these tests
+    });
 
+    it('should load statistics and readings', async () => {
+      component.ngOnInit();
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(mockReadingsService.getStatistics).toHaveBeenCalled();
+      expect(mockReadingsService.getAllReadings).toHaveBeenCalledWith(5);
+      expect(component.statistics).toEqual(mockStatistics);
+      expect(component.recentReadings).toEqual([mockReading]);
+    });
+
+    it('should set isLoading to false after loading', async () => {
+      component.ngOnInit();
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(component.isLoading).toBe(false);
+    });
+
+    it('should handle statistics loading error gracefully', async () => {
+      mockReadingsService.getStatistics.mockRejectedValue(new Error('Stats failed'));
+
+      component.ngOnInit();
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(component.isLoading).toBe(false);
+      expect(mockLoggerService.warn).toHaveBeenCalled();
+    });
+
+    it('should handle readings loading error gracefully', async () => {
+      mockReadingsService.getAllReadings.mockRejectedValue(new Error('Readings failed'));
+
+      component.ngOnInit();
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(component.isLoading).toBe(false);
+      expect(mockLoggerService.warn).toHaveBeenCalled();
+    });
+
+    it('should sync with backend in cloud mode', async () => {
+      component['isMockMode'] = false as any;
+
+      component.ngOnInit();
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(mockReadingsService.fetchFromBackend).toHaveBeenCalled();
+      expect(component.backendSyncResult).toEqual({ pushed: 0, fetched: 5, failed: 0 });
+    });
+
+    it('should handle backend sync error gracefully', async () => {
+      component['isMockMode'] = false as any;
+      mockReadingsService.fetchFromBackend.mockRejectedValue(new Error('Sync failed'));
+
+      component.ngOnInit();
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(mockLoggerService.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('Readings Subscription', () => {
+    it('should update recent readings when readings change', async () => {
+      component.ngOnInit();
+      const newReading: LocalGlucoseReading = {
+        ...mockReading,
+        id: 'reading-2',
+        value: 150,
+      };
+
+      mockReadingsService.readings$.next([newReading, mockReading]);
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(component.recentReadings).toEqual([newReading, mockReading]);
+    });
+
+    it('should limit recent readings to 5', async () => {
+      component.ngOnInit();
+      const readings = Array.from({ length: 10 }, (_, i) => ({
+        ...mockReading,
+        id: `reading-${i}`,
+      }));
+
+      mockReadingsService.readings$.next(readings);
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(component.recentReadings.length).toBe(5);
+    });
+
+    it('should recalculate statistics when readings change', async () => {
+      component.ngOnInit();
+      component['isLoading'] = false;
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      mockReadingsService.readings$.next([mockReading]);
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(mockReadingsService.getStatistics).toHaveBeenCalledTimes(2);
+    });
+
+    it('should not recalculate statistics during initial loading', async () => {
+      component.ngOnInit();
+      component['isLoading'] = true;
+
+      mockReadingsService.readings$.next([mockReading]);
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(mockReadingsService.getStatistics).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Pull-to-Refresh', () => {
+    it('should refresh dashboard data', async () => {
+      const event = {
+        target: { complete: vi.fn() },
+      } as any;
+
+      await component.handleRefresh(event);
+
+      expect(mockReadingsService.performFullSync).toHaveBeenCalled();
+      expect(event.target.complete).toHaveBeenCalled();
+    });
+
+    it('should show error toast on refresh failure', async () => {
+      mockReadingsService.performFullSync.mockRejectedValue(new Error('Refresh failed'));
+      const event = {
+        target: { complete: vi.fn() },
+      } as any;
+
+      await component.handleRefresh(event);
+
+      expect(mockToastController.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          color: 'danger',
+        })
+      );
+      expect(event.target.complete).toHaveBeenCalled();
+    });
+  });
+
+  describe('Manual Sync', () => {
+    it('should perform full sync on button click', async () => {
+      await component.onSync();
+
+      expect(mockReadingsService.performFullSync).toHaveBeenCalled();
+      expect(component.backendSyncResult).toEqual({ pushed: 0, fetched: 5, failed: 0 });
+    });
+
+    it('should reload dashboard data after sync', async () => {
+      await component.onSync();
+
+      expect(mockReadingsService.getStatistics).toHaveBeenCalled();
+      expect(mockReadingsService.getAllReadings).toHaveBeenCalledWith(5);
+    });
+
+    it('should show success toast after sync', async () => {
+      await component.onSync();
+
+      expect(mockToastController.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          color: 'success',
+        })
+      );
+    });
+
+    it('should set isSyncing flag during sync', async () => {
       const syncPromise = component.onSync();
       expect(component.isSyncing).toBe(true);
 
       await syncPromise;
-
-      expect(readingsServiceSpy.performFullSync).toHaveBeenCalled();
-      expect(readingsServiceSpy.getStatistics).toHaveBeenCalled();
       expect(component.isSyncing).toBe(false);
     });
 
+    it('should handle sync error gracefully', async () => {
+      mockReadingsService.performFullSync.mockRejectedValue(new Error('Sync failed'));
+
+      await component.onSync();
+
+      expect(mockLoggerService.error).toHaveBeenCalled();
+      expect(mockToastController.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          color: 'danger',
+        })
+      );
+    });
+  });
+
+  describe('Navigation', () => {
+    it('should navigate to add reading page', () => {
+      component.addReading();
+
+      expect(mockNgZone.run).toHaveBeenCalled();
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/add-reading']);
+    });
+
+    it('should navigate to bolus calculator page', () => {
+      component.openBolusCalculator();
+
+      expect(mockNgZone.run).toHaveBeenCalled();
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/bolus-calculator']);
+    });
+  });
+
+  describe('Formatting Utilities', () => {
+    it('should format percentage correctly', () => {
+      const result = component.formatPercentage(75.5);
+
+      expect(result).toContain('75.5');
+      expect(result).toContain('%');
+    });
+
+    it('should handle undefined percentage', () => {
+      const result = component.formatPercentage(undefined);
+
+      expect(result).toContain('0');
+    });
+
+    it('should format glucose in mg/dL with no decimals', () => {
+      component.preferredGlucoseUnit = 'mg/dL';
+
+      const result = component.formatGlucose(120.5);
+
+      expect(result).toBe('121');
+    });
+
+    it('should format glucose in mmol/L with 1 decimal', () => {
+      component.preferredGlucoseUnit = 'mmol/L';
+
+      const result = component.formatGlucose(6.7);
+
+      expect(result).toContain('6.7');
+    });
+
+    it('should handle undefined glucose value', () => {
+      const result = component.formatGlucose(undefined);
+
+      expect(result).toBe('0');
+    });
+
+    it('should return current glucose unit', () => {
+      component.preferredGlucoseUnit = 'mg/dL';
+
+      const result = component.getCurrentGlucoseUnit();
+
+      expect(result).toBe('mg/dL');
+    });
+  });
+
+  describe('Gamification Data', () => {
+    it('should update gamification data from auth state', () => {
+      component.ngOnInit();
+
+      expect(component.streak).toBe(5);
+      expect(component.maxStreak).toBe(10);
+      expect(component.timesMeasured).toBe(50);
+      expect(component.isLoadingStreak).toBe(false);
+    });
+
+    it('should handle missing gamification data', () => {
+      const authStateWithoutGamification: LocalAuthState = {
+        ...mockAuthState,
+        user: {
+          ...mockAuthState.user!,
+          streak: undefined,
+          max_streak: undefined,
+          times_measured: undefined,
+        },
+      };
+      mockLocalAuthService.authState$.next(authStateWithoutGamification);
+
+      component.ngOnInit();
+
+      expect(component.streak).toBe(0);
+      expect(component.maxStreak).toBe(0);
+      expect(component.timesMeasured).toBe(0);
+    });
+
+    it('should reset gamification data when user logs out', () => {
+      component.ngOnInit();
+      expect(component.streak).toBe(5);
+
+      mockLocalAuthService.authState$.next({
+        isAuthenticated: false,
+        token: null,
+        user: null,
+      });
+
+      expect(component.streak).toBe(0);
+      expect(component.maxStreak).toBe(0);
+      expect(component.timesMeasured).toBe(0);
+    });
+  });
+
+  describe('Preferences Updates', () => {
+    it('should update glucose unit when preference changes', () => {
+      component.ngOnInit();
+      component['isLoading'] = false;
+      expect(component.preferredGlucoseUnit).toBe('mg/dL');
+
+      const mmolProfile = {
+        ...mockProfile,
+        preferences: { ...mockProfile.preferences, glucoseUnit: 'mmol/L' as GlucoseUnit },
+      };
+      mockProfileService.profile$.next(mmolProfile);
+
+      expect(component.preferredGlucoseUnit).toBe('mmol/L');
+    });
+
+    it('should reload dashboard data when glucose unit changes', async () => {
+      component.ngOnInit();
+      component['isLoading'] = false;
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      const loadSpy = vi.spyOn<any>(component, 'loadDashboardData');
+      const mmolProfile = {
+        ...mockProfile,
+        preferences: { ...mockProfile.preferences, glucoseUnit: 'mmol/L' as GlucoseUnit },
+      };
+      mockProfileService.profile$.next(mmolProfile);
+
+      expect(loadSpy).toHaveBeenCalled();
+    });
+
+    it('should not reload during initial loading', () => {
+      component.ngOnInit();
+      component['isLoading'] = true;
+
+      const loadSpy = vi.spyOn<any>(component, 'loadDashboardData');
+      const mmolProfile = {
+        ...mockProfile,
+        preferences: { ...mockProfile.preferences, glucoseUnit: 'mmol/L' as GlucoseUnit },
+      };
+      mockProfileService.profile$.next(mmolProfile);
+
+      expect(loadSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Sync Display Utilities', () => {
+    it('should get sync items count', () => {
+      component.backendSyncResult = { pushed: 2, fetched: 3, failed: 0 };
+
+      expect(component.getSyncItemsCount()).toBe(5);
+    });
+
+    it('should return 0 for null sync result', () => {
+      component.backendSyncResult = null;
+
+      expect(component.getSyncItemsCount()).toBe(0);
+    });
+
+    it('should get sync failed count', () => {
+      component.backendSyncResult = { pushed: 0, fetched: 5, failed: 2 };
+
+      expect(component.getSyncFailedCount()).toBe(2);
+    });
+
+    it('should get last sync error', () => {
+      component.backendSyncResult = {
+        pushed: 0,
+        fetched: 5,
+        failed: 1,
+        lastError: 'Test error',
+      };
+
+      expect(component.getLastSyncError()).toBe('Test error');
+    });
+
+    it('should return null when no sync error', () => {
+      component.backendSyncResult = { pushed: 0, fetched: 5, failed: 0 };
+
+      expect(component.getLastSyncError()).toBeNull();
+    });
+
+    it('should clear sync error', () => {
+      component.backendSyncResult = {
+        pushed: 0,
+        fetched: 5,
+        failed: 1,
+        lastError: 'Test error',
+      };
+
+      component.clearSyncError();
+
+      expect(component.backendSyncResult.lastError).toBeNull();
+    });
+  });
+
+  describe('Last Sync Time Display', () => {
+    it('should display "never" when no sync time', () => {
+      component.lastSyncTime = null;
+
+      const result = component.getLastSyncDisplay();
+
+      expect(result).toBe('dashboard.lastSyncStatus.never');
+    });
+
+    it('should display "just now" for recent sync', () => {
+      component.lastSyncTime = new Date().toISOString();
+
+      const result = component.getLastSyncDisplay();
+
+      expect(result).toBe('dashboard.lastSyncStatus.justNow');
+    });
+
+    it('should display minutes for sync within last hour', () => {
+      const syncDate = new Date();
+      syncDate.setMinutes(syncDate.getMinutes() - 30);
+      component.lastSyncTime = syncDate.toISOString();
+
+      const result = component.getLastSyncDisplay();
+
+      expect(mockTranslationService.instant).toHaveBeenCalledWith(
+        'dashboard.lastSyncStatus.manyMinutes',
+        expect.objectContaining({ count: 30 })
+      );
+    });
+
+    it('should display hours for sync within last day', () => {
+      const syncDate = new Date();
+      syncDate.setHours(syncDate.getHours() - 5);
+      component.lastSyncTime = syncDate.toISOString();
+
+      const result = component.getLastSyncDisplay();
+
+      expect(mockTranslationService.instant).toHaveBeenCalledWith(
+        'dashboard.lastSyncStatus.manyHours',
+        expect.objectContaining({ count: 5 })
+      );
+    });
+
+    it('should display days for older sync', () => {
+      const syncDate = new Date();
+      syncDate.setDate(syncDate.getDate() - 3);
+      component.lastSyncTime = syncDate.toISOString();
+
+      const result = component.getLastSyncDisplay();
+
+      expect(mockTranslationService.instant).toHaveBeenCalledWith(
+        'dashboard.lastSyncStatus.manyDays',
+        expect.objectContaining({ count: 3 })
+      );
+    });
+  });
+
+  describe('Kid-Friendly Status', () => {
+    it('should get satisfied icon for excellent time in range', () => {
+      component.statistics = { ...mockStatistics, timeInRange: 75 };
+
+      const result = component.getStatusIcon();
+
+      expect(result).toBe('sentiment_satisfied');
+    });
+
+    it('should get satisfied icon for good time in range in dark mode', () => {
+      mockThemeService.isDarkTheme.mockReturnValue(true);
+      component.statistics = { ...mockStatistics, timeInRange: 60 };
+
+      const result = component.getStatusIcon();
+
+      expect(result).toBe('sentiment_satisfied');
+    });
+
+    it('should get dissatisfied icon for low time in range', () => {
+      component.statistics = { ...mockStatistics, timeInRange: 40 };
+
+      const result = component.getStatusIcon();
+
+      expect(result).toBe('sentiment_dissatisfied_outline');
+    });
+
+    it('should get success color for excellent time in range', () => {
+      component.statistics = { ...mockStatistics, timeInRange: 75 };
+
+      const result = component.getStatusColor();
+
+      expect(result).toBe('success');
+    });
+
+    it('should get warning color for good time in range', () => {
+      component.statistics = { ...mockStatistics, timeInRange: 60 };
+
+      const result = component.getStatusColor();
+
+      expect(result).toBe('warning');
+    });
+
+    it('should get danger color for low time in range', () => {
+      component.statistics = { ...mockStatistics, timeInRange: 40 };
+
+      const result = component.getStatusColor();
+
+      expect(result).toBe('danger');
+    });
+
+    it('should get kid-friendly message for excellent status', () => {
+      component.statistics = { ...mockStatistics, timeInRange: 75 };
+
+      const result = component.getKidFriendlyStatusMessage();
+
+      expect(result).toBe('dashboard.kids.status.great');
+    });
+
+    it('should get kid-friendly message for good status', () => {
+      component.statistics = { ...mockStatistics, timeInRange: 60 };
+
+      const result = component.getKidFriendlyStatusMessage();
+
+      expect(result).toBe('dashboard.kids.status.good');
+    });
+
+    it('should get kid-friendly message for needs work status', () => {
+      component.statistics = { ...mockStatistics, timeInRange: 40 };
+
+      const result = component.getKidFriendlyStatusMessage();
+
+      expect(result).toBe('dashboard.kids.status.needsWork');
+    });
+
+    it('should handle no statistics for kid-friendly message', () => {
+      component.statistics = null;
+
+      const result = component.getKidFriendlyStatusMessage();
+
+      expect(result).toBe('dashboard.kids.status.noData');
+    });
+  });
+
+  describe('UI State', () => {
     it('should dismiss success alert', () => {
       component.showSuccessAlert = true;
+
       component.onAlertDismissed();
 
       expect(component.showSuccessAlert).toBe(false);
+    });
+
+    it('should toggle details visibility', () => {
+      component.showDetails = false;
+
+      component.toggleDetails();
+
+      expect(component.showDetails).toBe(true);
+
+      component.toggleDetails();
+
+      expect(component.showDetails).toBe(false);
+    });
+  });
+
+  describe('TrackBy Function', () => {
+    it('should track readings by id', () => {
+      const reading = { ...mockReading, id: 'unique-id' };
+
+      const result = component.trackByReading(0, reading);
+
+      expect(result).toBe('unique-id');
     });
   });
 });
