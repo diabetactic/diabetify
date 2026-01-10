@@ -13,7 +13,7 @@ import { Injectable, Optional, Injector, OnDestroy } from '@angular/core';
 import { Subject, firstValueFrom } from 'rxjs';
 import { Network } from '@capacitor/network';
 import { PluginListenerHandle } from '@capacitor/core';
-import { LocalGlucoseReading } from '@models/glucose-reading.model';
+import { LocalGlucoseReading, MealContext, MEAL_CONTEXTS } from '@models/glucose-reading.model';
 import {
   DiabetacticDatabase,
   SyncConflictItem,
@@ -570,10 +570,16 @@ export class ReadingsSyncService implements OnDestroy {
           const backendNotes = backendReading.notes || '';
 
           if (existing.value !== backendValue || existing.notes !== backendNotes) {
+            const backendType = backendReading.reading_type;
+            const validMealContext =
+              backendType && (MEAL_CONTEXTS as readonly string[]).includes(backendType)
+                ? (backendType as MealContext)
+                : existing.mealContext;
+
             await this.db.readings.update(existing.id, {
               value: backendValue,
               notes: backendNotes,
-              mealContext: backendReading.reading_type || existing.mealContext,
+              mealContext: validMealContext,
               synced: true,
             });
           }
@@ -660,11 +666,23 @@ export class ReadingsSyncService implements OnDestroy {
   // Helper Methods
   // ============================================================================
 
+  /**
+   * Find a local reading by its backend ID
+   * @param backendId - Backend reading ID to search for
+   * @returns Local reading if found, null otherwise
+   */
   private async findReadingByBackendId(backendId: number): Promise<LocalGlucoseReading | null> {
     const matches = await this.db.readings.filter(r => r.backendId === backendId).toArray();
     return matches[0] || null;
   }
 
+  /**
+   * Find an unsynced local reading that matches backend data within time tolerance
+   * Used to link locally-created readings with their backend counterparts
+   * @param backendValue - Glucose value from backend
+   * @param backendTime - Timestamp from backend (milliseconds)
+   * @returns Matching unsynced local reading if found, null otherwise
+   */
   private async findMatchingUnsyncedReading(
     backendValue: number,
     backendTime: number
@@ -680,6 +698,13 @@ export class ReadingsSyncService implements OnDestroy {
     return matches[0] || null;
   }
 
+  /**
+   * Link a local reading to its backend counterpart after successful sync
+   * Updates the reading with backend ID, marks as synced, and syncs timestamp
+   * @param localId - Local reading ID to update
+   * @param backendId - Backend ID to associate
+   * @param backendTime - Canonical timestamp from backend (milliseconds)
+   */
   private async linkLocalToBackend(
     localId: string,
     backendId: number,
@@ -692,6 +717,15 @@ export class ReadingsSyncService implements OnDestroy {
     });
   }
 
+  /**
+   * Check if a local reading has changes compared to backend data
+   * Used for conflict detection during sync
+   * @param local - Local reading to compare
+   * @param backendValue - Glucose value from backend
+   * @param backendNotes - Notes from backend
+   * @param backendType - Optional meal context type from backend
+   * @returns true if there are differences, false if identical
+   */
   private hasReadingChanges(
     local: LocalGlucoseReading,
     backendValue: number,
@@ -705,6 +739,12 @@ export class ReadingsSyncService implements OnDestroy {
     );
   }
 
+  /**
+   * Create a sync conflict record when local and backend versions differ
+   * Stores both versions for user resolution
+   * @param existing - Local reading with conflicting data
+   * @param backendReading - Backend reading data
+   */
   private async createSyncConflict(
     existing: LocalGlucoseReading,
     backendReading: BackendGlucoseReading
@@ -720,17 +760,31 @@ export class ReadingsSyncService implements OnDestroy {
     this.logger?.warn('Sync', `Conflict detected for ${existing.id}`);
   }
 
+  /**
+   * Update local reading with backend data (server wins)
+   * Validates and sanitizes meal context before updating
+   * @param existingId - Local reading ID to update
+   * @param backendValue - Glucose value from backend
+   * @param backendNotes - Notes from backend
+   * @param backendType - Meal context type from backend (may be invalid)
+   * @param existingContext - Current local meal context (fallback if backend type invalid)
+   */
   private async updateLocalFromBackend(
     existingId: string,
     backendValue: number,
     backendNotes: string,
     backendType: string | undefined,
-    existingContext: string | undefined
+    existingContext: MealContext | undefined
   ): Promise<void> {
+    const validMealContext =
+      backendType && (MEAL_CONTEXTS as readonly string[]).includes(backendType)
+        ? (backendType as MealContext)
+        : existingContext;
+
     await this.db.readings.update(existingId, {
       value: backendValue,
       notes: backendNotes,
-      mealContext: backendType || existingContext,
+      mealContext: validMealContext,
       synced: true,
     });
   }

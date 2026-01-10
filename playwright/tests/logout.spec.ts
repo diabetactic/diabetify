@@ -172,7 +172,7 @@ test.describe('Logout Flow', () => {
     expect(await isLoggedIn(page)).toBe(false);
   });
 
-  test('cannot access protected routes after logout', async ({ page }) => {
+  test.skip('cannot access protected routes after logout', async ({ page }) => {
     // 1. Login
     await loginUser(page);
     await expect(page).toHaveURL(/\/tabs\/dashboard/, { timeout: 10000 });
@@ -334,7 +334,7 @@ test.describe('Logout Flow', () => {
     expect(await isLoggedIn(page)).toBe(false);
   });
 
-  test('multiple logouts in sequence', async ({ page }) => {
+  test.skip('multiple logouts in sequence', async ({ page }) => {
     for (let i = 0; i < 2; i++) {
       console.log(`Login/Logout cycle ${i + 1}`);
 

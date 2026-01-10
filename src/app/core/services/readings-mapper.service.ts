@@ -10,7 +10,13 @@
  */
 
 import { Injectable } from '@angular/core';
-import { LocalGlucoseReading, GlucoseUnit, GlucoseStatus } from '@models/glucose-reading.model';
+import {
+  LocalGlucoseReading,
+  GlucoseUnit,
+  GlucoseStatus,
+  MealContext,
+  MEAL_CONTEXTS,
+} from '@models/glucose-reading.model';
 import { MockReading } from '@services/mock-data.service';
 
 /**
@@ -128,6 +134,11 @@ export class ReadingsMapperService {
       `${year}-${month}-${day}T${timePart}${ARGENTINA_TIMEZONE_OFFSET}`
     ).toISOString();
 
+    const mealContext = backend.reading_type || 'OTRO';
+    const validMealContext = (MEAL_CONTEXTS as readonly string[]).includes(mealContext)
+      ? (mealContext as MealContext)
+      : 'OTRO';
+
     return {
       id: `backend_${backend.id}`,
       localId: `backend_${backend.id}`,
@@ -143,7 +154,7 @@ export class ReadingsMapperService {
       localStoredAt: new Date().toISOString(),
       isLocalOnly: false,
       status: this.calculateGlucoseStatus(backend.glucose_level, 'mg/dL'),
-      mealContext: backend.reading_type || 'OTRO',
+      mealContext: validMealContext,
       notes: backend.notes,
     };
   }

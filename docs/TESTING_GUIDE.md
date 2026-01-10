@@ -220,6 +220,115 @@ pnpm exec playwright test appointment
 
 ---
 
+## Testing OnPush Components
+
+### Pattern: Component with ChangeDetectionStrategy.OnPush
+
+Components using OnPush require manual change detection triggering after async operations.
+
+```typescript
+@Component({
+  selector: 'app-dashboard',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  // ...
+})
+export class DashboardPage {
+  constructor(private cdr: ChangeDetectorRef) {}
+
+  async loadData() {
+    this.data = await this.service.getData();
+    this.cdr.markForCheck(); // REQUIRED for OnPush
+  }
+}
+```
+
+### Testing OnPush Components
+
+**Key Rules:**
+
+1. **Wait for async operations to complete** before asserting
+2. **Clear mocks after ngOnInit** if testing subscriptions
+3. **Check behavior, not call counts** when timing is uncertain
+
+```typescript
+it('should recalculate statistics when readings change', async () => {
+  component.ngOnInit();
+  await new Promise(resolve => setTimeout(resolve, 0)); // Wait for ngOnInit
+  component['isLoading'] = false;
+  mockReadingsService.getStatistics.mockClear(); // Reset after init
+
+  mockReadingsService.readings$.next([newReading]);
+  await new Promise(resolve => setTimeout(resolve, 0)); // Wait for subscription
+
+  expect(mockReadingsService.getStatistics).toHaveBeenCalled();
+  expect(component.statistics).toEqual(mockStatistics); // Check result
+});
+```
+
+---
+
+## Advanced Mocking Patterns
+
+### Problem: DI Token Mismatch with Ionic Controllers
+
+**Symptom:** Mock is defined but never called in tests.
+
+**Cause:** `IonicModule.forRoot()` provides its own controller instances that override test providers.
+
+**Solution:** Override the component's property directly instead of relying on DI:
+
+```typescript
+// WRONG: This mock won't be used
+beforeEach(async () => {
+  await TestBed.configureTestingModule({
+    imports: [IonicModule.forRoot()], // Provides ToastController
+    providers: [
+      { provide: ToastController, useValue: mockToastController }, // Ignored!
+    ],
+  });
+});
+
+it('should show toast', async () => {
+  await component.onSync();
+  expect(mockToastController.create).toHaveBeenCalled(); // Fails - 0 calls
+});
+
+// CORRECT: Override component property directly
+it('should show toast', async () => {
+  const mockToast = { present: vi.fn().mockResolvedValue(undefined) };
+  const createSpy = vi.fn().mockResolvedValue(mockToast);
+  (component as any).toastController = { create: createSpy }; // Direct override
+
+  await component.onSync();
+
+  expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({ color: 'success' }));
+  expect(mockToast.present).toHaveBeenCalled();
+});
+```
+
+### Why This Happens
+
+Standalone components with `IonicModule.forRoot()` create a separate DI context. Controllers injected from the module bypass test providers.
+
+### Alternative: Use TestBed.inject() with spyOn
+
+```typescript
+it('should show toast', async () => {
+  const toastController = TestBed.inject(ToastController);
+  const createSpy = vi.spyOn(toastController, 'create').mockResolvedValue({
+    present: vi.fn().mockResolvedValue(undefined),
+  } as any);
+
+  await component.onSync();
+
+  expect(createSpy).toHaveBeenCalled();
+});
+```
+
+**Note:** This only works if the component is actually using the TestBed-injected instance. If not, use direct property override.
+
+---
+
 ## Best Practices
 
 ### 1. Usar vi.fn() (NO jest.fn())

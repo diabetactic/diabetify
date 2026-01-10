@@ -231,9 +231,9 @@ describe('ReadingsService Integration Tests', () => {
       // ID should start with 'local_'
       expect(result.id).toMatch(/^local_\d+_[a-z0-9]+$/);
 
-      // localId should also exist and be different
+      // localId should also exist and match the id
       expect(result.localId).toBeTruthy();
-      expect(result.localId).not.toBe(result.id);
+      expect(result.localId).toBe(result.id);
     });
 
     it('should handle empty ID gracefully', async () => {

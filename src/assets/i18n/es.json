@@ -475,7 +475,6 @@
     "history": "Historial",
     "schedule": "Programar Cita",
     "loading": "Cargando citas...",
-    "updatesUnavailable": "Las actualizaciones en tiempo real no están disponibles temporalmente",
     "dataShared": "Datos Compartidos",
     "record": "Cita",
     "tabs": {
@@ -575,7 +574,8 @@
       "cannotCreate": "No puedes crear una cita en este momento",
       "alreadyHasAppointment": "Ya tienes una cita activa",
       "pendingRequest": "Tu solicitud de cita está pendiente de aprobación",
-      "blocked": "No puedes crear citas en este momento"
+      "blocked": "No puedes crear citas en este momento",
+      "denied": "Tu solicitud de cita fue rechazada"
     },
     "queue": {
       "title": "Solicitud de Cita",
@@ -609,7 +609,8 @@
         "queueClosed": "La cola de citas está cerrada. Por favor intente más tarde.",
         "accepted": "¡Su solicitud de cita ha sido aceptada!",
         "denied": "Su solicitud de cita no fue aceptada",
-        "created": "Su cita ha sido registrada exitosamente"
+        "created": "Su cita ha sido registrada exitosamente",
+        "updatesUnavailable": "Las actualizaciones en tiempo real no están disponibles temporalmente"
       }
     },
     "reason": "Motivo",

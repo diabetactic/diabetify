@@ -1,6 +1,15 @@
 import { Injectable, inject } from '@angular/core';
-import { fakerES as faker } from '@faker-js/faker';
 import { Observable, of } from 'rxjs';
+
+// Lazy-loaded faker instance (only loaded in mock mode)
+let fakerInstance: typeof import('@faker-js/faker').fakerES | null = null;
+async function getFaker(): Promise<typeof import('@faker-js/faker').fakerES> {
+  if (!fakerInstance) {
+    const { fakerES } = await import('@faker-js/faker');
+    fakerInstance = fakerES;
+  }
+  return fakerInstance;
+}
 import { delay, map } from 'rxjs/operators';
 import { LocalGlucoseReading } from '@models/glucose-reading.model';
 import { UserProfile, AccountState } from '@models/user-profile.model';
@@ -263,10 +272,10 @@ export class DemoDataService {
       map(readings => {
         const validReadings = readings.filter(r => r.value > 0);
         const beforeMealReadings = validReadings.filter(
-          (r: LocalGlucoseReading) => r.mealContext === 'beforeMeal'
+          (r: LocalGlucoseReading) => r.mealContext === 'DESAYUNO' || r.mealContext === 'ALMUERZO'
         );
         const afterMealReadings = validReadings.filter(
-          (r: LocalGlucoseReading) => r.mealContext === 'afterMeal'
+          (r: LocalGlucoseReading) => r.mealContext === 'MERIENDA' || r.mealContext === 'CENA'
         );
 
         return {
@@ -351,8 +360,8 @@ export class DemoDataService {
   /**
    * Generate demo user profile (using faker for realistic data)
    */
-  generateUserProfile(): UserProfile {
-    // Faker locale configured via import
+  async generateUserProfile(): Promise<UserProfile> {
+    const faker = await getFaker();
 
     return {
       id: faker.string.uuid(),
@@ -371,7 +380,7 @@ export class DemoDataService {
       preferences: {
         glucoseUnit: 'mg/dL',
         colorPalette: 'default',
-        themeMode: 'light', // Default to light theme
+        themeMode: 'light',
         highContrastMode: false,
         targetRange: {
           min: 70,
@@ -519,7 +528,7 @@ export class DemoDataService {
     localStorage.setItem('demoUser', JSON.stringify(demoUser));
 
     // Store demo profile
-    const profile = this.generateUserProfile();
+    const profile = await this.generateUserProfile();
     localStorage.setItem('demoProfile', JSON.stringify(profile));
 
     // Store demo readings

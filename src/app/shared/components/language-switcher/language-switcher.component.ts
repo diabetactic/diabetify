@@ -5,7 +5,15 @@
  * Can be displayed as a button, select dropdown, or popover.
  */
 
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, OnDestroy, Input } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  OnInit,
+  OnDestroy,
+  Input,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { PopoverController } from '@ionic/angular';
@@ -30,6 +38,7 @@ import { TranslationService, Language, LanguageConfig } from '@services/translat
   templateUrl: './language-switcher.component.html',
   styleUrls: ['./language-switcher.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [FormsModule, TranslateModule, AppIconComponent, IonButton, IonSelect, IonSelectOption],
 })
@@ -47,7 +56,8 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
 
   constructor(
     private translationService: TranslationService,
-    private popoverController: PopoverController
+    private popoverController: PopoverController,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -58,6 +68,7 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.translationService.currentConfig$.subscribe(config => {
         this.currentLanguage = config;
+        this.cdr.markForCheck();
       })
     );
 
@@ -65,6 +76,7 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.translationService.state.subscribe(state => {
         this.isLoading = state.isLoading;
+        this.cdr.markForCheck();
       })
     );
   }
@@ -86,6 +98,7 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
       this.translationService
         .getAvailableLanguages()
         .find(l => l.code === this.translationService.getCurrentLanguage()) || null;
+    this.cdr.markForCheck();
   }
 
   /**
@@ -98,6 +111,7 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
     // Force UI update to ensure text synchronization
     this.currentLanguage =
       this.translationService.getAvailableLanguages().find(l => l.code === language) || null;
+    this.cdr.markForCheck();
 
     // Close popover if present
     try {

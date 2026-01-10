@@ -134,7 +134,6 @@ describe('TabsPage', () => {
   });
 
   describe('ngOnInit - Production Mode', () => {
-
     it('should load queue state when getQueueState is successful', () => {
       const mockQueueState: AppointmentQueueStateResponse = { state: 'ACCEPTED' };
       mockAppointmentService.getQueueState.mockReturnValue(new BehaviorSubject(mockQueueState));

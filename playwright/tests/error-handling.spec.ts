@@ -74,7 +74,7 @@ test.describe('Error Handling', () => {
     await expect(toast).toBeVisible({ timeout: 15000 });
 
     // Check toast contains error-related text
-    const toastMessage = page.locator('ion-toast .toast-message, ion-toast .toast-wrapper');
+    const toastMessage = page.locator('ion-toast .toast-message, ion-toast .toast-wrapper').first();
     await expect(toastMessage).toBeVisible({ timeout: 5000 });
 
     // Should still be on login page

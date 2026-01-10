@@ -143,8 +143,8 @@ describe('DashboardPage', () => {
     };
 
     mockNgZone = {
-      run: vi.fn((fn: Function) => fn()),
-      runOutsideAngular: vi.fn((fn: Function) => fn()),
+      run: vi.fn((fn: () => unknown) => fn()),
+      runOutsideAngular: vi.fn((fn: () => unknown) => fn()),
       onUnstable: { subscribe: vi.fn(), emit: vi.fn() },
       onMicrotaskEmpty: { subscribe: vi.fn(), emit: vi.fn() },
       onStable: { subscribe: vi.fn(), emit: vi.fn() },
@@ -309,6 +309,8 @@ describe('DashboardPage', () => {
   describe('Readings Subscription', () => {
     it('should update recent readings when readings change', async () => {
       component.ngOnInit();
+      await new Promise(resolve => setTimeout(resolve, 0)); // Wait for ngOnInit to complete
+
       const newReading: LocalGlucoseReading = {
         ...mockReading,
         id: 'reading-2',
@@ -323,6 +325,8 @@ describe('DashboardPage', () => {
 
     it('should limit recent readings to 5', async () => {
       component.ngOnInit();
+      await new Promise(resolve => setTimeout(resolve, 0)); // Wait for ngOnInit to complete
+
       const readings = Array.from({ length: 10 }, (_, i) => ({
         ...mockReading,
         id: `reading-${i}`,
@@ -336,23 +340,28 @@ describe('DashboardPage', () => {
 
     it('should recalculate statistics when readings change', async () => {
       component.ngOnInit();
+      await new Promise(resolve => setTimeout(resolve, 50));
       component['isLoading'] = false;
-      await new Promise(resolve => setTimeout(resolve, 0));
+      mockReadingsService.getStatistics.mockClear();
 
-      mockReadingsService.readings$.next([mockReading]);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      const newReading = { ...mockReading, id: 'new-reading', value: 150 };
+      mockReadingsService.readings$.next([newReading]);
+      await new Promise(resolve => setTimeout(resolve, 50));
 
-      expect(mockReadingsService.getStatistics).toHaveBeenCalledTimes(2);
+      expect(mockReadingsService.getStatistics).toHaveBeenCalled();
+      expect(component.statistics).toEqual(mockStatistics);
     });
 
     it('should not recalculate statistics during initial loading', async () => {
       component.ngOnInit();
+      await new Promise(resolve => setTimeout(resolve, 50));
+      mockReadingsService.getStatistics.mockClear();
       component['isLoading'] = true;
 
       mockReadingsService.readings$.next([mockReading]);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise(resolve => setTimeout(resolve, 50));
 
-      expect(mockReadingsService.getStatistics).toHaveBeenCalledTimes(1);
+      expect(mockReadingsService.getStatistics).not.toHaveBeenCalled();
     });
   });
 
@@ -369,14 +378,18 @@ describe('DashboardPage', () => {
     });
 
     it('should show error toast on refresh failure', async () => {
+      const mockToast = { present: vi.fn().mockResolvedValue(undefined) };
+      const createSpy = vi.fn().mockResolvedValue(mockToast);
+      (component as any).toastController = { create: createSpy };
       mockReadingsService.performFullSync.mockRejectedValue(new Error('Refresh failed'));
+
       const event = {
         target: { complete: vi.fn() },
       } as any;
 
       await component.handleRefresh(event);
 
-      expect(mockToastController.create).toHaveBeenCalledWith(
+      expect(createSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           color: 'danger',
         })
@@ -401,13 +414,18 @@ describe('DashboardPage', () => {
     });
 
     it('should show success toast after sync', async () => {
+      const mockToast = { present: vi.fn().mockResolvedValue(undefined) };
+      const createSpy = vi.fn().mockResolvedValue(mockToast);
+      (component as any).toastController = { create: createSpy };
+
       await component.onSync();
 
-      expect(mockToastController.create).toHaveBeenCalledWith(
+      expect(createSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           color: 'success',
         })
       );
+      expect(mockToast.present).toHaveBeenCalled();
     });
 
     it('should set isSyncing flag during sync', async () => {
@@ -419,12 +437,15 @@ describe('DashboardPage', () => {
     });
 
     it('should handle sync error gracefully', async () => {
+      const mockToast = { present: vi.fn().mockResolvedValue(undefined) };
+      const createSpy = vi.fn().mockResolvedValue(mockToast);
+      (component as any).toastController = { create: createSpy };
       mockReadingsService.performFullSync.mockRejectedValue(new Error('Sync failed'));
 
       await component.onSync();
 
       expect(mockLoggerService.error).toHaveBeenCalled();
-      expect(mockToastController.create).toHaveBeenCalledWith(
+      expect(createSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           color: 'danger',
         })
@@ -655,7 +676,7 @@ describe('DashboardPage', () => {
       syncDate.setMinutes(syncDate.getMinutes() - 30);
       component.lastSyncTime = syncDate.toISOString();
 
-      const result = component.getLastSyncDisplay();
+      component.getLastSyncDisplay();
 
       expect(mockTranslationService.instant).toHaveBeenCalledWith(
         'dashboard.lastSyncStatus.manyMinutes',
@@ -668,7 +689,7 @@ describe('DashboardPage', () => {
       syncDate.setHours(syncDate.getHours() - 5);
       component.lastSyncTime = syncDate.toISOString();
 
-      const result = component.getLastSyncDisplay();
+      component.getLastSyncDisplay();
 
       expect(mockTranslationService.instant).toHaveBeenCalledWith(
         'dashboard.lastSyncStatus.manyHours',
@@ -681,7 +702,7 @@ describe('DashboardPage', () => {
       syncDate.setDate(syncDate.getDate() - 3);
       component.lastSyncTime = syncDate.toISOString();
 
-      const result = component.getLastSyncDisplay();
+      component.getLastSyncDisplay();
 
       expect(mockTranslationService.instant).toHaveBeenCalledWith(
         'dashboard.lastSyncStatus.manyDays',

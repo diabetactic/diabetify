@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, Input } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonText } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
@@ -8,6 +8,7 @@ import { TranslateModule } from '@ngx-translate/core';
   templateUrl: './readings-stats.component.html',
   styleUrls: ['./readings-stats.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [CommonModule, TranslateModule, IonText],
 })

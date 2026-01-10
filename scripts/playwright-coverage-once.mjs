@@ -81,12 +81,12 @@ async function main() {
   await context.close();
   await browser.close();
 
-  // eslint-disable-next-line no-console
+   
   console.log(`Coverage report generated: ${path.join(outputDir, 'index.html')}`);
 }
 
 main().catch(err => {
-  // eslint-disable-next-line no-console
+   
   console.error(err);
   process.exitCode = 1;
 });

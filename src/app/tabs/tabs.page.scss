@@ -106,5 +106,17 @@ ion-fab.center-fab {
       transform: scale(0.95);
       transition: transform 0.1s ease;
     }
+
+    // Disabled state - greyed out
+    &.fab-disabled,
+    &[disabled] {
+      --background: #9ca3af;
+      --background-activated: #9ca3af;
+      --background-hover: #9ca3af;
+
+      opacity: 0.6;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
   }
 }

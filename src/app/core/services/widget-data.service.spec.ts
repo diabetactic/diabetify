@@ -41,28 +41,28 @@ describe('WidgetDataService', () => {
   describe('calculateTrend', () => {
     it('should return an up arrow when the trend is rising', () => {
       const readings = [{ value: 100 }, { value: 90 }] as LocalGlucoseReading[];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const trend = (service as any).calculateTrend(readings);
       expect(trend).toBe('↑');
     });
 
     it('should return a down arrow when the trend is falling', () => {
       const readings = [{ value: 90 }, { value: 100 }] as LocalGlucoseReading[];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const trend = (service as any).calculateTrend(readings);
       expect(trend).toBe('↓');
     });
 
     it('should return a right arrow when the trend is stable', () => {
       const readings = [{ value: 100 }, { value: 100 }] as LocalGlucoseReading[];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const trend = (service as any).calculateTrend(readings);
       expect(trend).toBe('→');
     });
 
     it('should return a right arrow when there is insufficient data', () => {
       const readings = [{ value: 100 }] as LocalGlucoseReading[];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const trend = (service as any).calculateTrend(readings);
       expect(trend).toBe('→');
     });
@@ -80,28 +80,28 @@ describe('WidgetDataService', () => {
 
     it('should return "just now" for times less than a minute ago', () => {
       const timestamp = new Date('2024-01-01T11:59:31Z').toISOString();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const formattedTime = (service as any).formatTimeAgo(timestamp);
       expect(formattedTime).toBe('just now');
     });
 
     it('should return minutes ago for times less than an hour ago', () => {
       const timestamp = new Date('2024-01-01T11:30:00Z').toISOString();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const formattedTime = (service as any).formatTimeAgo(timestamp);
       expect(formattedTime).toBe('30 min ago');
     });
 
     it('should return hours ago for times less than a day ago', () => {
       const timestamp = new Date('2024-01-01T08:00:00Z').toISOString();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const formattedTime = (service as any).formatTimeAgo(timestamp);
       expect(formattedTime).toBe('4h ago');
     });
 
     it('should return days ago for times more than a day ago', () => {
       const timestamp = new Date('2023-12-30T12:00:00Z').toISOString();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const formattedTime = (service as any).formatTimeAgo(timestamp);
       expect(formattedTime).toBe('2d ago');
     });
@@ -131,9 +131,7 @@ describe('WidgetDataService', () => {
         group: 'group.io.diabetactic.app',
       });
 
-      const widgetData = JSON.parse(
-        (WidgetBridgePlugin.setItem as vi.Mock).mock.calls[0][0].value
-      );
+      const widgetData = JSON.parse((WidgetBridgePlugin.setItem as vi.Mock).mock.calls[0][0].value);
       expect(widgetData.glucoseValue).toBe('100 mg/dL');
       expect(widgetData.trendArrow).toBe('↑');
       expect(widgetData.timeInRange).toBe('85%');

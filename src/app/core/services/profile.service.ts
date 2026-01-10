@@ -8,6 +8,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
+import { safeJsonParse, isUserProfile } from '../utils/type-guards';
 import { SecureStorage } from '@aparajita/capacitor-secure-storage';
 import {
   UserProfile,
@@ -107,9 +108,13 @@ export class ProfileService implements OnDestroy {
         return null;
       }
 
-      const profile: UserProfile = JSON.parse(value);
+      const profile = safeJsonParse<UserProfile>(value, isUserProfile);
 
-      // Ensure profile has all required preferences with defaults
+      if (!profile) {
+        this.logger.warn('Profile', 'Invalid profile data in storage', { value });
+        return null;
+      }
+
       if (!profile.preferences) {
         profile.preferences = DEFAULT_USER_PREFERENCES;
       } else {
@@ -506,14 +511,16 @@ export class ProfileService implements OnDestroy {
    */
   async importProfile(jsonData: string): Promise<UserProfile> {
     try {
-      const importedProfile: UserProfile = JSON.parse(jsonData);
+      const importedProfile = safeJsonParse<UserProfile>(jsonData, isUserProfile);
 
-      // Validate required fields
+      if (!importedProfile) {
+        throw new Error('Invalid profile data: failed to parse or validate');
+      }
+
       if (!importedProfile.name || !importedProfile.age) {
         throw new Error('Invalid profile data: missing required fields');
       }
 
-      // Generate new IDs and timestamps
       const now = new Date().toISOString();
       const profile: UserProfile = {
         ...importedProfile,

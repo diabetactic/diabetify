@@ -7,7 +7,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonItem, IonText } from '@ionic/angular/standalone';
+import { IonText } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { LocalGlucoseReading } from '@models/glucose-reading.model';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
@@ -26,14 +26,7 @@ export interface GroupedReading {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [
-    CommonModule,
-    TranslateModule,
-    IonItem,
-    IonText,
-    EmptyStateComponent,
-    ReadingItemComponent,
-  ],
+  imports: [CommonModule, TranslateModule, IonText, EmptyStateComponent, ReadingItemComponent],
 })
 export class ReadingsListComponent {
   @Input() groupedReadings: GroupedReading[] = [];

@@ -1,10 +1,17 @@
-import { CUSTOM_ELEMENTS_SCHEMA, Component, Input, OnInit } from '@angular/core';
+import {
+  CUSTOM_ELEMENTS_SCHEMA,
+  Component,
+  Input,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Appointment } from 'src/app/core/models/appointment.model';
 
 @Component({
   selector: 'app-appointment-timeline',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="timeline-container">
       <div class="timeline">

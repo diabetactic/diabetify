@@ -53,11 +53,12 @@ export class TabsPage implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   fabIcon = 'medkit-outline';
   fabLabel = '';
+  fabDisabled = false;
   readonly showStatusBadges = environment.features?.showStatusBadges ?? false;
 
-  // Queue state for appointment FAB button control
   private queueState: AppointmentQueueStateResponse | null = null;
   private readonly isMockMode = environment.backendMode === 'mock';
+  private isOnAppointmentsTab = false;
 
   constructor(
     private router: Router,
@@ -95,14 +96,20 @@ export class TabsPage implements OnInit, OnDestroy {
       .subscribe({
         next: state => {
           this.queueState = state;
-          this.cdr.detectChanges();
+          this.updateFabDisabledState();
         },
         error: () => {
-          // On error, default to NONE state (allow requesting)
           this.queueState = { state: 'NONE' };
-          this.cdr.detectChanges();
+          this.updateFabDisabledState();
         },
       });
+  }
+
+  private updateFabDisabledState(): void {
+    if (this.isOnAppointmentsTab) {
+      this.fabDisabled = !this.canCreateAppointment;
+    }
+    this.cdr.detectChanges();
   }
 
   /**
@@ -118,14 +125,17 @@ export class TabsPage implements OnInit, OnDestroy {
   }
 
   private updateFabContext(url: string): void {
-    if (url.includes(ROUTE_SEGMENTS.APPOINTMENTS)) {
+    this.isOnAppointmentsTab = url.includes(ROUTE_SEGMENTS.APPOINTMENTS);
+
+    if (this.isOnAppointmentsTab) {
       this.fabIcon = 'calendar-outline';
       this.fabLabel = this.translationService.instant('appointments.create.title');
+      this.fabDisabled = !this.canCreateAppointment;
     } else {
       this.fabIcon = 'medkit-outline';
       this.fabLabel = this.translationService.instant('addReading.title');
+      this.fabDisabled = false;
     }
-    // Mark for check since we're using OnPush change detection
     this.cdr.detectChanges();
   }
 
@@ -150,13 +160,14 @@ export class TabsPage implements OnInit, OnDestroy {
     const state = this.queueState?.state;
     let messageKey = 'appointments.errors.cannotCreate';
 
-    // Provide more specific message based on state
     if (state === 'CREATED') {
       messageKey = 'appointments.errors.alreadyHasAppointment';
     } else if (state === 'PENDING') {
       messageKey = 'appointments.errors.pendingRequest';
     } else if (state === 'BLOCKED') {
       messageKey = 'appointments.errors.blocked';
+    } else if (state === 'DENIED') {
+      messageKey = 'appointments.errors.denied';
     }
 
     const toast = await this.toastController.create({

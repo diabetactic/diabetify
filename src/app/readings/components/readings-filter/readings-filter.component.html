@@ -15,7 +15,7 @@
       <div class="page-shell">
         <!-- Status Filter -->
         <div class="card bg-base-200 mb-4 rounded-xl p-4">
-          <h3 class="mb-3 text-sm font-semibold uppercase text-base-content/60">
+          <h3 class="text-base-content/60 mb-3 text-sm font-semibold uppercase">
             {{ 'readings.glucoseStatus' | translate }}
           </h3>
           <ion-item lines="none" class="rounded-lg">
@@ -31,7 +31,9 @@
               <ion-select-option value="normal">{{
                 'glucose.status.normal' | translate
               }}</ion-select-option>
-              <ion-select-option value="low">{{ 'glucose.status.low' | translate }}</ion-select-option>
+              <ion-select-option value="low">{{
+                'glucose.status.low' | translate
+              }}</ion-select-option>
               <ion-select-option value="critical-low">{{
                 'glucose.status.veryLow' | translate
               }}</ion-select-option>
@@ -47,7 +49,7 @@
 
         <!-- Date Range Filter -->
         <div class="card bg-base-200 mb-4 rounded-xl p-4">
-          <h3 class="mb-3 text-sm font-semibold uppercase text-base-content/60">
+          <h3 class="text-base-content/60 mb-3 text-sm font-semibold uppercase">
             {{ 'readings.dateRange' | translate }}
           </h3>
           <ion-item lines="none" class="mb-2 rounded-lg">
@@ -62,7 +64,7 @@
 
         <!-- Quick Date Filters -->
         <div class="card bg-base-200 mb-4 rounded-xl p-4">
-          <h3 class="mb-3 text-sm font-semibold uppercase text-base-content/60">
+          <h3 class="text-base-content/60 mb-3 text-sm font-semibold uppercase">
             {{ 'readings.quickFilters' | translate }}
           </h3>
           <div class="grid grid-cols-2 gap-2">
@@ -84,7 +86,7 @@
 
       <!-- Action Buttons -->
       <div
-        class="ion-padding safe-area-bottom sticky bottom-0 border-t border-base-300 bg-base-100"
+        class="ion-padding safe-area-bottom border-base-300 bg-base-100 sticky bottom-0 border-t"
       >
         <ion-button expand="block" (click)="applyFilters()">
           {{ 'readings.applyFilters' | translate }}

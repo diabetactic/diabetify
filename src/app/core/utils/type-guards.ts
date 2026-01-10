@@ -3,7 +3,7 @@
  * Provides runtime type safety for dynamic data
  */
 
-import { AccountState } from '../models/user-profile.model';
+import { AccountState, UserProfile } from '../models/user-profile.model';
 
 // ============================================================================
 // Basic Type Guards
@@ -195,4 +195,34 @@ export function getArrayProperty<T>(obj: unknown, key: string): T[] | undefined 
   if (!isObject(obj)) return undefined;
   const value = obj[key];
   return Array.isArray(value) ? (value as T[]) : undefined;
+}
+
+// ============================================================================
+// User Profile Type Guard
+// ============================================================================
+
+/**
+ * Validate UserProfile structure from storage
+ * Checks minimum required fields for profile integrity
+ */
+export function isUserProfile(data: unknown): data is UserProfile {
+  if (!isObject(data)) return false;
+
+  const hasId = 'id' in data && typeof data['id'] === 'string' && data['id'].length > 0;
+  const hasName = 'name' in data && typeof data['name'] === 'string';
+  const hasAge = 'age' in data && typeof data['age'] === 'number' && Number.isFinite(data['age']);
+  const hasAccountState = 'accountState' in data && isValidAccountState(data['accountState']);
+
+  const hasPreferencesIfPresent = !('preferences' in data) || isObject(data['preferences']);
+  const hasTidepoolConnectionIfPresent =
+    !('tidepoolConnection' in data) || isObject(data['tidepoolConnection']);
+
+  return (
+    hasId &&
+    hasName &&
+    hasAge &&
+    hasAccountState &&
+    hasPreferencesIfPresent &&
+    hasTidepoolConnectionIfPresent
+  );
 }

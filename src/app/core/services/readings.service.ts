@@ -25,6 +25,7 @@ import {
   GlucoseUnit,
   GlucoseStatus,
   PaginatedReadings,
+  CreateReadingInput,
 } from '@models/glucose-reading.model';
 import { db, DiabetacticDatabase, SyncConflictItem } from '@services/database.service';
 import { LoggerService } from '@services/logger.service';
@@ -184,28 +185,19 @@ export class ReadingsService implements OnDestroy {
   /**
    * Add a new reading
    */
-  async addReading(
-    reading: Partial<GlucoseReading> & Omit<GlucoseReading, 'id'>,
-    userId?: string
-  ): Promise<LocalGlucoseReading> {
-    const readingWithId = reading as { id?: string };
-    const uniqueId =
-      readingWithId.id && readingWithId.id !== ''
-        ? readingWithId.id
-        : this.mapper.generateLocalId();
+  async addReading(reading: CreateReadingInput, userId?: string): Promise<LocalGlucoseReading> {
+    const existingId = (reading as Partial<GlucoseReading>).id;
+    const uniqueId = existingId && existingId !== '' ? existingId : this.mapper.generateLocalId();
 
     const localReading: LocalGlucoseReading = {
       ...reading,
       id: uniqueId,
-      localId: this.mapper.generateLocalId(),
+      localId: uniqueId,
       synced: false,
       userId: userId || 'local-user',
       localStoredAt: new Date().toISOString(),
-      isLocalOnly: !reading.id || reading.id === '' || uniqueId.startsWith('local_'),
-      status: this.mapper.calculateGlucoseStatus(
-        (reading as LocalGlucoseReading).value,
-        (reading as LocalGlucoseReading).units
-      ),
+      isLocalOnly: !existingId || existingId === '' || uniqueId.startsWith('local_'),
+      status: this.mapper.calculateGlucoseStatus(reading.value, reading.units),
     } as LocalGlucoseReading;
 
     await this.db.readings.add(localReading);

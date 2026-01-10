@@ -178,20 +178,36 @@ export abstract class BasePage {
     }
   }
 
-  /**
-   * Swipe item to reveal options (Ionic ion-item-sliding)
-   */
-  async swipeItemToRevealOptions(itemLocator: Locator): Promise<void> {
+  async swipeItemToRevealOptions(
+    itemLocator: Locator,
+    side: 'start' | 'end' = 'end'
+  ): Promise<void> {
     await itemLocator.evaluate((el: HTMLElement) => {
       el.scrollIntoView({ behavior: 'instant', block: 'center' });
     });
     await this.page.waitForTimeout(200);
 
+    const opened = await itemLocator.evaluate(async (el, openSide) => {
+      const sliding = el as unknown as { open?: (side: string) => Promise<void> };
+      if (typeof sliding.open === 'function') {
+        await sliding.open(openSide);
+        return true;
+      }
+      return false;
+    }, side);
+
+    if (opened) {
+      await this.page.waitForTimeout(300);
+      return;
+    }
+
     const box = await itemLocator.boundingBox();
     if (box) {
-      await this.page.mouse.move(box.x + box.width - 20, box.y + box.height / 2);
+      const startX = side === 'end' ? box.x + box.width - 20 : box.x + 20;
+      const endX = side === 'end' ? box.x + 50 : box.x + box.width - 50;
+      await this.page.mouse.move(startX, box.y + box.height / 2);
       await this.page.mouse.down();
-      await this.page.mouse.move(box.x + 50, box.y + box.height / 2);
+      await this.page.mouse.move(endX, box.y + box.height / 2);
       await this.page.mouse.up();
       await this.page.waitForTimeout(300);
     }

@@ -11,6 +11,7 @@ import {
 import { PluginListenerHandle } from '@capacitor/core';
 import { LoggerService } from '@services/logger.service';
 import { ROUTES, appointmentDetailRoute } from '@core/constants';
+import { isObject, getStringProperty } from '../utils/type-guards';
 
 export interface ReadingReminder {
   id: number;
@@ -312,31 +313,35 @@ export class NotificationService implements OnDestroy {
    * Handle notification action (when user taps notification)
    */
   private handleNotificationAction(action: ActionPerformed): void {
-    const extra = action.notification.extra as Record<string, unknown> | undefined;
-
-    if (!extra?.['type']) {
+    if (!isObject(action.notification.extra)) {
       return;
     }
 
-    // Capacitor callbacks run outside Angular zone, so we need to run navigation inside the zone
+    const extra = action.notification.extra;
+    const type = getStringProperty(extra, 'type');
+
+    if (!type) {
+      return;
+    }
+
     this.ngZone.run(() => {
-      const type = extra['type'] as string;
       switch (type) {
         case 'reading_reminder':
           this.logger.info('Notifications', 'User tapped reading reminder');
           this.router.navigate([ROUTES.ADD_READING]);
           break;
 
-        case 'appointment_reminder':
-          this.logger.info('Notifications', 'User tapped appointment reminder', {
-            appointmentId: extra['appointmentId'],
-          });
-          if (extra['appointmentId']) {
-            this.router.navigate([appointmentDetailRoute(extra['appointmentId'] as string)]);
+        case 'appointment_reminder': {
+          const appointmentId = getStringProperty(extra, 'appointmentId');
+          this.logger.info('Notifications', 'User tapped appointment reminder', { appointmentId });
+
+          if (appointmentId) {
+            this.router.navigate([appointmentDetailRoute(appointmentId)]);
           } else {
             this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
           }
           break;
+        }
 
         default:
           this.logger.debug('Notifications', 'Unknown notification type', { type });

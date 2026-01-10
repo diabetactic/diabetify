@@ -22,7 +22,6 @@
       ]
     },
     "build:mock": {
-      "dependsOn": ["^build"],
       "outputs": ["www/**", ".angular/**"],
       "inputs": [
         "src/**",
@@ -33,7 +32,6 @@
       ]
     },
     "build:heroku": {
-      "dependsOn": ["^build"],
       "outputs": ["www/**", ".angular/**"],
       "inputs": [
         "src/**",
@@ -44,7 +42,6 @@
       ]
     },
     "build:analyze": {
-      "dependsOn": ["^build"],
       "outputs": ["www/**", "dist/stats.json"],
       "inputs": ["src/**", "angular.json", "tsconfig*.json"]
     },
@@ -75,7 +72,7 @@
       "outputs": ["coverage/**"],
       "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "vitest.config.ts", "src/setup-vitest.ts"]
     },
-    "test:integration": {
+    "test:integration:backend": {
       "outputs": [],
       "inputs": [
         "src/app/tests/integration/**/*.ts",
@@ -102,24 +99,25 @@
       "outputs": ["coverage/**", "test-results/**", "junit.xml"],
       "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "vitest.config.ts", "src/setup-vitest.ts"]
     },
-    "test:e2e": {
-      "dependsOn": ["build"],
+    "test:e2e:mock": {
       "outputs": ["playwright-report/**", "test-results/**", "playwright/artifacts/**"],
       "inputs": ["playwright/**", "playwright.config.ts", "www/**"]
     },
-    "test:e2e:headed": {
-      "dependsOn": ["build"],
+    "test:e2e:docker": {
+      "outputs": ["playwright-report/**", "test-results/**", "playwright/artifacts/**"],
+      "inputs": ["playwright/**", "playwright.config.ts", "www/**"]
+    },
+    "test:e2e:docker:headed": {
       "cache": false,
       "outputs": ["playwright-report/**", "test-results/**"],
       "inputs": ["playwright/**", "playwright.config.ts", "www/**"]
     },
     "test:a11y": {
-      "dependsOn": ["build"],
       "outputs": ["playwright-report/**", "test-results/**"],
       "inputs": ["playwright/tests/accessibility-audit.spec.ts", "playwright.config.ts", "www/**"]
     },
-    "test:mobile": {
-      "dependsOn": ["mobile:build", "test:e2e"],
+    "test:e2e:mobile": {
+      "dependsOn": ["mobile:build"],
       "cache": false
     },
     "lint:ts:run": {
@@ -138,7 +136,7 @@
       "outputs": [],
       "inputs": ["src/**/*.scss", "src/**/*.css", ".stylelintrc.json"]
     },
-    "lint:fix": {
+    "lint:ts:fix": {
       "outputs": [],
       "inputs": ["src/**/*.ts", "src/**/*.js", "src/**/*.html", "eslint.config.js"],
       "cache": false
@@ -173,20 +171,11 @@
       "inputs": ["src/**/*.ts", "tsconfig*.json"]
     },
     "analyze:bundle": {
-      "dependsOn": ["build:prod"],
+      "dependsOn": ["build:prod:ng"],
       "outputs": ["reports/bundle-analysis.json"],
       "inputs": ["dist/diabetify/browser/stats.json"]
     },
-    "analyze:all": {
-      "dependsOn": [
-        "analyze:dead-code",
-        "analyze:circular",
-        "analyze:complexity",
-        "analyze:duplication",
-        "analyze:type-coverage"
-      ],
-      "outputs": []
-    },
+
     "fix:dead-code": {
       "cache": false,
       "outputs": [],

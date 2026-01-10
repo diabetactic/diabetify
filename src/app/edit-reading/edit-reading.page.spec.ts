@@ -139,7 +139,7 @@ describe('EditReadingPage', () => {
     it('should dismiss modal if no reading is provided', async () => {
       const dismissSpy = vi.spyOn(mockModalController, 'dismiss');
       const errorSpy = vi.spyOn(mockLoggerService, 'error');
-      
+
       component.reading = null as any;
       component.ngOnInit();
 
@@ -380,7 +380,9 @@ describe('EditReadingPage', () => {
 
     it('should get status label', () => {
       component.glucoseStatus = 'high';
-      const translateSpy = vi.spyOn(component['translate'], 'instant').mockReturnValue('glucose.status.high');
+      const translateSpy = vi
+        .spyOn(component['translate'], 'instant')
+        .mockReturnValue('glucose.status.high');
 
       const label = component.getStatusLabel();
 

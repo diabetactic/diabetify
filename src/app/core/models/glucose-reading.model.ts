@@ -25,6 +25,18 @@ export type GlucoseType = 'cbg' | 'smbg';
  */
 export type SMBGSubType = 'manual' | 'linked';
 
+export const MEAL_CONTEXTS = [
+  'DESAYUNO',
+  'ALMUERZO',
+  'MERIENDA',
+  'CENA',
+  'EJERCICIO',
+  'OTRAS_COMIDAS',
+  'OTRO',
+] as const;
+
+export type MealContext = (typeof MEAL_CONTEXTS)[number];
+
 /**
  * Glucose status based on value ranges
  */
@@ -161,8 +173,7 @@ export interface LocalGlucoseFields {
   /** Backend ID from Heroku API (for deduplication during sync) */
   backendId?: number;
 
-  /** Meal context for the reading (e.g., 'before-breakfast', 'after-lunch') */
-  mealContext?: string;
+  mealContext?: MealContext;
 }
 
 /**
@@ -170,6 +181,24 @@ export interface LocalGlucoseFields {
  * Intersection type combining GlucoseReading with local fields
  */
 export type LocalGlucoseReading = GlucoseReading & LocalGlucoseFields;
+
+/**
+ * Input type for creating a new glucose reading
+ * Requires essential fields (type, value, units, time) but omits auto-generated fields
+ */
+export type CreateReadingInput = Omit<
+  GlucoseReading,
+  'id' | 'createdTime' | 'modifiedTime' | 'uploadId' | 'guid'
+> & {
+  /** Type must be explicitly specified */
+  type: GlucoseType;
+  /** Value is required for new readings */
+  value: number;
+  /** Units are required for new readings */
+  units: GlucoseUnit;
+  /** Time is required for new readings */
+  time: string;
+} & Partial<LocalGlucoseFields>;
 
 /**
  * Query parameters for fetching glucose readings

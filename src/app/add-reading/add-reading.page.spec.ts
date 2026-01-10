@@ -12,7 +12,7 @@ import { AddReadingPage } from './add-reading.page';
 import { ReadingsService } from '@services/readings.service';
 import { ProfileService } from '@services/profile.service';
 import { LoggerService } from '@services/logger.service';
-import { GlucoseUnit, SMBGReading } from '@models/glucose-reading.model';
+import { GlucoseUnit } from '@models/glucose-reading.model';
 import { UserProfile, DEFAULT_USER_PREFERENCES, AccountState } from '@models/user-profile.model';
 
 describe('AddReadingPage', () => {

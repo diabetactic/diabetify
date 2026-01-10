@@ -169,22 +169,6 @@ describe('Backend Services Helper - Health Checks', () => {
       vi.useFakeTimers();
     });
 
-    /**
-     * TODO: SKIPPED - Retry timing makes test unreliable
-     *
-     * waitForBackendServices() has internal retry logic that waits for services
-     * to become healthy. Testing the unhealthy path requires:
-     * 1. Mocking all retry attempts to fail
-     * 2. Waiting for the full retry timeout
-     *
-     * The timeout makes this test slow and flaky. The function's behavior
-     * is verified indirectly by the 'unknown services' test below.
-     */
-    it.skip('should throw error if any service is unhealthy', async () => {
-      // This test has timing issues with the fetch mock and retries
-      // Function waits for multiple attempts before throwing error
-    });
-
     it('should throw error for unknown services', async () => {
       vi.useRealTimers();
       // Unknown services are treated as unhealthy and cause the function to throw
@@ -192,53 +176,6 @@ describe('Backend Services Helper - Health Checks', () => {
         'Backend services unhealthy'
       );
       vi.useFakeTimers();
-    });
-  });
-
-  /**
-   * TODO: SKIPPED - Module-level cache prevents isolated testing
-   *
-   * isBackendAvailable() uses a module-level cache that persists across tests.
-   * Once the first test runs, the cache is populated and subsequent tests
-   * cannot change the cached value.
-   *
-   * The cache is intentional for performance (avoid repeated health checks),
-   * but it makes unit testing difficult. Options to fix:
-   *
-   * 1. Export a clearBackendAvailableCache() function for testing
-   * 2. Use dependency injection for the cache
-   * 3. Move cache to a separate module that can be mocked
-   * 4. Test in separate processes (each test file gets fresh module)
-   */
-  describe('isBackendAvailable', () => {
-    it.skip('should return true if backend responds', async () => {
-      // Module-level cache prevents testing this correctly
-    });
-
-    it.skip('should return false if backend does not respond', async () => {
-      // Module-level cache prevents testing this correctly
-    });
-
-    it.skip('should cache result for subsequent calls', async () => {
-      // The cache behavior is correct but not testable
-      // without access to clearBackendAvailableCache() function
-    });
-  });
-
-  /**
-   * TODO: SKIPPED - Depends on isBackendAvailable's module-level cache
-   *
-   * skipIfNoBackend() calls isBackendAvailable() internally, which has
-   * a module-level cache. Since we can't control the cache state,
-   * we can't reliably test both the "available" and "unavailable" paths.
-   */
-  describe('skipIfNoBackend', () => {
-    it.skip('should throw special error if backend unavailable', async () => {
-      // Depends on isBackendAvailable cache
-    });
-
-    it.skip('should not throw error if backend is available', async () => {
-      // Depends on isBackendAvailable cache
     });
   });
 });
@@ -815,25 +752,7 @@ describe('Backend Services Helper - Setup/Teardown', () => {
     clearCachedAuthToken();
   });
 
-  /**
-   * TODO: SKIPPED - Requires real backend
-   *
-   * setupBackendIntegrationTests() performs actual network calls to:
-   * 1. Check backend health via waitForBackendServices()
-   * 2. Login and get authentication token
-   *
-   * This cannot be unit tested with mocks because the function's purpose
-   * is to verify real backend connectivity. It is tested as part of the
-   * E2E integration suite (playwright/tests/docker-backend-e2e.spec.ts).
-   */
   describe('setupBackendIntegrationTests', () => {
-    it.skip('should verify services and login (requires backend)', async () => {
-      // This function calls waitForBackendServices with complex retries
-      // Tested as part of E2E integration tests
-      const token = await setupBackendIntegrationTests();
-      expect(token).toBeDefined();
-    });
-
     it('should export setupBackendIntegrationTests function', () => {
       expect(typeof setupBackendIntegrationTests).toBe('function');
     });

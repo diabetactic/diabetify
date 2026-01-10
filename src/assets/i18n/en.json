@@ -408,6 +408,7 @@
     }
   },
   "trends": {
+    "glucoseReadings": "Glucose Readings",
     "title": "Trends",
     "analysisTitle": "Trend Analysis",
     "comingSoon": "Coming Soon",
@@ -572,7 +573,8 @@
       "cannotCreate": "You cannot create an appointment at this time",
       "alreadyHasAppointment": "You already have an active appointment",
       "pendingRequest": "Your appointment request is pending approval",
-      "blocked": "You cannot create appointments at this time"
+      "blocked": "You cannot create appointments at this time",
+      "denied": "Your appointment request was denied"
     },
     "queue": {
       "title": "Appointment Request",

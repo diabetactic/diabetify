@@ -1,24 +1,3 @@
-/**
- * Tests for offline detection in ReadingsService
- *
- * KNOWN ISSUES:
- * - 4 tests skipped due to flaky async timing issues
- * - The service calls initializeNetworkMonitoring() in constructor without awaiting
- * - This creates race conditions that are difficult to test reliably
- * - Tests pass locally but fail intermittently in CI with blank error messages
- *
- * SKIPPED TESTS:
- * 1. "should default to online if network plugin fails" - TestBed reset timing issues
- * 2. "should proceed with sync when online" - Blank error, likely timing
- * 3. "should allow sync after going from offline to online" - Network transition timing
- * 4. "should prevent sync after going from online to offline" - Network transition timing
- *
- * TO FIX:
- * - Refactor ReadingsService to make network initialization synchronous or exposing a ready promise
- * - OR use done() callbacks instead of async/await for these specific tests
- * - OR increase Vitest timeout globally (currently using 10s per-test timeout)
- */
-
 // Initialize TestBed environment for Vitest
 import '../../../test-setup';
 
@@ -160,73 +139,6 @@ describe('ReadingsService - Offline Detection', () => {
 
       expect(mockLogger.info).toHaveBeenCalledWith('Network', 'Network status changed: online');
     });
-
-    /**
-     * TODO: SKIPPED - TestBed reset conflicts with async network initialization
-     *
-     * This test attempts to reconfigure TestBed mid-suite to inject a failing
-     * network mock. However, TestBed.configureTestingModule() fails because
-     * the module was already instantiated in beforeEach.
-     *
-     * Fix options:
-     * 1. Move to separate test file with its own TestBed
-     * 2. Use dependency injection overrides instead of reconfiguring
-     * 3. Test this scenario in a standalone unit test of network initialization
-     */
-    it.skip('should default to online if network plugin fails', async () => {
-      // Mock network plugin to fail for this specific test
-      (Network.getStatus as Mock)
-        .mockReset()
-        .mockRejectedValue(new Error('Network plugin not available'));
-      (Network.addListener as Mock).mockReset().mockReturnValue({ remove: vi.fn() });
-
-      // Create a fresh database for this test
-      const failingDb = new Dexie('failing-test-db') as DiabetacticDatabase;
-      failingDb.version(1).stores({
-        readings: 'id, time, synced',
-        syncQueue: '++id, readingId, timestamp',
-        appointments: 'id, datetime, userId',
-      });
-
-      const mockLiveQuery = (queryFn: () => Promise<unknown>) => {
-        return {
-          subscribe: (observer: { next?: (value: unknown) => void }) => {
-            queryFn().then(result => observer.next?.(result));
-            return { unsubscribe: () => {} };
-          },
-        };
-      };
-
-      // Reset and reconfigure TestBed (already reset in beforeEach)
-      TestBed.configureTestingModule({
-        providers: [
-          ReadingsService,
-          { provide: DiabetacticDatabase, useValue: failingDb },
-          { provide: LIVE_QUERY_FN, useValue: mockLiveQuery },
-          // Disable mock backend to use real calculations from test data
-          { provide: MockDataService, useValue: undefined },
-          { provide: ApiGatewayService, useValue: mockApiGateway },
-          { provide: LoggerService, useValue: mockLogger },
-        ],
-      });
-
-      const failingService = TestBed.inject(ReadingsService);
-
-      await waitForInit();
-
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        'Network',
-        'Failed to initialize network monitoring',
-        expect.any(Error)
-      );
-
-      // Service should still work (default to online)
-      const result = await failingService.syncPendingReadings();
-      expect(result).toBeDefined();
-
-      // Cleanup
-      await failingDb.delete();
-    }, 10000); // 10s timeout for this test
   });
 
   describe('syncPendingReadings - offline behavior', () => {
@@ -247,30 +159,6 @@ describe('ReadingsService - Offline Detection', () => {
       expect(mockLogger.info).toHaveBeenCalledWith('Sync', 'Skipping sync - device is offline');
       expect(mockApiGateway.request).not.toHaveBeenCalled();
     });
-
-    /**
-     * TODO: SKIPPED - Flaky timing with blank Vitest error
-     *
-     * This test passes sometimes but Vitest reports a blank error. The issue
-     * is likely related to:
-     * 1. Async network status initialization racing with test execution
-     * 2. The mockLogger.info assertion checking for absence of a call
-     *
-     * The positive case (sync skipped when offline) works reliably; this
-     * negative case has timing issues.
-     */
-    it.skip('should proceed with sync when online', async () => {
-      await waitForInit();
-
-      // Clear any initialization logs
-      mockLogger.info.mockClear();
-
-      // Trigger sync (should not skip due to offline)
-      await service.syncPendingReadings();
-
-      expect(mockLogger.info).not.toHaveBeenCalledWith('Sync', 'Skipping sync - device is offline');
-      // Result may be { success: 0, failed: 0 } because queue is empty, but not due to offline
-    }, 10000); // 10s timeout
   });
 
   describe('fetchFromBackend - offline behavior', () => {
@@ -335,69 +223,5 @@ describe('ReadingsService - Offline Detection', () => {
       expect(mockLogger.info).toHaveBeenCalledWith('Sync', 'Skipping sync - device is offline');
       expect(mockLogger.info).toHaveBeenCalledWith('Sync', 'Skipping fetch - device is offline');
     });
-  });
-
-  /**
-   * TODO: SKIPPED - Network status transition timing is unreliable
-   *
-   * These tests verify behavior during network status transitions (offline->online,
-   * online->offline). The transitions work correctly in the app, but tests are
-   * flaky because:
-   *
-   * 1. The statusChangeCallback triggers async operations
-   * 2. There's no reliable way to await the status change completion
-   * 3. The service's internal isOnline state may not update before assertions
-   *
-   * The non-transitional tests (starts offline, starts online) work reliably.
-   * Transition behavior should be tested via E2E or by refactoring to expose
-   * a status change promise.
-   */
-  describe.skip('network status transitions', () => {
-    it('should allow sync after going from offline to online', async () => {
-      await waitForInit();
-
-      const addListenerCall = (Network.addListener as Mock).mock.calls[0];
-      const statusChangeCallback = addListenerCall[1];
-
-      // Start offline
-      statusChangeCallback({ connected: false });
-
-      // Verify offline behavior
-      let result = await service.syncPendingReadings();
-      expect(result).toEqual({ success: 0, failed: 0 });
-      expect(mockLogger.info).toHaveBeenCalledWith('Sync', 'Skipping sync - device is offline');
-
-      mockLogger.info.mockClear();
-
-      // Simulate network coming back online
-      statusChangeCallback({ connected: true });
-
-      // Now sync should proceed
-      result = await service.syncPendingReadings();
-
-      expect(mockLogger.info).not.toHaveBeenCalledWith('Sync', 'Skipping sync - device is offline');
-    }, 10000); // 10s timeout
-
-    // SKIPPED: Flaky async timing with network status transitions
-    it('should prevent sync after going from online to offline', async () => {
-      await waitForInit();
-
-      // Verify online behavior (no skip message)
-      mockLogger.info.mockClear();
-      await service.syncPendingReadings();
-      expect(mockLogger.info).not.toHaveBeenCalledWith('Sync', 'Skipping sync - device is offline');
-
-      // Simulate going offline
-      const addListenerCall = (Network.addListener as Mock).mock.calls[0];
-      const statusChangeCallback = addListenerCall[1];
-      statusChangeCallback({ connected: false });
-
-      mockLogger.info.mockClear();
-
-      // Now sync should be skipped
-      const result = await service.syncPendingReadings();
-      expect(result).toEqual({ success: 0, failed: 0 });
-      expect(mockLogger.info).toHaveBeenCalledWith('Sync', 'Skipping sync - device is offline');
-    }, 10000); // 10s timeout
   });
 });

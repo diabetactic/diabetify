@@ -24,8 +24,9 @@ pnpm test -- src/path/to/file.spec.ts  # Single test file
 pnpm test -- --grep "test name"      # Filter by test name
 pnpm run test:watch                  # Watch mode
 pnpm run test:coverage               # Coverage report
-pnpm run test:e2e                    # Playwright E2E (headless)
-pnpm run test:e2e:headed             # Playwright E2E (visible browser)
+pnpm run test:e2e:mock               # Playwright E2E - mock backend (headless)
+pnpm run test:e2e:docker             # Playwright E2E - Docker backend (headless)
+pnpm run test:e2e:docker:headed      # Playwright E2E - Docker backend (visible browser)
 ```
 
 ## Code Style
@@ -182,4 +183,18 @@ describe('MyService', () => {
 4. **OnPush change detection** - Prefer for performance; use `ChangeDetectorRef.markForCheck()`
 5. **Test isolation** - Tests run in forks with sequential execution per file
 
-Repository: https://github.com/diabetactic/diabetify
+## Hierarchical Documentation
+
+Additional AGENTS.md files in subdirectories:
+
+- `src/app/core/services/AGENTS.md` - Service layer patterns, API architecture
+- `src/app/tests/AGENTS.md` - Integration testing patterns, test helpers
+- `src/mocks/AGENTS.md` - MSW handlers, mock data
+- `playwright/AGENTS.md` - E2E testing, Page Object Model
+- `docs/AGENTS.md` - Documentation index
+- `scripts/AGENTS.md` - Build/CI automation scripts
+
+---
+
+Repository: https://github.com/diabetactic/diabetify  
+Last Updated: 2026-01-09 (commit a1ba245)

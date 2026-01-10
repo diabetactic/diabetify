@@ -6,7 +6,14 @@
  * and active workflows.
  */
 
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppIconComponent } from '../app-icon/app-icon.component';
@@ -27,6 +34,7 @@ import { ServiceOrchestrator, WorkflowState } from '@services/service-orchestrat
   templateUrl: './service-monitor.component.html',
   styleUrls: ['./service-monitor.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [CommonModule, TranslateModule, AppIconComponent],
 })
@@ -75,7 +83,8 @@ export class ServiceMonitorComponent implements OnInit, OnDestroy {
 
   constructor(
     private externalServices: ExternalServicesManager,
-    private orchestrator: ServiceOrchestrator
+    private orchestrator: ServiceOrchestrator,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -85,6 +94,7 @@ export class ServiceMonitorComponent implements OnInit, OnDestroy {
         this.servicesState = state;
         this.services = Array.from(state.services.values());
         this.circuitBreakers = Array.from(state.circuitBreakers.values());
+        this.cdr.markForCheck();
       })
     );
 
@@ -112,6 +122,7 @@ export class ServiceMonitorComponent implements OnInit, OnDestroy {
   loadWorkflows() {
     this.activeWorkflows = this.orchestrator.getActiveWorkflows();
     this.completedWorkflows = this.orchestrator.getCompletedWorkflows();
+    this.cdr.markForCheck();
   }
 
   /**

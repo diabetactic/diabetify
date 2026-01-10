@@ -1,4 +1,9 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef, AfterViewInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   IonHeader,
@@ -43,7 +48,7 @@ interface Tip {
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class TipsPage {
+export class TipsPage implements AfterViewInit {
   constructor(private cdr: ChangeDetectorRef) {}
   tips: Tip[] = [
     {

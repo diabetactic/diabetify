@@ -16,12 +16,7 @@
     "**/utils/type-guards.ts",
     "**/models/http-error.model.ts"
   ],
-  "ignoreDependencies": [
-    "@angular/language-service",
-    "@ionic/core",
-    "ionicons",
-    "@analogjs/vite-plugin-angular"
-  ],
+  "ignoreDependencies": ["@angular/language-service", "@analogjs/vite-plugin-angular"],
   "ignoreBinaries": ["only-allow", "adb", "studio", "emulator"],
   "ignoreExportsUsedInFile": true,
   "rules": {

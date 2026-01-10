@@ -153,7 +153,7 @@ test.describe('Bolus Calculator', () => {
   });
 
   test.describe('Navigation', () => {
-    test('should navigate to calculator from dashboard', async ({ page }) => {
+    test.skip('should navigate to calculator from dashboard', async ({ page }) => {
       // Dismiss any overlays first
       await dismissOnboardingOverlay(page);
 

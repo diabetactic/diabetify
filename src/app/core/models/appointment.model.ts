@@ -5,6 +5,36 @@
  * These models match the actual API response from the appointments service.
  */
 
+export const APPOINTMENT_MOTIVES = [
+  'AJUSTE',
+  'HIPOGLUCEMIA',
+  'HIPERGLUCEMIA',
+  'CETOSIS',
+  'DUDAS',
+  'OTRO',
+] as const;
+
+export type AppointmentMotive = (typeof APPOINTMENT_MOTIVES)[number];
+
+export const INSULIN_TYPES = ['rapid', 'short', 'intermediate', 'long', 'mixed', 'none'] as const;
+
+export type InsulinType = (typeof INSULIN_TYPES)[number];
+
+export const PUMP_TYPES = ['medtronic', 'omnipod', 'tandem', 'none', 'other'] as const;
+
+export type PumpType = (typeof PUMP_TYPES)[number];
+
+export const QUEUE_STATES = [
+  'PENDING',
+  'ACCEPTED',
+  'DENIED',
+  'CREATED',
+  'NONE',
+  'BLOCKED',
+] as const;
+
+export type AppointmentQueueState = (typeof QUEUE_STATES)[number];
+
 /**
  * Appointment (clinical treatment record) from ExtServices API
  * This is what the backend actually returns and accepts
@@ -24,7 +54,7 @@ export interface Appointment {
   control_data: string;
   motive: string[];
   other_motive?: string | null;
-  status: string;
+  status: AppointmentQueueState;
   timestamps: { [key: string]: string };
 }
 
@@ -55,21 +85,6 @@ export interface AppointmentListResponse {
 }
 
 /**
- * Common appointment motives (for UI dropdowns)
- * Backend enum: AJUSTE, HIPOGLUCEMIA, HIPERGLUCEMIA, CETOSIS, DUDAS, OTRO
- */
-export const APPOINTMENT_MOTIVES = [
-  'AJUSTE',
-  'HIPOGLUCEMIA',
-  'HIPERGLUCEMIA',
-  'CETOSIS',
-  'DUDAS',
-  'OTRO',
-] as const;
-
-export type AppointmentMotive = (typeof APPOINTMENT_MOTIVES)[number];
-
-/**
  * Mapping from backend motive to translation keys for UI display
  */
 export const MOTIVE_TRANSLATION_KEYS: Record<AppointmentMotive, string> = {
@@ -80,35 +95,6 @@ export const MOTIVE_TRANSLATION_KEYS: Record<AppointmentMotive, string> = {
   DUDAS: 'appointments.motives.questions',
   OTRO: 'appointments.motives.other',
 };
-
-/**
- * Common insulin types (for UI dropdowns)
- */
-export const INSULIN_TYPES = ['rapid', 'short', 'intermediate', 'long', 'mixed', 'none'] as const;
-
-export type InsulinType = (typeof INSULIN_TYPES)[number];
-
-/**
- * Common pump types (for UI dropdowns)
- */
-export const PUMP_TYPES = ['medtronic', 'omnipod', 'tandem', 'none', 'other'] as const;
-
-export type PumpType = (typeof PUMP_TYPES)[number];
-
-/**
- * Appointment queue states
- * CREATED: User has created an appointment (after being ACCEPTED)
- */
-export const QUEUE_STATES = [
-  'PENDING',
-  'ACCEPTED',
-  'DENIED',
-  'CREATED',
-  'NONE',
-  'BLOCKED',
-] as const;
-
-export type AppointmentQueueState = (typeof QUEUE_STATES)[number];
 
 /**
  * Response from GET /appointments/state
@@ -135,19 +121,15 @@ export interface AppointmentSubmitResponse {
  */
 export interface AppointmentResolutionResponse {
   appointment_id: number;
-  // Treatment change recommendations
   change_basal_type: string;
   change_basal_dose: number;
   change_basal_time: string;
   change_fast_type: string;
   change_ratio: number;
   change_sensitivity: number;
-  // Flags
   emergency_care: boolean;
   needed_physical_appointment: boolean;
-  // Optional
   glucose_scale?: string | null;
-  // Legacy fields (for backwards compatibility with old UI expectations)
   state?: AppointmentQueueState;
   resolved_at?: string;
   resolved_by?: string;

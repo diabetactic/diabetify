@@ -1,6 +1,15 @@
 import { inject, Injectable } from '@angular/core';
-import { fakerES as faker } from '@faker-js/faker';
 import { DemoDataService } from '@services/demo-data.service';
+
+// Lazy-loaded faker instance (only loaded in mock mode)
+let fakerInstance: typeof import('@faker-js/faker').fakerES | null = null;
+async function getFaker(): Promise<typeof import('@faker-js/faker').fakerES> {
+  if (!fakerInstance) {
+    const { fakerES } = await import('@faker-js/faker');
+    fakerInstance = fakerES;
+  }
+  return fakerInstance;
+}
 import { LoggerService } from '@services/logger.service';
 import { MockAdapterConfig } from '@core/config/mock-adapter-config';
 import { LocalGlucoseReading, PaginatedReadings } from '@models/glucose-reading.model';
@@ -102,7 +111,7 @@ export class MockAdapterService {
     }
 
     if (!localStorage.getItem(this.PROFILE_STORAGE_KEY)) {
-      const profile = this.demoDataService.generateUserProfile();
+      const profile = await this.demoDataService.generateUserProfile();
       localStorage.setItem(this.PROFILE_STORAGE_KEY, JSON.stringify(profile));
     }
   }
@@ -268,7 +277,7 @@ export class MockAdapterService {
       const stored = this.storage?.getItem(this.PROFILE_STORAGE_KEY);
       const profile: UserProfile = stored
         ? JSON.parse(stored)
-        : this.demoDataService.generateUserProfile();
+        : await this.demoDataService.generateUserProfile();
 
       const token = `mock_token_${Date.now()}`;
       this.storage?.setItem('diabetactic_mock_token', token);
@@ -294,7 +303,7 @@ export class MockAdapterService {
       return this.delay(JSON.parse(stored));
     }
 
-    // Generate realistic profile with faker
+    const faker = await getFaker();
     const profile: UserProfile = {
       id: faker.string.uuid(),
       name: faker.person.fullName(),
@@ -312,7 +321,7 @@ export class MockAdapterService {
       preferences: {
         glucoseUnit: 'mg/dL',
         colorPalette: 'default',
-        themeMode: 'light', // Default to light
+        themeMode: 'light',
         highContrastMode: false,
         targetRange: {
           min: 70,
@@ -360,7 +369,7 @@ export class MockAdapterService {
     const stored = this.storage?.getItem(this.PROFILE_STORAGE_KEY);
     const existing: UserProfile = stored
       ? JSON.parse(stored)
-      : this.demoDataService.generateUserProfile();
+      : await this.demoDataService.generateUserProfile();
 
     const updated = {
       ...existing,

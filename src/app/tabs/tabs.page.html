@@ -41,6 +41,8 @@
       (click)="navigateToAddReading()"
       data-testid="fab-add-reading"
       [attr.aria-label]="fabLabel"
+      [disabled]="fabDisabled"
+      [class.fab-disabled]="fabDisabled"
     >
       <ion-icon [name]="fabIcon"></ion-icon>
     </ion-fab-button>

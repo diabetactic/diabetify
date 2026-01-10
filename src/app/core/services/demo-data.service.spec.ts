@@ -270,8 +270,8 @@ describe('DemoDataService', () => {
   // ============================================================================
 
   describe('generateUserProfile', () => {
-    it('should generate realistic user profile using Faker', () => {
-      const profile = service.generateUserProfile();
+    it('should generate realistic user profile using Faker', async () => {
+      const profile = await service.generateUserProfile();
 
       expect(profile).toHaveProperty('id');
       expect(profile).toHaveProperty('name');
@@ -280,16 +280,16 @@ describe('DemoDataService', () => {
       expect(profile).toHaveProperty('preferences');
     });
 
-    it('should generate different profiles on each call', () => {
-      const profile1 = service.generateUserProfile();
-      const profile2 = service.generateUserProfile();
+    it('should generate different profiles on each call', async () => {
+      const profile1 = await service.generateUserProfile();
+      const profile2 = await service.generateUserProfile();
 
       // IDs deberían ser diferentes
       expect(profile1.id).not.toBe(profile2.id);
     });
 
-    it('should include healthcare provider', () => {
-      const profile = service.generateUserProfile();
+    it('should include healthcare provider', async () => {
+      const profile = await service.generateUserProfile();
 
       expect(profile.healthcareProvider).toBeDefined();
       expect(profile.healthcareProvider?.name).toContain('Dr.');
@@ -297,8 +297,8 @@ describe('DemoDataService', () => {
       expect(profile.healthcareProvider?.email).toBeDefined();
     });
 
-    it('should include emergency contact', () => {
-      const profile = service.generateUserProfile();
+    it('should include emergency contact', async () => {
+      const profile = await service.generateUserProfile();
 
       expect(profile.emergencyContact).toBeDefined();
       expect(profile.emergencyContact?.name).toBeDefined();
@@ -306,15 +306,15 @@ describe('DemoDataService', () => {
       expect(profile.emergencyContact?.phone).toBeDefined();
     });
 
-    it('should have valid age range', () => {
-      const profile = service.generateUserProfile();
+    it('should have valid age range', async () => {
+      const profile = await service.generateUserProfile();
 
       expect(profile.age).toBeGreaterThanOrEqual(25);
       expect(profile.age).toBeLessThanOrEqual(70);
     });
 
-    it('should have account state active', () => {
-      const profile = service.generateUserProfile();
+    it('should have account state active', async () => {
+      const profile = await service.generateUserProfile();
 
       expect(profile.accountState).toBe(AccountState.ACTIVE);
     });

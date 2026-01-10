@@ -648,14 +648,13 @@ export class AppointmentsPage implements OnInit, OnDestroy {
 
   /**
    * Check if user can request appointment (no pending request)
-   * User can request when no state exists, NONE, or DENIED
-   * CREATED means they already have an appointment, so they cannot request again
+   * User can request only when no state exists or NONE
+   * DENIED means request was rejected - cannot re-request
+   * CREATED means they already have an appointment - cannot request again
    */
   get canRequestAppointment(): boolean {
     if (this.requestingAppointment) return false;
-    return (
-      !this.queueState || this.queueState.state === 'NONE' || this.queueState.state === 'DENIED'
-    );
+    return !this.queueState || this.queueState.state === 'NONE';
   }
 
   /**

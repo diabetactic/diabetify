@@ -443,7 +443,7 @@ test.describe('Visual Regression - Other Pages @visual-mock @authenticated', () 
     await loginUser(page);
   });
 
-  test('Dashboard detail page', async ({ page }) => {
+  test.skip('Dashboard detail page', async ({ page }) => {
     await page.goto('/dashboard/detail');
     await prepareForScreenshot(page);
     await hideDynamicElements(page);

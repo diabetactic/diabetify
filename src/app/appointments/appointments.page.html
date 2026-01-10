@@ -106,24 +106,6 @@
                   {{ 'appointments.queue.states.DENIED' | translate }}
                 </p>
               </div>
-              <ion-button
-                expand="block"
-                fill="outline"
-                (click)="onRequestAppointment()"
-                [disabled]="requestingAppointment"
-              >
-                @if (!requestingAppointment) {
-                  <app-icon name="refresh-cw" slot="start"></app-icon>
-                }
-                @if (requestingAppointment) {
-                  <span class="loading loading-spinner loading-sm" slot="start"></span>
-                }
-                {{
-                  requestingAppointment
-                    ? ('appointments.queue.requesting' | translate)
-                    : ('appointments.queue.request' | translate)
-                }}
-              </ion-button>
             </div>
           }
           <!-- CREATED state -->
