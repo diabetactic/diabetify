@@ -44,7 +44,6 @@ const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 
 export default defineConfig({
   testDir: './playwright/tests',
-  testIgnore: ['**/legacy/**'],
 
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
@@ -138,7 +137,7 @@ export default defineConfig({
     },
     {
       name: 'desktop-chromium',
-      testMatch: '**/visual-regression.spec.ts', // Only run desktop for visual regression tests
+      testMatch: '**/visual/**/*.spec.ts', // Only run desktop for visual tests
       use: {
         browserName: 'chromium',
         viewport: DESKTOP_VIEWPORT,
