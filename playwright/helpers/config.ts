@@ -1,120 +1,85 @@
 /**
  * Configuration Helper for Playwright Tests
  *
- * Centralizes backend URLs and test configuration
+ * RE-EXPORTS from centralized test-config.ts for backward compatibility.
+ * New code should import directly from '../config/test-config'.
  */
 
-export const API_URL = process.env.E2E_API_URL || 'http://localhost:8000';
-export const BACKOFFICE_URL = process.env.E2E_BACKOFFICE_URL || 'http://localhost:8001';
-export const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:4200';
-export const TEST_USERNAME = process.env.E2E_TEST_USERNAME || '1000';
-export const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD || 'tuvieja';
+// Re-export everything from centralized config
+export {
+  API_URL,
+  BACKOFFICE_URL,
+  APP_URL as BASE_URL,
+  PRIMARY_USER,
+  SECONDARY_USER,
+  HEROKU_URLS,
+  TIMEOUTS,
+  ADMIN_CREDENTIALS,
+  isDockerMode,
+  isMockMode,
+  isCI,
+  shouldRunHerokuTests,
+  getSkipMessage,
+  buildUrl,
+  getTestCredentials,
+} from '../config/test-config';
+
+// Legacy exports for backward compatibility
+import {
+  PRIMARY_USER,
+  TIMEOUTS,
+  shouldRunHerokuTests as _shouldRunHerokuTests,
+  getSkipMessage,
+  HEROKU_URLS,
+  buildUrl,
+} from '../config/test-config';
 
 /**
- * Heroku Backend URLs
+ * @deprecated Use PRIMARY_USER.dni from test-config instead
  */
-export const HEROKU_URLS = {
-  /**
-   * Main API Gateway
-   * Used by: heroku-integration.spec.ts, heroku-appointments-flow.spec.ts, heroku-profile-sync.spec.ts
-   */
-  apiGateway: 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com',
-
-  /**
-   * Glucose Server
-   * Used by: heroku-readings-crud.spec.ts
-   */
-  glucoServer: 'https://dt-api-gateway-glucoserver-791f97472097.herokuapp.com',
-
-  /**
-   * Backoffice API (Admin operations)
-   * Used by: Maestro tests for queue management
-   */
-  backoffice: 'https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com',
-} as const;
+export const TEST_USERNAME = PRIMARY_USER.dni;
 
 /**
- * Test Environment Configuration
+ * @deprecated Use PRIMARY_USER.password from test-config instead
+ */
+export const TEST_PASSWORD = PRIMARY_USER.password;
+
+/**
+ * @deprecated Use imports from test-config instead
+ * Legacy TEST_CONFIG object for backward compatibility
  */
 export const TEST_CONFIG = {
-  /**
-   * Enable Heroku integration tests
-   */
-  herokuTestsEnabled: process.env.E2E_HEROKU_TESTS === 'true',
-
-  /**
-   * Test credentials
-   */
+  herokuTestsEnabled: process.env['E2E_HEROKU_TESTS'] === 'true',
   credentials: {
-    username: TEST_USERNAME,
-    password: TEST_PASSWORD,
+    username: PRIMARY_USER.dni,
+    password: PRIMARY_USER.password,
   },
-
-  /**
-   * Check if credentials are available
-   */
-  hasCredentials: Boolean(TEST_USERNAME) && Boolean(TEST_PASSWORD),
-
-  /**
-   * Timeouts (in milliseconds)
-   */
+  hasCredentials: Boolean(PRIMARY_USER.dni) && Boolean(PRIMARY_USER.password),
   timeouts: {
-    herokuTest: 60000, // 60s for Heroku tests (accounts for cold start)
-    navigation: 20000, // 20s for page navigation
-    apiCall: 15000, // 15s for API calls
-    hydration: 5000, // 5s for Ionic hydration
+    herokuTest: TIMEOUTS.herokuTest,
+    navigation: TIMEOUTS.navigation,
+    apiCall: TIMEOUTS.api,
+    hydration: TIMEOUTS.hydration,
   },
 } as const;
 
 /**
- * Check if Heroku tests should run
- *
- * @param requireCredentials - Whether credentials are required
- * @returns true if tests should run, false if they should be skipped
- */
-export function shouldRunHerokuTests(requireCredentials = true): boolean {
-  if (!TEST_CONFIG.herokuTestsEnabled) {
-    return false;
-  }
-
-  if (requireCredentials && !TEST_CONFIG.hasCredentials) {
-    return false;
-  }
-
-  return true;
-}
-
-/**
- * Get skip message for Heroku tests
- *
- * @param requireCredentials - Whether credentials are required
- * @returns Skip message to use with test.skip()
+ * @deprecated Use getSkipMessage from test-config instead
  */
 export function getHerokuSkipMessage(requireCredentials = true): string {
   if (!TEST_CONFIG.herokuTestsEnabled) {
-    return 'Set E2E_HEROKU_TESTS=true to run Heroku integration tests';
+    return getSkipMessage('heroku');
   }
-
   if (requireCredentials && !TEST_CONFIG.hasCredentials) {
-    return 'Requires E2E_TEST_USERNAME and E2E_TEST_PASSWORD environment variables';
+    return getSkipMessage('credentials');
   }
-
   return '';
 }
 
 /**
- * Build API endpoint URL
- *
- * @param backend - Backend name ('apiGateway' | 'glucoServer' | 'backoffice')
- * @param path - API path (e.g., '/users/me', '/glucose/mine')
- * @returns Complete URL
- *
- * @example
- * const url = buildApiUrl('apiGateway', '/users/me');
- * // Returns: 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com/users/me'
+ * @deprecated Use buildUrl from test-config instead
  */
 export function buildApiUrl(backend: keyof typeof HEROKU_URLS, path: string): string {
   const baseUrl = HEROKU_URLS[backend];
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `${baseUrl}${cleanPath}`;
+  return buildUrl(path, baseUrl);
 }

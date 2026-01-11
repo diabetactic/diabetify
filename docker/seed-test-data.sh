@@ -48,19 +48,21 @@ docker compose -f docker-compose.local.yml exec -T appointments alembic upgrade 
 echo "   ✓ Migrations applied"
 echo ""
 
-# Test user 1 credentials (same as Heroku seed account for consistency)
-TEST_USER_DNI="1000"
-TEST_USER_PASSWORD="tuvieja"
+# Test user 1 credentials (primary E2E test account)
+# IMPORTANT: Keep in sync with playwright/config/test-config.ts
+TEST_USER_DNI="40123456"
+TEST_USER_PASSWORD="thepassword"
 TEST_USER_NAME="Test"
 TEST_USER_SURNAME="User"
-TEST_USER_EMAIL="test1000@diabetactic.com"
+TEST_USER_EMAIL="test40123456@diabetactic.com"
 
 # Test user 2 credentials (for multi-user E2E tests)
-TEST_USER_2_DNI="1001"
-TEST_USER_2_PASSWORD="tuvieja2"
+# IMPORTANT: Keep in sync with playwright/config/test-config.ts
+TEST_USER_2_DNI="40123457"
+TEST_USER_2_PASSWORD="thepassword2"
 TEST_USER_2_NAME="Second"
 TEST_USER_2_SURNAME="Tester"
-TEST_USER_2_EMAIL="test1001@diabetactic.com"
+TEST_USER_2_EMAIL="test40123457@diabetactic.com"
 
 echo "🌱 Seeding test data (mode: $MODE)..."
 echo ""

@@ -44,6 +44,7 @@ const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 
 export default defineConfig({
   testDir: './playwright/tests',
+  testIgnore: ['**/legacy/**'],
 
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,

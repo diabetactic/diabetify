@@ -1,5 +1,6 @@
 import { Page, expect } from '@playwright/test';
 import { BasePage } from './base.page';
+import { PRIMARY_USER, isMockMode, type TestUser } from '../config/test-config';
 
 export interface LoginCredentials {
   username: string;
@@ -20,8 +21,12 @@ export class LoginPage extends BasePage {
     await this.waitForHydration(15000);
   }
 
+  async loginWithUser(user: TestUser): Promise<void> {
+    await this.login({ username: user.dni, password: user.password });
+  }
+
   async login(credentials?: LoginCredentials): Promise<void> {
-    const username = credentials?.username || process.env.E2E_TEST_USERNAME || '1000';
+    const username = credentials?.username || process.env['E2E_TEST_USERNAME'] || PRIMARY_USER.dni;
     const password = credentials?.password || this.getDefaultPassword();
 
     if (!this.page.url().includes('/login')) {
@@ -45,11 +50,10 @@ export class LoginPage extends BasePage {
   }
 
   private getDefaultPassword(): string {
-    if (process.env.E2E_TEST_PASSWORD) {
-      return process.env.E2E_TEST_PASSWORD;
+    if (process.env['E2E_TEST_PASSWORD']) {
+      return process.env['E2E_TEST_PASSWORD'];
     }
-    const isMockMode = process.env.E2E_MOCK_MODE === 'true';
-    return isMockMode ? 'demo123' : 'tuvieja';
+    return isMockMode ? 'demo123' : PRIMARY_USER.password;
   }
 
   private async completeOnboarding(): Promise<void> {

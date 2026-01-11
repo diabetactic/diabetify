@@ -154,10 +154,13 @@ describe('MyService', () => {
 
 ## Test Credentials
 
-| System     | Username | Password |
-| ---------- | -------- | -------- |
-| Mobile App | 1000     | tuvieja  |
-| Backoffice | admin    | admin    |
+| System     | Username | Password     |
+| ---------- | -------- | ------------ |
+| Mobile App | 40123456 | thepassword  |
+| Secondary  | 40123457 | thepassword2 |
+| Backoffice | admin    | admin        |
+
+Credentials are centralized in `playwright/config/test-config.ts`. Never hardcode in tests.
 
 ## Git Workflow
 

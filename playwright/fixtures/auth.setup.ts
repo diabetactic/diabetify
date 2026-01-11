@@ -7,11 +7,12 @@
 
 import { test as setup, expect } from '@playwright/test';
 import { STORAGE_STATE_PATH } from './storage-paths';
+import { PRIMARY_USER, isMockMode } from '../config/test-config';
 
 setup('authenticate', async ({ page }) => {
-  const username = process.env.E2E_TEST_USERNAME || '1000';
+  const username = process.env['E2E_TEST_USERNAME'] || PRIMARY_USER.dni;
   const password =
-    process.env.E2E_TEST_PASSWORD || (process.env.E2E_MOCK_MODE === 'true' ? 'demo123' : 'tuvieja');
+    process.env['E2E_TEST_PASSWORD'] || (isMockMode ? 'demo123' : PRIMARY_USER.password);
 
   // Navigate to login
   await page.goto('/login', { waitUntil: 'domcontentloaded' });
