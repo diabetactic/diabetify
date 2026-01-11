@@ -51,8 +51,16 @@ test.describe('Visual Regression - Pages @visual @docker', () => {
   });
 
   test('appointments page', async ({ page, pages }) => {
-    await page.goto('/tabs/appointments');
+    await page.goto('/tabs/dashboard');
+    await pages.dashboardPage.waitForHydration();
+
+    await page.click('[data-testid="tab-appointments"], ion-tab-button[tab="appointments"]');
     await pages.appointmentsPage.waitForHydration();
+    await page.waitForTimeout(1000);
+
+    await page.addStyleTag({
+      content: `app-toast-queue, .toast-container, ion-toast { display: none !important; }`,
+    });
     await prepareForScreenshot(page);
 
     await expect(page).toHaveScreenshot('appointments-page.png', screenshotOptions);
@@ -66,8 +74,23 @@ test.describe('Visual Regression - Pages @visual @docker', () => {
     await expect(page).toHaveScreenshot('profile-page.png', screenshotOptions);
   });
 
-  test('settings page', async ({ page }) => {
+  test('settings page', async ({ page, pages }) => {
+    await page.goto('/tabs/dashboard');
+    await pages.dashboardPage.waitForHydration();
+
     await page.goto('/settings');
+    await page.waitForLoadState('networkidle');
+
+    const onSettingsPage = await page.url().includes('/settings');
+    if (!onSettingsPage) {
+      await page.goto('/tabs/profile');
+      await pages.profilePage.waitForHydration();
+      const settingsButton = page.locator('[data-testid="advanced-settings-btn"]');
+      await settingsButton.scrollIntoViewIfNeeded();
+      await settingsButton.click();
+      await page.waitForTimeout(2000);
+    }
+
     await page.waitForSelector('ion-content', { state: 'visible', timeout: 10000 });
     await prepareForScreenshot(page);
 
