@@ -56,10 +56,14 @@ test.describe('Visual Regression - Pages @visual @docker', () => {
 
     await page.click('[data-testid="tab-appointments"], ion-tab-button[tab="appointments"]');
     await pages.appointmentsPage.waitForHydration();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(1500);
 
     await page.addStyleTag({
-      content: `app-toast-queue, .toast-container, ion-toast { display: none !important; }`,
+      content: `
+        .alert, .alert-error, .alert-warning, .alert-info,
+        app-toast-queue, .toast-container, ion-toast,
+        [role="alert"] { display: none !important; }
+      `,
     });
     await prepareForScreenshot(page);
 
@@ -74,27 +78,15 @@ test.describe('Visual Regression - Pages @visual @docker', () => {
     await expect(page).toHaveScreenshot('profile-page.png', screenshotOptions);
   });
 
-  test('settings page', async ({ page, pages }) => {
-    await page.goto('/tabs/dashboard');
-    await pages.dashboardPage.waitForHydration();
+  test('profile with preferences', async ({ page, pages }) => {
+    await page.goto('/tabs/profile');
+    await pages.profilePage.waitForHydration();
 
-    await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
-
-    const onSettingsPage = await page.url().includes('/settings');
-    if (!onSettingsPage) {
-      await page.goto('/tabs/profile');
-      await pages.profilePage.waitForHydration();
-      const settingsButton = page.locator('[data-testid="advanced-settings-btn"]');
-      await settingsButton.scrollIntoViewIfNeeded();
-      await settingsButton.click();
-      await page.waitForTimeout(2000);
-    }
-
-    await page.waitForSelector('ion-content', { state: 'visible', timeout: 10000 });
+    const preferencesSection = page.locator('[data-testid="advanced-settings-btn"]');
+    await preferencesSection.scrollIntoViewIfNeeded();
     await prepareForScreenshot(page);
 
-    await expect(page).toHaveScreenshot('settings-page.png', screenshotOptions);
+    await expect(page).toHaveScreenshot('profile-preferences.png', screenshotOptions);
   });
 });
 
