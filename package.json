@@ -130,7 +130,7 @@
     "@capacitor/preferences": "^8.0.0",
     "@capacitor/splash-screen": "^8.0.0",
     "@capacitor/status-bar": "^8.0.0",
-    "@capgo/capacitor-native-biometric": "^8.0.1",
+    "@capgo/capacitor-native-biometric": "^8.0.4",
     "@ionic/angular": "^8.7.15",
     "@ngx-translate/core": "^17.0.0",
     "@ngx-translate/http-loader": "^17.0.0",
