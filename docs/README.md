@@ -1,4 +1,4 @@
-# Documentación del Proyecto Diabetify
+# Documentación del Proyecto Diabetactic
 
 Trabajo Profesional de Ingeniería Informática
 **Universidad de Buenos Aires - Facultad de Ingeniería**

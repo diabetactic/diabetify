@@ -133,4 +133,4 @@ El desarrollo siguió una metodología iterativa con las siguientes etapas:
 
 ## 10. Conclusiones
 
-El proyecto Diabetify aborda una necesidad real del Hospital Garrahan, proporcionando una herramienta adaptada a pacientes pediátricos con diabetes. La arquitectura offline-first y el soporte bilingüe lo diferencian de soluciones genéricas existentes.
+El proyecto Diabetactic aborda una necesidad real del Hospital Garrahan, proporcionando una herramienta adaptada a pacientes pediátricos con diabetes. La arquitectura offline-first y el soporte bilingüe lo diferencian de soluciones genéricas existentes.
