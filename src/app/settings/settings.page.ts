@@ -162,10 +162,9 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.initializeReadingReminders();
-    this.loadUserData();
+    this.loadUserData(); // Also loads notification settings after preferences are ready
     this.isDemoMode = this.demoDataService.isDemoMode();
     this.checkNotificationPermission();
-    this.loadNotificationSettings();
     this.pendingConflictsSubscription = this.readingsService.pendingConflicts$.subscribe(count => {
       this.pendingConflicts = count;
     });
@@ -232,6 +231,9 @@ export class SettingsPage implements OnInit, OnDestroy {
         maxBolus: this.preferences.safety.maxBolus,
         lowGlucoseThreshold: this.preferences.safety.lowGlucoseThreshold,
       };
+
+      // Load notification settings AFTER preferences are ready
+      this.loadNotificationSettings();
     } catch (error) {
       this.logger.error('Settings', 'Error loading user data', error);
       await this.showToast('Error al cargar los datos del usuario', 'danger');
@@ -438,10 +440,15 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   /**
    * Check notification permission status
+   * If permission is denied, force notificationsEnabled off to keep UI consistent
    */
   private async checkNotificationPermission() {
     this.notificationPermissionGranted = await this.notificationService.checkPermissions();
-    this.notificationsEnabled = this.notificationPermissionGranted;
+    // If permission denied but notifications preference was enabled, force it off
+    // This prevents UI showing enabled toggle when notifications can't actually work
+    if (!this.notificationPermissionGranted && this.notificationsEnabled) {
+      this.notificationsEnabled = false;
+    }
   }
 
   private loadNotificationSettings() {

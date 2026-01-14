@@ -53,13 +53,18 @@ export class TokenService {
 
       const expiresAt = expiresAtStr.value ? parseInt(expiresAtStr.value, 10) : null;
 
-      if (accessToken) {
+      // Populate state if we have either token - refresh token alone can restore session
+      if (accessToken || refreshToken) {
         this.tokenState$.next({
           accessToken,
           refreshToken,
           expiresAt,
         });
-        this.logger.info('Token', 'Tokens restored from secure storage');
+        if (accessToken) {
+          this.logger.info('Token', 'Tokens restored from secure storage');
+        } else {
+          this.logger.info('Token', 'Refresh token restored (access token missing)');
+        }
       }
     } catch (error) {
       this.logger.error('Token', 'Failed to initialize tokens', error);

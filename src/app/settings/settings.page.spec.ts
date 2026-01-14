@@ -664,9 +664,9 @@ describe('SettingsPage', () => {
       const checkPermissionsSpy = vi
         .spyOn<any, any>(component, 'checkNotificationPermission')
         .mockResolvedValue(undefined);
-      const loadSettingsSpy = vi
-        .spyOn<any, any>(component, 'loadNotificationSettings')
-        .mockImplementation(() => {});
+      const loadUserDataSpy = vi
+        .spyOn<any, any>(component, 'loadUserData')
+        .mockResolvedValue(undefined);
 
       // Act: Trigger ngOnInit which calls initializeReadingReminders
       component.ngOnInit();
@@ -675,10 +675,11 @@ describe('SettingsPage', () => {
       expect(component.readingReminders.length).toBeGreaterThan(0);
       expect(component.isDemoMode).toBe(false);
       expect(checkPermissionsSpy).toHaveBeenCalled();
-      expect(loadSettingsSpy).toHaveBeenCalled();
+      // loadNotificationSettings is now called inside loadUserData, not directly in ngOnInit
+      expect(loadUserDataSpy).toHaveBeenCalled();
 
       checkPermissionsSpy.mockRestore();
-      loadSettingsSpy.mockRestore();
+      loadUserDataSpy.mockRestore();
     });
   });
 
@@ -880,7 +881,7 @@ describe('SettingsPage', () => {
 
       expect(mockNotificationService.checkPermissions).toHaveBeenCalled();
       expect(component.notificationPermissionGranted).toBe(true);
-      expect(component.notificationsEnabled).toBe(true);
+      // notificationsEnabled is NOT changed when permission is granted
     });
 
     it('should handle permission denied', async () => {
@@ -889,6 +890,19 @@ describe('SettingsPage', () => {
       await component['checkNotificationPermission']();
 
       expect(component.notificationPermissionGranted).toBe(false);
+      // notificationsEnabled should be false when permission is denied
+      expect(component.notificationsEnabled).toBe(false);
+    });
+
+    it('should force notificationsEnabled off when permission denied but was enabled', async () => {
+      // Simulate case where preference had notifications enabled
+      component.notificationsEnabled = true;
+      mockNotificationService.checkPermissions.mockResolvedValue(false);
+
+      await component['checkNotificationPermission']();
+
+      expect(component.notificationPermissionGranted).toBe(false);
+      // Should force notificationsEnabled to false to keep UI consistent
       expect(component.notificationsEnabled).toBe(false);
     });
   });
