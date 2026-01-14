@@ -1,56 +1,55 @@
-# Medical Algorithms Documentation
+# Documentación de Algoritmos Médicos
 
-## Medical Disclaimer
+## Aviso Médico
 
-**IMPORTANT: Diabetify is a diabetes management assistance tool, NOT a medical device.**
+**IMPORTANTE: Diabetify es una herramienta de asistencia para el manejo de diabetes, NO un dispositivo médico.**
 
-This application is designed to help users track glucose readings, calculate insulin doses, and monitor trends. It is intended for educational and personal tracking purposes only.
+Esta aplicación está diseñada para ayudar a los usuarios a registrar lecturas de glucosa, calcular dosis de insulina y monitorear tendencias. Está destinada únicamente para propósitos educativos y de seguimiento personal.
 
-- **Do not use this application as a substitute for professional medical advice, diagnosis, or treatment.**
-- **Always consult with your healthcare provider before making any changes to your diabetes management plan.**
-- **Insulin dosing decisions should always be verified with your medical team.**
-- **In case of emergency or severe hypoglycemia/hyperglycemia, seek immediate medical attention.**
+- **No use esta aplicación como sustituto del consejo médico profesional, diagnóstico o tratamiento.**
+- **Siempre consulte con su proveedor de salud antes de realizar cambios en su plan de manejo de diabetes.**
+- **Las decisiones de dosificación de insulina siempre deben ser verificadas con su equipo médico.**
+- **En caso de emergencia o hipoglucemia/hiperglucemia severa, busque atención médica inmediata.**
 
-The algorithms implemented in this application are based on established clinical guidelines but may not account for individual patient factors that only a healthcare provider can assess.
-
----
-
-## Table of Contents
-
-1. [Glucose Units and Conversion](#glucose-units-and-conversion)
-2. [Glucose Status Classification](#glucose-status-classification)
-3. [Insulin On Board (IOB) Calculation](#insulin-on-board-iob-calculation)
-4. [Bolus Calculator](#bolus-calculator)
-5. [Statistical Formulas](#statistical-formulas)
-6. [Clinical References](#clinical-references)
+Los algoritmos implementados en esta aplicación están basados en guías clínicas establecidas, pero pueden no contemplar factores individuales del paciente que solo un proveedor de salud puede evaluar.
 
 ---
 
-## Glucose Units and Conversion
+## Tabla de Contenidos
 
-### Overview
+1. [Unidades de Glucosa y Conversión](#unidades-de-glucosa-y-conversión)
+2. [Clasificación del Estado de Glucosa](#clasificación-del-estado-de-glucosa)
+3. [Calculadora de Bolo](#calculadora-de-bolo)
+4. [Fórmulas Estadísticas](#fórmulas-estadísticas)
+5. [Referencias Clínicas](#referencias-clínicas)
 
-Blood glucose can be measured in two units:
+---
 
-- **mg/dL** (milligrams per deciliter) - Used primarily in the United States, Japan, and some other countries
-- **mmol/L** (millimoles per liter) - Used in most other countries including Europe, Australia, and Canada
+## Unidades de Glucosa y Conversión
 
-### Conversion Formula
+### Descripción General
+
+La glucosa en sangre puede medirse en dos unidades:
+
+- **mg/dL** (miligramos por decilitro) - Usado principalmente en Estados Unidos, Japón y algunos otros países
+- **mmol/L** (milimoles por litro) - Usado en la mayoría de los demás países incluyendo Europa, Australia y Canadá
+
+### Fórmula de Conversión
 
 ```
-mg/dL = mmol/L x 18.0182
+mg/dL = mmol/L × 18.0182
 mmol/L = mg/dL / 18.0182
 ```
 
-The conversion factor 18.0182 is derived from the molecular weight of glucose (180.182 g/mol) divided by 10.
+El factor de conversión 18.0182 se deriva del peso molecular de la glucosa (180.182 g/mol) dividido por 10.
 
-### Implementation Reference
+### Referencia de Implementación
 
-From `src/app/core/services/readings.service.ts`:
+De `src/app/core/services/readings.service.ts`:
 
 ```typescript
 /**
- * Convert glucose value between units
+ * Convertir valor de glucosa entre unidades
  */
 private convertToUnit(value: number, from: GlucoseUnit, to: GlucoseUnit): number {
   if (from === to) return value;
@@ -65,7 +64,7 @@ private convertToUnit(value: number, from: GlucoseUnit, to: GlucoseUnit): number
 }
 ```
 
-### Quick Reference Table
+### Tabla de Referencia Rápida
 
 | mg/dL | mmol/L |
 | ----- | ------ |
@@ -78,35 +77,35 @@ private convertToUnit(value: number, from: GlucoseUnit, to: GlucoseUnit): number
 
 ---
 
-## Glucose Status Classification
+## Clasificación del Estado de Glucosa
 
-### Overview
+### Descripción General
 
-The application classifies glucose readings into five categories based on established clinical thresholds. These classifications help users quickly understand their glycemic status.
+La aplicación clasifica las lecturas de glucosa en cinco categorías basadas en umbrales clínicos establecidos. Estas clasificaciones ayudan a los usuarios a entender rápidamente su estado glucémico.
 
-### Classification Table
+### Tabla de Clasificación
 
-| Status                                   | Range (mg/dL) | Range (mmol/L) | Clinical Significance                                                                                     |
-| ---------------------------------------- | ------------- | -------------- | --------------------------------------------------------------------------------------------------------- |
-| **Critical Low (Severe Hypoglycemia)**   | < 54          | < 3.0          | Requires immediate treatment. Associated with increased risk of severe cognitive impairment and seizures. |
-| **Low (Hypoglycemia)**                   | 54 - 69       | 3.0 - 3.8      | Alert value. Treatment recommended to prevent progression to severe hypoglycemia.                         |
-| **Normal (In Range)**                    | 70 - 179      | 3.9 - 9.9      | Target range for most people with diabetes. Associated with reduced risk of complications.                |
-| **High (Hyperglycemia)**                 | 180 - 250     | 10.0 - 13.9    | Above target. May require correction dose. Persistent elevation increases complication risk.              |
-| **Critical High (Severe Hyperglycemia)** | > 250         | > 13.9         | Significantly elevated. Check for ketones (Type 1). May indicate need for medical attention.              |
+| Estado                                  | Rango (mg/dL) | Rango (mmol/L) | Significado Clínico                                                                                     |
+| --------------------------------------- | ------------- | -------------- | ------------------------------------------------------------------------------------------------------- |
+| **Crítico Bajo (Hipoglucemia Severa)**  | < 54          | < 3.0          | Requiere tratamiento inmediato. Asociado con mayor riesgo de deterioro cognitivo severo y convulsiones. |
+| **Bajo (Hipoglucemia)**                 | 54 - 69       | 3.0 - 3.8      | Valor de alerta. Se recomienda tratamiento para prevenir progresión a hipoglucemia severa.              |
+| **Normal (En Rango)**                   | 70 - 179      | 3.9 - 9.9      | Rango objetivo para la mayoría de personas con diabetes. Asociado con menor riesgo de complicaciones.   |
+| **Alto (Hiperglucemia)**                | 180 - 250     | 10.0 - 13.9    | Por encima del objetivo. Puede requerir dosis de corrección. Elevación persistente aumenta riesgo.      |
+| **Crítico Alto (Hiperglucemia Severa)** | > 250         | > 13.9         | Significativamente elevado. Verificar cetonas (Tipo 1). Puede indicar necesidad de atención médica.     |
 
-### Implementation Reference
+### Referencia de Implementación
 
-From `src/app/core/services/readings.service.ts`:
+De `src/app/core/services/readings.service.ts`:
 
 ```typescript
 /**
- * Calculate glucose status based on value and ranges
+ * Calcular estado de glucosa basado en valor y rangos
  */
 private calculateGlucoseStatus(
   value: number,
   unit: GlucoseUnit
 ): 'low' | 'normal' | 'high' | 'critical-low' | 'critical-high' {
-  // Convert to mg/dL for consistent comparison
+  // Convertir a mg/dL para comparación consistente
   const mgdl = unit === 'mmol/L' ? value * 18.0182 : value;
 
   if (mgdl < 54) return 'critical-low';
@@ -117,150 +116,58 @@ private calculateGlucoseStatus(
 }
 ```
 
-### Clinical Basis
+### Base Clínica
 
-These thresholds are based on:
+Estos umbrales están basados en:
 
-- **ADA Standards of Medical Care in Diabetes 2024**: Defines hypoglycemia Level 1 as < 70 mg/dL and Level 2 (clinically significant) as < 54 mg/dL
-- **International Hypoglycaemia Study Group**: Consensus on glucose thresholds for clinical trials
-- **Time in Range (TIR) International Consensus**: Defines target range as 70-180 mg/dL for most adults with diabetes
-
----
-
-## Insulin On Board (IOB) Calculation
-
-### Overview
-
-Insulin On Board (IOB) represents the amount of active insulin remaining in the body from previous bolus doses. Calculating IOB is critical for preventing "insulin stacking" - taking additional insulin before the previous dose has been fully utilized, which can lead to hypoglycemia.
-
-### Algorithm
-
-The application uses a **linear decay model** with a 4-hour insulin duration:
-
-```
-IOB = Dose x (1 - hours_since_bolus / insulin_duration)
-```
-
-Where:
-
-- **Dose**: The original bolus amount in units
-- **hours_since_bolus**: Time elapsed since the bolus was administered
-- **insulin_duration**: 4 hours (standard for rapid-acting insulin analogs)
-
-### Mathematical Representation
-
-```
-IOB(t) = D * max(0, 1 - t/4)
-
-Where:
-  D = initial bolus dose (units)
-  t = time since bolus (hours)
-  4 = insulin duration (hours)
-```
-
-### Implementation Reference
-
-From `src/app/core/services/bolus-safety.service.ts`:
-
-```typescript
-private readonly INSULIN_DURATION_HOURS = 4;
-
-calculateIOB(readings: MockReading[]): number {
-  const now = new Date().getTime();
-  let iob = 0;
-
-  const recentBolusReadings = readings
-    .filter(
-      r =>
-        r.insulin &&
-        r.insulin > 0 &&
-        (now - new Date(r.date).getTime()) / (1000 * 60 * 60) < this.INSULIN_DURATION_HOURS
-    )
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  if (recentBolusReadings.length > 0) {
-    const lastBolus = recentBolusReadings[0];
-    const hoursSinceBolus = (now - new Date(lastBolus.date).getTime()) / (1000 * 60 * 60);
-    const insulinRemaining =
-      lastBolus.insulin! * (1 - hoursSinceBolus / this.INSULIN_DURATION_HOURS);
-    iob = Math.max(0, insulinRemaining);
-  }
-
-  return iob;
-}
-```
-
-### IOB Decay Example
-
-For a 10-unit bolus:
-
-| Time Since Bolus | IOB Remaining | Calculation          |
-| ---------------- | ------------- | -------------------- |
-| 0 hours          | 10.0 units    | 10 x (1 - 0/4) = 10  |
-| 1 hour           | 7.5 units     | 10 x (1 - 1/4) = 7.5 |
-| 2 hours          | 5.0 units     | 10 x (1 - 2/4) = 5   |
-| 3 hours          | 2.5 units     | 10 x (1 - 3/4) = 2.5 |
-| 4 hours          | 0.0 units     | 10 x (1 - 4/4) = 0   |
-
-### Why 4 Hours?
-
-The 4-hour duration of insulin action (DIA) is based on:
-
-1. **Pharmacokinetic studies** of rapid-acting insulin analogs (lispro, aspart, glulisine) showing clinically significant activity typically ending at 4-5 hours
-2. **Clinical consensus** in insulin pump therapy (Walsh, "Pumping Insulin", 7th edition)
-3. **Balance between safety and accuracy**: Shorter DIA risks insulin stacking; longer DIA may under-calculate IOB
-
-**Note**: Some individuals may have different insulin activity profiles. The 4-hour default is conservative and appropriate for most users but should be validated with the healthcare team.
-
-### Clinical References
-
-- Walsh, J., & Roberts, R. (2016). _Pumping Insulin: Everything You Need to Succeed on an Insulin Pump_. Torrey Pines Press.
-- Mudaliar, S. R., et al. (1999). "Insulin aspart: onset of action after bolus and continuous infusion in patients with type 1 diabetes." _Diabetes Care_, 22(9), 1462-1467.
+- **Estándares de Atención Médica en Diabetes 2024 de la ADA**: Define hipoglucemia Nivel 1 como < 70 mg/dL y Nivel 2 (clínicamente significativa) como < 54 mg/dL
+- **Grupo Internacional de Estudio de Hipoglucemia**: Consenso sobre umbrales de glucosa para ensayos clínicos
+- **Consenso Internacional de Tiempo en Rango (TIR)**: Define el rango objetivo como 70-180 mg/dL para la mayoría de adultos con diabetes
 
 ---
 
-## Bolus Calculator
+## Calculadora de Bolo
 
-### Overview
+### Descripción General
 
-The bolus calculator helps estimate the insulin dose needed for meals and/or glucose correction. The calculation considers carbohydrate intake, current glucose level, target glucose, and relevant patient-specific ratios.
+La calculadora de bolo ayuda a estimar la dosis de insulina necesaria para comidas y/o corrección de glucosa. El cálculo considera la ingesta de carbohidratos, el nivel actual de glucosa, la glucosa objetivo y las proporciones específicas del paciente.
 
-### Formula Components
+### Componentes de la Fórmula
 
-#### 1. Meal Bolus (Carbohydrate Coverage)
-
-```
-Meal_Bolus = Carbohydrates / ICR
-```
-
-Where:
-
-- **Carbohydrates**: Grams of carbs to be consumed
-- **ICR (Insulin-to-Carb Ratio)**: Grams of carbs covered by 1 unit of insulin (e.g., 15 means 1 unit covers 15g carbs)
-
-#### 2. Correction Bolus
+#### 1. Bolo de Comida (Cobertura de Carbohidratos)
 
 ```
-Correction_Bolus = (Current_BG - Target_BG) / ISF
-
-If Current_BG <= Target_BG, then Correction_Bolus = 0
+Bolo_Comida = Carbohidratos / ICR
 ```
 
-Where:
+Donde:
 
-- **Current_BG**: Current blood glucose in mg/dL
-- **Target_BG**: Target blood glucose in mg/dL
-- **ISF (Insulin Sensitivity Factor)**: How much 1 unit of insulin lowers blood glucose (e.g., 50 means 1 unit lowers BG by 50 mg/dL)
+- **Carbohidratos**: Gramos de carbohidratos a consumir
+- **ICR (Relación Insulina-Carbohidratos)**: Gramos de carbohidratos cubiertos por 1 unidad de insulina (ej: 15 significa que 1 unidad cubre 15g de carbohidratos)
 
-#### 3. Total Bolus with IOB Adjustment
+#### 2. Bolo de Corrección
 
 ```
-Total_Bolus = max(0, Meal_Bolus + Correction_Bolus - IOB)
+Bolo_Corrección = (Glucosa_Actual - Glucosa_Objetivo) / ISF
+
+Si Glucosa_Actual <= Glucosa_Objetivo, entonces Bolo_Corrección = 0
 ```
 
-### Implementation Reference
+Donde:
 
-From `src/app/core/services/mock-data.service.ts`:
+- **Glucosa_Actual**: Glucosa en sangre actual en mg/dL
+- **Glucosa_Objetivo**: Glucosa en sangre objetivo en mg/dL
+- **ISF (Factor de Sensibilidad a la Insulina)**: Cuánto baja la glucosa 1 unidad de insulina (ej: 50 significa que 1 unidad baja la glucosa 50 mg/dL)
+
+#### 3. Bolo Total
+
+```
+Bolo_Total = max(0, Bolo_Comida + Bolo_Corrección)
+```
+
+### Referencia de Implementación
+
+De `src/app/core/services/mock-data.service.ts`:
 
 ```typescript
 calculateBolus(params: {
@@ -288,103 +195,83 @@ calculateBolus(params: {
 }
 ```
 
-### Safety Guardrails
+### Guardas de Seguridad
 
-The application implements safety checks to prevent dangerous insulin dosing:
+La aplicación implementa verificaciones de seguridad para prevenir dosificación peligrosa de insulina:
 
-#### 1. Maximum Dose Warning
+#### 1. Advertencia de Dosis Máxima
 
 ```typescript
-const maxBolus = this.mockData.getPatientParams().maxBolus || 15;
 if (calculation.recommendedInsulin > maxBolus) {
   warnings.push({
     type: 'maxDose',
-    message: `The recommended dose of ${calculation.recommendedInsulin.toFixed(1)}
-              units exceeds the maximum of ${maxBolus} units.`,
+    message: `La dosis recomendada de ${calculation.recommendedInsulin.toFixed(1)}
+              unidades excede el máximo de ${maxBolus} unidades.`,
   });
 }
 ```
 
-- Default maximum: 15 units
-- User-configurable based on individual needs and provider guidance
+- Máximo por defecto: 15 unidades
+- Configurable por el usuario según necesidades individuales y orientación del proveedor
 
-#### 2. Insulin On Board (IOB) Warning
-
-```typescript
-const iob = this.calculateIOB(readings);
-if (iob > 0) {
-  warnings.push({
-    type: 'iob',
-    message: `You still have an estimated ${iob.toFixed(1)} units of
-              insulin on board from a recent bolus.`,
-  });
-}
-```
-
-- Alerts user to active insulin to prevent stacking
-- IOB should be subtracted from the recommended dose
-
-#### 3. Low Glucose Prevention
+#### 2. Prevención de Glucosa Baja
 
 ```typescript
-const lowGlucoseThreshold = this.mockData.getPatientParams().lowGlucoseThreshold || 70;
 if (calculation.currentGlucose < lowGlucoseThreshold) {
   warnings.push({
     type: 'lowGlucose',
-    message: `Your current glucose of ${calculation.currentGlucose} mg/dL is low.
-              A bolus is not recommended.`,
+    message: `Tu glucosa actual de ${calculation.currentGlucose} mg/dL está baja.
+              No se recomienda un bolo.`,
   });
 }
 ```
 
-- Default threshold: 70 mg/dL
-- Prevents insulin dosing when glucose is already low
+- Umbral por defecto: 70 mg/dL
+- Previene dosificación de insulina cuando la glucosa ya está baja
 
-### Example Calculation
+### Ejemplo de Cálculo
 
-**Patient Parameters:**
+**Parámetros del Paciente:**
 
-- ICR: 15 (1 unit per 15g carbs)
-- ISF: 50 (1 unit drops BG by 50 mg/dL)
-- Target BG: 120 mg/dL
-- Max Bolus: 15 units
+- ICR: 15 (1 unidad por 15g de carbohidratos)
+- ISF: 50 (1 unidad baja la glucosa 50 mg/dL)
+- Glucosa objetivo: 120 mg/dL
+- Bolo máximo: 15 unidades
 
-**Scenario:**
+**Escenario:**
 
-- Current BG: 220 mg/dL
-- Carbs: 45g
-- IOB: 1.5 units
+- Glucosa actual: 220 mg/dL
+- Carbohidratos: 45g
 
-**Calculation:**
+**Cálculo:**
 
 ```
-Meal Bolus = 45 / 15 = 3.0 units
-Correction = (220 - 120) / 50 = 100 / 50 = 2.0 units
-Subtotal = 3.0 + 2.0 = 5.0 units
-Adjusted for IOB = 5.0 - 1.5 = 3.5 units
+Bolo de Comida = 45 / 15 = 3.0 unidades
+Corrección = (220 - 120) / 50 = 100 / 50 = 2.0 unidades
+Total = 3.0 + 2.0 = 5.0 unidades
 
-Final Recommendation: 3.5 units
+Recomendación Final: 5.0 unidades
 ```
 
 ---
 
-## Statistical Formulas
+## Fórmulas Estadísticas
 
-### Time in Range (TIR)
+### Tiempo en Rango (TIR)
 
-Time in Range measures the percentage of glucose readings within the target range (typically 70-180 mg/dL).
+El Tiempo en Rango mide el porcentaje de lecturas de glucosa dentro del rango objetivo (típicamente 70-180 mg/dL).
 
 ```
-TIR = (Readings_In_Range / Total_Readings) x 100
+TIR = (Lecturas_En_Rango / Total_Lecturas) × 100
 
-Where In_Range is defined as: 70 <= glucose <= 180 mg/dL
+Donde En_Rango se define como: 70 <= glucosa <= 180 mg/dL
 ```
 
-**Clinical Target**: >= 70% (ADA/ATTD Consensus)
+**Objetivo Clínico**: >= 70% (Consenso ADA/ATTD)
 
-### Implementation Reference
+### Referencia de Implementación
 
-From `src/app/core/services/mock-data.service.ts`:
+De `src/app/core/services/mock-data.service.ts`:
 
 ```typescript
 const inRange = last30Days.filter(
@@ -402,23 +289,23 @@ const timeAboveRange = Math.round((aboveRange / last30Days.length) * 100);
 const timeBelowRange = Math.round((belowRange / last30Days.length) * 100);
 ```
 
-### Coefficient of Variation (CV)
+### Coeficiente de Variación (CV)
 
-CV measures glucose variability as a percentage. Lower CV indicates more stable glucose control.
+El CV mide la variabilidad de la glucosa como porcentaje. Un CV más bajo indica un control de glucosa más estable.
 
 ```
-CV = (Standard_Deviation / Mean) x 100
+CV = (Desviación_Estándar / Media) × 100
 ```
 
-**Clinical Target**: <= 36% (stable glucose)
+**Objetivo Clínico**: <= 36% (glucosa estable)
 
-### Standard Deviation Calculation
+### Cálculo de Desviación Estándar
 
-From `src/app/core/services/readings.service.ts`:
+De `src/app/core/services/readings.service.ts`:
 
 ```typescript
 /**
- * Calculate standard deviation
+ * Calcular desviación estándar
  */
 private calculateStandardDeviation(values: number[], mean: number): number {
   const squaredDiffs = values.map(v => Math.pow(v - mean, 2));
@@ -427,28 +314,28 @@ private calculateStandardDeviation(values: number[], mean: number): number {
 }
 ```
 
-### Estimated A1C (eA1C) / Glucose Management Indicator (GMI)
+### A1C Estimada (eA1C) / Indicador de Gestión de Glucosa (GMI)
 
-The estimated A1C is calculated from average glucose using the ADAG (A1C-Derived Average Glucose) study formula:
-
-```
-eA1C(%) = (Average_Glucose_mg/dL + 46.7) / 28.7
-```
-
-Or equivalently:
+La A1C estimada se calcula a partir de la glucosa promedio usando la fórmula del estudio ADAG (Glucosa Promedio Derivada de A1C):
 
 ```
-eA1C(%) = (Average_Glucose_mmol/L + 2.59) / 1.59
+eA1C(%) = (Glucosa_Promedio_mg/dL + 46.7) / 28.7
 ```
 
-### Implementation Reference
+O equivalentemente:
 
-From `src/app/core/services/readings.service.ts`:
+```
+eA1C(%) = (Glucosa_Promedio_mmol/L + 2.59) / 1.59
+```
+
+### Referencia de Implementación
+
+De `src/app/core/services/readings.service.ts`:
 
 ```typescript
 /**
- * Calculate estimated A1C using ADAG formula
- * eA1C(%) = (average glucose mg/dL + 46.7) / 28.7
+ * Calcular A1C estimada usando fórmula ADAG
+ * eA1C(%) = (glucosa promedio mg/dL + 46.7) / 28.7
  */
 private calculateEstimatedA1C(average: number, unit: GlucoseUnit): number {
   const mgdl = unit === 'mmol/L' ? average * 18.0182 : average;
@@ -456,32 +343,26 @@ private calculateEstimatedA1C(average: number, unit: GlucoseUnit): number {
 }
 ```
 
-From `src/app/core/services/mock-data.service.ts`:
+### Tabla de Referencia eA1C
 
-```typescript
-const estimatedHbA1c = (avgGlucose30 + 46.7) / 28.7;
-```
+| Glucosa Promedio (mg/dL) | Glucosa Promedio (mmol/L) | eA1C (%) |
+| ------------------------ | ------------------------- | -------- |
+| 97                       | 5.4                       | 5.0      |
+| 126                      | 7.0                       | 6.0      |
+| 154                      | 8.6                       | 7.0      |
+| 183                      | 10.2                      | 8.0      |
+| 212                      | 11.8                      | 9.0      |
+| 240                      | 13.4                      | 10.0     |
 
-### eA1C Reference Table
+**Nota**: eA1C/GMI proporciona una estimación basada en datos de CGM o SMBG. La A1C de laboratorio puede diferir debido a factores como variaciones en la vida útil de los glóbulos rojos.
 
-| Average Glucose (mg/dL) | Average Glucose (mmol/L) | eA1C (%) |
-| ----------------------- | ------------------------ | -------- |
-| 97                      | 5.4                      | 5.0      |
-| 126                     | 7.0                      | 6.0      |
-| 154                     | 8.6                      | 7.0      |
-| 183                     | 10.2                     | 8.0      |
-| 212                     | 11.8                     | 9.0      |
-| 240                     | 13.4                     | 10.0     |
+### Cálculo de Mediana
 
-**Note**: eA1C/GMI provides an estimate based on CGM or SMBG data. Laboratory A1C may differ due to factors like red blood cell lifespan variations.
-
-### Median Calculation
-
-From `src/app/core/services/readings.service.ts`:
+De `src/app/core/services/readings.service.ts`:
 
 ```typescript
 /**
- * Calculate median from sorted array
+ * Calcular mediana de un arreglo ordenado
  */
 private calculateMedian(sortedValues: number[]): number {
   const mid = Math.floor(sortedValues.length / 2);
@@ -493,94 +374,82 @@ private calculateMedian(sortedValues: number[]): number {
 
 ---
 
-## Clinical References
+## Referencias Clínicas
 
-### Primary Guidelines
+### Guías Principales
 
-1. **American Diabetes Association (ADA)**
-   - _Standards of Medical Care in Diabetes - 2024_
-   - Diabetes Care 2024;47(Suppl. 1):S1-S321
-   - Defines glycemic targets, hypoglycemia thresholds, and treatment algorithms
+1. **Asociación Americana de Diabetes (ADA)**
+   - _Estándares de Atención Médica en Diabetes - 2024_
+   - Diabetes Care 2024;47(Supl. 1):S1-S321
+   - Define objetivos glucémicos, umbrales de hipoglucemia y algoritmos de tratamiento
    - https://diabetesjournals.org/care/issue/47/Supplement_1
 
-2. **Advanced Technologies & Treatments for Diabetes (ATTD)**
-   - _International Consensus on Time in Range_
+2. **Tecnologías Avanzadas y Tratamientos para Diabetes (ATTD)**
+   - _Consenso Internacional sobre Tiempo en Rango_
    - Battelino T, et al. Diabetes Care 2019;42:1593-1603
-   - Establishes TIR targets: >70% for most adults, <4% below range
+   - Establece objetivos TIR: >70% para la mayoría de adultos, <4% por debajo del rango
 
-### ADAG Study (eA1C Formula)
+### Estudio ADAG (Fórmula eA1C)
 
-3. **A1C-Derived Average Glucose (ADAG) Study Group**
+3. **Grupo de Estudio de Glucosa Promedio Derivada de A1C (ADAG)**
    - Nathan DM, et al. "Translating the A1C assay into estimated average glucose values."
    - Diabetes Care 2008;31(8):1473-1478
    - DOI: 10.2337/dc08-0545
-   - Established the linear relationship between A1C and average glucose
+   - Estableció la relación lineal entre A1C y glucosa promedio
 
-### Insulin Pharmacology
+### Consenso de Hipoglucemia
 
-4. **Walsh, J., & Roberts, R.**
-   - _Pumping Insulin: Everything You Need to Succeed on an Insulin Pump_
-   - Torrey Pines Press, 7th Edition (2016)
-   - Comprehensive guide to insulin dosing, IOB calculations, and pump therapy
-
-5. **Mudaliar SR, et al.**
-   - "Insulin aspart: onset of action after bolus and continuous infusion"
-   - Diabetes Care 1999;22(9):1462-1467
-   - Pharmacokinetic data supporting 4-hour insulin duration
-
-### Hypoglycemia Consensus
-
-6. **International Hypoglycaemia Study Group**
+4. **Grupo Internacional de Estudio de Hipoglucemia**
    - "Glucose concentrations of less than 3.0 mmol/L (54 mg/dL) should be reported in clinical trials"
    - Diabetes Care 2017;40:155-157
-   - Establishes clinically significant hypoglycemia threshold
+   - Establece el umbral de hipoglucemia clínicamente significativa
 
-### Glucose Management Indicator
+### Indicador de Gestión de Glucosa
 
-7. **Bergenstal RM, et al.**
+5. **Bergenstal RM, et al.**
    - "Glucose Management Indicator (GMI): A New Term for Estimating A1C From Continuous Glucose Monitoring"
    - Diabetes Care 2018;41:2275-2280
-   - Defines GMI as the CGM-derived A1C estimate
+   - Define GMI como la estimación de A1C derivada de CGM
 
 ---
 
-## Implementation Notes
+## Notas de Implementación
 
-### Code Location Reference
+### Referencia de Ubicación de Código
 
-| Algorithm                  | Primary File                                    |
-| -------------------------- | ----------------------------------------------- |
-| Unit Conversion            | `src/app/core/services/readings.service.ts`     |
-| Glucose Status             | `src/app/core/services/readings.service.ts`     |
-| IOB Calculation            | `src/app/core/services/bolus-safety.service.ts` |
-| Bolus Calculator           | `src/app/core/services/mock-data.service.ts`    |
-| Safety Guardrails          | `src/app/core/services/bolus-safety.service.ts` |
-| Statistics (TIR, CV, eA1C) | `src/app/core/services/readings.service.ts`     |
-| Mock Statistics            | `src/app/core/services/mock-data.service.ts`    |
+| Algoritmo                    | Archivo Principal                               |
+| ---------------------------- | ----------------------------------------------- |
+| Conversión de Unidades       | `src/app/core/services/readings.service.ts`     |
+| Estado de Glucosa            | `src/app/core/services/readings.service.ts`     |
+| Calculadora de Bolo          | `src/app/core/services/mock-data.service.ts`    |
+| Guardas de Seguridad         | `src/app/core/services/bolus-safety.service.ts` |
+| Estadísticas (TIR, CV, eA1C) | `src/app/core/services/readings.service.ts`     |
+| Estadísticas Mock            | `src/app/core/services/mock-data.service.ts`    |
 
-### Default Patient Parameters
+### Parámetros por Defecto del Paciente
 
-From `src/app/core/services/mock-data.service.ts`:
+De `src/app/core/services/mock-data.service.ts`:
 
 ```typescript
 private patientParams = {
-  carbRatio: 15,           // 1 unit per 15g carbs
-  correctionFactor: 50,    // 1 unit drops BG by 50 mg/dL
-  targetGlucose: 120,      // Target BG in mg/dL
-  targetRange: { min: 70, max: 180 },  // Time in Range boundaries
-  maxBolus: 15,            // Maximum single bolus in units
-  lowGlucoseThreshold: 70, // Low glucose warning threshold
+  carbRatio: 15,           // 1 unidad por 15g de carbohidratos
+  correctionFactor: 50,    // 1 unidad baja la glucosa 50 mg/dL
+  targetGlucose: 120,      // Glucosa objetivo en mg/dL
+  targetRange: { min: 70, max: 180 },  // Límites de Tiempo en Rango
+  maxBolus: 15,            // Bolo máximo en unidades
+  lowGlucoseThreshold: 70, // Umbral de advertencia de glucosa baja
 };
 ```
 
 ---
 
-## Version History
+## Historial de Versiones
 
-| Version | Date | Changes               |
-| ------- | ---- | --------------------- |
-| 1.0.0   | 2024 | Initial documentation |
+| Versión | Fecha      | Cambios                                            |
+| ------- | ---------- | -------------------------------------------------- |
+| 1.0.0   | 2024       | Documentación inicial                              |
+| 1.1.0   | Enero 2026 | Removido IOB (simplificación), traducido a español |
 
 ---
 
-_Last updated: December 2024_
+_Última actualización: Enero 2026_

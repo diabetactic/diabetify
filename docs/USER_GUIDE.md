@@ -1,8 +1,6 @@
-# Guía de Usuario de Diabetactic
+# Guía de Usuario de Diabetify
 
-**¡Bienvenido a Diabetactic!** Tu compañero para el manejo de la diabetes. Esta guía te ayudará a comenzar con la aplicación y aprovechar al máximo sus funciones.
-
-**Nota**: El nombre oficial de esta aplicación es "Diabetactic".
+**¡Bienvenido a Diabetify!** Tu compañero para el manejo de la diabetes. Esta guía te ayudará a comenzar con la aplicación y aprovechar al máximo sus funciones.
 
 ---
 
@@ -24,7 +22,7 @@
 
 ### Primer Inicio de Sesión
 
-Cuando abras Diabetactic por primera vez, verás una pantalla de bienvenida con una ilustración amigable. Esta aplicación está diseñada especialmente para niños de 6 a 14 años para ayudarles a manejar su diabetes con confianza.
+Cuando abras Diabetify por primera vez, verás una pantalla de bienvenida con una ilustración amigable. Esta aplicación está diseñada especialmente para niños de 6 a 14 años para ayudarles a manejar su diabetes con confianza.
 
 **Para iniciar sesión:**
 
@@ -256,7 +254,7 @@ Tidepool es un servicio que te permite compartir tus datos de diabetes con tu eq
 
 ## Modo Infantil
 
-¡Diabetactic está diseñado para ser divertido y alentador para los niños!
+¡Diabetify está diseñado para ser divertido y alentador para los niños!
 
 ### Características Amigables para Niños
 
@@ -291,7 +289,7 @@ Toca "Vista para Padres" o "Más Detalles" en el Panel para ver información té
 
 ## Uso Sin Conexión
 
-¡Diabetactic funciona incluso sin internet!
+¡Diabetify funciona incluso sin internet!
 
 ### Cómo Funciona
 
@@ -409,7 +407,7 @@ Si tienes:
 
 ## ¿Qué Sigue?
 
-Ahora que sabes cómo usar Diabetactic, ¡estás listo para tomar el control del manejo de tu diabetes! Recuerda:
+Ahora que sabes cómo usar Diabetify, ¡estás listo para tomar el control del manejo de tu diabetes! Recuerda:
 
 - **No estás solo**: Tu familia, médicos y esta aplicación están aquí para ayudar
 - **Los pequeños pasos importan**: Cada lectura que registras te ayuda a mantenerte saludable
@@ -460,7 +458,7 @@ adb logcat | grep -i chromium
 **Última Actualización:** Diciembre 2025
 **Tecnología**: Construida con Ionic 8, Angular 21, Capacitor 8 y Tailwind CSS
 
-_Diabetactic es una herramienta complementaria para el manejo de la diabetes. Siempre sigue los consejos médicos de tu proveedor de salud._
+_Diabetify es una herramienta complementaria para el manejo de la diabetes. Siempre sigue los consejos médicos de tu proveedor de salud._
 
 ---
 

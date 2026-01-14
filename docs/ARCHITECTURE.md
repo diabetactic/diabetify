@@ -91,8 +91,7 @@ Los datos de glucosa provienen del backend Diabetactic.
 
 - **Tests Unitarios**: Vitest 4.0 para servicios y componentes
 - **Tests E2E**: Playwright para flujos de usuario
-- **Tests de Integración**: Vitest para verificar interacciones entre servicios
-- **Tests Mobile**: Maestro para pruebas E2E en dispositivos Android
+- **Tests de Integración**: Vitest + MSW para verificar interacciones entre servicios
 
 ## Seguridad
 
