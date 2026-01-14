@@ -5,13 +5,16 @@ import {
   Output,
   EventEmitter,
   ChangeDetectionStrategy,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonAvatar, IonButton, IonIcon } from '@ionic/angular/standalone';
+import { IonAvatar, IonButton } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { UserProfile } from '@models/user-profile.model';
 import { AuthState } from '@services/tidepool-auth.service';
 import { TranslationService } from '@services/translation.service';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-profile-header',
@@ -20,13 +23,13 @@ import { TranslationService } from '@services/translation.service';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule, IonAvatar, IonButton, IonIcon, TranslateModule],
+  imports: [CommonModule, IonAvatar, IonButton, TranslateModule, AppIconComponent],
 })
 export class ProfileHeaderComponent {
+  @ViewChild('avatarInput') avatarInput?: ElementRef<HTMLInputElement>;
   @Input() profile: UserProfile | null = null;
   @Input() authState: AuthState | null = null;
   @Output() avatarSelected = new EventEmitter<Event>();
-  @Output() triggerAvatarUpload = new EventEmitter<void>();
   @Output() editProfile = new EventEmitter<void>();
 
   constructor(private translationService: TranslationService) {}
@@ -58,7 +61,7 @@ export class ProfileHeaderComponent {
   }
 
   onTriggerAvatarUpload() {
-    this.triggerAvatarUpload.emit();
+    this.avatarInput?.nativeElement.click();
   }
 
   onEditProfile() {

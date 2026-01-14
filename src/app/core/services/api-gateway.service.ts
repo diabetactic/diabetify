@@ -15,7 +15,7 @@ import {
   ExternalServicesManager,
   ExternalService,
 } from '@services/external-services-manager.service';
-import { LocalAuthService } from '@services/local-auth.service';
+import { TokenService } from '@services/token.service';
 import { TidepoolAuthService } from '@services/tidepool-auth.service';
 
 import { PlatformDetectorService } from '@services/platform-detector.service';
@@ -356,7 +356,7 @@ export class ApiGatewayService {
     private http: HttpClient,
     private injector: Injector,
     private externalServices: ExternalServicesManager,
-    private localAuth: LocalAuthService,
+    private tokenService: TokenService,
     private platformDetector: PlatformDetectorService,
     private logger: LoggerService,
     private mockAdapter: MockAdapterService
@@ -681,16 +681,15 @@ export class ApiGatewayService {
   private getBaseUrl(service: ExternalService): string {
     switch (service) {
       case ExternalService.TIDEPOOL:
-        // Tidepool remains direct for now (may route through gateway in future)
         return environment.tidepool.baseUrl;
       case ExternalService.GLUCOSERVER:
       case ExternalService.APPOINTMENTS:
       case ExternalService.LOCAL_AUTH: {
-        // Route all backend services through the API Gateway
-        // Use platform detector to get the correct URL for the current environment
         const defaultUrl = API_GATEWAY_BASE_URL;
         return this.platformDetector.getApiBaseUrl(defaultUrl);
       }
+      case ExternalService.OPEN_FOOD_FACTS:
+        return 'https://world.openfoodfacts.org';
       default:
         throw new Error(`Unknown service: ${service}`);
     }
@@ -703,12 +702,11 @@ export class ApiGatewayService {
   private async getAuthToken(service: ExternalService): Promise<string | null> {
     switch (service) {
       case ExternalService.TIDEPOOL:
-        // Lazily resolve TidepoolAuthService to avoid eager side-effects at app startup and in unit tests.
         return await this.injector.get(TidepoolAuthService).getAccessToken();
       case ExternalService.GLUCOSERVER:
       case ExternalService.APPOINTMENTS:
       case ExternalService.LOCAL_AUTH:
-        return await this.localAuth.getAccessToken();
+        return await this.tokenService.getAccessToken();
       default:
         return null;
     }

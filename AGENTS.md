@@ -1,16 +1,12 @@
-# AGENTS.md - Diabetactic AI Agent Configuration
+# AGENTS.md - Diabetify
 
-> Config for AI coding agents (Google Jules, OpenAI Codex, Claude Code)
+> Ionic/Angular mobile app for diabetes glucose management
 
-## Project Overview
-
-**Diabetactic** - Ionic/Angular mobile app for diabetes glucose management.  
 **Stack**: Angular 21, Ionic 8, Capacitor 8, Tailwind CSS + DaisyUI, Vitest 4, Playwright 1.48
 
 ## Commands
 
 ```bash
-# Build & Dev
 pnpm install              # Install deps (pnpm required)
 pnpm run start:mock       # Dev server - mock backend (RECOMMENDED)
 pnpm run start:cloud      # Dev server - Heroku production
@@ -19,90 +15,19 @@ pnpm run lint             # ESLint + Stylelint
 pnpm run typecheck        # TypeScript check
 
 # Testing
-pnpm test                            # All unit tests
+pnpm test                            # All unit tests (2392 tests)
 pnpm test -- src/path/to/file.spec.ts  # Single test file
-pnpm test -- --grep "test name"      # Filter by test name
-pnpm run test:watch                  # Watch mode
-pnpm run test:coverage               # Coverage report
-pnpm run test:e2e:mock               # Playwright E2E - mock backend (headless)
-pnpm run test:e2e:docker             # Playwright E2E - Docker backend (headless)
-pnpm run test:e2e:docker:headed      # Playwright E2E - Docker backend (visible browser)
+pnpm run test:e2e:mock               # Playwright E2E - mock backend
+pnpm run test:e2e:docker             # Playwright E2E - Docker backend
+pnpm run test:e2e:docker -- --update-snapshots  # Update visual baselines
 ```
 
-## Code Style
-
-### Formatting (Prettier)
-
-- Single quotes, semicolons, 2-space indent, 100 char line width
-- Trailing commas in ES5 contexts; Arrow parens only when required: `x => x`
-
-### TypeScript
-
-- **Strict mode** - no implicit any, strict null checks
-- **NO type suppressions**: Never use `as any`, `@ts-ignore`, `@ts-expect-error`
-- Unused variables prefixed with `_`: `(_unused, value) => value`
-
-### Path Aliases (tsconfig.json)
-
-```typescript
-import { ReadingsService } from '@services/readings.service';
-import { GlucoseReading } from '@models/glucose-reading.model';
-import { environment } from '@env/environment';
-// @core/* → src/app/core/*      @shared/* → src/app/shared/*
-// @services/* → src/app/core/services/*   @models/* → src/app/core/models/*
-// @guards/* → src/app/core/guards/*       @env/* → src/environments/*
-// @mocks/* → src/mocks/*        @test-setup/* → src/test-setup/*
-```
-
-### Naming Conventions
-
-- **Components**: `kebab-case` selector with `app-` prefix: `app-reading-item`
-- **Directives**: `camelCase` selector with `app` prefix: `appHighlight`
-- **Files**: `kebab-case.type.ts` (e.g., `readings.service.ts`)
-- **Classes**: `PascalCase`; **Interfaces**: `PascalCase`, no `I` prefix
-
-### Angular Components
-
-```typescript
-@Component({
-  selector: 'app-my-component',
-  templateUrl: './my-component.html',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,  // Prefer OnPush
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],                // REQUIRED for Ionic
-  imports: [
-    IonHeader, IonToolbar, IonTitle,                // Import Ionic individually
-    TranslateModule,
-  ],
-})
-```
-
-### API Calls
-
-```typescript
-// ALWAYS use ApiGatewayService - NEVER HttpClient directly
-this.apiGateway.request('readings.list', { params });
-this.apiGateway.request('readings.create', { body: reading });
-```
-
-### Error Handling
-
-- Use `catchError` operator for Observable errors
-- Never swallow errors silently - always log or rethrow
-- Use `LoggerService` for consistent logging
-
-### Internationalization
-
-- All user-facing text in BOTH `assets/i18n/en.json` AND `es.json`
-- Template: `{{ 'READINGS.TITLE' | translate }}`
-- Run `pnpm run i18n:check` before committing
-
-## File Structure
+## Architecture
 
 ```
 src/app/
 ├── core/
-│   ├── services/      # Singleton services (auth, api, database)
+│   ├── services/      # 38 singleton services (see services/AGENTS.md)
 │   ├── models/        # TypeScript interfaces
 │   ├── guards/        # Route guards
 │   └── interceptors/  # HTTP interceptors
@@ -110,47 +35,87 @@ src/app/
 ├── dashboard/         # Main dashboard page
 ├── readings/          # Glucose readings management
 ├── appointments/      # Medical appointments
-└── profile/           # User profile
+├── profile/           # User profile
+└── tests/             # Integration tests (see tests/AGENTS.md)
 ```
 
-## Testing
+**Key Patterns**:
 
-- **Unit tests**: `*.spec.ts` files alongside source
-- **Mocks**: Capacitor plugins mocked in `src/test-setup/`
-- **Use `vi.fn()`** for mocks (Vitest, not Jest)
-- **Coverage thresholds**: 80% lines, 75% functions, 70% branches
+- **Standalone Components**: Angular 21 style, no NgModules
+- **Offline-First**: IndexedDB (Dexie) as primary, sync to backend
+- **Facade Pattern**: `ReadingsService` coordinates mapper/statistics/sync
+- **Gateway Pattern**: `ApiGatewayService` centralizes ALL HTTP calls
+
+## Code Style
+
+### TypeScript
+
+- Strict mode enabled, `strictTemplates: true`
+- **NO type suppressions**: Never use `as any`, `@ts-ignore`, `@ts-expect-error`
+- Unused vars prefixed with `_`
+
+### Path Aliases
 
 ```typescript
-// Test file structure
-import '../../../test-setup'; // Required at top
-import { TestBed } from '@angular/core/testing';
-
-describe('MyService', () => {
-  let service: MyService;
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [MyService /* mocks */],
-    });
-    service = TestBed.inject(MyService);
-  });
-
-  it('should do something', () => {
-    expect(service.doSomething()).toBe(expected);
-  });
-});
+import { ReadingsService } from '@services/readings.service';
+import { GlucoseReading } from '@models/glucose-reading.model';
+import { environment } from '@env/environment';
+// @core/* @shared/* @services/* @models/* @guards/* @env/* @mocks/* @test-setup/*
 ```
+
+### Angular Components
+
+```typescript
+@Component({
+  selector: 'app-my-component',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],  // REQUIRED for Ionic
+  imports: [IonHeader, IonToolbar, TranslateModule],
+})
+```
+
+## Backend Repos (CRITICAL)
+
+**Location**: `/home/julito/code/facu/diabetactic/`
+
+| Repo                      | Purpose                 | Key Files                                                |
+| ------------------------- | ----------------------- | -------------------------------------------------------- |
+| `login/`                  | User auth, registration | `app/models/user_model.py`, `app/schemas/user_schema.py` |
+| `glucoserver/`            | Glucose readings        | `app/models/`, `app/routes/`                             |
+| `appointments/`           | Medical appointments    | `app/models/`, `app/routes/`                             |
+| `api-gateway/`            | Main API proxy          | Routes requests to services                              |
+| `api-gateway-backoffice/` | Admin API               | User management, queue control                           |
+
+**MANDATORY**: Before making assumptions about backend behavior:
+
+1. **READ the actual backend code** at `/home/julito/code/facu/diabetactic/`
+2. Check model definitions (`*_model.py`) for constraints (UNIQUE, nullable, defaults)
+3. Check schemas (`*_schema.py`) for required fields and types
+4. Check routes (`*_routes.py`) for endpoint behavior
+5. **NEVER assume** field types, defaults, or constraints - verify in backend repos
+
+## Anti-Patterns (THIS PROJECT)
+
+| Forbidden                        | Why                   | Correct                                |
+| -------------------------------- | --------------------- | -------------------------------------- |
+| `HttpClient` injection           | Bypasses caching/auth | Use `ApiGatewayService.request()`      |
+| `as any`, `@ts-ignore`           | Hides bugs            | Fix types properly                     |
+| Hardcoded credentials            | Security risk         | Use `playwright/config/test-config.ts` |
+| Inline `style=` in templates     | Breaks theming        | Use Tailwind classes                   |
+| Missing `CUSTOM_ELEMENTS_SCHEMA` | Ionic fails           | Add to all components                  |
+| Assuming backend behavior        | Causes bugs           | **Verify in backend repos first**      |
 
 ## Key Files
 
-| File                                           | Purpose                   |
-| ---------------------------------------------- | ------------------------- |
-| `src/app/core/services/api-gateway.service.ts` | All API calls (endpoints) |
-| `src/app/core/services/local-auth.service.ts`  | Authentication            |
-| `src/app/core/services/database.service.ts`    | IndexedDB (Dexie)         |
-| `src/environments/environment.ts`              | Backend mode config       |
-| `vitest.config.ts`                             | Test config               |
-| `playwright.config.ts`                         | E2E config                |
+| File                                           | Purpose                                 |
+| ---------------------------------------------- | --------------------------------------- |
+| `src/app/core/services/api-gateway.service.ts` | ALL external API calls (100+ endpoints) |
+| `src/app/core/services/readings.service.ts`    | Glucose CRUD facade                     |
+| `src/app/core/services/database.service.ts`    | IndexedDB (Dexie)                       |
+| `src/app/core/services/local-auth.service.ts`  | JWT auth                                |
+| `vitest.config.ts`                             | Unit test config                        |
+| `playwright.config.ts`                         | E2E config                              |
 
 ## Test Credentials
 
@@ -160,44 +125,37 @@ describe('MyService', () => {
 | Secondary  | 40123457 | thepassword2 |
 | Backoffice | admin    | admin        |
 
-Credentials are centralized in `playwright/config/test-config.ts`. Never hardcode in tests.
+Centralized in `playwright/config/test-config.ts`. Never hardcode.
+
+## Testing
+
+- Unit tests: `*.spec.ts` alongside source, use `vi.fn()` (Vitest)
+- First line: `import '../../../test-setup';`
+- Coverage: 80% lines, 75% functions, 70% branches
+- E2E: Page Object Model, `BasePage` handles Ionic hydration
+
+## Internationalization
+
+All text in BOTH `assets/i18n/en.json` AND `es.json`. Check: `pnpm run i18n:check`
 
 ## Git Workflow
 
 - **NEVER** commit to `master` directly
-- Branch naming: `feature/[agent]/[task]`, `fix/[issue]`
-- All PRs require passing CI checks
-- Squash merge preferred
+- Branch: `feature/[agent]/[task]`, `fix/[issue]`
+- Pre-commit: `pnpm test && pnpm run lint && pnpm run typecheck`
 
-## Pre-Commit Checklist
+## Subdirectory Documentation
 
-- [ ] `pnpm test` passes
-- [ ] `pnpm run lint` clean
-- [ ] `pnpm run typecheck` clean
-- [ ] Translations in both `en.json` AND `es.json`
-- [ ] `CUSTOM_ELEMENTS_SCHEMA` in new components
-- [ ] PR targets correct branch (NOT master)
-
-## Common Gotchas
-
-1. **CUSTOM_ELEMENTS_SCHEMA** - Required in ALL standalone components for Ionic
-2. **ApiGatewayService** - Never use HttpClient directly in components/services
-3. **Path aliases** - Use `@services/` not `../../core/services/`
-4. **OnPush change detection** - Prefer for performance; use `ChangeDetectorRef.markForCheck()`
-5. **Test isolation** - Tests run in forks with sequential execution per file
-
-## Hierarchical Documentation
-
-Additional AGENTS.md files in subdirectories:
-
-- `src/app/core/services/AGENTS.md` - Service layer patterns, API architecture
-- `src/app/tests/AGENTS.md` - Integration testing patterns, test helpers
-- `src/mocks/AGENTS.md` - MSW handlers, mock data
-- `playwright/AGENTS.md` - E2E testing, Page Object Model
-- `docs/AGENTS.md` - Documentation index
-- `scripts/AGENTS.md` - Build/CI automation scripts
+| Path                              | Purpose                                     |
+| --------------------------------- | ------------------------------------------- |
+| `src/app/core/services/AGENTS.md` | Service architecture, API patterns          |
+| `src/app/tests/AGENTS.md`         | Integration testing, setupTestBed()         |
+| `src/mocks/AGENTS.md`             | MSW handlers, Capacitor mocks               |
+| `playwright/AGENTS.md`            | E2E testing, Page Object Model              |
+| `scripts/AGENTS.md`               | CI/CD automation                            |
+| `docs/AGENTS.md`                  | Documentation index                         |
+| `docker/AGENTS.md`                | Local backend, **backend validation rules** |
 
 ---
 
-Repository: https://github.com/diabetactic/diabetify  
-Last Updated: 2026-01-09 (commit a1ba245)
+**Generated**: 2026-01-13 | **Commit**: 09787eb | **Branch**: master

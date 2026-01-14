@@ -4,33 +4,81 @@
   align-items: center;
   text-align: center;
   color: var(--ion-color-light);
-  background-color: var(--ion-color-primary);
-  padding: 1.5rem;
+  background: linear-gradient(
+    180deg,
+    var(--ion-color-primary) 0%,
+    var(--ion-color-primary-shade) 100%
+  );
+  padding: 2.5rem 1.5rem 2rem;
 }
 
 .avatar-container {
   position: relative;
-  margin-bottom: 1rem;
+  margin: 0 auto 1rem;
+  width: 108px;
+  height: 108px;
 }
 
 .avatar-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   padding: 4px;
-  background: rgb(255 255 255 / 20%);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
 }
 
 .hero-avatar {
-  width: 96px;
-  height: 96px;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+
+  img {
+    object-fit: cover;
+  }
 }
 
 .avatar-fallback {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .change-photo-btn {
+  --padding-start: 0;
+  --padding-end: 0;
+  --border-radius: 50%;
+  --background: #fff;
+  --color: var(--ion-color-primary);
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
   position: absolute;
   bottom: 0;
   right: 0;
+  margin: 0;
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+
+  app-icon {
+    font-size: 18px;
+  }
+}
+
+.edit-profile-btn {
+  --color: #fff;
+  --border-color: rgba(255, 255, 255, 0.8);
+  --border-width: 2px;
+  --background: transparent;
+  --background-hover: rgba(255, 255, 255, 0.15);
+  --background-activated: rgba(255, 255, 255, 0.2);
+  --box-shadow: none;
+
+  ion-icon,
+  app-icon {
+    color: var(--ion-color-light);
+  }
 }

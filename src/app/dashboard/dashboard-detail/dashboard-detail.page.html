@@ -151,11 +151,12 @@
               class="sync-item flex items-center gap-3 rounded-xl p-3"
               style="background: var(--ion-color-light)"
             >
-              <ion-icon
+              <app-icon
                 [name]="isSyncing ? 'ellipse' : 'checkmark-circle'"
-                [color]="isSyncing ? 'warning' : 'success'"
+                [class]="isSyncing ? 'text-warning' : 'text-success'"
                 class="shrink-0 text-[28px]"
-              ></ion-icon>
+                aria-hidden="true"
+              ></app-icon>
               <div class="flex-1">
                 <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">
                   {{ 'dashboard.status' | translate }}

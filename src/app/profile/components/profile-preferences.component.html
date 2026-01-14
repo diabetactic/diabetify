@@ -1,128 +1,138 @@
 <section class="card">
   <h3 class="text-dark m-0 text-lg font-bold">{{ 'profile.preferences' | translate }}</h3>
 
-  <div class="preference-row">
-    <div class="flex min-w-0 flex-1 items-center gap-3">
-      <app-icon
-        name="contrast-outline"
-        aria-hidden="true"
-        class="text-primary text-[26px]"
-      ></app-icon>
-      <div>
-        <p class="text-dark m-0 text-base font-semibold">
-          {{ 'profile.theme.title' | translate }}
-        </p>
-      </div>
-    </div>
-    <ion-select
-      id="theme-selector"
-      interface="alert"
-      [value]="currentTheme"
-      (ionChange)="onThemeChange($event)"
-      aria-label="{{ 'profile.theme.title' | translate }}"
-      data-testid="theme-selector"
-    >
-      <ion-select-option value="light">{{ 'profile.theme.light' | translate }}</ion-select-option>
-      <ion-select-option value="dark">{{ 'profile.theme.dark' | translate }}</ion-select-option>
-      <ion-select-option value="auto">{{ 'profile.theme.auto' | translate }}</ion-select-option>
-    </ion-select>
-  </div>
-
-  <div class="preference-row">
-    <div class="flex min-w-0 flex-1 items-center gap-3">
-      <app-icon
-        name="language-outline"
-        aria-hidden="true"
-        class="text-primary text-[26px]"
-      ></app-icon>
-      <div>
-        <p class="text-dark m-0 text-base font-semibold">
-          {{ 'profile.language.title' | translate }}
-        </p>
-      </div>
-    </div>
-    <ion-select
-      id="language-selector"
-      interface="alert"
-      [value]="currentLanguage"
-      (ionChange)="onLanguageChange($event)"
-      aria-label="{{ 'profile.language.title' | translate }}"
-      data-testid="language-selector"
-    >
-      <ion-select-option value="en">{{ 'profile.language.en' | translate }}</ion-select-option>
-      <ion-select-option value="es">{{ 'profile.language.es' | translate }}</ion-select-option>
-    </ion-select>
-  </div>
-
-  <div class="preference-row">
-    <div class="flex min-w-0 flex-1 items-center gap-3">
-      <app-icon name="water-outline" aria-hidden="true" class="text-primary text-[26px]"></app-icon>
-      <div>
-        <p class="text-dark m-0 text-base font-semibold">
-          {{ 'profile.glucoseUnits' | translate }}
-        </p>
-      </div>
-    </div>
-    <ion-select
-      interface="alert"
-      [value]="currentGlucoseUnit"
-      (ionChange)="onGlucoseUnitChange($event)"
-      aria-label="{{ 'profile.glucoseUnits' | translate }}"
-      data-testid="glucose-units-selector"
-    >
-      @for (option of unitOptions; track option.value) {
-        <ion-select-option [value]="option.value">
-          {{ option.label }}
-        </ion-select-option>
-      }
-    </ion-select>
-  </div>
-
-  <div class="preference-row">
-    <div class="flex min-w-0 flex-1 items-center gap-3">
-      <app-icon
-        name="notifications-outline"
-        aria-hidden="true"
-        class="text-primary text-[26px]"
-      ></app-icon>
-      <div>
-        <p class="text-dark m-0 text-base font-semibold">
-          {{ 'profile.notifications.title' | translate }}
-        </p>
-        <p class="text-medium mb-0 mt-1 text-xs">
-          {{ 'profile.notifications.desc' | translate }}
-        </p>
-      </div>
-    </div>
-    <ion-toggle
-      [checked]="notificationsEnabled"
-      (ionChange)="onNotificationsToggle($event)"
-      aria-label="{{ 'profile.notifications.title' | translate }}"
-      data-testid="notifications-toggle"
-    ></ion-toggle>
-  </div>
-
   <button
     type="button"
-    class="preference-row link"
+    class="preference-row link mt-5 w-full transition-colors hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-gray-800/50"
     (click)="onGoToSettings()"
-    data-testid="advanced-settings-btn"
+    data-testid="settings-btn"
   >
-    <div class="flex min-w-0 flex-1 items-center gap-3">
-      <app-icon
-        name="settings-outline"
-        aria-hidden="true"
-        class="text-primary text-[26px]"
-      ></app-icon>
-      <div>
+    <div class="flex min-w-0 flex-1 items-center gap-4">
+      <div
+        class="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-full"
+      >
+        <app-icon name="settings-outline" aria-hidden="true" class="text-2xl"></app-icon>
+      </div>
+      <div class="text-left">
         <p class="text-dark m-0 text-base font-semibold">
           {{ 'profile.advancedSettings' | translate }}
         </p>
-        <p class="text-medium mb-0 mt-1 text-xs">
+        <p class="text-medium mb-0 mt-0.5 text-xs">
           {{ 'profile.advancedSettingsDesc' | translate }}
         </p>
       </div>
     </div>
-    <app-icon name="chevron-forward-outline" aria-hidden="true" class="text-medium"></app-icon>
+    <app-icon
+      name="chevron-forward-outline"
+      aria-hidden="true"
+      class="text-medium text-lg opacity-50"
+    ></app-icon>
   </button>
+
+  <div
+    class="mt-4 divide-y divide-gray-100 border-t border-gray-100 dark:divide-gray-800 dark:border-gray-800"
+  >
+    <div class="flex items-center justify-between py-4">
+      <div class="flex items-center gap-3">
+        <app-icon
+          name="contrast-outline"
+          aria-hidden="true"
+          class="text-base-content/70 text-[22px]"
+        ></app-icon>
+        <span class="text-base-content text-base font-medium">{{
+          'profile.theme.title' | translate
+        }}</span>
+      </div>
+      <span class="text-base-content/80 font-medium">
+        @switch (currentTheme) {
+          @case ('light') {
+            {{ 'profile.theme.light' | translate }}
+          }
+          @case ('dark') {
+            {{ 'profile.theme.dark' | translate }}
+          }
+          @case ('auto') {
+            {{ 'profile.theme.auto' | translate }}
+          }
+        }
+      </span>
+    </div>
+
+    <div class="flex items-center justify-between py-4">
+      <div class="flex items-center gap-3">
+        <app-icon
+          name="language-outline"
+          aria-hidden="true"
+          class="text-base-content/70 text-[22px]"
+        ></app-icon>
+        <span class="text-base-content text-base font-medium">{{
+          'profile.language.title' | translate
+        }}</span>
+      </div>
+      <span class="text-base-content/80 font-medium">
+        {{
+          currentLanguage === 'en'
+            ? ('profile.language.en' | translate)
+            : ('profile.language.es' | translate)
+        }}
+      </span>
+    </div>
+
+    <div class="flex items-center justify-between py-4">
+      <div class="flex items-center gap-3">
+        <app-icon
+          name="water-outline"
+          aria-hidden="true"
+          class="text-base-content/70 text-[22px]"
+        ></app-icon>
+        <span class="text-base-content text-base font-medium">{{
+          'profile.glucoseUnits' | translate
+        }}</span>
+      </div>
+      <span class="text-base-content/80 font-medium">{{ currentGlucoseUnit }}</span>
+    </div>
+  </div>
+</section>
+
+<section class="card mt-6">
+  <div class="mb-5 flex items-center gap-3 border-b border-gray-100 pb-4 dark:border-gray-800">
+    <div class="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-full">
+      <app-icon name="notifications-outline" aria-hidden="true" class="text-2xl"></app-icon>
+    </div>
+    <h3 class="text-dark m-0 text-lg font-bold">
+      {{ 'profile.notifications.title' | translate }}
+    </h3>
+  </div>
+
+  <div class="flex items-center justify-between py-1">
+    <div>
+      <p class="text-dark m-0 text-base font-semibold">
+        {{ 'profile.notifications.master' | translate }}
+      </p>
+      <p class="text-medium mb-0 mt-0.5 text-xs">
+        {{ 'profile.notifications.desc' | translate }}
+      </p>
+    </div>
+    <ion-toggle
+      [checked]="notificationsEnabled"
+      (ionChange)="onNotificationsToggle($event)"
+      aria-label="{{ 'profile.notifications.master' | translate }}"
+      data-testid="notifications-master-toggle"
+      mode="ios"
+    ></ion-toggle>
+  </div>
+
+  @if (notificationsEnabled) {
+    <div class="mt-6 pt-2">
+      <button
+        type="button"
+        class="btn btn-outline btn-primary btn-sm w-full gap-2 font-medium"
+        (click)="onTestNotification()"
+        data-testid="test-notification-btn"
+      >
+        <app-icon name="paper-plane-outline"></app-icon>
+        {{ 'profile.notifications.testButton' | translate }}
+      </button>
+    </div>
+  }
 </section>

@@ -2,10 +2,9 @@ import {
   Component,
   OnInit,
   OnDestroy,
-  ElementRef,
-  ViewChild,
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,7 +17,7 @@ import { takeUntil } from 'rxjs/operators';
 import { TidepoolAuthService, AuthState } from '@services/tidepool-auth.service';
 import { LocalAuthService } from '@services/local-auth.service';
 import { ProfileService } from '@services/profile.service';
-import { ThemeService } from '@services/theme.service';
+
 import { TranslationService, Language } from '@services/translation.service';
 import { NotificationService } from '@services/notification.service';
 import { UserProfile, ThemeMode } from '@models/user-profile.model';
@@ -28,6 +27,7 @@ import { ProfileFormComponent } from './components/profile-form.component';
 import { ProfilePreferencesComponent } from './components/profile-preferences.component';
 import { ProfileActionsComponent } from './components/profile-actions.component';
 import { ProfileEditComponent } from './profile-edit/profile-edit.component';
+import { AvatarCropperComponent } from './components/avatar-cropper.component';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -52,30 +52,26 @@ import { CommonModule } from '@angular/common';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ProfilePage implements OnInit, OnDestroy {
-  @ViewChild('avatarInput') avatarInput?: ElementRef<HTMLInputElement>;
   profile: UserProfile | null = null;
   authState: AuthState | null = null;
   currentTheme: ThemeMode = 'auto';
   currentLanguage!: Language;
   currentGlucoseUnit = 'mg/dL';
   notificationsEnabled = false;
-  unitOptions = [
-    { value: 'mg/dL', label: 'mg/dL' },
-    { value: 'mmol/L', label: 'mmol/L' },
-  ];
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private authService: TidepoolAuthService,
     private localAuthService: LocalAuthService,
     private profileService: ProfileService,
-    private themeService: ThemeService,
     private translationService: TranslationService,
     private notificationService: NotificationService,
     private router: Router,
     private alertController: AlertController,
     private toastController: ToastController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private cdr: ChangeDetectorRef
   ) {
     this.currentLanguage = this.translationService.getCurrentLanguage();
   }
@@ -127,6 +123,7 @@ export class ProfilePage implements OnInit, OnDestroy {
         this.profile = profile;
         this.currentTheme = profile.preferences.themeMode;
         this.currentGlucoseUnit = profile.preferences.glucoseUnit;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -135,24 +132,6 @@ export class ProfilePage implements OnInit, OnDestroy {
     this.translationService.currentLanguage$.pipe(takeUntil(this.destroy$)).subscribe(language => {
       this.currentLanguage = language;
     });
-  }
-
-  async onThemeChange(event: CustomEvent<{ value: ThemeMode }>): Promise<void> {
-    const theme = event.detail.value as ThemeMode;
-    await this.themeService.setThemeMode(theme);
-    this.currentTheme = theme;
-  }
-
-  async onLanguageChange(event: CustomEvent<{ value: Language }>): Promise<void> {
-    const language = event.detail.value as Language;
-    await this.translationService.setLanguage(language);
-    await this.profileService.updatePreferences({ language });
-  }
-
-  async onGlucoseUnitChange(event: CustomEvent<{ value: string }>): Promise<void> {
-    const unit = event.detail.value as 'mg/dL' | 'mmol/L';
-    await this.profileService.updatePreferences({ glucoseUnit: unit });
-    this.currentGlucoseUnit = unit;
   }
 
   async onNotificationsToggle(event: CustomEvent<{ checked: boolean }>): Promise<void> {
@@ -244,15 +223,16 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   async goToSettings(): Promise<void> {
-    await this.router.navigate([ROUTES.SETTINGS]);
+    const { SettingsPage } = await import('../settings/settings.page');
+    const modal = await this.modalController.create({
+      component: SettingsPage,
+      cssClass: 'fullscreen-modal',
+    });
+    await modal.present();
   }
 
   async goToAchievements(): Promise<void> {
     await this.router.navigate(['/achievements']);
-  }
-
-  triggerAvatarUpload(): void {
-    this.avatarInput?.nativeElement.click();
   }
 
   async onAvatarSelected(event: Event): Promise<void> {
@@ -266,58 +246,34 @@ export class ProfilePage implements OnInit, OnDestroy {
       await this.presentAvatarError('profile.avatar.tooLarge');
       return;
     }
-    try {
-      const imagePath = await this.resizeAndReadImage(file);
-      await this.profileService.updateProfile({
-        avatar: {
-          id: 'custom-avatar',
-          name: file.name || 'Custom',
-          imagePath,
-          category: 'custom',
-        },
-      });
-    } catch {
-      await this.presentAvatarError('profile.avatar.updateFailed');
-    }
+    await this.openAvatarCropper(file);
   }
 
-  private async resizeAndReadImage(file: File): Promise<string> {
-    return await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const maxSize = 512;
-          let width = img.width;
-          let height = img.height;
-          if (width > height) {
-            if (width > maxSize) {
-              height = (height * maxSize) / width;
-              width = maxSize;
-            }
-          } else {
-            if (height > maxSize) {
-              width = (width * maxSize) / height;
-              height = maxSize;
-            }
-          }
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL('image/jpeg', 0.9));
-          } else {
-            reject(new Error('Failed to get canvas context'));
-          }
-        };
-        img.onerror = () => reject(new Error('Failed to load image'));
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = error => reject(error);
-      reader.readAsDataURL(file);
+  private async openAvatarCropper(file: File): Promise<void> {
+    const modal = await this.modalController.create({
+      component: AvatarCropperComponent,
+      componentProps: { imageFile: file },
+      cssClass: 'avatar-cropper-modal',
     });
+
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss<{ croppedImage: string }>();
+
+    if (role === 'confirm' && data?.croppedImage) {
+      try {
+        await this.profileService.updateProfile({
+          avatar: {
+            id: 'custom-avatar',
+            name: file.name || 'Custom',
+            imagePath: data.croppedImage,
+            category: 'custom',
+          },
+        });
+      } catch {
+        await this.presentAvatarError('profile.avatar.updateFailed');
+      }
+    }
   }
 
   private async presentAvatarError(messageKey: string): Promise<void> {
@@ -330,10 +286,27 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   private saveNotificationSettings(): void {
+    const saved = localStorage.getItem(STORAGE_KEYS.NOTIFICATION_SETTINGS);
+    const existingSettings = saved ? JSON.parse(saved) : {};
     const settings = {
+      ...existingSettings,
       enabled: this.notificationsEnabled,
-      readingReminders: [],
     };
     localStorage.setItem(STORAGE_KEYS.NOTIFICATION_SETTINGS, JSON.stringify(settings));
+  }
+
+  async onTestNotification(): Promise<void> {
+    const title = this.translationService.instant('profile.notifications.testTitle');
+    const body = this.translationService.instant('profile.notifications.testBody');
+
+    await this.notificationService.showImmediateNotification(title, body);
+
+    const toast = await this.toastController.create({
+      message: this.translationService.instant('profile.notifications.testSent'),
+      duration: 2000,
+      color: 'success',
+      position: 'bottom',
+    });
+    await toast.present();
   }
 }

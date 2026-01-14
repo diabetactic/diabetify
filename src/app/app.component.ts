@@ -12,7 +12,7 @@ import { LocalAuthService } from './core/services/local-auth.service';
 import { SessionTimeoutService } from './core/services/session-timeout.service';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
-import { environment } from '@env/environment';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
@@ -39,11 +39,12 @@ export class AppComponent implements OnInit, OnDestroy {
     private authService: LocalAuthService,
     private sessionTimeout: SessionTimeoutService,
     private readingsService: ReadingsService,
-    private demoDataService: DemoDataService
+    private demoDataService: DemoDataService,
+    private envConfig: EnvironmentConfigService
   ) {
     this.logger.info('Init', 'AppComponent initialized');
     this.initializeApp();
-    if (!environment.production) {
+    if (!this.envConfig.production) {
       (window as unknown as Record<string, unknown>)['readingsService'] = this.readingsService;
     }
   }
@@ -54,8 +55,7 @@ export class AppComponent implements OnInit, OnDestroy {
     // Log backend configuration for visibility
     this.logBackendConfiguration();
 
-    // Seed demo data if in mock mode
-    if (environment.backendMode === 'mock') {
+    if (this.envConfig.isMockMode) {
       this.demoDataService.ensureSeeded().catch(err => {
         this.logger.error('Init', 'Failed to seed demo data', err);
       });
@@ -84,9 +84,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private logBackendConfiguration(): void {
-    const mode = environment.backendMode;
-    const url = environment.backendServices.apiGateway.baseUrl;
-    const isProduction = environment.production;
+    const mode = this.envConfig.backendMode;
+    const url = this.envConfig.apiGatewayBaseUrl;
+    const isProduction = this.envConfig.production;
 
     // Log configuration via LoggerService (respects environment settings)
     if (!isProduction) {
@@ -109,7 +109,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private configureWebDeviceFrame(): void {
     if (this.platform.is('capacitor')) return;
-    const enableFrame = environment.features?.webDeviceFrame ?? false;
+    const enableFrame = this.envConfig.features.webDeviceFrame;
     document.documentElement.classList.toggle('dt-device-frame', enableFrame);
   }
 

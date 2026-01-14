@@ -9,6 +9,7 @@ import {
   ActionPerformed,
 } from '@capacitor/local-notifications';
 import { PluginListenerHandle } from '@capacitor/core';
+import { TranslateService } from '@ngx-translate/core';
 import { LoggerService } from '@services/logger.service';
 import { ROUTES, appointmentDetailRoute } from '@core/constants';
 import { isObject, getStringProperty } from '../utils/type-guards';
@@ -32,7 +33,8 @@ export class NotificationService implements OnDestroy {
     private platform: Platform,
     private logger: LoggerService,
     private router: Router,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private translate: TranslateService
   ) {
     this.init();
   }
@@ -189,8 +191,8 @@ export class NotificationService implements OnDestroy {
 
     const notification: LocalNotificationSchema = {
       id: notificationId,
-      title: reminder.label || 'Glucose Reading Reminder',
-      body: "It's time to check your glucose level!",
+      title: reminder.label || this.translate.instant('notifications.readingReminderTitle'),
+      body: this.translate.instant('notifications.readingReminderBody'),
       schedule: {
         at: scheduleDate,
         repeats: true,

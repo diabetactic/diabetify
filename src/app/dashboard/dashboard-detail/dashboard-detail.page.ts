@@ -19,7 +19,6 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
-  IonIcon,
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
@@ -53,7 +52,6 @@ import { LoggerService } from '@services/logger.service';
     IonCardHeader,
     IonCardTitle,
     IonCardContent,
-    IonIcon,
     StatCardComponent,
     AppIconComponent,
   ],

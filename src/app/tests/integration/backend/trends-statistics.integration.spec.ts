@@ -14,6 +14,7 @@ import {
   createGlucoseReading,
   getGlucoseReadings,
   authenticatedGet,
+  parseBackendDate,
 } from '../../helpers/backend-services.helper';
 
 // Test execution state
@@ -95,25 +96,26 @@ describe('Backend Integration - Trends & Statistics', () => {
 
       if (readings.length >= 2) {
         // Verify all readings have valid dates that can be sorted
+        // Backend uses DD/MM/YYYY HH:mm:ss format, use parseBackendDate helper
         const validDates = readings
-          .map(r => new Date(r.created_at || ''))
-          .filter(d => !isNaN(d.getTime()));
+          .map(r => parseBackendDate(r.created_at || ''))
+          .filter((d): d is Date => d !== null);
 
         expect(validDates.length).toBeGreaterThan(0);
 
         // Sort client-side to verify sorting works (backend may not guarantee order)
         const sortedReadings = [...readings].sort((a, b) => {
-          const dateA = new Date(a.created_at || '').getTime();
-          const dateB = new Date(b.created_at || '').getTime();
+          const dateA = parseBackendDate(a.created_at || '')?.getTime() ?? 0;
+          const dateB = parseBackendDate(b.created_at || '')?.getTime() ?? 0;
           return dateB - dateA; // Descending order (newest first)
         });
 
         // Verify sorted order is correct
         for (let i = 0; i < sortedReadings.length - 1; i++) {
-          const currentDate = new Date(sortedReadings[i].created_at || '');
-          const nextDate = new Date(sortedReadings[i + 1].created_at || '');
+          const currentDate = parseBackendDate(sortedReadings[i].created_at || '');
+          const nextDate = parseBackendDate(sortedReadings[i + 1].created_at || '');
 
-          if (!isNaN(currentDate.getTime()) && !isNaN(nextDate.getTime())) {
+          if (currentDate && nextDate) {
             expect(currentDate.getTime()).toBeGreaterThanOrEqual(nextDate.getTime());
           }
         }
@@ -249,35 +251,31 @@ describe('Backend Integration - Trends & Statistics', () => {
 
   describe('DATE RANGE Filtering', () => {
     conditionalIt('should filter readings by date range', async () => {
-      // Get all readings
       const allReadings = await getGlucoseReadings(authToken);
 
       if (allReadings.length === 0) {
         return;
       }
 
-      // Filter last 7 days (client-side)
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
       const recentReadings = allReadings.filter(r => {
-        const readingDate = new Date(r.created_at || '');
-        return !isNaN(readingDate.getTime()) && readingDate >= sevenDaysAgo;
+        const readingDate = parseBackendDate(r.created_at || '');
+        return readingDate && readingDate >= sevenDaysAgo;
       });
 
-      // Should have less or equal readings in the range
       expect(recentReadings.length).toBeLessThanOrEqual(allReadings.length);
     });
 
     conditionalIt('should group readings by day for trends', async () => {
       const readings = await getGlucoseReadings(authToken);
 
-      // Group by day
       const byDay = new Map<string, number[]>();
 
       readings.forEach(r => {
-        const date = new Date(r.created_at || '');
-        if (isNaN(date.getTime())) return;
+        const date = parseBackendDate(r.created_at || '');
+        if (!date) return;
 
         const dayKey = date.toISOString().split('T')[0];
         if (!byDay.has(dayKey)) {
@@ -286,7 +284,6 @@ describe('Backend Integration - Trends & Statistics', () => {
         byDay.get(dayKey)!.push(r.glucose_level);
       });
 
-      // Calculate average per day
       const dailyAverages = Array.from(byDay.entries()).map(([day, values]) => ({
         day,
         average: values.reduce((a, b) => a + b, 0) / values.length,

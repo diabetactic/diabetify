@@ -24,7 +24,7 @@ export interface UserProfile {
   name: string;
   surname: string;
   email: string;
-  hospital_account: 'pending' | 'accepted' | 'disabled';
+  hospital_account: string; // Backend accepts any string (unique per user)
 }
 
 export class ApiClient {

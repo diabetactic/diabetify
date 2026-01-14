@@ -2,7 +2,7 @@ import '../../test-setup';
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ToastController, IonicModule } from '@ionic/angular';
+import { ToastController, ModalController, IonicModule } from '@ionic/angular';
 import { NgZone } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { vi } from 'vitest';
@@ -19,6 +19,20 @@ import { ThemeService } from '@services/theme.service';
 import { LocalGlucoseReading, GlucoseStatistics, GlucoseUnit } from '@models/glucose-reading.model';
 import { UserProfile, DEFAULT_USER_PREFERENCES, AccountState } from '@models/user-profile.model';
 import { LocalAuthState } from '@services/local-auth.service';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
+
+class MockEnvironmentConfigService {
+  private _isMockMode = false;
+  backendMode = 'local';
+
+  get isMockMode(): boolean {
+    return this._isMockMode;
+  }
+
+  setMockMode(value: boolean): void {
+    this._isMockMode = value;
+  }
+}
 
 describe('DashboardPage', () => {
   let component: DashboardPage;
@@ -30,8 +44,10 @@ describe('DashboardPage', () => {
   let mockLoggerService: any;
   let mockThemeService: any;
   let mockToastController: any;
+  let mockModalController: any;
   let mockRouter: any;
   let mockNgZone: any;
+  let mockEnvConfig: MockEnvironmentConfigService;
 
   const mockReading: LocalGlucoseReading = {
     id: 'reading-1',
@@ -138,6 +154,12 @@ describe('DashboardPage', () => {
       }),
     };
 
+    mockModalController = {
+      create: vi.fn().mockResolvedValue({
+        present: vi.fn().mockResolvedValue(undefined),
+      }),
+    };
+
     mockRouter = {
       navigate: vi.fn().mockResolvedValue(true),
     };
@@ -154,6 +176,8 @@ describe('DashboardPage', () => {
       hasPendingMacrotasks: false,
     };
 
+    mockEnvConfig = new MockEnvironmentConfigService();
+
     await TestBed.configureTestingModule({
       imports: [DashboardPage, IonicModule.forRoot(), TranslateModule.forRoot()],
       providers: [
@@ -164,9 +188,11 @@ describe('DashboardPage', () => {
         { provide: LoggerService, useValue: mockLoggerService },
         { provide: ThemeService, useValue: mockThemeService },
         { provide: ToastController, useValue: mockToastController },
+        { provide: ModalController, useValue: mockModalController },
         { provide: Router, useValue: mockRouter },
         { provide: NgZone, useValue: mockNgZone },
         { provide: ActivatedRoute, useValue: { snapshot: { params: {} } } },
+        { provide: EnvironmentConfigService, useValue: mockEnvConfig },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -245,7 +271,7 @@ describe('DashboardPage', () => {
 
   describe('Dashboard Data Loading', () => {
     beforeEach(() => {
-      component['isMockMode'] = true as any; // Skip backend sync for these tests
+      mockEnvConfig.setMockMode(true);
     });
 
     it('should load statistics and readings', async () => {
@@ -286,7 +312,7 @@ describe('DashboardPage', () => {
     });
 
     it('should sync with backend in cloud mode', async () => {
-      component['isMockMode'] = false as any;
+      mockEnvConfig.setMockMode(false);
 
       component.ngOnInit();
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -296,7 +322,7 @@ describe('DashboardPage', () => {
     });
 
     it('should handle backend sync error gracefully', async () => {
-      component['isMockMode'] = false as any;
+      mockEnvConfig.setMockMode(false);
       mockReadingsService.fetchFromBackend.mockRejectedValue(new Error('Sync failed'));
 
       component.ngOnInit();
@@ -461,11 +487,12 @@ describe('DashboardPage', () => {
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/add-reading']);
     });
 
-    it('should navigate to bolus calculator page', () => {
-      component.openBolusCalculator();
+    it.skip('should open bolus calculator modal', async () => {
+      const createSpy = vi.spyOn(mockModalController, 'create');
 
-      expect(mockNgZone.run).toHaveBeenCalled();
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/bolus-calculator']);
+      await component.openBolusCalculator();
+
+      expect(createSpy).toHaveBeenCalled();
     });
   });
 

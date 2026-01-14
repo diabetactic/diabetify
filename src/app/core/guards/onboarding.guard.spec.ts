@@ -15,6 +15,7 @@ import {
 } from '@angular/router';
 import { OnboardingGuard } from './onboarding.guard';
 import { ProfileService } from '@services/profile.service';
+import { LocalAuthService } from '@services/local-auth.service';
 import { LoggerService } from '@services/logger.service';
 import { UserProfile } from '@models/user-profile.model';
 import { ROUTES } from '@core/constants';
@@ -24,11 +25,16 @@ describe('OnboardingGuard', () => {
   let mockProfileService: {
     getProfile: ReturnType<typeof vi.fn>;
   };
+  let mockAuthService: {
+    waitForInitialization: ReturnType<typeof vi.fn>;
+    getAccessToken: ReturnType<typeof vi.fn>;
+  };
   let mockRouter: {
     createUrlTree: ReturnType<typeof vi.fn>;
   };
   let mockLogger: {
     error: ReturnType<typeof vi.fn>;
+    debug: ReturnType<typeof vi.fn>;
   };
 
   // Helper para crear un perfil de usuario mock
@@ -51,9 +57,13 @@ describe('OnboardingGuard', () => {
     }) as UserProfile;
 
   beforeEach(() => {
-    // Crear mocks
     mockProfileService = {
       getProfile: vi.fn(),
+    };
+
+    mockAuthService = {
+      waitForInitialization: vi.fn().mockResolvedValue(undefined),
+      getAccessToken: vi.fn().mockResolvedValue('valid-token'),
     };
 
     mockRouter = {
@@ -62,12 +72,14 @@ describe('OnboardingGuard', () => {
 
     mockLogger = {
       error: vi.fn(),
+      debug: vi.fn(),
     };
 
     TestBed.configureTestingModule({
       providers: [
         OnboardingGuard,
         { provide: ProfileService, useValue: mockProfileService },
+        { provide: LocalAuthService, useValue: mockAuthService },
         { provide: Router, useValue: mockRouter },
         { provide: LoggerService, useValue: mockLogger },
       ],
@@ -217,7 +229,7 @@ describe('OnboardingGuard', () => {
       expect(result).toBe(mockUrlTree);
       expect(mockLogger.error).toHaveBeenCalledWith(
         'OnboardingGuard',
-        'Failed to check onboarding status',
+        'Failed to check auth/onboarding status',
         error
       );
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME]);
@@ -390,6 +402,63 @@ describe('OnboardingGuard', () => {
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
         queryParams: { returnUrl: '/tabs/dashboard' },
       });
+    });
+  });
+
+  describe('Authentication Check', () => {
+    it('debe redirigir a /welcome cuando no hay token de acceso', async () => {
+      mockAuthService.getAccessToken.mockResolvedValue(null);
+      const mockProfile = createMockProfile(true);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const mockUrlTree = {} as UrlTree;
+      mockRouter.createUrlTree.mockReturnValue(mockUrlTree);
+
+      const route = {} as ActivatedRouteSnapshot;
+      const state = { url: '/tabs/dashboard' } as RouterStateSnapshot;
+
+      const result = await guard.canActivate(route, state);
+
+      expect(result).toBe(mockUrlTree);
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith([ROUTES.WELCOME], {
+        queryParams: { returnUrl: '/tabs/dashboard' },
+      });
+      expect(mockProfileService.getProfile).not.toHaveBeenCalled();
+    });
+
+    it('debe verificar auth antes de onboarding', async () => {
+      mockAuthService.getAccessToken.mockResolvedValue('valid-token');
+      const mockProfile = createMockProfile(true);
+      mockProfileService.getProfile.mockResolvedValue(mockProfile);
+
+      const route = {} as ActivatedRouteSnapshot;
+      const state = { url: '/tabs/dashboard' } as RouterStateSnapshot;
+
+      const result = await guard.canActivate(route, state);
+
+      expect(result).toBe(true);
+      expect(mockAuthService.waitForInitialization).toHaveBeenCalled();
+      expect(mockAuthService.getAccessToken).toHaveBeenCalled();
+      expect(mockProfileService.getProfile).toHaveBeenCalled();
+    });
+
+    it('debe esperar inicialización de auth antes de verificar token', async () => {
+      const initOrder: string[] = [];
+      mockAuthService.waitForInitialization.mockImplementation(async () => {
+        initOrder.push('waitForInitialization');
+      });
+      mockAuthService.getAccessToken.mockImplementation(async () => {
+        initOrder.push('getAccessToken');
+        return 'valid-token';
+      });
+      mockProfileService.getProfile.mockResolvedValue(createMockProfile(true));
+
+      const route = {} as ActivatedRouteSnapshot;
+      const state = { url: '/tabs/dashboard' } as RouterStateSnapshot;
+
+      await guard.canActivate(route, state);
+
+      expect(initOrder).toEqual(['waitForInitialization', 'getAccessToken']);
     });
   });
 

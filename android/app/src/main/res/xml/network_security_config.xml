@@ -1,20 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Production: Disable cleartext (HTTP) by default for security -->
+    <!-- PRODUCTION: Require HTTPS for all connections -->
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>
     </base-config>
-
-    <!-- Allow HTTPS only for Google Fonts -->
-    <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="true">fonts.googleapis.com</domain>
-        <domain includeSubdomains="true">fonts.gstatic.com</domain>
-    </domain-config>
-
-    <!-- Allow localhost for Capacitor live reload (will be overridden in debug) -->
-    <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="false">localhost</domain>
-    </domain-config>
 </network-security-config>

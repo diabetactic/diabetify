@@ -14,10 +14,12 @@
     "**/contracts/**",
     "**/config/mock-adapter-config.ts",
     "**/utils/type-guards.ts",
-    "**/models/http-error.model.ts"
+    "**/models/http-error.model.ts",
+    "**/models/tidepool-auth.model.ts",
+    "**/services/tidepool-auth.service.ts"
   ],
   "ignoreDependencies": ["@angular/language-service", "@analogjs/vite-plugin-angular"],
-  "ignoreBinaries": ["only-allow", "adb", "studio", "emulator"],
+  "ignoreBinaries": ["only-allow", "adb", "studio", "emulator", "test:e2e", "test:visual:update"],
   "ignoreExportsUsedInFile": true,
   "rules": {
     "unlisted": "off",

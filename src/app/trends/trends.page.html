@@ -64,7 +64,7 @@
         <ion-card-header class="flex items-center justify-between">
           <ion-card-title>{{ 'trends.glucoseReadings' | translate }}</ion-card-title>
           <ion-button (click)="exportChart()" [attr.aria-label]="'trends.exportChart' | translate">
-            <ion-icon name="download-outline" slot="icon-only"></ion-icon>
+            <app-icon name="download-outline" slot="icon-only" aria-hidden="true"></app-icon>
           </ion-button>
         </ion-card-header>
         <ion-card-content>

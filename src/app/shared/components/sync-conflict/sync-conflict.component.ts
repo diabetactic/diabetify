@@ -9,6 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
+import { AppIconComponent } from '../app-icon/app-icon.component';
 import { SyncConflictItem } from '@services/database.service';
 
 @Component({
@@ -18,7 +19,7 @@ import { SyncConflictItem } from '@services/database.service';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule, IonicModule, TranslateModule],
+  imports: [CommonModule, IonicModule, TranslateModule, AppIconComponent],
 })
 export class SyncConflictComponent {
   @Input() conflict!: SyncConflictItem;

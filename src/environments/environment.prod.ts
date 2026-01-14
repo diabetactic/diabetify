@@ -13,9 +13,9 @@ function getBaseUrl(mode: BackendMode): string {
       if (platform === 'android') {
         return 'http://10.0.2.2:8000';
       }
-      return 'http://localhost:8004';
+      return 'http://localhost:8000';
     }
-    return 'http://localhost:8004';
+    return 'http://localhost:8000';
   }
 
   // cloud or mock → use Heroku production API

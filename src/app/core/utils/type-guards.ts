@@ -101,16 +101,10 @@ export function isGlucoseReading(data: unknown): data is {
 }
 
 /**
- * Validate account state enum value
- * @internal Exported for potential future use in auth validation
+ * Validate account state enum value (based on backend `blocked` field)
  */
-export function isValidAccountState(
-  state: unknown
-): state is 'active' | 'pending' | 'suspended' | 'inactive' {
-  return (
-    typeof state === 'string' &&
-    ['active', 'pending', 'suspended', 'inactive'].includes(state.toLowerCase())
-  );
+export function isValidAccountState(state: unknown): state is 'active' | 'disabled' {
+  return typeof state === 'string' && ['active', 'disabled'].includes(state.toLowerCase());
 }
 
 // ============================================================================

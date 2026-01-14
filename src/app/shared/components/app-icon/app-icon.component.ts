@@ -29,8 +29,10 @@ export class AppIconComponent {
 
   // Icon name mappings from Ionicons to Lucide
   private iconMappings: Record<string, string> = {
-    // Ionicon -> Lucide mappings
     'save-outline': 'save',
+    'arrow-back': 'arrow-left',
+    'arrow-back-outline': 'arrow-left',
+    'chevron-back': 'chevron-left',
     'chevron-forward': 'chevron-right',
     'chevron-forward-outline': 'chevron-right',
     'chevron-down': 'chevron-down',
@@ -48,8 +50,12 @@ export class AppIconComponent {
     'trash-outline': 'trash-2',
     trash: 'trash-2',
     checkmark: 'check',
+    'checkmark-outline': 'check',
     'checkmark-circle': 'check-circle',
     'checkmark-circle-outline': 'check-circle',
+    barcode: 'barcode',
+    'barcode-outline': 'barcode',
+    'clipboard-check': 'clipboard-check',
     'location-outline': 'map-pin',
     star: 'star',
     'star-outline': 'star',
@@ -199,6 +205,9 @@ export class AppIconComponent {
     'cloud-upload': 'upload-cloud',
     'cloud-download-outline': 'download-cloud',
     'cloud-download': 'download-cloud',
+    // Shape mappings
+    ellipse: 'circle',
+    'ellipse-outline': 'circle',
     // Spinner mappings
     crescent: 'loader',
     circular: 'loader-circle',
@@ -304,13 +313,15 @@ export class AppIconComponent {
     local_pharmacy: 'pill',
     healing: 'heart',
     medical_services: 'stethoscope',
-    science: 'flask',
+    science: 'flask-conical',
     biotech: 'dna',
     psychology: 'brain',
     fitness_center: 'dumbbell',
     sports: 'trophy',
     'restaurant-outline': 'utensils-crossed',
     restaurant: 'utensils-crossed',
+    'stats-chart-outline': 'line-chart',
+    'stats-chart': 'line-chart',
     // Achievement icons
     'trophy-outline': 'trophy',
     trophy: 'trophy',
@@ -332,6 +343,8 @@ export class AppIconComponent {
     nutrition: 'apple',
     'fitness-outline': 'dumbbell',
     fitness: 'dumbbell',
+    'paper-plane-outline': 'send',
+    'paper-plane': 'send',
   };
 
   get mappedName(): string {

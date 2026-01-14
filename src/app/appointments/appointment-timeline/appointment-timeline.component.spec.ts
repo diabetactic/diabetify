@@ -7,10 +7,10 @@ describe('AppointmentTimelineComponent', () => {
   let fixture: ComponentFixture<AppointmentTimelineComponent>;
 
   const mockAppointment = {
-    status: 'Accepted',
+    status: 'ACCEPTED',
     timestamps: {
-      Pending: '2023-10-27T10:00:00Z',
-      Accepted: '2023-10-27T12:30:00Z',
+      PENDING: '2023-10-27T10:00:00Z',
+      ACCEPTED: '2023-10-27T12:30:00Z',
     },
   };
 
@@ -31,30 +31,29 @@ describe('AppointmentTimelineComponent', () => {
 
   it('should set the current status on init', () => {
     component.ngOnInit();
-    expect(component.currentStatus).toBe('Accepted');
+    expect(component.currentStatus).toBe('ACCEPTED');
   });
 
   it('should correctly determine if a state is active', () => {
-    component.currentStatus = 'Accepted';
-    expect(component.isStateActive('Pending')).toBe(true);
-    expect(component.isStateActive('Accepted')).toBe(true);
-    expect(component.isStateActive('Created')).toBe(false);
-    expect(component.isStateActive('Resolved')).toBe(false);
+    component.currentStatus = 'ACCEPTED';
+    expect(component.isStateActive('NONE')).toBe(true);
+    expect(component.isStateActive('PENDING')).toBe(true);
+    expect(component.isStateActive('ACCEPTED')).toBe(true);
+    expect(component.isStateActive('CREATED')).toBe(false);
+    expect(component.isStateActive('DENIED')).toBe(false);
   });
 
   it('should return the correct timestamp for a state', () => {
     const pendingTimestamp = new Date('2023-10-27T10:00:00Z').toLocaleString();
-    expect(component.getTimestamp('Pending')).toBe(pendingTimestamp);
+    expect(component.getTimestamp('PENDING')).toBe(pendingTimestamp);
   });
 
   it('should return null for a state without a timestamp', () => {
-    expect(component.getTimestamp('Created')).toBeNull();
+    expect(component.getTimestamp('CREATED')).toBeNull();
   });
 
   it('should calculate the progress percentage correctly', () => {
-    component.currentStatus = 'Accepted';
-    // Accepted is the 3rd state (index 2) out of 5 states (length 5)
-    // (2 / 4) * 100 = 50
+    component.currentStatus = 'ACCEPTED';
     expect(component.progressPercentage).toBe(50);
   });
 

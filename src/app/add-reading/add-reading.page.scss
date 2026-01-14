@@ -68,6 +68,23 @@
   width: 100%;
 }
 
+.datetime-button-full {
+  width: calc(100% - 16px);
+  margin: 0 8px;
+
+  &::part(native) {
+    width: 100%;
+    background: oklch(var(--b2) / 50%);
+    border-radius: 1rem;
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 16px;
+    justify-content: center;
+    /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
+    box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
+  }
+}
+
 // Dark mode
 :host-context(.dark),
 :host-context(.ion-palette-dark),
@@ -85,6 +102,11 @@
 
   ion-item {
     --background: transparent;
+  }
+
+  .datetime-button-full::part(native) {
+    background: oklch(var(--b3) / 60%);
+    color: oklch(var(--bc));
   }
 
   .glucose-input {

@@ -14,7 +14,7 @@ import {
 import { UnifiedAuthService } from '@services/unified-auth.service';
 import { AppointmentService } from '@services/appointment.service';
 import { ReadingsService } from '@services/readings.service';
-// Database service not directly used in tests
+import { TranslationService } from '@services/translation.service';
 
 describe('ServiceOrchestrator', () => {
   let service: ServiceOrchestrator;
@@ -86,6 +86,10 @@ describe('ServiceOrchestrator', () => {
       getReadingsByDateRange: vi.fn(),
     };
 
+    const translationServiceMock = {
+      instant: vi.fn((key: string) => key),
+    };
+
     TestBed.configureTestingModule({
       providers: [
         ServiceOrchestrator,
@@ -93,6 +97,7 @@ describe('ServiceOrchestrator', () => {
         { provide: UnifiedAuthService, useValue: unifiedAuthMock },
         { provide: AppointmentService, useValue: appointmentsMock },
         { provide: ReadingsService, useValue: readingsMock },
+        { provide: TranslationService, useValue: translationServiceMock },
       ],
     });
 

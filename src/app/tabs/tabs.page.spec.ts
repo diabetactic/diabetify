@@ -14,6 +14,22 @@ import { TranslationService } from '@services/translation.service';
 import { ROUTES, ROUTE_SEGMENTS } from '@core/constants';
 import { AppointmentQueueStateResponse } from '@models/appointment.model';
 import { environment } from '@env/environment';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
+
+class MockEnvironmentConfigService {
+  private _isMockMode = false;
+  backendMode = 'local';
+  features = environment.features;
+  devToolsEnabled = environment.features?.showStatusBadges ?? false;
+
+  get isMockMode(): boolean {
+    return this._isMockMode;
+  }
+
+  setMockMode(value: boolean): void {
+    this._isMockMode = value;
+  }
+}
 
 describe('TabsPage', () => {
   let component: TabsPage;
@@ -22,6 +38,7 @@ describe('TabsPage', () => {
   let mockAppointmentService: any;
   let mockToastController: any;
   let mockTranslationService: any;
+  let mockEnvConfig: MockEnvironmentConfigService;
   let navigationEventsSubject: Subject<any>;
 
   const createNavigationEndEvent = (url: string) => new NavigationEnd(1, url, url);
@@ -36,7 +53,7 @@ describe('TabsPage', () => {
     };
 
     mockAppointmentService = {
-      getQueueState: vi.fn(),
+      getQueueState: vi.fn().mockReturnValue(new BehaviorSubject({ state: 'NONE' })),
     };
 
     mockToastController = {
@@ -49,6 +66,8 @@ describe('TabsPage', () => {
       instant: vi.fn((key: string) => key),
     };
 
+    mockEnvConfig = new MockEnvironmentConfigService();
+
     await TestBed.configureTestingModule({
       imports: [TabsPage, IonicModule.forRoot(), TranslateModule.forRoot()],
       providers: [
@@ -56,6 +75,7 @@ describe('TabsPage', () => {
         { provide: AppointmentService, useValue: mockAppointmentService },
         { provide: ToastController, useValue: mockToastController },
         { provide: TranslationService, useValue: mockTranslationService },
+        { provide: EnvironmentConfigService, useValue: mockEnvConfig },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -66,6 +86,7 @@ describe('TabsPage', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    mockEnvConfig.setMockMode(false);
   });
 
   describe('Component Initialization', () => {
@@ -105,7 +126,7 @@ describe('TabsPage', () => {
 
   describe('ngOnInit - Mock Mode', () => {
     beforeEach(() => {
-      vi.spyOn(environment, 'backendMode', 'get').mockReturnValue('mock');
+      mockEnvConfig.setMockMode(true);
     });
 
     it('should set queue state to NONE in mock mode', () => {
@@ -138,7 +159,7 @@ describe('TabsPage', () => {
       const mockQueueState: AppointmentQueueStateResponse = { state: 'ACCEPTED' };
       mockAppointmentService.getQueueState.mockReturnValue(new BehaviorSubject(mockQueueState));
 
-      component['isMockMode'] = false as any;
+      mockEnvConfig.setMockMode(false);
       component.ngOnInit();
 
       expect(mockAppointmentService.getQueueState).toHaveBeenCalled();
@@ -148,7 +169,7 @@ describe('TabsPage', () => {
       const errorSubject = new Subject<AppointmentQueueStateResponse>();
       mockAppointmentService.getQueueState.mockReturnValue(errorSubject.asObservable());
 
-      component['isMockMode'] = false as any;
+      mockEnvConfig.setMockMode(false);
       component.ngOnInit();
       errorSubject.error(new Error('Network error'));
 

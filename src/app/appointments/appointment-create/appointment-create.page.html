@@ -2,7 +2,7 @@
   <ion-toolbar class="ion-padding-top">
     <ion-buttons slot="start">
       <ion-button (click)="cancel()">
-        <ion-icon name="close" slot="icon-only"></ion-icon>
+        <app-icon name="close" slot="icon-only" aria-hidden="true"></app-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>{{ 'appointments.create.title' | translate }}</ion-title>
@@ -290,7 +290,7 @@
           color="primary"
           data-testid="appointment-submit-btn"
         >
-          <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+          <app-icon name="checkmark-circle" slot="start" aria-hidden="true"></app-icon>
           {{ 'appointments.create.submit' | translate }}
         </ion-button>
 
@@ -303,7 +303,7 @@
           color="medium"
           data-testid="appointment-cancel-btn"
         >
-          <ion-icon name="close-circle" slot="start"></ion-icon>
+          <app-icon name="close-circle" slot="start" aria-hidden="true"></app-icon>
           {{ 'common.cancel' | translate }}
         </ion-button>
       </div>

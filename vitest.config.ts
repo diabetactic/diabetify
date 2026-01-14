@@ -10,12 +10,16 @@ import {
 
 export default defineConfig({
   plugins: [ionicPolyfillPlugin(), angular()],
+  css: {
+    postcss: {},
+  },
   test: {
     globals: true,
     environment: 'jsdom',
     pool: 'forks',
     isolate: true,
     sequence: { concurrent: false },
+    css: false,
     setupFiles: [
       'src/setup-polyfills.ts',
       '@analogjs/vitest-angular/setup-zone',

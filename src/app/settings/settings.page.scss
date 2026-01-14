@@ -2,14 +2,13 @@ ion-content {
   --padding-bottom: 80px;
 }
 
-ion-list-header {
-  background: oklch(var(--b2));
-}
-
+// Reset item background to allow card color to show through
 ion-item {
+  --background: transparent;
   --padding-start: 16px;
   --padding-end: 16px;
   --inner-padding-end: 8px;
+  --min-height: 56px;
 
   ion-label p {
     color: var(--ion-color-medium);
@@ -21,10 +20,10 @@ ion-item {
   }
 
   &[button] {
-    --transition: all 0.2s ease;
+    --transition: background-color 0.2s ease;
 
     &:hover {
-      --background: oklch(var(--b2));
+      --background: rgba(var(--ion-color-primary-rgb), 0.05);
     }
   }
 }
@@ -33,67 +32,20 @@ ion-range ion-label {
   color: var(--ion-color-medium);
 }
 
-.demo-notice {
-  background: var(--ion-color-warning-tint);
-  border-left: 4px solid var(--ion-color-warning);
-
-  ion-card-content p {
-    color: var(--ion-color-warning-shade);
-  }
-}
-
 .danger-button {
   --color: var(--ion-color-danger);
 }
 
-// Dark mode - triple-trigger pattern
+// Dark mode overrides
 :host-context(.dark),
 :host-context(.ion-palette-dark) {
-  ion-list-header {
-    background: oklch(var(--b2));
-  }
-
-  .demo-notice {
-    background: oklch(var(--wa) / 10%);
-    border-left-color: oklch(var(--wa));
-
-    ion-card-content p {
-      color: oklch(var(--wa));
-    }
-  }
-
   ion-item {
-    --background: oklch(var(--b1));
-
     &[button]:hover {
-      --background: oklch(var(--b2));
+      --background: rgba(255, 255, 255, 0.05);
     }
 
     ion-label p {
       color: oklch(var(--bc) / 60%);
-    }
-  }
-
-  .debug-panel-container {
-    background: oklch(var(--b2));
-    border-color: oklch(var(--wa));
-  }
-}
-
-.debug-panel-container {
-  background: oklch(var(--b2));
-  border: 2px dashed var(--ion-color-warning);
-  animation: slideDown 0.3s ease-in-out;
-
-  @keyframes slideDown {
-    from {
-      opacity: 0%;
-      transform: translateY(-10px);
-    }
-
-    to {
-      opacity: 100%;
-      transform: translateY(0);
     }
   }
 }
@@ -102,15 +54,5 @@ ion-range ion-label {
   ion-content {
     --padding-start: 10%;
     --padding-end: 10%;
-  }
-
-  ion-list {
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .debug-panel-container {
-    margin: 20px auto;
-    max-width: 800px;
   }
 }

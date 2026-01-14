@@ -6,12 +6,13 @@
 import { GlucoseUnit } from '@models/glucose-reading.model';
 
 /**
- * Account state enum for pre-enabled account workflow
+ * Account state derived from backend `blocked` field
+ * - ACTIVE: blocked=false (user can log in)
+ * - DISABLED: blocked=true (account blocked by admin)
  */
 export enum AccountState {
-  PENDING = 'pending', // Account created, awaiting admin activation
-  ACTIVE = 'active', // Account activated, user can log in
-  DISABLED = 'disabled', // Account deactivated (suspended or deleted)
+  ACTIVE = 'active',
+  DISABLED = 'disabled',
 }
 
 /**

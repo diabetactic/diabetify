@@ -19,10 +19,7 @@ NC='\033[0m' # No Color
 # Service configuration
 declare -A SERVICES
 SERVICES=(
-  ["api-gateway"]="8004"
-  ["glucoserver"]="8002"
-  ["login"]="8003"
-  ["appointments"]="8005"
+  ["api-gateway"]="8000"
 )
 
 # Check if services are running
@@ -77,10 +74,7 @@ else
   echo "   docker compose logs -f"
   echo ""
   echo "4. Verify ports are not in use:"
-  echo "   lsof -i :8004"
-  echo "   lsof -i :8002"
-  echo "   lsof -i :8003"
-  echo "   lsof -i :8005"
+  echo "   lsof -i :8000"
   echo ""
   exit 1
 fi

@@ -3,10 +3,7 @@
 set -euo pipefail
 
 URLS=(
-  "http://localhost:8004/health"
-  "http://localhost:8002/health"
-  "http://localhost:8003/health"
-  "http://localhost:8005/health"
+  "http://localhost:8000/health"
 )
 
 MAX_RETRIES="${BACKEND_HEALTH_RETRIES:-10}"

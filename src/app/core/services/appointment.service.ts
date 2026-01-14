@@ -11,7 +11,7 @@ import { catchError, map, tap, takeUntil } from 'rxjs/operators';
 import { ApiGatewayService } from '@services/api-gateway.service';
 import { TranslationService } from '@services/translation.service';
 import { LoggerService } from '@services/logger.service';
-import { environment } from '@env/environment';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
 import {
   Appointment,
   CreateAppointmentRequest,
@@ -32,15 +32,16 @@ type MockAppointment = Appointment;
 })
 export class AppointmentService implements OnDestroy {
   private logger = inject(LoggerService);
+  private envConfig = inject(EnvironmentConfigService);
 
-  // Reactive state for appointments
   private appointmentsSubject = new BehaviorSubject<Appointment[]>([]);
   public appointments$ = this.appointmentsSubject.asObservable();
 
-  // Subject for cleanup on destroy
   private destroy$ = new Subject<void>();
 
-  private readonly isMockMode = environment.backendMode === 'mock';
+  get isMockMode(): boolean {
+    return this.envConfig.isMockMode;
+  }
 
   // Mock data for development
   private mockAppointments: MockAppointment[] = [

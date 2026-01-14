@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { WidgetDataService } from './widget-data.service';
 import { ReadingsService } from './readings.service';
+import { TranslationService } from './translation.service';
 import { WidgetBridgePlugin } from 'capacitor-widget-bridge';
 import { vi } from 'vitest';
 import { LocalGlucoseReading } from '@models/glucose-reading.model';
 import { Statistics } from '@models/statistics.model';
 
-// Explicitly mock the 'capacitor-widget-bridge' module
 vi.mock('capacitor-widget-bridge', () => ({
   WidgetBridgePlugin: {
     setItem: vi.fn(() => Promise.resolve()),
@@ -17,9 +17,9 @@ vi.mock('capacitor-widget-bridge', () => ({
 describe('WidgetDataService', () => {
   let service: WidgetDataService;
   let readingsServiceMock: Partial<ReadingsService>;
+  let translationServiceMock: Partial<TranslationService>;
 
   beforeEach(() => {
-    // Reset mocks before each test
     vi.clearAllMocks();
 
     readingsServiceMock = {
@@ -27,8 +27,22 @@ describe('WidgetDataService', () => {
       getStatistics: vi.fn(),
     };
 
+    translationServiceMock = {
+      instant: vi.fn((key: string, params?: Record<string, unknown>) => {
+        if (key === 'widget.timeAgo.justNow') return 'just now';
+        if (key === 'widget.timeAgo.minutes') return `${params?.['count']} min ago`;
+        if (key === 'widget.timeAgo.hours') return `${params?.['count']}h ago`;
+        if (key === 'widget.timeAgo.days') return `${params?.['count']}d ago`;
+        return key;
+      }),
+    };
+
     TestBed.configureTestingModule({
-      providers: [WidgetDataService, { provide: ReadingsService, useValue: readingsServiceMock }],
+      providers: [
+        WidgetDataService,
+        { provide: ReadingsService, useValue: readingsServiceMock },
+        { provide: TranslationService, useValue: translationServiceMock },
+      ],
     });
 
     service = TestBed.inject(WidgetDataService);
@@ -41,28 +55,28 @@ describe('WidgetDataService', () => {
   describe('calculateTrend', () => {
     it('should return an up arrow when the trend is rising', () => {
       const readings = [{ value: 100 }, { value: 90 }] as LocalGlucoseReading[];
-       
+
       const trend = (service as any).calculateTrend(readings);
       expect(trend).toBe('↑');
     });
 
     it('should return a down arrow when the trend is falling', () => {
       const readings = [{ value: 90 }, { value: 100 }] as LocalGlucoseReading[];
-       
+
       const trend = (service as any).calculateTrend(readings);
       expect(trend).toBe('↓');
     });
 
     it('should return a right arrow when the trend is stable', () => {
       const readings = [{ value: 100 }, { value: 100 }] as LocalGlucoseReading[];
-       
+
       const trend = (service as any).calculateTrend(readings);
       expect(trend).toBe('→');
     });
 
     it('should return a right arrow when there is insufficient data', () => {
       const readings = [{ value: 100 }] as LocalGlucoseReading[];
-       
+
       const trend = (service as any).calculateTrend(readings);
       expect(trend).toBe('→');
     });
@@ -80,28 +94,28 @@ describe('WidgetDataService', () => {
 
     it('should return "just now" for times less than a minute ago', () => {
       const timestamp = new Date('2024-01-01T11:59:31Z').toISOString();
-       
+
       const formattedTime = (service as any).formatTimeAgo(timestamp);
       expect(formattedTime).toBe('just now');
     });
 
     it('should return minutes ago for times less than an hour ago', () => {
       const timestamp = new Date('2024-01-01T11:30:00Z').toISOString();
-       
+
       const formattedTime = (service as any).formatTimeAgo(timestamp);
       expect(formattedTime).toBe('30 min ago');
     });
 
     it('should return hours ago for times less than a day ago', () => {
       const timestamp = new Date('2024-01-01T08:00:00Z').toISOString();
-       
+
       const formattedTime = (service as any).formatTimeAgo(timestamp);
       expect(formattedTime).toBe('4h ago');
     });
 
     it('should return days ago for times more than a day ago', () => {
       const timestamp = new Date('2023-12-30T12:00:00Z').toISOString();
-       
+
       const formattedTime = (service as any).formatTimeAgo(timestamp);
       expect(formattedTime).toBe('2d ago');
     });

@@ -20,6 +20,8 @@ import { MockDataService } from '@services/mock-data.service';
 import { MockAdapterService } from '@services/mock-adapter.service';
 import { HttpClient } from '@angular/common/http';
 import { SecureStorageService } from '@services/secure-storage.service';
+import { TokenService } from '@services/token.service';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
 
 // Mock Preferences for Vitest
 vi.mock('@capacitor/preferences', () => ({
@@ -38,6 +40,16 @@ describe('LocalAuthService', () => {
   let mockAdapter: MockAdapterService;
   let httpMock: HttpClient;
   let secureStorage: Mock<SecureStorageService>;
+  let tokenService: {
+    waitForInitialization: Mock;
+    getAccessToken: Mock;
+    getRefreshToken: Mock;
+    isTokenExpired: Mock;
+    getExpiresAt: Mock;
+    setTokens: Mock;
+    clearTokens: Mock;
+  };
+  let envConfig: Partial<EnvironmentConfigService>;
 
   const mockUser: LocalUser = {
     id: 'test-user-123',
@@ -102,6 +114,22 @@ describe('LocalAuthService', () => {
       waitForInit: vi.fn().mockResolvedValue(undefined),
     } as unknown as Mock<SecureStorageService>;
 
+    tokenService = {
+      waitForInitialization: vi.fn().mockResolvedValue(undefined),
+      getAccessToken: vi.fn().mockResolvedValue(null),
+      getRefreshToken: vi.fn().mockResolvedValue(null),
+      isTokenExpired: vi.fn().mockReturnValue(true),
+      getExpiresAt: vi.fn().mockReturnValue(null),
+      setTokens: vi.fn().mockResolvedValue(undefined),
+      clearTokens: vi.fn().mockResolvedValue(undefined),
+    };
+
+    envConfig = {
+      backendMode: 'cloud',
+      isMockMode: false,
+      devToolsEnabled: false,
+    };
+
     httpMock = {
       get: vi.fn(),
       post: vi.fn(),
@@ -119,6 +147,8 @@ describe('LocalAuthService', () => {
         { provide: MockAdapterService, useValue: mockAdapter },
         { provide: HttpClient, useValue: httpMock },
         { provide: SecureStorageService, useValue: secureStorage },
+        { provide: TokenService, useValue: tokenService },
+        { provide: EnvironmentConfigService, useValue: envConfig },
       ],
     });
 
@@ -145,39 +175,40 @@ describe('LocalAuthService', () => {
     });
 
     it('should restore auth state from storage when valid token exists', async () => {
-      // Setup stored data
       const storedUser = JSON.stringify(mockUser);
-      const futureExpiry = (Date.now() + 3600000).toString(); // 1 hour from now
 
-      vi.mocked(secureStorage.get).mockImplementation((key: string) => {
-        switch (key) {
-          case 'local_access_token':
-            return Promise.resolve('stored-token');
-          case 'local_refresh_token':
-            return Promise.resolve('stored-refresh');
-          default:
-            return Promise.resolve(null);
-        }
-      });
+      const testTokenService = {
+        waitForInitialization: vi.fn().mockResolvedValue(undefined),
+        getAccessToken: vi.fn().mockResolvedValue('stored-token'),
+        getRefreshToken: vi.fn().mockResolvedValue('stored-refresh'),
+        isTokenExpired: vi.fn().mockReturnValue(false),
+        getExpiresAt: vi.fn().mockReturnValue(Date.now() + 3600000),
+        setTokens: vi.fn().mockResolvedValue(undefined),
+        clearTokens: vi.fn().mockResolvedValue(undefined),
+      };
+
+      const testEnvConfig = {
+        backendMode: 'cloud',
+        isMockMode: false,
+        devToolsEnabled: false,
+      };
 
       vi.mocked(Preferences.get).mockImplementation(({ key }: { key: string }) => {
         switch (key) {
           case 'local_user':
             return Promise.resolve({ value: storedUser });
-          case 'local_token_expires':
-            return Promise.resolve({ value: futureExpiry });
           default:
             return Promise.resolve({ value: null });
         }
       });
 
-      // Create new service instance to trigger initialization with stored data
       const newService = new LocalAuthService(
         httpMock,
         platformDetector,
         logger,
         mockAdapter,
-        secureStorage
+        testTokenService as unknown as TokenService,
+        testEnvConfig as unknown as EnvironmentConfigService
       );
 
       // @ts-expect-error - private property access for testing
@@ -200,18 +231,16 @@ describe('LocalAuthService', () => {
       });
 
       it('should return demo user and store tokens when rememberMe is true', async () => {
-        // Test without rememberMe
         const result1 = await firstValueFrom(service.login('any@email.com', 'anypassword'));
         expect(result1.success).toBe(true);
         expect(result1.user).toBeDefined();
         expect(result1.user?.email).toBe('demo@diabetactic.com');
         expect(result1.user?.firstName).toBe('Sofia');
 
-        // Test with rememberMe
         vi.clearAllMocks();
         const result2 = await firstValueFrom(service.login('any@email.com', 'anypassword', true));
         expect(result2.success).toBe(true);
-        expect(secureStorage.set).toHaveBeenCalledWith('local_access_token', 'demo_access_token');
+        expect(tokenService.setTokens).toHaveBeenCalledWith('demo_access_token', null, 86400);
         expect(Preferences.set).toHaveBeenCalled();
       });
     });
@@ -227,20 +256,14 @@ describe('LocalAuthService', () => {
           httpMock.get.mockReturnValueOnce(of(mockGatewayUserResponse));
 
           service.login('test@example.com', 'password123', true).subscribe(() => {
-            // Verify API calls
             expect(httpMock.post).toHaveBeenCalledWith(
               expect.stringContaining('/token'),
               expect.any(String),
               expect.any(Object)
             );
 
-            // Verify tokens stored
-            expect(secureStorage.set).toHaveBeenCalledWith(
-              'local_access_token',
-              'test-access-token'
-            );
+            expect(tokenService.setTokens).toHaveBeenCalled();
 
-            // Verify state updated
             service.authState$.subscribe(state => {
               expect(state.isAuthenticated).toBe(true);
               expect(state.accessToken).toBe('test-access-token');
@@ -262,33 +285,27 @@ describe('LocalAuthService', () => {
         expect(result.error).toBeDefined();
       });
 
-      it.each([
-        { state: 'pending', errorContains: 'accountPending' },
-        { state: 'disabled', errorContains: 'accountDisabled' },
-      ])(
-        'should return error when account is $state',
-        ({ state, errorContains }) =>
-          new Promise<void>(resolve => {
-            httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
-            httpMock.get.mockReturnValueOnce(
-              of({
-                ...mockGatewayUserResponse,
-                state,
-              })
-            );
+      it('should return error when account is blocked', () =>
+        new Promise<void>(resolve => {
+          httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
+          httpMock.get.mockReturnValueOnce(
+            of({
+              ...mockGatewayUserResponse,
+              blocked: true,
+            })
+          );
 
-            service.login(`${state}@example.com`, 'password').subscribe({
-              next: result => {
-                expect(result.success).toBe(false);
-                resolve();
-              },
-              error: err => {
-                expect(err.message).toContain(errorContains);
-                resolve();
-              },
-            });
-          })
-      );
+          service.login('blocked@example.com', 'password').subscribe({
+            next: result => {
+              expect(result.success).toBe(false);
+              resolve();
+            },
+            error: err => {
+              expect(err.message).toContain('accountDisabled');
+              resolve();
+            },
+          });
+        }));
     });
   });
 
@@ -308,7 +325,6 @@ describe('LocalAuthService', () => {
     it('should clear state and storage', async () => {
       await service.logout();
 
-      // Verify state cleared
       const state = await new Promise<LocalAuthState>(resolve => {
         service.authState$.subscribe(s => resolve(s));
       });
@@ -316,11 +332,8 @@ describe('LocalAuthService', () => {
       expect(state.user).toBeNull();
       expect(state.accessToken).toBeNull();
 
-      // Verify storage cleared
-      expect(secureStorage.remove).toHaveBeenCalledWith('local_access_token');
-      expect(secureStorage.remove).toHaveBeenCalledWith('local_refresh_token');
+      expect(tokenService.clearTokens).toHaveBeenCalled();
       expect(Preferences.remove).toHaveBeenCalledWith({ key: 'local_user' });
-      expect(Preferences.remove).toHaveBeenCalledWith({ key: 'local_token_expires' });
     });
 
     it('should log events and clear IndexedDB PHI data', async () => {
@@ -350,35 +363,35 @@ describe('LocalAuthService', () => {
   describe('refreshAccessToken', () => {
     it('should refresh token when refresh token exists', () =>
       new Promise<void>(resolve => {
-        vi.mocked(secureStorage.get).mockResolvedValueOnce('stored-refresh-token');
+        tokenService.getRefreshToken.mockResolvedValueOnce('stored-refresh-token');
 
-        httpMock.post.mockReturnValueOnce(
+        (httpMock.post as Mock).mockReturnValueOnce(
           of({
             access_token: 'new-access-token',
             token_type: 'bearer',
           })
         );
 
-        // Setup existing user in state
         // @ts-expect-error - private property access for testing
         service.authStateSubject.next({
           isAuthenticated: true,
           user: mockUser,
           accessToken: 'old-token',
           refreshToken: 'stored-refresh-token',
-          expiresAt: Date.now() - 1000, // Expired
+          expiresAt: Date.now() - 1000,
         });
 
         service.refreshAccessToken().subscribe(state => {
           expect(state.accessToken).toBe('new-access-token');
           expect(state.isAuthenticated).toBe(true);
+          expect(tokenService.setTokens).toHaveBeenCalled();
           resolve();
         });
       }));
 
     it('should throw error when no refresh token available', () =>
       new Promise<void>(resolve => {
-        vi.mocked(secureStorage.get).mockResolvedValueOnce(null);
+        tokenService.getRefreshToken.mockResolvedValueOnce(null);
 
         service.refreshAccessToken().subscribe({
           error: error => {
@@ -390,9 +403,9 @@ describe('LocalAuthService', () => {
 
     it('should throw error when refresh fails', () =>
       new Promise<void>(resolve => {
-        vi.mocked(secureStorage.get).mockResolvedValueOnce('stored-refresh-token');
+        tokenService.getRefreshToken.mockResolvedValueOnce('stored-refresh-token');
 
-        httpMock.post.mockReturnValueOnce(
+        (httpMock.post as Mock).mockReturnValueOnce(
           throwError(() => ({
             status: 401,
             error: { detail: 'Invalid refresh token' },
@@ -402,6 +415,7 @@ describe('LocalAuthService', () => {
         service.refreshAccessToken().subscribe({
           error: error => {
             expect(error).toBeDefined();
+            expect(tokenService.clearTokens).toHaveBeenCalled();
             resolve();
           },
         });
@@ -614,37 +628,31 @@ describe('LocalAuthService', () => {
       });
     });
 
-    it.each([
-      { state: 'pending', errorContains: 'accountPending' },
-      { state: 'disabled', errorContains: 'accountDisabled' },
-    ])(
-      'should reject login for $state accounts without updating auth state',
-      ({ state, errorContains }) =>
-        new Promise<void>(resolve => {
-          httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
-          httpMock.get.mockReturnValueOnce(
-            of({
-              ...mockGatewayUserResponse,
-              state,
-            })
-          );
+    it('should reject login for blocked accounts without updating auth state', () =>
+      new Promise<void>(resolve => {
+        httpMock.post.mockReturnValueOnce(of(mockTokenResponse));
+        httpMock.get.mockReturnValueOnce(
+          of({
+            ...mockGatewayUserResponse,
+            blocked: true,
+          })
+        );
 
-          const initialState = service.getCurrentUser();
+        const initialState = service.getCurrentUser();
 
-          service.login(`${state}@example.com`, 'password').subscribe({
-            next: result => {
-              expect(result.success).toBe(false);
-              expect(service.getCurrentUser()).toEqual(initialState);
-              resolve();
-            },
-            error: err => {
-              expect(err.message).toContain(errorContains);
-              expect(service.getCurrentUser()).toEqual(initialState);
-              resolve();
-            },
-          });
-        })
-    );
+        service.login('blocked@example.com', 'password').subscribe({
+          next: result => {
+            expect(result.success).toBe(false);
+            expect(service.getCurrentUser()).toEqual(initialState);
+            resolve();
+          },
+          error: err => {
+            expect(err.message).toContain('accountDisabled');
+            expect(service.getCurrentUser()).toEqual(initialState);
+            resolve();
+          },
+        });
+      }));
   });
 
   describe('isAuthenticated observable', () => {

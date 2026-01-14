@@ -14,7 +14,6 @@ import { takeUntil } from 'rxjs/operators';
 import { LoadingController, ToastController } from '@ionic/angular';
 import {
   IonContent,
-  IonIcon,
   IonButton,
   IonCheckbox,
   IonFooter,
@@ -46,7 +45,6 @@ import { ROUTES } from '@core/constants';
     RouterModule,
     TranslateModule,
     IonContent,
-    IonIcon,
     IonButton,
     IonCheckbox,
     IonFooter,

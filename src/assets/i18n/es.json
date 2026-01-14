@@ -53,6 +53,7 @@
     "error": "Error",
     "sync": "Sincronizar",
     "goBack": "Volver",
+    "back": "Atrás",
     "online": "En línea",
     "offline": "Sin conexión"
   },
@@ -108,17 +109,9 @@
       "networkError": "Error de red. Por favor verifica tu conexión",
       "serverError": "Error del servidor. Por favor intenta más tarde",
       "sessionExpired": "Tu sesión ha expirado. Por favor inicia sesión nuevamente",
-      "accountPending": "Tu cuenta está pendiente de activación. Contacta al administrador.",
       "accountDisabled": "Tu cuenta ha sido desactivada. Contacta al administrador."
     },
     "accountStates": {
-      "pending": {
-        "title": "Cuenta Pendiente de Activación",
-        "message": "Tu cuenta está siendo revisada por nuestro equipo administrativo.",
-        "subtitle": "Te notificaremos por correo electrónico cuando tu cuenta esté activa.",
-        "support": "Si tienes preguntas, contacta a:",
-        "signOut": "Cerrar sesión"
-      },
       "disabled": {
         "title": "Cuenta Desactivada",
         "message": "Tu cuenta ha sido desactivada.",
@@ -583,6 +576,7 @@
       "requesting": "Solicitando...",
       "status": "Estado de la Cola",
       "position": "Posición en la cola: {{position}}",
+      "positionShort": "Posición: {{position}}",
       "labels": {
         "none": "Sin estado de cola",
         "pending": "Pendiente",
@@ -794,10 +788,18 @@
     },
     "notifications": {
       "title": "Notificaciones",
-      "desc": "Recibe recordatorios para chequeos de glucosa",
+      "master": "Activar Notificaciones",
+      "desc": "Recibe recordatorios para chequeos de glucosa y citas",
       "enabled": "Notificaciones activadas",
       "disabled": "Notificaciones desactivadas",
-      "permissionDenied": "Permiso denegado. Por favor activa las notificaciones en ajustes."
+      "permissionDenied": "Permiso denegado. Por favor activa las notificaciones en ajustes.",
+      "readingReminders": "Recordatorios de lectura",
+      "appointmentReminders": "Recordatorios de citas",
+      "syncNotifications": "Notificaciones de sincronización",
+      "testButton": "Enviar Notificación de Prueba",
+      "testSent": "¡Notificación de prueba enviada!",
+      "testTitle": "Notificación de Prueba",
+      "testBody": "Esta es una notificación de prueba de Diabetactic."
     },
     "theme": {
       "title": "Tema",
@@ -879,7 +881,9 @@
     "avatar": {
       "errorTitle": "Foto de perfil",
       "tooLarge": "Selecciona una imagen menor a 3 MB.",
-      "updateFailed": "No pudimos actualizar tu foto. Inténtalo nuevamente."
+      "updateFailed": "No pudimos actualizar tu foto. Inténtalo nuevamente.",
+      "cropTitle": "Recortar Foto",
+      "preview": "Vista previa"
     },
     "about": "Acerca de",
     "appVersion": "Versión de la Aplicación",
@@ -981,6 +985,7 @@
     "appVersion": "Versión de la Aplicación",
     "advanced": {
       "title": "Configuración Avanzada",
+      "dangerZone": "Zona de Peligro",
       "signOut": "Cerrar Sesión",
       "clearData": "Borrar Datos Locales",
       "clearDataConfirm": "¿Estás seguro de que quieres borrar todos los datos locales? Esta acción no se puede deshacer.",
@@ -1003,6 +1008,13 @@
       "spanish": "Español",
       "en": "English",
       "es": "Español"
+    },
+    "safety": {
+      "title": "Seguridad",
+      "maxBolus": "Dosis Máxima de Bolo",
+      "maxBolusDesc": "Límite máximo para dosis de insulina de bolo",
+      "lowGlucose": "Umbral de Glucosa Baja",
+      "lowGlucoseDesc": "Nivel de alerta para hipoglucemia"
     }
   },
   "sync": {
@@ -1416,7 +1428,9 @@
     "beforeAppointment": "{{minutes}} minutos antes",
     "morningReminder": "Revisión Matutina",
     "afternoonReminder": "Revisión de la Tarde",
-    "eveningReminder": "Revisión Nocturna"
+    "eveningReminder": "Revisión Nocturna",
+    "readingReminderTitle": "Recordatorio de Glucosa",
+    "readingReminderBody": "¡Es hora de revisar tu nivel de glucosa!"
   },
   "bolusCalculator": {
     "title": "Calculadora de Bolos",
@@ -1441,7 +1455,6 @@
     "warningsTitle": "Advertencias de seguridad",
     "warnings": {
       "maxDose": "La dosis recomendada de {{recommended}} unidades supera el máximo de {{max}} unidades.",
-      "iob": "Aún tienes un estimado de {{iob}} unidades de insulina activa de un bolo reciente.",
       "lowGlucose": "Tu glucosa actual de {{glucose}} mg/dL es baja. No se recomienda un bolo."
     },
     "errors": {
@@ -1589,5 +1602,13 @@
     "noAchievements": "Aún no hay logros. ¡Empieza a registrar para desbloquearlos!",
     "viewAchievements": "Ver Logros",
     "achievementsDesc": "Sigue tu progreso y gana insignias"
+  },
+  "widget": {
+    "timeAgo": {
+      "justNow": "ahora",
+      "minutes": "hace {{count}} min",
+      "hours": "hace {{count}}h",
+      "days": "hace {{count}}d"
+    }
   }
 }

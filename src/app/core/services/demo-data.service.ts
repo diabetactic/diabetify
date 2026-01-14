@@ -420,7 +420,7 @@ export class DemoDataService {
   /**
    * Generate glucose readings with realistic data
    */
-  async generateGlucoseReadings(days: number = 30): Promise<LocalGlucoseReading[]> {
+  async generateGlucoseReadings(days = 30): Promise<LocalGlucoseReading[]> {
     return this.getDemoReadings(days).toPromise() as Promise<LocalGlucoseReading[]>;
   }
 
@@ -502,7 +502,7 @@ export class DemoDataService {
   /**
    * Generate appointments
    */
-  async generateAppointments(_count: number = 5): Promise<Appointment[]> {
+  async generateAppointments(_count = 5): Promise<Appointment[]> {
     return this.getDemoAppointments().toPromise() as Promise<Appointment[]>;
   }
 

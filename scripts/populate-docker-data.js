@@ -13,8 +13,8 @@
 
 const http = require('http');
 
-// API Gateway runs on port 8004 in container-managing setup
-const DOCKER_URL = process.env.API_URL || 'http://localhost:8004';
+// API Gateway runs on port 8000 in Docker (docker-compose.local.yml)
+const DOCKER_URL = process.env.API_URL || 'http://localhost:8000';
 // Default user: Julian Crespo (dni=40123456, hospital_account=1000, user_id=5)
 const USER_DNI = process.env.USER_DNI || '40123456';
 const PASSWORD = process.env.PASSWORD || 'tuvieja';
@@ -101,7 +101,7 @@ async function clearAllData(token) {
     // Delete each reading
     for (const reading of readings || []) {
       try {
-        await request(`/glucose/${reading.id}`, 'DELETE', null, token);
+        await request(`/glucose/delete/${reading.id}`, 'DELETE', null, token);
       } catch (err) {
         // Ignore delete errors
       }

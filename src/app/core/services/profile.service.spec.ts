@@ -173,19 +173,19 @@ describe('ProfileService', () => {
       let profile = await service.createProfile(baseCreateInput);
       expect(profile.name).toBe('New User');
       expect(profile.id).toContain('user_');
-      expect(profile.accountState).toBe(AccountState.PENDING);
+      expect(profile.accountState).toBe(AccountState.ACTIVE);
       expect(profile.preferences).toEqual(DEFAULT_USER_PREFERENCES);
       expect(profile.tidepoolConnection.connected).toBe(false);
 
-      // With custom values
+      // With custom values (test disabled state)
       const customInput: CreateUserProfileInput = {
         ...baseCreateInput,
-        accountState: AccountState.ACTIVE,
+        accountState: AccountState.DISABLED,
         preferences: { ...DEFAULT_USER_PREFERENCES, glucoseUnit: 'mmol/L' },
         tidepoolConnection: { connected: true, userId: 'tidepool-123', email: 'test@example.com' },
       };
       profile = await service.createProfile(customInput);
-      expect(profile.accountState).toBe(AccountState.ACTIVE);
+      expect(profile.accountState).toBe(AccountState.DISABLED);
       expect(profile.preferences.glucoseUnit).toBe('mmol/L');
       expect(profile.tidepoolConnection.connected).toBe(true);
     });

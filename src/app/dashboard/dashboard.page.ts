@@ -6,17 +6,17 @@ import {
   NgZone,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  inject,
 } from '@angular/core';
 
 import { Router, RouterModule } from '@angular/router';
-import { ToastController } from '@ionic/angular';
+import { ToastController, ModalController } from '@ionic/angular';
 import {
   IonHeader,
   IonToolbar,
   IonTitle,
   IonButtons,
   IonButton,
-  IonIcon,
   IonContent,
   IonRefresher,
   IonRefresherContent,
@@ -40,7 +40,7 @@ import { LanguageSwitcherComponentModule } from '@shared/components/language-swi
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { StreakCardComponent } from '@shared/components/streak-card/streak-card.component';
 import { LocalAuthService } from '@services/local-auth.service';
-import { environment } from '@env/environment';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
 import { ROUTES } from '@core/constants';
 
 @Component({
@@ -58,7 +58,6 @@ import { ROUTES } from '@core/constants';
     IonTitle,
     IonButtons,
     IonButton,
-    IonIcon,
     IonContent,
     IonRefresher,
     IonRefresherContent,
@@ -74,8 +73,12 @@ import { ROUTES } from '@core/constants';
   ],
 })
 export class DashboardPage implements OnInit, OnDestroy {
-  readonly isMockMode = environment.backendMode === 'mock';
+  private envConfig = inject(EnvironmentConfigService);
   readonly routes = ROUTES;
+
+  get isMockMode(): boolean {
+    return this.envConfig.isMockMode;
+  }
 
   // Statistics data
   statistics: GlucoseStatistics | null = null;
@@ -140,7 +143,8 @@ export class DashboardPage implements OnInit, OnDestroy {
     private logger: LoggerService,
     private themeService: ThemeService,
     private ngZone: NgZone,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private modalController: ModalController
   ) {
     this.logger.info('Init', 'DashboardPage initialized');
     this.preferredGlucoseUnit = this.translationService.getCurrentConfig().glucoseUnit;
@@ -346,14 +350,13 @@ export class DashboardPage implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Navigate to bolus calculator page
-   * Using ngZone.run() to ensure navigation triggers immediately on mobile
-   */
-  openBolusCalculator() {
-    this.ngZone.run(() => {
-      this.router.navigate([ROUTES.BOLUS_CALCULATOR]);
+  async openBolusCalculator(): Promise<void> {
+    const { BolusCalculatorPage } = await import('../bolus-calculator/bolus-calculator.page');
+    const modal = await this.modalController.create({
+      component: BolusCalculatorPage,
+      cssClass: 'fullscreen-modal',
     });
+    await modal.present();
   }
 
   /**

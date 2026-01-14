@@ -258,7 +258,7 @@ export class ReadingsService implements OnDestroy {
    * Get unsynced readings
    */
   async getUnsyncedReadings(): Promise<LocalGlucoseReading[]> {
-    return await this.db.readings.where('synced').equals(0).toArray();
+    return await this.db.readings.filter(r => r.synced === false).toArray();
   }
 
   /**

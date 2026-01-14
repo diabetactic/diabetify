@@ -2,12 +2,21 @@
 // Most styling migrated to Tailwind classes in the template
 // Keeping only Ionic-specific CSS variables
 
-.reading-item {
-  // Ionic CSS variables to reset ion-item styling
+ion-item-sliding {
+  overflow: visible;
+}
+
+ion-item.reading-item-wrapper {
   --background: transparent;
   --padding-start: 0;
   --padding-end: 0;
+  --inner-padding-start: 0;
   --inner-padding-end: 0;
+  --inner-border-width: 0;
+  --border-width: 0;
+  --min-height: 0;
+}
 
-  margin-bottom: 12px;
+.reading-item {
+  margin-bottom: 0;
 }

@@ -68,8 +68,7 @@ export class ThemeService implements OnDestroy {
   private mediaQueryListener: ((e: MediaQueryListEvent) => void) | null = null;
   private mediaQuery: MediaQueryList | null = null;
 
-  // Theme state observables (default light mode)
-  private _themeMode$ = new BehaviorSubject<ThemeMode>('light');
+  private _themeMode$ = new BehaviorSubject<ThemeMode>('auto');
   private _colorPalette$ = new BehaviorSubject<ColorPalette>('default');
   private _highContrast$ = new BehaviorSubject<boolean>(false);
   private _isDark$ = new BehaviorSubject<boolean>(false);

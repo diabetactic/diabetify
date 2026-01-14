@@ -6,6 +6,9 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+export DOCKER_UID=$(id -u)
+export DOCKER_GID=$(id -g)
+
 source "$SCRIPT_DIR/_runlog.sh" 2>/dev/null || true
 
 echo "🚀 Starting Diabetactic local testing environment..."

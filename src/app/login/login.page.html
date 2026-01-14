@@ -19,7 +19,7 @@
           {{ 'login.username.label' | translate }}
         </label>
         <div class="input-wrapper">
-          <ion-icon name="person-outline" class="input-icon" aria-hidden="true"></ion-icon>
+          <app-icon name="person-outline" class="input-icon" aria-hidden="true"></app-icon>
           <input
             id="username"
             type="text"
@@ -37,7 +37,7 @@
           {{ 'login.password.label' | translate }}
         </label>
         <div class="input-wrapper">
-          <ion-icon name="lock-closed-outline" class="input-icon" aria-hidden="true"></ion-icon>
+          <app-icon name="lock-closed-outline" class="input-icon" aria-hidden="true"></app-icon>
           <input
             id="password"
             [type]="showPassword ? 'text' : 'password'"
@@ -59,11 +59,11 @@
             "
             type="button"
           >
-            <ion-icon
+            <app-icon
               slot="icon-only"
               [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
               aria-hidden="true"
-            ></ion-icon>
+            ></app-icon>
           </ion-button>
         </div>
 

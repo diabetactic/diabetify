@@ -1,12 +1,12 @@
 <ion-header [translucent]="true">
-  <ion-toolbar class="ion-padding-top">
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-button
         (click)="onCancel()"
         [attr.aria-label]="'common.cancel' | translate"
         class="min-h-44px min-w-44px"
       >
-        <app-icon slot="icon-only" name="close"></app-icon>
+        <app-icon slot="icon-only" name="x"></app-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>{{ 'addReading.title' | translate }}</ion-title>
@@ -16,21 +16,12 @@
 <ion-content [fullscreen]="true" class="add-reading-content">
   <div class="add-reading-shell safe-area-bottom mx-auto max-w-[640px] p-4">
     <!-- Info Banner with Tip -->
-    <div class="alert alert-info mb-6 shadow-lg" role="status">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        class="h-6 w-6 shrink-0 stroke-current"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        ></path>
-      </svg>
-      <span>{{ 'addReading.tip' | translate }}</span>
+    <div
+      class="bg-info/10 border-info/30 mb-6 flex items-start gap-3 rounded-2xl border p-4"
+      role="status"
+    >
+      <app-icon name="information-circle" class="text-info mt-0.5 h-5 w-5 shrink-0"></app-icon>
+      <span class="text-base-content/80 text-sm">{{ 'addReading.tip' | translate }}</span>
     </div>
 
     <!-- Form -->
@@ -68,7 +59,7 @@
             @if (getValidationMessage('value')) {
               <div class="label">
                 <span class="label-text-alt text-error flex items-center gap-1.5">
-                  <ion-icon name="alert-circle" class="text-base"></ion-icon>
+                  <app-icon name="alert-circle" class="text-base" aria-hidden="true"></app-icon>
                   {{ getValidationMessage('value') }}
                 </span>
               </div>
@@ -99,12 +90,11 @@
                 {{ 'addReading.dateTimeLabel' | translate }} <span class="text-danger">*</span>
               </span>
             </label>
-            <div class="px-2">
-              <ion-datetime-button
-                id="reading-datetime-btn"
-                datetime="reading-datetime"
-              ></ion-datetime-button>
-            </div>
+            <ion-datetime-button
+              id="reading-datetime-btn"
+              datetime="reading-datetime"
+              class="datetime-button-full"
+            ></ion-datetime-button>
           </div>
         </ion-item>
 

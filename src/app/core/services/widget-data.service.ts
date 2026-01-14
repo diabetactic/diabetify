@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ReadingsService } from './readings.service';
+import { TranslationService } from './translation.service';
 import { WidgetBridgePlugin } from 'capacitor-widget-bridge';
 import { LocalGlucoseReading } from '@models/glucose-reading.model';
 
@@ -7,7 +8,10 @@ import { LocalGlucoseReading } from '@models/glucose-reading.model';
   providedIn: 'root',
 })
 export class WidgetDataService {
-  constructor(private readingsService: ReadingsService) {}
+  constructor(
+    private readingsService: ReadingsService,
+    private translationService: TranslationService
+  ) {}
 
   async updateWidgetData() {
     const readings = await this.readingsService.getAllReadings(2);
@@ -58,20 +62,20 @@ export class WidgetDataService {
     const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
 
     if (diffInSeconds < 60) {
-      return 'just now';
+      return this.translationService.instant('widget.timeAgo.justNow');
     }
 
     const diffInMinutes = Math.floor(diffInSeconds / 60);
     if (diffInMinutes < 60) {
-      return `${diffInMinutes} min ago`;
+      return this.translationService.instant('widget.timeAgo.minutes', { count: diffInMinutes });
     }
 
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
+      return this.translationService.instant('widget.timeAgo.hours', { count: diffInHours });
     }
 
     const diffInDays = Math.floor(diffInHours / 24);
-    return `${diffInDays}d ago`;
+    return this.translationService.instant('widget.timeAgo.days', { count: diffInDays });
   }
 }

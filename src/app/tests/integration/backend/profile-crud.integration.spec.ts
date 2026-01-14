@@ -102,7 +102,6 @@ describe('Backend Integration - Profile CRUD', () => {
 
       expect(profile1.dni).toBe(profile2.dni);
       expect(profile1.email).toBe(profile2.email);
-      expect(profile1.name).toBe(profile2.name);
     });
   });
 

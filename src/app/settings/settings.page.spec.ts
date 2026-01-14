@@ -4,7 +4,13 @@ import '../../test-setup';
 import { type Mock } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { AlertController, LoadingController, ToastController, IonicModule } from '@ionic/angular';
+import {
+  AlertController,
+  LoadingController,
+  ToastController,
+  ModalController,
+  IonicModule,
+} from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 
@@ -12,9 +18,10 @@ import { SettingsPage } from './settings.page';
 import { ProfileService } from '@core/services/profile.service';
 import { ThemeService } from '@core/services/theme.service';
 import { LocalAuthService, LocalUser, AccountState } from '@core/services/local-auth.service';
+import { PreferencesService, DEFAULT_PREFERENCES } from '@core/services/preferences.service';
 import { DemoDataService } from '@core/services/demo-data.service';
 import { NotificationService, ReadingReminder } from '@core/services/notification.service';
-import { ROUTES, STORAGE_KEYS } from '@core/constants';
+import { ROUTES } from '@core/constants';
 import { ReadingsService } from '@services/readings.service';
 
 describe('SettingsPage', () => {
@@ -26,9 +33,17 @@ describe('SettingsPage', () => {
   let mockAlertController: Mock<AlertController>;
   let mockLoadingController: Mock<LoadingController>;
   let mockToastController: Mock<ToastController>;
+  let mockModalController: { getTop: Mock; dismiss: Mock };
   let mockProfileService: Mock<ProfileService>;
   let mockThemeService: Mock<ThemeService>;
   let mockAuthService: Mock<LocalAuthService>;
+  let mockPreferencesService: {
+    waitForInit: Mock;
+    getCurrentPreferences: Mock;
+    getPreferences: Mock;
+    updatePreferences: Mock;
+    setNotifications: Mock;
+  };
   let mockDemoDataService: Mock<DemoDataService>;
   let mockNotificationService: Mock<NotificationService>;
   let mockTranslateService: Mock<TranslateService>;
@@ -122,6 +137,12 @@ describe('SettingsPage', () => {
       create: vi.fn().mockResolvedValue(mockToast),
     } as any;
 
+    const mockModal = { dismiss: vi.fn().mockResolvedValue(true) };
+    mockModalController = {
+      getTop: vi.fn().mockResolvedValue(mockModal),
+      dismiss: vi.fn().mockResolvedValue(true),
+    };
+
     mockProfileService = {
       getProfile: vi.fn(),
       updatePreferences: vi.fn(),
@@ -136,6 +157,14 @@ describe('SettingsPage', () => {
       getCurrentUser: vi.fn().mockReturnValue(mockUser),
       logout: vi.fn().mockResolvedValue(undefined),
     } as any;
+
+    mockPreferencesService = {
+      waitForInit: vi.fn().mockResolvedValue(undefined),
+      getCurrentPreferences: vi.fn().mockReturnValue({ ...DEFAULT_PREFERENCES }),
+      getPreferences: vi.fn().mockReturnValue(new BehaviorSubject({ ...DEFAULT_PREFERENCES })),
+      updatePreferences: vi.fn().mockResolvedValue(undefined),
+      setNotifications: vi.fn().mockResolvedValue(undefined),
+    };
 
     mockDemoDataService = {
       isDemoMode: vi.fn().mockReturnValue(false),
@@ -174,9 +203,11 @@ describe('SettingsPage', () => {
         { provide: AlertController, useValue: mockAlertController },
         { provide: LoadingController, useValue: mockLoadingController },
         { provide: ToastController, useValue: mockToastController },
+        { provide: ModalController, useValue: mockModalController },
         { provide: ProfileService, useValue: mockProfileService },
         { provide: ThemeService, useValue: mockThemeService },
         { provide: LocalAuthService, useValue: mockAuthService },
+        { provide: PreferencesService, useValue: mockPreferencesService },
         { provide: DemoDataService, useValue: mockDemoDataService },
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: TranslateService, useValue: mockTranslateService },
@@ -332,22 +363,14 @@ describe('SettingsPage', () => {
   });
 
   describe('Settings Persistence', () => {
-    it('should save settings to localStorage', async () => {
+    it('should save settings via PreferencesService', async () => {
       component.hasChanges = true;
 
       await component.saveSettings();
 
       expect(mockLoadingController.create).toHaveBeenCalled();
       expect(mockLoading.present).toHaveBeenCalled();
-
-      const savedData = localStorage.getItem(STORAGE_KEYS.USER_SETTINGS);
-      expect(savedData).toBeTruthy();
-
-      const parsed = JSON.parse(savedData!);
-      expect(parsed).toHaveProperty('profile');
-      expect(parsed).toHaveProperty('glucose');
-      expect(parsed).toHaveProperty('preferences');
-
+      expect(mockPreferencesService.updatePreferences).toHaveBeenCalled();
       expect(mockToastController.create).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Configuración guardada exitosamente',
@@ -358,13 +381,9 @@ describe('SettingsPage', () => {
     });
 
     it('should handle save errors gracefully', async () => {
-      // Ensure hasChanges is true
       component.hasChanges = true;
 
-      // Spy on localStorage.setItem directly to throw error
-      const setItemErrorSpy = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
-        throw new Error('Storage error');
-      });
+      mockPreferencesService.updatePreferences.mockRejectedValueOnce(new Error('Storage error'));
 
       await component.saveSettings();
 
@@ -374,33 +393,24 @@ describe('SettingsPage', () => {
           color: 'danger',
         })
       );
-
-      // Restore original mock
-      setItemErrorSpy.mockRestore();
     });
 
     it('should dismiss loading on save error', async () => {
-      // Ensure hasChanges is true
       component.hasChanges = true;
 
-      // Spy on localStorage.setItem directly to throw error
-      const setItemErrorSpy = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
-        throw new Error('Storage error');
-      });
+      mockPreferencesService.updatePreferences.mockRejectedValueOnce(new Error('Storage error'));
 
       await component.saveSettings();
 
       expect(mockLoading.dismiss).toHaveBeenCalled();
-
-      // Restore original mock
-      setItemErrorSpy.mockRestore();
     });
   });
 
   describe('Navigation', () => {
-    it('should navigate to advanced settings', () => {
-      component.goToAdvancedSettings();
+    it('should dismiss modal and navigate to advanced settings', async () => {
+      await component.goToAdvancedSettings();
 
+      expect(mockModalController.getTop).toHaveBeenCalled();
       expect(mockRouter.navigate).toHaveBeenCalledWith([ROUTES.SETTINGS_ADVANCED]);
     });
 
@@ -548,7 +558,6 @@ describe('SettingsPage', () => {
     });
 
     it('should save notification settings after toggle', async () => {
-      // Ensure permission is granted so we don't get stuck in permission request
       component.notificationPermissionGranted = true;
 
       const event = {
@@ -558,10 +567,7 @@ describe('SettingsPage', () => {
 
       await component.onNotificationsToggle(event);
 
-      const saved = localStorage.getItem(STORAGE_KEYS.NOTIFICATION_SETTINGS);
-      expect(saved).toBeTruthy();
-      const parsed = JSON.parse(saved!);
-      expect(parsed.enabled).toBe(true);
+      expect(mockPreferencesService.setNotifications).toHaveBeenCalledWith({ enabled: true });
     });
   });
 
@@ -842,33 +848,26 @@ describe('SettingsPage', () => {
   });
 
   describe('Notification Settings Loading', () => {
-    it('should load saved notification settings from localStorage - Lines 433-437', () => {
-      // Test lines 433-437: loading saved settings from localStorage
-      const savedSettings = {
-        enabled: true,
-        readingReminders: [
-          { id: 1, time: '07:00', enabled: true, label: 'Early Morning' },
-          { id: 2, time: '13:00', enabled: false, label: 'Afternoon' },
-        ],
+    it('should load notification enabled state from preferences', () => {
+      component.preferences = {
+        ...DEFAULT_PREFERENCES,
+        notifications: { ...DEFAULT_PREFERENCES.notifications, enabled: true },
       };
-      localStorage.setItem(STORAGE_KEYS.NOTIFICATION_SETTINGS, JSON.stringify(savedSettings));
 
       component['loadNotificationSettings']();
 
-      expect(component.readingReminders.length).toBe(2);
-      expect(component.readingReminders[0].time).toBe('07:00');
-      expect(component.readingReminders[0].enabled).toBe(true);
       expect(component.notificationsEnabled).toBe(true);
     });
 
-    it('should use default reminders if no saved settings - Lines 425-426', () => {
-      // Test lines 425-426: checkNotificationPermission method
-      localStorage.removeItem(STORAGE_KEYS.NOTIFICATION_SETTINGS);
+    it('should use disabled state if notifications disabled in preferences', () => {
+      component.preferences = {
+        ...DEFAULT_PREFERENCES,
+        notifications: { ...DEFAULT_PREFERENCES.notifications, enabled: false },
+      };
 
       component['loadNotificationSettings']();
 
-      // Should keep existing readingReminders initialized in component
-      expect(Array.isArray(component.readingReminders)).toBe(true);
+      expect(component.notificationsEnabled).toBe(false);
     });
   });
 

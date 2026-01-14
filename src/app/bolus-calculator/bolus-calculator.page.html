@@ -2,7 +2,7 @@
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-button (click)="goBack()" [attr.aria-label]="'common.goBack' | translate">
-        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+        <app-icon name="arrow-back-outline" slot="icon-only" aria-hidden="true"></app-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>{{ 'bolusCalculator.title' | translate }}</ion-title>
@@ -13,7 +13,11 @@
   <div class="page-shell p-4">
     <!-- Info Banner -->
     <div class="info-banner mb-6">
-      <ion-icon name="information-circle-outline" class="text-primary text-xl"></ion-icon>
+      <app-icon
+        name="information-circle-outline"
+        class="text-primary text-xl"
+        aria-hidden="true"
+      ></app-icon>
       <span class="text-sm">
         {{ 'bolusCalculator.infoBanner' | translate }}
       </span>
@@ -129,7 +133,7 @@
           data-testid="calculate-btn"
         >
           @if (!calculating) {
-            <ion-icon slot="start" name="calculator-outline"></ion-icon>
+            <app-icon slot="start" name="calculator-outline" aria-hidden="true"></app-icon>
           }
           @if (calculating) {
             <ion-spinner name="crescent"></ion-spinner>
@@ -157,7 +161,11 @@
           @if (warnings.length > 0) {
             <div class="warnings-section">
               <h4 class="warnings-title">
-                <ion-icon name="alert-circle-outline" class="warning-icon"></ion-icon>
+                <app-icon
+                  name="alert-circle-outline"
+                  class="warning-icon"
+                  aria-hidden="true"
+                ></app-icon>
                 {{ 'bolusCalculator.warningsTitle' | translate }}
               </h4>
               <ul class="warnings-list">
@@ -198,7 +206,7 @@
             </div>
           </div>
           <div class="warning-banner mt-4">
-            <ion-icon name="warning-outline" class="warning-icon"></ion-icon>
+            <app-icon name="warning-outline" class="warning-icon" aria-hidden="true"></app-icon>
             <span class="text-sm">{{ 'bolusCalculator.warning' | translate }}</span>
           </div>
           <!-- Reset Button -->
@@ -210,7 +218,7 @@
             class="mt-4"
             data-testid="bolus-reset-btn"
           >
-            <ion-icon slot="start" name="refresh-outline"></ion-icon>
+            <app-icon slot="start" name="refresh-outline" aria-hidden="true"></app-icon>
             {{ 'bolusCalculator.newCalculation' | translate }}
           </ion-button>
         </div>

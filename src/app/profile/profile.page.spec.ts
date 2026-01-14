@@ -12,15 +12,10 @@ import { ProfilePage } from './profile.page';
 import { TidepoolAuthService, AuthState } from '@services/tidepool-auth.service';
 import { LocalAuthService } from '@services/local-auth.service';
 import { ProfileService } from '@services/profile.service';
-import { ThemeService } from '@services/theme.service';
+
 import { TranslationService, Language } from '@services/translation.service';
 import { NotificationService } from '@services/notification.service';
-import {
-  UserProfile,
-  ThemeMode,
-  AccountState,
-  DEFAULT_USER_PREFERENCES,
-} from '@models/user-profile.model';
+import { UserProfile, AccountState, DEFAULT_USER_PREFERENCES } from '@models/user-profile.model';
 import { ROUTES } from '@core/constants';
 
 describe('ProfilePage', () => {
@@ -29,7 +24,7 @@ describe('ProfilePage', () => {
   let mockAuthService: any;
   let mockLocalAuthService: any;
   let mockProfileService: any;
-  let mockThemeService: any;
+
   let mockTranslationService: any;
   let mockNotificationService: any;
   let mockRouter: any;
@@ -87,10 +82,6 @@ describe('ProfilePage', () => {
       deleteProfile: vi.fn().mockResolvedValue(undefined),
     };
 
-    mockThemeService = {
-      setThemeMode: vi.fn().mockResolvedValue(undefined),
-    };
-
     mockTranslationService = {
       currentLanguage$: new BehaviorSubject<Language>(Language.EN),
       getCurrentLanguage: vi.fn().mockReturnValue(Language.EN),
@@ -131,7 +122,6 @@ describe('ProfilePage', () => {
         { provide: TidepoolAuthService, useValue: mockAuthService },
         { provide: LocalAuthService, useValue: mockLocalAuthService },
         { provide: ProfileService, useValue: mockProfileService },
-        { provide: ThemeService, useValue: mockThemeService },
         { provide: TranslationService, useValue: mockTranslationService },
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: Router, useValue: mockRouter },
@@ -240,101 +230,6 @@ describe('ProfilePage', () => {
 
       expect(destroySpy).toHaveBeenCalled();
       expect(completeSpy).toHaveBeenCalled();
-    });
-  });
-
-  describe('Theme Management', () => {
-    beforeEach(() => {
-      component.ngOnInit();
-    });
-
-    it('should change theme when onThemeChange is called', async () => {
-      const event = {
-        detail: { value: 'dark' as ThemeMode },
-      } as CustomEvent<{ value: ThemeMode }>;
-
-      await component.onThemeChange(event);
-
-      expect(mockThemeService.setThemeMode).toHaveBeenCalledWith('dark');
-      expect(component.currentTheme).toBe('dark');
-    });
-
-    it('should handle light theme change', async () => {
-      const event = {
-        detail: { value: 'light' as ThemeMode },
-      } as CustomEvent<{ value: ThemeMode }>;
-
-      await component.onThemeChange(event);
-
-      expect(mockThemeService.setThemeMode).toHaveBeenCalledWith('light');
-      expect(component.currentTheme).toBe('light');
-    });
-
-    it('should handle auto theme change', async () => {
-      const event = {
-        detail: { value: 'auto' as ThemeMode },
-      } as CustomEvent<{ value: ThemeMode }>;
-
-      await component.onThemeChange(event);
-
-      expect(mockThemeService.setThemeMode).toHaveBeenCalledWith('auto');
-      expect(component.currentTheme).toBe('auto');
-    });
-  });
-
-  describe('Language Management', () => {
-    beforeEach(() => {
-      component.ngOnInit();
-    });
-
-    it('should change language when onLanguageChange is called', async () => {
-      const event = {
-        detail: { value: Language.ES },
-      } as CustomEvent<{ value: Language }>;
-
-      await component.onLanguageChange(event);
-
-      expect(mockTranslationService.setLanguage).toHaveBeenCalledWith(Language.ES);
-      expect(mockProfileService.updatePreferences).toHaveBeenCalledWith({ language: Language.ES });
-    });
-
-    it('should change language to English', async () => {
-      const event = {
-        detail: { value: Language.EN },
-      } as CustomEvent<{ value: Language }>;
-
-      await component.onLanguageChange(event);
-
-      expect(mockTranslationService.setLanguage).toHaveBeenCalledWith(Language.EN);
-      expect(mockProfileService.updatePreferences).toHaveBeenCalledWith({ language: Language.EN });
-    });
-  });
-
-  describe('Glucose Unit Management', () => {
-    beforeEach(() => {
-      component.ngOnInit();
-    });
-
-    it('should change glucose unit when onGlucoseUnitChange is called', async () => {
-      const event = {
-        detail: { value: 'mmol/L' },
-      } as CustomEvent<{ value: string }>;
-
-      await component.onGlucoseUnitChange(event);
-
-      expect(mockProfileService.updatePreferences).toHaveBeenCalledWith({ glucoseUnit: 'mmol/L' });
-      expect(component.currentGlucoseUnit).toBe('mmol/L');
-    });
-
-    it('should change glucose unit to mg/dL', async () => {
-      const event = {
-        detail: { value: 'mg/dL' },
-      } as CustomEvent<{ value: string }>;
-
-      await component.onGlucoseUnitChange(event);
-
-      expect(mockProfileService.updatePreferences).toHaveBeenCalledWith({ glucoseUnit: 'mg/dL' });
-      expect(component.currentGlucoseUnit).toBe('mg/dL');
     });
   });
 
@@ -521,10 +416,20 @@ describe('ProfilePage', () => {
       component.ngOnInit();
     });
 
-    it('should navigate to settings page', async () => {
+    it('should open settings modal', async () => {
+      const mockModal = {
+        present: vi.fn().mockResolvedValue(undefined),
+      };
+      mockModalController.create.mockResolvedValue(mockModal);
+
       await component.goToSettings();
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith([ROUTES.SETTINGS]);
+      expect(mockModalController.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cssClass: 'fullscreen-modal',
+        })
+      );
+      expect(mockModal.present).toHaveBeenCalled();
     });
 
     it('should navigate to achievements page', async () => {
@@ -537,21 +442,6 @@ describe('ProfilePage', () => {
   describe('Avatar Management', () => {
     beforeEach(() => {
       component.ngOnInit();
-    });
-
-    it('should trigger avatar file input click', () => {
-      const mockInput = { click: vi.fn() };
-      component.avatarInput = { nativeElement: mockInput as any } as any;
-
-      component.triggerAvatarUpload();
-
-      expect(mockInput.click).toHaveBeenCalled();
-    });
-
-    it('should do nothing if avatar input is not available', () => {
-      component.avatarInput = undefined;
-
-      expect(() => component.triggerAvatarUpload()).not.toThrow();
     });
 
     it('should reject files larger than 3MB', async () => {
@@ -584,13 +474,6 @@ describe('ProfilePage', () => {
   });
 
   describe('Data Properties', () => {
-    it('should have correct unit options', () => {
-      expect(component.unitOptions).toEqual([
-        { value: 'mg/dL', label: 'mg/dL' },
-        { value: 'mmol/L', label: 'mmol/L' },
-      ]);
-    });
-
     it('should initialize with default values', () => {
       expect(component.profile).toBeNull();
       expect(component.authState).toBeNull();

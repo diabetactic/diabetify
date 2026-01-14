@@ -7,22 +7,17 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  IonItem,
-  IonItemSliding,
-  IonItemOptions,
-  IonItemOption,
-  IonIcon,
-} from '@ionic/angular/standalone';
+import { IonItem, IonItemSliding, IonItemOptions, IonItemOption } from '@ionic/angular/standalone';
 import { LocalGlucoseReading } from '@core/models/glucose-reading.model';
 import { TranslationService } from '@services/translation.service';
+import { AppIconComponent } from '../app-icon/app-icon.component';
 
 @Component({
   selector: 'app-reading-item',
   templateUrl: './reading-item.component.html',
   styleUrls: ['./reading-item.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonItem, IonItemSliding, IonItemOptions, IonItemOption, IonIcon],
+  imports: [CommonModule, IonItem, IonItemSliding, IonItemOptions, IonItemOption, AppIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

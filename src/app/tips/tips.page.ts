@@ -2,7 +2,8 @@ import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
-  ChangeDetectorRef, AfterViewInit,
+  ChangeDetectorRef,
+  AfterViewInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {

@@ -187,10 +187,13 @@ export class ReadingsMapperService {
 
   /**
    * Build query params for creating a reading on the backend
+   * Note: Backend expects glucose values in mg/dL, so we convert if needed
    */
   buildBackendCreateParams(reading: LocalGlucoseReading): Record<string, string> {
+    // Convert to mg/dL if the reading is in mmol/L (backend expects mg/dL)
+    const glucoseInMgDl = this.toMgDl(reading.value, reading.units);
     const params: Record<string, string> = {
-      glucose_level: reading.value.toString(),
+      glucose_level: Math.round(glucoseInMgDl).toString(),
       reading_type: reading.mealContext || 'OTRO',
     };
 

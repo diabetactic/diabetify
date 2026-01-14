@@ -812,27 +812,12 @@
     },
     {
       "key": "port_8004",
-      "value": "8004",
+      "value": "8000",
       "type": "string"
     },
     {
       "key": "port_8006",
-      "value": "8006",
-      "type": "string"
-    },
-    {
-      "key": "port_8002",
-      "value": "8002",
-      "type": "string"
-    },
-    {
-      "key": "port_8003",
-      "value": "8003",
-      "type": "string"
-    },
-    {
-      "key": "port_8005",
-      "value": "8005",
+      "value": "8001",
       "type": "string"
     }
   ]

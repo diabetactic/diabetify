@@ -72,6 +72,8 @@ export interface FeaturesConfig {
   useTidepoolMock: boolean;
   devTools: boolean;
   showEnvBadge: boolean;
+  showStatusBadges: boolean;
+  webDeviceFrame: boolean;
 }
 
 /**

@@ -10,7 +10,6 @@
       [profile]="profile"
       [authState]="authState"
       (avatarSelected)="onAvatarSelected($event)"
-      (triggerAvatarUpload)="triggerAvatarUpload()"
       (editProfile)="editProfile()"
     ></app-profile-header>
 
@@ -25,11 +24,8 @@
       [currentLanguage]="currentLanguage"
       [currentGlucoseUnit]="currentGlucoseUnit"
       [notificationsEnabled]="notificationsEnabled"
-      [unitOptions]="unitOptions"
-      (themeChange)="onThemeChange($event)"
-      (languageChange)="onLanguageChange($event)"
-      (glucoseUnitChange)="onGlucoseUnitChange($event)"
       (notificationsToggle)="onNotificationsToggle($event)"
+      (testNotification)="onTestNotification()"
       (goToSettings)="goToSettings()"
     ></app-profile-preferences>
 

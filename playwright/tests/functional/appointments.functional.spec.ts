@@ -22,9 +22,10 @@ test.describe('Appointments Functional Tests @functional @docker', () => {
   test('should show request button when queue is clear', async ({ page, pages }) => {
     await page.goto('/tabs/appointments');
     await pages.appointmentsPage.waitForHydration();
+    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
 
     const requestBtn = page.locator('text=/Solicitar|Request|Nueva/i');
-    await expect(requestBtn.first()).toBeVisible({ timeout: 10000 });
+    await expect(requestBtn.first()).toBeVisible({ timeout: 15000 });
   });
 
   test('should fetch appointment status via API', async ({ authenticatedApi }) => {

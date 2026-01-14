@@ -114,16 +114,16 @@ ion-toolbar[color='primary'] ion-searchbar {
   /* Hex fallbacks for Android WebView compatibility */
   --background: #1e293b;
   --color: #f8fafc;
-  --placeholder-color: rgba(248, 250, 252, 0.5);
-  --icon-color: rgba(248, 250, 252, 0.6);
-  --clear-button-color: rgba(248, 250, 252, 0.6);
+  --placeholder-color: rgba(248, 250, 252, 0.85);
+  --icon-color: rgba(248, 250, 252, 0.85);
+  --clear-button-color: rgba(248, 250, 252, 0.85);
 
   @supports (color: oklch(0.5 0.1 100)) {
     --background: oklch(var(--b2, 0.2 0 0));
     --color: oklch(var(--bc, 1 0 0));
-    --placeholder-color: oklch(var(--bc, 1 0 0) / 50%);
-    --icon-color: oklch(var(--bc, 1 0 0) / 60%);
-    --clear-button-color: oklch(var(--bc, 1 0 0) / 60%);
+    --placeholder-color: oklch(var(--bc, 1 0 0) / 85%);
+    --icon-color: oklch(var(--bc, 1 0 0) / 85%);
+    --clear-button-color: oklch(var(--bc, 1 0 0) / 85%);
   }
 }
 

@@ -23,7 +23,7 @@ import { Appointment } from 'src/app/core/models/appointment.model';
         >
           <div class="timeline-dot"></div>
           <div class="timeline-content">
-            <div class="state-name">{{ state }}</div>
+            <div class="state-name">{{ getDisplayName(state) }}</div>
             <div class="timestamp" *ngIf="isStateActive(state) && getTimestamp(state)">
               {{ getTimestamp(state) }}
             </div>
@@ -156,13 +156,28 @@ import { Appointment } from 'src/app/core/models/appointment.model';
 export class AppointmentTimelineComponent implements OnInit {
   @Input() appointment!: Appointment;
 
-  states = ['None', 'Pending', 'Accepted', 'Created', 'Resolved'];
-  currentStatus = '';
-
-  constructor() {}
+  states = ['NONE', 'PENDING', 'ACCEPTED', 'CREATED', 'DENIED'];
+  displayNames: Record<string, string> = {
+    NONE: 'None',
+    PENDING: 'Pending',
+    ACCEPTED: 'Accepted',
+    CREATED: 'Created',
+    DENIED: 'Denied',
+  };
+  currentStatus = 'NONE';
 
   ngOnInit() {
-    this.currentStatus = this.appointment.status;
+    this.currentStatus = this.normalizeStatus(this.appointment?.status);
+  }
+
+  private normalizeStatus(status: string | undefined): string {
+    if (!status) return 'NONE';
+    const upper = status.toUpperCase();
+    return this.states.includes(upper) ? upper : 'NONE';
+  }
+
+  getDisplayName(state: string): string {
+    return this.displayNames[state] || state;
   }
 
   isStateActive(state: string): boolean {
@@ -172,16 +187,19 @@ export class AppointmentTimelineComponent implements OnInit {
   }
 
   getTimestamp(state: string): string | null {
-    if (this.appointment.timestamps && this.appointment.timestamps[state]) {
-      return new Date(this.appointment.timestamps[state]).toLocaleString();
+    const timestamps = this.appointment?.timestamps;
+    if (!timestamps) return null;
+    const key = state.toLowerCase();
+    const timestamp = timestamps[state] || timestamps[key] || timestamps[`${key}_at`];
+    if (timestamp) {
+      return new Date(timestamp).toLocaleString();
     }
     return null;
   }
 
   get progressPercentage(): number {
-    if (!this.currentStatus || this.states.indexOf(this.currentStatus) === -1) {
-      return 0;
-    }
-    return (this.states.indexOf(this.currentStatus) / (this.states.length - 1)) * 100;
+    const currentIndex = this.states.indexOf(this.currentStatus);
+    if (currentIndex === -1) return 0;
+    return (currentIndex / (this.states.length - 1)) * 100;
   }
 }

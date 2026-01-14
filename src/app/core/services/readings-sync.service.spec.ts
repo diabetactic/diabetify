@@ -73,6 +73,15 @@ describe('ReadingsSyncService', () => {
         update: vi.fn().mockResolvedValue(1),
         delete: vi.fn().mockResolvedValue(undefined),
         toArray: vi.fn().mockResolvedValue([]),
+        where: vi.fn().mockReturnValue({
+          equals: vi.fn().mockReturnValue({
+            first: vi.fn().mockResolvedValue(undefined),
+            toArray: vi.fn().mockResolvedValue([]),
+          }),
+          between: vi.fn().mockReturnValue({
+            toArray: vi.fn().mockResolvedValue([]),
+          }),
+        }),
         filter: vi.fn().mockReturnValue({
           toArray: vi.fn().mockResolvedValue([]),
         }),
@@ -433,17 +442,22 @@ describe('ReadingsSyncService', () => {
         of({ success: true, data: { readings: [backendReading] } })
       );
 
-      // First filter (by backendId) returns nothing
-      // Second filter (unsynced match) returns local reading
-      let filterCallCount = 0;
+      // Mock where().equals().first() for backendId lookup - returns undefined (no existing)
+      vi.mocked(mockDatabase.readings?.where).mockReturnValue({
+        equals: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue(undefined),
+          toArray: vi.fn().mockResolvedValue([]),
+        }),
+        between: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue([]),
+        }),
+      } as unknown as ReturnType<DiabetacticDatabase['readings']['where']>);
+
+      // Mock filter for unsynced match - returns local reading
       vi.mocked(mockDatabase.readings?.filter).mockImplementation(
         () =>
           ({
-            toArray: vi.fn().mockImplementation(() => {
-              filterCallCount++;
-              if (filterCallCount === 1) return Promise.resolve([]); // No existing by backendId
-              return Promise.resolve([localReading]); // Unsynced match found
-            }),
+            toArray: vi.fn().mockResolvedValue([localReading]),
           }) as unknown as ReturnType<DiabetacticDatabase['readings']['filter']>
       );
 
@@ -495,9 +509,15 @@ describe('ReadingsSyncService', () => {
       vi.mocked(mockApiGateway.request).mockReturnValue(
         of({ success: true, data: { readings: [backendReading] } })
       );
-      vi.mocked(mockDatabase.readings?.filter).mockReturnValue({
-        toArray: vi.fn().mockResolvedValue([existingReading]),
-      } as unknown as ReturnType<DiabetacticDatabase['readings']['filter']>);
+      vi.mocked(mockDatabase.readings?.where).mockReturnValue({
+        equals: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue(existingReading),
+          toArray: vi.fn().mockResolvedValue([existingReading]),
+        }),
+        between: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue([]),
+        }),
+      } as unknown as ReturnType<DiabetacticDatabase['readings']['where']>);
 
       await service.fetchLatestFromBackend();
 
@@ -550,6 +570,16 @@ describe('ReadingsSyncService', () => {
             data: { readings: [createBackendReading({ id: 99 })] },
           })
         ); // Fetch
+
+      vi.mocked(mockDatabase.readings?.where).mockReturnValue({
+        equals: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue(undefined),
+          toArray: vi.fn().mockResolvedValue([]),
+        }),
+        between: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue([]),
+        }),
+      } as unknown as ReturnType<DiabetacticDatabase['readings']['where']>);
 
       vi.mocked(mockDatabase.readings?.filter).mockReturnValue({
         toArray: vi.fn().mockResolvedValue([]),

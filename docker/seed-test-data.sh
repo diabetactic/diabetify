@@ -94,8 +94,6 @@ USER_2_EXISTS=$(curl -s "$API_URL/users/from_dni/$TEST_USER_2_DNI" 2>/dev/null |
 
 if [ "$USER_2_EXISTS" = "0" ]; then
     ./create-user.sh "$TEST_USER_2_DNI" "$TEST_USER_2_PASSWORD" "$TEST_USER_2_NAME" "$TEST_USER_2_SURNAME" "$TEST_USER_2_EMAIL"
-    # Also accept hospital account for user 2
-    docker exec diabetactic_test_utils python3 user_manager.py update-status "$TEST_USER_2_DNI" "accepted" 2>/dev/null || true
     if declare -F append_jsonl >/dev/null 2>&1; then
       append_jsonl "seed-history.jsonl" event="user_created" dni="$TEST_USER_2_DNI" || true
     fi

@@ -7,6 +7,7 @@ import { NgZone } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { NotificationService, ReadingReminder } from '@services/notification.service';
 import { LoggerService } from '@services/logger.service';
+import { TranslateService } from '@ngx-translate/core';
 import {
   LocalNotifications,
   ActionPerformed,
@@ -35,6 +36,16 @@ class MockNgZone extends NgZone {
   constructor() {
     super({ enableLongStackTrace: false });
   }
+}
+
+class MockTranslateService {
+  instant = vi.fn((key: string) => {
+    const translations: Record<string, string> = {
+      'notifications.readingReminderTitle': 'Reading Reminder',
+      'notifications.readingReminderBody': "It's time to check your glucose level!",
+    };
+    return translations[key] || key;
+  });
 }
 
 describe('NotificationService', () => {
@@ -70,6 +81,7 @@ describe('NotificationService', () => {
         { provide: LoggerService, useValue: mockLogger },
         { provide: Router, useValue: mockRouter },
         { provide: NgZone, useValue: mockNgZone },
+        { provide: TranslateService, useClass: MockTranslateService },
       ],
     });
   });

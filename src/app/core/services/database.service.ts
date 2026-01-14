@@ -80,26 +80,18 @@ export class DiabetacticDatabase extends Dexie {
       syncQueue: '++id, timestamp, operation',
     });
 
-    // Version 2: Add appointments table
     this.version(2).stores({
-      // Keep existing tables
       readings: 'id, time, type, userId, synced, localStoredAt',
       syncQueue: '++id, timestamp, operation, appointmentId',
-
-      // New appointments table cache
-      // Index by: id (primary), userId, dateTime, status, updatedAt
       appointments: 'id, userId, dateTime, status, updatedAt',
     });
 
-    // Version 3: Add backendId index to readings for efficient sync lookups
     this.version(3).stores({
-      // Add backendId index to prevent O(n) scans during sync
       readings: 'id, time, type, userId, synced, localStoredAt, backendId',
       syncQueue: '++id, timestamp, operation, appointmentId',
       appointments: 'id, userId, dateTime, status, updatedAt',
     });
 
-    // Version 4: Add conflicts and auditLog tables
     this.version(4).stores({
       readings: 'id, time, type, userId, synced, localStoredAt, backendId',
       syncQueue: '++id, timestamp, operation, appointmentId',

@@ -29,7 +29,7 @@ import {
   BackendGlucoseReading,
   BackendGlucoseResponse,
 } from './readings-mapper.service';
-import { environment } from '@env/environment';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
 
 /**
  * Result of a sync operation
@@ -81,8 +81,12 @@ export class ReadingsSyncService implements OnDestroy {
   private fetchInProgress = false;
   private fetchPromise: Promise<FetchResult> | null = null;
 
-  private readonly isMockBackend = environment.backendMode === 'mock';
   private readonly db: DiabetacticDatabase;
+  private envConfig?: EnvironmentConfigService;
+
+  get isMockBackend(): boolean {
+    return this.envConfig?.isMockMode ?? false;
+  }
 
   constructor(
     private mapper: ReadingsMapperService,
@@ -90,8 +94,10 @@ export class ReadingsSyncService implements OnDestroy {
     @Optional() private apiGateway?: ApiGatewayService,
     @Optional() private logger?: LoggerService,
     @Optional() private injector?: Injector,
-    @Optional() private auditLogService?: AuditLogService
+    @Optional() private auditLogService?: AuditLogService,
+    @Optional() envConfig?: EnvironmentConfigService
   ) {
+    this.envConfig = envConfig;
     this.db = this.database ?? db;
     this.initializeNetworkMonitoring();
   }
@@ -249,6 +255,13 @@ export class ReadingsSyncService implements OnDestroy {
         if (item.operation === 'create' && item.reading) {
           await this.pushReadingToBackend(item.reading);
           this.logger?.debug('Sync', `Created ${item.readingId} on backend`);
+        } else if (item.operation === 'update') {
+          // Backend doesn't support update endpoint - mark as synced locally
+          // The reading is already updated in local IndexedDB
+          this.logger?.info(
+            'Sync',
+            `Update for ${item.readingId} - local only (no backend endpoint)`
+          );
         } else if (item.operation === 'delete') {
           this.logger?.info('Sync', `Delete for ${item.readingId} - local only`);
         }
@@ -334,7 +347,7 @@ export class ReadingsSyncService implements OnDestroy {
 
     this.logger?.info('Sync', 'Pushing reading', {
       localId: reading.id,
-      params: JSON.stringify(params),
+      params,
     });
 
     const response = await firstValueFrom(
@@ -433,10 +446,11 @@ export class ReadingsSyncService implements OnDestroy {
       }
 
       const allReadings = response.data.readings;
-      const backendReadings = allReadings.slice(0, MAX_SYNC_READINGS);
+      // Take the LAST N readings (most recent) since backend returns oldest first
+      const backendReadings = allReadings.slice(-MAX_SYNC_READINGS);
       this.logger?.debug(
         'Sync',
-        `Fetched ${allReadings.length}, processing ${backendReadings.length}`
+        `Fetched ${allReadings.length}, processing ${backendReadings.length} (latest)`
       );
 
       let merged = 0;
@@ -547,10 +561,11 @@ export class ReadingsSyncService implements OnDestroy {
 
       for (const backendReading of backendReadings) {
         const existingByBackendId = await this.db.readings
-          .filter(r => r.backendId === backendReading.id)
-          .toArray();
+          .where('backendId')
+          .equals(backendReading.id)
+          .first();
 
-        if (existingByBackendId.length === 0) {
+        if (!existingByBackendId) {
           const backendValue = backendReading.glucose_level;
           const backendTime = this.mapper.parseBackendTimestamp(backendReading.created_at);
 
@@ -564,19 +579,20 @@ export class ReadingsSyncService implements OnDestroy {
             merged++;
           }
         } else {
-          // Update existing if different
-          const existing = existingByBackendId[0];
           const backendValue = backendReading.glucose_level;
           const backendNotes = backendReading.notes || '';
 
-          if (existing.value !== backendValue || existing.notes !== backendNotes) {
+          if (
+            existingByBackendId.value !== backendValue ||
+            existingByBackendId.notes !== backendNotes
+          ) {
             const backendType = backendReading.reading_type;
             const validMealContext =
               backendType && (MEAL_CONTEXTS as readonly string[]).includes(backendType)
                 ? (backendType as MealContext)
-                : existing.mealContext;
+                : existingByBackendId.mealContext;
 
-            await this.db.readings.update(existing.id, {
+            await this.db.readings.update(existingByBackendId.id, {
               value: backendValue,
               notes: backendNotes,
               mealContext: validMealContext,
@@ -672,8 +688,8 @@ export class ReadingsSyncService implements OnDestroy {
    * @returns Local reading if found, null otherwise
    */
   private async findReadingByBackendId(backendId: number): Promise<LocalGlucoseReading | null> {
-    const matches = await this.db.readings.filter(r => r.backendId === backendId).toArray();
-    return matches[0] || null;
+    const match = await this.db.readings.where('backendId').equals(backendId).first();
+    return match || null;
   }
 
   /**

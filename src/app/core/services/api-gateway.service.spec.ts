@@ -18,6 +18,7 @@ import {
   ExternalService,
 } from '@services/external-services-manager.service';
 import { LocalAuthService } from '@services/local-auth.service';
+import { TokenService } from '@services/token.service';
 import { TidepoolAuthService } from '@services/tidepool-auth.service';
 import { EnvironmentDetectorService } from '@services/environment-detector.service';
 import { PlatformDetectorService } from '@services/platform-detector.service';
@@ -31,6 +32,7 @@ describe('ApiGatewayService', () => {
   let httpMock: HttpTestingController;
   let mockExternalServices: any;
   let mockLocalAuth: any;
+  let mockTokenService: any;
   let mockTidepoolAuth: any;
   let mockEnvDetector: any;
   let mockPlatformDetector: any;
@@ -45,6 +47,9 @@ describe('ApiGatewayService', () => {
       recordServiceError: vi.fn(),
     } as any;
     mockLocalAuth = {
+      getAccessToken: vi.fn(),
+    } as any;
+    mockTokenService = {
       getAccessToken: vi.fn(),
     } as any;
     mockTidepoolAuth = {
@@ -69,9 +74,9 @@ describe('ApiGatewayService', () => {
       setRequestId: vi.fn(),
     } as any;
 
-    // Default spy behaviors - MUST set isServiceAvailable to true for all tests
     mockExternalServices.isServiceAvailable.mockReturnValue(true);
     mockLocalAuth.getAccessToken.mockReturnValue(Promise.resolve('mock-local-token'));
+    mockTokenService.getAccessToken.mockReturnValue(Promise.resolve('mock-local-token'));
     mockTidepoolAuth.getAccessToken.mockReturnValue(Promise.resolve('mock-tidepool-token'));
     mockPlatformDetector.getApiBaseUrl.mockReturnValue('http://localhost:8000');
     // CRITICAL: Disable mocks to force HTTP requests for HttpTestingController
@@ -87,6 +92,7 @@ describe('ApiGatewayService', () => {
         // HttpClientTestingModule provides the mock HttpClient automatically
         { provide: ExternalServicesManager, useValue: mockExternalServices },
         { provide: LocalAuthService, useValue: mockLocalAuth },
+        { provide: TokenService, useValue: mockTokenService },
         { provide: TidepoolAuthService, useValue: mockTidepoolAuth },
         { provide: EnvironmentDetectorService, useValue: mockEnvDetector },
         { provide: PlatformDetectorService, useValue: mockPlatformDetector },
@@ -100,10 +106,17 @@ describe('ApiGatewayService', () => {
   });
 
   afterEach(() => {
+    // Flush any pending requests to prevent verify() from throwing
+    // This handles tests that intentionally don't complete HTTP requests (e.g., auth error tests)
+    const openRequests = httpMock.match(() => true);
+    openRequests.forEach(req => req.flush(null, { status: 499, statusText: 'Test Cleanup' }));
+
     httpMock.verify();
     service.clearCache();
     // Reset spy call history
     vi.clearAllMocks();
+    // CRITICAL: Reset TestBed to allow re-configuration in next test
+    TestBed.resetTestingModule();
   });
 
   describe('request() - GET method', () => {
@@ -208,7 +221,7 @@ describe('ApiGatewayService', () => {
 
   describe('Authentication', () => {
     it('should add Bearer token for authenticated endpoints', async () => {
-      mockLocalAuth.getAccessToken.mockReturnValue(Promise.resolve('test-token-123'));
+      mockTokenService.getAccessToken.mockReturnValue(Promise.resolve('test-token-123'));
 
       service.request('extservices.glucose.mine').subscribe();
 
@@ -222,7 +235,7 @@ describe('ApiGatewayService', () => {
 
     it('should throw error if authentication required but no token available', () =>
       new Promise<void>((resolve, reject) => {
-        mockLocalAuth.getAccessToken.mockReturnValue(Promise.resolve(null));
+        mockTokenService.getAccessToken.mockReturnValue(Promise.resolve(null));
 
         service.request('extservices.glucose.mine').subscribe({
           next: () => {

@@ -28,7 +28,7 @@ jobs:
   # Testing Trophy: Base layer - many fast tests for quick feedback
   # ══════════════════════════════════════════════════════════════════════════
   type-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@v6
 
@@ -41,7 +41,7 @@ jobs:
         run: pnpm exec tsc --noEmit -p tsconfig.build.json
 
   static-analysis:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
@@ -187,17 +187,17 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: pnpm exec playwright install-deps chromium
 
-      - name: Verify www/ exists
+      - name: Verify www/browser/ exists
         run: |
-          if [ ! -d "www" ]; then
-            echo "::error::www/ directory not found. The build might have failed or was skipped."
+          if [ ! -d "www/browser" ]; then
+            echo "::error::www/browser/ directory not found. The build might have failed or was skipped."
             exit 1
           fi
 
       - name: Start static server (act)
         if: ${{ env.ACT == 'true' }}
         run: |
-          nohup npx serve www -l 4200 -s > serve.log 2>&1 &
+          nohup npx serve www/browser -l 4200 -s > serve.log 2>&1 &
           echo $! > serve.pid
 
       - name: Wait for server (act)
@@ -208,7 +208,7 @@ jobs:
 
       - name: Start static server (CI)
         if: ${{ env.ACT != 'true' }}
-        run: npx serve www -l 4200 -s &
+        run: npx serve www/browser -l 4200 -s &
 
       - name: Wait for server (CI)
         if: ${{ env.ACT != 'true' }}
@@ -216,7 +216,8 @@ jobs:
 
       # SINGLE browser - mobile only (it's a mobile-first app!)
       - name: Run UI Integration Tests
-        run: pnpm test:e2e --project=mobile-chromium --grep-invert "visual|@docker"
+        # Multiple --grep-invert flags override each other; must use single combined pattern
+        run: pnpm exec playwright test --grep-invert "@docker|visual" --project=mobile-chromium
         env:
           E2E_SKIP_SERVER: true
           E2E_MOCK_MODE: true
@@ -313,9 +314,8 @@ jobs:
           npx wait-on http://localhost:8000/health --timeout 60000
 
       - name: Run Real E2E Tests
-        run: pnpm test:e2e --project=mobile-chromium --grep "@docker"
+        run: pnpm test:e2e:docker --project=mobile-chromium
         env:
-          E2E_DOCKER_TESTS: true
           E2E_API_URL: http://localhost:8000
           E2E_BACKOFFICE_URL: http://localhost:8001
 

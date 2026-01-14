@@ -52,11 +52,8 @@ cmd_start() {
     log_success "All services started!"
     log_info ""
     log_info "Service URLs:"
-    log_info "  API Gateway:      http://localhost:8004"
-    log_info "  Backoffice API:   http://localhost:8006"
-    log_info "  Login Service:    http://localhost:8003"
-    log_info "  Glucoserver:      http://localhost:8002"
-    log_info "  Appointments:     http://localhost:8005"
+    log_info "  API Gateway:      http://localhost:8000"
+    log_info "  Backoffice API:   http://localhost:8001"
     log_info ""
     log_info "Run the app with: ENV=local npm start"
 }
@@ -78,11 +75,8 @@ cmd_status() {
     log_info "Checking service health..."
 
     SERVICES=(
-        "API Gateway|http://localhost:8004/docs"
-        "Backoffice|http://localhost:8006/docs"
-        "Login|http://localhost:8003/docs"
-        "Glucoserver|http://localhost:8002/docs"
-        "Appointments|http://localhost:8005/docs"
+        "API Gateway|http://localhost:8000/docs"
+        "Backoffice|http://localhost:8001/docs"
     )
 
     ALL_HEALTHY=true

@@ -10,7 +10,6 @@ import { existsSync } from 'fs';
 const PORT = Number(process.env.E2E_PORT ?? 4200);
 const HOST = process.env.E2E_HOST ?? 'localhost';
 const BASE_URL = process.env.E2E_BASE_URL ?? `http://${HOST}:${PORT}`;
-const E2E_DEBUG = process.env.E2E_DEBUG === 'true' || process.env.E2E_DEBUG === '1';
 
 // Browser executable resolution
 // Prefer Google Chrome stable, fallback to Chromium
@@ -51,11 +50,11 @@ export default defineConfig({
   /* Run tests in files in parallel for faster execution */
   fullyParallel: true,
 
-  /* Retries for flake mitigation on CI (max 2 retries) */
-  retries: process.env.CI ? 2 : 0,
+  /* Retries for flake mitigation (CI: 2, local: 1 for hydration flakiness) */
+  retries: process.env.CI ? 2 : 1,
 
-  /* Worker management: Use full power on CI, 75% capacity locally for balance of speed and responsiveness */
-  workers: process.env.CI ? '100%' : '75%',
+  /* Worker management: Use full power on CI, 50% locally to avoid resource contention */
+  workers: process.env.CI ? '100%' : '50%',
 
   /* Maximum time one test can run for */
   timeout: process.env.CI ? 60_000 : 30_000,
@@ -92,11 +91,10 @@ export default defineConfig({
     actionTimeout: 15_000,
     navigationTimeout: 30_000,
 
-    /* Debugging artifacts (always-on so HTML report shows screenshots for passing tests) */
-    trace: 'on',
-    video: 'on',
-    screenshot: 'on',
-    recordHar: E2E_DEBUG ? { path: 'playwright/artifacts/har', mode: 'minimal' } : undefined,
+    /* Debugging artifacts: retain on failure to avoid trace file conflicts in parallel runs */
+    trace: 'retain-on-failure',
+    video: 'retain-on-failure',
+    screenshot: 'only-on-failure',
 
     /* Primary target: Mobile-first viewport (iPhone 14/15 standard) */
     viewport: MOBILE_VIEWPORT,
@@ -108,6 +106,7 @@ export default defineConfig({
    * Projects define different browser/device combinations for cross-device testing.
    *
    * OPTIMIZED CONFIGURATION (reduced from 804 → 228 tests):
+   * - Setup: Authentication setup (runs once, saves state)
    * - Primary: mobile-chromium (iPhone 14/15 dimensions) - runs ALL tests (~201 tests)
    * - Secondary: desktop-chromium - ONLY visual regression tests (~27 tests)
    *
@@ -119,8 +118,23 @@ export default defineConfig({
    * Full matrix (mobile-safari, mobile-samsung) can be enabled via CI environment.
    */
   projects: [
+    // Auth setup project - runs ONCE before all other projects
+    {
+      name: 'setup',
+      testDir: './playwright/fixtures',
+      testMatch: /auth\.setup\.ts/,
+      use: {
+        browserName: 'chromium',
+        viewport: MOBILE_VIEWPORT,
+        launchOptions: {
+          executablePath: browserExecutable,
+          headless: process.env.HEADLESS !== 'false',
+        },
+      },
+    },
     {
       name: 'mobile-chromium',
+      dependencies: ['setup'],
       use: {
         browserName: 'chromium',
         viewport: MOBILE_VIEWPORT,
@@ -137,6 +151,7 @@ export default defineConfig({
     },
     {
       name: 'desktop-chromium',
+      dependencies: ['setup'],
       testMatch: '**/visual/**/*.spec.ts', // Only run desktop for visual tests
       use: {
         browserName: 'chromium',

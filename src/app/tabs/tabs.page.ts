@@ -5,6 +5,7 @@ import {
   OnDestroy,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  inject,
 } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -12,7 +13,6 @@ import {
   IonTabs,
   IonTabBar,
   IonTabButton,
-  IonIcon,
   IonLabel,
   IonFab,
   IonFabButton,
@@ -23,10 +23,11 @@ import { ROUTES, ROUTE_SEGMENTS } from '@core/constants';
 import { AppointmentService } from '@services/appointment.service';
 import { TranslationService } from '@services/translation.service';
 import { AppointmentQueueStateResponse } from '@models/appointment.model';
-import { environment } from '@env/environment';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
 import { EnvBadgeComponent } from '@shared/components/env-badge/env-badge.component';
 import { SyncStatusComponent } from '@shared/components/sync-status/sync-status.component';
 import { NetworkStatusComponent } from '@shared/components/network-status/network-status.component';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-tabs',
@@ -39,7 +40,6 @@ import { NetworkStatusComponent } from '@shared/components/network-status/networ
     IonTabs,
     IonTabBar,
     IonTabButton,
-    IonIcon,
     IonLabel,
     IonFab,
     IonFabButton,
@@ -47,18 +47,27 @@ import { NetworkStatusComponent } from '@shared/components/network-status/networ
     EnvBadgeComponent,
     SyncStatusComponent,
     NetworkStatusComponent,
+    AppIconComponent,
   ],
 })
 export class TabsPage implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private envConfig = inject(EnvironmentConfigService);
+
   fabIcon = 'medkit-outline';
   fabLabel = '';
   fabDisabled = false;
-  readonly showStatusBadges = environment.features?.showStatusBadges ?? false;
 
   private queueState: AppointmentQueueStateResponse | null = null;
-  private readonly isMockMode = environment.backendMode === 'mock';
   private isOnAppointmentsTab = false;
+
+  get showStatusBadges(): boolean {
+    return this.envConfig.features.showStatusBadges;
+  }
+
+  get isMockMode(): boolean {
+    return this.envConfig.isMockMode;
+  }
 
   constructor(
     private router: Router,

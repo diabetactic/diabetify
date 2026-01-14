@@ -54,8 +54,8 @@ export interface Appointment {
   control_data: string;
   motive: string[];
   other_motive?: string | null;
-  status: AppointmentQueueState;
-  timestamps: { [key: string]: string };
+  status?: AppointmentQueueState;
+  timestamps?: { [key: string]: string };
 }
 
 /**

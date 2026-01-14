@@ -2,21 +2,11 @@
  * AuthGuard - Route protection for authenticated routes
  *
  * Prevents unauthenticated users from accessing protected routes.
- * Additionally checks account state to enforce pre-enabled account workflow:
- * - PENDING accounts redirect to /account-pending
+ * Checks account state (based on backend `blocked` field):
  * - DISABLED accounts are logged out and denied access
  * - ACTIVE accounts are allowed to proceed
  *
  * Redirects to login page if user is not authenticated.
- *
- * Usage in routing module:
- * ```typescript
- * {
- *   path: 'dashboard',
- *   component: DashboardPage,
- *   canActivate: [AuthGuard]
- * }
- * ```
  */
 
 import { Injectable } from '@angular/core';
@@ -49,7 +39,7 @@ export class AuthGuard implements CanActivate {
    *
    * Checks:
    * 1. User authentication (Tidepool or Local)
-   * 2. Account state (PENDING, ACTIVE, DISABLED)
+   * 2. Account blocked status
    *
    * @param route - Activated route snapshot
    * @param state - Router state snapshot
@@ -83,20 +73,13 @@ export class AuthGuard implements CanActivate {
                   });
                 }
 
-                const accountState = localAuthState.user?.preferences
-                  ? (localAuthState.user as { accountState?: AccountState }).accountState
-                  : null;
-
-                if (accountState === AccountState.PENDING) {
-                  return this.router.createUrlTree([ROUTES.ACCOUNT_PENDING]);
-                }
+                const accountState = localAuthState.user?.accountState ?? null;
 
                 if (accountState === AccountState.DISABLED) {
                   this.localAuthService.logout();
                   return this.router.createUrlTree([ROUTES.WELCOME]);
                 }
 
-                // Account is ACTIVE, allow access
                 return true;
               })
             );

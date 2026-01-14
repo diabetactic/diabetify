@@ -142,7 +142,7 @@ export class ProfileService implements OnDestroy {
       name: input.name,
       email: input.email,
       age: input.age,
-      accountState: input.accountState || AccountState.PENDING,
+      accountState: input.accountState || AccountState.ACTIVE,
       dateOfBirth: input.dateOfBirth,
       avatar: input.avatar,
       tidepoolConnection: input.tidepoolConnection || {

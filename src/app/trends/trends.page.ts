@@ -24,7 +24,6 @@ import {
   IonCardTitle,
   IonSpinner,
   IonButton,
-  IonIcon,
   IonRefresher,
   IonRefresherContent,
 } from '@ionic/angular/standalone';
@@ -64,7 +63,6 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
     BaseChartDirective,
     AppIconComponent,
     IonButton,
-    IonIcon,
     IonRefresher,
     IonRefresherContent,
   ],

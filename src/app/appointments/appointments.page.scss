@@ -7,38 +7,29 @@
 }
 
 .queue-card {
-  border-left: 4px solid transparent;
-
   ion-card-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    text-align: center;
+    padding-top: 0;
   }
 
+  // Light mode: use direct background for Ionic 8 compatibility
   &[data-queue-state='PENDING'] {
-    --background: rgba(var(--ion-color-warning-rgb), 0.06);
-
-    border-left-color: var(--ion-color-warning);
+    background: rgba(245, 158, 11, 0.08); // warning yellow tint
+    border-left: 4px solid var(--ion-color-warning);
   }
 
   &[data-queue-state='ACCEPTED'] {
-    --background: rgba(var(--ion-color-success-rgb), 0.06);
-
-    border-left-color: var(--ion-color-success);
+    background: rgba(34, 197, 94, 0.08); // success green tint
+    border-left: 4px solid var(--ion-color-success);
   }
 
   &[data-queue-state='DENIED'] {
-    --background: rgba(var(--ion-color-danger-rgb), 0.06);
-
-    border-left-color: var(--ion-color-danger);
+    background: rgba(239, 68, 68, 0.08); // danger red tint
+    border-left: 4px solid var(--ion-color-danger);
   }
 
   &[data-queue-state='CREATED'] {
-    --background: rgba(var(--ion-color-primary-rgb), 0.06);
-
-    border-left-color: var(--ion-color-primary);
+    background: rgba(59, 130, 246, 0.08); // primary blue tint
+    border-left: 4px solid var(--ion-color-primary);
   }
 }
 
@@ -263,41 +254,38 @@ ion-button {
     --background: oklch(var(--b1));
   }
 
-  // Queue card enhancements
+  // Queue card enhancements - using direct background colors for Ionic 8 compatibility
   .queue-card {
-    // Enhanced visibility with elevated background and stronger border
-    background: var(--ion-color-step-50);
-    border: 1px solid var(--ion-color-step-200);
-    box-shadow: var(--ion-box-shadow-medium);
+    // Base elevated background with visible contrast
+    background: #1e293b; // slate-800 equivalent - slightly lighter than page bg
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* stylelint-disable-next-line scale-unlimited/declaration-strict-value */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 
-    // Preserve state-based left borders with brighter colors in dark mode
+    // State-based backgrounds with tinted colors for visibility
     &[data-queue-state='PENDING'] {
-      --background: rgba(var(--ion-color-warning-rgb), 0.12);
-
-      border-left-color: var(--ion-color-warning-shade);
+      background: rgba(245, 158, 11, 0.15); // warning yellow tint
+      border-left: 4px solid var(--ion-color-warning-shade);
     }
 
     &[data-queue-state='ACCEPTED'] {
-      --background: rgba(var(--ion-color-success-rgb), 0.12);
-
-      border-left-color: var(--ion-color-success-shade);
+      background: rgba(34, 197, 94, 0.15); // success green tint
+      border-left: 4px solid var(--ion-color-success-shade);
     }
 
     &[data-queue-state='DENIED'] {
-      --background: rgba(var(--ion-color-danger-rgb), 0.12);
-
-      border-left-color: var(--ion-color-danger-shade);
+      background: rgba(239, 68, 68, 0.15); // danger red tint
+      border-left: 4px solid var(--ion-color-danger-shade);
     }
 
     &[data-queue-state='CREATED'] {
-      --background: rgba(var(--ion-color-primary-rgb), 0.12);
-
-      border-left-color: var(--ion-color-primary-shade);
+      background: rgba(59, 130, 246, 0.15); // primary blue tint
+      border-left: 4px solid var(--ion-color-primary-shade);
     }
   }
 
-  // All cards - elevated with border for distinction
-  ion-card {
+  // All cards - elevated with border for distinction (except queue-card which has its own styling)
+  ion-card:not(.queue-card) {
     --background: oklch(var(--b2));
     --color: oklch(var(--bc));
 

@@ -245,35 +245,6 @@ describe('AuthGuard', () => {
       expect(router.createUrlTree).not.toHaveBeenCalled();
     });
 
-    it('should redirect PENDING accounts to account-pending page', async () => {
-      // Arrange
-      localAuthStateSubject.next({
-        isAuthenticated: true,
-        user: {
-          id: 'user-123',
-          email: 'user@example.com',
-          accountState: AccountState.PENDING,
-          preferences: {},
-        } as any,
-        accessToken: 'local-token',
-        refreshToken: 'local-refresh',
-        expiresAt: Date.now() + 3600000,
-      });
-
-      const route = {} as ActivatedRouteSnapshot;
-      const state = { url: '/dashboard' } as RouterStateSnapshot;
-
-      // Act
-      const result = await firstValueFrom(
-        guard.canActivate(route, state) as Observable<boolean | UrlTree>
-      );
-
-      // Assert
-      expect(result).toBe(urlTree);
-      expect(router.createUrlTree).toHaveBeenCalledWith(['/account-pending']);
-      expect(localAuthService.logout).not.toHaveBeenCalled();
-    });
-
     it('should logout and redirect DISABLED accounts to welcome page', async () => {
       // Arrange
       localAuthStateSubject.next({

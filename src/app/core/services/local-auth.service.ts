@@ -5,10 +5,10 @@ import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Preferences } from '@capacitor/preferences';
 import { PlatformDetectorService } from '@services/platform-detector.service';
 import { LoggerService } from '@services/logger.service';
-import { SecureStorageService } from '@services/secure-storage.service';
+import { TokenService } from '@services/token.service';
 
 import { MockAdapterService } from '@services/mock-adapter.service';
-import { environment } from '@env/environment';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
 import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
 import { safeJsonParse, isLocalUser } from '../utils/type-guards';
 import { AccountState } from '../models/user-profile.model';
@@ -100,16 +100,9 @@ export interface TokenResponse {
   user: LocalUser;
 }
 
-// Storage keys - used for both secure storage and migration from Preferences
 const STORAGE_KEYS = {
-  ACCESS_TOKEN: 'local_access_token',
-  REFRESH_TOKEN: 'local_refresh_token',
   USER: 'local_user',
-  EXPIRES_AT: 'local_token_expires',
 };
-
-// Keys that contain sensitive data and must be stored securely
-const SECURE_STORAGE_KEYS = [STORAGE_KEYS.ACCESS_TOKEN, STORAGE_KEYS.REFRESH_TOKEN];
 
 @Injectable({
   providedIn: 'root',
@@ -137,7 +130,8 @@ export class LocalAuthService {
     private platformDetector: PlatformDetectorService,
     private logger: LoggerService,
     private mockAdapter: MockAdapterService,
-    private secureStorage: SecureStorageService
+    private tokenService: TokenService,
+    private envConfig: EnvironmentConfigService
   ) {
     this.logger.info('Init', 'LocalAuthService initialized');
     // Set base URL for API calls
@@ -158,30 +152,16 @@ export class LocalAuthService {
     this.initializeAuthState();
   }
 
-  /**
-   * Initialize authentication state from storage
-   * Resolves initializationPromise when complete
-   *
-   * SECURITY: Uses SecureStorage for tokens (hardware-backed encryption on mobile)
-   * Includes one-time migration from insecure Preferences storage
-   */
   private async initializeAuthState(): Promise<void> {
-    // Timeout for token refresh operations during initialization
-    // Prevents app from hanging indefinitely if HTTP call stalls on native
     const INIT_REFRESH_TIMEOUT_MS = 8000;
 
     try {
-      // SECURITY: Migrate tokens from insecure Preferences to SecureStorage
-      // This is a one-time operation for existing installations
-      await this.secureStorage.migrateFromPreferences(SECURE_STORAGE_KEYS);
+      await this.tokenService.waitForInitialization();
 
-      // Read tokens from secure storage, user data from regular storage
-      // User data (name, email, preferences) is not sensitive enough to require encryption
-      const [accessToken, refreshToken, userStr, expiresAtStr] = await Promise.all([
-        this.secureStorage.get(STORAGE_KEYS.ACCESS_TOKEN),
-        this.secureStorage.get(STORAGE_KEYS.REFRESH_TOKEN),
+      const [accessToken, refreshToken, userStr] = await Promise.all([
+        this.tokenService.getAccessToken(),
+        this.tokenService.getRefreshToken(),
         Preferences.get({ key: STORAGE_KEYS.USER }),
-        Preferences.get({ key: STORAGE_KEYS.EXPIRES_AT }),
       ]);
 
       const hasAccessToken = Boolean(accessToken);
@@ -189,28 +169,27 @@ export class LocalAuthService {
       const hasUser = Boolean(userStr.value);
 
       if (hasAccessToken && hasUser && userStr.value) {
-        // Use safe JSON parsing with type validation to prevent runtime errors
         const user = safeJsonParse<LocalUser>(userStr.value, isLocalUser);
         if (!user) {
           this.logger.warn('Auth', 'Stored user data is invalid, clearing tokens');
           await this.clearStoredTokens();
           return;
         }
-        const expiresAt = expiresAtStr.value ? parseInt(expiresAtStr.value, 10) : null;
 
-        // Check if token is expired
-        if (!expiresAt || Date.now() < expiresAt) {
+        const tokenExpired = this.tokenService.isTokenExpired();
+
+        if (!tokenExpired) {
           this.logger.info('Auth', 'Auth state restored from secure storage', { userId: user.id });
+          const tokenState = await this.getTokenStateFromService();
           this.authStateSubject.next({
             isAuthenticated: true,
             user,
-            accessToken: accessToken,
-            refreshToken: hasRefreshToken ? refreshToken : null,
-            expiresAt,
+            accessToken: tokenState.accessToken,
+            refreshToken: tokenState.refreshToken,
+            expiresAt: tokenState.expiresAt,
           });
         } else if (hasRefreshToken) {
           this.logger.info('Auth', 'Token expired, attempting refresh with timeout');
-          // Try to refresh the token with timeout protection
           try {
             const refreshPromise = firstValueFrom(this.refreshAccessToken());
             const timeoutPromise = new Promise<never>((_, reject) =>
@@ -219,13 +198,11 @@ export class LocalAuthService {
             await Promise.race([refreshPromise, timeoutPromise]);
           } catch (err) {
             this.logger.error('Auth', 'Token refresh failed during init', err);
-            // Clear invalid tokens to prevent future hangs
             await this.clearStoredTokens();
           }
         }
       } else if (hasRefreshToken) {
         this.logger.info('Auth', 'No access token, attempting refresh with timeout');
-        // Try to refresh the token with timeout protection
         try {
           const refreshPromise = firstValueFrom(this.refreshAccessToken());
           const timeoutPromise = new Promise<never>((_, reject) =>
@@ -234,16 +211,30 @@ export class LocalAuthService {
           await Promise.race([refreshPromise, timeoutPromise]);
         } catch (err) {
           this.logger.error('Auth', 'Token refresh failed during init', err);
-          // Clear invalid tokens to prevent future hangs
           await this.clearStoredTokens();
         }
       }
     } catch (error) {
       this.logger.error('Auth', 'Failed to initialize auth state', error);
     } finally {
-      // Resolve initialization promise when complete (success or error)
       this.initializationResolve();
     }
+  }
+
+  private async getTokenStateFromService(): Promise<{
+    accessToken: string | null;
+    refreshToken: string | null;
+    expiresAt: number | null;
+  }> {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.tokenService.getAccessToken(),
+      this.tokenService.getRefreshToken(),
+    ]);
+    return {
+      accessToken,
+      refreshToken,
+      expiresAt: this.tokenService.getExpiresAt(),
+    };
   }
 
   /**
@@ -254,11 +245,7 @@ export class LocalAuthService {
    */
   private async clearStoredTokens(): Promise<void> {
     try {
-      await Promise.all([
-        this.secureStorage.remove(STORAGE_KEYS.ACCESS_TOKEN),
-        this.secureStorage.remove(STORAGE_KEYS.REFRESH_TOKEN),
-        Preferences.remove({ key: STORAGE_KEYS.EXPIRES_AT }),
-      ]);
+      await this.tokenService.clearTokens();
       this.logger.info('Auth', 'Cleared stored tokens from secure storage');
     } catch (e) {
       this.logger.error('Auth', 'Failed to clear stored tokens', e);
@@ -273,7 +260,7 @@ export class LocalAuthService {
     const isAuthMockEnabled = this.mockAdapter.isServiceMockEnabled('auth');
     this.logger.debug('Auth', 'Login attempt', {
       stage: 'start',
-      backendMode: (environment as { backendMode?: string }).backendMode,
+      backendMode: this.envConfig.backendMode,
       mockEnabled: isAuthMockEnabled,
     });
 
@@ -282,7 +269,7 @@ export class LocalAuthService {
       this.logger.info('Auth', 'Mock mode login - bypassing HTTP calls', {
         stage: 'mock-login',
         username,
-        backendMode: (environment as { backendMode?: string }).backendMode,
+        backendMode: this.envConfig.backendMode,
       });
       return from(this.handleDemoLogin(rememberMe));
     }
@@ -295,7 +282,7 @@ export class LocalAuthService {
       rememberMe,
       baseUrl: this.baseUrl,
       tokenEndpoint: `${this.baseUrl}/token`,
-      backendMode: environment.backendMode,
+      backendMode: this.envConfig.backendMode,
     });
 
     // Try REAL backend
@@ -341,15 +328,9 @@ export class LocalAuthService {
             this.logger.debug('Auth', 'Backend stage: user profile fetched', {
               stage: 'profile-fetched',
               userId: profile?.dni,
-              state: profile?.state,
             });
-            // Check account state
-            if (profile.state === 'pending') {
-              this.logger.warn('Auth', 'Account pending activation', { username });
-              return throwError(() => new Error('auth.errors.accountPending'));
-            }
-            if (profile.state === 'disabled') {
-              this.logger.warn('Auth', 'Account disabled', { username });
+            if (profile.blocked === true) {
+              this.logger.warn('Auth', 'Account blocked', { username });
               return throwError(() => new Error('auth.errors.accountDisabled'));
             }
 
@@ -357,9 +338,9 @@ export class LocalAuthService {
 
             const authResponse: TokenResponse = {
               access_token: token.access_token,
-              refresh_token: null, // No refresh token in current implementation
+              refresh_token: token.refresh_token ?? null,
               token_type: token.token_type || 'bearer',
-              expires_in: token.expires_in ?? 1800, // Default 30 minutes
+              expires_in: token.expires_in ?? 1800,
               user: this.mapGatewayUser(profile),
             };
 
@@ -477,12 +458,10 @@ export class LocalAuthService {
     });
 
     // SECURITY: Clear tokens from secure storage (hardware-backed on mobile)
-    // User data and expiry can remain in regular Preferences
+    // User data can remain in regular Preferences
     await Promise.all([
-      this.secureStorage.remove(STORAGE_KEYS.ACCESS_TOKEN),
-      this.secureStorage.remove(STORAGE_KEYS.REFRESH_TOKEN),
+      this.tokenService.clearTokens(),
       Preferences.remove({ key: STORAGE_KEYS.USER }),
-      Preferences.remove({ key: STORAGE_KEYS.EXPIRES_AT }),
     ]);
 
     // CRITICAL: Clear IndexedDB to remove PHI data (glucose readings, appointments)
@@ -503,14 +482,13 @@ export class LocalAuthService {
   refreshAccessToken(): Observable<LocalAuthState> {
     this.logger.info('Auth', 'Attempting token refresh');
 
-    return from(this.secureStorage.get(STORAGE_KEYS.REFRESH_TOKEN)).pipe(
+    return from(this.tokenService.getRefreshToken()).pipe(
       switchMap(refreshToken => {
         if (!refreshToken) {
           this.logger.warn('Auth', 'No refresh token available');
           return throwError(() => new Error('No refresh token available. Please login again.'));
         }
 
-        // Call refresh endpoint with refresh_token grant
         const body = new HttpParams()
           .set('grant_type', 'refresh_token')
           .set('refresh_token', refreshToken);
@@ -531,43 +509,32 @@ export class LocalAuthService {
 
               this.logger.info('Auth', 'Token refresh successful');
 
-              // Update access token in state and storage
               const currentUser = this.authStateSubject.value.user;
               if (!currentUser) {
                 return throwError(() => new Error('No user in auth state'));
               }
 
-              const expiresAt = Date.now() + (token.expires_in ?? 1800) * 1000;
+              const expiresInSeconds = token.expires_in ?? 1800;
+              const expiresAt = Date.now() + expiresInSeconds * 1000;
+              const newRefreshToken = token.refresh_token || refreshToken;
 
-              // Update state
               const newState: LocalAuthState = {
                 isAuthenticated: true,
                 user: currentUser,
                 accessToken: token.access_token,
-                refreshToken: token.refresh_token || refreshToken, // Use new refresh token or keep old one
+                refreshToken: newRefreshToken,
                 expiresAt,
               };
 
               this.authStateSubject.next(newState);
 
-              // SECURITY: Persist new tokens to secure storage
               return from(
-                Promise.all([
-                  this.secureStorage.set(STORAGE_KEYS.ACCESS_TOKEN, token.access_token),
-                  token.refresh_token
-                    ? this.secureStorage.set(STORAGE_KEYS.REFRESH_TOKEN, token.refresh_token)
-                    : Promise.resolve(),
-                  Preferences.set({
-                    key: STORAGE_KEYS.EXPIRES_AT,
-                    value: expiresAt.toString(),
-                  }),
-                ])
+                this.tokenService.setTokens(token.access_token, newRefreshToken, expiresInSeconds)
               ).pipe(map(() => newState));
             }),
             catchError(error => {
               this.logger.error('Auth', 'Token refresh failed', error);
-              // Clear invalid refresh token from secure storage
-              return from(this.secureStorage.remove(STORAGE_KEYS.REFRESH_TOKEN)).pipe(
+              return from(this.tokenService.clearTokens()).pipe(
                 switchMap(() =>
                   throwError(() => new Error('Token refresh failed. Please login again.'))
                 )
@@ -687,10 +654,9 @@ export class LocalAuthService {
    * - Expiry time: Regular Preferences (not sensitive)
    */
   private async handleAuthResponse(response: TokenResponse, _rememberMe: boolean): Promise<void> {
-    const expiresInSeconds = response.expires_in ?? 1800; // Default 30 minutes
+    const expiresInSeconds = response.expires_in ?? 1800;
     const expiresAt = Date.now() + expiresInSeconds * 1000;
 
-    // Update auth state
     this.authStateSubject.next({
       isAuthenticated: true,
       user: response.user,
@@ -699,20 +665,11 @@ export class LocalAuthService {
       expiresAt,
     });
 
-    // SECURITY: Store tokens in secure storage (hardware-backed on mobile)
-    // User data and expiry can use regular Preferences
     await Promise.all([
-      this.secureStorage.set(STORAGE_KEYS.ACCESS_TOKEN, response.access_token),
-      response.refresh_token
-        ? this.secureStorage.set(STORAGE_KEYS.REFRESH_TOKEN, response.refresh_token)
-        : Promise.resolve(),
+      this.tokenService.setTokens(response.access_token, response.refresh_token, expiresInSeconds),
       Preferences.set({
         key: STORAGE_KEYS.USER,
         value: JSON.stringify(response.user),
-      }),
-      Preferences.set({
-        key: STORAGE_KEYS.EXPIRES_AT,
-        value: expiresAt.toString(),
       }),
     ]);
 
@@ -722,12 +679,10 @@ export class LocalAuthService {
       expiresAt: new Date(expiresAt).toISOString(),
     });
 
-    // Schedule token expiration reminder (5 minutes before expiry)
     const reminderTime = (expiresInSeconds - 300) * 1000;
     if (reminderTime > 0) {
       setTimeout(() => {
         this.logger.warn('Auth', 'Token will expire soon - user should re-authenticate');
-        // Could emit an event here for the UI to show a warning
       }, reminderTime);
     }
   }
@@ -796,9 +751,7 @@ export class LocalAuthService {
    * Map API Gateway user payload into the local user format used by the app
    */
   private mapGatewayUser(user: GatewayUserResponse): LocalUser {
-    const accountState: AccountState = user.state
-      ? (user.state as AccountState)
-      : AccountState.ACTIVE;
+    const accountState = user.blocked ? AccountState.DISABLED : AccountState.ACTIVE;
 
     return {
       id: user.dni,
@@ -896,10 +849,6 @@ export class LocalAuthService {
 
     if (errorObj['message']) {
       const message = errorObj['message'] as string;
-      // Check for specific error codes
-      if (message.includes('accountPending')) {
-        return 'Tu cuenta está pendiente de activación. Por favor, contacta al administrador.';
-      }
       if (message.includes('accountDisabled')) {
         return 'Tu cuenta ha sido deshabilitada. Por favor, contacta al administrador.';
       }
@@ -937,7 +886,6 @@ interface GatewayUserResponse {
   surname: string;
   blocked: boolean;
   email: string;
-  state?: 'pending' | 'active' | 'disabled';
   tidepool?: string | null;
   hospital_account: string;
   times_measured: number;

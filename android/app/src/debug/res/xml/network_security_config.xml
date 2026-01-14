@@ -1,36 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Network Security Configuration for DEBUG builds only
-
-  This configuration allows cleartext (HTTP) traffic to localhost and the Android
-  emulator's special alias (10.0.2.2) which maps to the host machine's localhost.
-
-  SECURITY NOTE: This file is ONLY included in debug builds. Production builds
-  will NOT include this configuration and will enforce HTTPS for all connections.
-
-  Android Emulator Network:
-  - 10.0.2.2 is a special alias to the host machine's 127.0.0.1
-  - This allows the emulator to reach backend services running on the dev machine
-
-  See: https://developer.android.com/training/articles/security-config
+  ALLOWS ALL CLEARTEXT HTTP FOR DEVELOPMENT
 -->
 <network-security-config>
-  <!-- Debug-only cleartext traffic policy -->
-  <domain-config cleartextTrafficPermitted="true">
-    <!-- Android emulator → host machine localhost -->
-    <domain includeSubdomains="true">10.0.2.2</domain>
-
-    <!-- iOS simulator and web development -->
-    <domain includeSubdomains="true">localhost</domain>
-
-    <!-- Alternative localhost representations -->
-    <domain includeSubdomains="true">127.0.0.1</domain>
-  </domain-config>
-
-  <!-- Base configuration for all other domains (HTTPS required) -->
-  <base-config cleartextTrafficPermitted="false">
+  <base-config cleartextTrafficPermitted="true">
     <trust-anchors>
-      <!-- Trust system certificate authorities -->
       <certificates src="system" />
     </trust-anchors>
   </base-config>

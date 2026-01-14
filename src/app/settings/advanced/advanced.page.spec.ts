@@ -73,9 +73,9 @@ describe('AdvancedPage', () => {
   });
 
   it('should update account state on change', () => {
-    const newState = 'pending';
+    const newState = 'disabled';
     const event = new CustomEvent('ionChange', { detail: { value: newState } });
     component.onAccountStateChange(event as CustomEvent<{ value: string }>);
-    expect(component.accountState).toBe('pending');
+    expect(component.accountState).toBe('disabled');
   });
 });

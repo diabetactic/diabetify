@@ -7,7 +7,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonSelect, IonSelectOption, IonToggle } from '@ionic/angular/standalone';
+import { IonToggle } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { ThemeMode } from '@models/user-profile.model';
@@ -20,42 +20,27 @@ import { Language } from '@services/translation.service';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule, IonSelect, IonSelectOption, IonToggle, TranslateModule, AppIconComponent],
+  imports: [CommonModule, IonToggle, TranslateModule, AppIconComponent],
 })
 export class ProfilePreferencesComponent {
   @Input() currentTheme: ThemeMode = 'auto';
   @Input() currentLanguage: Language = Language.EN;
   @Input() currentGlucoseUnit: string = 'mg/dL';
   @Input() notificationsEnabled: boolean = false;
-  @Input() unitOptions: { value: string; label: string }[] = [];
 
-  @Output() themeChange = new EventEmitter<CustomEvent<{ value: ThemeMode }>>();
-  @Output() languageChange = new EventEmitter<CustomEvent<{ value: Language }>>();
-  @Output() glucoseUnitChange = new EventEmitter<CustomEvent<{ value: string }>>();
   @Output() notificationsToggle = new EventEmitter<CustomEvent<{ checked: boolean }>>();
+  @Output() testNotification = new EventEmitter<void>();
   @Output() goToSettings = new EventEmitter<void>();
-
-  onThemeChange(event: CustomEvent<{ value: ThemeMode }>) {
-    this.themeChange.emit(event);
-  }
-
-  onLanguageChange(event: CustomEvent<{ value: Language }>) {
-    this.languageChange.emit(event);
-  }
-
-  onGlucoseUnitChange(event: CustomEvent<{ value: string }>) {
-    this.glucoseUnitChange.emit(event);
-  }
 
   onNotificationsToggle(event: CustomEvent<{ checked: boolean }>) {
     this.notificationsToggle.emit(event);
   }
 
-  onGoToSettings() {
-    this.goToSettings.emit();
+  onTestNotification() {
+    this.testNotification.emit();
   }
 
-  trackByUnitOption(_index: number, option: { value: string; label: string }): string {
-    return option.value;
+  onGoToSettings() {
+    this.goToSettings.emit();
   }
 }

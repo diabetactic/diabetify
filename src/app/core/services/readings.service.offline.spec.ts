@@ -15,12 +15,15 @@ import Dexie from 'dexie';
 import type { Mock } from 'vitest';
 import { of } from 'rxjs';
 import { AuditLogService } from '@services/audit-log.service';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
 
-// Note: @capacitor/network is already mocked in test-setup/index.ts
+class MockEnvironmentConfigService {
+  isMockMode = false;
+  backendMode = 'local';
+}
 
 describe('ReadingsService - Offline Detection', () => {
   let service: ReadingsService;
-  let syncService: ReadingsSyncService;
   let mockDb: DiabetacticDatabase;
   let mockLogger: Mock<LoggerService>;
   let mockApiGateway: Mock<ApiGatewayService>;
@@ -85,7 +88,7 @@ describe('ReadingsService - Offline Detection', () => {
         AuditLogService,
         { provide: DiabetacticDatabase, useValue: mockDb },
         { provide: LIVE_QUERY_FN, useValue: mockLiveQuery },
-        // Disable mock backend to use real calculations from test data
+        { provide: EnvironmentConfigService, useClass: MockEnvironmentConfigService },
         { provide: MockDataService, useValue: undefined },
         { provide: ApiGatewayService, useValue: mockApiGateway },
         { provide: LoggerService, useValue: mockLogger },
@@ -93,10 +96,6 @@ describe('ReadingsService - Offline Detection', () => {
     });
 
     service = TestBed.inject(ReadingsService);
-    syncService = TestBed.inject(ReadingsSyncService);
-    // Disable mock mode to test real offline detection logic
-    (service as any).isMockBackend = false;
-    (syncService as any).isMockBackend = false;
   });
 
   afterEach(async () => {

@@ -21,7 +21,7 @@ def create_user(
     name: str = "Test",
     surname: str = "User",
     email: Optional[str] = None,
-    hospital_account: str = "pending"
+    hospital_account: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Create a new test user.
@@ -39,6 +39,9 @@ def create_user(
     """
     if email is None:
         email = f"test_{dni}@diabetactic.test"
+    
+    if hospital_account is None:
+        hospital_account = f"account_{dni}"
 
     user_data = {
         "dni": dni,

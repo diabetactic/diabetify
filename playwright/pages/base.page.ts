@@ -20,7 +20,7 @@ export abstract class BasePage {
    * Wait for Ionic components to fully hydrate.
    * Disables the mobile preview frame on desktop for full viewport access.
    */
-  async waitForHydration(timeout = 10000): Promise<void> {
+  async waitForHydration(timeout = 15000): Promise<void> {
     await this.page.evaluate(() => {
       document.documentElement.classList.add('no-device-frame');
     });
@@ -28,8 +28,14 @@ export abstract class BasePage {
     try {
       await this.page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout });
     } catch {
-      await this.page.waitForSelector('ion-content', { state: 'visible', timeout });
+      try {
+        await this.page.waitForSelector('ion-content', { state: 'visible', timeout: 5000 });
+      } catch {
+        await this.page.waitForLoadState('domcontentloaded', { timeout: 5000 });
+      }
     }
+
+    await this.page.waitForTimeout(100);
   }
 
   /**

@@ -17,7 +17,6 @@ export const ROUTE_SEGMENTS = {
   SETTINGS: 'settings',
   ADVANCED: 'advanced',
   ADD_READING: 'add-reading',
-  ACCOUNT_PENDING: 'account-pending',
   CREATE: 'create',
   DETAIL: 'detail',
   APPOINTMENT_DETAIL: 'appointment-detail',
@@ -29,7 +28,6 @@ export const ROUTES = {
   // Root routes
   WELCOME: `/${ROUTE_SEGMENTS.WELCOME}`,
   LOGIN: `/${ROUTE_SEGMENTS.LOGIN}`,
-  ACCOUNT_PENDING: `/${ROUTE_SEGMENTS.ACCOUNT_PENDING}`,
   ADD_READING: `/${ROUTE_SEGMENTS.ADD_READING}`,
   BOLUS_CALCULATOR: `/${ROUTE_SEGMENTS.BOLUS_CALCULATOR}`,
 
@@ -67,7 +65,6 @@ export function appointmentDetailRoute(appointmentId: number | string): string {
 export const ROUTE_ARRAYS = {
   WELCOME: [ROUTES.WELCOME],
   LOGIN: [ROUTES.LOGIN],
-  ACCOUNT_PENDING: [ROUTES.ACCOUNT_PENDING],
   ADD_READING: [ROUTES.ADD_READING],
   TABS: [ROUTES.TABS],
   TABS_DASHBOARD: [ROUTES.TABS_DASHBOARD],

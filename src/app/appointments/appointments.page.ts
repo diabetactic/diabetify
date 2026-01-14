@@ -5,6 +5,7 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -36,7 +37,7 @@ import {
 } from '@models/appointment.model';
 import { TranslationService } from '@services/translation.service';
 import { LoggerService } from '@services/logger.service';
-import { environment } from '@env/environment';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
 import { ROUTES, appointmentDetailRoute } from '@core/constants';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
@@ -68,6 +69,7 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppointmentsPage implements OnInit, OnDestroy {
+  private envConfig = inject(EnvironmentConfigService);
   appointments: Appointment[] = [];
   loading = false;
   error: string | null = null;
@@ -143,12 +145,10 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadAppointments();
     this.subscribeToAppointments();
-    if (environment.backendMode !== 'mock') {
-      // Set loading guard before async load to prevent stale UI
+    if (!this.envConfig.isMockMode) {
       this.queueLoading = true;
       this.loadQueueState();
     } else {
-      // Mock mode: set explicit NONE state immediately (no loading needed)
       this.queueState = { state: 'NONE' };
       this.logger.info('Queue', 'Mock mode: queue state set to NONE');
     }
@@ -203,7 +203,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    * Poll queue state silently (no loading indicator)
    */
   private async pollQueueState(): Promise<void> {
-    if (environment.backendMode === 'mock') return;
+    if (this.envConfig.isMockMode) return;
 
     try {
       const previousState = this.queueState?.state;
@@ -519,9 +519,9 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    * Load current queue state
    */
   async loadQueueState(): Promise<void> {
-    if (environment.backendMode === 'mock') {
+    if (this.envConfig.isMockMode) {
       this.queueState = { state: 'NONE' };
-      this.queueLoading = false; // Reset loading state in mock mode
+      this.queueLoading = false;
       this.cdr.markForCheck();
       return;
     }
@@ -732,7 +732,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    */
   private async loadResolutionsForPastAppointments(): Promise<void> {
     if (this.resolutionsLoading) return;
-    if (environment.backendMode === 'mock') return;
+    if (this.envConfig.isMockMode) return;
 
     this.resolutionsLoading = true;
     this.cdr.markForCheck();

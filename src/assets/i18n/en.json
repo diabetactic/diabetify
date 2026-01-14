@@ -53,6 +53,7 @@
     "error": "Error",
     "sync": "Sync",
     "goBack": "Go back",
+    "back": "Back",
     "online": "Online",
     "offline": "Offline"
   },
@@ -108,17 +109,9 @@
       "networkError": "Network error. Please check your connection",
       "serverError": "Server error. Please try again later",
       "sessionExpired": "Your session has expired. Please sign in again",
-      "accountPending": "Your account is pending activation. Please contact the administrator.",
       "accountDisabled": "Your account has been disabled. Please contact the administrator."
     },
     "accountStates": {
-      "pending": {
-        "title": "Account Pending Activation",
-        "message": "Your account is being reviewed by our administrative team.",
-        "subtitle": "We'll notify you by email when your account is active.",
-        "support": "If you have questions, contact:",
-        "signOut": "Sign Out"
-      },
       "disabled": {
         "title": "Account Disabled",
         "message": "Your account has been disabled.",
@@ -582,6 +575,7 @@
       "requesting": "Requesting...",
       "status": "Queue Status",
       "position": "Position in queue: {{position}}",
+      "positionShort": "Position: {{position}}",
       "labels": {
         "none": "No queue entry",
         "pending": "Pending",
@@ -793,10 +787,18 @@
     },
     "notifications": {
       "title": "Notifications",
-      "desc": "Get reminders for glucose checks",
+      "master": "Enable Notifications",
+      "desc": "Get reminders for glucose checks and appointments",
       "enabled": "Notifications enabled",
       "disabled": "Notifications disabled",
-      "permissionDenied": "Permission denied. Please enable notifications in settings."
+      "permissionDenied": "Permission denied. Please enable notifications in settings.",
+      "readingReminders": "Reading reminders",
+      "appointmentReminders": "Appointment reminders",
+      "syncNotifications": "Sync notifications",
+      "testButton": "Send Test Notification",
+      "testSent": "Test notification sent!",
+      "testTitle": "Test Notification",
+      "testBody": "This is a test notification from Diabetactic."
     },
     "theme": {
       "title": "Theme",
@@ -878,7 +880,9 @@
     "avatar": {
       "errorTitle": "Profile photo",
       "tooLarge": "Please choose an image smaller than 3 MB.",
-      "updateFailed": "We couldn't update your photo. Please try again."
+      "updateFailed": "We couldn't update your photo. Please try again.",
+      "cropTitle": "Crop Photo",
+      "preview": "Preview"
     },
     "about": "About",
     "appVersion": "App Version",
@@ -988,6 +992,7 @@
     },
     "advanced": {
       "title": "Advanced Settings",
+      "dangerZone": "Danger Zone",
       "signOut": "Sign Out",
       "clearData": "Clear Local Data",
       "clearDataConfirm": "Are you sure you want to clear all local data? This action cannot be undone.",
@@ -1002,6 +1007,13 @@
         "disabled": "Disabled"
       },
       "selectAccountState": "Select account state"
+    },
+    "safety": {
+      "title": "Safety",
+      "maxBolus": "Maximum Bolus Dose",
+      "maxBolusDesc": "Maximum limit for bolus insulin doses",
+      "lowGlucose": "Low Glucose Threshold",
+      "lowGlucoseDesc": "Alert level for hypoglycemia"
     }
   },
   "sync": {
@@ -1433,7 +1445,9 @@
     "beforeAppointment": "{{minutes}} minutes before",
     "morningReminder": "Morning Check",
     "afternoonReminder": "Afternoon Check",
-    "eveningReminder": "Evening Check"
+    "eveningReminder": "Evening Check",
+    "readingReminderTitle": "Glucose Reading Reminder",
+    "readingReminderBody": "It's time to check your glucose level!"
   },
   "bolusCalculator": {
     "title": "Bolus Calculator",
@@ -1458,7 +1472,6 @@
     "warningsTitle": "Safety Warnings",
     "warnings": {
       "maxDose": "The recommended dose of {{recommended}} units exceeds the maximum of {{max}} units.",
-      "iob": "You still have an estimated {{iob}} units of insulin on board from a recent bolus.",
       "lowGlucose": "Your current glucose of {{glucose}} mg/dL is low. A bolus is not recommended."
     },
     "errors": {
@@ -1588,5 +1601,13 @@
     "noAchievements": "No achievements yet. Start tracking to unlock them!",
     "viewAchievements": "View Achievements",
     "achievementsDesc": "Track your progress and earn badges"
+  },
+  "widget": {
+    "timeAgo": {
+      "justNow": "just now",
+      "minutes": "{{count}} min ago",
+      "hours": "{{count}}h ago",
+      "days": "{{count}}d ago"
+    }
   }
 }

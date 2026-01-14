@@ -4,12 +4,12 @@
     <ion-title class="text-lg font-semibold">{{ 'serviceMonitor.title' | translate }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="toggleAutoRefresh()">
-        <ion-icon
+        <app-icon
           slot="icon-only"
           [name]="autoRefresh ? 'pause' : 'play'"
-          [color]="autoRefresh ? 'primary' : 'medium'"
-        >
-        </ion-icon>
+          [class]="autoRefresh ? 'text-primary' : 'text-medium'"
+          aria-hidden="true"
+        ></app-icon>
       </ion-button>
       <ion-button (click)="checkAllServices()">
         <app-icon slot="icon-only" name="refresh"></app-icon>
@@ -28,12 +28,12 @@
         <div class="card-body">
           <ion-card-header>
             <ion-card-title class="flex items-center gap-3">
-              <ion-icon
+              <app-icon
                 [name]="statusIcons[servicesState.overallHealth]"
                 [style.color]="statusColors[servicesState.overallHealth]"
                 class="text-2xl"
-              >
-              </ion-icon>
+                aria-hidden="true"
+              ></app-icon>
               <span class="text-base-content font-semibold"
                 >System Status: {{ servicesState.overallHealth }}</span
               >
@@ -250,12 +250,12 @@
             <div class="space-y-2">
               @for (workflow of completedWorkflows.slice(0, 5); track workflow.id) {
                 <div class="hover:bg-base-200 flex items-start gap-3 rounded-lg p-2">
-                  <ion-icon
+                  <app-icon
                     [name]="workflow.status === 'completed' ? 'checkmark-circle' : 'close-circle'"
-                    [color]="workflow.status === 'completed' ? 'success' : 'danger'"
+                    [class]="workflow.status === 'completed' ? 'text-success' : 'text-danger'"
                     class="text-xl"
-                  >
-                  </ion-icon>
+                    aria-hidden="true"
+                  ></app-icon>
                   <div class="flex-1">
                     <h3 class="text-base-content text-sm font-medium">{{ workflow.type }}</h3>
                     <p class="text-base-content/60 mt-1 text-xs">
@@ -373,11 +373,12 @@
                       <span class="text-base-content/70 text-sm">{{
                         'serviceMonitor.config.offlineSupport' | translate
                       }}</span>
-                      <ion-icon
+                      <app-icon
                         [name]="config.offlineSupport ? 'checkmark-circle' : 'close-circle'"
-                        [color]="config.offlineSupport ? 'success' : 'danger'"
+                        [class]="config.offlineSupport ? 'text-success' : 'text-danger'"
                         class="text-xl"
-                      ></ion-icon>
+                        aria-hidden="true"
+                      ></app-icon>
                     </div>
                   </div>
                 </ion-card-content>

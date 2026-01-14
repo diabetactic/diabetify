@@ -29,6 +29,10 @@ test.describe('Visual Regression - Pages @visual @docker', () => {
   test('dashboard page', async ({ page, pages }) => {
     await page.goto('/tabs/dashboard');
     await pages.dashboardPage.waitForHydration();
+    await page.waitForSelector('[data-testid="stats-container"]', {
+      state: 'visible',
+      timeout: 15000,
+    });
     await prepareForScreenshot(page);
 
     await expect(page).toHaveScreenshot('dashboard.png', screenshotOptions);
@@ -51,20 +55,8 @@ test.describe('Visual Regression - Pages @visual @docker', () => {
   });
 
   test('appointments page', async ({ page, pages }) => {
-    await page.goto('/tabs/dashboard');
-    await pages.dashboardPage.waitForHydration();
-
-    await page.click('[data-testid="tab-appointments"], ion-tab-button[tab="appointments"]');
+    await page.goto('/tabs/appointments');
     await pages.appointmentsPage.waitForHydration();
-    await page.waitForTimeout(1500);
-
-    await page.addStyleTag({
-      content: `
-        .alert, .alert-error, .alert-warning, .alert-info,
-        app-toast-queue, .toast-container, ion-toast,
-        [role="alert"] { display: none !important; }
-      `,
-    });
     await prepareForScreenshot(page);
 
     await expect(page).toHaveScreenshot('appointments-page.png', screenshotOptions);
@@ -78,15 +70,12 @@ test.describe('Visual Regression - Pages @visual @docker', () => {
     await expect(page).toHaveScreenshot('profile-page.png', screenshotOptions);
   });
 
-  test('profile with preferences', async ({ page, pages }) => {
-    await page.goto('/tabs/profile');
-    await pages.profilePage.waitForHydration();
-
-    const preferencesSection = page.locator('[data-testid="advanced-settings-btn"]');
-    await preferencesSection.scrollIntoViewIfNeeded();
+  test('settings page', async ({ page }) => {
+    await page.goto('/settings');
+    await page.waitForSelector('ion-content', { state: 'visible', timeout: 10000 });
     await prepareForScreenshot(page);
 
-    await expect(page).toHaveScreenshot('profile-preferences.png', screenshotOptions);
+    await expect(page).toHaveScreenshot('settings-page.png', screenshotOptions);
   });
 });
 

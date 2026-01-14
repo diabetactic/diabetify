@@ -7,7 +7,7 @@
     [color]="isOpen ? 'danger' : 'medium'"
     aria-label="{{ isOpen ? ('debug.closePanel' | translate) : ('debug.openPanel' | translate) }}"
   >
-    <ion-icon [name]="isOpen ? 'close' : 'bug'" aria-hidden="true"></ion-icon>
+    <app-icon [name]="isOpen ? 'close' : 'bug'" aria-hidden="true"></app-icon>
   </ion-fab-button>
 </div>
 

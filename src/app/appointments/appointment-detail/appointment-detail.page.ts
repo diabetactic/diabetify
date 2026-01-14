@@ -304,7 +304,7 @@ export class AppointmentDetailPage implements OnInit {
   /**
    * Format number field, handling placeholders
    */
-  formatNumberField(value: number | null | undefined, suffix: string = ''): string {
+  formatNumberField(value: number | null | undefined, suffix = ''): string {
     if (value === null || value === undefined) return '-';
     return `${value}${suffix}`;
   }

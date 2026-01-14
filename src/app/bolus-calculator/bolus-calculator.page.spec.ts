@@ -48,6 +48,7 @@ describe('BolusCalculatorPage', () => {
         onWillDismiss: vi.fn().mockResolvedValue({ role: 'confirmed' }),
       } as any),
       dismiss: vi.fn(),
+      getTop: vi.fn().mockResolvedValue(null),
     } as any;
 
     const selectedFoodsSignal = signal<SelectedFood[]>([]);
@@ -435,9 +436,18 @@ describe('BolusCalculatorPage', () => {
       expect(component.glucoseError).toBe('');
     });
 
-    it('should navigate back to dashboard', () => {
-      component.goBack();
+    it('should navigate back to dashboard when not in modal', async () => {
+      mockModalController.getTop.mockResolvedValue(null);
+      await component.goBack();
       expect(mockNavController.navigateBack).toHaveBeenCalledWith('/tabs/dashboard');
+    });
+
+    it('should dismiss modal when opened as modal', async () => {
+      const mockModal = { dismiss: vi.fn().mockResolvedValue(undefined) };
+      mockModalController.getTop.mockResolvedValue(mockModal);
+      await component.goBack();
+      expect(mockModal.dismiss).toHaveBeenCalled();
+      expect(mockNavController.navigateBack).not.toHaveBeenCalled();
     });
   });
 

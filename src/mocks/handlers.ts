@@ -30,7 +30,7 @@ interface MockUser {
   email: string;
   name: string;
   surname: string;
-  state: 'ACTIVE' | 'PENDING' | 'DISABLED';
+  blocked: boolean;
   streak: number;
   times_measured: number;
   max_streak: number;
@@ -70,7 +70,7 @@ const DEFAULT_USER: MockUser = {
   email: 'test@example.com',
   name: 'Test',
   surname: 'User',
-  state: 'ACTIVE',
+  blocked: false,
   streak: 5,
   times_measured: 42,
   max_streak: 10,

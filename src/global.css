@@ -1516,6 +1516,68 @@ button:focus-visible {
   --background: var(--ion-background-color);
 }
 
+/* Ion Alert - General Styling */
+ion-alert {
+  --min-width: 320px;
+  --max-width: 400px;
+}
+
+ion-alert .alert-wrapper {
+  border-radius: 1rem;
+  box-shadow: 0 20px 40px rgb(0 0 0 / 20%);
+}
+
+ion-alert .alert-head {
+  padding: 1.25rem 1.25rem 0.75rem;
+}
+
+ion-alert .alert-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--ion-text-color);
+}
+
+ion-alert .alert-input-group {
+  padding: 0.5rem 1.25rem;
+}
+
+ion-alert .alert-input {
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid var(--dt-color-border-input, #d1d5db);
+  background: var(--ion-background-color, #fff);
+}
+
+ion-alert .alert-input:focus {
+  border-color: var(--ion-color-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 15%);
+}
+
+ion-alert .alert-button-group {
+  padding: 0.75rem 1.25rem 1.25rem;
+  gap: 0.5rem;
+}
+
+ion-alert .alert-button {
+  border-radius: 0.75rem;
+  font-weight: 600;
+  text-transform: none;
+  padding: 0.625rem 1.25rem;
+  min-height: 44px;
+}
+
+ion-alert .alert-button.alert-button-role-cancel {
+  color: var(--ion-text-color);
+  background: var(--ion-color-light, #f3f4f6);
+}
+
+ion-alert .alert-button:not(.alert-button-role-cancel) {
+  color: #fff;
+  background: var(--ion-color-primary);
+}
+
 /* Ion Alert - Dark Mode */
 .ion-palette-dark ion-alert,
 .dark ion-alert,
@@ -1651,3 +1713,22 @@ button:focus-visible {
   }
 }
 /* stylelint-enable declaration-no-important */
+
+/* ============================================
+ * FULLSCREEN MODAL
+ * Used for Settings and Bolus Calculator to avoid
+ * the double-tap navigation bug with Ionic tabs
+ * ============================================ */
+.fullscreen-modal {
+  --width: 100%;
+  --height: 100%;
+  --border-radius: 0;
+}
+
+.fullscreen-modal .modal-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}

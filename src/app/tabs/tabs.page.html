@@ -11,25 +11,25 @@
   <ion-tab-bar slot="bottom">
     <!-- Dashboard Tab -->
     <ion-tab-button id="tab-dashboard" tab="dashboard" data-testid="tab-dashboard">
-      <ion-icon name="home-outline"></ion-icon>
+      <app-icon name="home-outline" aria-hidden="true"></app-icon>
       <ion-label>{{ 'tabs.home' | translate }}</ion-label>
     </ion-tab-button>
 
     <!-- Readings Tab -->
     <ion-tab-button id="tab-readings" tab="readings" data-testid="tab-readings">
-      <ion-icon name="document-text-outline"></ion-icon>
+      <app-icon name="document-text-outline" aria-hidden="true"></app-icon>
       <ion-label>{{ 'tabs.readings' | translate }}</ion-label>
     </ion-tab-button>
 
     <!-- Appointments Tab -->
     <ion-tab-button id="tab-appointments" tab="appointments" data-testid="tab-appointments">
-      <ion-icon name="calendar-outline"></ion-icon>
+      <app-icon name="calendar-outline" aria-hidden="true"></app-icon>
       <ion-label>{{ 'appointments.title' | translate }}</ion-label>
     </ion-tab-button>
 
     <!-- Profile Tab -->
     <ion-tab-button id="tab-profile" tab="profile" data-testid="tab-profile">
-      <ion-icon name="person-outline"></ion-icon>
+      <app-icon name="person-outline" aria-hidden="true"></app-icon>
       <ion-label>{{ 'tabs.profile' | translate }}</ion-label>
     </ion-tab-button>
   </ion-tab-bar>
@@ -44,7 +44,7 @@
       [disabled]="fabDisabled"
       [class.fab-disabled]="fabDisabled"
     >
-      <ion-icon [name]="fabIcon"></ion-icon>
+      <app-icon [name]="fabIcon" aria-hidden="true"></app-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-tabs>

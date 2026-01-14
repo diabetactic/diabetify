@@ -1,72 +1,92 @@
 <ion-header [translucent]="true">
   <ion-toolbar class="ion-padding-top">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/profile"></ion-back-button>
+      <ion-back-button defaultHref="/tabs/profile" text=""></ion-back-button>
     </ion-buttons>
     <ion-title>{{ 'settings.advanced.title' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="bg-base-200/50">
   <ion-header collapse="condense">
     <ion-toolbar class="ion-padding-top">
       <ion-title size="large">{{ 'settings.advanced.title' | translate }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <ion-list>
-    <!-- Sign Out Button -->
-    <ion-item>
-      <ion-button
-        expand="block"
-        color="danger"
-        (click)="signOut()"
-        class="sign-out-button inline-flex items-center gap-2"
-      >
-        <app-icon name="log-out-outline"></app-icon>
-        {{ 'settings.advanced.signOut' | translate }}
-      </ion-button>
-    </ion-item>
-
-    <!-- Clear Local Data Button -->
-    <ion-item>
-      <ion-button
-        expand="block"
-        color="danger"
-        (click)="clearLocalData()"
-        class="clear-data-button inline-flex items-center gap-2"
-      >
-        <app-icon name="trash-outline"></app-icon>
-        {{ 'settings.advanced.clearData' | translate }}
-      </ion-button>
-    </ion-item>
-
-    <!-- Developer Tools: Account State Toggle (Dev Mode Only) -->
+  <div class="mx-auto max-w-lg space-y-6 px-4 py-6">
+    <!-- Developer Tools -->
     @if (isDevMode) {
-      <ion-item-divider>
-        <ion-label>{{ 'settings.advanced.developerTools' | translate }}</ion-label>
-      </ion-item-divider>
+      <section class="card space-y-4">
+        <div class="flex items-center gap-3 border-b border-gray-100 pb-3 dark:border-gray-800">
+          <div
+            class="bg-warning/10 text-warning flex h-10 w-10 items-center justify-center rounded-full"
+          >
+            <app-icon name="construct-outline" class="text-2xl"></app-icon>
+          </div>
+          <h3 class="text-dark m-0 text-lg font-bold">
+            {{ 'settings.advanced.developerTools' | translate }}
+          </h3>
+        </div>
 
-      <ion-item>
-        <ion-label position="stacked">
-          {{ 'settings.advanced.accountStateToggle' | translate }}
-        </ion-label>
-        <ion-select
-          [(ngModel)]="accountState"
-          (ionChange)="onAccountStateChange($event)"
-          [placeholder]="'settings.advanced.selectAccountState' | translate"
-        >
-          <ion-select-option value="pending">
-            {{ 'settings.advanced.accountState.pending' | translate }}
-          </ion-select-option>
-          <ion-select-option value="active">
-            {{ 'settings.advanced.accountState.active' | translate }}
-          </ion-select-option>
-          <ion-select-option value="disabled">
-            {{ 'settings.advanced.accountState.disabled' | translate }}
-          </ion-select-option>
-        </ion-select>
-      </ion-item>
+        <div class="space-y-2">
+          <ion-label class="text-base-content font-medium">
+            {{ 'settings.advanced.accountStateToggle' | translate }}
+          </ion-label>
+          <div class="border-base-300 bg-base-100 overflow-hidden rounded-xl border">
+            <ion-item lines="none" class="w-full text-sm">
+              <ion-select
+                [(ngModel)]="accountState"
+                (ionChange)="onAccountStateChange($event)"
+                [placeholder]="'settings.advanced.selectAccountState' | translate"
+                interface="popover"
+                class="w-full"
+              >
+                <ion-select-option value="active">
+                  {{ 'settings.advanced.accountState.active' | translate }}
+                </ion-select-option>
+                <ion-select-option value="disabled">
+                  {{ 'settings.advanced.accountState.disabled' | translate }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </div>
+        </div>
+      </section>
     }
-  </ion-list>
+
+    <!-- Danger Zone -->
+    <section class="card border-error/10 bg-error/5 border-2 shadow-none">
+      <div class="mb-4 flex items-center gap-3">
+        <div class="bg-error/10 text-error flex h-10 w-10 items-center justify-center rounded-full">
+          <app-icon name="warning-outline" class="text-2xl"></app-icon>
+        </div>
+        <h3 class="text-error m-0 text-lg font-bold">
+          {{ 'settings.advanced.dangerZone' | translate }}
+        </h3>
+      </div>
+
+      <div class="space-y-3">
+        <!-- Clear Data -->
+        <button
+          type="button"
+          class="btn btn-outline btn-error btn-block border-error/30 bg-base-100 hover:border-error hover:bg-error flex h-auto items-center justify-between gap-3 py-3 hover:text-white"
+          (click)="clearLocalData()"
+        >
+          <span class="font-bold">{{ 'settings.advanced.clearData' | translate }}</span>
+          <app-icon name="trash-outline" class="text-xl"></app-icon>
+        </button>
+
+        <!-- Sign Out -->
+        <button
+          type="button"
+          class="btn btn-error btn-block flex h-auto items-center justify-between gap-3 py-3 text-white"
+          (click)="signOut()"
+        >
+          <span class="font-bold">{{ 'settings.advanced.signOut' | translate }}</span>
+          <app-icon name="log-out-outline" class="text-xl"></app-icon>
+        </button>
+      </div>
+    </section>
+  </div>
 </ion-content>

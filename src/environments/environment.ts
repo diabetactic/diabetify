@@ -14,7 +14,7 @@ export type BackendMode = 'mock' | 'local' | 'cloud';
  *   'mock'  → Mock adapter (in-memory, instant, no backend required)
  *             Use for: Development, fast testing, offline mode
  *
- *   'local' → Local Docker backend (http://localhost:8004)
+ *   'local' → Local Docker backend (http://localhost:8000)
  *             Use for: Full-stack development, Docker Compose testing
  *             Config: Docker Compose with extServices
  *
@@ -32,17 +32,14 @@ const DEV_BACKEND_MODE: BackendMode = 'mock';
  */
 function getBaseUrl(mode: BackendMode): string {
   if (mode === 'local') {
-    // Local Docker env (docker-compose.local.yml, API Gateway on port 8000)
     if (Capacitor.isNativePlatform()) {
       const platform = Capacitor.getPlatform();
       if (platform === 'android') {
-        return 'http://10.0.2.2:8000'; // Android emulator host
+        return 'http://10.0.2.2:8000';
       }
-      // iOS simulator / device
-      return 'http://localhost:8004';
+      return 'http://localhost:8000';
     }
-    // Web dev hitting local gateway directly
-    return 'http://localhost:8004';
+    return 'http://localhost:8000';
   }
 
   // cloud or mock → use Heroku API Gateway

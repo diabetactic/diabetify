@@ -12,6 +12,12 @@ import { Observable, of } from 'rxjs';
 import { MockDataService } from '@services/mock-data.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
 import { AuditLogService } from '@services/audit-log.service';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
+
+class MockEnvironmentConfigService {
+  isMockMode = false;
+  backendMode = 'local';
+}
 
 // Mock Dexie database
 class MockDatabaseService {
@@ -23,6 +29,7 @@ class MockDatabaseService {
       }),
       equals: vi.fn().mockReturnValue({
         toArray: vi.fn().mockResolvedValue([]),
+        first: vi.fn().mockResolvedValue(undefined),
       }),
     }),
     filter: vi.fn().mockReturnValue({
@@ -104,7 +111,7 @@ describe('ReadingsService', () => {
         ReadingsSyncService,
         AuditLogService,
         { provide: DiabetacticDatabase, useValue: mockDb },
-        // Disable mock backend to use real calculations from test data
+        { provide: EnvironmentConfigService, useClass: MockEnvironmentConfigService },
         { provide: MockDataService, useValue: undefined },
         { provide: ApiGatewayService, useValue: mockApiGateway },
         {
@@ -521,10 +528,6 @@ describe('ReadingsService', () => {
 
   describe('fetchLatestFromBackend', () => {
     it('should fetch latest readings from backend using new endpoint', async () => {
-      // Disable mock mode on both services to test real fetch logic
-      (service as any).isMockBackend = false;
-      (syncService as any).isMockBackend = false;
-
       const mockBackendReadings = [
         {
           id: 1,
@@ -566,9 +569,6 @@ describe('ReadingsService', () => {
     });
 
     it('should handle backend errors gracefully', async () => {
-      // Disable mock mode to test error handling
-      (syncService as any).isMockBackend = false;
-
       const mockErrorResponse = {
         success: false,
         error: {

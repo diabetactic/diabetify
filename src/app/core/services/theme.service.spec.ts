@@ -96,9 +96,9 @@ describe('ThemeService', () => {
     service = TestBed.inject(ThemeService);
   });
 
-  it('should initialize with light theme mode by default', () => {
+  it('should initialize with auto theme mode by default', () => {
     const currentMode = service.getCurrentThemeMode();
-    expect(currentMode).toBe('light');
+    expect(currentMode).toBe('auto');
     expect(typeof service.isDarkTheme()).toBe('boolean');
   });
 
@@ -233,9 +233,9 @@ describe('ThemeService', () => {
       expect(newService.getCurrentThemeMode()).toBe('dark');
     });
 
-    it('should toggle between light and dark themes', async () => {
-      // Iniciar en light (predeterminado)
-      expect(service.getCurrentThemeMode()).toBe('light');
+    it('should toggle between auto and dark themes', async () => {
+      // Iniciar en auto (predeterminado)
+      expect(service.getCurrentThemeMode()).toBe('auto');
 
       // Cambiar a dark
       await service.toggleTheme();

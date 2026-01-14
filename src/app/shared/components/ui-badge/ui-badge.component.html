@@ -2,7 +2,7 @@
   <span [class]="badgeClasses" role="status" data-testid="ui-badge">
     <!-- Icon -->
     @if (icon) {
-      <ion-icon [name]="icon" [class]="iconSizeClasses"></ion-icon>
+      <app-icon [name]="icon" [class]="iconSizeClasses" aria-hidden="true"></app-icon>
     }
 
     <!-- Badge content (slot) -->

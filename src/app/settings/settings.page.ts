@@ -9,26 +9,30 @@ import {
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
-import { AlertController, LoadingController, Platform, ToastController } from '@ionic/angular';
+import {
+  AlertController,
+  LoadingController,
+  ModalController,
+  Platform,
+  ToastController,
+} from '@ionic/angular';
 import {
   IonHeader,
   IonToolbar,
   IonButtons,
-  IonBackButton,
   IonTitle,
   IonButton,
   IonContent,
-  IonListHeader,
   IonLabel,
   IonList,
   IonItem,
-  IonAvatar,
   IonSelect,
   IonSelectOption,
   IonToggle,
   IonCard,
-  IonCardContent,
   IonDatetime,
+  IonDatetimeButton,
+  IonModal,
   IonRange,
 } from '@ionic/angular/standalone';
 import { Subject, Subscription } from 'rxjs';
@@ -36,13 +40,18 @@ import { Subject, Subscription } from 'rxjs';
 import { ProfileService } from '@services/profile.service';
 import { ReadingsService } from '@services/readings.service';
 import { ThemeService } from '@services/theme.service';
-import { LocalAuthService, LocalUser, UserPreferences } from '@services/local-auth.service';
+import { LocalAuthService, LocalUser } from '@services/local-auth.service';
+import {
+  PreferencesService,
+  UserPreferences,
+  DEFAULT_PREFERENCES,
+} from '@services/preferences.service';
 import { DemoDataService } from '@services/demo-data.service';
 import { NotificationService, ReadingReminder } from '@services/notification.service';
 import { environment } from '@env/environment';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { LoggerService } from '@services/logger.service';
-import { ROUTES, STORAGE_KEYS, TIMEOUTS } from '@core/constants';
+import { ROUTES, TIMEOUTS } from '@core/constants';
 
 @Component({
   selector: 'app-settings',
@@ -56,21 +65,20 @@ import { ROUTES, STORAGE_KEYS, TIMEOUTS } from '@core/constants';
     IonHeader,
     IonToolbar,
     IonButtons,
-    IonBackButton,
     IonTitle,
     IonButton,
     IonContent,
-    IonListHeader,
     IonLabel,
     IonList,
     IonItem,
-    IonAvatar,
+
     IonSelect,
     IonSelectOption,
     IonToggle,
     IonCard,
-    IonCardContent,
     IonDatetime,
+    IonDatetimeButton,
+    IonModal,
     IonRange,
     AppIconComponent,
   ],
@@ -81,17 +89,7 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   // User profile data
   user: LocalUser | null = null;
-  preferences: UserPreferences = {
-    glucoseUnit: 'mg/dL',
-    targetRange: { low: 70, high: 180 },
-    language: 'es',
-    notifications: {
-      appointments: true,
-      readings: true,
-      reminders: true,
-    },
-    theme: 'light', // Changed from 'auto' to 'light' as default
-  };
+  preferences: UserPreferences = { ...DEFAULT_PREFERENCES };
 
   // Settings sections
   profileSettings = {
@@ -142,14 +140,24 @@ export class SettingsPage implements OnInit, OnDestroy {
     private profileService: ProfileService,
     private themeService: ThemeService,
     private authService: LocalAuthService,
+    private preferencesService: PreferencesService,
     private demoDataService: DemoDataService,
     private notificationService: NotificationService,
     private translate: TranslateService,
     private logger: LoggerService,
-    private readingsService: ReadingsService
+    private readingsService: ReadingsService,
+    private modalController: ModalController
   ) {
-    // Detect if running on web (not native)
     this.isWebPlatform = !this.platform.is('capacitor');
+  }
+
+  async dismiss(): Promise<void> {
+    const modal = await this.modalController.getTop();
+    if (modal) {
+      await modal.dismiss();
+    } else {
+      await this.router.navigate(['/tabs/profile']);
+    }
   }
 
   ngOnInit() {
@@ -195,15 +203,11 @@ export class SettingsPage implements OnInit, OnDestroy {
     ];
   }
 
-  /**
-   * Load user data and preferences
-   */
   private async loadUserData() {
     try {
       this.user = this.authService.getCurrentUser();
 
       if (this.user) {
-        // Load profile data
         this.profileSettings = {
           name: `${this.user.firstName} ${this.user.lastName}`,
           email: this.user.email,
@@ -212,23 +216,22 @@ export class SettingsPage implements OnInit, OnDestroy {
           diabetesType: this.user.diabetesType || '2',
           diagnosisDate: this.user.diagnosisDate || '',
         };
-
-        // Load preferences
-        if (this.user.preferences) {
-          this.preferences = this.user.preferences;
-          this.glucoseSettings = {
-            unit: this.preferences.glucoseUnit,
-            targetLow: this.preferences.targetRange.low,
-            targetHigh: this.preferences.targetRange.high,
-            hypoglycemiaThreshold: this.preferences.targetRange.low,
-            hyperglycemiaThreshold: this.preferences.targetRange.high,
-          };
-          this.safetySettings = {
-            maxBolus: this.preferences.maxBolus || 15,
-            lowGlucoseThreshold: this.preferences.lowGlucoseThreshold || 70,
-          };
-        }
       }
+
+      await this.preferencesService.waitForInit();
+      this.preferences = this.preferencesService.getCurrentPreferences();
+
+      this.glucoseSettings = {
+        unit: this.preferences.glucoseUnit,
+        targetLow: this.preferences.targetRange.low,
+        targetHigh: this.preferences.targetRange.high,
+        hypoglycemiaThreshold: this.preferences.targetRange.low,
+        hyperglycemiaThreshold: this.preferences.targetRange.high,
+      };
+      this.safetySettings = {
+        maxBolus: this.preferences.safety.maxBolus,
+        lowGlucoseThreshold: this.preferences.safety.lowGlucoseThreshold,
+      };
     } catch (error) {
       this.logger.error('Settings', 'Error loading user data', error);
       await this.showToast('Error al cargar los datos del usuario', 'danger');
@@ -309,32 +312,20 @@ export class SettingsPage implements OnInit, OnDestroy {
     await loading.present();
 
     try {
-      // Update preferences object
-      this.preferences = {
-        ...this.preferences,
+      await this.preferencesService.updatePreferences({
         glucoseUnit: this.glucoseSettings.unit,
         targetRange: {
           low: this.glucoseSettings.targetLow,
           high: this.glucoseSettings.targetHigh,
         },
-        notifications: {
-          appointments: true,
-          readings: true,
-          reminders: true,
+        safety: {
+          maxBolus: this.safetySettings.maxBolus,
+          lowGlucoseThreshold: this.safetySettings.lowGlucoseThreshold,
         },
-        maxBolus: this.safetySettings.maxBolus,
-        lowGlucoseThreshold: this.safetySettings.lowGlucoseThreshold,
-      };
+      });
 
-      // Save to local storage
-      const settings = {
-        profile: this.profileSettings,
-        glucose: this.glucoseSettings,
-        preferences: this.preferences,
-      };
-      localStorage.setItem(STORAGE_KEYS.USER_SETTINGS, JSON.stringify(settings));
+      this.preferences = this.preferencesService.getCurrentPreferences();
 
-      // Save to backend API - convert to profile service format
       await this.profileService.updatePreferences({
         glucoseUnit: this.preferences.glucoseUnit,
         targetRange: {
@@ -357,8 +348,12 @@ export class SettingsPage implements OnInit, OnDestroy {
   /**
    * Navigate to advanced settings
    */
-  goToAdvancedSettings() {
-    this.router.navigate([ROUTES.SETTINGS_ADVANCED]);
+  async goToAdvancedSettings() {
+    const modal = await this.modalController.getTop();
+    if (modal) {
+      await modal.dismiss();
+    }
+    await this.router.navigate([ROUTES.SETTINGS_ADVANCED]);
   }
 
   /**
@@ -449,27 +444,14 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.notificationsEnabled = this.notificationPermissionGranted;
   }
 
-  /**
-   * Load notification settings from storage
-   */
   private loadNotificationSettings() {
-    const saved = localStorage.getItem(STORAGE_KEYS.NOTIFICATION_SETTINGS);
-    if (saved) {
-      const settings = JSON.parse(saved);
-      this.readingReminders = settings.readingReminders || this.readingReminders;
-      this.notificationsEnabled = settings.enabled ?? false;
-    }
+    this.notificationsEnabled = this.preferences.notifications.enabled;
   }
 
-  /**
-   * Save notification settings
-   */
-  private saveNotificationSettings() {
-    const settings = {
+  private async saveNotificationSettings() {
+    await this.preferencesService.setNotifications({
       enabled: this.notificationsEnabled,
-      readingReminders: this.readingReminders,
-    };
-    localStorage.setItem(STORAGE_KEYS.NOTIFICATION_SETTINGS, JSON.stringify(settings));
+    });
   }
 
   /**
@@ -527,15 +509,30 @@ export class SettingsPage implements OnInit, OnDestroy {
    * Update reminder time
    */
   async onReminderTimeChange(reminder: ReadingReminder, event: CustomEvent) {
-    reminder.time = event.detail.value as string;
-    this.hasChanges = true;
+    let timeValue = event.detail.value;
 
-    if (reminder.enabled) {
-      // Reschedule with new time
-      await this.notificationService.scheduleReadingReminder(reminder);
+    if (Array.isArray(timeValue)) {
+      timeValue = timeValue[0];
     }
 
-    this.saveNotificationSettings();
+    if (timeValue && typeof timeValue === 'string') {
+      if (timeValue.includes('T')) {
+        const date = new Date(timeValue);
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        reminder.time = `${hours}:${minutes}`;
+      } else {
+        reminder.time = timeValue.substring(0, 5);
+      }
+
+      this.hasChanges = true;
+
+      if (reminder.enabled) {
+        await this.notificationService.scheduleReadingReminder(reminder);
+      }
+
+      this.saveNotificationSettings();
+    }
   }
 
   /**

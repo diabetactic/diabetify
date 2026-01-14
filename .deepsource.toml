@@ -1,12 +1,7 @@
 version = 1
 
-# DeepSource Configuration for Diabetify
-# Angular 21 + Ionic 8 + TypeScript 5.9 + Vitest
-
-# Test coverage reporting (uploads from CI)
 test_coverage_enabled = true
 
-# Files that are tests (helps DeepSource understand code structure)
 test_patterns = [
   "src/**/*.spec.ts",
   "src/**/*.test.ts",
@@ -15,7 +10,6 @@ test_patterns = [
   "maestro/**"
 ]
 
-# Files to exclude from analysis (applies to ALL analyzers including test-coverage)
 exclude_patterns = [
   # Build outputs
   "www/**",
@@ -25,17 +19,15 @@ exclude_patterns = [
   # Dependencies
   "node_modules/**",
 
-  # Android build artifacts
+  # Android/iOS build artifacts
   "android/.gradle/**",
   "android/build/**",
   "android/app/build/**",
   "android/capacitor-cordova-android-plugins/build/**",
-
-  # iOS artifacts (if added later)
   "ios/Pods/**",
   "ios/build/**",
 
-  # Test files (console.log, any, mocks are acceptable in tests)
+  # Test files (console.log, any, mocks are acceptable)
   "**/*.spec.ts",
   "**/*.test.ts",
   "**/tests/**",
@@ -43,80 +35,73 @@ exclude_patterns = [
   "playwright/**",
   "maestro/**",
   "src/test-setup/**",
+  "src/test-setup.ts",
 
-  # Dev-only debug components (not production code, don't need coverage)
+  # Dev/debug code (not production)
   "src/app/shared/components/debug-panel/**",
   "src/app/testing/**",
 
-  # Test artifacts
+  # Test/report artifacts
   "coverage/**",
   "playwright/artifacts/**",
   "playwright-report/**",
   "maestro/.maestro/**",
+  "html/**",
 
-  # Generated files
+  # Generated/config files
   "src/polyfills.ts",
   "src/environments/environment.prod.ts",
+  "*.config.js",
+  "*.config.ts",
+  "playwright.config.ts",
+  "vitest.config.ts",
+  "tailwind.config.js",
 
-  # Third-party and vendor files
+  # Vendor/third-party
   "**/vendor/**",
 
-  # Mock infrastructure (intentional patterns - not production code)
+  # Mock infrastructure
   "src/mocks/**",
   "src/setup-polyfills.ts",
 
-  # Angular NgModules (class-as-namespace is legitimate Angular pattern)
+  # Angular NgModules (class-as-namespace pattern)
   "**/*.module.ts",
 
-  # Barrel exports and type-only files (no testable logic)
+  # Type-only files (no testable logic)
   "**/index.ts",
   "**/*.model.ts",
   "**/constants/**",
   "src/app/shared/icons/**",
 
-  # Mock services (intentional mock patterns)
+  # Mock services
   "src/app/core/services/mock-adapter.service.ts",
   "src/app/shared/components/env-badge/**",
 
-  # IDE and editor
+  # IDE/editor
   ".idea/**",
   ".vscode/**",
 
-  # Scripts and config (not production code)
-  "scripts/**",
-  "*.config.js",
-  "*.config.ts"
+  # Scripts
+  "scripts/**"
 ]
 
-# JavaScript/TypeScript Analyzer (primary)
 [[analyzers]]
 name = "javascript"
 enabled = true
 
   [analyzers.meta]
-  # Angular 21 framework support
-  plugins = [
-    "angular"
-  ]
-
-  # Vitest test environment
-  environment = [
-    "vitest",
-    "browser"
-  ]
-
-  # TypeScript version
+  plugins = ["angular"]
+  environment = ["vitest", "browser"]
   dialect = "typescript"
 
-# Test Coverage Analyzer
-# DISABLED: DeepSource's exclude_patterns don't affect coverage calculation
-# correctly. Coverage is calculated against ALL source files in repo, not just
-# those matching include patterns. This causes 79% local coverage to show as
-# ~13% in DeepSource. See: https://discuss.deepsource.com/t/683
-#
-# TODO: Re-enable after configuring coverage threshold in DeepSource dashboard
-# or when DeepSource adds support for coverage-specific exclude patterns.
-# [[analyzers]]
-# name = "test-coverage"
-# enabled = true
-
+  # Skip rules that don't align with our codebase patterns
+  # Configure additional rules in DeepSource dashboard: Settings > Quality Gates
+  [analyzers.meta.skip_doc_coverage]
+  # Logger service legitimately uses console methods
+  skip_functions = [
+    "writeLog",
+    "warn",
+    "error", 
+    "debug",
+    "info"
+  ]

@@ -8,7 +8,6 @@ import {
   IonToolbar,
   IonButtons,
   IonButton,
-  IonIcon,
   IonTitle,
   IonContent,
   IonItem,
@@ -28,6 +27,7 @@ import { CreateAppointmentRequest, AppointmentQueueState } from '@models/appoint
 import { TranslationService } from '@services/translation.service';
 import { LoggerService } from '@services/logger.service';
 import { ROUTES } from '@core/constants';
+import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-appointment-create',
@@ -41,7 +41,6 @@ import { ROUTES } from '@core/constants';
     IonToolbar,
     IonButtons,
     IonButton,
-    IonIcon,
     IonTitle,
     IonContent,
     IonItem,
@@ -51,6 +50,7 @@ import { ROUTES } from '@core/constants';
     IonLabel,
     IonCheckbox,
     IonTextarea,
+    AppIconComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

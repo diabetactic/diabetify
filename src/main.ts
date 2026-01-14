@@ -1,6 +1,6 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { provideIonicAngular } from '@ionic/angular/standalone';
@@ -108,10 +108,31 @@ import { APP_ROUTES } from './app/app-routing.module';
 import { LucideAngularModule } from 'lucide-angular';
 import { appIcons } from './app/shared/icons/lucide-icons';
 import { provideCharts } from 'ng2-charts';
-import { Chart, DoughnutController, ArcElement, Legend, Tooltip } from 'chart.js';
+import {
+  Chart,
+  DoughnutController,
+  ArcElement,
+  Legend,
+  Tooltip,
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  TimeScale,
+} from 'chart.js';
+import 'chartjs-adapter-date-fns'; // Required side-effect import for TimeScale
 
-// Optimize Chart.js bundle - only register used components
-Chart.register(DoughnutController, ArcElement, Legend, Tooltip);
+Chart.register(
+  DoughnutController,
+  ArcElement,
+  Legend,
+  Tooltip,
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  TimeScale
+);
 
 // Ensure Ionic web components can resolve their asset path (icons, etc.)
 setAssetPath(window.document.baseURI ?? '/');
@@ -133,7 +154,7 @@ bootstrapApplication(AppComponent, {
     provideAnimations(),
     provideIonicAngular(),
     provideRouter(APP_ROUTES, withPreloading(PreloadAllModules)),
-    provideHttpClient(),
+    provideHttpClient(withInterceptorsFromDi()),
     // Optimized chart config - no default registerables
     provideCharts(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },

@@ -38,7 +38,7 @@ export interface TestUser {
   firstName: string;
   lastName: string;
   role: 'patient' | 'doctor' | 'admin';
-  accountState: 'ACTIVE' | 'PENDING' | 'DISABLED';
+  accountState: 'ACTIVE' | 'DISABLED';
   phone?: string;
   dateOfBirth?: string;
   diabetesType?: '1' | '2' | 'gestational' | 'other';

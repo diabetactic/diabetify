@@ -1,7 +1,7 @@
 import { APIRequestContext } from '@playwright/test';
 import { BACKOFFICE_URL, ADMIN_CREDENTIALS, TIMEOUTS } from '../../config/test-config';
 
-export type HospitalAccountStatus = 'pending' | 'accepted' | 'disabled';
+export type HospitalAccountStatus = string;
 
 export interface QueueStatus {
   isOpen: boolean;
@@ -138,8 +138,27 @@ export class AdminClient {
     }
   }
 
+  private async getUserIdByDni(dni: string): Promise<number> {
+    const response = await this.request.get(`${this.baseUrl}/users/`, {
+      headers: this.authHeaders(),
+      timeout: TIMEOUTS.api,
+    });
+
+    if (!response.ok()) {
+      throw new Error(`Failed to list users: ${response.status()}`);
+    }
+
+    const users = (await response.json()) as Array<{ user_id: number; dni: string }>;
+    const user = users.find(u => u.dni === dni);
+    if (!user) {
+      throw new Error(`User with DNI ${dni} not found`);
+    }
+    return user.user_id;
+  }
+
   async updateHospitalAccountStatus(dni: string, status: HospitalAccountStatus): Promise<void> {
-    const response = await this.request.patch(`${this.baseUrl}/users/${dni}/status`, {
+    const userId = await this.getUserIdByDni(dni);
+    const response = await this.request.patch(`${this.baseUrl}/users/user/${userId}`, {
       headers: {
         ...this.authHeaders(),
         'Content-Type': 'application/json',
@@ -154,7 +173,8 @@ export class AdminClient {
   }
 
   async getUserStatus(dni: string): Promise<UserStatus> {
-    const response = await this.request.get(`${this.baseUrl}/users/${dni}/status`, {
+    const userId = await this.getUserIdByDni(dni);
+    const response = await this.request.get(`${this.baseUrl}/users/user/${userId}`, {
       headers: this.authHeaders(),
       timeout: TIMEOUTS.api,
     });
@@ -163,7 +183,12 @@ export class AdminClient {
       throw new Error(`Failed to get user status for ${dni}: ${response.status()}`);
     }
 
-    return response.json();
+    const user = await response.json();
+    return {
+      dni: user.dni,
+      hospital_account: user.hospital_account,
+      queue_state: undefined,
+    };
   }
 
   async resetTestUser(dni: string): Promise<void> {

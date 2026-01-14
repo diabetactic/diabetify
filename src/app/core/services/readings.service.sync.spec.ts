@@ -30,6 +30,7 @@ import { LocalGlucoseReading } from '@models/glucose-reading.model';
 import { Observable } from 'rxjs';
 import { AuditLogService } from '@services/audit-log.service';
 import { MockDataService } from '@services/mock-data.service';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
 
 // Mock database with sync queue capabilities
 class MockSyncDatabase {
@@ -46,6 +47,7 @@ class MockSyncDatabase {
       }),
       equals: vi.fn().mockReturnValue({
         toArray: vi.fn().mockResolvedValue([]),
+        first: vi.fn().mockResolvedValue(undefined),
       }),
     }),
     get: vi.fn().mockResolvedValue(undefined),
@@ -203,17 +205,32 @@ class MockLoggerService {
   error = vi.fn();
 }
 
+class MockEnvironmentConfigService {
+  private _isMockMode = false;
+  backendMode = 'local';
+
+  get isMockMode(): boolean {
+    return this._isMockMode;
+  }
+
+  setMockMode(value: boolean): void {
+    this._isMockMode = value;
+  }
+}
+
 describe('ReadingsService - Sync Queue Logic', () => {
   let service: ReadingsService;
   let syncService: ReadingsSyncService;
   let mockDb: MockSyncDatabase;
   let mockApiGateway: MockApiGatewayService;
   let mockLogger: MockLoggerService;
+  let mockEnvConfig: MockEnvironmentConfigService;
 
   beforeEach(() => {
     mockDb = new MockSyncDatabase();
     mockApiGateway = new MockApiGatewayService();
     mockLogger = new MockLoggerService();
+    mockEnvConfig = new MockEnvironmentConfigService();
 
     TestBed.configureTestingModule({
       providers: [
@@ -225,7 +242,7 @@ describe('ReadingsService - Sync Queue Logic', () => {
         { provide: DiabetacticDatabase, useValue: mockDb },
         { provide: ApiGatewayService, useValue: mockApiGateway },
         { provide: LoggerService, useValue: mockLogger },
-        // Disable mock backend to use real calculations from test data
+        { provide: EnvironmentConfigService, useValue: mockEnvConfig },
         { provide: MockDataService, useValue: undefined },
         {
           provide: LIVE_QUERY_FN,
@@ -240,9 +257,6 @@ describe('ReadingsService - Sync Queue Logic', () => {
 
     service = TestBed.inject(ReadingsService);
     syncService = TestBed.inject(ReadingsSyncService);
-    // Disable mock mode to test real sync logic
-    (service as any).isMockBackend = false;
-    (syncService as any).isMockBackend = false;
   });
 
   afterEach(() => {
@@ -407,9 +421,7 @@ describe('ReadingsService - Sync Queue Logic', () => {
     });
 
     it('should skip sync and return zero counts when in mock mode', async () => {
-      // Access private property to set mock mode on both services
-      (service as any).isMockBackend = true;
-      (syncService as any).isMockBackend = true;
+      mockEnvConfig.setMockMode(true);
 
       const queueItem = createQueueItem();
       mockDb.addQueueItem(queueItem);
@@ -573,8 +585,7 @@ describe('ReadingsService - Sync Queue Logic', () => {
       'should handle $scenario gracefully',
       async ({ mockResponse, isMockMode, expectApiCall, expectWarning }) => {
         if (isMockMode) {
-          (service as any).isMockBackend = true;
-          (syncService as any).isMockBackend = true;
+          mockEnvConfig.setMockMode(true);
         }
 
         if (mockResponse) {
@@ -698,8 +709,14 @@ describe('ReadingsService - Sync Queue Logic', () => {
         })
       );
 
-      mockDb.readings.filter = vi.fn().mockReturnValue({
-        toArray: vi.fn().mockResolvedValue([localReading]),
+      mockDb.readings.where = vi.fn().mockReturnValue({
+        equals: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue(localReading),
+          toArray: vi.fn().mockResolvedValue([localReading]),
+        }),
+        between: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue([]),
+        }),
       });
 
       await service.fetchFromBackend();

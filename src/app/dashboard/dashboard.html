@@ -9,7 +9,12 @@
         class="dashboard-toolbar-btn"
         [attr.aria-label]="'dashboard.syncNow' | translate"
       >
-        <ion-icon slot="icon-only" name="sync-outline" [class.spinning]="isSyncing"></ion-icon>
+        <app-icon
+          slot="icon-only"
+          name="sync-outline"
+          [class.spinning]="isSyncing"
+          aria-hidden="true"
+        ></app-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

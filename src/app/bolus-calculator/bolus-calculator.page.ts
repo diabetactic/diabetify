@@ -20,7 +20,6 @@ import {
   IonToolbar,
   IonButtons,
   IonButton,
-  IonIcon,
   IonTitle,
   IonContent,
   IonInput,
@@ -28,7 +27,7 @@ import {
 } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { MockDataService, BolusCalculation, MockReading } from '@services/mock-data.service';
+import { MockDataService, BolusCalculation } from '@services/mock-data.service';
 import { BolusSafetyService, SafetyWarning } from '@services/bolus-safety.service';
 import { FoodService } from '@services/food.service';
 import { FoodPickerResult, SelectedFood } from '@models/food.model';
@@ -36,7 +35,7 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
 import { FoodPickerComponent } from '@shared/components/food-picker/food-picker.component';
 import { ConfirmationModalComponent } from '@shared/components/confirmation-modal/confirmation-modal.component';
 import { LoggerService } from '@services/logger.service';
-import { environment } from '@env/environment';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
 
 @Component({
   selector: 'app-bolus-calculator',
@@ -57,7 +56,6 @@ import { environment } from '@env/environment';
     IonToolbar,
     IonButtons,
     IonButton,
-    IonIcon,
     IonTitle,
     IonContent,
     IonInput,
@@ -73,18 +71,15 @@ export class BolusCalculatorPage implements OnInit {
   private bolusSafetyService = inject(BolusSafetyService);
   private modalCtrl = inject(ModalController);
   private toastCtrl = inject(ToastController);
+  private envConfig = inject(EnvironmentConfigService);
 
   calculatorForm: FormGroup;
   calculating = false;
   result: BolusCalculation | null = null;
   isModalOpen = false;
   warnings: SafetyWarning[] = [];
-  recentReadings: MockReading[] = [];
 
-  /** Food picker modal state */
   showFoodPicker = signal(false);
-
-  /** Selected foods from food picker */
   selectedFoods = signal<SelectedFood[]>([]);
 
   constructor(
@@ -99,25 +94,9 @@ export class BolusCalculatorPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.getRecentReadings();
-
-    // Keep template bindings (e.g. disabled state) in sync under OnPush.
-    // Ionic web components + Playwright fills can otherwise update the form
-    // without triggering Angular's default change detection.
     this.calculatorForm.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.cdr.markForCheck());
-  }
-
-  getRecentReadings(): void {
-    const since = new Date();
-    since.setHours(since.getHours() - 4);
-    this.mockData
-      .getReadings(since)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(readings => {
-        this.recentReadings = readings;
-      });
   }
 
   /**
@@ -190,17 +169,14 @@ export class BolusCalculatorPage implements OnInit {
         })
       );
 
-      this.warnings = this.bolusSafetyService.checkSafetyGuardrails(
-        calculation,
-        this.recentReadings
-      );
+      this.warnings = this.bolusSafetyService.checkSafetyGuardrails(calculation);
 
       this.bolusSafetyService.logAuditEvent('Bolus Calculation', {
         calculation,
         warnings: this.warnings,
       });
 
-      const blockOnWarnings = environment.backendMode !== 'mock';
+      const blockOnWarnings = !this.envConfig.isMockMode;
       if (this.warnings.length > 0 && blockOnWarnings) {
         // In non-mock backends, require explicit confirmation before displaying the result.
         await this.presentConfirmationModal(calculation);
@@ -261,8 +237,13 @@ export class BolusCalculatorPage implements OnInit {
     this.cdr.detectChanges();
   }
 
-  goBack() {
-    this.navCtrl.navigateBack('/tabs/dashboard');
+  async goBack(): Promise<void> {
+    const modal = await this.modalCtrl.getTop();
+    if (modal) {
+      await modal.dismiss();
+    } else {
+      this.navCtrl.navigateBack('/tabs/dashboard');
+    }
   }
 
   get glucoseError(): string {

@@ -1,6 +1,7 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy, inject } from '@angular/core';
 
-import { environment, BackendMode } from '@env/environment';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
+import { BackendMode } from '@env/environment';
 
 /**
  * Environment Badge Component
@@ -74,8 +75,10 @@ import { environment, BackendMode } from '@env/environment';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EnvBadgeComponent {
-  readonly mode: BackendMode = environment.backendMode;
-  readonly showBadge = environment.features?.showEnvBadge ?? false;
+  private envConfig = inject(EnvironmentConfigService);
+
+  readonly mode: BackendMode = this.envConfig.backendMode;
+  readonly showBadge = this.envConfig.features?.showEnvBadge ?? false;
 
   get modeLabel(): string {
     switch (this.mode) {

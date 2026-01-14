@@ -8,6 +8,12 @@ import { of, throwError } from 'rxjs';
 import { AppointmentService } from '@services/appointment.service';
 import { ApiGatewayService, ApiResponse } from '@services/api-gateway.service';
 import { TranslationService } from '@services/translation.service';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
+
+class MockEnvironmentConfigService {
+  isMockMode = false;
+  backendMode = 'local';
+}
 
 import {
   Appointment,
@@ -75,12 +81,11 @@ describe('AppointmentService', () => {
         AppointmentService,
         { provide: ApiGatewayService, useValue: apiGatewaySpy },
         { provide: TranslationService, useValue: translationSpy },
+        { provide: EnvironmentConfigService, useClass: MockEnvironmentConfigService },
       ],
     });
 
     service = TestBed.inject(AppointmentService);
-    // Force non-mock mode to test API gateway calls
-    (service as any).isMockMode = false;
 
     apiGateway = TestBed.inject(ApiGatewayService) as Mock<ApiGatewayService>;
     translationService = TestBed.inject(TranslationService) as Mock<TranslationService>;

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, of, delay } from 'rxjs';
-import { environment } from '@env/environment';
+import { EnvironmentConfigService } from '@core/config/environment-config.service';
 import { LoggerService } from './logger.service';
 
 export interface MockUser {
@@ -88,7 +88,11 @@ export class MockDataService {
     lowGlucoseThreshold: 70,
   };
 
-  private readonly isMockMode = environment.backendMode === 'mock';
+  private envConfig = inject(EnvironmentConfigService);
+
+  get isMockMode(): boolean {
+    return this.envConfig.isMockMode;
+  }
 
   private readings: MockReading[] = [
     {

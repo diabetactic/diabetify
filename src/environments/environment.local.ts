@@ -10,11 +10,10 @@ export type BackendMode = 'mock' | 'local' | 'cloud';
 
 function getLocalBaseUrl(): string {
   if (Capacitor.isNativePlatform()) {
-    const platform = Capacitor.getPlatform();
-    if (platform === 'android') {
-      return 'http://10.0.2.2:8000'; // Android emulator
-    }
-    return 'http://localhost:8000'; // iOS
+    // Use your PC's local IP for physical devices on the same WiFi network
+    // Change this IP to match your PC's local IP address
+    const PC_LOCAL_IP = '192.168.0.9';
+    return `http://${PC_LOCAL_IP}:8000`;
   }
   return 'http://localhost:8000'; // Web (Docker API gateway)
 }

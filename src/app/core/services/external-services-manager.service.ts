@@ -103,8 +103,8 @@ export class ExternalServicesManager implements OnDestroy {
   public readonly state: Observable<ExternalServicesState> = this.state$.asObservable();
 
   private healthCheckInterval?: Subscription;
+  private networkListenerHandle?: import('@capacitor/core').PluginListenerHandle;
 
-  // Service response cache
   private responseCache = new Map<string, { data: unknown; timestamp: number }>();
 
   constructor(
@@ -148,15 +148,12 @@ export class ExternalServicesManager implements OnDestroy {
     });
     this.updateState({ isOnline: status.connected });
 
-    // Listen for network changes
-    Network.addListener('networkStatusChange', status => {
+    this.networkListenerHandle = await Network.addListener('networkStatusChange', status => {
       this.updateState({ isOnline: status.connected });
 
       if (status.connected) {
-        // Network restored, check all services
         this.performHealthCheck();
       } else {
-        // Network lost, mark all services as unhealthy
         this.markAllServicesUnhealthy('Network connection lost');
       }
     });
@@ -731,6 +728,7 @@ export class ExternalServicesManager implements OnDestroy {
    */
   public ngOnDestroy(): void {
     this.stopHealthCheckInterval();
+    this.networkListenerHandle?.remove();
     this.state$.complete();
   }
 }

@@ -1,13 +1,11 @@
 @if (!isLoading && filteredCount > 0) {
   <div class="border-b border-[var(--ion-color-light-shade)] px-4 py-3 pb-2">
-    <ion-text color="medium">
-      <p class="m-0 text-center text-[13px]">
-        {{ 'readings.showing' | translate }} {{ filteredCount }} {{ 'readings.of' | translate }}
-        {{ totalCount }} {{ 'readings.readings' | translate }}
-        @if (hasActiveFilters) {
-          <span> ({{ 'readings.filtered' | translate }})</span>
-        }
-      </p>
-    </ion-text>
+    <p class="text-base-content/60 dark:text-base-content/80 m-0 text-center text-[13px]">
+      {{ 'readings.showing' | translate }} {{ filteredCount }} {{ 'readings.of' | translate }}
+      {{ totalCount }} {{ 'readings.readings' | translate }}
+      @if (hasActiveFilters) {
+        <span> ({{ 'readings.filtered' | translate }})</span>
+      }
+    </p>
   </div>
 }

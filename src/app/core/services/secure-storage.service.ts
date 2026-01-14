@@ -22,6 +22,7 @@ import { Preferences } from '@capacitor/preferences';
 export class SecureStorageService {
   private isInitialized = false;
   private initPromise: Promise<void> | null = null;
+  private useSecureStorage = false; // Only true if SecureStorage actually works
 
   // Migration flags
   private readonly MIGRATION_COMPLETE_KEY = 'secure_storage_migration_v1';
@@ -37,24 +38,57 @@ export class SecureStorageService {
   private async initialize(): Promise<void> {
     if (this.isInitialized) return;
 
+    const testKey = '__secure_storage_test__';
+    const testValue = 'test_' + Date.now();
+
     try {
       const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
-
-      // Test that secure storage is working
-      const testKey = '__secure_storage_test__';
-      await SecureStorage.set(testKey, 'test');
+      await SecureStorage.set(testKey, testValue);
+      const retrieved = await SecureStorage.get(testKey);
       await SecureStorage.remove(testKey);
 
-      this.isInitialized = true;
-      this.logger.info('SecureStorage', 'Initialized successfully with hardware-backed encryption');
+      if (retrieved === testValue) {
+        this.useSecureStorage = true;
+        this.logger.info('SecureStorage', 'Initialized with hardware-backed encryption');
+      } else {
+        throw new Error('Verification failed: value mismatch');
+      }
     } catch (error) {
-      this.logger.warn(
-        'SecureStorage',
-        'Hardware-backed storage unavailable, using fallback',
-        error
-      );
-      // On web or if plugin fails, we'll fall back to Preferences
-      // This is less secure but maintains functionality
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const isCorrupted =
+        errorMsg.includes('invalid format') || errorMsg.includes('could not decrypt');
+
+      if (isCorrupted) {
+        this.logger.warn('SecureStorage', 'Corrupted data detected, clearing and retrying');
+        try {
+          const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
+          await SecureStorage.clear();
+          await SecureStorage.set(testKey, testValue);
+          const retrieved = await SecureStorage.get(testKey);
+          await SecureStorage.remove(testKey);
+
+          if (retrieved === testValue) {
+            this.useSecureStorage = true;
+            this.logger.info(
+              'SecureStorage',
+              'Recovered and initialized with hardware-backed encryption'
+            );
+          } else {
+            throw new Error('Verification failed after recovery');
+          }
+        } catch (retryError) {
+          this.useSecureStorage = false;
+          this.logger.warn(
+            'SecureStorage',
+            'Recovery failed, using Preferences fallback',
+            retryError
+          );
+        }
+      } else {
+        this.useSecureStorage = false;
+        this.logger.warn('SecureStorage', 'Unavailable, using Preferences fallback', error);
+      }
+    } finally {
       this.isInitialized = true;
     }
   }
@@ -78,15 +112,20 @@ export class SecureStorageService {
 
     const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
 
-    try {
-      const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
-      await SecureStorage.set(key, stringValue);
-      this.logger.debug('SecureStorage', `Set key: ${key} (encrypted)`);
-    } catch {
-      // Fallback to Preferences on web
-      this.logger.warn('SecureStorage', `Fallback to Preferences for key: ${key}`);
-      await Preferences.set({ key, value: stringValue });
+    if (this.useSecureStorage) {
+      try {
+        const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
+        await SecureStorage.set(key, stringValue);
+        this.logger.debug('SecureStorage', `Set key: ${key} (encrypted)`);
+        return;
+      } catch (error) {
+        this.logger.warn('SecureStorage', `SecureStorage.set failed, falling back`, error);
+        this.useSecureStorage = false;
+      }
     }
+
+    await Preferences.set({ key, value: stringValue });
+    this.logger.debug('SecureStorage', `Set key: ${key} (Preferences fallback)`);
   }
 
   /**
@@ -97,18 +136,20 @@ export class SecureStorageService {
   async get(key: string): Promise<string | null> {
     await this.waitForInit();
 
-    try {
-      const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
-      const value = await SecureStorage.get(key);
-      // SecureStorage.get returns DataType (string | number | boolean | object) | null
-      // We always store strings, so convert to string if not null
-      if (value === null || value === undefined) return null;
-      return typeof value === 'string' ? value : String(value);
-    } catch {
-      // Fallback to Preferences on web
-      const { value } = await Preferences.get({ key });
-      return value ?? null;
+    if (this.useSecureStorage) {
+      try {
+        const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
+        const value = await SecureStorage.get(key);
+        if (value === null || value === undefined) return null;
+        return typeof value === 'string' ? value : String(value);
+      } catch (error) {
+        this.logger.warn('SecureStorage', `SecureStorage.get failed, falling back`, error);
+        this.useSecureStorage = false;
+      }
     }
+
+    const { value } = await Preferences.get({ key });
+    return value ?? null;
   }
 
   /**
@@ -135,15 +176,19 @@ export class SecureStorageService {
   async remove(key: string): Promise<void> {
     await this.waitForInit();
 
-    try {
-      const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
-      await SecureStorage.remove(key);
-    } catch {
-      // Fallback to Preferences
-      await Preferences.remove({ key });
+    if (this.useSecureStorage) {
+      try {
+        const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
+        await SecureStorage.remove(key);
+        this.logger.debug('SecureStorage', `Removed key: ${key}`);
+        return;
+      } catch {
+        this.useSecureStorage = false;
+      }
     }
 
-    this.logger.debug('SecureStorage', `Removed key: ${key}`);
+    await Preferences.remove({ key });
+    this.logger.debug('SecureStorage', `Removed key: ${key} (Preferences fallback)`);
   }
 
   /**
@@ -191,6 +236,15 @@ export class SecureStorageService {
       return false;
     }
 
+    // Only migrate if SecureStorage is available - otherwise tokens would be lost
+    if (!this.useSecureStorage) {
+      this.logger.warn(
+        'SecureStorage',
+        'Skipping migration - SecureStorage unavailable, tokens will remain in Preferences'
+      );
+      return false;
+    }
+
     this.logger.info('SecureStorage', 'Starting migration from Preferences', {
       keyCount: keys.length,
     });
@@ -203,10 +257,11 @@ export class SecureStorageService {
         const { value } = await Preferences.get({ key });
 
         if (value) {
-          // Write to secure storage
-          await this.set(key, value);
+          // Write to secure storage (only reaches here if useSecureStorage is true)
+          const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
+          await SecureStorage.set(key, value);
 
-          // Remove from insecure storage
+          // Only remove from Preferences after confirmed secure write
           await Preferences.remove({ key });
 
           migratedCount++;

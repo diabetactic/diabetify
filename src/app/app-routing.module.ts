@@ -36,11 +36,6 @@ export const APP_ROUTES: Routes = [
       import('./add-reading/add-reading.module').then(m => m.AddReadingPageModule),
   },
   {
-    path: 'account-pending',
-    loadComponent: () =>
-      import('./account-pending/account-pending.page').then(m => m.AccountPendingPage),
-  },
-  {
     path: 'settings',
     loadChildren: () => import('./settings/settings.module').then(m => m.SettingsModule),
   },
