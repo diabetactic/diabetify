@@ -7,5 +7,11 @@
     "outDir": "../dist/playwright",
     "noEmit": false
   },
-  "include": ["./tests/**/*.ts", "./config/**/*.ts"]
+  "include": [
+    "./tests/**/*.ts",
+    "./config/**/*.ts",
+    "./helpers/**/*.ts",
+    "./fixtures/**/*.ts",
+    "./pages/**/*.ts"
+  ]
 }
