@@ -76,3 +76,9 @@ coordination/orchestration/*
 *.sqlite-wal
 claude-flow
 .auth/
+
+# Midscene.js dump files
+midscene_run/dump
+midscene_run/report
+midscene_run/tmp
+midscene_run/log
