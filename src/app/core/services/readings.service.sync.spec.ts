@@ -122,6 +122,11 @@ class MockSyncDatabase {
       }
       return Promise.resolve();
     }),
+    filter: vi.fn().mockImplementation((predicate: (item: SyncQueueItem) => boolean) => ({
+      toArray: vi
+        .fn()
+        .mockImplementation(() => Promise.resolve(this.syncQueueItems.filter(predicate))),
+    })),
   };
 
   conflicts = {
@@ -313,7 +318,7 @@ describe('ReadingsService - Sync Queue Logic', () => {
       );
     });
 
-    it('should clear queue and process items using 3-phase pattern', async () => {
+    it('should use crash-safe sync pattern', async () => {
       const queueItem = createQueueItem();
       mockDb.addQueueItem(queueItem);
 
@@ -326,8 +331,10 @@ describe('ReadingsService - Sync Queue Logic', () => {
 
       await service.syncPendingReadings();
 
-      // New 3-phase pattern: clear() is called first, then items are processed
-      expect(mockDb.syncQueue.clear).toHaveBeenCalled();
+      // Crash-safe pattern: filter pending items, mark as processing, then delete on success
+      // Should NOT call clear() - items are deleted individually after successful sync
+      expect(mockDb.syncQueue.filter).toHaveBeenCalled();
+      expect(mockDb.syncQueue.delete).toHaveBeenCalled();
     });
 
     it.each([
@@ -375,15 +382,18 @@ describe('ReadingsService - Sync Queue Logic', () => {
 
         await service.syncPendingReadings();
 
-        expect(mockDb.syncQueue.clear).toHaveBeenCalled();
+        // Crash-safe pattern uses filter + individual updates/deletes, not clear + bulkAdd
+        expect(mockDb.syncQueue.filter).toHaveBeenCalled();
 
         if (shouldRetry) {
-          expect(mockDb.syncQueue.bulkAdd).toHaveBeenCalledWith([
+          // Failed items are updated with incremented retryCount (not re-added via bulkAdd)
+          expect(mockDb.syncQueue.update).toHaveBeenCalledWith(
+            expect.any(Number),
             expect.objectContaining({
+              status: 'pending',
               retryCount: expectedRetryCount,
-              lastError: expect.any(String),
-            }),
-          ]);
+            })
+          );
         }
 
         if (expectedWarning) {
@@ -443,8 +453,9 @@ describe('ReadingsService - Sync Queue Logic', () => {
       const result = await service.syncPendingReadings();
 
       // Delete operations are processed but no API call for delete
-      // 3-phase pattern: clear() first, then items are processed
-      expect(mockDb.syncQueue.clear).toHaveBeenCalled();
+      // Crash-safe pattern: filter pending, mark processing, delete after success
+      expect(mockDb.syncQueue.filter).toHaveBeenCalled();
+      expect(mockDb.syncQueue.delete).toHaveBeenCalled();
       expect(result.success).toBe(1);
     });
   });
@@ -740,7 +751,18 @@ describe('ReadingsService - Sync Queue Logic', () => {
 
     it('should resolve conflict with "keep-server"', async () => {
       await service.resolveConflict(conflict, 'keep-server');
-      expect(mockDb.readings.put).toHaveBeenCalledWith({ ...serverReading, synced: true });
+      // Changed from put() to update() to prevent duplicate records
+      // This preserves the local ID while replacing content with server version
+      expect(mockDb.readings.update).toHaveBeenCalledWith(
+        'reading1', // localReading.id
+        expect.objectContaining({
+          value: serverReading.value,
+          units: serverReading.units,
+          time: serverReading.time,
+          backendId: serverReading.backendId,
+          synced: true,
+        })
+      );
       expect(mockDb.conflicts.update).toHaveBeenCalledWith(1, { status: 'resolved' });
       expect(mockDb.auditLog.add).toHaveBeenCalled();
     });
@@ -751,10 +773,13 @@ describe('ReadingsService - Sync Queue Logic', () => {
       expect(mockDb.syncQueue.add).toHaveBeenCalledWith(
         expect.objectContaining({ operation: 'update' })
       );
+      // Server reading is added with new ID and WITHOUT backendId to prevent duplicates
       expect(mockDb.readings.add).toHaveBeenCalledWith(
         expect.objectContaining({
           value: serverReading.value,
           id: expect.stringMatching(/^local_/),
+          backendId: undefined, // Removed to prevent duplicate backendId
+          synced: true, // Server data is already synced
         })
       );
       expect(mockDb.conflicts.update).toHaveBeenCalledWith(1, { status: 'resolved' });

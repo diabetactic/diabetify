@@ -18,8 +18,9 @@ test.describe('Authentication Smoke Tests @smoke @docker', () => {
     await pages.loginPage.passwordInput.fill('wrong_password');
     await pages.loginPage.submitButton.click();
 
-    await pages.loginPage.page.waitForTimeout(2000);
-    await expect(pages.loginPage.page).not.toHaveURL(/\/tabs\//);
+    // Wait for error state: either error message appears or URL stays on login page
+    // Use explicit timeout in assertion instead of waitForTimeout
+    await expect(pages.loginPage.page).not.toHaveURL(/\/tabs\//, { timeout: 5000 });
   });
 
   test('should redirect unauthenticated users to login or welcome', async ({ page }) => {

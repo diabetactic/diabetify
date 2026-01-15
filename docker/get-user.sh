@@ -11,7 +11,7 @@ if [ $# -lt 1 ]; then
     echo "Usage: $0 <dni>"
     echo ""
     echo "Example:"
-    echo "  $0 1000"
+    echo "  $0 40123456"
     exit 1
 fi
 

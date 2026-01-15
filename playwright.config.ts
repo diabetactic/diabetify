@@ -20,11 +20,10 @@ const browserExecutable =
   (existsSync(CHROME_EXECUTABLE) ? CHROME_EXECUTABLE : undefined) ||
   (existsSync(LOCAL_CHROMIUM) ? LOCAL_CHROMIUM : undefined);
 
-// Default backend mode for E2E runs:
-// - Mock mode is used for deterministic UI/Logic testing
-// - Docker mode is used for full end-to-end integration testing
-if (process.env.E2E_MOCK_MODE == null) {
-  process.env.E2E_MOCK_MODE = process.env.E2E_DOCKER_TESTS === 'true' ? 'false' : 'true';
+// E2E tests always run against Docker backend
+// Set E2E_DOCKER_TESTS=true to ensure proper backend configuration
+if (process.env.E2E_DOCKER_TESTS == null) {
+  process.env.E2E_DOCKER_TESTS = 'true';
 }
 
 /**

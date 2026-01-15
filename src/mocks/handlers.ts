@@ -66,8 +66,8 @@ export const seedMockData = (options?: {
 
 // Default test user (matches GatewayUserResponse backend format)
 const DEFAULT_USER: MockUser = {
-  dni: '1000',
-  email: 'test@example.com',
+  dni: '40123456',
+  email: 'test40123456@diabetactic.com',
   name: 'Test',
   surname: 'User',
   blocked: false,
@@ -89,8 +89,14 @@ export const handlers = [
     const password = formData.get('password');
 
     // Valid test credentials
-    if (username === '1000' && password === 'demo123') {
-      mockUser = { ...DEFAULT_USER };
+    const isPrimary = username === '40123456' && password === 'thepassword';
+    const isSecondary = username === '40123457' && password === 'thepassword2';
+    if (isPrimary || isSecondary) {
+      mockUser = {
+        ...DEFAULT_USER,
+        dni: isSecondary ? '40123457' : DEFAULT_USER.dni,
+        email: isSecondary ? 'test40123457@diabetactic.com' : DEFAULT_USER.email,
+      };
       return HttpResponse.json({
         access_token: 'mock-access-token-' + Date.now(),
         refresh_token: 'mock-refresh-token-' + Date.now(),
@@ -178,7 +184,7 @@ export const handlers = [
       reading_type,
       notes,
       timestamp: new Date().toISOString(),
-      user_id: mockUser?.dni || '1000',
+      user_id: mockUser?.dni || '40123456',
     };
 
     mockReadings.unshift(newReading);
@@ -242,7 +248,7 @@ export const handlers = [
 
     mockAppointment = {
       id: generateId(),
-      user_id: mockUser?.dni || '1000',
+      user_id: mockUser?.dni || '40123456',
       status: 'PENDING',
       created_at: new Date().toISOString(),
     };

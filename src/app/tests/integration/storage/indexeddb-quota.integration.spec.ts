@@ -278,15 +278,16 @@ describe('Integration - IndexedDB Quota Management', () => {
 
       await db.readings.bulkAdd([...unsyncedOld, ...syncedOld]);
 
-      // Pruning only deletes by time, NOT by synced status
-      // This is the current behavior of pruneOldData()
+      // Pruning now only deletes SYNCED old data
+      // This preserves unsynced data to prevent data loss for offline readings
       await db.pruneOldData(60);
 
       const remaining = await db.readings.toArray();
 
-      // NOTE: Current implementation does not preserve unsynced data
-      // This test documents expected vs actual behavior
-      expect(remaining.length).toBe(0); // Both types are deleted
+      // FIXED: Implementation now preserves unsynced data
+      // Only synced old data is deleted, unsynced is preserved for eventual upload
+      expect(remaining.length).toBe(10); // Only unsynced remain
+      expect(remaining.every(r => r.synced === false)).toBe(true);
     });
 
     it('should handle empty database during cleanup', async () => {
@@ -303,11 +304,12 @@ describe('Integration - IndexedDB Quota Management', () => {
   // =========================================================================
 
   describe('Data Prioritization', () => {
-    it('should keep newest data when storage is limited', async () => {
+    it('should keep newest data when storage is limited, preserving unsynced', async () => {
       const totalReadings = 200;
       const keepDays = 30;
 
       // Create data distributed over time
+      // All readings are SYNCED for this test to verify pruning works correctly
       const readings: LocalGlucoseReading[] = Array.from({ length: totalReadings }, (_, i) => {
         const daysAgo = Math.floor((i / totalReadings) * 100); // 0-100 days ago
         return {
@@ -317,7 +319,7 @@ describe('Integration - IndexedDB Quota Management', () => {
           units: 'mg/dL',
           type: 'smbg',
           time: new Date(Date.now() - daysAgo * 24 * 3600000).toISOString(),
-          synced: i % 2 === 0,
+          synced: true, // All synced - pruning should delete old ones
           userId: 'test-user',
           status: 'normal',
           localStoredAt: new Date().toISOString(),
@@ -332,11 +334,11 @@ describe('Integration - IndexedDB Quota Management', () => {
       // Verify that only the most recent remain
       const remaining = await db.readings.orderBy('time').reverse().toArray();
 
-      // All remaining readings must be from the last 30 days
+      // All remaining synced readings must be from the last 30 days
       const cutoff = new Date(Date.now() - keepDays * 24 * 3600000).toISOString();
-      const oldDataCount = remaining.filter(r => r.time < cutoff).length;
+      const oldSyncedDataCount = remaining.filter(r => r.time < cutoff && r.synced).length;
 
-      expect(oldDataCount).toBe(0);
+      expect(oldSyncedDataCount).toBe(0);
       expect(remaining.length).toBeGreaterThan(0);
       expect(remaining.length).toBeLessThan(totalReadings);
     });

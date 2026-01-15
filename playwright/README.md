@@ -4,28 +4,21 @@ Comprehensive end-to-end testing suite for Diabetactic mobile app.
 
 ## Test Projects
 
-The configuration supports multiple test environments:
+The configuration uses an optimized mobile-first setup:
 
 ### 1. **mobile-chromium** (Primary)
 
 - Mobile-optimized web testing
-- Simulates Pixel 5 device (390x844 viewport)
+- iPhone-sized viewport (390x844)
 - Touch events enabled
 - Default for `pnpm run test:e2e`
 
 ### 2. **desktop-chromium** (Secondary)
 
 - Desktop web testing
-- 1280x720 viewport
+- 1440x900 viewport
 - For responsive design validation
-- Run with: `pnpm run test:e2e -- --project=desktop-chromium`
-
-### 3. **mobile-webkit** (Optional)
-
-- iPhone 14 simulation
-- WebKit engine
-- iOS-specific testing
-- Run with: `pnpm run test:e2e -- --project=mobile-webkit`
+- Only runs for visual regression tests (see `playwright.config.ts`)
 
 ## Running Tests
 
@@ -39,12 +32,12 @@ pnpm run test:e2e
 pnpm run test:e2e:headed
 
 # Run a specific test file
-pnpm run test:e2e -- profile-edit.spec.ts
+pnpm run test:e2e -- playwright/tests/smoke/auth.smoke.spec.ts
 ```
 
 ### Docker Backend E2E Tests
 
-These tests run against a local Docker backend, providing a stable and reproducible environment.
+These tests run against a local Docker backend.
 
 **Prerequisites:**
 
@@ -54,8 +47,8 @@ These tests run against a local Docker backend, providing a stable and reproduci
 **Running the Tests:**
 
 ```bash
-# Run all Docker E2E tests
-pnpm run test:e2e -- --grep "@docker"
+# Run all Docker-tagged tests
+pnpm run test:e2e
 ```
 
 ### Visual Regression Tests
@@ -64,55 +57,28 @@ Visual regression tests capture screenshots and compare them against baseline im
 
 ```bash
 # Run visual regression tests
-E2E_DOCKER_TESTS=true pnpm run test:e2e -- --grep "@docker-visual"
+pnpm run test:e2e -- --grep "@visual"
 
 # Update baseline snapshots (when UI intentionally changes)
-E2E_DOCKER_TESTS=true pnpm run test:e2e -- --grep "@docker-visual" --update-snapshots
+pnpm run test:e2e -- --grep "@visual" --update-snapshots
 
 # Update specific test snapshots
-E2E_DOCKER_TESTS=true pnpm run test:e2e -- --grep "Dashboard - main view" --update-snapshots
+pnpm run test:e2e -- --grep "Visual Regression - Pages" --update-snapshots
 ```
 
 **Note**: Visual regression tests will fail when the UI changes. This is expected behavior. Review the diff images in `playwright/artifacts/` to verify the changes are intentional, then update snapshots.
 
-**Test Orchestration:**
-
-The Docker E2E tests are now self-contained and manage their own setup and teardown. The following utilities are used to orchestrate the test environment:
-
-- **`DockerTestManager`**: Ensures that the Docker services (`api_gateway` and `glucoserver`) are healthy before any tests are run.
-- **`DatabaseSeeder`**: Handles all database operations, including resetting the database, seeding it with test data, and cleaning up after the tests have completed.
-
-Each test is run in a separate database transaction, which is rolled back after the test is complete. This ensures that each test is independent and that the database is in a clean state for every test.
-
 ## Test Categories
 
-### Core Functionality
+Tests are organized under `playwright/tests/`:
 
-- `e2e-flow.spec.ts` - Full user journey
-- `appointment-full-flow.spec.ts` - Appointment state machine
-- `docker-backend-e2e.spec.ts` - Docker backend integration
-
-### UI & Accessibility
-
-- `accessibility-audit.spec.ts` - WCAG compliance
-- `settings-theme.spec.ts` - Theme switching
-
-### Features
-
-- `profile-edit.spec.ts` - Profile editing
-- `settings-persistence.spec.ts` - Settings persistence
-- `error-handling.spec.ts` - Error scenarios
+- `smoke/` (auth, API health, navigation)
+- `functional/` (feature flows)
+- `visual/` (screenshots)
 
 ## Environment Variables
 
 ```bash
-# Test credentials
-E2E_TEST_USERNAME=1000
-E2E_TEST_PASSWORD=tuvieja
-
-# Enable Docker tests
-E2E_DOCKER_TESTS=true
-
 # Custom server
 E2E_PORT=4200
 E2E_HOST=localhost
@@ -124,17 +90,13 @@ E2E_BASE_URL=http://localhost:4200
 ```
 playwright/
 ├── tests/
-│   ├── accessibility-audit.spec.ts
-│   ├── appointment-full-flow.spec.ts
-│   ├── docker-backend-e2e.spec.ts
-│   ├── e2e-flow.spec.ts
-│   ├── error-handling.spec.ts
-│   ├── profile-edit.spec.ts
-│   ├── settings-persistence.spec.ts
-│   └── settings-theme.spec.ts
+│   ├── smoke/
+│   ├── functional/
+│   └── visual/
+├── fixtures/
+├── pages/
 ├── helpers/
-│   ├── docker-test-manager.ts
-│   └── database-seeder.ts
+├── config/
 ├── artifacts/
 └── README.md
 ```

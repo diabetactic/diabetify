@@ -2,12 +2,14 @@
 import '../../../test-setup';
 
 import { type Mock } from 'vitest';
-import { TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
+import { TestBed, fakeAsync, flushMicrotasks } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { HTTP_INTERCEPTORS, HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { of, throwError, BehaviorSubject, timer, firstValueFrom } from 'rxjs';
+import { of, throwError, BehaviorSubject, firstValueFrom } from 'rxjs';
 import { delay } from 'rxjs/operators';
+
+// Note: 5xx retry tests removed - retry logic is now in retry.interceptor.ts
 
 import { AuthInterceptor } from './auth.interceptor';
 import { LocalAuthService, LocalAuthState } from '@services/local-auth.service';
@@ -306,111 +308,8 @@ describe('AuthInterceptor', () => {
     }));
   });
 
-  describe('5xx Server Error Retry with Exponential Backoff', () => {
-    // Spy on calculateBackoffDelay to return timer(0) for instant retries in tests
-    beforeEach(() => {
-      vi.spyOn(interceptor as any, 'calculateBackoffDelay').mockReturnValue(timer(0));
-    });
-
-    it('should retry on 500 Internal Server Error', fakeAsync(() => {
-      const mockResponse = { data: 'success after retry' };
-      let response: any = null;
-
-      httpClient.get(testUrl).subscribe(res => {
-        response = res;
-      });
-
-      // First attempt - 500 error
-      const req1 = httpMock.expectOne(testUrl);
-      req1.flush(null, { status: 500, statusText: 'Internal Server Error' });
-
-      // Advance timer(0) to trigger retry
-      tick(0);
-
-      // Retry succeeds
-      const req2 = httpMock.expectOne(testUrl);
-      req2.flush(mockResponse);
-
-      tick(0);
-      expect(response).toEqual(mockResponse);
-    }));
-
-    it('should retry on 502 Bad Gateway', fakeAsync(() => {
-      let success = false;
-
-      httpClient.get(testUrl).subscribe({
-        next: () => {
-          success = true;
-        },
-      });
-
-      const req1 = httpMock.expectOne(testUrl);
-      req1.flush(null, { status: 502, statusText: 'Bad Gateway' });
-
-      tick(0);
-
-      const req2 = httpMock.expectOne(testUrl);
-      req2.flush({ data: 'success' });
-
-      tick(0);
-      expect(success).toBe(true);
-    }));
-
-    it('should retry on 503 Service Unavailable', fakeAsync(() => {
-      let success = false;
-
-      httpClient.get(testUrl).subscribe({
-        next: () => {
-          success = true;
-        },
-      });
-
-      const req1 = httpMock.expectOne(testUrl);
-      req1.flush(null, { status: 503, statusText: 'Service Unavailable' });
-
-      tick(0);
-
-      const req2 = httpMock.expectOne(testUrl);
-      req2.flush({ data: 'success' });
-
-      tick(0);
-      expect(success).toBe(true);
-    }));
-
-    it('should give up after max retries (3 attempts)', fakeAsync(() => {
-      let capturedError: HttpErrorResponse | null = null;
-
-      httpClient.get(testUrl).subscribe({
-        next: () => fail('should have failed after max retries'),
-        error: (error: HttpErrorResponse) => {
-          capturedError = error;
-        },
-      });
-
-      // Initial attempt
-      const req1 = httpMock.expectOne(testUrl);
-      req1.flush(null, { status: 500, statusText: 'Internal Server Error' });
-      tick(0);
-
-      // Retry 1
-      const req2 = httpMock.expectOne(testUrl);
-      req2.flush(null, { status: 500, statusText: 'Internal Server Error' });
-      tick(0);
-
-      // Retry 2
-      const req3 = httpMock.expectOne(testUrl);
-      req3.flush(null, { status: 500, statusText: 'Internal Server Error' });
-      tick(0);
-
-      // Retry 3 (final - maxRetries=3 means 3 retries after the first attempt)
-      const req4 = httpMock.expectOne(testUrl);
-      req4.flush(null, { status: 500, statusText: 'Internal Server Error' });
-      tick(0);
-
-      expect(capturedError).not.toBeNull();
-      expect(capturedError!.status).toBe(500);
-    }));
-  });
+  // Note: 5xx retry tests removed - retry logic moved to retry.interceptor.ts
+  // See retry.interceptor.spec.ts for comprehensive retry behavior tests
 
   describe('POST/PUT/DELETE Requests', () => {
     it('should handle POST requests with 401 error', async () => {

@@ -36,7 +36,9 @@ import { Subject, takeUntil } from 'rxjs';
 import { ReadingsService } from '@services/readings.service';
 import { LoggerService } from '@services/logger.service';
 import { ThemeService } from '@services/theme.service';
-import { GlucoseStatistics, LocalGlucoseReading } from '@models/glucose-reading.model';
+import { PreferencesService } from '@services/preferences.service';
+import { ReadingsMapperService } from '@services/readings-mapper.service';
+import { GlucoseStatistics, LocalGlucoseReading, GlucoseUnit } from '@models/glucose-reading.model';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
 @Component({
@@ -74,10 +76,13 @@ export class TrendsPage implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly themeService = inject(ThemeService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly preferencesService = inject(PreferencesService);
+  private readonly mapper = inject(ReadingsMapperService);
 
   selectedPeriod = signal<'week' | 'month' | 'all'>('week');
   statistics = signal<GlucoseStatistics | null>(null);
   loading = signal(true);
+  preferredUnit = signal<GlucoseUnit>('mg/dL');
   isDarkMode = signal(false);
 
   // Chart color configuration for light/dark modes
@@ -149,7 +154,7 @@ export class TrendsPage implements OnInit, OnDestroy {
         y: {
           title: {
             display: true,
-            text: 'Glucose (mg/dL)',
+            text: `Glucose (${this.preferredUnit()})`,
             color: colors.text,
           },
           ticks: {
@@ -190,6 +195,17 @@ export class TrendsPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
+    // Subscribe to preferences to get user's preferred glucose unit
+    this.preferencesService
+      .getPreferences()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(prefs => {
+        this.preferredUnit.set(prefs.glucoseUnit);
+        // Update chart options when unit changes
+        this.lineChartOptions = this.getChartOptions(this.isDarkMode());
+        this.cdr.markForCheck();
+      });
+
     // Subscribe to theme changes
     this.themeService.isDark$.pipe(takeUntil(this.destroy$)).subscribe(isDark => {
       this.isDarkMode.set(isDark);
@@ -254,11 +270,13 @@ export class TrendsPage implements OnInit, OnDestroy {
 
   private updateLineChart(readings: LocalGlucoseReading[]) {
     const colors = this.isDarkMode() ? this.chartColors.dark : this.chartColors.light;
+    const targetUnit = this.preferredUnit();
 
     if (readings && readings.length > 0) {
       const chartData = readings.map(reading => ({
         x: new Date(reading.time).getTime(),
-        y: reading.value,
+        // Convert reading value to user's preferred unit for consistent display
+        y: this.mapper.convertToUnit(reading.value, reading.units, targetUnit),
       }));
 
       this.lineChartData = {

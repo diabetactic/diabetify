@@ -143,12 +143,12 @@ describe('DemoDataService', () => {
   // ============================================================================
 
   describe('getDemoAppointments', () => {
-    it('should return demo appointments for user 1000', async () => {
+    it('should return demo appointments for user 40123456', async () => {
       const result = await firstValueFrom(service.getDemoAppointments());
 
       expect(result).toHaveLength(3);
       result.forEach((appt: Appointment) => {
-        expect(appt.user_id).toBe(1000);
+        expect(appt.user_id).toBe(40123456);
         expect(appt).toHaveProperty('appointment_id');
         expect(appt).toHaveProperty('glucose_objective');
         expect(appt).toHaveProperty('insulin_type');
@@ -367,18 +367,18 @@ describe('DemoDataService', () => {
       expect(loggerSpy.info).toHaveBeenCalledWith('DemoData', 'Demo data seeded successfully');
       expect(loggerSpy.info).toHaveBeenCalledWith(
         'DemoData',
-        'Demo credentials: demo@diabetactic.com / demo123'
+        'Demo credentials: 40123456 / thepassword'
       );
     });
 
-    it('should create demo user with ID 1000', async () => {
+    it('should create demo user with ID 40123456', async () => {
       await service.seedDemoData();
 
       const demoUserStr = localStorage.getItem('demoUser');
       expect(demoUserStr).toBeDefined();
       const demoUser = JSON.parse(demoUserStr!);
-      expect(demoUser.id).toBe('1000');
-      expect(demoUser.dni).toBe('1000');
+      expect(demoUser.id).toBe('40123456');
+      expect(demoUser.dni).toBe('40123456');
     });
 
     it('should store readings and appointments', async () => {

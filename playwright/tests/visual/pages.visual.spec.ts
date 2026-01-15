@@ -19,7 +19,17 @@ async function prepareForScreenshot(page: import('@playwright/test').Page): Prom
       }
     `,
   });
-  await page.waitForTimeout(300);
+  await page.evaluate(async () => {
+    if (document.fonts?.ready) {
+      try {
+        await document.fonts.ready;
+      } catch {
+        // Ignore font readiness errors in test environment
+      }
+    }
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+  });
 }
 
 test.describe('Visual Regression - Pages @visual @docker', () => {

@@ -76,7 +76,7 @@ export class AppointmentsPage extends BasePage {
         el.scrollIntoView({ behavior: 'instant', block: 'center' });
         el.click();
       });
-      await this.page.waitForTimeout(300);
+      await this.waitForFrames();
     }
   }
 

@@ -5,7 +5,7 @@
 # Removes test-tagged data to maintain clean state.
 #
 # Usage:
-#   ./cleanup-test-data.sh           # Clean test data for user 1000
+#   ./cleanup-test-data.sh           # Clean test data for user 40123456
 #   ./cleanup-test-data.sh <dni>     # Clean test data for specific user
 #
 # =============================================================================
@@ -18,8 +18,8 @@ cd "$SCRIPT_DIR"
 API_URL="http://localhost:8000"
 BACKOFFICE_URL="http://localhost:8001"
 
-TEST_USER_DNI="${1:-1000}"
-TEST_USER_PASSWORD="tuvieja"
+TEST_USER_DNI="${1:-40123456}"
+TEST_USER_PASSWORD="thepassword"
 
 echo "🧹 Cleaning up test data for user $TEST_USER_DNI..."
 echo ""

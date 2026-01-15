@@ -1250,7 +1250,7 @@
       "disableAll": "Disable All Mocks",
       "clearData": "Clear Mock Data",
       "tip": "💡 Tip: Mock mode lets you test the app offline without real data.",
-      "demoCredentials": "Demo credentials: demo@diabetactic.com / demo123"
+      "demoCredentials": "Demo credentials: 40123456 / thepassword"
     },
     "actions": {
       "dataManagement": "Data Management",
@@ -1327,7 +1327,7 @@
     "tagline": "Your digital health companion",
     "demoHint": {
       "testAccount": "Test Account:",
-      "message": "DNI: 1000 | Password: tuvieja"
+      "message": "DNI: 40123456 | Password: thepassword"
     },
     "username": {
       "label": "DNI",

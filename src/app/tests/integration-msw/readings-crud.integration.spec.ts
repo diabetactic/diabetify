@@ -7,12 +7,12 @@
  * Note: ReadingsService uses IndexedDB (Dexie) for local storage
  * and syncs with the backend. These tests focus on the sync behavior.
  */
-import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { server, resetMockState } from '../../../mocks/server';
+import { setupMSW, server } from '@test-setup/msw-setup';
 import { http, HttpResponse } from 'msw';
 
 // Services under test
@@ -29,21 +29,13 @@ describe('Readings CRUD Integration (MSW)', () => {
   let readingsService: ReadingsService;
   let authService: LocalAuthService;
 
-  beforeAll(() => {
-    server.listen({ onUnhandledRequest: 'warn' });
-  });
+  setupMSW();
 
   afterEach(async () => {
-    server.resetHandlers();
-    resetMockState();
     // Clear local IndexedDB data between tests
     if (readingsService) {
       await readingsService.clearAllReadings();
     }
-  });
-
-  afterAll(() => {
-    server.close();
   });
 
   beforeEach(async () => {
@@ -66,7 +58,7 @@ describe('Readings CRUD Integration (MSW)', () => {
     await readingsService.clearAllReadings();
 
     // Login before each test (required for authenticated endpoints)
-    await firstValueFrom(authService.login('1000', 'tuvieja', false));
+    await firstValueFrom(authService.login('40123456', 'thepassword', false));
   });
 
   describe('Create Reading', () => {

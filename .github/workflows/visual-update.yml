@@ -16,7 +16,7 @@ jobs:
   update-baselines:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref || github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -31,7 +31,7 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Update Visual Baselines
-        run: pnpm test:visual:update --project=mobile-chromium
+        run: pnpm run test:e2e:visual:update --project=mobile-chromium
         env:
           E2E_SKIP_SERVER: false
 

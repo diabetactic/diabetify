@@ -4,12 +4,12 @@
  * Tests the complete authentication flow using MSW to mock the backend API.
  * These tests verify that components, services, and HTTP layer work together.
  */
-import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { server, resetMockState } from '../../../mocks/server';
+import { setupMSW, server } from '@test-setup/msw-setup';
 import { http, HttpResponse } from 'msw';
 
 // Services under test
@@ -25,23 +25,15 @@ describe('Auth Workflow Integration (MSW)', () => {
   let authService: LocalAuthService;
   let tokenStorage: TokenStorageService;
 
-  beforeAll(() => {
-    server.listen({ onUnhandledRequest: 'warn' });
-  });
+  setupMSW();
 
   afterEach(async () => {
-    server.resetHandlers();
-    resetMockState();
     // Clear token storage between tests
     try {
       await tokenStorage?.clearAll();
     } catch {
       // Ignore cleanup errors if not initialized
     }
-  });
-
-  afterAll(() => {
-    server.close();
   });
 
   beforeEach(async () => {
@@ -62,8 +54,8 @@ describe('Auth Workflow Integration (MSW)', () => {
 
   describe('Login Flow', () => {
     it('should successfully login with valid credentials', async () => {
-      // Act: Login with test credentials (from handlers.ts: 1000/tuvieja)
-      const result = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      // Act: Login with test credentials (from handlers.ts: 40123456/thepassword)
+      const result = await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Assert: Should have successful result
       expect(result).toBeDefined();
@@ -76,7 +68,7 @@ describe('Auth Workflow Integration (MSW)', () => {
     // actual credential validation, which requires a real backend.
     it('should complete login flow with any credentials in mock mode', async () => {
       // In mock mode, any credentials result in successful login
-      const result = await firstValueFrom(authService.login('1000', 'anypassword', false));
+      const result = await firstValueFrom(authService.login('40123456', 'anypassword', false));
 
       // Mock mode always succeeds - this is expected behavior for local development
       expect(result.success).toBe(true);
@@ -94,7 +86,7 @@ describe('Auth Workflow Integration (MSW)', () => {
 
     it('should have access token after successful login', async () => {
       // Act: Login
-      const result = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      const result = await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Assert: Should be authenticated after successful login
       expect(result.success).toBe(true);
@@ -106,7 +98,7 @@ describe('Auth Workflow Integration (MSW)', () => {
   describe('Token Refresh Flow', () => {
     it('should attempt token refresh after login', async () => {
       // Arrange: Login first to get initial tokens
-      const loginResult = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      const loginResult = await firstValueFrom(authService.login('40123456', 'thepassword', false));
       expect(loginResult.success).toBe(true);
 
       // Act: Attempt refresh - may fail in test environment due to SecureStorage mock
@@ -129,7 +121,7 @@ describe('Auth Workflow Integration (MSW)', () => {
   describe('User Profile Flow', () => {
     it('should return user in login result', async () => {
       // Act: Login
-      const loginResult = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      const loginResult = await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Assert: Should have user data in result
       expect(loginResult.success).toBe(true);
@@ -140,7 +132,7 @@ describe('Auth Workflow Integration (MSW)', () => {
 
     it('should have correct user properties in login result', async () => {
       // Act: Login
-      const loginResult = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      const loginResult = await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Assert: Should have expected properties (mock data has different values)
       // In mock mode, auth service uses internal mock data, not MSW handlers
@@ -152,7 +144,7 @@ describe('Auth Workflow Integration (MSW)', () => {
   describe('Logout Flow', () => {
     it('should clear authentication state on logout', async () => {
       // Arrange: Login first
-      const loginResult = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      const loginResult = await firstValueFrom(authService.login('40123456', 'thepassword', false));
       expect(loginResult.success).toBe(true);
 
       // Act: Logout
@@ -165,7 +157,7 @@ describe('Auth Workflow Integration (MSW)', () => {
 
     it('should emit unauthenticated state after logout', async () => {
       // Arrange: Login first
-      const loginResult = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      const loginResult = await firstValueFrom(authService.login('40123456', 'thepassword', false));
       expect(loginResult.success).toBe(true);
 
       // Act: Logout
@@ -190,7 +182,7 @@ describe('Auth Workflow Integration (MSW)', () => {
       );
 
       // In mock mode, login will still succeed because HTTP is bypassed
-      const result = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      const result = await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Verify the service completed without throwing
       expect(result).toBeDefined();
@@ -206,7 +198,7 @@ describe('Auth Workflow Integration (MSW)', () => {
       );
 
       // In mock mode, login will still succeed because HTTP is bypassed
-      const result = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      const result = await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Verify the service completed without throwing
       expect(result).toBeDefined();
@@ -224,7 +216,7 @@ describe('Auth Workflow Integration (MSW)', () => {
       });
 
       // Login
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Wait for observable to emit
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -237,7 +229,7 @@ describe('Auth Workflow Integration (MSW)', () => {
 
     it('should emit auth state changes on logout', async () => {
       // Login first
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       const states: boolean[] = [];
 

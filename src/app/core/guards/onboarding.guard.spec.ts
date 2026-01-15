@@ -40,7 +40,7 @@ describe('OnboardingGuard', () => {
   // Helper para crear un perfil de usuario mock
   const createMockProfile = (hasCompletedOnboarding: boolean): UserProfile =>
     ({
-      id: '1000',
+      id: '40123456',
       name: 'Test User',
       email: 'test@example.com',
       hasCompletedOnboarding,

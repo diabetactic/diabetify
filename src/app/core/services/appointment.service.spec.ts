@@ -34,7 +34,7 @@ describe('AppointmentService', () => {
   // Mock appointments
   const mockAppointment1: Appointment = {
     appointment_id: 1,
-    user_id: 1000,
+    user_id: 40123456,
     glucose_objective: 120,
     insulin_type: 'rapid',
     dose: 10,
@@ -51,7 +51,7 @@ describe('AppointmentService', () => {
 
   const mockAppointment2: Appointment = {
     appointment_id: 2,
-    user_id: 1000,
+    user_id: 40123456,
     glucose_objective: 110,
     insulin_type: 'long',
     dose: 20,
@@ -517,7 +517,7 @@ describe('AppointmentService', () => {
     const createdAppointment: Appointment = {
       ...createRequest,
       appointment_id: 3,
-      user_id: 1000,
+      user_id: 40123456,
       other_motive: null,
       another_treatment: null,
     };
@@ -566,7 +566,7 @@ describe('AppointmentService', () => {
           const fullAppointment: Appointment = {
             ...fullRequest,
             appointment_id: 4,
-            user_id: 1000,
+            user_id: 40123456,
           };
 
           const response: ApiResponse<Appointment> = {
@@ -595,7 +595,7 @@ describe('AppointmentService', () => {
           const multiMotiveAppointment: Appointment = {
             ...multiMotiveRequest,
             appointment_id: 5,
-            user_id: 1000,
+            user_id: 40123456,
             other_motive: null,
             another_treatment: null,
           };

@@ -8,13 +8,12 @@
 
 import { test as setup, expect, request } from '@playwright/test';
 import { STORAGE_STATE_PATH } from './storage-paths';
-import { PRIMARY_USER, isMockMode, API_URL } from '../config/test-config';
+import { PRIMARY_USER, API_URL } from '../config/test-config';
 import { ApiClient } from '../helpers/api/client';
 
 setup('authenticate', async ({ page }) => {
   const username = process.env['E2E_TEST_USERNAME'] || PRIMARY_USER.dni;
-  const password =
-    process.env['E2E_TEST_PASSWORD'] || (isMockMode ? 'demo123' : PRIMARY_USER.password);
+  const password = process.env['E2E_TEST_PASSWORD'] || PRIMARY_USER.password;
 
   // Navigate to login
   await page.goto('/login', { waitUntil: 'domcontentloaded' });
@@ -124,7 +123,7 @@ setup('authenticate', async ({ page }) => {
   await page.waitForTimeout(200);
 
   // Seed sample readings via API so dashboard/trends have data to display
-  if (!isMockMode && authToken) {
+  if (authToken) {
     try {
       const apiContext = await request.newContext();
       const apiClient = new ApiClient(apiContext, API_URL);

@@ -16,6 +16,14 @@ export abstract class BasePage {
     this.page = page;
   }
 
+  protected async waitForFrames(frames = 2): Promise<void> {
+    await this.page.evaluate(async frameCount => {
+      for (let i = 0; i < frameCount; i++) {
+        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+      }
+    }, frames);
+  }
+
   /**
    * Wait for Ionic components to fully hydrate.
    * Disables the mobile preview frame on desktop for full viewport access.
@@ -35,7 +43,7 @@ export abstract class BasePage {
       }
     }
 
-    await this.page.waitForTimeout(100);
+    await this.waitForFrames();
   }
 
   /**
@@ -166,7 +174,7 @@ export abstract class BasePage {
       }
     });
 
-    await this.page.waitForTimeout(250);
+    await this.waitForFrames();
   }
 
   /**
@@ -191,7 +199,7 @@ export abstract class BasePage {
     await itemLocator.evaluate((el: HTMLElement) => {
       el.scrollIntoView({ behavior: 'instant', block: 'center' });
     });
-    await this.page.waitForTimeout(200);
+    await this.waitForFrames();
 
     const opened = await itemLocator.evaluate(async (el, openSide) => {
       const sliding = el as unknown as { open?: (side: string) => Promise<void> };
@@ -203,7 +211,10 @@ export abstract class BasePage {
     }, side);
 
     if (opened) {
-      await this.page.waitForTimeout(300);
+      const options = itemLocator.locator('ion-item-options').first();
+      await options.waitFor({ state: 'visible', timeout: 2000 }).catch(async () => {
+        await this.waitForFrames();
+      });
       return;
     }
 
@@ -215,7 +226,10 @@ export abstract class BasePage {
       await this.page.mouse.down();
       await this.page.mouse.move(endX, box.y + box.height / 2);
       await this.page.mouse.up();
-      await this.page.waitForTimeout(300);
+      const options = itemLocator.locator('ion-item-options').first();
+      await options.waitFor({ state: 'visible', timeout: 2000 }).catch(async () => {
+        await this.waitForFrames();
+      });
     }
   }
 }

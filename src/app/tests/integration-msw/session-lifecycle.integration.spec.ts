@@ -4,12 +4,12 @@
  * Tests session timeout, persistence across refreshes, and cleanup.
  * Critical for user experience and data security.
  */
-import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { server, resetMockState } from '../../../mocks/server';
+import { setupMSW, server } from '@test-setup/msw-setup';
 import { http, HttpResponse } from 'msw';
 
 // Services under test
@@ -24,13 +24,9 @@ describe('Session Lifecycle Integration (MSW)', () => {
   let authService: LocalAuthService;
   let tokenStorage: TokenStorageService;
 
-  beforeAll(() => {
-    server.listen({ onUnhandledRequest: 'warn' });
-  });
+  setupMSW();
 
   afterEach(async () => {
-    server.resetHandlers();
-    resetMockState();
     try {
       await tokenStorage?.clearAll();
     } catch {
@@ -38,10 +34,6 @@ describe('Session Lifecycle Integration (MSW)', () => {
     }
     vi.clearAllTimers();
     vi.useRealTimers();
-  });
-
-  afterAll(() => {
-    server.close();
   });
 
   beforeEach(async () => {
@@ -62,7 +54,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
 
   describe('Session Start', () => {
     it('should start a new session on login', async () => {
-      const result = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      const result = await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       expect(result.success).toBe(true);
       expect(result.user).toBeDefined();
@@ -71,14 +63,14 @@ describe('Session Lifecycle Integration (MSW)', () => {
     });
 
     it('should initialize auth state as authenticated after login', async () => {
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       const isAuth = await firstValueFrom(authService.isAuthenticated());
       expect(isAuth).toBe(true);
     });
 
     it('should populate user data after login', async () => {
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       const user = authService.getCurrentUser();
       expect(user).not.toBeNull();
@@ -92,7 +84,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
         states.push(state.isAuthenticated);
       });
 
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
       await new Promise(resolve => setTimeout(resolve, 50));
 
       sub.unsubscribe();
@@ -105,7 +97,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
   describe('Session End (Logout)', () => {
     it('should clear auth state on logout', async () => {
       // Login first
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
       expect(await firstValueFrom(authService.isAuthenticated())).toBe(true);
 
       // Logout
@@ -118,7 +110,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
 
     it('should clear user data on logout', async () => {
       // Login
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
       expect(authService.getCurrentUser()).not.toBeNull();
 
       // Logout
@@ -131,7 +123,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
 
     it('should emit unauthenticated state on logout', async () => {
       // Login
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       const finalStates: boolean[] = [];
       const sub = authService.authState$.subscribe(state => {
@@ -150,13 +142,13 @@ describe('Session Lifecycle Integration (MSW)', () => {
 
     it('should allow re-login after logout', async () => {
       // Login
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Logout
       await authService.logout();
 
       // Re-login
-      const result = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      const result = await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       expect(result.success).toBe(true);
       expect(await firstValueFrom(authService.isAuthenticated())).toBe(true);
@@ -166,7 +158,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
   describe('Session Persistence', () => {
     it('should persist session state across auth service access', async () => {
       // Login with first service instance
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Get a new reference (same singleton)
       const authService2 = TestBed.inject(LocalAuthService);
@@ -177,7 +169,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
     });
 
     it('should have consistent user across multiple calls', async () => {
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       const user1 = authService.getCurrentUser();
       const user2 = authService.getCurrentUser();
@@ -191,7 +183,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
   describe('Session Timeout Handling', () => {
     it('should handle server-side session invalidation', async () => {
       // Login
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Simulate server rejecting all requests (session invalidated)
       server.use(
@@ -214,7 +206,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
 
     it('should handle network disconnection gracefully', async () => {
       // Login
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Simulate network failure
       server.use(
@@ -240,7 +232,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
   describe('Remember Me Functionality', () => {
     it('should handle login with remember me flag', async () => {
       const result = await firstValueFrom(
-        authService.login('1000', 'tuvieja', true) // rememberMe = true
+        authService.login('40123456', 'thepassword', true) // rememberMe = true
       );
 
       expect(result.success).toBe(true);
@@ -252,7 +244,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
 
     it('should handle login without remember me flag', async () => {
       const result = await firstValueFrom(
-        authService.login('1000', 'tuvieja', false) // rememberMe = false
+        authService.login('40123456', 'thepassword', false) // rememberMe = false
       );
 
       expect(result.success).toBe(true);
@@ -266,7 +258,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
   describe('Multi-Tab Session Behavior', () => {
     it('should maintain session in single TestBed environment', async () => {
       // Login
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Multiple auth checks should be consistent
       const checks = await Promise.all([
@@ -295,7 +287,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
     // This test verifies that multiple login attempts work correctly.
     it('should handle multiple login attempts correctly in mock mode', async () => {
       // First login attempt - succeeds in mock mode
-      const firstResult = await firstValueFrom(authService.login('1000', 'anypassword', false));
+      const firstResult = await firstValueFrom(authService.login('40123456', 'anypassword', false));
       expect(firstResult.success).toBe(true);
 
       // Should be authenticated
@@ -310,7 +302,9 @@ describe('Session Lifecycle Integration (MSW)', () => {
       expect(isAuthAfterLogout).toBe(false);
 
       // Second login attempt - also succeeds in mock mode
-      const secondResult = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      const secondResult = await firstValueFrom(
+        authService.login('40123456', 'thepassword', false)
+      );
       expect(secondResult.success).toBe(true);
 
       // Should be authenticated again
@@ -326,7 +320,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
       expect(beforeLogin.isAuthenticated).toBe(false);
 
       // Login
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // After login
       const afterLogin = await firstValueFrom(authService.authState$);

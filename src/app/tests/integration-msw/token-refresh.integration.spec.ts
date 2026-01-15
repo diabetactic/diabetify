@@ -4,12 +4,12 @@
  * Tests token expiration detection, automatic refresh, and retry behavior.
  * Critical for ensuring users don't get logged out unexpectedly.
  */
-import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient, HttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { firstValueFrom, take } from 'rxjs';
-import { server, resetMockState } from '../../../mocks/server';
+import { setupMSW, server } from '@test-setup/msw-setup';
 import { http, HttpResponse, delay } from 'msw';
 
 // Services under test
@@ -25,23 +25,15 @@ describe('Token Refresh Integration (MSW)', () => {
   let tokenStorage: TokenStorageService;
   let httpClient: HttpClient;
 
-  beforeAll(() => {
-    server.listen({ onUnhandledRequest: 'warn' });
-  });
+  setupMSW();
 
   afterEach(async () => {
-    server.resetHandlers();
-    resetMockState();
     try {
       await tokenStorage?.clearAll();
     } catch {
       // Ignore cleanup errors during teardown
     }
     vi.clearAllTimers();
-  });
-
-  afterAll(() => {
-    server.close();
   });
 
   beforeEach(async () => {
@@ -64,7 +56,7 @@ describe('Token Refresh Integration (MSW)', () => {
   describe('Token Expiration Detection', () => {
     it('should detect when access token is expired', async () => {
       // Login first
-      const loginResult = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      const loginResult = await firstValueFrom(authService.login('40123456', 'thepassword', false));
       expect(loginResult.success).toBe(true);
 
       // Simulate expired token on the server
@@ -86,7 +78,7 @@ describe('Token Refresh Integration (MSW)', () => {
 
     it('should handle 401 response gracefully', async () => {
       // Login
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Simulate 401 on any request
       server.use(
@@ -109,7 +101,7 @@ describe('Token Refresh Integration (MSW)', () => {
   describe('Token Refresh Flow', () => {
     it('should refresh tokens with valid refresh token', async () => {
       // Setup: Login first
-      const loginResult = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      const loginResult = await firstValueFrom(authService.login('40123456', 'thepassword', false));
       expect(loginResult.success).toBe(true);
 
       // Mock successful refresh
@@ -150,7 +142,7 @@ describe('Token Refresh Integration (MSW)', () => {
 
     it('should clear session on refresh failure', async () => {
       // Login first
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Mock refresh failure
       server.use(
@@ -177,7 +169,7 @@ describe('Token Refresh Integration (MSW)', () => {
   describe('Retry After Refresh', () => {
     it('should retry original request after successful refresh', async () => {
       // Login
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       let firstRequestFailed = false;
 
@@ -189,7 +181,7 @@ describe('Token Refresh Integration (MSW)', () => {
             return HttpResponse.json({ detail: 'Token expired' }, { status: 401 });
           }
           return HttpResponse.json({
-            dni: '1000',
+            dni: '40123456',
             email: 'test@example.com',
             name: 'Test',
             surname: 'User',
@@ -216,7 +208,7 @@ describe('Token Refresh Integration (MSW)', () => {
   describe('Concurrent Request Handling', () => {
     it('should handle multiple concurrent 401 responses', async () => {
       // Login
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Mock 401 for multiple endpoints
       server.use(
@@ -242,7 +234,7 @@ describe('Token Refresh Integration (MSW)', () => {
 
     it('should not attempt multiple simultaneous refreshes', async () => {
       // Login
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       let _refreshCallCount = 0;
       server.use(
@@ -281,7 +273,7 @@ describe('Token Refresh Integration (MSW)', () => {
       });
 
       // Login
-      await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       // Wait for state propagation
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -302,7 +294,7 @@ describe('Token Refresh Integration (MSW)', () => {
 
     it('should emit token update events', async () => {
       // Login to get initial tokens
-      const result = await firstValueFrom(authService.login('1000', 'tuvieja', false));
+      const result = await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
       expect(result.success).toBe(true);
 

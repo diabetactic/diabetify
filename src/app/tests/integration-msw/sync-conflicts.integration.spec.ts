@@ -4,12 +4,12 @@
  * Tests offline queue processing, conflict resolution, and data consistency.
  * Critical for ensuring reliable data sync in mobile environments.
  */
-import { describe, it, expect, beforeEach, beforeAll, afterAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient, HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { server, resetMockState } from '../../../mocks/server';
+import { setupMSW, server } from '@test-setup/msw-setup';
 import { http, HttpResponse, delay } from 'msw';
 
 // Services under test
@@ -31,13 +31,9 @@ describe('Sync Conflicts Integration (MSW)', () => {
   let readingsService: ReadingsService;
   let httpClient: HttpClient;
 
-  beforeAll(() => {
-    server.listen({ onUnhandledRequest: 'warn' });
-  });
+  setupMSW();
 
   afterEach(async () => {
-    server.resetHandlers();
-    resetMockState();
     try {
       await tokenStorage?.clearAll();
     } catch {
@@ -48,10 +44,6 @@ describe('Sync Conflicts Integration (MSW)', () => {
     } catch {
       // Ignore cleanup errors during teardown
     }
-  });
-
-  afterAll(() => {
-    server.close();
   });
 
   beforeEach(async () => {
@@ -73,7 +65,7 @@ describe('Sync Conflicts Integration (MSW)', () => {
     httpClient = TestBed.inject(HttpClient);
 
     // Login for authenticated tests
-    await firstValueFrom(authService.login('1000', 'tuvieja', false));
+    await firstValueFrom(authService.login('40123456', 'thepassword', false));
   });
 
   describe('Network Transition Handling', () => {
@@ -218,7 +210,7 @@ describe('Sync Conflicts Integration (MSW)', () => {
               reading_type: 'OTRO',
               notes: '',
               timestamp: new Date().toISOString(),
-              user_id: '1000',
+              user_id: '40123456',
             },
             { status: 201 }
           );
@@ -374,7 +366,7 @@ describe('Sync Conflicts Integration (MSW)', () => {
               reading_type: 'OTRO',
               notes: '',
               timestamp: new Date().toISOString(),
-              user_id: '1000',
+              user_id: '40123456',
             },
             { status: 201 }
           );
@@ -414,7 +406,7 @@ describe('Sync Conflicts Integration (MSW)', () => {
               reading_type: 'OTRO',
               notes: '',
               timestamp: new Date().toISOString(),
-              user_id: '1000',
+              user_id: '40123456',
             },
             { status: 201 }
           );

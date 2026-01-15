@@ -18,9 +18,13 @@ import {
   clearCachedAuthToken,
   getGlucoseReadings,
 } from '../../helpers/backend-services.helper';
+import { createServer, type Server } from 'node:http';
 
 // Test execution state
 let shouldRun = false;
+
+let timeoutTestServer: Server | null = null;
+let timeoutTestServerUrl: string | null = null;
 
 beforeAll(async () => {
   const backendAvailable = await isBackendAvailable();
@@ -66,7 +70,7 @@ describe('Backend Integration - Error Recovery', () => {
         headers,
       });
 
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       expect(response.status).toBe(404);
     });
 
@@ -89,7 +93,7 @@ describe('Backend Integration - Error Recovery', () => {
       );
 
       // May return 400 (bad request) or 422 (validation error)
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       expect([400, 422, 500]).toContain(response.status);
     });
 
@@ -104,7 +108,7 @@ describe('Backend Integration - Error Recovery', () => {
       });
 
       // Should return 405 Method Not Allowed or 404
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       expect([404, 405]).toContain(response.status);
     });
   });
@@ -114,20 +118,60 @@ describe('Backend Integration - Error Recovery', () => {
   // =========================================================================
 
   describe('NETWORK TIMEOUT SIMULATION', () => {
+    beforeAll(async () => {
+      if (!shouldRun) return;
+
+      timeoutTestServer = createServer((req, res) => {
+        const requestUrl = new URL(req.url ?? '/', 'http://localhost');
+        const delayParam = requestUrl.searchParams.get('delayMs');
+        const parsedDelay = delayParam == null ? NaN : Number(delayParam);
+        const delayMs = Number.isFinite(parsedDelay) ? parsedDelay : 250;
+
+        setTimeout(() => {
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+          res.end('ok');
+        }, delayMs);
+      });
+
+      await new Promise<void>((resolve, reject) => {
+        timeoutTestServer!.once('error', reject);
+        timeoutTestServer!.listen(0, '127.0.0.1', () => resolve());
+      });
+
+      const address = timeoutTestServer.address();
+      if (address == null || typeof address === 'string') {
+        throw new Error('Failed to determine timeout test server address');
+      }
+
+      timeoutTestServerUrl = `http://127.0.0.1:${address.port}`;
+    }, 10000);
+
+    afterAll(async () => {
+      if (timeoutTestServer == null) return;
+
+      await new Promise<void>(resolve => {
+        timeoutTestServer!.close(() => resolve());
+      });
+
+      timeoutTestServer = null;
+      timeoutTestServerUrl = null;
+    });
+
     conditionalIt(
       'should timeout on requests with AbortController',
       async () => {
-        const token = await loginTestUser(TEST_USERS.user1);
-        const headers = await getAuthHeadersForFetch(token);
+        if (timeoutTestServerUrl == null) {
+          throw new Error('Timeout test server not initialized');
+        }
 
-        // Create AbortController with very short timeout (1ms)
+        // Abort a request to a local slow server to avoid flaking the real backend connection pool.
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1);
+        const timeoutId = setTimeout(() => controller.abort(), 10);
 
         try {
-          await fetch(`${SERVICE_URLS.apiGateway}/glucose/mine`, {
+          await fetch(`${timeoutTestServerUrl}/slow?delayMs=250`, {
             method: 'GET',
-            headers,
             signal: controller.signal,
           });
 
@@ -147,16 +191,17 @@ describe('Backend Integration - Error Recovery', () => {
     conditionalIt(
       'should handle graceful timeout with longer delay',
       async () => {
-        const token = await loginTestUser(TEST_USERS.user1);
-        const _headers = await getAuthHeadersForFetch(token);
+        if (timeoutTestServerUrl == null) {
+          throw new Error('Timeout test server not initialized');
+        }
 
         const controller = new AbortController();
         const timeoutMs = 100; // 100ms timeout
         const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
         try {
-          // Try a request that should complete before timeout
-          const response = await fetch(`${SERVICE_URLS.apiGateway}/docs`, {
+          // Try a request that should complete before timeout (local fast server)
+          const response = await fetch(`${timeoutTestServerUrl}/fast?delayMs=10`, {
             method: 'GET',
             signal: controller.signal,
           });
@@ -164,7 +209,7 @@ describe('Backend Integration - Error Recovery', () => {
           clearTimeout(timeoutId);
 
           // Docs request should be fast and complete
-          expect(response.ok).toBeTrue();
+          expect(response.ok).toBe(true);
         } catch (error: any) {
           // If timeout, also valid (depends on system latency)
           clearTimeout(timeoutId);
@@ -195,7 +240,7 @@ describe('Backend Integration - Error Recovery', () => {
         },
       });
 
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       expect([401, 403, 500]).toContain(response.status);
 
       const errorText = await response.text();
@@ -211,7 +256,7 @@ describe('Backend Integration - Error Recovery', () => {
         },
       });
 
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       expect([401, 403]).toContain(response.status);
     });
 
@@ -223,7 +268,7 @@ describe('Backend Integration - Error Recovery', () => {
         },
       });
 
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       expect([401, 403, 500]).toContain(response.status);
     });
 
@@ -236,7 +281,7 @@ describe('Backend Integration - Error Recovery', () => {
         },
       });
 
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       expect([401, 403]).toContain(response.status);
     });
   });
@@ -267,7 +312,7 @@ describe('Backend Integration - Error Recovery', () => {
         }
       );
 
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       expect([400, 422]).toContain(response.status);
     });
 
@@ -292,7 +337,7 @@ describe('Backend Integration - Error Recovery', () => {
         }
       );
 
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       expect([400, 422]).toContain(response.status);
     });
 
@@ -317,7 +362,7 @@ describe('Backend Integration - Error Recovery', () => {
         }
       );
 
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       expect([400, 422]).toContain(response.status);
     });
 
@@ -334,7 +379,7 @@ describe('Backend Integration - Error Recovery', () => {
         // Without query params
       });
 
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       expect([400, 422]).toContain(response.status);
     });
   });
@@ -366,9 +411,9 @@ describe('Backend Integration - Error Recovery', () => {
 
         // Backend may or may not have rate limiting implemented
         if (rateLimited) {
-          expect(rateLimited).toBeTrue();
+          expect(rateLimited).toBe(true);
         } else {
-          expect(allOk).toBeTrue();
+          expect(allOk).toBe(true);
         }
       },
       30000
@@ -397,7 +442,7 @@ describe('Backend Integration - Error Recovery', () => {
         }
 
         // Test passes regardless - we're testing graceful handling
-        expect(true).toBeTrue();
+        expect(true).toBe(true);
       },
       30000
     );

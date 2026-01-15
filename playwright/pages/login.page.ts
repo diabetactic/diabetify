@@ -1,6 +1,6 @@
 import { Page, expect } from '@playwright/test';
 import { BasePage } from './base.page';
-import { PRIMARY_USER, isMockMode, type TestUser } from '../config/test-config';
+import { PRIMARY_USER, type TestUser } from '../config/test-config';
 
 export interface LoginCredentials {
   username: string;
@@ -50,10 +50,7 @@ export class LoginPage extends BasePage {
   }
 
   private getDefaultPassword(): string {
-    if (process.env['E2E_TEST_PASSWORD']) {
-      return process.env['E2E_TEST_PASSWORD'];
-    }
-    return isMockMode ? 'demo123' : PRIMARY_USER.password;
+    return process.env['E2E_TEST_PASSWORD'] || PRIMARY_USER.password;
   }
 
   private async completeOnboarding(): Promise<void> {

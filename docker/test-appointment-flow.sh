@@ -15,7 +15,7 @@
 #
 # Environment:
 #   BACKOFFICE_API_URL - Override backoffice URL (auto-detected)
-#   USER_ID - Default user ID (default: 1000)
+#   USER_ID - Default user ID (default: 40123456)
 #
 # =============================================================================
 
@@ -33,8 +33,8 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Default values
-DEFAULT_USER_ID="1000"
-DEFAULT_PASSWORD="tuvieja"
+DEFAULT_USER_ID="40123456"
+DEFAULT_PASSWORD="thepassword"
 HEROKU_URL="https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com"
 LOCAL_URL="http://localhost:8001"
 

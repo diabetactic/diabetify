@@ -43,20 +43,24 @@ global.fetch = mockFetch;
 describe('Backend Services Helper - Constants', () => {
   it('should have test user credentials defined', () => {
     expect(TEST_USER).toEqual({
-      dni: '1000',
-      password: 'tuvieja',
-      email: 'test@test.com',
+      dni: '40123456',
+      password: 'thepassword',
+      email: 'test40123456@diabetactic.com',
     });
   });
 
-  it('should have multiple test users (all pointing to user1)', () => {
+  it('should have primary and secondary test users configured', () => {
     expect(TEST_USERS.user1).toEqual({
-      dni: '1000',
-      password: 'tuvieja',
-      email: '1@example.com',
+      dni: '40123456',
+      password: 'thepassword',
+      email: 'test40123456@diabetactic.com',
     });
-    expect(TEST_USERS.user2.dni).toBe('1000');
-    expect(TEST_USERS.user8.dni).toBe('1000');
+    expect(TEST_USERS.user2).toEqual({
+      dni: '40123457',
+      password: 'thepassword2',
+      email: 'test40123457@diabetactic.com',
+    });
+    expect(TEST_USERS.user8.dni).toBe('40123456');
   });
 
   it('should have service URLs configured', () => {
@@ -219,10 +223,10 @@ describe('Backend Services Helper - Authentication', () => {
         json: async () => ({ access_token: 'token', token_type: 'Bearer' }),
       });
 
-      await loginTestUser({ dni: '1000', password: 'pass', email: 'test@test.com' });
+      await loginTestUser({ dni: '40123456', password: 'pass', email: 'test@test.com' });
 
       const callArgs = mockFetch.mock.calls[0][1];
-      expect(callArgs.body).toContain('username=1000');
+      expect(callArgs.body).toContain('username=40123456');
       expect(callArgs.body).toContain('password=pass');
     });
 

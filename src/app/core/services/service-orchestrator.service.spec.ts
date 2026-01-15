@@ -251,7 +251,7 @@ describe('ServiceOrchestrator', () => {
       appointments.getAppointment.mockReturnValue(
         of({
           appointment_id: 123,
-          user_id: 1000,
+          user_id: 40123456,
           glucose_objective: 120,
           insulin_type: 'rapid',
           dose: 10,

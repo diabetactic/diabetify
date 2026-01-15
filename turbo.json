@@ -99,15 +99,11 @@
       "outputs": ["coverage/**", "test-results/**", "junit.xml"],
       "inputs": ["src/**/*.ts", "src/**/*.spec.ts", "vitest.config.ts", "src/setup-vitest.ts"]
     },
-    "test:e2e:mock": {
+    "test:e2e": {
       "outputs": ["playwright-report/**", "test-results/**", "playwright/artifacts/**"],
       "inputs": ["playwright/**", "playwright.config.ts", "www/**"]
     },
-    "test:e2e:docker": {
-      "outputs": ["playwright-report/**", "test-results/**", "playwright/artifacts/**"],
-      "inputs": ["playwright/**", "playwright.config.ts", "www/**"]
-    },
-    "test:e2e:docker:headed": {
+    "test:e2e:headed": {
       "cache": false,
       "outputs": ["playwright-report/**", "test-results/**"],
       "inputs": ["playwright/**", "playwright.config.ts", "www/**"]

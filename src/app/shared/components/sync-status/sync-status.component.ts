@@ -123,6 +123,10 @@ export class SyncStatusComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private networkListener: ReturnType<typeof Network.addListener> | null = null;
 
+  // Store window event handlers for cleanup
+  private onlineHandler: (() => void) | null = null;
+  private offlineHandler: (() => void) | null = null;
+
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
@@ -139,6 +143,14 @@ export class SyncStatusComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.networkListener?.then(listener => listener.remove());
+
+    // Clean up window event listeners to prevent memory leaks
+    if (this.onlineHandler) {
+      window.removeEventListener('online', this.onlineHandler);
+    }
+    if (this.offlineHandler) {
+      window.removeEventListener('offline', this.offlineHandler);
+    }
   }
 
   private async checkNetworkStatus(): Promise<void> {
@@ -159,9 +171,11 @@ export class SyncStatusComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Web fallback listeners
-    window.addEventListener('online', () => this.updateState(true));
-    window.addEventListener('offline', () => this.updateState(false));
+    // Web fallback listeners - store handlers for cleanup in ngOnDestroy
+    this.onlineHandler = () => this.updateState(true);
+    this.offlineHandler = () => this.updateState(false);
+    window.addEventListener('online', this.onlineHandler);
+    window.addEventListener('offline', this.offlineHandler);
   }
 
   private async checkPendingSyncItems(): Promise<void> {

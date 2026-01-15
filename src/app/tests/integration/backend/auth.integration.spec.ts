@@ -73,7 +73,7 @@ describe('Backend Integration - Auth', () => {
         body: formData.toString(),
       });
 
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       expect([401, 403]).toContain(response.status);
     });
 
@@ -91,7 +91,7 @@ describe('Backend Integration - Auth', () => {
         body: formData.toString(),
       });
 
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       expect([401, 403, 404]).toContain(response.status);
     });
 
@@ -109,7 +109,7 @@ describe('Backend Integration - Auth', () => {
         body: formData.toString(),
       });
 
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
     });
   });
 
@@ -144,7 +144,7 @@ describe('Backend Integration - Auth', () => {
         },
       });
 
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       // Backend may return 401, 403, or 500 depending on token parsing
       expect([401, 403, 500]).toContain(response.status);
     });
@@ -163,7 +163,7 @@ describe('Backend Integration - Auth', () => {
         },
       });
 
-      expect(response.ok).toBeFalse();
+      expect(response.ok).toBe(false);
       // Backend may return 401, 403, or 500 depending on signature validation
       expect([401, 403, 500]).toContain(response.status);
     });

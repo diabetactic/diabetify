@@ -48,6 +48,7 @@ import {
 } from '@services/preferences.service';
 import { DemoDataService } from '@services/demo-data.service';
 import { NotificationService, ReadingReminder } from '@services/notification.service';
+import { TranslationService, Language } from '@services/translation.service';
 import { environment } from '@env/environment';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { LoggerService } from '@services/logger.service';
@@ -144,6 +145,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     private demoDataService: DemoDataService,
     private notificationService: NotificationService,
     private translate: TranslateService,
+    private translationService: TranslationService,
     private logger: LoggerService,
     private readingsService: ReadingsService,
     private modalController: ModalController
@@ -324,7 +326,12 @@ export class SettingsPage implements OnInit, OnDestroy {
           maxBolus: this.safetySettings.maxBolus,
           lowGlucoseThreshold: this.safetySettings.lowGlucoseThreshold,
         },
+        language: this.preferences.language, // Persist language setting
       });
+
+      // Also update TranslationService so it persists in its own storage key
+      // This ensures language is correctly loaded on next app start
+      await this.translationService.setLanguage(this.preferences.language as Language);
 
       this.preferences = this.preferencesService.getCurrentPreferences();
 

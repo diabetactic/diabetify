@@ -67,6 +67,16 @@ const MAX_SYNC_READINGS = 200;
 /** Maximum retry attempts for failed sync operations */
 const SYNC_RETRY_LIMIT = 3;
 
+/** Time threshold for considering a 'processing' item as stale (5 minutes) */
+const STALE_PROCESSING_THRESHOLD_MS = 5 * 60 * 1000;
+
+/**
+ * Tolerance for glucose value comparison when matching local and backend readings.
+ * Accounts for floating point rounding errors from unit conversions.
+ * e.g., 5.5 mmol/L → 99.1001 mg/dL, should match backend's rounded 99 mg/dL
+ */
+const VALUE_TOLERANCE_MGDL = 1.5;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -100,6 +110,46 @@ export class ReadingsSyncService implements OnDestroy {
     this.envConfig = envConfig;
     this.db = this.database ?? db;
     this.initializeNetworkMonitoring();
+    // Recover any items that were left in 'processing' state from a previous crash
+    this.recoverStaleProcessingItems();
+  }
+
+  /**
+   * Recover items that were left in 'processing' state due to app crash.
+   * Items older than STALE_PROCESSING_THRESHOLD_MS are reset to 'pending'.
+   */
+  private async recoverStaleProcessingItems(): Promise<void> {
+    try {
+      const staleThreshold = Date.now() - STALE_PROCESSING_THRESHOLD_MS;
+      const staleItems = await this.db.syncQueue
+        .filter(
+          item =>
+            item.status === 'processing' &&
+            item.processingStartedAt !== undefined &&
+            item.processingStartedAt < staleThreshold
+        )
+        .toArray();
+
+      if (staleItems.length === 0) return;
+
+      this.logger?.warn(
+        'Sync',
+        `Recovering ${staleItems.length} stale processing items (possible crash recovery)`
+      );
+
+      for (const item of staleItems) {
+        if (item.id !== undefined) {
+          await this.db.syncQueue.update(item.id, {
+            status: 'pending',
+            processingStartedAt: undefined,
+          });
+        }
+      }
+
+      this.logger?.info('Sync', `Recovered ${staleItems.length} items, will retry on next sync`);
+    } catch (error) {
+      this.logger?.error('Sync', 'Failed to recover stale processing items', error);
+    }
   }
 
   ngOnDestroy(): void {
@@ -212,7 +262,12 @@ export class ReadingsSyncService implements OnDestroy {
     }
 
     this.syncInProgress = true;
-    this.syncPromise = this.executeSync();
+    this.syncPromise = (async () => {
+      // Crash recovery: if some items became stale while the app stayed open,
+      // periodically re-check and re-queue them (instead of only doing this in the constructor).
+      await this.recoverStaleProcessingItems();
+      return this.executeSync();
+    })();
 
     try {
       return await this.syncPromise;
@@ -224,19 +279,41 @@ export class ReadingsSyncService implements OnDestroy {
 
   /**
    * Execute the actual sync operation (called by syncPendingReadings with mutex)
+   *
+   * CRASH-SAFE DESIGN:
+   * Instead of clearing the queue before processing (which loses data on crash),
+   * we mark items as 'processing' and only delete them after successful sync.
+   * If the app crashes mid-sync, items remain in the queue with status='processing'
+   * and are recovered on next startup via recoverStaleProcessingItems().
    */
   private async executeSync(): Promise<SyncResult> {
-    // Phase 1: Extract queue items atomically
+    // Phase 1: Get pending items and mark them as processing (atomic)
     let queueItems: SyncQueueItem[] = [];
+    const processingStartedAt = Date.now();
 
     try {
-      queueItems = await this.db.syncQueue.toArray();
+      // Get only pending items (not already processing)
+      queueItems = await this.db.syncQueue
+        .filter(item => !item.status || item.status === 'pending')
+        .toArray();
+
       if (queueItems.length === 0) {
         return { success: 0, failed: 0, lastError: null };
       }
-      await this.db.syncQueue.clear();
+
+      // Mark items as 'processing' - they stay in queue until confirmed success
+      await this.db.transaction('rw', this.db.syncQueue, async () => {
+        for (const item of queueItems) {
+          if (item.id !== undefined) {
+            await this.db.syncQueue.update(item.id, {
+              status: 'processing',
+              processingStartedAt,
+            });
+          }
+        }
+      });
     } catch (error) {
-      this.logger?.error('Sync', 'Failed to extract queue items', error);
+      this.logger?.error('Sync', 'Failed to claim queue items', error);
       throw error;
     }
 
@@ -273,50 +350,61 @@ export class ReadingsSyncService implements OnDestroy {
       }
     }
 
-    // Phase 3: Update local state
+    // Phase 3: Update local state and queue
     const successItems = results.filter(r => r.success);
     const failedItems = results.filter(r => !r.success);
 
-    // Mark successful items as synced
+    // Mark successful items as synced in readings table AND remove from queue
     for (const result of successItems) {
-      if (result.item.operation !== 'delete' && result.item.readingId) {
-        try {
+      try {
+        // Mark reading as synced
+        if (result.item.operation !== 'delete' && result.item.readingId) {
           await this.db.readings.update(result.item.readingId, { synced: true });
-        } catch (markError) {
-          this.logger?.warn('Sync', `Could not mark ${result.item.readingId} as synced`, markError);
         }
+        // Remove from sync queue (item successfully processed)
+        if (result.item.id !== undefined) {
+          await this.db.syncQueue.delete(result.item.id);
+        }
+      } catch (markError) {
+        this.logger?.warn('Sync', `Could not finalize ${result.item.readingId}`, markError);
       }
     }
 
-    // Re-add failed items for retry
-    const itemsToRetry: SyncQueueItem[] = [];
+    // Update failed items: reset to 'pending' with incremented retry count
     for (const result of failedItems) {
       const retryCount = result.item.retryCount + 1;
+      if (result.item.id === undefined) continue;
+
       if (retryCount < SYNC_RETRY_LIMIT) {
-        itemsToRetry.push({
-          ...result.item,
-          retryCount,
-          lastError: result.error,
-        });
+        // Reset to pending for retry
+        try {
+          await this.db.syncQueue.update(result.item.id, {
+            status: 'pending',
+            retryCount,
+            lastError: result.error,
+            processingStartedAt: undefined,
+          });
+        } catch (error) {
+          this.logger?.warn('Sync', `Could not reset ${result.item.readingId} for retry`, error);
+        }
         this.logger?.info(
           'Sync',
           `Will retry ${result.item.readingId} (${retryCount}/${SYNC_RETRY_LIMIT})`
         );
       } else {
-        this.logger?.warn('Sync', `Max retries reached for ${result.item.readingId}`);
-      }
-    }
-
-    if (itemsToRetry.length > 0) {
-      try {
-        await this.db.transaction('rw', this.db.syncQueue, async () => {
-          await this.db.syncQueue.bulkAdd(itemsToRetry);
-        });
-      } catch (error) {
-        if ((error as Error).name === 'PrematureCommitError') {
-          await this.db.syncQueue.bulkAdd(itemsToRetry);
-        } else {
-          throw error;
+        // Max retries reached - remove from queue (data loss prevention: keep reading as unsynced)
+        this.logger?.warn(
+          'Sync',
+          `Max retries reached for ${result.item.readingId}, removing from queue`
+        );
+        try {
+          await this.db.syncQueue.delete(result.item.id);
+        } catch (error) {
+          this.logger?.warn(
+            'Sync',
+            `Could not remove exhausted item ${result.item.readingId}`,
+            error
+          );
         }
       }
     }
@@ -519,11 +607,10 @@ export class ReadingsSyncService implements OnDestroy {
 
     if (hasChanges) {
       await this.updateLocalFromBackend(
-        existing.id,
+        existing,
         backendValue,
         backendNotes,
-        backendReading.reading_type,
-        existing.mealContext
+        backendReading.reading_type
       );
       this.logger?.debug('Sync', `Updated ${existing.id} from backend`);
       return { action: 'updated' };
@@ -579,21 +666,32 @@ export class ReadingsSyncService implements OnDestroy {
             merged++;
           }
         } else {
-          const backendValue = backendReading.glucose_level;
+          const backendValueMgDl = backendReading.glucose_level;
           const backendNotes = backendReading.notes || '';
 
-          if (
-            existingByBackendId.value !== backendValue ||
-            existingByBackendId.notes !== backendNotes
-          ) {
+          // Convert local value to mg/dL for comparison (backend always uses mg/dL)
+          const localValueMgDl = this.mapper.toMgDl(
+            existingByBackendId.value,
+            existingByBackendId.units
+          );
+          const valuesDiffer = Math.abs(localValueMgDl - backendValueMgDl) > VALUE_TOLERANCE_MGDL;
+
+          if (valuesDiffer || existingByBackendId.notes !== backendNotes) {
             const backendType = backendReading.reading_type;
             const validMealContext =
               backendType && (MEAL_CONTEXTS as readonly string[]).includes(backendType)
                 ? (backendType as MealContext)
                 : existingByBackendId.mealContext;
 
+            // Convert backend value to local units to preserve user's unit preference
+            const newValue = this.mapper.convertToUnit(
+              backendValueMgDl,
+              'mg/dL',
+              existingByBackendId.units
+            );
+
             await this.db.readings.update(existingByBackendId.id, {
-              value: backendValue,
+              value: newValue,
               notes: backendNotes,
               mealContext: validMealContext,
               synced: true,
@@ -652,18 +750,32 @@ export class ReadingsSyncService implements OnDestroy {
         break;
 
       case 'keep-server':
-        await this.db.readings.put({ ...conflict.serverReading, synced: true });
+        // Update the existing local reading with server data instead of creating duplicate
+        // This preserves the local ID while replacing content with server version
+        await this.db.readings.update(conflict.localReading.id, {
+          value: conflict.serverReading.value,
+          units: conflict.serverReading.units,
+          time: conflict.serverReading.time,
+          notes: conflict.serverReading.notes,
+          mealContext: conflict.serverReading.mealContext,
+          backendId: conflict.serverReading.backendId,
+          synced: true,
+        });
         break;
 
       case 'keep-both':
+        // Keep local version and mark for re-sync
         await this.db.readings.update(conflict.localReading.id, { synced: false });
         await this.addToSyncQueue('update', conflict.localReading);
-        // Add server version as new reading
+        // Add server version as new reading WITHOUT backendId to avoid duplicate backendId
+        // The local version will be synced and get its own backendId from backend
         const newId = this.mapper.generateLocalId();
         await this.db.readings.add({
           ...conflict.serverReading,
           id: newId,
           localId: newId,
+          backendId: undefined, // Remove backendId to prevent duplicate reference
+          synced: true, // Server data is already synced
         });
         break;
     }
@@ -695,9 +807,13 @@ export class ReadingsSyncService implements OnDestroy {
   /**
    * Find an unsynced local reading that matches backend data within time tolerance
    * Used to link locally-created readings with their backend counterparts
-   * @param backendValue - Glucose value from backend
+   * @param backendValue - Glucose value from backend (always mg/dL)
    * @param backendTime - Timestamp from backend (milliseconds)
    * @returns Matching unsynced local reading if found, null otherwise
+   *
+   * NOTE: Local readings may be stored in mg/dL or mmol/L depending on user preference.
+   * We convert local values to mg/dL before comparing to handle unit differences.
+   * Uses VALUE_TOLERANCE_MGDL to account for floating point rounding in unit conversions.
    */
   private async findMatchingUnsyncedReading(
     backendValue: number,
@@ -706,7 +822,14 @@ export class ReadingsSyncService implements OnDestroy {
     const matches = await this.db.readings
       .filter(r => {
         if (r.synced || r.backendId) return false;
-        if (r.value !== backendValue) return false;
+
+        // Convert local value to mg/dL for comparison (backend always uses mg/dL)
+        const localValueMgDl = this.mapper.toMgDl(r.value, r.units);
+
+        // Use tolerance to handle floating point rounding from unit conversions
+        // e.g., 5.5 mmol/L → 99.1001 mg/dL, should match backend's 99 mg/dL
+        if (Math.abs(localValueMgDl - backendValue) > VALUE_TOLERANCE_MGDL) return false;
+
         const localTime = new Date(r.time).getTime();
         return Math.abs(localTime - backendTime) <= SYNC_TIME_TOLERANCE_MS;
       })
@@ -737,10 +860,13 @@ export class ReadingsSyncService implements OnDestroy {
    * Check if a local reading has changes compared to backend data
    * Used for conflict detection during sync
    * @param local - Local reading to compare
-   * @param backendValue - Glucose value from backend
+   * @param backendValue - Glucose value from backend (always mg/dL)
    * @param backendNotes - Notes from backend
    * @param backendType - Optional meal context type from backend
    * @returns true if there are differences, false if identical
+   *
+   * NOTE: Converts local value to mg/dL before comparing since backend always uses mg/dL.
+   * Uses VALUE_TOLERANCE_MGDL to account for floating point rounding in unit conversions.
    */
   private hasReadingChanges(
     local: LocalGlucoseReading,
@@ -748,8 +874,12 @@ export class ReadingsSyncService implements OnDestroy {
     backendNotes: string,
     backendType?: string
   ): boolean {
+    // Convert local value to mg/dL for comparison (backend always uses mg/dL)
+    const localValueMgDl = this.mapper.toMgDl(local.value, local.units);
+    const valuesDiffer = Math.abs(localValueMgDl - backendValue) > VALUE_TOLERANCE_MGDL;
+
     return (
-      local.value !== backendValue ||
+      valuesDiffer ||
       local.notes !== backendNotes ||
       (!!backendType && local.mealContext !== backendType)
     );
@@ -777,28 +907,33 @@ export class ReadingsSyncService implements OnDestroy {
   }
 
   /**
-   * Update local reading with backend data (server wins)
-   * Validates and sanitizes meal context before updating
-   * @param existingId - Local reading ID to update
-   * @param backendValue - Glucose value from backend
+   * Update local reading with backend data
+   * Used when backend version is considered authoritative (e.g., synced reading changed on server)
+   *
+   * NOTE: Backend always uses mg/dL. This method converts to the local reading's unit
+   * to preserve the user's unit preference.
+   *
+   * @param existing - Local reading to update (used for ID and unit info)
+   * @param backendValueMgDl - Glucose value from backend (always mg/dL)
    * @param backendNotes - Notes from backend
-   * @param backendType - Meal context type from backend (may be invalid)
-   * @param existingContext - Current local meal context (fallback if backend type invalid)
+   * @param backendType - Optional meal context type from backend
    */
   private async updateLocalFromBackend(
-    existingId: string,
-    backendValue: number,
+    existing: LocalGlucoseReading,
+    backendValueMgDl: number,
     backendNotes: string,
-    backendType: string | undefined,
-    existingContext: MealContext | undefined
+    backendType: string | undefined
   ): Promise<void> {
     const validMealContext =
       backendType && (MEAL_CONTEXTS as readonly string[]).includes(backendType)
         ? (backendType as MealContext)
-        : existingContext;
+        : existing.mealContext;
 
-    await this.db.readings.update(existingId, {
-      value: backendValue,
+    // Convert backend value (mg/dL) to local units to preserve user's unit preference
+    const newValue = this.mapper.convertToUnit(backendValueMgDl, 'mg/dL', existing.units);
+
+    await this.db.readings.update(existing.id, {
+      value: newValue,
       notes: backendNotes,
       mealContext: validMealContext,
       synced: true,

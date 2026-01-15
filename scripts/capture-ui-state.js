@@ -5,6 +5,24 @@ const path = require('path');
 async function captureUIState() {
   console.log('🚀 Starting UI State Capture...');
 
+  const waitForStableUi = async page => {
+    await page.waitForLoadState('domcontentloaded');
+    await page
+      .waitForSelector('ion-app.hydrated, ion-content', { state: 'visible', timeout: 10000 })
+      .catch(() => {});
+    await page.evaluate(async () => {
+      if (document.fonts && document.fonts.status !== 'loaded') {
+        await document.fonts.ready;
+      }
+    });
+    await page.evaluate(
+      () =>
+        new Promise(resolve => {
+          requestAnimationFrame(() => requestAnimationFrame(resolve));
+        })
+    );
+  };
+
   const browser = await chromium.launch({ headless: false });
   const context = await browser.newContext({
     viewport: { width: 375, height: 812 }, // iPhone 12 Pro dimensions
@@ -36,7 +54,7 @@ async function captureUIState() {
     // 1. Navigate to homepage
     console.log('📍 Navigating to http://localhost:4200...');
     await page.goto('http://localhost:4200', { waitUntil: 'networkidle' });
-    await page.waitForTimeout(2000);
+    await waitForStableUi(page);
 
     // Screenshot: Initial load
     const initialPath = path.join(screenshotDir, 'broken-ui-initial-load.png');
@@ -50,7 +68,7 @@ async function captureUIState() {
     if (await getStartedBtn.isVisible().catch(() => false)) {
       console.log('🔘 Clicking "Get Started"...');
       await getStartedBtn.click();
-      await page.waitForTimeout(1500);
+      await waitForStableUi(page);
 
       const onboardingPath = path.join(screenshotDir, 'broken-ui-post-onboarding.png');
       await page.screenshot({ path: onboardingPath, fullPage: true });
@@ -60,7 +78,7 @@ async function captureUIState() {
 
     // 3. Dashboard (should be working)
     console.log('📍 Capturing Dashboard...');
-    await page.waitForTimeout(1000);
+    await waitForStableUi(page);
     const dashboardPath = path.join(screenshotDir, 'broken-ui-dashboard.png');
     await page.screenshot({ path: dashboardPath, fullPage: true });
     findings.screenshots.push({ name: 'dashboard', path: dashboardPath });
@@ -75,7 +93,7 @@ async function captureUIState() {
       const readingsTab = page.locator('ion-tab-button[tab="readings"]');
       if (await readingsTab.isVisible().catch(() => false)) {
         await readingsTab.click();
-        await page.waitForTimeout(1500);
+        await waitForStableUi(page);
 
         const readingsPath = path.join(screenshotDir, 'broken-ui-readings.png');
         await page.screenshot({ path: readingsPath, fullPage: true });
@@ -94,7 +112,7 @@ async function captureUIState() {
       const appointmentsTab = page.locator('ion-tab-button[tab="appointments"]');
       if (await appointmentsTab.isVisible().catch(() => false)) {
         await appointmentsTab.click();
-        await page.waitForTimeout(1500);
+        await waitForStableUi(page);
 
         const appointmentsPath = path.join(screenshotDir, 'broken-ui-appointments.png');
         await page.screenshot({ path: appointmentsPath, fullPage: true });
@@ -117,7 +135,7 @@ async function captureUIState() {
       const trendsTab = page.locator('ion-tab-button[tab="trends"]');
       if (await trendsTab.isVisible().catch(() => false)) {
         await trendsTab.click();
-        await page.waitForTimeout(1500);
+        await waitForStableUi(page);
 
         const trendsPath = path.join(screenshotDir, 'broken-ui-trends.png');
         await page.screenshot({ path: trendsPath, fullPage: true });
@@ -136,7 +154,7 @@ async function captureUIState() {
       const profileTab = page.locator('ion-tab-button[tab="profile"]');
       if (await profileTab.isVisible().catch(() => false)) {
         await profileTab.click();
-        await page.waitForTimeout(1500);
+        await waitForStableUi(page);
 
         const profilePath = path.join(screenshotDir, 'broken-ui-profile.png');
         await page.screenshot({ path: profilePath, fullPage: true });
@@ -154,7 +172,7 @@ async function captureUIState() {
     try {
       // Navigate to add-reading directly
       await page.goto('http://localhost:4200/add-reading', { waitUntil: 'networkidle' });
-      await page.waitForTimeout(1500);
+      await waitForStableUi(page);
 
       const addReadingPath = path.join(screenshotDir, 'broken-ui-add-reading.png');
       await page.screenshot({ path: addReadingPath, fullPage: true });

@@ -46,10 +46,10 @@
  *
  * EXAMPLES:
  *   # Create Julian's user on Docker
- *   node scripts/diabetify-api.js create-user --dni=julian --email=juliancrespo15@gmail.com --name=Julian --surname=Crespo --password=tuvieja
+ *   node scripts/diabetify-api.js create-user --dni=40123456 --email=test40123456@diabetactic.com --name=Test --surname=User --password=thepassword
  *
  *   # Login and add a reading
- *   export USER_TOKEN=$(node scripts/diabetify-api.js login --user=julian --pass=tuvieja | jq -r .access_token)
+ *   export USER_TOKEN=$(node scripts/diabetify-api.js login --user=40123456 --pass=thepassword | jq -r .access_token)
  *   node scripts/diabetify-api.js add-reading --level=95 --type=DESAYUNO --notes="Fasting"
  *
  *   # Admin: Accept next appointment

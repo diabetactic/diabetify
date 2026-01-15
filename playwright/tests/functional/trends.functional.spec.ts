@@ -36,7 +36,16 @@ test.describe('Trends Functional Tests @functional @docker', () => {
 
     if (buttonCount > 1) {
       await segmentButtons.nth(1).click();
-      await page.waitForTimeout(500);
+      await expect
+        .poll(async () => {
+          const button = segmentButtons.nth(1);
+          return button.evaluate(
+            el =>
+              el.getAttribute('aria-checked') === 'true' ||
+              el.classList.contains('segment-button-checked')
+          );
+        })
+        .toBe(true);
     }
   });
 

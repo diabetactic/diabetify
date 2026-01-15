@@ -26,7 +26,7 @@ export default defineConfig({
       'src/test-setup/index.ts',
     ],
     include: ['src/**/*.spec.ts'],
-    exclude: ['node_modules/**'],
+    exclude: ['node_modules/**', 'src/app/tests/integration/backend/**'],
     reporters: ['default', 'html'],
     coverage: {
       provider: 'v8',

@@ -20,27 +20,27 @@ import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
  */
 // Public test credentials
 export const TEST_USER = {
-  dni: '1000',
-  password: 'tuvieja',
-  email: 'test@test.com',
+  dni: '40123456',
+  password: 'thepassword',
+  email: 'test40123456@diabetactic.com',
 };
 
 /**
  * Test users configuration.
- * Only user1 (1000/tuvieja) is guaranteed to exist in the backend.
- * All other users are aliases to user1 for backward compatibility.
+ * Primary (40123456/thepassword) and secondary (40123457/thepassword2)
+ * are seeded by docker/seed-test-data.sh.
  */
 // Public test credentials
 export const TEST_USERS = {
-  user1: { dni: '1000', password: 'tuvieja', email: '1@example.com' },
+  user1: { dni: '40123456', password: 'thepassword', email: 'test40123456@diabetactic.com' },
+  user2: { dni: '40123457', password: 'thepassword2', email: 'test40123457@diabetactic.com' },
   // Aliases to user1 for tests that reference other users
-  user2: { dni: '1000', password: 'tuvieja', email: '1@example.com' },
-  user3: { dni: '1000', password: 'tuvieja', email: '1@example.com' },
-  user4: { dni: '1000', password: 'tuvieja', email: '1@example.com' },
-  user5: { dni: '1000', password: 'tuvieja', email: '1@example.com' },
-  user6: { dni: '1000', password: 'tuvieja', email: '1@example.com' },
-  user7: { dni: '1000', password: 'tuvieja', email: '1@example.com' },
-  user8: { dni: '1000', password: 'tuvieja', email: '1@example.com' },
+  user3: { dni: '40123456', password: 'thepassword', email: 'test40123456@diabetactic.com' },
+  user4: { dni: '40123456', password: 'thepassword', email: 'test40123456@diabetactic.com' },
+  user5: { dni: '40123456', password: 'thepassword', email: 'test40123456@diabetactic.com' },
+  user6: { dni: '40123456', password: 'thepassword', email: 'test40123456@diabetactic.com' },
+  user7: { dni: '40123456', password: 'thepassword', email: 'test40123456@diabetactic.com' },
+  user8: { dni: '40123456', password: 'thepassword', email: 'test40123456@diabetactic.com' },
 };
 
 /**

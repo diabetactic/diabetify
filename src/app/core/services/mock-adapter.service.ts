@@ -269,9 +269,12 @@ export class MockAdapterService {
     emailOrDni: string,
     password: string
   ): Promise<{ token: string; user: UserProfile }> {
-    // Demo account credentials: demo@diabetactic.com / demo123 OR 1000 / demo123
+    // Demo account credentials: demo@diabetactic.com / thepassword OR 40123456 / thepassword.
+    // Secondary account: 40123457 / thepassword2.
     const validCredentials =
-      (emailOrDni === 'demo@diabetactic.com' || emailOrDni === '1000') && password === 'demo123';
+      ((emailOrDni === 'demo@diabetactic.com' || emailOrDni === '40123456') &&
+        password === 'thepassword') ||
+      (emailOrDni === '40123457' && password === 'thepassword2');
 
     if (validCredentials) {
       const stored = this.storage?.getItem(this.PROFILE_STORAGE_KEY);

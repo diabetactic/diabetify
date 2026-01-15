@@ -115,6 +115,7 @@ ion-fab.center-fab {
       --background-hover: #9ca3af;
 
       opacity: 0.6;
+      /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- cursor: fallback for web; ignored on touch devices */
       cursor: not-allowed;
       pointer-events: none;
     }

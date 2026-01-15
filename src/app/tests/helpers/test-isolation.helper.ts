@@ -207,7 +207,7 @@ export class TestDataFactory {
 
     return {
       appointment_id: `apt_${Date.now()}`,
-      user_id: '1000',
+      user_id: '40123456',
       doctor_id: 'doc_123',
       doctor_name: 'Dr. Smith',
       appointment_type: 'routine',

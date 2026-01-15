@@ -195,9 +195,6 @@ importers:
       daisyui:
         specifier: ^5.5.14
         version: 5.5.14
-      dotenv:
-        specifier: ^17.2.3
-        version: 17.2.3
       dpdm:
         specifier: ^3.14.0
         version: 3.14.0
@@ -4291,10 +4288,6 @@ packages:
 
   dotenv@16.6.1:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
-    engines: {node: '>=12'}
-
-  dotenv@17.2.3:
-    resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
     engines: {node: '>=12'}
 
   dpdm@3.14.0:
@@ -11950,8 +11943,6 @@ snapshots:
       domhandler: 5.0.3
 
   dotenv@16.6.1: {}
-
-  dotenv@17.2.3: {}
 
   dpdm@3.14.0:
     dependencies:

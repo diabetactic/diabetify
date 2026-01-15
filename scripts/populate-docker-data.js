@@ -5,19 +5,19 @@
  * Usage:
  *   node scripts/populate-docker-data.js              # Populate data (default: Julian dni=40123456)
  *   node scripts/populate-docker-data.js --clear      # Clear all data first
- *   USER_DNI=1000 node scripts/populate-docker-data.js # Different user (by DNI, not hospital_account)
+ *   USER_DNI=40123457 node scripts/populate-docker-data.js # Different user (by DNI, not hospital_account)
  *
- * Default user: Julian Crespo (dni=40123456, hospital_account=1000, user_id=5)
- * Other users:  Nacho Scocco (dni=1000, hospital_account=1, user_id=1)
+ * Default user: Primary test account (dni=40123456)
+ * Secondary user: 40123457
  */
 
 const http = require('http');
 
 // API Gateway runs on port 8000 in Docker (docker-compose.local.yml)
 const DOCKER_URL = process.env.API_URL || 'http://localhost:8000';
-// Default user: Julian Crespo (dni=40123456, hospital_account=1000, user_id=5)
+// Default user: Primary test account (dni=40123456)
 const USER_DNI = process.env.USER_DNI || '40123456';
-const PASSWORD = process.env.PASSWORD || 'tuvieja';
+const PASSWORD = process.env.PASSWORD || 'thepassword';
 const CLEAR_FIRST = process.argv.includes('--clear');
 
 async function request(path, method = 'GET', body = null, token = null) {

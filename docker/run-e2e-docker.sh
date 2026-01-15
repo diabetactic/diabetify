@@ -161,8 +161,8 @@ if [ "$TEST_SUITE" = "all" ] || [ "$TEST_SUITE" = "playwright" ]; then
     E2E_BASE_URL="http://localhost:4200" \
     E2E_API_URL="http://localhost:8000" \
     E2E_BACKOFFICE_URL="http://localhost:8001" \
-    E2E_TEST_USERNAME="1000" \
-    E2E_TEST_PASSWORD="tuvieja" \
+    E2E_TEST_USERNAME="40123456" \
+    E2E_TEST_PASSWORD="thepassword" \
     E2E_DOCKER_TESTS="true" \
     pnpm run test:e2e --grep "@docker" || TEST_EXIT_CODE=$?
 
@@ -181,8 +181,8 @@ if [ "$TEST_SUITE" = "all" ] || [ "$TEST_SUITE" = "maestro" ]; then
         # Run Maestro tests against local backend
         API_BASE_URL="http://10.0.2.2:8000" \
         BACKOFFICE_API_URL="http://10.0.2.2:8001" \
-        TEST_USER_ID="1000" \
-        TEST_USER_PASSWORD="tuvieja" \
+        TEST_USER_ID="40123456" \
+        TEST_USER_PASSWORD="thepassword" \
         maestro test tests/ --env DOCKER_BACKEND=true || TEST_EXIT_CODE=$?
 
         cd "$PROJECT_DIR"

@@ -1,9 +1,27 @@
 import { test, expect, isDockerMode } from '../../fixtures';
 import { STORAGE_STATE_PATH } from '../../fixtures/storage-paths';
+import { Page } from '@playwright/test';
 
 test.describe('Dashboard Functional Tests @functional @docker', () => {
   test.skip(!isDockerMode, 'Functional tests require Docker backend');
   test.use({ storageState: STORAGE_STATE_PATH });
+
+  /**
+   * Helper: Wait for dashboard content to fully load
+   * Dashboard has loading state that shows skeleton, then renders content
+   */
+  async function waitForDashboardContent(page: Page) {
+    // Wait for loading skeleton to disappear (dashboard sets isLoading=false)
+    // The skeleton has animate-pulse class, content appears after
+    await page.waitForFunction(
+      () => {
+        const skeleton = document.querySelector('.animate-pulse');
+        const content = document.querySelector('[data-testid="stats-container"], app-streak-card');
+        return !skeleton && content !== null;
+      },
+      { timeout: 15000 }
+    );
+  }
 
   test('should display dashboard page', async ({ page, pages }) => {
     await page.goto('/tabs/dashboard');
@@ -16,16 +34,13 @@ test.describe('Dashboard Functional Tests @functional @docker', () => {
   test('should show glucose summary or stats', async ({ page, pages }) => {
     await page.goto('/tabs/dashboard');
     await pages.dashboardPage.waitForHydration();
+    await waitForDashboardContent(page);
 
-    const statsSection = page.locator(
-      '[data-testid="glucose-summary"], [data-testid="stats"], text=/mg\\/dL|mmol|Promedio|Average/i'
-    );
-    const hasStats = await statsSection
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-
-    expect(hasStats || true).toBe(true);
+    // Dashboard stats container with Time in Range and Average Glucose cards
+    const statsSection = page.locator('[data-testid="stats-container"]');
+    await expect
+      .soft(statsSection.first(), 'Dashboard should show glucose stats section')
+      .toBeVisible({ timeout: 10000 });
   });
 
   test('should show quick actions or FAB', async ({ page, pages }) => {
@@ -33,27 +48,21 @@ test.describe('Dashboard Functional Tests @functional @docker', () => {
     await pages.dashboardPage.waitForHydration();
 
     const fab = page.locator('ion-fab, [data-testid="fab"], [data-testid="quick-actions"]');
-    const hasFab = await fab
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-
-    expect(hasFab || true).toBe(true);
+    await expect(fab.first(), 'Dashboard should show FAB or quick actions').toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test('should show recent readings section', async ({ page, pages }) => {
     await page.goto('/tabs/dashboard');
     await pages.dashboardPage.waitForHydration();
+    await waitForDashboardContent(page);
 
-    const recentSection = page.locator(
-      'text=/Recientes|Recent|Últimas|Latest/i, [data-testid="recent-readings"]'
-    );
-    const hasRecent = await recentSection
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-
-    expect(hasRecent || true).toBe(true);
+    // Recent readings section with data-testid
+    const recentSection = page.locator('[data-testid="recent-readings"]');
+    await expect
+      .soft(recentSection.first(), 'Dashboard should show recent readings section')
+      .toBeVisible({ timeout: 10000 });
   });
 
   test('should navigate to readings from dashboard', async ({ page, pages }) => {
@@ -78,16 +87,15 @@ test.describe('Dashboard Functional Tests @functional @docker', () => {
     }
   });
 
-  test('should show chart or trends visualization', async ({ page, pages }) => {
+  test('should show streak or gamification visualization', async ({ page, pages }) => {
     await page.goto('/tabs/dashboard');
     await pages.dashboardPage.waitForHydration();
+    await waitForDashboardContent(page);
 
-    const chart = page.locator('canvas, [data-testid="chart"], app-glucose-chart');
-    const hasChart = await chart
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-
-    expect(hasChart || true).toBe(true);
+    // Dashboard shows streak card with progress visualization instead of charts
+    const streakCard = page.locator('app-streak-card');
+    await expect
+      .soft(streakCard.first(), 'Dashboard should show streak/gamification visualization')
+      .toBeVisible({ timeout: 10000 });
   });
 });

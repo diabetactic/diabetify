@@ -815,6 +815,7 @@ export class ApiGatewayService {
 
   /**
    * Generate a unique cache key based on endpoint and params.
+   * Uses stable stringification to ensure consistent keys regardless of object property order.
    */
   private getCacheKey(
     endpointKey: string,
@@ -824,7 +825,48 @@ export class ApiGatewayService {
     if (endpoint.cache?.key) {
       return `${endpointKey}_${endpoint.cache.key(params as Record<string, unknown>)}`;
     }
-    return `${endpointKey}_${JSON.stringify(params || {})}`;
+    return `${endpointKey}_${this.stableStringify(params || {})}`;
+  }
+
+  /**
+   * Creates a stable JSON string from an object by sorting keys recursively.
+   * Ensures consistent cache keys regardless of object property insertion order.
+   * Also handles HttpParams by converting to a sorted array.
+   */
+  private stableStringify(obj: unknown): string {
+    if (obj === null) return 'null';
+    if (obj === undefined) return 'undefined';
+
+    // Handle HttpParams by converting to sorted key-value pairs
+    if (
+      obj &&
+      typeof obj === 'object' &&
+      'keys' in obj &&
+      typeof (obj as { keys: unknown }).keys === 'function'
+    ) {
+      const httpParams = obj as { keys: () => string[]; getAll: (key: string) => string[] | null };
+      const keys = httpParams.keys().sort();
+      const entries: [string, string[]][] = keys.map(k => [k, httpParams.getAll(k) || []]);
+      return JSON.stringify(entries);
+    }
+
+    // Handle arrays
+    if (Array.isArray(obj)) {
+      return `[${obj.map(item => this.stableStringify(item)).join(',')}]`;
+    }
+
+    // Handle objects with sorted keys
+    if (typeof obj === 'object') {
+      const sortedKeys = Object.keys(obj).sort();
+      const pairs = sortedKeys.map(key => {
+        const value = (obj as Record<string, unknown>)[key];
+        return `"${key}":${this.stableStringify(value)}`;
+      });
+      return `{${pairs.join(',')}}`;
+    }
+
+    // Primitives
+    return JSON.stringify(obj);
   }
 
   /**

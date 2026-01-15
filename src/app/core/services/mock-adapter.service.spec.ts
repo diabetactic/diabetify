@@ -210,8 +210,9 @@ describe('MockAdapterService', () => {
   describe('mockLogin', () => {
     it('should authenticate with valid credentials and persist token', async () => {
       const testCases = [
-        { username: 'demo@diabetactic.com', password: 'demo123' },
-        { username: '1000', password: 'demo123' },
+        { username: 'demo@diabetactic.com', password: 'thepassword' },
+        { username: '40123456', password: 'thepassword' },
+        { username: '40123457', password: 'thepassword2' },
       ];
 
       for (const { username, password } of testCases) {
@@ -234,7 +235,7 @@ describe('MockAdapterService', () => {
       const testProfile = { id: 'test123', name: 'Test User' } as UserProfile;
       localStorage.setItem('diabetactic_mock_profile', JSON.stringify(testProfile));
 
-      const result = await service.mockLogin('demo@diabetactic.com', 'demo123');
+      const result = await service.mockLogin('demo@diabetactic.com', 'thepassword');
       expect(result.user.id).toBe('test123');
     });
   });

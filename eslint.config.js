@@ -151,6 +151,17 @@ module.exports = tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       '@angular-eslint/prefer-standalone': 'off', // Test modules often use NgModule
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.property.name='toBeTrue']",
+          message: 'Use toBe(true) instead of toBeTrue().',
+        },
+        {
+          selector: "CallExpression[callee.property.name='toBeFalse']",
+          message: 'Use toBe(false) instead of toBeFalse().',
+        },
+      ],
     },
   }
 );

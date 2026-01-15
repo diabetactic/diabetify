@@ -37,8 +37,7 @@ test.describe('Readings Functional Tests @functional @docker', () => {
     await valueInput.first().fill(testValue.toString());
     await valueInput.first().dispatchEvent('change');
     await valueInput.first().dispatchEvent('input');
-
-    await page.waitForTimeout(500);
+    await expect(valueInput.first()).toHaveValue(testValue.toString());
 
     const submitBtn = page.locator('[data-testid="add-reading-save-btn"]');
     await expect(submitBtn).toBeEnabled({ timeout: 5000 });

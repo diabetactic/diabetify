@@ -20,7 +20,29 @@ if (!existsSync(screenshotsDir)) {
 const BASE_URL = 'http://localhost:4200';
 // Julian Crespo (dni=40123456, hospital_account=1000, user_id=5)
 const TEST_USER = '40123456';
-const TEST_PASSWORD = 'tuvieja';
+const TEST_PASSWORD = 'thepassword';
+
+async function waitForStableUi(page, selector) {
+  await page.waitForLoadState('domcontentloaded');
+  if (selector) {
+    await page.waitForSelector(selector, { state: 'visible', timeout: 10000 }).catch(() => {});
+  } else {
+    await page
+      .waitForSelector('ion-app.hydrated, ion-content', { state: 'visible', timeout: 10000 })
+      .catch(() => {});
+  }
+  await page.evaluate(async () => {
+    if (document.fonts && document.fonts.status !== 'loaded') {
+      await document.fonts.ready;
+    }
+  });
+  await page.evaluate(
+    () =>
+      new Promise(resolve => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      })
+  );
+}
 
 // Pages to capture with both themes
 const PAGES = [
@@ -43,7 +65,7 @@ async function setTheme(page, theme) {
       document.body.classList.remove('dark');
     }
   }, theme);
-  await page.waitForTimeout(300);
+  await waitForStableUi(page);
 }
 
 async function captureScreenshot(page, name, theme) {
@@ -70,36 +92,28 @@ async function main() {
     // Login first
     console.log('Logging in as Julian (DNI: 40123456)...');
     await page.goto(`${BASE_URL}/welcome`);
-    await page.waitForTimeout(2000);
+    await waitForStableUi(page);
 
     // Click "Vamos" or similar to get to login
     const vamosBtn = page.locator('text=¡Vamos!');
     if (await vamosBtn.isVisible()) {
       await vamosBtn.click();
-      await page.waitForTimeout(1000);
+      await waitForStableUi(page);
     }
 
     // Fill login form
     await page.fill('input[formcontrolname="userId"], input[type="text"]', TEST_USER);
     await page.fill('input[formcontrolname="password"], input[type="password"]', TEST_PASSWORD);
     await page.click('button[type="submit"], ion-button[type="submit"]');
-    await page.waitForTimeout(3000);
-
-    // Wait for dashboard to load
     await page.waitForSelector('ion-tab-bar', { timeout: 15000 });
+    await waitForStableUi(page);
     console.log('Logged in successfully\n');
 
     // Capture each page in both themes
     for (const pageInfo of PAGES) {
       console.log(`Capturing ${pageInfo.name}...`);
       await page.goto(`${BASE_URL}${pageInfo.path}`);
-      await page.waitForTimeout(1500);
-
-      try {
-        await page.waitForSelector(pageInfo.waitFor, { timeout: 5000 });
-      } catch {
-        // Continue anyway
-      }
+      await waitForStableUi(page, pageInfo.waitFor);
 
       // Light theme
       await setTheme(page, 'diabetactic');

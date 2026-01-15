@@ -11,7 +11,7 @@ if [ $# -lt 2 ]; then
     echo "Usage: $0 <dni> <password> [name] [surname] [email]"
     echo ""
     echo "Examples:"
-    echo "  $0 1000 tuvieja"
+    echo "  $0 40123456 thepassword"
     echo "  $0 1001 password123 John Doe john@example.com"
     exit 1
 fi

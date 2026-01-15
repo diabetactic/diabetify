@@ -33,6 +33,13 @@ export interface AuditLogItem {
 
 /**
  * Sync queue item for offline operations
+ *
+ * Status lifecycle:
+ * - 'pending': Item waiting to be processed
+ * - 'processing': Item currently being synced (prevents data loss on crash)
+ *
+ * If app crashes while status='processing', items are recovered on next startup
+ * by checking processingStartedAt against STALE_PROCESSING_THRESHOLD_MS
  */
 export interface SyncQueueItem {
   id?: number;
@@ -42,6 +49,10 @@ export interface SyncQueueItem {
   timestamp: number;
   retryCount: number;
   lastError?: string;
+  /** Status of the queue item - 'pending' or 'processing' */
+  status?: 'pending' | 'processing';
+  /** Timestamp when processing started (for crash recovery) */
+  processingStartedAt?: number;
 }
 
 /**
@@ -95,6 +106,16 @@ export class DiabetacticDatabase extends Dexie {
     this.version(4).stores({
       readings: 'id, time, type, userId, synced, localStoredAt, backendId',
       syncQueue: '++id, timestamp, operation, appointmentId',
+      appointments: 'id, userId, dateTime, status, updatedAt',
+      conflicts: '++id, readingId, status, createdAt',
+      auditLog: '++id, action, createdAt',
+    });
+
+    // Version 5: Add status field to syncQueue for crash-safe processing
+    // Items are marked 'processing' during sync instead of being deleted upfront
+    this.version(5).stores({
+      readings: 'id, time, type, userId, synced, localStoredAt, backendId',
+      syncQueue: '++id, timestamp, operation, appointmentId, status',
       appointments: 'id, userId, dateTime, status, updatedAt',
       conflicts: '++id, readingId, status, createdAt',
       auditLog: '++id, action, createdAt',
@@ -164,16 +185,31 @@ export class DiabetacticDatabase extends Dexie {
   }
 
   /**
-   * Prune old readings to free space (keeps last 90 days)
+   * Prune old readings to free space (keeps last N days)
+   *
+   * IMPORTANT: Only deletes readings that are SYNCED to prevent data loss.
+   * Unsynced readings are preserved regardless of age to ensure they can
+   * be uploaded when connectivity is restored.
    */
   async pruneOldData(daysToKeep = 90): Promise<number> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
     const cutoffTime = cutoffDate.toISOString();
 
-    const deletedCount = await this.readings.where('time').below(cutoffTime).delete();
+    // Only delete old readings that have been successfully synced
+    // This prevents data loss for offline readings that haven't been uploaded yet
+    const oldReadings = await this.readings
+      .where('time')
+      .below(cutoffTime)
+      .filter(reading => reading.synced === true)
+      .toArray();
 
-    return deletedCount;
+    const idsToDelete = oldReadings.map(r => r.id);
+    if (idsToDelete.length > 0) {
+      await this.readings.bulkDelete(idsToDelete);
+    }
+
+    return idsToDelete.length;
   }
 
   /**

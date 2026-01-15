@@ -28,9 +28,9 @@ jobs:
   # Testing Trophy: Base layer - many fast tests for quick feedback
   # ══════════════════════════════════════════════════════════════════════════
   type-check:
-    runs-on: ubuntu-slim
+    runs-on: [self-hosted, high-mem]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
@@ -41,7 +41,7 @@ jobs:
         run: pnpm exec tsc --noEmit -p tsconfig.build.json
 
   static-analysis:
-    runs-on: ubuntu-slim
+    runs-on: [self-hosted, high-mem]
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
@@ -58,7 +58,7 @@ jobs:
         run: pnpm run i18n:check
 
   integration-tests-msw:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, high-mem]
     steps:
       - uses: actions/checkout@v4
       - name: Setup pnpm
@@ -70,9 +70,9 @@ jobs:
         run: pnpm run test:integration:msw
 
   unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, high-mem]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
@@ -90,30 +90,23 @@ jobs:
         # Build will fail if coverage drops below these thresholds
 
       - name: Upload coverage artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage/
           retention-days: 7
-
-      - name: Upload coverage to DeepSource
-        uses: deepsourcelabs/test-coverage-action@master
-        with:
-          key: javascript
-          coverage-file: coverage/lcov.info
-          dsn: ${{ secrets.DEEPSOURCE_DSN }}
 
   # ══════════════════════════════════════════════════════════════════════════
   # PHASE 2: Build (~60s, only if Phase 1 passes)
   # ══════════════════════════════════════════════════════════════════════════
   build:
     needs: [type-check, static-analysis, integration-tests-msw, unit-tests]
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, high-mem]
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
@@ -146,9 +139,9 @@ jobs:
   # ══════════════════════════════════════════════════════════════════════════
   ui-tests:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, high-mem]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
@@ -158,7 +151,7 @@ jobs:
 
       - name: Download build
         if: ${{ env.ACT != 'true' }}
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v4
         with:
           name: www
           path: www/
@@ -170,7 +163,9 @@ jobs:
       # Cache Playwright browsers (saves ~30s per run)
       - name: Get Playwright version
         id: playwright-version
-        run: echo "version=$(pnpm list @playwright/test --json | jq -r '.[0].devDependencies["@playwright/test"].version // "unknown"')" >> $GITHUB_OUTPUT
+        run: |
+          VERSION="$(pnpm -s list @playwright/test --depth=0 --json | node -pe "const fs=require('fs'); const data=JSON.parse(fs.readFileSync(0,'utf8')); process.stdout.write(data?.[0]?.devDependencies?.['@playwright/test']?.version ?? data?.[0]?.dependencies?.['@playwright/test']?.version ?? 'unknown');")"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
@@ -179,13 +174,16 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
-      - name: Install Playwright (cache miss)
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium
 
-      - name: Install Playwright deps (cache hit)
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: pnpm exec playwright install-deps chromium
+      - name: Install Playwright system deps (Ubuntu runners)
+        run: |
+          if command -v apt-get >/dev/null 2>&1 && command -v sudo >/dev/null 2>&1; then
+            pnpm exec playwright install-deps chromium
+          else
+            echo "Skipping playwright install-deps (non-Ubuntu runner or no sudo)"
+          fi
 
       - name: Verify www/browser/ exists
         run: |
@@ -239,12 +237,12 @@ jobs:
   # ══════════════════════════════════════════════════════════════════════════
   docker-e2e:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, high-mem]
     if: |
       github.event_name == 'push' && github.ref == 'refs/heads/main' ||
       contains(github.event.pull_request.labels.*.name, 'run-e2e')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
@@ -254,7 +252,7 @@ jobs:
 
       - name: Download build
         if: ${{ env.ACT != 'true' }}
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v4
         with:
           name: www
           path: www/
@@ -269,7 +267,7 @@ jobs:
           sleep 5
 
       - name: Backend Integration Tests (Docker)
-        run: pnpm run test:integration
+        run: pnpm run test:integration:backend
 
       - name: Seed test data
         run: ./docker/seed-test-data.sh full
@@ -281,7 +279,15 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install Playwright
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install chromium
+
+      - name: Install Playwright system deps (Ubuntu runners)
+        run: |
+          if command -v apt-get >/dev/null 2>&1 && command -v sudo >/dev/null 2>&1; then
+            pnpm exec playwright install-deps chromium
+          else
+            echo "Skipping playwright install-deps (non-Ubuntu runner or no sudo)"
+          fi
 
       - name: Verify www/ exists
         run: |
@@ -314,7 +320,7 @@ jobs:
           npx wait-on http://localhost:8000/health --timeout 60000
 
       - name: Run Real E2E Tests
-        run: pnpm test:e2e:docker --project=mobile-chromium
+        run: pnpm test:e2e --project=mobile-chromium
         env:
           E2E_API_URL: http://localhost:8000
           E2E_BACKOFFICE_URL: http://localhost:8001
@@ -337,16 +343,69 @@ jobs:
   # PR Utilities
   # ══════════════════════════════════════════════════════════════════════════
   pr-labeler:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, high-mem]
     if: github.event_name == 'pull_request'
     permissions:
       contents: read
       pull-requests: write
       issues: write
     steps:
-      - uses: codelytv/pr-size-labeler@v1
+      - uses: actions/github-script@v7
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          xs_max_size: '10'
-          s_max_size: '100'
-          m_max_size: '500'
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = context.payload.pull_request.number;
+
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number });
+            const totalChanges = (pr.additions ?? 0) + (pr.deletions ?? 0);
+
+            const sizeLabels = [
+              { name: 'size/XS', max: 10 },
+              { name: 'size/S',  max: 100 },
+              { name: 'size/M',  max: 500 },
+              { name: 'size/L',  max: 1000 },
+              { name: 'size/XL', max: Number.POSITIVE_INFINITY },
+            ];
+
+            const desired = sizeLabels.find(l => totalChanges <= l.max)?.name ?? 'size/XL';
+
+            // Ensure labels exist
+            for (const l of sizeLabels) {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name: l.name });
+              } catch {
+                await github.rest.issues.createLabel({
+                  owner,
+                  repo,
+                  name: l.name,
+                  color: 'ededed',
+                  description: `PR size label (${l.name})`,
+                }).catch(() => {});
+              }
+            }
+
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+              owner,
+              repo,
+              issue_number: pull_number,
+            });
+
+            // Remove any existing size/* label
+            const existingSize = currentLabels
+              .map(l => l.name)
+              .filter(name => typeof name === 'string' && name.startsWith('size/'));
+
+            for (const name of existingSize) {
+              if (name !== desired) {
+                await github.rest.issues.removeLabel({ owner, repo, issue_number: pull_number, name }).catch(() => {});
+              }
+            }
+
+            // Add desired label
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number: pull_number,
+              labels: [desired],
+            });

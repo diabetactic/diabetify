@@ -43,10 +43,12 @@ test.describe('Bolus Calculator Functional Tests @functional @docker', () => {
     const foodPickerBtn = page.locator('[data-testid="food-picker-btn"]');
     await foodPickerBtn.click();
 
-    const foodModal = page.locator('.food-picker-modal, ion-modal:visible');
-    await expect(foodModal.first()).toBeVisible({ timeout: 5000 });
+    const foodModal = page.locator('.food-picker-modal');
+    await expect(foodModal).toHaveClass(/food-picker-modal--open/, { timeout: 5000 });
+    await expect(foodModal).toHaveAttribute('aria-hidden', 'false');
 
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(500);
+    await expect(foodModal).not.toHaveClass(/food-picker-modal--open/, { timeout: 5000 });
+    await expect(foodModal).toHaveAttribute('aria-hidden', 'true');
   });
 });

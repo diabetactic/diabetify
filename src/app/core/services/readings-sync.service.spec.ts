@@ -1,3 +1,5 @@
+import '../../../test-setup';
+
 import { TestBed } from '@angular/core/testing';
 import { Injector } from '@angular/core';
 import { of, throwError } from 'rxjs';
@@ -91,6 +93,11 @@ describe('ReadingsSyncService', () => {
         toArray: vi.fn().mockResolvedValue([]),
         clear: vi.fn().mockResolvedValue(undefined),
         bulkAdd: vi.fn().mockResolvedValue([]),
+        update: vi.fn().mockResolvedValue(1),
+        delete: vi.fn().mockResolvedValue(undefined),
+        filter: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue([]),
+        }),
       } as unknown as DiabetacticDatabase['syncQueue'],
       conflicts: {
         add: vi.fn().mockResolvedValue(1),
@@ -218,8 +225,15 @@ describe('ReadingsSyncService', () => {
   // syncPendingReadings Tests
   // ============================================================================
   describe('syncPendingReadings', () => {
+    // Helper to mock the filter().toArray() chain for syncQueue
+    const mockSyncQueueFilter = (items: SyncQueueItem[]) => {
+      vi.mocked(mockDatabase.syncQueue?.filter).mockReturnValue({
+        toArray: vi.fn().mockResolvedValue(items),
+      } as unknown as ReturnType<DiabetacticDatabase['syncQueue']['filter']>);
+    };
+
     it('should return empty result when queue is empty', async () => {
-      vi.mocked(mockDatabase.syncQueue?.toArray).mockResolvedValue([]);
+      mockSyncQueueFilter([]);
 
       const result = await service.syncPendingReadings();
 
@@ -229,14 +243,16 @@ describe('ReadingsSyncService', () => {
     it('should process create operations in queue', async () => {
       const reading = createTestReading();
       const queueItem: SyncQueueItem = {
+        id: 1,
         operation: 'create',
         readingId: reading.id,
         reading: reading,
         timestamp: Date.now(),
         retryCount: 0,
+        status: 'pending',
       };
 
-      vi.mocked(mockDatabase.syncQueue?.toArray).mockResolvedValue([queueItem]);
+      mockSyncQueueFilter([queueItem]);
       vi.mocked(mockApiGateway.request).mockReturnValue(
         of({ success: true, data: { id: 123, ...createBackendReading() } })
       );
@@ -250,14 +266,16 @@ describe('ReadingsSyncService', () => {
     it('should handle API errors gracefully', async () => {
       const reading = createTestReading();
       const queueItem: SyncQueueItem = {
+        id: 1,
         operation: 'create',
         readingId: reading.id,
         reading: reading,
         timestamp: Date.now(),
         retryCount: 0,
+        status: 'pending',
       };
 
-      vi.mocked(mockDatabase.syncQueue?.toArray).mockResolvedValue([queueItem]);
+      mockSyncQueueFilter([queueItem]);
       vi.mocked(mockApiGateway.request).mockReturnValue(
         of({ success: false, error: { message: 'API Error' } })
       );
@@ -272,77 +290,101 @@ describe('ReadingsSyncService', () => {
     it('should retry failed items up to retry limit', async () => {
       const reading = createTestReading();
       const queueItem: SyncQueueItem = {
+        id: 1,
         operation: 'create',
         readingId: reading.id,
         reading: reading,
         timestamp: Date.now(),
         retryCount: 1, // Already retried once
+        status: 'pending',
       };
 
-      vi.mocked(mockDatabase.syncQueue?.toArray).mockResolvedValue([queueItem]);
+      mockSyncQueueFilter([queueItem]);
       vi.mocked(mockApiGateway.request).mockReturnValue(
         throwError(() => new Error('Network error'))
       );
 
       await service.syncPendingReadings();
 
-      // Should re-add to queue with incremented retry count
-      expect(mockDatabase.syncQueue?.bulkAdd).toHaveBeenCalled();
+      // Should update the item with incremented retry count and reset to pending
+      expect(mockDatabase.syncQueue?.update).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({
+          status: 'pending',
+          retryCount: 2,
+        })
+      );
     });
 
     it('should not retry items that reached max retries', async () => {
       const reading = createTestReading();
       const queueItem: SyncQueueItem = {
+        id: 1,
         operation: 'create',
         readingId: reading.id,
         reading: reading,
         timestamp: Date.now(),
-        retryCount: 3, // At max retries
+        retryCount: 3, // At max retries (SYNC_RETRY_LIMIT = 3)
+        status: 'pending',
       };
 
-      vi.mocked(mockDatabase.syncQueue?.toArray).mockResolvedValue([queueItem]);
+      mockSyncQueueFilter([queueItem]);
       vi.mocked(mockApiGateway.request).mockReturnValue(
         throwError(() => new Error('Network error'))
       );
 
       await service.syncPendingReadings();
 
-      // Should not add item back to queue (max retries reached)
-      const bulkAddCalls = vi.mocked(mockDatabase.syncQueue?.bulkAdd).mock.calls;
-      if (bulkAddCalls.length > 0) {
-        expect(bulkAddCalls[0][0]).toEqual([]);
-      }
+      // Should delete the item from queue (max retries reached)
+      expect(mockDatabase.syncQueue?.delete).toHaveBeenCalledWith(1);
     });
 
     it('should use mutex to prevent concurrent syncs', async () => {
-      vi.mocked(mockDatabase.syncQueue?.toArray).mockImplementation(async () => {
-        await new Promise(resolve => setTimeout(resolve, 50));
-        return [];
+      let filterCallCount = 0;
+      vi.mocked(mockDatabase.syncQueue?.filter).mockImplementation(() => {
+        filterCallCount++;
+        return {
+          toArray: vi.fn().mockImplementation(async () => {
+            // Add delay to simulate slow database operation
+            await new Promise(resolve => setTimeout(resolve, 50));
+            return [];
+          }),
+        } as unknown as ReturnType<DiabetacticDatabase['syncQueue']['filter']>;
       });
 
       // Start two concurrent syncs
       const promise1 = service.syncPendingReadings();
+      // Small delay to ensure first sync has started
+      await new Promise(resolve => setTimeout(resolve, 5));
       const promise2 = service.syncPendingReadings();
 
       const [result1, result2] = await Promise.all([promise1, promise2]);
 
       // Both should return the same result (mutex returns existing promise)
       expect(result1).toEqual(result2);
-      // Database should only be queried once
-      expect(mockDatabase.syncQueue?.toArray).toHaveBeenCalledTimes(1);
+      // We do 2 filters in a single sync call:
+      // - crash recovery scan (processing items)
+      // - pending queue scan (items to sync)
+      // Mutex should ensure concurrent calls share the same promise (2 total, not 4).
+      expect(filterCallCount).toBe(2);
     });
 
     it('should mark readings as synced on success', async () => {
       const reading = createTestReading({ id: 'test_123' });
       const queueItem: SyncQueueItem = {
+        id: 1, // Required for delete after sync
         operation: 'create',
         readingId: reading.id,
         reading: reading,
         timestamp: Date.now(),
         retryCount: 0,
+        status: 'pending',
       };
 
-      vi.mocked(mockDatabase.syncQueue?.toArray).mockResolvedValue([queueItem]);
+      // Mock the filter().toArray() chain that executeSync uses
+      vi.mocked(mockDatabase.syncQueue?.filter).mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([queueItem]),
+      } as unknown as ReturnType<DiabetacticDatabase['syncQueue']['filter']>);
       vi.mocked(mockApiGateway.request).mockReturnValue(of({ success: true, data: { id: 456 } }));
 
       await service.syncPendingReadings();
@@ -554,14 +596,20 @@ describe('ReadingsSyncService', () => {
     it('should aggregate results from push and fetch', async () => {
       const reading = createTestReading();
       const queueItem: SyncQueueItem = {
+        id: 1, // Required for delete after sync
         operation: 'create',
         readingId: reading.id,
         reading: reading,
         timestamp: Date.now(),
         retryCount: 0,
+        status: 'pending',
       };
 
-      vi.mocked(mockDatabase.syncQueue?.toArray).mockResolvedValue([queueItem]);
+      // Mock the filter().toArray() chain that executeSync uses for sync queue
+      vi.mocked(mockDatabase.syncQueue?.filter).mockReturnValue({
+        toArray: vi.fn().mockResolvedValue([queueItem]),
+      } as unknown as ReturnType<DiabetacticDatabase['syncQueue']['filter']>);
+
       vi.mocked(mockApiGateway.request)
         .mockReturnValueOnce(of({ success: true, data: { id: 1 } })) // Push
         .mockReturnValueOnce(
@@ -621,9 +669,15 @@ describe('ReadingsSyncService', () => {
 
       await service.resolveConflict(conflict, 'keep-server');
 
-      expect(mockDatabase.readings?.put).toHaveBeenCalledWith(
+      // Changed from put() to update() to prevent duplicate records
+      // Uses local reading's ID to update with server values
+      expect(mockDatabase.readings?.update).toHaveBeenCalledWith(
+        conflict.localReading.id,
         expect.objectContaining({
-          ...conflict.serverReading,
+          value: conflict.serverReading.value,
+          units: conflict.serverReading.units,
+          time: conflict.serverReading.time,
+          backendId: conflict.serverReading.backendId,
           synced: true,
         })
       );
@@ -672,7 +726,10 @@ describe('ReadingsSyncService', () => {
     });
 
     it('should handle database errors during sync', async () => {
-      vi.mocked(mockDatabase.syncQueue?.toArray).mockRejectedValue(new Error('DB Error'));
+      // Mock the filter().toArray() chain to reject
+      vi.mocked(mockDatabase.syncQueue?.filter).mockReturnValue({
+        toArray: vi.fn().mockRejectedValue(new Error('DB Error')),
+      } as unknown as ReturnType<DiabetacticDatabase['syncQueue']['filter']>);
 
       await expect(service.syncPendingReadings()).rejects.toThrow('DB Error');
     });

@@ -423,13 +423,18 @@ describe('ExternalServicesManager', () => {
       expect(state.isOnline).toBe(false);
     });
 
-    it('should perform health check when network reconnects', () => {
+    // Note: Health check on network reconnect was disabled to prevent false positives
+    // during network transitions. The service now relies on the periodic health check interval.
+    // See: external-services-manager.service.ts lines 154-159 for context
+    it('should NOT perform health check immediately when network reconnects (disabled)', () => {
       const performHealthCheckSpy = vi.spyOn(service, 'performHealthCheck');
       const listener = (Network.addListener as Mock).mock.calls[0][1];
 
       listener({ connected: true });
 
-      expect(performHealthCheckSpy).toHaveBeenCalled();
+      // Health check is intentionally NOT called on reconnect to avoid
+      // false positives during transient network state changes
+      expect(performHealthCheckSpy).not.toHaveBeenCalled();
     });
 
     it('should mark all services unhealthy when network disconnects', () => {

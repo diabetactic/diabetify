@@ -17,9 +17,8 @@ pnpm run typecheck        # TypeScript check
 # Testing
 pnpm test                            # All unit tests (2392 tests)
 pnpm test -- src/path/to/file.spec.ts  # Single test file
-pnpm run test:e2e:mock               # Playwright E2E - mock backend
-pnpm run test:e2e:docker             # Playwright E2E - Docker backend
-pnpm run test:e2e:docker -- --update-snapshots  # Update visual baselines
+pnpm run test:e2e                    # Playwright E2E (requires Docker backend)
+pnpm run test:e2e -- --update-snapshots  # Update visual baselines
 ```
 
 ## Architecture

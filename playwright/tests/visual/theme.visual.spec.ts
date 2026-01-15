@@ -33,7 +33,17 @@ async function prepareForScreenshot(page: import('@playwright/test').Page): Prom
       }
     `,
   });
-  await page.waitForTimeout(300);
+  await page.evaluate(async () => {
+    if (document.fonts?.ready) {
+      try {
+        await document.fonts.ready;
+      } catch {
+        // Ignore font readiness errors in test environment
+      }
+    }
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+  });
 }
 
 async function setTheme(page: import('@playwright/test').Page, theme: 'light' | 'dark') {
@@ -62,7 +72,19 @@ async function setTheme(page: import('@playwright/test').Page, theme: 'light' | 
     void document.body.offsetHeight;
   }, isDark);
 
-  await page.waitForTimeout(1000);
+  await page.waitForFunction(
+    ({ dark }) => {
+      const html = document.documentElement;
+      const body = document.body;
+      const expectedTheme = dark ? 'dark' : 'diabetactic';
+      const themeMatches = html.getAttribute('data-theme') === expectedTheme;
+      const classMatches = dark
+        ? html.classList.contains('ion-palette-dark') && body.classList.contains('dark')
+        : html.classList.contains('light') && body.classList.contains('light');
+      return themeMatches && classMatches;
+    },
+    { dark: isDark }
+  );
 
   await page.evaluate(dark => {
     const html = document.documentElement;
@@ -73,7 +95,18 @@ async function setTheme(page: import('@playwright/test').Page, theme: 'light' | 
     }
   }, isDark);
 
-  await page.waitForTimeout(500);
+  await page.waitForFunction(
+    ({ dark }) => {
+      const html = document.documentElement;
+      if (!dark) {
+        return true;
+      }
+      return (
+        html.classList.contains('ion-palette-dark') && html.getAttribute('data-theme') === 'dark'
+      );
+    },
+    { dark: isDark }
+  );
 }
 
 test.describe('Visual Regression - Dark Theme @visual @docker', () => {

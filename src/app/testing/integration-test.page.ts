@@ -50,7 +50,11 @@ import { LoggerService } from '@core/services/logger.service';
 
           <ion-item>
             <ion-label position="stacked">Username (DNI)</ion-label>
-            <ion-input [(ngModel)]="username" placeholder="1000" [disabled]="running"></ion-input>
+            <ion-input
+              [(ngModel)]="username"
+              placeholder="40123456"
+              [disabled]="running"
+            ></ion-input>
           </ion-item>
 
           <ion-item>
@@ -336,8 +340,8 @@ export class IntegrationTestPage implements OnInit {
   private alertController = inject(AlertController);
 
   apiUrl: string;
-  username = '1000';
-  password = 'tuvieja';
+  username = '40123456';
+  password = 'thepassword';
   running = false;
   results: TestResult[] = [];
 

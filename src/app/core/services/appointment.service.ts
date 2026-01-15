@@ -47,7 +47,7 @@ export class AppointmentService implements OnDestroy {
   private mockAppointments: MockAppointment[] = [
     {
       appointment_id: 1,
-      user_id: 1000,
+      user_id: 40123456,
       glucose_objective: 120,
       insulin_type: 'rapid',
       dose: 10,
@@ -65,7 +65,7 @@ export class AppointmentService implements OnDestroy {
     },
     {
       appointment_id: 2,
-      user_id: 1000,
+      user_id: 40123456,
       glucose_objective: 110,
       insulin_type: 'long',
       dose: 20,
@@ -133,7 +133,7 @@ export class AppointmentService implements OnDestroy {
       const newAppointment: MockAppointment = {
         ...formData,
         appointment_id: Date.now(),
-        user_id: 1000,
+        user_id: 40123456,
         status: 'CREATED',
         timestamps: { created_at: new Date().toISOString() },
       };

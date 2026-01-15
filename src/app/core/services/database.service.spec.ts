@@ -105,7 +105,7 @@ describe('DiabetacticDatabase', () => {
   describe('Database Initialization', () => {
     it('should initialize with correct name, version, and tables', () => {
       expect(database.name).toBe('DiabetacticDB');
-      expect(database.verno).toBe(4);
+      expect(database.verno).toBe(5);
       expect(database.readings).toBeDefined();
       expect(database.syncQueue).toBeDefined();
       expect(database.appointments).toBeDefined();
@@ -194,7 +194,7 @@ describe('DiabetacticDatabase', () => {
       dbV4.name = MIGRATION_DB_NAME;
       await dbV4.open();
 
-      expect(dbV4.verno).toBe(4);
+      expect(dbV4.verno).toBe(5);
       expect(await dbV4.table('readings').count()).toBe(1);
       expect(dbV4.tables.map(t => t.name)).toContain('conflicts');
       expect(dbV4.tables.map(t => t.name)).toContain('auditLog');
@@ -467,7 +467,7 @@ describe('DiabetacticDatabase', () => {
       expect(stats.conflictsCount).toBe(1);
       expect(stats.auditLogCount).toBe(1);
       expect(stats.databaseName).toBe('DiabetacticDB');
-      expect(stats.version).toBe(4);
+      expect(stats.version).toBe(5);
 
       await database.clearAllData();
 
@@ -493,7 +493,7 @@ describe('DiabetacticDatabase', () => {
       expect(db).toBeDefined();
       expect(db).toBeInstanceOf(DiabetacticDatabase);
       expect(db.name).toBe('DiabetacticDB');
-      expect(db.verno).toBe(4);
+      expect(db.verno).toBe(5);
       expect(db.readings).toBeDefined();
     });
   });

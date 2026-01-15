@@ -18,7 +18,7 @@
 import type { Page } from '@playwright/test';
 
 // Type for the Midscene PlaywrightAgent (imported dynamically)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 type PlaywrightAgentType = any;
 
 // Lazy-load Midscene only when needed (keeps it out of production)

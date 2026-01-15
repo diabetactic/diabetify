@@ -157,7 +157,7 @@ export class DemoDataService {
     const appointments: Appointment[] = [
       {
         appointment_id: 1,
-        user_id: 1000,
+        user_id: 40123456,
         glucose_objective: 120,
         insulin_type: 'rapid',
         dose: 10,
@@ -175,7 +175,7 @@ export class DemoDataService {
       },
       {
         appointment_id: 2,
-        user_id: 1000,
+        user_id: 40123456,
         glucose_objective: 110,
         insulin_type: 'long',
         dose: 20,
@@ -193,7 +193,7 @@ export class DemoDataService {
       },
       {
         appointment_id: 3,
-        user_id: 1000,
+        user_id: 40123456,
         glucose_objective: 100,
         insulin_type: 'mixed',
         dose: 15,
@@ -459,7 +459,7 @@ export class DemoDataService {
         units: 'mg/dL',
         time: iso,
         synced: true,
-        userId: '1000',
+        userId: '40123456',
         localStoredAt: iso,
         isLocalOnly: false,
         status: statusFor(value),
@@ -517,12 +517,12 @@ export class DemoDataService {
 
     // Store demo user
     const demoUser = {
-      id: '1000',
-      dni: '1000',
+      id: '40123456',
+      dni: '40123456',
       name: 'Usuario',
       surname: 'Demo',
       email: 'demo@diabetactic.com',
-      password: 'demo123', // Public test credentials
+      password: 'thepassword', // Public test credentials (primary account)
       role: 'patient',
     };
     localStorage.setItem('demoUser', JSON.stringify(demoUser));
@@ -541,7 +541,7 @@ export class DemoDataService {
     localStorage.setItem('demoAppointments', JSON.stringify(appointments));
 
     this.logger.info('DemoData', 'Demo data seeded successfully');
-    this.logger.info('DemoData', 'Demo credentials: demo@diabetactic.com / demo123');
+    this.logger.info('DemoData', 'Demo credentials: 40123456 / thepassword');
   }
 
   /**

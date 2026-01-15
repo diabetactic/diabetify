@@ -9,10 +9,11 @@ import {
 import { Router, RouterModule, NavigationStart } from '@angular/router';
 import { IonContent } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subject } from 'rxjs';
+import { Subject, firstValueFrom } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { ProfileService } from '@services/profile.service';
 import { ThemeService } from '@services/theme.service';
+import { LocalAuthService } from '@services/local-auth.service';
 import { ROUTES, ROUTE_SEGMENTS } from '@core/constants';
 
 @Component({
@@ -41,7 +42,8 @@ export class WelcomePage implements OnInit, OnDestroy {
     private router: Router,
     private profileService: ProfileService,
     private themeService: ThemeService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private authService: LocalAuthService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -72,10 +74,15 @@ export class WelcomePage implements OnInit, OnDestroy {
     }
     // END MOCK QUOTES
 
-    // Check if user has already completed onboarding
+    // Check if user has already completed onboarding AND is authenticated
+    // Both conditions must be true to auto-redirect to dashboard
+    // This prevents navigation loops when user has logged out but profile persists
     const profile = await this.profileService.getProfile();
-    if (profile?.hasCompletedOnboarding) {
-      // Navigate to tabs if already onboarded
+    await this.authService.waitForInitialization();
+    const isAuthenticated = await firstValueFrom(this.authService.isAuthenticated());
+
+    if (profile?.hasCompletedOnboarding && isAuthenticated) {
+      // Navigate to tabs if already onboarded and authenticated
       this.router.navigate([ROUTES.TABS_DASHBOARD], { replaceUrl: true });
     }
   }

@@ -152,7 +152,11 @@ export class ExternalServicesManager implements OnDestroy {
       this.updateState({ isOnline: status.connected });
 
       if (status.connected) {
-        this.performHealthCheck();
+        // DISABLED: Health checks cause 404 errors for /api/health endpoint
+        // Services are verified via actual API calls instead
+        // Uncommenting this would cause false "unhealthy" states and circuit breaker issues
+        // this.performHealthCheck();
+        this.logger.info('NetworkMonitor', 'Network reconnected, services available');
       } else {
         this.markAllServicesUnhealthy('Network connection lost');
       }

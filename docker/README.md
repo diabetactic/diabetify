@@ -97,7 +97,7 @@ This will:
 ./create-user.sh <dni> <password>
 
 # Example
-./create-user.sh 1000 tuvieja
+./create-user.sh 40123456 thepassword
 
 # Full user details
 ./create-user.sh <dni> <password> <name> <surname> <email>
@@ -112,7 +112,7 @@ This will:
 ./delete-user.sh <dni>
 
 # Example
-./delete-user.sh 1000
+./delete-user.sh 40123456
 ```
 
 Note: This actually blocks the user (backend has no delete endpoint).
@@ -123,7 +123,7 @@ Note: This actually blocks the user (backend has no delete endpoint).
 ./get-user.sh <dni>
 
 # Example
-./get-user.sh 1000
+./get-user.sh 40123456
 ```
 
 ### List All Users
@@ -261,7 +261,7 @@ python3 user_manager.py list
 docker exec diabetactic_test_utils python3 user_manager.py update-status <dni> <status>
 
 # Example
-docker exec diabetactic_test_utils python3 user_manager.py update-status 1000 accepted
+docker exec diabetactic_test_utils python3 user_manager.py update-status 40123456 accepted
 ```
 
 ### Access PostgreSQL databases directly
@@ -289,7 +289,7 @@ docker exec -it diabetactic_appointments_db psql -U postgres -d appointments
 2. **Create test user**:
 
    ```bash
-   ./create-user.sh 1000 tuvieja
+   ./create-user.sh 40123456 thepassword
    ```
 
 3. **Start frontend with local backend**:
@@ -301,7 +301,7 @@ docker exec -it diabetactic_appointments_db psql -U postgres -d appointments
 
 4. **Test the app**:
    - Web: http://localhost:8100
-   - Login with DNI: 1000, Password: tuvieja
+   - Login with DNI: 40123456, Password: thepassword
 
 5. **View backend logs**:
 
@@ -358,41 +358,47 @@ docker exec -it diabetactic_appointments_db psql -U postgres -d appointments
 ./test-appointment-flow.sh clear
 
 # Accept user's pending appointment
-./test-appointment-flow.sh accept 1000
+./test-appointment-flow.sh accept 40123456
 
 # Deny user's pending appointment
-./test-appointment-flow.sh deny 1000
+./test-appointment-flow.sh deny 40123456
 
 # Open/close appointment queue
 ./test-appointment-flow.sh open
 ./test-appointment-flow.sh close
 
 # Check queue status
-./test-appointment-flow.sh status 1000
+./test-appointment-flow.sh status 40123456
 
 # Run full flow demo with state visualization
-./test-appointment-flow.sh full 1000
+./test-appointment-flow.sh full 40123456
 ```
 
 ### Testing Appointment Flow
 
 1. **Clear existing state**: `./test-appointment-flow.sh clear`
 2. **In mobile app**: Request appointment (NONE → PENDING)
-3. **Accept via script**: `./test-appointment-flow.sh accept 1000`
+3. **Accept via script**: `./test-appointment-flow.sh accept 40123456`
 4. **In mobile app**: Create appointment (ACCEPTED → CREATED)
 
 ## E2E Testing Integration
 
 ### Playwright Docker Tests
 
-Dedicated Docker tests in `playwright/tests/docker-backend-e2e.spec.ts`:
+Docker E2E tests are organized under:
+
+- `playwright/tests/smoke/` (quick checks)
+- `playwright/tests/functional/` (feature flows)
+- `playwright/tests/visual/` (screenshot regression)
+
+All Docker-dependent tests are tagged with `@docker`.
 
 ```bash
-# Run Docker-specific Playwright tests
-E2E_DOCKER_TESTS=true \
-E2E_API_URL=http://localhost:8000 \
-E2E_BACKOFFICE_URL=http://localhost:8001 \
-pnpm run test:e2e -- --grep "@docker"
+# Run all Docker-tagged tests (uses localhost backend)
+pnpm run test:e2e
+
+# Run a specific Docker test file
+pnpm run test:e2e -- playwright/tests/smoke/api.smoke.spec.ts
 ```
 
 ### Maestro Integration
@@ -401,7 +407,7 @@ The `maestro/scripts/backoffice-api.js` auto-detects Docker backend:
 
 ```bash
 # Auto-detects localhost:8001 if Docker is running
-ACTION=accept USER_ID=1000 node maestro/scripts/backoffice-api.js
+ACTION=accept USER_ID=40123456 node maestro/scripts/backoffice-api.js
 
 # Force specific backend
 BACKOFFICE_API_URL=http://localhost:8001 ACTION=clear node maestro/scripts/backoffice-api.js

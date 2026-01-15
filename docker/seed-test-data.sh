@@ -5,7 +5,7 @@
 # Creates a deterministic test environment with known data for reproducible tests.
 #
 # Usage:
-#   ./seed-test-data.sh              # Seed default test user (1000)
+#   ./seed-test-data.sh              # Seed default test user (40123456)
 #   ./seed-test-data.sh full         # Seed with readings and appointments
 #   ./seed-test-data.sh minimal      # Just create user, no data
 #

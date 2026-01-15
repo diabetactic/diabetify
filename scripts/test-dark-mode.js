@@ -4,6 +4,24 @@ const fs = require('fs');
 const path = require('path');
 
 (async () => {
+  const waitForStableUi = async page => {
+    await page.waitForLoadState('domcontentloaded');
+    await page
+      .waitForSelector('ion-app.hydrated, ion-content', { state: 'visible', timeout: 10000 })
+      .catch(() => {});
+    await page.evaluate(async () => {
+      if (document.fonts && document.fonts.status !== 'loaded') {
+        await document.fonts.ready;
+      }
+    });
+    await page.evaluate(
+      () =>
+        new Promise(resolve => {
+          requestAnimationFrame(() => requestAnimationFrame(resolve));
+        })
+    );
+  };
+
   const browser = await chromium.launch({
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -22,7 +40,7 @@ const path = require('path');
     document.documentElement.setAttribute('data-theme', 'dark');
   });
 
-  await page.waitForTimeout(1000);
+  await waitForStableUi(page);
 
   // Check computed styles for stat cards
   const gradients = await page.evaluate(() => {

@@ -118,10 +118,8 @@ export const TEST_TAGS = {
   functional: '@functional',
   /** Visual regression tests - screenshot comparisons */
   visual: '@visual',
-  /** Docker backend tests (legacy, prefer @functional) */
+  /** Docker backend tests */
   docker: '@docker',
-  /** Docker visual tests (legacy, prefer @visual) */
-  dockerVisual: '@docker-visual',
   /** Mock backend visual tests */
   visualMock: '@visual-mock',
 } as const;
@@ -131,14 +129,9 @@ export const TEST_TAGS = {
 // =============================================================================
 
 /**
- * Check if running against Docker backend
+ * Check if running against Docker backend (always true for E2E tests)
  */
 export const isDockerMode = process.env['E2E_DOCKER_TESTS'] === 'true';
-
-/**
- * Check if running against mock backend
- */
-export const isMockMode = process.env['E2E_MOCK_MODE'] === 'true';
 
 /**
  * Check if running in CI environment
@@ -168,7 +161,6 @@ export const TestConfig = {
   tags: TEST_TAGS,
   flags: {
     isDockerMode,
-    isMockMode,
     isCI,
   },
 } as const;

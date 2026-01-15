@@ -71,7 +71,17 @@ export class BolusCalculatorPage extends BasePage {
       return false;
     }
 
-    await this.page.waitForTimeout(300);
+    await this.page
+      .waitForFunction(() => {
+        const modals = Array.from(document.querySelectorAll('ion-modal'));
+        const visibleModal = modals.find(modal => {
+          const style = window.getComputedStyle(modal);
+          return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+        });
+        if (!visibleModal) return false;
+        return visibleModal.querySelectorAll('ion-button, button').length > 0;
+      })
+      .catch(() => {});
 
     const clicked = await this.page.evaluate(() => {
       const modals = Array.from(document.querySelectorAll('ion-modal')).filter(modal => {

@@ -1233,7 +1233,7 @@
       "disableAll": "Deshabilitar Todas las Simulaciones",
       "clearData": "Limpiar Datos Simulados",
       "tip": "💡 Consejo: El modo simulación te permite probar la app sin conexión y sin datos reales.",
-      "demoCredentials": "Credenciales de demostración: demo@diabetactic.com / demo123"
+      "demoCredentials": "Credenciales de demostración: 40123456 / thepassword"
     },
     "actions": {
       "dataManagement": "Gestión de Datos",
@@ -1310,7 +1310,7 @@
     "tagline": "Tu compañero de salud digital",
     "demoHint": {
       "testAccount": "Cuenta de Prueba:",
-      "message": "DNI: 1000 | Contraseña: tuvieja"
+      "message": "DNI: 40123456 | Contraseña: thepassword"
     },
     "username": {
       "label": "DNI",

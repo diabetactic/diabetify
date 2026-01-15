@@ -33,12 +33,10 @@ test.describe('Profile Functional Tests @functional @docker', () => {
     await pages.profilePage.waitForHydration();
 
     const settingsSection = page.locator('text=/Configuraci|Settings|Preferencias|Preferences/i');
-    const hasSettings = await settingsSection
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-
-    expect(hasSettings || true).toBe(true);
+    await expect(
+      settingsSection.first(),
+      'Profile should show settings/preferences section'
+    ).toBeVisible({ timeout: 5000 });
   });
 
   test('should show logout button', async ({ page, pages }) => {

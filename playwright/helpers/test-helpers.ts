@@ -105,7 +105,8 @@ export async function scrollAndClickIonElement(page: Page, selector: string): Pr
   });
 
   // Allow Ionic scroll/animations to settle.
-  await page.waitForTimeout(250);
+  await page.evaluate(() => new Promise(requestAnimationFrame));
+  await page.evaluate(() => new Promise(requestAnimationFrame));
 }
 
 /**
@@ -127,22 +128,18 @@ export async function isVisibleSoon(
 
 /**
  * Get default password based on environment mode.
- * Mock mode uses demo123, real backend uses tuvieja.
+ * Mock mode and Docker backend share the same seeded test password.
  */
 function getDefaultPassword(): string {
-  if (process.env.E2E_TEST_PASSWORD) {
-    return process.env.E2E_TEST_PASSWORD;
-  }
-  // Mock mode uses demo123, real backend uses tuvieja
-  const isMockMode = process.env.E2E_MOCK_MODE === 'true';
-  return isMockMode ? 'demo123' : 'tuvieja';
+  // Use environment variable or fall back to default test password
+  return process.env['E2E_TEST_PASSWORD'] || 'thepassword';
 }
 
 /**
  * Login helper - handles the complete login flow with proper waits
  */
 export async function loginUser(page: Page, credentials?: LoginCredentials): Promise<void> {
-  const username = credentials?.username || process.env.E2E_TEST_USERNAME || '1000';
+  const username = credentials?.username || process.env['E2E_TEST_USERNAME'] || '40123456';
   const password = credentials?.password || getDefaultPassword();
 
   // Navigate to login if not already there
@@ -512,11 +509,11 @@ export async function dismissOnboardingOverlay(page: Page): Promise<void> {
           .first()
           .click()
           .catch(() => {});
-        await page.waitForTimeout(200);
+        await overlay.waitFor({ state: 'hidden', timeout: 1000 }).catch(() => {});
       } else {
         // Try clicking outside or pressing Escape
         await page.keyboard.press('Escape');
-        await page.waitForTimeout(200);
+        await overlay.waitFor({ state: 'hidden', timeout: 1000 }).catch(() => {});
       }
     }
   }
@@ -622,8 +619,8 @@ export async function navigateToBolusCalculator(page: Page): Promise<void> {
   });
 
   if (routerNavigated) {
-    // Give Angular time to complete the navigation
-    await page.waitForTimeout(1000);
+    // Wait for Angular to complete the navigation
+    await page.waitForURL(/\/bolus-calculator/, { timeout: 10000 }).catch(() => {});
     if (page.url().includes('/bolus-calculator')) {
       return;
     }
@@ -678,8 +675,16 @@ export async function confirmWarningModal(page: Page): Promise<boolean> {
     return false;
   }
 
-  // Wait for animation to complete (Ionic modals have ~300ms animation)
-  await page.waitForTimeout(350);
+  // Wait for modal content to be ready before interacting
+  await page.waitForFunction(() => {
+    const modals = Array.from(document.querySelectorAll('ion-modal')).filter(modal => {
+      const style = window.getComputedStyle(modal);
+      return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+    });
+    if (modals.length === 0) return false;
+    const modal = modals[modals.length - 1];
+    return modal.querySelectorAll('ion-button').length > 0;
+  });
 
   // Use page.evaluate to find and click the CONFIRM button in the Warning modal
   // This is the most reliable method for Ionic/Angular components
@@ -722,7 +727,19 @@ export async function confirmWarningModal(page: Page): Promise<boolean> {
 
   if (clicked.clicked) {
     // Wait for modal to close
-    await page.waitForTimeout(500);
+    await page
+      .waitForFunction(
+        () => {
+          return !Array.from(document.querySelectorAll('ion-modal')).some(modal => {
+            const style = window.getComputedStyle(modal);
+            return (
+              style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0'
+            );
+          });
+        },
+        { timeout: 5000 }
+      )
+      .catch(() => {});
     return true;
   }
 
@@ -733,12 +750,36 @@ export async function confirmWarningModal(page: Page): Promise<boolean> {
       .last()
       .getByRole('button', { name: /CONFIRM|Confirm|Confirmar/i });
     await confirmBtn.evaluate((el: HTMLElement) => el.click());
-    await page.waitForTimeout(500);
+    await page
+      .waitForFunction(
+        () => {
+          return !Array.from(document.querySelectorAll('ion-modal')).some(modal => {
+            const style = window.getComputedStyle(modal);
+            return (
+              style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0'
+            );
+          });
+        },
+        { timeout: 5000 }
+      )
+      .catch(() => {});
     return true;
   } catch {
     // Last resort: press Escape to dismiss any open modal
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(300);
+    await page
+      .waitForFunction(
+        () => {
+          return !Array.from(document.querySelectorAll('ion-modal')).some(modal => {
+            const style = window.getComputedStyle(modal);
+            return (
+              style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0'
+            );
+          });
+        },
+        { timeout: 5000 }
+      )
+      .catch(() => {});
     return false;
   }
 }

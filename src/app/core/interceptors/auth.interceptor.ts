@@ -18,8 +18,8 @@ import {
   HttpInterceptor,
   HttpErrorResponse,
 } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError, timer, Subject } from 'rxjs';
-import { catchError, filter, take, switchMap, retryWhen, mergeMap } from 'rxjs/operators';
+import { Observable, BehaviorSubject, throwError, Subject } from 'rxjs';
+import { catchError, filter, take, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { LocalAuthService } from '@services/local-auth.service';
 import { LoggerService } from '@services/logger.service';
@@ -43,10 +43,8 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
     this.refreshTokenSubject.complete();
   }
 
-  // Exponential backoff configuration for 5xx errors
-  private readonly baseDelay = 1000; // 1 second base delay
-  private readonly maxRetries = 3;
-  private readonly maxDelay = 30000; // 30 second max delay
+  // Note: 5xx retry logic is handled by RetryInterceptor
+  // This interceptor focuses on auth-specific handling (401/403)
 
   constructor(
     private router: Router,
@@ -55,43 +53,19 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
   ) {}
 
   /**
-   * Intercept HTTP requests to add authentication and handle errors
+   * Intercept HTTP requests to handle auth-specific errors
    * - 401: Unauthorized - triggers token refresh with request queueing
-   * - 5xx: Server errors - applies exponential backoff retry with jitter
+   * - 403: Forbidden - forces re-login
    *
-   * Note: With CapacitorHttp auto-patching enabled, errors on native platforms
+   * Note: 5xx retry logic is handled by RetryInterceptor to avoid duplicate retries.
+   * With CapacitorHttp auto-patching enabled, errors on native platforms
    * may be plain objects instead of HttpErrorResponse. We handle both cases.
    */
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     // Note: Token injection is handled by ApiGatewayService
-    // This interceptor focuses on error handling, refresh, and retry
+    // This interceptor focuses on auth error handling (401/403)
 
     return next.handle(request).pipe(
-      retryWhen(errors =>
-        errors.pipe(
-          mergeMap((error, attemptIndex) => {
-            // Extract status from HttpErrorResponse or plain object (native CapacitorHttp)
-            const status = this.extractErrorStatus(error);
-
-            // Only retry 5xx server errors for GET requests (idempotent operations only)
-            // POST/PUT/DELETE are not retried to prevent duplicate operations
-            if (
-              status !== null &&
-              status >= 500 &&
-              attemptIndex < this.maxRetries &&
-              request.method === 'GET'
-            ) {
-              this.logger.debug(
-                'AuthInterceptor',
-                `Retrying 5xx error (attempt ${attemptIndex + 1}/${this.maxRetries})`,
-                { status, url: request.url }
-              );
-              return this.calculateBackoffDelay(attemptIndex);
-            }
-            return throwError(() => error);
-          })
-        )
-      ),
       catchError(error => {
         // Extract status from HttpErrorResponse or plain object (native CapacitorHttp)
         const status = this.extractErrorStatus(error);
@@ -200,23 +174,5 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
         Authorization: `Bearer ${token}`,
       },
     });
-  }
-
-  /**
-   * Calculate exponential backoff delay with jitter
-   * Formula: delay = min(baseDelay * 2^attempt + jitter, maxDelay)
-   * where jitter is a random value to prevent thundering herd
-   */
-  private calculateBackoffDelay(attemptIndex: number): Observable<number> {
-    // Calculate exponential backoff: baseDelay * 2^attempt
-    const exponentialDelay = this.baseDelay * Math.pow(2, attemptIndex);
-
-    // Add random jitter (0-1000ms) to prevent thundering herd
-    const jitter = Math.random() * 1000;
-
-    // Cap at maxDelay
-    const delay = Math.min(exponentialDelay + jitter, this.maxDelay);
-
-    return timer(delay);
   }
 }

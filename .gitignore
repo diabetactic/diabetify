@@ -26,6 +26,10 @@ docker/.state/
 # Local env/config
 mise.local.toml
 
+# Codex / OpenCode local config (do not commit)
+/.codex/
+/.opencode/
+
 # Secrets/keys
 android/release-keystore.jks
 android/keystore.properties

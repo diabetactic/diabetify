@@ -297,8 +297,21 @@ export class EditReadingPage implements OnInit, OnDestroy {
     try {
       const formValue = this.readingForm.value;
 
+      // Defensively validate that the glucose value is a finite number before saving
+      // This prevents data integrity issues from NaN/Infinity values
+      const glucoseValue = parseFloat(formValue.value);
+
+      if (isNaN(glucoseValue) || !isFinite(glucoseValue)) {
+        const errorMessage = 'Invalid glucose value provided.';
+        this.logger.error('Data Integrity', errorMessage, { value: formValue.value });
+        await this.showErrorToast(new Error(errorMessage));
+        this.isSubmitting = false;
+        this.cdr.markForCheck();
+        return;
+      }
+
       const updates: Partial<LocalGlucoseReading> = {
-        value: parseFloat(formValue.value),
+        value: glucoseValue,
         time: formValue.datetime,
         notes: formValue.notes || undefined,
         mealContext: formValue.mealContext || undefined,

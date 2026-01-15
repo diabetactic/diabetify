@@ -61,10 +61,20 @@ export class ProfileService implements OnDestroy {
   private _tidepoolConnected$ = new BehaviorSubject<boolean>(false);
   public readonly tidepoolConnected$ = this._tidepoolConnected$.asObservable();
 
+  // Promise that resolves when initialization is complete
+  // Prevents race conditions when guards/components call getProfile() before init finishes
+  private initializationPromise: Promise<void>;
+  private initializationResolve!: () => void;
+
   constructor(
     private apiGateway: ApiGatewayService,
     private logger: LoggerService
   ) {
+    // Create initialization promise that callers can await
+    this.initializationPromise = new Promise<void>(resolve => {
+      this.initializationResolve = resolve;
+    });
+
     this.initialize();
   }
 
@@ -79,14 +89,15 @@ export class ProfileService implements OnDestroy {
 
   /**
    * Initialize service and load profile
+   * Resolves initializationPromise when complete (success or failure)
    */
   private async initialize(): Promise<void> {
     try {
       // Check and run migrations if needed
       await this.runMigrations();
 
-      // Load profile from storage
-      const profile = await this.getProfile();
+      // Load profile from storage (internal call, doesn't wait for init)
+      const profile = await this.loadProfileFromStorage();
 
       if (profile) {
         this._profile$.next(profile);
@@ -94,13 +105,28 @@ export class ProfileService implements OnDestroy {
       }
     } catch (error) {
       this.logger.error('ProfileService', 'Failed to initialize ProfileService', error);
+    } finally {
+      // Always resolve initialization promise, even on error
+      // This prevents callers from hanging indefinitely
+      this.initializationResolve();
     }
   }
 
   /**
    * Get user profile
+   * Waits for initialization to complete before reading, preventing race conditions
    */
   async getProfile(): Promise<UserProfile | null> {
+    // Wait for initialization to ensure migrations have run
+    await this.initializationPromise;
+    return this.loadProfileFromStorage();
+  }
+
+  /**
+   * Internal method to load profile from storage
+   * Does NOT wait for initialization - used during init and by getProfile()
+   */
+  private async loadProfileFromStorage(): Promise<UserProfile | null> {
     try {
       const { value } = await Preferences.get({ key: STORAGE_KEYS.PROFILE });
 
@@ -466,7 +492,8 @@ export class ProfileService implements OnDestroy {
    */
   private async migrateToV1(): Promise<void> {
     // Check if there's an old profile format and migrate it
-    const profile = await this.getProfile();
+    // Use loadProfileFromStorage() to avoid deadlock (getProfile waits for init)
+    const profile = await this.loadProfileFromStorage();
 
     if (profile) {
       // Ensure all new fields exist

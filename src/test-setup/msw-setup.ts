@@ -15,7 +15,7 @@ export function setupMSW(): void {
   beforeAll(() => {
     // Start MSW server before all tests in the suite
     server.listen({
-      onUnhandledRequest: 'warn',
+      onUnhandledRequest: 'error',
     });
   });
 

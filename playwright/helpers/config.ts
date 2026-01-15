@@ -16,7 +16,6 @@ export {
   TIMEOUTS,
   ADMIN_CREDENTIALS,
   isDockerMode,
-  isMockMode,
   isCI,
   shouldRunHerokuTests,
   getSkipMessage,

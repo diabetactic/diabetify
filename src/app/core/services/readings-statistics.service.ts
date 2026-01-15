@@ -18,6 +18,26 @@ import { ReadingsMapperService } from './readings-mapper.service';
 export const DEFAULT_TARGET_MIN = 70;
 export const DEFAULT_TARGET_MAX = 180;
 
+/**
+ * Nathan/ADAG Formula Constants for eA1C calculation
+ *
+ * Formula: eA1C(%) = (average glucose mg/dL + INTERCEPT) / SLOPE
+ *
+ * Reference: Nathan DM, Kuenen J, Borg R, Zheng H, Schoenfeld D, Heine RJ;
+ * "Translating the A1C assay into estimated average glucose values."
+ * A1c-Derived Average Glucose Study Group. Diabetes Care. 2008 Aug;31(8):1473-8.
+ *
+ * DOI: https://doi.org/10.2337/dc08-0545
+ */
+export const NATHAN_FORMULA = {
+  /** Intercept constant from ADAG study regression analysis */
+  INTERCEPT: 46.7,
+  /** Slope constant from ADAG study regression analysis */
+  SLOPE: 28.7,
+  /** Reference DOI for the study */
+  SOURCE: 'https://doi.org/10.2337/dc08-0545',
+} as const;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -142,12 +162,14 @@ export class ReadingsStatisticsService {
   // ============================================================================
 
   /**
-   * Calculate estimated A1C using ADAG formula
-   * eA1C(%) = (average glucose mg/dL + 46.7) / 28.7
+   * Calculate estimated A1C using ADAG (Nathan) formula
+   * eA1C(%) = (average glucose mg/dL + INTERCEPT) / SLOPE
+   *
+   * @see NATHAN_FORMULA for reference to the study
    */
   calculateEstimatedA1C(average: number, unit: GlucoseUnit): number {
     const mgdl = this.mapper.toMgDl(average, unit);
-    return (mgdl + 46.7) / 28.7;
+    return (mgdl + NATHAN_FORMULA.INTERCEPT) / NATHAN_FORMULA.SLOPE;
   }
 
   // ============================================================================

@@ -17,6 +17,24 @@ const routes = [
   { name: 'account-pending', url: '/account-pending' },
 ];
 
+async function waitForStableUi(page) {
+  await page.waitForLoadState('domcontentloaded');
+  await page
+    .waitForSelector('ion-app.hydrated, ion-content', { state: 'visible', timeout: 10000 })
+    .catch(() => {});
+  await page.evaluate(async () => {
+    if (document.fonts && document.fonts.status !== 'loaded') {
+      await document.fonts.ready;
+    }
+  });
+  await page.evaluate(
+    () =>
+      new Promise(resolve => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      })
+  );
+}
+
 async function waitForServer(timeoutMs = 120000) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
@@ -60,8 +78,7 @@ async function waitForServer(timeoutMs = 120000) {
       const url = `${BASE}${route.url}`;
       console.log('Capturing', url);
       await page.goto(url, { waitUntil: 'networkidle' });
-      // wait for content to paint
-      await page.waitForTimeout(1000);
+      await waitForStableUi(page);
       const outPath = path.join(OUTPUT_DIR, `${route.name}.png`);
       await page.screenshot({ path: outPath, fullPage: true });
     }

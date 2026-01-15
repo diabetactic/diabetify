@@ -3,7 +3,7 @@
  * Seed Test Users Script
  *
  * Creates test users in the backend database for integration testing.
- * Each user has a unique DNI (1000-1007) to avoid queue conflicts.
+ * Each user has a unique DNI (40123456-40123463) to avoid queue conflicts.
  */
 
 const SERVICE_URLS = {
@@ -12,65 +12,65 @@ const SERVICE_URLS = {
 
 const TEST_USERS = [
   {
-    dni: '1000',
-    password: 'tuvieja',
-    email: 'test1@test.com',
+    dni: '40123456',
+    password: 'thepassword',
+    email: 'test40123456@diabetactic.com',
     name: 'Test',
     surname: 'User1',
     hospital_account: 'test_account_1',
   },
   {
-    dni: '1001',
-    password: 'tuvieja',
-    email: 'test2@test.com',
+    dni: '40123457',
+    password: 'thepassword2',
+    email: 'test40123457@diabetactic.com',
     name: 'Test',
     surname: 'User2',
     hospital_account: 'test_account_2',
   },
   {
-    dni: '1002',
-    password: 'tuvieja',
-    email: 'test3@test.com',
+    dni: '40123458',
+    password: 'thepassword',
+    email: 'test40123458@diabetactic.com',
     name: 'Test',
     surname: 'User3',
     hospital_account: 'test_account_3',
   },
   {
-    dni: '1003',
-    password: 'tuvieja',
-    email: 'test4@test.com',
+    dni: '40123459',
+    password: 'thepassword',
+    email: 'test40123459@diabetactic.com',
     name: 'Test',
     surname: 'User4',
     hospital_account: 'test_account_4',
   },
   {
-    dni: '1004',
-    password: 'tuvieja',
-    email: 'test5@test.com',
+    dni: '40123460',
+    password: 'thepassword',
+    email: 'test40123460@diabetactic.com',
     name: 'Test',
     surname: 'User5',
     hospital_account: 'test_account_5',
   },
   {
-    dni: '1005',
-    password: 'tuvieja',
-    email: 'test6@test.com',
+    dni: '40123461',
+    password: 'thepassword',
+    email: 'test40123461@diabetactic.com',
     name: 'Test',
     surname: 'User6',
     hospital_account: 'test_account_6',
   },
   {
-    dni: '1006',
-    password: 'tuvieja',
-    email: 'test7@test.com',
+    dni: '40123462',
+    password: 'thepassword',
+    email: 'test40123462@diabetactic.com',
     name: 'Test',
     surname: 'User7',
     hospital_account: 'test_account_7',
   },
   {
-    dni: '1007',
-    password: 'tuvieja',
-    email: 'test8@test.com',
+    dni: '40123463',
+    password: 'thepassword',
+    email: 'test40123463@diabetactic.com',
     name: 'Test',
     surname: 'User8',
     hospital_account: 'test_account_8',

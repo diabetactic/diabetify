@@ -18,8 +18,12 @@
     "**/models/tidepool-auth.model.ts",
     "**/services/tidepool-auth.service.ts"
   ],
-  "ignoreDependencies": ["@angular/language-service", "@analogjs/vite-plugin-angular"],
-  "ignoreBinaries": ["only-allow", "adb", "studio", "emulator", "test:e2e", "test:visual:update"],
+  "ignoreDependencies": [
+    "@angular/language-service",
+    "@analogjs/vite-plugin-angular",
+    "@midscene/web"
+  ],
+  "ignoreBinaries": ["only-allow", "adb", "studio", "emulator", "test:visual:update"],
   "ignoreExportsUsedInFile": true,
   "rules": {
     "unlisted": "off",
