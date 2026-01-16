@@ -5,10 +5,10 @@
 - [ ] Task: Conductor - User Manual Verification 'Optimistic Offline Authentication' (Protocol in workflow.md)
 
 ## Phase 3: UX & Offline Polish
-- [x] Task: Fix status bar overlap in modals (safe-area-inset-top) 6e828e4
-- [x] Task: Fix invisible tab labels (CSS color/rendering issue) 6e828e4
-- [x] Task: Implement global 'Offline' indicator and disable online-only actions 6e828e4
-- [x] Task: Debug 'Advanced Options' navigation freeze on Profile page 6e828e4
+- [x] Task: Fix status bar overlap in modals (safe-area-inset-top) 6d12193
+- [x] Task: Fix invisible tab labels (CSS color/rendering issue) 6d12193
+- [x] Task: Implement global 'Offline' indicator and disable online-only actions 6d12193
+- [x] Task: Debug 'Advanced Options' navigation freeze on Profile page 6d12193
 
 ## Phase 4: Appointments Logic & Data Integrity
 - [ ] Task: Investigate source of 'phantom' data in PENDING appointments (mock data leak vs backend issue)
