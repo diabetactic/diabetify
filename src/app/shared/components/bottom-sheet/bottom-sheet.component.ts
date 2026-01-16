@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, state, style, transition, animate } from '@angular/animations';
+import { AppIconComponent } from '../app-icon/app-icon.component';
 
 /**
  * Bottom Sheet Component
@@ -28,7 +29,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
   selector: 'app-bottom-sheet',
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule],
+  imports: [CommonModule, AppIconComponent],
   template: `
     <!-- Backdrop -->
     <div
@@ -64,7 +65,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
           [attr.aria-label]="closeLabel"
           type="button"
         >
-          <span class="material-symbols-outlined">close</span>
+          <app-icon name="x"></app-icon>
         </button>
       </div>
 

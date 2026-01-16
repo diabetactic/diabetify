@@ -2,4 +2,7 @@
 - [x] Task: Write failing tests for offline session restoration in `local-auth.service.spec.ts` 2131969
 - [x] Task: Implement offline network check and state restoration in `LocalAuthService` 2131969
 - [x] Task: Verify fix with unit tests 2131969
-- [ ] Task: Conductor - User Manual Verification 'Optimistic Offline Authentication' (Protocol in workflow.md)\n\n## Phase 3: Final Verification\n- [ ] Task: Run full regression test suite (Unit, Integration, E2E)\n- [ ] Task: Document implementation in architecture notes\n- [ ] Task: Conductor - User Manual Verification 'Final Verification' (Protocol in workflow.md)
+- [ ] Task: Conductor - User Manual Verification 'Optimistic Offline Authentication' (Protocol in workflow.md)
+- [~] Task: Migrate remaining Material Icons to Lucide (app-icon) to unify icon system and fix offline issues
+
+## Phase 3: Final Verification\n- [ ] Task: Run full regression test suite (Unit, Integration, E2E)\n- [ ] Task: Document implementation in architecture notes\n- [ ] Task: Conductor - User Manual Verification 'Final Verification' (Protocol in workflow.md)

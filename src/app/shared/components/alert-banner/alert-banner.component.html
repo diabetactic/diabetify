@@ -11,17 +11,15 @@
     <!-- Alert Content -->
     <div class="flex flex-1 items-center gap-3">
       <!-- Icon -->
-      <span
-        class="material-symbols-outlined flex-shrink-0 text-2xl"
+      <app-icon
+        [name]="getIcon()"
+        class="flex-shrink-0 text-2xl"
         [ngClass]="{
           'text-yellow-600 dark:text-yellow-400': type === 'success',
           'text-sky-600 dark:text-sky-400': type === 'info',
           'text-orange-600 dark:text-orange-400': type === 'warning',
         }"
-        [style.font-variation-settings]="type === 'success' ? '\'FILL\' 1' : '\'FILL\' 0'"
-      >
-        {{ getIcon() }}
-      </span>
+      ></app-icon>
       <!-- Message -->
       <p
         class="m-0 flex-1 text-sm font-medium leading-snug"
@@ -41,16 +39,15 @@
         [attr.aria-label]="'common.dismissAlert' | translate"
         class="flex flex-shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-1 transition-colors duration-200 hover:bg-black/10 active:bg-black/15 dark:hover:bg-white/10 dark:active:bg-white/15"
       >
-        <span
-          class="material-symbols-outlined text-xl"
+        <app-icon
+          name="x"
+          class="text-xl"
           [ngClass]="{
             'text-yellow-700 dark:text-yellow-200': type === 'success',
             'text-sky-600 dark:text-sky-400': type === 'info',
             'text-orange-600 dark:text-orange-400': type === 'warning',
           }"
-        >
-          close
-        </span>
+        ></app-icon>
       </button>
     }
   </div>

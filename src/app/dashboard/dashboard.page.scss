@@ -145,13 +145,13 @@ ion-content {
   box-shadow: var(--shadow-08);
 
   ion-icon,
-  .material-symbols-outlined {
+  app-icon {
     font-size: 32px;
   }
 }
 
 .parent-view-btn {
-  .material-symbols-outlined {
+  app-icon {
     font-size: 20px;
   }
 }
@@ -232,7 +232,6 @@ ion-content {
     }
 
     ion-item ion-icon,
-    ion-item .material-symbols-outlined,
     ion-item app-icon {
       color: var(--color-primary, #3b82f6);
     }

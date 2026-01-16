@@ -1221,19 +1221,9 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
-/* Material Symbols Outlined configuration */
-.material-symbols-outlined {
-  font-variation-settings:
-    'FILL' 0,
-    'wght' 400,
-    'GRAD' 0,
-    'opsz' 24;
-}
-
 /* ============================================
- * ICON UTILITIES
- * Consistent sizing and styling for icons
- * ============================================ */
+   7. UTILITIES
+   ============================================ */
 
 /* Icon sizes */
 .icon-xs {

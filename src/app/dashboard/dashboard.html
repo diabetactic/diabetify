@@ -183,7 +183,7 @@
                 {{ 'dashboard.todaysSummary' | translate }}
               </p>
             </div>
-            <span class="material-symbols-outlined text-3xl drop-shadow-sm"> bolt </span>
+            <app-icon name="zap" class="text-3xl drop-shadow-sm"></app-icon>
           </div>
           <!-- Actions -->
           <div class="px-5 pb-4 pt-3">
@@ -221,7 +221,7 @@
               class="bg-base-200/70 text-base-content/70 dark:text-base-content/90 mt-4 flex items-center justify-between rounded-xl px-3 py-2 text-xs"
             >
               <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary text-base"> sync </span>
+                <app-icon name="refresh-cw" class="text-primary text-base"></app-icon>
                 <span>
                   {{ 'dashboard.lastSync' | translate }}:
                   <strong>{{ getLastSyncDisplay() }}</strong>

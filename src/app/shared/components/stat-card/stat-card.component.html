@@ -42,7 +42,7 @@
       @if (error) {
         <div>
           <div class="flex flex-col items-center justify-center gap-2 p-5 text-center">
-            <span class="material-symbols-outlined text-4xl text-red-400">error_outline</span>
+            <app-icon name="alert-circle" class="text-4xl text-red-400"></app-icon>
             <span class="text-white">{{ 'common.unableToLoad' | translate }}</span>
             @if (clickable) {
               <button
@@ -59,7 +59,7 @@
           <!-- Icon -->
           @if (icon) {
             <div class="stat-figure text-white opacity-80">
-              <span class="material-symbols-outlined text-5xl drop-shadow-lg">{{ icon }}</span>
+              <app-icon [name]="icon" class="text-5xl drop-shadow-lg"></app-icon>
             </div>
           }
           <!-- Value -->
@@ -93,9 +93,7 @@
                   'text-white/80': trend === 'stable',
                 }"
               >
-                <span class="material-symbols-outlined text-lg">{{
-                  trend === 'up' ? 'arrow_upward' : trend === 'down' ? 'arrow_downward' : 'remove'
-                }}</span>
+                <app-icon [name]="trend === 'up' ? 'arrow-up' : trend === 'down' ? 'arrow-down' : 'minus'" class="text-lg"></app-icon>
                 @if (trendValue) {
                   <span class="font-semibold">{{ trendValue > 0 ? '+' : '' }}{{ trendValue }}</span>
                 }
