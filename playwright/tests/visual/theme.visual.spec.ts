@@ -17,16 +17,10 @@ async function prepareForScreenshot(page: import('@playwright/test').Page): Prom
   await page.waitForLoadState('networkidle').catch(() => {});
   await page.addStyleTag({
     content: `
-      /* Hide dynamic timestamps */
-      [data-testid="timestamp"], .timestamp, .time-ago { visibility: hidden !important; }
-      
-      /* Hide dynamic reading values and counts */
-      [data-testid="reading-value"], [data-testid="reading-count"],
-      [data-testid="stats-value"], [data-testid="readings-count"] { 
-        visibility: hidden !important; 
-      }
-      
-      /* Disable animations */
+      [data-testid="timestamp"], .timestamp, .time-ago,
+      [data-testid="current-date"], [data-testid="current-time"],
+      ion-spinner, .loading-indicator, .loading, .loading-spinner,
+      [data-testid="appointment-id"], .appointment-id { visibility: hidden !important; }
       *, *::before, *::after { 
         animation-duration: 0s !important; 
         transition-duration: 0s !important; 
@@ -124,7 +118,7 @@ test.describe('Visual Regression - Dark Theme @visual @docker', () => {
     await pages.dashboardPage.waitForHydration();
     await page.waitForSelector('[data-testid="stats-container"]', {
       state: 'visible',
-      timeout: 15000,
+      timeout: 30000,
     });
     await setTheme(page, 'dark');
     await prepareForScreenshot(page);

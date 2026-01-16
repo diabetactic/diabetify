@@ -243,7 +243,7 @@
                   name="clipboard-list"
                   class="text-primary h-4 w-4 flex-shrink-0"
                 ></app-icon>
-                <span
+                <span data-testid="appointment-id"
                   >{{ 'appointments.record' | translate }} #{{
                     currentAppointment.appointment_id
                   }}</span
@@ -359,7 +359,9 @@
                           name="clipboard-list"
                           class="text-base-content/50 dark:text-base-content/70 h-4 w-4"
                         ></app-icon>
-                        {{ 'appointments.record' | translate }} #{{ appointment.appointment_id }}
+                        <span data-testid="appointment-id">
+                          {{ 'appointments.record' | translate }} #{{ appointment.appointment_id }}
+                        </span>
                       </ion-card-subtitle>
                       <ion-card-title class="text-base">
                         {{ formatMotive(appointment.motive) }}
