@@ -358,11 +358,11 @@ export class SettingsPage implements OnInit, OnDestroy {
    * Navigate to advanced settings
    */
   async goToAdvancedSettings() {
-    const modal = await this.modalController.getTop();
-    if (modal) {
-      await modal.dismiss();
-    }
-    await this.router.navigate([ROUTES.SETTINGS_ADVANCED]);
+    const { AdvancedPage } = await import('./advanced/advanced.page');
+    const modal = await this.modalController.create({
+      component: AdvancedPage,
+    });
+    await modal.present();
   }
 
   /**

@@ -93,7 +93,10 @@
                   'text-white/80': trend === 'stable',
                 }"
               >
-                <app-icon [name]="trend === 'up' ? 'arrow-up' : trend === 'down' ? 'arrow-down' : 'minus'" class="text-lg"></app-icon>
+                <app-icon
+                  [name]="trend === 'up' ? 'arrow-up' : trend === 'down' ? 'arrow-down' : 'minus'"
+                  class="text-lg"
+                ></app-icon>
                 @if (trendValue) {
                   <span class="font-semibold">{{ trendValue > 0 ? '+' : '' }}{{ trendValue }}</span>
                 }

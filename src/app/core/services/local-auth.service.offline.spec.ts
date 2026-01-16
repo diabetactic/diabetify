@@ -135,7 +135,7 @@ describe('LocalAuthService - Offline Optimistic Auth', () => {
     expect(state.isAuthenticated).toBe(true);
     expect(state.user).toEqual(mockUser);
     expect(state.accessToken).toBe('expired-access-token');
-    
+
     // 6. Verify NO refresh attempt was made
     expect(httpMock.post).not.toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledWith(
@@ -148,33 +148,33 @@ describe('LocalAuthService - Offline Optimistic Auth', () => {
   it('should FAIL to restore session when online with expired token (refresh fails)', async () => {
     // 1. Setup Storage with User
     vi.mocked(Preferences.get).mockImplementation(async ({ key }) => {
-        if (key === 'local_user') return { value: JSON.stringify(mockUser) };
-        return { value: null };
-      });
-  
-      // 2. Setup TokenService (Expired Access, Valid Refresh)
-      tokenService.getAccessToken.mockResolvedValue('expired-access-token');
-      tokenService.getRefreshToken.mockResolvedValue('valid-refresh-token');
-      tokenService.isTokenExpired.mockReturnValue(true); 
-  
-      // 3. Setup Network (ONLINE)
-      vi.mocked(Network.getStatus).mockResolvedValue({ connected: true, connectionType: 'wifi' });
+      if (key === 'local_user') return { value: JSON.stringify(mockUser) };
+      return { value: null };
+    });
 
-      // 4. Mock HTTP Refresh Failure
-      httpMock.post.mockReturnValue(throwError(() => new Error('Refresh Failed')));
+    // 2. Setup TokenService (Expired Access, Valid Refresh)
+    tokenService.getAccessToken.mockResolvedValue('expired-access-token');
+    tokenService.getRefreshToken.mockResolvedValue('valid-refresh-token');
+    tokenService.isTokenExpired.mockReturnValue(true);
 
-      service = TestBed.inject(LocalAuthService);
-      // @ts-expect-error - access private
-      await service.initializationPromise;
-      
-      // 5. Verify it attempted refresh and cleared tokens
-      expect(httpMock.post).toHaveBeenCalled(); // It SHOULD attempt refresh
-      expect(tokenService.clearTokens).toHaveBeenCalled(); // And clear tokens on failure
-      
-      // 6. Verify State is NOT authenticated
-      const state = await new Promise<LocalAuthState>(resolve => {
-        service.authState$.subscribe(resolve);
-      });
-      expect(state.isAuthenticated).toBe(false);
+    // 3. Setup Network (ONLINE)
+    vi.mocked(Network.getStatus).mockResolvedValue({ connected: true, connectionType: 'wifi' });
+
+    // 4. Mock HTTP Refresh Failure
+    httpMock.post.mockReturnValue(throwError(() => new Error('Refresh Failed')));
+
+    service = TestBed.inject(LocalAuthService);
+    // @ts-expect-error - access private
+    await service.initializationPromise;
+
+    // 5. Verify it attempted refresh and cleared tokens
+    expect(httpMock.post).toHaveBeenCalled(); // It SHOULD attempt refresh
+    expect(tokenService.clearTokens).toHaveBeenCalled(); // And clear tokens on failure
+
+    // 6. Verify State is NOT authenticated
+    const state = await new Promise<LocalAuthState>(resolve => {
+      service.authState$.subscribe(resolve);
+    });
+    expect(state.isAuthenticated).toBe(false);
   });
 });

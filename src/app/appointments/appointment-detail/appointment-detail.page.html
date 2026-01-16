@@ -174,7 +174,9 @@
             </ion-card>
           }
           <!-- Another treatment card -->
-          @if (appointment.another_treatment && !isPlaceholderValue(appointment.another_treatment)) {
+          @if (
+            appointment.another_treatment && !isPlaceholderValue(appointment.another_treatment)
+          ) {
             <ion-card class="!m-0">
               <ion-card-header>
                 <ion-card-title class="flex items-center gap-2 text-lg">

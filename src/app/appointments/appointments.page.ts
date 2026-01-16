@@ -170,7 +170,7 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
   private async initializeNetworkMonitoring() {
     const status = await Network.getStatus();
     this.isOnline = status.connected;
-    
+
     this.networkListener = await Network.addListener('networkStatusChange', status => {
       this.isOnline = status.connected;
       this.cdr.markForCheck();
