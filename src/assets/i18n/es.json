@@ -558,7 +558,7 @@
       "unauthorized": "No autorizado. Por favor, inicie sesión nuevamente.",
       "notFound": "Cita no encontrada.",
       "slotUnavailable": "El horario ya no está disponible.",
-      "serviceUnavailable": "Servicio no disponible. Por favor, intente más tarde.",
+      "serviceUnavailable": "Servicio de citas no disponible. Por favor, intente más tarde.",
       "networkError": "Error de conexión. Verifique su conexión a internet.",
       "queueFull": "No se pueden tomar más citas hoy.",
       "notInQueue": "Debe solicitar una cita antes de completar el formulario.",

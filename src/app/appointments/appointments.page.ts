@@ -25,7 +25,7 @@ import {
   IonCardSubtitle,
   IonCardContent,
 } from '@ionic/angular/standalone';
-import { ToastController } from '@ionic/angular';
+import { ToastController, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, firstValueFrom, interval } from 'rxjs';
 import { AppointmentService } from '@services/appointment.service';
@@ -68,7 +68,7 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class AppointmentsPage implements OnInit, OnDestroy {
+export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillLeave {
   private envConfig = inject(EnvironmentConfigService);
   appointments: Appointment[] = [];
   loading = false;
@@ -145,6 +145,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadAppointments();
     this.subscribeToAppointments();
+    // Initial load handled here, ensuring data is ready when view appears
     if (!this.envConfig.isMockMode) {
       this.queueLoading = true;
       this.loadQueueState();
@@ -158,6 +159,28 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     // Only need destroy$ - polling uses takeUntil(destroy$) for automatic cleanup
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Ionic Lifecycle: View Will Enter
+   * Resumes polling when the user returns to this tab
+   */
+  ionViewWillEnter(): void {
+    // If state is already loaded and we should be polling, resume it
+    if (this.queueState && !this.queueLoading && !this.envConfig.isMockMode) {
+      this.startPolling();
+    } else if (!this.queueState && !this.queueLoading && !this.envConfig.isMockMode) {
+      // Reload if missing
+      this.loadQueueState();
+    }
+  }
+
+  /**
+   * Ionic Lifecycle: View Will Leave
+   * Pauses polling when the user navigates away (e.g. to another tab)
+   */
+  ionViewWillLeave(): void {
+    this.stopPolling();
   }
 
   // Track if polling is active (managed via destroy$, not manual subscription)

@@ -1,1 +1,1 @@
-# Project Tracks\n\nThis file tracks all major tracks for the project. Each track has its own detailed plan in its respective folder.\n\n---\n\n- [ ] **Track: Project Verification and Safety Enhancement**\n  *Link: [./tracks/verification_20260116/](./tracks/verification_20260116/)*
+# Project Tracks\n\nThis file tracks all major tracks for the project. Each track has its own detailed plan in its respective folder.\n\n---\n\n- [~] **Track: Project Verification and Safety Enhancement**\n _Link: [./tracks/verification_20260116/](./tracks/verification_20260116/)_

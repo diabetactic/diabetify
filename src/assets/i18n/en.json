@@ -557,7 +557,7 @@
       "unauthorized": "Unauthorized. Please log in again.",
       "notFound": "Appointment not found.",
       "slotUnavailable": "The time slot is no longer available.",
-      "serviceUnavailable": "Service unavailable. Please try again later.",
+      "serviceUnavailable": "Appointments service unavailable. Please try again later.",
       "networkError": "Connection error. Please check your internet connection.",
       "queueFull": "No more appointments can be taken today.",
       "notInQueue": "You need to request an appointment before filling the form.",
