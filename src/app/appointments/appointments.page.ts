@@ -10,6 +10,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Network } from '@capacitor/network';
+import { PluginListenerHandle } from '@capacitor/core';
 import {
   IonHeader,
   IonToolbar,
@@ -92,6 +94,10 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
   resolutions: Map<number, AppointmentResolutionResponse> = new Map();
   resolutionsLoading = false;
 
+  // Network state
+  isOnline = true;
+  private networkListener?: PluginListenerHandle;
+
   /**
    * Get the current/upcoming appointment (first in list)
    */
@@ -143,6 +149,7 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
   }
 
   ngOnInit(): void {
+    this.initializeNetworkMonitoring();
     this.loadAppointments();
     this.subscribeToAppointments();
     // Initial load handled here, ensuring data is ready when view appears
@@ -159,6 +166,19 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
     // Only need destroy$ - polling uses takeUntil(destroy$) for automatic cleanup
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.networkListener) {
+      this.networkListener.remove();
+    }
+  }
+
+  private async initializeNetworkMonitoring() {
+    const status = await Network.getStatus();
+    this.isOnline = status.connected;
+    
+    this.networkListener = await Network.addListener('networkStatusChange', status => {
+      this.isOnline = status.connected;
+      this.cdr.markForCheck();
+    });
   }
 
   /**
@@ -615,6 +635,11 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
    * Request an appointment (submit to queue)
    */
   async onRequestAppointment(): Promise<void> {
+    if (!this.isOnline) {
+      await this.showToast(this.translationService.instant('errors.offline'), 'warning');
+      return;
+    }
+
     // Prevent multiple requests (debouncing)
     if (this.isSubmitting || this.requestingAppointment || !this.canRequestAppointment) {
       return;
@@ -676,6 +701,7 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
    * CREATED means they already have an appointment - cannot request again
    */
   get canRequestAppointment(): boolean {
+    if (!this.isOnline) return false;
     if (this.requestingAppointment) return false;
     return !this.queueState || this.queueState.state === 'NONE';
   }

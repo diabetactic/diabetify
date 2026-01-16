@@ -3,6 +3,17 @@
 - [x] Task: Implement offline network check and state restoration in `LocalAuthService` 2131969
 - [x] Task: Verify fix with unit tests 2131969
 - [ ] Task: Conductor - User Manual Verification 'Optimistic Offline Authentication' (Protocol in workflow.md)
-- [x] Task: Migrate remaining Material Icons to Lucide (app-icon) to unify icon system and fix offline issues 8ecf8a0
 
-## Phase 3: Final Verification\n- [ ] Task: Run full regression test suite (Unit, Integration, E2E)\n- [ ] Task: Document implementation in architecture notes\n- [ ] Task: Conductor - User Manual Verification 'Final Verification' (Protocol in workflow.md)
+## Phase 3: UX & Offline Polish
+- [x] Task: Fix status bar overlap in modals (safe-area-inset-top) 6e828e4
+- [x] Task: Fix invisible tab labels (CSS color/rendering issue) 6e828e4
+- [x] Task: Implement global 'Offline' indicator and disable online-only actions 6e828e4
+- [x] Task: Debug 'Advanced Options' navigation freeze on Profile page 6e828e4
+
+## Phase 4: Appointments Logic & Data Integrity
+- [ ] Task: Investigate source of 'phantom' data in PENDING appointments (mock data leak vs backend issue)
+- [ ] Task: Enforce UI state: Hide appointment details/form for PENDING state
+- [ ] Task: Review and clean up appointment title formatting (motive concatenation)
+- [ ] Task: Fix historical appointments showing incorrect 'NONE' state
+
+## Phase 5: Final Verification\n- [ ] Task: Run full regression test suite (Unit, Integration, E2E)\n- [ ] Task: Document implementation in architecture notes\n- [ ] Task: Conductor - User Manual Verification 'Final Verification' (Protocol in workflow.md)

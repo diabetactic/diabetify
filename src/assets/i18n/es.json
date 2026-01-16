@@ -55,7 +55,8 @@
     "goBack": "Volver",
     "back": "Atrás",
     "online": "En línea",
-    "offline": "Sin conexión"
+    "offline": "Sin conexión",
+    "offlineMode": "Modo Sin Conexión"
   },
   "tabs": {
     "home": "Inicio",

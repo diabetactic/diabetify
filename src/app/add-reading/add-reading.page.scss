@@ -3,6 +3,11 @@
   --background: oklch(var(--b1));
 }
 
+// Fix status bar overlap
+ion-header ion-toolbar {
+  padding-top: var(--safe-area-inset-top);
+}
+
 .add-reading-shell {
   display: flex;
   flex-direction: column;

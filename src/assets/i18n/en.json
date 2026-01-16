@@ -55,7 +55,8 @@
     "goBack": "Go back",
     "back": "Back",
     "online": "Online",
-    "offline": "Offline"
+    "offline": "Offline",
+    "offlineMode": "Offline Mode"
   },
   "tabs": {
     "home": "Home",

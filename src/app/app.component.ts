@@ -20,6 +20,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ReadingsService } from '@services/readings.service';
 import { DemoDataService } from '@services/demo-data.service';
+import { OfflineBannerComponent } from '@shared/components/offline-banner/offline-banner.component';
 
 @Component({
   selector: 'app-root',
@@ -27,7 +28,7 @@ import { DemoDataService } from '@services/demo-data.service';
   styleUrls: ['app.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslateModule, IonApp, IonRouterOutlet],
+  imports: [TranslateModule, IonApp, IonRouterOutlet, OfflineBannerComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppComponent implements OnInit, OnDestroy {

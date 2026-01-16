@@ -2,6 +2,11 @@
   padding-bottom: 20px;
 }
 
+// Fix status bar overlap
+ion-header ion-toolbar {
+  padding-top: var(--safe-area-inset-top);
+}
+
 .doctor-avatar {
   background: var(--ion-color-primary);
   width: 100%;

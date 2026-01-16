@@ -2,12 +2,12 @@ import { Component, CUSTOM_ELEMENTS_SCHEMA, OnDestroy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AlertController, ToastController } from '@ionic/angular';
+import { AlertController, ToastController, ModalController } from '@ionic/angular';
 import {
   IonHeader,
   IonToolbar,
   IonButtons,
-  IonBackButton,
+  IonButton,
   IonTitle,
   IonContent,
   IonItem,
@@ -39,7 +39,7 @@ import { ROUTES, TIMEOUTS } from '@core/constants';
     IonHeader,
     IonToolbar,
     IonButtons,
-    IonBackButton,
+    IonButton,
     IonTitle,
     IonContent,
     IonItem,
@@ -58,6 +58,7 @@ export class AdvancedPage implements OnDestroy {
     private authService: UnifiedAuthService,
     private alertController: AlertController,
     private toastController: ToastController,
+    private modalController: ModalController,
     private router: Router,
     private translationService: TranslationService,
     private logger: LoggerService
@@ -66,6 +67,15 @@ export class AdvancedPage implements OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  async close(): Promise<void> {
+    const modal = await this.modalController.getTop();
+    if (modal) {
+      await modal.dismiss();
+    } else {
+      this.router.navigate([ROUTES.SETTINGS]);
+    }
   }
 
   /**

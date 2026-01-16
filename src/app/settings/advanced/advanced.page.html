@@ -1,7 +1,9 @@
 <ion-header [translucent]="true">
   <ion-toolbar class="ion-padding-top">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/profile" text=""></ion-back-button>
+      <ion-button (click)="close()">
+        <app-icon slot="icon-only" name="close-outline"></app-icon>
+      </ion-button>
     </ion-buttons>
     <ion-title>{{ 'settings.advanced.title' | translate }}</ion-title>
   </ion-toolbar>
