@@ -250,7 +250,7 @@ export class AppointmentDetailPage implements OnInit {
         const mappedKey =
           this.motiveMapping[m] || this.motiveMapping[m.toUpperCase()] || m.toLowerCase();
         const translated = this.translationService.instant(`appointments.motives.${mappedKey}`);
-        return translated && !translated.startsWith('appointments.motives.') ? translated : m;
+        return (translated && !translated.startsWith('appointments.motives.') ? translated : m).trim();
       })
       .join(', ');
   }

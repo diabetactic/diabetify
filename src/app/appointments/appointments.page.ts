@@ -106,9 +106,9 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
       return null;
     }
 
-    const state = this.queueState?.state;
-    // When there is no queue entry or it was denied, treat all appointments as "past"
-    if (!state || state === 'NONE' || state === 'DENIED') {
+    // Only show "Current Appointment" card if the appointment is fully created/completed
+    // For PENDING/ACCEPTED states, the Queue Status Panel handles the display
+    if (this.queueState?.state !== 'CREATED') {
       return null;
     }
 
@@ -116,18 +116,14 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
   }
 
   /**
-   * Get past appointments (all except first)
+   * Get past appointments (all except first if current is shown)
    */
   get pastAppointments(): Appointment[] {
     if (this.appointments.length === 0) {
       return [];
     }
 
-    const state = this.queueState?.state;
-    const hasCurrent =
-      Boolean(state) && state !== 'NONE' && state !== 'DENIED' && this.appointments.length > 0;
-
-    if (hasCurrent) {
+    if (this.currentAppointment) {
       return this.appointments.length > 1 ? this.appointments.slice(1) : [];
     }
 

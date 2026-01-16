@@ -11,9 +11,9 @@
 - [x] Task: Debug 'Advanced Options' navigation freeze on Profile page 6d12193
 
 ## Phase 4: Appointments Logic & Data Integrity
-- [ ] Task: Investigate source of 'phantom' data in PENDING appointments (mock data leak vs backend issue)
-- [ ] Task: Enforce UI state: Hide appointment details/form for PENDING state
-- [ ] Task: Review and clean up appointment title formatting (motive concatenation)
-- [ ] Task: Fix historical appointments showing incorrect 'NONE' state
+- [x] Task: Investigate source of 'phantom' data in PENDING appointments (mock data leak vs backend issue) 6d12193
+- [x] Task: Enforce UI state: Hide appointment details/form for PENDING state 6d12193
+- [x] Task: Review and clean up appointment title formatting (motive concatenation) 6d12193
+- [x] Task: Fix historical appointments showing incorrect 'NONE' state 6d12193
 
 ## Phase 5: Final Verification\n- [ ] Task: Run full regression test suite (Unit, Integration, E2E)\n- [ ] Task: Document implementation in architecture notes\n- [ ] Task: Conductor - User Manual Verification 'Final Verification' (Protocol in workflow.md)

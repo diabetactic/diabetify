@@ -38,153 +38,157 @@
             </ion-card-title>
           </ion-card-header>
         </ion-card>
-        <!-- Treatment parameters card -->
-        <ion-card class="!m-0">
-          <ion-card-header>
-            <ion-card-title class="flex items-center gap-2 text-lg">
-              <app-icon name="activity" class="text-primary"></app-icon>
-              {{ 'appointments.detail.treatmentParams' | translate }}
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <div class="grid grid-cols-2 gap-4">
-              <!-- Glucose Objective -->
-              <div class="bg-base-200 flex flex-col rounded-xl p-3">
-                <span
-                  class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
-                >
-                  {{ 'appointments.fields.glucoseObjective' | translate }}
-                </span>
-                <span class="text-primary text-lg font-bold">
-                  {{ appointment.glucose_objective }} mg/dL
-                </span>
-              </div>
-              <!-- Insulin Type -->
-              <div class="bg-base-200 flex flex-col rounded-xl p-3">
-                <span
-                  class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
-                >
-                  {{ 'appointments.fields.insulinType' | translate }}
-                </span>
-                <span class="text-lg font-semibold">
-                  {{ formatInsulinType(appointment.insulin_type) }}
-                </span>
-              </div>
-              <!-- Dose -->
-              <div class="bg-base-200 flex flex-col rounded-xl p-3">
-                <span
-                  class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
-                >
-                  {{ 'appointments.fields.dose' | translate }}
-                </span>
-                <span class="text-lg font-semibold">{{ appointment.dose }} U</span>
-              </div>
-              <!-- Fixed Dose -->
-              <div class="bg-base-200 flex flex-col rounded-xl p-3">
-                <span
-                  class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
-                >
-                  {{ 'appointments.fields.fixedDose' | translate }}
-                </span>
-                <span class="text-lg font-semibold">{{ appointment.fixed_dose }} U</span>
-              </div>
-              <!-- Ratio -->
-              <div class="bg-base-200 flex flex-col rounded-xl p-3">
-                <span
-                  class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
-                >
-                  {{ 'appointments.fields.ratio' | translate }}
-                </span>
-                <span class="text-lg font-semibold">1:{{ appointment.ratio }}</span>
-              </div>
-              <!-- Sensitivity -->
-              <div class="bg-base-200 flex flex-col rounded-xl p-3">
-                <span
-                  class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
-                >
-                  {{ 'appointments.fields.sensitivity' | translate }}
-                </span>
-                <span class="text-lg font-semibold">{{ appointment.sensitivity }}</span>
-              </div>
-            </div>
-          </ion-card-content>
-        </ion-card>
-        <!-- Insulin details card -->
-        <ion-card class="!m-0">
-          <ion-card-header>
-            <ion-card-title class="flex items-center gap-2 text-lg">
-              <app-icon name="syringe" class="text-primary"></app-icon>
-              {{ 'appointments.detail.insulinDetails' | translate }}
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-list lines="none" class="ion-no-padding">
-              <ion-item>
-                <ion-label>
-                  <p class="text-base-content/60 dark:text-base-content/80">
-                    {{ 'appointments.fields.fastInsulin' | translate }}
-                  </p>
-                  <h3 class="font-semibold">{{ formatTextField(appointment.fast_insulin) }}</h3>
-                </ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-label>
-                  <p class="text-base-content/60 dark:text-base-content/80">
-                    {{ 'appointments.fields.pumpType' | translate }}
-                  </p>
-                  <h3 class="font-semibold">{{ formatPumpType(appointment.pump_type) }}</h3>
-                </ion-label>
-              </ion-item>
-            </ion-list>
-          </ion-card-content>
-        </ion-card>
-        <!-- Control data card -->
-        @if (appointment.control_data && !isPlaceholderValue(appointment.control_data)) {
+
+        <!-- Clinical Data (Only show if accepted/created) -->
+        @if (appointment.status !== 'PENDING' && appointment.status !== 'DENIED') {
+          <!-- Treatment parameters card -->
           <ion-card class="!m-0">
             <ion-card-header>
               <ion-card-title class="flex items-center gap-2 text-lg">
-                <app-icon name="file-text" class="text-primary"></app-icon>
-                {{ 'appointments.fields.controlData' | translate }}
+                <app-icon name="activity" class="text-primary"></app-icon>
+                {{ 'appointments.detail.treatmentParams' | translate }}
               </ion-card-title>
             </ion-card-header>
             <ion-card-content>
-              <p class="text-base-content/70 dark:text-base-content/90">
-                {{ appointment.control_data }}
-              </p>
+              <div class="grid grid-cols-2 gap-4">
+                <!-- Glucose Objective -->
+                <div class="bg-base-200 flex flex-col rounded-xl p-3">
+                  <span
+                    class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+                  >
+                    {{ 'appointments.fields.glucoseObjective' | translate }}
+                  </span>
+                  <span class="text-primary text-lg font-bold">
+                    {{ appointment.glucose_objective }} mg/dL
+                  </span>
+                </div>
+                <!-- Insulin Type -->
+                <div class="bg-base-200 flex flex-col rounded-xl p-3">
+                  <span
+                    class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+                  >
+                    {{ 'appointments.fields.insulinType' | translate }}
+                  </span>
+                  <span class="text-lg font-semibold">
+                    {{ formatInsulinType(appointment.insulin_type) }}
+                  </span>
+                </div>
+                <!-- Dose -->
+                <div class="bg-base-200 flex flex-col rounded-xl p-3">
+                  <span
+                    class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+                  >
+                    {{ 'appointments.fields.dose' | translate }}
+                  </span>
+                  <span class="text-lg font-semibold">{{ appointment.dose }} U</span>
+                </div>
+                <!-- Fixed Dose -->
+                <div class="bg-base-200 flex flex-col rounded-xl p-3">
+                  <span
+                    class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+                  >
+                    {{ 'appointments.fields.fixedDose' | translate }}
+                  </span>
+                  <span class="text-lg font-semibold">{{ appointment.fixed_dose }} U</span>
+                </div>
+                <!-- Ratio -->
+                <div class="bg-base-200 flex flex-col rounded-xl p-3">
+                  <span
+                    class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+                  >
+                    {{ 'appointments.fields.ratio' | translate }}
+                  </span>
+                  <span class="text-lg font-semibold">1:{{ appointment.ratio }}</span>
+                </div>
+                <!-- Sensitivity -->
+                <div class="bg-base-200 flex flex-col rounded-xl p-3">
+                  <span
+                    class="text-base-content/60 dark:text-base-content/80 text-xs uppercase tracking-wide"
+                  >
+                    {{ 'appointments.fields.sensitivity' | translate }}
+                  </span>
+                  <span class="text-lg font-semibold">{{ appointment.sensitivity }}</span>
+                </div>
+              </div>
             </ion-card-content>
           </ion-card>
-        }
-        <!-- Other motive card -->
-        @if (appointment.other_motive && !isPlaceholderValue(appointment.other_motive)) {
+          <!-- Insulin details card -->
           <ion-card class="!m-0">
             <ion-card-header>
               <ion-card-title class="flex items-center gap-2 text-lg">
-                <app-icon name="message-square" class="text-primary"></app-icon>
-                {{ 'appointments.fields.otherMotive' | translate }}
+                <app-icon name="syringe" class="text-primary"></app-icon>
+                {{ 'appointments.detail.insulinDetails' | translate }}
               </ion-card-title>
             </ion-card-header>
             <ion-card-content>
-              <p class="text-base-content/70 dark:text-base-content/90">
-                {{ appointment.other_motive }}
-              </p>
+              <ion-list lines="none" class="ion-no-padding">
+                <ion-item>
+                  <ion-label>
+                    <p class="text-base-content/60 dark:text-base-content/80">
+                      {{ 'appointments.fields.fastInsulin' | translate }}
+                    </p>
+                    <h3 class="font-semibold">{{ formatTextField(appointment.fast_insulin) }}</h3>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>
+                    <p class="text-base-content/60 dark:text-base-content/80">
+                      {{ 'appointments.fields.pumpType' | translate }}
+                    </p>
+                    <h3 class="font-semibold">{{ formatPumpType(appointment.pump_type) }}</h3>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
             </ion-card-content>
           </ion-card>
-        }
-        <!-- Another treatment card -->
-        @if (appointment.another_treatment && !isPlaceholderValue(appointment.another_treatment)) {
-          <ion-card class="!m-0">
-            <ion-card-header>
-              <ion-card-title class="flex items-center gap-2 text-lg">
-                <app-icon name="pill" class="text-primary"></app-icon>
-                {{ 'appointments.fields.otherTreatment' | translate }}
-              </ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <p class="text-base-content/70 dark:text-base-content/90">
-                {{ appointment.another_treatment }}
-              </p>
-            </ion-card-content>
-          </ion-card>
+          <!-- Control data card -->
+          @if (appointment.control_data && !isPlaceholderValue(appointment.control_data)) {
+            <ion-card class="!m-0">
+              <ion-card-header>
+                <ion-card-title class="flex items-center gap-2 text-lg">
+                  <app-icon name="file-text" class="text-primary"></app-icon>
+                  {{ 'appointments.fields.controlData' | translate }}
+                </ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <p class="text-base-content/70 dark:text-base-content/90">
+                  {{ appointment.control_data }}
+                </p>
+              </ion-card-content>
+            </ion-card>
+          }
+          <!-- Other motive card -->
+          @if (appointment.other_motive && !isPlaceholderValue(appointment.other_motive)) {
+            <ion-card class="!m-0">
+              <ion-card-header>
+                <ion-card-title class="flex items-center gap-2 text-lg">
+                  <app-icon name="message-square" class="text-primary"></app-icon>
+                  {{ 'appointments.fields.otherMotive' | translate }}
+                </ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <p class="text-base-content/70 dark:text-base-content/90">
+                  {{ appointment.other_motive }}
+                </p>
+              </ion-card-content>
+            </ion-card>
+          }
+          <!-- Another treatment card -->
+          @if (appointment.another_treatment && !isPlaceholderValue(appointment.another_treatment)) {
+            <ion-card class="!m-0">
+              <ion-card-header>
+                <ion-card-title class="flex items-center gap-2 text-lg">
+                  <app-icon name="pill" class="text-primary"></app-icon>
+                  {{ 'appointments.fields.otherTreatment' | translate }}
+                </ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <p class="text-base-content/70 dark:text-base-content/90">
+                  {{ appointment.another_treatment }}
+                </p>
+              </ion-card-content>
+            </ion-card>
+          }
         }
         <!-- Resolution card - shown when resolution data is available -->
         @if (resolution && resolution.change_basal_type) {
