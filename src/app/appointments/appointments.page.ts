@@ -145,17 +145,18 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
   }
 
   ngOnInit(): void {
-    this.initializeNetworkMonitoring();
-    this.loadAppointments();
-    this.subscribeToAppointments();
-    // Initial load handled here, ensuring data is ready when view appears
-    if (!this.envConfig.isMockMode) {
-      this.queueLoading = true;
-      this.loadQueueState();
-    } else {
-      this.queueState = { state: 'NONE' };
-      this.logger.info('Queue', 'Mock mode: queue state set to NONE');
-    }
+    this.initializeNetworkMonitoring().then(() => {
+      this.loadAppointments();
+      this.subscribeToAppointments();
+      // Initial load handled here, ensuring data is ready when view appears
+      if (!this.envConfig.isMockMode) {
+        this.queueLoading = true;
+        this.loadQueueState();
+      } else {
+        this.queueState = { state: 'NONE' };
+        this.logger.info('Queue', 'Mock mode: queue state set to NONE');
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -351,6 +352,13 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
    * Load appointments from the service
    */
   async loadAppointments(): Promise<void> {
+    if (!this.isOnline) {
+      this.error = this.translationService.instant('errors.offline');
+      this.loading = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.loading = true;
     this.error = null;
 
