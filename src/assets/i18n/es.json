@@ -195,6 +195,8 @@
       "description": "Esta sección contiene información técnica y métricas médicas para padres, cuidadores y profesionales de la salud.",
       "syncStatus": "Estado de Sincronización",
       "aboutMetrics": "Acerca de Estas Métricas",
+      "timeInRange": "El porcentaje de tiempo que tus niveles de glucosa están dentro del rango objetivo (70-180 mg/dL).",
+      "avgGlucose": "Tu nivel de glucosa promedio calculado de todas las lecturas en el período seleccionado.",
       "hba1cExplanation": "La HbA1c estimada muestra tu glucosa promedio en sangre durante los últimos 2-3 meses. El objetivo suele estar por debajo del 7% para la mayoría de las personas con diabetes.",
       "gmiExplanation": "GMI (Indicador de Gestión de Glucosa) se calcula a partir de los datos de tu monitor continuo de glucosa y proporciona una imagen similar a la HbA1c.",
       "cvExplanation": "El Coeficiente de Variación mide cuánto varían tus niveles de glucosa. Menor es mejor, con un objetivo por debajo del 36%."
