@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">
+        {{ 'common.cancel' | translate }}
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ 'profile.emergencyContact' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [strong]="true">
+        {{ 'common.save' | translate }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="flex flex-col gap-6">
+    <div class="form-group">
+      <ion-list lines="none" class="rounded-2xl bg-white shadow-sm dark:bg-gray-800">
+        <ion-item>
+          <ion-input
+            [(ngModel)]="name"
+            label="Name"
+            labelPlacement="stacked"
+            placeholder="Contact Name"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input
+            [(ngModel)]="relationship"
+            label="Relationship"
+            labelPlacement="stacked"
+            placeholder="e.g. Mother, Father"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input
+            [(ngModel)]="phone"
+            label="Phone"
+            labelPlacement="stacked"
+            placeholder="+1 234 567 890"
+            type="tel"
+          ></ion-input>
+        </ion-item>
+      </ion-list>
+    </div>
+  </div>
+</ion-content>

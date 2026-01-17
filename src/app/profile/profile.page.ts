@@ -317,6 +317,43 @@ export class ProfilePage implements OnInit, OnDestroy {
     }
   }
 
+  async editEmergencyContact(): Promise<void> {
+    const { EmergencyContactModalComponent } = await import(
+      './components/emergency-contact-modal/emergency-contact-modal.component'
+    );
+    const modal = await this.modalController.create({
+      component: EmergencyContactModalComponent,
+      componentProps: { profile: this.profile },
+      cssClass: 'profile-edit-modal',
+    });
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss<{
+      name: string;
+      relationship: string;
+      phone: string;
+    }>();
+
+    if (role === 'confirm' && data) {
+      try {
+        await this.profileService.updateProfile({
+          emergencyContact: {
+            name: data.name,
+            relationship: data.relationship,
+            phone: data.phone,
+          },
+        });
+      } catch {
+        const toast = await this.toastController.create({
+          message: this.translationService.instant('profile.edit.error'),
+          duration: 3000,
+          color: 'danger',
+          position: 'bottom',
+        });
+        await toast.present();
+      }
+    }
+  }
+
   async editProfile(): Promise<void> {
     const modal = await this.modalController.create({
       component: ProfileEditComponent,

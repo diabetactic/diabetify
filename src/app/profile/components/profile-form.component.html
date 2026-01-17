@@ -26,13 +26,20 @@
     <app-icon name="chevron-forward-outline" aria-hidden="true" class="text-medium"></app-icon>
   </button>
 
-  <div class="overview-card" [class.overview-card--placeholder]="!hasEmergencyContact">
+  <button
+    type="button"
+    class="overview-card"
+    [class.overview-card--placeholder]="!hasEmergencyContact"
+    (click)="onEditEmergencyContact()"
+    data-testid="emergency-contact-btn"
+  >
     <app-icon name="warning-outline" aria-hidden="true" class="text-primary text-[28px]"></app-icon>
     <div class="min-w-0 flex-1">
       <p class="m-0 text-base font-semibold">{{ 'profile.emergencyContact' | translate }}</p>
       <p class="text-medium mb-0 mt-1 text-sm">{{ emergencySummary }}</p>
     </div>
-  </div>
+    <app-icon name="chevron-forward-outline" aria-hidden="true" class="text-medium"></app-icon>
+  </button>
 
   <button
     type="button"

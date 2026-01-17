@@ -25,6 +25,7 @@ export class ProfileFormComponent {
   @Input() profile: UserProfile | null = null;
   @Output() editAge = new EventEmitter<void>();
   @Output() editDiabetesInfo = new EventEmitter<void>();
+  @Output() editEmergencyContact = new EventEmitter<void>();
   @Output() goToAchievements = new EventEmitter<void>();
   @Output() goToTips = new EventEmitter<void>();
 
@@ -94,6 +95,10 @@ export class ProfileFormComponent {
 
   onEditDiabetesInfo() {
     this.editDiabetesInfo.emit();
+  }
+
+  onEditEmergencyContact() {
+    this.editEmergencyContact.emit();
   }
 
   onGoToAchievements() {
