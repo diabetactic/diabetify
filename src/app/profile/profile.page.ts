@@ -284,6 +284,39 @@ export class ProfilePage implements OnInit, OnDestroy {
     await alert.present();
   }
 
+  async editDiabetesInfo(): Promise<void> {
+    const { DiabetesInfoModalComponent } = await import(
+      './components/diabetes-info-modal/diabetes-info-modal.component'
+    );
+    const modal = await this.modalController.create({
+      component: DiabetesInfoModalComponent,
+      componentProps: { profile: this.profile },
+      cssClass: 'profile-edit-modal',
+    });
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss<{
+      diabetesType: 'type1' | 'type2' | 'gestational' | 'other';
+      diagnosisDate: string;
+    }>();
+
+    if (role === 'confirm' && data) {
+      try {
+        await this.profileService.updateProfile({
+          diabetesType: data.diabetesType,
+          diagnosisDate: data.diagnosisDate,
+        });
+      } catch {
+        const toast = await this.toastController.create({
+          message: this.translationService.instant('profile.edit.error'),
+          duration: 3000,
+          color: 'danger',
+          position: 'bottom',
+        });
+        await toast.present();
+      }
+    }
+  }
+
   async editProfile(): Promise<void> {
     const modal = await this.modalController.create({
       component: ProfileEditComponent,

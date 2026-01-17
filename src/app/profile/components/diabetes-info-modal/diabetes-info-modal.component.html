@@ -1,0 +1,62 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">
+        {{ 'common.cancel' | translate }}
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ 'profile.diabetesInfo' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [strong]="true">
+        {{ 'common.save' | translate }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="flex flex-col gap-6">
+    <!-- Diabetes Type -->
+    <div class="form-group">
+      <ion-list lines="none" class="rounded-2xl bg-white shadow-sm dark:bg-gray-800">
+        <ion-item>
+          <ion-select
+            [(ngModel)]="diabetesType"
+            [label]="'profile.diabetesType' | translate"
+            labelPlacement="stacked"
+            interface="action-sheet"
+            class="w-full"
+          >
+            <ion-select-option value="type1">{{ 'profile.type1' | translate }}</ion-select-option>
+            <ion-select-option value="type2">{{ 'profile.type2' | translate }}</ion-select-option>
+            <ion-select-option value="gestational">{{
+              'profile.gestational' | translate
+            }}</ion-select-option>
+            <ion-select-option value="other">{{ 'profile.other' | translate }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <!-- Diagnosis Date -->
+    <div class="form-group">
+      <ion-list lines="none" class="rounded-2xl bg-white shadow-sm dark:bg-gray-800">
+        <ion-item>
+          <ion-label position="stacked">{{ 'profile.diagnosisDate' | translate }}</ion-label>
+          <ion-datetime-button datetime="diagnosisDate"></ion-datetime-button>
+        </ion-item>
+      </ion-list>
+      
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime
+            id="diagnosisDate"
+            presentation="date"
+            [(ngModel)]="diagnosisDate"
+            [showDefaultButtons]="true"
+          ></ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </div>
+  </div>
+</ion-content>
