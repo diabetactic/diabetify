@@ -8,19 +8,19 @@
     - [x] Write integration tests for `AppointmentsPage` in offline mode.
     - [x] Suppress "Server Error" alert when `Network.getStatus().connected` is false.
     - [x] Display a user-friendly offline banner.
-- [ ] Task: Fix Empty Info Popups
-    - [ ] Identify source of empty content in `InfoButtonComponent` or related tooltips.
-    - [ ] Write unit tests for content population.
-    - [ ] Fix the logic to ensure translations/text are passed correctly to the popup.
-- [ ] Task: Investigate Ghost Navigation (Appointments -> Profile)
-    - [ ] Audit `ionViewWillEnter` and route guards for unexpected redirects.
-    - [ ] Implement logging to track navigation triggers.
+- [x] Task: Fix Empty Info Popups
+    - [x] Identify source of empty content in `InfoButtonComponent` or related tooltips.
+    - [x] Write unit tests for content population.
+    - [x] Fix the logic to ensure translations/text are passed correctly to the popup.
+- [x] Task: Investigate Ghost Navigation (Appointments -> Profile)
+    - [x] Audit `ionViewWillEnter` and route guards for unexpected redirects.
+    - [x] Implement logging to track navigation triggers.
 - [ ] Task: Conductor - User Manual Verification 'Critical UI Regressions' (Protocol in workflow.md)
 
 ## Phase 2: Tips Screen Refactor
-- [ ] Task: Relocate Tips Entry Point
-    - [ ] Update `ProfilePage` template to move the "Tips" button under "Ver Logros".
-    - [ ] Match the styling (size, color, icon placement) of the "Ver Logros" button.
+- [x] Task: Relocate Tips Entry Point cf3d305
+    - [x] Update `ProfilePage` template to move the "Tips" button under "Ver Logros".
+    - [x] Match the styling (size, color, icon placement) of the "Ver Logros" button.
 - [ ] Task: Reskin Tips Screen UI
     - [ ] Analyze `AchievementsPage` styling (Tailwind classes, card structure).
     - [ ] Apply the same "Achievements" look and feel to `TipsPage`.
