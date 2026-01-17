@@ -28,13 +28,13 @@
 - [ ] Task: Conductor - User Manual Verification 'Tips Screen Refactor' (Protocol in workflow.md)
 
 ## Phase 3: Profile Functional Gaps
-- [ ] Task: Make Diabetes Info Editable
-    - [ ] Create edit form/modal for Diabetes Information.
-    - [ ] Implement persistence in `ProfileService`.
-    - [ ] Update UI to display actual data instead of skeletons.
-- [ ] Task: Make Emergency Contact Editable
-    - [ ] Create input fields for Emergency Contact name and phone.
-    - [ ] Implement persistence and validation.
+- [x] Task: Make Diabetes Info Editable
+    - [x] Create edit form/modal for Diabetes Information.
+    - [x] Implement persistence in `ProfileService`.
+    - [x] Update UI to display actual data instead of skeletons.
+- [x] Task: Make Emergency Contact Editable b188394
+    - [x] Create input fields for Emergency Contact name and phone.
+    - [x] Implement persistence and validation.
 - [ ] Task: Refactor Edit Age Popup UI
     - [ ] Update `AlertController` configuration for "Edit Age".
     - [ ] Apply custom CSS for tall, squared buttons and fix input margins.
