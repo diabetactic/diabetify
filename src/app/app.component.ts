@@ -5,7 +5,8 @@ import {
   ChangeDetectionStrategy,
   CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
-import { Platform } from '@ionic/angular';
+import { Router, NavigationStart } from '@angular/router';
+import { ToastController, ModalController, Platform } from '@ionic/angular';
 import { TranslationService } from './core/services/translation.service';
 import { LoggerService } from './core/services/logger.service';
 import { LocalAuthService } from './core/services/local-auth.service';
@@ -17,7 +18,7 @@ import { EnvironmentConfigService } from '@core/config/environment-config.servic
 import { TranslateModule } from '@ngx-translate/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, filter } from 'rxjs/operators';
 import { ReadingsService } from '@services/readings.service';
 import { DemoDataService } from '@services/demo-data.service';
 import { OfflineBannerComponent } from '@shared/components/offline-banner/offline-banner.component';
@@ -41,7 +42,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private sessionTimeout: SessionTimeoutService,
     private readingsService: ReadingsService,
     private demoDataService: DemoDataService,
-    private envConfig: EnvironmentConfigService
+    private envConfig: EnvironmentConfigService,
+    private router: Router
   ) {
     this.logger.info('Init', 'AppComponent initialized');
     this.initializeApp();
@@ -52,6 +54,16 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.configureWebDeviceFrame();
+
+    // Log navigation events to trace ghost navigation
+    this.router.events
+      .pipe(
+        takeUntil(this.destroy$),
+        filter(event => event instanceof NavigationStart)
+      )
+      .subscribe((event: NavigationStart) => {
+        this.logger.info('Navigation', 'Navigating to', { url: event.url, trigger: event.navigationTrigger });
+      });
 
     // Log backend configuration for visibility
     this.logBackendConfiguration();
