@@ -4,10 +4,10 @@
 - [x] Task: Restore Dashboard Stat Card Icons f6832d1
     - [x] Write tests verifying `Activity` and `Target` icons are correctly rendered in `StatCardComponent`.
     - [x] Fix registration and rendering of icons in `DashboardPage`.
-- [ ] Task: Implement "You are Offline" State for Appointments
-    - [ ] Write integration tests for `AppointmentsPage` in offline mode.
-    - [ ] Suppress "Server Error" alert when `Network.getStatus().connected` is false.
-    - [ ] Display a user-friendly offline banner.
+- [x] Task: Implement "You are Offline" State for Appointments 796c04d
+    - [x] Write integration tests for `AppointmentsPage` in offline mode.
+    - [x] Suppress "Server Error" alert when `Network.getStatus().connected` is false.
+    - [x] Display a user-friendly offline banner.
 - [ ] Task: Fix Empty Info Popups
     - [ ] Identify source of empty content in `InfoButtonComponent` or related tooltips.
     - [ ] Write unit tests for content population.
