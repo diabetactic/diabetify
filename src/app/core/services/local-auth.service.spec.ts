@@ -420,6 +420,29 @@ describe('LocalAuthService', () => {
           },
         });
       }));
+
+    it('should handle 503 Token service unavailable error', () =>
+      new Promise<void>(resolve => {
+        tokenService.getRefreshToken.mockResolvedValueOnce('stored-refresh-token');
+
+        // Mock 503 response (Redis down)
+        (httpMock.post as Mock).mockReturnValueOnce(
+          throwError(() => ({
+            status: 503,
+            error: { detail: 'Token service unavailable' },
+          }))
+        );
+
+        service.refreshAccessToken().subscribe({
+          error: error => {
+            // Error should be propagated - could be original or wrapped
+            expect(error).toBeDefined();
+            // Tokens should be cleared on any refresh failure
+            expect(tokenService.clearTokens).toHaveBeenCalled();
+            resolve();
+          },
+        });
+      }));
   });
 
   describe('getAccessToken', () => {
