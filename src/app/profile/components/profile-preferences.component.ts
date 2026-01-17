@@ -28,7 +28,6 @@ export class ProfilePreferencesComponent {
   @Output() biometricToggle = new EventEmitter<CustomEvent<{ checked: boolean }>>();
   @Output() testNotification = new EventEmitter<void>();
   @Output() goToSettings = new EventEmitter<void>();
-  @Output() goToTips = new EventEmitter<void>();
 
   onNotificationsToggle(event: CustomEvent<{ checked: boolean }>) {
     this.notificationsToggle.emit(event);
@@ -44,9 +43,5 @@ export class ProfilePreferencesComponent {
 
   onGoToSettings() {
     this.goToSettings.emit();
-  }
-
-  onGoToTips() {
-    this.goToTips.emit();
   }
 }

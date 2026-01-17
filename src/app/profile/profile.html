@@ -17,6 +17,7 @@
       [profile]="profile"
       (editAge)="editAge()"
       (goToAchievements)="goToAchievements()"
+      (goToTips)="onGoToTips()"
     ></app-profile-form>
 
     <app-profile-preferences
@@ -26,7 +27,6 @@
       (biometricToggle)="onBiometricToggle($event)"
       (testNotification)="onTestNotification()"
       (goToSettings)="goToSettings()"
-      (goToTips)="onGoToTips()"
     ></app-profile-preferences>
 
     <app-profile-actions (signOut)="onSignOut()"></app-profile-actions>

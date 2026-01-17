@@ -25,6 +25,7 @@ export class ProfileFormComponent {
   @Input() profile: UserProfile | null = null;
   @Output() editAge = new EventEmitter<void>();
   @Output() goToAchievements = new EventEmitter<void>();
+  @Output() goToTips = new EventEmitter<void>();
 
   constructor(private translationService: TranslationService) {}
 
@@ -92,6 +93,10 @@ export class ProfileFormComponent {
 
   onGoToAchievements() {
     this.goToAchievements.emit();
+  }
+
+  onGoToTips() {
+    this.goToTips.emit();
   }
 
   private getDiabetesTypeLabel(): string | null {
