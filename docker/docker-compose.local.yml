@@ -144,12 +144,15 @@ services:
         condition: service_healthy
       glucoserver:
         condition: service_healthy
+      redis:
+        condition: service_started
     volumes:
       - ../../api-gateway:/app
     environment:
       - USERS_BASE_URL=http://login_service:8000
       - APPOINTMENTS_BASE_URL=http://appointments:8000
       - GLUCOSERVER_BASE_URL=http://glucoserver:8000
+      - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=9830e8615a20b5b145edd6cbf11ca1943cb15dac7ff72be7fd0f046d133b2740
     healthcheck:
       test:
@@ -196,6 +199,19 @@ services:
     networks:
       - diabetactic-network
 
+  redis:
+    image: redis:7-alpine
+    container_name: diabetactic_redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - diabetactic-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   # Test Utils Container - for user management scripts
   test-utils:
     container_name: diabetactic_test_utils
@@ -216,6 +232,7 @@ volumes:
   postgres_data_users:
   postgres_data_appointments:
   postgres_data_glucoserver:
+  redis_data:
 
 networks:
   diabetactic-network:
