@@ -63,17 +63,8 @@
     <app-icon name="chevron-forward-outline" aria-hidden="true" class="text-medium"></app-icon>
   </button>
 
-  <button
-    type="button"
-    class="overview-card"
-    (click)="onGoToTips()"
-    data-testid="tips-btn"
-  >
-    <app-icon
-      name="bulb-outline"
-      aria-hidden="true"
-      class="text-warning text-[28px]"
-    ></app-icon>
+  <button type="button" class="overview-card" (click)="onGoToTips()" data-testid="tips-btn">
+    <app-icon name="bulb-outline" aria-hidden="true" class="text-warning text-[28px]"></app-icon>
     <div class="min-w-0 flex-1">
       <p class="m-0 text-base font-semibold">
         {{ 'tips.title' | translate }}

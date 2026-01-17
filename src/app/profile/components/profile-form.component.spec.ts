@@ -21,18 +21,18 @@ describe('ProfileFormComponent', () => {
 
   it('should emit editDiabetesInfo when diabetes info card is clicked', () => {
     const spy = vi.spyOn(component.editDiabetesInfo, 'emit');
-    
+
     // Find the diabetes info card
     // It currently doesn't have a specific test id or class distinguishing it easily other than position or content
     // I should add a test id in the implementation step.
     // For now, I'll try to find it by text or icon?
     // Or I'll just assume I'll add data-testid="diabetes-info-btn"
-    
+
     const btn = fixture.debugElement.query(By.css('[data-testid="diabetes-info-btn"]'));
-    
+
     // This will fail because the button doesn't exist/have the ID yet
     expect(btn).toBeTruthy();
-    
+
     btn.nativeElement.click();
     expect(spy).toHaveBeenCalled();
   });

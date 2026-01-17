@@ -21,25 +21,25 @@
         <ion-item>
           <ion-input
             [(ngModel)]="name"
-            label="Name"
+            [label]="'profile.nameLabel' | translate"
             labelPlacement="stacked"
-            placeholder="Contact Name"
+            [placeholder]="'profile.namePlaceholder' | translate"
           ></ion-input>
         </ion-item>
         <ion-item>
           <ion-input
             [(ngModel)]="relationship"
-            label="Relationship"
+            [label]="'profile.relationshipLabel' | translate"
             labelPlacement="stacked"
-            placeholder="e.g. Mother, Father"
+            [placeholder]="'profile.relationshipPlaceholder' | translate"
           ></ion-input>
         </ion-item>
         <ion-item>
           <ion-input
             [(ngModel)]="phone"
-            label="Phone"
+            [label]="'profile.phoneLabel' | translate"
             labelPlacement="stacked"
-            placeholder="+1 234 567 890"
+            [placeholder]="'profile.phonePlaceholder' | translate"
             type="tel"
           ></ion-input>
         </ion-item>

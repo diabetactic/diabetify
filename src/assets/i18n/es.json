@@ -788,6 +788,12 @@
     "emergencyContactPlaceholder": "Agrega un contacto de emergencia para mostrarlo aquí.",
     "emergencyContactWithRelationship": "{{name}} ({{relationship}})",
     "emergencyContactPhone": "Tel: {{phone}}",
+    "nameLabel": "Nombre del Contacto",
+    "namePlaceholder": "Nombre del Contacto",
+    "relationshipLabel": "Relación",
+    "relationshipPlaceholder": "ej. Madre, Padre",
+    "phoneLabel": "Teléfono",
+    "phonePlaceholder": "+1 234 567 890",
     "preferences": "Preferencias",
     "language": {
       "title": "Idioma",

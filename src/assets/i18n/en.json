@@ -787,6 +787,12 @@
     "emergencyContactPlaceholder": "Add an emergency contact to see it here.",
     "emergencyContactWithRelationship": "{{name}} ({{relationship}})",
     "emergencyContactPhone": "{{phone}}",
+    "nameLabel": "Contact Name",
+    "namePlaceholder": "Contact Name",
+    "relationshipLabel": "Relationship",
+    "relationshipPlaceholder": "e.g. Mother, Father",
+    "phoneLabel": "Phone",
+    "phonePlaceholder": "+1 234 567 890",
     "preferences": "Preferences",
     "language": {
       "title": "Language",

@@ -13,8 +13,6 @@ import {
   IonBackButton,
   IonTitle,
   IonContent,
-  IonCard,
-  IonCardContent,
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
@@ -42,8 +40,6 @@ interface Tip {
     IonBackButton,
     IonTitle,
     IonContent,
-    IonCard,
-    IonCardContent,
     // App components
     AppIconComponent,
   ],

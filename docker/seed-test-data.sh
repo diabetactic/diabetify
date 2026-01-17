@@ -272,6 +272,67 @@ else
 fi
 
 # -----------------------------------------------------------------------------
+# Step 7: Seed appointments (full mode only)
+# -----------------------------------------------------------------------------
+echo ""
+echo "📅 Seeding appointments..."
+
+if [ -n "$ADMIN_TOKEN" ]; then
+    # 1. Create a DENIED appointment
+    # User requests
+    curl -s -X POST "$API_URL/appointments/submit" \
+        -H "Authorization: Bearer $AUTH_TOKEN" > /dev/null
+
+    # Admin denies
+    curl -s -X POST "$BACKOFFICE_URL/appointments/queue/deny" \
+        -H "Authorization: Bearer $ADMIN_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "{\"user_id\": \"$TEST_USER_DNI\"}" > /dev/null
+
+    echo "   ✓ Created DENIED appointment"
+
+    # 2. Create a COMPLETED (CREATED) appointment
+    # User requests
+    curl -s -X POST "$API_URL/appointments/submit" \
+        -H "Authorization: Bearer $AUTH_TOKEN" > /dev/null
+
+    # Admin accepts
+    curl -s -X POST "$BACKOFFICE_URL/appointments/queue/accept" \
+        -H "Authorization: Bearer $ADMIN_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "{\"user_id\": \"$TEST_USER_DNI\"}" > /dev/null
+
+    # User creates (fills form)
+    CREATE_BODY='{
+      "glucose_objective": 100,
+      "insulin_type": "rapid",
+      "dose": 20,
+      "fast_insulin": "Humalog",
+      "fixed_dose": 5,
+      "ratio": 15,
+      "sensitivity": 50,
+      "pump_type": "none",
+      "control_data": "http://example.com/pdf",
+      "motive": ["AJUSTE"],
+      "other_motive": null,
+      "another_treatment": null
+    }'
+
+    curl -s -X POST "$API_URL/appointments/create" \
+        -H "Authorization: Bearer $AUTH_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "$CREATE_BODY" > /dev/null
+
+    echo "   ✓ Created COMPLETED appointment"
+    
+    if declare -F append_jsonl >/dev/null 2>&1; then
+      append_jsonl "seed-history.jsonl" event="appointments_seeded" user_id="$USER_ID" || true
+    fi
+else
+    echo "   ⚠ Skipping appointment seeding (backoffice auth failed)"
+fi
+
+# -----------------------------------------------------------------------------
 # Summary
 # -----------------------------------------------------------------------------
 echo ""

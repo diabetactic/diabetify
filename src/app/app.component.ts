@@ -6,7 +6,7 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
 import { Router, NavigationStart } from '@angular/router';
-import { ToastController, ModalController, Platform } from '@ionic/angular';
+import { Platform } from '@ionic/angular';
 import { TranslationService } from './core/services/translation.service';
 import { LoggerService } from './core/services/logger.service';
 import { LocalAuthService } from './core/services/local-auth.service';
@@ -62,7 +62,10 @@ export class AppComponent implements OnInit, OnDestroy {
         filter(event => event instanceof NavigationStart)
       )
       .subscribe((event: NavigationStart) => {
-        this.logger.info('Navigation', 'Navigating to', { url: event.url, trigger: event.navigationTrigger });
+        this.logger.info('Navigation', 'Navigating to', {
+          url: event.url,
+          trigger: event.navigationTrigger,
+        });
       });
 
     // Log backend configuration for visibility

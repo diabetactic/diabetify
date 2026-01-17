@@ -55,25 +55,27 @@ describe('AppointmentsPage Offline Handling', () => {
   it('should NOT show server error when offline', async () => {
     // Simulate Offline
     vi.mocked(Network.getStatus).mockResolvedValue({ connected: false, connectionType: 'none' });
-    
+
     // Simulate Service Error (which usually happens when offline requests fail)
-    mockAppointmentService.getAppointments.mockReturnValue(throwError(() => new Error('Server error')));
+    mockAppointmentService.getAppointments.mockReturnValue(
+      throwError(() => new Error('Server error'))
+    );
 
     fixture = TestBed.createComponent(AppointmentsPage);
     component = fixture.componentInstance;
-    
+
     // Trigger ngOnInit
     component.ngOnInit();
-    
+
     // Wait for async network check and Observables
     await fixture.whenStable();
     fixture.detectChanges();
 
     expect(component.isOnline).toBe(false);
-    
+
     // Should avoid calling the service
     expect(mockAppointmentService.getAppointments).not.toHaveBeenCalled();
-    
+
     // Should not show server error
     expect(component.error).not.toBe('Server error');
   });

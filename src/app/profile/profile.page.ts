@@ -286,9 +286,8 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   async editDiabetesInfo(): Promise<void> {
-    const { DiabetesInfoModalComponent } = await import(
-      './components/diabetes-info-modal/diabetes-info-modal.component'
-    );
+    const { DiabetesInfoModalComponent } =
+      await import('./components/diabetes-info-modal/diabetes-info-modal.component');
     const modal = await this.modalController.create({
       component: DiabetesInfoModalComponent,
       componentProps: { profile: this.profile },
@@ -319,9 +318,8 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   async editEmergencyContact(): Promise<void> {
-    const { EmergencyContactModalComponent } = await import(
-      './components/emergency-contact-modal/emergency-contact-modal.component'
-    );
+    const { EmergencyContactModalComponent } =
+      await import('./components/emergency-contact-modal/emergency-contact-modal.component');
     const modal = await this.modalController.create({
       component: EmergencyContactModalComponent,
       componentProps: { profile: this.profile },

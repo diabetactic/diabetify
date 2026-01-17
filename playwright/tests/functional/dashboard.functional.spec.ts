@@ -20,6 +20,7 @@ test.describe('Dashboard Functional Tests @functional @docker', () => {
         const content = document.querySelector('[data-testid="stats-container"]');
         return !mainSkeleton && content !== null;
       },
+      null,
       { timeout: 30000 }
     );
   }

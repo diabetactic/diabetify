@@ -154,11 +154,14 @@ tidepool: {
 ## Actualizaciones Recientes (Enero 2026)
 
 ### Autenticación Offline Optimista
+
 Se ha implementado una estrategia de "Autenticación Optimista" en `LocalAuthService` para mejorar la experiencia offline:
+
 - **Comportamiento:** Si la app inicia sin conexión y el token de acceso ha expirado (pero existe un refresh token válido), la sesión se restaura localmente permitiendo el acceso a la app.
 - **Sincronización:** El refresco del token se difiere hasta que se restablezca la conexión y se intente una petición a la API.
 - **Seguridad:** Esto no compromete la seguridad ya que cualquier acción sensible requerirá conexión y validará el token en el backend.
 
 ### Gestión de Citas y Cronología
+
 - **Lógica de Estado:** Refactorización de `AppointmentTimelineComponent` para manejar estados inconsistentes (`NONE`) y citas históricas sin timestamps precisos.
 - **Integridad:** Se asegura que las citas en estado `PENDING` no muestren detalles innecesarios hasta ser aceptadas.
