@@ -10,7 +10,7 @@
  */
 
 import { Injectable, Optional, Injector, OnDestroy } from '@angular/core';
-import { Subject, firstValueFrom } from 'rxjs';
+import { Subject, firstValueFrom, BehaviorSubject } from 'rxjs';
 import { Network } from '@capacitor/network';
 import { PluginListenerHandle } from '@capacitor/core';
 import { LocalGlucoseReading, MealContext, MEAL_CONTEXTS } from '@models/glucose-reading.model';
@@ -77,6 +77,15 @@ const STALE_PROCESSING_THRESHOLD_MS = 5 * 60 * 1000;
  */
 const VALUE_TOLERANCE_MGDL = 1.5;
 
+/**
+ * Event emitted when a reading permanently fails to sync after all retries
+ */
+export interface SyncFailureEvent {
+  readingId: string;
+  error: string;
+  timestamp: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -90,6 +99,20 @@ export class ReadingsSyncService implements OnDestroy {
   private syncPromise: Promise<SyncResult> | null = null;
   private fetchInProgress = false;
   private fetchPromise: Promise<FetchResult> | null = null;
+
+  /**
+   * Emits when a reading permanently fails to sync (exhausted all retries).
+   * Subscribe to this to show user notifications about sync failures.
+   */
+  private _syncFailure$ = new Subject<SyncFailureEvent>();
+  public readonly syncFailure$ = this._syncFailure$.asObservable();
+
+  /**
+   * Count of readings that failed to sync permanently (exhausted retries).
+   * These readings are stuck with synced=false and no queue entry.
+   */
+  private _permanentlyFailedCount$ = new BehaviorSubject<number>(0);
+  public readonly permanentlyFailedCount$ = this._permanentlyFailedCount$.asObservable();
 
   private readonly db: DiabetacticDatabase;
   private envConfig?: EnvironmentConfigService;
@@ -112,6 +135,28 @@ export class ReadingsSyncService implements OnDestroy {
     this.initializeNetworkMonitoring();
     // Recover any items that were left in 'processing' state from a previous crash
     this.recoverStaleProcessingItems();
+    // Initialize count of permanently failed readings
+    this.updatePermanentlyFailedCount();
+  }
+
+  /**
+   * Count readings that are unsynced but NOT in the sync queue (permanently failed).
+   * These are readings where all retries were exhausted.
+   */
+  private async updatePermanentlyFailedCount(): Promise<void> {
+    try {
+      // Get all unsynced readings
+      const unsyncedReadings = await this.db.readings.filter(r => r.synced === false).toArray();
+      // Get all readings currently in sync queue
+      const queueReadingIds = new Set(
+        (await this.db.syncQueue.toArray()).map(item => item.readingId)
+      );
+      // Count unsynced readings that are NOT in the queue (permanently failed)
+      const permanentlyFailed = unsyncedReadings.filter(r => !queueReadingIds.has(r.id));
+      this._permanentlyFailedCount$.next(permanentlyFailed.length);
+    } catch (error) {
+      this.logger?.warn('Sync', 'Failed to count permanently failed readings', error);
+    }
   }
 
   /**
@@ -399,6 +444,13 @@ export class ReadingsSyncService implements OnDestroy {
         );
         try {
           await this.db.syncQueue.delete(result.item.id);
+          if (result.item.readingId) {
+            this._syncFailure$.next({
+              readingId: result.item.readingId,
+              error: result.error ?? 'Sync failed after multiple retries',
+              timestamp: Date.now(),
+            });
+          }
         } catch (error) {
           this.logger?.warn(
             'Sync',
@@ -407,6 +459,11 @@ export class ReadingsSyncService implements OnDestroy {
           );
         }
       }
+    }
+
+    // Update count of permanently failed readings after processing
+    if (failedItems.length > 0) {
+      this.updatePermanentlyFailedCount();
     }
 
     const success = successItems.length;

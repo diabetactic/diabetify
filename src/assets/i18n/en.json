@@ -507,6 +507,7 @@
       "created": "Created",
       "accepted": "Accepted",
       "denied": "Denied",
+      "resolved": "Resolved",
       "completed": "Completed"
     },
     "fields": {
@@ -571,6 +572,8 @@
       "notInQueue": "You need to request an appointment before filling the form.",
       "notAccepted": "Your request hasn't been accepted yet.",
       "alreadyInQueue": "You already have a pending appointment request.",
+      "alreadyAccepted": "Your request is already accepted. You can now create your appointment.",
+      "cannotRequest": "You cannot request an appointment at this time.",
       "cannotCreate": "You cannot create an appointment at this time",
       "alreadyHasAppointment": "You already have an active appointment",
       "pendingRequest": "Your appointment request is pending approval",
@@ -611,7 +614,8 @@
         "accepted": "Your appointment request has been accepted!",
         "denied": "Your appointment request was not accepted",
         "created": "Your appointment has been successfully registered",
-        "updatesUnavailable": "Real-time updates are temporarily unavailable"
+        "updatesUnavailable": "Real-time updates are temporarily unavailable",
+        "resolutionReady": "Your doctor has added treatment recommendations!"
       }
     },
     "reason": "Reason",
@@ -1038,6 +1042,9 @@
     "error": {
       "title": "Sync Error",
       "message": "Failed to sync your data. Please check your connection and try again."
+    },
+    "errors": {
+      "permanentFailure": "A reading could not be synced after multiple attempts. It is saved locally but not on the server."
     },
     "lastSync": "Last Sync",
     "never": "Never",

@@ -508,6 +508,7 @@
       "created": "Creada",
       "accepted": "Aceptada",
       "denied": "Denegada",
+      "resolved": "Resuelta",
       "completed": "Completada"
     },
     "fields": {
@@ -572,6 +573,8 @@
       "notInQueue": "Debe solicitar una cita antes de completar el formulario.",
       "notAccepted": "Su solicitud aún no ha sido aceptada.",
       "alreadyInQueue": "Ya tiene una solicitud de cita pendiente.",
+      "alreadyAccepted": "Su solicitud ya fue aceptada. Ahora puede crear su cita.",
+      "cannotRequest": "No puede solicitar una cita en este momento.",
       "cannotCreate": "No puedes crear una cita en este momento",
       "alreadyHasAppointment": "Ya tienes una cita activa",
       "pendingRequest": "Tu solicitud de cita está pendiente de aprobación",
@@ -612,7 +615,8 @@
         "accepted": "¡Su solicitud de cita ha sido aceptada!",
         "denied": "Su solicitud de cita no fue aceptada",
         "created": "Su cita ha sido registrada exitosamente",
-        "updatesUnavailable": "Las actualizaciones en tiempo real no están disponibles temporalmente"
+        "updatesUnavailable": "Las actualizaciones en tiempo real no están disponibles temporalmente",
+        "resolutionReady": "¡Su doctor ha agregado recomendaciones de tratamiento!"
       }
     },
     "reason": "Motivo",
@@ -1039,6 +1043,9 @@
     "error": {
       "title": "Error de Sincronización",
       "message": "No se pudo sincronizar tus datos. Por favor verifica tu conexión e intenta nuevamente."
+    },
+    "errors": {
+      "permanentFailure": "Una lectura no pudo sincronizarse después de varios intentos. Está guardada localmente pero no en el servidor."
     },
     "lastSync": "Última Sincronización",
     "never": "Nunca",

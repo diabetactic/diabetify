@@ -1,3 +1,4 @@
+import '../../../test-setup';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
@@ -11,8 +12,8 @@ describe('AppointmentTimelineComponent', () => {
   const mockAppointment: any = {
     status: 'ACCEPTED',
     timestamps: {
-      created_at: '2023-10-27T10:00:00Z', // PENDING maps to created_at
-      accepted_at: '2023-10-27T12:30:00Z', // ACCEPTED maps to accepted_at
+      created_at: '2023-10-27T10:00:00Z',
+      accepted_at: '2023-10-27T12:30:00Z',
     },
   };
 
@@ -25,7 +26,6 @@ describe('AppointmentTimelineComponent', () => {
     component = fixture.componentInstance;
     component.appointment = mockAppointment;
 
-    // Trigger ngOnChanges to initialize state
     component.ngOnChanges({
       appointment: new SimpleChange(null, mockAppointment, true),
     });
@@ -62,7 +62,7 @@ describe('AppointmentTimelineComponent', () => {
   });
 
   it('should return the correct timestamp for a step', () => {
-    const pendingTimestamp = new Date('2023-10-27T10:00:00Z').toLocaleString();
+    const pendingTimestamp = new Date('2023-10-27T10:00:00Z').toLocaleDateString();
     expect(component.getTimestamp('PENDING')).toBe(pendingTimestamp);
   });
 
@@ -71,9 +71,6 @@ describe('AppointmentTimelineComponent', () => {
   });
 
   it('should calculate the progress percentage correctly', () => {
-    // Steps: PENDING (0), ACCEPTED (1), CREATED (2). Total 2 segments.
-    // Current: ACCEPTED (index 1).
-    // Progress: 1/2 * 100 = 50%
     expect(component.progressPercentage).toBe(50);
   });
 
@@ -88,15 +85,30 @@ describe('AppointmentTimelineComponent', () => {
     expect(component.progressPercentage).toBe(0);
   });
 
-  it('should handle COMPLETED status', () => {
-    const completedAppt: any = { status: 'COMPLETED', timestamps: {} };
-    component.appointment = completedAppt;
+  it('should show RESOLVED state when hasResolution is true', () => {
+    const createdAppt: any = { status: 'CREATED', timestamps: {} };
+    component.appointment = createdAppt;
+    component.hasResolution = true;
     component.ngOnChanges({
-      appointment: new SimpleChange(mockAppointment, completedAppt, false),
+      appointment: new SimpleChange(mockAppointment, createdAppt, false),
+      hasResolution: new SimpleChange(false, true, false),
     });
 
-    expect(component.currentStatus).toBe('COMPLETED');
-    expect(component.steps).toEqual(['PENDING', 'ACCEPTED', 'CREATED', 'COMPLETED']);
+    expect(component.currentStatus).toBe('RESOLVED');
+    expect(component.steps).toEqual(['PENDING', 'ACCEPTED', 'CREATED', 'RESOLVED']);
+    expect(component.progressPercentage).toBe(100);
+  });
+
+  it('should not show RESOLVED state when hasResolution is false', () => {
+    const createdAppt: any = { status: 'CREATED', timestamps: {} };
+    component.appointment = createdAppt;
+    component.hasResolution = false;
+    component.ngOnChanges({
+      appointment: new SimpleChange(mockAppointment, createdAppt, false),
+    });
+
+    expect(component.currentStatus).toBe('CREATED');
+    expect(component.steps).toEqual(['PENDING', 'ACCEPTED', 'CREATED']);
     expect(component.progressPercentage).toBe(100);
   });
 });

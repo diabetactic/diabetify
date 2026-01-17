@@ -17,27 +17,30 @@ import { TranslateModule } from '@ngx-translate/core';
   template: `
     <div class="timeline-container">
       <div class="timeline" [class.denied-flow]="isDenied">
+        <!-- Progress bar (horizontal) -->
         <div class="timeline-progress-bar">
-          <div class="timeline-progress-fill" [style.height.%]="progressPercentage"></div>
+          <div class="timeline-progress-fill" [style.width.%]="progressPercentage"></div>
         </div>
 
-        <div
-          *ngFor="let step of steps; let i = index"
-          class="timeline-item"
-          [class.active]="isStepActive(step)"
-          [class.current]="step === currentStatus"
-        >
-          <div class="timeline-dot-wrapper">
-            <div class="timeline-dot"></div>
-          </div>
-          <div class="timeline-content">
-            <div class="state-name">
-              {{ 'appointments.status.' + step.toLowerCase() | translate }}
+        <!-- Steps -->
+        <div class="timeline-steps">
+          @for (step of steps; track step; let i = $index) {
+            <div
+              class="timeline-step"
+              [class.active]="isStepActive(step)"
+              [class.current]="step === currentStatus"
+            >
+              <div class="timeline-dot"></div>
+              <div class="timeline-label">
+                <span class="state-name">
+                  {{ 'appointments.status.' + step.toLowerCase() | translate }}
+                </span>
+                @if (isStepActive(step) && getTimestamp(step)) {
+                  <span class="timestamp">{{ getTimestamp(step) }}</span>
+                }
+              </div>
             </div>
-            <div class="timestamp" *ngIf="isStepActive(step) && getTimestamp(step)">
-              {{ getTimestamp(step) }}
-            </div>
-          </div>
+          }
         </div>
       </div>
     </div>
@@ -45,108 +48,161 @@ import { TranslateModule } from '@ngx-translate/core';
   styles: [
     `
       .timeline-container {
-        padding: 0 16px;
+        padding: 16px;
         font-family: inherit;
       }
 
       .timeline {
         position: relative;
-        display: flex;
-        flex-direction: column;
-        gap: 0;
       }
 
-      /* Vertical Line Background */
+      /* Horizontal progress bar background */
       .timeline-progress-bar {
         position: absolute;
-        top: 10px;
-        bottom: 10px;
-        left: 9px;
-        width: 2px;
-        background-color: var(--ion-color-step-150, #e0e0e0);
+        top: 6px;
+        left: 6px;
+        right: 6px;
+        height: 2px;
+        background-color: var(--ion-color-step-200, #e0e0e0);
         z-index: 1;
       }
 
-      /* Vertical Line Fill */
+      /* Horizontal progress fill */
       .timeline-progress-fill {
-        width: 100%;
+        height: 100%;
         background-color: var(--ion-color-primary, #3880ff);
-        transition: height 0.3s ease-in-out;
+        transition: width 0.3s ease-in-out;
       }
 
       .timeline.denied-flow .timeline-progress-fill {
         background-color: var(--ion-color-danger, #eb445a);
       }
 
-      .timeline-item {
+      /* Steps container - horizontal flex */
+      .timeline-steps {
+        display: flex;
+        justify-content: space-between;
         position: relative;
         z-index: 2;
+      }
+
+      .timeline-step {
         display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .timeline-step:first-child {
         align-items: flex-start;
-        padding-bottom: 16px; /* Space between items */
       }
 
-      .timeline-item:last-child {
-        padding-bottom: 0;
-      }
-
-      .timeline-dot-wrapper {
-        width: 20px;
-        display: flex;
-        justify-content: center;
-        margin-right: 16px;
-        padding-top: 4px; /* Align dot with text */
+      .timeline-step:last-child {
+        align-items: flex-end;
       }
 
       .timeline-dot {
-        width: 12px;
-        height: 12px;
-        background-color: var(--ion-color-step-150, #e0e0e0);
+        width: 14px;
+        height: 14px;
+        background-color: var(--ion-color-step-200, #e0e0e0);
         border-radius: 50%;
+        border: 2px solid var(--ion-background-color, #fff);
+        box-shadow: 0 0 0 1px var(--ion-color-step-200, #e0e0e0);
         transition: all 0.3s ease-in-out;
-        border: 2px solid #fff;
-        box-shadow: 0 0 0 1px var(--ion-color-step-150, #e0e0e0);
+        flex-shrink: 0;
       }
 
-      /* Active State (Past/Current) */
-      .timeline-item.active .timeline-dot {
+      /* Active state */
+      .timeline-step.active .timeline-dot {
         background-color: var(--ion-color-primary, #3880ff);
-        box-shadow: 0 0 0 2px var(--ion-color-primary-tint, #3880ff);
+        box-shadow: 0 0 0 2px var(--ion-color-primary-tint, rgba(56, 128, 255, 0.3));
       }
 
-      .timeline.denied-flow .timeline-item.active .timeline-dot {
+      .timeline.denied-flow .timeline-step.active .timeline-dot {
         background-color: var(--ion-color-danger, #eb445a);
-        box-shadow: 0 0 0 2px var(--ion-color-danger-tint, #eb445a);
+        box-shadow: 0 0 0 2px var(--ion-color-danger-tint, rgba(235, 68, 90, 0.3));
       }
 
-      /* Current State (Pulse effect or larger) */
-      .timeline-item.current .timeline-dot {
+      /* Current state - pulse effect */
+      .timeline-step.current .timeline-dot {
         transform: scale(1.2);
+        animation: pulse 2s infinite;
       }
 
-      .timeline-content {
-        flex: 1;
+      @keyframes pulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 2px var(--ion-color-primary-tint, rgba(56, 128, 255, 0.3));
+        }
+        50% {
+          box-shadow: 0 0 0 4px var(--ion-color-primary-tint, rgba(56, 128, 255, 0.2));
+        }
+      }
+
+      .timeline.denied-flow .timeline-step.current .timeline-dot {
+        animation: pulse-danger 2s infinite;
+      }
+
+      @keyframes pulse-danger {
+        0%,
+        100% {
+          box-shadow: 0 0 0 2px var(--ion-color-danger-tint, rgba(235, 68, 90, 0.3));
+        }
+        50% {
+          box-shadow: 0 0 0 4px var(--ion-color-danger-tint, rgba(235, 68, 90, 0.2));
+        }
+      }
+
+      .timeline-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 8px;
+        text-align: center;
+      }
+
+      .timeline-step:first-child .timeline-label {
+        align-items: flex-start;
+        text-align: left;
+      }
+
+      .timeline-step:last-child .timeline-label {
+        align-items: flex-end;
+        text-align: right;
       }
 
       .state-name {
-        font-size: 14px;
+        font-size: 11px;
         font-weight: 600;
         color: var(--ion-color-medium);
         line-height: 1.2;
+        text-transform: capitalize;
       }
 
-      .timeline-item.active .state-name {
+      .timeline-step.active .state-name {
         color: var(--ion-color-dark);
       }
 
-      .timeline.denied-flow .timeline-item.active .state-name {
+      .timeline.denied-flow .timeline-step.active .state-name {
         color: var(--ion-color-danger, #eb445a);
       }
 
       .timestamp {
-        font-size: 12px;
+        font-size: 9px;
         color: var(--ion-color-medium-tint);
         margin-top: 2px;
+        white-space: nowrap;
+      }
+
+      /* Responsive: stack labels on very small screens */
+      @media (max-width: 320px) {
+        .state-name {
+          font-size: 10px;
+        }
+        .timestamp {
+          font-size: 8px;
+        }
       }
     `,
   ],
@@ -156,13 +212,14 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class AppointmentTimelineComponent implements OnChanges {
   @Input() appointment!: Appointment;
+  @Input() hasResolution = false;
 
   steps: string[] = [];
   currentStatus = 'NONE';
   isDenied = false;
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['appointment']) {
+    if (changes['appointment'] || changes['hasResolution']) {
       this.updateState();
     }
   }
@@ -173,8 +230,11 @@ export class AppointmentTimelineComponent implements OnChanges {
 
     if (this.isDenied) {
       this.steps = ['PENDING', 'DENIED'];
-    } else if (this.currentStatus === 'COMPLETED') {
-      this.steps = ['PENDING', 'ACCEPTED', 'CREATED', 'COMPLETED'];
+    } else if (this.hasResolution) {
+      this.steps = ['PENDING', 'ACCEPTED', 'CREATED', 'RESOLVED'];
+      if (this.currentStatus === 'CREATED') {
+        this.currentStatus = 'RESOLVED';
+      }
     } else {
       this.steps = ['PENDING', 'ACCEPTED', 'CREATED'];
     }
@@ -183,13 +243,12 @@ export class AppointmentTimelineComponent implements OnChanges {
   private normalizeStatus(status: string | undefined): string {
     if (!status) return 'NONE';
     const upper = status.toUpperCase();
-    // Basic validation to ensure we don't display garbage
     const validStates = [
       'PENDING',
       'ACCEPTED',
       'DENIED',
       'CREATED',
-      'COMPLETED',
+      'RESOLVED',
       'NONE',
       'BLOCKED',
       'CANCELLED',
@@ -203,7 +262,6 @@ export class AppointmentTimelineComponent implements OnChanges {
     const currentIndex = this.steps.indexOf(this.currentStatus);
     const stepIndex = this.steps.indexOf(step);
 
-    // If current status is not in the steps (e.g. unexpected), default to inactive
     if (currentIndex === -1) return false;
 
     return stepIndex <= currentIndex;
@@ -212,22 +270,14 @@ export class AppointmentTimelineComponent implements OnChanges {
   getTimestamp(step: string): string | null {
     if (!this.appointment?.timestamps) return null;
 
-    // Map step name to timestamp key
-    // PENDING -> created_at (usually request time)
-    // ACCEPTED -> accepted_at
-    // CREATED -> completed_at or created_at (of the appointment object?)
-    // DENIED -> denied_at
-
-    // Wait, the backend model timestamps might differ.
-    // Let's assume consistent keys or use a map.
     const keyMap: Record<string, string> = {
-      PENDING: 'created_at', // The request creation
+      PENDING: 'created_at',
       ACCEPTED: 'accepted_at',
       DENIED: 'denied_at',
-      CREATED: 'completed_at', // or 'appointment_created_at'
+      CREATED: 'completed_at',
+      RESOLVED: 'resolved_at',
     };
 
-    // Fallback to simple lowercase check
     const key = keyMap[step] || step.toLowerCase() + '_at';
 
     const timestamps = this.appointment.timestamps as Record<string, string>;
@@ -235,7 +285,7 @@ export class AppointmentTimelineComponent implements OnChanges {
       timestamps[key] || ((this.appointment as unknown as Record<string, unknown>)[key] as string);
 
     if (ts) {
-      return new Date(ts).toLocaleString();
+      return new Date(ts).toLocaleDateString();
     }
     return null;
   }
@@ -243,11 +293,6 @@ export class AppointmentTimelineComponent implements OnChanges {
   get progressPercentage(): number {
     const currentIndex = this.steps.indexOf(this.currentStatus);
     if (currentIndex === -1) return 0;
-    // Calculate percentage based on steps
-    // 0 steps -> 0%
-    // 1 step (start) -> 0%
-    // 2 steps -> 100% (full line)
-    // But we want to fill UP TO the current dot.
 
     if (this.steps.length <= 1) return 0;
     return (currentIndex / (this.steps.length - 1)) * 100;

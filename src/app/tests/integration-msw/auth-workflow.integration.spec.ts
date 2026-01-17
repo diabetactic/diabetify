@@ -17,9 +17,24 @@ import { LocalAuthService } from '@core/services/local-auth.service';
 import { TokenStorageService } from '@core/services/token-storage.service';
 import { LoggerService } from '@core/services/logger.service';
 import { ApiGatewayService } from '@core/services/api-gateway.service';
+import { MockAdapterService } from '@core/services/mock-adapter.service';
 
 // API base URL (must match handlers.ts)
 const API_BASE = 'http://localhost:8000';
+
+/**
+ * Mock MockAdapterService that enables auth mock mode for tests.
+ * When auth mock is enabled, LocalAuthService bypasses HTTP calls and uses internal mock data.
+ */
+class MockMockAdapterService {
+  isServiceMockEnabled(service: 'appointments' | 'glucoserver' | 'auth'): boolean {
+    // Enable mock mode for auth service - this causes LocalAuthService to bypass HTTP
+    return service === 'auth';
+  }
+  isMockEnabled(): boolean {
+    return true;
+  }
+}
 
 describe('Auth Workflow Integration (MSW)', () => {
   let authService: LocalAuthService;
@@ -45,6 +60,8 @@ describe('Auth Workflow Integration (MSW)', () => {
         TokenStorageService,
         LoggerService,
         ApiGatewayService,
+        // Provide mock MockAdapterService that enables auth mock mode
+        { provide: MockAdapterService, useClass: MockMockAdapterService },
       ],
     }).compileComponents();
 

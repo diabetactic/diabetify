@@ -328,9 +328,9 @@
           (keydown.space)="togglePastAppointments(); $event.preventDefault()"
         >
           <span
-            class="text-base-content/80 dark:text-base-content/90 flex items-center gap-2 text-sm font-medium"
+            class="text-base-content/80 dark:text-base-content/90 flex items-center gap-3 text-sm font-medium"
           >
-            <app-icon name="history" class="h-4 w-4"></app-icon>
+            <app-icon name="history" class="h-5 w-5 flex-shrink-0"></app-icon>
             {{ 'appointments.past' | translate }} ({{ pastAppointments.length }})
           </span>
           <div class="flex items-center gap-2">
@@ -354,10 +354,10 @@
                 <ion-card-header class="pb-2">
                   <div class="flex items-start justify-between gap-2">
                     <div>
-                      <ion-card-subtitle class="flex items-center gap-2 text-xs">
+                      <ion-card-subtitle class="flex items-center gap-2.5 text-xs">
                         <app-icon
                           name="clipboard-list"
-                          class="text-base-content/50 dark:text-base-content/70 h-4 w-4"
+                          class="text-base-content/50 dark:text-base-content/70 h-4 w-4 flex-shrink-0"
                         ></app-icon>
                         <span data-testid="appointment-id">
                           {{ 'appointments.record' | translate }} #{{ appointment.appointment_id }}

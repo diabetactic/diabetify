@@ -24,8 +24,10 @@
     <!-- Appointment details -->
     @if (!loading && appointment) {
       <div class="flex flex-col gap-4">
-        <!-- Timeline -->
-        <app-appointment-timeline [appointment]="appointment"></app-appointment-timeline>
+        <app-appointment-timeline
+          [appointment]="appointment"
+          [hasResolution]="!!resolution?.change_basal_type"
+        ></app-appointment-timeline>
         <!-- Header card with ID and motive -->
         <ion-card class="!m-0">
           <ion-card-header>

@@ -208,14 +208,16 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
    * Uses takeUntil(destroy$) for automatic cleanup - no manual unsubscription needed
    */
   private startPolling(): void {
-    // Only poll if not already polling and in a state that can change
     if (this.isPollingActive) return;
 
     const state = this.queueState?.state;
-    if (state !== 'PENDING' && state !== 'ACCEPTED') return;
+    // Poll for PENDING (waiting for acceptance), ACCEPTED (waiting for creation),
+    // and CREATED (waiting for resolution from doctor)
+    if (state !== 'PENDING' && state !== 'ACCEPTED' && state !== 'CREATED') return;
 
     this.logger.info('Queue', 'Starting polling for queue updates', {
       interval: this.POLLING_INTERVAL_MS,
+      state,
     });
 
     this.isPollingActive = true;
@@ -265,17 +267,16 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
         // Show toast notification for state change
         await this.notifyStateChange(previousState, newState.state);
 
-        // If moved to ACCEPTED, fetch position (should be undefined now, but for completeness)
-        // If moved to CREATED or DENIED, stop polling
-        if (
-          newState.state === 'CREATED' ||
-          newState.state === 'DENIED' ||
-          newState.state === 'NONE'
-        ) {
+        // Stop polling only for terminal states (DENIED, NONE)
+        // CREATED continues polling to check for resolution
+        if (newState.state === 'DENIED' || newState.state === 'NONE') {
           this.stopPolling();
         }
 
         this.cdr.markForCheck();
+      } else if (newState.state === 'CREATED') {
+        // When in CREATED state, poll for resolution
+        await this.pollForResolution();
       } else if (newState.state === 'PENDING') {
         // Update position even if state didn't change
         try {
@@ -304,6 +305,37 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
           'warning'
         );
       }
+    }
+  }
+
+  /**
+   * Poll for resolution on the current appointment (when in CREATED state)
+   */
+  private async pollForResolution(): Promise<void> {
+    const currentApt = this.currentAppointment;
+    if (!currentApt) return;
+
+    // Skip if we already have the resolution cached
+    if (this.resolutions.has(currentApt.appointment_id)) {
+      this.stopPolling();
+      return;
+    }
+
+    try {
+      const resolution = await firstValueFrom(
+        this.appointmentService.getResolution(currentApt.appointment_id)
+      );
+      if (resolution) {
+        this.resolutions.set(currentApt.appointment_id, resolution);
+        this.stopPolling();
+        await this.showToast(
+          this.translationService.instant('appointments.queue.messages.resolutionReady'),
+          'success'
+        );
+        this.cdr.markForCheck();
+      }
+    } catch {
+      // Resolution not ready yet - continue polling
     }
   }
 

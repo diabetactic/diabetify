@@ -7,7 +7,7 @@
 
 import { Injectable, inject, OnDestroy } from '@angular/core';
 import { Observable, BehaviorSubject, throwError, of, Subject } from 'rxjs';
-import { catchError, map, tap, takeUntil } from 'rxjs/operators';
+import { catchError, map, tap, takeUntil, switchMap } from 'rxjs/operators';
 import { ApiGatewayService } from '@services/api-gateway.service';
 import { TranslationService } from '@services/translation.service';
 import { LoggerService } from '@services/logger.service';
@@ -240,6 +240,7 @@ export class AppointmentService implements OnDestroy {
 
   /**
    * Request an appointment (submit to queue)
+   * Pre-checks queue state to prevent duplicate submissions and provide better error messages.
    * Note: Backend returns a number (queue position), not an object
    */
   requestAppointment(): Observable<AppointmentSubmitResponse> {
@@ -252,20 +253,34 @@ export class AppointmentService implements OnDestroy {
       });
     }
 
-    // Backend returns just a number (queue position), not an AppointmentSubmitResponse object
-    return this.apiGateway.request<number>('extservices.appointments.submit').pipe(
-      map(response => {
-        if (response.success) {
-          // Transform the number response into AppointmentSubmitResponse
-          const position = typeof response.data === 'number' ? response.data : 1;
-          return {
-            success: true,
-            state: 'PENDING' as AppointmentQueueState,
-            position,
-            message: `Added to queue at position ${position}`,
-          };
+    // Pre-check: verify user doesn't already have a queue entry (prevents 500 from backend IntegrityError)
+    return this.getQueueState().pipe(
+      switchMap((currentState: AppointmentQueueStateResponse) => {
+        if (currentState.state !== 'NONE') {
+          const errorKey =
+            currentState.state === 'PENDING'
+              ? 'appointments.errors.alreadyInQueue'
+              : currentState.state === 'ACCEPTED'
+                ? 'appointments.errors.alreadyAccepted'
+                : currentState.state === 'CREATED'
+                  ? 'appointments.errors.alreadyHasAppointment'
+                  : 'appointments.errors.cannotRequest';
+          return throwError(() => new Error(this.translationService.instant(errorKey)));
         }
-        throw new Error(response.error?.message || 'Failed to submit appointment request');
+        return this.apiGateway.request<number>('extservices.appointments.submit').pipe(
+          map(response => {
+            if (response.success) {
+              const position = typeof response.data === 'number' ? response.data : 1;
+              return {
+                success: true,
+                state: 'PENDING' as AppointmentQueueState,
+                position,
+                message: `Added to queue at position ${position}`,
+              };
+            }
+            throw new Error(response.error?.message || 'Failed to submit appointment request');
+          })
+        );
       }),
       catchError(this.handleError.bind(this))
     );
@@ -366,6 +381,10 @@ export class AppointmentService implements OnDestroy {
       'Appointment already exists in queue': 'appointments.errors.alreadyInQueue',
       'Appointment does not exist': 'appointments.errors.notFound',
       'Appointment Queue is not open': 'appointments.errors.queueClosed',
+      // DB constraint violation patterns (backup for race conditions bypassing pre-check)
+      'unique constraint': 'appointments.errors.alreadyInQueue',
+      'duplicate key': 'appointments.errors.alreadyInQueue',
+      'violates unique': 'appointments.errors.alreadyInQueue',
     };
 
     // Check for backend error message match (case-insensitive)
