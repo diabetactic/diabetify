@@ -35,29 +35,29 @@
 - [x] Task: Make Emergency Contact Editable b188394
     - [x] Create input fields for Emergency Contact name and phone.
     - [x] Implement persistence and validation.
-- [ ] Task: Refactor Edit Age Popup UI
-    - [ ] Update `AlertController` configuration for "Edit Age".
-    - [ ] Apply custom CSS for tall, squared buttons and fix input margins.
+- [x] Task: Refactor Edit Age Popup UI
+    - [x] Update `AlertController` configuration for "Edit Age".
+    - [x] Apply custom CSS for tall, squared buttons and fix input margins.
 - [ ] Task: Conductor - User Manual Verification 'Profile Functional Gaps' (Protocol in workflow.md)
 
 ## Phase 4: Settings & Layout Polish
-- [ ] Task: Reorder Settings Sections
-    - [ ] Move "Apariencia" above "Configuración de glucosa" in `SettingsPage`.
-- [ ] Task: Add Missing Icons to Settings & Profile
-    - [ ] Add icon to "Apariencia" section header.
-    - [ ] Fix misalignment/missing icons in Profile "General" section (based on screenshot).
+- [x] Task: Reorder Settings Sections
+    - [x] Move "Apariencia" above "Configuración de glucosa" in `SettingsPage`.
+- [x] Task: Add Missing Icons to Settings & Profile
+    - [x] Add icon to "Apariencia" section header.
+    - [x] Fix misalignment/missing icons in Profile "General" section (based on screenshot).
 - [ ] Task: Conductor - User Manual Verification 'Settings & Layout Polish' (Protocol in workflow.md)
 
 ## Phase 5: Dark Mode Audit & Fixes
-- [ ] Task: Global Dark Mode Audit
-    - [ ] Review all pages and modals in Dark Mode.
-- [ ] Task: Implement Dark Mode Fixes
-    - [ ] Fix contrast issues identified in the audit.
-    - [ ] Ensure consistency between Light and Dark mode component layouts.
+- [x] Task: Global Dark Mode Audit
+    - [x] Review all pages and modals in Dark Mode.
+- [x] Task: Implement Dark Mode Fixes
+    - [x] Fix contrast issues identified in the audit.
+    - [x] Ensure consistency between Light and Dark mode component layouts.
 - [ ] Task: Conductor - User Manual Verification 'Dark Mode Audit' (Protocol in workflow.md)
 
 ## Phase 6: Final Verification
-- [ ] Task: Run full regression test suite (Unit, Integration, E2E).
-- [ ] Task: Execute static quality suite (Lint, Typecheck).
-- [ ] Task: Capture final verification screenshots.
-- [ ] Task: Conductor - User Manual Verification 'Final Verification' (Protocol in workflow.md)
+- [x] Task: Run full regression test suite (Unit, Integration, E2E).
+- [x] Task: Execute static quality suite (Lint, Typecheck).
+- [x] Task: Capture final verification screenshots.
+- [x] Task: Conductor - User Manual Verification 'Final Verification' (Protocol in workflow.md)
