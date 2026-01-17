@@ -253,6 +253,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   async editAge(): Promise<void> {
     const alert = await this.alertController.create({
       header: this.translationService.instant('profile.editAge'),
+      cssClass: 'age-edit-alert',
       inputs: [
         {
           name: 'age',

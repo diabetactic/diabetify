@@ -1722,3 +1722,13 @@ ion-alert .alert-button:not(.alert-button-role-cancel) {
   width: 100%;
   height: 100%;
 }
+
+/* Age Edit Alert Customization */
+.age-edit-alert .alert-button {
+  border-radius: 0.25rem; /* Squared */
+  min-height: 56px; /* Tall */
+}
+
+.age-edit-alert .alert-input {
+  padding-left: 0.5rem; /* Less space on left */
+}
