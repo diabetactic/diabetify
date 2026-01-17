@@ -348,6 +348,10 @@ export class AppIconComponent {
     // Missing dashboard icons
     track_changes: 'target',
     monitoring: 'activity',
+    // Settings & Profile icons
+    'color-palette': 'palette',
+    'options-outline': 'sliders-horizontal',
+    options: 'sliders-horizontal',
   };
 
   get mappedName(): string {

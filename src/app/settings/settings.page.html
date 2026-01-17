@@ -55,6 +55,67 @@
       </ion-card>
     </section>
 
+    <!-- Appearance Settings -->
+    <section>
+      <h2
+        class="text-base-content dark:text-base-content mb-3 flex items-center gap-2 px-1 text-base font-semibold"
+      >
+        <span class="text-primary">
+          <app-icon name="color-palette" class="h-5 w-5"></app-icon>
+        </span>
+        <span>{{ 'settings.sections.appearance' | translate }}</span>
+      </h2>
+
+      <ion-card
+        class="bg-base-100 border-base-300 m-0 overflow-hidden rounded-2xl border shadow-md dark:border dark:border-slate-600 dark:bg-slate-900/80"
+      >
+        <ion-list class="bg-transparent py-0">
+          <ion-item class="bg-transparent">
+            <ion-label class="font-medium">{{
+              'settings.appearance.themeLabel' | translate
+            }}</ion-label>
+            <ion-select
+              [(ngModel)]="preferences.theme"
+              (ionChange)="onThemeChange($event)"
+              interface="popover"
+              slot="end"
+              class="text-primary font-medium"
+            >
+              <ion-select-option value="light">
+                {{ 'settings.appearance.themeLight' | translate }}
+              </ion-select-option>
+              <ion-select-option value="dark">
+                {{ 'settings.appearance.themeDark' | translate }}
+              </ion-select-option>
+              <ion-select-option value="auto">
+                {{ 'settings.appearance.themeAuto' | translate }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item lines="none" class="bg-transparent">
+            <ion-label class="font-medium">{{
+              'settings.sections.language' | translate
+            }}</ion-label>
+            <ion-select
+              [(ngModel)]="preferences.language"
+              (ionChange)="onLanguageChange($event)"
+              interface="popover"
+              slot="end"
+              class="text-primary font-medium"
+            >
+              <ion-select-option value="es">
+                {{ 'settings.language.es' | translate }}
+              </ion-select-option>
+              <ion-select-option value="en">
+                {{ 'settings.language.en' | translate }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-list>
+      </ion-card>
+    </section>
+
     <!-- Glucose Settings -->
     <section>
       <h2
@@ -155,67 +216,6 @@
               }}</ion-label>
             </ion-range>
           </div>
-        </ion-list>
-      </ion-card>
-    </section>
-
-    <!-- Appearance Settings -->
-    <section>
-      <h2
-        class="text-base-content dark:text-base-content mb-3 flex items-center gap-2 px-1 text-base font-semibold"
-      >
-        <span class="text-primary">
-          <app-icon name="color-palette" class="h-5 w-5"></app-icon>
-        </span>
-        <span>{{ 'settings.sections.appearance' | translate }}</span>
-      </h2>
-
-      <ion-card
-        class="bg-base-100 border-base-300 m-0 overflow-hidden rounded-2xl border shadow-md dark:border dark:border-slate-600 dark:bg-slate-900/80"
-      >
-        <ion-list class="bg-transparent py-0">
-          <ion-item class="bg-transparent">
-            <ion-label class="font-medium">{{
-              'settings.appearance.themeLabel' | translate
-            }}</ion-label>
-            <ion-select
-              [(ngModel)]="preferences.theme"
-              (ionChange)="onThemeChange($event)"
-              interface="popover"
-              slot="end"
-              class="text-primary font-medium"
-            >
-              <ion-select-option value="light">
-                {{ 'settings.appearance.themeLight' | translate }}
-              </ion-select-option>
-              <ion-select-option value="dark">
-                {{ 'settings.appearance.themeDark' | translate }}
-              </ion-select-option>
-              <ion-select-option value="auto">
-                {{ 'settings.appearance.themeAuto' | translate }}
-              </ion-select-option>
-            </ion-select>
-          </ion-item>
-
-          <ion-item lines="none" class="bg-transparent">
-            <ion-label class="font-medium">{{
-              'settings.sections.language' | translate
-            }}</ion-label>
-            <ion-select
-              [(ngModel)]="preferences.language"
-              (ionChange)="onLanguageChange($event)"
-              interface="popover"
-              slot="end"
-              class="text-primary font-medium"
-            >
-              <ion-select-option value="es">
-                {{ 'settings.language.es' | translate }}
-              </ion-select-option>
-              <ion-select-option value="en">
-                {{ 'settings.language.en' | translate }}
-              </ion-select-option>
-            </ion-select>
-          </ion-item>
         </ion-list>
       </ion-card>
     </section>
