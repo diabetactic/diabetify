@@ -442,21 +442,24 @@
 }
 
 .search-container {
-  position: relative;
   display: flex;
   align-items: center;
+  gap: 12px;
+
+  ion-searchbar {
+    padding: 0;
+    flex: 1;
+  }
 
   .scan-button {
     --padding-start: 0;
     --padding-end: 0;
+    --border-radius: 1rem;
 
-    position: absolute;
-    top: 50%;
-    right: 8px;
-    z-index: var(--z-overlay, 10);
-    width: 40px;
-    height: 40px;
-    transform: translateY(-50%);
+    margin: 0;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
   }
 }
 

@@ -585,6 +585,25 @@ describe('LocalAuthService', () => {
         if (expectExact) expect(result.error).toBe(expectExact);
       }
     });
+
+    it('should handle errors with statusCode property (AppError format)', async () => {
+      // Simulate AppError format from ErrorHandlerService
+      const appError = {
+        statusCode: 403,
+        message: 'Access denied',
+        code: 'FORBIDDEN',
+      };
+
+      httpMock.post.mockReturnValueOnce(throwError(() => appError));
+
+      const result = await new Promise<{ success: boolean; error?: string }>(resolve => {
+        service.login('test@example.com', 'password').subscribe(r => resolve(r));
+      });
+
+      expect(result.success).toBe(false);
+      // Should map 403 to invalid credentials message
+      expect(result.error).toContain('Credenciales incorrectas');
+    });
   });
 
   describe('account state transitions', () => {

@@ -12,6 +12,7 @@ import {
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { IonRippleEffect, IonSpinner, IonSkeletonText } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
+import { InfoButtonComponent } from '@shared/components/info-button/info-button.component';
 
 @Component({
   selector: 'app-stat-card',
@@ -19,7 +20,14 @@ import { TranslateModule } from '@ngx-translate/core';
   styleUrls: ['./stat-card.component.scss'],
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule, IonRippleEffect, IonSpinner, IonSkeletonText, TranslateModule],
+  imports: [
+    CommonModule,
+    IonRippleEffect,
+    IonSpinner,
+    IonSkeletonText,
+    TranslateModule,
+    InfoButtonComponent,
+  ],
   providers: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -35,6 +43,7 @@ export class StatCardComponent implements OnChanges {
   @Input() loading = false;
   @Input() error = false;
   @Input() clickable = false;
+  @Input() infoMessage = '';
 
   @Output() readonly cardClick = new EventEmitter<void>();
 

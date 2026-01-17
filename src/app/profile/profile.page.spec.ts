@@ -12,6 +12,7 @@ import { ProfilePage } from './profile.page';
 import { TidepoolAuthService, AuthState } from '@services/tidepool-auth.service';
 import { LocalAuthService } from '@services/local-auth.service';
 import { ProfileService } from '@services/profile.service';
+import { BiometricAuthService } from '@services/biometric-auth.service';
 
 import { TranslationService, Language } from '@services/translation.service';
 import { NotificationService } from '@services/notification.service';
@@ -24,6 +25,7 @@ describe('ProfilePage', () => {
   let mockAuthService: any;
   let mockLocalAuthService: any;
   let mockProfileService: any;
+  let mockBiometricAuthService: any;
 
   let mockTranslationService: any;
   let mockNotificationService: any;
@@ -72,6 +74,8 @@ describe('ProfilePage', () => {
 
     mockLocalAuthService = {
       logout: vi.fn().mockResolvedValue(undefined),
+      getCurrentUser: vi.fn().mockReturnValue({ id: 'local-user-id' }),
+      getAccessToken: vi.fn().mockResolvedValue('access-token'),
     };
 
     mockProfileService = {
@@ -80,6 +84,12 @@ describe('ProfilePage', () => {
       updateProfile: vi.fn().mockResolvedValue(undefined),
       updatePreferences: vi.fn().mockResolvedValue(undefined),
       deleteProfile: vi.fn().mockResolvedValue(undefined),
+    };
+
+    mockBiometricAuthService = {
+      isBiometricAvailable: vi.fn().mockResolvedValue(true),
+      enrollBiometric: vi.fn().mockResolvedValue({ success: true }),
+      clearBiometricEnrollment: vi.fn().mockResolvedValue(undefined),
     };
 
     mockTranslationService = {
@@ -122,6 +132,7 @@ describe('ProfilePage', () => {
         { provide: TidepoolAuthService, useValue: mockAuthService },
         { provide: LocalAuthService, useValue: mockLocalAuthService },
         { provide: ProfileService, useValue: mockProfileService },
+        { provide: BiometricAuthService, useValue: mockBiometricAuthService },
         { provide: TranslationService, useValue: mockTranslationService },
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: Router, useValue: mockRouter },
@@ -280,6 +291,85 @@ describe('ProfilePage', () => {
 
       expect(component.notificationsEnabled).toBe(false);
       expect(mockToastController.create).toHaveBeenCalled();
+    });
+  });
+
+  describe('Biometric Management', () => {
+    beforeEach(() => {
+      component.ngOnInit();
+    });
+
+    it('should load biometric status on init', async () => {
+      vi.mocked(localStorage.getItem).mockReturnValue('true');
+      mockBiometricAuthService.isBiometricAvailable.mockResolvedValue(true);
+
+      // Re-init to trigger loadBiometricStatus
+      component.ngOnInit();
+      await fixture.whenStable();
+      await new Promise(resolve => setTimeout(resolve, 0)); // Ensure microtasks clear
+
+      expect(mockBiometricAuthService.isBiometricAvailable).toHaveBeenCalled();
+      expect(component.biometricEnabled).toBe(true);
+    });
+
+    it('should set biometric disabled if not available', async () => {
+      mockBiometricAuthService.isBiometricAvailable.mockResolvedValue(false);
+
+      component.ngOnInit();
+      await fixture.whenStable();
+
+      expect(component.biometricEnabled).toBe(false);
+    });
+
+    it('should enable biometric when toggled on and enrollment succeeds', async () => {
+      const event = {
+        detail: { checked: true },
+        target: { checked: true },
+      } as CustomEvent<{ checked: boolean }>;
+
+      await component.onBiometricToggle(event);
+
+      expect(mockBiometricAuthService.enrollBiometric).toHaveBeenCalledWith(
+        'local-user-id',
+        'access-token'
+      );
+      expect(component.biometricEnabled).toBe(true);
+      expect(mockToastController.create).toHaveBeenCalledWith(
+        expect.objectContaining({ color: 'success' })
+      );
+    });
+
+    it('should revert toggle if enrollment fails', async () => {
+      mockBiometricAuthService.enrollBiometric.mockResolvedValue({
+        success: false,
+        error: 'Failed',
+      });
+      const mockToggle = { checked: true };
+      const event = {
+        detail: { checked: true },
+        target: mockToggle,
+      } as CustomEvent<{ checked: boolean }>;
+
+      await component.onBiometricToggle(event);
+
+      expect(component.biometricEnabled).toBe(false);
+      expect(mockToggle.checked).toBe(false);
+      expect(mockToastController.create).toHaveBeenCalledWith(
+        expect.objectContaining({ color: 'danger' })
+      );
+    });
+
+    it('should disable biometric when toggled off', async () => {
+      component.biometricEnabled = true;
+      const event = {
+        detail: { checked: false },
+        target: { checked: false },
+      } as CustomEvent<{ checked: boolean }>;
+
+      await component.onBiometricToggle(event);
+
+      expect(mockBiometricAuthService.clearBiometricEnrollment).toHaveBeenCalled();
+      expect(component.biometricEnabled).toBe(false);
     });
   });
 

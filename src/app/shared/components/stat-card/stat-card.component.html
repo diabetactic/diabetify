@@ -76,11 +76,20 @@
             }
           </div>
           <!-- Title -->
-          <div
-            class="stat-title truncate text-[15px] font-semibold leading-tight text-white opacity-90 drop-shadow-md"
-            [attr.title]="title"
-          >
-            {{ title }}
+          <div class="flex items-center gap-2">
+            <div
+              class="stat-title truncate text-[15px] font-semibold leading-tight text-white opacity-90 drop-shadow-md"
+              [attr.title]="title"
+            >
+              {{ title }}
+            </div>
+            @if (infoMessage) {
+              <app-info-button
+                [message]="infoMessage"
+                [title]="title"
+                buttonClass="text-white/80 hover:text-white"
+              ></app-info-button>
+            }
           </div>
           <!-- Trend -->
           @if (trend) {

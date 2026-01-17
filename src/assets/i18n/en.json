@@ -28,6 +28,7 @@
   "common": {
     "comingSoon": "Coming Soon",
     "inDevelopment": "Feature in development",
+    "add": "Add",
     "viewDetails": "View Details",
     "viewAll": "View All",
     "close": "Close",
@@ -500,7 +501,11 @@
       "pending": "Pending",
       "confirmed": "Confirmed",
       "noShow": "No Show",
-      "rescheduled": "Rescheduled"
+      "rescheduled": "Rescheduled",
+      "created": "Created",
+      "accepted": "Accepted",
+      "denied": "Denied",
+      "completed": "Completed"
     },
     "fields": {
       "glucoseObjective": "Glucose Objective",
@@ -812,7 +817,7 @@
     "autoTheme": "Auto",
     "glucoseUnit": "Glucose Unit",
     "glucoseUnits": "Glucose Units",
-    "advancedSettings": "Advanced Settings",
+    "advancedSettings": "Settings",
     "advancedSettingsDesc": "Glucose targets, reminders, and more",
     "privacy": "Privacy",
     "dataSharing": "Data Sharing",

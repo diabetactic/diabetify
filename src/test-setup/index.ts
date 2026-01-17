@@ -451,6 +451,7 @@ vi.mock('lucide-angular', async () => {
     Store: mockIcon,
     Sun: mockIcon,
     Syringe: mockIcon,
+    Target: mockIcon,
     Terminal: mockIcon,
     ThumbsDown: mockIcon,
     ThumbsUp: mockIcon,
@@ -474,6 +475,7 @@ vi.mock('lucide-angular', async () => {
     Wrench: mockIcon,
     X: mockIcon,
     XCircle: mockIcon,
+    Zap: mockIcon,
   };
 });
 

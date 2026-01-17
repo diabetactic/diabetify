@@ -140,6 +140,7 @@ import {
   Store,
   Sun,
   Syringe,
+  Target,
   Terminal,
   ThumbsDown,
   ThumbsUp,
@@ -163,6 +164,7 @@ import {
   Wrench,
   X,
   XCircle,
+  Zap,
 } from 'lucide-angular';
 
 export const appIcons = {
@@ -300,6 +302,7 @@ export const appIcons = {
   Store,
   Sun,
   Syringe,
+  Target,
   Terminal,
   ThumbsDown,
   ThumbsUp,
@@ -323,4 +326,5 @@ export const appIcons = {
   Wrench,
   X,
   XCircle,
+  Zap,
 };

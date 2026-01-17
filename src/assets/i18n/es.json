@@ -28,6 +28,7 @@
   "common": {
     "comingSoon": "Próximamente",
     "inDevelopment": "Función en desarrollo",
+    "add": "Agregar",
     "viewDetails": "Ver Detalles",
     "viewAll": "Ver Todo",
     "close": "Cerrar",
@@ -501,7 +502,11 @@
       "pending": "Pendiente",
       "confirmed": "Confirmada",
       "noShow": "No Asistió",
-      "rescheduled": "Reprogramada"
+      "rescheduled": "Reprogramada",
+      "created": "Creada",
+      "accepted": "Aceptada",
+      "denied": "Denegada",
+      "completed": "Completada"
     },
     "fields": {
       "glucoseObjective": "Objetivo de Glucosa",
@@ -813,7 +818,7 @@
     "autoTheme": "Automático",
     "glucoseUnit": "Unidad de Glucosa",
     "glucoseUnits": "Unidades de Glucosa",
-    "advancedSettings": "Configuración Avanzada",
+    "advancedSettings": "Configuración",
     "advancedSettingsDesc": "Objetivos de glucosa, recordatorios y más",
     "privacy": "Privacidad",
     "dataSharing": "Compartir Datos",

@@ -22,4 +22,21 @@
 ## Phase 5: Final Verification
 
 - [x] Task: Run full quality check (lint, test, build) 4d0d68a
-- [x] Task: Capture screenshots of all screens (Emulator via ADB) 7460f23 (verified via deep navigation) (verified via deep navigation)\n- [ ] Task: Run full regression test suite (Unit, Integration, E2E)\n- [ ] Task: Document implementation in architecture notes\n- [ ] Task: Conductor - User Manual Verification 'Final Verification' (Protocol in workflow.md)
+- [x] Task: Capture screenshots of all screens (Emulator via ADB) 7460f23 (verified via deep navigation) (verified via deep navigation)
+
+## Phase 6: UI/UX Polish & Fixes
+
+- [x] Task: Restore missing Lucide icons for 'Time in Range' and 'Average Glucose' cards on Dashboard
+- [x] Task: Fix missing translation for 'Add manually' button in Bolus Calculator
+- [x] Task: Rename 'Advanced Settings' button on Profile to 'Settings' (Configuración)
+- [x] Task: Fix 'Cerrar Sesión' button alignment and width on Profile
+- [x] Task: Improve UI/UX of the inner 'Advanced Settings' screen
+- [x] Task: Fix general icon alignment (spacing between text and icons) across the app
+- [x] Task: Refactor Appointment Detail Timeline (reduce vertical space, conditional logic)
+- [x] Task: Fix 'NONE' state in historical appointments and update seed data (add Completed/Denied examples)
+
+## Phase 7: Final Verification
+
+- [x] Task: Run full regression test suite (Unit, Integration, E2E) All tests passed (2230 unit, 72 E2E)
+- [x] Task: Document implementation in architecture notes
+- [ ] Task: Conductor - User Manual Verification 'Final Verification' (Protocol in workflow.md)

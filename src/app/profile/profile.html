@@ -20,13 +20,13 @@
     ></app-profile-form>
 
     <app-profile-preferences
-      [currentTheme]="currentTheme"
-      [currentLanguage]="currentLanguage"
-      [currentGlucoseUnit]="currentGlucoseUnit"
       [notificationsEnabled]="notificationsEnabled"
+      [biometricEnabled]="biometricEnabled"
       (notificationsToggle)="onNotificationsToggle($event)"
+      (biometricToggle)="onBiometricToggle($event)"
       (testNotification)="onTestNotification()"
       (goToSettings)="goToSettings()"
+      (goToTips)="onGoToTips()"
     ></app-profile-preferences>
 
     <app-profile-actions (signOut)="onSignOut()"></app-profile-actions>

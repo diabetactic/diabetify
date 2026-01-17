@@ -10,8 +10,6 @@ import { CommonModule } from '@angular/common';
 import { IonToggle } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
-import { ThemeMode } from '@models/user-profile.model';
-import { Language } from '@services/translation.service';
 
 @Component({
   selector: 'app-profile-preferences',
@@ -23,17 +21,21 @@ import { Language } from '@services/translation.service';
   imports: [CommonModule, IonToggle, TranslateModule, AppIconComponent],
 })
 export class ProfilePreferencesComponent {
-  @Input() currentTheme: ThemeMode = 'auto';
-  @Input() currentLanguage: Language = Language.EN;
-  @Input() currentGlucoseUnit: string = 'mg/dL';
   @Input() notificationsEnabled: boolean = false;
+  @Input() biometricEnabled: boolean = false;
 
   @Output() notificationsToggle = new EventEmitter<CustomEvent<{ checked: boolean }>>();
+  @Output() biometricToggle = new EventEmitter<CustomEvent<{ checked: boolean }>>();
   @Output() testNotification = new EventEmitter<void>();
   @Output() goToSettings = new EventEmitter<void>();
+  @Output() goToTips = new EventEmitter<void>();
 
   onNotificationsToggle(event: CustomEvent<{ checked: boolean }>) {
     this.notificationsToggle.emit(event);
+  }
+
+  onBiometricToggle(event: CustomEvent<{ checked: boolean }>) {
+    this.biometricToggle.emit(event);
   }
 
   onTestNotification() {
@@ -42,5 +44,9 @@ export class ProfilePreferencesComponent {
 
   onGoToSettings() {
     this.goToSettings.emit();
+  }
+
+  onGoToTips() {
+    this.goToTips.emit();
   }
 }

@@ -849,9 +849,10 @@ export class LocalAuthService {
 
     // HTTP status code specific messages - user-friendly error messages
     // (use !== undefined to handle status 0)
-    if (errorObj['status'] !== undefined) {
-      const status = errorObj['status'] as number;
-      switch (status) {
+    const status = errorObj['status'] ?? errorObj['statusCode'];
+    if (status !== undefined) {
+      const statusCode = status as number;
+      switch (statusCode) {
         case 401:
         case 403:
           // Both 401 and 403 during login mean invalid credentials
