@@ -13,6 +13,7 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { IonRippleEffect, IonSpinner, IonSkeletonText } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { InfoButtonComponent } from '@shared/components/info-button/info-button.component';
+import { AppIconComponent } from '../app-icon/app-icon.component';
 
 @Component({
   selector: 'app-stat-card',
@@ -27,6 +28,7 @@ import { InfoButtonComponent } from '@shared/components/info-button/info-button.
     IonSkeletonText,
     TranslateModule,
     InfoButtonComponent,
+    AppIconComponent,
   ],
   providers: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,

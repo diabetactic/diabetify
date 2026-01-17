@@ -124,9 +124,9 @@ export class DashboardPage implements OnInit, OnDestroy {
   // Icons for stat cards
   icons = {
     hba1c: 'star',
-    timeInRange: 'track_changes',
-    avgGlucose: 'favorite',
-    gmi: 'monitoring',
+    timeInRange: 'target',
+    avgGlucose: 'activity',
+    gmi: 'bar-chart-3',
   };
 
   preferredGlucoseUnit: GlucoseUnit;
