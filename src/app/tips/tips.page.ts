@@ -114,28 +114,28 @@ export class TipsPage implements AfterViewInit {
     },
   ];
 
-  getCategoryIcon(category: string): string {
-    const icons: { [key: string]: string } = {
-      glucose: 'analytics-outline',
-      nutrition: 'nutrition-outline',
-      exercise: 'fitness-outline',
-      medication: 'medical-outline',
-      wellness: 'heart-outline',
-      safety: 'shield-checkmark-outline',
+  getCategoryColorClass(category: string): string {
+    const colors: { [key: string]: string } = {
+      glucose: 'text-primary',
+      nutrition: 'text-success',
+      exercise: 'text-warning',
+      medication: 'text-danger',
+      wellness: 'text-tertiary',
+      safety: 'text-secondary',
     };
-    return icons[category] || 'information-circle-outline';
+    return colors[category] || 'text-medium';
   }
 
-  getCategoryColor(category: string): string {
+  getCategoryBgClass(category: string): string {
     const colors: { [key: string]: string } = {
-      glucose: 'primary',
-      nutrition: 'success',
-      exercise: 'warning',
-      medication: 'danger',
-      wellness: 'tertiary',
-      safety: 'secondary',
+      glucose: 'bg-primary/10',
+      nutrition: 'bg-success/10',
+      exercise: 'bg-warning/10',
+      medication: 'bg-danger/10',
+      wellness: 'bg-tertiary/10',
+      safety: 'bg-secondary/10',
     };
-    return colors[category] || 'medium';
+    return colors[category] || 'bg-medium/10';
   }
 
   // trackBy function for tips ngFor
