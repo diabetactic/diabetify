@@ -426,12 +426,12 @@ describe('SettingsPage', () => {
 
       // getTop is no longer called in the new implementation (we stack modals)
       // expect(mockModalController.getTop).toHaveBeenCalled();
-      
+
       // We expect create to be called to open the new modal
-      // Note: We use 'called' instead of 'calledWith' because the component class reference from import() 
+      // Note: We use 'called' instead of 'calledWith' because the component class reference from import()
       // might vary in test environment vs runtime
       expect(mockModalController.create).toHaveBeenCalled();
-      
+
       // Ensure we are NOT navigating via router to avoid the freeze bug
       expect(mockRouter.navigate).not.toHaveBeenCalledWith([ROUTES.SETTINGS_ADVANCED]);
     });

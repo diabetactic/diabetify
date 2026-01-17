@@ -44,7 +44,7 @@ describe('AppointmentsPage', () => {
     };
 
     translationService = {
-      instant: vi.fn((key) => key),
+      instant: vi.fn(key => key),
     };
 
     loggerService = {
@@ -88,14 +88,14 @@ describe('AppointmentsPage', () => {
       component.isOnline = false;
       // Force queue state to NONE to normally allow request
       component.queueState = { state: 'NONE' };
-      
+
       expect(component.canRequestAppointment).toBeFalsy();
     });
 
     it('should show toast if requesting while offline', async () => {
       component.isOnline = false;
       await component.onRequestAppointment();
-      
+
       expect(appointmentService.requestAppointment).not.toHaveBeenCalled();
       expect(toastController.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -107,7 +107,7 @@ describe('AppointmentsPage', () => {
     it('should enable appointment request when online and queue state is NONE', () => {
       component.isOnline = true;
       component.queueState = { state: 'NONE' };
-      
+
       expect(component.canRequestAppointment).toBeTruthy();
     });
   });
@@ -116,14 +116,14 @@ describe('AppointmentsPage', () => {
     it('should not show current appointment if state is PENDING', () => {
       component.appointments = [{ appointment_id: 123 } as any];
       component.queueState = { state: 'PENDING' };
-      
+
       expect(component.currentAppointment).toBeNull();
     });
 
     it('should not show current appointment if state is ACCEPTED', () => {
       component.appointments = [{ appointment_id: 123 } as any];
       component.queueState = { state: 'ACCEPTED' };
-      
+
       expect(component.currentAppointment).toBeNull();
     });
 
@@ -131,7 +131,7 @@ describe('AppointmentsPage', () => {
       const mockAppt = { appointment_id: 123 } as any;
       component.appointments = [mockAppt];
       component.queueState = { state: 'CREATED' };
-      
+
       expect(component.currentAppointment).toEqual(mockAppt);
     });
 
@@ -140,7 +140,7 @@ describe('AppointmentsPage', () => {
       const mockAppt2 = { appointment_id: 122 } as any;
       component.appointments = [mockAppt1, mockAppt2];
       component.queueState = { state: 'PENDING' };
-      
+
       // Since currentAppointment is null, everything is past
       expect(component.pastAppointments.length).toBe(2);
       expect(component.pastAppointments[0]).toEqual(mockAppt1);
@@ -151,7 +151,7 @@ describe('AppointmentsPage', () => {
       const mockAppt2 = { appointment_id: 122 } as any;
       component.appointments = [mockAppt1, mockAppt2];
       component.queueState = { state: 'CREATED' };
-      
+
       expect(component.pastAppointments.length).toBe(1);
       expect(component.pastAppointments[0]).toEqual(mockAppt2);
     });

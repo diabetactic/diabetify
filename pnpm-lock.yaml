@@ -234,9 +234,6 @@ importers:
       prettier-plugin-tailwindcss:
         specifier: ^0.7.2
         version: 0.7.2(prettier@3.7.4)
-      puppeteer:
-        specifier: ^24.35.0
-        version: 24.35.0(typescript@5.9.3)
       serve:
         specifier: ^14.2.5
         version: 14.2.5
@@ -10662,6 +10659,7 @@ snapshots:
       - bare-buffer
       - react-native-b4a
       - supports-color
+    optional: true
 
   '@rolldown/binding-android-arm64@1.0.0-beta.47':
     optional: true
@@ -10881,7 +10879,8 @@ snapshots:
 
   '@tokenizer/token@0.3.0': {}
 
-  '@tootallnate/quickjs-emscripten@0.23.0': {}
+  '@tootallnate/quickjs-emscripten@0.23.0':
+    optional: true
 
   '@ts-morph/common@0.22.0':
     dependencies:
@@ -11473,6 +11472,7 @@ snapshots:
   ast-types@0.13.4:
     dependencies:
       tslib: 2.8.1
+    optional: true
 
   ast-v8-to-istanbul@0.3.10:
     dependencies:
@@ -11517,7 +11517,8 @@ snapshots:
 
   axobject-query@4.1.0: {}
 
-  b4a@1.7.3: {}
+  b4a@1.7.3:
+    optional: true
 
   babel-loader@10.0.0(@babel/core@7.28.4)(webpack@5.104.0(esbuild@0.26.0)):
     dependencies:
@@ -11559,7 +11560,8 @@ snapshots:
 
   balanced-match@2.0.0: {}
 
-  bare-events@2.8.2: {}
+  bare-events@2.8.2:
+    optional: true
 
   bare-fs@4.5.2:
     dependencies:
@@ -11606,7 +11608,8 @@ snapshots:
     dependencies:
       safe-buffer: 5.1.2
 
-  basic-ftp@5.1.0: {}
+  basic-ftp@5.1.0:
+    optional: true
 
   batch@0.6.1: {}
 
@@ -11855,6 +11858,7 @@ snapshots:
       devtools-protocol: 0.0.1534754
       mitt: 3.0.1
       zod: 3.25.76
+    optional: true
 
   cli-boxes@3.0.0: {}
 
@@ -12078,7 +12082,8 @@ snapshots:
 
   daisyui@5.5.14: {}
 
-  data-uri-to-buffer@6.0.2: {}
+  data-uri-to-buffer@6.0.2:
+    optional: true
 
   data-urls@6.0.0:
     dependencies:
@@ -12131,6 +12136,7 @@ snapshots:
       ast-types: 0.13.4
       escodegen: 2.1.0
       esprima: 4.0.1
+    optional: true
 
   delayed-stream@1.0.0: {}
 
@@ -12147,7 +12153,8 @@ snapshots:
 
   detect-node@2.1.0: {}
 
-  devtools-protocol@0.0.1534754: {}
+  devtools-protocol@0.0.1534754:
+    optional: true
 
   dexie@4.2.1: {}
 
@@ -12396,6 +12403,7 @@ snapshots:
       esutils: 2.0.3
     optionalDependencies:
       source-map: 0.6.1
+    optional: true
 
   eslint-scope@5.1.1:
     dependencies:
@@ -12496,6 +12504,7 @@ snapshots:
       bare-events: 2.8.2
     transitivePeerDependencies:
       - bare-abort-controller
+    optional: true
 
   events@3.3.0: {}
 
@@ -12617,12 +12626,14 @@ snapshots:
       '@types/yauzl': 2.10.3
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   fake-indexeddb@6.2.5: {}
 
   fast-deep-equal@3.1.3: {}
 
-  fast-fifo@1.3.2: {}
+  fast-fifo@1.3.2:
+    optional: true
 
   fast-glob@3.3.3:
     dependencies:
@@ -12829,6 +12840,7 @@ snapshots:
       debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   gifwrap@0.10.1:
     dependencies:
@@ -13590,7 +13602,8 @@ snapshots:
     dependencies:
       yallist: 4.0.0
 
-  lru-cache@7.18.3: {}
+  lru-cache@7.18.3:
+    optional: true
 
   lucide-angular@0.562.0(@angular/common@21.0.8(@angular/core@21.0.8(@angular/compiler@21.0.8)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.8(@angular/compiler@21.0.8)(rxjs@7.8.2)(zone.js@0.16.0)):
     dependencies:
@@ -13773,7 +13786,8 @@ snapshots:
     dependencies:
       minipass: 7.1.2
 
-  mitt@3.0.1: {}
+  mitt@3.0.1:
+    optional: true
 
   mkdirp@1.0.4: {}
 
@@ -13882,7 +13896,8 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  netmask@2.0.2: {}
+  netmask@2.0.2:
+    optional: true
 
   ng2-charts@8.0.0(@angular/cdk@21.0.5(@angular/common@21.0.8(@angular/core@21.0.8(@angular/compiler@21.0.8)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.8(@angular/compiler@21.0.8)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/common@21.0.8(@angular/core@21.0.8(@angular/compiler@21.0.8)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.8(@angular/compiler@21.0.8)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.0.8(@angular/animations@21.0.8(@angular/core@21.0.8(@angular/compiler@21.0.8)(rxjs@7.8.2)(zone.js@0.16.0)))(@angular/common@21.0.8(@angular/core@21.0.8(@angular/compiler@21.0.8)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.0.8(@angular/compiler@21.0.8)(rxjs@7.8.2)(zone.js@0.16.0)))(chart.js@4.5.1)(rxjs@7.8.2):
     dependencies:
@@ -14150,11 +14165,13 @@ snapshots:
       socks-proxy-agent: 8.0.5
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   pac-resolver@7.0.1:
     dependencies:
       degenerator: 5.0.1
       netmask: 2.0.2
+    optional: true
 
   package-json-from-dist@1.0.1: {}
 
@@ -14423,7 +14440,8 @@ snapshots:
 
   process@0.11.10: {}
 
-  progress@2.0.3: {}
+  progress@2.0.3:
+    optional: true
 
   promise-retry@2.0.1:
     dependencies:
@@ -14456,6 +14474,7 @@ snapshots:
       socks-proxy-agent: 8.0.5
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   proxy-from-env@1.1.0: {}
 
@@ -14552,6 +14571,7 @@ snapshots:
       - react-native-b4a
       - supports-color
       - utf-8-validate
+    optional: true
 
   puppeteer@24.35.0(typescript@5.9.3):
     dependencies:
@@ -14569,6 +14589,7 @@ snapshots:
       - supports-color
       - typescript
       - utf-8-validate
+    optional: true
 
   qified@0.5.3:
     dependencies:
@@ -15224,6 +15245,7 @@ snapshots:
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
+    optional: true
 
   strict-event-emitter@0.5.1: {}
 
@@ -15471,6 +15493,7 @@ snapshots:
       - bare-abort-controller
       - bare-buffer
       - react-native-b4a
+    optional: true
 
   tar-stream@3.1.7:
     dependencies:
@@ -15480,6 +15503,7 @@ snapshots:
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
+    optional: true
 
   tar@6.2.1:
     dependencies:
@@ -15521,6 +15545,7 @@ snapshots:
       b4a: 1.7.3
     transitivePeerDependencies:
       - react-native-b4a
+    optional: true
 
   thenify-all@1.6.0:
     dependencies:
@@ -15687,7 +15712,8 @@ snapshots:
 
   typed-assert@1.0.9: {}
 
-  typed-query-selector@2.12.0: {}
+  typed-query-selector@2.12.0:
+    optional: true
 
   typescript-eslint@8.51.0(eslint@9.39.2(jiti@1.21.7))(typescript@5.9.3):
     dependencies:
@@ -15874,7 +15900,8 @@ snapshots:
   weak-lru-cache@1.2.2:
     optional: true
 
-  webdriver-bidi-protocol@0.3.10: {}
+  webdriver-bidi-protocol@0.3.10:
+    optional: true
 
   webidl-conversions@3.0.1: {}
 
@@ -16071,7 +16098,8 @@ snapshots:
 
   ws@8.18.3: {}
 
-  ws@8.19.0: {}
+  ws@8.19.0:
+    optional: true
 
   wsl-utils@0.1.0:
     dependencies:
