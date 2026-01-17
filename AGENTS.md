@@ -50,29 +50,28 @@ src/app/
 ### TypeScript
 
 - Strict mode enabled, `strictTemplates: true`
-- **NO type suppressions**: Never use `as any`, `ts-ignore`, `ts-expect-error`
+- **NO type suppressions**: Never use `as any`, `@ts-ignore`, `@ts-expect-error`
 - Unused vars prefixed with `_`
 
 ### Path Aliases
 
 ```typescript
-import { ReadingsService } from '/services/readings.service';
-import { GlucoseReading } from '/models/glucose-reading.model';
-import { environment } from '/env/environment';
-// AT-core/* AT-shared/* AT-services/* AT-models/* AT-guards/* AT-env/* AT-mocks/* AT-test-setup/*
+import { ReadingsService } from '@services/readings.service';
+import { GlucoseReading } from '@models/glucose-reading.model';
+import { environment } from '@env/environment';
+// @core/* @shared/* @services/* @models/* @guards/* @env/* @mocks/* @test-setup/*
 ```
 
 ### Angular Components
 
 ```typescript
-AT -
-  Component({
-    selector: 'app-my-component',
-    standalone: true,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    schemas: [CUSTOM_ELEMENTS_SCHEMA], // REQUIRED for Ionic
-    imports: [IonHeader, IonToolbar, TranslateModule],
-  });
+@Component({
+  selector: 'app-my-component',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],  // REQUIRED for Ionic
+  imports: [IonHeader, IonToolbar, TranslateModule],
+})
 ```
 
 ## Backend Repos (CRITICAL)
@@ -100,7 +99,7 @@ AT -
 | Forbidden                        | Why                   | Correct                                |
 | -------------------------------- | --------------------- | -------------------------------------- |
 | `HttpClient` injection           | Bypasses caching/auth | Use `ApiGatewayService.request()`      |
-| `as any`, `ts-ignore`            | Hides bugs            | Fix types properly                     |
+| `as any`, `@ts-ignore`           | Hides bugs            | Fix types properly                     |
 | Hardcoded credentials            | Security risk         | Use `playwright/config/test-config.ts` |
 | Inline `style=` in templates     | Breaks theming        | Use Tailwind classes                   |
 | Missing `CUSTOM_ELEMENTS_SCHEMA` | Ionic fails           | Add to all components                  |
@@ -156,27 +155,6 @@ All text in BOTH `assets/i18n/en.json` AND `es.json`. Check: `pnpm run i18n:chec
 | `docs/AGENTS.md`                  | Documentation index                         |
 | `docker/AGENTS.md`                | Local backend, **backend validation rules** |
 
-## AI Agent: DON'T GUESS - USE YOUR TOOLS
-
-**STOP guessing. You have powerful web/doc tools. USE THEM:**
-
-| Tool                                                  | When to Use                                                   |
-| ----------------------------------------------------- | ------------------------------------------------------------- |
-| `context7_resolve-library-id` + `context7_query-docs` | Library/framework APIs, best practices, version-specific docs |
-| `firecrawl_search` / `firecrawl_scrape`               | Web search, scrape specific URLs                              |
-| `tavily-search` / `tavily-extract`                    | Real-time web search, content extraction                      |
-| `websearch_web_search_exa`                            | AI-powered web search                                         |
-| `grep_app_searchGitHub`                               | Find real code examples in public repos                       |
-
-**MANDATORY before any of these:**
-
-- Unfamiliar library/API → `context7` or `librarian` agent
-- Tool/framework configuration → search docs first
-- "How does X work?" → search before guessing
-- Version-specific behavior → verify in official docs
-
-**OpenCode Skills**: Located in `.opencode/skill/*/SKILL.md` - use `angular`, `playwright`, `backend`, `qa`, `quality`, `reviewer`, `tester`, `full-test`
-
 ---
 
-**Generated**: 2026-01-15 | **Commit**: 09787eb | **Branch**: master
+**Generated**: 2026-01-13 | **Commit**: 09787eb | **Branch**: master

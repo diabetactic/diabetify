@@ -29,6 +29,14 @@ mise.local.toml
 # Codex / OpenCode local config (do not commit)
 /.codex/
 /.opencode/
+opencode.json
+GEMINI.md
+
+# Agent tooling (do not commit)
+.shared/
+conductor/
+.sisyphus/
+screenshots/
 
 # Secrets/keys
 android/release-keystore.jks
