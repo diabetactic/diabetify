@@ -70,6 +70,7 @@
     "test:e2e:functional": "E2E_DOCKER_TESTS=true playwright test --grep @functional",
     "test:e2e:visual": "E2E_DOCKER_TESTS=true playwright test --grep @visual",
     "test:e2e:visual:update": "E2E_DOCKER_TESTS=true playwright test --grep @visual --update-snapshots",
+    "test:prod-smoke": "pnpm run build:prod && pnpm exec playwright test -c playwright.prod-smoke.config.ts",
     "test:report": "playwright show-report",
     "test:report:serve": "npx serve playwright-report -l 9323",
     "lint": "turbo run lint:ts:run lint:styles:run analyze:dead-code analyze:circular analyze:type-coverage",

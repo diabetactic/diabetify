@@ -5,9 +5,12 @@ import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { provideIonicAngular } from '@ionic/angular/standalone';
 import { setAssetPath } from '@ionic/core/components';
+import { defineCustomElement as defineIonActionSheet } from '@ionic/core/components/ion-action-sheet.js';
 import { defineCustomElement as defineIonAlert } from '@ionic/core/components/ion-alert.js';
 import { defineCustomElement as defineIonLoading } from '@ionic/core/components/ion-loading.js';
 import { defineCustomElement as defineIonModal } from '@ionic/core/components/ion-modal.js';
+import { defineCustomElement as defineIonPicker } from '@ionic/core/components/ion-picker.js';
+import { defineCustomElement as defineIonPopover } from '@ionic/core/components/ion-popover.js';
 import { defineCustomElement as defineIonToast } from '@ionic/core/components/ion-toast.js';
 import {
   RouteReuseStrategy,
@@ -145,9 +148,12 @@ setAssetPath(window.document.baseURI ?? '/');
 // away when using standalone Angular imports. Overlays (loading/toast/alert/modal) are
 // created imperatively via controllers and may not appear in templates, so we define
 // them explicitly to prevent `LoadingController.create()`/etc. from hanging.
+defineIonActionSheet();
 defineIonAlert();
 defineIonLoading();
 defineIonModal();
+defineIonPicker();
+defineIonPopover();
 defineIonToast();
 
 const httpLoaderConfig: TranslateHttpLoaderConfig = {

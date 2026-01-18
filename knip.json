@@ -1,6 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
-  "project": ["src/**/*.ts"],
+  "entry": ["src/main.ts", "server/heroku-web-server.js"],
+  "project": ["src/**/*.ts", "server/**/*.js"],
   "ignore": [
     "**/*.spec.ts",
     "**/test-*.ts",
@@ -23,7 +24,7 @@
     "@analogjs/vite-plugin-angular",
     "@midscene/web"
   ],
-  "ignoreBinaries": ["only-allow", "adb", "studio", "emulator", "test:visual:update"],
+  "ignoreBinaries": ["only-allow", "adb", "studio", "emulator"],
   "ignoreExportsUsedInFile": true,
   "rules": {
     "unlisted": "off",

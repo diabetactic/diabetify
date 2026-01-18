@@ -133,6 +133,54 @@ jobs:
           retention-days: 1
 
   # ══════════════════════════════════════════════════════════════════════════
+  # PHASE 2b: Production Build Smoke (prevents prod-only hangs)
+  # Runs an optimized prod build and validates critical Ionic overlays load.
+  # ══════════════════════════════════════════════════════════════════════════
+  prod-smoke:
+    needs: [type-check, static-analysis, integration-tests-msw, unit-tests]
+    runs-on: [self-hosted, high-mem]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          pnpm-version: ${{ env.PNPM_VERSION }}
+
+      - name: Cache Angular build assets
+        uses: actions/cache@v4
+        with:
+          path: .angular/cache
+          key: angular-prod-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            angular-prod-${{ runner.os }}-
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium
+
+      - name: Install Playwright system deps (Ubuntu runners)
+        run: |
+          if command -v apt-get >/dev/null 2>&1 && command -v sudo >/dev/null 2>&1; then
+            pnpm exec playwright install-deps chromium
+          else
+            echo "Skipping playwright install-deps (non-Ubuntu runner or no sudo)"
+          fi
+
+      - name: Production smoke test (Ionic overlays)
+        run: pnpm run test:prod-smoke
+
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-smoke-artifacts
+          path: |
+            playwright-report-prod-smoke/
+            playwright/artifacts-prod-smoke/
+          retention-days: 7
+
+  # ══════════════════════════════════════════════════════════════════════════
   # PHASE 3: UI Integration Tests (~90s)
   # Testing Trophy: Middle layer - UI tests with mock backend
   # Single browser (mobile-first app), Playwright cached
