@@ -13,7 +13,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "postinstall": "[ -d www ] && npx cap sync || echo 'Skipping cap sync (no www directory yet)'",
-    "heroku-postbuild": "pnpm run build:prod:ng",
+    "heroku-postbuild": "pnpm run build:prod:ng && pnpm install --prod --ignore-scripts",
     "ng": "ng",
     "start": "node scripts/start-with-env.mjs",
     "start:mock": "ENV=mock pnpm start",
