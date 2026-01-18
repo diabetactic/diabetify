@@ -1,8 +1,21 @@
+const fs = require('node:fs');
 const path = require('node:path');
 const express = require('express');
 
 const PORT = Number(process.env.PORT ?? 3000);
-const STATIC_DIR = path.resolve(__dirname, '..', 'www');
+const STATIC_DIR_CANDIDATES = [
+  path.resolve(__dirname, '..', 'www', 'browser'),
+  path.resolve(__dirname, '..', 'www'),
+];
+
+function pickStaticDir() {
+  for (const dir of STATIC_DIR_CANDIDATES) {
+    if (fs.existsSync(path.join(dir, 'index.html'))) return dir;
+  }
+  return STATIC_DIR_CANDIDATES[0];
+}
+
+const STATIC_DIR = pickStaticDir();
 
 const DEFAULT_API_GATEWAY_URL = 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
 const API_GATEWAY_URL = process.env.API_GATEWAY_URL ?? DEFAULT_API_GATEWAY_URL;
