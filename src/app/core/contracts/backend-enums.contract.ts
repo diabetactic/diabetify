@@ -94,16 +94,16 @@ export const MOTIVE_DESCRIPTIONS: Record<BackendAppointmentMotive, string> = {
  * Valid appointment queue states from the backend.
  * Backend: AppointmentStateEnum (Pydantic enum)
  *
- * Note: 'NONE' is a frontend-only state indicating no queue entry exists.
+ * Includes 'NONE' - returned when user has no appointment in queue.
  */
-export const BACKEND_QUEUE_STATES = ['PENDING', 'ACCEPTED', 'DENIED', 'CREATED'] as const;
+export const BACKEND_QUEUE_STATES = ['PENDING', 'ACCEPTED', 'DENIED', 'CREATED', 'NONE'] as const;
 
 export type BackendQueueState = (typeof BACKEND_QUEUE_STATES)[number];
 
 /**
  * Frontend-only queue states (not from backend)
  */
-export const FRONTEND_ONLY_QUEUE_STATES = ['NONE'] as const;
+export const FRONTEND_ONLY_QUEUE_STATES = [] as const;
 
 export type FrontendOnlyQueueState = (typeof FRONTEND_ONLY_QUEUE_STATES)[number];
 

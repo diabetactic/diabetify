@@ -448,31 +448,6 @@ describe('ApiGatewayService', () => {
             },
           });
       }));
-
-    it('should treat appointments.state 404 as NONE (not an error)', () =>
-      new Promise<void>((resolve, reject) => {
-        const notFoundError = new HttpErrorResponse({
-          error: { detail: 'Appointment does not exist' },
-          status: 404,
-          statusText: 'Not Found',
-          url: 'http://localhost:8000/appointments/state',
-        });
-
-        const endpoint = service.getEndpoint('extservices.appointments.state') as ApiEndpoint;
-
-        (service as any)
-          ['handleError'](notFoundError, endpoint, 'extservices.appointments.state')
-          .subscribe({
-            next: (res: any) => {
-              expect(res.success).toBe(true);
-              expect(res.data).toBe('NONE');
-              expect(mockExternalServices.recordServiceError).not.toHaveBeenCalled();
-              resolve();
-            },
-            error: (err: unknown) =>
-              reject(new Error(`should not have errored, got: ${String(err)}`)),
-          });
-      }));
   });
 
   describe('Cache Management - Advanced Scenarios', () => {

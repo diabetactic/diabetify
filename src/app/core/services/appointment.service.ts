@@ -180,26 +180,7 @@ export class AppointmentService implements OnDestroy {
           // If no data, assume no queue state
           return { state: 'NONE' as AppointmentQueueState };
         }),
-        catchError(error => {
-          // If 404 or "does not exist" error, return NONE (no queue state exists)
-          // Note: ApiGatewayService returns { success: false, error: ApiError }
-          // ApiError has 'statusCode' and 'details', not 'status' or 'detail'
-          const apiError = error?.error;
-          const is404 = error?.status === 404 || apiError?.statusCode === 404;
-
-          const errorDetails = apiError?.details;
-          const detailMsg = errorDetails?.detail || errorDetails?.message || '';
-
-          const isNotFound =
-            detailMsg.includes('does not exist') ||
-            apiError?.message?.includes('does not exist') ||
-            apiError?.message?.includes('404');
-
-          if (is404 || isNotFound) {
-            return of({ state: 'NONE' as AppointmentQueueState });
-          }
-          return this.handleError(error);
-        })
+        catchError(error => this.handleError(error))
       );
   }
 

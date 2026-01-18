@@ -583,27 +583,13 @@ export class ApiGatewayService {
             catchError((error): Observable<ApiResponse<T>> => {
               const responseTime = Date.now() - startTime;
 
-              const statusCode = error?.status;
-              const isQueueStateNotFound =
-                endpointKey === 'extservices.appointments.state' && statusCode === 404;
-
-              if (!isQueueStateNotFound) {
-                this.logger.error('API', 'Request failed', error, {
-                  endpoint: endpointKey,
-                  method: endpoint.method,
-                  responseTime: `${responseTime}ms`,
-                  statusCode,
-                  requestId: this.logger.getRequestId(),
-                });
-              } else {
-                this.logger.info('API', 'Queue state not found (treated as none)', {
-                  endpoint: endpointKey,
-                  method: endpoint.method,
-                  responseTime: `${responseTime}ms`,
-                  statusCode,
-                  requestId: this.logger.getRequestId(),
-                });
-              }
+              this.logger.error('API', 'Request failed', error, {
+                endpoint: endpointKey,
+                method: endpoint.method,
+                responseTime: `${responseTime}ms`,
+                statusCode: error?.status,
+                requestId: this.logger.getRequestId(),
+              });
 
               return this.handleError<T>(error, endpoint, endpointKey);
             })
@@ -723,22 +709,6 @@ export class ApiGatewayService {
     endpointKey: string
   ): Observable<ApiResponse<T>> {
     let apiError: ApiError;
-
-    // Special-case: appointments queue state 404 means "no queue entry yet", not an error.
-    // Backend returns 404 "Appointment does not exist" when user has never requested an appointment.
-    if (endpointKey === 'extservices.appointments.state' && error.status === 404) {
-      return of({
-        success: true,
-        data: 'NONE' as unknown as T,
-        metadata: {
-          service: endpoint.service,
-          endpoint: endpointKey,
-          responseTime: 0,
-          cached: false,
-          timestamp: new Date(),
-        },
-      } as ApiResponse<T>);
-    }
 
     if (error.error instanceof ErrorEvent) {
       // Client-side error
