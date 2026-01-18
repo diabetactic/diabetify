@@ -724,6 +724,22 @@ export class ApiGatewayService {
   ): Observable<ApiResponse<T>> {
     let apiError: ApiError;
 
+    // Special-case: appointments queue state 404 means "no queue entry yet", not an error.
+    // Backend returns 404 "Appointment does not exist" when user has never requested an appointment.
+    if (endpointKey === 'extservices.appointments.state' && error.status === 404) {
+      return of({
+        success: true,
+        data: 'NONE' as unknown as T,
+        metadata: {
+          service: endpoint.service,
+          endpoint: endpointKey,
+          responseTime: 0,
+          cached: false,
+          timestamp: new Date(),
+        },
+      } as ApiResponse<T>);
+    }
+
     if (error.error instanceof ErrorEvent) {
       // Client-side error
       apiError = {

@@ -821,6 +821,51 @@ describe('DashboardPage', () => {
     });
   });
 
+  describe('Statistics Cards', () => {
+    it('should show placeholder values when there are no readings in the selected period', () => {
+      mockTranslationService.instant.mockClear();
+
+      component.statistics = { ...mockStatistics, totalReadings: 0, timeInRange: 0, average: 0 };
+      component.recentReadings = [{ ...mockReading, time: '2020-01-02T03:04:05.000Z' }];
+
+      expect(component.getTimeInRangeCardValue()).toBe('—');
+      expect(component.getTimeInRangeCardUnit()).toBe('');
+      component.getTimeInRangeInfoMessage();
+      expect(mockTranslationService.instant).toHaveBeenCalledWith(
+        'dashboard.detail.timeInRangeNoRecent',
+        expect.objectContaining({ lastReading: expect.any(String) })
+      );
+
+      expect(component.getAverageGlucoseCardValue()).toBe('—');
+      expect(component.getAverageGlucoseCardUnit()).toBe('');
+      component.getAverageGlucoseInfoMessage();
+      expect(mockTranslationService.instant).toHaveBeenCalledWith(
+        'dashboard.detail.avgGlucoseNoRecent',
+        expect.objectContaining({ lastReading: expect.any(String) })
+      );
+    });
+
+    it('should show normal values when statistics have readings', () => {
+      mockTranslationService.instant.mockClear();
+
+      component.statistics = {
+        ...mockStatistics,
+        totalReadings: 10,
+        timeInRange: 55,
+        average: 123,
+      };
+      component.recentReadings = [{ ...mockReading, time: new Date().toISOString() }];
+
+      expect(component.getTimeInRangeCardValue()).toBe(55);
+      expect(component.getTimeInRangeCardUnit()).toBe('%');
+      expect(component.getTimeInRangeInfoMessage()).toBe('dashboard.detail.timeInRange');
+
+      expect(component.getAverageGlucoseCardValue()).toBe(123);
+      expect(component.getAverageGlucoseCardUnit()).toBe('mg/dL');
+      expect(component.getAverageGlucoseInfoMessage()).toBe('dashboard.detail.avgGlucose');
+    });
+  });
+
   describe('UI State', () => {
     it('should dismiss success alert', () => {
       component.showSuccessAlert = true;

@@ -138,22 +138,22 @@
       <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2" data-testid="stats-container">
         <app-stat-card
           [title]="'dashboard.timeInRange' | translate"
-          [value]="statistics?.timeInRange ?? 0"
-          unit="%"
+          [value]="getTimeInRangeCardValue()"
+          [unit]="getTimeInRangeCardUnit()"
           [icon]="icons.timeInRange"
           color="info"
           [gradientColors]="gradients.timeInRange"
-          [infoMessage]="'dashboard.detail.timeInRange' | translate"
+          [infoMessage]="getTimeInRangeInfoMessage()"
         >
         </app-stat-card>
         <app-stat-card
           [title]="'dashboard.averageGlucose' | translate"
-          [value]="statistics?.average ?? 0"
-          [unit]="getCurrentGlucoseUnit()"
+          [value]="getAverageGlucoseCardValue()"
+          [unit]="getAverageGlucoseCardUnit()"
           [icon]="icons.avgGlucose"
           color="success"
           [gradientColors]="gradients.avgGlucose"
-          [infoMessage]="'dashboard.detail.avgGlucose' | translate"
+          [infoMessage]="getAverageGlucoseInfoMessage()"
         >
         </app-stat-card>
       </div>

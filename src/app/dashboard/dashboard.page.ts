@@ -342,6 +342,69 @@ export class DashboardPage implements OnInit, OnDestroy {
     return this.preferredGlucoseUnit;
   }
 
+  private get hasStatisticsData(): boolean {
+    return Boolean(this.statistics && this.statistics.totalReadings > 0);
+  }
+
+  private get latestReadingTime(): string | null {
+    return this.recentReadings[0]?.time ?? null;
+  }
+
+  private formatShortDateTime(iso: string): string {
+    const locale = this.translationService.getCurrentLanguage();
+    const date = new Date(iso);
+    const formatter = new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return formatter.format(date);
+  }
+
+  getTimeInRangeCardValue(): number | string {
+    if (!this.statistics) return '—';
+    if (this.statistics.totalReadings === 0) return '—';
+    return this.statistics.timeInRange;
+  }
+
+  getTimeInRangeCardUnit(): string {
+    return this.hasStatisticsData ? '%' : '';
+  }
+
+  getTimeInRangeInfoMessage(): string {
+    if (this.hasStatisticsData) {
+      return this.translationService.instant('dashboard.detail.timeInRange');
+    }
+
+    const latest = this.latestReadingTime;
+    return this.translationService.instant('dashboard.detail.timeInRangeNoRecent', {
+      lastReading: latest ? this.formatShortDateTime(latest) : '—',
+    });
+  }
+
+  getAverageGlucoseCardValue(): number | string {
+    if (!this.statistics) return '—';
+    if (this.statistics.totalReadings === 0) return '—';
+    return this.statistics.average;
+  }
+
+  getAverageGlucoseCardUnit(): string {
+    return this.hasStatisticsData ? this.getCurrentGlucoseUnit() : '';
+  }
+
+  getAverageGlucoseInfoMessage(): string {
+    if (this.hasStatisticsData) {
+      return this.translationService.instant('dashboard.detail.avgGlucose');
+    }
+
+    const latest = this.latestReadingTime;
+    return this.translationService.instant('dashboard.detail.avgGlucoseNoRecent', {
+      lastReading: latest ? this.formatShortDateTime(latest) : '—',
+    });
+  }
+
   /**
    * Navigate to add reading page
    * Using ngZone.run() to ensure navigation triggers immediately on mobile

@@ -196,7 +196,9 @@
       "syncStatus": "Sync Status",
       "aboutMetrics": "About These Metrics",
       "timeInRange": "The percentage of time your glucose levels are within the target range (70-180 mg/dL).",
+      "timeInRangeNoRecent": "No readings in the last 30 days. Last reading: {{lastReading}}.",
       "avgGlucose": "Your average glucose level calculated from all readings in the selected period.",
+      "avgGlucoseNoRecent": "No readings in the last 30 days. Last reading: {{lastReading}}.",
       "hba1cExplanation": "Estimated HbA1c shows your average blood glucose over the past 2-3 months. Target is usually below 7% for most people with diabetes.",
       "gmiExplanation": "GMI (Glucose Management Indicator) is calculated from your continuous glucose monitor data and gives a similar picture to HbA1c.",
       "cvExplanation": "Coefficient of Variation measures how much your glucose levels vary. Lower is better, with a target below 36%."
