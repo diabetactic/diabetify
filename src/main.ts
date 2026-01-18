@@ -5,6 +5,10 @@ import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { provideIonicAngular } from '@ionic/angular/standalone';
 import { setAssetPath } from '@ionic/core/components';
+import { defineCustomElement as defineIonAlert } from '@ionic/core/components/ion-alert.js';
+import { defineCustomElement as defineIonLoading } from '@ionic/core/components/ion-loading.js';
+import { defineCustomElement as defineIonModal } from '@ionic/core/components/ion-modal.js';
+import { defineCustomElement as defineIonToast } from '@ionic/core/components/ion-toast.js';
 import {
   RouteReuseStrategy,
   PreloadAllModules,
@@ -136,6 +140,15 @@ Chart.register(
 
 // Ensure Ionic web components can resolve their asset path (icons, etc.)
 setAssetPath(window.document.baseURI ?? '/');
+
+// NOTE: In optimized production builds, unused Ionic web components can be tree-shaken
+// away when using standalone Angular imports. Overlays (loading/toast/alert/modal) are
+// created imperatively via controllers and may not appear in templates, so we define
+// them explicitly to prevent `LoadingController.create()`/etc. from hanging.
+defineIonAlert();
+defineIonLoading();
+defineIonModal();
+defineIonToast();
 
 const httpLoaderConfig: TranslateHttpLoaderConfig = {
   prefix: './assets/i18n/',
