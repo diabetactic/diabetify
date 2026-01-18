@@ -28,6 +28,7 @@
   "common": {
     "comingSoon": "Coming Soon",
     "inDevelopment": "Feature in development",
+    "add": "Add",
     "viewDetails": "View Details",
     "viewAll": "View All",
     "close": "Close",
@@ -55,7 +56,8 @@
     "goBack": "Go back",
     "back": "Back",
     "online": "Online",
-    "offline": "Offline"
+    "offline": "Offline",
+    "offlineMode": "Offline Mode"
   },
   "tabs": {
     "home": "Home",
@@ -193,6 +195,12 @@
       "description": "This section contains technical information and medical metrics for parents, caregivers, and healthcare providers.",
       "syncStatus": "Sync Status",
       "aboutMetrics": "About These Metrics",
+      "timeInRange": "The percentage of time your glucose levels are within the target range (70-180 mg/dL).",
+      "timeInRangeUsingLatest": "Not enough readings in the last 30 days. Showing the last {{count}} readings (latest: {{lastReading}}).",
+      "timeInRangeNoRecent": "No readings in the last 30 days. Last reading: {{lastReading}}.",
+      "avgGlucose": "Your average glucose level calculated from all readings in the selected period.",
+      "avgGlucoseUsingLatest": "Not enough readings in the last 30 days. Showing the last {{count}} readings (latest: {{lastReading}}).",
+      "avgGlucoseNoRecent": "No readings in the last 30 days. Last reading: {{lastReading}}.",
       "hba1cExplanation": "Estimated HbA1c shows your average blood glucose over the past 2-3 months. Target is usually below 7% for most people with diabetes.",
       "gmiExplanation": "GMI (Glucose Management Indicator) is calculated from your continuous glucose monitor data and gives a similar picture to HbA1c.",
       "cvExplanation": "Coefficient of Variation measures how much your glucose levels vary. Lower is better, with a target below 36%."
@@ -499,7 +507,12 @@
       "pending": "Pending",
       "confirmed": "Confirmed",
       "noShow": "No Show",
-      "rescheduled": "Rescheduled"
+      "rescheduled": "Rescheduled",
+      "created": "Created",
+      "accepted": "Accepted",
+      "denied": "Denied",
+      "resolved": "Resolved",
+      "completed": "Completed"
     },
     "fields": {
       "glucoseObjective": "Glucose Objective",
@@ -557,12 +570,14 @@
       "unauthorized": "Unauthorized. Please log in again.",
       "notFound": "Appointment not found.",
       "slotUnavailable": "The time slot is no longer available.",
-      "serviceUnavailable": "Service unavailable. Please try again later.",
+      "serviceUnavailable": "Appointments service unavailable. Please try again later.",
       "networkError": "Connection error. Please check your internet connection.",
       "queueFull": "No more appointments can be taken today.",
       "notInQueue": "You need to request an appointment before filling the form.",
       "notAccepted": "Your request hasn't been accepted yet.",
       "alreadyInQueue": "You already have a pending appointment request.",
+      "alreadyAccepted": "Your request is already accepted. You can now create your appointment.",
+      "cannotRequest": "You cannot request an appointment at this time.",
       "cannotCreate": "You cannot create an appointment at this time",
       "alreadyHasAppointment": "You already have an active appointment",
       "pendingRequest": "Your appointment request is pending approval",
@@ -603,7 +618,8 @@
         "accepted": "Your appointment request has been accepted!",
         "denied": "Your appointment request was not accepted",
         "created": "Your appointment has been successfully registered",
-        "updatesUnavailable": "Real-time updates are temporarily unavailable"
+        "updatesUnavailable": "Real-time updates are temporarily unavailable",
+        "resolutionReady": "Your doctor has added treatment recommendations!"
       }
     },
     "reason": "Reason",
@@ -779,6 +795,12 @@
     "emergencyContactPlaceholder": "Add an emergency contact to see it here.",
     "emergencyContactWithRelationship": "{{name}} ({{relationship}})",
     "emergencyContactPhone": "{{phone}}",
+    "nameLabel": "Contact Name",
+    "namePlaceholder": "Contact Name",
+    "relationshipLabel": "Relationship",
+    "relationshipPlaceholder": "e.g. Mother, Father",
+    "phoneLabel": "Phone",
+    "phonePlaceholder": "+1 234 567 890",
     "preferences": "Preferences",
     "language": {
       "title": "Language",
@@ -811,7 +833,7 @@
     "autoTheme": "Auto",
     "glucoseUnit": "Glucose Unit",
     "glucoseUnits": "Glucose Units",
-    "advancedSettings": "Advanced Settings",
+    "advancedSettings": "Settings",
     "advancedSettingsDesc": "Glucose targets, reminders, and more",
     "privacy": "Privacy",
     "dataSharing": "Data Sharing",
@@ -1024,6 +1046,9 @@
     "error": {
       "title": "Sync Error",
       "message": "Failed to sync your data. Please check your connection and try again."
+    },
+    "errors": {
+      "permanentFailure": "A reading could not be synced after multiple attempts. It is saved locally but not on the server."
     },
     "lastSync": "Last Sync",
     "never": "Never",
@@ -1601,6 +1626,12 @@
     "noAchievements": "No achievements yet. Start tracking to unlock them!",
     "viewAchievements": "View Achievements",
     "achievementsDesc": "Track your progress and earn badges"
+  },
+  "barcodeScanner": {
+    "permissionDenied": {
+      "title": "Permission Denied",
+      "message": "Camera permission is required to scan barcodes. Please grant permission in your device settings."
+    }
   },
   "widget": {
     "timeAgo": {

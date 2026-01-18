@@ -1,4 +1,10 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -21,6 +27,8 @@ import {
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
+
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { AppointmentService } from '@services/appointment.service';
 import { Appointment, AppointmentResolutionResponse } from '@models/appointment.model';
 import { TranslationService } from '@services/translation.service';
@@ -34,6 +42,7 @@ import { AppointmentTimelineComponent } from 'src/app/appointments/appointment-t
   templateUrl: './appointment-detail.page.html',
   styleUrls: ['./appointment-detail.page.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     TranslateModule,
@@ -114,7 +123,8 @@ export class AppointmentDetailPage implements OnInit {
       this.resolution = await firstValueFrom(this.appointmentService.getResolution(id));
       this.logger.info('UI', 'Resolution loaded', {
         appointmentId: id,
-        resolution: this.resolution,
+        resolvedAt: this.resolution?.resolved_at ?? null,
+        resolvedBy: this.resolution?.resolved_by ?? null,
       });
     } catch (error: unknown) {
       const errorMsg = ((error as Error)?.message || '').toLowerCase();
@@ -250,7 +260,9 @@ export class AppointmentDetailPage implements OnInit {
         const mappedKey =
           this.motiveMapping[m] || this.motiveMapping[m.toUpperCase()] || m.toLowerCase();
         const translated = this.translationService.instant(`appointments.motives.${mappedKey}`);
-        return translated && !translated.startsWith('appointments.motives.') ? translated : m;
+        return (
+          translated && !translated.startsWith('appointments.motives.') ? translated : m
+        ).trim();
       })
       .join(', ');
   }
@@ -313,11 +325,16 @@ export class AppointmentDetailPage implements OnInit {
    * Show error message
    */
   private async showError(message: string): Promise<void> {
-    const alert = await this.alertController.create({
-      header: this.translationService.instant('app.error'),
-      message,
-      buttons: ['OK'],
-    });
+    const alert = await createOverlaySafely(
+      () =>
+        this.alertController.create({
+          header: this.translationService.instant('app.error'),
+          message,
+          buttons: ['OK'],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!alert) return;
     await alert.present();
   }
 
@@ -335,12 +352,17 @@ export class AppointmentDetailPage implements OnInit {
     message: string,
     color: 'success' | 'warning' | 'danger' = 'success'
   ): Promise<void> {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      position: 'bottom',
-      color,
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message,
+          duration: 3000,
+          position: 'bottom',
+          color,
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 }

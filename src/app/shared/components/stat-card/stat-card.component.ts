@@ -12,6 +12,8 @@ import {
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { IonRippleEffect, IonSpinner, IonSkeletonText } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
+import { InfoButtonComponent } from '@shared/components/info-button/info-button.component';
+import { AppIconComponent } from '../app-icon/app-icon.component';
 
 @Component({
   selector: 'app-stat-card',
@@ -19,7 +21,15 @@ import { TranslateModule } from '@ngx-translate/core';
   styleUrls: ['./stat-card.component.scss'],
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule, IonRippleEffect, IonSpinner, IonSkeletonText, TranslateModule],
+  imports: [
+    CommonModule,
+    IonRippleEffect,
+    IonSpinner,
+    IonSkeletonText,
+    TranslateModule,
+    InfoButtonComponent,
+    AppIconComponent,
+  ],
   providers: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -35,14 +45,28 @@ export class StatCardComponent implements OnChanges {
   @Input() loading = false;
   @Input() error = false;
   @Input() clickable = false;
+  @Input() infoMessage = '';
 
   @Output() readonly cardClick = new EventEmitter<void>();
 
   valueUpdating = false;
+  private hasCustomGradientColors = false;
+
+  private readonly gradientColorsByColor: Record<string, [string, string]> = {
+    primary: ['#3b82f6', '#2563eb'],
+    success: ['#22c55e', '#16a34a'],
+    warning: ['#eab308', '#ca8a04'],
+    danger: ['#ef4444', '#dc2626'],
+    info: ['#06b6d4', '#0891b2'],
+  };
 
   constructor(private decimalPipe: DecimalPipe) {}
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['gradientColors']) {
+      this.hasCustomGradientColors = true;
+    }
+
     if (changes['value'] && !changes['value'].firstChange) {
       this.valueUpdating = true;
       setTimeout(() => {
@@ -53,6 +77,14 @@ export class StatCardComponent implements OnChanges {
 
   @HostBinding('attr.aria-busy') get isBusy() {
     return this.loading ? 'true' : 'false';
+  }
+
+  @HostBinding('style.--stat-card-gradient-start') get gradientStart(): string {
+    return this.effectiveGradientColors[0];
+  }
+
+  @HostBinding('style.--stat-card-gradient-end') get gradientEnd(): string {
+    return this.effectiveGradientColors[1];
   }
 
   @HostBinding('class') get hostClasses(): string {
@@ -70,6 +102,14 @@ export class StatCardComponent implements OnChanges {
       classes.push('stat-card-pulse');
     }
     return classes.join(' ');
+  }
+
+  private get effectiveGradientColors(): [string, string] {
+    if (!this.hasCustomGradientColors && this.color) {
+      return this.gradientColorsByColor[this.color] ?? this.gradientColors;
+    }
+
+    return this.gradientColors;
   }
 
   get gradientClass(): string {

@@ -28,6 +28,7 @@
   "common": {
     "comingSoon": "Próximamente",
     "inDevelopment": "Función en desarrollo",
+    "add": "Agregar",
     "viewDetails": "Ver Detalles",
     "viewAll": "Ver Todo",
     "close": "Cerrar",
@@ -55,7 +56,8 @@
     "goBack": "Volver",
     "back": "Atrás",
     "online": "En línea",
-    "offline": "Sin conexión"
+    "offline": "Sin conexión",
+    "offlineMode": "Modo Sin Conexión"
   },
   "tabs": {
     "home": "Inicio",
@@ -193,6 +195,12 @@
       "description": "Esta sección contiene información técnica y métricas médicas para padres, cuidadores y profesionales de la salud.",
       "syncStatus": "Estado de Sincronización",
       "aboutMetrics": "Acerca de Estas Métricas",
+      "timeInRange": "El porcentaje de tiempo que tus niveles de glucosa están dentro del rango objetivo (70-180 mg/dL).",
+      "timeInRangeUsingLatest": "No hay suficientes lecturas en los últimos 30 días. Mostrando las últimas {{count}} lecturas (más reciente: {{lastReading}}).",
+      "timeInRangeNoRecent": "No hay lecturas en los últimos 30 días. Última lectura: {{lastReading}}.",
+      "avgGlucose": "Tu nivel de glucosa promedio calculado de todas las lecturas en el período seleccionado.",
+      "avgGlucoseUsingLatest": "No hay suficientes lecturas en los últimos 30 días. Mostrando las últimas {{count}} lecturas (más reciente: {{lastReading}}).",
+      "avgGlucoseNoRecent": "No hay lecturas en los últimos 30 días. Última lectura: {{lastReading}}.",
       "hba1cExplanation": "La HbA1c estimada muestra tu glucosa promedio en sangre durante los últimos 2-3 meses. El objetivo suele estar por debajo del 7% para la mayoría de las personas con diabetes.",
       "gmiExplanation": "GMI (Indicador de Gestión de Glucosa) se calcula a partir de los datos de tu monitor continuo de glucosa y proporciona una imagen similar a la HbA1c.",
       "cvExplanation": "El Coeficiente de Variación mide cuánto varían tus niveles de glucosa. Menor es mejor, con un objetivo por debajo del 36%."
@@ -500,7 +508,12 @@
       "pending": "Pendiente",
       "confirmed": "Confirmada",
       "noShow": "No Asistió",
-      "rescheduled": "Reprogramada"
+      "rescheduled": "Reprogramada",
+      "created": "Creada",
+      "accepted": "Aceptada",
+      "denied": "Denegada",
+      "resolved": "Resuelta",
+      "completed": "Completada"
     },
     "fields": {
       "glucoseObjective": "Objetivo de Glucosa",
@@ -558,12 +571,14 @@
       "unauthorized": "No autorizado. Por favor, inicie sesión nuevamente.",
       "notFound": "Cita no encontrada.",
       "slotUnavailable": "El horario ya no está disponible.",
-      "serviceUnavailable": "Servicio no disponible. Por favor, intente más tarde.",
+      "serviceUnavailable": "Servicio de citas no disponible. Por favor, intente más tarde.",
       "networkError": "Error de conexión. Verifique su conexión a internet.",
       "queueFull": "No se pueden tomar más citas hoy.",
       "notInQueue": "Debe solicitar una cita antes de completar el formulario.",
       "notAccepted": "Su solicitud aún no ha sido aceptada.",
       "alreadyInQueue": "Ya tiene una solicitud de cita pendiente.",
+      "alreadyAccepted": "Su solicitud ya fue aceptada. Ahora puede crear su cita.",
+      "cannotRequest": "No puede solicitar una cita en este momento.",
       "cannotCreate": "No puedes crear una cita en este momento",
       "alreadyHasAppointment": "Ya tienes una cita activa",
       "pendingRequest": "Tu solicitud de cita está pendiente de aprobación",
@@ -604,7 +619,8 @@
         "accepted": "¡Su solicitud de cita ha sido aceptada!",
         "denied": "Su solicitud de cita no fue aceptada",
         "created": "Su cita ha sido registrada exitosamente",
-        "updatesUnavailable": "Las actualizaciones en tiempo real no están disponibles temporalmente"
+        "updatesUnavailable": "Las actualizaciones en tiempo real no están disponibles temporalmente",
+        "resolutionReady": "¡Su doctor ha agregado recomendaciones de tratamiento!"
       }
     },
     "reason": "Motivo",
@@ -780,6 +796,12 @@
     "emergencyContactPlaceholder": "Agrega un contacto de emergencia para mostrarlo aquí.",
     "emergencyContactWithRelationship": "{{name}} ({{relationship}})",
     "emergencyContactPhone": "Tel: {{phone}}",
+    "nameLabel": "Nombre del Contacto",
+    "namePlaceholder": "Nombre del Contacto",
+    "relationshipLabel": "Relación",
+    "relationshipPlaceholder": "ej. Madre, Padre",
+    "phoneLabel": "Teléfono",
+    "phonePlaceholder": "+1 234 567 890",
     "preferences": "Preferencias",
     "language": {
       "title": "Idioma",
@@ -812,7 +834,7 @@
     "autoTheme": "Automático",
     "glucoseUnit": "Unidad de Glucosa",
     "glucoseUnits": "Unidades de Glucosa",
-    "advancedSettings": "Configuración Avanzada",
+    "advancedSettings": "Configuración",
     "advancedSettingsDesc": "Objetivos de glucosa, recordatorios y más",
     "privacy": "Privacidad",
     "dataSharing": "Compartir Datos",
@@ -1025,6 +1047,9 @@
     "error": {
       "title": "Error de Sincronización",
       "message": "No se pudo sincronizar tus datos. Por favor verifica tu conexión e intenta nuevamente."
+    },
+    "errors": {
+      "permanentFailure": "Una lectura no pudo sincronizarse después de varios intentos. Está guardada localmente pero no en el servidor."
     },
     "lastSync": "Última Sincronización",
     "never": "Nunca",
@@ -1602,6 +1627,12 @@
     "noAchievements": "Aún no hay logros. ¡Empieza a registrar para desbloquearlos!",
     "viewAchievements": "Ver Logros",
     "achievementsDesc": "Sigue tu progreso y gana insignias"
+  },
+  "barcodeScanner": {
+    "permissionDenied": {
+      "title": "Permiso denegado",
+      "message": "Se requiere permiso de cámara para escanear códigos de barras. Por favor otorga permiso en la configuración de tu dispositivo."
+    }
   },
   "widget": {
     "timeAgo": {

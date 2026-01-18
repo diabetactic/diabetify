@@ -31,6 +31,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { AccountState, DEFAULT_USER_PREFERENCES } from '@models/user-profile.model';
 import { ROUTES } from '@core/constants';
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 
 @Component({
   selector: 'app-login',
@@ -110,6 +111,8 @@ export class LoginPage implements OnInit, OnDestroy {
       return;
     }
 
+    const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+
     if (!this.loginForm.valid) {
       this.markFormGroupTouched(this.loginForm);
       this.logger.warn('Auth', 'Login form invalid', this.loginForm.errors);
@@ -125,26 +128,48 @@ export class LoginPage implements OnInit, OnDestroy {
       stage: 'ui-before-loading',
     });
 
-    const loading = await this.loadingCtrl.create({
-      message: this.translate.instant('login.messages.loggingIn'),
-      spinner: 'crescent',
-      cssClass: 'custom-loading',
-    });
-    await loading.present();
-    this.logger.debug('Auth', 'Loading spinner presented', { stage: 'ui-loading-presented' });
+    // NOTE: Do not await LoadingController.create()/present() here.
+    // In some web builds this can hang indefinitely and block the entire login flow.
+    const loadingPromise: Promise<{ dismiss: () => Promise<boolean> } | null> = this.loadingCtrl
+      .create({
+        message: this.translate.instant('login.messages.loggingIn'),
+        spinner: 'crescent',
+        cssClass: 'custom-loading',
+      })
+      .then(async loading => {
+        const presentPromise = loading.present().catch(error => {
+          this.logger.warn('Auth', 'Loading spinner failed to present', error);
+        });
+        await Promise.race([presentPromise, sleep(500)]);
+        return loading;
+      })
+      .catch(error => {
+        this.logger.warn('Auth', 'Loading spinner failed to create', error);
+        return null;
+      });
+
+    const dismissLoading = async () => {
+      try {
+        const loading = await Promise.race([loadingPromise, sleep(1000).then(() => null)]);
+        if (!loading) return;
+        await Promise.race([loading.dismiss(), sleep(1000)]);
+      } catch (error) {
+        this.logger.warn('Auth', 'Loading spinner failed to dismiss', error);
+      }
+    };
 
     // FAILSAFE: Dismiss loading after 15 seconds NO MATTER WHAT
     // This ensures the user is never stuck on a spinning screen forever
     const failsafeTimeout = setTimeout(async () => {
       this.logger.error('Auth', 'FAILSAFE: 15-second hard timeout triggered - dismissing loading');
       try {
-        await loading.dismiss();
+        await dismissLoading();
         this.ngZone.run(() => {
           this.isLoading = false;
           this.loginForm.enable({ emitEvent: false });
           this.cdr.detectChanges();
         });
-        await this.showErrorToast(this.translate.instant('errors.timeout'));
+        void this.showErrorToast(this.translate.instant('errors.timeout'));
       } catch (e) {
         this.logger.error('Auth', 'FAILSAFE cleanup error', e);
       }
@@ -193,13 +218,19 @@ export class LoginPage implements OnInit, OnDestroy {
         }
 
         this.logger.debug('Auth', 'Showing welcome toast', { stage: 'toast-before' });
-        const toast = await this.toastCtrl.create({
-          message: this.translate.instant('login.messages.welcomeBack'),
-          duration: 2000,
-          color: 'success',
-          position: 'top',
-        });
-        await toast.present();
+        const toast = await createOverlaySafely(
+          () =>
+            this.toastCtrl.create({
+              message: this.translate.instant('login.messages.welcomeBack'),
+              duration: 2000,
+              color: 'success',
+              position: 'top',
+            }),
+          { timeoutMs: 1500 }
+        );
+        if (toast) {
+          await toast.present();
+        }
 
         this.logger.info('Auth', 'Navigating to dashboard...', { stage: 'navigate-dashboard' });
         await this.router.navigate([ROUTES.TABS_DASHBOARD], { replaceUrl: true });
@@ -259,9 +290,14 @@ export class LoginPage implements OnInit, OnDestroy {
     } finally {
       // Cancel the failsafe timeout since we're handling the result normally
       clearTimeout(failsafeTimeout);
-      this.logger.debug('Auth', 'Ensuring loading spinner is dismissed');
-      await loading.dismiss();
-      // No need to reset isLoading or enable form here, done in catch or success path
+      await dismissLoading();
+
+      // Always reset UI state if we remain on this page (Ionic may cache routes).
+      this.ngZone.run(() => {
+        this.isLoading = false;
+        this.loginForm.enable({ emitEvent: false });
+        this.cdr.detectChanges();
+      });
     }
   }
 
@@ -330,18 +366,23 @@ export class LoginPage implements OnInit, OnDestroy {
   }
 
   private async showErrorToast(message: string): Promise<void> {
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 3500,
-      color: 'danger',
-      position: 'top',
-      buttons: [
-        {
-          icon: 'close',
-          role: 'cancel',
-        },
-      ],
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastCtrl.create({
+          message,
+          duration: 3500,
+          color: 'danger',
+          position: 'top',
+          buttons: [
+            {
+              icon: 'close',
+              role: 'cancel',
+            },
+          ],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 }

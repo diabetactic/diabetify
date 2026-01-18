@@ -17,6 +17,7 @@ import { FormsModule } from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { IonButton, IonSearchbar, ToastController } from '@ionic/angular/standalone';
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { FoodService } from '@services/food.service';
 import {
   FoodItem,
@@ -198,12 +199,18 @@ export class FoodPickerComponent implements OnInit {
         if (foodItem) {
           this.foodService.addFood(foodItem);
         } else {
-          const toast = await this.toastController.create({
-            message: this.translate.instant('foodPicker.barcodeNotFound'),
-            duration: 3000,
-            position: 'top',
-          });
-          toast.present();
+          const toast = await createOverlaySafely(
+            () =>
+              this.toastController.create({
+                message: this.translate.instant('foodPicker.barcodeNotFound'),
+                duration: 3000,
+                position: 'top',
+              }),
+            { timeoutMs: 1500 }
+          );
+          if (toast) {
+            void toast.present();
+          }
         }
       });
     }

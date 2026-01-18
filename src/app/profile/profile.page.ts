@@ -14,9 +14,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { TidepoolAuthService, AuthState } from '@services/tidepool-auth.service';
 import { LocalAuthService } from '@services/local-auth.service';
 import { ProfileService } from '@services/profile.service';
+import { BiometricAuthService } from '@services/biometric-auth.service';
 
 import { TranslationService, Language } from '@services/translation.service';
 import { NotificationService } from '@services/notification.service';
@@ -58,6 +60,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   currentLanguage!: Language;
   currentGlucoseUnit = 'mg/dL';
   notificationsEnabled = false;
+  biometricEnabled = false;
 
   private destroy$ = new Subject<void>();
 
@@ -65,6 +68,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     private authService: TidepoolAuthService,
     private localAuthService: LocalAuthService,
     private profileService: ProfileService,
+    private biometricAuthService: BiometricAuthService,
     private translationService: TranslationService,
     private notificationService: NotificationService,
     private router: Router,
@@ -79,6 +83,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadUserData();
     this.loadNotificationSettings();
+    this.loadBiometricStatus();
     this.subscribeToAuthState();
     this.subscribeToProfile();
     this.subscribeToLanguageChanges();
@@ -108,6 +113,27 @@ export class ProfilePage implements OnInit, OnDestroy {
       this.notificationsEnabled = settings.enabled ?? false;
     } else {
       this.notificationsEnabled = false;
+    }
+  }
+
+  private async loadBiometricStatus(): Promise<void> {
+    try {
+      const isAvailable = await this.biometricAuthService.isBiometricAvailable();
+      if (isAvailable) {
+        // We assume enabled if we have credentials stored (simplified logic)
+        // Ideally we check specific state or storage key
+        // For now, let's assume false unless we have a robust check
+        // Check if we have enrolled
+        // Since we don't have an explicit 'isEnrolled' method exposed publicly easily without side effects,
+        // we might track this in local storage preference
+        const saved = localStorage.getItem('biometric_enabled');
+        this.biometricEnabled = saved === 'true';
+      } else {
+        this.biometricEnabled = false;
+      }
+      this.cdr.markForCheck();
+    } catch {
+      this.biometricEnabled = false;
     }
   }
 
@@ -143,27 +169,100 @@ export class ProfilePage implements OnInit, OnDestroy {
         if (toggle) {
           toggle.checked = false;
         }
-        const toast = await this.toastController.create({
-          message: this.translationService.instant('profile.notifications.permissionDenied'),
-          duration: 3000,
-          color: 'warning',
-          position: 'bottom',
-        });
-        await toast.present();
+        const toast = await createOverlaySafely(
+          () =>
+            this.toastController.create({
+              message: this.translationService.instant('profile.notifications.permissionDenied'),
+              duration: 3000,
+              color: 'warning',
+              position: 'bottom',
+            }),
+          { timeoutMs: 1500 }
+        );
+        if (toast) {
+          await toast.present();
+        }
         return;
       }
     }
     this.notificationsEnabled = enabled;
     this.saveNotificationSettings();
-    const toast = await this.toastController.create({
-      message: enabled
-        ? this.translationService.instant('profile.notifications.enabled')
-        : this.translationService.instant('profile.notifications.disabled'),
-      duration: 2000,
-      color: 'success',
-      position: 'bottom',
-    });
-    await toast.present();
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message: enabled
+            ? this.translationService.instant('profile.notifications.enabled')
+            : this.translationService.instant('profile.notifications.disabled'),
+          duration: 2000,
+          color: 'success',
+          position: 'bottom',
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (toast) {
+      await toast.present();
+    }
+  }
+
+  async onBiometricToggle(event: CustomEvent<{ checked: boolean }>): Promise<void> {
+    const enabled = event.detail.checked;
+    const toggle = event.target as HTMLIonToggleElement;
+
+    try {
+      if (enabled) {
+        // To enable, we need to enroll. Typically this requires re-entering password or having current tokens.
+        // For simplicity, we'll try to enroll with current session if available.
+        const userId = this.localAuthService.getCurrentUser()?.id;
+        const accessToken = await this.localAuthService.getAccessToken();
+
+        if (!userId || !accessToken) {
+          throw new Error('Not authenticated');
+        }
+
+        const result = await this.biometricAuthService.enrollBiometric(userId, accessToken);
+        if (result.success) {
+          this.biometricEnabled = true;
+          localStorage.setItem('biometric_enabled', 'true');
+          const toast = await createOverlaySafely(
+            () =>
+              this.toastController.create({
+                message: this.translationService.instant('biometric.enrollSuccess'),
+                duration: 2000,
+                color: 'success',
+                position: 'bottom',
+              }),
+            { timeoutMs: 1500 }
+          );
+          if (toast) {
+            await toast.present();
+          }
+        } else {
+          throw new Error(result.error);
+        }
+      } else {
+        // Disable
+        await this.biometricAuthService.clearBiometricEnrollment();
+        this.biometricEnabled = false;
+        localStorage.setItem('biometric_enabled', 'false');
+      }
+    } catch {
+      this.biometricEnabled = !enabled; // Revert state
+      if (toggle) toggle.checked = !enabled;
+
+      const toast = await createOverlaySafely(
+        () =>
+          this.toastController.create({
+            message: this.translationService.instant('biometric.error'),
+            duration: 3000,
+            color: 'danger',
+            position: 'bottom',
+          }),
+        { timeoutMs: 1500 }
+      );
+      if (toast) {
+        await toast.present();
+      }
+    }
   }
 
   async onSignOut(): Promise<void> {
@@ -177,44 +276,145 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   async editAge(): Promise<void> {
-    const alert = await this.alertController.create({
-      header: this.translationService.instant('profile.editAge'),
-      inputs: [
-        {
-          name: 'age',
-          type: 'number',
-          placeholder: this.translationService.instant('profile.agePlaceholder'),
-          value: this.profile?.age || 12,
-          min: 1,
-          max: 120,
-        },
-      ],
-      buttons: [
-        {
-          text: this.translationService.instant('common.cancel'),
-          role: 'cancel',
-        },
-        {
-          text: this.translationService.instant('common.save'),
-          handler: async data => {
-            const age = parseInt(data.age, 10);
-            if (age && age > 0 && age <= 120) {
-              try {
-                await this.profileService.updateProfile({ age });
-              } catch {}
-            }
-          },
-        },
-      ],
-    });
+    const alert = await createOverlaySafely(
+      () =>
+        this.alertController.create({
+          header: this.translationService.instant('profile.editAge'),
+          cssClass: 'age-edit-alert',
+          inputs: [
+            {
+              name: 'age',
+              type: 'number',
+              placeholder: this.translationService.instant('profile.agePlaceholder'),
+              value: this.profile?.age || 12,
+              min: 1,
+              max: 120,
+            },
+          ],
+          buttons: [
+            {
+              text: this.translationService.instant('common.cancel'),
+              role: 'cancel',
+            },
+            {
+              text: this.translationService.instant('common.save'),
+              handler: async data => {
+                const age = parseInt(data.age, 10);
+                if (age && age > 0 && age <= 120) {
+                  try {
+                    await this.profileService.updateProfile({ age });
+                  } catch {}
+                }
+              },
+            },
+          ],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!alert) return;
     await alert.present();
   }
 
+  async editDiabetesInfo(): Promise<void> {
+    const { DiabetesInfoModalComponent } =
+      await import('./components/diabetes-info-modal/diabetes-info-modal.component');
+    const modal = await createOverlaySafely(
+      () =>
+        this.modalController.create({
+          component: DiabetesInfoModalComponent,
+          componentProps: { profile: this.profile },
+          cssClass: 'profile-edit-modal',
+        }),
+      { timeoutMs: 2500 }
+    );
+    if (!modal) return;
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss<{
+      diabetesType: 'type1' | 'type2' | 'gestational' | 'other';
+      diagnosisDate: string;
+    }>();
+
+    if (role === 'confirm' && data) {
+      try {
+        await this.profileService.updateProfile({
+          diabetesType: data.diabetesType,
+          diagnosisDate: data.diagnosisDate,
+        });
+      } catch {
+        const toast = await createOverlaySafely(
+          () =>
+            this.toastController.create({
+              message: this.translationService.instant('profile.edit.error'),
+              duration: 3000,
+              color: 'danger',
+              position: 'bottom',
+            }),
+          { timeoutMs: 1500 }
+        );
+        if (toast) {
+          await toast.present();
+        }
+      }
+    }
+  }
+
+  async editEmergencyContact(): Promise<void> {
+    const { EmergencyContactModalComponent } =
+      await import('./components/emergency-contact-modal/emergency-contact-modal.component');
+    const modal = await createOverlaySafely(
+      () =>
+        this.modalController.create({
+          component: EmergencyContactModalComponent,
+          componentProps: { profile: this.profile },
+          cssClass: 'profile-edit-modal',
+        }),
+      { timeoutMs: 2500 }
+    );
+    if (!modal) return;
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss<{
+      name: string;
+      relationship: string;
+      phone: string;
+    }>();
+
+    if (role === 'confirm' && data) {
+      try {
+        await this.profileService.updateProfile({
+          emergencyContact: {
+            name: data.name,
+            relationship: data.relationship,
+            phone: data.phone,
+          },
+        });
+      } catch {
+        const toast = await createOverlaySafely(
+          () =>
+            this.toastController.create({
+              message: this.translationService.instant('profile.edit.error'),
+              duration: 3000,
+              color: 'danger',
+              position: 'bottom',
+            }),
+          { timeoutMs: 1500 }
+        );
+        if (toast) {
+          await toast.present();
+        }
+      }
+    }
+  }
+
   async editProfile(): Promise<void> {
-    const modal = await this.modalController.create({
-      component: ProfileEditComponent,
-      cssClass: 'profile-edit-modal',
-    });
+    const modal = await createOverlaySafely(
+      () =>
+        this.modalController.create({
+          component: ProfileEditComponent,
+          cssClass: 'profile-edit-modal',
+        }),
+      { timeoutMs: 2500 }
+    );
+    if (!modal) return;
     await modal.present();
     const { data } = await modal.onWillDismiss<{ success: boolean }>();
     if (data?.success) {
@@ -224,15 +424,24 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   async goToSettings(): Promise<void> {
     const { SettingsPage } = await import('../settings/settings.page');
-    const modal = await this.modalController.create({
-      component: SettingsPage,
-      cssClass: 'fullscreen-modal',
-    });
+    const modal = await createOverlaySafely(
+      () =>
+        this.modalController.create({
+          component: SettingsPage,
+          cssClass: 'fullscreen-modal',
+        }),
+      { timeoutMs: 2500 }
+    );
+    if (!modal) return;
     await modal.present();
   }
 
   async goToAchievements(): Promise<void> {
     await this.router.navigate(['/achievements']);
+  }
+
+  async onGoToTips(): Promise<void> {
+    await this.router.navigate(['/tips']);
   }
 
   async onAvatarSelected(event: Event): Promise<void> {
@@ -250,11 +459,16 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   private async openAvatarCropper(file: File): Promise<void> {
-    const modal = await this.modalController.create({
-      component: AvatarCropperComponent,
-      componentProps: { imageFile: file },
-      cssClass: 'avatar-cropper-modal',
-    });
+    const modal = await createOverlaySafely(
+      () =>
+        this.modalController.create({
+          component: AvatarCropperComponent,
+          componentProps: { imageFile: file },
+          cssClass: 'avatar-cropper-modal',
+        }),
+      { timeoutMs: 2500 }
+    );
+    if (!modal) return;
 
     await modal.present();
 
@@ -277,11 +491,16 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   private async presentAvatarError(messageKey: string): Promise<void> {
-    const alert = await this.alertController.create({
-      header: this.translationService.instant('profile.avatar.errorTitle'),
-      message: this.translationService.instant(messageKey),
-      buttons: [this.translationService.instant('common.ok')],
-    });
+    const alert = await createOverlaySafely(
+      () =>
+        this.alertController.create({
+          header: this.translationService.instant('profile.avatar.errorTitle'),
+          message: this.translationService.instant(messageKey),
+          buttons: [this.translationService.instant('common.ok')],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!alert) return;
     await alert.present();
   }
 
@@ -301,12 +520,18 @@ export class ProfilePage implements OnInit, OnDestroy {
 
     await this.notificationService.showImmediateNotification(title, body);
 
-    const toast = await this.toastController.create({
-      message: this.translationService.instant('profile.notifications.testSent'),
-      duration: 2000,
-      color: 'success',
-      position: 'bottom',
-    });
-    await toast.present();
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message: this.translationService.instant('profile.notifications.testSent'),
+          duration: 2000,
+          color: 'success',
+          position: 'bottom',
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (toast) {
+      await toast.present();
+    }
   }
 }

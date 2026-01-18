@@ -18,6 +18,22 @@
   background: var(--gradient-info-light);
 }
 
+.text-ion-medium {
+  color: var(--ion-color-medium);
+}
+
+.text-ion-primary {
+  color: var(--ion-color-primary);
+}
+
+.text-ion-text {
+  color: var(--ion-text-color);
+}
+
+.sync-item {
+  background: var(--ion-color-light);
+}
+
 // Dark mode adjustments (class-based for manual theme toggle)
 .dark .info-banner {
   background: var(--gradient-info-dark);

@@ -90,52 +90,50 @@ describe('TipsPage', () => {
     });
   });
 
-  describe('getCategoryIcon', () => {
-    it('should map all categories to correct icons', () => {
-      const categoryIcons: Record<string, string> = {
-        glucose: 'analytics-outline',
-        nutrition: 'nutrition-outline',
-        exercise: 'fitness-outline',
-        medication: 'medical-outline',
-        wellness: 'heart-outline',
-        safety: 'shield-checkmark-outline',
+  describe('getCategoryColorClass', () => {
+    it('should map all categories to correct color classes', () => {
+      const categoryColors: Record<string, string> = {
+        glucose: 'text-primary',
+        nutrition: 'text-success',
+        exercise: 'text-warning',
+        medication: 'text-danger',
+        wellness: 'text-tertiary',
+        safety: 'text-secondary',
       };
 
-      Object.entries(categoryIcons).forEach(([category, expectedIcon]) => {
-        expect(component.getCategoryIcon(category)).toBe(expectedIcon);
+      Object.entries(categoryColors).forEach(([category, expectedClass]) => {
+        expect(component.getCategoryColorClass(category)).toBe(expectedClass);
       });
     });
 
-    it('should return default icon for invalid inputs', () => {
+    it('should return default color class for invalid inputs', () => {
       const invalidInputs = ['unknown', '', null, undefined];
       invalidInputs.forEach(input => {
-        // SAFETY: Intentionally testing invalid inputs
-        expect(component.getCategoryIcon(input as any)).toBe('information-circle-outline');
+        expect(component.getCategoryColorClass(input as any)).toBe('text-medium');
       });
     });
   });
 
-  describe('getCategoryColor', () => {
-    it('should map all categories to correct colors', () => {
-      const categoryColors: Record<string, string> = {
-        glucose: 'primary',
-        nutrition: 'success',
-        exercise: 'warning',
-        medication: 'danger',
-        wellness: 'tertiary',
-        safety: 'secondary',
+  describe('getCategoryBgClass', () => {
+    it('should map all categories to correct bg classes', () => {
+      const categoryBgs: Record<string, string> = {
+        glucose: 'bg-primary/10',
+        nutrition: 'bg-success/10',
+        exercise: 'bg-warning/10',
+        medication: 'bg-danger/10',
+        wellness: 'bg-tertiary/10',
+        safety: 'bg-secondary/10',
       };
 
-      Object.entries(categoryColors).forEach(([category, expectedColor]) => {
-        expect(component.getCategoryColor(category)).toBe(expectedColor);
+      Object.entries(categoryBgs).forEach(([category, expectedClass]) => {
+        expect(component.getCategoryBgClass(category)).toBe(expectedClass);
       });
     });
 
-    it('should return default color for invalid inputs', () => {
+    it('should return default bg class for invalid inputs', () => {
       const invalidInputs = ['unknown', '', null, undefined];
       invalidInputs.forEach(input => {
-        // SAFETY: Intentionally testing invalid inputs
-        expect(component.getCategoryColor(input as any)).toBe('medium');
+        expect(component.getCategoryBgClass(input as any)).toBe('bg-medium/10');
       });
     });
   });

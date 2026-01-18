@@ -1,12 +1,17 @@
 import { Injectable } from '@angular/core';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { AlertController } from '@ionic/angular';
+import { TranslationService } from '@services/translation.service';
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BarcodeScannerService {
-  constructor(private alertController: AlertController) {}
+  constructor(
+    private alertController: AlertController,
+    private translationService: TranslationService
+  ) {}
 
   async scan(): Promise<string | null> {
     const granted = await this.requestPermissions();
@@ -25,12 +30,16 @@ export class BarcodeScannerService {
   }
 
   private async presentPermissionsAlert(): Promise<void> {
-    const alert = await this.alertController.create({
-      header: 'Permission Denied',
-      message:
-        'Camera permission is required to scan barcodes. Please grant permission in your device settings.',
-      buttons: ['OK'],
-    });
+    const alert = await createOverlaySafely(
+      () =>
+        this.alertController.create({
+          header: this.translationService.instant('barcodeScanner.permissionDenied.title'),
+          message: this.translationService.instant('barcodeScanner.permissionDenied.message'),
+          buttons: [this.translationService.instant('common.ok')],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!alert) return;
     await alert.present();
   }
 }

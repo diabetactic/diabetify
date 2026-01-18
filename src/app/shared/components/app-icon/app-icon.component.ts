@@ -345,6 +345,13 @@ export class AppIconComponent {
     fitness: 'dumbbell',
     'paper-plane-outline': 'send',
     'paper-plane': 'send',
+    // Missing dashboard icons
+    track_changes: 'target',
+    monitoring: 'activity',
+    // Settings & Profile icons
+    'color-palette': 'palette',
+    'options-outline': 'sliders-horizontal',
+    options: 'sliders-horizontal',
   };
 
   get mappedName(): string {

@@ -819,21 +819,15 @@ describe('AppointmentService', () => {
         });
       }));
 
-    it('should return NONE state on 404 error (ApiError format)', () =>
+    it('should return NONE state when backend returns "NONE" string', () =>
       new Promise<void>((resolve, _reject) => {
-        // Simulate ApiGatewayService error structure
-        const errorResponse: ApiResponse<AppointmentQueueStateResponse> = {
-          success: false,
-          error: {
-            code: 'NOT_FOUND',
-            message: 'Not Found',
-            statusCode: 404,
-            retryable: false,
-            details: { detail: 'Appointment does not exist' },
-          },
+        // Backend now returns HTTP 200 with "NONE" string (not 404)
+        const response: ApiResponse<string> = {
+          success: true,
+          data: 'NONE',
         };
 
-        apiGateway.request.mockReturnValue(throwError(() => errorResponse));
+        apiGateway.request.mockReturnValue(of(response));
 
         service.getQueueState().subscribe({
           next: state => {
@@ -841,29 +835,6 @@ describe('AppointmentService', () => {
             resolve();
           },
           error: err => fail(`should not have errored, got: ${err}`),
-        });
-      }));
-
-    it('should return NONE state on 404 status code in ApiError', () =>
-      new Promise<void>((resolve, _reject) => {
-        const errorResponse: ApiResponse<AppointmentQueueStateResponse> = {
-          success: false,
-          error: {
-            code: 'NOT_FOUND',
-            message: 'Some other message',
-            statusCode: 404, // Key check
-            retryable: false,
-          },
-        };
-
-        apiGateway.request.mockReturnValue(throwError(() => errorResponse));
-
-        service.getQueueState().subscribe({
-          next: state => {
-            expect(state.state).toBe('NONE');
-            resolve();
-          },
-          error: () => reject(new Error('should not have errored')),
         });
       }));
 

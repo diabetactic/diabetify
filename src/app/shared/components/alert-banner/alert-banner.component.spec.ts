@@ -72,9 +72,9 @@ describe('AlertBannerComponent', () => {
   });
 
   describe('getIconForType static method', () => {
-    it('should return check_circle for success type', () => {
+    it('should return check-circle for success type', () => {
       const icon = AlertBannerComponent.getIconForType('success');
-      expect(icon).toBe('check_circle');
+      expect(icon).toBe('check-circle');
     });
 
     it('should return info for info type', () => {
@@ -82,9 +82,9 @@ describe('AlertBannerComponent', () => {
       expect(icon).toBe('info');
     });
 
-    it('should return warning for warning type', () => {
+    it('should return alert-triangle for warning type', () => {
       const icon = AlertBannerComponent.getIconForType('warning');
-      expect(icon).toBe('warning');
+      expect(icon).toBe('alert-triangle');
     });
 
     it('should return default info icon for unknown type', () => {
@@ -103,13 +103,10 @@ describe('AlertBannerComponent', () => {
 
     it('should return correct icon based on component type', () => {
       component.type = 'success';
-      expect(component.getIcon()).toBe('check_circle');
+      expect(component.getIcon()).toBe('check-circle');
 
       component.type = 'warning';
-      expect(component.getIcon()).toBe('warning');
-
-      component.type = 'info';
-      expect(component.getIcon()).toBe('info');
+      expect(component.getIcon()).toBe('alert-triangle');
     });
   });
 

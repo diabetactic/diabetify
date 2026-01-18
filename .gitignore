@@ -10,6 +10,8 @@ coverage
 junit.xml
 playwright-report
 playwright/artifacts
+playwright-report-prod-smoke
+playwright/artifacts-prod-smoke
 playwright/screenshots
 
 # Docker local state (run history, debug logs)
@@ -18,7 +20,6 @@ docker/.state/
 # Tooling caches
 .angular
 .turbo
-.netlify
 .playwright-mcp
 .aider.tags.cache.v4
 .zed
@@ -29,18 +30,30 @@ mise.local.toml
 # Codex / OpenCode local config (do not commit)
 /.codex/
 /.opencode/
+opencode.json
+GEMINI.md
+
+# Agent tooling (do not commit)
+.shared/
+conductor/
+.sisyphus/
+screenshots/
 
 # Secrets/keys
 android/release-keystore.jks
 android/keystore.properties
 
 # Ad-hoc reports/exports
-deepsource-export
 html
 SECURITY_AUDIT_REPORT.md
 WARP.md
 docs/*REPORT.md
 docs/*SUMMARY.md
+
+# Deprecated services (do not commit)
+.netlify/
+deepsource-export/
+bin/deepsource
 
 # Debugging artifacts
 snapshot*.txt

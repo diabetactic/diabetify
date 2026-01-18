@@ -113,6 +113,7 @@ import {
   Phone,
   PieChart,
   Pill,
+  Palette,
   Play,
   Plus,
   PlusCircle,
@@ -132,6 +133,7 @@ import {
   Signal,
   SkipBack,
   SkipForward,
+  SlidersHorizontal,
   Smartphone,
   Smile,
   Square,
@@ -140,6 +142,7 @@ import {
   Store,
   Sun,
   Syringe,
+  Target,
   Terminal,
   ThumbsDown,
   ThumbsUp,
@@ -163,6 +166,7 @@ import {
   Wrench,
   X,
   XCircle,
+  Zap,
 } from 'lucide-angular';
 
 export const appIcons = {
@@ -268,6 +272,7 @@ export const appIcons = {
   MoreHorizontal,
   MoreVertical,
   Navigation,
+  Palette,
   Paperclip,
   Pause,
   Phone,
@@ -292,6 +297,7 @@ export const appIcons = {
   Signal,
   SkipBack,
   SkipForward,
+  SlidersHorizontal,
   Smartphone,
   Smile,
   Square,
@@ -300,6 +306,7 @@ export const appIcons = {
   Store,
   Sun,
   Syringe,
+  Target,
   Terminal,
   ThumbsDown,
   ThumbsUp,
@@ -323,4 +330,5 @@ export const appIcons = {
   Wrench,
   X,
   XCircle,
+  Zap,
 };

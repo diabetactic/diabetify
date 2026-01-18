@@ -1,0 +1,13 @@
+node_modules
+.angular
+coverage
+playwright-report
+test-results
+reports
+
+android
+ios
+.gradle
+
+.netlify
+deepsource-export

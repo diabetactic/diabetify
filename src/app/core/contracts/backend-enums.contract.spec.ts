@@ -147,7 +147,7 @@ describe('Backend Contract: Appointment Motives', () => {
 // ============================================================================
 
 describe('Backend Contract: Queue States', () => {
-  const EXPECTED_BACKEND_STATES = ['PENDING', 'ACCEPTED', 'DENIED', 'CREATED'];
+  const EXPECTED_BACKEND_STATES = ['PENDING', 'ACCEPTED', 'DENIED', 'CREATED', 'NONE'];
 
   it('should contain all backend queue states', () => {
     expect(BACKEND_QUEUE_STATES).toHaveLength(EXPECTED_BACKEND_STATES.length);
@@ -156,20 +156,19 @@ describe('Backend Contract: Queue States', () => {
     });
   });
 
-  it('should not include frontend-only NONE state in backend states', () => {
-    expect(BACKEND_QUEUE_STATES).not.toContain('NONE');
+  it('should include NONE as a backend state (returned by backend for users with no appointment)', () => {
+    expect(BACKEND_QUEUE_STATES).toContain('NONE');
   });
 
-  it('should include NONE in ALL_QUEUE_STATES (frontend extended)', () => {
+  it('should include all states in ALL_QUEUE_STATES', () => {
     expect(ALL_QUEUE_STATES).toContain('NONE');
-    expect(ALL_QUEUE_STATES).toHaveLength(EXPECTED_BACKEND_STATES.length + 1);
+    expect(ALL_QUEUE_STATES).toHaveLength(EXPECTED_BACKEND_STATES.length);
   });
 
   it('should validate backend states with isValidBackendQueueState', () => {
     EXPECTED_BACKEND_STATES.forEach(state => {
       expect(isValidBackendQueueState(state)).toBe(true);
     });
-    expect(isValidBackendQueueState('NONE')).toBe(false);
     expect(isValidBackendQueueState('pending')).toBe(false);
   });
 });

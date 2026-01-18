@@ -67,6 +67,14 @@ export class ServiceMonitorComponent implements OnInit, OnDestroy {
     [HealthStatus.UNKNOWN]: '#9E9E9E',
   };
 
+  readonly statusColorClasses: Record<HealthStatus, string> = {
+    [HealthStatus.HEALTHY]: 'text-success',
+    [HealthStatus.DEGRADED]: 'text-warning',
+    [HealthStatus.UNHEALTHY]: 'text-error',
+    [HealthStatus.CHECKING]: 'text-info',
+    [HealthStatus.UNKNOWN]: 'text-base-content/60',
+  };
+
   readonly statusIcons = {
     [HealthStatus.HEALTHY]: 'checkmark-circle',
     [HealthStatus.DEGRADED]: 'warning',

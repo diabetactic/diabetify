@@ -372,6 +372,19 @@ export class ReadingsService implements OnDestroy {
     return this.statistics.calculateStatistics(readings, targetMin, targetMax, unit);
   }
 
+  /**
+   * Calculate statistics for a given set of readings (no DB access).
+   * Useful for UI-level "smart" fallbacks (e.g. last N readings when last 30 days is empty).
+   */
+  calculateStatistics(
+    readings: LocalGlucoseReading[],
+    targetMin = 70,
+    targetMax = 180,
+    unit: GlucoseUnit = 'mg/dL'
+  ): GlucoseStatistics {
+    return this.statistics.calculateStatistics(readings, targetMin, targetMax, unit);
+  }
+
   // ============================================================================
   // Sync Operations (Delegated)
   // ============================================================================

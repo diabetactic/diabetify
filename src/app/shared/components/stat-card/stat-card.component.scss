@@ -33,6 +33,12 @@
 
 // DaisyUI Stats Component Enhancement
 .stat {
+  background: linear-gradient(
+    135deg,
+    var(--stat-card-gradient-start, #3b82f6),
+    var(--stat-card-gradient-end, #60a5fa)
+  );
+
   @apply rounded-xl;
 
   // Ensure proper spacing and alignment for stat elements

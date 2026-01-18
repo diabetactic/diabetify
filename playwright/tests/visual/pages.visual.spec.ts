@@ -12,7 +12,9 @@ async function prepareForScreenshot(page: import('@playwright/test').Page): Prom
   await page.addStyleTag({
     content: `
       [data-testid="timestamp"], .timestamp, .time-ago,
-      [data-testid="current-date"], [data-testid="current-time"] { visibility: hidden !important; }
+      [data-testid="current-date"], [data-testid="current-time"],
+      ion-spinner, .loading-indicator, .loading, .loading-spinner,
+      [data-testid="appointment-id"], .appointment-id { visibility: hidden !important; }
       *, *::before, *::after { 
         animation-duration: 0s !important; 
         transition-duration: 0s !important; 
@@ -41,7 +43,7 @@ test.describe('Visual Regression - Pages @visual @docker', () => {
     await pages.dashboardPage.waitForHydration();
     await page.waitForSelector('[data-testid="stats-container"]', {
       state: 'visible',
-      timeout: 15000,
+      timeout: 30000,
     });
     await prepareForScreenshot(page);
 

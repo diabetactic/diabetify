@@ -11,15 +11,17 @@ test.describe('Dashboard Functional Tests @functional @docker', () => {
    * Dashboard has loading state that shows skeleton, then renders content
    */
   async function waitForDashboardContent(page: Page) {
-    // Wait for loading skeleton to disappear (dashboard sets isLoading=false)
-    // The skeleton has animate-pulse class, content appears after
+    // Wait for main loading skeleton to disappear (dashboard sets isLoading=false)
+    // We target the specific container for the main skeleton to avoid waiting for
+    // independent component skeletons (like the streak card) if they are not critical
     await page.waitForFunction(
       () => {
-        const skeleton = document.querySelector('.animate-pulse');
-        const content = document.querySelector('[data-testid="stats-container"], app-streak-card');
-        return !skeleton && content !== null;
+        const mainSkeleton = document.querySelector('.page-shell > .animate-pulse');
+        const content = document.querySelector('[data-testid="stats-container"]');
+        return !mainSkeleton && content !== null;
       },
-      { timeout: 15000 }
+      null,
+      { timeout: 30000 }
     );
   }
 

@@ -20,7 +20,9 @@ import {
 import { ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { ROUTES, ROUTE_SEGMENTS } from '@core/constants';
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { AppointmentService } from '@services/appointment.service';
+import { ReadingsSyncService } from '@services/readings-sync.service';
 import { TranslationService } from '@services/translation.service';
 import { AppointmentQueueStateResponse } from '@models/appointment.model';
 import { EnvironmentConfigService } from '@core/config/environment-config.service';
@@ -72,6 +74,7 @@ export class TabsPage implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private appointmentService: AppointmentService,
+    private syncService: ReadingsSyncService,
     private toastController: ToastController,
     private translationService: TranslationService,
     private cdr: ChangeDetectorRef
@@ -90,9 +93,32 @@ export class TabsPage implements OnInit, OnDestroy {
     if (!this.isMockMode) {
       this.loadQueueState();
     } else {
-      // Mock mode: set explicit NONE state
       this.queueState = { state: 'NONE' };
     }
+
+    this.subscribeToSyncFailures();
+  }
+
+  private subscribeToSyncFailures(): void {
+    this.syncService.syncFailure$.pipe(takeUntil(this.destroy$)).subscribe(failure => {
+      this.showSyncFailureToast(failure.error);
+    });
+  }
+
+  private async showSyncFailureToast(error: string): Promise<void> {
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message: this.translationService.instant('sync.errors.permanentFailure', { error }),
+          duration: 5000,
+          position: 'bottom',
+          color: 'danger',
+          buttons: [{ text: this.translationService.instant('common.close'), role: 'cancel' }],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
+    await toast.present();
   }
 
   /**
@@ -179,18 +205,23 @@ export class TabsPage implements OnInit, OnDestroy {
       messageKey = 'appointments.errors.denied';
     }
 
-    const toast = await this.toastController.create({
-      message: this.translationService.instant(messageKey),
-      duration: 3000,
-      position: 'bottom',
-      color: 'warning',
-      buttons: [
-        {
-          text: this.translationService.instant('common.close'),
-          role: 'cancel',
-        },
-      ],
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message: this.translationService.instant(messageKey),
+          duration: 3000,
+          position: 'bottom',
+          color: 'warning',
+          buttons: [
+            {
+              text: this.translationService.instant('common.close'),
+              role: 'cancel',
+            },
+          ],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 }

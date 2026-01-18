@@ -112,6 +112,7 @@ describe('DashboardPage', () => {
       readings$: new BehaviorSubject<LocalGlucoseReading[]>([mockReading]),
       getAllReadings: vi.fn().mockResolvedValue({ readings: [mockReading], total: 1 }),
       getStatistics: vi.fn().mockResolvedValue(mockStatistics),
+      calculateStatistics: vi.fn().mockReturnValue(mockStatistics),
       performFullSync: vi.fn().mockResolvedValue({ pushed: 0, fetched: 5, failed: 0 }),
       fetchFromBackend: vi.fn().mockResolvedValue({ fetched: 5 }),
     };
@@ -368,26 +369,26 @@ describe('DashboardPage', () => {
       component.ngOnInit();
       await new Promise(resolve => setTimeout(resolve, 50));
       component['isLoading'] = false;
-      mockReadingsService.getStatistics.mockClear();
+      mockReadingsService.calculateStatistics.mockClear();
 
       const newReading = { ...mockReading, id: 'new-reading', value: 150 };
       mockReadingsService.readings$.next([newReading]);
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      expect(mockReadingsService.getStatistics).toHaveBeenCalled();
+      expect(mockReadingsService.calculateStatistics).toHaveBeenCalled();
       expect(component.statistics).toEqual(mockStatistics);
     });
 
     it('should not recalculate statistics during initial loading', async () => {
       component.ngOnInit();
       await new Promise(resolve => setTimeout(resolve, 50));
-      mockReadingsService.getStatistics.mockClear();
+      mockReadingsService.calculateStatistics.mockClear();
       component['isLoading'] = true;
 
       mockReadingsService.readings$.next([mockReading]);
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      expect(mockReadingsService.getStatistics).not.toHaveBeenCalled();
+      expect(mockReadingsService.calculateStatistics).not.toHaveBeenCalled();
     });
   });
 
@@ -818,6 +819,81 @@ describe('DashboardPage', () => {
       const result = component.getKidFriendlyStatusMessage();
 
       expect(result).toBe('dashboard.kids.status.noData');
+    });
+  });
+
+  describe('Statistics Cards', () => {
+    it('should show placeholder values when there are no readings in the selected period', () => {
+      mockTranslationService.instant.mockClear();
+
+      component.statistics = { ...mockStatistics, totalReadings: 0, timeInRange: 0, average: 0 };
+      component.recentReadings = [{ ...mockReading, time: '2020-01-02T03:04:05.000Z' }];
+
+      expect(component.getTimeInRangeCardValue()).toBe('—');
+      expect(component.getTimeInRangeCardUnit()).toBe('');
+      component.getTimeInRangeInfoMessage();
+      expect(mockTranslationService.instant).toHaveBeenCalledWith(
+        'dashboard.detail.timeInRangeNoRecent',
+        expect.objectContaining({ lastReading: expect.any(String) })
+      );
+
+      expect(component.getAverageGlucoseCardValue()).toBe('—');
+      expect(component.getAverageGlucoseCardUnit()).toBe('');
+      component.getAverageGlucoseInfoMessage();
+      expect(mockTranslationService.instant).toHaveBeenCalledWith(
+        'dashboard.detail.avgGlucoseNoRecent',
+        expect.objectContaining({ lastReading: expect.any(String) })
+      );
+    });
+
+    it('should show normal values when statistics have readings', () => {
+      mockTranslationService.instant.mockClear();
+
+      component.statistics = {
+        ...mockStatistics,
+        totalReadings: 10,
+        timeInRange: 55,
+        average: 123,
+      };
+      component.recentReadings = [{ ...mockReading, time: new Date().toISOString() }];
+
+      expect(component.getTimeInRangeCardValue()).toBe(55);
+      expect(component.getTimeInRangeCardUnit()).toBe('%');
+      expect(component.getTimeInRangeInfoMessage()).toBe('dashboard.detail.timeInRange');
+
+      expect(component.getAverageGlucoseCardValue()).toBe(123);
+      expect(component.getAverageGlucoseCardUnit()).toBe('mg/dL');
+      expect(component.getAverageGlucoseInfoMessage()).toBe('dashboard.detail.avgGlucose');
+    });
+
+    it('should use latest readings when month statistics are empty', async () => {
+      const monthEmptyStats: GlucoseStatistics = { ...mockStatistics, totalReadings: 0 };
+      const latestStats: GlucoseStatistics = {
+        ...mockStatistics,
+        totalReadings: 10,
+        timeInRange: 62,
+      };
+
+      const latestReadings: LocalGlucoseReading[] = Array.from({ length: 10 }, (_, index) => ({
+        ...mockReading,
+        id: `reading-${index}`,
+        time: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(),
+      }));
+
+      mockReadingsService.getStatistics.mockResolvedValueOnce(monthEmptyStats);
+      mockReadingsService.getAllReadings
+        .mockResolvedValueOnce({
+          readings: latestReadings.slice(0, 5),
+          total: latestReadings.length,
+        })
+        .mockResolvedValueOnce({ readings: latestReadings, total: latestReadings.length });
+      mockReadingsService.calculateStatistics.mockReturnValueOnce(latestStats);
+
+      await (component as any).loadDashboardData();
+
+      expect(mockReadingsService.getAllReadings).toHaveBeenCalledWith(10);
+      expect(component.statistics?.timeInRange).toBe(62);
+      expect(component.getTimeInRangeInfoMessage()).toBe('dashboard.detail.timeInRangeUsingLatest');
     });
   });
 

@@ -1,8 +1,8 @@
 <ion-header>
-  <ion-toolbar class="ion-padding-top">
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button
-        defaultHref="/tabs/dashboard"
+        defaultHref="/tabs/profile"
         [text]="'common.back' | translate"
       ></ion-back-button>
     </ion-buttons>
@@ -10,62 +10,52 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <div class="page-shell max-w-3xl lg:max-w-none">
-    <!-- Page header -->
-    <div class="mb-6 text-center">
-      <app-icon name="bulb-outline" class="text-primary mb-2 text-5xl"></app-icon>
-      <p class="text-base-content/60 dark:text-base-content/80 prose">
-        {{ 'tips.subtitle' | translate }}
-      </p>
-    </div>
-
-    <!-- Tips list -->
-    <div class="space-y-4">
-      @for (tip of tips; track tip.title) {
-        <ion-card class="m-0">
-          <ion-card-content>
-            <div class="flex items-start gap-3">
-              <div
-                class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full"
-                [ngClass]="{
-                  'bg-primary-100 dark:bg-primary-900': tip.category === 'glucose',
-                  'bg-success-100 dark:bg-success-900': tip.category === 'nutrition',
-                  'bg-warning-100 dark:bg-warning-900': tip.category === 'exercise',
-                  'bg-danger-100 dark:bg-danger-900': tip.category === 'medication',
-                }"
-              >
-                <app-icon
-                  [name]="tip.icon"
-                  class="text-2xl"
-                  [color]="getCategoryColor(tip.category)"
-                ></app-icon>
-              </div>
-              <div class="prose flex-1">
-                <h3 class="mb-1 text-lg font-semibold">{{ tip.title | translate }}</h3>
-                <p class="text-base-content/60 dark:text-base-content/80 mb-0 text-sm">
-                  {{ tip.description | translate }}
-                </p>
-              </div>
-            </div>
-          </ion-card-content>
-        </ion-card>
-      }
-    </div>
-
-    <!-- Disclaimer -->
-    <div class="card bg-warning/10 dark:bg-warning/20 mt-6 shadow-sm">
-      <div class="card-body p-4">
-        <div class="flex items-start gap-2">
-          <app-icon
-            name="alert-circle-outline"
-            class="text-warning flex-shrink-0 text-xl"
-          ></app-icon>
-          <p class="text-base-content/70 dark:text-base-content/90 mb-0 text-sm">
-            {{ 'tips.disclaimer' | translate }}
-          </p>
+<ion-content class="tips-content" [fullscreen]="true">
+  <div class="page-shell flex flex-col gap-6 pb-8 pt-4">
+    <!-- Hero Section -->
+    <section class="tips-hero">
+      <div class="hero-card">
+        <div class="hero-icon-container">
+          <app-icon name="lightbulb" class="hero-icon text-white"></app-icon>
+        </div>
+        <div class="hero-info">
+          <h2 class="hero-title">{{ 'tips.title' | translate }}</h2>
+          <p class="hero-subtitle">{{ 'tips.subtitle' | translate }}</p>
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- Tips List -->
+    <section class="tips-list-section">
+      <div class="tips-grid">
+        @for (tip of tips; track tip.title) {
+          <div class="tip-card">
+            <div class="tip-icon-wrapper" [ngClass]="getCategoryBgClass(tip.category)">
+              <app-icon
+                [name]="tip.icon"
+                class="tip-icon"
+                [class]="getCategoryColorClass(tip.category)"
+              ></app-icon>
+            </div>
+            <div class="tip-content">
+              <h4 class="tip-title">{{ tip.title | translate }}</h4>
+              <p class="tip-description">
+                {{ tip.description | translate }}
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Disclaimer -->
+    <section class="disclaimer-section">
+      <div class="disclaimer-card">
+        <app-icon name="alert-circle" class="text-xl text-amber-500"></app-icon>
+        <p class="disclaimer-text">
+          {{ 'tips.disclaimer' | translate }}
+        </p>
+      </div>
+    </section>
   </div>
 </ion-content>

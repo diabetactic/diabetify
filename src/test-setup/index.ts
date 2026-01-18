@@ -419,6 +419,7 @@ vi.mock('lucide-angular', async () => {
     MoreHorizontal: mockIcon,
     MoreVertical: mockIcon,
     Navigation: mockIcon,
+    Palette: mockIcon,
     Paperclip: mockIcon,
     Pause: mockIcon,
     Phone: mockIcon,
@@ -443,6 +444,7 @@ vi.mock('lucide-angular', async () => {
     Signal: mockIcon,
     SkipBack: mockIcon,
     SkipForward: mockIcon,
+    SlidersHorizontal: mockIcon,
     Smartphone: mockIcon,
     Smile: mockIcon,
     Square: mockIcon,
@@ -451,6 +453,7 @@ vi.mock('lucide-angular', async () => {
     Store: mockIcon,
     Sun: mockIcon,
     Syringe: mockIcon,
+    Target: mockIcon,
     Terminal: mockIcon,
     ThumbsDown: mockIcon,
     ThumbsUp: mockIcon,
@@ -474,6 +477,7 @@ vi.mock('lucide-angular', async () => {
     Wrench: mockIcon,
     X: mockIcon,
     XCircle: mockIcon,
+    Zap: mockIcon,
   };
 });
 

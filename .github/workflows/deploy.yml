@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: '24'
   PNPM_VERSION: '10'
 
 jobs:
@@ -34,6 +34,9 @@ jobs:
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Build Production
         run: pnpm run build:prod
@@ -58,6 +61,9 @@ jobs:
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install chromium
@@ -86,24 +92,3 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
-
-  # Deploy to Netlify
-  deploy-netlify:
-    needs: [build, playwright-e2e]
-    if: always() && needs.build.result == 'success' && (needs.playwright-e2e.result == 'success' || needs.playwright-e2e.result == 'skipped')
-    runs-on: [self-hosted, high-mem]
-    steps:
-      - name: Download www artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: www
-          path: www/
-
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3.0
-        with:
-          publish-dir: './www'
-          production-deploy: true
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

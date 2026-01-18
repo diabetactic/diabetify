@@ -30,6 +30,7 @@ import {
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { ReadingsService } from '@services/readings.service';
 import { ProfileService } from '@services/profile.service';
 import { LoggerService } from '@services/logger.service';
@@ -340,28 +341,38 @@ export class EditReadingPage implements OnInit, OnDestroy {
   }
 
   private async showSuccessToast(): Promise<void> {
-    const toast = await this.toastController.create({
-      message:
-        this.translate.instant('readings.editReading') +
-        ' - ' +
-        this.translate.instant('addReading.toast.success'),
-      duration: 2000,
-      position: 'bottom',
-      color: 'success',
-      icon: 'checkmark-circle-outline',
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message:
+            this.translate.instant('readings.editReading') +
+            ' - ' +
+            this.translate.instant('addReading.toast.success'),
+          duration: 2000,
+          position: 'bottom',
+          color: 'success',
+          icon: 'checkmark-circle-outline',
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 
   private async showErrorToast(error: unknown): Promise<void> {
     const errorMessage = error instanceof Error ? error.message : 'Failed to update reading';
-    const toast = await this.toastController.create({
-      message: this.translate.instant('addReading.toast.error', { message: errorMessage }),
-      duration: 3000,
-      position: 'bottom',
-      color: 'danger',
-      icon: 'alert-circle-outline',
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message: this.translate.instant('addReading.toast.error', { message: errorMessage }),
+          duration: 3000,
+          position: 'bottom',
+          color: 'danger',
+          icon: 'alert-circle-outline',
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 

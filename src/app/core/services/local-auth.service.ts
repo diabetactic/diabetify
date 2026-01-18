@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError, from, of, firstValueFrom } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Preferences } from '@capacitor/preferences';
+import { Network } from '@capacitor/network';
 import { PlatformDetectorService } from '@services/platform-detector.service';
 import { LoggerService } from '@services/logger.service';
 import { TokenService } from '@services/token.service';
@@ -189,6 +190,28 @@ export class LocalAuthService {
             expiresAt: tokenState.expiresAt,
           });
         } else if (hasRefreshToken) {
+          // Check network status before attempting refresh
+          const status = await Network.getStatus();
+
+          if (!status.connected) {
+            this.logger.info(
+              'Auth',
+              'Offline mode: Access token expired but skipping refresh due to no connection',
+              { userId: user.id }
+            );
+            // OPTIMISTIC AUTH: Restore session with expired token to allow offline access
+            // The AuthInterceptor will handle refreshing automatically when connection is restored
+            const tokenState = await this.getTokenStateFromService();
+            this.authStateSubject.next({
+              isAuthenticated: true,
+              user,
+              accessToken: tokenState.accessToken,
+              refreshToken: tokenState.refreshToken,
+              expiresAt: tokenState.expiresAt,
+            });
+            return;
+          }
+
           this.logger.info('Auth', 'Token expired, attempting refresh with timeout');
           try {
             const refreshPromise = firstValueFrom(this.refreshAccessToken());
@@ -826,9 +849,10 @@ export class LocalAuthService {
 
     // HTTP status code specific messages - user-friendly error messages
     // (use !== undefined to handle status 0)
-    if (errorObj['status'] !== undefined) {
-      const status = errorObj['status'] as number;
-      switch (status) {
+    const status = errorObj['status'] ?? errorObj['statusCode'];
+    if (status !== undefined) {
+      const statusCode = status as number;
+      switch (statusCode) {
         case 401:
         case 403:
           // Both 401 and 403 during login mean invalid credentials

@@ -26,6 +26,8 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { ReadingsService } from '@services/readings.service';
 import { LoggerService } from '@services/logger.service';
 import { LocalGlucoseReading, GlucoseStatistics, GlucoseUnit } from '@models/glucose-reading.model';
@@ -76,12 +78,16 @@ export class DashboardPage implements OnInit, OnDestroy {
   private envConfig = inject(EnvironmentConfigService);
   readonly routes = ROUTES;
 
+  private readonly minStatsReadings = 10;
+
   get isMockMode(): boolean {
     return this.envConfig.isMockMode;
   }
 
   // Statistics data
   statistics: GlucoseStatistics | null = null;
+  private statisticsBasis: 'month' | 'latest' = 'month';
+  private statisticsUsedReadingsCount = 0;
 
   // Recent readings (last 5)
   recentReadings: LocalGlucoseReading[] = [];
@@ -124,9 +130,9 @@ export class DashboardPage implements OnInit, OnDestroy {
   // Icons for stat cards
   icons = {
     hba1c: 'star',
-    timeInRange: 'track_changes',
-    avgGlucose: 'favorite',
-    gmi: 'monitoring',
+    timeInRange: 'target',
+    avgGlucose: 'activity',
+    gmi: 'bar-chart-3',
   };
 
   preferredGlucoseUnit: GlucoseUnit;
@@ -194,18 +200,59 @@ export class DashboardPage implements OnInit, OnDestroy {
         this.readingsService.getAllReadings(5),
       ]);
 
-      // Update statistics if successful, keep existing on failure
-      if (statisticsResult.status === 'fulfilled') {
-        this.statistics = statisticsResult.value;
-      } else {
-        this.logger.warn('Dashboard', 'Failed to load statistics', statisticsResult.reason);
-      }
-
       // Update readings if successful, keep existing on failure
       if (readingsResult.status === 'fulfilled') {
         this.recentReadings = readingsResult.value.readings;
       } else {
         this.logger.warn('Dashboard', 'Failed to load recent readings', readingsResult.reason);
+      }
+
+      // Update statistics if successful, keep existing on failure
+      if (statisticsResult.status === 'fulfilled') {
+        const monthStats = statisticsResult.value;
+
+        // Prefer last 30 days, but ensure at least N readings are considered.
+        if (monthStats.totalReadings >= this.minStatsReadings || monthStats.totalReadings === 0) {
+          this.statistics = monthStats;
+          this.statisticsBasis = 'month';
+          this.statisticsUsedReadingsCount = monthStats.totalReadings;
+        }
+
+        if (monthStats.totalReadings > 0 && monthStats.totalReadings < this.minStatsReadings) {
+          // Too few readings in the last 30 days; fall back to latest N readings (can include older).
+          const latest = await this.readingsService.getAllReadings(this.minStatsReadings);
+          const latestReadings = latest.readings;
+          this.statistics = this.readingsService.calculateStatistics(
+            latestReadings,
+            70,
+            180,
+            this.preferredGlucoseUnit
+          );
+          this.statisticsBasis = 'latest';
+          this.statisticsUsedReadingsCount = latestReadings.length;
+        }
+
+        if (monthStats.totalReadings === 0) {
+          // If there are no readings in the last 30 days, try to show stats from the latest N readings.
+          const latest = await this.readingsService.getAllReadings(this.minStatsReadings);
+          const latestReadings = latest.readings;
+          if (latestReadings.length > 0) {
+            this.statistics = this.readingsService.calculateStatistics(
+              latestReadings,
+              70,
+              180,
+              this.preferredGlucoseUnit
+            );
+            this.statisticsBasis = 'latest';
+            this.statisticsUsedReadingsCount = latestReadings.length;
+          } else {
+            this.statistics = monthStats;
+            this.statisticsBasis = 'month';
+            this.statisticsUsedReadingsCount = 0;
+          }
+        }
+      } else {
+        this.logger.warn('Dashboard', 'Failed to load statistics', statisticsResult.reason);
       }
     } catch (error) {
       this.logger.error('Dashboard', 'Error loading dashboard data', error);
@@ -227,12 +274,31 @@ export class DashboardPage implements OnInit, OnDestroy {
         // Recalculate statistics when readings change
         if (!this.isLoading) {
           try {
-            this.statistics = await this.readingsService.getStatistics(
-              'month',
+            const now = new Date();
+            const monthStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+            const monthReadings = readings.filter(
+              r =>
+                new Date(r.time).getTime() >= monthStart.getTime() &&
+                new Date(r.time).getTime() <= now.getTime()
+            );
+
+            const shouldUseMonth =
+              monthReadings.length >= this.minStatsReadings ||
+              (monthReadings.length > 0 && readings.length === monthReadings.length);
+
+            const statsReadings = shouldUseMonth
+              ? monthReadings
+              : readings.slice(0, Math.min(this.minStatsReadings, readings.length));
+
+            this.statistics = this.readingsService.calculateStatistics(
+              statsReadings,
               70,
               180,
               this.preferredGlucoseUnit
             );
+            this.statisticsBasis = shouldUseMonth ? 'month' : 'latest';
+            this.statisticsUsedReadingsCount = statsReadings.length;
           } catch (error) {
             this.logger.warn('Dashboard', 'Failed to update statistics', error);
             // Keep existing statistics on error rather than showing stale data
@@ -340,6 +406,83 @@ export class DashboardPage implements OnInit, OnDestroy {
     return this.preferredGlucoseUnit;
   }
 
+  private get hasStatisticsData(): boolean {
+    return Boolean(this.statistics && this.statistics.totalReadings > 0);
+  }
+
+  private get latestReadingTime(): string | null {
+    return this.recentReadings[0]?.time ?? null;
+  }
+
+  private formatShortDateTime(iso: string): string {
+    const locale = this.translationService.getCurrentLanguage();
+    const date = new Date(iso);
+    const formatter = new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return formatter.format(date);
+  }
+
+  getTimeInRangeCardValue(): number | string {
+    if (!this.statistics) return '—';
+    if (this.statistics.totalReadings === 0) return '—';
+    return this.statistics.timeInRange;
+  }
+
+  getTimeInRangeCardUnit(): string {
+    return this.hasStatisticsData ? '%' : '';
+  }
+
+  getTimeInRangeInfoMessage(): string {
+    if (this.hasStatisticsData) {
+      if (this.statisticsBasis === 'latest') {
+        const latest = this.latestReadingTime;
+        return this.translationService.instant('dashboard.detail.timeInRangeUsingLatest', {
+          count: this.statisticsUsedReadingsCount,
+          lastReading: latest ? this.formatShortDateTime(latest) : '—',
+        });
+      }
+      return this.translationService.instant('dashboard.detail.timeInRange');
+    }
+
+    const latest = this.latestReadingTime;
+    return this.translationService.instant('dashboard.detail.timeInRangeNoRecent', {
+      lastReading: latest ? this.formatShortDateTime(latest) : '—',
+    });
+  }
+
+  getAverageGlucoseCardValue(): number | string {
+    if (!this.statistics) return '—';
+    if (this.statistics.totalReadings === 0) return '—';
+    return this.statistics.average;
+  }
+
+  getAverageGlucoseCardUnit(): string {
+    return this.hasStatisticsData ? this.getCurrentGlucoseUnit() : '';
+  }
+
+  getAverageGlucoseInfoMessage(): string {
+    if (this.hasStatisticsData) {
+      if (this.statisticsBasis === 'latest') {
+        const latest = this.latestReadingTime;
+        return this.translationService.instant('dashboard.detail.avgGlucoseUsingLatest', {
+          count: this.statisticsUsedReadingsCount,
+          lastReading: latest ? this.formatShortDateTime(latest) : '—',
+        });
+      }
+      return this.translationService.instant('dashboard.detail.avgGlucose');
+    }
+
+    const latest = this.latestReadingTime;
+    return this.translationService.instant('dashboard.detail.avgGlucoseNoRecent', {
+      lastReading: latest ? this.formatShortDateTime(latest) : '—',
+    });
+  }
+
   /**
    * Navigate to add reading page
    * Using ngZone.run() to ensure navigation triggers immediately on mobile
@@ -352,10 +495,15 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   async openBolusCalculator(): Promise<void> {
     const { BolusCalculatorPage } = await import('../bolus-calculator/bolus-calculator.page');
-    const modal = await this.modalController.create({
-      component: BolusCalculatorPage,
-      cssClass: 'fullscreen-modal',
-    });
+    const modal = await createOverlaySafely(
+      () =>
+        this.modalController.create({
+          component: BolusCalculatorPage,
+          cssClass: 'fullscreen-modal',
+        }),
+      { timeoutMs: 2500 }
+    );
+    if (!modal) return;
     await modal.present();
   }
 
@@ -363,18 +511,23 @@ export class DashboardPage implements OnInit, OnDestroy {
    * Show toast notification
    */
   private async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      position: 'bottom',
-      color,
-      buttons: [
-        {
-          text: this.translationService.instant('common.close'),
-          role: 'cancel',
-        },
-      ],
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message,
+          duration: 3000,
+          position: 'bottom',
+          color,
+          buttons: [
+            {
+              text: this.translationService.instant('common.close'),
+              role: 'cancel',
+            },
+          ],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 

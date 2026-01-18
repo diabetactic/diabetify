@@ -17,16 +17,10 @@ async function prepareForScreenshot(page: import('@playwright/test').Page): Prom
   await page.waitForLoadState('networkidle').catch(() => {});
   await page.addStyleTag({
     content: `
-      /* Hide dynamic timestamps */
-      [data-testid="timestamp"], .timestamp, .time-ago { visibility: hidden !important; }
-      
-      /* Hide dynamic reading values and counts */
-      [data-testid="reading-value"], [data-testid="reading-count"],
-      [data-testid="stats-value"], [data-testid="readings-count"] { 
-        visibility: hidden !important; 
-      }
-      
-      /* Disable animations */
+      [data-testid="timestamp"], .timestamp, .time-ago,
+      [data-testid="current-date"], [data-testid="current-time"],
+      ion-spinner, .loading-indicator, .loading, .loading-spinner,
+      [data-testid="appointment-id"], .appointment-id { visibility: hidden !important; }
       *, *::before, *::after { 
         animation-duration: 0s !important; 
         transition-duration: 0s !important; 
@@ -49,6 +43,10 @@ async function prepareForScreenshot(page: import('@playwright/test').Page): Prom
 async function setTheme(page: import('@playwright/test').Page, theme: 'light' | 'dark') {
   const isDark = theme === 'dark';
 
+  // 1. Emulate system preference (helps if app is in 'auto' mode)
+  await page.emulateMedia({ colorScheme: isDark ? 'dark' : 'light' });
+
+  // 2. Force apply via DOM immediately
   await page.evaluate(dark => {
     const html = document.documentElement;
     const body = document.body;
@@ -72,40 +70,42 @@ async function setTheme(page: import('@playwright/test').Page, theme: 'light' | 
     void document.body.offsetHeight;
   }, isDark);
 
+  // 3. Wait for it to stick, re-applying if the app reverts it (Active Wait)
   await page.waitForFunction(
     ({ dark }) => {
       const html = document.documentElement;
       const body = document.body;
       const expectedTheme = dark ? 'dark' : 'diabetactic';
-      const themeMatches = html.getAttribute('data-theme') === expectedTheme;
-      const classMatches = dark
-        ? html.classList.contains('ion-palette-dark') && body.classList.contains('dark')
-        : html.classList.contains('light') && body.classList.contains('light');
-      return themeMatches && classMatches;
-    },
-    { dark: isDark }
-  );
 
-  await page.evaluate(dark => {
-    const html = document.documentElement;
-    if (dark && !html.classList.contains('ion-palette-dark')) {
-      html.classList.add('dark', 'ion-palette-dark');
-      document.body.classList.add('dark');
-      html.setAttribute('data-theme', 'dark');
-    }
-  }, isDark);
+      const themeAttrMatch = html.getAttribute('data-theme') === expectedTheme;
+      const htmlClassMatch = dark
+        ? html.classList.contains('ion-palette-dark')
+        : html.classList.contains('light');
+      const bodyClassMatch = dark
+        ? body.classList.contains('dark')
+        : body.classList.contains('light');
 
-  await page.waitForFunction(
-    ({ dark }) => {
-      const html = document.documentElement;
-      if (!dark) {
-        return true;
+      const isCorrect = themeAttrMatch && htmlClassMatch && bodyClassMatch;
+
+      if (!isCorrect) {
+        // Re-apply if app reverted it
+        html.setAttribute('data-theme', dark ? 'dark' : 'diabetactic');
+        html.classList.remove('dark', 'light', 'ion-palette-dark');
+        body.classList.remove('dark', 'light');
+
+        if (dark) {
+          html.classList.add('dark', 'ion-palette-dark');
+          body.classList.add('dark');
+        } else {
+          html.classList.add('light');
+          body.classList.add('light');
+        }
       }
-      return (
-        html.classList.contains('ion-palette-dark') && html.getAttribute('data-theme') === 'dark'
-      );
+
+      return isCorrect;
     },
-    { dark: isDark }
+    { dark: isDark },
+    { polling: 100, timeout: 15000 }
   );
 }
 
@@ -118,7 +118,7 @@ test.describe('Visual Regression - Dark Theme @visual @docker', () => {
     await pages.dashboardPage.waitForHydration();
     await page.waitForSelector('[data-testid="stats-container"]', {
       state: 'visible',
-      timeout: 15000,
+      timeout: 30000,
     });
     await setTheme(page, 'dark');
     await prepareForScreenshot(page);

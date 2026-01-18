@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { AppIconComponent } from '../app-icon/app-icon.component';
 
 export type AlertType = 'success' | 'info' | 'warning';
 
@@ -18,7 +19,7 @@ export type AlertType = 'success' | 'info' | 'warning';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, AppIconComponent],
 })
 export class AlertBannerComponent {
   @Input() type: AlertType = 'info';
@@ -31,11 +32,11 @@ export class AlertBannerComponent {
   static getIconForType(type: AlertType): string {
     switch (type) {
       case 'success':
-        return 'check_circle';
+        return 'check-circle';
       case 'info':
         return 'info';
       case 'warning':
-        return 'warning';
+        return 'alert-triangle';
       default:
         return 'info';
     }

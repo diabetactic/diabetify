@@ -16,15 +16,17 @@
     <app-profile-form
       [profile]="profile"
       (editAge)="editAge()"
+      (editDiabetesInfo)="editDiabetesInfo()"
+      (editEmergencyContact)="editEmergencyContact()"
       (goToAchievements)="goToAchievements()"
+      (goToTips)="onGoToTips()"
     ></app-profile-form>
 
     <app-profile-preferences
-      [currentTheme]="currentTheme"
-      [currentLanguage]="currentLanguage"
-      [currentGlucoseUnit]="currentGlucoseUnit"
       [notificationsEnabled]="notificationsEnabled"
+      [biometricEnabled]="biometricEnabled"
       (notificationsToggle)="onNotificationsToggle($event)"
+      (biometricToggle)="onBiometricToggle($event)"
       (testNotification)="onTestNotification()"
       (goToSettings)="goToSettings()"
     ></app-profile-preferences>

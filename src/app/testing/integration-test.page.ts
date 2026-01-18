@@ -1,4 +1,10 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastController, AlertController } from '@ionic/angular';
@@ -15,10 +21,12 @@ import {
 } from '@ionic/angular/standalone';
 import { AutoTestService, TestResult } from './auto-test.service';
 import { LoggerService } from '@core/services/logger.service';
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 
 @Component({
   selector: 'app-integration-test',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     CommonModule,
@@ -377,21 +385,31 @@ export class IntegrationTestPage implements OnInit {
   }
 
   private async showToast(message: string, color = 'dark') {
-    const toast = await this.toastController.create({
-      message,
-      duration: 2000,
-      position: 'bottom',
-      color,
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message,
+          duration: 2000,
+          position: 'bottom',
+          color,
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 
   private async showAlert(header: string, message: string) {
-    const alert = await this.alertController.create({
-      header,
-      message,
-      buttons: ['OK'],
-    });
+    const alert = await createOverlaySafely(
+      () =>
+        this.alertController.create({
+          header,
+          message,
+          buttons: ['OK'],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!alert) return;
     await alert.present();
   }
 

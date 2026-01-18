@@ -2,6 +2,11 @@
   padding-bottom: 20px;
 }
 
+// Fix status bar overlap
+ion-header ion-toolbar {
+  padding-top: var(--safe-area-inset-top);
+}
+
 .doctor-avatar {
   background: var(--ion-color-primary);
   width: 100%;
@@ -12,7 +17,7 @@
   border-radius: 50%;
   color: var(--ion-color-primary-contrast);
 
-  .material-symbols-outlined {
+  app-icon {
     font-size: 28px;
   }
 }
@@ -71,7 +76,7 @@ ion-card {
 
       font-weight: 600;
 
-      .material-symbols-outlined {
+      app-icon {
         margin-right: 8px;
       }
     }
@@ -126,7 +131,7 @@ ion-card {
     margin-bottom: 12px;
     font-weight: 600;
 
-    .material-symbols-outlined {
+    app-icon {
       margin-right: 8px;
       font-size: 20px;
     }
@@ -137,7 +142,7 @@ ion-item {
   --padding-start: 0;
   --inner-padding-end: 0;
 
-  .material-symbols-outlined[slot='start'] {
+  app-icon[slot='start'] {
     margin-right: 16px;
     color: var(--ion-color-primary);
     font-size: 24px;
@@ -194,7 +199,7 @@ ion-item {
   ion-item {
     --background: transparent;
 
-    .material-symbols-outlined[slot='start'] {
+    app-icon[slot='start'] {
       color: oklch(var(--p));
     }
 

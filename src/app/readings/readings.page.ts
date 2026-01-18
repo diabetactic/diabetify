@@ -33,6 +33,8 @@ import { ModalController, ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { LocalGlucoseReading, GlucoseStatus, GlucoseUnit } from '@models/glucose-reading.model';
 import { ReadingsService } from '@services/readings.service';
 import { ProfileService } from '@services/profile.service';
@@ -50,6 +52,7 @@ import {
   GroupedReading,
   ReadingsListComponent,
 } from './components/readings-list/readings-list.component';
+import { groupReadingsByLocalDate } from './utils/readings-date-grouping';
 
 @Component({
   selector: 'app-readings',
@@ -215,48 +218,11 @@ export class ReadingsPage implements OnInit, OnDestroy {
     }
 
     this.filteredReadings = filtered;
-    this.groupedReadings = this.groupReadingsByDate(filtered);
+    this.groupedReadings = groupReadingsByLocalDate(filtered, {
+      language: this.translationService.getCurrentLanguage(),
+      translate: (key: string) => this.translationService.instant(key),
+    });
     this.cdr.markForCheck();
-  }
-
-  private groupReadingsByDate(readings: LocalGlucoseReading[]): GroupedReading[] {
-    const groups = new Map<string, LocalGlucoseReading[]>();
-    readings.forEach(reading => {
-      const dateKey = this.getDateKey(new Date(reading.time));
-      if (!groups.has(dateKey)) {
-        groups.set(dateKey, []);
-      }
-      groups.get(dateKey)?.push(reading);
-    });
-
-    const grouped: GroupedReading[] = Array.from(groups.entries()).map(([date, readings]) => ({
-      date,
-      displayDate: this.formatDateHeader(date),
-      readings: readings.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()),
-    }));
-
-    return grouped.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }
-
-  private getDateKey(date: Date): string {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
-      date.getDate()
-    ).padStart(2, '0')}`;
-  }
-
-  private formatDateHeader(dateKey: string): string {
-    const date = new Date(dateKey);
-    const todayKey = this.getDateKey(new Date());
-    const yesterdayKey = this.getDateKey(new Date(Date.now() - 864e5));
-
-    if (dateKey === todayKey) return this.translationService.instant('common.today');
-    if (dateKey === yesterdayKey) return this.translationService.instant('common.yesterday');
-
-    return date.toLocaleDateString(this.translationService.getCurrentLanguage(), {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-    });
   }
 
   openFilterModal(): void {
@@ -313,12 +279,17 @@ export class ReadingsPage implements OnInit, OnDestroy {
   async addReading(): Promise<void> {
     this.logger.info('UI', 'Add reading button clicked');
 
-    const modal = await this.modalController.create({
-      component: AddReadingPage,
-      breakpoints: [0, 0.8, 1],
-      initialBreakpoint: 0.8,
-      cssClass: 'add-reading-modal',
-    });
+    const modal = await createOverlaySafely(
+      () =>
+        this.modalController.create({
+          component: AddReadingPage,
+          breakpoints: [0, 0.8, 1],
+          initialBreakpoint: 0.8,
+          cssClass: 'add-reading-modal',
+        }),
+      { timeoutMs: 2500 }
+    );
+    if (!modal) return;
 
     await modal.present();
   }
@@ -326,15 +297,20 @@ export class ReadingsPage implements OnInit, OnDestroy {
   async editReading(reading: LocalGlucoseReading): Promise<void> {
     this.logger.info('UI', 'Edit reading button clicked', { readingId: reading.id });
 
-    const modal = await this.modalController.create({
-      component: EditReadingPage,
-      componentProps: {
-        reading,
-      },
-      breakpoints: [0, 0.8, 1],
-      initialBreakpoint: 0.8,
-      cssClass: 'edit-reading-modal',
-    });
+    const modal = await createOverlaySafely(
+      () =>
+        this.modalController.create({
+          component: EditReadingPage,
+          componentProps: {
+            reading,
+          },
+          breakpoints: [0, 0.8, 1],
+          initialBreakpoint: 0.8,
+          cssClass: 'edit-reading-modal',
+        }),
+      { timeoutMs: 2500 }
+    );
+    if (!modal) return;
 
     await modal.present();
   }
@@ -387,12 +363,17 @@ export class ReadingsPage implements OnInit, OnDestroy {
   }
 
   private async showToast(message: string, color: 'success' | 'danger'): Promise<void> {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      color,
-      position: 'bottom',
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message,
+          duration: 3000,
+          color,
+          position: 'bottom',
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 

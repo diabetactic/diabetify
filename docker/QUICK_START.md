@@ -164,7 +164,7 @@ docker-compose.yml          # Multi-service orchestration
    # Build production bundle
    ./docker/docker-helper.sh prod
 
-   # Deploy www/ directory to Netlify/Vercel/etc
+   # Deploy www/ directory to a static host
    ```
 
 ## Help

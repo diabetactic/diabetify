@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
 import { IonButton } from '@ionic/angular/standalone';
 import { Subscription } from 'rxjs';
 import { ThemeService } from '@services/theme.service';
+import { AppIconComponent } from '../app-icon/app-icon.component';
 
 @Component({
   selector: 'app-empty-state',
@@ -22,7 +23,7 @@ import { ThemeService } from '@services/theme.service';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [CommonModule, IonButton],
+  imports: [CommonModule, IonButton, AppIconComponent],
   host: {
     '[class.dark-theme]': 'isDarkMode',
   },
@@ -49,11 +50,6 @@ export class EmptyStateComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.themeSubscription?.unsubscribe();
-  }
-
-  get iconClass(): string {
-    // Use filled icons in dark mode for better visibility
-    return this.isDarkMode ? 'material-symbols-outlined filled' : 'material-symbols-outlined';
   }
 
   onCtaClick(): void {

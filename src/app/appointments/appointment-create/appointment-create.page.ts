@@ -1,4 +1,10 @@
-import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -21,6 +27,7 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, firstValueFrom } from 'rxjs';
 
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { AppointmentService } from '@services/appointment.service';
 import { CreateAppointmentRequest, AppointmentQueueState } from '@models/appointment.model';
 
@@ -34,6 +41,7 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
   templateUrl: './appointment-create.page.html',
   styleUrls: ['./appointment-create.page.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     TranslateModule,
@@ -193,19 +201,24 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
    * Show alert and redirect back
    */
   private async showBlockAlert(message: string): Promise<void> {
-    const alert = await this.alertController.create({
-      header: this.translationService.instant('appointments.queue.title'),
-      message,
-      buttons: [
-        {
-          text: 'OK',
-          handler: () => {
-            this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
-          },
-        },
-      ],
-      backdropDismiss: false,
-    });
+    const alert = await createOverlaySafely(
+      () =>
+        this.alertController.create({
+          header: this.translationService.instant('appointments.queue.title'),
+          message,
+          buttons: [
+            {
+              text: 'OK',
+              handler: () => {
+                void this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
+              },
+            },
+          ],
+          backdropDismiss: false,
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!alert) return;
     await alert.present();
   }
 
@@ -329,10 +342,16 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
     this.isSubmitting = true;
 
     // Show loading
-    const loading = await this.loadingController.create({
-      message: 'Creando cita...',
-    });
-    await loading.present();
+    const loading = await createOverlaySafely(
+      () =>
+        this.loadingController.create({
+          message: 'Creando cita...',
+        }),
+      { timeoutMs: 2000 }
+    );
+    if (loading) {
+      await loading.present();
+    }
 
     this.isLoading = true;
 
@@ -348,13 +367,13 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
         timeoutPromise,
       ]);
 
-      await loading.dismiss();
+      await loading?.dismiss();
       await this.showToast('Cita creada exitosamente', 'success');
 
       // Navigate back to appointments list
       this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
     } catch (error: unknown) {
-      await loading.dismiss();
+      await loading?.dismiss();
       this.logger.error('Appointments', 'Error creating appointment', error);
       const errorMessage =
         error instanceof Error
@@ -371,24 +390,29 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
    * Cancel and go back
    */
   async cancel() {
-    const alert = await this.alertController.create({
-      header: '¿Cancelar cita?',
-      message: '¿Estás seguro de que deseas cancelar? Se perderán los datos ingresados.',
-      buttons: [
-        {
-          text: 'No',
-          role: 'cancel',
-        },
-        {
-          text: 'Sí, cancelar',
-          role: 'destructive',
-          handler: () => {
-            this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
-          },
-        },
-      ],
-    });
+    const alert = await createOverlaySafely(
+      () =>
+        this.alertController.create({
+          header: '¿Cancelar cita?',
+          message: '¿Estás seguro de que deseas cancelar? Se perderán los datos ingresados.',
+          buttons: [
+            {
+              text: 'No',
+              role: 'cancel',
+            },
+            {
+              text: 'Sí, cancelar',
+              role: 'destructive',
+              handler: () => {
+                void this.router.navigate([ROUTES.TABS_APPOINTMENTS]);
+              },
+            },
+          ],
+        }),
+      { timeoutMs: 1500 }
+    );
 
+    if (!alert) return;
     await alert.present();
   }
 
@@ -396,12 +420,17 @@ export class AppointmentCreatePage implements OnInit, OnDestroy {
    * Show toast message
    */
   private async showToast(message: string, color: string) {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      color,
-      position: 'bottom',
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message,
+          duration: 3000,
+          color,
+          position: 'bottom',
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 

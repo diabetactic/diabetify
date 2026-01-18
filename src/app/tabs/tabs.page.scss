@@ -50,6 +50,7 @@ ion-tab-button {
   ion-label {
     font-size: 12px;
     margin-top: 2px;
+    color: inherit;
   }
 }
 
@@ -86,15 +87,6 @@ ion-fab.center-fab {
     --color: white;
     --box-shadow: var(--shadow-11);
     --border-radius: 50%;
-
-    // Material symbol sizing
-    .material-symbols-outlined {
-      font-variation-settings:
-        'FILL' 0,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 28;
-    }
 
     // Hover effect for web (enhanced by Tailwind class in HTML)
     &:hover {

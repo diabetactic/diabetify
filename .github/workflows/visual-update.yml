@@ -9,7 +9,7 @@ on:
         default: 'UI changes'
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '24'
   PNPM_VERSION: '10'
 
 jobs:
@@ -23,6 +23,9 @@ jobs:
 
       - name: Setup pnpm
         uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Build Production
         run: pnpm run build:prod

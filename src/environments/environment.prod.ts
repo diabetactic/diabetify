@@ -23,7 +23,7 @@ function getBaseUrl(mode: BackendMode): string {
     return 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
   }
 
-  // Web: use proxy to bypass CORS (Netlify redirects /api/* to Heroku)
+  // Web: use proxy to bypass CORS (deployment should proxy /api/* to the cloud gateway)
   return '/api';
 }
 

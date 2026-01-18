@@ -10,6 +10,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Network } from '@capacitor/network';
+import { PluginListenerHandle } from '@capacitor/core';
 import {
   IonHeader,
   IonToolbar,
@@ -25,9 +27,11 @@ import {
   IonCardSubtitle,
   IonCardContent,
 } from '@ionic/angular/standalone';
-import { ToastController } from '@ionic/angular';
+import { ToastController, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, firstValueFrom, interval } from 'rxjs';
+
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { AppointmentService } from '@services/appointment.service';
 import {
   Appointment,
@@ -68,7 +72,7 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class AppointmentsPage implements OnInit, OnDestroy {
+export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillLeave {
   private envConfig = inject(EnvironmentConfigService);
   appointments: Appointment[] = [];
   loading = false;
@@ -92,6 +96,10 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   resolutions: Map<number, AppointmentResolutionResponse> = new Map();
   resolutionsLoading = false;
 
+  // Network state
+  isOnline = true;
+  private networkListener?: PluginListenerHandle;
+
   /**
    * Get the current/upcoming appointment (first in list)
    */
@@ -100,9 +108,9 @@ export class AppointmentsPage implements OnInit, OnDestroy {
       return null;
     }
 
-    const state = this.queueState?.state;
-    // When there is no queue entry or it was denied, treat all appointments as "past"
-    if (!state || state === 'NONE' || state === 'DENIED') {
+    // Only show "Current Appointment" card if the appointment is fully created/completed
+    // For PENDING/ACCEPTED states, the Queue Status Panel handles the display
+    if (this.queueState?.state !== 'CREATED') {
       return null;
     }
 
@@ -110,18 +118,14 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Get past appointments (all except first)
+   * Get past appointments (all except first if current is shown)
    */
   get pastAppointments(): Appointment[] {
     if (this.appointments.length === 0) {
       return [];
     }
 
-    const state = this.queueState?.state;
-    const hasCurrent =
-      Boolean(state) && state !== 'NONE' && state !== 'DENIED' && this.appointments.length > 0;
-
-    if (hasCurrent) {
+    if (this.currentAppointment) {
       return this.appointments.length > 1 ? this.appointments.slice(1) : [];
     }
 
@@ -130,6 +134,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   }
 
   private destroy$ = new Subject<void>();
+  private pollingStop$ = new Subject<void>();
 
   constructor(
     private appointmentService: AppointmentService,
@@ -143,21 +148,61 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadAppointments();
-    this.subscribeToAppointments();
-    if (!this.envConfig.isMockMode) {
-      this.queueLoading = true;
-      this.loadQueueState();
-    } else {
-      this.queueState = { state: 'NONE' };
-      this.logger.info('Queue', 'Mock mode: queue state set to NONE');
-    }
+    this.initializeNetworkMonitoring().then(() => {
+      this.loadAppointments();
+      this.subscribeToAppointments();
+      // Initial load handled here, ensuring data is ready when view appears
+      if (!this.envConfig.isMockMode) {
+        this.queueLoading = true;
+        this.loadQueueState();
+      } else {
+        this.queueState = { state: 'NONE' };
+        this.logger.info('Queue', 'Mock mode: queue state set to NONE');
+      }
+    });
   }
 
   ngOnDestroy(): void {
     // Only need destroy$ - polling uses takeUntil(destroy$) for automatic cleanup
     this.destroy$.next();
     this.destroy$.complete();
+    this.pollingStop$.next();
+    this.pollingStop$.complete();
+    if (this.networkListener) {
+      this.networkListener.remove();
+    }
+  }
+
+  private async initializeNetworkMonitoring() {
+    const status = await Network.getStatus();
+    this.isOnline = status.connected;
+
+    this.networkListener = await Network.addListener('networkStatusChange', status => {
+      this.isOnline = status.connected;
+      this.cdr.markForCheck();
+    });
+  }
+
+  /**
+   * Ionic Lifecycle: View Will Enter
+   * Resumes polling when the user returns to this tab
+   */
+  ionViewWillEnter(): void {
+    // If state is already loaded and we should be polling, resume it
+    if (this.queueState && !this.queueLoading && !this.envConfig.isMockMode) {
+      this.startPolling();
+    } else if (!this.queueState && !this.queueLoading && !this.envConfig.isMockMode) {
+      // Reload if missing
+      this.loadQueueState();
+    }
+  }
+
+  /**
+   * Ionic Lifecycle: View Will Leave
+   * Pauses polling when the user navigates away (e.g. to another tab)
+   */
+  ionViewWillLeave(): void {
+    this.stopPolling();
   }
 
   // Track if polling is active (managed via destroy$, not manual subscription)
@@ -168,14 +213,16 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    * Uses takeUntil(destroy$) for automatic cleanup - no manual unsubscription needed
    */
   private startPolling(): void {
-    // Only poll if not already polling and in a state that can change
     if (this.isPollingActive) return;
 
     const state = this.queueState?.state;
-    if (state !== 'PENDING' && state !== 'ACCEPTED') return;
+    // Poll for PENDING (waiting for acceptance), ACCEPTED (waiting for creation),
+    // and CREATED (waiting for resolution from doctor)
+    if (state !== 'PENDING' && state !== 'ACCEPTED' && state !== 'CREATED') return;
 
     this.logger.info('Queue', 'Starting polling for queue updates', {
       interval: this.POLLING_INTERVAL_MS,
+      state,
     });
 
     this.isPollingActive = true;
@@ -183,18 +230,19 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     this.pollingErrorShown = false;
 
     interval(this.POLLING_INTERVAL_MS)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroy$), takeUntil(this.pollingStop$))
       .subscribe(() => {
         this.pollQueueState();
       });
   }
 
   /**
-   * Stop polling indicator (actual subscription is managed by destroy$)
+   * Stop polling (subscription is managed via pollingStop$ + destroy$)
    */
   private stopPolling(): void {
     if (this.isPollingActive) {
       this.isPollingActive = false;
+      this.pollingStop$.next();
       this.logger.info('Queue', 'Stopped polling for queue updates');
     }
   }
@@ -225,17 +273,16 @@ export class AppointmentsPage implements OnInit, OnDestroy {
         // Show toast notification for state change
         await this.notifyStateChange(previousState, newState.state);
 
-        // If moved to ACCEPTED, fetch position (should be undefined now, but for completeness)
-        // If moved to CREATED or DENIED, stop polling
-        if (
-          newState.state === 'CREATED' ||
-          newState.state === 'DENIED' ||
-          newState.state === 'NONE'
-        ) {
+        // Stop polling only for terminal states (DENIED, NONE)
+        // CREATED continues polling to check for resolution
+        if (newState.state === 'DENIED' || newState.state === 'NONE') {
           this.stopPolling();
         }
 
         this.cdr.markForCheck();
+      } else if (newState.state === 'CREATED') {
+        // When in CREATED state, poll for resolution
+        await this.pollForResolution();
       } else if (newState.state === 'PENDING') {
         // Update position even if state didn't change
         try {
@@ -264,6 +311,37 @@ export class AppointmentsPage implements OnInit, OnDestroy {
           'warning'
         );
       }
+    }
+  }
+
+  /**
+   * Poll for resolution on the current appointment (when in CREATED state)
+   */
+  private async pollForResolution(): Promise<void> {
+    const currentApt = this.currentAppointment;
+    if (!currentApt) return;
+
+    // Skip if we already have the resolution cached
+    if (this.resolutions.has(currentApt.appointment_id)) {
+      this.stopPolling();
+      return;
+    }
+
+    try {
+      const resolution = await firstValueFrom(
+        this.appointmentService.getResolution(currentApt.appointment_id)
+      );
+      if (resolution) {
+        this.resolutions.set(currentApt.appointment_id, resolution);
+        this.stopPolling();
+        await this.showToast(
+          this.translationService.instant('appointments.queue.messages.resolutionReady'),
+          'success'
+        );
+        this.cdr.markForCheck();
+      }
+    } catch {
+      // Resolution not ready yet - continue polling
     }
   }
 
@@ -312,6 +390,13 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    * Load appointments from the service
    */
   async loadAppointments(): Promise<void> {
+    if (!this.isOnline) {
+      this.error = this.translationService.instant('errors.offline');
+      this.loading = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.loading = true;
     this.error = null;
 
@@ -592,6 +677,11 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    * Request an appointment (submit to queue)
    */
   async onRequestAppointment(): Promise<void> {
+    if (!this.isOnline) {
+      await this.showToast(this.translationService.instant('errors.offline'), 'warning');
+      return;
+    }
+
     // Prevent multiple requests (debouncing)
     if (this.isSubmitting || this.requestingAppointment || !this.canRequestAppointment) {
       return;
@@ -653,6 +743,7 @@ export class AppointmentsPage implements OnInit, OnDestroy {
    * CREATED means they already have an appointment - cannot request again
    */
   get canRequestAppointment(): boolean {
+    if (!this.isOnline) return false;
     if (this.requestingAppointment) return false;
     return !this.queueState || this.queueState.state === 'NONE';
   }
@@ -703,12 +794,17 @@ export class AppointmentsPage implements OnInit, OnDestroy {
     message: string,
     color: 'success' | 'warning' | 'danger' = 'success'
   ): Promise<void> {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      position: 'bottom',
-      color,
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message,
+          duration: 3000,
+          position: 'bottom',
+          color,
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 
