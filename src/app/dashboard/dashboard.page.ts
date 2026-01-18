@@ -78,12 +78,16 @@ export class DashboardPage implements OnInit, OnDestroy {
   private envConfig = inject(EnvironmentConfigService);
   readonly routes = ROUTES;
 
+  private readonly minStatsReadings = 10;
+
   get isMockMode(): boolean {
     return this.envConfig.isMockMode;
   }
 
   // Statistics data
   statistics: GlucoseStatistics | null = null;
+  private statisticsBasis: 'month' | 'latest' = 'month';
+  private statisticsUsedReadingsCount = 0;
 
   // Recent readings (last 5)
   recentReadings: LocalGlucoseReading[] = [];
@@ -196,18 +200,59 @@ export class DashboardPage implements OnInit, OnDestroy {
         this.readingsService.getAllReadings(5),
       ]);
 
-      // Update statistics if successful, keep existing on failure
-      if (statisticsResult.status === 'fulfilled') {
-        this.statistics = statisticsResult.value;
-      } else {
-        this.logger.warn('Dashboard', 'Failed to load statistics', statisticsResult.reason);
-      }
-
       // Update readings if successful, keep existing on failure
       if (readingsResult.status === 'fulfilled') {
         this.recentReadings = readingsResult.value.readings;
       } else {
         this.logger.warn('Dashboard', 'Failed to load recent readings', readingsResult.reason);
+      }
+
+      // Update statistics if successful, keep existing on failure
+      if (statisticsResult.status === 'fulfilled') {
+        const monthStats = statisticsResult.value;
+
+        // Prefer last 30 days, but ensure at least N readings are considered.
+        if (monthStats.totalReadings >= this.minStatsReadings || monthStats.totalReadings === 0) {
+          this.statistics = monthStats;
+          this.statisticsBasis = 'month';
+          this.statisticsUsedReadingsCount = monthStats.totalReadings;
+        }
+
+        if (monthStats.totalReadings > 0 && monthStats.totalReadings < this.minStatsReadings) {
+          // Too few readings in the last 30 days; fall back to latest N readings (can include older).
+          const latest = await this.readingsService.getAllReadings(this.minStatsReadings);
+          const latestReadings = latest.readings;
+          this.statistics = this.readingsService.calculateStatistics(
+            latestReadings,
+            70,
+            180,
+            this.preferredGlucoseUnit
+          );
+          this.statisticsBasis = 'latest';
+          this.statisticsUsedReadingsCount = latestReadings.length;
+        }
+
+        if (monthStats.totalReadings === 0) {
+          // If there are no readings in the last 30 days, try to show stats from the latest N readings.
+          const latest = await this.readingsService.getAllReadings(this.minStatsReadings);
+          const latestReadings = latest.readings;
+          if (latestReadings.length > 0) {
+            this.statistics = this.readingsService.calculateStatistics(
+              latestReadings,
+              70,
+              180,
+              this.preferredGlucoseUnit
+            );
+            this.statisticsBasis = 'latest';
+            this.statisticsUsedReadingsCount = latestReadings.length;
+          } else {
+            this.statistics = monthStats;
+            this.statisticsBasis = 'month';
+            this.statisticsUsedReadingsCount = 0;
+          }
+        }
+      } else {
+        this.logger.warn('Dashboard', 'Failed to load statistics', statisticsResult.reason);
       }
     } catch (error) {
       this.logger.error('Dashboard', 'Error loading dashboard data', error);
@@ -229,12 +274,31 @@ export class DashboardPage implements OnInit, OnDestroy {
         // Recalculate statistics when readings change
         if (!this.isLoading) {
           try {
-            this.statistics = await this.readingsService.getStatistics(
-              'month',
+            const now = new Date();
+            const monthStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+            const monthReadings = readings.filter(
+              r =>
+                new Date(r.time).getTime() >= monthStart.getTime() &&
+                new Date(r.time).getTime() <= now.getTime()
+            );
+
+            const shouldUseMonth =
+              monthReadings.length >= this.minStatsReadings ||
+              (monthReadings.length > 0 && readings.length === monthReadings.length);
+
+            const statsReadings = shouldUseMonth
+              ? monthReadings
+              : readings.slice(0, Math.min(this.minStatsReadings, readings.length));
+
+            this.statistics = this.readingsService.calculateStatistics(
+              statsReadings,
               70,
               180,
               this.preferredGlucoseUnit
             );
+            this.statisticsBasis = shouldUseMonth ? 'month' : 'latest';
+            this.statisticsUsedReadingsCount = statsReadings.length;
           } catch (error) {
             this.logger.warn('Dashboard', 'Failed to update statistics', error);
             // Keep existing statistics on error rather than showing stale data
@@ -375,6 +439,13 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   getTimeInRangeInfoMessage(): string {
     if (this.hasStatisticsData) {
+      if (this.statisticsBasis === 'latest') {
+        const latest = this.latestReadingTime;
+        return this.translationService.instant('dashboard.detail.timeInRangeUsingLatest', {
+          count: this.statisticsUsedReadingsCount,
+          lastReading: latest ? this.formatShortDateTime(latest) : '—',
+        });
+      }
       return this.translationService.instant('dashboard.detail.timeInRange');
     }
 
@@ -396,6 +467,13 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   getAverageGlucoseInfoMessage(): string {
     if (this.hasStatisticsData) {
+      if (this.statisticsBasis === 'latest') {
+        const latest = this.latestReadingTime;
+        return this.translationService.instant('dashboard.detail.avgGlucoseUsingLatest', {
+          count: this.statisticsUsedReadingsCount,
+          lastReading: latest ? this.formatShortDateTime(latest) : '—',
+        });
+      }
       return this.translationService.instant('dashboard.detail.avgGlucose');
     }
 
