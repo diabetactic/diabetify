@@ -19,7 +19,7 @@ import { TranslateModule } from '@ngx-translate/core';
       <div class="timeline" [class.denied-flow]="isDenied">
         <!-- Progress bar (horizontal) -->
         <div class="timeline-progress-bar">
-          <div class="timeline-progress-fill" [style.width.%]="progressPercentage"></div>
+          <div class="timeline-progress-fill" [ngClass]="progressFillClass"></div>
         </div>
 
         <!-- Steps -->
@@ -72,6 +72,26 @@ import { TranslateModule } from '@ngx-translate/core';
         height: 100%;
         background-color: var(--ion-color-primary, #3880ff);
         transition: width 0.3s ease-in-out;
+      }
+
+      .timeline-progress-fill.progress-0 {
+        width: 0%;
+      }
+
+      .timeline-progress-fill.progress-33 {
+        width: 33.3333%;
+      }
+
+      .timeline-progress-fill.progress-50 {
+        width: 50%;
+      }
+
+      .timeline-progress-fill.progress-67 {
+        width: 66.6667%;
+      }
+
+      .timeline-progress-fill.progress-100 {
+        width: 100%;
       }
 
       .timeline.denied-flow .timeline-progress-fill {
@@ -296,5 +316,20 @@ export class AppointmentTimelineComponent implements OnChanges {
 
     if (this.steps.length <= 1) return 0;
     return (currentIndex / (this.steps.length - 1)) * 100;
+  }
+
+  get progressFillClass(): string {
+    const currentIndex = this.steps.indexOf(this.currentStatus);
+    if (currentIndex <= 0) return 'progress-0';
+
+    const denominator = this.steps.length - 1;
+    if (denominator <= 0) return 'progress-0';
+    if (currentIndex >= denominator) return 'progress-100';
+
+    if (denominator === 2 && currentIndex === 1) return 'progress-50';
+    if (denominator === 3 && currentIndex === 1) return 'progress-33';
+    if (denominator === 3 && currentIndex === 2) return 'progress-67';
+
+    return 'progress-0';
   }
 }

@@ -23,16 +23,14 @@ import { MockAdapterService } from '@core/services/mock-adapter.service';
 const API_BASE = 'http://localhost:8000';
 
 /**
- * Mock MockAdapterService that enables auth mock mode for tests.
- * When auth mock is enabled, LocalAuthService bypasses HTTP calls and uses internal mock data.
+ * MockAdapterService stub that disables app-level mock mode so MSW handlers are exercised.
  */
-class MockMockAdapterService {
-  isServiceMockEnabled(service: 'appointments' | 'glucoserver' | 'auth'): boolean {
-    // Enable mock mode for auth service - this causes LocalAuthService to bypass HTTP
-    return service === 'auth';
+class MockAdapterDisabled {
+  isServiceMockEnabled(_service: 'appointments' | 'glucoserver' | 'auth'): boolean {
+    return false;
   }
   isMockEnabled(): boolean {
-    return true;
+    return false;
   }
 }
 
@@ -60,8 +58,7 @@ describe('Auth Workflow Integration (MSW)', () => {
         TokenStorageService,
         LoggerService,
         ApiGatewayService,
-        // Provide mock MockAdapterService that enables auth mock mode
-        { provide: MockAdapterService, useClass: MockMockAdapterService },
+        { provide: MockAdapterService, useClass: MockAdapterDisabled },
       ],
     }).compileComponents();
 
@@ -80,25 +77,11 @@ describe('Auth Workflow Integration (MSW)', () => {
       expect(result.user).toBeDefined();
     });
 
-    // NOTE: In mock mode, LocalAuthService uses internal mock data and always succeeds login.
-    // These tests verify that the login flow completes without errors rather than testing
-    // actual credential validation, which requires a real backend.
-    it('should complete login flow with any credentials in mock mode', async () => {
-      // In mock mode, any credentials result in successful login
-      const result = await firstValueFrom(authService.login('40123456', 'anypassword', false));
+    it('should reject login with invalid credentials', async () => {
+      const result = await firstValueFrom(authService.login('40123456', 'wrongpassword', false));
 
-      // Mock mode always succeeds - this is expected behavior for local development
-      expect(result.success).toBe(true);
-      expect(result.user).toBeDefined();
-    });
-
-    it('should complete login flow for any user ID in mock mode', async () => {
-      // In mock mode, any user ID results in successful login
-      const result = await firstValueFrom(authService.login('9999', 'password', false));
-
-      // Mock mode always succeeds - this is expected behavior for local development
-      expect(result.success).toBe(true);
-      expect(result.user).toBeDefined();
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
     });
 
     it('should have access token after successful login', async () => {
@@ -143,16 +126,14 @@ describe('Auth Workflow Integration (MSW)', () => {
       // Assert: Should have user data in result
       expect(loginResult.success).toBe(true);
       expect(loginResult.user).toBeDefined();
-      // In mock mode, auth service uses internal mock data, not MSW handlers
-      expect(loginResult.user?.id).toBeDefined();
+      expect(loginResult.user?.id).toBe('40123456');
     });
 
     it('should have correct user properties in login result', async () => {
       // Act: Login
       const loginResult = await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
-      // Assert: Should have expected properties (mock data has different values)
-      // In mock mode, auth service uses internal mock data, not MSW handlers
+      // Assert: Should have expected properties
       expect(loginResult.user?.email).toBeDefined();
       expect(loginResult.user?.role).toBeDefined();
     });
@@ -187,39 +168,34 @@ describe('Auth Workflow Integration (MSW)', () => {
   });
 
   describe('Error Handling', () => {
-    // NOTE: In mock mode, LocalAuthService bypasses HTTP calls and uses internal mock data.
-    // These tests verify that the service handles various scenarios gracefully.
-
-    it('should handle login attempt and complete without crashing', async () => {
-      // Configure MSW to simulate network failure (may not be called in mock mode)
+    it('should fail login gracefully on network error', async () => {
+      // Configure MSW to simulate network failure
       server.use(
         http.post(`${API_BASE}/token`, () => {
           return HttpResponse.error();
         })
       );
 
-      // In mock mode, login will still succeed because HTTP is bypassed
       const result = await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
-      // Verify the service completed without throwing
       expect(result).toBeDefined();
-      expect(result.success).toBe(true); // Mock mode always succeeds
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
     });
 
-    it('should handle server error configuration gracefully', async () => {
-      // Configure MSW to simulate server error (may not be called in mock mode)
+    it('should fail login gracefully on server error', async () => {
+      // Configure MSW to simulate server error
       server.use(
         http.post(`${API_BASE}/token`, () => {
           return HttpResponse.json({ detail: 'Internal Server Error' }, { status: 500 });
         })
       );
 
-      // In mock mode, login will still succeed because HTTP is bypassed
       const result = await firstValueFrom(authService.login('40123456', 'thepassword', false));
 
-      // Verify the service completed without throwing
       expect(result).toBeDefined();
-      expect(result.success).toBe(true); // Mock mode always succeeds
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
     });
   });
 

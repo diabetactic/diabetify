@@ -209,6 +209,8 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
   selector: 'app-language-popover',
   standalone: true,
   imports: [TranslateModule, IonList, IonListHeader, IonLabel, IonItem, IonIcon, IonButton],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <ion-list class="m-0">
       <ion-list-header class="text-xs font-semibold uppercase">

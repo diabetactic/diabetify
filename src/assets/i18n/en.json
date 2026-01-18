@@ -1623,6 +1623,12 @@
     "viewAchievements": "View Achievements",
     "achievementsDesc": "Track your progress and earn badges"
   },
+  "barcodeScanner": {
+    "permissionDenied": {
+      "title": "Permission Denied",
+      "message": "Camera permission is required to scan barcodes. Please grant permission in your device settings."
+    }
+  },
   "widget": {
     "timeAgo": {
       "justNow": "just now",

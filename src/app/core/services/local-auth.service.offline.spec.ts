@@ -1,4 +1,3 @@
-/* eslint-disable */
 import '../../../test-setup';
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { TestBed } from '@angular/core/testing';
@@ -6,7 +5,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Preferences } from '@capacitor/preferences';
 import { Network } from '@capacitor/network';
 import { HttpClient } from '@angular/common/http';
-import { of, throwError } from 'rxjs';
+import { throwError } from 'rxjs';
 
 import { LocalAuthService, LocalAuthState, LocalUser, AccountState } from './local-auth.service';
 import { PlatformDetectorService } from './platform-detector.service';
@@ -124,8 +123,7 @@ describe('LocalAuthService - Offline Optimistic Auth', () => {
 
     // 4. Instantiate Service
     service = TestBed.inject(LocalAuthService);
-    // @ts-expect-error - access private
-    await service.initializationPromise;
+    await service.waitForInitialization();
 
     // 5. Verify State
     const state = await new Promise<LocalAuthState>(resolve => {
@@ -164,8 +162,7 @@ describe('LocalAuthService - Offline Optimistic Auth', () => {
     httpMock.post.mockReturnValue(throwError(() => new Error('Refresh Failed')));
 
     service = TestBed.inject(LocalAuthService);
-    // @ts-expect-error - access private
-    await service.initializationPromise;
+    await service.waitForInitialization();
 
     // 5. Verify it attempted refresh and cleared tokens
     expect(httpMock.post).toHaveBeenCalled(); // It SHOULD attempt refresh

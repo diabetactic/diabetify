@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -9,7 +9,6 @@ import { TranslationService } from '@services/translation.service';
 import { LoggerService } from '@services/logger.service';
 import { EnvironmentConfigService } from '@core/config/environment-config.service';
 import { AppointmentQueueStateResponse } from '@models/appointment.model';
-import { Network } from '@capacitor/network';
 
 // Mock Network plugin
 vi.mock('@capacitor/network', () => ({
@@ -155,5 +154,31 @@ describe('AppointmentsPage', () => {
       expect(component.pastAppointments.length).toBe(1);
       expect(component.pastAppointments[0]).toEqual(mockAppt2);
     });
+  });
+
+  describe('Polling Lifecycle', () => {
+    it('should stop polling when leaving the view', fakeAsync(() => {
+      // Reset any ngOnInit calls so we only count polling-driven calls
+      appointmentService.getQueueState.mockClear();
+      appointmentService.getQueuePosition.mockClear();
+
+      appointmentService.getQueueState.mockReturnValue(of({ state: 'PENDING' }));
+      appointmentService.getQueuePosition.mockReturnValue(of(0));
+
+      const pending: AppointmentQueueStateResponse = { state: 'PENDING' };
+      component.queueState = pending;
+      component.queueLoading = false;
+
+      component.ionViewWillEnter();
+
+      tick(15000);
+      const callsAfterEnter = appointmentService.getQueueState.mock.calls.length;
+      expect(callsAfterEnter).toBeGreaterThan(0);
+
+      component.ionViewWillLeave();
+
+      tick(30000);
+      expect(appointmentService.getQueueState).toHaveBeenCalledTimes(callsAfterEnter);
+    }));
   });
 });

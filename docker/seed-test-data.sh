@@ -169,7 +169,21 @@ else
 fi
 
 if [ -z "${USER_ID:-}" ]; then
-  USER_ID="1"
+  echo "❌ Failed to determine user_id for DNI $TEST_USER_DNI"
+  echo "   Response: $USER_JSON"
+  if declare -F append_jsonl >/dev/null 2>&1; then
+    append_jsonl "seed-history.jsonl" event="user_id_failed" dni="$TEST_USER_DNI" || true
+  fi
+  exit 1
+fi
+
+if ! [[ "$USER_ID" =~ ^[0-9]+$ ]]; then
+  echo "❌ Invalid user_id for DNI $TEST_USER_DNI (expected integer): $USER_ID"
+  echo "   Response: $USER_JSON"
+  if declare -F append_jsonl >/dev/null 2>&1; then
+    append_jsonl "seed-history.jsonl" event="user_id_invalid" dni="$TEST_USER_DNI" user_id="$USER_ID" || true
+  fi
+  exit 1
 fi
 
 # -----------------------------------------------------------------------------

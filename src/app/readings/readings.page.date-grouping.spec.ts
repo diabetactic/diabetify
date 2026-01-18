@@ -1,181 +1,72 @@
 /**
- * Tests for local timezone date grouping in ReadingsPage
+ * Tests for local timezone date grouping in Readings
  */
 
 // Initialize TestBed environment for Vitest
 import '../../test-setup';
 
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
-import { ToastController } from '@ionic/angular';
-import { TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
-import { ReadingsPage } from './readings.page';
-import { ReadingsService } from '@core/services/readings.service';
-import { ProfileService } from '@core/services/profile.service';
-import { TranslationService } from '@core/services/translation.service';
-import { LoggerService } from '@core/services/logger.service';
-import { LocalGlucoseReading } from '@core/models/glucose-reading.model';
+import { describe, it, expect, vi } from 'vitest';
+import type { LocalGlucoseReading } from '@models/glucose-reading.model';
+import {
+  formatReadingsDateHeader,
+  getLocalDateKey,
+  groupReadingsByLocalDate,
+} from './utils/readings-date-grouping';
 
-describe('ReadingsPage - Date Grouping', () => {
-  let component: ReadingsPage;
-  let fixture: ComponentFixture<ReadingsPage>;
-  let mockReadingsService: Mock<ReadingsService>;
-  let mockProfileService: Mock<ProfileService>;
-  let mockTranslationService: Mock<TranslationService>;
+const translate = (key: string): string => {
+  const translations: Record<string, string> = {
+    'common.today': 'Today',
+    'common.yesterday': 'Yesterday',
+  };
+  return translations[key] || key;
+};
 
-  beforeEach(async () => {
-    // Mock services
-    mockReadingsService = {
-      readings$: of([]),
-      performFullSync: vi.fn().mockResolvedValue({ fetched: 0, pushed: 0, failed: 0 }),
-    } as unknown as Mock<ReadingsService>;
+const createReading = (id: string, time: string): LocalGlucoseReading => ({
+  id,
+  type: 'smbg',
+  time,
+  value: 120,
+  units: 'mg/dL',
+  synced: false,
+});
 
-    mockProfileService = {
-      profile$: of({ preferences: { glucoseUnit: 'mg/dL' } }),
-    } as unknown as Mock<ProfileService>;
-
-    mockTranslationService = {
-      instant: vi.fn((key: string) => {
-        const translations: Record<string, string> = {
-          'common.today': 'Today',
-          'common.yesterday': 'Yesterday',
-        };
-        return translations[key] || key;
-      }),
-      getCurrentLanguage: vi.fn().mockReturnValue('en'),
-    } as unknown as Mock<TranslationService>;
-
-    const mockLogger = {
-      info: vi.fn(),
-      debug: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-    };
-
-    const mockRouter = {
-      navigate: vi.fn(),
-    };
-
-    const mockToastController = {
-      create: vi.fn().mockResolvedValue({
-        present: vi.fn(),
-      }),
-    };
-
-    await TestBed.configureTestingModule({
-      imports: [ReadingsPage, TranslateModule.forRoot()],
-      providers: [
-        { provide: ReadingsService, useValue: mockReadingsService },
-        { provide: ProfileService, useValue: mockProfileService },
-        { provide: TranslationService, useValue: mockTranslationService },
-        { provide: LoggerService, useValue: mockLogger },
-        { provide: Router, useValue: mockRouter },
-        { provide: ToastController, useValue: mockToastController },
-      ],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(ReadingsPage);
-    component = fixture.componentInstance;
-  });
-
-  describe('getDateKey - local timezone', () => {
+describe('Readings - Date Grouping', () => {
+  describe('getLocalDateKey - local timezone', () => {
     it('should use local timezone for date key generation', () => {
-      // Create a date at 11:30 PM local time
       const date = new Date(2025, 0, 15, 23, 30, 0); // January 15, 2025, 11:30 PM
-
-      // @ts-expect-error - private method access for testing
-      const dateKey = component.getDateKey(date);
-
-      // Should use local date components, not UTC
-      expect(dateKey).toBe('2025-01-15');
+      expect(getLocalDateKey(date)).toBe('2025-01-15');
     });
 
     it('should handle dates near midnight correctly', () => {
-      // Create a date at 11:59 PM local time on January 15
       const date = new Date(2025, 0, 15, 23, 59, 59);
-
-      // @ts-expect-error - private method access for testing
-      const dateKey = component.getDateKey(date);
-
-      // Should still be January 15 in local timezone
-      expect(dateKey).toBe('2025-01-15');
+      expect(getLocalDateKey(date)).toBe('2025-01-15');
     });
 
     it('should handle dates at 12:00 AM correctly', () => {
-      // Create a date at 12:00 AM local time on January 16
       const date = new Date(2025, 0, 16, 0, 0, 0);
-
-      // @ts-expect-error - private method access for testing
-      const dateKey = component.getDateKey(date);
-
-      // Should be January 16 in local timezone
-      expect(dateKey).toBe('2025-01-16');
+      expect(getLocalDateKey(date)).toBe('2025-01-16');
     });
 
     it('should pad single-digit months and days with zero', () => {
-      // Create a date on January 5 (single-digit month and day)
-      const date = new Date(2025, 0, 5, 12, 0, 0); // January 5, 2025
-
-      // @ts-expect-error - private method access for testing
-      const dateKey = component.getDateKey(date);
-
-      expect(dateKey).toBe('2025-01-05');
+      const date = new Date(2025, 0, 5, 12, 0, 0);
+      expect(getLocalDateKey(date)).toBe('2025-01-05');
     });
 
     it('should handle dates in different timezones consistently', () => {
-      // Create a date that might have different UTC vs local dates
-      // e.g., 1 AM on Jan 16 in UTC-5 is still Jan 15, 8 PM local
-      const date = new Date(2025, 0, 15, 20, 0, 0); // January 15, 8 PM local
-
-      // @ts-expect-error - private method access for testing
-      const dateKey = component.getDateKey(date);
-
-      // Should use local date (Jan 15), not UTC date
-      expect(dateKey).toBe('2025-01-15');
+      const date = new Date(2025, 0, 15, 20, 0, 0);
+      expect(getLocalDateKey(date)).toBe('2025-01-15');
     });
   });
 
-  describe('groupReadingsByDate - local timezone grouping', () => {
+  describe('groupReadingsByLocalDate - local timezone grouping', () => {
     it('should group readings by local date, not UTC date', () => {
-      // Create readings that span midnight in UTC but are same day locally
       const readings: LocalGlucoseReading[] = [
-        {
-          id: '1',
-          localId: '1',
-          time: new Date(2025, 0, 15, 22, 0, 0).toISOString(), // Jan 15, 10 PM local
-          value: 120,
-          units: 'mg/dL',
-          type: 'smbg',
-          subType: 'manual',
-          deviceId: 'test',
-          userId: 'user1',
-          synced: false,
-          localStoredAt: new Date().toISOString(),
-          isLocalOnly: false,
-          status: 'normal',
-        },
-        {
-          id: '2',
-          localId: '2',
-          time: new Date(2025, 0, 15, 23, 30, 0).toISOString(), // Jan 15, 11:30 PM local
-          value: 130,
-          units: 'mg/dL',
-          type: 'smbg',
-          subType: 'manual',
-          deviceId: 'test',
-          userId: 'user1',
-          synced: false,
-          localStoredAt: new Date().toISOString(),
-          isLocalOnly: false,
-          status: 'normal',
-        },
+        createReading('1', new Date(2025, 0, 15, 22, 0, 0).toISOString()),
+        createReading('2', new Date(2025, 0, 15, 23, 30, 0).toISOString()),
       ];
 
-      // @ts-expect-error - private method access for testing
-      const grouped = component.groupReadingsByDate(readings);
+      const grouped = groupReadingsByLocalDate(readings, { language: 'en', translate });
 
-      // Both readings should be in the same group (same local date)
       expect(grouped.length).toBe(1);
       expect(grouped[0].date).toBe('2025-01-15');
       expect(grouped[0].readings.length).toBe(2);
@@ -183,68 +74,33 @@ describe('ReadingsPage - Date Grouping', () => {
 
     it('should separate readings on different local dates', () => {
       const readings: LocalGlucoseReading[] = [
-        {
-          id: '1',
-          localId: '1',
-          time: new Date(2025, 0, 15, 23, 59, 0).toISOString(), // Jan 15, 11:59 PM
-          value: 120,
-          units: 'mg/dL',
-          type: 'smbg',
-          subType: 'manual',
-          deviceId: 'test',
-          userId: 'user1',
-          synced: false,
-          localStoredAt: new Date().toISOString(),
-          isLocalOnly: false,
-          status: 'normal',
-        },
-        {
-          id: '2',
-          localId: '2',
-          time: new Date(2025, 0, 16, 0, 1, 0).toISOString(), // Jan 16, 12:01 AM
-          value: 130,
-          units: 'mg/dL',
-          type: 'smbg',
-          subType: 'manual',
-          deviceId: 'test',
-          userId: 'user1',
-          synced: false,
-          localStoredAt: new Date().toISOString(),
-          isLocalOnly: false,
-          status: 'normal',
-        },
+        createReading('1', new Date(2025, 0, 15, 23, 59, 0).toISOString()),
+        createReading('2', new Date(2025, 0, 16, 0, 1, 0).toISOString()),
       ];
 
-      // @ts-expect-error - private method access for testing
-      const grouped = component.groupReadingsByDate(readings);
+      const grouped = groupReadingsByLocalDate(readings, { language: 'en', translate });
 
-      // Should be in separate groups (different local dates)
       expect(grouped.length).toBe(2);
       expect(grouped[0].date).toBe('2025-01-16'); // Newest first
       expect(grouped[1].date).toBe('2025-01-15');
     });
   });
 
-  describe('formatDateHeader - local timezone comparison', () => {
+  describe('formatReadingsDateHeader - local timezone comparison', () => {
     it('should correctly identify "Today" using local date', () => {
       const now = new Date();
-      // @ts-expect-error - private method access for testing
-      const todayKey = component.getDateKey(now);
-
-      // @ts-expect-error - private method access for testing
-      const formatted = component.formatDateHeader(todayKey);
-
+      const todayKey = getLocalDateKey(now);
+      const formatted = formatReadingsDateHeader(todayKey, { language: 'en', translate, now });
       expect(formatted).toBe('Today');
     });
 
     it('should correctly identify "Yesterday" using local date', () => {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      // @ts-expect-error - private method access for testing
-      const yesterdayKey = component.getDateKey(yesterday);
+      const now = new Date();
+      const yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
 
-      // @ts-expect-error - private method access for testing
-      const formatted = component.formatDateHeader(yesterdayKey);
+      const yesterdayKey = getLocalDateKey(yesterday);
+      const formatted = formatReadingsDateHeader(yesterdayKey, { language: 'en', translate, now });
 
       expect(formatted).toBe('Yesterday');
     });
@@ -252,49 +108,37 @@ describe('ReadingsPage - Date Grouping', () => {
     it('should format other dates using local date', () => {
       const dateKey = '2025-01-15';
 
-      // Mock toLocaleDateString
       const originalToLocaleDateString = Date.prototype.toLocaleDateString;
       Date.prototype.toLocaleDateString = vi.fn(() => 'Wednesday, January 15');
 
-      // @ts-expect-error - private method access for testing
-      const formatted = component.formatDateHeader(dateKey);
+      const formatted = formatReadingsDateHeader(dateKey, {
+        language: 'en',
+        translate,
+        now: new Date(2025, 0, 20),
+      });
 
       expect(formatted).toBe('Wednesday, January 15');
 
-      // Restore original
       Date.prototype.toLocaleDateString = originalToLocaleDateString;
     });
   });
 
   describe('timezone edge cases', () => {
     it('should handle readings from users in different timezones', () => {
-      // Reading stored in UTC but should be grouped by local timezone
       const utcDate = new Date('2025-01-16T02:00:00.000Z'); // 2 AM UTC
-      // In UTC-5 (EST), this is Jan 15, 9 PM
-      // In UTC+1 (CET), this is Jan 16, 3 AM
 
       const reading: LocalGlucoseReading = {
         id: '1',
-        localId: '1',
+        type: 'smbg',
         time: utcDate.toISOString(),
         value: 120,
         units: 'mg/dL',
-        type: 'smbg',
-        subType: 'manual',
-        deviceId: 'test',
-        userId: 'user1',
         synced: false,
-        localStoredAt: new Date().toISOString(),
-        isLocalOnly: false,
-        status: 'normal',
       };
 
-      // Should use local date for grouping
       const date = new Date(reading.time);
-      // @ts-expect-error - private method access for testing
-      const dateKey = component.getDateKey(date);
+      const dateKey = getLocalDateKey(date);
 
-      // The date key should match the local date, not UTC date
       const expectedYear = date.getFullYear();
       const expectedMonth = String(date.getMonth() + 1).padStart(2, '0');
       const expectedDay = String(date.getDate()).padStart(2, '0');

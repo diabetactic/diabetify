@@ -132,6 +132,7 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
   }
 
   private destroy$ = new Subject<void>();
+  private pollingStop$ = new Subject<void>();
 
   constructor(
     private appointmentService: AppointmentService,
@@ -163,6 +164,8 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
     // Only need destroy$ - polling uses takeUntil(destroy$) for automatic cleanup
     this.destroy$.next();
     this.destroy$.complete();
+    this.pollingStop$.next();
+    this.pollingStop$.complete();
     if (this.networkListener) {
       this.networkListener.remove();
     }
@@ -225,18 +228,19 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
     this.pollingErrorShown = false;
 
     interval(this.POLLING_INTERVAL_MS)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroy$), takeUntil(this.pollingStop$))
       .subscribe(() => {
         this.pollQueueState();
       });
   }
 
   /**
-   * Stop polling indicator (actual subscription is managed by destroy$)
+   * Stop polling (subscription is managed via pollingStop$ + destroy$)
    */
   private stopPolling(): void {
     if (this.isPollingActive) {
       this.isPollingActive = false;
+      this.pollingStop$.next();
       this.logger.info('Queue', 'Stopped polling for queue updates');
     }
   }

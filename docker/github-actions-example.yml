@@ -264,7 +264,7 @@ jobs:
 #
 # To customize:
 # - Add deployment steps in build-prod job
-# - Add Netlify/Vercel deployment
+# - Add a static hosting deployment (optional)
 # - Add Docker Hub push for sharing images
 # - Add security scanning (Snyk, Trivy)
 # =============================================================================

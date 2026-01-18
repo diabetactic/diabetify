@@ -15,11 +15,13 @@ import { TestBed } from '@angular/core/testing';
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { AlertController } from '@ionic/angular';
 import { BarcodeScannerService } from '@services/barcode-scanner.service';
+import { TranslationService } from '@services/translation.service';
 import type { Mock } from 'vitest';
 
 describe('BarcodeScannerService', () => {
   let service: BarcodeScannerService;
   let alertController: AlertController;
+  let translationService: { instant: Mock };
   let mockAlertElement: {
     present: Mock;
     dismiss: Mock;
@@ -37,11 +39,19 @@ describe('BarcodeScannerService', () => {
     };
 
     TestBed.configureTestingModule({
-      providers: [BarcodeScannerService, AlertController],
+      providers: [
+        BarcodeScannerService,
+        AlertController,
+        {
+          provide: TranslationService,
+          useValue: { instant: vi.fn((key: string) => key) },
+        },
+      ],
     });
 
     service = TestBed.inject(BarcodeScannerService);
     alertController = TestBed.inject(AlertController);
+    translationService = TestBed.inject(TranslationService) as unknown as { instant: Mock };
 
     // Reset all mocks before each test
     vi.clearAllMocks();
@@ -139,11 +149,17 @@ describe('BarcodeScannerService', () => {
 
         expect(result).toBeNull();
         expect(BarcodeScanner.scan).not.toHaveBeenCalled();
+        expect(translationService.instant).toHaveBeenCalledWith(
+          'barcodeScanner.permissionDenied.title'
+        );
+        expect(translationService.instant).toHaveBeenCalledWith(
+          'barcodeScanner.permissionDenied.message'
+        );
+        expect(translationService.instant).toHaveBeenCalledWith('common.ok');
         expect(alertController.create).toHaveBeenCalledWith({
-          header: 'Permission Denied',
-          message:
-            'Camera permission is required to scan barcodes. Please grant permission in your device settings.',
-          buttons: ['OK'],
+          header: 'barcodeScanner.permissionDenied.title',
+          message: 'barcodeScanner.permissionDenied.message',
+          buttons: ['common.ok'],
         });
         expect(mockAlertElement.present).toHaveBeenCalled();
       });

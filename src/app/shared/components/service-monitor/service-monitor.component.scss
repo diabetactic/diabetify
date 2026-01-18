@@ -11,6 +11,10 @@ ion-card {
   border-radius: 1rem;
 }
 
+.service-monitor-content {
+  --background: var(--color-base-200);
+}
+
 // Modal card overrides (prevent hover effects in modal)
 ion-modal {
   ion-card {

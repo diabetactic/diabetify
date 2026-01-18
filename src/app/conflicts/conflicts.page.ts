@@ -1,4 +1,10 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
@@ -11,20 +17,25 @@ import { ReadingsService } from '@services/readings.service';
   templateUrl: './conflicts.page.html',
   styleUrls: ['./conflicts.page.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [CommonModule, IonicModule, TranslateModule, SyncConflictComponent],
 })
 export class ConflictsPage implements OnInit {
   conflicts: SyncConflictItem[] = [];
 
-  constructor(private readingsService: ReadingsService) {}
+  constructor(
+    private readingsService: ReadingsService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-  ngOnInit() {
-    this.loadConflicts();
+  ngOnInit(): void {
+    void this.loadConflicts();
   }
 
   async loadConflicts() {
     this.conflicts = await db.conflicts.where('status').equals('pending').toArray();
+    this.cdr.markForCheck();
   }
 
   async resolveConflict(event: {
@@ -32,6 +43,6 @@ export class ConflictsPage implements OnInit {
     resolution: 'keep-mine' | 'keep-server' | 'keep-both';
   }) {
     await this.readingsService.resolveConflict(event.conflict, event.resolution);
-    this.loadConflicts();
+    await this.loadConflicts();
   }
 }

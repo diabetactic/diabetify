@@ -226,7 +226,7 @@ export class ProfilePage implements OnInit, OnDestroy {
         this.biometricEnabled = false;
         localStorage.setItem('biometric_enabled', 'false');
       }
-    } catch (error) {
+    } catch {
       this.biometricEnabled = !enabled; // Revert state
       if (toggle) toggle.checked = !enabled;
 

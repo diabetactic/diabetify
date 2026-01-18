@@ -71,6 +71,14 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
         const status = this.extractErrorStatus(error);
 
         if (status === 401) {
+          // IMPORTANT: Never try to refresh tokens when the failing request is itself a token request.
+          // Otherwise we can end up in an infinite refresh loop (login/refresh failing -> interceptor refresh -> same call -> ...).
+          if (this.isTokenEndpointRequest(request)) {
+            this.logger.debug('AuthInterceptor', '401 on token endpoint - skipping refresh logic', {
+              url: request.url,
+            });
+            return throwError(() => error);
+          }
           this.logger.debug('AuthInterceptor', '401 Unauthorized - attempting token refresh');
           return this.handle401Error(request, next);
         }
@@ -79,6 +87,18 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
         }
         return throwError(() => error);
       })
+    );
+  }
+
+  private isTokenEndpointRequest(request: HttpRequest<unknown>): boolean {
+    const urlWithoutQuery = request.url.split('?')[0] ?? request.url;
+    const normalized = urlWithoutQuery.replace(/\/+$/, '');
+
+    return (
+      normalized.endsWith('/token') ||
+      normalized.endsWith('/token/revoke') ||
+      // Tidepool / OAuth token endpoints should also be excluded
+      normalized.includes('/protocol/openid-connect/token')
     );
   }
 

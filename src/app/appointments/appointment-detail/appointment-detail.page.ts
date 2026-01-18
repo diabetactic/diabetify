@@ -1,4 +1,10 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -34,6 +40,7 @@ import { AppointmentTimelineComponent } from 'src/app/appointments/appointment-t
   templateUrl: './appointment-detail.page.html',
   styleUrls: ['./appointment-detail.page.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     TranslateModule,
@@ -114,7 +121,8 @@ export class AppointmentDetailPage implements OnInit {
       this.resolution = await firstValueFrom(this.appointmentService.getResolution(id));
       this.logger.info('UI', 'Resolution loaded', {
         appointmentId: id,
-        resolution: this.resolution,
+        resolvedAt: this.resolution?.resolved_at ?? null,
+        resolvedBy: this.resolution?.resolved_by ?? null,
       });
     } catch (error: unknown) {
       const errorMsg = ((error as Error)?.message || '').toLowerCase();

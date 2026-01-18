@@ -22,13 +22,7 @@
     <ion-ripple-effect></ion-ripple-effect>
   }
 
-  <div
-    class="stat h-full p-4"
-    [ngClass]="gradientClass"
-    [style.background]="
-      'linear-gradient(135deg, ' + gradientColors[0] + ', ' + gradientColors[1] + ')'
-    "
-  >
+  <div class="stat h-full p-4" [ngClass]="gradientClass">
     <!-- Loading State -->
     @if (loading) {
       <div class="flex flex-col gap-2">

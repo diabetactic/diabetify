@@ -1624,6 +1624,12 @@
     "viewAchievements": "Ver Logros",
     "achievementsDesc": "Sigue tu progreso y gana insignias"
   },
+  "barcodeScanner": {
+    "permissionDenied": {
+      "title": "Permiso denegado",
+      "message": "Se requiere permiso de cámara para escanear códigos de barras. Por favor otorga permiso en la configuración de tu dispositivo."
+    }
+  },
   "widget": {
     "timeAgo": {
       "justNow": "ahora",

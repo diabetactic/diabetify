@@ -17,8 +17,19 @@ import { LocalAuthService } from '@core/services/local-auth.service';
 import { TokenStorageService } from '@core/services/token-storage.service';
 import { LoggerService } from '@core/services/logger.service';
 import { ApiGatewayService } from '@core/services/api-gateway.service';
+import { MockAdapterService } from '@core/services/mock-adapter.service';
 
 const API_BASE = 'http://localhost:8000';
+
+class MockAdapterDisabled {
+  isServiceMockEnabled(_service: 'appointments' | 'glucoserver' | 'auth'): boolean {
+    return false;
+  }
+
+  isMockEnabled(): boolean {
+    return false;
+  }
+}
 
 describe('Token Refresh Integration (MSW)', () => {
   let authService: LocalAuthService;
@@ -45,12 +56,35 @@ describe('Token Refresh Integration (MSW)', () => {
         TokenStorageService,
         LoggerService,
         ApiGatewayService,
+        { provide: MockAdapterService, useClass: MockAdapterDisabled },
       ],
     }).compileComponents();
 
     authService = TestBed.inject(LocalAuthService);
     tokenStorage = TestBed.inject(TokenStorageService);
     httpClient = TestBed.inject(HttpClient);
+  });
+
+  describe('MSW Wiring', () => {
+    it('should hit MSW /token endpoint during login (not MockAdapter)', async () => {
+      const requestUrls: string[] = [];
+
+      const onRequestStart = (event: { request: Request }) => {
+        requestUrls.push(event.request.url);
+      };
+
+      server.events.on('request:start', onRequestStart);
+      try {
+        const loginResult = await firstValueFrom(
+          authService.login('40123456', 'thepassword', false)
+        );
+        expect(loginResult.success).toBe(true);
+      } finally {
+        server.events.removeListener('request:start', onRequestStart);
+      }
+
+      expect(requestUrls.some(url => url.endsWith('/token'))).toBe(true);
+    });
   });
 
   describe('Token Expiration Detection', () => {
@@ -107,7 +141,12 @@ describe('Token Refresh Integration (MSW)', () => {
       // Mock successful refresh
       let _refreshCalled = false;
       server.use(
-        http.post(`${API_BASE}/token/refresh`, async () => {
+        http.post(`${API_BASE}/token`, async ({ request }) => {
+          const body = await request.text();
+          if (!body.includes('grant_type=refresh_token')) {
+            return HttpResponse.json({ detail: 'Unexpected token request' }, { status: 400 });
+          }
+
           _refreshCalled = true;
           await delay(50);
           return HttpResponse.json({
@@ -146,7 +185,12 @@ describe('Token Refresh Integration (MSW)', () => {
 
       // Mock refresh failure
       server.use(
-        http.post(`${API_BASE}/token/refresh`, () => {
+        http.post(`${API_BASE}/token`, async ({ request }) => {
+          const body = await request.text();
+          if (!body.includes('grant_type=refresh_token')) {
+            return HttpResponse.json({ detail: 'Unexpected token request' }, { status: 400 });
+          }
+
           return HttpResponse.json({ detail: 'Refresh token expired' }, { status: 401 });
         })
       );
@@ -238,7 +282,12 @@ describe('Token Refresh Integration (MSW)', () => {
 
       let _refreshCallCount = 0;
       server.use(
-        http.post(`${API_BASE}/token/refresh`, async () => {
+        http.post(`${API_BASE}/token`, async ({ request }) => {
+          const body = await request.text();
+          if (!body.includes('grant_type=refresh_token')) {
+            return HttpResponse.json({ detail: 'Unexpected token request' }, { status: 400 });
+          }
+
           _refreshCallCount++;
           await delay(200); // Simulate slow refresh
           return HttpResponse.json({

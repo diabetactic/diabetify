@@ -1,4 +1,10 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import {
@@ -28,6 +34,7 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
   templateUrl: './profile-edit.component.html',
   styleUrls: ['./profile-edit.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     TranslateModule,
@@ -57,10 +64,11 @@ export class ProfileEditComponent implements OnInit {
     private profileService: ProfileService,
     private toastController: ToastController,
     private loadingController: LoadingController,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private cdr: ChangeDetectorRef
   ) {}
 
-  async ngOnInit() {
+  async ngOnInit(): Promise<void> {
     // Load current profile
     this.profile = await this.profileService.getProfile();
 
@@ -70,6 +78,8 @@ export class ProfileEditComponent implements OnInit {
       surname: ['', [Validators.minLength(2)]],
       email: [this.profile?.email || '', [Validators.required, Validators.email]],
     });
+
+    this.cdr.markForCheck();
   }
 
   /**

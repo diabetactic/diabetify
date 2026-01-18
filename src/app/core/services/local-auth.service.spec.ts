@@ -1,4 +1,3 @@
-/* eslint-disable */
 // Initialize TestBed environment for Vitest
 import '../../../test-setup';
 
@@ -155,8 +154,7 @@ describe('LocalAuthService', () => {
     service = TestBed.inject(LocalAuthService);
 
     // Wait for initialization to complete
-    // @ts-expect-error - private property access for testing
-    await service.initializationPromise;
+    await service.waitForInitialization();
   });
 
   afterEach(() => {
@@ -211,8 +209,7 @@ describe('LocalAuthService', () => {
         testEnvConfig as unknown as EnvironmentConfigService
       );
 
-      // @ts-expect-error - private property access for testing
-      await newService.initializationPromise;
+      await newService.waitForInitialization();
 
       const state = await new Promise<LocalAuthState>(resolve => {
         newService.authState$.subscribe(s => resolve(s));
@@ -311,15 +308,9 @@ describe('LocalAuthService', () => {
 
   describe('logout', () => {
     beforeEach(async () => {
-      // Setup authenticated state
-      // @ts-expect-error - private property access for testing
-      service.authStateSubject.next({
-        isAuthenticated: true,
-        user: mockUser,
-        accessToken: 'test-token',
-        refreshToken: 'test-refresh',
-        expiresAt: Date.now() + 3600000,
-      });
+      // Setup authenticated state via public API (avoid private state mutation)
+      mockAdapter.isServiceMockEnabled.mockReturnValue(true);
+      await firstValueFrom(service.login('any@email.com', 'anypassword', true));
     });
 
     it('should clear state and storage', async () => {
@@ -363,29 +354,29 @@ describe('LocalAuthService', () => {
   describe('refreshAccessToken', () => {
     it('should refresh token when refresh token exists', () =>
       new Promise<void>(resolve => {
+        mockAdapter.isServiceMockEnabled.mockReturnValue(true);
         tokenService.getRefreshToken.mockResolvedValueOnce('stored-refresh-token');
 
         (httpMock.post as Mock).mockReturnValueOnce(
           of({
             access_token: 'new-access-token',
+            refresh_token: 'stored-refresh-token',
             token_type: 'bearer',
+            expires_in: 3600,
           })
         );
 
-        // @ts-expect-error - private property access for testing
-        service.authStateSubject.next({
-          isAuthenticated: true,
-          user: mockUser,
-          accessToken: 'old-token',
-          refreshToken: 'stored-refresh-token',
-          expiresAt: Date.now() - 1000,
-        });
-
-        service.refreshAccessToken().subscribe(state => {
-          expect(state.accessToken).toBe('new-access-token');
-          expect(state.isAuthenticated).toBe(true);
-          expect(tokenService.setTokens).toHaveBeenCalled();
-          resolve();
+        service.login('any@email.com', 'anypassword', false).subscribe(() => {
+          service.refreshAccessToken().subscribe(state => {
+            expect(state.accessToken).toBe('new-access-token');
+            expect(state.isAuthenticated).toBe(true);
+            expect(tokenService.setTokens).toHaveBeenCalledWith(
+              'new-access-token',
+              'stored-refresh-token',
+              3600
+            );
+            resolve();
+          });
         });
       }));
 
@@ -447,31 +438,20 @@ describe('LocalAuthService', () => {
 
   describe('getAccessToken', () => {
     it('should return token when authenticated or null when not', async () => {
-      // Test authenticated
-      // @ts-expect-error - private property access for testing
-      service.authStateSubject.next({
-        isAuthenticated: true,
-        user: mockUser,
-        accessToken: 'current-token',
-        refreshToken: null,
-        expiresAt: Date.now() + 3600000,
-      });
+      // Before login
+      const tokenBefore = await service.getAccessToken();
+      expect(tokenBefore).toBeNull();
 
-      const token1 = await service.getAccessToken();
-      expect(token1).toBe('current-token');
+      // After login (mock mode)
+      mockAdapter.isServiceMockEnabled.mockReturnValue(true);
+      await firstValueFrom(service.login('any@email.com', 'anypassword', false));
+      const tokenAfterLogin = await service.getAccessToken();
+      expect(tokenAfterLogin).toBe('demo_access_token');
 
-      // Test not authenticated
-      // @ts-expect-error - private property access for testing
-      service.authStateSubject.next({
-        isAuthenticated: false,
-        user: null,
-        accessToken: null,
-        refreshToken: null,
-        expiresAt: null,
-      });
-
-      const token2 = await service.getAccessToken();
-      expect(token2).toBeNull();
+      // After logout
+      await service.logout();
+      const tokenAfterLogout = await service.getAccessToken();
+      expect(tokenAfterLogout).toBeNull();
     });
   });
 
@@ -482,23 +462,15 @@ describe('LocalAuthService', () => {
 
         const sub = service.authState$.subscribe(state => {
           states.push(state);
-          if (states.length === 2) {
+          if (states.some(s => s.isAuthenticated)) {
             expect(states[0].isAuthenticated).toBe(false);
-            expect(states[1].isAuthenticated).toBe(true);
             sub.unsubscribe();
             resolve();
           }
         });
 
-        // Trigger state change
-        // @ts-expect-error - private property access for testing
-        service.authStateSubject.next({
-          isAuthenticated: true,
-          user: mockUser,
-          accessToken: 'test-token',
-          refreshToken: null,
-          expiresAt: null,
-        });
+        mockAdapter.isServiceMockEnabled.mockReturnValue(true);
+        service.login('any@email.com', 'anypassword', false).subscribe();
       }));
   });
 
@@ -699,50 +671,20 @@ describe('LocalAuthService', () => {
 
   describe('isAuthenticated observable', () => {
     it('should emit correct auth status based on state and token', async () => {
-      // Test not authenticated
-      // @ts-expect-error - private property access for testing
-      service.authStateSubject.next({
-        isAuthenticated: false,
-        user: null,
-        accessToken: null,
-        refreshToken: null,
-        expiresAt: null,
-      });
+      // Not authenticated by default
+      const isAuthBefore = await firstValueFrom(service.isAuthenticated());
+      expect(isAuthBefore).toBe(false);
 
-      const isAuth1 = await new Promise<boolean>(resolve => {
-        service.isAuthenticated().subscribe(isAuth => resolve(isAuth));
-      });
-      expect(isAuth1).toBe(false);
+      // Authenticated after login
+      mockAdapter.isServiceMockEnabled.mockReturnValue(true);
+      await firstValueFrom(service.login('any@email.com', 'anypassword', false));
+      const isAuthAfterLogin = await firstValueFrom(service.isAuthenticated());
+      expect(isAuthAfterLogin).toBe(true);
 
-      // Test authenticated with token
-      // @ts-expect-error - private property access for testing
-      service.authStateSubject.next({
-        isAuthenticated: true,
-        user: mockUser,
-        accessToken: 'valid-token',
-        refreshToken: null,
-        expiresAt: Date.now() + 3600000,
-      });
-
-      const isAuth2 = await new Promise<boolean>(resolve => {
-        service.isAuthenticated().subscribe(isAuth => resolve(isAuth));
-      });
-      expect(isAuth2).toBe(true);
-
-      // Test authenticated flag but no token
-      // @ts-expect-error - private property access for testing
-      service.authStateSubject.next({
-        isAuthenticated: true,
-        user: mockUser,
-        accessToken: null, // No token
-        refreshToken: null,
-        expiresAt: null,
-      });
-
-      const isAuth3 = await new Promise<boolean>(resolve => {
-        service.isAuthenticated().subscribe(isAuth => resolve(isAuth));
-      });
-      expect(isAuth3).toBe(false);
+      // Not authenticated after logout
+      await service.logout();
+      const isAuthAfterLogout = await firstValueFrom(service.isAuthenticated());
+      expect(isAuthAfterLogout).toBe(false);
     });
   });
 });

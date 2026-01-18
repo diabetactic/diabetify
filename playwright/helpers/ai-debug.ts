@@ -37,9 +37,11 @@ export function isAiDebugEnabled(): boolean {
 async function getAgentClass(): Promise<PlaywrightAgentType> {
   if (!PlaywrightAgent) {
     // Dynamic import to avoid bundling in production
-    // @ts-expect-error - moduleResolution doesn't support subpath exports, but runtime does
-    const midscene = await import('@midscene/web/playwright');
-    PlaywrightAgent = midscene.PlaywrightAgent;
+    const modulePath: string = '@midscene/web/playwright';
+    const midsceneModule = (await import(modulePath)) as unknown as {
+      PlaywrightAgent: PlaywrightAgentType;
+    };
+    PlaywrightAgent = midsceneModule.PlaywrightAgent;
   }
   return PlaywrightAgent;
 }

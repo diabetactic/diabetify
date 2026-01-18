@@ -1,4 +1,10 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastController, AlertController } from '@ionic/angular';
@@ -19,6 +25,7 @@ import { LoggerService } from '@core/services/logger.service';
 @Component({
   selector: 'app-integration-test',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     CommonModule,

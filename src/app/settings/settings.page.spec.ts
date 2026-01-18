@@ -413,14 +413,14 @@ describe('SettingsPage', () => {
   describe('Navigation', () => {
     it('should open advanced settings as a modal', async () => {
       // Spy on modal creation
-      const createSpy = vi.spyOn(mockModalController, 'create').mockResolvedValue({
+      vi.spyOn(mockModalController, 'create').mockResolvedValue({
         present: vi.fn().mockResolvedValue(undefined),
         onDidDismiss: vi.fn().mockResolvedValue({}),
       } as any);
 
       try {
         await component.goToAdvancedSettings();
-      } catch (e) {
+      } catch {
         // Ignore potential import errors in test environment
       }
 

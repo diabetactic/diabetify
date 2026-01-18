@@ -195,6 +195,10 @@
       "outputs": [],
       "inputs": ["src/assets/i18n/*.json", "scripts/check-i18n-missing.js"]
     },
+    "check:guardrails": {
+      "outputs": [],
+      "inputs": ["src/**", "docker/**", "scripts/check-guardrails.mjs"]
+    },
     "docs:sync": {
       "outputs": [],
       "inputs": ["docs/**/*.md", "CLAUDE.md", "scripts/sync-docs.mjs"],

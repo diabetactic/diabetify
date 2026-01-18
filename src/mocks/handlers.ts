@@ -80,13 +80,36 @@ const DEFAULT_USER: MockUser = {
 export const handlers = [
   // ========== Authentication ==========
 
-  // Login - POST /token
+  // Login / Refresh - POST /token (OAuth2-style form-encoded)
   http.post(`${API_BASE}/token`, async ({ request }) => {
     await delay(100); // Simulate network latency
 
-    const formData = await request.formData();
-    const username = formData.get('username');
-    const password = formData.get('password');
+    const bodyText = await request.text();
+    const params = new URLSearchParams(bodyText);
+    const username = params.get('username');
+    const password = params.get('password');
+    const grantType = params.get('grant_type');
+    const refreshToken = params.get('refresh_token');
+
+    // Refresh flow: grant_type=refresh_token&refresh_token=...
+    if (grantType === 'refresh_token') {
+      if (!refreshToken) {
+        return new HttpResponse(JSON.stringify({ detail: 'Missing refresh token' }), {
+          status: 400,
+        });
+      }
+
+      if (!mockUser) {
+        return new HttpResponse(JSON.stringify({ detail: 'Not authenticated' }), { status: 401 });
+      }
+
+      return HttpResponse.json({
+        access_token: 'mock-refreshed-token-' + Date.now(),
+        refresh_token: 'mock-refresh-token-' + Date.now(),
+        token_type: 'bearer',
+        expires_in: 3600,
+      });
+    }
 
     // Valid test credentials
     const isPrimary = username === '40123456' && password === 'thepassword';
@@ -107,22 +130,6 @@ export const handlers = [
 
     // Invalid credentials
     return new HttpResponse(JSON.stringify({ detail: 'Invalid credentials' }), { status: 401 });
-  }),
-
-  // Refresh token - POST /token/refresh
-  http.post(`${API_BASE}/token/refresh`, async () => {
-    await delay(50);
-
-    if (!mockUser) {
-      return new HttpResponse(JSON.stringify({ detail: 'Not authenticated' }), { status: 401 });
-    }
-
-    return HttpResponse.json({
-      access_token: 'mock-refreshed-token-' + Date.now(),
-      refresh_token: 'mock-refresh-token-' + Date.now(),
-      token_type: 'bearer',
-      expires_in: 3600,
-    });
   }),
 
   // ========== User Profile ==========

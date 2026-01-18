@@ -18,6 +18,7 @@ import { TokenStorageService } from '@core/services/token-storage.service';
 import { LoggerService } from '@core/services/logger.service';
 import { ReadingsService } from '@core/services/readings.service';
 import { ApiGatewayService } from '@core/services/api-gateway.service';
+import { MockAdapterService } from '@core/services/mock-adapter.service';
 
 const API_BASE = 'http://localhost:8000';
 
@@ -30,6 +31,16 @@ describe('Sync Conflicts Integration (MSW)', () => {
   let tokenStorage: TokenStorageService;
   let readingsService: ReadingsService;
   let httpClient: HttpClient;
+
+  class MockAdapterDisabled {
+    isServiceMockEnabled(_service: 'appointments' | 'glucoserver' | 'auth'): boolean {
+      return false;
+    }
+
+    isMockEnabled(): boolean {
+      return false;
+    }
+  }
 
   setupMSW();
 
@@ -56,6 +67,7 @@ describe('Sync Conflicts Integration (MSW)', () => {
         LoggerService,
         ReadingsService,
         ApiGatewayService,
+        { provide: MockAdapterService, useClass: MockAdapterDisabled },
       ],
     }).compileComponents();
 

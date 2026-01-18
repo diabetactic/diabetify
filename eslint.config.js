@@ -15,8 +15,7 @@ module.exports = tseslint.config(
       '.angular/**/*',
       '.browser-pilot/**/*',
       '.turbo/**/*',
-      // File with parsing errors (false positive)
-      'src/app/core/services/local-auth.service.spec.ts',
+      'playwright-report/**/*',
     ],
   },
 
@@ -56,6 +55,15 @@ module.exports = tseslint.config(
     files: ['**/*.ts'],
     processor: angular.processInlineTemplates,
     rules: {
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        {
+          'ts-ignore': true,
+          'ts-expect-error': true,
+          'ts-nocheck': true,
+          'ts-check': false,
+        },
+      ],
       '@typescript-eslint/no-namespace': 'off',
       // CSS Pro: Avoid inline styles
       'no-restricted-syntax': [
@@ -84,6 +92,7 @@ module.exports = tseslint.config(
         },
       ],
       '@angular-eslint/no-empty-lifecycle-method': 'warn',
+      '@angular-eslint/prefer-on-push-component-change-detection': 'error',
 
       // Pragmatic Overrides
       '@typescript-eslint/no-explicit-any': 'warn',
@@ -103,6 +112,7 @@ module.exports = tseslint.config(
     rules: {
       '@angular-eslint/template/alt-text': 'error',
       '@angular-eslint/template/elements-content': 'error',
+      '@angular-eslint/template/no-inline-styles': 'error',
       '@angular-eslint/template/valid-aria': 'error',
       '@angular-eslint/template/click-events-have-key-events': 'warn',
       '@angular-eslint/template/interactive-supports-focus': 'warn',
@@ -162,6 +172,14 @@ module.exports = tseslint.config(
           message: 'Use toBe(false) instead of toBeFalse().',
         },
       ],
+    },
+  },
+
+  // 9. Mocks & Test Scaffolding (avoid false positives)
+  {
+    files: ['src/mocks/**/*.ts', 'src/test-setup/**/*.ts'],
+    rules: {
+      '@angular-eslint/prefer-on-push-component-change-detection': 'off',
     },
   }
 );

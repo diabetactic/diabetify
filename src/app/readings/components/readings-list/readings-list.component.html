@@ -38,11 +38,7 @@
 
 <!-- Grouped Readings List -->
 @if (!isLoading && groupedReadings.length > 0) {
-  <div
-    class="page-shell readings-list-shell pb-20"
-    style="padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px))"
-    data-testid="readings-list"
-  >
+  <div class="page-shell readings-list-shell" data-testid="readings-list">
     @for (group of groupedReadings; track trackByGroup($index, group)) {
       <!-- Date Header -->
       <div

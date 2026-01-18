@@ -1,4 +1,9 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnDestroy } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  OnDestroy,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -31,6 +36,7 @@ import { ROUTES, TIMEOUTS } from '@core/constants';
   templateUrl: './advanced.page.html',
   styleUrls: ['./advanced.page.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     FormsModule,

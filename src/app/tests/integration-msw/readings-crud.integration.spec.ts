@@ -21,6 +21,7 @@ import { LocalAuthService } from '@core/services/local-auth.service';
 import { ApiGatewayService } from '@core/services/api-gateway.service';
 import { LoggerService } from '@core/services/logger.service';
 import { TokenStorageService } from '@core/services/token-storage.service';
+import { MockAdapterService } from '@core/services/mock-adapter.service';
 
 // API base URL (must match handlers.ts)
 const API_BASE = 'http://localhost:8000';
@@ -28,6 +29,16 @@ const API_BASE = 'http://localhost:8000';
 describe('Readings CRUD Integration (MSW)', () => {
   let readingsService: ReadingsService;
   let authService: LocalAuthService;
+
+  class MockAdapterDisabled {
+    isServiceMockEnabled(_service: 'appointments' | 'glucoserver' | 'auth'): boolean {
+      return false;
+    }
+
+    isMockEnabled(): boolean {
+      return false;
+    }
+  }
 
   setupMSW();
 
@@ -48,6 +59,7 @@ describe('Readings CRUD Integration (MSW)', () => {
         ApiGatewayService,
         LoggerService,
         TokenStorageService,
+        { provide: MockAdapterService, useClass: MockAdapterDisabled },
       ],
     }).compileComponents();
 

@@ -6,23 +6,35 @@ import { TestBed, fakeAsync, flushMicrotasks } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { HTTP_INTERCEPTORS, HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { of, throwError, BehaviorSubject, firstValueFrom } from 'rxjs';
+import { of, throwError, firstValueFrom } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
 // Note: 5xx retry tests removed - retry logic is now in retry.interceptor.ts
 
 import { AuthInterceptor } from './auth.interceptor';
-import { LocalAuthService, LocalAuthState } from '@services/local-auth.service';
+import {
+  LocalAuthService,
+  type LocalAuthState,
+  type LocalUser,
+} from '@services/local-auth.service';
 
 describe('AuthInterceptor', () => {
   let httpClient: HttpClient;
   let httpMock: HttpTestingController;
   let authService: Mock<LocalAuthService>;
   let router: Mock<Router>;
-  let interceptor: AuthInterceptor;
 
   const testUrl = '/api/test-endpoint';
   const mockRefreshToken = 'mock-refresh-token-67890';
+  const mockUser: LocalUser = {
+    id: 'user-123',
+    email: 'user@example.com',
+    firstName: 'Test',
+    lastName: 'User',
+    role: 'patient',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
 
   beforeEach(() => {
     const authServiceSpy = {
@@ -52,16 +64,9 @@ describe('AuthInterceptor', () => {
     httpMock = TestBed.inject(HttpTestingController);
     authService = TestBed.inject(LocalAuthService) as Mock<LocalAuthService>;
     router = TestBed.inject(Router) as Mock<Router>;
-    interceptor = TestBed.inject(AuthInterceptor);
 
     // Default logout behavior
     authService.logout.mockResolvedValue();
-
-    // Reset interceptor state to prevent pollution
-    // @ts-expect-error - private property access for testing
-    interceptor.isRefreshing = false;
-    // @ts-expect-error - private property access for testing
-    interceptor.refreshTokenSubject = new BehaviorSubject<string | null>(null);
   });
 
   afterEach(() => {
@@ -112,10 +117,27 @@ describe('AuthInterceptor', () => {
   });
 
   describe('401 Unauthorized Error Handling', () => {
+    it('should NOT attempt token refresh for /token endpoint 401 errors', async () => {
+      const promise = firstValueFrom(httpClient.post('/token', 'x=1'));
+
+      const req = httpMock.expectOne('/token');
+      req.flush(null, { status: 401, statusText: 'Unauthorized' });
+
+      try {
+        await promise;
+        fail('should have failed with 401');
+      } catch (error: unknown) {
+        const httpError = error as HttpErrorResponse;
+        expect(httpError.status).toBe(401);
+      }
+
+      expect(authService.refreshAccessToken).not.toHaveBeenCalled();
+    });
+
     it('should intercept 401 errors and attempt token refresh', async () => {
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
-        user: { id: 'user-123', email: 'user@example.com' } as any,
+        user: mockUser,
         accessToken: 'new-access-token',
         refreshToken: mockRefreshToken,
         expiresAt: Date.now() + 3600000,
@@ -144,7 +166,7 @@ describe('AuthInterceptor', () => {
     it('should add Bearer token to retried request', async () => {
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
-        user: { id: 'user-123', email: 'user@example.com' } as any,
+        user: mockUser,
         accessToken: 'fresh-token-abc',
         refreshToken: mockRefreshToken,
         expiresAt: Date.now() + 3600000,
@@ -206,7 +228,7 @@ describe('AuthInterceptor', () => {
     it('should queue multiple requests while refresh is in progress', async () => {
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
-        user: { id: 'user-123', email: 'user@example.com' } as any,
+        user: mockUser,
         accessToken: 'shared-new-token',
         refreshToken: mockRefreshToken,
         expiresAt: Date.now() + 3600000,
@@ -252,7 +274,7 @@ describe('AuthInterceptor', () => {
     it('should prevent token refresh stampede', async () => {
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
-        user: { id: 'user-123', email: 'user@example.com' } as any,
+        user: mockUser,
         accessToken: 'stampede-prevention-token',
         refreshToken: mockRefreshToken,
         expiresAt: Date.now() + 3600000,
@@ -316,7 +338,7 @@ describe('AuthInterceptor', () => {
       const postData = { name: 'Test' };
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
-        user: { id: 'user-123', email: 'user@example.com' } as any,
+        user: mockUser,
         accessToken: 'post-token',
         refreshToken: mockRefreshToken,
         expiresAt: Date.now() + 3600000,
@@ -345,7 +367,7 @@ describe('AuthInterceptor', () => {
       const putData = { id: '123', name: 'Updated' };
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
-        user: { id: 'user-123', email: 'user@example.com' } as any,
+        user: mockUser,
         accessToken: 'put-token',
         refreshToken: mockRefreshToken,
         expiresAt: Date.now() + 3600000,
@@ -371,7 +393,7 @@ describe('AuthInterceptor', () => {
     it('should handle DELETE requests with 401 error', async () => {
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
-        user: { id: 'user-123', email: 'user@example.com' } as any,
+        user: mockUser,
         accessToken: 'delete-token',
         refreshToken: mockRefreshToken,
         expiresAt: Date.now() + 3600000,
@@ -399,7 +421,7 @@ describe('AuthInterceptor', () => {
     it('should handle empty token string', async () => {
       const authStateWithEmptyToken: LocalAuthState = {
         isAuthenticated: true,
-        user: { id: 'user-123', email: 'user@example.com' } as any,
+        user: mockUser,
         accessToken: '', // Empty string
         refreshToken: mockRefreshToken,
         expiresAt: Date.now() + 3600000,
@@ -418,7 +440,7 @@ describe('AuthInterceptor', () => {
     it('should handle concurrent 401 errors from different endpoints', async () => {
       const newAuthState: LocalAuthState = {
         isAuthenticated: true,
-        user: { id: 'user-123', email: 'user@example.com' } as any,
+        user: mockUser,
         accessToken: 'concurrent-token',
         refreshToken: mockRefreshToken,
         expiresAt: Date.now() + 3600000,

@@ -43,7 +43,9 @@
             <app-icon name="person" class="text-primary h-6 w-6"></app-icon>
           </div>
           <ion-label>
-            <h2 class="mb-1 text-base font-semibold">{{ profileSettings.name || 'Usuario' }}</h2>
+            <h2 class="mb-1 text-base font-semibold">
+              {{ profileSettings.name || ('profile.defaultName' | translate) }}
+            </h2>
             <p class="text-base-content/60 text-sm">{{ profileSettings.email }}</p>
           </ion-label>
           <app-icon

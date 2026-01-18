@@ -22,16 +22,14 @@ import { MockAdapterService } from '@core/services/mock-adapter.service';
 const API_BASE = 'http://localhost:8000';
 
 /**
- * Mock MockAdapterService that enables auth mock mode for tests.
- * When auth mock is enabled, LocalAuthService bypasses HTTP calls and uses internal mock data.
+ * MockAdapterService stub that disables app-level mock mode so MSW handlers are exercised.
  */
-class MockMockAdapterService {
-  isServiceMockEnabled(service: 'appointments' | 'glucoserver' | 'auth'): boolean {
-    // Enable mock mode for auth service - this causes LocalAuthService to bypass HTTP
-    return service === 'auth';
+class MockAdapterDisabled {
+  isServiceMockEnabled(_service: 'appointments' | 'glucoserver' | 'auth'): boolean {
+    return false;
   }
   isMockEnabled(): boolean {
-    return true;
+    return false;
   }
 }
 
@@ -60,8 +58,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
         TokenStorageService,
         LoggerService,
         ApiGatewayService,
-        // Provide mock MockAdapterService that enables auth mock mode
-        { provide: MockAdapterService, useClass: MockMockAdapterService },
+        { provide: MockAdapterService, useClass: MockAdapterDisabled },
       ],
     }).compileComponents();
 
@@ -75,8 +72,7 @@ describe('Session Lifecycle Integration (MSW)', () => {
 
       expect(result.success).toBe(true);
       expect(result.user).toBeDefined();
-      // In mock mode, auth service uses internal mock data, not MSW handlers
-      expect(result.user?.id).toBeDefined();
+      expect(result.user?.id).toBe('40123456');
     });
 
     it('should initialize auth state as authenticated after login', async () => {
@@ -91,7 +87,6 @@ describe('Session Lifecycle Integration (MSW)', () => {
 
       const user = authService.getCurrentUser();
       expect(user).not.toBeNull();
-      // In mock mode, auth service uses internal mock data, not MSW handlers
       expect(user?.email).toBeDefined();
     });
 
@@ -300,33 +295,12 @@ describe('Session Lifecycle Integration (MSW)', () => {
       expect(user).toBeNull();
     });
 
-    // NOTE: In mock mode, LocalAuthService always succeeds login.
-    // This test verifies that multiple login attempts work correctly.
-    it('should handle multiple login attempts correctly in mock mode', async () => {
-      // First login attempt - succeeds in mock mode
-      const firstResult = await firstValueFrom(authService.login('40123456', 'anypassword', false));
-      expect(firstResult.success).toBe(true);
+    it('should reject login with invalid credentials', async () => {
+      const result = await firstValueFrom(authService.login('40123456', 'wrongpassword', false));
 
-      // Should be authenticated
-      const isAuth = await firstValueFrom(authService.isAuthenticated());
-      expect(isAuth).toBe(true);
-
-      // Logout
-      await authService.logout();
-
-      // Should be unauthenticated after logout
-      const isAuthAfterLogout = await firstValueFrom(authService.isAuthenticated());
-      expect(isAuthAfterLogout).toBe(false);
-
-      // Second login attempt - also succeeds in mock mode
-      const secondResult = await firstValueFrom(
-        authService.login('40123456', 'thepassword', false)
-      );
-      expect(secondResult.success).toBe(true);
-
-      // Should be authenticated again
-      const isAuth2 = await firstValueFrom(authService.isAuthenticated());
-      expect(isAuth2).toBe(true);
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+      expect(await firstValueFrom(authService.isAuthenticated())).toBe(false);
     });
   });
 

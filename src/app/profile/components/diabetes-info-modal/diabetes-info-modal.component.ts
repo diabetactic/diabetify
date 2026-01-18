@@ -1,4 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -26,6 +32,8 @@ import { UserProfile } from '@models/user-profile.model';
   templateUrl: './diabetes-info-modal.component.html',
   styleUrls: ['./diabetes-info-modal.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     CommonModule,
     FormsModule,

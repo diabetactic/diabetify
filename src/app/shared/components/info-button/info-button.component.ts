@@ -1,4 +1,4 @@
-import { Component, Input, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AlertController } from '@ionic/angular';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
@@ -6,6 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-info-button',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button
       type="button"

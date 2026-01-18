@@ -20,7 +20,7 @@
     @if (isLoading) {
       <div class="flex min-h-[300px] flex-col items-center justify-center gap-4">
         <app-icon name="loader" class="h-12 w-12 animate-spin"></app-icon>
-        <p class="text-base" style="color: var(--ion-color-medium)">
+        <p class="text-ion-medium text-base">
           {{ 'app.loading' | translate }}
         </p>
       </div>
@@ -111,46 +111,37 @@
         </ion-card-header>
         <ion-card-content>
           <div class="mb-5 flex flex-col gap-4">
-            <div
-              class="sync-item flex items-center gap-3 rounded-xl p-3"
-              style="background: var(--ion-color-light)"
-            >
+            <div class="sync-item flex items-center gap-3 rounded-xl p-3">
               <app-icon
                 name="cloud-upload-outline"
                 class="text-success shrink-0 text-[28px]"
               ></app-icon>
               <div class="flex-1">
-                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">
+                <h4 class="text-ion-medium m-0 mb-1 text-sm font-semibold">
                   {{ 'dashboard.syncedItems' | translate }}
                 </h4>
-                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">
+                <p class="text-ion-text m-0 text-base font-bold">
                   {{ (backendSyncResult?.fetched || 0) + (backendSyncResult?.pushed || 0) }}
                 </p>
               </div>
             </div>
             @if (backendSyncResult && backendSyncResult.failed > 0) {
-              <div
-                class="sync-item flex items-center gap-3 rounded-xl p-3"
-                style="background: var(--ion-color-light)"
-              >
+              <div class="sync-item flex items-center gap-3 rounded-xl p-3">
                 <app-icon
                   name="alert-circle-outline"
                   class="text-danger shrink-0 text-[28px]"
                 ></app-icon>
                 <div class="flex-1">
-                  <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">
+                  <h4 class="text-ion-medium m-0 mb-1 text-sm font-semibold">
                     {{ 'dashboard.failedItems' | translate }}
                   </h4>
-                  <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">
+                  <p class="text-ion-text m-0 text-base font-bold">
                     {{ backendSyncResult.failed }}
                   </p>
                 </div>
               </div>
             }
-            <div
-              class="sync-item flex items-center gap-3 rounded-xl p-3"
-              style="background: var(--ion-color-light)"
-            >
+            <div class="sync-item flex items-center gap-3 rounded-xl p-3">
               <app-icon
                 [name]="isSyncing ? 'ellipse' : 'checkmark-circle'"
                 [class]="isSyncing ? 'text-warning' : 'text-success'"
@@ -158,10 +149,10 @@
                 aria-hidden="true"
               ></app-icon>
               <div class="flex-1">
-                <h4 class="m-0 mb-1 text-sm font-semibold" style="color: var(--ion-color-medium)">
+                <h4 class="text-ion-medium m-0 mb-1 text-sm font-semibold">
                   {{ 'dashboard.status' | translate }}
                 </h4>
-                <p class="m-0 text-base font-bold" style="color: var(--ion-text-color)">
+                <p class="text-ion-text m-0 text-base font-bold">
                   {{ getSyncStatusText() }}
                 </p>
               </div>
@@ -195,26 +186,26 @@
         </ion-card-header>
         <ion-card-content>
           <div class="metric-explanation border-b border-[var(--ion-color-light)] py-4">
-            <h4 class="m-0 mb-2 text-base font-semibold" style="color: var(--ion-color-primary)">
+            <h4 class="text-ion-primary m-0 mb-2 text-base font-semibold">
               {{ 'readings.statistics.hba1c' | translate }}
             </h4>
-            <p class="m-0 text-sm leading-[1.6]" style="color: var(--ion-color-medium)">
+            <p class="text-ion-medium m-0 text-sm leading-[1.6]">
               {{ 'dashboard.detail.hba1cExplanation' | translate }}
             </p>
           </div>
           <div class="metric-explanation border-b border-[var(--ion-color-light)] py-4">
-            <h4 class="m-0 mb-2 text-base font-semibold" style="color: var(--ion-color-primary)">
+            <h4 class="text-ion-primary m-0 mb-2 text-base font-semibold">
               {{ 'readings.statistics.gmi' | translate }}
             </h4>
-            <p class="m-0 text-sm leading-[1.6]" style="color: var(--ion-color-medium)">
+            <p class="text-ion-medium m-0 text-sm leading-[1.6]">
               {{ 'dashboard.detail.gmiExplanation' | translate }}
             </p>
           </div>
           <div class="metric-explanation py-4 pb-0">
-            <h4 class="m-0 mb-2 text-base font-semibold" style="color: var(--ion-color-primary)">
+            <h4 class="text-ion-primary m-0 mb-2 text-base font-semibold">
               {{ 'readings.statistics.cv' | translate }}
             </h4>
-            <p class="m-0 text-sm leading-[1.6]" style="color: var(--ion-color-medium)">
+            <p class="text-ion-medium m-0 text-sm leading-[1.6]">
               {{ 'dashboard.detail.cvExplanation' | translate }}
             </p>
           </div>

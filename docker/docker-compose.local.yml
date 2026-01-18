@@ -92,7 +92,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@users_db:5432/users
       - NOREPLY_ACCOUNT=diabetactic@gmail.com
-      - NOREPLY_PASSWORD=mtoj zcft rxbt pgta
+      - NOREPLY_PASSWORD=${NOREPLY_PASSWORD:-}
       - BACKOFFICE_FRONT_URL=http://localhost:3000
     healthcheck:
       test:
@@ -145,7 +145,7 @@ services:
       glucoserver:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - ../../api-gateway:/app
     environment:
@@ -153,7 +153,7 @@ services:
       - APPOINTMENTS_BASE_URL=http://appointments:8000
       - GLUCOSERVER_BASE_URL=http://glucoserver:8000
       - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=9830e8615a20b5b145edd6cbf11ca1943cb15dac7ff72be7fd0f046d133b2740
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-change-me}
     healthcheck:
       test:
         [
@@ -186,7 +186,7 @@ services:
       - USERS_BASE_URL=http://login_service:8000
       - APPOINTMENTS_BASE_URL=http://appointments:8000
       - GLUCOSERVER_BASE_URL=http://glucoserver:8000
-      - SECRET_KEY=9830e8615a20b5b145edd6cbf11ca1943cb15dac7ff72be7fd0f046d133b2740
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-change-me}
     healthcheck:
       test:
         [

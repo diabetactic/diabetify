@@ -86,24 +86,3 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
-
-  # Deploy to Netlify
-  deploy-netlify:
-    needs: [build, playwright-e2e]
-    if: always() && needs.build.result == 'success' && (needs.playwright-e2e.result == 'success' || needs.playwright-e2e.result == 'skipped')
-    runs-on: [self-hosted, high-mem]
-    steps:
-      - name: Download www artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: www
-          path: www/
-
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3.0
-        with:
-          publish-dir: './www'
-          production-deploy: true
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

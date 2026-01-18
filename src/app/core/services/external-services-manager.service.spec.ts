@@ -3,13 +3,14 @@ import '../../../test-setup';
 
 import { TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
-import { Injector } from '@angular/core';
-import { of, throwError } from 'rxjs';
+import { of, throwError, firstValueFrom } from 'rxjs';
+import { filter, take } from 'rxjs/operators';
 import {
   ExternalServicesManager,
   ExternalService,
   HealthStatus,
 } from '@services/external-services-manager.service';
+import { LoggerService } from '@services/logger.service';
 import { Network } from '@capacitor/network';
 import { environment } from '@env/environment';
 import type { Mock } from 'vitest';
@@ -19,11 +20,11 @@ import type { Mock } from 'vitest';
 describe('ExternalServicesManager', () => {
   let service: ExternalServicesManager;
   let httpClient: Mock<HttpClient>;
-  let injector: Injector;
+  let networkListenerHandle: { remove: Mock };
 
   const mockNetworkStatus = { connected: true, connectionType: 'wifi' };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Mock environment with complete structure
     environment.backendServices = {
       ...environment.backendServices,
@@ -68,7 +69,8 @@ describe('ExternalServicesManager', () => {
     };
 
     (Network.getStatus as Mock).mockResolvedValue(mockNetworkStatus);
-    (Network.addListener as Mock).mockImplementation(() => ({ remove: vi.fn() }));
+    networkListenerHandle = { remove: vi.fn() };
+    (Network.addListener as Mock).mockImplementation(() => networkListenerHandle);
 
     TestBed.configureTestingModule({
       providers: [ExternalServicesManager, { provide: HttpClient, useValue: httpClientMock }],
@@ -76,7 +78,14 @@ describe('ExternalServicesManager', () => {
 
     service = TestBed.inject(ExternalServicesManager);
     httpClient = TestBed.inject(HttpClient) as Mock<HttpClient>;
-    injector = TestBed.inject(Injector);
+
+    // Ensure the async initializer has populated circuit breakers before running tests.
+    await firstValueFrom(
+      service.state.pipe(
+        filter(s => s.circuitBreakers.size > 0),
+        take(1)
+      )
+    );
   });
 
   afterEach(() => {
@@ -113,28 +122,35 @@ describe('ExternalServicesManager', () => {
       expect(service.isServiceAvailable(ExternalService.GLUCOSERVER)).toBe(true);
     });
 
-    it('should return false when circuit breaker is open', () => {
-      // Manually open circuit breaker
-      // @ts-expect-error - private method access for testing
-      service.updateCircuitBreaker(ExternalService.GLUCOSERVER, {
-        state: 'OPEN',
-        failureCount: 5,
-      });
+    it('should return false when circuit breaker is open', async () => {
+      httpClient.head.mockReturnValue(throwError(() => new Error('Network error')));
+      const threshold =
+        service.getServiceConfig(ExternalService.GLUCOSERVER)?.circuitBreakerThreshold ?? 3;
+
+      for (let i = 0; i < threshold; i++) {
+        await service.checkService(ExternalService.GLUCOSERVER);
+      }
 
       expect(service.isServiceAvailable(ExternalService.GLUCOSERVER)).toBe(false);
     });
 
     it('should return false when offline and service does not support offline', () => {
-      // @ts-expect-error - private method access for testing
-      service.updateState({ isOnline: false });
+      const listener = (Network.addListener as Mock).mock.calls[0][1] as (s: {
+        connected: boolean;
+        connectionType?: string;
+      }) => void;
+      listener({ connected: false, connectionType: 'none' });
 
       // APPOINTMENTS doesn't support offline
       expect(service.isServiceAvailable(ExternalService.APPOINTMENTS)).toBe(false);
     });
 
     it('should return true when offline but service supports offline', () => {
-      // @ts-expect-error - private method access for testing
-      service.updateState({ isOnline: false });
+      const listener = (Network.addListener as Mock).mock.calls[0][1] as (s: {
+        connected: boolean;
+        connectionType?: string;
+      }) => void;
+      listener({ connected: false, connectionType: 'none' });
 
       // GLUCOSERVER supports offline
       expect(service.isServiceAvailable(ExternalService.GLUCOSERVER)).toBe(true);
@@ -221,12 +237,14 @@ describe('ExternalServicesManager', () => {
       expect(circuitBreaker?.failureCount).toBe(0);
     });
 
-    it('should manually reset circuit breaker', () => {
-      // @ts-expect-error - private method access for testing
-      service.updateCircuitBreaker(ExternalService.GLUCOSERVER, {
-        state: 'OPEN',
-        failureCount: 5,
-      });
+    it('should manually reset circuit breaker', async () => {
+      httpClient.head.mockReturnValue(throwError(() => new Error('Network error')));
+      const threshold =
+        service.getServiceConfig(ExternalService.GLUCOSERVER)?.circuitBreakerThreshold ?? 3;
+
+      for (let i = 0; i < threshold; i++) {
+        await service.checkService(ExternalService.GLUCOSERVER);
+      }
 
       service.resetCircuitBreaker(ExternalService.GLUCOSERVER);
 
@@ -248,32 +266,31 @@ describe('ExternalServicesManager', () => {
     });
 
     it('should throw error when service is unavailable', async () => {
-      // Open circuit breaker
-      // @ts-expect-error - private method access for testing
-      service.updateCircuitBreaker(ExternalService.GLUCOSERVER, {
-        state: 'OPEN',
-        failureCount: 5,
-      });
+      const listener = (Network.addListener as Mock).mock.calls[0][1] as (s: {
+        connected: boolean;
+        connectionType?: string;
+      }) => void;
+      listener({ connected: false, connectionType: 'none' });
 
       const requestFn = vi.fn();
 
-      await expect(service.executeRequest(ExternalService.GLUCOSERVER, requestFn)).rejects.toThrow(
-        'Service GLUCOSERVER is not available'
+      await expect(service.executeRequest(ExternalService.APPOINTMENTS, requestFn)).rejects.toThrow(
+        'Service APPOINTMENTS is not available'
       );
     });
 
     it('should use fallback when service is unavailable', async () => {
-      // @ts-expect-error - private method access for testing
-      service.updateCircuitBreaker(ExternalService.GLUCOSERVER, {
-        state: 'OPEN',
-        failureCount: 5,
-      });
+      const listener = (Network.addListener as Mock).mock.calls[0][1] as (s: {
+        connected: boolean;
+        connectionType?: string;
+      }) => void;
+      listener({ connected: false, connectionType: 'none' });
 
       const fallbackData = { data: 'fallback' };
       const requestFn = vi.fn();
       const fallbackFn = vi.fn().mockReturnValue(fallbackData);
 
-      const result = await service.executeRequest(ExternalService.GLUCOSERVER, requestFn, {
+      const result = await service.executeRequest(ExternalService.APPOINTMENTS, requestFn, {
         fallback: fallbackFn,
       });
 
@@ -318,12 +335,17 @@ describe('ExternalServicesManager', () => {
     });
 
     it('should reset circuit breaker on successful request', async () => {
-      // Set some failures
-      // @ts-expect-error - private method access for testing
-      service.updateCircuitBreaker(ExternalService.GLUCOSERVER, {
-        state: 'CLOSED',
-        failureCount: 2,
-      });
+      httpClient.head.mockReturnValue(throwError(() => new Error('Network error')));
+      await service.checkService(ExternalService.GLUCOSERVER);
+      await service.checkService(ExternalService.GLUCOSERVER);
+      expect(service.getCircuitBreakerState(ExternalService.GLUCOSERVER)?.failureCount).toBe(2);
+
+      // When offline, offline-capable services are considered available even if health is UNHEALTHY.
+      const listener = (Network.addListener as Mock).mock.calls[0][1] as (s: {
+        connected: boolean;
+        connectionType?: string;
+      }) => void;
+      listener({ connected: false, connectionType: 'none' });
 
       const requestFn = vi.fn().mockResolvedValue({ data: 'test' });
       await service.executeRequest(ExternalService.GLUCOSERVER, requestFn);
@@ -347,15 +369,26 @@ describe('ExternalServicesManager', () => {
 
   describe('cache management', () => {
     it('should cache data with service prefix', async () => {
-      const requestFn = vi.fn().mockResolvedValue({ data: 'test' });
+      const glucoserverRequest = vi.fn().mockResolvedValue({ data: 'gluco' });
+      const tidepoolRequest = vi.fn().mockResolvedValue({ data: 'tidepool' });
 
-      await service.executeRequest(ExternalService.GLUCOSERVER, requestFn, {
-        cacheKey: 'test-key',
+      await service.executeRequest(ExternalService.GLUCOSERVER, glucoserverRequest, {
+        cacheKey: 'same-key',
+      });
+      await service.executeRequest(ExternalService.TIDEPOOL, tidepoolRequest, {
+        cacheKey: 'same-key',
       });
 
-      // @ts-expect-error - private property access for testing
-      const cache = service.responseCache;
-      expect(cache.has('GLUCOSERVER:test-key')).toBe(true);
+      await service.executeRequest(ExternalService.GLUCOSERVER, glucoserverRequest, {
+        cacheKey: 'same-key',
+      });
+      await service.executeRequest(ExternalService.TIDEPOOL, tidepoolRequest, {
+        cacheKey: 'same-key',
+      });
+
+      // Cache should be isolated per service via key prefix (service:cacheKey)
+      expect(glucoserverRequest).toHaveBeenCalledTimes(1);
+      expect(tidepoolRequest).toHaveBeenCalledTimes(1);
     });
 
     it('should expire cache after duration', async () => {
@@ -383,43 +416,57 @@ describe('ExternalServicesManager', () => {
     });
 
     it('should clear cache for specific service', async () => {
-      const requestFn = vi.fn().mockResolvedValue({ data: 'test' });
+      const glucoserverRequest = vi.fn().mockResolvedValue({ data: 'gluco' });
+      const tidepoolRequest = vi.fn().mockResolvedValue({ data: 'tidepool' });
 
-      await service.executeRequest(ExternalService.GLUCOSERVER, requestFn, {
-        cacheKey: 'test-key',
+      await service.executeRequest(ExternalService.GLUCOSERVER, glucoserverRequest, {
+        cacheKey: 'shared-key',
+      });
+      await service.executeRequest(ExternalService.TIDEPOOL, tidepoolRequest, {
+        cacheKey: 'shared-key',
       });
 
       service.clearCache(ExternalService.GLUCOSERVER);
 
-      // @ts-expect-error - private property access for testing
-      const cache = service.responseCache;
-      expect(cache.has('GLUCOSERVER:test-key')).toBe(false);
+      await service.executeRequest(ExternalService.GLUCOSERVER, glucoserverRequest, {
+        cacheKey: 'shared-key',
+      });
+      await service.executeRequest(ExternalService.TIDEPOOL, tidepoolRequest, {
+        cacheKey: 'shared-key',
+      });
+
+      expect(glucoserverRequest).toHaveBeenCalledTimes(2);
+      expect(tidepoolRequest).toHaveBeenCalledTimes(1);
     });
 
     it('should clear all cache when no service specified', async () => {
-      const requestFn = vi.fn().mockResolvedValue({ data: 'test' });
+      const glucoserverRequest = vi.fn().mockResolvedValue({ data: 'gluco' });
+      const tidepoolRequest = vi.fn().mockResolvedValue({ data: 'tidepool' });
 
-      await service.executeRequest(ExternalService.GLUCOSERVER, requestFn, {
+      await service.executeRequest(ExternalService.GLUCOSERVER, glucoserverRequest, {
         cacheKey: 'key1',
       });
-      await service.executeRequest(ExternalService.TIDEPOOL, requestFn, { cacheKey: 'key2' });
+      await service.executeRequest(ExternalService.TIDEPOOL, tidepoolRequest, { cacheKey: 'key2' });
 
       service.clearCache();
 
-      // @ts-expect-error - private property access for testing
-      const cache = service.responseCache;
-      expect(cache.size).toBe(0);
+      await service.executeRequest(ExternalService.GLUCOSERVER, glucoserverRequest, {
+        cacheKey: 'key1',
+      });
+      await service.executeRequest(ExternalService.TIDEPOOL, tidepoolRequest, { cacheKey: 'key2' });
+
+      expect(glucoserverRequest).toHaveBeenCalledTimes(2);
+      expect(tidepoolRequest).toHaveBeenCalledTimes(2);
     });
   });
 
   describe('network monitoring', () => {
-    it('should update state when network status changes', () => {
+    it('should update state when network status changes', async () => {
       const listener = (Network.addListener as Mock).mock.calls[0][1];
 
-      listener({ connected: false });
+      listener({ connected: false, connectionType: 'none' });
 
-      // @ts-expect-error - private property access for testing
-      const state = service.state$.value;
+      const state = await firstValueFrom(service.state.pipe(take(1)));
       expect(state.isOnline).toBe(false);
     });
 
@@ -437,13 +484,12 @@ describe('ExternalServicesManager', () => {
       expect(performHealthCheckSpy).not.toHaveBeenCalled();
     });
 
-    it('should mark all services unhealthy when network disconnects', () => {
+    it('should mark all services unhealthy when network disconnects', async () => {
       const listener = (Network.addListener as Mock).mock.calls[0][1];
 
-      listener({ connected: false });
+      listener({ connected: false, connectionType: 'none' });
 
-      // @ts-expect-error - private property access for testing
-      const state = service.state$.value;
+      const state = await firstValueFrom(service.state.pipe(take(1)));
       const glucoserverHealth = state.services.get(ExternalService.GLUCOSERVER);
       expect(glucoserverHealth?.status).toBe(HealthStatus.UNHEALTHY);
     });
@@ -473,11 +519,19 @@ describe('ExternalServicesManager', () => {
     it('should not configure Tidepool when disabled in environment', () => {
       environment.features!.useTidepoolIntegration = false;
 
-      // Create new service instance
-      const newService = new ExternalServicesManager(httpClient, injector);
+      const logger = {
+        info: vi.fn(),
+        debug: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+      } as unknown as LoggerService;
+
+      // Create new service instance (config map is built at construction time)
+      const newService = new ExternalServicesManager(httpClient, logger);
       const config = newService.getServiceConfig(ExternalService.TIDEPOOL);
 
       expect(config).toBeUndefined();
+      newService.ngOnDestroy();
     });
   });
 
@@ -516,12 +570,18 @@ describe('ExternalServicesManager', () => {
 
   describe('ngOnDestroy', () => {
     it('should clean up subscriptions', () => {
-      // @ts-expect-error - private method access for testing
-      const stopSpy = vi.spyOn(service, 'stopHealthCheckInterval');
+      let completed = false;
+      const sub = service.state.subscribe({
+        complete: () => {
+          completed = true;
+        },
+      });
 
       service.ngOnDestroy();
 
-      expect(stopSpy).toHaveBeenCalled();
+      expect(networkListenerHandle.remove).toHaveBeenCalled();
+      expect(completed).toBe(true);
+      sub.unsubscribe();
     });
   });
 });

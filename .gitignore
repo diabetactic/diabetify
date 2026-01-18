@@ -18,7 +18,6 @@ docker/.state/
 # Tooling caches
 .angular
 .turbo
-.netlify
 .playwright-mcp
 .aider.tags.cache.v4
 .zed
@@ -43,7 +42,6 @@ android/release-keystore.jks
 android/keystore.properties
 
 # Ad-hoc reports/exports
-deepsource-export
 html
 SECURITY_AUDIT_REPORT.md
 WARP.md
