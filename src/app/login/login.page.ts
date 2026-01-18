@@ -127,31 +127,51 @@ export class LoginPage implements OnInit, OnDestroy {
       stage: 'ui-before-loading',
     });
 
-    const loading = await this.loadingCtrl.create({
-      message: this.translate.instant('login.messages.loggingIn'),
-      spinner: 'crescent',
-      cssClass: 'custom-loading',
-    });
-    const presentPromise = loading.present().catch(error => {
-      this.logger.warn('Auth', 'Loading spinner failed to present', error);
-    });
-    await Promise.race([presentPromise, sleep(500)]);
-    this.logger.debug('Auth', 'Loading spinner presented (or timed out)', {
-      stage: 'ui-loading-presented',
-    });
+    // NOTE: Do not await LoadingController.create()/present() here.
+    // In some web builds this can hang indefinitely and block the entire login flow.
+    const loadingPromise: Promise<{ dismiss: () => Promise<boolean> } | null> = this.loadingCtrl
+      .create({
+        message: this.translate.instant('login.messages.loggingIn'),
+        spinner: 'crescent',
+        cssClass: 'custom-loading',
+      })
+      .then(async loading => {
+        const presentPromise = loading.present().catch(error => {
+          this.logger.warn('Auth', 'Loading spinner failed to present', error);
+        });
+        await Promise.race([presentPromise, sleep(500)]);
+        return loading;
+      })
+      .catch(error => {
+        this.logger.warn('Auth', 'Loading spinner failed to create', error);
+        return null;
+      });
+
+    const dismissLoading = async () => {
+      try {
+        const loading = await Promise.race([
+          loadingPromise,
+          sleep(1000).then(() => null),
+        ]);
+        if (!loading) return;
+        await Promise.race([loading.dismiss(), sleep(1000)]);
+      } catch (error) {
+        this.logger.warn('Auth', 'Loading spinner failed to dismiss', error);
+      }
+    };
 
     // FAILSAFE: Dismiss loading after 15 seconds NO MATTER WHAT
     // This ensures the user is never stuck on a spinning screen forever
     const failsafeTimeout = setTimeout(async () => {
       this.logger.error('Auth', 'FAILSAFE: 15-second hard timeout triggered - dismissing loading');
       try {
-        await Promise.race([loading.dismiss(), sleep(1000)]);
+        await dismissLoading();
         this.ngZone.run(() => {
           this.isLoading = false;
           this.loginForm.enable({ emitEvent: false });
           this.cdr.detectChanges();
         });
-        await this.showErrorToast(this.translate.instant('errors.timeout'));
+        void this.showErrorToast(this.translate.instant('errors.timeout'));
       } catch (e) {
         this.logger.error('Auth', 'FAILSAFE cleanup error', e);
       }
@@ -266,13 +286,14 @@ export class LoginPage implements OnInit, OnDestroy {
     } finally {
       // Cancel the failsafe timeout since we're handling the result normally
       clearTimeout(failsafeTimeout);
-      this.logger.debug('Auth', 'Ensuring loading spinner is dismissed');
-      try {
-        await Promise.race([loading.dismiss(), sleep(1000)]);
-      } catch (error) {
-        this.logger.warn('Auth', 'Loading spinner failed to dismiss', error);
-      }
-      // No need to reset isLoading or enable form here, done in catch or success path
+      await dismissLoading();
+
+      // Always reset UI state if we remain on this page (Ionic may cache routes).
+      this.ngZone.run(() => {
+        this.isLoading = false;
+        this.loginForm.enable({ emitEvent: false });
+        this.cdr.detectChanges();
+      });
     }
   }
 

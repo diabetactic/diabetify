@@ -19,6 +19,7 @@ const STATIC_DIR = pickStaticDir();
 
 const DEFAULT_API_GATEWAY_URL = 'https://diabetactic-api-gateway-37949d6f182f.herokuapp.com';
 const API_GATEWAY_URL = process.env.API_GATEWAY_URL ?? DEFAULT_API_GATEWAY_URL;
+const LOG_API_REQUESTS = /^(1|true)$/i.test(process.env.LOG_API_REQUESTS ?? '');
 
 const app = express();
 app.disable('x-powered-by');
@@ -46,6 +47,8 @@ async function readBody(req) {
 }
 
 app.all('/api/*', async (req, res) => {
+  const startedAt = Date.now();
+  const safePath = req.originalUrl.split('?')[0];
   try {
     const upstreamBase = new URL(API_GATEWAY_URL);
     const upstreamPath = req.originalUrl.replace(/^\/api/, '');
@@ -69,7 +72,20 @@ app.all('/api/*', async (req, res) => {
 
     const buf = Buffer.from(await upstreamRes.arrayBuffer());
     res.send(buf);
+
+    if (LOG_API_REQUESTS) {
+      const elapsedMs = Date.now() - startedAt;
+      console.log(`[api-proxy] ${req.method} ${safePath} -> ${upstreamRes.status} (${elapsedMs}ms)`);
+    }
   } catch (error) {
+    if (LOG_API_REQUESTS) {
+      const elapsedMs = Date.now() - startedAt;
+      console.warn(
+        `[api-proxy] ${req.method} ${safePath} -> 502 (${elapsedMs}ms): ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
     res.status(502).json({
       detail: 'Upstream API request failed',
       error: error instanceof Error ? error.message : String(error),
