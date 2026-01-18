@@ -13,6 +13,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NavController, ModalController, ToastController } from '@ionic/angular/standalone';
 import {
@@ -205,19 +206,28 @@ export class BolusCalculatorPage implements OnInit {
   async presentConfirmationModal(calculation: BolusCalculation) {
     this.isModalOpen = true;
     const message = this.warnings.map(w => w.message).join('<br><br>');
-    const modal = await this.modalCtrl.create({
-      component: ConfirmationModalComponent,
-      componentProps: {
-        title: 'Warning',
-        message: message,
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
-        icon: 'alert-circle-outline',
-        color: 'warning',
-        calculation,
-      },
-      backdropDismiss: false,
-    });
+    const modal = await createOverlaySafely(
+      () =>
+        this.modalCtrl.create({
+          component: ConfirmationModalComponent,
+          componentProps: {
+            title: 'Warning',
+            message: message,
+            confirmButtonText: 'Confirm',
+            cancelButtonText: 'Cancel',
+            icon: 'alert-circle-outline',
+            color: 'warning',
+            calculation,
+          },
+          backdropDismiss: false,
+        }),
+      { timeoutMs: 2500 }
+    );
+    if (!modal) {
+      this.isModalOpen = false;
+      this.cdr.detectChanges();
+      return;
+    }
 
     await modal.present();
 
@@ -286,12 +296,17 @@ export class BolusCalculatorPage implements OnInit {
 
   /** Show error toast when bolus calculation fails */
   private async showErrorToast(): Promise<void> {
-    const toast = await this.toastCtrl.create({
-      message: this.translate.instant('bolusCalculator.errors.calculationFailed'),
-      duration: 3000,
-      position: 'bottom',
-      color: 'danger',
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastCtrl.create({
+          message: this.translate.instant('bolusCalculator.errors.calculationFailed'),
+          duration: 3000,
+          position: 'bottom',
+          color: 'danger',
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 }

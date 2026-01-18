@@ -27,6 +27,8 @@ import {
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
+
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { AppointmentService } from '@services/appointment.service';
 import { Appointment, AppointmentResolutionResponse } from '@models/appointment.model';
 import { TranslationService } from '@services/translation.service';
@@ -323,11 +325,16 @@ export class AppointmentDetailPage implements OnInit {
    * Show error message
    */
   private async showError(message: string): Promise<void> {
-    const alert = await this.alertController.create({
-      header: this.translationService.instant('app.error'),
-      message,
-      buttons: ['OK'],
-    });
+    const alert = await createOverlaySafely(
+      () =>
+        this.alertController.create({
+          header: this.translationService.instant('app.error'),
+          message,
+          buttons: ['OK'],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!alert) return;
     await alert.present();
   }
 
@@ -345,12 +352,17 @@ export class AppointmentDetailPage implements OnInit {
     message: string,
     color: 'success' | 'warning' | 'danger' = 'success'
   ): Promise<void> {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      position: 'bottom',
-      color,
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message,
+          duration: 3000,
+          position: 'bottom',
+          color,
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 }

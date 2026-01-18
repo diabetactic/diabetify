@@ -25,6 +25,7 @@ import {
 } from '@ionic/angular/standalone';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { ProfileService } from '@core/services/profile.service';
 import { UserProfile } from '@core/models/user-profile.model';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
@@ -130,10 +131,16 @@ export class ProfileEditComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    const loading = await this.loadingController.create({
-      message: this.translate.instant('common.saving'),
-    });
-    await loading.present();
+    const loading = await createOverlaySafely(
+      () =>
+        this.loadingController.create({
+          message: this.translate.instant('common.saving'),
+        }),
+      { timeoutMs: 2000 }
+    );
+    if (loading) {
+      await loading.present();
+    }
 
     try {
       const formValue = this.editForm.value;
@@ -162,32 +169,44 @@ export class ProfileEditComponent implements OnInit {
         await this.profileService.updateProfile(localUpdates);
       }
 
-      await loading.dismiss();
+      await loading?.dismiss();
 
       // Show success toast
-      const toast = await this.toastController.create({
-        message: this.translate.instant('profile.editForm.success'),
-        duration: 2000,
-        color: 'success',
-        position: 'bottom',
-        icon: 'checkmark-circle-outline',
-      });
-      await toast.present();
+      const toast = await createOverlaySafely(
+        () =>
+          this.toastController.create({
+            message: this.translate.instant('profile.editForm.success'),
+            duration: 2000,
+            color: 'success',
+            position: 'bottom',
+            icon: 'checkmark-circle-outline',
+          }),
+        { timeoutMs: 1500 }
+      );
+      if (toast) {
+        await toast.present();
+      }
 
       // Close modal with success result
       await this.modalController.dismiss({ success: true });
     } catch {
-      await loading.dismiss();
+      await loading?.dismiss();
 
       // Show error toast
-      const toast = await this.toastController.create({
-        message: this.translate.instant('profile.editForm.error'),
-        duration: 3000,
-        color: 'danger',
-        position: 'bottom',
-        icon: 'alert-circle-outline',
-      });
-      await toast.present();
+      const toast = await createOverlaySafely(
+        () =>
+          this.toastController.create({
+            message: this.translate.instant('profile.editForm.error'),
+            duration: 3000,
+            color: 'danger',
+            position: 'bottom',
+            icon: 'alert-circle-outline',
+          }),
+        { timeoutMs: 1500 }
+      );
+      if (toast) {
+        await toast.present();
+      }
 
       this.isSubmitting = false;
     }

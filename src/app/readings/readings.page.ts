@@ -33,6 +33,8 @@ import { ModalController, ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { LocalGlucoseReading, GlucoseStatus, GlucoseUnit } from '@models/glucose-reading.model';
 import { ReadingsService } from '@services/readings.service';
 import { ProfileService } from '@services/profile.service';
@@ -277,12 +279,17 @@ export class ReadingsPage implements OnInit, OnDestroy {
   async addReading(): Promise<void> {
     this.logger.info('UI', 'Add reading button clicked');
 
-    const modal = await this.modalController.create({
-      component: AddReadingPage,
-      breakpoints: [0, 0.8, 1],
-      initialBreakpoint: 0.8,
-      cssClass: 'add-reading-modal',
-    });
+    const modal = await createOverlaySafely(
+      () =>
+        this.modalController.create({
+          component: AddReadingPage,
+          breakpoints: [0, 0.8, 1],
+          initialBreakpoint: 0.8,
+          cssClass: 'add-reading-modal',
+        }),
+      { timeoutMs: 2500 }
+    );
+    if (!modal) return;
 
     await modal.present();
   }
@@ -290,15 +297,20 @@ export class ReadingsPage implements OnInit, OnDestroy {
   async editReading(reading: LocalGlucoseReading): Promise<void> {
     this.logger.info('UI', 'Edit reading button clicked', { readingId: reading.id });
 
-    const modal = await this.modalController.create({
-      component: EditReadingPage,
-      componentProps: {
-        reading,
-      },
-      breakpoints: [0, 0.8, 1],
-      initialBreakpoint: 0.8,
-      cssClass: 'edit-reading-modal',
-    });
+    const modal = await createOverlaySafely(
+      () =>
+        this.modalController.create({
+          component: EditReadingPage,
+          componentProps: {
+            reading,
+          },
+          breakpoints: [0, 0.8, 1],
+          initialBreakpoint: 0.8,
+          cssClass: 'edit-reading-modal',
+        }),
+      { timeoutMs: 2500 }
+    );
+    if (!modal) return;
 
     await modal.present();
   }
@@ -351,12 +363,17 @@ export class ReadingsPage implements OnInit, OnDestroy {
   }
 
   private async showToast(message: string, color: 'success' | 'danger'): Promise<void> {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      color,
-      position: 'bottom',
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message,
+          duration: 3000,
+          color,
+          position: 'bottom',
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 

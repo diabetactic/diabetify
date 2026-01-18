@@ -20,6 +20,7 @@ import {
 import { ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { ROUTES, ROUTE_SEGMENTS } from '@core/constants';
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { AppointmentService } from '@services/appointment.service';
 import { ReadingsSyncService } from '@services/readings-sync.service';
 import { TranslationService } from '@services/translation.service';
@@ -105,13 +106,18 @@ export class TabsPage implements OnInit, OnDestroy {
   }
 
   private async showSyncFailureToast(error: string): Promise<void> {
-    const toast = await this.toastController.create({
-      message: this.translationService.instant('sync.errors.permanentFailure', { error }),
-      duration: 5000,
-      position: 'bottom',
-      color: 'danger',
-      buttons: [{ text: this.translationService.instant('common.close'), role: 'cancel' }],
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message: this.translationService.instant('sync.errors.permanentFailure', { error }),
+          duration: 5000,
+          position: 'bottom',
+          color: 'danger',
+          buttons: [{ text: this.translationService.instant('common.close'), role: 'cancel' }],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 
@@ -199,18 +205,23 @@ export class TabsPage implements OnInit, OnDestroy {
       messageKey = 'appointments.errors.denied';
     }
 
-    const toast = await this.toastController.create({
-      message: this.translationService.instant(messageKey),
-      duration: 3000,
-      position: 'bottom',
-      color: 'warning',
-      buttons: [
-        {
-          text: this.translationService.instant('common.close'),
-          role: 'cancel',
-        },
-      ],
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message: this.translationService.instant(messageKey),
+          duration: 3000,
+          position: 'bottom',
+          color: 'warning',
+          buttons: [
+            {
+              text: this.translationService.instant('common.close'),
+              role: 'cancel',
+            },
+          ],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 }

@@ -31,6 +31,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { AccountState, DEFAULT_USER_PREFERENCES } from '@models/user-profile.model';
 import { ROUTES } from '@core/constants';
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 
 @Component({
   selector: 'app-login',
@@ -220,13 +221,19 @@ export class LoginPage implements OnInit, OnDestroy {
         }
 
         this.logger.debug('Auth', 'Showing welcome toast', { stage: 'toast-before' });
-        const toast = await this.toastCtrl.create({
-          message: this.translate.instant('login.messages.welcomeBack'),
-          duration: 2000,
-          color: 'success',
-          position: 'top',
-        });
-        await toast.present();
+        const toast = await createOverlaySafely(
+          () =>
+            this.toastCtrl.create({
+              message: this.translate.instant('login.messages.welcomeBack'),
+              duration: 2000,
+              color: 'success',
+              position: 'top',
+            }),
+          { timeoutMs: 1500 }
+        );
+        if (toast) {
+          await toast.present();
+        }
 
         this.logger.info('Auth', 'Navigating to dashboard...', { stage: 'navigate-dashboard' });
         await this.router.navigate([ROUTES.TABS_DASHBOARD], { replaceUrl: true });
@@ -362,18 +369,23 @@ export class LoginPage implements OnInit, OnDestroy {
   }
 
   private async showErrorToast(message: string): Promise<void> {
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 3500,
-      color: 'danger',
-      position: 'top',
-      buttons: [
-        {
-          icon: 'close',
-          role: 'cancel',
-        },
-      ],
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastCtrl.create({
+          message,
+          duration: 3500,
+          color: 'danger',
+          position: 'top',
+          buttons: [
+            {
+              icon: 'close',
+              role: 'cancel',
+            },
+          ],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 }

@@ -26,6 +26,8 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { ReadingsService } from '@services/readings.service';
 import { LoggerService } from '@services/logger.service';
 import { LocalGlucoseReading, GlucoseStatistics, GlucoseUnit } from '@models/glucose-reading.model';
@@ -352,10 +354,15 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   async openBolusCalculator(): Promise<void> {
     const { BolusCalculatorPage } = await import('../bolus-calculator/bolus-calculator.page');
-    const modal = await this.modalController.create({
-      component: BolusCalculatorPage,
-      cssClass: 'fullscreen-modal',
-    });
+    const modal = await createOverlaySafely(
+      () =>
+        this.modalController.create({
+          component: BolusCalculatorPage,
+          cssClass: 'fullscreen-modal',
+        }),
+      { timeoutMs: 2500 }
+    );
+    if (!modal) return;
     await modal.present();
   }
 
@@ -363,18 +370,23 @@ export class DashboardPage implements OnInit, OnDestroy {
    * Show toast notification
    */
   private async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      position: 'bottom',
-      color,
-      buttons: [
-        {
-          text: this.translationService.instant('common.close'),
-          role: 'cancel',
-        },
-      ],
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message,
+          duration: 3000,
+          position: 'bottom',
+          color,
+          buttons: [
+            {
+              text: this.translationService.instant('common.close'),
+              role: 'cancel',
+            },
+          ],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 

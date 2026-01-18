@@ -3,6 +3,7 @@ import { ToastController, ToastOptions } from '@ionic/angular';
 import { Network } from '@capacitor/network';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { PluginListenerHandle } from '@capacitor/core';
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 
 /**
  * Circuit breaker states for resilience pattern
@@ -117,7 +118,10 @@ export class ErrorRecoveryService implements OnDestroy {
         },
       ],
     };
-    const toast = await this.toastController.create(options);
+    const toast = await createOverlaySafely(() => this.toastController.create(options), {
+      timeoutMs: 1500,
+    });
+    if (!toast) return;
     await toast.present();
   }
 

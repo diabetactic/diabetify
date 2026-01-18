@@ -23,6 +23,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
 
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { environment } from '@env/environment';
 import { UnifiedAuthService } from '@services/unified-auth.service';
 import { TranslationService } from '@services/translation.service';
@@ -86,35 +87,46 @@ export class AdvancedPage implements OnDestroy {
    * Sign out the current user
    */
   async signOut(): Promise<void> {
-    const alert = await this.alertController.create({
-      header: this.translationService.instant('app.settings'),
-      message: this.translationService.instant('settings.advanced.signOut'),
-      buttons: [
-        {
-          text: this.translationService.instant('app.cancel'),
-          role: 'cancel',
-        },
-        {
-          text: this.translationService.instant('auth.signOut'),
-          role: 'destructive',
-          handler: async () => {
-            try {
-              await this.authService.logout();
-              this.router.navigate([ROUTES.WELCOME]);
-            } catch (error) {
-              this.logger.error('Auth', 'Sign out error', error);
-              const toast = await this.toastController.create({
-                message: this.translationService.instant('errors.generic'),
-                duration: TIMEOUTS.TOAST_SHORT,
-                color: 'danger',
-              });
-              await toast.present();
-            }
-          },
-        },
-      ],
-    });
+    const alert = await createOverlaySafely(
+      () =>
+        this.alertController.create({
+          header: this.translationService.instant('app.settings'),
+          message: this.translationService.instant('settings.advanced.signOut'),
+          buttons: [
+            {
+              text: this.translationService.instant('app.cancel'),
+              role: 'cancel',
+            },
+            {
+              text: this.translationService.instant('auth.signOut'),
+              role: 'destructive',
+              handler: async () => {
+                try {
+                  await this.authService.logout();
+                  this.router.navigate([ROUTES.WELCOME]);
+                } catch (error) {
+                  this.logger.error('Auth', 'Sign out error', error);
+                  const toast = await createOverlaySafely(
+                    () =>
+                      this.toastController.create({
+                        message: this.translationService.instant('errors.generic'),
+                        duration: TIMEOUTS.TOAST_SHORT,
+                        color: 'danger',
+                      }),
+                    { timeoutMs: 1500 }
+                  );
+                  if (toast) {
+                    await toast.present();
+                  }
+                }
+              },
+            },
+          ],
+        }),
+      { timeoutMs: 1500 }
+    );
 
+    if (!alert) return;
     await alert.present();
   }
 
@@ -122,53 +134,70 @@ export class AdvancedPage implements OnDestroy {
    * Clear all local data (IndexedDB and preferences)
    */
   async clearLocalData(): Promise<void> {
-    const alert = await this.alertController.create({
-      header: this.translationService.instant('settings.advanced.clearData'),
-      message: this.translationService.instant('settings.advanced.clearDataConfirm'),
-      buttons: [
-        {
-          text: this.translationService.instant('app.cancel'),
-          role: 'cancel',
-        },
-        {
-          text: this.translationService.instant('settings.advanced.clearDataButton'),
-          role: 'destructive',
-          handler: async () => {
-            try {
-              // Clear IndexedDB
-              if (db) {
-                await db.delete();
-              }
+    const alert = await createOverlaySafely(
+      () =>
+        this.alertController.create({
+          header: this.translationService.instant('settings.advanced.clearData'),
+          message: this.translationService.instant('settings.advanced.clearDataConfirm'),
+          buttons: [
+            {
+              text: this.translationService.instant('app.cancel'),
+              role: 'cancel',
+            },
+            {
+              text: this.translationService.instant('settings.advanced.clearDataButton'),
+              role: 'destructive',
+              handler: async () => {
+                try {
+                  // Clear IndexedDB
+                  if (db) {
+                    await db.delete();
+                  }
 
-              // Clear Preferences
-              await Preferences.clear();
+                  // Clear Preferences
+                  await Preferences.clear();
 
-              // Show success toast
-              const toast = await this.toastController.create({
-                message: this.translationService.instant('settings.advanced.clearDataSuccess'),
-                duration: TIMEOUTS.TOAST_SHORT,
-                color: 'success',
-              });
-              await toast.present();
+                  // Show success toast
+                  const toast = await createOverlaySafely(
+                    () =>
+                      this.toastController.create({
+                        message: this.translationService.instant('settings.advanced.clearDataSuccess'),
+                        duration: TIMEOUTS.TOAST_SHORT,
+                        color: 'success',
+                      }),
+                    { timeoutMs: 1500 }
+                  );
+                  if (toast) {
+                    await toast.present();
+                  }
 
-              // Reload the app
-              setTimeout(() => {
-                window.location.reload();
-              }, 500);
-            } catch (error) {
-              this.logger.error('Settings', 'Clear data error', error);
-              const toast = await this.toastController.create({
-                message: this.translationService.instant('settings.advanced.clearDataError'),
-                duration: TIMEOUTS.TOAST_SHORT,
-                color: 'danger',
-              });
-              await toast.present();
-            }
-          },
-        },
-      ],
-    });
+                  // Reload the app
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 500);
+                } catch (error) {
+                  this.logger.error('Settings', 'Clear data error', error);
+                  const toast = await createOverlaySafely(
+                    () =>
+                      this.toastController.create({
+                        message: this.translationService.instant('settings.advanced.clearDataError'),
+                        duration: TIMEOUTS.TOAST_SHORT,
+                        color: 'danger',
+                      }),
+                    { timeoutMs: 1500 }
+                  );
+                  if (toast) {
+                    await toast.present();
+                  }
+                }
+              },
+            },
+          ],
+        }),
+      { timeoutMs: 1500 }
+    );
 
+    if (!alert) return;
     await alert.present();
   }
 

@@ -31,6 +31,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { AppIconComponent } from '../app-icon/app-icon.component';
 
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { TranslationService, Language, LanguageConfig } from '@services/translation.service';
 
 @Component({
@@ -189,12 +190,17 @@ export class LanguageSwitcherComponent implements OnInit, OnDestroy {
    * Show language popover
    */
   async showLanguagePopover(event: Event) {
-    const popover = await this.popoverController.create({
-      component: LanguagePopoverComponent,
-      event,
-      translucent: true,
-      cssClass: 'language-popover',
-    });
+    const popover = await createOverlaySafely(
+      () =>
+        this.popoverController.create({
+          component: LanguagePopoverComponent,
+          event,
+          translucent: true,
+          cssClass: 'language-popover',
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!popover) return;
 
     await popover.present();
   }

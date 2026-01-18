@@ -30,6 +30,8 @@ import {
 import { ToastController, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, firstValueFrom, interval } from 'rxjs';
+
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { AppointmentService } from '@services/appointment.service';
 import {
   Appointment,
@@ -792,12 +794,17 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
     message: string,
     color: 'success' | 'warning' | 'danger' = 'success'
   ): Promise<void> {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      position: 'bottom',
-      color,
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message,
+          duration: 3000,
+          position: 'bottom',
+          color,
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 

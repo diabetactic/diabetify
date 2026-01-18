@@ -37,6 +37,7 @@ import {
 } from '@ionic/angular/standalone';
 import { Subject, Subscription } from 'rxjs';
 
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { ProfileService } from '@services/profile.service';
 import { ReadingsService } from '@services/readings.service';
 import { ThemeService } from '@services/theme.service';
@@ -282,27 +283,32 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.hasChanges = true;
 
     // Show confirmation to reload app for language change
-    const alert = await this.alertController.create({
-      header: language === 'es' ? 'Cambio de idioma' : 'Language Change',
-      message:
-        language === 'es'
-          ? 'La aplicación se recargará para aplicar el cambio de idioma.'
-          : 'The app will reload to apply the language change.',
-      buttons: [
-        {
-          text: language === 'es' ? 'Cancelar' : 'Cancel',
-          role: 'cancel',
-        },
-        {
-          text: 'OK',
-          handler: () => {
-            this.saveSettings().then(() => {
-              window.location.reload();
-            });
-          },
-        },
-      ],
-    });
+    const alert = await createOverlaySafely(
+      () =>
+        this.alertController.create({
+          header: language === 'es' ? 'Cambio de idioma' : 'Language Change',
+          message:
+            language === 'es'
+              ? 'La aplicación se recargará para aplicar el cambio de idioma.'
+              : 'The app will reload to apply the language change.',
+          buttons: [
+            {
+              text: language === 'es' ? 'Cancelar' : 'Cancel',
+              role: 'cancel',
+            },
+            {
+              text: 'OK',
+              handler: () => {
+                this.saveSettings().then(() => {
+                  window.location.reload();
+                });
+              },
+            },
+          ],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!alert) return;
     await alert.present();
   }
 
@@ -310,10 +316,16 @@ export class SettingsPage implements OnInit, OnDestroy {
    * Save all settings
    */
   async saveSettings() {
-    const loading = await this.loadingController.create({
-      message: 'Guardando configuración...',
-    });
-    await loading.present();
+    const loading = await createOverlaySafely(
+      () =>
+        this.loadingController.create({
+          message: 'Guardando configuración...',
+        }),
+      { timeoutMs: 2000 }
+    );
+    if (loading) {
+      await loading.present();
+    }
 
     try {
       await this.preferencesService.updatePreferences({
@@ -350,7 +362,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.logger.error('Settings', 'Error saving settings', error);
       await this.showToast('Error al guardar la configuración', 'danger');
     } finally {
-      await loading.dismiss();
+      await loading?.dismiss();
     }
   }
 
@@ -359,9 +371,14 @@ export class SettingsPage implements OnInit, OnDestroy {
    */
   async goToAdvancedSettings() {
     const { AdvancedPage } = await import('./advanced/advanced.page');
-    const modal = await this.modalController.create({
-      component: AdvancedPage,
-    });
+    const modal = await createOverlaySafely(
+      () =>
+        this.modalController.create({
+          component: AdvancedPage,
+        }),
+      { timeoutMs: 2500 }
+    );
+    if (!modal) return;
     await modal.present();
   }
 
@@ -376,31 +393,36 @@ export class SettingsPage implements OnInit, OnDestroy {
    * Sign out with proper error handling
    */
   async signOut() {
-    const alert = await this.alertController.create({
-      header: 'Cerrar Sesión',
-      message: '¿Estás seguro de que deseas cerrar sesión?',
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
-        {
-          text: 'Cerrar Sesión',
-          handler: async () => {
-            try {
-              await this.authService.logout();
-              await this.router.navigate([ROUTES.LOGIN], { replaceUrl: true });
-            } catch (error) {
-              this.logger.error('Settings', 'Failed to logout', error);
-              // Even if logout fails, still navigate to login page
-              // This ensures user can re-authenticate
-              await this.showToast('Error al cerrar sesión', 'warning');
-              await this.router.navigate([ROUTES.LOGIN], { replaceUrl: true });
-            }
-          },
-        },
-      ],
-    });
+    const alert = await createOverlaySafely(
+      () =>
+        this.alertController.create({
+          header: 'Cerrar Sesión',
+          message: '¿Estás seguro de que deseas cerrar sesión?',
+          buttons: [
+            {
+              text: 'Cancelar',
+              role: 'cancel',
+            },
+            {
+              text: 'Cerrar Sesión',
+              handler: async () => {
+                try {
+                  await this.authService.logout();
+                  await this.router.navigate([ROUTES.LOGIN], { replaceUrl: true });
+                } catch (error) {
+                  this.logger.error('Settings', 'Failed to logout', error);
+                  // Even if logout fails, still navigate to login page
+                  // This ensures user can re-authenticate
+                  await this.showToast('Error al cerrar sesión', 'warning');
+                  await this.router.navigate([ROUTES.LOGIN], { replaceUrl: true });
+                }
+              },
+            },
+          ],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!alert) return;
     await alert.present();
   }
 
@@ -408,12 +430,17 @@ export class SettingsPage implements OnInit, OnDestroy {
    * Show toast message
    */
   private async showToast(message: string, color: 'success' | 'warning' | 'danger') {
-    const toast = await this.toastController.create({
-      message,
-      duration: TIMEOUTS.TOAST_SHORT,
-      color,
-      position: 'bottom',
-    });
+    const toast = await createOverlaySafely(
+      () =>
+        this.toastController.create({
+          message,
+          duration: TIMEOUTS.TOAST_SHORT,
+          color,
+          position: 'bottom',
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!toast) return;
     await toast.present();
   }
 
@@ -425,20 +452,25 @@ export class SettingsPage implements OnInit, OnDestroy {
       return true;
     }
 
-    const alert = await this.alertController.create({
-      header: 'Cambios sin guardar',
-      message: 'Tienes cambios sin guardar. ¿Deseas salir sin guardar?',
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
-        {
-          text: 'Salir sin guardar',
-          handler: () => true,
-        },
-      ],
-    });
+    const alert = await createOverlaySafely(
+      () =>
+        this.alertController.create({
+          header: 'Cambios sin guardar',
+          message: 'Tienes cambios sin guardar. ¿Deseas salir sin guardar?',
+          buttons: [
+            {
+              text: 'Cancelar',
+              role: 'cancel',
+            },
+            {
+              text: 'Salir sin guardar',
+              handler: () => true,
+            },
+          ],
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!alert) return false;
 
     await alert.present();
     const result = await alert.onDidDismiss();

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AlertController } from '@ionic/angular';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { createOverlaySafely } from '@core/utils/ionic-overlays';
 
 @Component({
   selector: 'app-info-button',
@@ -32,12 +33,17 @@ export class InfoButtonComponent {
   ) {}
 
   async showInfo() {
-    const alert = await this.alertController.create({
-      header: this.title || this.translate.instant('app.info'),
-      message: this.message,
-      buttons: [this.translate.instant('common.ok')],
-      cssClass: 'info-alert',
-    });
+    const alert = await createOverlaySafely(
+      () =>
+        this.alertController.create({
+          header: this.title || this.translate.instant('app.info'),
+          message: this.message,
+          buttons: [this.translate.instant('common.ok')],
+          cssClass: 'info-alert',
+        }),
+      { timeoutMs: 1500 }
+    );
+    if (!alert) return;
     await alert.present();
   }
 }
