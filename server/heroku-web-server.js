@@ -75,7 +75,9 @@ app.all('/api/*', async (req, res) => {
 
     if (LOG_API_REQUESTS) {
       const elapsedMs = Date.now() - startedAt;
-      console.log(`[api-proxy] ${req.method} ${safePath} -> ${upstreamRes.status} (${elapsedMs}ms)`);
+      console.log(
+        `[api-proxy] ${req.method} ${safePath} -> ${upstreamRes.status} (${elapsedMs}ms)`
+      );
     }
   } catch (error) {
     if (LOG_API_REQUESTS) {

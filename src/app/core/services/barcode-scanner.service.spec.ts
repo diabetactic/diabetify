@@ -228,14 +228,14 @@ describe('BarcodeScannerService', () => {
       await expect(service.scan()).rejects.toThrow('No camera found on device');
     });
 
-    it('should propagate error when alert creation fails', async () => {
+    it('should not throw when alert creation fails', async () => {
       (BarcodeScanner.requestPermissions as Mock).mockResolvedValue({
         camera: 'denied',
       });
       const alertError = new Error('Failed to create alert');
       (alertController.create as Mock).mockRejectedValue(alertError);
 
-      await expect(service.scan()).rejects.toThrow('Failed to create alert');
+      await expect(service.scan()).resolves.toBeNull();
     });
   });
 

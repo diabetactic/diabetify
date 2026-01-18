@@ -150,10 +150,7 @@ export class LoginPage implements OnInit, OnDestroy {
 
     const dismissLoading = async () => {
       try {
-        const loading = await Promise.race([
-          loadingPromise,
-          sleep(1000).then(() => null),
-        ]);
+        const loading = await Promise.race([loadingPromise, sleep(1000).then(() => null)]);
         if (!loading) return;
         await Promise.race([loading.dismiss(), sleep(1000)]);
       } catch (error) {

@@ -50,6 +50,11 @@ WARP.md
 docs/*REPORT.md
 docs/*SUMMARY.md
 
+# Deprecated services (do not commit)
+.netlify/
+deepsource-export/
+bin/deepsource
+
 # Debugging artifacts
 snapshot*.txt
 dashboard_*.txt

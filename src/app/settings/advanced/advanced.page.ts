@@ -161,7 +161,9 @@ export class AdvancedPage implements OnDestroy {
                   const toast = await createOverlaySafely(
                     () =>
                       this.toastController.create({
-                        message: this.translationService.instant('settings.advanced.clearDataSuccess'),
+                        message: this.translationService.instant(
+                          'settings.advanced.clearDataSuccess'
+                        ),
                         duration: TIMEOUTS.TOAST_SHORT,
                         color: 'success',
                       }),
@@ -180,7 +182,9 @@ export class AdvancedPage implements OnDestroy {
                   const toast = await createOverlaySafely(
                     () =>
                       this.toastController.create({
-                        message: this.translationService.instant('settings.advanced.clearDataError'),
+                        message: this.translationService.instant(
+                          'settings.advanced.clearDataError'
+                        ),
                         duration: TIMEOUTS.TOAST_SHORT,
                         color: 'danger',
                       }),

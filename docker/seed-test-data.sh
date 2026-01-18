@@ -68,14 +68,42 @@ echo "🌱 Seeding test data (mode: $MODE)..."
 echo ""
 
 # -----------------------------------------------------------------------------
+# Helpers
+# -----------------------------------------------------------------------------
+require_numeric_dni() {
+  local dni="$1"
+  if ! [[ "$dni" =~ ^[0-9]+$ ]]; then
+    echo "❌ Invalid DNI (expected numeric): $dni"
+    exit 1
+  fi
+}
+
+get_user_id_by_dni_from_db() {
+  local dni="$1"
+  require_numeric_dni "$dni"
+  docker exec diabetactic_users_db psql -U postgres -d users -tA \
+    -c "SELECT user_id FROM users WHERE dni = '$dni' LIMIT 1;" 2>/dev/null | tr -d '\r'
+}
+
+user_exists_in_db() {
+  local dni="$1"
+  require_numeric_dni "$dni"
+  local count
+  count="$(docker exec diabetactic_users_db psql -U postgres -d users -tA \
+    -c "SELECT COUNT(*) FROM users WHERE dni = '$dni';" 2>/dev/null | tr -d '\r')"
+  if [ "${count:-0}" -gt 0 ]; then
+    return 0
+  fi
+  return 1
+}
+
+# -----------------------------------------------------------------------------
 # Step 1: Create test user
 # -----------------------------------------------------------------------------
 echo "👤 Creating test user..."
 
 # Check if user already exists
-USER_EXISTS=$(curl -s "$API_URL/users/from_dni/$TEST_USER_DNI" 2>/dev/null | grep -c "user_id" || echo "0")
-
-if [ "$USER_EXISTS" = "0" ]; then
+if ! user_exists_in_db "$TEST_USER_DNI"; then
     ./create-user.sh "$TEST_USER_DNI" "$TEST_USER_PASSWORD" "$TEST_USER_NAME" "$TEST_USER_SURNAME" "$TEST_USER_EMAIL"
     if declare -F append_jsonl >/dev/null 2>&1; then
       append_jsonl "seed-history.jsonl" event="user_created" dni="$TEST_USER_DNI" || true
@@ -90,9 +118,7 @@ fi
 # Create second test user for multi-user E2E tests
 echo ""
 echo "👤 Creating second test user (for multi-user tests)..."
-USER_2_EXISTS=$(curl -s "$API_URL/users/from_dni/$TEST_USER_2_DNI" 2>/dev/null | grep -c "user_id" || echo "0")
-
-if [ "$USER_2_EXISTS" = "0" ]; then
+if ! user_exists_in_db "$TEST_USER_2_DNI"; then
     ./create-user.sh "$TEST_USER_2_DNI" "$TEST_USER_2_PASSWORD" "$TEST_USER_2_NAME" "$TEST_USER_2_SURNAME" "$TEST_USER_2_EMAIL"
     if declare -F append_jsonl >/dev/null 2>&1; then
       append_jsonl "seed-history.jsonl" event="user_created" dni="$TEST_USER_2_DNI" || true
@@ -153,24 +179,11 @@ if [ "$MODE" = "minimal" ]; then
 fi
 
 # Determine numeric user_id for deterministic cleanup.
-USER_JSON=$(curl -s "$API_URL/users/from_dni/$TEST_USER_DNI" 2>/dev/null || echo "")
-if command -v python3 >/dev/null 2>&1; then
-  USER_ID=$(python3 - <<'PY' 2>/dev/null <<<"$USER_JSON" || true
-import json, sys
-try:
-  data = json.load(sys.stdin)
-  print(data.get("user_id", ""))
-except Exception:
-  print("")
-PY
-  )
-else
-  USER_ID=""
-fi
+USER_ID="$(get_user_id_by_dni_from_db "$TEST_USER_DNI")"
 
 if [ -z "${USER_ID:-}" ]; then
   echo "❌ Failed to determine user_id for DNI $TEST_USER_DNI"
-  echo "   Response: $USER_JSON"
+  echo "   Hint: could not find user in users DB"
   if declare -F append_jsonl >/dev/null 2>&1; then
     append_jsonl "seed-history.jsonl" event="user_id_failed" dni="$TEST_USER_DNI" || true
   fi
@@ -179,7 +192,7 @@ fi
 
 if ! [[ "$USER_ID" =~ ^[0-9]+$ ]]; then
   echo "❌ Invalid user_id for DNI $TEST_USER_DNI (expected integer): $USER_ID"
-  echo "   Response: $USER_JSON"
+  echo "   Hint: users DB returned unexpected value"
   if declare -F append_jsonl >/dev/null 2>&1; then
     append_jsonl "seed-history.jsonl" event="user_id_invalid" dni="$TEST_USER_DNI" user_id="$USER_ID" || true
   fi

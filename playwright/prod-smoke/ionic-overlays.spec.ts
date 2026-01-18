@@ -17,7 +17,9 @@ test.describe('Ionic overlay registration (production build)', () => {
       ] as const;
 
       const timeout = (ms: number) =>
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`timeout ${ms}ms`)), ms));
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`timeout ${ms}ms`)), ms)
+        );
 
       const defined: Record<string, boolean> = {};
       for (const tag of overlays) {
@@ -65,4 +67,3 @@ test.describe('Ionic overlay registration (production build)', () => {
     expect(result.presentedMs).toBeLessThan(1500);
   });
 });
-

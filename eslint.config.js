@@ -56,19 +56,19 @@ module.exports = tseslint.config(
     files: ['**/*.html'],
   })),
 
-	  // 5. TypeScript Overrides
-	  {
-	    files: ['**/*.ts'],
-	    processor: angular.processInlineTemplates,
-	    plugins: {
-	      diabetactic: diabetacticRules,
-	    },
-	    rules: {
-	      'diabetactic/no-await-ionic-overlay-create': 'error',
-	      '@typescript-eslint/ban-ts-comment': [
-	        'error',
-	        {
-	          'ts-ignore': true,
+  // 5. TypeScript Overrides
+  {
+    files: ['**/*.ts'],
+    processor: angular.processInlineTemplates,
+    plugins: {
+      diabetactic: diabetacticRules,
+    },
+    rules: {
+      'diabetactic/no-await-ionic-overlay-create': 'error',
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        {
+          'ts-ignore': true,
           'ts-expect-error': true,
           'ts-nocheck': true,
           'ts-check': false,
@@ -153,23 +153,23 @@ module.exports = tseslint.config(
     },
   },
 
-	  // 8. Test Files Overrides - more lenient for mocks and test utilities
-	  {
-	    files: [
-	      '**/*.spec.ts',
+  // 8. Test Files Overrides - more lenient for mocks and test utilities
+  {
+    files: [
+      '**/*.spec.ts',
       '**/*.test.ts',
       '**/setup-vitest.ts',
       '**/test-setup.ts',
       'e2e/**/*.ts',
-	      'playwright/**/*.ts',
-	      'src/app/tests/**/*.ts',
-	    ],
-	    rules: {
-	      'diabetactic/no-await-ionic-overlay-create': 'off',
-	      '@typescript-eslint/no-explicit-any': 'off', // Mocks often need flexible types
-	      '@typescript-eslint/no-unused-vars': [
-	        'warn',
-	        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      'playwright/**/*.ts',
+      'src/app/tests/**/*.ts',
+    ],
+    rules: {
+      'diabetactic/no-await-ionic-overlay-create': 'off',
+      '@typescript-eslint/no-explicit-any': 'off', // Mocks often need flexible types
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       '@angular-eslint/prefer-standalone': 'off', // Test modules often use NgModule
       'no-restricted-syntax': [
