@@ -128,6 +128,46 @@ html.high-contrast {
     border: 2px solid #000 !important;
     --background: #fff !important;
   }
+
+  // Enhanced focus states for WCAG AAA (3:1 contrast minimum)
+  *:focus-visible {
+    outline: 3px solid #000 !important;
+    outline-offset: 3px !important;
+  }
+
+  ion-button:focus-visible::part(native),
+  ion-input:focus-visible,
+  ion-select:focus-visible,
+  ion-toggle:focus-visible,
+  ion-checkbox:focus-visible,
+  ion-radio:focus-visible {
+    outline: 3px solid #000 !important;
+    outline-offset: 3px !important;
+    box-shadow: none !important;
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline: 3px solid #000 !important;
+    outline-offset: 3px !important;
+  }
+
+  // Non-color indicators for glucose status (WCAG 1.4.1)
+  .status-badge {
+    border-width: 2px !important;
+
+    &.normal::before {
+      content: '✓ ';
+    }
+
+    &.low::before {
+      content: '↓ ';
+    }
+
+    &.high::before {
+      content: '↑ ';
+    }
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -236,5 +276,45 @@ html.high-contrast[data-theme='dark'] {
     border: 2px solid #fff !important;
     --background: #000 !important;
     color: #fff !important;
+  }
+
+  // Enhanced focus states for dark high contrast
+  *:focus-visible {
+    outline: 3px solid #ff0 !important;
+    outline-offset: 3px !important;
+  }
+
+  ion-button:focus-visible::part(native),
+  ion-input:focus-visible,
+  ion-select:focus-visible,
+  ion-toggle:focus-visible,
+  ion-checkbox:focus-visible,
+  ion-radio:focus-visible {
+    outline: 3px solid #ff0 !important;
+    outline-offset: 3px !important;
+    box-shadow: none !important;
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline: 3px solid #ff0 !important;
+    outline-offset: 3px !important;
+  }
+
+  // Non-color indicators for glucose status (WCAG 1.4.1)
+  .status-badge {
+    border-width: 2px !important;
+
+    &.normal::before {
+      content: '✓ ';
+    }
+
+    &.low::before {
+      content: '↓ ';
+    }
+
+    &.high::before {
+      content: '↑ ';
+    }
   }
 }
