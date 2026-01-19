@@ -65,6 +65,9 @@ export class ReadingsService implements OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private liveQuerySubscriptions: { unsubscribe: () => void }[] = [];
 
+  // User tracking for multi-user data isolation
+  private readonly currentUserId$ = new BehaviorSubject<string | null>(null);
+
   // Reactive observables
   private _readings$ = new BehaviorSubject<LocalGlucoseReading[]>([]);
   public readonly readings$ = this._readings$.asObservable();
@@ -103,13 +106,44 @@ export class ReadingsService implements OnDestroy {
   }
 
   // ============================================================================
+  // User Management (Multi-User Data Isolation)
+  // ============================================================================
+
+  /**
+   * Set the current user for query filtering
+   * All subsequent queries will only return data for this user
+   */
+  setCurrentUser(userId: string): void {
+    this.currentUserId$.next(userId);
+  }
+
+  /**
+   * Clear the current user (typically on logout)
+   * Queries will return no data until a new user is set
+   */
+  clearCurrentUser(): void {
+    this.currentUserId$.next(null);
+  }
+
+  // ============================================================================
   // Observable Initialization
   // ============================================================================
 
   private initializeObservables(): void {
-    const readingsSub = this.liveQueryFn(() =>
-      this.db.readings.orderBy('time').reverse().toArray()
-    ).subscribe(readings => this._readings$.next(readings));
+    const readingsSub = this.liveQueryFn(() => {
+      const userId = this.currentUserId$.getValue();
+      if (!userId) {
+        return [];
+      }
+      return this.db.readings
+        .where('userId')
+        .equals(userId)
+        .toArray()
+        .then(readings => {
+          readings.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+          return readings;
+        });
+    }).subscribe(readings => this._readings$.next(readings));
     this.liveQuerySubscriptions.push(readingsSub);
 
     const syncQueueSub = this.liveQueryFn(() => this.db.syncQueue.count()).subscribe(count =>
@@ -131,9 +165,20 @@ export class ReadingsService implements OnDestroy {
    * Get all readings with optional pagination
    */
   async getAllReadings(limit?: number, offset = 0): Promise<PaginatedReadings> {
-    const total = await this.db.readings.count();
+    const userId = this.currentUserId$.getValue();
+    if (!userId) {
+      return {
+        readings: [],
+        total: 0,
+        hasMore: false,
+        offset,
+        limit: limit || 0,
+      };
+    }
 
-    let query = this.db.readings.orderBy('time').reverse();
+    const total = await this.db.readings.where('userId').equals(userId).count();
+
+    let query = this.db.readings.where('userId').equals(userId);
 
     if (offset > 0) {
       query = query.offset(offset);
@@ -144,6 +189,7 @@ export class ReadingsService implements OnDestroy {
     }
 
     const readings = await query.toArray();
+    readings.reverse();
 
     return {
       readings,
@@ -162,17 +208,23 @@ export class ReadingsService implements OnDestroy {
     endDate: Date,
     type?: GlucoseType
   ): Promise<LocalGlucoseReading[]> {
+    const userId = this.currentUserId$.getValue();
+    if (!userId) {
+      return [];
+    }
+
     const startTime = startDate.toISOString();
     const endTime = endDate.toISOString();
 
     const query = this.db.readings.where('time').between(startTime, endTime, true, true);
     const readings = await query.toArray();
+    const userReadings = readings.filter(r => r.userId === userId);
 
     if (type) {
-      return readings.filter(r => r.type === type);
+      return userReadings.filter(r => r.type === type);
     }
 
-    return readings;
+    return userReadings;
   }
 
   /**
