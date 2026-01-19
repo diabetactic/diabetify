@@ -974,7 +974,9 @@
       "themeLabel": "Tema",
       "themeLight": "Claro",
       "themeDark": "Oscuro",
-      "themeAuto": "Automático del Sistema"
+      "themeAuto": "Automático del Sistema",
+      "highContrast": "Modo Alto Contraste",
+      "highContrastDesc": "Aumenta el contraste para mejor visibilidad (WCAG AAA)"
     },
     "profile": {
       "avatarAlt": "Foto de perfil"

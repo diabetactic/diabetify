@@ -495,4 +495,140 @@ sudo chown -R "$USER":"$USER" playwright-report playwright/artifacts
 - **Tests E2E**: `playwright/tests/`
 - **Page Objects**: `playwright/pages/`
 
+---
+
+## Testing Gotchas
+
+### Common Pitfalls
+
+| Problema                                  | Causa                                            | Solución                                                                |
+| ----------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------- |
+| `fakeAsync` no funciona con `async/await` | Zone.js no puede rastrear Promises nativas       | Usar `tick()` después de operaciones o `await flushMicrotasks()`        |
+| Mock de Ionic controller ignorado         | `IonicModule.forRoot()` provee instancias reales | Override directo: `(component as any).toastController = mockController` |
+| `ActivatedRoute` mock incompleto          | Falta `snapshot` o `params`                      | Proveer objeto completo con `snapshot: { params: {} }`                  |
+| Router mock falla                         | Falta `createUrlTree`                            | Agregar: `createUrlTree: vi.fn(), serializeUrl: vi.fn(), events: of()`  |
+| `PrematureCommitError` en IndexedDB tests | Transaction auto-commit                          | Usar `fake-indexeddb` v6+ y asegurar import de `test-setup.ts`          |
+| MSW handler no intercepta                 | Orden de handlers incorrecto                     | Handlers más específicos primero, genéricos después                     |
+
+### Ionic Component Testing
+
+```typescript
+// INCORRECTO: Este mock no se usará porque IonicModule provee ToastController
+beforeEach(async () => {
+  await TestBed.configureTestingModule({
+    imports: [IonicModule.forRoot()],
+    providers: [{ provide: ToastController, useValue: mockToast }], // ¡Ignorado!
+  });
+});
+
+// CORRECTO: Override directo de la propiedad
+it('should show toast', async () => {
+  const mockToast = { present: vi.fn().mockResolvedValue(undefined) };
+  (component as any).toastController = { create: vi.fn().mockResolvedValue(mockToast) };
+
+  await component.onAction();
+
+  expect(mockToast.present).toHaveBeenCalled();
+});
+```
+
+### Playwright E2E Gotchas
+
+| Problema                           | Causa                              | Solución                                                                         |
+| ---------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------- |
+| `isVisible({ timeout })` no espera | Timeout se ignora en `isVisible()` | Usar `await locator.waitFor({ state: 'visible', timeout: 3000 })`                |
+| Elemento no clickeable             | Ionic hydration incompleta         | `BasePage.waitForHydration()` o `await page.waitForSelector('ion-app.hydrated')` |
+| Screenshots difieren en CI         | Fuentes/rendering diferente        | Usar `maxDiffPixelRatio` o actualizar baselines en CI                            |
+| Artefactos con owner `root`        | Docker ejecuta como root           | `sudo chown -R "$USER":"$USER" playwright-report`                                |
+
+### Router Mock Template
+
+```typescript
+const mockRouter = {
+  navigate: vi.fn().mockResolvedValue(true),
+  navigateByUrl: vi.fn().mockResolvedValue(true),
+  createUrlTree: vi.fn().mockReturnValue({}),
+  serializeUrl: vi.fn().mockReturnValue(''),
+  events: of(),
+  routerState: { root: {} },
+};
+
+const mockActivatedRoute = {
+  snapshot: { params: {}, queryParams: {}, data: {} },
+  params: of({}),
+  queryParams: of({}),
+  data: of({}),
+};
+```
+
+### CSS Analysis
+
+Para analizar CSS del proyecto:
+
+```bash
+# Análisis rápido
+pnpm run css:analyze
+
+# Generar reporte JSON
+pnpm run css:report
+
+# Ver estadísticas: selectores, media queries, colores
+```
+
+El reporte incluye:
+
+- Conteo de selectores y especificidad
+- Media queries utilizadas
+- Colores únicos en el CSS
+- Reglas duplicadas o no usadas
+
+### CSS Analysis Results (Enero 2026)
+
+Resultados del análisis de `styles-*.css` (producción):
+
+| Métrica                    | Valor    | Notas                                              |
+| -------------------------- | -------- | -------------------------------------------------- |
+| **Tamaño total**           | 144.8 KB | Minificado                                         |
+| **Selectors**              | 1498     | Longitud promedio: 1.21                            |
+| **Declaraciones**          | 2560     |                                                    |
+| **Reglas**                 | 1250     |                                                    |
+| **Colores únicos**         | 208      | Incluye variantes Ionic/DaisyUI                    |
+| **Media queries**          | 114      | Breakpoints responsive                             |
+| **!important**             | 491      | Mayoría de Ionic utility classes                   |
+| **Selectores complejos**   | 44       | 4+ partes (ej: `html.ios ion-modal.modal-card...`) |
+| **Selectores duplicados**  | 18       |                                                    |
+| **Selectores calificados** | 66       | `element.class` patterns                           |
+| **Errores de parsing**     | 3        | `&.normal`, `&.low`, `&.high` (SCSS nesting)       |
+
+**Observaciones clave:**
+
+1. **Alto uso de `!important`**: 491 instancias, pero la mayoría provienen de Ionic utility classes (`.ion-hide`, `.ion-float-*`, etc.) - esto es esperado y no representa un problema.
+
+2. **Selectores complejos de Ionic**: Los 44 selectores complejos son mayormente de Ionic Framework para modal/accordion styling específico de iOS/Material Design.
+
+3. **208 colores**: El alto número se debe a las variantes de colores de Ionic (primary, secondary, success, warning, danger, light, medium, dark) y sus derivados (shade, tint, rgb).
+
+4. **Errores de parsing**: Los 3 errores (`&.normal`, `&.low`, `&.high`) son selectores SCSS anidados que `analyze-css` no puede parsear correctamente - no son errores reales en el CSS compilado.
+
+**Componentes con CSS excediendo budget (6KB):**
+
+| Archivo                      | Tamaño  | Exceso     |
+| ---------------------------- | ------- | ---------- |
+| `food-picker.component.scss` | 9.10 KB | +3.10 KB   |
+| `appointments.page.scss`     | 8.10 KB | +2.10 KB   |
+| `add-reading.page.scss`      | 7.73 KB | +1.73 KB   |
+| `reset-password.page.scss`   | 7.16 KB | +1.16 KB   |
+| `bolus-calculator.page.scss` | 6.71 KB | +706 bytes |
+| `forgot-password.page.scss`  | 6.70 KB | +702 bytes |
+| `login.page.scss`            | 6.32 KB | +321 bytes |
+| `dashboard.page.scss`        | 6.14 KB | +144 bytes |
+
+**Recomendaciones:**
+
+1. Extraer estilos comunes de `food-picker` y `appointments` a clases compartidas en `global.scss`
+2. Los componentes de login (`login`, `reset-password`, `forgot-password`) podrían compartir un archivo de estilos de autenticación
+3. Considerar usar más utilidades de Tailwind en lugar de CSS custom para reducir duplicación
+
+---
+
 **Última actualización**: Enero 2026

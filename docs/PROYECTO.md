@@ -131,6 +131,56 @@ El desarrollo siguió una metodología iterativa con las siguientes etapas:
 
 ---
 
-## 10. Conclusiones
+## 10. Gotchas del Proyecto
+
+### 10.1 Lecciones Aprendidas - Frontend
+
+| Problema                                 | Causa                                         | Solución Implementada                                              |
+| ---------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------ |
+| Componentes Ionic no renderizan en tests | Falta `CUSTOM_ELEMENTS_SCHEMA`                | Agregar schema a TODOS los componentes standalone                  |
+| Mock de `ToastController` ignorado       | `IonicModule.forRoot()` provee instancia real | Override directo: `(component as any).toastController = mock`      |
+| Tema oscuro no sincroniza con Ionic      | Ionic usa clases diferentes a DaisyUI         | Setear TRES triggers: `[data-theme]`, `.ion-palette-dark`, `.dark` |
+| `ion-datetime` muestra fecha incorrecta  | Bug de Ionic con timezone                     | Usar `displayFormat` explícito y manejar UTC manualmente           |
+
+### 10.2 Lecciones Aprendidas - Datos
+
+| Problema                         | Causa                                | Solución Implementada                                                 |
+| -------------------------------- | ------------------------------------ | --------------------------------------------------------------------- |
+| Datos de otro usuario visibles   | IndexedDB no filtra por userId       | Agregar `userId` a todas las queries de Dexie                         |
+| `PrematureCommitError` en tests  | Transaction auto-commit en IndexedDB | Usar `fake-indexeddb` v6+ y importar `test-setup.ts` primero          |
+| Sincronización duplica registros | Conflicto de IDs local vs server     | Usar UUIDs generados en cliente, resolver conflictos por timestamp    |
+| Pérdida de datos en logout       | Clear de IndexedDB sin confirmación  | Implementar `clearOrphanedDataIfNeeded()` con validación de ownership |
+
+### 10.3 Lecciones Aprendidas - Capacitor/Nativo
+
+| Problema                           | Causa                                        | Solución Implementada                                       |
+| ---------------------------------- | -------------------------------------------- | ----------------------------------------------------------- |
+| Deep links no funcionan en Android | Falta configuración en `AndroidManifest.xml` | Agregar intent-filter para scheme `diabetify://`            |
+| Splash screen se congela           | Plugin Capacitor requiere `hide()` manual    | Llamar `SplashScreen.hide()` después de `platform.ready()`  |
+| Plugins undefined en web           | Plugins solo disponibles en nativo           | Usar `Capacitor.isNativePlatform()` antes de llamar plugins |
+| Push notifications silenciosas     | Falta canal de notificación en Android 8+    | Crear canal con `LocalNotifications.createChannel()`        |
+
+### 10.4 Lecciones Aprendidas - Testing
+
+| Problema                            | Causa                               | Solución Implementada                                      |
+| ----------------------------------- | ----------------------------------- | ---------------------------------------------------------- |
+| `fakeAsync` no funciona con `await` | Zone.js no trackea Promises nativas | Usar `tick()` o `await flushMicrotasks()`                  |
+| Screenshots E2E difieren en CI      | Fuentes y rendering diferente       | Usar `maxDiffPixelRatio: 0.1` o actualizar baselines en CI |
+| MSW handler no intercepta requests  | Orden de handlers incorrecto        | Handlers específicos primero, genéricos después            |
+| Router mock falla con `canActivate` | Falta `createUrlTree`               | Agregar: `createUrlTree: vi.fn(), serializeUrl: vi.fn()`   |
+
+### 10.5 Lecciones Aprendidas - Médicas/Algoritmos
+
+| Problema                                         | Causa                               | Solución Implementada                                  |
+| ------------------------------------------------ | ----------------------------------- | ------------------------------------------------------ |
+| Valores de glucosa categorizados incorrectamente | Conversión de unidades con redondeo | Comparar siempre en mg/dL, redondear solo para display |
+| Lecturas aparecen en día incorrecto              | Timezone handling inconsistente     | Almacenar ISO 8601, filtrar con timezone del usuario   |
+| eA1C muy diferente de A1C real                   | Pocos datos o factores individuales | Requerir mínimo 14 días, mostrar disclaimer            |
+
+---
+
+## 11. Conclusiones
 
 El proyecto Diabetactic aborda una necesidad real del Hospital Garrahan, proporcionando una herramienta adaptada a pacientes pediátricos con diabetes. La arquitectura offline-first y el soporte bilingüe lo diferencian de soluciones genéricas existentes.
+
+Las lecciones aprendidas documentadas en la sección 10 reflejan los desafíos reales encontrados durante el desarrollo y las soluciones implementadas, sirviendo como referencia para futuros desarrolladores y mantenedores del proyecto.

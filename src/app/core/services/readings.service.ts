@@ -133,7 +133,7 @@ export class ReadingsService implements OnDestroy {
     const readingsSub = this.liveQueryFn(() => {
       const userId = this.currentUserId$.getValue();
       if (!userId) {
-        return [];
+        return Promise.resolve([] as LocalGlucoseReading[]);
       }
       return this.db.readings
         .where('userId')
@@ -236,17 +236,21 @@ export class ReadingsService implements OnDestroy {
 
   /**
    * Add a new reading
+   * Uses current user ID from session, or explicit userId parameter, or 'local-user' as fallback
    */
   async addReading(reading: CreateReadingInput, userId?: string): Promise<LocalGlucoseReading> {
     const existingId = (reading as Partial<GlucoseReading>).id;
     const uniqueId = existingId && existingId !== '' ? existingId : this.mapper.generateLocalId();
+
+    // Priority: explicit userId > currentUserId$ > 'local-user' fallback
+    const effectiveUserId = userId || this.currentUserId$.getValue() || 'local-user';
 
     const localReading: LocalGlucoseReading = {
       ...reading,
       id: uniqueId,
       localId: uniqueId,
       synced: false,
-      userId: userId || 'local-user',
+      userId: effectiveUserId,
       localStoredAt: new Date().toISOString(),
       isLocalOnly: !existingId || existingId === '' || uniqueId.startsWith('local_'),
       status: this.mapper.calculateGlucoseStatus(reading.value, reading.units),

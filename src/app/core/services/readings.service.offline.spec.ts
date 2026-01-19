@@ -42,10 +42,10 @@ describe('ReadingsService - Offline Detection', () => {
     // Reset all mocks
     vi.clearAllMocks();
 
-    // Create fresh mock database
+    // Create fresh mock database with userId index for multi-user support
     mockDb = new Dexie('test-db') as DiabetacticDatabase;
     mockDb.version(1).stores({
-      readings: 'id, time, synced',
+      readings: 'id, time, userId, synced',
       syncQueue: '++id, readingId, timestamp',
       appointments: 'id, datetime, userId',
       conflicts: '++id, readingId, status',
@@ -96,6 +96,7 @@ describe('ReadingsService - Offline Detection', () => {
     });
 
     service = TestBed.inject(ReadingsService);
+    service.setCurrentUser('test-user');
   });
 
   afterEach(async () => {

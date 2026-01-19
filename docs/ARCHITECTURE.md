@@ -150,3 +150,74 @@ tidepool: {
 - `src/app/core/services/tidepool-auth.service.ts` - Autenticación OAuth
 - `src/app/core/config/oauth.config.ts` - Configuración OAuth
 - `src/app/core/utils/pkce.utils.ts` - Utilidades PKCE
+
+---
+
+## Common Gotchas
+
+Esta sección documenta problemas comunes y sus soluciones para evitar errores recurrentes.
+
+### Angular Gotchas
+
+| Problema                                      | Causa                              | Solución                                                                    |
+| --------------------------------------------- | ---------------------------------- | --------------------------------------------------------------------------- |
+| Componente no reconoce elementos Ionic        | Falta `CUSTOM_ELEMENTS_SCHEMA`     | Agregar `schemas: [CUSTOM_ELEMENTS_SCHEMA]` en `@Component`                 |
+| `ExpressionChangedAfterItHasBeenCheckedError` | Cambio de estado en lifecycle hook | Usar `ChangeDetectorRef.detectChanges()` o mover lógica a `ngAfterViewInit` |
+| `NullInjectorError` en tests                  | Provider no configurado            | Agregar mock al array de `providers` en `TestBed.configureTestingModule()`  |
+| Componente standalone no importa dependencias | Angular 21 standalone pattern      | Agregar componentes/pipes/directivas a `imports: []` en `@Component`        |
+| Change detection no actualiza vista           | Componente usa `OnPush`            | Llamar `cdr.markForCheck()` después de cambios async                        |
+
+### Ionic Gotchas
+
+| Problema                                                 | Causa                   | Solución                                                                                       |
+| -------------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------- |
+| `ion-button` no tiene role="button"`                     | Ionic usa shadow DOM    | Usar `[attr.aria-label]` y test con `getByRole('button')` puede fallar - usar `data-testid`    |
+| Modal/popover no aplica estilos                          | CSS encapsulado         | Usar `::part()` selector o variables CSS `--background`, `--color`                             |
+| `ion-datetime` números desaparecen al scroll             | Bug de rendering        | Agregar `will-change: transform` y `backface-visibility: hidden`                               |
+| Forms con `ion-input` + `formControlName` fallan en test | Lifecycle timing        | No llamar `fixture.detectChanges()` inmediatamente, inicializar form en `ngOnInit()`           |
+| Dark mode no aplica                                      | Clases no sincronizadas | `ThemeService` debe agregar `.dark`, `.ion-palette-dark` Y `data-theme="dark"` simultáneamente |
+
+### Capacitor Gotchas
+
+| Problema                                | Causa                      | Solución                                                         |
+| --------------------------------------- | -------------------------- | ---------------------------------------------------------------- |
+| Plugin no funciona en web               | API nativa                 | Verificar `Capacitor.isNativePlatform()` antes de llamar plugins |
+| `Preferences.get()` retorna `undefined` | Key no existe              | Siempre verificar `value !== null` antes de usar                 |
+| `Network.getStatus()` inconsistente     | Emulador vs real           | Usar mock en desarrollo, test en dispositivo real                |
+| Deep links no funcionan                 | AndroidManifest incompleto | Agregar `intent-filter` con scheme y host correctos              |
+| Splash screen se queda                  | `autoHide` habilitado      | Llamar `SplashScreen.hide()` manualmente después de init         |
+
+### IndexedDB / Dexie Gotchas
+
+| Problema                        | Causa                     | Solución                                                                  |
+| ------------------------------- | ------------------------- | ------------------------------------------------------------------------- |
+| `PrematureCommitError` en tests | Transaction auto-commit   | Usar `fake-indexeddb` v6+ y no mezclar `await` con callbacks              |
+| Datos de otro usuario aparecen  | Query sin filtro `userId` | Siempre filtrar por `userId` en queries de `ReadingsService`              |
+| `ConstraintError` en put        | Clave duplicada           | Verificar si registro existe antes de insertar, o usar `put()` con upsert |
+| Base de datos vacía en tests    | DB no inicializada        | Importar `test-setup.ts` que inicializa `fake-indexeddb`                  |
+| Migraciones no corren           | Version mismatch          | Incrementar `version` en `DiabetacticDatabase` al cambiar schema          |
+
+### Tailwind + DaisyUI Gotchas
+
+| Problema                   | Causa                    | Solución                                                                                 |
+| -------------------------- | ------------------------ | ---------------------------------------------------------------------------------------- |
+| Clases no aplican          | Purge eliminó la clase   | Agregar clase a `safelist` en `tailwind.config.js` o usar en template                    |
+| Conflicto Ionic/Tailwind   | Reset de estilos         | Usar `@aparajita/tailwind-ionic` para integración correcta                               |
+| Dark mode inconsistente    | Selector incorrecto      | DaisyUI usa `data-theme`, Tailwind usa `.dark` - sincronizar ambos                       |
+| Colores no cambian en dark | Variable CSS no definida | Definir variable en ambos `:root[data-theme='diabetactic']` y `:root[data-theme='dark']` |
+
+### Multi-Usuario Gotchas
+
+| Problema                           | Causa                             | Solución                                                                |
+| ---------------------------------- | --------------------------------- | ----------------------------------------------------------------------- |
+| Datos de usuario anterior aparecen | IndexedDB no filtra por userId    | `ReadingsService.setCurrentUser()` debe llamarse en login/restore       |
+| Datos huérfanos persisten          | Logout no limpia userId diferente | `clearOrphanedDataIfNeeded()` elimina datos de otros usuarios           |
+| `currentUserId$` es null           | No se llamó `setCurrentUser()`    | `LocalAuthService.initializeAuthState()` debe llamar `setCurrentUser()` |
+
+### Password Recovery Gotchas
+
+| Problema         | Causa                           | Solución                                        |
+| ---------------- | ------------------------------- | ----------------------------------------------- |
+| Email no llega   | Backend no configurado          | Verificar configuración SMTP en backend `login` |
+| Token expirado   | Más de 15 minutos               | Usuario debe solicitar nuevo token              |
+| Validación falla | Contraseña no cumple requisitos | Frontend debe validar antes de enviar           |
