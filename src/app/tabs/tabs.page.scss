@@ -58,14 +58,14 @@ ion-tab-button {
 :host-context(.dark),
 :host-context(.ion-palette-dark) {
   ion-tab-bar {
-    --background: #1a1a2e;
+    --background: var(--tabs-dark-bg, #1a1a2e);
 
-    border-top: 1px solid #374151;
+    border-top: 1px solid var(--tabs-dark-border, #374151);
   }
 
   ion-tab-button {
-    --color: #9ca3af;
-    --color-selected: #a78bfa;
+    --color: var(--tabs-dark-color, #9ca3af);
+    --color-selected: var(--tabs-dark-selected, #a78bfa);
 
     ion-label {
       color: inherit;
@@ -102,9 +102,9 @@ ion-fab.center-fab {
     // Disabled state - greyed out
     &.fab-disabled,
     &[disabled] {
-      --background: #9ca3af;
-      --background-activated: #9ca3af;
-      --background-hover: #9ca3af;
+      --background: var(--ion-color-medium, #9ca3af);
+      --background-activated: var(--ion-color-medium, #9ca3af);
+      --background-hover: var(--ion-color-medium, #9ca3af);
 
       opacity: 0.6;
       /* stylelint-disable-next-line plugin/no-unsupported-browser-features -- cursor: fallback for web; ignored on touch devices */
