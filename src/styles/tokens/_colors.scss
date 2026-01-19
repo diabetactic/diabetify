@@ -1,0 +1,11 @@
+// =============================================================================
+// COLOR TOKENS
+// =============================================================================
+// Design tokens for colors used throughout the application.
+// Migrated from global.css to enable SCSS features like mixins and functions.
+//
+// IMPORTANT: Keep hex fallbacks for Android WebView compatibility.
+// Pattern: var(--token-name, #fallback)
+// =============================================================================
+
+// Color tokens will be migrated from global.css in Task 1.2

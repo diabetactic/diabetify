@@ -37,7 +37,10 @@
               "src/theme/variables.scss",
               "src/theme/high-contrast.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "stylePreprocessorOptions": {
+              "includePaths": ["src/styles"]
+            }
           },
           "configurations": {
             "production": {

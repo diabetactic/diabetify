@@ -1,0 +1,32 @@
+// =============================================================================
+// DIABETIFY SCSS PARTIALS - Main Aggregator
+// =============================================================================
+// This file serves as the main entry point for all SCSS partials.
+// Use @use 'styles' to import all partials at once.
+//
+// Architecture:
+// - tokens/    : Design tokens (colors, shadows, radius, animations)
+// - ionic/     : Ionic component overrides and bridges
+// - components/: Reusable component patterns
+// - utilities/ : Utility classes and mixins
+// =============================================================================
+
+// Design Tokens
+@forward 'tokens/colors';
+@forward 'tokens/shadows';
+@forward 'tokens/radius';
+@forward 'tokens/animations';
+
+// Ionic Overrides
+@forward 'ionic/overrides';
+@forward 'ionic/bridges';
+
+// Component Patterns
+@forward 'components/cards';
+@forward 'components/forms';
+@forward 'components/buttons';
+@forward 'components/typography';
+
+// Utilities
+@forward 'utilities/layout';
+@forward 'utilities/icons';
