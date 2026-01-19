@@ -7,6 +7,7 @@ import { Network } from '@capacitor/network';
 import { PlatformDetectorService } from '@services/platform-detector.service';
 import { LoggerService } from '@services/logger.service';
 import { TokenService } from '@services/token.service';
+import { ReadingsService } from '@services/readings.service';
 
 import { MockAdapterService } from '@services/mock-adapter.service';
 import { EnvironmentConfigService } from '@core/config/environment-config.service';
@@ -132,7 +133,8 @@ export class LocalAuthService {
     private logger: LoggerService,
     private mockAdapter: MockAdapterService,
     private tokenService: TokenService,
-    private envConfig: EnvironmentConfigService
+    private envConfig: EnvironmentConfigService,
+    private readingsService: ReadingsService
   ) {
     this.logger.info('Init', 'LocalAuthService initialized');
     // Set base URL for API calls
@@ -189,6 +191,8 @@ export class LocalAuthService {
             refreshToken: tokenState.refreshToken,
             expiresAt: tokenState.expiresAt,
           });
+          this.readingsService.setCurrentUser(user.id);
+          await this.clearOrphanedDataIfNeeded(user.id);
         } else if (hasRefreshToken) {
           // Check network status before attempting refresh
           const status = await Network.getStatus();
@@ -209,6 +213,8 @@ export class LocalAuthService {
               refreshToken: tokenState.refreshToken,
               expiresAt: tokenState.expiresAt,
             });
+            this.readingsService.setCurrentUser(user.id);
+            await this.clearOrphanedDataIfNeeded(user.id);
             return;
           }
 
@@ -471,6 +477,8 @@ export class LocalAuthService {
     const user = this.authStateSubject.value.user;
     this.logger.info('Auth', 'Logout initiated', { userId: user?.id });
 
+    this.readingsService.clearCurrentUser();
+
     // Clear local state
     this.authStateSubject.next({
       isAuthenticated: false,
@@ -723,6 +731,9 @@ export class LocalAuthService {
       expiresAt,
     });
 
+    this.readingsService.setCurrentUser(response.user.id);
+    await this.clearOrphanedDataIfNeeded(response.user.id);
+
     await Promise.all([
       this.tokenService.setTokens(response.access_token, response.refresh_token, expiresInSeconds),
       Preferences.set({
@@ -838,6 +849,21 @@ export class LocalAuthService {
         theme: 'auto',
       },
     };
+  }
+
+  private async clearOrphanedDataIfNeeded(currentUserId: string): Promise<void> {
+    const { db } = await import('./database.service');
+
+    const orphanedReadings = await db.readings.where('userId').notEqual(currentUserId).count();
+
+    if (orphanedReadings > 0) {
+      this.logger.warn('Auth', 'Clearing orphaned data from previous user', {
+        count: orphanedReadings,
+      });
+      await db.readings.where('userId').notEqual(currentUserId).delete();
+      await db.appointments.where('userId').notEqual(currentUserId).delete();
+      await db.syncQueue.clear();
+    }
   }
 
   /**
