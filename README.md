@@ -13,7 +13,7 @@ Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar e
 - Gestión de citas médicas
 - Soporte offline con sincronización automática
 - Interfaz bilingüe (Español/Inglés)
-- Temas claro y oscuro
+- Temas claro, oscuro y modo alto contraste (accesibilidad)
 
 ## Stack Tecnológico
 
