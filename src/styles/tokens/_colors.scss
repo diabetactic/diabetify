@@ -1,11 +1,150 @@
 // =============================================================================
 // COLOR TOKENS
 // =============================================================================
-// Design tokens for colors used throughout the application.
-// Migrated from global.css to enable SCSS features like mixins and functions.
+// SCSS utilities for working with Diabetify color system.
+//
+// NOTE: The actual CSS custom properties (--color-*, --dt-color-*, --glucose-*)
+// are defined in global.css and applied at runtime. This file provides SCSS
+// helpers for compile-time operations.
 //
 // IMPORTANT: Keep hex fallbacks for Android WebView compatibility.
 // Pattern: var(--token-name, #fallback)
 // =============================================================================
 
-// Color tokens will be migrated from global.css in Task 1.2
+// -----------------------------------------------------------------------------
+// COLOR REFERENCE MAP (mirrors global.css :root variables)
+// Use these for SCSS operations; CSS vars for runtime
+// -----------------------------------------------------------------------------
+
+$colors-light: (
+  // Primary palette
+  'primary': #3b82f6,
+  'primary-content': #0f172a,
+  'secondary': #00c6ae,
+  'secondary-content': #0f172a,
+  'accent': #667eea,
+  'accent-content': #fff,
+
+  // Neutral
+  'neutral': #0d171c,
+  'neutral-content': #fff,
+
+  // Base (backgrounds)
+  'base-100': #fff,
+  'base-200': #f5f7f8,
+  'base-300': #e5e7eb,
+  'base-content': #0d171c,
+
+  // Semantic
+  'info': #3b82f6,
+  'success': #22c55e,
+  'warning': #f59e0b,
+  'error': #fca5a5,
+
+  // App-specific
+  'text-primary': #1f2937,
+  'text-secondary': #4b5563,
+  'text-muted': #6b7280,
+  'border-subtle': #e5e7eb,
+  'border-input': #d1d5db,
+  'link': #1d4ed8,
+  'surface': #fff,
+
+  // Glucose status
+  'glucose-normal': #22c55e,
+  'glucose-low': #f59e0b,
+  'glucose-high': #ef4444,
+  'glucose-critical': #dc2626
+);
+
+$colors-dark: (
+  // Base (backgrounds)
+  'base-100': #101c22,
+  'base-200': #1e293b,
+  'base-300': #334155,
+  'base-content': #fff,
+
+  // App-specific (dark overrides)
+  'text-primary': #e5e7eb,
+  'text-secondary': #cbd5f5,
+  'text-muted': #9ca3af,
+  'border-subtle': #334155,
+  'border-input': #475569,
+  'link': #bfdbfe,
+  'surface': rgba(15, 23, 42, 0.96),
+  // Glucose status (dark - adjusted for contrast)
+  'glucose-normal': #22c55e,
+  'glucose-low': #f59e0b,
+  'glucose-high': #fca5a5,
+  'glucose-critical': #fecaca
+);
+
+// -----------------------------------------------------------------------------
+// HELPER FUNCTIONS
+// -----------------------------------------------------------------------------
+
+/// Get a color from the light palette
+/// @param {String} $name - Color name (e.g., 'primary', 'glucose-normal')
+/// @return {Color} The color value
+@function color($name) {
+  @if map-has-key($colors-light, $name) {
+    @return map-get($colors-light, $name);
+  }
+  @warn "Color '#{$name}' not found in $colors-light";
+  @return null;
+}
+
+/// Get a color from the dark palette
+/// @param {String} $name - Color name
+/// @return {Color} The color value, falling back to light if not defined
+@function color-dark($name) {
+  @if map-has-key($colors-dark, $name) {
+    @return map-get($colors-dark, $name);
+  }
+  @return color($name);
+}
+
+// -----------------------------------------------------------------------------
+// CSS VARIABLE HELPERS
+// Generate CSS variable references with fallbacks
+// -----------------------------------------------------------------------------
+
+/// Get a CSS variable reference with hex fallback
+/// @param {String} $name - Variable name without prefix
+/// @param {String} $prefix - Variable prefix (default: 'color')
+/// @return {String} CSS var() with fallback
+@function cv($name, $prefix: 'color') {
+  $fallback: color($name);
+  @return var(--#{$prefix}-#{$name}, #{$fallback});
+}
+
+/// Get a glucose color CSS variable with fallback
+/// @param {String} $status - Status name (normal, low, high, critical)
+/// @return {String} CSS var() with fallback
+@function glucose-color($status) {
+  $fallback: color('glucose-#{$status}');
+  @return var(--glucose-#{$status}, #{$fallback});
+}
+
+// -----------------------------------------------------------------------------
+// MIXINS FOR DARK MODE
+// -----------------------------------------------------------------------------
+
+/// Apply styles for dark mode using all three trigger selectors
+/// Use at root level only (not in components - use :host-context there)
+@mixin dark-mode {
+  .dark &,
+  .ion-palette-dark &,
+  :root[data-theme='dark'] & {
+    @content;
+  }
+}
+
+/// Apply dark mode styles for component :host-context
+/// Use in Angular component SCSS files
+@mixin host-dark {
+  :host-context(.dark),
+  :host-context(.ion-palette-dark) {
+    @content;
+  }
+}

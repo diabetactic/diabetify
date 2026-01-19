@@ -1,10 +1,90 @@
 // =============================================================================
 // RADIUS TOKENS
 // =============================================================================
-// Design tokens for border radius values.
-// Migrated from global.css to enable SCSS features.
+// SCSS utilities for border radius values.
 //
-// Scale: --radius-xs, --radius-sm, --radius-md, --radius-lg, --radius-xl, --radius-full
+// NOTE: The actual CSS custom properties (--radius-*) are defined in global.css.
+// This file provides SCSS helpers and a radius scale map.
+//
+// Scale:
+// - xs:   4px  - Tiny elements (checkboxes, small badges)
+// - sm:   8px  - Badges, chips, small buttons
+// - md:  12px  - Inputs, buttons, small cards
+// - lg:  16px  - Cards, containers
+// - xl:  24px  - Large cards, modals
+// - full: pill - Pills, avatars, circular elements
 // =============================================================================
 
-// Radius tokens will be migrated from global.css in Task 1.4
+// -----------------------------------------------------------------------------
+// RADIUS REFERENCE MAP (mirrors global.css :root variables)
+// -----------------------------------------------------------------------------
+
+$radii: (
+  'xs': 0.25rem,
+  // 4px
+  'sm': 0.5rem,
+  // 8px
+  'md': 0.75rem,
+  // 12px
+  'lg': 1rem,
+  // 16px
+  'xl': 1.5rem,
+  // 24px
+  'full': 9999px, // pill
+);
+
+// Semantic aliases
+$radius-badge: var(--radius-sm, #{map-get($radii, 'sm')});
+$radius-button: var(--radius-md, #{map-get($radii, 'md')});
+$radius-input: var(--radius-md, #{map-get($radii, 'md')});
+$radius-card: var(--radius-lg, #{map-get($radii, 'lg')});
+$radius-modal: var(--radius-xl, #{map-get($radii, 'xl')});
+$radius-pill: var(--radius-full, #{map-get($radii, 'full')});
+
+// -----------------------------------------------------------------------------
+// HELPER FUNCTIONS
+// -----------------------------------------------------------------------------
+
+/// Get a radius value by size name
+/// @param {String} $size - Size name (xs, sm, md, lg, xl, full)
+/// @return {String} The radius value
+@function radius($size) {
+  @if map-has-key($radii, $size) {
+    @return map-get($radii, $size);
+  }
+  @warn "Radius '#{$size}' not found";
+  @return 0;
+}
+
+/// Get a CSS variable reference for a radius with fallback
+/// @param {String} $size - Size name
+/// @return {String} CSS var() with fallback
+@function rv($size) {
+  $fallback: radius($size);
+  @return var(--radius-#{$size}, #{$fallback});
+}
+
+// -----------------------------------------------------------------------------
+// MIXINS
+// -----------------------------------------------------------------------------
+
+/// Apply consistent border radius to an element
+/// @param {String} $size - Size name (xs, sm, md, lg, xl, full)
+@mixin rounded($size: 'md') {
+  border-radius: rv($size);
+}
+
+/// Apply card-style border radius
+@mixin card-radius {
+  border-radius: $radius-card;
+}
+
+/// Apply button-style border radius
+@mixin button-radius {
+  border-radius: $radius-button;
+}
+
+/// Apply pill-style border radius (fully rounded)
+@mixin pill {
+  border-radius: $radius-pill;
+}

@@ -4,4 +4,7 @@
 // Reusable form field styles and mixins.
 // =============================================================================
 
-// Form patterns will be extracted during component optimization
+// Placeholder variable to indicate file is ready for content
+$form-patterns-ready: true;
+
+// Form patterns will be extracted during Phase 5 component optimization

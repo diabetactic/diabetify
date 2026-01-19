@@ -1,10 +1,159 @@
 // =============================================================================
 // ANIMATION TOKENS
 // =============================================================================
-// Keyframe definitions and animation utility classes.
-// Migrated from global.css to enable SCSS features.
+// Keyframe definitions and animation utility mixins.
 //
-// IMPORTANT: Preserve prefers-reduced-motion handling for accessibility.
+// NOTE: The actual keyframes and animation classes are defined in global.css.
+// This file provides SCSS mixins for consistent animation application in
+// component SCSS files.
+//
+// IMPORTANT: Always respect prefers-reduced-motion for accessibility.
+// The global.css includes a media query that disables animations system-wide.
 // =============================================================================
 
-// Animation tokens will be migrated from global.css in Task 1.5
+// -----------------------------------------------------------------------------
+// TIMING FUNCTIONS
+// -----------------------------------------------------------------------------
+
+$ease-out: ease-out;
+$ease-in-out: ease-in-out;
+$ease-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+$ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+// -----------------------------------------------------------------------------
+// DURATION TOKENS
+// -----------------------------------------------------------------------------
+
+$duration-instant: 0.1s;
+$duration-fast: 0.2s;
+$duration-normal: 0.3s;
+$duration-slow: 0.5s;
+$duration-slower: 0.8s;
+
+// -----------------------------------------------------------------------------
+// ANIMATION MIXINS
+// -----------------------------------------------------------------------------
+
+/// Apply a fade-in animation
+/// @param {Number} $duration - Animation duration (default: 0.6s)
+@mixin fade-in($duration: 0.6s) {
+  animation: fadeIn $duration $ease-out;
+}
+
+/// Apply a fade-in-down animation
+/// @param {Number} $duration - Animation duration (default: 0.8s)
+@mixin fade-in-down($duration: 0.8s) {
+  animation: fadeInDown $duration $ease-out;
+}
+
+/// Apply a fade-in-up animation
+/// @param {Number} $duration - Animation duration (default: 0.8s)
+@mixin fade-in-up($duration: 0.8s) {
+  animation: fadeInUp $duration $ease-out;
+}
+
+/// Apply a slide-up animation
+/// @param {Number} $duration - Animation duration (default: 0.5s)
+@mixin slide-up($duration: 0.5s) {
+  animation: slideUp $duration $ease-out;
+}
+
+/// Apply a card scale-in animation
+/// @param {Number} $duration - Animation duration (default: 0.25s)
+@mixin card-enter($duration: 0.25s) {
+  animation: cardScaleIn $duration $ease-out forwards;
+  opacity: 0;
+}
+
+/// Apply a list item enter animation with optional delay
+/// @param {Number} $delay - Animation delay (default: 0)
+@mixin list-enter($delay: 0) {
+  animation: listItemEnter 0.3s $ease-out forwards;
+  animation-delay: $delay;
+  opacity: 0;
+}
+
+/// Apply a success pop animation
+@mixin success-pop {
+  animation: successPop 0.4s $ease-spring forwards;
+}
+
+/// Apply a shake animation (for errors)
+@mixin shake {
+  animation: shake 0.3s ease;
+}
+
+/// Apply a pulse glow animation
+@mixin pulse-glow {
+  animation: pulseGlow 2s infinite;
+}
+
+// -----------------------------------------------------------------------------
+// STAGGER UTILITIES
+// Generate stagger delay classes for list animations
+// -----------------------------------------------------------------------------
+
+/// Generate stagger delay for a specific index
+/// @param {Number} $index - List item index (1-based)
+/// @param {Number} $base-delay - Base delay increment (default: 0.05s)
+/// @return {Number} The calculated delay
+@function stagger-delay($index, $base-delay: 0.05s) {
+  @return $index * $base-delay;
+}
+
+/// Mixin to apply staggered animation to list items
+/// Use with @for loop in component SCSS
+/// @param {Number} $count - Number of items to stagger
+/// @param {Number} $base-delay - Base delay increment
+@mixin stagger-children($count: 10, $base-delay: 0.05s) {
+  @for $i from 1 through $count {
+    &:nth-child(#{$i}) {
+      animation-delay: stagger-delay($i, $base-delay);
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// TRANSITION HELPERS
+// -----------------------------------------------------------------------------
+
+/// Standard transition for interactive elements
+@mixin transition-interactive {
+  transition: all $duration-fast $ease-smooth;
+}
+
+/// Transition specifically for color changes
+@mixin transition-color {
+  transition:
+    color $duration-fast $ease-out,
+    background-color $duration-fast $ease-out,
+    border-color $duration-fast $ease-out;
+}
+
+/// Transition for transform effects (hover lifts, etc.)
+@mixin transition-transform {
+  transition:
+    transform $duration-fast $ease-out,
+    box-shadow $duration-fast $ease-out;
+}
+
+// -----------------------------------------------------------------------------
+// REDUCED MOTION WRAPPER
+// Use this to wrap animations that should respect user preferences
+// -----------------------------------------------------------------------------
+
+/// Wrap animation code to respect reduced motion preferences
+/// @content Animation styles to conditionally apply
+@mixin motion-safe {
+  @media (prefers-reduced-motion: no-preference) {
+    @content;
+  }
+}
+
+/// Apply styles only when reduced motion is preferred
+/// @content Fallback styles for reduced motion
+@mixin motion-reduce {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}

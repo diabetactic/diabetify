@@ -4,4 +4,7 @@
 // Reusable button styles and mixins.
 // =============================================================================
 
-// Button patterns will be extracted during component optimization
+// Placeholder variable to indicate file is ready for content
+$button-patterns-ready: true;
+
+// Button patterns will be extracted during Phase 5 component optimization

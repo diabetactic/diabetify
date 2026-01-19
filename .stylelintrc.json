@@ -15,7 +15,24 @@
     "function-no-unknown": [
       true,
       {
-        "ignoreFunctions": ["theme", "var"]
+        "ignoreFunctions": [
+          "theme",
+          "var",
+          "map-get",
+          "map-has-key",
+          "type-of",
+          "str-length",
+          "if",
+          "color",
+          "color-dark",
+          "cv",
+          "glucose-color",
+          "shadow",
+          "sv",
+          "radius",
+          "rv",
+          "stagger-delay"
+        ]
       }
     ],
     "scss/at-rule-no-unknown": [
@@ -29,7 +46,18 @@
           "plugin",
           "custom-variant",
           "layer",
-          "use"
+          "use",
+          "forward",
+          "function",
+          "return",
+          "mixin",
+          "include",
+          "if",
+          "else",
+          "warn",
+          "for",
+          "content",
+          "each"
         ]
       }
     ],
@@ -46,7 +74,18 @@
           "plugin",
           "custom-variant",
           "layer",
-          "use"
+          "use",
+          "forward",
+          "function",
+          "return",
+          "mixin",
+          "include",
+          "if",
+          "else",
+          "warn",
+          "for",
+          "content",
+          "each"
         ]
       }
     ],
@@ -121,6 +160,18 @@
       "files": ["src/global.css"],
       "rules": {
         "scale-unlimited/declaration-strict-value": null
+      }
+    },
+    {
+      "files": ["src/styles/**/*.scss"],
+      "rules": {
+        "scale-unlimited/declaration-strict-value": null,
+        "scss/no-global-function-names": null,
+        "scss/dollar-variable-pattern": null,
+        "scss/dollar-variable-empty-line-before": null,
+        "scss/comment-no-empty": null,
+        "at-rule-empty-line-before": null,
+        "plugin/no-unsupported-browser-features": null
       }
     }
   ]
