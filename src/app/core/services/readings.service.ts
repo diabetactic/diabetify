@@ -115,6 +115,22 @@ export class ReadingsService implements OnDestroy {
    */
   setCurrentUser(userId: string): void {
     this.currentUserId$.next(userId);
+    // Trigger a refresh since liveQuery doesn't react to currentUserId$ changes
+    this.refreshReadingsForUser(userId);
+  }
+
+  /**
+   * Manually refresh readings for a specific user
+   * Called when currentUserId$ changes since liveQuery only reacts to DB changes
+   */
+  private async refreshReadingsForUser(userId: string): Promise<void> {
+    try {
+      const readings = await this.db.readings.where('userId').equals(userId).toArray();
+      readings.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+      this._readings$.next(readings);
+    } catch (error) {
+      this.logger?.error('Readings', 'Failed to refresh readings for user', { userId, error });
+    }
   }
 
   /**
@@ -257,6 +273,11 @@ export class ReadingsService implements OnDestroy {
     } as LocalGlucoseReading;
 
     await this.db.readings.add(localReading);
+
+    // Trigger refresh since liveQuery may not react in all environments (e.g., tests)
+    if (effectiveUserId) {
+      this.refreshReadingsForUser(effectiveUserId);
+    }
 
     if (!localReading.synced) {
       await this.syncService.addToSyncQueue('create', localReading);

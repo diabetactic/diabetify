@@ -139,6 +139,32 @@ export class ReadingsSyncService implements OnDestroy {
     this.updatePermanentlyFailedCount();
   }
 
+  // ============================================================================
+  // User Identity Helper
+  // ============================================================================
+
+  /**
+   * Get the current user's DNI (used as userId in the frontend).
+   *
+   * CRITICAL: The backend uses numeric user_id (e.g., 133), but the frontend
+   * uses DNI string (e.g., "40999999") for data isolation in IndexedDB.
+   * This method ensures readings fetched from backend are stored with the
+   * correct userId that matches the current user's session.
+   *
+   * @returns The current user's DNI string, or null if not authenticated
+   */
+  private getCurrentUserDni(): string | null {
+    if (!this.injector) return null;
+    try {
+      const localAuthService = this.injector.get(LocalAuthService);
+      const user = localAuthService.getCurrentUser();
+      return user?.id ?? null; // user.id is the DNI (set in mapGatewayUser)
+    } catch {
+      // LocalAuthService not available
+      return null;
+    }
+  }
+
   /**
    * Count readings that are unsynced but NOT in the sync queue (permanently failed).
    * These are readings where all retries were exhausted.
@@ -638,8 +664,12 @@ export class ReadingsSyncService implements OnDestroy {
         return { action: 'linked' };
       }
 
-      // Truly new reading - add to local
+      // Truly new reading - add to local with correct userId
       const localReading = this.mapper.mapBackendToLocal(backendReading);
+      const currentUserDni = this.getCurrentUserDni();
+      if (currentUserDni) {
+        localReading.userId = currentUserDni;
+      }
       await this.db.readings.add(localReading);
       return { action: 'created' };
     }
@@ -719,6 +749,10 @@ export class ReadingsSyncService implements OnDestroy {
             await this.linkLocalToBackend(unsyncedMatch.id, backendReading.id, backendTime);
           } else {
             const localReading = this.mapper.mapBackendToLocal(backendReading);
+            const currentUserDni = this.getCurrentUserDni();
+            if (currentUserDni) {
+              localReading.userId = currentUserDni;
+            }
             await this.db.readings.add(localReading);
             merged++;
           }
@@ -953,6 +987,10 @@ export class ReadingsSyncService implements OnDestroy {
     backendReading: BackendGlucoseReading
   ): Promise<void> {
     const serverReading = this.mapper.mapBackendToLocal(backendReading);
+    const currentUserDni = this.getCurrentUserDni();
+    if (currentUserDni) {
+      serverReading.userId = currentUserDni;
+    }
     await this.db.conflicts.add({
       readingId: existing.id,
       localReading: existing,
