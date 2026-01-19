@@ -84,15 +84,18 @@ export class TrendsPage implements OnInit, OnDestroy {
   loading = signal(true);
   preferredUnit = signal<GlucoseUnit>('mg/dL');
   isDarkMode = signal(false);
+  isHighContrast = signal(false);
 
-  // Chart color configuration for light/dark modes
-  private readonly chartColors = {
+  private readonly fallbackColors = {
     light: {
       primary: '#3880ff',
       primaryBg: 'rgba(56, 128, 255, 0.2)',
       text: '#1f2937',
       grid: 'rgba(0, 0, 0, 0.1)',
       border: 'rgba(0, 0, 0, 0.1)',
+      glucoseNormal: '#22c55e',
+      glucoseLow: '#f59e0b',
+      glucoseHigh: '#ef4444',
     },
     dark: {
       primary: '#6ea8fe',
@@ -100,23 +103,63 @@ export class TrendsPage implements OnInit, OnDestroy {
       text: '#e5e7eb',
       grid: 'rgba(255, 255, 255, 0.1)',
       border: 'rgba(255, 255, 255, 0.1)',
+      glucoseNormal: '#22c55e',
+      glucoseLow: '#f59e0b',
+      glucoseHigh: '#fca5a5',
     },
   };
+
+  /**
+   * Read a CSS variable value from the document root
+   */
+  private getCSSVariable(name: string, fallback: string): string {
+    if (typeof window === 'undefined') return fallback;
+    const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+  }
+
+  /**
+   * Get current chart colors based on theme and high contrast state
+   */
+  private getChartColors(): {
+    primary: string;
+    primaryBg: string;
+    text: string;
+    grid: string;
+    border: string;
+    glucoseNormal: string;
+    glucoseLow: string;
+    glucoseHigh: string;
+  } {
+    const isDark = this.isDarkMode();
+    const fallback = isDark ? this.fallbackColors.dark : this.fallbackColors.light;
+
+    return {
+      primary: this.getCSSVariable('--ion-color-primary', fallback.primary),
+      primaryBg: isDark ? 'rgba(110, 168, 254, 0.2)' : 'rgba(56, 128, 255, 0.2)',
+      text: this.getCSSVariable('--dt-color-text-primary', fallback.text),
+      grid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+      border: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+      glucoseNormal: this.getCSSVariable('--glucose-normal', fallback.glucoseNormal),
+      glucoseLow: this.getCSSVariable('--glucose-low', fallback.glucoseLow),
+      glucoseHigh: this.getCSSVariable('--glucose-high', fallback.glucoseHigh),
+    };
+  }
 
   public lineChartData: ChartData<'line'> = {
     datasets: [
       {
         data: [],
         label: 'Glucose Readings',
-        borderColor: this.chartColors.light.primary,
-        backgroundColor: this.chartColors.light.primaryBg,
+        borderColor: this.fallbackColors.light.primary,
+        backgroundColor: this.fallbackColors.light.primaryBg,
         fill: true,
       },
     ],
     labels: [],
   };
   public lineChartType: ChartType = 'line';
-  public lineChartOptions: ChartConfiguration['options'] = this.getChartOptions(false);
+  public lineChartOptions: ChartConfiguration['options'] = this.buildChartOptions();
 
   constructor(
     private readingsService: ReadingsService,
@@ -125,8 +168,8 @@ export class TrendsPage implements OnInit, OnDestroy {
     Chart.register(zoomPlugin);
   }
 
-  private getChartOptions(isDark: boolean): ChartConfiguration['options'] {
-    const colors = isDark ? this.chartColors.dark : this.chartColors.light;
+  private buildChartOptions(): ChartConfiguration['options'] {
+    const colors = this.getChartColors();
     return {
       responsive: true,
       maintainAspectRatio: false,
@@ -195,26 +238,32 @@ export class TrendsPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    // Subscribe to preferences to get user's preferred glucose unit
     this.preferencesService
       .getPreferences()
       .pipe(takeUntil(this.destroy$))
       .subscribe(prefs => {
         this.preferredUnit.set(prefs.glucoseUnit);
-        // Update chart options when unit changes
-        this.lineChartOptions = this.getChartOptions(this.isDarkMode());
+        this.lineChartOptions = this.buildChartOptions();
         this.cdr.markForCheck();
       });
 
-    // Subscribe to theme changes
     this.themeService.isDark$.pipe(takeUntil(this.destroy$)).subscribe(isDark => {
       this.isDarkMode.set(isDark);
-      this.lineChartOptions = this.getChartOptions(isDark);
-      this.updateChartColors(isDark);
-      this.cdr.markForCheck();
+      this.refreshChartTheme();
+    });
+
+    this.themeService.highContrast$.pipe(takeUntil(this.destroy$)).subscribe(highContrast => {
+      this.isHighContrast.set(highContrast);
+      this.refreshChartTheme();
     });
 
     await this.loadStatistics();
+  }
+
+  private refreshChartTheme(): void {
+    this.lineChartOptions = this.buildChartOptions();
+    this.updateChartColors();
+    this.cdr.markForCheck();
   }
 
   ngOnDestroy(): void {
@@ -222,8 +271,8 @@ export class TrendsPage implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private updateChartColors(isDark: boolean): void {
-    const colors = isDark ? this.chartColors.dark : this.chartColors.light;
+  private updateChartColors(): void {
+    const colors = this.getChartColors();
     if (this.lineChartData.datasets.length > 0) {
       this.lineChartData.datasets[0].borderColor = colors.primary;
       this.lineChartData.datasets[0].backgroundColor = colors.primaryBg;
@@ -269,7 +318,7 @@ export class TrendsPage implements OnInit, OnDestroy {
   }
 
   private updateLineChart(readings: LocalGlucoseReading[]) {
-    const colors = this.isDarkMode() ? this.chartColors.dark : this.chartColors.light;
+    const colors = this.getChartColors();
     const targetUnit = this.preferredUnit();
 
     if (readings && readings.length > 0) {
