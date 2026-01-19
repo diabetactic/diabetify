@@ -4,6 +4,7 @@
 // Whitespace and ordering rules are relaxed for accessibility documentation clarity.
 /* stylelint-disable declaration-no-important, scale-unlimited/declaration-strict-value */
 /* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before, order/order */
+/* stylelint-disable selector-class-pattern, selector-max-compound-selectors, max-nesting-depth */
 
 html.high-contrast {
   // --------------------------------------------------------------------------
@@ -168,6 +169,192 @@ html.high-contrast {
       content: '↑ ';
     }
   }
+
+  // --------------------------------------------------------------------------
+  // CUSTOM APP COMPONENTS - Light Mode High Contrast
+  // --------------------------------------------------------------------------
+
+  // Kill ALL gradient backgrounds - use solid colors instead
+  [class*='bg-gradient'],
+  [class*='from-'],
+  .bg-gradient-to-r,
+  .bg-gradient-to-l,
+  .bg-gradient-to-t,
+  .bg-gradient-to-b,
+  .bg-gradient-to-br,
+  .bg-gradient-to-bl,
+  .bg-gradient-to-tr,
+  .bg-gradient-to-tl {
+    background: #fff !important;
+    border: 3px solid #000 !important;
+  }
+
+  // Streak Card - remove gradient, add solid border
+  app-streak-card {
+    .card,
+    .card-body {
+      background: #fff !important;
+      border: 3px solid #000 !important;
+      color: #000 !important;
+    }
+
+    // Progress bar needs visible track
+    .progress {
+      border: 2px solid #000 !important;
+      background: #e6e6e6 !important;
+
+      &::-webkit-progress-bar {
+        background: #e6e6e6 !important;
+      }
+
+      &::-webkit-progress-value {
+        background: #000 !important;
+      }
+
+      &::-moz-progress-bar {
+        background: #000 !important;
+      }
+    }
+
+    // Stat boxes inside streak card
+    .bg-white\/20,
+    [class*='bg-white/'] {
+      background: #e6e6e6 !important;
+      border: 2px solid #000 !important;
+    }
+  }
+
+  // Stat Cards - override inline gradient styles
+  app-stat-card {
+    .stat {
+      background: #fff !important;
+      border: 3px solid #000 !important;
+      color: #000 !important;
+
+      // Override inline style attribute
+      &[style*='background'] {
+        background: #fff !important;
+      }
+    }
+
+    // Icon should be visible
+    app-icon,
+    ion-icon {
+      color: #000 !important;
+    }
+
+    // Value text
+    .stat-value,
+    .text-3xl,
+    .text-4xl {
+      color: #000 !important;
+    }
+  }
+
+  // Quick Actions Card
+  .quick-actions-card {
+    background: #fff !important;
+    border: 3px solid #000 !important;
+
+    // Header with gradient
+    [class*='bg-gradient'] {
+      background: #e6e6e6 !important;
+      border-bottom: 2px solid #000 !important;
+    }
+
+    // Action buttons
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-lg {
+      background: #fff !important;
+      border: 3px solid #000 !important;
+      color: #000 !important;
+      box-shadow: none !important;
+
+      &:hover {
+        background: #e6e6e6 !important;
+      }
+    }
+  }
+
+  // DaisyUI Cards
+  .card {
+    background: #fff !important;
+    border: 3px solid #000 !important;
+    box-shadow: none !important;
+
+    .card-body {
+      background: #fff !important;
+      color: #000 !important;
+    }
+  }
+
+  // Tab Bar
+  ion-tab-bar {
+    background: #fff !important;
+    border-top: 3px solid #000 !important;
+
+    ion-tab-button {
+      background: #fff !important;
+      color: #000 !important;
+      border-right: 1px solid #000 !important;
+
+      &.tab-selected {
+        background: #e6e6e6 !important;
+        border-bottom: 3px solid #000 !important;
+      }
+
+      ion-icon {
+        color: #000 !important;
+      }
+
+      ion-label {
+        color: #000 !important;
+      }
+    }
+  }
+
+  // Toolbar
+  ion-toolbar {
+    --background: #fff !important;
+    --color: #000 !important;
+    border-bottom: 3px solid #000 !important;
+  }
+
+  // FAB Button
+  ion-fab-button,
+  .fab-button {
+    --background: #fff !important;
+    --color: #000 !important;
+    border: 3px solid #000 !important;
+    box-shadow: none !important;
+  }
+
+  // Empty State
+  app-empty-state {
+    [class*='bg-gradient'],
+    [class*='from-'] {
+      background: #e6e6e6 !important;
+      border: 3px solid #000 !important;
+    }
+  }
+
+  // Reading Items
+  app-reading-item {
+    .card,
+    ion-item {
+      background: #fff !important;
+      border: 2px solid #000 !important;
+    }
+  }
+
+  // Appointment Cards
+  .appointment-card {
+    background: #fff !important;
+    border: 3px solid #000 !important;
+    box-shadow: none !important;
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -315,6 +502,248 @@ html.high-contrast[data-theme='dark'] {
 
     &.high::before {
       content: '↑ ';
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // CUSTOM APP COMPONENTS - Dark Mode High Contrast
+  // --------------------------------------------------------------------------
+
+  // Kill ALL gradient backgrounds - use solid black with white borders
+  [class*='bg-gradient'],
+  [class*='from-'],
+  .bg-gradient-to-r,
+  .bg-gradient-to-l,
+  .bg-gradient-to-t,
+  .bg-gradient-to-b,
+  .bg-gradient-to-br,
+  .bg-gradient-to-bl,
+  .bg-gradient-to-tr,
+  .bg-gradient-to-tl {
+    background: #000 !important;
+    border: 3px solid #fff !important;
+  }
+
+  // Streak Card - pure black with white borders
+  app-streak-card {
+    .card,
+    .card-body {
+      background: #000 !important;
+      border: 3px solid #fff !important;
+      color: #fff !important;
+    }
+
+    // All text must be white
+    * {
+      color: #fff !important;
+    }
+
+    // Progress bar
+    .progress {
+      border: 2px solid #fff !important;
+      background: #1a1a1a !important;
+
+      &::-webkit-progress-bar {
+        background: #1a1a1a !important;
+      }
+
+      &::-webkit-progress-value {
+        background: #ff0 !important;
+      }
+
+      &::-moz-progress-bar {
+        background: #ff0 !important;
+      }
+    }
+
+    // Stat boxes inside streak card
+    .bg-white\/20,
+    [class*='bg-white/'] {
+      background: #1a1a1a !important;
+      border: 2px solid #fff !important;
+      color: #fff !important;
+    }
+  }
+
+  // Stat Cards - pure black with white borders
+  app-stat-card {
+    .stat {
+      background: #000 !important;
+      border: 3px solid #fff !important;
+      color: #fff !important;
+
+      // Override inline style attribute
+      &[style*='background'] {
+        background: #000 !important;
+      }
+
+      * {
+        color: #fff !important;
+      }
+    }
+
+    // Icon should be bright yellow
+    app-icon,
+    ion-icon {
+      color: #ff0 !important;
+    }
+  }
+
+  // Quick Actions Card
+  .quick-actions-card {
+    background: #000 !important;
+    border: 3px solid #fff !important;
+
+    // Header
+    [class*='bg-gradient'] {
+      background: #1a1a1a !important;
+      border-bottom: 2px solid #fff !important;
+      color: #fff !important;
+    }
+
+    // Action buttons - high visibility
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-lg {
+      background: #000 !important;
+      border: 3px solid #ff0 !important;
+      color: #ff0 !important;
+      box-shadow: none !important;
+
+      &:hover {
+        background: #1a1a1a !important;
+      }
+    }
+
+    // Sync status text
+    .sync-status,
+    ion-item {
+      color: #fff !important;
+    }
+  }
+
+  // DaisyUI Cards
+  .card {
+    background: #000 !important;
+    border: 3px solid #fff !important;
+    box-shadow: none !important;
+
+    .card-body {
+      background: #000 !important;
+      color: #fff !important;
+    }
+
+    * {
+      color: #fff !important;
+    }
+  }
+
+  // Tab Bar - high contrast
+  ion-tab-bar {
+    background: #000 !important;
+    border-top: 3px solid #fff !important;
+
+    ion-tab-button {
+      background: #000 !important;
+      color: #fff !important;
+      border-right: 1px solid #fff !important;
+
+      &.tab-selected {
+        background: #1a1a1a !important;
+        border-bottom: 3px solid #ff0 !important;
+      }
+
+      ion-icon {
+        color: #fff !important;
+      }
+
+      ion-label {
+        color: #fff !important;
+      }
+
+      &.tab-selected ion-icon,
+      &.tab-selected ion-label {
+        color: #ff0 !important;
+      }
+    }
+  }
+
+  // Toolbar
+  ion-toolbar {
+    --background: #000 !important;
+    --color: #fff !important;
+    border-bottom: 3px solid #fff !important;
+
+    ion-title {
+      color: #fff !important;
+    }
+
+    ion-button {
+      color: #fff !important;
+      border: 2px solid #fff !important;
+    }
+  }
+
+  // FAB Button - bright yellow accent
+  ion-fab-button,
+  .fab-button {
+    --background: #ff0 !important;
+    --color: #000 !important;
+    border: 3px solid #fff !important;
+    box-shadow: none !important;
+  }
+
+  // Empty State
+  app-empty-state {
+    [class*='bg-gradient'],
+    [class*='from-'] {
+      background: #1a1a1a !important;
+      border: 3px solid #fff !important;
+    }
+
+    * {
+      color: #fff !important;
+    }
+  }
+
+  // Reading Items
+  app-reading-item {
+    .card,
+    ion-item {
+      background: #000 !important;
+      border: 2px solid #fff !important;
+      color: #fff !important;
+    }
+  }
+
+  // Appointment Cards
+  .appointment-card {
+    background: #000 !important;
+    border: 3px solid #fff !important;
+    box-shadow: none !important;
+    color: #fff !important;
+  }
+
+  // Modal/Dialog backgrounds
+  ion-modal {
+    --ion-background-color: #000 !important;
+
+    ion-content {
+      --background: #000 !important;
+    }
+  }
+
+  // Inputs need visible borders
+  input,
+  textarea,
+  select {
+    background: #000 !important;
+    border: 2px solid #fff !important;
+    color: #fff !important;
+
+    &::placeholder {
+      color: #999 !important;
     }
   }
 }
