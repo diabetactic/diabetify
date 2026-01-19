@@ -94,6 +94,7 @@ services:
       - NOREPLY_ACCOUNT=diabetactic@gmail.com
       - NOREPLY_PASSWORD=${NOREPLY_PASSWORD:-}
       - BACKOFFICE_FRONT_URL=http://localhost:3000
+      - MOBILE_FRONT_URL=http://localhost:4200
     healthcheck:
       test:
         [

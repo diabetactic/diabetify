@@ -3,7 +3,7 @@ import '../../test-setup';
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingController, ToastController, AlertController } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of, throwError, BehaviorSubject } from 'rxjs';
@@ -78,7 +78,12 @@ describe('LoginPage', () => {
       profile$: of(null),
     } as any;
 
-    router = { navigate: vi.fn().mockResolvedValue(true) } as any;
+    router = {
+      navigate: vi.fn().mockResolvedValue(true),
+      events: of(),
+      createUrlTree: vi.fn().mockReturnValue({}),
+      serializeUrl: vi.fn().mockReturnValue('/forgot-password'),
+    } as any;
     Object.defineProperty(router, 'url', { writable: true, value: '/login' });
 
     loadingCtrl = { create: vi.fn().mockResolvedValue(mockLoading) } as any;
@@ -86,6 +91,14 @@ describe('LoginPage', () => {
     alertCtrl = { create: vi.fn().mockResolvedValue(mockAlert) } as any;
 
     logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };
+
+    const activatedRoute = {
+      snapshot: {
+        queryParamMap: {
+          get: vi.fn().mockReturnValue(null),
+        },
+      },
+    };
 
     await TestBed.configureTestingModule({
       imports: [
@@ -101,6 +114,7 @@ describe('LoginPage', () => {
         { provide: LoadingController, useValue: loadingCtrl },
         { provide: ToastController, useValue: toastCtrl },
         { provide: AlertController, useValue: alertCtrl },
+        { provide: ActivatedRoute, useValue: activatedRoute },
         TranslateService,
         { provide: LoggerService, useValue: logger },
       ],

@@ -67,6 +67,17 @@
           </ion-button>
         </div>
 
+        <div class="mb-1 w-full text-right">
+          <a
+            routerLink="/forgot-password"
+            class="cursor-pointer text-xs font-semibold text-[var(--ion-color-primary)] no-underline hover:underline"
+            tabindex="0"
+            data-testid="forgot-password-link"
+          >
+            {{ 'login.forgotPassword' | translate }}
+          </a>
+        </div>
+
         <div class="remember-row">
           <ion-checkbox
             formControlName="rememberMe"

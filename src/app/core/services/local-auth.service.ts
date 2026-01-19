@@ -621,22 +621,57 @@ export class LocalAuthService {
     );
   }
 
-  /**
-   * Request password reset
-   */
-  requestPasswordReset(_email: string): Observable<{ message: string }> {
-    return throwError(
-      () => new Error('Password reset is not supported by the current authentication backend.')
-    );
+  requestPasswordReset(email: string): Observable<{ message: string }> {
+    const isAuthMockEnabled = this.mockAdapter.isServiceMockEnabled('auth');
+
+    if (isAuthMockEnabled) {
+      this.logger.info('Auth', 'Mock mode - simulating password reset request', { email });
+      return of({ message: 'Mail should be received anytime' });
+    }
+
+    this.logger.info('Auth', 'Requesting password reset', { email });
+
+    return this.http
+      .post<{ message: string } | string>(`${this.baseUrl}/forgot-password`, { email })
+      .pipe(
+        map(response => {
+          if (typeof response === 'string') {
+            return { message: response };
+          }
+          return response;
+        }),
+        tap(() => this.logger.info('Auth', 'Password reset request sent successfully')),
+        catchError(error => {
+          this.logger.error('Auth', 'Password reset request failed', error);
+          return of({ message: 'Mail should be received anytime' });
+        })
+      );
   }
 
-  /**
-   * Reset password with token
-   */
-  resetPassword(_token: string, _newPassword: string): Observable<{ message: string }> {
-    return throwError(
-      () => new Error('Password reset is not supported by the current authentication backend.')
-    );
+  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
+    const isAuthMockEnabled = this.mockAdapter.isServiceMockEnabled('auth');
+
+    if (isAuthMockEnabled) {
+      this.logger.info('Auth', 'Mock mode - simulating password reset');
+      return of({ message: 'Password reset successfully' });
+    }
+
+    this.logger.info('Auth', 'Resetting password with token');
+
+    return this.http
+      .post<{ status: string; message: string }>(`${this.baseUrl}/reset-password`, {
+        token,
+        new_password: newPassword,
+      })
+      .pipe(
+        map(response => ({ message: response.message })),
+        tap(() => this.logger.info('Auth', 'Password reset successfully')),
+        catchError(error => {
+          this.logger.error('Auth', 'Password reset failed', error);
+          const errorMessage = error?.error?.detail || error?.message || 'Failed to reset password';
+          return throwError(() => new Error(errorMessage));
+        })
+      );
   }
 
   /**

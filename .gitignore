@@ -4,6 +4,7 @@ package-lock.json
 # Build output
 dist
 www
+release-builds/
 
 # Test artifacts
 coverage

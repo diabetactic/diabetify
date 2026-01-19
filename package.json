@@ -1,6 +1,6 @@
 {
   "name": "diabetactic",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Diabetactic - Mobile app for diabetes glucose management built with Ionic/Angular",
   "author": "Diabetactic Team - FIUBA",
   "homepage": "https://github.com/diabetactic/diabetify",
@@ -30,6 +30,8 @@
     "mobile:sync": "pnpm build:heroku && npx cap sync",
     "mobile:build": "pnpm mobile:sync && cd android && ./gradlew assembleDebug",
     "mobile:build:release": "pnpm mobile:sync && cd android && ./gradlew assembleRelease",
+    "mobile:build:bundle": "pnpm mobile:sync && cd android && ./gradlew bundleRelease",
+    "mobile:release": "./scripts/build-release.sh",
     "mobile:install": "pnpm mobile:build && cd android && ./gradlew installDebug",
     "mobile:run": "pnpm mobile:install && adb logcat | grep -i 'diabetactic\\|chromium\\|capacitor'",
     "mobile:clean": "cd android && ./gradlew clean && cd .. && rm -rf www .angular",

@@ -1,0 +1,93 @@
+name: Deploy Privacy Policy to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'docs/PRIVACY_POLICY.md'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Create HTML from Markdown
+        run: |
+          mkdir -p _site
+
+          # Create index.html with privacy policy
+          cat > _site/index.html << 'HTMLEOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Diabetactic - Privacy Policy</title>
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                line-height: 1.6;
+                color: #333;
+              }
+              h1, h2, h3 { color: #1a73e8; }
+              h1 { border-bottom: 2px solid #1a73e8; padding-bottom: 10px; }
+              a { color: #1a73e8; }
+              @media (prefers-color-scheme: dark) {
+                body { background: #1a1a1a; color: #e0e0e0; }
+                h1, h2, h3, a { color: #8ab4f8; }
+                h1 { border-bottom-color: #8ab4f8; }
+              }
+            </style>
+          </head>
+          <body>
+          HTMLEOF
+
+          # Convert markdown to HTML (basic conversion)
+          cat docs/PRIVACY_POLICY.md | sed \
+            -e 's/^# \(.*\)/<h1>\1<\/h1>/' \
+            -e 's/^## \(.*\)/<h2>\1<\/h2>/' \
+            -e 's/^### \(.*\)/<h3>\1<\/h3>/' \
+            -e 's/^- \(.*\)/<li>\1<\/li>/' \
+            -e 's/\*\*\([^*]*\)\*\*/<strong>\1<\/strong>/g' \
+            -e 's/^\([^<].*\)$/<p>\1<\/p>/' \
+            -e '/^$/d' \
+            >> _site/index.html
+
+          echo "</body></html>" >> _site/index.html
+
+          # Also copy raw markdown
+          cp docs/PRIVACY_POLICY.md _site/privacy-policy.md
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

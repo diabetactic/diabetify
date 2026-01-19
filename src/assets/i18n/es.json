@@ -1386,6 +1386,39 @@
       "message": "La función de recuperación de contraseña estará disponible próximamente. Por favor, contacta a soporte para asistencia."
     }
   },
+  "forgotPassword": {
+    "title": "Recuperar Contraseña",
+    "subtitle": "Ingresa tu email para recibir un enlace de recuperación",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Ingresa tu email",
+    "submitButton": "Enviar Enlace",
+    "backToLogin": "Volver al Inicio",
+    "successMessage": "Si existe una cuenta con este email, recibirás un enlace de recuperación.",
+    "validation": {
+      "emailRequired": "El email es obligatorio",
+      "emailInvalid": "Ingresa un email válido"
+    }
+  },
+  "resetPassword": {
+    "title": "Restablecer Contraseña",
+    "subtitle": "Ingresa tu nueva contraseña",
+    "newPasswordLabel": "Nueva Contraseña",
+    "newPasswordPlaceholder": "Ingresa nueva contraseña",
+    "confirmPasswordLabel": "Confirmar Contraseña",
+    "confirmPasswordPlaceholder": "Confirma tu contraseña",
+    "submitButton": "Restablecer Contraseña",
+    "successMessage": "¡Contraseña restablecida! Redirigiendo al inicio...",
+    "validation": {
+      "passwordRequired": "La contraseña es obligatoria",
+      "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
+      "passwordsMustMatch": "Las contraseñas deben coincidir"
+    },
+    "errors": {
+      "tokenExpired": "Este enlace ha expirado. Solicita uno nuevo.",
+      "tokenInvalid": "Enlace inválido. Solicita uno nuevo.",
+      "resetFailed": "Error al restablecer. Intenta de nuevo."
+    }
+  },
   "explore": {
     "explorePrefix": "Explora",
     "uiComponents": "Componentes de UI"
