@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diabetify QA Evidence Report</title>
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-card: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent-green: #22c55e;
+      --accent-blue: #3b82f6;
+      --accent-purple: #a855f7;
+      --accent-red: #ef4444;
+      --accent-yellow: #eab308;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+    
+    header {
+      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+      padding: 2rem;
+      text-align: center;
+    }
+    
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    header p {
+      color: rgba(255,255,255,0.8);
+      font-size: 1.1rem;
+    }
+    
+    .timestamp {
+      background: rgba(0,0,0,0.2);
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+    
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+    
+    .summary-card {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    
+    .summary-card .number {
+      font-size: 3rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    
+    .summary-card.passed .number { color: var(--accent-green); }
+    .summary-card.screenshots .number { color: var(--accent-blue); }
+    .summary-card.api .number { color: var(--accent-purple); }
+    
+    .summary-card .label {
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+    
+    .flow-section {
+      margin-bottom: 4rem;
+    }
+    
+    .flow-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--bg-card);
+    }
+    
+    .flow-badge {
+      background: var(--accent-green);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    
+    h2 {
+      font-size: 1.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    h2 .icon {
+      font-size: 1.5rem;
+    }
+    
+    .steps {
+      display: grid;
+      gap: 2rem;
+    }
+    
+    .step {
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    
+    .step-header {
+      background: var(--bg-card);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .step-number {
+      background: var(--accent-blue);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    
+    .step-title {
+      font-weight: 600;
+      flex: 1;
+    }
+    
+    .step-state {
+      background: rgba(34, 197, 94, 0.2);
+      color: var(--accent-green);
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    
+    .step-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      padding: 1.5rem;
+    }
+    
+    @media (max-width: 900px) {
+      .step-content {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .screenshot-container {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid var(--bg-card);
+    }
+    
+    .screenshot-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    
+    .api-evidence {
+      background: var(--bg-primary);
+      border-radius: 12px;
+      padding: 1rem;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.85rem;
+      overflow-x: auto;
+    }
+    
+    .api-evidence pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    
+    .api-label {
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    
+    .state-flow {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .state-flow .state {
+      background: var(--bg-card);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    
+    .state-flow .arrow {
+      color: var(--accent-blue);
+    }
+    
+    .state-flow .state.current {
+      background: var(--accent-green);
+      color: white;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    .json-key { color: #7dd3fc; }
+    .json-string { color: #86efac; }
+    .json-number { color: #fde047; }
+    .json-boolean { color: #c4b5fd; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Diabetify QA Evidence Report</h1>
+    <p>E2E Test Evidence Collection - Flow Screenshots & API Verification</p>
+    <div class="timestamp">Generated: January 20, 2026</div>
+  </header>
+  
+  <main>
+    <section class="summary">
+      <div class="summary-card passed">
+        <div class="number">3</div>
+        <div class="label">Flows Tested</div>
+      </div>
+      <div class="summary-card screenshots">
+        <div class="number">14</div>
+        <div class="label">Screenshots</div>
+      </div>
+      <div class="summary-card api">
+        <div class="number">13</div>
+        <div class="label">API Verifications</div>
+      </div>
+    </section>
+    
+    <!-- READING FLOW -->
+    <section class="flow-section">
+      <div class="flow-header">
+        <h2><span class="icon">📊</span> Reading Flow</h2>
+        <span class="flow-badge">PASSED</span>
+      </div>
+      
+      <div class="state-flow">
+        <span class="state">Dashboard</span>
+        <span class="arrow">→</span>
+        <span class="state">Add Form</span>
+        <span class="arrow">→</span>
+        <span class="state">Fill (187 mg/dL)</span>
+        <span class="arrow">→</span>
+        <span class="state">Submit</span>
+        <span class="arrow">→</span>
+        <span class="state current">Verify in List</span>
+      </div>
+      
+      <div class="steps">
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">1</div>
+            <div class="step-title">Dashboard Before (Fully Loaded)</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/01-reading-dashboard-before.png" alt="Dashboard before adding reading">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">API: Initial Readings State</span>
+              <pre>{
+  <span class="json-key">"description"</span>: <span class="json-string">"Initial state before adding new reading"</span>,
+  <span class="json-key">"totalCount"</span>: <span class="json-number">23</span>,
+  <span class="json-key">"latestReading"</span>: {
+    <span class="json-key">"glucose_level"</span>: <span class="json-number">142</span>,
+    <span class="json-key">"reading_type"</span>: <span class="json-string">"OTRO"</span>
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">2</div>
+            <div class="step-title">Add Reading Form (Empty)</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/02-reading-add-form-empty.png" alt="Add reading form empty">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">Navigation</span>
+              <pre>User clicked "Add Reading" button
+Navigated to /add-reading
+Form ready with empty glucose input</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">3</div>
+            <div class="step-title">Form Filled (187 mg/dL - Unique Test Value)</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/03-reading-add-form-filled.png" alt="Add reading form filled">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">Test Data (Unique Value)</span>
+              <pre>{
+  <span class="json-key">"testValue"</span>: <span class="json-number">187</span>,
+  <span class="json-key">"unit"</span>: <span class="json-string">"mg/dL"</span>,
+  <span class="json-key">"tag"</span>: <span class="json-string">"__EVIDENCE_TEST__"</span>,
+  <span class="json-key">"status"</span>: <span class="json-string">"Normal (in range)"</span>
+}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">4</div>
+            <div class="step-title">After Submit - Success</div>
+            <div class="step-state">SUBMITTED</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/04-reading-submitted-success.png" alt="After submit success">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">API: After Submit</span>
+              <pre>{
+  <span class="json-key">"previousCount"</span>: <span class="json-number">23</span>,
+  <span class="json-key">"newCount"</span>: <span class="json-number">24</span>,
+  <span class="json-key">"newReadingFound"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"newReading"</span>: {
+    <span class="json-key">"glucose_level"</span>: <span class="json-number">187</span>
+  },
+  <span class="json-key">"testValueUsed"</span>: <span class="json-number">187</span>
+}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">5</div>
+            <div class="step-title">Reading Visible in List</div>
+            <div class="step-state">VERIFIED</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/05-reading-visible-in-list.png" alt="Reading visible in list">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">Verification Complete</span>
+              <pre>Reading 187 mg/dL successfully:
+- Created in IndexedDB
+- Synced to backend
+- Visible in readings list
+- API verified: count 23 → 24</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- APPOINTMENT ACCEPTED FLOW -->
+    <section class="flow-section">
+      <div class="flow-header">
+        <h2><span class="icon">✅</span> Appointment Flow: ACCEPTED</h2>
+        <span class="flow-badge">PASSED</span>
+      </div>
+      
+      <div class="state-flow">
+        <span class="state">NONE</span>
+        <span class="arrow">→</span>
+        <span class="state">PENDING</span>
+        <span class="arrow">→</span>
+        <span class="state">ACCEPTED</span>
+        <span class="arrow">→</span>
+        <span class="state">Fill Form</span>
+        <span class="arrow">→</span>
+        <span class="state">CREATED</span>
+        <span class="arrow">→</span>
+        <span class="state current" style="background: var(--accent-purple);">+ RESOLUTION</span>
+      </div>
+      
+      <div class="steps">
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">1</div>
+            <div class="step-title">Initial State: NONE</div>
+            <div class="step-state">NONE</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/10-appt-state-none.png" alt="Appointment state NONE">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">API: GET /appointments/state</span>
+              <pre>{
+  <span class="json-key">"description"</span>: <span class="json-string">"Initial state - no appointment request"</span>,
+  <span class="json-key">"state"</span>: <span class="json-string">"NONE"</span>
+}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">2</div>
+            <div class="step-title">After Request: PENDING</div>
+            <div class="step-state">PENDING</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/11-appt-state-pending.png" alt="Appointment state PENDING">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">API: POST /appointments/submit</span>
+              <pre>{
+  <span class="json-key">"description"</span>: <span class="json-string">"Waiting in queue"</span>,
+  <span class="json-key">"state"</span>: <span class="json-string">"PENDING"</span>
+}
+
+User clicked "Request Appointment"
+State: NONE → PENDING</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">3</div>
+            <div class="step-title">Admin Accepts: ACCEPTED</div>
+            <div class="step-state">ACCEPTED</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/12-appt-state-accepted.png" alt="Appointment state ACCEPTED">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">API: PUT /appointments/accept/{id}</span>
+              <pre>{
+  <span class="json-key">"description"</span>: <span class="json-string">"User can now fill form"</span>,
+  <span class="json-key">"state"</span>: <span class="json-string">"ACCEPTED"</span>
+}
+
+Admin accepted from queue
+State: PENDING → ACCEPTED</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">4</div>
+            <div class="step-title">Appointment Form (Empty)</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/13-appt-form-empty.png" alt="Appointment form empty">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">Clinical Form Fields</span>
+              <pre>Required fields:
+- Glucose Objective (mg/dL)
+- Insulin Type (rapid/slow/mixed)
+- Dose (U)
+- Fast Insulin Brand
+- Fixed Dose (U)
+- Ratio
+- Sensitivity
+- Pump Type
+- Motive (checkbox)</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">5</div>
+            <div class="step-title">Form Filled with Clinical Data</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/14-appt-form-filled.png" alt="Appointment form filled">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">Form Data</span>
+              <pre>{
+  <span class="json-key">"glucose_objective"</span>: <span class="json-number">100</span>,
+  <span class="json-key">"insulin_type"</span>: <span class="json-string">"selected"</span>,
+  <span class="json-key">"dose"</span>: <span class="json-number">10</span>,
+  <span class="json-key">"fast_insulin"</span>: <span class="json-string">"Humalog"</span>,
+  <span class="json-key">"fixed_dose"</span>: <span class="json-number">5</span>,
+  <span class="json-key">"ratio"</span>: <span class="json-number">10</span>,
+  <span class="json-key">"sensitivity"</span>: <span class="json-number">50</span>
+}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">6</div>
+            <div class="step-title">Appointment Created</div>
+            <div class="step-state">CREATED</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/15-appt-state-created.png" alt="Appointment state CREATED">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">API: POST /appointments/create</span>
+              <pre>{
+  <span class="json-key">"description"</span>: <span class="json-string">"Awaiting medical resolution"</span>,
+  <span class="json-key">"state"</span>: <span class="json-string">"CREATED"</span>
+}
+
+Form submitted successfully
+State: ACCEPTED → CREATED
+Appointment now active!</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">7</div>
+            <div class="step-title">Doctor Resolution Added</div>
+            <div class="step-state" style="background: rgba(168, 85, 247, 0.2); color: var(--accent-purple);">+ RESOLUTION</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/16-appt-with-resolution.png" alt="Appointment with resolution">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">API: POST /appointments/create_resolution (via Backoffice)</span>
+              <pre>{
+  <span class="json-key">"description"</span>: <span class="json-string">"Doctor provided treatment"</span>,
+  <span class="json-key">"state"</span>: <span class="json-string">"CREATED"</span>,
+  <span class="json-key">"resolution_created"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"resolution_data"</span>: {
+    <span class="json-key">"change_basal_type"</span>: <span class="json-string">"Lantus"</span>,
+    <span class="json-key">"change_basal_dose"</span>: <span class="json-number">22</span>,
+    <span class="json-key">"change_basal_time"</span>: <span class="json-string">"22:00"</span>,
+    <span class="json-key">"change_fast_type"</span>: <span class="json-string">"Humalog"</span>,
+    <span class="json-key">"change_ratio"</span>: <span class="json-number">12</span>,
+    <span class="json-key">"change_sensitivity"</span>: <span class="json-number">45</span>
+  }
+}
+
+Resolution created via BACKOFFICE API
+Email notification sent to patient
+State remains CREATED (+ resolution record)</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- APPOINTMENT DENIED FLOW -->
+    <section class="flow-section">
+      <div class="flow-header">
+        <h2><span class="icon">❌</span> Appointment Flow: DENIED</h2>
+        <span class="flow-badge">PASSED</span>
+      </div>
+      
+      <div class="state-flow">
+        <span class="state">NONE</span>
+        <span class="arrow">→</span>
+        <span class="state">PENDING</span>
+        <span class="arrow">→</span>
+        <span class="state current" style="background: var(--accent-red);">DENIED</span>
+      </div>
+      
+      <div class="steps">
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">1</div>
+            <div class="step-title">Initial State: NONE</div>
+            <div class="step-state">NONE</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/20-denied-state-none.png" alt="Denied flow - state NONE">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">API: GET /appointments/state</span>
+              <pre>{
+  <span class="json-key">"description"</span>: <span class="json-string">"Initial state - no request"</span>,
+  <span class="json-key">"state"</span>: <span class="json-string">"NONE"</span>
+}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">2</div>
+            <div class="step-title">After Request: PENDING</div>
+            <div class="step-state">PENDING</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/21-denied-state-pending.png" alt="Denied flow - state PENDING">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">API: POST /appointments/submit</span>
+              <pre>{
+  <span class="json-key">"description"</span>: <span class="json-string">"Waiting in queue"</span>,
+  <span class="json-key">"state"</span>: <span class="json-string">"PENDING"</span>
+}
+
+User submitted request
+State: NONE → PENDING</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">3</div>
+            <div class="step-title">Admin Denies: DENIED</div>
+            <div class="step-state" style="background: rgba(239, 68, 68, 0.2); color: var(--accent-red);">DENIED</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/22-denied-state-denied.png" alt="Denied flow - state DENIED">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">API: PUT /appointments/deny/{id}</span>
+              <pre>{
+  <span class="json-key">"description"</span>: <span class="json-string">"Admin denied request"</span>,
+  <span class="json-key">"state"</span>: <span class="json-string">"DENIED"</span>
+}
+
+Admin denied from queue
+State: PENDING → DENIED
+User sees denial message</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <footer>
+    <p>Diabetify QA Evidence Report | Generated by Playwright E2E Tests</p>
+    <p>Branch: feature/high-contrast-and-fixes</p>
+  </footer>
+</body>
+</html>
