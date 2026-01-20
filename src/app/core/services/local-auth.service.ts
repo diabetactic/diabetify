@@ -11,6 +11,7 @@ import { AuthSessionService } from '@services/auth-session.service';
 
 import { MockAdapterService } from '@services/mock-adapter.service';
 import { EnvironmentConfigService } from '@core/config/environment-config.service';
+import { ApiGatewayService } from '@services/api-gateway.service';
 import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
 import { safeJsonParse, isLocalUser } from '../utils/type-guards';
 import { AccountState } from '../models/user-profile.model';
@@ -134,7 +135,8 @@ export class LocalAuthService {
     private mockAdapter: MockAdapterService,
     private tokenService: TokenService,
     private envConfig: EnvironmentConfigService,
-    private authSession: AuthSessionService
+    private authSession: AuthSessionService,
+    private apiGateway: ApiGatewayService
   ) {
     this.logger.info('Init', 'LocalAuthService initialized');
     // Set base URL for API calls
@@ -499,7 +501,11 @@ export class LocalAuthService {
     const { db } = await import('./database.service');
     await db.clearAllData();
 
-    this.logger.info('Auth', 'Logout completed - all data cleared from secure storage', {
+    // SECURITY: Clear API response cache to prevent data leakage between users
+    // This ensures cached responses from the previous user are not shown to the next user
+    this.apiGateway.clearCache();
+
+    this.logger.info('Auth', 'Logout completed - all data cleared from secure storage and cache', {
       userId: user?.id,
     });
   }

@@ -21,6 +21,8 @@ import { HttpClient } from '@angular/common/http';
 import { SecureStorageService } from '@services/secure-storage.service';
 import { TokenService } from '@services/token.service';
 import { EnvironmentConfigService } from '@core/config/environment-config.service';
+import { AuthSessionService } from '@services/auth-session.service';
+import { ApiGatewayService } from '@services/api-gateway.service';
 
 // Mock Preferences for Vitest
 vi.mock('@capacitor/preferences', () => ({
@@ -49,6 +51,8 @@ describe('LocalAuthService', () => {
     clearTokens: Mock;
   };
   let envConfig: Partial<EnvironmentConfigService>;
+  let authSession: Partial<AuthSessionService>;
+  let apiGateway: Partial<ApiGatewayService>;
 
   const mockUser: LocalUser = {
     id: 'test-user-123',
@@ -129,6 +133,16 @@ describe('LocalAuthService', () => {
       devToolsEnabled: false,
     };
 
+    authSession = {
+      setUser: vi.fn(),
+      clearUser: vi.fn(),
+      getCurrentUserId: vi.fn().mockReturnValue(null),
+    };
+
+    apiGateway = {
+      clearCache: vi.fn(),
+    };
+
     httpMock = {
       get: vi.fn(),
       post: vi.fn(),
@@ -148,6 +162,8 @@ describe('LocalAuthService', () => {
         { provide: SecureStorageService, useValue: secureStorage },
         { provide: TokenService, useValue: tokenService },
         { provide: EnvironmentConfigService, useValue: envConfig },
+        { provide: AuthSessionService, useValue: authSession },
+        { provide: ApiGatewayService, useValue: apiGateway },
       ],
     });
 
@@ -342,7 +358,7 @@ describe('LocalAuthService', () => {
       expect(logger.info).toHaveBeenCalledWith('Auth', 'Logout initiated', expect.any(Object));
       expect(logger.info).toHaveBeenCalledWith(
         'Auth',
-        'Logout completed - all data cleared from secure storage',
+        'Logout completed - all data cleared from secure storage and cache',
         expect.any(Object)
       );
 
