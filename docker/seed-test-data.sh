@@ -269,6 +269,22 @@ if declare -F append_jsonl >/dev/null 2>&1; then
 fi
 
 # -----------------------------------------------------------------------------
+# Step 5b: Sync times_measured counter with actual readings count
+# -----------------------------------------------------------------------------
+echo ""
+echo "🔄 Syncing times_measured counter..."
+
+# Reset times_measured to match the actual number of readings we just created
+# This ensures the dashboard "Total de Lecturas" matches the readings page count
+docker exec diabetactic_users_db psql -U postgres -d users \
+    -c "UPDATE users SET times_measured = $READINGS_CREATED WHERE user_id = $USER_ID;" 2>/dev/null || true
+
+echo "   ✓ Set times_measured = $READINGS_CREATED for user $USER_ID"
+if declare -F append_jsonl >/dev/null 2>&1; then
+  append_jsonl "seed-history.jsonl" event="times_measured_synced" user_id="$USER_ID" count="$READINGS_CREATED" || true
+fi
+
+# -----------------------------------------------------------------------------
 # Step 6: Clear appointment queue (full mode only)
 # -----------------------------------------------------------------------------
 echo ""

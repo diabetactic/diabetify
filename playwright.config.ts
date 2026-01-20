@@ -131,9 +131,19 @@ export default defineConfig({
         },
       },
     },
+
+    // Visual setup - reseeds database for deterministic visual test data
+    // Runs after functional tests pollute data, before visual tests capture screenshots
     {
-      name: 'mobile-chromium',
+      name: 'visual-setup',
+      testDir: './playwright/fixtures',
+      testMatch: /visual\.setup\.ts/,
       dependencies: ['setup'],
+    },
+    {
+      name: 'mobile-chromium-functional',
+      dependencies: ['setup'],
+      testIgnore: '**/visual/**/*.spec.ts', // Visual tests run in dedicated project
       use: {
         browserName: 'chromium',
         viewport: MOBILE_VIEWPORT,
@@ -149,8 +159,26 @@ export default defineConfig({
       },
     },
     {
+      name: 'mobile-chromium',
+      dependencies: ['visual-setup'],
+      testMatch: '**/visual/**/*.spec.ts',
+      use: {
+        browserName: 'chromium',
+        viewport: MOBILE_VIEWPORT,
+        deviceScaleFactor: 3,
+        isMobile: true,
+        hasTouch: true,
+        userAgent:
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+        launchOptions: {
+          executablePath: browserExecutable,
+          headless: process.env.HEADLESS !== 'false',
+        },
+      },
+    },
+    {
       name: 'desktop-chromium',
-      dependencies: ['setup'],
+      dependencies: ['visual-setup'],
       testMatch: '**/visual/**/*.spec.ts', // Only run desktop for visual tests
       use: {
         browserName: 'chromium',

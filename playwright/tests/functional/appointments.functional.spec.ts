@@ -22,7 +22,17 @@ test.describe('Appointments Functional Tests @functional @docker', () => {
   test('should show request button when queue is clear', async ({ page, pages }) => {
     await page.goto('/tabs/appointments');
     await pages.appointmentsPage.waitForHydration();
-    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+
+    await page.evaluate(() => {
+      const db = indexedDB.deleteDatabase('diabetactic-appointments');
+      return new Promise(resolve => {
+        db.onsuccess = resolve;
+        db.onerror = resolve;
+      });
+    });
+
+    await page.reload();
+    await pages.appointmentsPage.waitForHydration();
 
     const requestBtn = page.locator('text=/Solicitar|Request|Nueva/i');
     await expect(requestBtn.first()).toBeVisible({ timeout: 15000 });

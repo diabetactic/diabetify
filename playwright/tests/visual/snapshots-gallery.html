@@ -1,401 +1,527 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Diabetify Visual Snapshots Gallery</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #1a1a2e;
-      color: #eee;
-      padding: 2rem;
-      min-height: 100vh;
-    }
-    
-    h1 {
-      text-align: center;
-      margin-bottom: 0.5rem;
-      color: #4cc9f0;
-      font-size: 2.5rem;
-    }
-    
-    .subtitle {
-      text-align: center;
-      color: #888;
-      margin-bottom: 2rem;
-    }
-    
-    .stats {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-    
-    .stat {
-      background: #16213e;
-      padding: 1rem 2rem;
-      border-radius: 12px;
-      text-align: center;
-    }
-    
-    .stat-value {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #4cc9f0;
-    }
-    
-    .stat-label {
-      color: #888;
-      font-size: 0.875rem;
-    }
-    
-    h2 {
-      color: #f72585;
-      margin: 2rem 0 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid #f72585;
-    }
-    
-    h3 {
-      color: #7209b7;
-      margin: 1.5rem 0 1rem;
-    }
-    
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-    
-    .card {
-      background: #16213e;
-      border-radius: 12px;
-      overflow: hidden;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(76, 201, 240, 0.2);
-    }
-    
-    .card-header {
-      padding: 1rem;
-      background: #0f3460;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .card-title {
-      font-weight: 600;
-      color: #fff;
-    }
-    
-    .badge {
-      padding: 0.25rem 0.75rem;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-    
-    .badge-mobile {
-      background: #3a0ca3;
-      color: #fff;
-    }
-    
-    .badge-desktop {
-      background: #4361ee;
-      color: #fff;
-    }
-    
-    .card-image {
-      width: 100%;
-      height: auto;
-      display: block;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-    
-    .card-image:hover {
-      opacity: 0.9;
-    }
-    
-    .comparison {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-    
-    .comparison-item {
-      text-align: center;
-    }
-    
-    .comparison-label {
-      background: #0f3460;
-      padding: 0.5rem;
-      font-size: 0.875rem;
-      color: #4cc9f0;
-    }
-    
-    /* Modal for full-size view */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.95);
-      z-index: 1000;
-      cursor: zoom-out;
-      overflow: auto;
-      padding: 2rem;
-    }
-    
-    .modal.active {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .modal img {
-      max-width: 95%;
-      max-height: 95vh;
-      border-radius: 8px;
-      box-shadow: 0 0 60px rgba(76, 201, 240, 0.3);
-    }
-    
-    .modal-close {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      background: #f72585;
-      color: #fff;
-      border: none;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      font-size: 1.5rem;
-      cursor: pointer;
-      z-index: 1001;
-    }
-    
-    footer {
-      text-align: center;
-      margin-top: 3rem;
-      padding-top: 2rem;
-      border-top: 1px solid #333;
-      color: #666;
-    }
-  </style>
-</head>
-<body>
-  <h1>Diabetify Visual Snapshots</h1>
-  <p class="subtitle">Playwright E2E Visual Regression Baselines</p>
-  
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-value">26</div>
-      <div class="stat-label">Total Snapshots</div>
-    </div>
-    <div class="stat">
-      <div class="stat-value">18</div>
-      <div class="stat-label">Light Theme</div>
-    </div>
-    <div class="stat">
-      <div class="stat-value">8</div>
-      <div class="stat-label">Dark Theme</div>
-    </div>
-  </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diabetify Visual Snapshots Gallery</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-  <!-- LIGHT THEME PAGES -->
-  <h2>Light Theme - Pages</h2>
-  
-  <h3>Dashboard</h3>
-  <div class="comparison">
-    <div class="comparison-item">
-      <div class="comparison-label">Mobile</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/dashboard-mobile-chromium.png" alt="Dashboard Mobile" onclick="openModal(this)">
-    </div>
-    <div class="comparison-item">
-      <div class="comparison-label">Desktop</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/dashboard-desktop-chromium.png" alt="Dashboard Desktop" onclick="openModal(this)">
-    </div>
-  </div>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #1a1a2e;
+        color: #eee;
+        padding: 2rem;
+        min-height: 100vh;
+      }
 
-  <h3>Readings</h3>
-  <div class="comparison">
-    <div class="comparison-item">
-      <div class="comparison-label">Mobile</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/readings-page-mobile-chromium.png" alt="Readings Mobile" onclick="openModal(this)">
-    </div>
-    <div class="comparison-item">
-      <div class="comparison-label">Desktop</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/readings-page-desktop-chromium.png" alt="Readings Desktop" onclick="openModal(this)">
-    </div>
-  </div>
+      h1 {
+        text-align: center;
+        margin-bottom: 0.5rem;
+        color: #4cc9f0;
+        font-size: 2.5rem;
+      }
 
-  <h3>Add Reading Form</h3>
-  <div class="comparison">
-    <div class="comparison-item">
-      <div class="comparison-label">Mobile</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/add-reading-form-mobile-chromium.png" alt="Add Reading Mobile" onclick="openModal(this)">
-    </div>
-    <div class="comparison-item">
-      <div class="comparison-label">Desktop</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/add-reading-form-desktop-chromium.png" alt="Add Reading Desktop" onclick="openModal(this)">
-    </div>
-  </div>
+      .subtitle {
+        text-align: center;
+        color: #888;
+        margin-bottom: 2rem;
+      }
 
-  <h3>Appointments</h3>
-  <div class="comparison">
-    <div class="comparison-item">
-      <div class="comparison-label">Mobile</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/appointments-page-mobile-chromium.png" alt="Appointments Mobile" onclick="openModal(this)">
-    </div>
-    <div class="comparison-item">
-      <div class="comparison-label">Desktop</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/appointments-page-desktop-chromium.png" alt="Appointments Desktop" onclick="openModal(this)">
-    </div>
-  </div>
+      .stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
 
-  <h3>Profile</h3>
-  <div class="comparison">
-    <div class="comparison-item">
-      <div class="comparison-label">Mobile</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/profile-page-mobile-chromium.png" alt="Profile Mobile" onclick="openModal(this)">
-    </div>
-    <div class="comparison-item">
-      <div class="comparison-label">Desktop</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/profile-page-desktop-chromium.png" alt="Profile Desktop" onclick="openModal(this)">
-    </div>
-  </div>
+      .stat {
+        background: #16213e;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        text-align: center;
+      }
 
-  <h3>Settings</h3>
-  <div class="comparison">
-    <div class="comparison-item">
-      <div class="comparison-label">Mobile</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/settings-page-mobile-chromium.png" alt="Settings Mobile" onclick="openModal(this)">
-    </div>
-    <div class="comparison-item">
-      <div class="comparison-label">Desktop</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/settings-page-desktop-chromium.png" alt="Settings Desktop" onclick="openModal(this)">
-    </div>
-  </div>
+      .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #4cc9f0;
+      }
 
-  <!-- AUTH PAGES -->
-  <h2>Light Theme - Auth Pages</h2>
+      .stat-label {
+        color: #888;
+        font-size: 0.875rem;
+      }
 
-  <h3>Login</h3>
-  <div class="comparison">
-    <div class="comparison-item">
-      <div class="comparison-label">Mobile</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/login-page-mobile-chromium.png" alt="Login Mobile" onclick="openModal(this)">
-    </div>
-    <div class="comparison-item">
-      <div class="comparison-label">Desktop</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/login-page-desktop-chromium.png" alt="Login Desktop" onclick="openModal(this)">
-    </div>
-  </div>
+      h2 {
+        color: #f72585;
+        margin: 2rem 0 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #f72585;
+      }
 
-  <h3>Welcome</h3>
-  <div class="comparison">
-    <div class="comparison-item">
-      <div class="comparison-label">Mobile</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/welcome-page-mobile-chromium.png" alt="Welcome Mobile" onclick="openModal(this)">
-    </div>
-    <div class="comparison-item">
-      <div class="comparison-label">Desktop</div>
-      <img class="card-image" src="pages.visual.spec.ts-snapshots/welcome-page-desktop-chromium.png" alt="Welcome Desktop" onclick="openModal(this)">
-    </div>
-  </div>
+      h3 {
+        color: #7209b7;
+        margin: 1.5rem 0 1rem;
+      }
 
-  <!-- DARK THEME -->
-  <h2>Dark Theme</h2>
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
 
-  <h3>Dashboard (Dark)</h3>
-  <div class="comparison">
-    <div class="comparison-item">
-      <div class="comparison-label">Mobile</div>
-      <img class="card-image" src="theme.visual.spec.ts-snapshots/dashboard-dark-mobile-chromium.png" alt="Dashboard Dark Mobile" onclick="openModal(this)">
-    </div>
-    <div class="comparison-item">
-      <div class="comparison-label">Desktop</div>
-      <img class="card-image" src="theme.visual.spec.ts-snapshots/dashboard-dark-desktop-chromium.png" alt="Dashboard Dark Desktop" onclick="openModal(this)">
-    </div>
-  </div>
+      .card {
+        background: #16213e;
+        border-radius: 12px;
+        overflow: hidden;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
 
-  <h3>Readings (Dark)</h3>
-  <div class="comparison">
-    <div class="comparison-item">
-      <div class="comparison-label">Mobile</div>
-      <img class="card-image" src="theme.visual.spec.ts-snapshots/readings-dark-mobile-chromium.png" alt="Readings Dark Mobile" onclick="openModal(this)">
-    </div>
-    <div class="comparison-item">
-      <div class="comparison-label">Desktop</div>
-      <img class="card-image" src="theme.visual.spec.ts-snapshots/readings-dark-desktop-chromium.png" alt="Readings Dark Desktop" onclick="openModal(this)">
-    </div>
-  </div>
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(76, 201, 240, 0.2);
+      }
 
-  <h3>Profile (Dark)</h3>
-  <div class="comparison">
-    <div class="comparison-item">
-      <div class="comparison-label">Mobile</div>
-      <img class="card-image" src="theme.visual.spec.ts-snapshots/profile-dark-mobile-chromium.png" alt="Profile Dark Mobile" onclick="openModal(this)">
-    </div>
-    <div class="comparison-item">
-      <div class="comparison-label">Desktop</div>
-      <img class="card-image" src="theme.visual.spec.ts-snapshots/profile-dark-desktop-chromium.png" alt="Profile Dark Desktop" onclick="openModal(this)">
-    </div>
-  </div>
+      .card-header {
+        padding: 1rem;
+        background: #0f3460;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
-  <h3>Login (Dark)</h3>
-  <div class="comparison">
-    <div class="comparison-item">
-      <div class="comparison-label">Mobile</div>
-      <img class="card-image" src="theme.visual.spec.ts-snapshots/login-dark-mobile-chromium.png" alt="Login Dark Mobile" onclick="openModal(this)">
+      .card-title {
+        font-weight: 600;
+        color: #fff;
+      }
+
+      .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      .badge-mobile {
+        background: #3a0ca3;
+        color: #fff;
+      }
+
+      .badge-desktop {
+        background: #4361ee;
+        color: #fff;
+      }
+
+      .card-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+
+      .card-image:hover {
+        opacity: 0.9;
+      }
+
+      .comparison {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      .comparison-item {
+        text-align: center;
+      }
+
+      .comparison-label {
+        background: #0f3460;
+        padding: 0.5rem;
+        font-size: 0.875rem;
+        color: #4cc9f0;
+      }
+
+      /* Modal for full-size view */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 1000;
+        cursor: zoom-out;
+        overflow: auto;
+        padding: 2rem;
+      }
+
+      .modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal img {
+        max-width: 95%;
+        max-height: 95vh;
+        border-radius: 8px;
+        box-shadow: 0 0 60px rgba(76, 201, 240, 0.3);
+      }
+
+      .modal-close {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: #f72585;
+        color: #fff;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        cursor: pointer;
+        z-index: 1001;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid #333;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Diabetify Visual Snapshots</h1>
+    <p class="subtitle">Playwright E2E Visual Regression Baselines</p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">26</div>
+        <div class="stat-label">Total Snapshots</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">18</div>
+        <div class="stat-label">Light Theme</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">8</div>
+        <div class="stat-label">Dark Theme</div>
+      </div>
     </div>
-    <div class="comparison-item">
-      <div class="comparison-label">Desktop</div>
-      <img class="card-image" src="theme.visual.spec.ts-snapshots/login-dark-desktop-chromium.png" alt="Login Dark Desktop" onclick="openModal(this)">
+
+    <!-- LIGHT THEME PAGES -->
+    <h2>Light Theme - Pages</h2>
+
+    <h3>Dashboard</h3>
+    <div class="comparison">
+      <div class="comparison-item">
+        <div class="comparison-label">Mobile</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/dashboard-mobile-chromium.png"
+          alt="Dashboard Mobile"
+          onclick="openModal(this)"
+        />
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Desktop</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/dashboard-desktop-chromium.png"
+          alt="Dashboard Desktop"
+          onclick="openModal(this)"
+        />
+      </div>
     </div>
-  </div>
 
-  <footer>
-    <p>Generated for Diabetify - Visual Regression Testing</p>
-    <p>Playwright 1.48 | Chromium | Mobile (390x844) & Desktop (1280x720)</p>
-  </footer>
+    <h3>Readings</h3>
+    <div class="comparison">
+      <div class="comparison-item">
+        <div class="comparison-label">Mobile</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/readings-page-mobile-chromium.png"
+          alt="Readings Mobile"
+          onclick="openModal(this)"
+        />
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Desktop</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/readings-page-desktop-chromium.png"
+          alt="Readings Desktop"
+          onclick="openModal(this)"
+        />
+      </div>
+    </div>
 
-  <!-- Modal -->
-  <div class="modal" id="modal" onclick="closeModal()">
-    <button class="modal-close" onclick="closeModal()">&times;</button>
-    <img id="modal-img" src="" alt="Full size">
-  </div>
+    <h3>Add Reading Form</h3>
+    <div class="comparison">
+      <div class="comparison-item">
+        <div class="comparison-label">Mobile</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/add-reading-form-mobile-chromium.png"
+          alt="Add Reading Mobile"
+          onclick="openModal(this)"
+        />
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Desktop</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/add-reading-form-desktop-chromium.png"
+          alt="Add Reading Desktop"
+          onclick="openModal(this)"
+        />
+      </div>
+    </div>
 
-  <script>
-    function openModal(img) {
-      const modal = document.getElementById('modal');
-      const modalImg = document.getElementById('modal-img');
-      modalImg.src = img.src;
-      modal.classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
-    
-    function closeModal() {
-      const modal = document.getElementById('modal');
-      modal.classList.remove('active');
-      document.body.style.overflow = '';
-    }
-    
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
-    });
-  </script>
-</body>
+    <h3>Appointments</h3>
+    <div class="comparison">
+      <div class="comparison-item">
+        <div class="comparison-label">Mobile</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/appointments-page-mobile-chromium.png"
+          alt="Appointments Mobile"
+          onclick="openModal(this)"
+        />
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Desktop</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/appointments-page-desktop-chromium.png"
+          alt="Appointments Desktop"
+          onclick="openModal(this)"
+        />
+      </div>
+    </div>
+
+    <h3>Profile</h3>
+    <div class="comparison">
+      <div class="comparison-item">
+        <div class="comparison-label">Mobile</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/profile-page-mobile-chromium.png"
+          alt="Profile Mobile"
+          onclick="openModal(this)"
+        />
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Desktop</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/profile-page-desktop-chromium.png"
+          alt="Profile Desktop"
+          onclick="openModal(this)"
+        />
+      </div>
+    </div>
+
+    <h3>Settings</h3>
+    <div class="comparison">
+      <div class="comparison-item">
+        <div class="comparison-label">Mobile</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/settings-page-mobile-chromium.png"
+          alt="Settings Mobile"
+          onclick="openModal(this)"
+        />
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Desktop</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/settings-page-desktop-chromium.png"
+          alt="Settings Desktop"
+          onclick="openModal(this)"
+        />
+      </div>
+    </div>
+
+    <!-- AUTH PAGES -->
+    <h2>Light Theme - Auth Pages</h2>
+
+    <h3>Login</h3>
+    <div class="comparison">
+      <div class="comparison-item">
+        <div class="comparison-label">Mobile</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/login-page-mobile-chromium.png"
+          alt="Login Mobile"
+          onclick="openModal(this)"
+        />
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Desktop</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/login-page-desktop-chromium.png"
+          alt="Login Desktop"
+          onclick="openModal(this)"
+        />
+      </div>
+    </div>
+
+    <h3>Welcome</h3>
+    <div class="comparison">
+      <div class="comparison-item">
+        <div class="comparison-label">Mobile</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/welcome-page-mobile-chromium.png"
+          alt="Welcome Mobile"
+          onclick="openModal(this)"
+        />
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Desktop</div>
+        <img
+          class="card-image"
+          src="pages.visual.spec.ts-snapshots/welcome-page-desktop-chromium.png"
+          alt="Welcome Desktop"
+          onclick="openModal(this)"
+        />
+      </div>
+    </div>
+
+    <!-- DARK THEME -->
+    <h2>Dark Theme</h2>
+
+    <h3>Dashboard (Dark)</h3>
+    <div class="comparison">
+      <div class="comparison-item">
+        <div class="comparison-label">Mobile</div>
+        <img
+          class="card-image"
+          src="theme.visual.spec.ts-snapshots/dashboard-dark-mobile-chromium.png"
+          alt="Dashboard Dark Mobile"
+          onclick="openModal(this)"
+        />
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Desktop</div>
+        <img
+          class="card-image"
+          src="theme.visual.spec.ts-snapshots/dashboard-dark-desktop-chromium.png"
+          alt="Dashboard Dark Desktop"
+          onclick="openModal(this)"
+        />
+      </div>
+    </div>
+
+    <h3>Readings (Dark)</h3>
+    <div class="comparison">
+      <div class="comparison-item">
+        <div class="comparison-label">Mobile</div>
+        <img
+          class="card-image"
+          src="theme.visual.spec.ts-snapshots/readings-dark-mobile-chromium.png"
+          alt="Readings Dark Mobile"
+          onclick="openModal(this)"
+        />
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Desktop</div>
+        <img
+          class="card-image"
+          src="theme.visual.spec.ts-snapshots/readings-dark-desktop-chromium.png"
+          alt="Readings Dark Desktop"
+          onclick="openModal(this)"
+        />
+      </div>
+    </div>
+
+    <h3>Profile (Dark)</h3>
+    <div class="comparison">
+      <div class="comparison-item">
+        <div class="comparison-label">Mobile</div>
+        <img
+          class="card-image"
+          src="theme.visual.spec.ts-snapshots/profile-dark-mobile-chromium.png"
+          alt="Profile Dark Mobile"
+          onclick="openModal(this)"
+        />
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Desktop</div>
+        <img
+          class="card-image"
+          src="theme.visual.spec.ts-snapshots/profile-dark-desktop-chromium.png"
+          alt="Profile Dark Desktop"
+          onclick="openModal(this)"
+        />
+      </div>
+    </div>
+
+    <h3>Login (Dark)</h3>
+    <div class="comparison">
+      <div class="comparison-item">
+        <div class="comparison-label">Mobile</div>
+        <img
+          class="card-image"
+          src="theme.visual.spec.ts-snapshots/login-dark-mobile-chromium.png"
+          alt="Login Dark Mobile"
+          onclick="openModal(this)"
+        />
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Desktop</div>
+        <img
+          class="card-image"
+          src="theme.visual.spec.ts-snapshots/login-dark-desktop-chromium.png"
+          alt="Login Dark Desktop"
+          onclick="openModal(this)"
+        />
+      </div>
+    </div>
+
+    <footer>
+      <p>Generated for Diabetify - Visual Regression Testing</p>
+      <p>Playwright 1.48 | Chromium | Mobile (390x844) & Desktop (1280x720)</p>
+    </footer>
+
+    <!-- Modal -->
+    <div class="modal" id="modal" onclick="closeModal()">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <img id="modal-img" src="" alt="Full size" />
+    </div>
+
+    <script>
+      function openModal(img) {
+        const modal = document.getElementById('modal');
+        const modalImg = document.getElementById('modal-img');
+        modalImg.src = img.src;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal() {
+        const modal = document.getElementById('modal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+      });
+    </script>
+  </body>
 </html>
