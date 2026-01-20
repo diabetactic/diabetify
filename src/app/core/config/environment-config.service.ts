@@ -17,22 +17,6 @@ import { environment, BackendMode } from '@env/environment';
 import { Capacitor } from '@capacitor/core';
 
 /**
- * Configuration for Tidepool integration
- */
-export interface TidepoolConfig {
-  baseUrl: string;
-  authUrl: string;
-  dataUrl: string;
-  uploadUrl: string;
-  clientId: string;
-  redirectUri: string;
-  scopes: string;
-  requestTimeout: number;
-  maxRetries: number;
-  retryDelay: number;
-}
-
-/**
  * Logging configuration
  */
 export interface LoggingConfig {
@@ -68,8 +52,6 @@ export interface FeaturesConfig {
   analyticsEnabled: boolean;
   crashReporting: boolean;
   useLocalBackend: boolean;
-  useTidepoolIntegration: boolean;
-  useTidepoolMock: boolean;
   devTools: boolean;
   showEnvBadge: boolean;
   showStatusBadges: boolean;
@@ -82,7 +64,6 @@ export interface FeaturesConfig {
 export interface EnvironmentConfig {
   production: boolean;
   backendMode: BackendMode;
-  tidepool: TidepoolConfig;
   logging: LoggingConfig;
   backendServices: BackendServicesConfig;
   features: FeaturesConfig;
@@ -119,15 +100,6 @@ export class EnvironmentConfigService {
    */
   get backendMode(): BackendMode {
     return environment.backendMode;
-  }
-
-  // ===== Tidepool Configuration =====
-
-  /**
-   * Tidepool integration configuration
-   */
-  get tidepool(): Readonly<TidepoolConfig> {
-    return environment.tidepool;
   }
 
   // ===== Logging Configuration =====
@@ -240,7 +212,6 @@ export class EnvironmentConfigService {
     return {
       production: this.production,
       backendMode: this.backendMode,
-      tidepool: this.tidepool,
       logging: this.logging,
       backendServices: this.backendServices,
       features: this.features,

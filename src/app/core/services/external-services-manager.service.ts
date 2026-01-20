@@ -19,7 +19,6 @@ import { LoggerService } from '@services/logger.service';
  * External service types
  */
 export enum ExternalService {
-  TIDEPOOL = 'TIDEPOOL',
   GLUCOSERVER = 'GLUCOSERVER',
   APPOINTMENTS = 'APPOINTMENTS',
   LOCAL_AUTH = 'LOCAL_AUTH',
@@ -617,20 +616,6 @@ export class ExternalServicesManager implements OnDestroy {
    */
   private buildServiceConfigs(): Map<ExternalService, ServiceConfig> {
     const configs = new Map<ExternalService, ServiceConfig>();
-
-    if (environment.features?.useTidepoolIntegration !== false && environment.tidepool?.baseUrl) {
-      configs.set(ExternalService.TIDEPOOL, {
-        name: 'Tidepool API',
-        baseUrl: environment.tidepool.baseUrl,
-        healthEndpoint: '/v1/status',
-        timeout: environment.tidepool.requestTimeout ?? 30000,
-        retryAttempts: environment.tidepool.maxRetries ?? 3,
-        circuitBreakerThreshold: 5,
-        circuitBreakerTimeout: 60000,
-        cacheDuration: 300000, // 5 minutes
-        offlineSupport: true,
-      });
-    }
 
     const backend = environment.backendServices;
     const gatewayBase = this.resolveServiceBase(

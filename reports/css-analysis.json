@@ -825,9 +825,7 @@
       ".backdrop-blur-none { -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia) } // was required by Edge 18, Safari on iOS 17.6, Safari 17.6 and earlier @ 1:105894",
       ".backdrop-blur-sm { -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia) } // was required by Edge 18, Safari on iOS 17.6, Safari 17.6 and earlier @ 1:106476"
     ],
-    "emptyRules": [
-      ".status-badge @ 1:120808"
-    ],
+    "emptyRules": [".status-badge @ 1:120808"],
     "parsingErrors": [
       "Empty sub-selector @ 1:120977",
       "Empty sub-selector @ 1:121077",

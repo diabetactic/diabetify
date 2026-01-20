@@ -16,8 +16,8 @@ Este proyecto sigue el patrón **Testing Trophy**:
 
 ### Estadísticas Actuales
 
-- **111 archivos de test** pasando
-- **2391 tests unitarios** ejecutándose en ~27s
+- **100 archivos de test** pasando
+- **2228 tests unitarios** ejecutándose en ~30s
 - **11 archivos E2E** con tests funcionales, visuales y de humo
 - **194 tests de integración** con MSW (Mock Service Worker)
 
@@ -560,74 +560,6 @@ const mockActivatedRoute = {
   data: of({}),
 };
 ```
-
-### CSS Analysis
-
-Para analizar CSS del proyecto:
-
-```bash
-# Análisis rápido
-pnpm run css:analyze
-
-# Generar reporte JSON
-pnpm run css:report
-
-# Ver estadísticas: selectores, media queries, colores
-```
-
-El reporte incluye:
-
-- Conteo de selectores y especificidad
-- Media queries utilizadas
-- Colores únicos en el CSS
-- Reglas duplicadas o no usadas
-
-### CSS Analysis Results (Enero 2026)
-
-Resultados del análisis de `styles-*.css` (producción):
-
-| Métrica                    | Valor    | Notas                                              |
-| -------------------------- | -------- | -------------------------------------------------- |
-| **Tamaño total**           | 144.8 KB | Minificado                                         |
-| **Selectors**              | 1498     | Longitud promedio: 1.21                            |
-| **Declaraciones**          | 2560     |                                                    |
-| **Reglas**                 | 1250     |                                                    |
-| **Colores únicos**         | 208      | Incluye variantes Ionic/DaisyUI                    |
-| **Media queries**          | 114      | Breakpoints responsive                             |
-| **!important**             | 491      | Mayoría de Ionic utility classes                   |
-| **Selectores complejos**   | 44       | 4+ partes (ej: `html.ios ion-modal.modal-card...`) |
-| **Selectores duplicados**  | 18       |                                                    |
-| **Selectores calificados** | 66       | `element.class` patterns                           |
-| **Errores de parsing**     | 3        | `&.normal`, `&.low`, `&.high` (SCSS nesting)       |
-
-**Observaciones clave:**
-
-1. **Alto uso de `!important`**: 491 instancias, pero la mayoría provienen de Ionic utility classes (`.ion-hide`, `.ion-float-*`, etc.) - esto es esperado y no representa un problema.
-
-2. **Selectores complejos de Ionic**: Los 44 selectores complejos son mayormente de Ionic Framework para modal/accordion styling específico de iOS/Material Design.
-
-3. **208 colores**: El alto número se debe a las variantes de colores de Ionic (primary, secondary, success, warning, danger, light, medium, dark) y sus derivados (shade, tint, rgb).
-
-4. **Errores de parsing**: Los 3 errores (`&.normal`, `&.low`, `&.high`) son selectores SCSS anidados que `analyze-css` no puede parsear correctamente - no son errores reales en el CSS compilado.
-
-**Componentes con CSS excediendo budget (6KB):**
-
-| Archivo                      | Tamaño  | Exceso     |
-| ---------------------------- | ------- | ---------- |
-| `food-picker.component.scss` | 9.10 KB | +3.10 KB   |
-| `appointments.page.scss`     | 8.10 KB | +2.10 KB   |
-| `add-reading.page.scss`      | 7.73 KB | +1.73 KB   |
-| `reset-password.page.scss`   | 7.16 KB | +1.16 KB   |
-| `bolus-calculator.page.scss` | 6.71 KB | +706 bytes |
-| `forgot-password.page.scss`  | 6.70 KB | +702 bytes |
-| `login.page.scss`            | 6.32 KB | +321 bytes |
-| `dashboard.page.scss`        | 6.14 KB | +144 bytes |
-
-**Recomendaciones:**
-
-1. Extraer estilos comunes de `food-picker` y `appointments` a clases compartidas en `global.scss`
-2. Los componentes de login (`login`, `reset-password`, `forgot-password`) podrían compartir un archivo de estilos de autenticación
-3. Considerar usar más utilidades de Tailwind en lugar de CSS custom para reducir duplicación
 
 ---
 

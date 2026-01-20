@@ -44,9 +44,6 @@ describe('OnboardingGuard', () => {
       name: 'Test User',
       email: 'test@example.com',
       hasCompletedOnboarding,
-      tidepoolConnection: {
-        connected: false,
-      },
       preferences: {
         language: 'es',
         notificationsEnabled: true,

@@ -37,15 +37,13 @@ Toda la comunicación con el backend se realiza a través del servicio API Gatew
 
 Los siguientes servicios pueden hacer llamadas HTTP directas:
 
-1. **TidepoolAuthService** - Proveedor OAuth externo
-2. **ExternalServicesManagerService** - Solo para health checks
+1. **ExternalServicesManagerService** - Solo para health checks
 
 ## Arquitectura de Servicios
 
 ### Capa de Autenticación
 
 - **UnifiedAuthService**: Coordina todos los flujos de autenticación
-- **TidepoolAuthService**: Maneja OAuth2/PKCE de Tidepool
 - **LocalAuthService**: Gestiona autenticación con backend local
 
 ### Capa de Datos
@@ -59,25 +57,17 @@ Los siguientes servicios pueden hacer llamadas HTTP directas:
 
 - **ApiGatewayService**: Comunicación centralizada con backend
 - **ExternalServicesManagerService**: Monitoreo de salud de servicios
-- **TidepoolAuthService**: Autenticación con Tidepool (auth-only, sin sync de datos)
 
 ## Flujo de Datos
 
-```
-Acción del Usuario
-  ↓
-Componente
-  ↓
-Servicio (Lógica de Negocio)
-  ↓
-ApiGatewayService → Microservicios Backend
-  ↓
-DatabaseService
-  ↓
-IndexedDB
-
-Nota: Tidepool se usa solo para autenticación (obtener userId).
-Los datos de glucosa provienen del backend Diabetactic.
+```mermaid
+flowchart TD
+    A[Acción del Usuario] --> B[Componente]
+    B --> C[Servicio]
+    C --> D[ApiGatewayService]
+    D --> E[Microservicios Backend]
+    C --> F[DatabaseService]
+    F --> G[(IndexedDB)]
 ```
 
 ## Estrategia Offline-First
@@ -95,7 +85,6 @@ Los datos de glucosa provienen del backend Diabetactic.
 
 ## Seguridad
 
-- OAuth2/PKCE para Tidepool
 - Tokens JWT para servicios backend
 - Manejo de refresh de tokens
 - Almacenamiento seguro con Capacitor Preferences
@@ -107,51 +96,6 @@ Los datos de glucosa provienen del backend Diabetactic.
 - Lazy loading de rutas
 - Optimización de imágenes
 - Objetivo de bundle: <2MB inicial
-
-## Integración Tidepool (Auth-Only)
-
-Tidepool se usa **solo para autenticación** - obtener ID de usuario. Los datos de glucosa provienen del backend Diabetactic.
-
-### Flujo OAuth2/PKCE
-
-1. Usuario toca "Conectar con Tidepool"
-2. App abre página de login de Tidepool en navegador in-app
-3. Usuario inicia sesión con credenciales Tidepool
-4. Tidepool redirige con código de autorización
-5. App intercambia código por tokens y extrae userId
-
-### Configuración
-
-```typescript
-// src/environments/environment.ts
-tidepool: {
-  baseUrl: 'https://api.tidepool.org',
-  authUrl: 'https://api.tidepool.org/auth',
-  clientId: 'diabetactic-mobile-dev',
-  redirectUri: 'diabetactic://oauth/callback',
-  scopes: 'profile:read',
-}
-```
-
-### URI de Redirección (Android)
-
-```xml
-<!-- android/app/src/main/AndroidManifest.xml -->
-<intent-filter>
-  <action android:name="android.intent.action.VIEW" />
-  <category android:name="android.intent.category.DEFAULT" />
-  <category android:name="android.intent.category.BROWSABLE" />
-  <data android:scheme="diabetactic" android:host="oauth" android:path="/callback" />
-</intent-filter>
-```
-
-### Archivos Relacionados
-
-- `src/app/core/services/tidepool-auth.service.ts` - Autenticación OAuth
-- `src/app/core/config/oauth.config.ts` - Configuración OAuth
-- `src/app/core/utils/pkce.utils.ts` - Utilidades PKCE
-
----
 
 ## Common Gotchas
 
@@ -221,3 +165,20 @@ Esta sección documenta problemas comunes y sus soluciones para evitar errores r
 | Email no llega   | Backend no configurado          | Verificar configuración SMTP en backend `login` |
 | Token expirado   | Más de 15 minutos               | Usuario debe solicitar nuevo token              |
 | Validación falla | Contraseña no cumple requisitos | Frontend debe validar antes de enviar           |
+
+### Testing Gotchas
+
+| Problema                            | Causa                               | Solución                                                   |
+| ----------------------------------- | ----------------------------------- | ---------------------------------------------------------- |
+| `fakeAsync` no funciona con `await` | Zone.js no trackea Promises nativas | Usar `tick()` o `await flushMicrotasks()`                  |
+| Screenshots E2E difieren en CI      | Fuentes y rendering diferente       | Usar `maxDiffPixelRatio: 0.1` o actualizar baselines en CI |
+| MSW handler no intercepta requests  | Orden de handlers incorrecto        | Handlers específicos primero, genéricos después            |
+| Router mock falla con `canActivate` | Falta `createUrlTree`               | Agregar: `createUrlTree: vi.fn(), serializeUrl: vi.fn()`   |
+
+### Medical/Algorithm Gotchas
+
+| Problema                                         | Causa                               | Solución                                               |
+| ------------------------------------------------ | ----------------------------------- | ------------------------------------------------------ |
+| Valores de glucosa categorizados incorrectamente | Conversión de unidades con redondeo | Comparar siempre en mg/dL, redondear solo para display |
+| Lecturas aparecen en día incorrecto              | Timezone handling inconsistente     | Almacenar ISO 8601, filtrar con timezone del usuario   |
+| eA1C muy diferente de A1C real                   | Pocos datos o factores individuales | Requerir mínimo 14 días, mostrar disclaimer            |

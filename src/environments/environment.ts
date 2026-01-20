@@ -58,31 +58,6 @@ export const environment = {
   production: false,
   backendMode: DEV_BACKEND_MODE as BackendMode,
 
-  // Tidepool API Configuration
-  tidepool: {
-    // API base URLs
-    baseUrl: 'https://api.tidepool.org',
-    authUrl: 'https://api.tidepool.org/auth',
-    dataUrl: 'https://api.tidepool.org/data',
-    uploadUrl: 'https://api.tidepool.org/data',
-
-    // OAuth2 Configuration
-    // Client ID for Tidepool authentication (auth-only integration)
-    clientId: 'diabetactic-mobile-dev',
-
-    // Redirect URI for OAuth flow (must be registered with Tidepool)
-    // For Capacitor apps, use custom URL scheme
-    redirectUri: 'diabetactic://oauth/callback',
-
-    // OAuth scopes
-    scopes: 'data:read data:write profile:read',
-
-    // API request configuration
-    requestTimeout: 30000, // 30 seconds
-    maxRetries: 3,
-    retryDelay: 1000, // 1 second initial delay
-  },
-
   // Logging configuration
   logging: {
     enableConsole: true,
@@ -134,8 +109,6 @@ export const environment = {
     crashReporting: false,
     // Single-source backend mode flags
     useLocalBackend: (DEV_BACKEND_MODE as BackendMode) === 'local',
-    useTidepoolIntegration: (DEV_BACKEND_MODE as BackendMode) === 'cloud',
-    useTidepoolMock: (DEV_BACKEND_MODE as BackendMode) === 'mock',
     devTools: true, // Enable developer tools (account state toggle, etc.)
     showEnvBadge: false, // Show CLOUD/LOCAL/MOCK badge (set true for debugging)
     showStatusBadges: false, // Show floating demo badges (env/sync/network)

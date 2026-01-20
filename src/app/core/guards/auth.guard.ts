@@ -19,7 +19,6 @@ import {
 } from '@angular/router';
 import { Observable, from } from 'rxjs';
 import { map, take, switchMap } from 'rxjs/operators';
-import { TidepoolAuthService } from '@services/tidepool-auth.service';
 import { LocalAuthService } from '@services/local-auth.service';
 import { AccountState } from '@models/user-profile.model';
 import { ROUTES } from '@core/constants';
@@ -29,7 +28,6 @@ import { ROUTES } from '@core/constants';
 })
 export class AuthGuard implements CanActivate {
   constructor(
-    private tidepoolAuthService: TidepoolAuthService,
     private localAuthService: LocalAuthService,
     private router: Router
   ) {}
@@ -38,7 +36,7 @@ export class AuthGuard implements CanActivate {
    * Determine if route can be activated
    *
    * Checks:
-   * 1. User authentication (Tidepool or Local)
+   * 1. User authentication (Local)
    * 2. Account blocked status
    *
    * @param route - Activated route snapshot
@@ -53,36 +51,25 @@ export class AuthGuard implements CanActivate {
     // This prevents race conditions where guard runs before auth is restored from storage
     return from(this.localAuthService.waitForInitialization()).pipe(
       switchMap(() => {
-        // First check Tidepool authentication
-        return this.tidepoolAuthService.authState.pipe(
+        // Check local authentication
+        return this.localAuthService.authState$.pipe(
           take(1),
-          switchMap(tidepoolAuthState => {
-            if (tidepoolAuthState.isAuthenticated) {
-              // Tidepool auth is active, allow access
-              return [true];
+          map(localAuthState => {
+            if (!localAuthState.isAuthenticated) {
+              const returnUrl = state.url;
+              return this.router.createUrlTree([ROUTES.WELCOME], {
+                queryParams: { returnUrl },
+              });
             }
 
-            // Check local authentication
-            return this.localAuthService.authState$.pipe(
-              take(1),
-              map(localAuthState => {
-                if (!localAuthState.isAuthenticated) {
-                  const returnUrl = state.url;
-                  return this.router.createUrlTree([ROUTES.WELCOME], {
-                    queryParams: { returnUrl },
-                  });
-                }
+            const accountState = localAuthState.user?.accountState ?? null;
 
-                const accountState = localAuthState.user?.accountState ?? null;
+            if (accountState === AccountState.DISABLED) {
+              this.localAuthService.logout();
+              return this.router.createUrlTree([ROUTES.WELCOME]);
+            }
 
-                if (accountState === AccountState.DISABLED) {
-                  this.localAuthService.logout();
-                  return this.router.createUrlTree([ROUTES.WELCOME]);
-                }
-
-                return true;
-              })
-            );
+            return true;
           })
         );
       })

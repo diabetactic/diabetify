@@ -7,7 +7,7 @@ import { Network } from '@capacitor/network';
 import { PlatformDetectorService } from '@services/platform-detector.service';
 import { LoggerService } from '@services/logger.service';
 import { TokenService } from '@services/token.service';
-import { ReadingsService } from '@services/readings.service';
+import { AuthSessionService } from '@services/auth-session.service';
 
 import { MockAdapterService } from '@services/mock-adapter.service';
 import { EnvironmentConfigService } from '@core/config/environment-config.service';
@@ -134,7 +134,7 @@ export class LocalAuthService {
     private mockAdapter: MockAdapterService,
     private tokenService: TokenService,
     private envConfig: EnvironmentConfigService,
-    private readingsService: ReadingsService
+    private authSession: AuthSessionService
   ) {
     this.logger.info('Init', 'LocalAuthService initialized');
     // Set base URL for API calls
@@ -191,7 +191,7 @@ export class LocalAuthService {
             refreshToken: tokenState.refreshToken,
             expiresAt: tokenState.expiresAt,
           });
-          this.readingsService.setCurrentUser(user.id);
+          this.authSession.setUser(user.id);
           await this.clearOrphanedDataIfNeeded(user.id);
         } else if (hasRefreshToken) {
           // Check network status before attempting refresh
@@ -213,7 +213,7 @@ export class LocalAuthService {
               refreshToken: tokenState.refreshToken,
               expiresAt: tokenState.expiresAt,
             });
-            this.readingsService.setCurrentUser(user.id);
+            this.authSession.setUser(user.id);
             await this.clearOrphanedDataIfNeeded(user.id);
             return;
           }
@@ -477,7 +477,7 @@ export class LocalAuthService {
     const user = this.authStateSubject.value.user;
     this.logger.info('Auth', 'Logout initiated', { userId: user?.id });
 
-    this.readingsService.clearCurrentUser();
+    this.authSession.clearUser();
 
     // Clear local state
     this.authStateSubject.next({
@@ -731,7 +731,7 @@ export class LocalAuthService {
       expiresAt,
     });
 
-    this.readingsService.setCurrentUser(response.user.id);
+    this.authSession.setUser(response.user.id);
     await this.clearOrphanedDataIfNeeded(response.user.id);
 
     await Promise.all([
@@ -971,7 +971,6 @@ interface GatewayUserResponse {
   surname: string;
   blocked: boolean;
   email: string;
-  tidepool?: string | null;
   hospital_account: string;
   times_measured: number;
   streak: number;

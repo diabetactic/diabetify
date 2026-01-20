@@ -15,7 +15,9 @@
 
 import { Injectable, Optional, Inject, InjectionToken, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable, Subject, from } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { liveQuery } from 'dexie';
+import { AuthSessionService } from '@services/auth-session.service';
 import {
   LocalGlucoseReading,
   GlucoseReading,
@@ -85,6 +87,7 @@ export class ReadingsService implements OnDestroy {
     private mapper: ReadingsMapperService,
     private statistics: ReadingsStatisticsService,
     private syncService: ReadingsSyncService,
+    @Optional() private authSession?: AuthSessionService,
     @Optional() private database?: DiabetacticDatabase,
     @Optional() @Inject(LIVE_QUERY_FN) liveQueryFn?: typeof liveQuery,
     @Optional() private logger?: LoggerService
@@ -95,6 +98,15 @@ export class ReadingsService implements OnDestroy {
     if (this.db) {
       this.initializeObservables();
     }
+
+    this.authSession?.userId$.pipe(takeUntil(this.destroy$)).subscribe(userId => {
+      if (userId) {
+        this.currentUserId$.next(userId);
+        this.refreshReadingsForUser(userId);
+      } else {
+        this.currentUserId$.next(null);
+      }
+    });
   }
 
   ngOnDestroy(): void {

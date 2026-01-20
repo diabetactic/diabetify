@@ -24,7 +24,6 @@ export interface UserProfile {
   age: number;
   accountState: 'active' | 'pending' | 'disabled'; // Lowercase to match app
   dateOfBirth: string;
-  tidepoolConnection: { connected: boolean };
   preferences: {
     useDarkTheme?: boolean;
     language?: string;
@@ -425,7 +424,6 @@ export async function completeOnboarding(page: Page): Promise<void> {
     age: 30,
     accountState: 'active',
     dateOfBirth: '1993-01-01',
-    tidepoolConnection: { connected: false },
     preferences: {
       useDarkTheme: false,
       language: 'en',

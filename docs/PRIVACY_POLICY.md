@@ -67,7 +67,6 @@ We use your information to:
 
 The App may integrate with:
 
-- **Tidepool** (optional): For importing glucose data from compatible devices
 - **Backend Services**: Hosted on Heroku for data synchronization
 
 We do not sell your personal information to third parties.

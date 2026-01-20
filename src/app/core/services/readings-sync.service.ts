@@ -22,6 +22,7 @@ import {
 } from '@services/database.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
 import { LoggerService } from '@services/logger.service';
+import { AuthSessionService } from '@services/auth-session.service';
 import { LocalAuthService } from '@services/local-auth.service';
 import { AuditLogService } from './audit-log.service';
 import {
@@ -123,6 +124,7 @@ export class ReadingsSyncService implements OnDestroy {
 
   constructor(
     private mapper: ReadingsMapperService,
+    @Optional() private authSession?: AuthSessionService,
     @Optional() private database?: DiabetacticDatabase,
     @Optional() private apiGateway?: ApiGatewayService,
     @Optional() private logger?: LoggerService,
@@ -133,9 +135,7 @@ export class ReadingsSyncService implements OnDestroy {
     this.envConfig = envConfig;
     this.db = this.database ?? db;
     this.initializeNetworkMonitoring();
-    // Recover any items that were left in 'processing' state from a previous crash
     this.recoverStaleProcessingItems();
-    // Initialize count of permanently failed readings
     this.updatePermanentlyFailedCount();
   }
 
@@ -143,26 +143,8 @@ export class ReadingsSyncService implements OnDestroy {
   // User Identity Helper
   // ============================================================================
 
-  /**
-   * Get the current user's DNI (used as userId in the frontend).
-   *
-   * CRITICAL: The backend uses numeric user_id (e.g., 133), but the frontend
-   * uses DNI string (e.g., "40999999") for data isolation in IndexedDB.
-   * This method ensures readings fetched from backend are stored with the
-   * correct userId that matches the current user's session.
-   *
-   * @returns The current user's DNI string, or null if not authenticated
-   */
   private getCurrentUserDni(): string | null {
-    if (!this.injector) return null;
-    try {
-      const localAuthService = this.injector.get(LocalAuthService);
-      const user = localAuthService.getCurrentUser();
-      return user?.id ?? null; // user.id is the DNI (set in mapGatewayUser)
-    } catch {
-      // LocalAuthService not available
-      return null;
-    }
+    return this.authSession?.getCurrentUserId() ?? null;
   }
 
   /**

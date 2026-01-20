@@ -1,25 +1,5 @@
-/**
- * Barrel export for all Diabetactic data models
- * Centralizes model imports for cleaner imports throughout the app
- *
- * Usage:
- * import { GlucoseReading, UserProfile, TidepoolAuth } from '@app/core/models';
- */
-
-// Glucose reading models
 export * from '@models/glucose-reading.model';
-
-// User profile models
 export * from '@models/user-profile.model';
-
-// Tidepool authentication models
-export * from '@models/tidepool-auth.model';
-
-// Appointment models
 export * from '@models/appointment.model';
-
-// Food models for carbohydrate counting
 export * from '@models/food.model';
-
-// Achievements/gamification models
 export * from '@models/achievements.model';

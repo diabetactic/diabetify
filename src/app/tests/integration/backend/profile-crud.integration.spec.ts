@@ -2,7 +2,7 @@
  * Backend Integration Tests - Profile CRUD
  *
  * Tests user profile operations against the Docker backend.
- * Supported fields: dni, password, name, surname, email, tidepool, hospital_account
+ * Supported fields: dni, password, name, surname, email, hospital_account
  *
  * Requires Docker backend: pnpm run docker:start
  */
@@ -23,7 +23,6 @@ interface UserProfile {
   name?: string;
   surname?: string;
   blocked?: boolean;
-  tidepool?: string | null;
   hospital_account?: string;
   times_measured?: number;
   streak?: number;

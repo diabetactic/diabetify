@@ -25,7 +25,6 @@ describe('ThemeService', () => {
     age: 10,
     accountState: AccountState.ACTIVE,
     dateOfBirth: '2014-01-01',
-    tidepoolConnection: { connected: false },
     preferences: {
       ...DEFAULT_USER_PREFERENCES,
     },

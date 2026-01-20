@@ -19,7 +19,7 @@ import {
 } from '@services/external-services-manager.service';
 import { LocalAuthService } from '@services/local-auth.service';
 import { TokenService } from '@services/token.service';
-import { TidepoolAuthService } from '@services/tidepool-auth.service';
+
 import { EnvironmentDetectorService } from '@services/environment-detector.service';
 import { PlatformDetectorService } from '@services/platform-detector.service';
 import { MockAdapterService } from '@services/mock-adapter.service';
@@ -33,7 +33,7 @@ describe('ApiGatewayService', () => {
   let mockExternalServices: any;
   let mockLocalAuth: any;
   let mockTokenService: any;
-  let mockTidepoolAuth: any;
+
   let mockEnvDetector: any;
   let mockPlatformDetector: any;
   let mockAdapterService: any;
@@ -52,9 +52,7 @@ describe('ApiGatewayService', () => {
     mockTokenService = {
       getAccessToken: vi.fn(),
     } as any;
-    mockTidepoolAuth = {
-      getAccessToken: vi.fn(),
-    } as any;
+
     mockEnvDetector = {
       isProduction: vi.fn(),
     } as any;
@@ -77,7 +75,7 @@ describe('ApiGatewayService', () => {
     mockExternalServices.isServiceAvailable.mockReturnValue(true);
     mockLocalAuth.getAccessToken.mockReturnValue(Promise.resolve('mock-local-token'));
     mockTokenService.getAccessToken.mockReturnValue(Promise.resolve('mock-local-token'));
-    mockTidepoolAuth.getAccessToken.mockReturnValue(Promise.resolve('mock-tidepool-token'));
+
     mockPlatformDetector.getApiBaseUrl.mockReturnValue('http://localhost:8000');
     // CRITICAL: Disable mocks to force HTTP requests for HttpTestingController
     mockAdapterService.isServiceMockEnabled.mockReturnValue(false);
@@ -93,7 +91,7 @@ describe('ApiGatewayService', () => {
         { provide: ExternalServicesManager, useValue: mockExternalServices },
         { provide: LocalAuthService, useValue: mockLocalAuth },
         { provide: TokenService, useValue: mockTokenService },
-        { provide: TidepoolAuthService, useValue: mockTidepoolAuth },
+
         { provide: EnvironmentDetectorService, useValue: mockEnvDetector },
         { provide: PlatformDetectorService, useValue: mockPlatformDetector },
         { provide: MockAdapterService, useValue: mockAdapterService },

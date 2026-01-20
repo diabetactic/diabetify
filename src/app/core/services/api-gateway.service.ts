@@ -6,7 +6,7 @@
  * response transformation, and centralized error handling.
  */
 
-import { Injectable, Injector } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of, from } from 'rxjs';
 import { switchMap, catchError, map, timeout, retry, shareReplay } from 'rxjs/operators';
@@ -16,13 +16,11 @@ import {
   ExternalService,
 } from '@services/external-services-manager.service';
 import { TokenService } from '@services/token.service';
-import { TidepoolAuthService } from '@services/tidepool-auth.service';
 
 import { PlatformDetectorService } from '@services/platform-detector.service';
 import { LoggerService } from '@services/logger.service';
 import { MockAdapterService } from '@services/mock-adapter.service';
 import { LRUCache } from 'lru-cache';
-import { environment } from '@env/environment';
 import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
 
 /**
@@ -325,7 +323,7 @@ const API_ENDPOINTS: Map<string, ApiEndpoint> = new Map([
  * ApiGatewayService - Centralized API Request Handler
  *
  * Implements the API Gateway pattern for the frontend application.
- * Acts as the single point of entry for all backend service communication (except Tidepool direct auth).
+ * Acts as the single point of entry for all backend service communication.
  *
  * Key Responsibilities:
  * 1. **Routing:** Maps logical endpoint keys (e.g., 'extservices.glucose.mine') to physical URLs based on environment.
@@ -354,7 +352,6 @@ export class ApiGatewayService {
 
   constructor(
     private http: HttpClient,
-    private injector: Injector,
     private externalServices: ExternalServicesManager,
     private tokenService: TokenService,
     private platformDetector: PlatformDetectorService,
@@ -666,8 +663,6 @@ export class ApiGatewayService {
    */
   private getBaseUrl(service: ExternalService): string {
     switch (service) {
-      case ExternalService.TIDEPOOL:
-        return environment.tidepool.baseUrl;
       case ExternalService.GLUCOSERVER:
       case ExternalService.APPOINTMENTS:
       case ExternalService.LOCAL_AUTH: {
@@ -683,12 +678,10 @@ export class ApiGatewayService {
 
   /**
    * Get authentication token for a service.
-   * Maps the service type to the appropriate auth provider (Local vs Tidepool).
+   * Maps the service type to the appropriate auth provider (Local).
    */
   private async getAuthToken(service: ExternalService): Promise<string | null> {
     switch (service) {
-      case ExternalService.TIDEPOOL:
-        return await this.injector.get(TidepoolAuthService).getAccessToken();
       case ExternalService.GLUCOSERVER:
       case ExternalService.APPOINTMENTS:
       case ExternalService.LOCAL_AUTH:
@@ -932,11 +925,6 @@ export class ApiGatewayService {
    * @param service - The target external service.
    */
   private shouldUseMock(service: ExternalService): boolean {
-    // Tidepool always uses real API (not routed through mock system)
-    if (service === ExternalService.TIDEPOOL) {
-      return false;
-    }
-
     // Check mock adapter configuration
     const serviceName = this.getServiceMockKey(service);
     return serviceName ? this.mockAdapter.isServiceMockEnabled(serviceName) : false;

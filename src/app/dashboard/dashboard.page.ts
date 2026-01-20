@@ -318,7 +318,7 @@ export class DashboardPage implements OnInit, OnDestroy {
    */
   async handleRefresh(event: CustomEvent) {
     try {
-      // Sync with backend (not Tidepool)
+      // Sync with backend
       await this.readingsService.performFullSync();
       await this.loadDashboardData();
     } catch (error) {
@@ -339,7 +339,7 @@ export class DashboardPage implements OnInit, OnDestroy {
     this.logger.info('UI', 'Manual sync button clicked (backend)');
     try {
       this.isSyncing = true;
-      // Sync with backend (not Tidepool)
+      // Sync with backend
       this.backendSyncResult = await this.readingsService.performFullSync();
       this.logger.info('UI', 'Backend sync completed successfully', this.backendSyncResult);
 

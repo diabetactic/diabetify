@@ -417,7 +417,6 @@ describe('LoginPage', () => {
         age: 12,
         accountState: AccountState.ACTIVE,
         preferences: DEFAULT_USER_PREFERENCES,
-        tidepoolConnection: { connected: false },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
@@ -441,7 +440,6 @@ describe('LoginPage', () => {
         age: 12,
         accountState: AccountState.ACTIVE,
         preferences: DEFAULT_USER_PREFERENCES,
-        tidepoolConnection: { connected: false },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });

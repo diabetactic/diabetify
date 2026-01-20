@@ -15,7 +15,6 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { createOverlaySafely } from '@core/utils/ionic-overlays';
-import { TidepoolAuthService, AuthState } from '@services/tidepool-auth.service';
 import { LocalAuthService } from '@services/local-auth.service';
 import { ProfileService } from '@services/profile.service';
 import { BiometricAuthService } from '@services/biometric-auth.service';
@@ -55,7 +54,6 @@ import { CommonModule } from '@angular/common';
 })
 export class ProfilePage implements OnInit, OnDestroy {
   profile: UserProfile | null = null;
-  authState: AuthState | null = null;
   currentTheme: ThemeMode = 'auto';
   currentLanguage!: Language;
   currentGlucoseUnit = 'mg/dL';
@@ -65,7 +63,6 @@ export class ProfilePage implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private authService: TidepoolAuthService,
     private localAuthService: LocalAuthService,
     private profileService: ProfileService,
     private biometricAuthService: BiometricAuthService,
@@ -84,7 +81,6 @@ export class ProfilePage implements OnInit, OnDestroy {
     this.loadUserData();
     this.loadNotificationSettings();
     this.loadBiometricStatus();
-    this.subscribeToAuthState();
     this.subscribeToProfile();
     this.subscribeToLanguageChanges();
   }
@@ -135,12 +131,6 @@ export class ProfilePage implements OnInit, OnDestroy {
     } catch {
       this.biometricEnabled = false;
     }
-  }
-
-  private subscribeToAuthState(): void {
-    this.authService.authState.pipe(takeUntil(this.destroy$)).subscribe(state => {
-      this.authState = state;
-    });
   }
 
   private subscribeToProfile(): void {
@@ -267,7 +257,7 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   async onSignOut(): Promise<void> {
     try {
-      await Promise.all([this.localAuthService.logout(), this.authService.logout()]);
+      await this.localAuthService.logout();
       await this.profileService.deleteProfile();
       await this.router.navigate([ROUTES.WELCOME], { replaceUrl: true });
     } catch {

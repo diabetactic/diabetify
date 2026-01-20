@@ -2,12 +2,9 @@
 import '../../../test-setup';
 
 import { TestBed } from '@angular/core/testing';
-import { of, BehaviorSubject, throwError } from 'rxjs';
+import { of, BehaviorSubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { UnifiedAuthService } from '@services/unified-auth.service';
-import {
-  TidepoolAuthService,
-  AuthState as TidepoolAuthState,
-} from '@services/tidepool-auth.service';
 import {
   LocalAuthService,
   LocalAuthState,
@@ -16,28 +13,20 @@ import {
 } from '@services/local-auth.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
 import { TranslateService } from '@ngx-translate/core';
+import { LoggerService } from '@services/logger.service';
+import { LoginRateLimiterService } from '@services/login-rate-limiter.service';
 
 describe('UnifiedAuthService', () => {
   let service: UnifiedAuthService;
-  let tidepoolAuthSpy: Mock<TidepoolAuthService>;
   let localAuthSpy: Mock<LocalAuthService>;
   let apiGatewaySpy: Mock<Partial<ApiGatewayService>>;
   let translateSpy: Mock<TranslateService>;
+  let loggerSpy: Mock<LoggerService>;
+  let rateLimiterSpy: Mock<LoginRateLimiterService>;
 
-  // Mock auth states
-  let mockTidepoolAuthState: BehaviorSubject<TidepoolAuthState>;
   let mockLocalAuthState: BehaviorSubject<LocalAuthState>;
 
   beforeEach(() => {
-    // Create spy objects
-    tidepoolAuthSpy = {
-      login: vi.fn(),
-      logout: vi.fn(),
-      getAccessToken: vi.fn(),
-      refreshAccessToken: vi.fn(),
-      isTokenExpired: vi.fn(),
-    } as unknown as Mock<TidepoolAuthService>;
-
     localAuthSpy = {
       login: vi.fn(),
       register: vi.fn(),
@@ -56,14 +45,20 @@ describe('UnifiedAuthService', () => {
       instant: vi.fn((key: string) => key),
     } as unknown as Mock<TranslateService>;
 
-    // Initialize mock auth states
-    mockTidepoolAuthState = new BehaviorSubject<TidepoolAuthState>({
-      isAuthenticated: false,
-      isLoading: false,
-      error: null,
-      userId: null,
-      email: null,
-    });
+    loggerSpy = {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    } as unknown as Mock<LoggerService>;
+
+    rateLimiterSpy = {
+      canAttemptLogin: vi.fn().mockReturnValue({ allowed: true }),
+      checkRateLimit: vi.fn().mockReturnValue({ allowed: true, remainingAttempts: 5 }),
+      recordSuccessfulLogin: vi.fn(),
+      recordFailedAttempt: vi.fn().mockReturnValue({ allowed: true, remainingAttempts: 4 }),
+      getLockoutTimeRemaining: vi.fn().mockReturnValue(null),
+    } as unknown as Mock<LoginRateLimiterService>;
 
     mockLocalAuthState = new BehaviorSubject<LocalAuthState>({
       isAuthenticated: false,
@@ -73,11 +68,6 @@ describe('UnifiedAuthService', () => {
       expiresAt: null,
     });
 
-    // Set up spy return values - authState is a property, so we need to define it as such
-    Object.defineProperty(tidepoolAuthSpy, 'authState', {
-      value: mockTidepoolAuthState.asObservable(),
-      writable: false,
-    });
     Object.defineProperty(localAuthSpy, 'authState$', {
       value: mockLocalAuthState.asObservable(),
       writable: false,
@@ -86,10 +76,11 @@ describe('UnifiedAuthService', () => {
     TestBed.configureTestingModule({
       providers: [
         UnifiedAuthService,
-        { provide: TidepoolAuthService, useValue: tidepoolAuthSpy },
         { provide: LocalAuthService, useValue: localAuthSpy },
         { provide: ApiGatewayService, useValue: apiGatewaySpy },
         { provide: TranslateService, useValue: translateSpy },
+        { provide: LoggerService, useValue: loggerSpy },
+        { provide: LoginRateLimiterService, useValue: rateLimiterSpy },
       ],
     });
 
@@ -107,232 +98,140 @@ describe('UnifiedAuthService', () => {
         });
       }));
 
-    it('should update state when local auth succeeds', () =>
+    it('should update state when local auth state changes', () =>
       new Promise<void>(resolve => {
-        const mockUser = {
-          id: 'user123',
-          email: 'test@example.com',
-          firstName: 'John',
-          lastName: 'Doe',
-          role: 'patient' as const,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
         mockLocalAuthState.next({
           isAuthenticated: true,
-          user: mockUser,
-          accessToken: 'local-token',
-          refreshToken: 'local-refresh',
+          user: {
+            id: 'local-user-123',
+            dni: '12345678',
+            email: 'test@example.com',
+            firstName: 'Test',
+            lastName: 'User',
+            role: 'patient',
+          },
+          accessToken: 'access-token',
+          refreshToken: 'refresh-token',
           expiresAt: Date.now() + 3600000,
         });
 
         service.authState$.subscribe(state => {
           if (state.isAuthenticated) {
-            expect(state.isAuthenticated).toBe(true);
             expect(state.provider).toBe('local');
             expect(state.user?.email).toBe('test@example.com');
-            expect(state.user?.provider).toBe('local');
-            resolve();
-          }
-        });
-      }));
-
-    it('should update state when Tidepool auth succeeds', () =>
-      new Promise<void>(resolve => {
-        mockTidepoolAuthState.next({
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-          userId: 'tidepool-user-123',
-          email: 'tidepool@example.com',
-        });
-
-        service.authState$.subscribe(state => {
-          if (state.isAuthenticated) {
-            expect(state.isAuthenticated).toBe(true);
-            expect(state.provider).toBe('tidepool');
-            expect(state.user?.email).toBe('tidepool@example.com');
-            expect(state.user?.provider).toBe('tidepool');
-            resolve();
-          }
-        });
-      }));
-
-    it('should handle both providers authenticated', () =>
-      new Promise<void>(resolve => {
-        const mockLocalUser = {
-          id: 'user123',
-          email: 'test@example.com',
-          firstName: 'John',
-          lastName: 'Doe',
-          role: 'patient' as const,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        mockLocalAuthState.next({
-          isAuthenticated: true,
-          user: mockLocalUser,
-          accessToken: 'local-token',
-          refreshToken: 'local-refresh',
-          expiresAt: Date.now() + 3600000,
-        });
-
-        mockTidepoolAuthState.next({
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-          userId: 'tidepool-user-123',
-          email: 'tidepool@example.com',
-        });
-
-        service.authState$.subscribe(state => {
-          if (state.provider === 'both') {
-            expect(state.isAuthenticated).toBe(true);
-            expect(state.provider).toBe('both');
-            expect(state.user?.tidepoolUserId).toBe('tidepool-user-123');
-            expect(state.user?.email).toBe('test@example.com'); // Local takes precedence
             resolve();
           }
         });
       }));
   });
 
-  describe('Login Methods', () => {
-    it('should login with local backend', () =>
+  describe('Login', () => {
+    it('should login with local auth', () =>
       new Promise<void>(resolve => {
-        const loginRequest: LoginRequest = {
-          email: 'test@example.com',
+        const credentials: LoginRequest = {
+          dni: '12345678',
           password: 'password123',
-          rememberMe: true,
         };
 
-        const mockUser = {
-          id: 'user123',
-          email: 'test@example.com',
-          firstName: 'John',
-          lastName: 'Doe',
-          role: 'patient' as const,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        const mockLoginResult: LoginResult = {
+        const loginResult: LoginResult = {
           success: true,
-          user: mockUser,
+          user: {
+            id: 'user-123',
+            dni: '12345678',
+            email: 'test@example.com',
+            firstName: 'Test',
+            lastName: 'User',
+            role: 'patient',
+          },
+          accessToken: 'access-token',
+          refreshToken: 'refresh-token',
+          expiresIn: 3600,
         };
 
-        const mockAuthState: LocalAuthState = {
-          isAuthenticated: true,
-          user: mockUser,
-          accessToken: 'token',
-          refreshToken: 'refresh',
-          expiresAt: Date.now() + 3600000,
-        };
+        localAuthSpy.login.mockReturnValue(
+          of(loginResult).pipe(
+            tap(() => {
+              mockLocalAuthState.next({
+                isAuthenticated: true,
+                user: loginResult.user,
+                accessToken: loginResult.accessToken,
+                refreshToken: loginResult.refreshToken,
+                expiresAt: Date.now() + 3600000,
+              });
+            })
+          )
+        );
 
-        localAuthSpy.login.mockReturnValue(of(mockLoginResult));
-        mockLocalAuthState.next(mockAuthState);
-
-        service.loginLocal(loginRequest).subscribe(state => {
+        service.loginLocal(credentials).subscribe(state => {
           expect(state.isAuthenticated).toBe(true);
           expect(state.provider).toBe('local');
           expect(localAuthSpy.login).toHaveBeenCalledWith(
-            loginRequest.email || loginRequest.dni || '',
-            loginRequest.password,
-            loginRequest.rememberMe || false
+            credentials.dni,
+            credentials.password,
+            undefined
           );
           resolve();
         });
       }));
 
-    it('should handle local login failure', () =>
+    it('should handle login failure', () =>
       new Promise<void>(resolve => {
-        const loginRequest: LoginRequest = {
-          email: 'test@example.com',
+        const credentials: LoginRequest = {
+          dni: '12345678',
           password: 'wrong-password',
         };
 
-        const mockLoginResult: LoginResult = {
+        const loginResult: LoginResult = {
           success: false,
           error: 'Invalid credentials',
         };
-        localAuthSpy.login.mockReturnValue(of(mockLoginResult));
 
-        service.loginLocal(loginRequest).subscribe(state => {
+        localAuthSpy.login.mockReturnValue(of(loginResult));
+
+        service.loginLocal(credentials).subscribe(state => {
           expect(state.isAuthenticated).toBe(false);
           resolve();
         });
       }));
-
-    it('should login with Tidepool', () => {
-      tidepoolAuthSpy.login.mockReturnValue(Promise.resolve());
-
-      service.loginTidepool();
-
-      expect(tidepoolAuthSpy.login).toHaveBeenCalled();
-    });
   });
 
-  describe('Logout Methods', () => {
-    it('should logout from both providers', async () => {
-      // Set up authenticated state for both
+  describe('Logout', () => {
+    it('should logout from local auth', async () => {
       mockLocalAuthState.next({
         isAuthenticated: true,
         user: {
-          id: 'user123',
+          id: 'user-123',
+          dni: '12345678',
           email: 'test@example.com',
-          firstName: 'John',
-          lastName: 'Doe',
+          firstName: 'Test',
+          lastName: 'User',
           role: 'patient',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
         },
-        accessToken: 'local-token',
-        refreshToken: 'local-refresh',
+        accessToken: 'token',
+        refreshToken: 'refresh',
         expiresAt: Date.now() + 3600000,
       });
 
-      mockTidepoolAuthState.next({
-        isAuthenticated: true,
-        isLoading: false,
-        error: null,
-        userId: 'tidepool-user',
-        email: 'test@example.com',
-      });
-
       localAuthSpy.logout.mockReturnValue(Promise.resolve());
-      tidepoolAuthSpy.logout.mockReturnValue(Promise.resolve());
 
       await service.logout();
 
       expect(localAuthSpy.logout).toHaveBeenCalled();
-      expect(tidepoolAuthSpy.logout).toHaveBeenCalled();
-    });
-
-    it('should logout from specific provider', async () => {
-      localAuthSpy.logout.mockReturnValue(Promise.resolve());
-      tidepoolAuthSpy.logout.mockReturnValue(Promise.resolve());
-
-      await service.logoutFrom('local');
-      expect(localAuthSpy.logout).toHaveBeenCalled();
-      expect(tidepoolAuthSpy.logout).not.toHaveBeenCalled();
-
-      await service.logoutFrom('tidepool');
-      expect(tidepoolAuthSpy.logout).toHaveBeenCalled();
     });
   });
 
   describe('Token Management', () => {
-    it('should get access token from local auth when available', () =>
+    it('should get local access token', () =>
       new Promise<void>(resolve => {
         mockLocalAuthState.next({
           isAuthenticated: true,
           user: null,
           accessToken: 'local-access-token',
-          refreshToken: 'local-refresh',
-          expiresAt: Date.now() + 3600000,
+          refreshToken: null,
+          expiresAt: null,
         });
+
+        localAuthSpy.getAccessToken.mockReturnValue(Promise.resolve('local-access-token'));
 
         service.getAccessToken().subscribe(token => {
           expect(token).toBe('local-access-token');
@@ -340,267 +239,35 @@ describe('UnifiedAuthService', () => {
         });
       }));
 
-    it('should fallback to Tidepool token when local not available', () =>
-      new Promise<void>(resolve => {
-        mockTidepoolAuthState.next({
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-          userId: 'user',
-          email: 'test@example.com',
-        });
-
-        tidepoolAuthSpy.getAccessToken.mockReturnValue(Promise.resolve('tidepool-access-token'));
-
-        service.getAccessToken().subscribe(token => {
-          expect(token).toBe('tidepool-access-token');
-          resolve();
-        });
-      }));
-
     it('should return null when not authenticated', () =>
       new Promise<void>(resolve => {
+        localAuthSpy.getAccessToken.mockReturnValue(Promise.resolve(null));
+
         service.getAccessToken().subscribe(token => {
           expect(token).toBeNull();
           resolve();
         });
       }));
-
-    it('should get provider-specific token', () =>
-      new Promise<void>(resolve => {
-        localAuthSpy.getAccessToken.mockReturnValue(Promise.resolve('local-token'));
-        tidepoolAuthSpy.getAccessToken.mockReturnValue(Promise.resolve('tidepool-token'));
-
-        service.getProviderToken('local').subscribe(token => {
-          expect(token).toBe('local-token');
-          expect(localAuthSpy.getAccessToken).toHaveBeenCalled();
-        });
-
-        service.getProviderToken('tidepool').subscribe(token => {
-          expect(token).toBe('tidepool-token');
-          expect(tidepoolAuthSpy.getAccessToken).toHaveBeenCalled();
-          resolve();
-        });
-      }));
   });
 
-  describe('Token Refresh', () => {
-    it('should refresh tokens for active providers', () =>
-      new Promise<void>(resolve => {
-        mockLocalAuthState.next({
-          isAuthenticated: true,
-          user: null,
-          accessToken: 'local-token',
-          refreshToken: 'local-refresh-token',
-          expiresAt: Date.now() + 3600000,
-        });
-
-        mockTidepoolAuthState.next({
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-          userId: 'user',
-          email: 'test@example.com',
-        });
-
-        const newLocalState: LocalAuthState = {
-          isAuthenticated: true,
-          user: null,
-          accessToken: 'new-local-token',
-          refreshToken: 'new-local-refresh',
-          expiresAt: Date.now() + 7200000,
-        };
-
-        localAuthSpy.refreshAccessToken.mockReturnValue(of(newLocalState));
-        tidepoolAuthSpy.refreshAccessToken.mockReturnValue(Promise.resolve('new-tidepool-token'));
-
-        service.refreshTokens().subscribe(() => {
-          expect(localAuthSpy.refreshAccessToken).toHaveBeenCalled();
-          expect(tidepoolAuthSpy.refreshAccessToken).toHaveBeenCalled();
-          resolve();
-        });
-      }));
-
-    it('should handle refresh failures gracefully', () =>
-      new Promise<void>(resolve => {
-        mockLocalAuthState.next({
-          isAuthenticated: true,
-          user: null,
-          accessToken: 'local-token',
-          refreshToken: 'local-refresh-token',
-          expiresAt: Date.now() + 3600000,
-        });
-
-        localAuthSpy.refreshAccessToken.mockReturnValue(
-          throwError(() => new Error('Refresh failed'))
-        );
-
-        service.refreshTokens().subscribe(state => {
-          // Should not throw, just log warning
-          expect(state).toBeDefined();
-          resolve();
-        });
-      }));
-  });
-
-  describe('Provider Checks', () => {
-    it('should check authentication with specific provider', () => {
+  describe('Authentication Status', () => {
+    it('should correctly report local auth status', () => {
       mockLocalAuthState.next({
         isAuthenticated: true,
-        user: null,
+        user: {
+          id: 'user-123',
+          dni: '12345678',
+          email: 'test@example.com',
+          firstName: 'Test',
+          lastName: 'User',
+          role: 'patient',
+        },
         accessToken: 'token',
         refreshToken: 'refresh',
         expiresAt: Date.now() + 3600000,
       });
 
       expect(service.isAuthenticatedWith('local')).toBe(true);
-      expect(service.isAuthenticatedWith('tidepool')).toBe(false);
-    });
-
-    it('should get current provider', () => {
-      mockLocalAuthState.next({
-        isAuthenticated: true,
-        user: null,
-        accessToken: 'token',
-        refreshToken: 'refresh',
-        expiresAt: Date.now() + 3600000,
-      });
-
-      expect(service.getProvider()).toBe('local');
-    });
-  });
-
-  describe('Account Linking', () => {
-    it('should link Tidepool account to local account', () => {
-      // Mark local auth as authenticated so unified state reflects it
-      mockLocalAuthState.next({
-        isAuthenticated: true,
-        user: null,
-        accessToken: 'token',
-        refreshToken: 'refresh',
-        expiresAt: Date.now() + 3600000,
-      });
-
-      tidepoolAuthSpy.login.mockReturnValue(Promise.resolve());
-
-      service.linkTidepoolAccount().subscribe(() => {
-        expect(tidepoolAuthSpy.login).toHaveBeenCalled();
-      });
-    });
-
-    it('should throw error if not logged in locally', () => {
-      // Ensure local auth is not authenticated in unified state
-      mockLocalAuthState.next({
-        isAuthenticated: false,
-        user: null,
-        accessToken: null,
-        refreshToken: null,
-        expiresAt: null,
-      });
-
-      expect(() => service.linkTidepoolAccount()).toThrow(
-        new Error('Must be logged in locally to link Tidepool account')
-      );
-    });
-
-    it('should unlink Tidepool account', async () => {
-      mockTidepoolAuthState.next({
-        isAuthenticated: true,
-        userId: 'user',
-        email: 'test@example.com',
-        isLoading: false,
-        error: null,
-      });
-
-      tidepoolAuthSpy.logout.mockReturnValue(Promise.resolve());
-
-      await service.unlinkTidepoolAccount();
-
-      expect(tidepoolAuthSpy.logout).toHaveBeenCalled();
-    });
-  });
-
-  describe('User Preferences', () => {
-    it('should update preferences for local user', () =>
-      new Promise<void>(resolve => {
-        mockLocalAuthState.next({
-          isAuthenticated: true,
-          user: {
-            id: 'user',
-            email: 'test@example.com',
-            firstName: 'John',
-            lastName: 'Doe',
-            role: 'patient',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          accessToken: 'token',
-          refreshToken: 'refresh',
-          expiresAt: Date.now() + 3600000,
-        });
-
-        const preferences = {
-          glucoseUnit: 'mmol/L' as const,
-          language: 'es' as const,
-        };
-
-        localAuthSpy.updatePreferences.mockReturnValue(
-          of({
-            id: 'user',
-            email: 'test@example.com',
-            firstName: 'John',
-            lastName: 'Doe',
-            role: 'patient',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            preferences: preferences as any,
-          })
-        );
-
-        service.updatePreferences(preferences).subscribe(() => {
-          expect(localAuthSpy.updatePreferences).toHaveBeenCalledWith(preferences);
-          resolve();
-        });
-      }));
-  });
-
-  describe('User Management', () => {
-    it('should get current user', () => {
-      const mockUser = {
-        id: 'user123',
-        email: 'test@example.com',
-        firstName: 'John',
-        lastName: 'Doe',
-        role: 'patient' as const,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      mockLocalAuthState.next({
-        isAuthenticated: true,
-        user: mockUser,
-        accessToken: 'token',
-        refreshToken: 'refresh',
-        expiresAt: Date.now() + 3600000,
-      });
-
-      const user = service.getCurrentUser();
-      expect(user?.email).toBe('test@example.com');
-      expect(user?.provider).toBe('local');
-    });
-
-    it('should check if user is authenticated', () => {
-      expect(service.isAuthenticated()).toBe(false);
-
-      mockLocalAuthState.next({
-        isAuthenticated: true,
-        user: null,
-        accessToken: 'token',
-        refreshToken: 'refresh',
-        expiresAt: Date.now() + 3600000,
-      });
-
-      expect(service.isAuthenticated()).toBe(true);
     });
   });
 });

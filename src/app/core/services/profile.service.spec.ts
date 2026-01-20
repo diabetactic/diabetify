@@ -11,14 +11,12 @@ import {
   UserProfile,
   CreateUserProfileInput,
   DEFAULT_USER_PREFERENCES,
-  TidepoolAuth,
   AccountState,
 } from '@core/models';
 
 describe('ProfileService', () => {
   let service: ProfileService;
   let mockStorage: Map<string, string>;
-  let mockSecureStorage: Map<string, any>;
 
   const mockProfile: UserProfile = {
     id: 'user_123',
@@ -27,23 +25,12 @@ describe('ProfileService', () => {
     accountState: AccountState.ACTIVE,
     dateOfBirth: '2014-01-01',
     avatar: { id: 'avatar-1', name: 'Happy Dino', imagePath: '/assets/avatars/dino.png' },
-    tidepoolConnection: { connected: false },
     preferences: DEFAULT_USER_PREFERENCES,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
     diagnosisDate: '2020-06-15',
     diabetesType: 'type1',
     hasCompletedOnboarding: true,
-  };
-
-  const mockTidepoolAuth: TidepoolAuth = {
-    userId: 'tidepool-user-123',
-    email: 'test@example.com',
-    accessToken: 'access-token-123',
-    refreshToken: 'refresh-token-123',
-    tokenType: 'Bearer',
-    issuedAt: Date.now(),
-    expiresAt: Date.now() + 3600000,
   };
 
   const baseCreateInput: CreateUserProfileInput = {
@@ -58,7 +45,6 @@ describe('ProfileService', () => {
 
   beforeEach(async () => {
     mockStorage = new Map<string, string>();
-    mockSecureStorage = new Map<string, any>();
 
     const PreferencesMock = {
       get: vi.fn().mockImplementation(async (options: { key: string }) => ({
@@ -72,29 +58,15 @@ describe('ProfileService', () => {
       }),
     };
 
-    const SecureStorageMock = {
-      get: vi.fn().mockImplementation(async (key: string) => mockSecureStorage.get(key) || null),
-      set: vi.fn().mockImplementation(async (key: string, value: any) => {
-        mockSecureStorage.set(key, value);
-      }),
-      remove: vi.fn().mockImplementation(async (key: string) => {
-        mockSecureStorage.delete(key);
-      }),
-    };
-
     (window as any).Capacitor = {
-      Plugins: { Preferences: PreferencesMock, SecureStorage: SecureStorageMock },
+      Plugins: { Preferences: PreferencesMock },
     };
 
     const { Preferences } = await import('@capacitor/preferences');
-    const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
 
     vi.spyOn(Preferences, 'get').mockImplementation(PreferencesMock.get);
     vi.spyOn(Preferences, 'set').mockImplementation(PreferencesMock.set);
     vi.spyOn(Preferences, 'remove').mockImplementation(PreferencesMock.remove);
-    vi.spyOn(SecureStorage, 'get').mockImplementation(SecureStorageMock.get);
-    vi.spyOn(SecureStorage, 'set').mockImplementation(SecureStorageMock.set);
-    vi.spyOn(SecureStorage, 'remove').mockImplementation(SecureStorageMock.remove);
 
     TestBed.configureTestingModule({
       providers: [
@@ -113,7 +85,6 @@ describe('ProfileService', () => {
 
   afterEach(() => {
     mockStorage.clear();
-    mockSecureStorage.clear();
     TestBed.resetTestingModule();
   });
 
@@ -175,19 +146,16 @@ describe('ProfileService', () => {
       expect(profile.id).toContain('user_');
       expect(profile.accountState).toBe(AccountState.ACTIVE);
       expect(profile.preferences).toEqual(DEFAULT_USER_PREFERENCES);
-      expect(profile.tidepoolConnection.connected).toBe(false);
 
       // With custom values (test disabled state)
       const customInput: CreateUserProfileInput = {
         ...baseCreateInput,
         accountState: AccountState.DISABLED,
         preferences: { ...DEFAULT_USER_PREFERENCES, glucoseUnit: 'mmol/L' },
-        tidepoolConnection: { connected: true, userId: 'tidepool-123', email: 'test@example.com' },
       };
       profile = await service.createProfile(customInput);
       expect(profile.accountState).toBe(AccountState.DISABLED);
       expect(profile.preferences.glucoseUnit).toBe('mmol/L');
-      expect(profile.tidepoolConnection.connected).toBe(true);
     });
 
     it('should generate unique IDs and update observable', async () => {
@@ -284,109 +252,12 @@ describe('ProfileService', () => {
   describe('deleteProfile()', () => {
     beforeEach(async () => {
       await service.createProfile({ ...baseCreateInput, hasCompletedOnboarding: true });
-      await service.setTidepoolCredentials(mockTidepoolAuth);
     });
 
-    it('should delete profile, credentials, and update observables', async () => {
+    it('should delete profile and update observables', async () => {
       await service.deleteProfile();
 
       expect(await service.getProfile()).toBeNull();
-      expect(await service.getTidepoolCredentials()).toBeNull();
-    });
-  });
-
-  // ============================================================================
-  // TIDEPOOL CREDENTIALS
-  // ============================================================================
-
-  describe('Tidepool Credentials', () => {
-    beforeEach(async () => {
-      await service.createProfile({ ...baseCreateInput, hasCompletedOnboarding: true });
-    });
-
-    it('should store and retrieve credentials', async () => {
-      expect(await service.getTidepoolCredentials()).toBeNull();
-
-      await service.setTidepoolCredentials(mockTidepoolAuth);
-
-      expect(mockSecureStorage.has('diabetactic_tidepool_auth')).toBe(true);
-
-      const auth = await service.getTidepoolCredentials();
-      expect(auth!.userId).toBe(mockTidepoolAuth.userId);
-      expect(auth!.accessToken).toBe(mockTidepoolAuth.accessToken);
-
-      const profile = await service.getProfile();
-      expect(profile!.tidepoolConnection.connected).toBe(true);
-      expect(profile!.tidepoolConnection.userId).toBe(mockTidepoolAuth.userId);
-    });
-
-    it('should clear credentials and update profile', async () => {
-      await service.setTidepoolCredentials(mockTidepoolAuth);
-      await service.clearTidepoolCredentials();
-
-      expect(mockSecureStorage.has('diabetactic_tidepool_auth')).toBe(false);
-      const profile = await service.getProfile();
-      expect(profile!.tidepoolConnection.connected).toBe(false);
-    });
-
-    it('should handle storage errors', async () => {
-      const { SecureStorage } = await import('@aparajita/capacitor-secure-storage');
-      (SecureStorage.set as Mock).mockReturnValue(Promise.reject(new Error('Storage full')));
-
-      await expect(service.setTidepoolCredentials(mockTidepoolAuth)).rejects.toThrow(
-        'Failed to save authentication credentials'
-      );
-    });
-  });
-
-  describe('isTidepoolConnected()', () => {
-    beforeEach(async () => {
-      await service.createProfile({ ...baseCreateInput, hasCompletedOnboarding: true });
-    });
-
-    it('should check connection status based on token expiry', async () => {
-      // No credentials
-      expect(await service.isTidepoolConnected()).toBe(false);
-
-      // Valid credentials (1 hour expiry)
-      mockSecureStorage.set('diabetactic_tidepool_auth', {
-        ...mockTidepoolAuth,
-        expiresAt: Date.now() + 3600000,
-      });
-      expect(await service.isTidepoolConnected()).toBe(true);
-
-      // Expired token
-      mockSecureStorage.set('diabetactic_tidepool_auth', {
-        ...mockTidepoolAuth,
-        expiresAt: Date.now() - 10 * 60 * 1000,
-      });
-      expect(await service.isTidepoolConnected()).toBe(false);
-
-      // Token expiring within 5 min buffer
-      mockSecureStorage.set('diabetactic_tidepool_auth', {
-        ...mockTidepoolAuth,
-        expiresAt: Date.now() + 3 * 60 * 1000,
-      });
-      expect(await service.isTidepoolConnected()).toBe(false);
-    });
-  });
-
-  describe('updateLastSyncTime()', () => {
-    beforeEach(async () => {
-      await service.createProfile({ ...baseCreateInput, hasCompletedOnboarding: true });
-    });
-
-    it('should update sync time only when connected', async () => {
-      // Not connected - should not update
-      await service.updateLastSyncTime();
-      let profile = await service.getProfile();
-      expect(profile!.tidepoolConnection.lastSyncTime).toBeUndefined();
-
-      // Connected - should update
-      await service.setTidepoolCredentials(mockTidepoolAuth);
-      await service.updateLastSyncTime();
-      profile = await service.getProfile();
-      expect(profile!.tidepoolConnection.lastSyncTime).toBeTruthy();
     });
   });
 
@@ -414,16 +285,14 @@ describe('ProfileService', () => {
         name: 'Export Test',
         hasCompletedOnboarding: true,
       });
-      await service.setTidepoolCredentials(mockTidepoolAuth);
     });
 
-    it('should export profile without credentials', async () => {
+    it('should export profile', async () => {
       const exported = await service.exportProfile();
       expect(() => JSON.parse(exported)).not.toThrow();
 
       const data = JSON.parse(exported);
-      expect(data.tidepoolConnection.connected).toBe(false);
-      expect(data.tidepoolConnection.userId).toBeUndefined();
+      expect(data.name).toBe('Export Test');
     });
 
     it('should import profile with new ID and timestamps', async () => {
@@ -438,7 +307,6 @@ describe('ProfileService', () => {
       expect(imported.name).toBe('Export Test');
       expect(imported.id).not.toBe(original!.id);
       expect(imported.createdAt).not.toBe(original!.createdAt);
-      expect(imported.tidepoolConnection.connected).toBe(false);
     });
 
     it('should handle export/import errors', async () => {
@@ -467,7 +335,7 @@ describe('ProfileService', () => {
         avatar: mockProfile.avatar,
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
-        // Missing preferences and tidepoolConnection
+        // Missing preferences
       };
 
       mockStorage.set('diabetactic_user_profile', JSON.stringify(oldProfile));
@@ -481,7 +349,7 @@ describe('ProfileService', () => {
   // ============================================================================
 
   describe('Observables', () => {
-    it('should emit profile and tidepool status to multiple subscribers', () =>
+    it('should emit profile to multiple subscribers', () =>
       new Promise<void>(resolve => {
         let sub1 = false,
           sub2 = false;

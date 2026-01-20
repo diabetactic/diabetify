@@ -45,6 +45,7 @@
 **Reading Added**: 136 mg/dL at 07:46 (Desayuno context)
 
 **API Response** (GET /readings/user/latest?user_id=133):
+
 ```json
 {
   "readings": [
@@ -67,20 +68,24 @@
 ## Appointment Flow - Success
 
 ### State: NONE → PENDING
+
 **Action**: User clicked "Solicitar Cita"
 **API Response** (GET /queue/state/133): "PENDING"
 **Queue Placement**: 1
 
 ### State: PENDING → ACCEPTED
+
 **Action**: Admin accepted via PUT /queue/accept/1
 **API Response**: true
 **State After**: "ACCEPTED"
 
 ### State: ACCEPTED → CREATED
+
 **Action**: User filled and submitted appointment form
 **Appointment ID**: 134
 
 **Appointment Data** (GET /appointments/from_user/latest/133):
+
 ```json
 {
   "user_id": 133,
@@ -98,9 +103,11 @@
 ```
 
 ### State: CREATED → RESOLVED
+
 **Action**: Admin created resolution via POST /appointments/create_resolution
 
 **Resolution Data**:
+
 ```json
 {
   "appointment_id": 134,
@@ -112,7 +119,11 @@
   "change_sensitivity": 35.0,
   "emergency_care": false,
   "needed_physical_appointment": true,
-  "glucose_scale": [["Bajo", 70], ["Objetivo", 110], ["Alto", 180]]
+  "glucose_scale": [
+    ["Bajo", 70],
+    ["Objetivo", 110],
+    ["Alto", 180]
+  ]
 }
 ```
 
@@ -123,14 +134,17 @@
 ## Appointment Flow - Denied
 
 ### State: NONE (after queue clear)
+
 **Action**: Admin cleared queue via DELETE /queue
 **API Response**: State returned to "NONE"
 
 ### State: NONE → PENDING
+
 **Action**: User clicked "Solicitar Cita"
 **Queue Placement**: 0
 
 ### State: PENDING → DENIED
+
 **Action**: Admin denied via PUT /queue/deny/0
 **API Response**: true
 **Final State**: "DENIED"

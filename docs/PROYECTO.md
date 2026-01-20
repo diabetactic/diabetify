@@ -15,7 +15,6 @@ Los sistemas existentes presentan las siguientes limitaciones:
 1. **Conectividad**: Requieren conexión permanente a internet, problemático en zonas con conectividad limitada
 2. **Idioma**: Mayoría en inglés, sin soporte adecuado para español
 3. **Complejidad**: Interfaces diseñadas para adultos, no adaptadas a pacientes pediátricos
-4. **Integración**: No se integran con sistemas de glucómetros continuos como Tidepool
 
 ---
 
@@ -29,9 +28,8 @@ Desarrollar una aplicación móvil que permita a pacientes pediátricos con diab
 
 1. Implementar registro de lecturas de glucosa con funcionamiento offline
 2. Desarrollar sistema de gestión de citas médicas con notificaciones
-3. Integrar autenticación con Tidepool para acceso a datos de glucómetros continuos
-4. Soportar múltiples idiomas (español e inglés)
-5. Diseñar interfaz accesible para distintos grupos etarios
+3. Soportar múltiples idiomas (español e inglés)
+4. Diseñar interfaz accesible para distintos grupos etarios
 
 ---
 
@@ -41,7 +39,6 @@ Desarrollar una aplicación móvil que permita a pacientes pediátricos con diab
 
 - Registro manual de lecturas de glucosa (SMBG)
 - Gestión de citas médicas con recordatorios
-- Autenticación mediante Tidepool OAuth
 - Sincronización de datos con backend cuando hay conectividad
 - Soporte para Android y navegadores web
 - Interfaz en español e inglés
@@ -79,9 +76,8 @@ Desarrollar una aplicación móvil que permita a pacientes pediátricos con diab
 | RF04 | Sincronización automática al recuperar conectividad         | Alta      |
 | RF05 | Gestión de citas médicas                                    | Media     |
 | RF06 | Notificaciones de recordatorio                              | Media     |
-| RF07 | Autenticación mediante Tidepool                             | Media     |
-| RF08 | Cambio de idioma (ES/EN)                                    | Baja      |
-| RF09 | Tema claro/oscuro                                           | Baja      |
+| RF07 | Cambio de idioma (ES/EN)                                    | Baja      |
+| RF08 | Tema claro/oscuro                                           | Baja      |
 
 ---
 
@@ -111,13 +107,12 @@ El desarrollo siguió una metodología iterativa con las siguientes etapas:
 
 ## 8. Cronograma
 
-| Fase                 | Duración  | Entregables                          |
-| -------------------- | --------- | ------------------------------------ |
-| Análisis y diseño    | 4 semanas | Documento de requerimientos, mockups |
-| Desarrollo core      | 8 semanas | Módulos de lecturas y citas          |
-| Integración Tidepool | 3 semanas | Autenticación OAuth                  |
-| Testing y ajustes    | 3 semanas | Informe de pruebas                   |
-| Documentación        | 2 semanas | Documentación técnica y de usuario   |
+| Fase              | Duración  | Entregables                          |
+| ----------------- | --------- | ------------------------------------ |
+| Análisis y diseño | 4 semanas | Documento de requerimientos, mockups |
+| Desarrollo core   | 8 semanas | Módulos de lecturas y citas          |
+| Testing y ajustes | 3 semanas | Informe de pruebas                   |
+| Documentación     | 2 semanas | Documentación técnica y de usuario   |
 
 ---
 
@@ -125,62 +120,13 @@ El desarrollo siguió una metodología iterativa con las siguientes etapas:
 
 | Riesgo                            | Probabilidad | Impacto | Mitigación                                      |
 | --------------------------------- | ------------ | ------- | ----------------------------------------------- |
-| Cambios en API de Tidepool        | Media        | Alto    | Capa de abstracción, monitoreo de cambios       |
 | Problemas de rendimiento offline  | Baja         | Alto    | IndexedDB optimizado, límites de almacenamiento |
 | Incompatibilidad con dispositivos | Media        | Medio   | Testing en múltiples dispositivos               |
 
 ---
 
-## 10. Gotchas del Proyecto
-
-### 10.1 Lecciones Aprendidas - Frontend
-
-| Problema                                 | Causa                                         | Solución Implementada                                              |
-| ---------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------ |
-| Componentes Ionic no renderizan en tests | Falta `CUSTOM_ELEMENTS_SCHEMA`                | Agregar schema a TODOS los componentes standalone                  |
-| Mock de `ToastController` ignorado       | `IonicModule.forRoot()` provee instancia real | Override directo: `(component as any).toastController = mock`      |
-| Tema oscuro no sincroniza con Ionic      | Ionic usa clases diferentes a DaisyUI         | Setear TRES triggers: `[data-theme]`, `.ion-palette-dark`, `.dark` |
-| `ion-datetime` muestra fecha incorrecta  | Bug de Ionic con timezone                     | Usar `displayFormat` explícito y manejar UTC manualmente           |
-
-### 10.2 Lecciones Aprendidas - Datos
-
-| Problema                         | Causa                                | Solución Implementada                                                 |
-| -------------------------------- | ------------------------------------ | --------------------------------------------------------------------- |
-| Datos de otro usuario visibles   | IndexedDB no filtra por userId       | Agregar `userId` a todas las queries de Dexie                         |
-| `PrematureCommitError` en tests  | Transaction auto-commit en IndexedDB | Usar `fake-indexeddb` v6+ y importar `test-setup.ts` primero          |
-| Sincronización duplica registros | Conflicto de IDs local vs server     | Usar UUIDs generados en cliente, resolver conflictos por timestamp    |
-| Pérdida de datos en logout       | Clear de IndexedDB sin confirmación  | Implementar `clearOrphanedDataIfNeeded()` con validación de ownership |
-
-### 10.3 Lecciones Aprendidas - Capacitor/Nativo
-
-| Problema                           | Causa                                        | Solución Implementada                                       |
-| ---------------------------------- | -------------------------------------------- | ----------------------------------------------------------- |
-| Deep links no funcionan en Android | Falta configuración en `AndroidManifest.xml` | Agregar intent-filter para scheme `diabetify://`            |
-| Splash screen se congela           | Plugin Capacitor requiere `hide()` manual    | Llamar `SplashScreen.hide()` después de `platform.ready()`  |
-| Plugins undefined en web           | Plugins solo disponibles en nativo           | Usar `Capacitor.isNativePlatform()` antes de llamar plugins |
-| Push notifications silenciosas     | Falta canal de notificación en Android 8+    | Crear canal con `LocalNotifications.createChannel()`        |
-
-### 10.4 Lecciones Aprendidas - Testing
-
-| Problema                            | Causa                               | Solución Implementada                                      |
-| ----------------------------------- | ----------------------------------- | ---------------------------------------------------------- |
-| `fakeAsync` no funciona con `await` | Zone.js no trackea Promises nativas | Usar `tick()` o `await flushMicrotasks()`                  |
-| Screenshots E2E difieren en CI      | Fuentes y rendering diferente       | Usar `maxDiffPixelRatio: 0.1` o actualizar baselines en CI |
-| MSW handler no intercepta requests  | Orden de handlers incorrecto        | Handlers específicos primero, genéricos después            |
-| Router mock falla con `canActivate` | Falta `createUrlTree`               | Agregar: `createUrlTree: vi.fn(), serializeUrl: vi.fn()`   |
-
-### 10.5 Lecciones Aprendidas - Médicas/Algoritmos
-
-| Problema                                         | Causa                               | Solución Implementada                                  |
-| ------------------------------------------------ | ----------------------------------- | ------------------------------------------------------ |
-| Valores de glucosa categorizados incorrectamente | Conversión de unidades con redondeo | Comparar siempre en mg/dL, redondear solo para display |
-| Lecturas aparecen en día incorrecto              | Timezone handling inconsistente     | Almacenar ISO 8601, filtrar con timezone del usuario   |
-| eA1C muy diferente de A1C real                   | Pocos datos o factores individuales | Requerir mínimo 14 días, mostrar disclaimer            |
-
----
-
-## 11. Conclusiones
+## 10. Conclusiones
 
 El proyecto Diabetactic aborda una necesidad real del Hospital Garrahan, proporcionando una herramienta adaptada a pacientes pediátricos con diabetes. La arquitectura offline-first y el soporte bilingüe lo diferencian de soluciones genéricas existentes.
 
-Las lecciones aprendidas documentadas en la sección 10 reflejan los desafíos reales encontrados durante el desarrollo y las soluciones implementadas, sirviendo como referencia para futuros desarrolladores y mantenedores del proyecto.
+Las lecciones aprendidas están documentadas en [ARCHITECTURE.md](./ARCHITECTURE.md#common-gotchas), sirviendo como referencia para futuros desarrolladores y mantenedores del proyecto.

@@ -1,6 +1,5 @@
 /**
- * Glucose reading models based on Tidepool API data types
- * @see https://developer.tidepool.org/data-model/
+ * Glucose reading models
  */
 
 /**
@@ -43,10 +42,9 @@ export type MealContext = (typeof MEAL_CONTEXTS)[number];
 export type GlucoseStatus = 'low' | 'normal' | 'high' | 'critical-low' | 'critical-high';
 
 /**
- * Base interface for all Tidepool glucose data
- * Based on Tidepool's base.v1.yaml schema
+ * Base interface for all glucose data
  */
-export interface TidepoolBaseData {
+export interface BaseGlucoseData {
   /** Unique identifier for the data record */
   id: string;
 
@@ -65,7 +63,7 @@ export interface TidepoolBaseData {
   /** Upload session identifier */
   uploadId?: string;
 
-  /** GUID assigned during data processing (deprecated by Tidepool) */
+  /** GUID assigned during data processing (deprecated) */
   guid?: string;
 
   /** Clock drift offset in milliseconds */
@@ -80,7 +78,7 @@ export interface TidepoolBaseData {
   /** Timezone name (e.g., "America/Los_Angeles") */
   timezone?: string;
 
-  /** Timestamp when record was created in Tidepool */
+  /** Timestamp when record was created */
   createdTime?: string;
 
   /** Timestamp when record was last modified */
@@ -101,9 +99,8 @@ export interface TidepoolBaseData {
 
 /**
  * Continuous Blood Glucose (CBG) reading from CGM devices
- * Based on Tidepool's continuousglucose.v1.yaml schema
  */
-export interface CBGReading extends TidepoolBaseData {
+export interface CBGReading extends BaseGlucoseData {
   type: 'cbg';
 
   /** Glucose concentration value */
@@ -127,9 +124,8 @@ export interface CBGReading extends TidepoolBaseData {
 
 /**
  * Self-Monitored Blood Glucose (SMBG) reading from fingerstick meters
- * Based on Tidepool's selfmonitoredglucose.v1.yaml schema
  */
-export interface SMBGReading extends TidepoolBaseData {
+export interface SMBGReading extends BaseGlucoseData {
   type: 'smbg';
 
   /** Glucose concentration value */
@@ -152,10 +148,10 @@ export type GlucoseReading = CBGReading | SMBGReading;
  * Used for local storage and display in the mobile app
  */
 export interface LocalGlucoseFields {
-  /** Local database identifier (separate from Tidepool id) */
+  /** Local database identifier */
   localId?: string;
 
-  /** Indicates if this reading has been synced with Tidepool/backend */
+  /** Indicates if this reading has been synced with backend */
   synced: boolean;
 
   /** Derived status based on value and target ranges */
