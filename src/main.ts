@@ -23,7 +23,7 @@ import {
   APP_INITIALIZER,
   importProvidersFrom,
   LOCALE_ID,
-  provideZoneChangeDetection,
+  provideZonelessChangeDetection,
 } from '@angular/core';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -169,7 +169,7 @@ export function createTranslateLoader() {
 
 bootstrapApplication(AppComponent, {
   providers: [
-    provideZoneChangeDetection(),
+    provideZonelessChangeDetection(),
     provideAnimations(),
     provideIonicAngular(),
     provideRouter(APP_ROUTES, withPreloading(PreloadAllModules)),
