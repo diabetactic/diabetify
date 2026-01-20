@@ -51,8 +51,19 @@ test.describe('Visual Regression - Pages @visual @docker', () => {
   });
 
   test('readings page - empty or list', async ({ page, pages }) => {
+    await page.goto('/tabs/dashboard');
+    await pages.dashboardPage.waitForHydration();
+    await page.waitForSelector('[data-testid="stats-container"]', {
+      state: 'visible',
+      timeout: 30000,
+    });
+
     await page.goto('/tabs/readings');
     await pages.readingsPage.waitForHydration();
+    await page.waitForSelector('app-reading-item', {
+      state: 'visible',
+      timeout: 15000,
+    });
     await prepareForScreenshot(page);
 
     await expect(page).toHaveScreenshot('readings-page.png', screenshotOptions);
