@@ -344,8 +344,14 @@
           </div>
         </div>
         @if (pastAppointmentsExpanded) {
-          <div class="mt-4 flex flex-col gap-3">
-            @for (appointment of pastAppointments; track trackByAppointment($index, appointment)) {
+          <cdk-virtual-scroll-viewport
+            [itemSize]="APPOINTMENT_ITEM_HEIGHT"
+            class="past-appointments-viewport mt-4"
+          >
+            <div
+              *cdkVirtualFor="let appointment of pastAppointments; trackBy: trackByAppointment"
+              class="pb-3"
+            >
               <ion-card
                 [button]="true"
                 (click)="viewAppointment(appointment)"
@@ -367,7 +373,6 @@
                         {{ formatMotive(appointment.motive) }}
                       </ion-card-title>
                     </div>
-                    <!-- Resolution flags badges -->
                     <div class="flex flex-wrap gap-1">
                       @if (hasEmergencyCare(appointment.appointment_id)) {
                         <span
@@ -407,8 +412,8 @@
                   </div>
                 </ion-card-content>
               </ion-card>
-            }
-          </div>
+            </div>
+          </cdk-virtual-scroll-viewport>
         }
       </div>
     }

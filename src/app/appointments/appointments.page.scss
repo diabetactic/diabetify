@@ -333,3 +333,13 @@ ion-button {
     }
   }
 }
+
+.past-appointments-viewport {
+  height: 400px;
+  width: 100%;
+
+  .cdk-virtual-scroll-content-wrapper {
+    display: flex;
+    flex-direction: column;
+  }
+}
