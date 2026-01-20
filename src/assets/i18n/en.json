@@ -1616,7 +1616,19 @@
     "allAchievements": "All Achievements",
     "noAchievements": "No achievements yet. Start tracking to unlock them!",
     "viewAchievements": "View Achievements",
-    "achievementsDesc": "Track your progress and earn badges"
+    "achievementsDesc": "Track your progress and earn badges",
+    "names": {
+      "1": "First Reading!",
+      "2": "Measurement Rookie",
+      "3": "Measurement Pro",
+      "4": "Measurement Master",
+      "5": "First Day!",
+      "6": "First Week!",
+      "7": "First Month!",
+      "8": "Consistency Genius!",
+      "9": "Consistency Master!",
+      "10": "A Whole Year!"
+    }
   },
   "barcodeScanner": {
     "permissionDenied": {

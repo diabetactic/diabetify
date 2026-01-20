@@ -1617,7 +1617,19 @@
     "allAchievements": "Todos los Logros",
     "noAchievements": "Aún no hay logros. ¡Empieza a registrar para desbloquearlos!",
     "viewAchievements": "Ver Logros",
-    "achievementsDesc": "Sigue tu progreso y gana insignias"
+    "achievementsDesc": "Sigue tu progreso y gana insignias",
+    "names": {
+      "1": "¡Primera medición!",
+      "2": "Pichón de las mediciones",
+      "3": "Capo de las mediciones",
+      "4": "Crack de las mediciones",
+      "5": "¡Primer día!",
+      "6": "¡Primera semana!",
+      "7": "¡Primer mes!",
+      "8": "¡Genio de la constancia!",
+      "9": "¡Crack de la constancia!",
+      "10": "¡Un año entero!"
+    }
   },
   "barcodeScanner": {
     "permissionDenied": {
