@@ -31,11 +31,15 @@ test.describe('Appointments Functional Tests @functional @docker', () => {
       });
     });
 
-    await page.reload();
+    // Wait for the queue state API to complete before checking UI
+    await Promise.all([
+      page.waitForResponse(resp => resp.url().includes('/appointments/state'), { timeout: 15000 }),
+      page.reload(),
+    ]);
     await pages.appointmentsPage.waitForHydration();
 
     const requestBtn = page.locator('text=/Solicitar|Request|Nueva/i');
-    await expect(requestBtn.first()).toBeVisible({ timeout: 15000 });
+    await expect(requestBtn.first()).toBeVisible({ timeout: 10000 });
   });
 
   test('should fetch appointment status via API', async ({ authenticatedApi }) => {
