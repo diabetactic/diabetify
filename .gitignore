@@ -101,6 +101,7 @@ midscene_run/report
 midscene_run/tmp
 midscene_run/log
 
-# Evidence collection output (generated)
-evidence/screenshots/
+# Evidence collection output (generated, except production evidence)
+evidence/screenshots/*
+!evidence/screenshots/heroku/
 evidence/api-responses/

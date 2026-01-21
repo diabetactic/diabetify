@@ -268,16 +268,239 @@
   <main>
     <section class="summary">
       <div class="summary-card passed">
-        <div class="number">3</div>
+        <div class="number">4</div>
         <div class="label">Flows Tested</div>
       </div>
       <div class="summary-card screenshots">
-        <div class="number">14</div>
+        <div class="number">25</div>
         <div class="label">Screenshots</div>
       </div>
       <div class="summary-card api">
-        <div class="number">13</div>
+        <div class="number">15</div>
         <div class="label">API Verifications</div>
+      </div>
+    </section>
+    
+    <!-- HEROKU PRODUCTION EVIDENCE -->
+    <section class="flow-section">
+      <div class="flow-header">
+        <h2><span class="icon">🚀</span> Production Environment (Heroku)</h2>
+        <span class="flow-badge" style="background: var(--accent-purple);">PRODUCTION</span>
+      </div>
+      
+      <div class="state-flow">
+        <span class="state">Dashboard</span>
+        <span class="arrow">→</span>
+        <span class="state">NONE</span>
+        <span class="arrow">→</span>
+        <span class="state">PENDING</span>
+        <span class="arrow">→</span>
+        <span class="state">ACCEPTED</span>
+        <span class="arrow">→</span>
+        <span class="state">CREATED</span>
+        <span class="arrow">→</span>
+        <span class="state current" style="background: var(--accent-purple);">+ RESOLUTION</span>
+      </div>
+      
+      <div class="steps">
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">1</div>
+            <div class="step-title">Dashboard (Production)</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/heroku/heroku-01-dashboard.png" alt="Production dashboard">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">Production Environment</span>
+              <pre>{
+  <span class="json-key">"environment"</span>: <span class="json-string">"production"</span>,
+  <span class="json-key">"url"</span>: <span class="json-string">"diabetify-c45581776692.herokuapp.com"</span>,
+  <span class="json-key">"user"</span>: <span class="json-string">"40999999"</span>,
+  <span class="json-key">"totalReadings"</span>: <span class="json-number">3</span>,
+  <span class="json-key">"timeInRange"</span>: <span class="json-string">"100%"</span>,
+  <span class="json-key">"avgGlucose"</span>: <span class="json-string">"130.3 mg/dL"</span>
+}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">2</div>
+            <div class="step-title">Appointments: NONE State</div>
+            <div class="step-state">NONE</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/heroku/heroku-02-appointments-none.png" alt="Appointment NONE state">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">Initial appointment state</span>
+              <pre>No active appointment
+"Solicitar Cita" button visible
+State: NONE</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">3</div>
+            <div class="step-title">Appointments: PENDING State</div>
+            <div class="step-state">PENDING</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/heroku/heroku-03-appointments-pending.png" alt="Appointment PENDING state">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">After clicking "Solicitar Cita"</span>
+              <pre>User clicked request button
+Waiting in queue for admin
+State: NONE → PENDING</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">4</div>
+            <div class="step-title">Appointments: ACCEPTED State</div>
+            <div class="step-state">ACCEPTED</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/heroku/heroku-04-appointments-accepted.png" alt="Appointment ACCEPTED state">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">Admin accepted via Backoffice API</span>
+              <pre>{
+  <span class="json-key">"action"</span>: <span class="json-string">"accept"</span>,
+  <span class="json-key">"via"</span>: <span class="json-string">"backoffice API"</span>
+}
+
+State: PENDING → ACCEPTED
+User can now fill clinical form</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">5</div>
+            <div class="step-title">Clinical Form (Empty)</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/heroku/heroku-05-appointment-form-empty.png" alt="Empty appointment form">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">Clinical data form fields</span>
+              <pre>Fields to complete:
+- Objetivo de glucosa
+- Tipo de insulina
+- Dosis
+- Insulina rápida
+- Ratio
+- Sensibilidad</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">6</div>
+            <div class="step-title">Clinical Form (Filled)</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/heroku/heroku-06-appointment-form-filled.png" alt="Filled appointment form">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">Form data submitted</span>
+              <pre>{
+  <span class="json-key">"glucose_objective"</span>: <span class="json-number">100</span>,
+  <span class="json-key">"insulin_type"</span>: <span class="json-string">"Rápida"</span>,
+  <span class="json-key">"dose"</span>: <span class="json-number">10</span>,
+  <span class="json-key">"fast_insulin"</span>: <span class="json-string">"Humalog"</span>,
+  <span class="json-key">"ratio"</span>: <span class="json-number">10</span>,
+  <span class="json-key">"sensitivity"</span>: <span class="json-number">50</span>
+}</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">7</div>
+            <div class="step-title">Appointment Created</div>
+            <div class="step-state">CREATED</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/heroku/heroku-07-appointment-created.png" alt="Appointment created">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">Appointment #137 created</span>
+              <pre>Form submitted successfully
+State: ACCEPTED → CREATED
+Appointment ID: 137
+Awaiting doctor resolution</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">8</div>
+            <div class="step-title">Appointment with Doctor Resolution</div>
+            <div class="step-state" style="background: rgba(168, 85, 247, 0.2); color: var(--accent-purple);">+ RESOLUTION</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/heroku/heroku-08-appointment-with-resolution.png" alt="Appointment with resolution">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">Doctor resolution via Backoffice</span>
+              <pre>{
+  <span class="json-key">"resolution_created"</span>: <span class="json-boolean">true</span>,
+  <span class="json-key">"via"</span>: <span class="json-string">"backoffice API"</span>,
+  <span class="json-key">"treatment"</span>: {
+    <span class="json-key">"change_basal_type"</span>: <span class="json-string">"Lantus"</span>,
+    <span class="json-key">"change_basal_dose"</span>: <span class="json-number">22</span>,
+    <span class="json-key">"change_ratio"</span>: <span class="json-number">12</span>,
+    <span class="json-key">"change_sensitivity"</span>: <span class="json-number">45</span>
+  }
+}
+
+Full appointment cycle completed!</pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">9</div>
+            <div class="step-title">Dashboard with Readings Stats</div>
+          </div>
+          <div class="step-content">
+            <div class="screenshot-container">
+              <img src="screenshots/heroku/heroku-11-dashboard-with-readings.png" alt="Dashboard with readings">
+            </div>
+            <div class="api-evidence">
+              <span class="api-label">Production data summary</span>
+              <pre>Readings: 135, 120, 136 mg/dL
+Time in Range: 100%
+Average Glucose: 130.3 mg/dL
+Total Readings: 3
+
+All readings synced from backend
+Real Heroku production data!</pre>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
     
