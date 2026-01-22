@@ -223,9 +223,9 @@ export class ThemeService implements OnDestroy {
     // Add palette class
     this.renderer.addClass(body, `palette-${palette}`);
 
-    // Add high contrast if enabled
+    // Add high contrast if enabled (must be on html for CSS selectors)
     if (highContrast) {
-      this.renderer.addClass(body, 'high-contrast');
+      this.renderer.addClass(html, 'high-contrast');
     }
 
     // Update CSS custom properties

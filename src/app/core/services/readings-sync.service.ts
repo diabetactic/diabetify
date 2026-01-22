@@ -22,6 +22,7 @@ import {
 } from '@services/database.service';
 import { ApiGatewayService } from '@services/api-gateway.service';
 import { LoggerService } from '@services/logger.service';
+import { AuthSessionService } from '@services/auth-session.service';
 import { LocalAuthService } from '@services/local-auth.service';
 import { AuditLogService } from './audit-log.service';
 import {
@@ -123,6 +124,7 @@ export class ReadingsSyncService implements OnDestroy {
 
   constructor(
     private mapper: ReadingsMapperService,
+    @Optional() private authSession?: AuthSessionService,
     @Optional() private database?: DiabetacticDatabase,
     @Optional() private apiGateway?: ApiGatewayService,
     @Optional() private logger?: LoggerService,
@@ -133,10 +135,16 @@ export class ReadingsSyncService implements OnDestroy {
     this.envConfig = envConfig;
     this.db = this.database ?? db;
     this.initializeNetworkMonitoring();
-    // Recover any items that were left in 'processing' state from a previous crash
     this.recoverStaleProcessingItems();
-    // Initialize count of permanently failed readings
     this.updatePermanentlyFailedCount();
+  }
+
+  // ============================================================================
+  // User Identity Helper
+  // ============================================================================
+
+  private getCurrentUserDni(): string | null {
+    return this.authSession?.getCurrentUserId() ?? null;
   }
 
   /**
@@ -638,8 +646,12 @@ export class ReadingsSyncService implements OnDestroy {
         return { action: 'linked' };
       }
 
-      // Truly new reading - add to local
+      // Truly new reading - add to local with correct userId
       const localReading = this.mapper.mapBackendToLocal(backendReading);
+      const currentUserDni = this.getCurrentUserDni();
+      if (currentUserDni) {
+        localReading.userId = currentUserDni;
+      }
       await this.db.readings.add(localReading);
       return { action: 'created' };
     }
@@ -719,6 +731,10 @@ export class ReadingsSyncService implements OnDestroy {
             await this.linkLocalToBackend(unsyncedMatch.id, backendReading.id, backendTime);
           } else {
             const localReading = this.mapper.mapBackendToLocal(backendReading);
+            const currentUserDni = this.getCurrentUserDni();
+            if (currentUserDni) {
+              localReading.userId = currentUserDni;
+            }
             await this.db.readings.add(localReading);
             merged++;
           }
@@ -953,6 +969,10 @@ export class ReadingsSyncService implements OnDestroy {
     backendReading: BackendGlucoseReading
   ): Promise<void> {
     const serverReading = this.mapper.mapBackendToLocal(backendReading);
+    const currentUserDni = this.getCurrentUserDni();
+    if (currentUserDni) {
+      serverReading.userId = currentUserDni;
+    }
     await this.db.conflicts.add({
       readingId: existing.id,
       localReading: existing,

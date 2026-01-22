@@ -1,10 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, BehaviorSubject, combineLatest, of, from, Subject, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, of, Subject, throwError } from 'rxjs';
 import { map, tap, catchError, takeUntil } from 'rxjs/operators';
-import {
-  TidepoolAuthService,
-  AuthState as TidepoolAuthState,
-} from '@services/tidepool-auth.service';
 import {
   LocalAuthService,
   LocalAuthState,
@@ -16,25 +12,15 @@ import { ApiGatewayService } from '@services/api-gateway.service';
 import { LoginRateLimiterService, RateLimitResult } from '@services/login-rate-limiter.service';
 import { TranslateService } from '@ngx-translate/core';
 
-/**
- * Unified authentication provider type
- */
-export type AuthProvider = 'tidepool' | 'local' | 'both';
+export type AuthProvider = 'local';
 
-/**
- * Unified authentication state combining both providers
- */
 export interface UnifiedAuthState {
   isAuthenticated: boolean;
   provider: AuthProvider | null;
-  tidepoolAuth: TidepoolAuthState | null;
   localAuth: LocalAuthState | null;
   user: UnifiedUser | null;
 }
 
-/**
- * Unified user interface combining data from both providers
- */
 export interface UnifiedUser {
   id: string;
   email: string;
@@ -49,10 +35,6 @@ export interface UnifiedUser {
   dateOfBirth?: string;
   diabetesType?: '1' | '2' | 'gestational' | 'other';
   diagnosisDate?: string;
-
-  // Tidepool specific
-  tidepoolUserId?: string;
-  tidepoolEmail?: string;
 
   // Common preferences
   preferences?: {
@@ -82,7 +64,6 @@ export class UnifiedAuthService implements OnDestroy {
   private unifiedAuthStateSubject = new BehaviorSubject<UnifiedAuthState>({
     isAuthenticated: false,
     provider: null,
-    tidepoolAuth: null,
     localAuth: null,
     user: null,
   });
@@ -93,7 +74,6 @@ export class UnifiedAuthService implements OnDestroy {
   public provider$ = this.authState$.pipe(map(state => state.provider));
 
   constructor(
-    private tidepoolAuth: TidepoolAuthService,
     private localAuth: LocalAuthService,
     private logger: LoggerService,
     private apiGateway: ApiGatewayService,
@@ -101,7 +81,7 @@ export class UnifiedAuthService implements OnDestroy {
     private translate: TranslateService
   ) {
     this.logger.info('Init', 'UnifiedAuthService initialized');
-    // Combine both authentication states
+    // Initialize unified auth from local auth state
     this.initializeUnifiedAuth();
   }
 
@@ -117,37 +97,26 @@ export class UnifiedAuthService implements OnDestroy {
   }
 
   /**
-   * Initialize unified authentication by combining both providers
+   * Initialize unified authentication from local auth state
    */
   private initializeUnifiedAuth(): void {
-    combineLatest([this.tidepoolAuth.authState, this.localAuth.authState$])
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(([tidepoolState, localState]) => {
-        this.updateUnifiedState(tidepoolState, localState);
-      });
+    this.localAuth.authState$.pipe(takeUntil(this.destroy$)).subscribe(localState => {
+      this.updateUnifiedState(localState);
+    });
   }
 
   /**
    * Update unified authentication state
    */
-  private updateUnifiedState(tidepoolState: TidepoolAuthState, localState: LocalAuthState): void {
+  private updateUnifiedState(localState: LocalAuthState): void {
     let provider: AuthProvider | null = null;
     let isAuthenticated = false;
     let user: UnifiedUser | null = null;
 
-    // Determine authentication status and provider
-    if (localState.isAuthenticated && tidepoolState.isAuthenticated) {
-      provider = 'both';
-      isAuthenticated = true;
-      user = this.mergeUsers(localState, tidepoolState);
-    } else if (localState.isAuthenticated) {
+    if (localState.isAuthenticated) {
       provider = 'local';
       isAuthenticated = true;
       user = this.createUserFromLocal(localState);
-    } else if (tidepoolState.isAuthenticated) {
-      provider = 'tidepool';
-      isAuthenticated = true;
-      user = this.createUserFromTidepool(tidepoolState);
     }
 
     this.logger.info('Auth', 'Auth state updated', {
@@ -159,7 +128,6 @@ export class UnifiedAuthService implements OnDestroy {
     this.unifiedAuthStateSubject.next({
       isAuthenticated,
       provider,
-      tidepoolAuth: tidepoolState,
       localAuth: localState,
       user,
     });
@@ -256,42 +224,17 @@ export class UnifiedAuthService implements OnDestroy {
   }
 
   /**
-   * Login with Tidepool
-   */
-  loginTidepool(): Observable<void> {
-    this.logger.info('Auth', 'Tidepool login initiated', { provider: 'tidepool' });
-
-    return from(this.tidepoolAuth.login()).pipe(
-      tap(() => {
-        this.logger.info('Auth', 'Tidepool login successful', { provider: 'tidepool' });
-      }),
-      catchError(error => {
-        this.logger.error('Auth', 'Tidepool login failed', error, { provider: 'tidepool' });
-        throw error;
-      })
-    );
-  }
-
-  /**
-   * Logout from both providers
+   * Logout
    */
   async logout(): Promise<void> {
     this.logger.info('Auth', 'Logout initiated');
-    const promises: Promise<void>[] = [];
 
     const state = this.unifiedAuthStateSubject.value;
 
     if (state.localAuth?.isAuthenticated) {
       this.logger.debug('Auth', 'Logging out from local');
-      promises.push(this.localAuth.logout());
+      await this.localAuth.logout();
     }
-
-    if (state.tidepoolAuth?.isAuthenticated) {
-      this.logger.debug('Auth', 'Logging out from Tidepool');
-      promises.push(this.tidepoolAuth.logout());
-    }
-
-    await Promise.all(promises);
 
     // Clear API cache to prevent stale data from previous user
     this.apiGateway.clearCache();
@@ -301,19 +244,7 @@ export class UnifiedAuthService implements OnDestroy {
   }
 
   /**
-   * Logout from specific provider
-   */
-  async logoutFrom(provider: 'tidepool' | 'local'): Promise<void> {
-    if (provider === 'local') {
-      await this.localAuth.logout();
-    } else {
-      await this.tidepoolAuth.logout();
-    }
-  }
-
-  /**
    * Get access token for API calls
-   * Prioritizes local token if available, falls back to Tidepool
    */
   getAccessToken(): Observable<string | null> {
     const state = this.unifiedAuthStateSubject.value;
@@ -322,117 +253,38 @@ export class UnifiedAuthService implements OnDestroy {
       return of(state.localAuth.accessToken);
     }
 
-    if (state.tidepoolAuth?.isAuthenticated) {
-      return from(this.tidepoolAuth.getAccessToken());
-    }
-
     return of(null);
   }
 
   /**
-   * Get access token for specific provider
+   * Check if authenticated
    */
-  getProviderToken(provider: 'tidepool' | 'local'): Observable<string | null> {
-    if (provider === 'local') {
-      return from(this.localAuth.getAccessToken());
-    } else {
-      return from(this.tidepoolAuth.getAccessToken());
-    }
-  }
-
-  /**
-   * Check if authenticated with specific provider
-   */
-  isAuthenticatedWith(provider: 'tidepool' | 'local'): boolean {
+  isAuthenticatedWith(_provider: 'local'): boolean {
     const state = this.unifiedAuthStateSubject.value;
-
-    if (provider === 'local') {
-      return state.localAuth?.isAuthenticated || false;
-    } else {
-      return state.tidepoolAuth?.isAuthenticated || false;
-    }
+    return state.localAuth?.isAuthenticated || false;
   }
 
   /**
-   * Link Tidepool account to existing local account
-   */
-  linkTidepoolAccount(): Observable<void> {
-    const isLocalAuthenticated =
-      this.unifiedAuthStateSubject.value.localAuth?.isAuthenticated ?? false;
-
-    if (!isLocalAuthenticated) {
-      throw new Error('Must be logged in locally to link Tidepool account');
-    }
-
-    return from(this.tidepoolAuth.login()).pipe(
-      tap(() => {
-        // After successful Tidepool login, update the backend
-        // to link the accounts (implementation depends on backend API)
-        this.logger.info('Auth', 'Tidepool account linked successfully', {
-          provider: 'tidepool',
-        });
-      })
-    );
-  }
-
-  /**
-   * Unlink Tidepool account
-   */
-  async unlinkTidepoolAccount(): Promise<void> {
-    if (!this.isAuthenticatedWith('tidepool')) {
-      throw new Error('No Tidepool account linked');
-    }
-
-    await this.tidepoolAuth.logout();
-    // Optionally update backend to unlink accounts
-  }
-
-  /**
-   * Refresh tokens for active providers
+   * Refresh tokens
    */
   refreshTokens(): Observable<UnifiedAuthState> {
     this.logger.info('Auth', 'Token refresh initiated');
     const state = this.unifiedAuthStateSubject.value;
-    const refreshObservables: Observable<unknown>[] = [];
 
-    if (state.localAuth?.refreshToken) {
-      refreshObservables.push(
-        this.localAuth.refreshAccessToken().pipe(
-          tap(() => {
-            this.logger.info('Auth', 'Local token refreshed successfully');
-          }),
-          catchError(error => {
-            this.logger.warn('Auth', 'Local token refresh failed', { error: error?.message });
-            return of(null);
-          })
-        )
-      );
-    }
-
-    if (state.tidepoolAuth?.isAuthenticated) {
-      refreshObservables.push(
-        from(this.tidepoolAuth.refreshAccessToken()).pipe(
-          tap(() => {
-            this.logger.info('Auth', 'Tidepool token refreshed successfully');
-          }),
-          catchError(error => {
-            this.logger.warn('Auth', 'Tidepool token refresh failed', { error: error?.message });
-            return of(null);
-          })
-        )
-      );
-    }
-
-    if (refreshObservables.length === 0) {
+    if (!state.localAuth?.refreshToken) {
       this.logger.debug('Auth', 'No tokens to refresh');
       return of(this.unifiedAuthStateSubject.value);
     }
 
-    return combineLatest(refreshObservables).pipe(
+    return this.localAuth.refreshAccessToken().pipe(
       tap(() => {
-        this.logger.info('Auth', 'All tokens refreshed');
+        this.logger.info('Auth', 'Local token refreshed successfully');
       }),
-      map(() => this.unifiedAuthStateSubject.value)
+      map(() => this.unifiedAuthStateSubject.value),
+      catchError(error => {
+        this.logger.warn('Auth', 'Local token refresh failed', { error: error?.message });
+        return of(this.unifiedAuthStateSubject.value);
+      })
     );
   }
 
@@ -455,74 +307,6 @@ export class UnifiedAuthService implements OnDestroy {
       diabetesType: localState.user.diabetesType,
       diagnosisDate: localState.user.diagnosisDate,
       preferences: localState.user.preferences,
-    };
-  }
-
-  /**
-   * Create unified user from Tidepool auth state
-   */
-  private createUserFromTidepool(tidepoolState: TidepoolAuthState): UnifiedUser | null {
-    if (!tidepoolState.userId) return null;
-
-    const email = tidepoolState.email || '';
-    const nameParts = email.split('@')[0].split('.');
-    const firstName = nameParts[0] || 'User';
-    const lastName = nameParts[1] || '';
-
-    return {
-      id: tidepoolState.userId,
-      email,
-      firstName,
-      lastName,
-      fullName: `${firstName} ${lastName}`.trim(),
-      provider: 'tidepool',
-      tidepoolUserId: tidepoolState.userId,
-      tidepoolEmail: email,
-      preferences: {
-        glucoseUnit: 'mg/dL',
-        targetRange: {
-          low: 70,
-          high: 180,
-        },
-        language: 'en',
-        theme: 'auto',
-        notifications: {
-          appointments: true,
-          readings: true,
-          reminders: true,
-        },
-      },
-    };
-  }
-
-  /**
-   * Merge users from both providers
-   */
-  private mergeUsers(
-    localState: LocalAuthState,
-    tidepoolState: TidepoolAuthState
-  ): UnifiedUser | null {
-    if (!localState.user) {
-      return this.createUserFromTidepool(tidepoolState);
-    }
-
-    const localUser = localState.user;
-
-    return {
-      id: localUser.id,
-      email: localUser.email,
-      firstName: localUser.firstName,
-      lastName: localUser.lastName,
-      fullName: `${localUser.firstName} ${localUser.lastName}`,
-      provider: 'both',
-      role: localUser.role,
-      phone: localUser.phone,
-      dateOfBirth: localUser.dateOfBirth,
-      diabetesType: localUser.diabetesType,
-      diagnosisDate: localUser.diagnosisDate,
-      tidepoolUserId: tidepoolState.userId || undefined,
-      tidepoolEmail: tidepoolState.email || undefined,
-      preferences: localUser.preferences,
     };
   }
 
@@ -566,8 +350,6 @@ export class UnifiedAuthService implements OnDestroy {
       return this.localAuth.updatePreferences(payload).pipe(map(() => undefined));
     }
 
-    // For Tidepool-only users, store preferences locally
-    // (would need to implement local storage for Tidepool users)
     return of(undefined);
   }
 

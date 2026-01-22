@@ -75,7 +75,10 @@ class MockCalculationsDatabase {
         toArray: vi.fn().mockResolvedValue(readings),
       }),
       equals: vi.fn().mockReturnValue({
-        toArray: vi.fn().mockResolvedValue([]),
+        toArray: vi.fn().mockResolvedValue(readings),
+        count: vi.fn().mockResolvedValue(readings.length),
+        offset: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
       }),
     });
   }
@@ -107,6 +110,8 @@ describe('ReadingsService - Medical Calculations Precision', () => {
     });
 
     service = TestBed.inject(ReadingsService);
+    // Set current user for multi-user data isolation
+    service.setCurrentUser('test-user');
   });
 
   describe('HbA1c Estimation (ADAG Formula)', () => {

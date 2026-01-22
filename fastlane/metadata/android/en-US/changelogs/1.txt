@@ -1,0 +1,8 @@
+Initial release of Diabetactic!
+
+• Track glucose readings with meal context
+• Bolus calculator with food database
+• Appointment management and reminders
+• Offline-first with cloud sync
+• Light and dark themes
+• English and Spanish support

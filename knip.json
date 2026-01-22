@@ -15,9 +15,7 @@
     "**/contracts/**",
     "**/config/mock-adapter-config.ts",
     "**/utils/type-guards.ts",
-    "**/models/http-error.model.ts",
-    "**/models/tidepool-auth.model.ts",
-    "**/services/tidepool-auth.service.ts"
+    "**/models/http-error.model.ts"
   ],
   "ignoreDependencies": [
     "@angular/language-service",

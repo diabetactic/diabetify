@@ -94,12 +94,11 @@
     "dontHaveAccount": "Don't have an account?",
     "signInWith": "Sign in with",
     "orContinueWith": "Or continue with",
-    "tidepoolLogin": "Sign in with Tidepool",
     "localLogin": "Sign in with Email",
     "linkAccounts": "Link Accounts",
     "unlinkAccounts": "Unlink Accounts",
-    "accountLinked": "Tidepool account linked successfully",
-    "accountUnlinked": "Tidepool account unlinked",
+    "accountLinked": "Account linked successfully",
+    "accountUnlinked": "Account unlinked",
     "errors": {
       "invalidCredentials": "Invalid DNI or password",
       "emailRequired": "Email is required",
@@ -758,7 +757,6 @@
   },
   "profile": {
     "title": "Profile",
-    "tidepoolAccount": "Tidepool Account",
     "manageAccount": "Manage Account",
     "personalInfo": "Personal Information",
     "firstName": "First Name",
@@ -840,45 +838,6 @@
     "exportData": "Export Data",
     "deleteAccount": "Delete Account",
     "confirmDelete": "Are you sure you want to delete your account? This action cannot be undone.",
-    "tidepoolIntegration": "Tidepool Integration",
-    "connectionStatus": "Connection Status",
-    "connected": "Connected",
-    "notConnected": "Not connected",
-    "lastSync": "Last Sync",
-    "disconnect": "Disconnect",
-    "connect": "Connect to Tidepool",
-    "viewDashboard": "View Dashboard",
-    "tidepoolUserId": "Tidepool User ID",
-    "tidepoolInfo": {
-      "title": "Tidepool Connection",
-      "status": "Status",
-      "userId": "User ID",
-      "email": "Email",
-      "lastAuth": "Last Authenticated",
-      "notConnectedMessage": "You are not connected to Tidepool. Connect your account to sync glucose data and share with your healthcare team.",
-      "learnMore": "Learn More",
-      "fetchError": "Could not fetch data from Tidepool. Please try again later.",
-      "sessionExpired": "Session expired. Please reconnect.",
-      "fullName": "Name",
-      "birthday": "Birthday",
-      "diagnosisDate": "Diagnosis Date",
-      "timezone": "Timezone",
-      "dataSources": "Data Sources",
-      "providers": "Connected Devices",
-      "totalReadings": "Total Readings Synced",
-      "syncHistory": "Successful Syncs"
-    },
-    "tidepoolLoginDialog": {
-      "title": "Connect to Tidepool",
-      "message": "Enter your Tidepool account credentials",
-      "email": "Email",
-      "password": "Password",
-      "connect": "Connect",
-      "connecting": "Connecting to Tidepool...",
-      "success": "Connected to Tidepool!",
-      "invalidCredentials": "Invalid DNI or password",
-      "networkError": "Network error. Please check your connection."
-    },
     "changePhoto": "Change photo",
     "editProfile": "Edit Profile",
     "edit": {
@@ -973,7 +932,9 @@
       "themeLabel": "Theme",
       "themeLight": "Light",
       "themeDark": "Dark",
-      "themeAuto": "System Default"
+      "themeAuto": "System Default",
+      "highContrast": "High Contrast Mode",
+      "highContrastDesc": "Increases contrast for better visibility (WCAG AAA)"
     },
     "profile": {
       "avatarAlt": "Profile picture"
@@ -1243,7 +1204,6 @@
     },
     "auth": {
       "title": "Authentication Status",
-      "tidepool": "Tidepool",
       "authenticated": "Authenticated",
       "notAuthenticated": "Not Authenticated",
       "userId": "User ID"
@@ -1293,8 +1253,6 @@
     "config": {
       "featureFlags": "Feature Flags",
       "offlineMode": "Offline Mode",
-      "tidepoolIntegration": "Tidepool Integration",
-      "tidepoolMock": "Tidepool Mock",
       "localBackend": "Local Backend",
       "featureFlagsNote": "Feature flags are read-only. Modify environment.ts to change them.",
       "customBackendUrl": "Custom Backend URL",
@@ -1401,6 +1359,39 @@
     "forgotPasswordDialog": {
       "title": "Recover Password",
       "message": "Password recovery will be available soon. Please contact support for assistance."
+    }
+  },
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "subtitle": "Enter your email to receive a password reset link",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Enter your email",
+    "submitButton": "Send Reset Link",
+    "backToLogin": "Back to Login",
+    "successMessage": "If an account exists with this email, you will receive a reset link shortly.",
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email"
+    }
+  },
+  "resetPassword": {
+    "title": "Reset Password",
+    "subtitle": "Enter your new password",
+    "newPasswordLabel": "New Password",
+    "newPasswordPlaceholder": "Enter new password",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "submitButton": "Reset Password",
+    "successMessage": "Password reset successfully! Redirecting to login...",
+    "validation": {
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "passwordsMustMatch": "Passwords must match"
+    },
+    "errors": {
+      "tokenExpired": "This reset link has expired. Please request a new one.",
+      "tokenInvalid": "Invalid reset link. Please request a new one.",
+      "resetFailed": "Failed to reset password. Please try again."
     }
   },
   "explore": {
@@ -1625,7 +1616,19 @@
     "allAchievements": "All Achievements",
     "noAchievements": "No achievements yet. Start tracking to unlock them!",
     "viewAchievements": "View Achievements",
-    "achievementsDesc": "Track your progress and earn badges"
+    "achievementsDesc": "Track your progress and earn badges",
+    "names": {
+      "1": "First Reading!",
+      "2": "Measurement Rookie",
+      "3": "Measurement Pro",
+      "4": "Measurement Master",
+      "5": "First Day!",
+      "6": "First Week!",
+      "7": "First Month!",
+      "8": "Consistency Genius!",
+      "9": "Consistency Master!",
+      "10": "A Whole Year!"
+    }
   },
   "barcodeScanner": {
     "permissionDenied": {

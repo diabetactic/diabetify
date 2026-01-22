@@ -61,19 +61,6 @@ describe('EnvironmentConfigService', () => {
     });
   });
 
-  describe('tidepool configuration', () => {
-    it('should return tidepool config', () => {
-      expect(service.tidepool).toBeDefined();
-      expect(service.tidepool.baseUrl).toBe(environment.tidepool.baseUrl);
-      expect(service.tidepool.clientId).toBe(environment.tidepool.clientId);
-    });
-
-    it('should return readonly tidepool config', () => {
-      const tidepool = service.tidepool;
-      expect(tidepool).toBe(environment.tidepool);
-    });
-  });
-
   describe('logging configuration', () => {
     it('should return logging config', () => {
       expect(service.logging).toBeDefined();
@@ -161,7 +148,6 @@ describe('EnvironmentConfigService', () => {
 
       expect(config.production).toBe(environment.production);
       expect(config.backendMode).toBe(environment.backendMode);
-      expect(config.tidepool).toBeDefined();
       expect(config.logging).toBeDefined();
       expect(config.backendServices).toBeDefined();
       expect(config.features).toBeDefined();

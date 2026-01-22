@@ -12,7 +12,6 @@ import { CommonModule } from '@angular/common';
 import { IonAvatar, IonButton } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { UserProfile } from '@models/user-profile.model';
-import { AuthState } from '@services/tidepool-auth.service';
 import { TranslationService } from '@services/translation.service';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 
@@ -28,7 +27,6 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
 export class ProfileHeaderComponent {
   @ViewChild('avatarInput') avatarInput?: ElementRef<HTMLInputElement>;
   @Input() profile: UserProfile | null = null;
-  @Input() authState: AuthState | null = null;
   @Output() avatarSelected = new EventEmitter<Event>();
   @Output() editProfile = new EventEmitter<void>();
 
@@ -45,7 +43,7 @@ export class ProfileHeaderComponent {
   }
 
   get emailText(): string {
-    const email = this.profile?.email ?? this.authState?.email ?? '';
+    const email = this.profile?.email ?? '';
     if (email.trim()) {
       return email;
     }

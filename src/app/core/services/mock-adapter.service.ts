@@ -318,9 +318,6 @@ export class MockAdapterService {
         .split('T')[0],
       diabetesType: faker.helpers.arrayElement(['type1', 'type2'] as const),
       diagnosisDate: faker.date.past({ years: 10 }).toISOString().split('T')[0],
-      tidepoolConnection: {
-        connected: false,
-      },
       preferences: {
         glucoseUnit: 'mg/dL',
         colorPalette: 'default',

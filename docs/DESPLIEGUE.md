@@ -22,18 +22,11 @@
 
 ## 2. Arquitectura de Despliegue
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   App Móvil     │────▶│   API Gateway   │────▶│   Base de       │
-│   (Capacitor)   │     │   (FastAPI)     │     │   Datos         │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-         │                       │
-         │                       │
-         ▼                       ▼
-┌─────────────────┐     ┌─────────────────┐
-│   IndexedDB     │     │   Tidepool      │
-│   (Offline)     │     │   OAuth         │
-└─────────────────┘     └─────────────────┘
+```mermaid
+graph LR
+    A[App Móvil<br/>Capacitor] --> B[API Gateway<br/>FastAPI]
+    B --> C[(Base de Datos)]
+    A --> D[(IndexedDB<br/>Offline)]
 ```
 
 ---
@@ -84,10 +77,6 @@ adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 ```env
 # API Backend
 API_BASE_URL=https://api.hospital.example.com
-
-# Tidepool (Producción)
-TIDEPOOL_CLIENT_ID=diabetactic-hospital
-TIDEPOOL_REDIRECT_URI=io.diabetactic.app://callback
 ```
 
 ### 5.2 Personalización

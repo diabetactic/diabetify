@@ -21,6 +21,8 @@ import { HttpClient } from '@angular/common/http';
 import { SecureStorageService } from '@services/secure-storage.service';
 import { TokenService } from '@services/token.service';
 import { EnvironmentConfigService } from '@core/config/environment-config.service';
+import { AuthSessionService } from '@services/auth-session.service';
+import { ApiGatewayService } from '@services/api-gateway.service';
 
 // Mock Preferences for Vitest
 vi.mock('@capacitor/preferences', () => ({
@@ -49,6 +51,8 @@ describe('LocalAuthService', () => {
     clearTokens: Mock;
   };
   let envConfig: Partial<EnvironmentConfigService>;
+  let authSession: Partial<AuthSessionService>;
+  let apiGateway: Partial<ApiGatewayService>;
 
   const mockUser: LocalUser = {
     id: 'test-user-123',
@@ -129,6 +133,16 @@ describe('LocalAuthService', () => {
       devToolsEnabled: false,
     };
 
+    authSession = {
+      setUser: vi.fn(),
+      clearUser: vi.fn(),
+      getCurrentUserId: vi.fn().mockReturnValue(null),
+    };
+
+    apiGateway = {
+      clearCache: vi.fn(),
+    };
+
     httpMock = {
       get: vi.fn(),
       post: vi.fn(),
@@ -148,6 +162,8 @@ describe('LocalAuthService', () => {
         { provide: SecureStorageService, useValue: secureStorage },
         { provide: TokenService, useValue: tokenService },
         { provide: EnvironmentConfigService, useValue: envConfig },
+        { provide: AuthSessionService, useValue: authSession },
+        { provide: ApiGatewayService, useValue: apiGateway },
       ],
     });
 
@@ -342,7 +358,7 @@ describe('LocalAuthService', () => {
       expect(logger.info).toHaveBeenCalledWith('Auth', 'Logout initiated', expect.any(Object));
       expect(logger.info).toHaveBeenCalledWith(
         'Auth',
-        'Logout completed - all data cleared from secure storage',
+        'Logout completed - all data cleared from secure storage and cache',
         expect.any(Object)
       );
 
@@ -685,6 +701,123 @@ describe('LocalAuthService', () => {
       await service.logout();
       const isAuthAfterLogout = await firstValueFrom(service.isAuthenticated());
       expect(isAuthAfterLogout).toBe(false);
+    });
+  });
+
+  describe('requestPasswordReset', () => {
+    describe('mock mode', () => {
+      beforeEach(() => {
+        mockAdapter.isServiceMockEnabled.mockReturnValue(true);
+      });
+
+      it('should return success message in mock mode', async () => {
+        const result = await firstValueFrom(service.requestPasswordReset('test@example.com'));
+        expect(result.message).toBe('Mail should be received anytime');
+        expect(httpMock.post).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('real backend mode', () => {
+      beforeEach(() => {
+        mockAdapter.isServiceMockEnabled.mockReturnValue(false);
+      });
+
+      it('should call forgot-password endpoint and return success', async () => {
+        (httpMock.post as Mock).mockReturnValueOnce(of('Mail should be received anytime'));
+
+        const result = await firstValueFrom(service.requestPasswordReset('test@example.com'));
+
+        expect(httpMock.post).toHaveBeenCalledWith(expect.stringContaining('/forgot-password'), {
+          email: 'test@example.com',
+        });
+        expect(result.message).toBe('Mail should be received anytime');
+      });
+
+      it('should handle object response format', async () => {
+        (httpMock.post as Mock).mockReturnValueOnce(
+          of({ message: 'Mail should be received anytime' })
+        );
+
+        const result = await firstValueFrom(service.requestPasswordReset('user@test.com'));
+        expect(result.message).toBe('Mail should be received anytime');
+      });
+
+      it('should return success even when backend fails (prevent email enumeration)', async () => {
+        (httpMock.post as Mock).mockReturnValueOnce(
+          throwError(() => ({ status: 500, error: { detail: 'Server error' } }))
+        );
+
+        const result = await firstValueFrom(service.requestPasswordReset('any@email.com'));
+        expect(result.message).toBe('Mail should be received anytime');
+      });
+    });
+  });
+
+  describe('resetPassword', () => {
+    describe('mock mode', () => {
+      beforeEach(() => {
+        mockAdapter.isServiceMockEnabled.mockReturnValue(true);
+      });
+
+      it('should return success message in mock mode', async () => {
+        const result = await firstValueFrom(service.resetPassword('mock-token', 'newPassword123'));
+        expect(result.message).toBe('Password reset successfully');
+        expect(httpMock.post).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('real backend mode', () => {
+      beforeEach(() => {
+        mockAdapter.isServiceMockEnabled.mockReturnValue(false);
+      });
+
+      it('should call reset-password endpoint with token and new password', async () => {
+        (httpMock.post as Mock).mockReturnValueOnce(
+          of({ status: 'ok', message: 'Password reset successfully' })
+        );
+
+        const result = await firstValueFrom(service.resetPassword('valid-token', 'newPassword123'));
+
+        expect(httpMock.post).toHaveBeenCalledWith(expect.stringContaining('/reset-password'), {
+          token: 'valid-token',
+          new_password: 'newPassword123',
+        });
+        expect(result.message).toBe('Password reset successfully');
+      });
+
+      it('should throw error when token is expired', async () => {
+        (httpMock.post as Mock).mockReturnValueOnce(
+          throwError(() => ({
+            status: 401,
+            error: { detail: 'Recovery token has expired' },
+          }))
+        );
+
+        await expect(
+          firstValueFrom(service.resetPassword('expired-token', 'newPassword'))
+        ).rejects.toThrow('Recovery token has expired');
+      });
+
+      it('should throw error when token is invalid', async () => {
+        (httpMock.post as Mock).mockReturnValueOnce(
+          throwError(() => ({
+            status: 401,
+            error: { detail: 'Invalid recovery token' },
+          }))
+        );
+
+        await expect(
+          firstValueFrom(service.resetPassword('invalid-token', 'newPassword'))
+        ).rejects.toThrow('Invalid recovery token');
+      });
+
+      it('should handle generic errors', async () => {
+        (httpMock.post as Mock).mockReturnValueOnce(throwError(() => new Error('Network error')));
+
+        await expect(firstValueFrom(service.resetPassword('token', 'newPassword'))).rejects.toThrow(
+          'Network error'
+        );
+      });
     });
   });
 });

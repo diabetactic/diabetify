@@ -36,9 +36,6 @@ describe('AddReadingPage', () => {
       ...DEFAULT_USER_PREFERENCES,
       glucoseUnit: 'mg/dL',
     },
-    tidepoolConnection: {
-      connected: false,
-    },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };

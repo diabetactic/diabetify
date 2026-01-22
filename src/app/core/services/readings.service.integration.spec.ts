@@ -22,6 +22,7 @@ describe('ReadingsService Integration Tests', () => {
     });
 
     service = TestBed.inject(ReadingsService);
+    service.setCurrentUser('test-user');
   });
 
   afterEach(async () => {

@@ -36,38 +36,41 @@
   </div>
 }
 
-<!-- Grouped Readings List -->
-@if (!isLoading && groupedReadings.length > 0) {
-  <div class="page-shell readings-list-shell" data-testid="readings-list">
-    @for (group of groupedReadings; track trackByGroup($index, group)) {
-      <!-- Date Header -->
-      <div
-        class="border-primary bg-base-100 dark:bg-base-300 sticky top-0 z-10 border-b-2 px-4 py-2"
-      >
-        <div class="flex items-center justify-between">
-          <h2 class="text-base-content m-0 text-lg font-semibold">{{ group.displayDate }}</h2>
-          <p class="text-base-content/60 dark:text-base-content/80 m-0 text-[13px]">
-            {{ group.readings.length }}
-            {{
-              group.readings.length !== 1
-                ? ('readings.readings' | translate)
-                : ('readings.reading' | translate)
-            }}
-          </p>
-        </div>
-      </div>
-
-      <div class="p-4">
-        @for (reading of group.readings; track trackByReading($index, reading)) {
-          <div class="mb-2">
-            <app-reading-item
-              [reading]="reading"
-              (edit)="onReadingEdit(reading)"
-              class="block w-full"
-            ></app-reading-item>
+<!-- Virtual Scrolling Readings List -->
+@if (!isLoading && flattenedItems().length > 0) {
+  <cdk-virtual-scroll-viewport
+    [itemSize]="ITEM_HEIGHT"
+    class="readings-virtual-viewport"
+    data-testid="readings-list"
+  >
+    <div *cdkVirtualFor="let item of flattenedItems(); trackBy: trackByItem" class="virtual-item">
+      @if (isHeader(item)) {
+        <div
+          class="border-primary bg-base-100 dark:bg-base-300 sticky top-0 z-10 border-b-2 px-4 py-2"
+          [style.height.px]="HEADER_HEIGHT"
+        >
+          <div class="flex items-center justify-between">
+            <h2 class="text-base-content m-0 text-lg font-semibold">{{ item.displayDate }}</h2>
+            <p class="text-base-content/60 dark:text-base-content/80 m-0 text-[13px]">
+              {{ item.count }}
+              {{
+                item.count !== 1
+                  ? ('readings.readings' | translate)
+                  : ('readings.reading' | translate)
+              }}
+            </p>
           </div>
-        }
-      </div>
-    }
-  </div>
+        </div>
+      }
+      @if (isReading(item)) {
+        <div class="px-4 py-1" [style.height.px]="ITEM_HEIGHT">
+          <app-reading-item
+            [reading]="item.reading"
+            (edit)="onReadingEdit(item.reading)"
+            class="block w-full"
+          ></app-reading-item>
+        </div>
+      }
+    </div>
+  </cdk-virtual-scroll-viewport>
 }

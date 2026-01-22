@@ -15,6 +15,24 @@ export interface UserStatus {
   queue_state?: string;
 }
 
+/**
+ * Resolution data for completing an appointment.
+ * This is submitted by the doctor/admin via the BACKOFFICE API
+ * (not the appointments API directly) to ensure email notification is sent.
+ */
+export interface AppointmentResolution {
+  appointment_id: number;
+  change_basal_type?: string;
+  change_basal_dose?: number;
+  change_basal_time?: string;
+  change_fast_type?: string;
+  change_ratio?: number;
+  change_sensitivity?: number;
+  emergency_care?: boolean;
+  needed_physical_appointment?: boolean;
+  glucose_scale?: Array<[number, number, number]>;
+}
+
 export class AdminClient {
   private token: string | null = null;
 
@@ -136,6 +154,64 @@ export class AdminClient {
     if (!response.ok()) {
       throw new Error(`Failed to deny queue placement ${queuePlacement}: ${response.status()}`);
     }
+  }
+
+  /**
+   * Resolve an appointment with clinical recommendations.
+   * IMPORTANT: This calls the BACKOFFICE API which:
+   * 1. Creates the resolution in the appointments service
+   * 2. Sends an email notification to the user
+   *
+   * Do NOT call the appointments API directly - it skips the email.
+   */
+  async resolveAppointment(resolution: AppointmentResolution): Promise<void> {
+    const response = await this.request.post(`${this.baseUrl}/appointments/create_resolution`, {
+      headers: {
+        ...this.authHeaders(),
+        'Content-Type': 'application/json',
+      },
+      data: resolution,
+      timeout: TIMEOUTS.api,
+    });
+
+    if (!response.ok()) {
+      const text = await response.text();
+      throw new Error(
+        `Failed to resolve appointment ${resolution.appointment_id}: ${response.status()} - ${text}`
+      );
+    }
+  }
+
+  /**
+   * Get active appointment ID for a user (needed for resolution).
+   * Uses the backoffice endpoint: GET /appointments/from_user/latest/{user_id}
+   * Returns the appointment_id if found, null otherwise.
+   */
+  async getActiveAppointmentId(dni: string): Promise<number | null> {
+    const userId = await this.getUserIdByDni(dni);
+    const response = await this.request.get(
+      `${this.baseUrl}/appointments/from_user/latest/${userId}`,
+      {
+        headers: this.authHeaders(),
+        timeout: TIMEOUTS.api,
+      }
+    );
+
+    if (!response.ok()) {
+      if (response.status() === 404) return null;
+      const text = await response.text();
+      console.log(
+        `[AdminClient] Failed to get appointment for user ${dni}: ${response.status()} - ${text}`
+      );
+      return null;
+    }
+
+    const data = await response.json();
+    // The endpoint returns a single appointment object with 'appointment_id' field
+    if (data && data.appointment_id) {
+      return data.appointment_id;
+    }
+    return null;
   }
 
   private async getUserIdByDni(dni: string): Promise<number> {

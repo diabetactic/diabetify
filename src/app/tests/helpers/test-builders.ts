@@ -27,7 +27,7 @@ export interface LocalProfile {
 /**
  * Test-only device type for integration tests
  */
-export interface TidepoolDevice {
+export interface TestDevice {
   id: string;
   name: string;
   manufacturer: string;
@@ -255,9 +255,9 @@ export class StatisticsBuilder extends TestBuilder<GlucoseStatistics> {
 }
 
 /**
- * Tidepool Device Builder
+ * Device Builder
  */
-export class DeviceBuilder extends TestBuilder<TidepoolDevice> {
+export class DeviceBuilder extends TestBuilder<TestDevice> {
   constructor() {
     super();
     this.object = {
@@ -300,8 +300,8 @@ export class DeviceBuilder extends TestBuilder<TidepoolDevice> {
     return this.withManufacturer('Medtronic', '670G');
   }
 
-  build(): TidepoolDevice {
-    return this.object as TidepoolDevice;
+  build(): TestDevice {
+    return this.object as TestDevice;
   }
 }
 

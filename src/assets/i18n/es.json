@@ -94,12 +94,11 @@
     "dontHaveAccount": "¿No tienes una cuenta?",
     "signInWith": "Iniciar sesión con",
     "orContinueWith": "O continuar con",
-    "tidepoolLogin": "Iniciar sesión con Tidepool",
     "localLogin": "Iniciar sesión con Correo",
     "linkAccounts": "Vincular Cuentas",
     "unlinkAccounts": "Desvincular Cuentas",
-    "accountLinked": "Cuenta de Tidepool vinculada exitosamente",
-    "accountUnlinked": "Cuenta de Tidepool desvinculada",
+    "accountLinked": "Cuenta vinculada exitosamente",
+    "accountUnlinked": "Cuenta desvinculada",
     "errors": {
       "invalidCredentials": "DNI o contraseña inválidos",
       "emailRequired": "El correo es requerido",
@@ -759,7 +758,6 @@
   },
   "profile": {
     "title": "Perfil",
-    "tidepoolAccount": "Cuenta de Tidepool",
     "manageAccount": "Gestionar Cuenta",
     "personalInfo": "Información Personal",
     "firstName": "Nombre",
@@ -841,45 +839,6 @@
     "exportData": "Exportar Datos",
     "deleteAccount": "Eliminar Cuenta",
     "confirmDelete": "¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.",
-    "tidepoolIntegration": "Integración Tidepool",
-    "connectionStatus": "Estado de Conexión",
-    "connected": "Conectado",
-    "notConnected": "No conectado",
-    "lastSync": "Última Sincronización",
-    "disconnect": "Desconectar",
-    "connect": "Conectar a Tidepool",
-    "viewDashboard": "Ver Panel de Control",
-    "tidepoolUserId": "ID de Usuario Tidepool",
-    "tidepoolInfo": {
-      "title": "Conexión Tidepool",
-      "status": "Estado",
-      "userId": "ID de Usuario",
-      "email": "Correo",
-      "lastAuth": "Última Autenticación",
-      "notConnectedMessage": "No estás conectado a Tidepool. Conecta tu cuenta para sincronizar datos de glucosa y compartir con tu equipo médico.",
-      "learnMore": "Más Información",
-      "fetchError": "No se pudieron obtener datos de Tidepool. Intenta de nuevo más tarde.",
-      "fullName": "Nombre",
-      "birthday": "Fecha de Nacimiento",
-      "diagnosisDate": "Fecha de Diagnóstico",
-      "timezone": "Zona Horaria",
-      "dataSources": "Fuentes de Datos",
-      "providers": "Dispositivos Conectados",
-      "totalReadings": "Lecturas Sincronizadas",
-      "syncHistory": "Sincronizaciones Exitosas",
-      "sessionExpired": "Sesión expirada. Por favor reconecte."
-    },
-    "tidepoolLoginDialog": {
-      "title": "Conectar a Tidepool",
-      "message": "Ingresa tus credenciales de Tidepool",
-      "email": "Correo",
-      "password": "Contraseña",
-      "connect": "Conectar",
-      "connecting": "Conectando...",
-      "success": "¡Conectado a Tidepool!",
-      "invalidCredentials": "DNI o contraseña inválidos",
-      "networkError": "Error de red. Por favor verifica tu conexión"
-    },
     "changePhoto": "Cambiar foto",
     "editProfile": "Editar Perfil",
     "edit": {
@@ -974,7 +933,9 @@
       "themeLabel": "Tema",
       "themeLight": "Claro",
       "themeDark": "Oscuro",
-      "themeAuto": "Automático del Sistema"
+      "themeAuto": "Automático del Sistema",
+      "highContrast": "Modo Alto Contraste",
+      "highContrastDesc": "Aumenta el contraste para mejor visibilidad (WCAG AAA)"
     },
     "profile": {
       "avatarAlt": "Foto de perfil"
@@ -1226,7 +1187,6 @@
     },
     "auth": {
       "title": "Estado de Autenticación",
-      "tidepool": "Tidepool",
       "authenticated": "Autenticado",
       "notAuthenticated": "No Autenticado",
       "userId": "ID de Usuario"
@@ -1276,8 +1236,6 @@
     "config": {
       "featureFlags": "Banderas de Funcionalidad",
       "offlineMode": "Modo Sin Conexión",
-      "tidepoolIntegration": "Integración Tidepool",
-      "tidepoolMock": "Simulación Tidepool",
       "localBackend": "Backend Local",
       "featureFlagsNote": "Las banderas de funcionalidad son de solo lectura. Modifica environment.ts para cambiarlas.",
       "customBackendUrl": "URL de Backend Personalizada",
@@ -1384,6 +1342,39 @@
     "forgotPasswordDialog": {
       "title": "Recuperar Contraseña",
       "message": "La función de recuperación de contraseña estará disponible próximamente. Por favor, contacta a soporte para asistencia."
+    }
+  },
+  "forgotPassword": {
+    "title": "Recuperar Contraseña",
+    "subtitle": "Ingresa tu email para recibir un enlace de recuperación",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Ingresa tu email",
+    "submitButton": "Enviar Enlace",
+    "backToLogin": "Volver al Inicio",
+    "successMessage": "Si existe una cuenta con este email, recibirás un enlace de recuperación.",
+    "validation": {
+      "emailRequired": "El email es obligatorio",
+      "emailInvalid": "Ingresa un email válido"
+    }
+  },
+  "resetPassword": {
+    "title": "Restablecer Contraseña",
+    "subtitle": "Ingresa tu nueva contraseña",
+    "newPasswordLabel": "Nueva Contraseña",
+    "newPasswordPlaceholder": "Ingresa nueva contraseña",
+    "confirmPasswordLabel": "Confirmar Contraseña",
+    "confirmPasswordPlaceholder": "Confirma tu contraseña",
+    "submitButton": "Restablecer Contraseña",
+    "successMessage": "¡Contraseña restablecida! Redirigiendo al inicio...",
+    "validation": {
+      "passwordRequired": "La contraseña es obligatoria",
+      "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
+      "passwordsMustMatch": "Las contraseñas deben coincidir"
+    },
+    "errors": {
+      "tokenExpired": "Este enlace ha expirado. Solicita uno nuevo.",
+      "tokenInvalid": "Enlace inválido. Solicita uno nuevo.",
+      "resetFailed": "Error al restablecer. Intenta de nuevo."
     }
   },
   "explore": {
@@ -1626,7 +1617,19 @@
     "allAchievements": "Todos los Logros",
     "noAchievements": "Aún no hay logros. ¡Empieza a registrar para desbloquearlos!",
     "viewAchievements": "Ver Logros",
-    "achievementsDesc": "Sigue tu progreso y gana insignias"
+    "achievementsDesc": "Sigue tu progreso y gana insignias",
+    "names": {
+      "1": "¡Primera medición!",
+      "2": "Pichón de las mediciones",
+      "3": "Capo de las mediciones",
+      "4": "Crack de las mediciones",
+      "5": "¡Primer día!",
+      "6": "¡Primera semana!",
+      "7": "¡Primer mes!",
+      "8": "¡Genio de la constancia!",
+      "9": "¡Crack de la constancia!",
+      "10": "¡Un año entero!"
+    }
   },
   "barcodeScanner": {
     "permissionDenied": {

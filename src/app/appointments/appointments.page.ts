@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Network } from '@capacitor/network';
 import { PluginListenerHandle } from '@capacitor/core';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import {
   IonHeader,
   IonToolbar,
@@ -55,6 +56,7 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
     CommonModule,
     FormsModule,
     TranslateModule,
+    ScrollingModule,
     AppIconComponent,
     IonHeader,
     IonToolbar,
@@ -92,9 +94,10 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
   private readonly MAX_POLLING_FAILURES = 3; // Show warning after 3 consecutive failures
   private pollingErrorShown = false;
 
-  // Resolution data cache
   resolutions: Map<number, AppointmentResolutionResponse> = new Map();
   resolutionsLoading = false;
+
+  readonly APPOINTMENT_ITEM_HEIGHT = 140;
 
   // Network state
   isOnline = true;

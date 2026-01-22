@@ -32,8 +32,15 @@
                 "output": "./svg"
               }
             ],
-            "styles": ["src/global.css", "src/theme/variables.scss"],
-            "scripts": []
+            "styles": [
+              "src/global.css",
+              "src/theme/variables.scss",
+              "src/theme/high-contrast.scss"
+            ],
+            "scripts": [],
+            "stylePreprocessorOptions": {
+              "includePaths": ["src/styles"]
+            }
           },
           "configurations": {
             "production": {

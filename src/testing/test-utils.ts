@@ -92,7 +92,7 @@ export function resetServiceState<T extends object>(
  *
  * @example
  * beforeEach(() => {
- *   const interceptor = TestBed.inject(TidepoolInterceptor);
+ *   const interceptor = TestBed.inject(AuthInterceptor);
  *   resetInterceptorState(interceptor, () => new Subject<string | null>());
  * });
  */

@@ -122,7 +122,7 @@ export class MockDataService {
       glucose: 95,
       type: 'fasting',
       mood: 'happy',
-      source: 'xdrip', // Ejemplo de lectura que vendría de xDrip/Tidepool
+      source: 'xdrip',
     },
     {
       id: '4',

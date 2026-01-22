@@ -9,7 +9,6 @@ import { vi } from 'vitest';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 
 import { ProfilePage } from './profile.page';
-import { TidepoolAuthService, AuthState } from '@services/tidepool-auth.service';
 import { LocalAuthService } from '@services/local-auth.service';
 import { ProfileService } from '@services/profile.service';
 import { BiometricAuthService } from '@services/biometric-auth.service';
@@ -22,7 +21,6 @@ import { ROUTES } from '@core/constants';
 describe('ProfilePage', () => {
   let component: ProfilePage;
   let fixture: ComponentFixture<ProfilePage>;
-  let mockAuthService: any;
   let mockLocalAuthService: any;
   let mockProfileService: any;
   let mockBiometricAuthService: any;
@@ -45,9 +43,6 @@ describe('ProfilePage', () => {
       language: 'en',
       themeMode: 'auto',
     },
-    tidepoolConnection: {
-      connected: false,
-    },
     avatar: {
       id: 'avatar-1',
       name: 'Default',
@@ -58,20 +53,7 @@ describe('ProfilePage', () => {
     updatedAt: new Date().toISOString(),
   };
 
-  const mockAuthState: AuthState = {
-    isAuthenticated: true,
-    isLoading: false,
-    error: null,
-    userId: 'test-user-id',
-    email: 'test@example.com',
-  };
-
   beforeEach(async () => {
-    mockAuthService = {
-      authState: new BehaviorSubject<AuthState | null>(mockAuthState),
-      logout: vi.fn().mockResolvedValue(undefined),
-    };
-
     mockLocalAuthService = {
       logout: vi.fn().mockResolvedValue(undefined),
       getCurrentUser: vi.fn().mockReturnValue({ id: 'local-user-id' }),
@@ -129,7 +111,6 @@ describe('ProfilePage', () => {
     await TestBed.configureTestingModule({
       imports: [ProfilePage, IonicModule.forRoot(), TranslateModule.forRoot()],
       providers: [
-        { provide: TidepoolAuthService, useValue: mockAuthService },
         { provide: LocalAuthService, useValue: mockLocalAuthService },
         { provide: ProfileService, useValue: mockProfileService },
         { provide: BiometricAuthService, useValue: mockBiometricAuthService },
@@ -192,23 +173,6 @@ describe('ProfilePage', () => {
       component.ngOnInit();
 
       expect(component.notificationsEnabled).toBe(false);
-    });
-
-    it('should subscribe to auth state changes', () => {
-      component.ngOnInit();
-
-      expect(component.authState).toEqual(mockAuthState);
-
-      const newAuthState: AuthState = {
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
-        userId: null,
-        email: null,
-      };
-      mockAuthService.authState.next(newAuthState);
-
-      expect(component.authState).toEqual(newAuthState);
     });
 
     it('should subscribe to profile changes', () => {
@@ -382,7 +346,6 @@ describe('ProfilePage', () => {
       await component.onSignOut();
 
       expect(mockLocalAuthService.logout).toHaveBeenCalled();
-      expect(mockAuthService.logout).toHaveBeenCalled();
       expect(mockProfileService.deleteProfile).toHaveBeenCalled();
       expect(mockRouter.navigate).toHaveBeenCalledWith([ROUTES.WELCOME], { replaceUrl: true });
     });
@@ -566,7 +529,6 @@ describe('ProfilePage', () => {
   describe('Data Properties', () => {
     it('should initialize with default values', () => {
       expect(component.profile).toBeNull();
-      expect(component.authState).toBeNull();
       expect(component.currentTheme).toBe('auto');
       expect(component.currentGlucoseUnit).toBe('mg/dL');
       expect(component.notificationsEnabled).toBe(false);

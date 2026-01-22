@@ -1,13 +1,13 @@
 {
   "name": "diabetactic",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Diabetactic - Mobile app for diabetes glucose management built with Ionic/Angular",
   "author": "Diabetactic Team - FIUBA",
   "homepage": "https://github.com/diabetactic/diabetify",
   "private": true,
   "packageManager": "pnpm@10.12.1",
   "engines": {
-    "node": "24.x",
+    "node": ">=22.0.0",
     "pnpm": ">=10.0.0"
   },
   "scripts": {
@@ -30,6 +30,8 @@
     "mobile:sync": "pnpm build:heroku && npx cap sync",
     "mobile:build": "pnpm mobile:sync && cd android && ./gradlew assembleDebug",
     "mobile:build:release": "pnpm mobile:sync && cd android && ./gradlew assembleRelease",
+    "mobile:build:bundle": "pnpm mobile:sync && cd android && ./gradlew bundleRelease",
+    "mobile:release": "./scripts/build-release.sh",
     "mobile:install": "pnpm mobile:build && cd android && ./gradlew installDebug",
     "mobile:run": "pnpm mobile:install && adb logcat | grep -i 'diabetactic\\|chromium\\|capacitor'",
     "mobile:clean": "cd android && ./gradlew clean && cd .. && rm -rf www .angular",
@@ -94,6 +96,8 @@
     "analyze:duplication": "jscpd src/",
     "analyze:type-coverage": "type-coverage --detail --strict",
     "analyze:bundle": "hawkeye dist/diabetify/browser/stats.json --json > reports/bundle-analysis.json",
+    "css:analyze": "pnpm run build:prod && npx analyze-css --file www/browser/styles-*.css",
+    "css:report": "pnpm run build:prod && npx analyze-css --file www/browser/styles-*.css --pretty > reports/css-analysis.json",
     "fix:dead-code": "knip --fix",
     "fix:deps": "ncu -u && pnpm install",
     "fix:deps:check": "ncu",
@@ -110,6 +114,7 @@
   },
   "dependencies": {
     "@angular/animations": "^21.0.8",
+    "@angular/cdk": "^21.1.0",
     "@angular/common": "^21.0.8",
     "@angular/core": "^21.0.8",
     "@angular/forms": "^21.0.8",
@@ -120,7 +125,6 @@
     "@capacitor-mlkit/barcode-scanning": "^8.0.0",
     "@capacitor/android": "^8.0.1",
     "@capacitor/app": "^8.0.0",
-    "@capacitor/browser": "^8.0.0",
     "@capacitor/core": "^8.0.1",
     "@capacitor/device": "^8.0.0",
     "@capacitor/haptics": "^8.0.0",
@@ -169,6 +173,7 @@
     "@types/node": "^25.0.8",
     "@vitest/coverage-v8": "^4.0.15",
     "@vitest/ui": "^4.0.15",
+    "analyze-css": "^2.4.26",
     "angular-eslint": "^21.0.1",
     "autoprefixer": "^10.4.23",
     "cyclomatic-complexity": "^1.2.5",

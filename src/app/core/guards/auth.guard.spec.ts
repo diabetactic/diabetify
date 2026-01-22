@@ -6,10 +6,6 @@ import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@a
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 
 import { AuthGuard } from './auth.guard';
-import {
-  TidepoolAuthService,
-  AuthState as TidepoolAuthState,
-} from '@services/tidepool-auth.service';
 import { LocalAuthService, LocalAuthState } from '@services/local-auth.service';
 import { AccountState } from '@models/user-profile.model';
 
@@ -20,24 +16,12 @@ describe('AuthGuard', () => {
   let urlTree: UrlTree;
 
   // Auth state subjects for testing
-  let tidepoolAuthStateSubject: BehaviorSubject<TidepoolAuthState>;
   let localAuthStateSubject: BehaviorSubject<LocalAuthState>;
 
   beforeEach(() => {
     urlTree = {} as UrlTree;
 
     // Initialize auth state subjects
-    tidepoolAuthStateSubject = new BehaviorSubject<TidepoolAuthState>({
-      isAuthenticated: false,
-      isLoading: false,
-      error: null,
-      errorCode: null,
-      userId: null,
-      email: null,
-      flowStep: 'idle',
-      lastAuthenticated: null,
-    });
-
     localAuthStateSubject = new BehaviorSubject<LocalAuthState>({
       isAuthenticated: false,
       user: null,
@@ -51,10 +35,6 @@ describe('AuthGuard', () => {
       createUrlTree: vi.fn().mockReturnValue(urlTree),
     } as unknown as Mock<Router>;
 
-    const tidepoolSpy = {
-      authState: tidepoolAuthStateSubject.asObservable(),
-    } as unknown as Mock<TidepoolAuthService>;
-
     const localSpy = {
       logout: vi.fn(),
       waitForInitialization: vi.fn().mockResolvedValue(undefined),
@@ -64,7 +44,6 @@ describe('AuthGuard', () => {
     TestBed.configureTestingModule({
       providers: [
         AuthGuard,
-        { provide: TidepoolAuthService, useValue: tidepoolSpy },
         { provide: LocalAuthService, useValue: localSpy },
         { provide: Router, useValue: routerSpy },
       ],
@@ -76,7 +55,6 @@ describe('AuthGuard', () => {
   });
 
   afterEach(() => {
-    tidepoolAuthStateSubject.complete();
     localAuthStateSubject.complete();
   });
 
@@ -84,76 +62,7 @@ describe('AuthGuard', () => {
     expect(guard).toBeTruthy();
   });
 
-  describe('Tidepool Authentication', () => {
-    it('should allow access when user is authenticated via Tidepool', async () => {
-      // Arrange
-      tidepoolAuthStateSubject.next({
-        isAuthenticated: true,
-        isLoading: false,
-        error: null,
-        errorCode: null,
-        userId: 'tidepool-user-123',
-        email: 'tidepool@example.com',
-        flowStep: 'idle',
-        lastAuthenticated: Date.now(),
-      });
-
-      const route = {} as ActivatedRouteSnapshot;
-      const state = { url: '/dashboard' } as RouterStateSnapshot;
-
-      // Act
-      const result = await firstValueFrom(
-        guard.canActivate(route, state) as Observable<boolean | UrlTree>
-      );
-
-      // Assert
-      expect(result).toBe(true);
-      expect(router.createUrlTree).not.toHaveBeenCalled();
-    });
-
-    it('should not check local auth when Tidepool auth is active', async () => {
-      // Arrange
-      tidepoolAuthStateSubject.next({
-        isAuthenticated: true,
-        isLoading: false,
-        error: null,
-        errorCode: null,
-        userId: 'tidepool-user-123',
-        email: 'tidepool@example.com',
-        flowStep: 'idle',
-        lastAuthenticated: Date.now(),
-      });
-
-      const route = {} as ActivatedRouteSnapshot;
-      const state = { url: '/dashboard' } as RouterStateSnapshot;
-
-      // Act
-      const result = await firstValueFrom(
-        guard.canActivate(route, state) as Observable<boolean | UrlTree>
-      );
-
-      // Assert
-      expect(result).toBe(true);
-      // Local auth state subject should not be consumed
-      expect(localAuthStateSubject.observers.length).toBe(0);
-    });
-  });
-
   describe('Local Authentication', () => {
-    beforeEach(() => {
-      // Ensure Tidepool auth is not active
-      tidepoolAuthStateSubject.next({
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
-        errorCode: null,
-        userId: null,
-        email: null,
-        flowStep: 'idle',
-        lastAuthenticated: null,
-      });
-    });
-
     it('should redirect to login when user is not authenticated', async () => {
       // Arrange
       localAuthStateSubject.next({
@@ -203,20 +112,6 @@ describe('AuthGuard', () => {
   });
 
   describe('Account State Checks', () => {
-    beforeEach(() => {
-      // Ensure Tidepool auth is not active
-      tidepoolAuthStateSubject.next({
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
-        errorCode: null,
-        userId: null,
-        email: null,
-        flowStep: 'idle',
-        lastAuthenticated: null,
-      });
-    });
-
     it('should allow access for ACTIVE accounts', async () => {
       // Arrange
       localAuthStateSubject.next({
@@ -329,19 +224,8 @@ describe('AuthGuard', () => {
   });
 
   describe('Edge Cases', () => {
-    it('should handle both auth services being unauthenticated', async () => {
+    it('should handle auth service being unauthenticated', async () => {
       // Arrange
-      tidepoolAuthStateSubject.next({
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
-        errorCode: null,
-        userId: null,
-        email: null,
-        flowStep: 'idle',
-        lastAuthenticated: null,
-      });
-
       localAuthStateSubject.next({
         isAuthenticated: false,
         user: null,
@@ -367,17 +251,6 @@ describe('AuthGuard', () => {
 
     it('should handle null user in local auth state', async () => {
       // Arrange
-      tidepoolAuthStateSubject.next({
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
-        errorCode: null,
-        userId: null,
-        email: null,
-        flowStep: 'idle',
-        lastAuthenticated: null,
-      });
-
       localAuthStateSubject.next({
         isAuthenticated: true,
         user: null, // Unusual but possible
@@ -401,17 +274,6 @@ describe('AuthGuard', () => {
 
     it('should handle empty returnUrl', async () => {
       // Arrange
-      tidepoolAuthStateSubject.next({
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
-        errorCode: null,
-        userId: null,
-        email: null,
-        flowStep: 'idle',
-        lastAuthenticated: null,
-      });
-
       localAuthStateSubject.next({
         isAuthenticated: false,
         user: null,
@@ -436,15 +298,17 @@ describe('AuthGuard', () => {
   describe('Observable Behavior', () => {
     it('should complete after taking first value from auth states', async () => {
       // Arrange
-      tidepoolAuthStateSubject.next({
+      localAuthStateSubject.next({
         isAuthenticated: true,
-        isLoading: false,
-        error: null,
-        errorCode: null,
-        userId: 'user-123',
-        email: 'user@example.com',
-        flowStep: 'idle',
-        lastAuthenticated: Date.now(),
+        user: {
+          id: 'user-123',
+          email: 'user@example.com',
+          accountState: AccountState.ACTIVE,
+          preferences: {},
+        } as any,
+        accessToken: 'local-token',
+        refreshToken: 'local-refresh',
+        expiresAt: Date.now() + 3600000,
       });
 
       const route = {} as ActivatedRouteSnapshot;
@@ -477,17 +341,6 @@ describe('AuthGuard', () => {
 
     it('should not react to subsequent auth state changes', async () => {
       // Arrange
-      tidepoolAuthStateSubject.next({
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
-        errorCode: null,
-        userId: null,
-        email: null,
-        flowStep: 'idle',
-        lastAuthenticated: null,
-      });
-
       localAuthStateSubject.next({
         isAuthenticated: true,
         user: {
@@ -513,18 +366,7 @@ describe('AuthGuard', () => {
         result$.subscribe(() => {
           callCount++;
 
-          // Emit new values
-          tidepoolAuthStateSubject.next({
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-            errorCode: null,
-            userId: 'new-user',
-            email: 'new@example.com',
-            flowStep: 'idle',
-            lastAuthenticated: Date.now(),
-          });
-
+          // Emit new value
           localAuthStateSubject.next({
             isAuthenticated: false,
             user: null,

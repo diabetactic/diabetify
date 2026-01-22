@@ -37,15 +37,13 @@ Toda la comunicación con el backend se realiza a través del servicio API Gatew
 
 Los siguientes servicios pueden hacer llamadas HTTP directas:
 
-1. **TidepoolAuthService** - Proveedor OAuth externo
-2. **ExternalServicesManagerService** - Solo para health checks
+1. **ExternalServicesManagerService** - Solo para health checks
 
 ## Arquitectura de Servicios
 
 ### Capa de Autenticación
 
 - **UnifiedAuthService**: Coordina todos los flujos de autenticación
-- **TidepoolAuthService**: Maneja OAuth2/PKCE de Tidepool
 - **LocalAuthService**: Gestiona autenticación con backend local
 
 ### Capa de Datos
@@ -59,25 +57,17 @@ Los siguientes servicios pueden hacer llamadas HTTP directas:
 
 - **ApiGatewayService**: Comunicación centralizada con backend
 - **ExternalServicesManagerService**: Monitoreo de salud de servicios
-- **TidepoolAuthService**: Autenticación con Tidepool (auth-only, sin sync de datos)
 
 ## Flujo de Datos
 
-```
-Acción del Usuario
-  ↓
-Componente
-  ↓
-Servicio (Lógica de Negocio)
-  ↓
-ApiGatewayService → Microservicios Backend
-  ↓
-DatabaseService
-  ↓
-IndexedDB
-
-Nota: Tidepool se usa solo para autenticación (obtener userId).
-Los datos de glucosa provienen del backend Diabetactic.
+```mermaid
+flowchart TD
+    A[Acción del Usuario] --> B[Componente]
+    B --> C[Servicio]
+    C --> D[ApiGatewayService]
+    D --> E[Microservicios Backend]
+    C --> F[DatabaseService]
+    F --> G[(IndexedDB)]
 ```
 
 ## Estrategia Offline-First
@@ -95,7 +85,6 @@ Los datos de glucosa provienen del backend Diabetactic.
 
 ## Seguridad
 
-- OAuth2/PKCE para Tidepool
 - Tokens JWT para servicios backend
 - Manejo de refresh de tokens
 - Almacenamiento seguro con Capacitor Preferences
@@ -108,45 +97,88 @@ Los datos de glucosa provienen del backend Diabetactic.
 - Optimización de imágenes
 - Objetivo de bundle: <2MB inicial
 
-## Integración Tidepool (Auth-Only)
+## Common Gotchas
 
-Tidepool se usa **solo para autenticación** - obtener ID de usuario. Los datos de glucosa provienen del backend Diabetactic.
+Esta sección documenta problemas comunes y sus soluciones para evitar errores recurrentes.
 
-### Flujo OAuth2/PKCE
+### Angular Gotchas
 
-1. Usuario toca "Conectar con Tidepool"
-2. App abre página de login de Tidepool en navegador in-app
-3. Usuario inicia sesión con credenciales Tidepool
-4. Tidepool redirige con código de autorización
-5. App intercambia código por tokens y extrae userId
+| Problema                                      | Causa                              | Solución                                                                    |
+| --------------------------------------------- | ---------------------------------- | --------------------------------------------------------------------------- |
+| Componente no reconoce elementos Ionic        | Falta `CUSTOM_ELEMENTS_SCHEMA`     | Agregar `schemas: [CUSTOM_ELEMENTS_SCHEMA]` en `@Component`                 |
+| `ExpressionChangedAfterItHasBeenCheckedError` | Cambio de estado en lifecycle hook | Usar `ChangeDetectorRef.detectChanges()` o mover lógica a `ngAfterViewInit` |
+| `NullInjectorError` en tests                  | Provider no configurado            | Agregar mock al array de `providers` en `TestBed.configureTestingModule()`  |
+| Componente standalone no importa dependencias | Angular 21 standalone pattern      | Agregar componentes/pipes/directivas a `imports: []` en `@Component`        |
+| Change detection no actualiza vista           | Componente usa `OnPush`            | Llamar `cdr.markForCheck()` después de cambios async                        |
 
-### Configuración
+### Ionic Gotchas
 
-```typescript
-// src/environments/environment.ts
-tidepool: {
-  baseUrl: 'https://api.tidepool.org',
-  authUrl: 'https://api.tidepool.org/auth',
-  clientId: 'diabetactic-mobile-dev',
-  redirectUri: 'diabetactic://oauth/callback',
-  scopes: 'profile:read',
-}
-```
+| Problema                                                 | Causa                   | Solución                                                                                       |
+| -------------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------- |
+| `ion-button` no tiene role="button"`                     | Ionic usa shadow DOM    | Usar `[attr.aria-label]` y test con `getByRole('button')` puede fallar - usar `data-testid`    |
+| Modal/popover no aplica estilos                          | CSS encapsulado         | Usar `::part()` selector o variables CSS `--background`, `--color`                             |
+| `ion-datetime` números desaparecen al scroll             | Bug de rendering        | Agregar `will-change: transform` y `backface-visibility: hidden`                               |
+| Forms con `ion-input` + `formControlName` fallan en test | Lifecycle timing        | No llamar `fixture.detectChanges()` inmediatamente, inicializar form en `ngOnInit()`           |
+| Dark mode no aplica                                      | Clases no sincronizadas | `ThemeService` debe agregar `.dark`, `.ion-palette-dark` Y `data-theme="dark"` simultáneamente |
 
-### URI de Redirección (Android)
+### Capacitor Gotchas
 
-```xml
-<!-- android/app/src/main/AndroidManifest.xml -->
-<intent-filter>
-  <action android:name="android.intent.action.VIEW" />
-  <category android:name="android.intent.category.DEFAULT" />
-  <category android:name="android.intent.category.BROWSABLE" />
-  <data android:scheme="diabetactic" android:host="oauth" android:path="/callback" />
-</intent-filter>
-```
+| Problema                                | Causa                      | Solución                                                         |
+| --------------------------------------- | -------------------------- | ---------------------------------------------------------------- |
+| Plugin no funciona en web               | API nativa                 | Verificar `Capacitor.isNativePlatform()` antes de llamar plugins |
+| `Preferences.get()` retorna `undefined` | Key no existe              | Siempre verificar `value !== null` antes de usar                 |
+| `Network.getStatus()` inconsistente     | Emulador vs real           | Usar mock en desarrollo, test en dispositivo real                |
+| Deep links no funcionan                 | AndroidManifest incompleto | Agregar `intent-filter` con scheme y host correctos              |
+| Splash screen se queda                  | `autoHide` habilitado      | Llamar `SplashScreen.hide()` manualmente después de init         |
 
-### Archivos Relacionados
+### IndexedDB / Dexie Gotchas
 
-- `src/app/core/services/tidepool-auth.service.ts` - Autenticación OAuth
-- `src/app/core/config/oauth.config.ts` - Configuración OAuth
-- `src/app/core/utils/pkce.utils.ts` - Utilidades PKCE
+| Problema                        | Causa                     | Solución                                                                  |
+| ------------------------------- | ------------------------- | ------------------------------------------------------------------------- |
+| `PrematureCommitError` en tests | Transaction auto-commit   | Usar `fake-indexeddb` v6+ y no mezclar `await` con callbacks              |
+| Datos de otro usuario aparecen  | Query sin filtro `userId` | Siempre filtrar por `userId` en queries de `ReadingsService`              |
+| `ConstraintError` en put        | Clave duplicada           | Verificar si registro existe antes de insertar, o usar `put()` con upsert |
+| Base de datos vacía en tests    | DB no inicializada        | Importar `test-setup.ts` que inicializa `fake-indexeddb`                  |
+| Migraciones no corren           | Version mismatch          | Incrementar `version` en `DiabetacticDatabase` al cambiar schema          |
+
+### Tailwind + DaisyUI Gotchas
+
+| Problema                   | Causa                    | Solución                                                                                 |
+| -------------------------- | ------------------------ | ---------------------------------------------------------------------------------------- |
+| Clases no aplican          | Purge eliminó la clase   | Agregar clase a `safelist` en `tailwind.config.js` o usar en template                    |
+| Conflicto Ionic/Tailwind   | Reset de estilos         | Usar `@aparajita/tailwind-ionic` para integración correcta                               |
+| Dark mode inconsistente    | Selector incorrecto      | DaisyUI usa `data-theme`, Tailwind usa `.dark` - sincronizar ambos                       |
+| Colores no cambian en dark | Variable CSS no definida | Definir variable en ambos `:root[data-theme='diabetactic']` y `:root[data-theme='dark']` |
+
+### Multi-Usuario Gotchas
+
+| Problema                           | Causa                             | Solución                                                                |
+| ---------------------------------- | --------------------------------- | ----------------------------------------------------------------------- |
+| Datos de usuario anterior aparecen | IndexedDB no filtra por userId    | `ReadingsService.setCurrentUser()` debe llamarse en login/restore       |
+| Datos huérfanos persisten          | Logout no limpia userId diferente | `clearOrphanedDataIfNeeded()` elimina datos de otros usuarios           |
+| `currentUserId$` es null           | No se llamó `setCurrentUser()`    | `LocalAuthService.initializeAuthState()` debe llamar `setCurrentUser()` |
+
+### Password Recovery Gotchas
+
+| Problema         | Causa                           | Solución                                        |
+| ---------------- | ------------------------------- | ----------------------------------------------- |
+| Email no llega   | Backend no configurado          | Verificar configuración SMTP en backend `login` |
+| Token expirado   | Más de 15 minutos               | Usuario debe solicitar nuevo token              |
+| Validación falla | Contraseña no cumple requisitos | Frontend debe validar antes de enviar           |
+
+### Testing Gotchas
+
+| Problema                            | Causa                               | Solución                                                   |
+| ----------------------------------- | ----------------------------------- | ---------------------------------------------------------- |
+| `fakeAsync` no funciona con `await` | Zone.js no trackea Promises nativas | Usar `tick()` o `await flushMicrotasks()`                  |
+| Screenshots E2E difieren en CI      | Fuentes y rendering diferente       | Usar `maxDiffPixelRatio: 0.1` o actualizar baselines en CI |
+| MSW handler no intercepta requests  | Orden de handlers incorrecto        | Handlers específicos primero, genéricos después            |
+| Router mock falla con `canActivate` | Falta `createUrlTree`               | Agregar: `createUrlTree: vi.fn(), serializeUrl: vi.fn()`   |
+
+### Medical/Algorithm Gotchas
+
+| Problema                                         | Causa                               | Solución                                               |
+| ------------------------------------------------ | ----------------------------------- | ------------------------------------------------------ |
+| Valores de glucosa categorizados incorrectamente | Conversión de unidades con redondeo | Comparar siempre en mg/dL, redondear solo para display |
+| Lecturas aparecen en día incorrecto              | Timezone handling inconsistente     | Almacenar ISO 8601, filtrar con timezone del usuario   |
+| eA1C muy diferente de A1C real                   | Pocos datos o factores individuales | Requerir mínimo 14 días, mostrar disclaimer            |

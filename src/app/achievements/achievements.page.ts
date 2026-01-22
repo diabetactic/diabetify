@@ -20,7 +20,7 @@ import {
   IonProgressBar,
   IonSpinner,
 } from '@ionic/angular/standalone';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 
 import { AchievementsService } from '@services/achievements.service';
@@ -66,7 +66,8 @@ export class AchievementsPage implements OnInit, OnDestroy {
   constructor(
     private achievementsService: AchievementsService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -172,5 +173,11 @@ export class AchievementsPage implements OnInit, OnDestroy {
 
   trackByAchievement(_index: number, achievement: Achievement): number {
     return achievement.ach_id;
+  }
+
+  getAchievementName(achievement: Achievement): string {
+    const key = `achievements.names.${achievement.ach_id}`;
+    const translated = this.translate.instant(key);
+    return translated !== key ? translated : achievement.name;
   }
 }

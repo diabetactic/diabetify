@@ -15,7 +15,9 @@
 
 import { Injectable, Optional, Inject, InjectionToken, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable, Subject, from } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { liveQuery } from 'dexie';
+import { AuthSessionService } from '@services/auth-session.service';
 import {
   LocalGlucoseReading,
   GlucoseReading,
@@ -65,6 +67,9 @@ export class ReadingsService implements OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private liveQuerySubscriptions: { unsubscribe: () => void }[] = [];
 
+  // User tracking for multi-user data isolation
+  private readonly currentUserId$ = new BehaviorSubject<string | null>(null);
+
   // Reactive observables
   private _readings$ = new BehaviorSubject<LocalGlucoseReading[]>([]);
   public readonly readings$ = this._readings$.asObservable();
@@ -82,6 +87,7 @@ export class ReadingsService implements OnDestroy {
     private mapper: ReadingsMapperService,
     private statistics: ReadingsStatisticsService,
     private syncService: ReadingsSyncService,
+    @Optional() private authSession?: AuthSessionService,
     @Optional() private database?: DiabetacticDatabase,
     @Optional() @Inject(LIVE_QUERY_FN) liveQueryFn?: typeof liveQuery,
     @Optional() private logger?: LoggerService
@@ -92,6 +98,15 @@ export class ReadingsService implements OnDestroy {
     if (this.db) {
       this.initializeObservables();
     }
+
+    this.authSession?.userId$.pipe(takeUntil(this.destroy$)).subscribe(userId => {
+      if (userId) {
+        this.currentUserId$.next(userId);
+        this.refreshReadingsForUser(userId);
+      } else {
+        this.currentUserId$.next(null);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -103,13 +118,60 @@ export class ReadingsService implements OnDestroy {
   }
 
   // ============================================================================
+  // User Management (Multi-User Data Isolation)
+  // ============================================================================
+
+  /**
+   * Set the current user for query filtering
+   * All subsequent queries will only return data for this user
+   */
+  setCurrentUser(userId: string): void {
+    this.currentUserId$.next(userId);
+    // Trigger a refresh since liveQuery doesn't react to currentUserId$ changes
+    this.refreshReadingsForUser(userId);
+  }
+
+  /**
+   * Manually refresh readings for a specific user
+   * Called when currentUserId$ changes since liveQuery only reacts to DB changes
+   */
+  private async refreshReadingsForUser(userId: string): Promise<void> {
+    try {
+      const readings = await this.db.readings.where('userId').equals(userId).toArray();
+      readings.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+      this._readings$.next(readings);
+    } catch (error) {
+      this.logger?.error('Readings', 'Failed to refresh readings for user', { userId, error });
+    }
+  }
+
+  /**
+   * Clear the current user (typically on logout)
+   * Queries will return no data until a new user is set
+   */
+  clearCurrentUser(): void {
+    this.currentUserId$.next(null);
+  }
+
+  // ============================================================================
   // Observable Initialization
   // ============================================================================
 
   private initializeObservables(): void {
-    const readingsSub = this.liveQueryFn(() =>
-      this.db.readings.orderBy('time').reverse().toArray()
-    ).subscribe(readings => this._readings$.next(readings));
+    const readingsSub = this.liveQueryFn(() => {
+      const userId = this.currentUserId$.getValue();
+      if (!userId) {
+        return Promise.resolve([] as LocalGlucoseReading[]);
+      }
+      return this.db.readings
+        .where('userId')
+        .equals(userId)
+        .toArray()
+        .then(readings => {
+          readings.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+          return readings;
+        });
+    }).subscribe(readings => this._readings$.next(readings));
     this.liveQuerySubscriptions.push(readingsSub);
 
     const syncQueueSub = this.liveQueryFn(() => this.db.syncQueue.count()).subscribe(count =>
@@ -131,9 +193,20 @@ export class ReadingsService implements OnDestroy {
    * Get all readings with optional pagination
    */
   async getAllReadings(limit?: number, offset = 0): Promise<PaginatedReadings> {
-    const total = await this.db.readings.count();
+    const userId = this.currentUserId$.getValue();
+    if (!userId) {
+      return {
+        readings: [],
+        total: 0,
+        hasMore: false,
+        offset,
+        limit: limit || 0,
+      };
+    }
 
-    let query = this.db.readings.orderBy('time').reverse();
+    const total = await this.db.readings.where('userId').equals(userId).count();
+
+    let query = this.db.readings.where('userId').equals(userId);
 
     if (offset > 0) {
       query = query.offset(offset);
@@ -144,6 +217,7 @@ export class ReadingsService implements OnDestroy {
     }
 
     const readings = await query.toArray();
+    readings.reverse();
 
     return {
       readings,
@@ -162,17 +236,23 @@ export class ReadingsService implements OnDestroy {
     endDate: Date,
     type?: GlucoseType
   ): Promise<LocalGlucoseReading[]> {
+    const userId = this.currentUserId$.getValue();
+    if (!userId) {
+      return [];
+    }
+
     const startTime = startDate.toISOString();
     const endTime = endDate.toISOString();
 
     const query = this.db.readings.where('time').between(startTime, endTime, true, true);
     const readings = await query.toArray();
+    const userReadings = readings.filter(r => r.userId === userId);
 
     if (type) {
-      return readings.filter(r => r.type === type);
+      return userReadings.filter(r => r.type === type);
     }
 
-    return readings;
+    return userReadings;
   }
 
   /**
@@ -184,23 +264,32 @@ export class ReadingsService implements OnDestroy {
 
   /**
    * Add a new reading
+   * Uses current user ID from session, or explicit userId parameter, or 'local-user' as fallback
    */
   async addReading(reading: CreateReadingInput, userId?: string): Promise<LocalGlucoseReading> {
     const existingId = (reading as Partial<GlucoseReading>).id;
     const uniqueId = existingId && existingId !== '' ? existingId : this.mapper.generateLocalId();
+
+    // Priority: explicit userId > currentUserId$ > 'local-user' fallback
+    const effectiveUserId = userId || this.currentUserId$.getValue() || 'local-user';
 
     const localReading: LocalGlucoseReading = {
       ...reading,
       id: uniqueId,
       localId: uniqueId,
       synced: false,
-      userId: userId || 'local-user',
+      userId: effectiveUserId,
       localStoredAt: new Date().toISOString(),
       isLocalOnly: !existingId || existingId === '' || uniqueId.startsWith('local_'),
       status: this.mapper.calculateGlucoseStatus(reading.value, reading.units),
     } as LocalGlucoseReading;
 
     await this.db.readings.add(localReading);
+
+    // Trigger refresh since liveQuery may not react in all environments (e.g., tests)
+    if (effectiveUserId) {
+      this.refreshReadingsForUser(effectiveUserId);
+    }
 
     if (!localReading.synced) {
       await this.syncService.addToSyncQueue('create', localReading);

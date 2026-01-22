@@ -37,15 +37,6 @@ export interface UserProfileSeed {
     backgroundColor?: string;
     category?: 'animals' | 'characters' | 'shapes' | 'custom';
   };
-  tidepoolConnection: {
-    connected: boolean;
-    userId?: string;
-    email?: string;
-    fullName?: string;
-    lastSyncTime?: string;
-    connectedAt?: string;
-    dataRetentionDays?: number;
-  };
   preferences: PreferencesSeed;
   createdAt: string;
   updatedAt: string;
@@ -96,18 +87,12 @@ export function createProfileSeed(overrides: Partial<UserProfileSeed> = {}): Use
     ...(overrides.preferences ?? {}),
   };
 
-  const mergedConnection: UserProfileSeed['tidepoolConnection'] = {
-    connected: false,
-    ...(overrides.tidepoolConnection ?? {}),
-  };
-
   const base: UserProfileSeed = {
     id: 'test-user',
     name: 'Test User',
     age: 12,
     accountState: 'active',
     dateOfBirth: '2012-02-20',
-    tidepoolConnection: mergedConnection,
     preferences: mergedPreferences,
     createdAt: now,
     updatedAt: now,
@@ -117,7 +102,6 @@ export function createProfileSeed(overrides: Partial<UserProfileSeed> = {}): Use
   return {
     ...base,
     ...overrides,
-    tidepoolConnection: mergedConnection,
     preferences: mergedPreferences,
   };
 }

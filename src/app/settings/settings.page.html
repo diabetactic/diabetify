@@ -95,7 +95,7 @@
             </ion-select>
           </ion-item>
 
-          <ion-item lines="none" class="bg-transparent">
+          <ion-item class="bg-transparent">
             <ion-label class="font-medium">{{
               'settings.sections.language' | translate
             }}</ion-label>
@@ -113,6 +113,22 @@
                 {{ 'settings.language.en' | translate }}
               </ion-select-option>
             </ion-select>
+          </ion-item>
+
+          <ion-item lines="none" class="bg-transparent">
+            <app-icon name="contrast-outline" slot="start" class="text-primary h-5 w-5"></app-icon>
+            <ion-label>
+              <h3 class="font-medium">{{ 'settings.appearance.highContrast' | translate }}</h3>
+              <p class="text-base-content/60 text-xs">
+                {{ 'settings.appearance.highContrastDesc' | translate }}
+              </p>
+            </ion-label>
+            <ion-toggle
+              [checked]="highContrastEnabled"
+              (ionChange)="onHighContrastToggle($event)"
+              slot="end"
+              [attr.aria-label]="'settings.appearance.highContrast' | translate"
+            ></ion-toggle>
           </ion-item>
         </ion-list>
       </ion-card>

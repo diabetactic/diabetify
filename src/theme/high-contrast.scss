@@ -1,0 +1,749 @@
+// High Contrast Theme (WCAG AAA)
+// Activates when .high-contrast class is present on html element
+// This file intentionally uses !important to ensure high contrast overrides work.
+// Whitespace and ordering rules are relaxed for accessibility documentation clarity.
+/* stylelint-disable declaration-no-important, scale-unlimited/declaration-strict-value */
+/* stylelint-disable custom-property-empty-line-before, declaration-empty-line-before, order/order */
+/* stylelint-disable selector-class-pattern, selector-max-compound-selectors, max-nesting-depth */
+
+html.high-contrast {
+  // --------------------------------------------------------------------------
+  // LIGHT MODE (Default) - Pure Black on White
+  // --------------------------------------------------------------------------
+
+  // Ionic System Colors
+  --ion-background-color: #fff;
+  --ion-text-color: #000;
+  --ion-toolbar-background: #fff;
+  --ion-toolbar-color: #000;
+
+  // Card Overrides
+  --ion-card-background: #fff;
+  --ion-card-color: #000;
+
+  // Item Overrides
+  --ion-item-background: #fff;
+  --ion-item-color: #000;
+  --ion-item-border-color: #000;
+
+  // 1. Primary (High Contrast Blue)
+  // Contrast vs White: 8.16:1 (AAA)
+  --ion-color-primary: #00e;
+  --ion-color-primary-rgb: 0, 0, 238;
+  --ion-color-primary-contrast: #fff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #00c;
+  --ion-color-primary-tint: #1a1aff;
+
+  // 2. Secondary (Black)
+  // Contrast vs White: 21:1 (AAA)
+  --ion-color-secondary: #000;
+  --ion-color-secondary-rgb: 0, 0, 0;
+  --ion-color-secondary-contrast: #fff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #000;
+  --ion-color-secondary-tint: #1a1a1a;
+
+  // 3. Success (Dark Green)
+  // Contrast vs White: 8.5:1 (AAA) - Standard green #008000 is 5.1:1 (Fail AAA)
+  --ion-color-success: #005a00;
+  --ion-color-success-rgb: 0, 90, 0;
+  --ion-color-success-contrast: #fff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #004d00;
+  --ion-color-success-tint: #1a6b1a;
+
+  // 4. Warning (Dark Brown/Ochre)
+  // Contrast vs White: 8.9:1 (AAA) - Yellow #FFFF00 fails miserably
+  --ion-color-warning: #594300;
+  --ion-color-warning-rgb: 89, 67, 0;
+  --ion-color-warning-contrast: #fff;
+  --ion-color-warning-contrast-rgb: 255, 255, 255;
+  --ion-color-warning-shade: #4d3a00;
+  --ion-color-warning-tint: #6a561a;
+
+  // 5. Danger (Dark Red)
+  // Contrast vs White: 7.5:1 (AAA) - Standard Red #FF0000 is 4:1 (Fail AAA)
+  --ion-color-danger: #a00000;
+  --ion-color-danger-rgb: 160, 0, 0;
+  --ion-color-danger-contrast: #fff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #8c0000;
+  --ion-color-danger-tint: #aa1a1a;
+
+  // Semantic App Colors
+  --dt-color-text-primary: #000;
+  --dt-color-text-secondary: #000;
+  --dt-color-text-muted: #1a1a1a;
+  --dt-color-border-subtle: #000;
+  --dt-color-border-input: #000;
+  --dt-color-link: #00e;
+  --dt-color-link-soft: #00e;
+  --dt-color-surface: #fff;
+  --dt-color-surface-soft: #fff;
+
+  // Glucose Status
+  --glucose-normal: #005a00;
+  --glucose-low: #594300;
+  --glucose-high: #a00000;
+  --glucose-critical: #800000;
+
+  // Borders & Visibility
+  --border-radius: 0; // Reduce soft edges
+  --ion-card-border-radius: 0;
+
+  // Tailwind/Theme overrides
+  --color-base-100: #fff;
+  --color-base-200: #fff;
+  --color-base-300: #e6e6e6;
+  --color-base-content: #000;
+
+  // Force visible borders on interactive elements
+  ion-button,
+  .btn {
+    --border-width: 2px !important;
+    --border-style: solid !important;
+    --border-color: #000 !important;
+    border: 2px solid #000 !important;
+
+    &[fill='clear'] {
+      text-decoration: underline;
+    }
+  }
+
+  ion-card,
+  .card {
+    border: 2px solid #000 !important;
+    box-shadow: none !important;
+    --box-shadow: none !important;
+  }
+
+  ion-item {
+    --border-width: 0 0 2px 0 !important;
+    --border-color: #000 !important;
+  }
+
+  ion-input,
+  ion-textarea,
+  ion-select {
+    border: 2px solid #000 !important;
+    --background: #fff !important;
+  }
+
+  // Enhanced focus states for WCAG AAA (3:1 contrast minimum)
+  *:focus-visible {
+    outline: 3px solid #000 !important;
+    outline-offset: 3px !important;
+  }
+
+  ion-button:focus-visible::part(native),
+  ion-input:focus-visible,
+  ion-select:focus-visible,
+  ion-toggle:focus-visible,
+  ion-checkbox:focus-visible,
+  ion-radio:focus-visible {
+    outline: 3px solid #000 !important;
+    outline-offset: 3px !important;
+    box-shadow: none !important;
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline: 3px solid #000 !important;
+    outline-offset: 3px !important;
+  }
+
+  // Non-color indicators for glucose status (WCAG 1.4.1)
+  .status-badge {
+    border-width: 2px !important;
+
+    &.normal::before {
+      content: '✓ ';
+    }
+
+    &.low::before {
+      content: '↓ ';
+    }
+
+    &.high::before {
+      content: '↑ ';
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // CUSTOM APP COMPONENTS - Light Mode High Contrast
+  // --------------------------------------------------------------------------
+
+  // Kill ALL gradient backgrounds - use solid colors instead
+  [class*='bg-gradient'],
+  [class*='from-'],
+  .bg-gradient-to-r,
+  .bg-gradient-to-l,
+  .bg-gradient-to-t,
+  .bg-gradient-to-b,
+  .bg-gradient-to-br,
+  .bg-gradient-to-bl,
+  .bg-gradient-to-tr,
+  .bg-gradient-to-tl {
+    background: #fff !important;
+    border: 3px solid #000 !important;
+  }
+
+  // Streak Card - remove gradient, add solid border
+  app-streak-card {
+    .card,
+    .card-body {
+      background: #fff !important;
+      border: 3px solid #000 !important;
+      color: #000 !important;
+    }
+
+    // Progress bar needs visible track
+    .progress {
+      border: 2px solid #000 !important;
+      background: #e6e6e6 !important;
+
+      &::-webkit-progress-bar {
+        background: #e6e6e6 !important;
+      }
+
+      &::-webkit-progress-value {
+        background: #000 !important;
+      }
+
+      &::-moz-progress-bar {
+        background: #000 !important;
+      }
+    }
+
+    // Stat boxes inside streak card
+    .bg-white\/20,
+    [class*='bg-white/'] {
+      background: #e6e6e6 !important;
+      border: 2px solid #000 !important;
+    }
+  }
+
+  // Stat Cards - override inline gradient styles
+  app-stat-card {
+    .stat {
+      background: #fff !important;
+      border: 3px solid #000 !important;
+      color: #000 !important;
+
+      // Override inline style attribute
+      &[style*='background'] {
+        background: #fff !important;
+      }
+    }
+
+    // Icon should be visible
+    app-icon,
+    ion-icon {
+      color: #000 !important;
+    }
+
+    // Value text
+    .stat-value,
+    .text-3xl,
+    .text-4xl {
+      color: #000 !important;
+    }
+  }
+
+  // Quick Actions Card
+  .quick-actions-card {
+    background: #fff !important;
+    border: 3px solid #000 !important;
+
+    // Header with gradient
+    [class*='bg-gradient'] {
+      background: #e6e6e6 !important;
+      border-bottom: 2px solid #000 !important;
+    }
+
+    // Action buttons
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-lg {
+      background: #fff !important;
+      border: 3px solid #000 !important;
+      color: #000 !important;
+      box-shadow: none !important;
+
+      &:hover {
+        background: #e6e6e6 !important;
+      }
+    }
+  }
+
+  // DaisyUI Cards
+  .card {
+    background: #fff !important;
+    border: 3px solid #000 !important;
+    box-shadow: none !important;
+
+    .card-body {
+      background: #fff !important;
+      color: #000 !important;
+    }
+  }
+
+  // Tab Bar
+  ion-tab-bar {
+    background: #fff !important;
+    border-top: 3px solid #000 !important;
+
+    ion-tab-button {
+      background: #fff !important;
+      color: #000 !important;
+      border-right: 1px solid #000 !important;
+
+      &.tab-selected {
+        background: #e6e6e6 !important;
+        border-bottom: 3px solid #000 !important;
+      }
+
+      ion-icon {
+        color: #000 !important;
+      }
+
+      ion-label {
+        color: #000 !important;
+      }
+    }
+  }
+
+  // Toolbar
+  ion-toolbar {
+    --background: #fff !important;
+    --color: #000 !important;
+    border-bottom: 3px solid #000 !important;
+  }
+
+  // FAB Button
+  ion-fab-button,
+  .fab-button {
+    --background: #fff !important;
+    --color: #000 !important;
+    border: 3px solid #000 !important;
+    box-shadow: none !important;
+  }
+
+  // Empty State
+  app-empty-state {
+    [class*='bg-gradient'],
+    [class*='from-'] {
+      background: #e6e6e6 !important;
+      border: 3px solid #000 !important;
+    }
+  }
+
+  // Reading Items
+  app-reading-item {
+    .card,
+    ion-item {
+      background: #fff !important;
+      border: 2px solid #000 !important;
+    }
+  }
+
+  // Appointment Cards
+  .appointment-card {
+    background: #fff !important;
+    border: 3px solid #000 !important;
+    box-shadow: none !important;
+  }
+}
+
+// --------------------------------------------------------------------------
+// DARK MODE - Pure White on Black
+// --------------------------------------------------------------------------
+html.high-contrast.dark,
+html.high-contrast[data-theme='dark'] {
+  --ion-background-color: #000;
+  --ion-text-color: #fff;
+  --ion-toolbar-background: #000;
+  --ion-toolbar-color: #fff;
+
+  --ion-card-background: #000;
+  --ion-card-color: #fff;
+
+  --ion-item-background: #000;
+  --ion-item-color: #fff;
+  --ion-item-border-color: #fff;
+
+  // 1. Primary (Yellow)
+  // Contrast vs Black: 19:1 (AAA)
+  --ion-color-primary: #ff0;
+  --ion-color-primary-rgb: 255, 255, 0;
+  --ion-color-primary-contrast: #000;
+  --ion-color-primary-contrast-rgb: 0, 0, 0;
+  --ion-color-primary-shade: #e6e600;
+  --ion-color-primary-tint: #ffff1a;
+
+  // 2. Secondary (White)
+  // Contrast vs Black: 21:1 (AAA)
+  --ion-color-secondary: #fff;
+  --ion-color-secondary-rgb: 255, 255, 255;
+  --ion-color-secondary-contrast: #000;
+  --ion-color-secondary-contrast-rgb: 0, 0, 0;
+  --ion-color-secondary-shade: #e6e6e6;
+  --ion-color-secondary-tint: #fff;
+
+  // 3. Success (Bright Green)
+  // Contrast vs Black: 15:1 (AAA)
+  --ion-color-success: #0f0;
+  --ion-color-success-rgb: 0, 255, 0;
+  --ion-color-success-contrast: #000;
+  --ion-color-success-contrast-rgb: 0, 0, 0;
+  --ion-color-success-shade: #00e600;
+  --ion-color-success-tint: #1aff1a;
+
+  // 4. Warning (Bright Yellow/Orange)
+  --ion-color-warning: #ff0;
+  --ion-color-warning-rgb: 255, 255, 0;
+  --ion-color-warning-contrast: #000;
+  --ion-color-warning-contrast-rgb: 0, 0, 0;
+  --ion-color-warning-shade: #e6e600;
+  --ion-color-warning-tint: #ffff1a;
+
+  // 5. Danger (Bright Pink/Red)
+  // Contrast vs Black: 10:1 (AAA)
+  --ion-color-danger: #ff8080;
+  --ion-color-danger-rgb: 255, 128, 128;
+  --ion-color-danger-contrast: #000;
+  --ion-color-danger-contrast-rgb: 0, 0, 0;
+  --ion-color-danger-shade: #e07070;
+  --ion-color-danger-tint: #ff8c8c;
+
+  // Semantic App Colors
+  --dt-color-text-primary: #fff;
+  --dt-color-text-secondary: #fff;
+  --dt-color-text-muted: #e6e6e6;
+  --dt-color-border-subtle: #fff;
+  --dt-color-border-input: #fff;
+  --dt-color-link: #ff0;
+  --dt-color-link-soft: #ff0;
+  --dt-color-surface: #000;
+  --dt-color-surface-soft: #000;
+
+  // Glucose Status
+  --glucose-normal: #0f0;
+  --glucose-low: #ff0;
+  --glucose-high: #ff8080;
+  --glucose-critical: #ff8080;
+
+  // Tailwind/Theme overrides
+  --color-base-100: #000;
+  --color-base-200: #000;
+  --color-base-300: #1a1a1a;
+  --color-base-content: #fff;
+
+  // Force visible borders
+  ion-button,
+  .btn {
+    --border-color: #fff !important;
+    border: 2px solid #fff !important;
+  }
+
+  ion-card,
+  .card {
+    border: 2px solid #fff !important;
+  }
+
+  ion-item {
+    --border-color: #fff !important;
+  }
+
+  ion-input,
+  ion-textarea,
+  ion-select {
+    border: 2px solid #fff !important;
+    --background: #000 !important;
+    color: #fff !important;
+  }
+
+  // Enhanced focus states for dark high contrast
+  *:focus-visible {
+    outline: 3px solid #ff0 !important;
+    outline-offset: 3px !important;
+  }
+
+  ion-button:focus-visible::part(native),
+  ion-input:focus-visible,
+  ion-select:focus-visible,
+  ion-toggle:focus-visible,
+  ion-checkbox:focus-visible,
+  ion-radio:focus-visible {
+    outline: 3px solid #ff0 !important;
+    outline-offset: 3px !important;
+    box-shadow: none !important;
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline: 3px solid #ff0 !important;
+    outline-offset: 3px !important;
+  }
+
+  // Non-color indicators for glucose status (WCAG 1.4.1)
+  .status-badge {
+    border-width: 2px !important;
+
+    &.normal::before {
+      content: '✓ ';
+    }
+
+    &.low::before {
+      content: '↓ ';
+    }
+
+    &.high::before {
+      content: '↑ ';
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // CUSTOM APP COMPONENTS - Dark Mode High Contrast
+  // --------------------------------------------------------------------------
+
+  // Kill ALL gradient backgrounds - use solid black with white borders
+  [class*='bg-gradient'],
+  [class*='from-'],
+  .bg-gradient-to-r,
+  .bg-gradient-to-l,
+  .bg-gradient-to-t,
+  .bg-gradient-to-b,
+  .bg-gradient-to-br,
+  .bg-gradient-to-bl,
+  .bg-gradient-to-tr,
+  .bg-gradient-to-tl {
+    background: #000 !important;
+    border: 3px solid #fff !important;
+  }
+
+  // Streak Card - pure black with white borders
+  app-streak-card {
+    .card,
+    .card-body {
+      background: #000 !important;
+      border: 3px solid #fff !important;
+      color: #fff !important;
+    }
+
+    // All text must be white
+    * {
+      color: #fff !important;
+    }
+
+    // Progress bar
+    .progress {
+      border: 2px solid #fff !important;
+      background: #1a1a1a !important;
+
+      &::-webkit-progress-bar {
+        background: #1a1a1a !important;
+      }
+
+      &::-webkit-progress-value {
+        background: #ff0 !important;
+      }
+
+      &::-moz-progress-bar {
+        background: #ff0 !important;
+      }
+    }
+
+    // Stat boxes inside streak card
+    .bg-white\/20,
+    [class*='bg-white/'] {
+      background: #1a1a1a !important;
+      border: 2px solid #fff !important;
+      color: #fff !important;
+    }
+  }
+
+  // Stat Cards - pure black with white borders
+  app-stat-card {
+    .stat {
+      background: #000 !important;
+      border: 3px solid #fff !important;
+      color: #fff !important;
+
+      // Override inline style attribute
+      &[style*='background'] {
+        background: #000 !important;
+      }
+
+      * {
+        color: #fff !important;
+      }
+    }
+
+    // Icon should be bright yellow
+    app-icon,
+    ion-icon {
+      color: #ff0 !important;
+    }
+  }
+
+  // Quick Actions Card
+  .quick-actions-card {
+    background: #000 !important;
+    border: 3px solid #fff !important;
+
+    // Header
+    [class*='bg-gradient'] {
+      background: #1a1a1a !important;
+      border-bottom: 2px solid #fff !important;
+      color: #fff !important;
+    }
+
+    // Action buttons - high visibility
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-lg {
+      background: #000 !important;
+      border: 3px solid #ff0 !important;
+      color: #ff0 !important;
+      box-shadow: none !important;
+
+      &:hover {
+        background: #1a1a1a !important;
+      }
+    }
+
+    // Sync status text
+    .sync-status,
+    ion-item {
+      color: #fff !important;
+    }
+  }
+
+  // DaisyUI Cards
+  .card {
+    background: #000 !important;
+    border: 3px solid #fff !important;
+    box-shadow: none !important;
+
+    .card-body {
+      background: #000 !important;
+      color: #fff !important;
+    }
+
+    * {
+      color: #fff !important;
+    }
+  }
+
+  // Tab Bar - high contrast
+  ion-tab-bar {
+    background: #000 !important;
+    border-top: 3px solid #fff !important;
+
+    ion-tab-button {
+      background: #000 !important;
+      color: #fff !important;
+      border-right: 1px solid #fff !important;
+
+      &.tab-selected {
+        background: #1a1a1a !important;
+        border-bottom: 3px solid #ff0 !important;
+      }
+
+      ion-icon {
+        color: #fff !important;
+      }
+
+      ion-label {
+        color: #fff !important;
+      }
+
+      &.tab-selected ion-icon,
+      &.tab-selected ion-label {
+        color: #ff0 !important;
+      }
+    }
+  }
+
+  // Toolbar
+  ion-toolbar {
+    --background: #000 !important;
+    --color: #fff !important;
+    border-bottom: 3px solid #fff !important;
+
+    ion-title {
+      color: #fff !important;
+    }
+
+    ion-button {
+      color: #fff !important;
+      border: 2px solid #fff !important;
+    }
+  }
+
+  // FAB Button - bright yellow accent
+  ion-fab-button,
+  .fab-button {
+    --background: #ff0 !important;
+    --color: #000 !important;
+    border: 3px solid #fff !important;
+    box-shadow: none !important;
+  }
+
+  // Empty State
+  app-empty-state {
+    [class*='bg-gradient'],
+    [class*='from-'] {
+      background: #1a1a1a !important;
+      border: 3px solid #fff !important;
+    }
+
+    * {
+      color: #fff !important;
+    }
+  }
+
+  // Reading Items
+  app-reading-item {
+    .card,
+    ion-item {
+      background: #000 !important;
+      border: 2px solid #fff !important;
+      color: #fff !important;
+    }
+  }
+
+  // Appointment Cards
+  .appointment-card {
+    background: #000 !important;
+    border: 3px solid #fff !important;
+    box-shadow: none !important;
+    color: #fff !important;
+  }
+
+  // Modal/Dialog backgrounds
+  ion-modal {
+    --ion-background-color: #000 !important;
+
+    ion-content {
+      --background: #000 !important;
+    }
+  }
+
+  // Inputs need visible borders
+  input,
+  textarea,
+  select {
+    background: #000 !important;
+    border: 2px solid #fff !important;
+    color: #fff !important;
+
+    &::placeholder {
+      color: #999 !important;
+    }
+  }
+}

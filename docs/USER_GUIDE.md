@@ -238,18 +238,6 @@ Personaliza tu experiencia en la aplicación en el menú de Configuración.
 - Objetivo alto: Nivel máximo objetivo de glucosa
 - Estos ayudan a calcular tu "tiempo en rango"
 
-### Integración con Tidepool
-
-Si tu equipo de salud usa Tidepool, puedes conectar tu cuenta:
-
-1. Ve a Perfil o Configuración
-2. Toca "Conectar con Tidepool"
-3. Inicia sesión con tus credenciales de Tidepool
-4. Tus datos se sincronizarán automáticamente
-
-**¿Qué es Tidepool?**
-Tidepool es un servicio que te permite compartir tus datos de diabetes con tu equipo de salud, familiares y otras aplicaciones de diabetes.
-
 ---
 
 ## Modo Infantil
@@ -308,7 +296,6 @@ Toca "Vista para Padres" o "Más Detalles" en el Panel para ver información té
 
 - Sincronizar datos con el hospital
 - Solicitar nuevas citas
-- Conectar con Tidepool
 - Obtener los últimos datos de tu equipo de salud
 
 ### Sincronizar tus Datos
@@ -331,12 +318,77 @@ Busca estos indicadores:
 
 ---
 
+## Recuperación de Contraseña
+
+Si olvidaste tu contraseña, puedes restablecerla fácilmente:
+
+### Pasos para Recuperar tu Contraseña
+
+1. **Abre la aplicación** y toca "Iniciar Sesión"
+2. **Toca "¿Olvidaste tu contraseña?"** debajo del botón de inicio de sesión
+3. **Ingresa tu DNI** - el mismo que usaste al registrarte
+4. **Revisa tu correo electrónico** - recibirás un código de 6 dígitos
+5. **Ingresa el código** en la aplicación
+6. **Crea una nueva contraseña** que tenga al menos 8 caracteres
+
+### Consejos Importantes
+
+- El código de verificación expira en **15 minutos**
+- Si no recibes el correo, revisa tu carpeta de **spam/correo no deseado**
+- Si cambiaste de correo electrónico, contacta al equipo de diabetes del hospital
+- Puedes solicitar un nuevo código tocando "Reenviar código"
+
+### ¿Problemas con la Recuperación?
+
+Si tienes problemas para recuperar tu contraseña:
+
+- Verifica que estés usando el DNI correcto
+- Asegúrate de tener acceso al correo electrónico registrado
+- Contacta al equipo de diabetes de tu hospital si necesitas actualizar tu correo
+
+---
+
+## Consideraciones Multi-Usuario
+
+Si compartes el dispositivo con otro usuario de Diabetactic:
+
+### Cerrar Sesión Correctamente
+
+Es importante **cerrar sesión completamente** antes de que otro usuario inicie sesión:
+
+1. Ve a **Perfil** en la barra de navegación inferior
+2. Desplázate hacia abajo y toca **"Cerrar Sesión"**
+3. Confirma que deseas salir
+4. El nuevo usuario puede iniciar sesión con sus credenciales
+
+### ¿Por Qué es Importante?
+
+- Tus datos de glucosa se guardan localmente en el dispositivo
+- Cerrar sesión correctamente asegura que el próximo usuario no vea tus datos
+- La aplicación limpia automáticamente los datos del usuario anterior al detectar un cambio de cuenta
+
+### Privacidad de Datos
+
+- Cada usuario solo puede ver **sus propias lecturas**
+- Los datos se filtran automáticamente por cuenta de usuario
+- Si notas datos que no son tuyos, cierra sesión e inicia sesión nuevamente
+
+---
+
 ## Obtener Ayuda
 
 ### Preguntas Frecuentes
 
 **P: Olvidé mi contraseña. ¿Qué hago?**
-R: Contacta al equipo de diabetes de tu hospital. Ellos manejan todas las cuentas y pueden restablecer tu contraseña.
+R: Puedes recuperar tu contraseña directamente desde la aplicación:
+
+1. Toca "¿Olvidaste tu contraseña?" en la pantalla de inicio de sesión
+2. Ingresa tu DNI registrado
+3. Recibirás un código de verificación en tu correo electrónico
+4. Ingresa el código y crea una nueva contraseña
+5. La nueva contraseña debe tener al menos 8 caracteres
+
+Si no recibes el correo en 5 minutos, revisa tu carpeta de spam. Si el problema persiste, contacta al equipo de diabetes de tu hospital.
 
 **P: Mis lecturas no se sincronizan. ¿Qué pasa?**
 R:
@@ -350,7 +402,7 @@ R:
 R: ¡Sí! Aunque la aplicación está diseñada para niños de 6-14 años, personas de cualquier edad con diabetes pueden usarla. La "Vista para Padres" tiene información más detallada para adultos.
 
 **P: ¿Mis datos serán compartidos con alguien?**
-R: Tus datos solo se comparten con tu equipo de salud en el hospital. Si te conectas a Tidepool, tú controlas quién ve tus datos de Tidepool.
+R: Tus datos solo se comparten con tu equipo de salud en el hospital.
 
 **P: ¿Qué pasa si quiero eliminar una lectura?**
 R: Actualmente, puedes ver y agregar lecturas. Para eliminar una lectura, por favor contacta a tu equipo de salud.
@@ -454,8 +506,8 @@ adb logcat | grep -i chromium
 
 ---
 
-**Versión de la App:** 0.0.1
-**Última Actualización:** Diciembre 2025
+**Versión de la App:** 1.0.0
+**Última Actualización:** Enero 2026
 **Tecnología**: Construida con Ionic 8, Angular 21, Capacitor 8 y Tailwind CSS
 
 _Diabetactic es una herramienta complementaria para el manejo de la diabetes. Siempre sigue los consejos médicos de tu proveedor de salud._

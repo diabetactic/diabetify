@@ -7,9 +7,11 @@ import { Network } from '@capacitor/network';
 import { PlatformDetectorService } from '@services/platform-detector.service';
 import { LoggerService } from '@services/logger.service';
 import { TokenService } from '@services/token.service';
+import { AuthSessionService } from '@services/auth-session.service';
 
 import { MockAdapterService } from '@services/mock-adapter.service';
 import { EnvironmentConfigService } from '@core/config/environment-config.service';
+import { ApiGatewayService } from '@services/api-gateway.service';
 import { API_GATEWAY_BASE_URL } from '@shared/config/api-base-url';
 import { safeJsonParse, isLocalUser } from '../utils/type-guards';
 import { AccountState } from '../models/user-profile.model';
@@ -132,7 +134,9 @@ export class LocalAuthService {
     private logger: LoggerService,
     private mockAdapter: MockAdapterService,
     private tokenService: TokenService,
-    private envConfig: EnvironmentConfigService
+    private envConfig: EnvironmentConfigService,
+    private authSession: AuthSessionService,
+    private apiGateway: ApiGatewayService
   ) {
     this.logger.info('Init', 'LocalAuthService initialized');
     // Set base URL for API calls
@@ -189,6 +193,8 @@ export class LocalAuthService {
             refreshToken: tokenState.refreshToken,
             expiresAt: tokenState.expiresAt,
           });
+          this.authSession.setUser(user.id);
+          await this.clearOrphanedDataIfNeeded(user.id);
         } else if (hasRefreshToken) {
           // Check network status before attempting refresh
           const status = await Network.getStatus();
@@ -209,6 +215,8 @@ export class LocalAuthService {
               refreshToken: tokenState.refreshToken,
               expiresAt: tokenState.expiresAt,
             });
+            this.authSession.setUser(user.id);
+            await this.clearOrphanedDataIfNeeded(user.id);
             return;
           }
 
@@ -471,6 +479,8 @@ export class LocalAuthService {
     const user = this.authStateSubject.value.user;
     this.logger.info('Auth', 'Logout initiated', { userId: user?.id });
 
+    this.authSession.clearUser();
+
     // Clear local state
     this.authStateSubject.next({
       isAuthenticated: false,
@@ -491,7 +501,11 @@ export class LocalAuthService {
     const { db } = await import('./database.service');
     await db.clearAllData();
 
-    this.logger.info('Auth', 'Logout completed - all data cleared from secure storage', {
+    // SECURITY: Clear API response cache to prevent data leakage between users
+    // This ensures cached responses from the previous user are not shown to the next user
+    this.apiGateway.clearCache();
+
+    this.logger.info('Auth', 'Logout completed - all data cleared from secure storage and cache', {
       userId: user?.id,
     });
   }
@@ -621,22 +635,57 @@ export class LocalAuthService {
     );
   }
 
-  /**
-   * Request password reset
-   */
-  requestPasswordReset(_email: string): Observable<{ message: string }> {
-    return throwError(
-      () => new Error('Password reset is not supported by the current authentication backend.')
-    );
+  requestPasswordReset(email: string): Observable<{ message: string }> {
+    const isAuthMockEnabled = this.mockAdapter.isServiceMockEnabled('auth');
+
+    if (isAuthMockEnabled) {
+      this.logger.info('Auth', 'Mock mode - simulating password reset request', { email });
+      return of({ message: 'Mail should be received anytime' });
+    }
+
+    this.logger.info('Auth', 'Requesting password reset', { email });
+
+    return this.http
+      .post<{ message: string } | string>(`${this.baseUrl}/forgot-password`, { email })
+      .pipe(
+        map(response => {
+          if (typeof response === 'string') {
+            return { message: response };
+          }
+          return response;
+        }),
+        tap(() => this.logger.info('Auth', 'Password reset request sent successfully')),
+        catchError(error => {
+          this.logger.error('Auth', 'Password reset request failed', error);
+          return of({ message: 'Mail should be received anytime' });
+        })
+      );
   }
 
-  /**
-   * Reset password with token
-   */
-  resetPassword(_token: string, _newPassword: string): Observable<{ message: string }> {
-    return throwError(
-      () => new Error('Password reset is not supported by the current authentication backend.')
-    );
+  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
+    const isAuthMockEnabled = this.mockAdapter.isServiceMockEnabled('auth');
+
+    if (isAuthMockEnabled) {
+      this.logger.info('Auth', 'Mock mode - simulating password reset');
+      return of({ message: 'Password reset successfully' });
+    }
+
+    this.logger.info('Auth', 'Resetting password with token');
+
+    return this.http
+      .post<{ status: string; message: string }>(`${this.baseUrl}/reset-password`, {
+        token,
+        new_password: newPassword,
+      })
+      .pipe(
+        map(response => ({ message: response.message })),
+        tap(() => this.logger.info('Auth', 'Password reset successfully')),
+        catchError(error => {
+          this.logger.error('Auth', 'Password reset failed', error);
+          const errorMessage = error?.error?.detail || error?.message || 'Failed to reset password';
+          return throwError(() => new Error(errorMessage));
+        })
+      );
   }
 
   /**
@@ -687,6 +736,9 @@ export class LocalAuthService {
       refreshToken: response.refresh_token,
       expiresAt,
     });
+
+    this.authSession.setUser(response.user.id);
+    await this.clearOrphanedDataIfNeeded(response.user.id);
 
     await Promise.all([
       this.tokenService.setTokens(response.access_token, response.refresh_token, expiresInSeconds),
@@ -805,6 +857,21 @@ export class LocalAuthService {
     };
   }
 
+  private async clearOrphanedDataIfNeeded(currentUserId: string): Promise<void> {
+    const { db } = await import('./database.service');
+
+    const orphanedReadings = await db.readings.where('userId').notEqual(currentUserId).count();
+
+    if (orphanedReadings > 0) {
+      this.logger.warn('Auth', 'Clearing orphaned data from previous user', {
+        count: orphanedReadings,
+      });
+      await db.readings.where('userId').notEqual(currentUserId).delete();
+      await db.appointments.where('userId').notEqual(currentUserId).delete();
+      await db.syncQueue.clear();
+    }
+  }
+
   /**
    * Extract error message from various error formats
    */
@@ -910,7 +977,6 @@ interface GatewayUserResponse {
   surname: string;
   blocked: boolean;
   email: string;
-  tidepool?: string | null;
   hospital_account: string;
   times_measured: number;
   streak: number;

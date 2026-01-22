@@ -137,29 +137,20 @@ export class ServiceOrchestrator implements OnDestroy {
     const steps: WorkflowStep[] = [
       {
         name: 'Check Network Connectivity',
-        service: ExternalService.TIDEPOOL,
+        service: ExternalService.GLUCOSERVER,
         action: () => this.checkNetworkConnectivity(),
         retryable: true,
         critical: true,
       },
       {
         name: 'Verify Authentication',
-        service: ExternalService.TIDEPOOL,
+        service: ExternalService.GLUCOSERVER,
         action: () => this.verifyAuthentication(),
         retryable: true,
         critical: true,
       },
       {
-        name: 'Sync Tidepool Data',
-        service: ExternalService.TIDEPOOL,
-        action: () => this.syncTidepoolData(),
-        compensate: () => this.rollbackTidepoolSync(),
-        retryable: true,
-        critical: false,
-        timeout: 60000,
-      },
-      {
-        name: 'Sync Local Server Data',
+        name: 'Sync Server Data',
         service: ExternalService.GLUCOSERVER,
         action: () => this.syncLocalServerData(),
         compensate: () => this.rollbackLocalServerSync(),
@@ -194,22 +185,15 @@ export class ServiceOrchestrator implements OnDestroy {
 
     const steps: WorkflowStep[] = [
       {
-        name: 'Authenticate with Tidepool',
-        service: ExternalService.TIDEPOOL,
-        action: () => this.authenticateTidepool(),
-        retryable: false,
-        critical: true,
-      },
-      {
         name: 'Authenticate with Local Server',
         service: ExternalService.LOCAL_AUTH,
         action: () => this.authenticateLocal(),
         retryable: false,
-        critical: false,
+        critical: true,
       },
       {
         name: 'Initial Data Sync',
-        service: ExternalService.TIDEPOOL,
+        service: ExternalService.GLUCOSERVER,
         action: () => this.performInitialSync(),
         retryable: true,
         critical: false,
@@ -287,7 +271,7 @@ export class ServiceOrchestrator implements OnDestroy {
     const steps: WorkflowStep[] = [
       {
         name: 'Sync Latest Data',
-        service: ExternalService.TIDEPOOL,
+        service: ExternalService.GLUCOSERVER,
         action: () => this.syncLatestData(),
         retryable: true,
         critical: false,
@@ -329,21 +313,6 @@ export class ServiceOrchestrator implements OnDestroy {
         name: 'Verify Local Authentication',
         service: ExternalService.LOCAL_AUTH,
         action: () => this.verifyLocalAuth(),
-        retryable: false,
-        critical: true,
-      },
-      {
-        name: 'Authenticate with Tidepool',
-        service: ExternalService.TIDEPOOL,
-        action: () => this.authenticateTidepool(),
-        retryable: false,
-        critical: true,
-      },
-      {
-        name: 'Link Accounts',
-        service: ExternalService.LOCAL_AUTH,
-        action: () => this.linkAccounts(),
-        compensate: () => this.unlinkAccounts(),
         retryable: false,
         critical: true,
       },
@@ -595,33 +564,9 @@ export class ServiceOrchestrator implements OnDestroy {
     return true;
   }
 
-  private async authenticateTidepool(): Promise<void> {
-    await firstValueFrom(this.unifiedAuth.loginTidepool());
-  }
-
   private async authenticateLocal(): Promise<void> {
     // This would need credentials, so it's just a placeholder
     throw new Error('Local authentication requires credentials');
-  }
-
-  private async syncTidepoolData(): Promise<unknown> {
-    // Tidepool is auth-only now, no data sync needed
-    // Backend sync is handled by syncLocalServerData
-    return Promise.resolve({ skipped: true, reason: 'auth-only' });
-  }
-
-  private async rollbackTidepoolSync(): Promise<void> {
-    // Mark recently synced data as unsynced
-    const recentData = await db.readings
-      .where('synced')
-      .equals(1)
-      .and(reading => {
-        const syncTime = new Date(reading.localStoredAt || 0).getTime();
-        return Date.now() - syncTime < 300000; // Last 5 minutes
-      })
-      .toArray();
-
-    await db.readings.bulkPut(recentData.map(r => ({ ...r, synced: false })));
   }
 
   private async syncLocalServerData(): Promise<unknown> {
@@ -658,7 +603,6 @@ export class ServiceOrchestrator implements OnDestroy {
   }
 
   private async performInitialSync(): Promise<unknown> {
-    // Tidepool is auth-only now, use backend sync
     return await this.readings.performFullSync();
   }
 
@@ -701,7 +645,6 @@ export class ServiceOrchestrator implements OnDestroy {
   }
 
   private async syncLatestData(): Promise<unknown> {
-    // Tidepool is auth-only now, use backend sync
     return await this.readings.performFullSync();
   }
 
@@ -723,14 +666,6 @@ export class ServiceOrchestrator implements OnDestroy {
     // Generate export using readings service
     const readings = await this.readings.getAllReadings();
     return { format, count: readings.total };
-  }
-
-  private async linkAccounts(): Promise<void> {
-    await firstValueFrom(this.unifiedAuth.linkTidepoolAccount());
-  }
-
-  private async unlinkAccounts(): Promise<void> {
-    await this.unifiedAuth.unlinkTidepoolAccount();
   }
 
   private async mergeAccountData(): Promise<unknown> {

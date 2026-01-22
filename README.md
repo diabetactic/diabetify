@@ -1,10 +1,10 @@
 # Diabetify
 
-Aplicación móvil desarrollada con Ionic/Angular para la gestión de lecturas de glucosa en pacientes diabéticos. Integración con Tidepool para autenticación de usuarios.
+Aplicación móvil desarrollada con Ionic/Angular para la gestión de lecturas de glucosa en pacientes diabéticos.
 
 ## Descripción del Proyecto
 
-Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar el seguimiento y control de niveles de glucosa en sangre. El sistema permite a los usuarios registrar sus lecturas, visualizar tendencias históricas y gestionar citas médicas. Los datos se almacenan en el backend de Diabetactic, con autenticación opcional vía Tidepool.
+Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar el seguimiento y control de niveles de glucosa en sangre. El sistema permite a los usuarios registrar sus lecturas, visualizar tendencias históricas y gestionar citas médicas. Los datos se almacenan en el backend de Diabetactic.
 
 ### Características Principales
 
@@ -13,7 +13,7 @@ Diabetactic es una aplicación móvil multiplataforma diseñada para facilitar e
 - Gestión de citas médicas
 - Soporte offline con sincronización automática
 - Interfaz bilingüe (Español/Inglés)
-- Temas claro y oscuro
+- Temas claro, oscuro y modo alto contraste (accesibilidad)
 
 ## Stack Tecnológico
 

@@ -113,6 +113,7 @@ export class AppIconComponent {
     copy: 'copy',
     'document-text-outline': 'file-text',
     'document-text': 'file-text',
+    description: 'file-text', // Material Symbols description icon
     'shield-checkmark-outline': 'shield-check',
     'shield-checkmark': 'shield-check',
     'contrast-outline': 'contrast',

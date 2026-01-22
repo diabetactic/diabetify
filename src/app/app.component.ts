@@ -4,6 +4,7 @@ import {
   OnDestroy,
   ChangeDetectionStrategy,
   CUSTOM_ELEMENTS_SCHEMA,
+  NgZone,
 } from '@angular/core';
 import { Router, NavigationStart } from '@angular/router';
 import { Platform } from '@ionic/angular';
@@ -13,6 +14,7 @@ import { LocalAuthService } from './core/services/local-auth.service';
 import { SessionTimeoutService } from './core/services/session-timeout.service';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
+import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { EnvironmentConfigService } from '@core/config/environment-config.service';
 
 import { TranslateModule } from '@ngx-translate/core';
@@ -43,7 +45,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private readingsService: ReadingsService,
     private demoDataService: DemoDataService,
     private envConfig: EnvironmentConfigService,
-    private router: Router
+    private router: Router,
+    private ngZone: NgZone
   ) {
     this.logger.info('Init', 'AppComponent initialized');
     this.initializeApp();
@@ -54,6 +57,23 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.configureWebDeviceFrame();
+
+    // Deep link handler
+    if (this.platform.is('capacitor')) {
+      App.addListener('appUrlOpen', (data: URLOpenListenerEvent) => {
+        this.ngZone.run(() => {
+          const url = new URL(data.url);
+          // Handle reset-password deep link
+          // Format: diabetify://reset-password?token=... or https://.../reset-password?token=...
+          if (url.host === 'reset-password' || url.pathname.includes('reset-password')) {
+            const token = url.searchParams.get('token');
+            if (token) {
+              this.router.navigate(['/reset-password'], { queryParams: { token } });
+            }
+          }
+        });
+      });
+    }
 
     // Log navigation events to trace ghost navigation
     this.router.events

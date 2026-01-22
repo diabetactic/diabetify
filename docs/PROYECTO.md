@@ -15,7 +15,6 @@ Los sistemas existentes presentan las siguientes limitaciones:
 1. **Conectividad**: Requieren conexión permanente a internet, problemático en zonas con conectividad limitada
 2. **Idioma**: Mayoría en inglés, sin soporte adecuado para español
 3. **Complejidad**: Interfaces diseñadas para adultos, no adaptadas a pacientes pediátricos
-4. **Integración**: No se integran con sistemas de glucómetros continuos como Tidepool
 
 ---
 
@@ -29,9 +28,8 @@ Desarrollar una aplicación móvil que permita a pacientes pediátricos con diab
 
 1. Implementar registro de lecturas de glucosa con funcionamiento offline
 2. Desarrollar sistema de gestión de citas médicas con notificaciones
-3. Integrar autenticación con Tidepool para acceso a datos de glucómetros continuos
-4. Soportar múltiples idiomas (español e inglés)
-5. Diseñar interfaz accesible para distintos grupos etarios
+3. Soportar múltiples idiomas (español e inglés)
+4. Diseñar interfaz accesible para distintos grupos etarios
 
 ---
 
@@ -41,7 +39,6 @@ Desarrollar una aplicación móvil que permita a pacientes pediátricos con diab
 
 - Registro manual de lecturas de glucosa (SMBG)
 - Gestión de citas médicas con recordatorios
-- Autenticación mediante Tidepool OAuth
 - Sincronización de datos con backend cuando hay conectividad
 - Soporte para Android y navegadores web
 - Interfaz en español e inglés
@@ -79,9 +76,8 @@ Desarrollar una aplicación móvil que permita a pacientes pediátricos con diab
 | RF04 | Sincronización automática al recuperar conectividad         | Alta      |
 | RF05 | Gestión de citas médicas                                    | Media     |
 | RF06 | Notificaciones de recordatorio                              | Media     |
-| RF07 | Autenticación mediante Tidepool                             | Media     |
-| RF08 | Cambio de idioma (ES/EN)                                    | Baja      |
-| RF09 | Tema claro/oscuro                                           | Baja      |
+| RF07 | Cambio de idioma (ES/EN)                                    | Baja      |
+| RF08 | Tema claro/oscuro                                           | Baja      |
 
 ---
 
@@ -111,13 +107,12 @@ El desarrollo siguió una metodología iterativa con las siguientes etapas:
 
 ## 8. Cronograma
 
-| Fase                 | Duración  | Entregables                          |
-| -------------------- | --------- | ------------------------------------ |
-| Análisis y diseño    | 4 semanas | Documento de requerimientos, mockups |
-| Desarrollo core      | 8 semanas | Módulos de lecturas y citas          |
-| Integración Tidepool | 3 semanas | Autenticación OAuth                  |
-| Testing y ajustes    | 3 semanas | Informe de pruebas                   |
-| Documentación        | 2 semanas | Documentación técnica y de usuario   |
+| Fase              | Duración  | Entregables                          |
+| ----------------- | --------- | ------------------------------------ |
+| Análisis y diseño | 4 semanas | Documento de requerimientos, mockups |
+| Desarrollo core   | 8 semanas | Módulos de lecturas y citas          |
+| Testing y ajustes | 3 semanas | Informe de pruebas                   |
+| Documentación     | 2 semanas | Documentación técnica y de usuario   |
 
 ---
 
@@ -125,7 +120,6 @@ El desarrollo siguió una metodología iterativa con las siguientes etapas:
 
 | Riesgo                            | Probabilidad | Impacto | Mitigación                                      |
 | --------------------------------- | ------------ | ------- | ----------------------------------------------- |
-| Cambios en API de Tidepool        | Media        | Alto    | Capa de abstracción, monitoreo de cambios       |
 | Problemas de rendimiento offline  | Baja         | Alto    | IndexedDB optimizado, límites de almacenamiento |
 | Incompatibilidad con dispositivos | Media        | Medio   | Testing en múltiples dispositivos               |
 
@@ -134,3 +128,5 @@ El desarrollo siguió una metodología iterativa con las siguientes etapas:
 ## 10. Conclusiones
 
 El proyecto Diabetactic aborda una necesidad real del Hospital Garrahan, proporcionando una herramienta adaptada a pacientes pediátricos con diabetes. La arquitectura offline-first y el soporte bilingüe lo diferencian de soluciones genéricas existentes.
+
+Las lecciones aprendidas están documentadas en [ARCHITECTURE.md](./ARCHITECTURE.md#common-gotchas), sirviendo como referencia para futuros desarrolladores y mantenedores del proyecto.

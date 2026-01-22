@@ -42,20 +42,6 @@ export const environment = {
   production: false,
   backendMode: DEV_BACKEND_MODE as BackendMode,
 
-  // Tidepool API Configuration
-  tidepool: {
-    baseUrl: 'https://api.tidepool.org',
-    authUrl: 'https://api.tidepool.org/auth',
-    dataUrl: 'https://api.tidepool.org/data',
-    uploadUrl: 'https://api.tidepool.org/data',
-    clientId: 'diabetactic-mobile-dev',
-    redirectUri: 'diabetactic://oauth/callback',
-    scopes: 'data:read data:write profile:read',
-    requestTimeout: 30000,
-    maxRetries: 3,
-    retryDelay: 1000,
-  },
-
   logging: {
     enableConsole: true,
     enableApiLogging: true,
@@ -90,8 +76,6 @@ export const environment = {
     analyticsEnabled: false,
     crashReporting: false,
     useLocalBackend: (DEV_BACKEND_MODE as BackendMode) === 'local',
-    useTidepoolIntegration: (DEV_BACKEND_MODE as BackendMode) === 'cloud',
-    useTidepoolMock: (DEV_BACKEND_MODE as BackendMode) === 'mock',
     devTools: true,
     showEnvBadge: false, // Show CLOUD/LOCAL/MOCK badge (set true for debugging)
     showStatusBadges: false, // Show floating demo badges (env/sync/network)

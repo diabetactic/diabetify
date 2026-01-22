@@ -97,7 +97,7 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
     return (
       normalized.endsWith('/token') ||
       normalized.endsWith('/token/revoke') ||
-      // Tidepool / OAuth token endpoints should also be excluded
+      // OAuth token endpoints should also be excluded
       normalized.includes('/protocol/openid-connect/token')
     );
   }

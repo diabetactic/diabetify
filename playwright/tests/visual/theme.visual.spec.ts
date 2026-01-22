@@ -127,21 +127,23 @@ test.describe('Visual Regression - Dark Theme @visual @docker', () => {
   });
 
   test('readings - dark theme', async ({ page, pages }) => {
+    await page.goto('/tabs/dashboard');
+    await pages.dashboardPage.waitForHydration();
+    await page.waitForSelector('[data-testid="stats-container"]', {
+      state: 'visible',
+      timeout: 30000,
+    });
+
     await page.goto('/tabs/readings');
     await pages.readingsPage.waitForHydration();
+    await page.waitForSelector('app-reading-item', {
+      state: 'visible',
+      timeout: 15000,
+    });
     await setTheme(page, 'dark');
     await prepareForScreenshot(page);
 
-    const dynamicElements = [
-      page.locator('[data-testid="readings-list"]'),
-      page.locator('[data-testid="readings-empty"]'),
-      page.locator('app-readings-stats'),
-    ];
-
-    await expect(page).toHaveScreenshot('readings-dark.png', {
-      ...permissiveOptionsForDynamicContent,
-      mask: dynamicElements,
-    });
+    await expect(page).toHaveScreenshot('readings-dark.png', screenshotOptions);
   });
 
   test('profile - dark theme', async ({ page, pages }) => {

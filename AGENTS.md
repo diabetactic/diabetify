@@ -98,12 +98,18 @@ import { environment } from '@env/environment';
 
 | Forbidden                        | Why                   | Correct                                |
 | -------------------------------- | --------------------- | -------------------------------------- |
-| `HttpClient` injection           | Bypasses caching/auth | Use `ApiGatewayService.request()`      |
+| `HttpClient` injection\*         | Bypasses caching/auth | Use `ApiGatewayService.request()`      |
 | `as any`, `@ts-ignore`           | Hides bugs            | Fix types properly                     |
 | Hardcoded credentials            | Security risk         | Use `playwright/config/test-config.ts` |
 | Inline `style=` in templates     | Breaks theming        | Use Tailwind classes                   |
 | Missing `CUSTOM_ELEMENTS_SCHEMA` | Ionic fails           | Add to all components                  |
 | Assuming backend behavior        | Causes bugs           | **Verify in backend repos first**      |
+
+\*HttpClient exceptions (these 3 services MAY use HttpClient directly):
+
+- `ApiGatewayService` - IS the HTTP abstraction layer
+- `LocalAuthService` - Auth token refresh, login (uses Capacitor auto-patching)
+- `ExternalServicesManager` - Health checks with circuit breakers
 
 ## Key Files
 

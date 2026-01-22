@@ -421,15 +421,18 @@
                 rel="noopener noreferrer"
               >
                 <i data-lucide="download" class="h-5 w-5"></i>
-                <span>Descargar APK (Última versión)</span>
+                <span>Descargar APK</span>
               </a>
-              <span
-                class="inline-flex cursor-not-allowed items-center justify-center space-x-2 rounded-2xl bg-white px-8 py-4 font-semibold text-gray-800 opacity-70 shadow-lg dark:bg-slate-800 dark:text-white"
-                title="No disponible"
+              <a
+                href="https://diabetactic-app.herokuapp.com"
+                class="inline-flex items-center justify-center space-x-2 rounded-2xl bg-white px-8 py-4 font-semibold text-gray-800 shadow-lg transition-all hover:-translate-y-1 hover:bg-gray-50 hover:shadow-xl dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Probar la demo web en Heroku"
               >
-                <i data-lucide="globe" class="h-5 w-5"></i>
-                <span>Versión Web</span>
-              </span>
+                <i data-lucide="play-circle" class="h-5 w-5"></i>
+                <span>Probar Demo Web</span>
+              </a>
               <!-- Play Store Coming Soon -->
               <span
                 class="inline-flex cursor-not-allowed items-center justify-center space-x-3 rounded-2xl bg-slate-800 px-6 py-4 text-white opacity-75 dark:bg-slate-700"
@@ -463,6 +466,10 @@
                   class="text-primary-600 dark:text-primary-400 h-5 w-5"
                 ></i>
                 <span class="text-sm text-gray-600 dark:text-gray-400">Funcionalidad offline</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <i data-lucide="eye" class="text-primary-600 dark:text-primary-400 h-5 w-5"></i>
+                <span class="text-sm text-gray-600 dark:text-gray-400">Modo alto contraste</span>
               </div>
               <div class="flex items-center space-x-2">
                 <i data-lucide="code-2" class="text-primary-600 dark:text-primary-400 h-5 w-5"></i>
@@ -598,14 +605,14 @@
             <div
               class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-500 shadow-lg"
             >
-              <i data-lucide="link" class="h-7 w-7 text-white"></i>
+              <i data-lucide="languages" class="h-7 w-7 text-white"></i>
             </div>
             <h3 class="mb-3 text-xl font-bold text-gray-900 dark:text-white">
-              Integración Tidepool
+              Soporte Multiidioma
             </h3>
             <p class="text-gray-600 dark:text-gray-300">
-              Autenticación mediante Tidepool (solo login, datos gestionados localmente). Plataforma
-              de código abierto para diabetes.
+              Interfaz disponible en español e inglés, adaptada a las necesidades de pacientes y
+              familias del Hospital Garrahan.
             </p>
           </div>
         </div>
@@ -873,6 +880,30 @@
               </h3>
               <p class="text-sm text-gray-600 dark:text-gray-400">
                 Información del usuario y configuración personal con modo oscuro.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshot 11 - High Contrast Mode -->
+          <div
+            class="screenshot-card group overflow-hidden rounded-3xl bg-white shadow-lg transition-all hover:shadow-xl dark:bg-slate-900"
+            data-screenshot="dashboard-high-contrast"
+          >
+            <div class="aspect-[9/16] overflow-hidden">
+              <img
+                src="assets/screenshots/dashboard-high-contrast.png"
+                alt="Modo Alto Contraste - Accesibilidad mejorada"
+                class="h-full w-full object-cover object-top transition-transform group-hover:scale-105"
+                loading="lazy"
+              />
+            </div>
+            <div class="p-6">
+              <h3 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">
+                Modo Alto Contraste
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Accesibilidad mejorada con colores de alto contraste para usuarios con necesidades
+                visuales especiales.
               </p>
             </div>
           </div>

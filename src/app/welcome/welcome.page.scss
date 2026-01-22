@@ -97,11 +97,11 @@
 .cta-primary {
   width: 75%;
   max-width: 280px;
-  border: 3px solid #e68600; // Darker orange border for 3D effect
-  border-radius: 50px; // Pill-shaped
+  border: 3px solid var(--welcome-cta-border, #e68600);
+  border-radius: 50px;
   padding: 14px 32px;
-  background: #ff9500; // Solid vibrant orange
-  color: #fff;
+  background: var(--welcome-cta-bg, #ff9500);
+  color: var(--welcome-cta-text, #fff);
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -111,9 +111,8 @@
   justify-content: center;
   gap: 10px;
 
-  // 3D border effect
   box-shadow:
-    0 4px 0 #c70,
+    0 4px 0 var(--welcome-cta-shadow, #c70),
     0 6px 12px rgb(255 149 0 / 35%);
 
   transition:
@@ -153,7 +152,7 @@
 
 // Register link - styled like the design (WCAG AA compliant)
 .register-link {
-  color: #0a5f7d; // Darker cyan for better contrast (7.2:1 ratio)
+  color: var(--welcome-link, #0a5f7d);
   font-size: 16px;
   font-weight: 600;
   text-decoration: none;
@@ -169,7 +168,7 @@
 :host-context(.dark),
 :host-context(.ion-palette-dark) {
   .register-link {
-    color: #06b6d4; // Cyan-500 - brighter for dark mode
+    color: var(--welcome-link-dark, #06b6d4);
   }
 }
 

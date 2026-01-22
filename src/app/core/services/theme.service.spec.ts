@@ -25,7 +25,6 @@ describe('ThemeService', () => {
     age: 10,
     accountState: AccountState.ACTIVE,
     dateOfBirth: '2014-01-01',
-    tidepoolConnection: { connected: false },
     preferences: {
       ...DEFAULT_USER_PREFERENCES,
     },
@@ -254,20 +253,70 @@ describe('ThemeService', () => {
       expect(mockBody.classList.contains('palette-candy')).toBe(true);
     });
 
-    it('should apply high contrast classes when enabled', async () => {
+    it('should apply high contrast classes to html element when enabled', async () => {
       await service.toggleHighContrast();
 
-      expect(mockBody.classList.contains('high-contrast')).toBe(true);
+      expect(mockHtml.classList.contains('high-contrast')).toBe(true);
     });
 
-    it('should remove high contrast classes when disabled', async () => {
-      // Activar primero
+    it('should remove high contrast classes from html element when disabled', async () => {
       await service.toggleHighContrast();
-      expect(mockBody.classList.contains('high-contrast')).toBe(true);
+      expect(mockHtml.classList.contains('high-contrast')).toBe(true);
 
-      // Desactivar
       await service.toggleHighContrast();
-      expect(mockBody.classList.contains('high-contrast')).toBe(false);
+      expect(mockHtml.classList.contains('high-contrast')).toBe(false);
+    });
+
+    it('should persist high contrast mode to profile service', async () => {
+      await service.toggleHighContrast();
+
+      expect(mockProfileService.updatePreferences).toHaveBeenCalledWith({ highContrastMode: true });
+    });
+
+    it('should restore high contrast mode from profile on initialization', async () => {
+      const profileWithHighContrast = {
+        ...mockUserProfile,
+        preferences: {
+          ...DEFAULT_USER_PREFERENCES,
+          highContrastMode: true,
+        },
+      };
+
+      const newMockProfileService = {
+        getProfile: vi.fn().mockResolvedValue(profileWithHighContrast),
+        updatePreferences: vi.fn().mockResolvedValue(mockUserProfile),
+      };
+
+      const newMockLoggerService = {
+        info: vi.fn(),
+        debug: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+      };
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          ThemeService,
+          { provide: RendererFactory2, useValue: mockRendererFactory },
+          { provide: ProfileService, useValue: newMockProfileService },
+          { provide: LoggerService, useValue: newMockLoggerService },
+        ],
+      });
+
+      const newService = TestBed.inject(ThemeService);
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      expect(newService.isHighContrastEnabled()).toBe(true);
+    });
+
+    it('should apply high contrast with dark theme simultaneously', async () => {
+      await service.setThemeMode('dark');
+      await service.toggleHighContrast();
+
+      expect(mockHtml.classList.contains('dark')).toBe(true);
+      expect(mockHtml.classList.contains('high-contrast')).toBe(true);
+      expect(mockHtml.classList.contains('ion-palette-dark')).toBe(true);
     });
 
     it('should apply CSS custom properties for color palette', async () => {

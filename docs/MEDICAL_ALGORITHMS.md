@@ -413,6 +413,78 @@ private calculateMedian(sortedValues: number[]): number {
 
 ---
 
+## Gotchas de Implementación
+
+### Precisión en Conversión de Unidades
+
+| Problema                                     | Causa                             | Solución                                                          |
+| -------------------------------------------- | --------------------------------- | ----------------------------------------------------------------- |
+| Discrepancia en valores convertidos          | Redondeo prematuro                | Mantener precisión completa hasta la visualización final          |
+| 120 mg/dL → mmol/L → mg/dL ≠ 120             | Factor 18.0182 causa pérdida      | Almacenar siempre en unidad original, convertir solo para display |
+| Valores límite categorizados incorrectamente | Comparación después de conversión | Convertir a mg/dL ANTES de comparar con umbrales                  |
+
+**Ejemplo de error común:**
+
+```typescript
+// INCORRECTO: redondea antes de comparar
+const mmol = Math.round((mgdl / 18.0182) * 10) / 10; // 69.9 → 3.9
+const status = mmol < 3.9 ? 'low' : 'normal'; // ¡INCORRECTO! 69.9 debería ser 'low'
+
+// CORRECTO: comparar primero, formatear después
+const status = mgdl < 70 ? 'low' : 'normal'; // Correcto
+const displayValue = (mgdl / 18.0182).toFixed(1); // Solo para mostrar
+```
+
+### Manejo de Zonas Horarias
+
+| Problema                                        | Causa                                | Solución                                     |
+| ----------------------------------------------- | ------------------------------------ | -------------------------------------------- |
+| Lecturas aparecen en día incorrecto             | Conversión UTC/local inconsistente   | Almacenar siempre en ISO 8601 con timezone   |
+| Estadísticas de "hoy" incluyen lecturas de ayer | Filtro por fecha sin considerar zona | Usar `startOfDay()` con timezone del usuario |
+| Gráficos muestran horas incorrectas             | Backend en UTC, frontend en local    | Convertir consistentemente en el frontend    |
+
+**Patrón recomendado:**
+
+```typescript
+// CORRECTO: Almacenar con timezone explícito
+const reading = {
+  timestamp: new Date().toISOString(), // "2026-01-19T15:30:00.000Z"
+  timezoneOffset: new Date().getTimezoneOffset(), // -180 para Argentina
+};
+
+// Para filtrar "lecturas de hoy":
+const todayStart = startOfDay(new Date()); // Usa timezone local
+const todayReadings = readings.filter(r => new Date(r.timestamp) >= todayStart);
+```
+
+### Límites de Validación por Unidad
+
+| Unidad | Mínimo | Máximo | Notas                        |
+| ------ | ------ | ------ | ---------------------------- |
+| mg/dL  | 20     | 600    | Límites físicamente posibles |
+| mmol/L | 1.1    | 33.3   | Conversión de mg/dL limits   |
+
+**Gotcha**: Validar DESPUÉS de determinar la unidad, no antes:
+
+```typescript
+// INCORRECTO: valida sin saber la unidad
+if (value < 20 || value > 600) throw new Error('Invalid'); // ¡3.5 mmol/L es válido!
+
+// CORRECTO: valida según la unidad
+const limits = unit === 'mg/dL' ? { min: 20, max: 600 } : { min: 1.1, max: 33.3 };
+if (value < limits.min || value > limits.max) throw new Error('Invalid');
+```
+
+### Cálculo de eA1C / GMI
+
+| Problema                                            | Causa                                          | Solución                                                          |
+| --------------------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------- |
+| eA1C varía significativamente de A1C de laboratorio | Factores individuales (vida de glóbulos rojos) | Mostrar disclaimer, usar "GMI" en lugar de "eA1C"                 |
+| eA1C con pocos datos es poco confiable              | Varianza alta con N pequeño                    | Requerir mínimo 14 días de datos, mostrar "Insuficiente" si menos |
+| eA1C calculada con datos de un solo día es engañosa | No representa promedio real                    | Calcular solo con >= 100 lecturas o >= 14 días                    |
+
+---
+
 ## Notas de Implementación
 
 ### Referencia de Ubicación de Código

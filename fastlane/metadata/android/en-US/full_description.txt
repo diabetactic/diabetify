@@ -1,0 +1,43 @@
+Diabetactic is a comprehensive diabetes management app designed to help you take control of your glucose levels and insulin therapy.
+
+KEY FEATURES:
+
+📊 GLUCOSE TRACKING
+• Log blood glucose readings with meal context (fasting, before/after meals)
+• View trends and statistics over time
+• Visualize your data with interactive charts
+• Track your time in range
+
+💉 BOLUS CALCULATOR
+• Calculate insulin doses based on carbohydrates
+• Customize your insulin-to-carb ratio
+• Food database for quick carb lookup
+• Correction factor support
+
+📅 APPOINTMENT MANAGEMENT
+• Schedule appointments with healthcare providers
+• Receive reminders for upcoming visits
+• Track appointment history
+• Queue system for clinic visits
+
+🔄 SYNC & OFFLINE
+• Works offline - your data is always accessible
+• Automatic cloud sync when connected
+• Secure data backup
+• Multi-device support
+
+🎨 PERSONALIZATION
+• Light and dark theme support
+• Available in English and Spanish
+• Customizable glucose targets
+• Unit preferences (mg/dL)
+
+🔒 PRIVACY & SECURITY
+• Local-first data storage
+• Encrypted cloud sync
+• No ads, no data selling
+• HTTPS everywhere
+
+Diabetactic is developed by the FIUBA (University of Buenos Aires) team as part of a professional engineering project, with a focus on usability, reliability, and patient privacy.
+
+Download now and take control of your diabetes management!

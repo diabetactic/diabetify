@@ -130,6 +130,9 @@ export class SettingsPage implements OnInit, OnDestroy {
   // Platform detection for web notification warning
   isWebPlatform = false;
 
+  // High contrast mode
+  highContrastEnabled = false;
+
   public pendingConflicts = 0;
   private pendingConflictsSubscription: Subscription | undefined;
 
@@ -235,6 +238,8 @@ export class SettingsPage implements OnInit, OnDestroy {
         lowGlucoseThreshold: this.preferences.safety.lowGlucoseThreshold,
       };
 
+      this.highContrastEnabled = this.themeService.isHighContrastEnabled();
+
       // Load notification settings AFTER preferences are ready
       this.loadNotificationSettings();
     } catch (error) {
@@ -250,6 +255,15 @@ export class SettingsPage implements OnInit, OnDestroy {
     const theme = event.detail.value as 'light' | 'dark' | 'auto';
     this.preferences.theme = theme;
     await this.themeService.setThemeMode(theme);
+    this.hasChanges = true;
+  }
+
+  /**
+   * Handle high contrast mode toggle
+   */
+  async onHighContrastToggle(event: CustomEvent<{ checked: boolean }>) {
+    this.highContrastEnabled = event.detail.checked;
+    await this.themeService.toggleHighContrast();
     this.hasChanges = true;
   }
 

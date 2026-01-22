@@ -31,7 +31,6 @@ export const STORAGE_KEYS = {
 
   // Profile service (already defined in profile.service.ts, re-exported for consistency)
   USER_PROFILE: 'diabetactic_user_profile',
-  TIDEPOOL_AUTH: 'diabetactic_tidepool_auth',
   SCHEMA_VERSION: 'diabetactic_schema_version',
 
   // Language
@@ -151,28 +150,6 @@ export const COLORS = {
   PRIMARY: '#3b82f6',
   PRIMARY_LIGHT: '#60a5fa',
 } as const;
-
-// ============================================================================
-// EXTERNAL URLS
-// ============================================================================
-
-export const EXTERNAL_URLS = {
-  TIDEPOOL: {
-    API: 'https://api.tidepool.org',
-    AUTH: 'https://auth.tidepool.org',
-    AUTH_EXTERNAL: 'https://auth.external.tidepool.org',
-    APP: 'https://app.tidepool.org',
-    WEBSITE: 'https://www.tidepool.org/',
-    LOGIN_ENDPOINT: 'https://api.tidepool.org/auth/login',
-  } as const,
-} as const;
-
-/**
- * Build Tidepool dashboard URL for a specific user
- */
-export function tidepoolDashboardUrl(userId: string): string {
-  return `${EXTERNAL_URLS.TIDEPOOL.APP}/patients/${userId}/data`;
-}
 
 // ============================================================================
 // TYPE EXPORTS

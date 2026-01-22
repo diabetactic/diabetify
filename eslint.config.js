@@ -22,6 +22,7 @@ module.exports = tseslint.config(
       '.browser-pilot/**/*',
       '.turbo/**/*',
       'playwright-report/**/*',
+      'reports/**/*',
     ],
   },
 

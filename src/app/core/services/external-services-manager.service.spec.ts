@@ -10,7 +10,7 @@ import {
   ExternalService,
   HealthStatus,
 } from '@services/external-services-manager.service';
-import { LoggerService } from '@services/logger.service';
+
 import { Network } from '@capacitor/network';
 import { environment } from '@env/environment';
 import type { Mock } from 'vitest';
@@ -50,18 +50,6 @@ describe('ExternalServicesManager', () => {
       },
     };
 
-    environment.tidepool = {
-      ...environment.tidepool,
-      baseUrl: 'https://tidepool.org',
-      requestTimeout: 30000,
-      maxRetries: 3,
-    };
-
-    environment.features = {
-      ...environment.features,
-      useTidepoolIntegration: true,
-    };
-
     const httpClientMock = {
       get: vi.fn(),
       head: vi.fn(),
@@ -98,7 +86,6 @@ describe('ExternalServicesManager', () => {
         service.state.subscribe(state => {
           expect(state.circuitBreakers.size).toBeGreaterThan(0);
           expect(state.circuitBreakers.has(ExternalService.GLUCOSERVER)).toBe(true);
-          expect(state.circuitBreakers.has(ExternalService.TIDEPOOL)).toBe(true);
           resolve();
         });
       }));
@@ -370,25 +357,25 @@ describe('ExternalServicesManager', () => {
   describe('cache management', () => {
     it('should cache data with service prefix', async () => {
       const glucoserverRequest = vi.fn().mockResolvedValue({ data: 'gluco' });
-      const tidepoolRequest = vi.fn().mockResolvedValue({ data: 'tidepool' });
+      const appointmentsRequest = vi.fn().mockResolvedValue({ data: 'appointments' });
 
       await service.executeRequest(ExternalService.GLUCOSERVER, glucoserverRequest, {
         cacheKey: 'same-key',
       });
-      await service.executeRequest(ExternalService.TIDEPOOL, tidepoolRequest, {
+      await service.executeRequest(ExternalService.APPOINTMENTS, appointmentsRequest, {
         cacheKey: 'same-key',
       });
 
       await service.executeRequest(ExternalService.GLUCOSERVER, glucoserverRequest, {
         cacheKey: 'same-key',
       });
-      await service.executeRequest(ExternalService.TIDEPOOL, tidepoolRequest, {
+      await service.executeRequest(ExternalService.APPOINTMENTS, appointmentsRequest, {
         cacheKey: 'same-key',
       });
 
       // Cache should be isolated per service via key prefix (service:cacheKey)
       expect(glucoserverRequest).toHaveBeenCalledTimes(1);
-      expect(tidepoolRequest).toHaveBeenCalledTimes(1);
+      expect(appointmentsRequest).toHaveBeenCalledTimes(1);
     });
 
     it('should expire cache after duration', async () => {
@@ -417,12 +404,12 @@ describe('ExternalServicesManager', () => {
 
     it('should clear cache for specific service', async () => {
       const glucoserverRequest = vi.fn().mockResolvedValue({ data: 'gluco' });
-      const tidepoolRequest = vi.fn().mockResolvedValue({ data: 'tidepool' });
+      const appointmentsRequest = vi.fn().mockResolvedValue({ data: 'appointments' });
 
       await service.executeRequest(ExternalService.GLUCOSERVER, glucoserverRequest, {
         cacheKey: 'shared-key',
       });
-      await service.executeRequest(ExternalService.TIDEPOOL, tidepoolRequest, {
+      await service.executeRequest(ExternalService.APPOINTMENTS, appointmentsRequest, {
         cacheKey: 'shared-key',
       });
 
@@ -431,32 +418,36 @@ describe('ExternalServicesManager', () => {
       await service.executeRequest(ExternalService.GLUCOSERVER, glucoserverRequest, {
         cacheKey: 'shared-key',
       });
-      await service.executeRequest(ExternalService.TIDEPOOL, tidepoolRequest, {
+      await service.executeRequest(ExternalService.APPOINTMENTS, appointmentsRequest, {
         cacheKey: 'shared-key',
       });
 
       expect(glucoserverRequest).toHaveBeenCalledTimes(2);
-      expect(tidepoolRequest).toHaveBeenCalledTimes(1);
+      expect(appointmentsRequest).toHaveBeenCalledTimes(1);
     });
 
     it('should clear all cache when no service specified', async () => {
       const glucoserverRequest = vi.fn().mockResolvedValue({ data: 'gluco' });
-      const tidepoolRequest = vi.fn().mockResolvedValue({ data: 'tidepool' });
+      const appointmentsRequest = vi.fn().mockResolvedValue({ data: 'appointments' });
 
       await service.executeRequest(ExternalService.GLUCOSERVER, glucoserverRequest, {
         cacheKey: 'key1',
       });
-      await service.executeRequest(ExternalService.TIDEPOOL, tidepoolRequest, { cacheKey: 'key2' });
+      await service.executeRequest(ExternalService.APPOINTMENTS, appointmentsRequest, {
+        cacheKey: 'key2',
+      });
 
       service.clearCache();
 
       await service.executeRequest(ExternalService.GLUCOSERVER, glucoserverRequest, {
         cacheKey: 'key1',
       });
-      await service.executeRequest(ExternalService.TIDEPOOL, tidepoolRequest, { cacheKey: 'key2' });
+      await service.executeRequest(ExternalService.APPOINTMENTS, appointmentsRequest, {
+        cacheKey: 'key2',
+      });
 
       expect(glucoserverRequest).toHaveBeenCalledTimes(2);
-      expect(tidepoolRequest).toHaveBeenCalledTimes(2);
+      expect(appointmentsRequest).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -507,31 +498,6 @@ describe('ExternalServicesManager', () => {
     it('should return undefined for unknown service', () => {
       const config = service.getServiceConfig('UNKNOWN' as ExternalService);
       expect(config).toBeUndefined();
-    });
-
-    it('should configure Tidepool when enabled in environment', () => {
-      const config = service.getServiceConfig(ExternalService.TIDEPOOL);
-
-      expect(config).toBeDefined();
-      expect(config?.name).toBe('Tidepool API');
-    });
-
-    it('should not configure Tidepool when disabled in environment', () => {
-      environment.features!.useTidepoolIntegration = false;
-
-      const logger = {
-        info: vi.fn(),
-        debug: vi.fn(),
-        warn: vi.fn(),
-        error: vi.fn(),
-      } as unknown as LoggerService;
-
-      // Create new service instance (config map is built at construction time)
-      const newService = new ExternalServicesManager(httpClient, logger);
-      const config = newService.getServiceConfig(ExternalService.TIDEPOOL);
-
-      expect(config).toBeUndefined();
-      newService.ngOnDestroy();
     });
   });
 

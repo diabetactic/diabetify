@@ -16,8 +16,8 @@ Este proyecto sigue el patrón **Testing Trophy**:
 
 ### Estadísticas Actuales
 
-- **111 archivos de test** pasando
-- **2391 tests unitarios** ejecutándose en ~27s
+- **100 archivos de test** pasando
+- **2228 tests unitarios** ejecutándose en ~30s
 - **11 archivos E2E** con tests funcionales, visuales y de humo
 - **194 tests de integración** con MSW (Mock Service Worker)
 
@@ -494,5 +494,73 @@ sudo chown -R "$USER":"$USER" playwright-report playwright/artifacts
 - **MSW Handlers**: `src/mocks/handlers/`
 - **Tests E2E**: `playwright/tests/`
 - **Page Objects**: `playwright/pages/`
+
+---
+
+## Testing Gotchas
+
+### Common Pitfalls
+
+| Problema                                  | Causa                                            | Solución                                                                |
+| ----------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------- |
+| `fakeAsync` no funciona con `async/await` | Zone.js no puede rastrear Promises nativas       | Usar `tick()` después de operaciones o `await flushMicrotasks()`        |
+| Mock de Ionic controller ignorado         | `IonicModule.forRoot()` provee instancias reales | Override directo: `(component as any).toastController = mockController` |
+| `ActivatedRoute` mock incompleto          | Falta `snapshot` o `params`                      | Proveer objeto completo con `snapshot: { params: {} }`                  |
+| Router mock falla                         | Falta `createUrlTree`                            | Agregar: `createUrlTree: vi.fn(), serializeUrl: vi.fn(), events: of()`  |
+| `PrematureCommitError` en IndexedDB tests | Transaction auto-commit                          | Usar `fake-indexeddb` v6+ y asegurar import de `test-setup.ts`          |
+| MSW handler no intercepta                 | Orden de handlers incorrecto                     | Handlers más específicos primero, genéricos después                     |
+
+### Ionic Component Testing
+
+```typescript
+// INCORRECTO: Este mock no se usará porque IonicModule provee ToastController
+beforeEach(async () => {
+  await TestBed.configureTestingModule({
+    imports: [IonicModule.forRoot()],
+    providers: [{ provide: ToastController, useValue: mockToast }], // ¡Ignorado!
+  });
+});
+
+// CORRECTO: Override directo de la propiedad
+it('should show toast', async () => {
+  const mockToast = { present: vi.fn().mockResolvedValue(undefined) };
+  (component as any).toastController = { create: vi.fn().mockResolvedValue(mockToast) };
+
+  await component.onAction();
+
+  expect(mockToast.present).toHaveBeenCalled();
+});
+```
+
+### Playwright E2E Gotchas
+
+| Problema                           | Causa                              | Solución                                                                         |
+| ---------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------- |
+| `isVisible({ timeout })` no espera | Timeout se ignora en `isVisible()` | Usar `await locator.waitFor({ state: 'visible', timeout: 3000 })`                |
+| Elemento no clickeable             | Ionic hydration incompleta         | `BasePage.waitForHydration()` o `await page.waitForSelector('ion-app.hydrated')` |
+| Screenshots difieren en CI         | Fuentes/rendering diferente        | Usar `maxDiffPixelRatio` o actualizar baselines en CI                            |
+| Artefactos con owner `root`        | Docker ejecuta como root           | `sudo chown -R "$USER":"$USER" playwright-report`                                |
+
+### Router Mock Template
+
+```typescript
+const mockRouter = {
+  navigate: vi.fn().mockResolvedValue(true),
+  navigateByUrl: vi.fn().mockResolvedValue(true),
+  createUrlTree: vi.fn().mockReturnValue({}),
+  serializeUrl: vi.fn().mockReturnValue(''),
+  events: of(),
+  routerState: { root: {} },
+};
+
+const mockActivatedRoute = {
+  snapshot: { params: {}, queryParams: {}, data: {} },
+  params: of({}),
+  queryParams: of({}),
+  data: of({}),
+};
+```
+
+---
 
 **Última actualización**: Enero 2026

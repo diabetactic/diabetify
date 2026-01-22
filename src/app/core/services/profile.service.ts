@@ -9,7 +9,6 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
 import { safeJsonParse, isUserProfile } from '../utils/type-guards';
-import { SecureStorage } from '@aparajita/capacitor-secure-storage';
 import {
   UserProfile,
   CreateUserProfileInput,
@@ -17,7 +16,6 @@ import {
   DEFAULT_USER_PREFERENCES,
   AccountState,
 } from '@models/user-profile.model';
-import { TidepoolAuth } from '@models/tidepool-auth.model';
 import { ApiGatewayService } from '@services/api-gateway.service';
 import { LoggerService } from '@services/logger.service';
 
@@ -31,7 +29,6 @@ export interface BackendUserUpdate {
   name?: string;
   surname?: string;
   email?: string;
-  tidepool?: string;
   hospital_account?: string;
 }
 
@@ -40,7 +37,6 @@ export interface BackendUserUpdate {
  */
 const STORAGE_KEYS = {
   PROFILE: 'diabetactic_user_profile',
-  TIDEPOOL_AUTH: 'diabetactic_tidepool_auth',
   SCHEMA_VERSION: 'diabetactic_schema_version',
 } as const;
 
@@ -56,10 +52,6 @@ export class ProfileService implements OnDestroy {
   // Reactive profile state
   private _profile$ = new BehaviorSubject<UserProfile | null>(null);
   public readonly profile$ = this._profile$.asObservable();
-
-  // Reactive Tidepool connection status
-  private _tidepoolConnected$ = new BehaviorSubject<boolean>(false);
-  public readonly tidepoolConnected$ = this._tidepoolConnected$.asObservable();
 
   // Promise that resolves when initialization is complete
   // Prevents race conditions when guards/components call getProfile() before init finishes
@@ -84,7 +76,6 @@ export class ProfileService implements OnDestroy {
    */
   ngOnDestroy(): void {
     this._profile$.complete();
-    this._tidepoolConnected$.complete();
   }
 
   /**
@@ -101,7 +92,6 @@ export class ProfileService implements OnDestroy {
 
       if (profile) {
         this._profile$.next(profile);
-        this._tidepoolConnected$.next(profile.tidepoolConnection.connected);
       }
     } catch (error) {
       this.logger.error('ProfileService', 'Failed to initialize ProfileService', error);
@@ -171,9 +161,6 @@ export class ProfileService implements OnDestroy {
       accountState: input.accountState || AccountState.ACTIVE,
       dateOfBirth: input.dateOfBirth,
       avatar: input.avatar,
-      tidepoolConnection: input.tidepoolConnection || {
-        connected: false,
-      },
       preferences: input.preferences || DEFAULT_USER_PREFERENCES,
       createdAt: now,
       updatedAt: now,
@@ -295,104 +282,7 @@ export class ProfileService implements OnDestroy {
    */
   async deleteProfile(): Promise<void> {
     await Preferences.remove({ key: STORAGE_KEYS.PROFILE });
-    await this.clearTidepoolCredentials();
     this._profile$.next(null);
-    this._tidepoolConnected$.next(false);
-  }
-
-  /**
-   * Set Tidepool authentication credentials
-   * Stores credentials securely using native platform encryption
-   * (iOS Keychain, Android KeyStore)
-   */
-  async setTidepoolCredentials(auth: TidepoolAuth): Promise<void> {
-    try {
-      // Store credentials using SecureStorage (native encryption)
-      // Cast to Record to satisfy SecureStorage's DataType requirement
-      await SecureStorage.set(
-        STORAGE_KEYS.TIDEPOOL_AUTH,
-        auth as unknown as Record<string, unknown>
-      );
-
-      // Update profile connection status
-      const profile = await this.getProfile();
-      if (profile) {
-        profile.tidepoolConnection = {
-          connected: true,
-          userId: auth.userId,
-          email: auth.email,
-          connectedAt: new Date().toISOString(),
-          lastSyncTime: undefined,
-        };
-        await this.saveProfile(profile);
-      }
-
-      // TODO: Patch backend with Tidepool dashboard link when endpoint is implemented
-      // The backend User model has 'tidepool' field (login/app/models/user_model.py:14)
-      // but needs PATCH /users/tidepool endpoint to be created
-      // Dashboard link format: https://app.tidepool.org/patients/${auth.userId}/data
-
-      this._tidepoolConnected$.next(true);
-    } catch (error) {
-      this.logger.error('ProfileService', 'Failed to set Tidepool credentials', error);
-      throw new Error('Failed to save authentication credentials');
-    }
-  }
-
-  /**
-   * Get Tidepool authentication credentials
-   * Retrieves from native secure storage (iOS Keychain, Android KeyStore)
-   */
-  async getTidepoolCredentials(): Promise<TidepoolAuth | null> {
-    try {
-      // Retrieve credentials from SecureStorage (native encryption)
-      const auth = (await SecureStorage.get(STORAGE_KEYS.TIDEPOOL_AUTH)) as TidepoolAuth | null;
-
-      if (!auth) {
-        return null;
-      }
-
-      // Check if token is expired
-      if (auth.expiresAt && auth.expiresAt < Date.now()) {
-        this.logger.warn('ProfileService', 'Tidepool auth token expired');
-        // Don't clear automatically - let the auth service handle refresh
-      }
-
-      return auth;
-    } catch (error) {
-      this.logger.error('ProfileService', 'Failed to get Tidepool credentials', error);
-      return null;
-    }
-  }
-
-  /**
-   * Clear Tidepool authentication credentials
-   * Removes from native secure storage
-   */
-  async clearTidepoolCredentials(): Promise<void> {
-    await SecureStorage.remove(STORAGE_KEYS.TIDEPOOL_AUTH);
-
-    // Update profile connection status
-    const profile = await this.getProfile();
-    if (profile) {
-      profile.tidepoolConnection = {
-        connected: false,
-      };
-      await this.saveProfile(profile);
-    }
-
-    this._tidepoolConnected$.next(false);
-  }
-
-  /**
-   * Update Tidepool last sync time
-   */
-  async updateLastSyncTime(): Promise<void> {
-    const profile = await this.getProfile();
-    if (profile?.tidepoolConnection.connected) {
-      profile.tidepoolConnection.lastSyncTime = new Date().toISOString();
-      await this.saveProfile(profile);
-    }
   }
 
   /**
@@ -401,14 +291,6 @@ export class ProfileService implements OnDestroy {
   async hasProfile(): Promise<boolean> {
     const profile = await this.getProfile();
     return profile !== null;
-  }
-
-  /**
-   * Check if Tidepool is connected
-   */
-  async isTidepoolConnected(): Promise<boolean> {
-    const auth = await this.getTidepoolCredentials();
-    return auth !== null && !this.isTokenExpired(auth);
   }
 
   // === Private Helper Methods ===
@@ -424,7 +306,6 @@ export class ProfileService implements OnDestroy {
     });
 
     this._profile$.next(profile);
-    this._tidepoolConnected$.next(profile.tidepoolConnection.connected);
   }
 
   /**
@@ -432,17 +313,6 @@ export class ProfileService implements OnDestroy {
    */
   private generateUserId(): string {
     return `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  /**
-   * Check if token is expired
-   */
-  private isTokenExpired(auth: TidepoolAuth): boolean {
-    if (!auth.expiresAt) {
-      return false;
-    }
-    // Add 5 minute buffer
-    return auth.expiresAt - 5 * 60 * 1000 < Date.now();
   }
 
   /**
@@ -503,9 +373,6 @@ export class ProfileService implements OnDestroy {
           ...DEFAULT_USER_PREFERENCES,
           ...(profile.preferences || {}),
         },
-        tidepoolConnection: profile.tidepoolConnection || {
-          connected: false,
-        },
       };
 
       await this.saveProfile(migratedProfile);
@@ -522,15 +389,7 @@ export class ProfileService implements OnDestroy {
       throw new Error('No profile to export');
     }
 
-    // Don't include credentials in export for security
-    const exportData = {
-      ...profile,
-      tidepoolConnection: {
-        connected: false,
-      },
-    };
-
-    return JSON.stringify(exportData, null, 2);
+    return JSON.stringify(profile, null, 2);
   }
 
   /**
@@ -554,9 +413,6 @@ export class ProfileService implements OnDestroy {
         id: this.generateUserId(),
         createdAt: now,
         updatedAt: now,
-        tidepoolConnection: {
-          connected: false,
-        },
       };
 
       await this.saveProfile(profile);

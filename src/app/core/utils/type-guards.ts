@@ -208,15 +208,6 @@ export function isUserProfile(data: unknown): data is UserProfile {
   const hasAccountState = 'accountState' in data && isValidAccountState(data['accountState']);
 
   const hasPreferencesIfPresent = !('preferences' in data) || isObject(data['preferences']);
-  const hasTidepoolConnectionIfPresent =
-    !('tidepoolConnection' in data) || isObject(data['tidepoolConnection']);
 
-  return (
-    hasId &&
-    hasName &&
-    hasAge &&
-    hasAccountState &&
-    hasPreferencesIfPresent &&
-    hasTidepoolConnectionIfPresent
-  );
+  return hasId && hasName && hasAge && hasAccountState && hasPreferencesIfPresent;
 }

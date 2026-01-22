@@ -1,6 +1,5 @@
 /**
  * User profile models for Diabetactic mobile app
- * Manages user preferences, Tidepool connection, and app settings
  */
 
 import { GlucoseUnit } from '@models/glucose-reading.model';
@@ -73,7 +72,7 @@ export interface UserPreferences {
   /** Show trend arrows on dashboard */
   showTrendArrows: boolean;
 
-  /** Automatically sync with Tidepool */
+  /** Automatically sync with backend */
   autoSync: boolean;
 
   /** Sync interval in minutes */
@@ -108,32 +107,6 @@ export const DEFAULT_USER_PREFERENCES: UserPreferences = {
   language: 'es',
   dateFormat: '12h',
 };
-
-/**
- * Tidepool account connection status
- */
-export interface TidepoolConnection {
-  /** Is user connected to Tidepool */
-  connected: boolean;
-
-  /** Tidepool user ID */
-  userId?: string;
-
-  /** User's email registered with Tidepool */
-  email?: string;
-
-  /** Full name from Tidepool account */
-  fullName?: string;
-
-  /** Timestamp of last successful sync */
-  lastSyncTime?: string;
-
-  /** Timestamp when connection was established */
-  connectedAt?: string;
-
-  /** Number of days of data available in Tidepool */
-  dataRetentionDays?: number;
-}
 
 /**
  * Avatar configuration for child-friendly profiles
@@ -179,9 +152,6 @@ export interface UserProfile {
 
   /** Selected avatar */
   avatar?: Avatar;
-
-  /** Tidepool connection information */
-  tidepoolConnection: TidepoolConnection;
 
   /** User preferences */
   preferences: UserPreferences;

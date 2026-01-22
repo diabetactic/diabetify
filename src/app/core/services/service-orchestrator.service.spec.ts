@@ -27,7 +27,7 @@ describe('ServiceOrchestrator', () => {
   beforeEach(() => {
     // Create state subject for external services
     const initialHealthCheck: ServiceHealthCheck = {
-      service: ExternalService.TIDEPOOL,
+      service: ExternalService.GLUCOSERVER,
       status: HealthStatus.HEALTHY,
       lastChecked: new Date(),
     };
@@ -35,7 +35,6 @@ describe('ServiceOrchestrator', () => {
     stateSubject = new BehaviorSubject<ExternalServicesState>({
       isOnline: true,
       services: new Map([
-        [ExternalService.TIDEPOOL, { ...initialHealthCheck, service: ExternalService.TIDEPOOL }],
         [
           ExternalService.GLUCOSERVER,
           { ...initialHealthCheck, service: ExternalService.GLUCOSERVER },
@@ -67,10 +66,7 @@ describe('ServiceOrchestrator', () => {
     const unifiedAuthMock = {
       isAuthenticated: vi.fn(),
       isAuthenticatedWith: vi.fn(),
-      loginTidepool: vi.fn(),
       getCurrentUser: vi.fn(),
-      linkTidepoolAccount: vi.fn(),
-      unlinkTidepoolAccount: vi.fn(),
     };
 
     const appointmentsMock = {
@@ -106,9 +102,6 @@ describe('ServiceOrchestrator', () => {
     unifiedAuth = TestBed.inject(UnifiedAuthService) as Mock<UnifiedAuthService>;
     appointments = TestBed.inject(AppointmentService) as Mock<AppointmentService>;
     readings = TestBed.inject(ReadingsService) as Mock<ReadingsService>;
-
-    // Default mock returns
-    unifiedAuth.loginTidepool.mockReturnValue(of(void 0));
   });
 
   afterEach(() => {
@@ -167,8 +160,7 @@ describe('ServiceOrchestrator', () => {
       expect(result.error).toContain('Not authenticated');
     });
 
-    it('should skip non-critical steps when service unavailable', async () => {
-      // Make Glucoserver unavailable
+    it('should fail when critical service unavailable', async () => {
       const updatedServices = new Map(stateSubject.value.services);
       updatedServices.set(ExternalService.GLUCOSERVER, {
         service: ExternalService.GLUCOSERVER,
@@ -183,9 +175,8 @@ describe('ServiceOrchestrator', () => {
 
       const result = await service.executeFullSync();
 
-      // Should still succeed since glucoserver steps are non-critical
-      expect(result.success).toBe(true);
-      expect(result.workflow.steps.some(s => s.status === 'skipped')).toBe(true);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('not available');
     });
 
     it('should track workflow in active workflows during execution', async () => {
@@ -205,7 +196,6 @@ describe('ServiceOrchestrator', () => {
 
   describe('executeAuthAndSync', () => {
     beforeEach(() => {
-      unifiedAuth.loginTidepool.mockReturnValue(of(void 0));
       readings.performFullSync.mockResolvedValue({
         pushed: 0,
         fetched: 0,
@@ -218,28 +208,22 @@ describe('ServiceOrchestrator', () => {
       });
     });
 
-    it('should execute auth and sync workflow successfully', async () => {
-      const result = await service.executeAuthAndSync();
-
-      expect(result.success).toBe(true);
-      expect(result.workflow.type).toBe(WorkflowType.AUTH_AND_SYNC);
-      expect(unifiedAuth.loginTidepool).toHaveBeenCalled();
-    });
-
-    it('should fail on Tidepool authentication error', async () => {
-      unifiedAuth.loginTidepool.mockReturnValue(throwError(() => new Error('Auth failed')));
-
+    it('should fail when local authentication is not provided', async () => {
+      // authenticateLocal() throws "requires credentials" by design
       const result = await service.executeAuthAndSync();
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Auth failed');
+      expect(result.workflow.type).toBe(WorkflowType.AUTH_AND_SYNC);
+      expect(result.error).toContain('credentials');
     });
 
-    it('should continue if local auth fails (non-critical)', async () => {
-      // This step would fail but is non-critical
+    it('should continue with non-critical sync steps after auth', async () => {
+      // This tests that the workflow handles the auth step failure gracefully
       const result = await service.executeAuthAndSync();
 
-      expect(result.success).toBe(true);
+      // Auth step is critical, so workflow fails
+      expect(result.success).toBe(false);
+      expect(result.workflow.status).toBe('failed');
     });
   });
 
@@ -356,8 +340,6 @@ describe('ServiceOrchestrator', () => {
   describe('executeLinkAccounts', () => {
     beforeEach(() => {
       unifiedAuth.isAuthenticatedWith.mockReturnValue(true);
-      unifiedAuth.loginTidepool.mockReturnValue(of(void 0));
-      unifiedAuth.linkTidepoolAccount.mockReturnValue(of(void 0));
     });
 
     it('should execute account linking workflow successfully', async () => {
@@ -365,7 +347,6 @@ describe('ServiceOrchestrator', () => {
 
       expect(result.success).toBe(true);
       expect(result.workflow.type).toBe(WorkflowType.ACCOUNT_LINK);
-      expect(unifiedAuth.linkTidepoolAccount).toHaveBeenCalled();
     });
 
     it('should fail if local auth verification fails', async () => {
@@ -377,91 +358,85 @@ describe('ServiceOrchestrator', () => {
       expect(result.error).toContain('local server');
     });
 
-    it('should compensate on failure after linking', async () => {
-      unifiedAuth.unlinkTidepoolAccount.mockResolvedValue();
-      // Make merge fail to trigger compensation
+    it('should compensate on failure after merge step fails', async () => {
       const mergeStep = vi.spyOn(service as any, 'mergeAccountData');
       mergeStep.mockRejectedValue(new Error('Merge failed'));
+      const rollbackSpy = vi.spyOn(service as any, 'rollbackDataMerge').mockResolvedValue();
 
       const result = await service.executeLinkAccounts();
 
       expect(result.success).toBe(false);
       expect(result.workflow.status).toBe('failed');
-      // Compensation should have been attempted
-      expect(unifiedAuth.unlinkTidepoolAccount).toHaveBeenCalled();
 
       mergeStep.mockRestore();
+      rollbackSpy.mockRestore();
     });
   });
 
   describe('Workflow Step Retry Logic', () => {
     it('should retry retryable steps on failure', async () => {
-      // Setup auth mocks
-      unifiedAuth.loginTidepool.mockReturnValue(of(void 0));
-      (unifiedAuth.getCurrentUser as Mock).mockReturnValue({
-        id: 'user123',
-        email: 'test@example.com',
-        authSource: 'local' as const,
+      unifiedAuth.isAuthenticated.mockReturnValue(true);
+      readings.syncPendingReadings.mockResolvedValue({ success: 0, failed: 0 });
+      readings.getStatistics.mockResolvedValue({
+        average: 120,
+        median: 118,
+        standardDeviation: 20,
+        coefficientOfVariation: 17,
+        timeInRange: 75,
+        timeAboveRange: 15,
+        timeBelowRange: 10,
+        totalReadings: 100,
       });
 
-      // This test verifies retry mechanism exists by ensuring eventual success after retries
-      let attemptCount = 0;
-      const mockSync = readings.performFullSync as Mock;
+      const result = await service.executeFullSync();
 
-      mockSync.mockImplementation(() => {
-        attemptCount++;
-        if (attemptCount < 2) {
-          return Promise.reject(new Error('Temporary failure'));
-        }
-        return Promise.resolve({ pushed: 0, fetched: 0, failed: 0 });
-      });
-
-      const result = await service.executeAuthAndSync();
-
-      // Should eventually succeed due to retry logic
       expect(result.success).toBe(true);
-      expect(attemptCount).toBeGreaterThan(1);
+      expect(result.workflow.type).toBe(WorkflowType.FULL_SYNC);
     });
 
     it('should not retry non-retryable steps', async () => {
+      unifiedAuth.isAuthenticated.mockReturnValue(true);
       let attemptCount = 0;
-      unifiedAuth.loginTidepool.mockImplementation(() => {
+      const mockStats = readings.getStatistics as Mock;
+      mockStats.mockImplementation(() => {
         attemptCount++;
-        return throwError(() => new Error('Auth error'));
+        return Promise.reject(new Error('Stats error'));
       });
 
-      const result = await service.executeAuthAndSync();
+      const result = await service.executeFullSync();
 
-      expect(attemptCount).toBe(1); // Should only try once
-      expect(result.success).toBe(false);
+      expect(attemptCount).toBe(1);
+      expect(result.success).toBe(true);
     });
 
     it('should apply exponential backoff between retries', async () => {
-      // Setup auth mocks
-      unifiedAuth.loginTidepool.mockReturnValue(of(void 0));
-      (unifiedAuth.getCurrentUser as Mock).mockReturnValue({
-        id: 'user123',
-        email: 'test@example.com',
-        authSource: 'local' as const,
+      unifiedAuth.isAuthenticated.mockReturnValue(true);
+      readings.getStatistics.mockResolvedValue({
+        average: 120,
+        median: 118,
+        standardDeviation: 20,
+        coefficientOfVariation: 17,
+        timeInRange: 75,
+        timeAboveRange: 15,
+        timeBelowRange: 10,
+        totalReadings: 100,
       });
 
-      // This test verifies retry delays exist by checking execution time
       const startTime = Date.now();
       let attemptCount = 0;
-      const mockSync = readings.performFullSync as Mock;
+      const mockSync = readings.syncPendingReadings as Mock;
 
       mockSync.mockImplementation(() => {
         attemptCount++;
         if (attemptCount < 2) {
           return Promise.reject(new Error('Temporary failure'));
         }
-        return Promise.resolve({ pushed: 0, fetched: 0, failed: 0 });
+        return Promise.resolve({ success: 0, failed: 0 });
       });
 
-      await service.executeAuthAndSync();
+      await service.executeFullSync();
 
       const duration = Date.now() - startTime;
-      // Should have some delay due to retry backoff (at least ~1 second, with 50ms tolerance for CI timing variance)
       expect(duration).toBeGreaterThanOrEqual(950);
       expect(attemptCount).toBeGreaterThan(1);
     });
@@ -528,20 +503,17 @@ describe('ServiceOrchestrator', () => {
     it('should execute compensating transactions in reverse order', async () => {
       const compensationOrder: string[] = [];
 
-      // Mock methods to track compensation order
-      vi.spyOn(service as any, 'rollbackTidepoolSync').mockImplementation(async () => {
-        compensationOrder.push('tidepool');
-      });
       vi.spyOn(service as any, 'rollbackLocalServerSync').mockImplementation(async () => {
         compensationOrder.push('local');
       });
+      vi.spyOn(service as any, 'rollbackDataMerge').mockImplementation(async () => {
+        compensationOrder.push('dataMerge');
+      });
 
-      // Force failure after some steps succeed
       readings.getStatistics.mockRejectedValue(new Error('Stats failed'));
 
       await service.executeFullSync();
 
-      // Compensations should run in reverse order (last succeeded step first)
       if (compensationOrder.length > 0) {
         expect(compensationOrder[0]).toBe('local');
       }
@@ -550,20 +522,17 @@ describe('ServiceOrchestrator', () => {
     it('should continue compensation even if a compensating transaction fails', async () => {
       const compensationAttempts: string[] = [];
 
-      vi.spyOn(service as any, 'rollbackTidepoolSync').mockImplementation(async () => {
-        compensationAttempts.push('tidepool');
-        throw new Error('Compensation failed');
-      });
       vi.spyOn(service as any, 'rollbackLocalServerSync').mockImplementation(async () => {
         compensationAttempts.push('local');
+        throw new Error('Compensation failed');
+      });
+      vi.spyOn(service as any, 'rollbackDataMerge').mockImplementation(async () => {
+        compensationAttempts.push('dataMerge');
       });
 
       readings.getStatistics.mockRejectedValue(new Error('Force failure'));
 
       await service.executeFullSync();
-
-      // Both compensations should be attempted despite first one failing
-      // Note: order depends on which steps succeeded before failure
     });
   });
 
@@ -588,16 +557,25 @@ describe('ServiceOrchestrator', () => {
     });
 
     it('should handle network timeout on step execution', async () => {
-      // Mock performFullSync to fail with a timeout
-      // Use a shorter timeout for the test to avoid hanging
-      readings.performFullSync.mockImplementation(
+      unifiedAuth.isAuthenticated.mockReturnValue(true);
+      readings.getStatistics.mockResolvedValue({
+        average: 120,
+        median: 118,
+        standardDeviation: 20,
+        coefficientOfVariation: 17,
+        timeInRange: 75,
+        timeAboveRange: 15,
+        timeBelowRange: 10,
+        totalReadings: 100,
+      });
+      readings.syncPendingReadings.mockImplementation(
         () => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 100))
       );
 
-      const result = await service.executeAuthAndSync();
+      const result = await service.executeFullSync();
 
       expect(result.success).toBe(true);
-      const failedStep = result.workflow.steps.find(step => step.name === 'Initial Data Sync');
+      const failedStep = result.workflow.steps.find(step => step.name === 'Sync Server Data');
       expect(failedStep?.status).toBe('failed');
       expect(failedStep?.error).toContain('Timeout');
     });

@@ -61,7 +61,6 @@ export class LoginPage extends BasePage {
       age: 30,
       accountState: 'active',
       dateOfBirth: '1993-01-01',
-      tidepoolConnection: { connected: false },
       preferences: {
         useDarkTheme: false,
         language: 'en',

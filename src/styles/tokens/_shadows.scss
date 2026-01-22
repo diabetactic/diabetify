@@ -1,0 +1,132 @@
+// =============================================================================
+// SHADOW TOKENS
+// =============================================================================
+// SCSS utilities for working with Diabetify shadow system.
+//
+// NOTE: The actual CSS custom properties (--shadow-01 to --shadow-39) are
+// defined in global.css. This file provides SCSS helpers and shadow maps.
+//
+// Shadow naming convention:
+// - 01-10: General elevation shadows
+// - 11-15: Primary/accent glows
+// - 16-20: Interactive element shadows
+// - 21-30: Specialized component shadows
+// - 31-39: Dark mode / modal shadows
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// SHADOW REFERENCE MAP (mirrors global.css :root variables)
+// -----------------------------------------------------------------------------
+
+$shadows: (
+  '01': 0 12px 24px rgb(37 175 244 / 20%),
+  '02': 0 8px 16px rgb(0 0 0 / 15%),
+  '03': 0 8px 16px rgb(10 31 68 / 8%),
+  '04': 0 16px 32px rgb(10 31 68 / 12%),
+  '05': 0 12px 24px rgb(10 31 68 / 9%),
+  '06': 0 8px 16px oklch(var(--p) / 15%),
+  '07': 0 6px 12px oklch(0% 0 0deg / 15%),
+  '08': 0 4px 12px rgb(0 0 0 / 15%),
+  '09': 0 12px 24px rgb(10 31 68 / 12%),
+  '10': 0 4px 8px rgb(10 31 68 / 10%),
+  '11': 0 4px 12px rgb(37 175 244 / 30%),
+  '12': 0 6px 16px rgb(37 175 244 / 40%),
+  '13': 0 8px 20px rgb(0 0 0 / 8%),
+  '14': 0 12px 30px rgb(0 0 0 / 8%),
+  '15': 0 0 0 3px rgb(59 130 246 / 15%),
+  '16': 0 10px 18px rgb(79 139 255 / 28%),
+  '17': none,
+  '18': 0 12px 20px rgb(79 139 255 / 32%),
+  '19': 0 14px 30px rgb(0 0 0 / 70%) #{','} 0 0 0 1px rgb(30 64 175 / 45%),
+  '20': 0 8px 18px rgb(255 119 15 / 28%) #{','} 0 3px 8px rgb(0 0 0 / 8%),
+  '21': 0 10px 20px rgb(255 119 15 / 32%) #{','} 0 4px 10px rgb(0 0 0 / 10%),
+  '22': 0 8px 20px rgb(0 0 0 / 6%),
+  '23': 0 12px 30px rgb(0 0 0 / 60%) #{','} 0 0 0 1px rgb(148 163 184 / 45%),
+  '24': 0 14px 26px rgb(248 113 113 / 35%) #{','} 0 4px 10px rgb(0 0 0 / 40%),
+  '25': 0 4px 12px rgb(10 31 68 / 8%),
+  '26': 0 8px 20px rgb(10 31 68 / 12%),
+  '27': 0 4px 8px rgb(10 31 68 / 6%),
+  '28': 0 8px 16px rgb(10 31 68 / 10%),
+  '29': 0 4px 16px oklch(0% 0 0deg / 30%) #{','} 0 0 0 1px oklch(var(--bc) / 5%),
+  '30': 0 8px 24px oklch(0% 0 0deg / 40%) #{','} 0 0 0 1px oklch(var(--bc) / 8%),
+  '31': 0 6px 18px oklch(0% 0 0deg / 32%) #{','} 0 0 0 1px oklch(var(--bc) / 8%),
+  '32': 0 4px 12px oklch(0% 0 0deg / 30%),
+  '33': 0 2px 8px oklch(0% 0 0deg / 8%),
+  '34': 0 2px 8px oklch(0% 0 0deg / 6%),
+  '35': 0 2px 8px oklch(0% 0 0deg / 30%),
+  '36': 0 4px 12px oklch(var(--p) / 30%),
+  '37': 0 8px 24px oklch(0% 0 0deg / 40%),
+  '38': 0 8px 24px rgb(235 68 90 / 40%),
+  '39': 0 6px 16px rgb(0 0 0 / 20%),
+  // Special shadows
+  'illustration-light': 0 8px 32px rgb(59 130 246 / 15%) #{','} 0 4px 12px rgb(0 0 0 / 8%),
+  'illustration-dark': 0 8px 32px rgb(0 0 0 / 40%) #{','} 0 0 20px rgb(148 163 184 / 10%),
+);
+
+// Semantic shadow aliases for common use cases
+$shadow-card: var(--shadow-03, #{map-get($shadows, '03')});
+$shadow-card-hover: var(--shadow-04, #{map-get($shadows, '04')});
+$shadow-button: var(--shadow-08, #{map-get($shadows, '08')});
+$shadow-dropdown: var(--shadow-09, #{map-get($shadows, '09')});
+$shadow-modal: var(--shadow-19, #{map-get($shadows, '19')});
+$shadow-focus: var(--shadow-15, #{map-get($shadows, '15')});
+
+// -----------------------------------------------------------------------------
+// HELPER FUNCTIONS
+// -----------------------------------------------------------------------------
+
+/// Get a shadow value by number
+/// @param {String|Number} $num - Shadow number (01-39) or special name
+/// @return {String} The shadow value
+@function shadow($num) {
+  $key: if(type-of($num) == 'number', '#{$num}', $num);
+  @if str-length($key) == 1 {
+    $key: '0#{$key}';
+  }
+  @if map-has-key($shadows, $key) {
+    @return map-get($shadows, $key);
+  }
+  @warn "Shadow '#{$key}' not found";
+  @return none;
+}
+
+/// Get a CSS variable reference for a shadow with fallback
+/// @param {String|Number} $num - Shadow number
+/// @return {String} CSS var() with fallback
+@function sv($num) {
+  $key: if(type-of($num) == 'number', '#{$num}', $num);
+  @if str-length($key) == 1 {
+    $key: '0#{$key}';
+  }
+  $fallback: shadow($key);
+  @return var(--shadow-#{$key}, #{$fallback});
+}
+
+// -----------------------------------------------------------------------------
+// MIXINS
+// -----------------------------------------------------------------------------
+
+/// Apply a card shadow with hover effect
+@mixin card-shadow {
+  box-shadow: $shadow-card;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: $shadow-card-hover;
+  }
+}
+
+/// Apply elevation shadow based on level (1-5)
+@mixin elevation($level: 1) {
+  @if $level == 1 {
+    box-shadow: sv(33);
+  } @else if $level == 2 {
+    box-shadow: sv(10);
+  } @else if $level == 3 {
+    box-shadow: sv(03);
+  } @else if $level == 4 {
+    box-shadow: sv(04);
+  } @else if $level == 5 {
+    box-shadow: sv(09);
+  }
+}

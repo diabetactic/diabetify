@@ -1,149 +1,16 @@
-// Login screen styling inspired by the provided mockup
+// Login Page Styles
+// Uses shared auth mixins for common patterns
 
-.login-content {
-  --background: url('/assets/images/sky-background.webp');
+@use 'auth-mixins' as auth;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+// Include all shared auth page patterns
+@include auth.auth-all;
 
-  /* Use dvh (dynamic viewport height) for mobile browsers with address bar */
+// =============================================================================
+// LOGIN-SPECIFIC STYLES
+// =============================================================================
 
-  /* Fallback to vh for older browsers */
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding: 32px 20px;
-
-  /* Add safe area padding for notched devices */
-  padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
-  padding-top: calc(32px + env(safe-area-inset-top, 0px));
-  position: relative;
-  overflow: hidden;
-
-  // Full-screen sky background
-  &::part(background) {
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-}
-
-.login-shell {
-  width: 100%;
-  max-width: 460px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-  text-align: center;
-  position: relative;
-}
-
-// Mascot illustration - layered cloud frame behind kids
-.login-illustration {
-  width: 260px;
-  height: 260px;
-  border-radius: 0;
-  overflow: visible;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-// Cloud frame behind kids
-.login-illustration .cloud-frame {
-  position: absolute;
-  width: 115%;
-  height: 115%;
-  object-fit: contain;
-
-  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- local stacking context */
-  z-index: 0;
-}
-
-// Kids image on top
-.login-illustration .kids-image {
-  position: relative;
-  width: 85%;
-  height: auto;
-  object-fit: contain;
-
-  /* stylelint-disable-next-line scale-unlimited/declaration-strict-value -- local stacking context */
-  z-index: 1;
-  filter: drop-shadow(0 4px 12px rgb(0 0 0 / 10%));
-}
-
-.login-title {
-  margin: 8px 0 4px;
-  font-size: 30px;
-  font-weight: 800;
-  color: var(--dt-color-text-primary);
-  text-shadow:
-    0 1px 2px rgb(255 255 255 / 80%),
-    0 0 20px rgb(255 255 255 / 60%);
-}
-
-.login-subtitle {
-  margin: 0;
-  font-size: 15px;
-  color: var(--dt-color-text-secondary);
-  text-shadow: 0 1px 2px rgb(255 255 255 / 70%);
-}
-
-.login-card {
-  width: 100%;
-  background: var(--dt-color-surface);
-  border-radius: 22px;
-  box-shadow: var(--shadow-14);
-  padding: 22px 22px 12px;
-  border: 1px solid var(--dt-color-border-subtle);
-}
-
-.field-label {
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--dt-color-text-primary);
-  margin-bottom: 6px;
-  display: block;
-  text-align: left;
-}
-
-.input-wrapper {
-  position: relative;
-  margin-bottom: 12px;
-}
-
-.input-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--dt-color-text-muted);
-  font-size: 18px;
-}
-
-.login-input {
-  width: 100%;
-  border-radius: 1rem;
-  border: 1.5px solid var(--dt-color-border-input);
-  padding: 12px 12px 12px 40px;
-  font-size: 15px;
-  background: var(--dt-color-surface);
-  transition:
-    border 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.login-input:focus {
-  outline: none;
-  border-color: var(--ion-color-primary);
-  box-shadow: var(--shadow-15);
-}
-
+// Password visibility toggle button
 .password-toggle-btn {
   --padding-start: 8px;
   --padding-end: 8px;
@@ -155,6 +22,7 @@
   color: var(--dt-color-text-muted);
 }
 
+// Remember me checkbox row
 .remember-row {
   display: flex;
   align-items: center;
@@ -164,138 +32,42 @@
   color: var(--dt-color-text-secondary);
 }
 
-.login-cta {
-  width: 100%;
-  border: none;
-  border-radius: 16px;
-  padding: 14px;
-  background: linear-gradient(135deg, #4f8bff 0%, #3b74ff 100%);
-  color: var(--dt-color-text-primary); /* mejora contraste sobre el gradiente */
-  font-weight: 700;
-  font-size: 16px;
-  box-shadow: var(--shadow-16);
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-.login-cta:focus-visible {
-  outline: 3px solid var(--ion-color-primary);
-  outline-offset: 2px;
-}
-
-.login-cta:disabled {
-  opacity: 60%;
-  box-shadow: var(--shadow-17);
-}
-
-.login-cta:not(:disabled):hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-18);
-}
-
+// Register/forgot password links
 .link-row {
   margin: 10px 0 0;
   font-size: 13px;
   color: var(--dt-color-text-primary);
+
+  a {
+    color: var(--dt-color-link);
+    font-weight: 700;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 
-.link-row a {
-  color: var(--dt-color-link);
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.link-row a:hover {
-  text-decoration: underline;
-}
-
+// Footer legal links
 .footer-legal {
   margin-top: 8px;
   font-size: 12px;
   color: var(--dt-color-text-muted);
+
+  span + span::before {
+    content: '•';
+    margin: 0 6px;
+  }
 }
 
-.footer-legal span + span::before {
-  content: '•';
-  margin: 0 6px;
-}
-
-// Dark mode adjustments
+// Dark mode overrides for login-specific elements
 :host-context(.dark),
 :host-context(.ion-palette-dark),
 :host-context([data-theme='dark']) {
-  .login-content {
-    --background: url('/assets/images/sky-background-night.webp');
-  }
-
-  .login-illustration {
-    background: transparent;
-  }
-
-  .login-title {
-    color: var(--dt-color-text-primary);
-    text-shadow:
-      0 1px 3px rgb(0 0 0 / 50%),
-      0 0 15px rgb(0 0 0 / 30%);
-  }
-
-  .login-subtitle {
-    color: var(--dt-color-text-secondary);
-    text-shadow: 0 1px 2px rgb(0 0 0 / 40%);
-  }
-
-  .login-card {
-    background: var(--dt-color-surface);
-    border-color: var(--dt-color-border-subtle);
-    box-shadow: var(--shadow-19);
-  }
-
-  .field-label {
-    color: var(--dt-color-text-primary);
-  }
-
-  .input-icon {
-    color: var(--dt-color-text-muted);
-  }
-
-  .login-input {
-    background: var(--dt-color-surface-soft);
-    border-color: var(--dt-color-border-input);
-    color: var(--dt-color-text-primary);
-  }
-
-  .login-input::placeholder {
-    color: var(--dt-color-text-muted);
-  }
-
-  .login-input:focus {
-    border-color: var(--ion-color-primary);
-    box-shadow: var(--dt-shadow-focus, 0 0 0 3px oklch(var(--p) / 15%));
-  }
-
   .remember-row,
   .link-row,
   .footer-legal {
     color: var(--dt-color-text-secondary);
-  }
-
-  // Ensure native input contrast in dark mode
-  input[type='text'],
-  input[type='email'],
-  input[type='password'] {
-    background-color: var(--dt-color-surface-soft);
-    color: var(--dt-color-text-primary);
-    -webkit-text-fill-color: var(--dt-color-text-primary);
-  }
-}
-
-@media (width <= 480px) {
-  .login-card {
-    padding: 16px 16px 8px;
-  }
-
-  .login-title {
-    font-size: 24px;
   }
 }
