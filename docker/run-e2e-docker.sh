@@ -25,6 +25,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$SCRIPT_DIR"
 
+API_GATEWAY_PORT="${DIABETACTIC_API_PORT:-8000}"
+BACKOFFICE_PORT="${DIABETACTIC_BACKOFFICE_PORT:-8001}"
+
 # Parse arguments
 FRESH_DB=false
 KEEP_DATA=false
@@ -92,7 +95,7 @@ if [ -z "$SKIP_BACKEND_START" ]; then
         echo "yes" | ./reset-db.sh 2>/dev/null || ./reset-db.sh <<< "yes"
     else
         # Check if already running
-        if curl -s http://localhost:8000/docs > /dev/null 2>&1; then
+        if curl -s "http://localhost:${API_GATEWAY_PORT}/docs" > /dev/null 2>&1; then
             echo "   ✓ Backend already running"
         else
             ./start.sh
@@ -104,7 +107,7 @@ if [ -z "$SKIP_BACKEND_START" ]; then
     MAX_RETRIES=30
     RETRY=0
     while [ $RETRY -lt $MAX_RETRIES ]; do
-        if curl -s http://localhost:8000/docs > /dev/null 2>&1; then
+        if curl -s "http://localhost:${API_GATEWAY_PORT}/docs" > /dev/null 2>&1; then
             echo "   ✓ Backend is healthy"
             break
         fi
@@ -159,8 +162,8 @@ if [ "$TEST_SUITE" = "all" ] || [ "$TEST_SUITE" = "playwright" ]; then
 
     # Run Playwright tests against local backend
     E2E_BASE_URL="http://localhost:4200" \
-    E2E_API_URL="http://localhost:8000" \
-    E2E_BACKOFFICE_URL="http://localhost:8001" \
+    E2E_API_URL="http://localhost:${API_GATEWAY_PORT}" \
+    E2E_BACKOFFICE_URL="http://localhost:${BACKOFFICE_PORT}" \
     E2E_TEST_USERNAME="40123456" \
     E2E_TEST_PASSWORD="thepassword" \
     E2E_DOCKER_TESTS="true" \

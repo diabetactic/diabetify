@@ -6,6 +6,8 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+API_GATEWAY_PORT="${DIABETACTIC_API_PORT:-8000}"
+
 source "$SCRIPT_DIR/_runlog.sh" 2>/dev/null || true
 
 echo "⚠️  WARNING: This will delete ALL data in the local test databases!"
@@ -40,7 +42,7 @@ MAX_RETRIES=30
 RETRY_COUNT=0
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    if curl -s http://localhost:8000/docs > /dev/null 2>&1; then
+    if curl -s "http://localhost:${API_GATEWAY_PORT}/docs" > /dev/null 2>&1; then
         echo ""
         echo "✅ Databases reset successfully!"
         echo "   All data has been wiped and services are ready."

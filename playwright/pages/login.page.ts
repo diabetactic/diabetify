@@ -18,7 +18,14 @@ export class LoginPage extends BasePage {
 
   async goto(): Promise<void> {
     await this.page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    await this.page.waitForSelector('ion-app', { state: 'attached', timeout: 15_000 });
     await this.waitForHydration(15000);
+
+    // The app may auto-redirect after async session restore; wait for either state deterministically.
+    await Promise.any([
+      this.usernameInput.waitFor({ state: 'visible', timeout: 30_000 }),
+      this.page.waitForURL(/\/tabs\//, { timeout: 30_000 }),
+    ]);
   }
 
   async loginWithUser(user: TestUser): Promise<void> {
@@ -37,7 +44,15 @@ export class LoginPage extends BasePage {
       return;
     }
 
-    await this.usernameInput.waitFor({ state: 'visible', timeout: 15000 });
+    await Promise.any([
+      this.usernameInput.waitFor({ state: 'visible', timeout: 15_000 }),
+      this.page.waitForURL(/\/tabs\//, { timeout: 15_000 }),
+    ]);
+
+    if (this.page.url().includes('/tabs/')) {
+      return;
+    }
+
     await this.page.fill('[data-testid="login-username-input"]', username);
     await this.page.fill('[data-testid="login-password-input"]', password);
     await this.submitButton.click();

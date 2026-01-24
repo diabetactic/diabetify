@@ -563,6 +563,11 @@ test.describe('Evidence Collection - Appointment Flows @evidence @docker', () =>
       await page.reload();
       await pages.appointmentsPage.waitForHydration();
       await waitForAppointmentsContent(page);
+
+      await expect
+        .poll(async () => (await authenticatedApi.getAppointmentStatus()).state, { timeout: 15000 })
+        .toBe('DENIED');
+
       await takeEvidenceScreenshot(page, '22-denied-state-denied');
 
       const deniedState = await authenticatedApi.getAppointmentStatus();

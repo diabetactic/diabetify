@@ -132,18 +132,11 @@ export default defineConfig({
       },
     },
 
-    // Visual setup - reseeds database for deterministic visual test data
-    // Runs after functional tests pollute data, before visual tests capture screenshots
-    {
-      name: 'visual-setup',
-      testDir: './playwright/fixtures',
-      testMatch: /visual\.setup\.ts/,
-      dependencies: ['setup'],
-    },
+    // Functional tests (smoke + functional + evidence excluded)
     {
       name: 'mobile-chromium-functional',
       dependencies: ['setup'],
-      testIgnore: '**/visual/**/*.spec.ts', // Visual tests run in dedicated project
+      testIgnore: ['**/visual/**/*.spec.ts', '**/evidence/**/*.spec.ts'], // Run these in dedicated projects
       use: {
         browserName: 'chromium',
         viewport: MOBILE_VIEWPORT,
@@ -157,6 +150,35 @@ export default defineConfig({
           headless: process.env.HEADLESS !== 'false', // Set HEADLESS=false to see browser
         },
       },
+    },
+
+    // Evidence collection tests (run after functional to avoid state interference)
+    {
+      name: 'mobile-chromium-evidence',
+      dependencies: ['mobile-chromium-functional'],
+      testMatch: '**/evidence/**/*.spec.ts',
+      use: {
+        browserName: 'chromium',
+        viewport: MOBILE_VIEWPORT,
+        deviceScaleFactor: 3,
+        isMobile: true,
+        hasTouch: true,
+        userAgent:
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+        launchOptions: {
+          executablePath: browserExecutable,
+          headless: process.env.HEADLESS !== 'false',
+        },
+      },
+    },
+
+    // Visual setup - reseeds database for deterministic visual test data
+    // Runs after functional + evidence pollute data, before visual tests capture screenshots
+    {
+      name: 'visual-setup',
+      testDir: './playwright/fixtures',
+      testMatch: /visual\.setup\.ts/,
+      dependencies: ['mobile-chromium-evidence'],
     },
     {
       name: 'mobile-chromium',
@@ -202,7 +224,7 @@ export default defineConfig({
     : {
         command:
           process.env.E2E_DOCKER_TESTS === 'true'
-            ? `npx ng serve --configuration local --proxy-config proxy.conf.local.json --port ${PORT} --host ${HOST}`
+            ? `npx ng serve --configuration local --proxy-config proxy.conf.local.cjs --port ${PORT} --host ${HOST}`
             : `npx ng serve --configuration development --port ${PORT} --host ${HOST}`,
         url: BASE_URL,
         reuseExistingServer: !process.env.CI,

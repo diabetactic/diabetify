@@ -40,6 +40,19 @@ async function prepareForScreenshot(page: import('@playwright/test').Page): Prom
   });
 }
 
+async function waitForDashboardContent(page: import('@playwright/test').Page): Promise<void> {
+  await page.waitForFunction(
+    () => {
+      const mainSkeleton = document.querySelector('.page-shell > .animate-pulse');
+      const statsContainer = document.querySelector('[data-testid="stats-container"]');
+      const recentReadings = document.querySelector('[data-testid="recent-readings"]');
+      return !mainSkeleton && (statsContainer !== null || recentReadings !== null);
+    },
+    null,
+    { timeout: 60000 }
+  );
+}
+
 async function setTheme(page: import('@playwright/test').Page, theme: 'light' | 'dark') {
   const isDark = theme === 'dark';
 
@@ -116,10 +129,7 @@ test.describe('Visual Regression - Dark Theme @visual @docker', () => {
   test('dashboard - dark theme', async ({ page, pages }) => {
     await page.goto('/tabs/dashboard');
     await pages.dashboardPage.waitForHydration();
-    await page.waitForSelector('[data-testid="stats-container"]', {
-      state: 'visible',
-      timeout: 30000,
-    });
+    await waitForDashboardContent(page);
     await setTheme(page, 'dark');
     await prepareForScreenshot(page);
 
@@ -129,17 +139,20 @@ test.describe('Visual Regression - Dark Theme @visual @docker', () => {
   test('readings - dark theme', async ({ page, pages }) => {
     await page.goto('/tabs/dashboard');
     await pages.dashboardPage.waitForHydration();
-    await page.waitForSelector('[data-testid="stats-container"]', {
-      state: 'visible',
-      timeout: 30000,
-    });
+    await waitForDashboardContent(page);
 
     await page.goto('/tabs/readings');
     await pages.readingsPage.waitForHydration();
-    await page.waitForSelector('app-reading-item', {
-      state: 'visible',
-      timeout: 15000,
-    });
+    await page.waitForFunction(
+      () => {
+        const list = document.querySelector('[data-testid="readings-list"]');
+        const empty = document.querySelector('[data-testid="readings-empty"]');
+        const loading = document.querySelector('.animate-pulse, ion-skeleton-text');
+        return !loading && (list !== null || empty !== null);
+      },
+      null,
+      { timeout: 30000 }
+    );
     await setTheme(page, 'dark');
     await prepareForScreenshot(page);
 
@@ -169,7 +182,10 @@ test.describe('Visual Regression - Dark Theme Auth @visual @docker', () => {
 
   test('login - dark theme', async ({ page }) => {
     await page.goto('/login');
-    await page.waitForSelector('form', { state: 'visible', timeout: 10000 });
+    await page.waitForSelector('[data-testid="login-submit-btn"]', {
+      state: 'visible',
+      timeout: 30000,
+    });
     await setTheme(page, 'dark');
     await prepareForScreenshot(page);
 

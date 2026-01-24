@@ -44,14 +44,13 @@
     data-testid="readings-list"
   >
     <div *cdkVirtualFor="let item of flattenedItems(); trackBy: trackByItem" class="virtual-item">
-      @if (isHeader(item)) {
-        <div
-          class="border-primary bg-base-100 dark:bg-base-300 sticky top-0 z-10 border-b-2 px-4 py-2"
-          [style.height.px]="HEADER_HEIGHT"
-        >
-          <div class="flex items-center justify-between">
-            <h2 class="text-base-content m-0 text-lg font-semibold">{{ item.displayDate }}</h2>
-            <p class="text-base-content/60 dark:text-base-content/80 m-0 text-[13px]">
+	      @if (isHeader(item)) {
+	        <div
+	          class="border-primary bg-base-100 dark:bg-base-300 sticky top-0 z-10 h-12 border-b-2 px-4 py-2"
+	        >
+	          <div class="flex items-center justify-between">
+	            <h2 class="text-base-content m-0 text-lg font-semibold">{{ item.displayDate }}</h2>
+	            <p class="text-base-content/60 dark:text-base-content/80 m-0 text-[13px]">
               {{ item.count }}
               {{
                 item.count !== 1
@@ -61,16 +60,16 @@
             </p>
           </div>
         </div>
-      }
-      @if (isReading(item)) {
-        <div class="px-4 py-1" [style.height.px]="ITEM_HEIGHT">
-          <app-reading-item
-            [reading]="item.reading"
-            (edit)="onReadingEdit(item.reading)"
-            class="block w-full"
-          ></app-reading-item>
-        </div>
-      }
-    </div>
-  </cdk-virtual-scroll-viewport>
-}
+	      }
+	      @if (isReading(item)) {
+	        <div class="h-20 px-4 py-1">
+	          <app-reading-item
+	            [reading]="item.reading"
+	            (edit)="onReadingEdit(item.reading)"
+	            class="block w-full"
+	          ></app-reading-item>
+	        </div>
+	      }
+	    </div>
+	  </cdk-virtual-scroll-viewport>
+	}
