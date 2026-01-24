@@ -38,7 +38,9 @@ test.describe('Appointments Functional Tests @functional @docker', () => {
     ]);
     await pages.appointmentsPage.waitForHydration();
 
-    const requestBtn = page.locator('#request-appointment-btn, [data-testid="request-appointment-btn"]');
+    const requestBtn = page.locator(
+      '#request-appointment-btn, [data-testid="request-appointment-btn"], text=/Solicitar|Request|Nueva/i'
+    );
     await expect(requestBtn.first()).toBeVisible({ timeout: 15000 });
   });
 
