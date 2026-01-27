@@ -158,22 +158,43 @@ export class ReadingsService implements OnDestroy {
   // ============================================================================
 
   private initializeObservables(): void {
-    const readingsSub = this.liveQueryFn(() => {
-      const userId = this.currentUserId$.getValue();
-      if (!userId) {
-        return Promise.resolve([] as LocalGlucoseReading[]);
-      }
-      return this.db.readings
-        .where('userId')
-        .equals(userId)
-        .toArray()
-        .then(readings => {
-          readings.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-          return readings;
-        });
-    }).subscribe(readings => this._readings$.next(readings));
-    this.liveQuerySubscriptions.push(readingsSub);
+    // Track current readings liveQuery to unsubscribe when userId changes
+    let currentReadingsSub: { unsubscribe: () => void } | null = null;
 
+    // Re-subscribe to liveQuery whenever userId changes (fixes race condition on first open)
+    this.currentUserId$.pipe(takeUntil(this.destroy$)).subscribe(userId => {
+      // Unsubscribe from previous liveQuery
+      if (currentReadingsSub) {
+        const index = this.liveQuerySubscriptions.indexOf(currentReadingsSub);
+        if (index > -1) {
+          this.liveQuerySubscriptions.splice(index, 1);
+        }
+        currentReadingsSub.unsubscribe();
+        currentReadingsSub = null;
+      }
+
+      // If no userId, emit empty array and don't set up liveQuery
+      if (!userId) {
+        this._readings$.next([]);
+        return;
+      }
+
+      // Create new liveQuery with current userId captured in closure
+      currentReadingsSub = this.liveQueryFn(() => {
+        return this.db.readings
+          .where('userId')
+          .equals(userId)
+          .toArray()
+          .then(readings => {
+            readings.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+            return readings;
+          });
+      }).subscribe(readings => this._readings$.next(readings));
+
+      this.liveQuerySubscriptions.push(currentReadingsSub);
+    });
+
+    // syncQueue and conflicts liveQueries are not user-specific
     const syncQueueSub = this.liveQueryFn(() => this.db.syncQueue.count()).subscribe(count =>
       this._pendingSyncCount$.next(count)
     );

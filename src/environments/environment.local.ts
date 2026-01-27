@@ -15,7 +15,9 @@ function getLocalBaseUrl(): string {
     const PC_LOCAL_IP = '192.168.0.9';
     return `http://${PC_LOCAL_IP}:8000`;
   }
-  return 'http://localhost:8000'; // Web (Docker API gateway)
+  // Web: use relative proxy path so `ng serve --proxy-config proxy.conf.local.cjs`
+  // can route to the correct Docker host port (including non-default ports).
+  return '/api';
 }
 
 export const environment = {

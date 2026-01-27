@@ -4,7 +4,9 @@ import { BasePage } from './base.page';
 export type QueueState = 'PENDING' | 'ACCEPTED' | 'DENIED' | 'CREATED' | 'BLOCKED' | 'NONE';
 
 export class AppointmentsPage extends BasePage {
-  readonly requestButton = this.page.locator('#request-appointment-btn');
+  readonly requestButton = this.page
+    .locator('#request-appointment-btn, [data-testid="request-appointment-btn"]')
+    .or(this.page.getByRole('button', { name: /Solicitar Cita|Request Appointment/i }));
   readonly createButton = this.page
     .locator('ion-button')
     .filter({ hasText: /Agregar Nueva Cita|Add New Appointment|Crear|Create/i });
@@ -21,8 +23,12 @@ export class AppointmentsPage extends BasePage {
   }
 
   async requestAppointment(): Promise<void> {
-    if ((await this.requestButton.count()) > 0 && !(await this.requestButton.isDisabled())) {
-      await this.scrollAndClick('#request-appointment-btn');
+    const button = this.requestButton.first();
+    if ((await button.count()) > 0 && !(await button.isDisabled())) {
+      await button.evaluate((el: HTMLElement) => {
+        el.scrollIntoView({ behavior: 'instant', block: 'center' });
+        el.click();
+      });
       await this.waitForNetwork();
     }
   }

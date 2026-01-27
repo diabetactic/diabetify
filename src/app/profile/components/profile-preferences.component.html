@@ -91,6 +91,7 @@
       </div>
       <ion-toggle
         [checked]="biometricEnabled"
+        [disabled]="true"
         (ionChange)="onBiometricToggle($event)"
         aria-label="{{ 'biometric.settings.title' | translate }}"
         data-testid="biometric-toggle"

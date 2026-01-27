@@ -18,7 +18,7 @@ import {
   HttpInterceptor,
   HttpErrorResponse,
 } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError, Subject } from 'rxjs';
+import { Observable, BehaviorSubject, throwError, Subject, from } from 'rxjs';
 import { catchError, filter, take, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { LocalAuthService } from '@services/local-auth.service';
@@ -150,11 +150,9 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
           this.isRefreshing = false;
           this.refreshTokenSubject.next(null);
 
-          this.authService.logout().then(() => {
-            this.router.navigate([ROUTES.WELCOME]);
-          });
-
-          return throwError(() => err);
+          // Perform logout and navigation, then throw error
+          // Using from() to convert Promise to Observable ensures proper sequencing
+          return from(this.logoutAndRedirect()).pipe(switchMap(() => throwError(() => err)));
         })
       );
     } else {
@@ -176,13 +174,17 @@ export class AuthInterceptor implements HttpInterceptor, OnDestroy {
   private handle403Error(error: HttpErrorResponse): Observable<never> {
     this.logger.warn('AuthInterceptor', '403 Forbidden - forcing re-login for fresh permissions');
 
-    // Force logout and redirect to welcome page
-    // Don't wait for logout to complete, just trigger it
-    this.authService.logout().then(() => {
-      this.router.navigate([ROUTES.WELCOME]);
-    });
+    // Perform logout and navigation, then throw error
+    return from(this.logoutAndRedirect()).pipe(switchMap(() => throwError(() => error)));
+  }
 
-    return throwError(() => error);
+  /**
+   * Logout user and redirect to welcome page.
+   * Uses replaceUrl to clear navigation history and prevent back-button issues.
+   */
+  private async logoutAndRedirect(): Promise<void> {
+    await this.authService.logout();
+    await this.router.navigate([ROUTES.WELCOME], { replaceUrl: true });
   }
 
   /**

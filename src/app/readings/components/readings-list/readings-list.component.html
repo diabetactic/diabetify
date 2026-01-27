@@ -36,38 +36,37 @@
   </div>
 }
 
-<!-- Virtual Scrolling Readings List -->
-@if (!isLoading && flattenedItems().length > 0) {
-  <cdk-virtual-scroll-viewport
-    [itemSize]="ITEM_HEIGHT"
-    class="readings-virtual-viewport"
-    data-testid="readings-list"
-  >
-    <div *cdkVirtualFor="let item of flattenedItems(); trackBy: trackByItem" class="virtual-item">
-      @if (isHeader(item)) {
-        <div class="border-primary bg-base-100 dark:bg-base-300 sticky top-0 z-10 h-12 border-b-2 px-4 py-2">
-          <div class="flex items-center justify-between">
-            <h2 class="text-base-content m-0 text-lg font-semibold">{{ item.displayDate }}</h2>
-            <p class="text-base-content/60 dark:text-base-content/80 m-0 text-[13px]">
-              {{ item.count }}
-              {{
-                item.count !== 1
-                  ? ('readings.readings' | translate)
-                  : ('readings.reading' | translate)
-              }}
-            </p>
-          </div>
+<!-- Readings List (grouped by date) -->
+@if (!isLoading && groupedReadings.length > 0) {
+  <div class="readings-list-container" data-testid="readings-list">
+    @for (group of groupedReadings; track trackByGroup($index, group)) {
+      <!-- Date Header -->
+      <div
+        class="border-primary bg-base-100 dark:bg-base-300 sticky top-0 z-10 border-b-2 px-4 py-2"
+      >
+        <div class="flex items-center justify-between">
+          <h2 class="text-base-content m-0 text-lg font-semibold">{{ group.displayDate }}</h2>
+          <p class="text-base-content/60 dark:text-base-content/80 m-0 text-[13px]">
+            {{ group.readings.length }}
+            {{
+              group.readings.length !== 1
+                ? ('readings.readings' | translate)
+                : ('readings.reading' | translate)
+            }}
+          </p>
         </div>
-      }
-      @if (isReading(item)) {
-        <div class="h-20 px-4 py-1">
+      </div>
+
+      <!-- Readings for this date -->
+      @for (reading of group.readings; track trackByReading($index, reading)) {
+        <div class="px-4 py-1">
           <app-reading-item
-            [reading]="item.reading"
-            (edit)="onReadingEdit(item.reading)"
+            [reading]="reading"
+            (edit)="onReadingEdit(reading)"
             class="block w-full"
           ></app-reading-item>
         </div>
       }
-    </div>
-  </cdk-virtual-scroll-viewport>
+    }
+  </div>
 }

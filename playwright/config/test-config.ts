@@ -47,12 +47,15 @@ export const SECONDARY_USER: TestUser = {
 /**
  * API Gateway - Main user-facing API (login, readings, appointments, profile)
  */
-export const API_URL = process.env['E2E_API_URL'] || 'http://localhost:8000';
+const DEFAULT_API_PORT = process.env['DIABETACTIC_API_PORT'] || '8000';
+export const API_URL = process.env['E2E_API_URL'] || `http://localhost:${DEFAULT_API_PORT}`;
 
 /**
  * Backoffice API - Admin operations (queue management, user CRUD, test setup)
  */
-export const BACKOFFICE_URL = process.env['E2E_BACKOFFICE_URL'] || 'http://localhost:8001';
+const DEFAULT_BACKOFFICE_PORT = process.env['DIABETACTIC_BACKOFFICE_PORT'] || '8001';
+export const BACKOFFICE_URL =
+  process.env['E2E_BACKOFFICE_URL'] || `http://localhost:${DEFAULT_BACKOFFICE_PORT}`;
 
 /**
  * App Base URL - Frontend application

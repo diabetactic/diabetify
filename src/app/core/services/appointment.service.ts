@@ -151,7 +151,11 @@ export class AppointmentService implements OnDestroy {
           }
           throw new Error(response.error?.message || 'Failed to create appointment');
         }),
-        tap(() => this.refreshAppointments()),
+        tap(() => {
+          // Clear appointments cache before refresh to ensure fresh data is fetched
+          this.apiGateway.clearCache('extservices.appointments.mine');
+          this.refreshAppointments();
+        }),
         catchError(this.handleError.bind(this))
       );
   }

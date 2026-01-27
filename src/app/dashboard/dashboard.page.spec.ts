@@ -14,6 +14,7 @@ import { ReadingsService } from '@services/readings.service';
 import { TranslationService } from '@services/translation.service';
 import { ProfileService } from '@services/profile.service';
 import { LocalAuthService } from '@services/local-auth.service';
+import { AuthSessionService } from '@services/auth-session.service';
 import { LoggerService } from '@services/logger.service';
 import { ThemeService } from '@services/theme.service';
 import { LocalGlucoseReading, GlucoseStatistics, GlucoseUnit } from '@models/glucose-reading.model';
@@ -41,6 +42,7 @@ describe('DashboardPage', () => {
   let mockTranslationService: any;
   let mockProfileService: any;
   let mockLocalAuthService: any;
+  let mockAuthSessionService: any;
   let mockLoggerService: any;
   let mockThemeService: any;
   let mockToastController: any;
@@ -135,6 +137,11 @@ describe('DashboardPage', () => {
       authState$: new BehaviorSubject<LocalAuthState>(mockAuthState),
     };
 
+    mockAuthSessionService = {
+      userIdNonNull$: new BehaviorSubject<string>('test-user-123'),
+      userId$: new BehaviorSubject<string | null>('test-user-123'),
+    };
+
     mockLoggerService = {
       info: vi.fn(),
       debug: vi.fn(),
@@ -144,6 +151,7 @@ describe('DashboardPage', () => {
 
     mockThemeService = {
       isDarkTheme: vi.fn().mockReturnValue(false),
+      isDark$: new BehaviorSubject<boolean>(false),
     };
 
     mockToastController = {
@@ -183,6 +191,7 @@ describe('DashboardPage', () => {
         { provide: TranslationService, useValue: mockTranslationService },
         { provide: ProfileService, useValue: mockProfileService },
         { provide: LocalAuthService, useValue: mockLocalAuthService },
+        { provide: AuthSessionService, useValue: mockAuthSessionService },
         { provide: LoggerService, useValue: mockLoggerService },
         { provide: ThemeService, useValue: mockThemeService },
         { provide: ToastController, useValue: mockToastController },
@@ -241,8 +250,10 @@ describe('DashboardPage', () => {
       expect(loadSpy).toHaveBeenCalled();
     });
 
-    it('should subscribe to readings on init', () => {
+    it('should subscribe to readings on init', async () => {
       component.ngOnInit();
+      // Wait for async loadDashboardData() to complete (auth waits, then loads, then subscribes)
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       expect(component.recentReadings).toEqual([mockReading]);
     });
@@ -315,13 +326,13 @@ describe('DashboardPage', () => {
       component.ngOnInit();
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      expect(mockReadingsService.fetchFromBackend).toHaveBeenCalled();
+      expect(mockReadingsService.performFullSync).toHaveBeenCalled();
       expect(component.backendSyncResult).toEqual({ pushed: 0, fetched: 5, failed: 0 });
     });
 
     it('should handle backend sync error gracefully', async () => {
       mockEnvConfig.setMockMode(false);
-      mockReadingsService.fetchFromBackend.mockRejectedValue(new Error('Sync failed'));
+      mockReadingsService.performFullSync.mockRejectedValue(new Error('Sync failed'));
 
       component.ngOnInit();
       await new Promise(resolve => setTimeout(resolve, 0));

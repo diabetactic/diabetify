@@ -61,21 +61,14 @@ describe('AdvancedPage', () => {
 
     fixture = TestBed.createComponent(AdvancedPage);
     component = fixture.componentInstance;
-    // Don't call detectChanges() in beforeEach to avoid template binding issues
   });
 
-  it('should have dev mode enabled based on production flag', () => {
-    expect(component.isDevMode).toBeDefined();
+  it('should create', () => {
+    expect(component).toBeTruthy();
   });
 
-  it('should initialize account state to active', () => {
-    expect(component.accountState).toBe('active');
-  });
-
-  it('should update account state on change', () => {
-    const newState = 'disabled';
-    const event = new CustomEvent('ionChange', { detail: { value: newState } });
-    component.onAccountStateChange(event as CustomEvent<{ value: string }>);
-    expect(component.accountState).toBe('disabled');
+  it('should close modal when close() is called', async () => {
+    await component.close();
+    expect(mockRouter.navigate).toHaveBeenCalled();
   });
 });

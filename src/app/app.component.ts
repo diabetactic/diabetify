@@ -58,18 +58,27 @@ export class AppComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.configureWebDeviceFrame();
 
-    // Deep link handler
     if (this.platform.is('capacitor')) {
+      // Deep link handler
       App.addListener('appUrlOpen', (data: URLOpenListenerEvent) => {
         this.ngZone.run(() => {
           const url = new URL(data.url);
-          // Handle reset-password deep link
-          // Format: diabetify://reset-password?token=... or https://.../reset-password?token=...
           if (url.host === 'reset-password' || url.pathname.includes('reset-password')) {
             const token = url.searchParams.get('token');
             if (token) {
               this.router.navigate(['/reset-password'], { queryParams: { token } });
             }
+          }
+        });
+      });
+
+      // Hardware back button handler for Android
+      App.addListener('backButton', ({ canGoBack }) => {
+        this.ngZone.run(() => {
+          if (this.isOnMainTab()) {
+            App.exitApp();
+          } else if (canGoBack) {
+            window.history.back();
           }
         });
       });
@@ -147,6 +156,12 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.platform.is('capacitor')) return;
     const enableFrame = this.envConfig.features.webDeviceFrame;
     document.documentElement.classList.toggle('dt-device-frame', enableFrame);
+  }
+
+  private isOnMainTab(): boolean {
+    const url = this.router.url;
+    const mainTabs = ['/tabs/dashboard', '/tabs/readings', '/tabs/appointments', '/tabs/profile'];
+    return mainTabs.some(tab => url === tab || url.startsWith(tab + '?'));
   }
 
   private async initializeApp(): Promise<void> {

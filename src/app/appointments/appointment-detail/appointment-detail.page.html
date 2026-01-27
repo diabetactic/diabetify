@@ -26,7 +26,7 @@
       <div class="flex flex-col gap-4">
         <app-appointment-timeline
           [appointment]="appointment"
-          [hasResolution]="!!resolution?.change_basal_type"
+          [hasResolution]="!!resolution"
         ></app-appointment-timeline>
         <!-- Header card with ID and motive -->
         <ion-card class="!m-0">
@@ -195,7 +195,7 @@
           }
         }
         <!-- Resolution card - shown when resolution data is available -->
-        @if (resolution && resolution.change_basal_type) {
+        @if (resolution) {
           <ion-card class="!m-0 border-l-4 border-l-green-500">
             <ion-card-header>
               <ion-card-title class="flex items-center gap-2 text-lg">
@@ -206,55 +206,67 @@
             <ion-card-content>
               <ion-list lines="none" class="ion-no-padding">
                 <!-- Basal Insulin Changes -->
-                <ion-item>
-                  <ion-label>
-                    <p class="text-base-content/60 dark:text-base-content/80">
-                      {{ 'appointments.resolution.basalType' | translate }}
-                    </p>
-                    <h3 class="font-semibold">{{ resolution.change_basal_type }}</h3>
-                  </ion-label>
-                </ion-item>
-                <ion-item>
-                  <ion-label>
-                    <p class="text-base-content/60 dark:text-base-content/80">
-                      {{ 'appointments.resolution.basalDose' | translate }}
-                    </p>
-                    <h3 class="font-semibold">{{ resolution.change_basal_dose }} U</h3>
-                  </ion-label>
-                </ion-item>
-                <ion-item>
-                  <ion-label>
-                    <p class="text-base-content/60 dark:text-base-content/80">
-                      {{ 'appointments.resolution.basalTime' | translate }}
-                    </p>
-                    <h3 class="font-semibold">{{ resolution.change_basal_time }}</h3>
-                  </ion-label>
-                </ion-item>
+                @if (resolution.change_basal_type) {
+                  <ion-item>
+                    <ion-label>
+                      <p class="text-base-content/60 dark:text-base-content/80">
+                        {{ 'appointments.resolution.basalType' | translate }}
+                      </p>
+                      <h3 class="font-semibold">{{ resolution.change_basal_type }}</h3>
+                    </ion-label>
+                  </ion-item>
+                }
+                @if (resolution.change_basal_dose) {
+                  <ion-item>
+                    <ion-label>
+                      <p class="text-base-content/60 dark:text-base-content/80">
+                        {{ 'appointments.resolution.basalDose' | translate }}
+                      </p>
+                      <h3 class="font-semibold">{{ resolution.change_basal_dose }} U</h3>
+                    </ion-label>
+                  </ion-item>
+                }
+                @if (resolution.change_basal_time) {
+                  <ion-item>
+                    <ion-label>
+                      <p class="text-base-content/60 dark:text-base-content/80">
+                        {{ 'appointments.resolution.basalTime' | translate }}
+                      </p>
+                      <h3 class="font-semibold">{{ resolution.change_basal_time }}</h3>
+                    </ion-label>
+                  </ion-item>
+                }
                 <!-- Fast Insulin Changes -->
-                <ion-item>
-                  <ion-label>
-                    <p class="text-base-content/60 dark:text-base-content/80">
-                      {{ 'appointments.resolution.fastType' | translate }}
-                    </p>
-                    <h3 class="font-semibold">{{ resolution.change_fast_type }}</h3>
-                  </ion-label>
-                </ion-item>
-                <ion-item>
-                  <ion-label>
-                    <p class="text-base-content/60 dark:text-base-content/80">
-                      {{ 'appointments.resolution.ratio' | translate }}
-                    </p>
-                    <h3 class="font-semibold">1:{{ resolution.change_ratio }}</h3>
-                  </ion-label>
-                </ion-item>
-                <ion-item>
-                  <ion-label>
-                    <p class="text-base-content/60 dark:text-base-content/80">
-                      {{ 'appointments.resolution.sensitivity' | translate }}
-                    </p>
-                    <h3 class="font-semibold">{{ resolution.change_sensitivity }} mg/dL</h3>
-                  </ion-label>
-                </ion-item>
+                @if (resolution.change_fast_type) {
+                  <ion-item>
+                    <ion-label>
+                      <p class="text-base-content/60 dark:text-base-content/80">
+                        {{ 'appointments.resolution.fastType' | translate }}
+                      </p>
+                      <h3 class="font-semibold">{{ resolution.change_fast_type }}</h3>
+                    </ion-label>
+                  </ion-item>
+                }
+                @if (resolution.change_ratio) {
+                  <ion-item>
+                    <ion-label>
+                      <p class="text-base-content/60 dark:text-base-content/80">
+                        {{ 'appointments.resolution.ratio' | translate }}
+                      </p>
+                      <h3 class="font-semibold">1:{{ resolution.change_ratio }}</h3>
+                    </ion-label>
+                  </ion-item>
+                }
+                @if (resolution.change_sensitivity) {
+                  <ion-item>
+                    <ion-label>
+                      <p class="text-base-content/60 dark:text-base-content/80">
+                        {{ 'appointments.resolution.sensitivity' | translate }}
+                      </p>
+                      <h3 class="font-semibold">{{ resolution.change_sensitivity }} mg/dL</h3>
+                    </ion-label>
+                  </ion-item>
+                }
                 <!-- Flags -->
                 @if (resolution.emergency_care) {
                   <ion-item class="text-error">

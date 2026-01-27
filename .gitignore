@@ -108,3 +108,5 @@ evidence/screenshots/*
 !evidence/screenshots/heroku/
 !evidence/screenshots/heroku/**
 evidence/api-responses/
+# Local mise overrides (machine-specific)
+mise.local.toml
