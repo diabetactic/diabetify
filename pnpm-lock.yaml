@@ -72,8 +72,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0(@capacitor/core@8.0.1)
       '@capgo/capacitor-native-biometric':
-        specifier: ^8.0.4
-        version: 8.0.4(@capacitor/core@8.0.1)
+        specifier: ^8.3.2
+        version: 8.3.2(@capacitor/core@8.0.1)
       '@ionic/angular':
         specifier: ^8.7.16
         version: 8.7.16(9fafce56858244f1c034b013da79a9a5)
@@ -1277,8 +1277,8 @@ packages:
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
 
-  '@capgo/capacitor-native-biometric@8.0.4':
-    resolution: {integrity: sha512-ZGo6UtmGJZg4ioVqjNNVeMoeC6fp4TNJoiQJ7dloXQM6P6lk68P9KtACPa4VPANaL28/3gTYmHbEbXbk3Xsx7g==}
+  '@capgo/capacitor-native-biometric@8.3.2':
+    resolution: {integrity: sha512-2hTVfC64AROwWBnNsprwnnUr4779B6BaOib+p/bGvuzk4D5A+axEkgn++X4sjOMt9N/XPhHN9s99qqQStuBsrg==}
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
 
@@ -9265,7 +9265,7 @@ snapshots:
     dependencies:
       '@capacitor/core': 8.0.1
 
-  '@capgo/capacitor-native-biometric@8.0.4(@capacitor/core@8.0.1)':
+  '@capgo/capacitor-native-biometric@8.3.2(@capacitor/core@8.0.1)':
     dependencies:
       '@capacitor/core': 8.0.1
 
