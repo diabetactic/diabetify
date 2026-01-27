@@ -71,6 +71,7 @@ describe('AppointmentService', () => {
   beforeEach(() => {
     const apiGatewaySpy = {
       request: vi.fn(),
+      clearCache: vi.fn(),
     } as unknown as Mock<ApiGatewayService>;
     const translationSpy = {
       instant: vi.fn(),

@@ -25,7 +25,7 @@ import {
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { take, takeUntil } from 'rxjs/operators';
 
 import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { ReadingsService } from '@services/readings.service';
@@ -42,6 +42,7 @@ import { LanguageSwitcherComponentModule } from '@shared/components/language-swi
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { StreakCardComponent } from '@shared/components/streak-card/streak-card.component';
 import { LocalAuthService } from '@services/local-auth.service';
+import { AuthSessionService } from '@services/auth-session.service';
 import { EnvironmentConfigService } from '@core/config/environment-config.service';
 import { ROUTES } from '@core/constants';
 
@@ -146,6 +147,7 @@ export class DashboardPage implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private profileService: ProfileService,
     private localAuthService: LocalAuthService,
+    private authSession: AuthSessionService,
     private logger: LoggerService,
     private themeService: ThemeService,
     private ngZone: NgZone,
@@ -159,8 +161,14 @@ export class DashboardPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscribeToPreferences();
     this.subscribeToGamification();
-    this.loadDashboardData();
-    this.subscribeToReadings();
+    this.waitForAuthThenLoadData();
+  }
+
+  private waitForAuthThenLoadData(): void {
+    this.authSession.userIdNonNull$.pipe(take(1), takeUntil(this.destroy$)).subscribe(async () => {
+      await this.loadDashboardData();
+      this.subscribeToReadings();
+    });
   }
 
   ngOnDestroy() {
@@ -176,17 +184,16 @@ export class DashboardPage implements OnInit, OnDestroy {
     try {
       this.isLoading = true;
 
-      // In cloud/local mode, sync with backend first to get readings
       if (!this.isMockMode) {
         this.logger.info('Dashboard', 'Auto-syncing with backend on load');
         try {
-          // Use full fetch endpoint (latest endpoint has issues)
-          const fetchResult = await this.readingsService.fetchFromBackend();
+          const syncResult = await this.readingsService.performFullSync();
           this.backendSyncResult = {
-            pushed: 0,
-            fetched: fetchResult.fetched,
-            failed: 0,
+            pushed: syncResult.pushed,
+            fetched: syncResult.fetched,
+            failed: syncResult.failed,
           };
+          this.lastSyncTime = new Date().toISOString();
           this.logger.info('Dashboard', 'Backend sync completed', this.backendSyncResult);
         } catch (syncError) {
           this.logger.error('Dashboard', 'Backend sync failed on load', syncError);
@@ -339,8 +346,8 @@ export class DashboardPage implements OnInit, OnDestroy {
     this.logger.info('UI', 'Manual sync button clicked (backend)');
     try {
       this.isSyncing = true;
-      // Sync with backend
       this.backendSyncResult = await this.readingsService.performFullSync();
+      this.lastSyncTime = new Date().toISOString();
       this.logger.info('UI', 'Backend sync completed successfully', this.backendSyncResult);
 
       // Reload dashboard data (but skip another sync since we just did one)

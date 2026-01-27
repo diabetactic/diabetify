@@ -36,7 +36,8 @@ NC='\033[0m' # No Color
 DEFAULT_USER_ID="40123456"
 DEFAULT_PASSWORD="thepassword"
 HEROKU_URL="https://dt-api-gateway-backoffice-3dead350d8fa.herokuapp.com"
-LOCAL_URL="http://localhost:8001"
+BACKOFFICE_PORT="${DIABETACTIC_BACKOFFICE_PORT:-8001}"
+LOCAL_URL="http://localhost:${BACKOFFICE_PORT}"
 
 # Auto-detect backend
 detect_backend() {
@@ -46,7 +47,7 @@ detect_backend() {
     fi
 
     # Check if Docker backend is running
-    if curl -s "http://localhost:8001/docs" > /dev/null 2>&1; then
+    if curl -s "http://localhost:${BACKOFFICE_PORT}/docs" > /dev/null 2>&1; then
         echo -e "${GREEN}✓ Docker backend detected${NC}" >&2
         echo "$LOCAL_URL"
     else

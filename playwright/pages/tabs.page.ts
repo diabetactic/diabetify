@@ -13,10 +13,16 @@ export class TabsPage extends BasePage {
   }
 
   async navigateTo(tabName: TabName): Promise<void> {
-    const tabButton = this.getTabButton(tabName);
-    await tabButton.click();
-    await expect(this.page).toHaveURL(new RegExp(`/${tabName}`), { timeout: 10000 });
-    await expect(tabButton).toHaveClass(/tab-selected/, { timeout: 5000 });
+    const tabButton = this.getTabButton(tabName).first();
+    await tabButton.waitFor({ state: 'visible', timeout: 15_000 });
+
+    await Promise.all([
+      tabButton.click({ timeout: 15_000 }),
+      this.page.waitForURL(new RegExp(`/tabs/${tabName}`), { timeout: 15_000 }),
+    ]);
+
+    await expect(this.page).toHaveURL(new RegExp(`/tabs/${tabName}`), { timeout: 15_000 });
+    await expect(tabButton).toHaveClass(/tab-selected/, { timeout: 10_000 });
     await expect(this.page.locator(`app-${tabName} ion-content`).first()).toBeVisible({
       timeout: 10000,
     });

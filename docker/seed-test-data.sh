@@ -19,8 +19,10 @@ cd "$SCRIPT_DIR"
 source "$SCRIPT_DIR/_runlog.sh" 2>/dev/null || true
 
 MODE=${1:-"full"}
-API_URL="http://localhost:8000"
-BACKOFFICE_URL="http://localhost:8001"
+API_GATEWAY_PORT="${DIABETACTIC_API_PORT:-8000}"
+BACKOFFICE_PORT="${DIABETACTIC_BACKOFFICE_PORT:-8001}"
+API_URL="${E2E_API_URL:-http://localhost:${API_GATEWAY_PORT}}"
+BACKOFFICE_URL="${E2E_BACKOFFICE_URL:-http://localhost:${BACKOFFICE_PORT}}"
 
 RUN_ID="${SEED_RUN_ID:-${RUN_ID:-}}"
 export RUN_ID

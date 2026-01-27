@@ -5,7 +5,6 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertController, ToastController, ModalController } from '@ionic/angular';
 import {
@@ -15,16 +14,13 @@ import {
   IonButton,
   IonTitle,
   IonContent,
-  IonLabel,
-  IonSelect,
-  IonSelectOption,
 } from '@ionic/angular/standalone';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { Preferences } from '@capacitor/preferences';
 
 import { createOverlaySafely } from '@core/utils/ionic-overlays';
-import { environment } from '@env/environment';
+
 import { UnifiedAuthService } from '@services/unified-auth.service';
 import { TranslationService } from '@services/translation.service';
 import { db } from '@services/database.service';
@@ -40,7 +36,6 @@ import { ROUTES, TIMEOUTS } from '@core/constants';
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
-    FormsModule,
     TranslateModule,
     IonHeader,
     IonToolbar,
@@ -48,15 +43,10 @@ import { ROUTES, TIMEOUTS } from '@core/constants';
     IonButton,
     IonTitle,
     IonContent,
-    IonLabel,
-    IonSelect,
-    IonSelectOption,
     AppIconComponent,
   ],
 })
 export class AdvancedPage implements OnDestroy {
-  isDevMode = !environment.production;
-  accountState = 'active';
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -203,13 +193,5 @@ export class AdvancedPage implements OnDestroy {
 
     if (!alert) return;
     await alert.present();
-  }
-
-  /**
-   * Handle account state change (dev mode only)
-   */
-  onAccountStateChange(event: CustomEvent): void {
-    this.accountState = event.detail.value;
-    this.logger.debug('Settings', 'Account state changed', { state: this.accountState });
   }
 }

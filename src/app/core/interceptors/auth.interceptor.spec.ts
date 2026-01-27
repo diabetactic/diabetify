@@ -201,7 +201,7 @@ describe('AuthInterceptor', () => {
 
       // Wait for async logout to complete
       await new Promise(resolve => setTimeout(resolve, 50));
-      expect(router.navigate).toHaveBeenCalledWith(['/welcome']);
+      expect(router.navigate).toHaveBeenCalledWith(['/welcome'], { replaceUrl: true });
     });
 
     it('should handle missing access token after refresh', async () => {

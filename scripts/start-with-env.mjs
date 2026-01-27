@@ -36,7 +36,7 @@ switch (envMode) {
     // Local Docker / backend (container-managing uses port 8004)
     apiGatewayUrl = process.env.LOCAL_API_GATEWAY_URL || 'http://localhost:8004';
     configName = 'local';
-    proxyConfig = 'proxy.conf.local.json'; // Local Docker proxy
+    proxyConfig = 'proxy.conf.local.cjs'; // Local Docker proxy
     break;
   case 'mock':
     // Pure front-end / mock data

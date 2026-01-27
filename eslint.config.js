@@ -23,6 +23,7 @@ module.exports = tseslint.config(
       '.turbo/**/*',
       'playwright-report/**/*',
       'reports/**/*',
+      'evidence/**/*',
     ],
   },
 
@@ -134,7 +135,7 @@ module.exports = tseslint.config(
 
   // 7. Node.js Scripts & Configs Overrides
   {
-    files: ['scripts/**/*.{js,mjs}', '*.config.{js,cjs,mjs}'],
+    files: ['scripts/**/*.{js,mjs}', '*.config.{js,cjs,mjs}', 'proxy.conf.*.cjs'],
     languageOptions: {
       globals: {
         console: 'readonly',

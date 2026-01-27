@@ -38,7 +38,7 @@ GEMINI.md
 .shared/
 conductor/
 .sisyphus/
-screenshots/
+/screenshots/
 
 # Secrets/keys
 android/release-keystore.jks
@@ -64,6 +64,7 @@ dashboard_*.txt
 # IDE configs (keep local)
 .cursor/
 .gemini/
+.vscode/
 android/.idea/
 
 # Removed Windows wrapper files per user request
@@ -101,7 +102,11 @@ midscene_run/report
 midscene_run/tmp
 midscene_run/log
 
-# Evidence collection output (generated, except production evidence)
+# Evidence collection output (generated)
+# Keep upstream-tracked Heroku evidence; ignore locally-generated artifacts.
 evidence/screenshots/*
 !evidence/screenshots/heroku/
+!evidence/screenshots/heroku/**
 evidence/api-responses/
+# Local mise overrides (machine-specific)
+mise.local.toml

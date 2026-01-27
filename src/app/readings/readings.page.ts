@@ -32,7 +32,7 @@ import {
 import { ModalController, ToastController } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, take, takeUntil } from 'rxjs/operators';
 
 import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { LocalGlucoseReading, GlucoseStatus, GlucoseUnit } from '@models/glucose-reading.model';
@@ -40,6 +40,7 @@ import { ReadingsService } from '@services/readings.service';
 import { ProfileService } from '@services/profile.service';
 import { TranslationService } from '@services/translation.service';
 import { LoggerService } from '@services/logger.service';
+import { AuthSessionService } from '@services/auth-session.service';
 import { AppIconComponent } from '@shared/components/app-icon/app-icon.component';
 import { AddReadingPage } from '../add-reading/add-reading.page';
 import { EditReadingPage } from '../edit-reading/edit-reading.page';
@@ -114,6 +115,7 @@ export class ReadingsPage implements OnInit, OnDestroy {
     private profileService: ProfileService,
     private translationService: TranslationService,
     private logger: LoggerService,
+    private authSession: AuthSessionService,
     private toastController: ToastController,
     private cdr: ChangeDetectorRef,
     private modalController: ModalController
@@ -123,9 +125,20 @@ export class ReadingsPage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscribeToUserPreferences();
-    this.loadReadings();
     this.setupSearchDebounce();
-    this.autoFetchFromBackend();
+    this.waitForAuthThenLoadReadings();
+  }
+
+  /**
+   * Wait for user authentication before loading readings.
+   * Fixes race condition where readings$ subscription fires before userId is set,
+   * causing empty results on first page open.
+   */
+  private waitForAuthThenLoadReadings(): void {
+    this.authSession.userIdNonNull$.pipe(take(1), takeUntil(this.destroy$)).subscribe(() => {
+      this.loadReadings();
+      this.autoFetchFromBackend();
+    });
   }
 
   /**

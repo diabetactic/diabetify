@@ -1,26 +1,14 @@
 :host {
   display: block;
-  height: 100%;
 }
 
-.readings-list-shell {
+.readings-list-container {
   width: 100%;
   padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
-}
-
-.readings-virtual-viewport {
-  height: calc(100vh - 180px);
-  width: 100%;
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
-}
-
-.virtual-item {
-  width: 100%;
 }
 
 @media (width >= 1024px) {
-  .readings-list-shell,
-  .readings-virtual-viewport {
+  .readings-list-container {
     max-width: 960px;
   }
 }

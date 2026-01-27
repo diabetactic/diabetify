@@ -1,4 +1,5 @@
 import { test, expect } from '../../fixtures';
+import { TIMEOUTS } from '../../config/test-config';
 
 test.describe('Password Recovery Flow @functional @docker', () => {
   test.describe('Forgot Password Page', () => {
@@ -10,7 +11,7 @@ test.describe('Password Recovery Flow @functional @docker', () => {
 
     test('should display forgot password form', async ({ page }) => {
       await page.goto('/forgot-password');
-      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 15000 });
+      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: TIMEOUTS.navigation });
 
       await expect(page.getByTestId('forgot-password-email-input')).toBeVisible();
       await expect(page.getByTestId('forgot-password-submit-btn')).toBeVisible();
@@ -19,7 +20,7 @@ test.describe('Password Recovery Flow @functional @docker', () => {
 
     test('should validate email format', async ({ page }) => {
       await page.goto('/forgot-password');
-      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 15000 });
+      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: TIMEOUTS.navigation });
 
       const emailInput = page.getByTestId('forgot-password-email-input');
       await emailInput.fill('invalid-email');
@@ -30,7 +31,7 @@ test.describe('Password Recovery Flow @functional @docker', () => {
 
     test('should enable submit button with valid email', async ({ page }) => {
       await page.goto('/forgot-password');
-      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 15000 });
+      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: TIMEOUTS.navigation });
 
       const emailInput = page.getByTestId('forgot-password-email-input');
       await emailInput.fill('valid@example.com');
@@ -40,7 +41,7 @@ test.describe('Password Recovery Flow @functional @docker', () => {
 
     test('should show success message after submitting email', async ({ page, primaryUser }) => {
       await page.goto('/forgot-password');
-      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 15000 });
+      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: TIMEOUTS.navigation });
 
       const emailInput = page.getByTestId('forgot-password-email-input');
       await emailInput.fill(primaryUser.email);
@@ -52,7 +53,7 @@ test.describe('Password Recovery Flow @functional @docker', () => {
 
     test('should navigate back to login from success state', async ({ page, primaryUser }) => {
       await page.goto('/forgot-password');
-      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 15000 });
+      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: TIMEOUTS.navigation });
 
       await page.getByTestId('forgot-password-email-input').fill(primaryUser.email);
       await page.getByTestId('forgot-password-submit-btn').click();
@@ -67,7 +68,7 @@ test.describe('Password Recovery Flow @functional @docker', () => {
   test.describe('Reset Password Page', () => {
     test('should show error when no token provided', async ({ page }) => {
       await page.goto('/reset-password');
-      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 15000 });
+      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: TIMEOUTS.navigation });
 
       await expect(page.locator('.error-message')).toBeVisible();
       await expect(page.getByTestId('reset-password-input')).not.toBeVisible();
@@ -75,7 +76,7 @@ test.describe('Password Recovery Flow @functional @docker', () => {
 
     test('should show form when token is provided', async ({ page }) => {
       await page.goto('/reset-password?token=test-token-123');
-      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 15000 });
+      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: TIMEOUTS.navigation });
 
       await expect(page.getByTestId('reset-password-input')).toBeVisible();
       await expect(page.getByTestId('reset-confirm-password-input')).toBeVisible();
@@ -84,7 +85,7 @@ test.describe('Password Recovery Flow @functional @docker', () => {
 
     test('should validate password minimum length', async ({ page }) => {
       await page.goto('/reset-password?token=test-token-123');
-      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 15000 });
+      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: TIMEOUTS.navigation });
 
       await page.getByTestId('reset-password-input').fill('12345');
       await page.getByTestId('reset-password-input').blur();
@@ -94,7 +95,7 @@ test.describe('Password Recovery Flow @functional @docker', () => {
 
     test('should validate passwords match', async ({ page }) => {
       await page.goto('/reset-password?token=test-token-123');
-      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 15000 });
+      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: TIMEOUTS.navigation });
 
       await page.getByTestId('reset-password-input').fill('newPassword123');
       await page.getByTestId('reset-confirm-password-input').fill('differentPassword');
@@ -105,7 +106,7 @@ test.describe('Password Recovery Flow @functional @docker', () => {
 
     test('should enable submit with valid matching passwords', async ({ page }) => {
       await page.goto('/reset-password?token=test-token-123');
-      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 15000 });
+      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: TIMEOUTS.navigation });
 
       await page.getByTestId('reset-password-input').fill('newPassword123');
       await page.getByTestId('reset-confirm-password-input').fill('newPassword123');
@@ -115,7 +116,7 @@ test.describe('Password Recovery Flow @functional @docker', () => {
 
     test('should show error toast with invalid token', async ({ page }) => {
       await page.goto('/reset-password?token=invalid-token-will-fail');
-      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 15000 });
+      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: TIMEOUTS.navigation });
 
       await page.getByTestId('reset-password-input').fill('newPassword123');
       await page.getByTestId('reset-confirm-password-input').fill('newPassword123');
@@ -126,7 +127,7 @@ test.describe('Password Recovery Flow @functional @docker', () => {
 
     test('should navigate to forgot-password from no-token error state', async ({ page }) => {
       await page.goto('/reset-password');
-      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 15000 });
+      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: TIMEOUTS.navigation });
 
       await expect(page.locator('.error-message')).toBeVisible();
       await page.locator('.error-message').getByRole('link').click();
@@ -138,14 +139,14 @@ test.describe('Password Recovery Flow @functional @docker', () => {
   test.describe('Navigation Flow', () => {
     test('should have back button on forgot password page', async ({ page }) => {
       await page.goto('/forgot-password');
-      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 15000 });
+      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: TIMEOUTS.navigation });
 
       await expect(page.locator('ion-back-button')).toBeVisible();
     });
 
     test('should navigate back to login using back button', async ({ page }) => {
       await page.goto('/login');
-      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: 15000 });
+      await page.waitForSelector('ion-app.hydrated', { state: 'attached', timeout: TIMEOUTS.navigation });
 
       await page.getByTestId('forgot-password-link').click();
       await expect(page).toHaveURL(/\/forgot-password/);

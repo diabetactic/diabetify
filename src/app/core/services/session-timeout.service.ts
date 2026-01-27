@@ -119,9 +119,10 @@ export class SessionTimeoutService implements OnDestroy {
     // Logout user
     await this.authService.logout();
 
-    // Redirect to welcome page
+    // Redirect to welcome page with replaceUrl to prevent back-button issues
     await this.router.navigate([ROUTES.WELCOME], {
       queryParams: { sessionTimeout: 'true' },
+      replaceUrl: true,
     });
   }
 

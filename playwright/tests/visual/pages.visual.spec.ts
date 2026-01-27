@@ -34,6 +34,19 @@ async function prepareForScreenshot(page: import('@playwright/test').Page): Prom
   });
 }
 
+async function waitForDashboardContent(page: import('@playwright/test').Page): Promise<void> {
+  await page.waitForFunction(
+    () => {
+      const mainSkeleton = document.querySelector('.page-shell > .animate-pulse');
+      const statsContainer = document.querySelector('[data-testid="stats-container"]');
+      const recentReadings = document.querySelector('[data-testid="recent-readings"]');
+      return !mainSkeleton && (statsContainer !== null || recentReadings !== null);
+    },
+    null,
+    { timeout: 60000 }
+  );
+}
+
 test.describe('Visual Regression - Pages @visual @docker', () => {
   test.skip(!isDockerMode, 'Visual tests require Docker backend');
   test.use({ storageState: STORAGE_STATE_PATH });
@@ -41,10 +54,7 @@ test.describe('Visual Regression - Pages @visual @docker', () => {
   test('dashboard page', async ({ page, pages }) => {
     await page.goto('/tabs/dashboard');
     await pages.dashboardPage.waitForHydration();
-    await page.waitForSelector('[data-testid="stats-container"]', {
-      state: 'visible',
-      timeout: 30000,
-    });
+    await waitForDashboardContent(page);
     await prepareForScreenshot(page);
 
     await expect(page).toHaveScreenshot('dashboard.png', screenshotOptions);
@@ -53,17 +63,20 @@ test.describe('Visual Regression - Pages @visual @docker', () => {
   test('readings page - empty or list', async ({ page, pages }) => {
     await page.goto('/tabs/dashboard');
     await pages.dashboardPage.waitForHydration();
-    await page.waitForSelector('[data-testid="stats-container"]', {
-      state: 'visible',
-      timeout: 30000,
-    });
+    await waitForDashboardContent(page);
 
     await page.goto('/tabs/readings');
     await pages.readingsPage.waitForHydration();
-    await page.waitForSelector('app-reading-item', {
-      state: 'visible',
-      timeout: 15000,
-    });
+    await page.waitForFunction(
+      () => {
+        const list = document.querySelector('[data-testid="readings-list"]');
+        const empty = document.querySelector('[data-testid="readings-empty"]');
+        const loading = document.querySelector('.animate-pulse, ion-skeleton-text');
+        return !loading && (list !== null || empty !== null);
+      },
+      null,
+      { timeout: 30000 }
+    );
     await prepareForScreenshot(page);
 
     await expect(page).toHaveScreenshot('readings-page.png', screenshotOptions);
@@ -95,7 +108,7 @@ test.describe('Visual Regression - Pages @visual @docker', () => {
 
   test('settings page', async ({ page }) => {
     await page.goto('/settings');
-    await page.waitForSelector('ion-content', { state: 'visible', timeout: 10000 });
+    await page.waitForSelector('ion-content', { state: 'visible', timeout: 30000 });
     await prepareForScreenshot(page);
 
     await expect(page).toHaveScreenshot('settings-page.png', screenshotOptions);
@@ -107,7 +120,10 @@ test.describe('Visual Regression - Auth Pages @visual @docker', () => {
 
   test('login page', async ({ page }) => {
     await page.goto('/login');
-    await page.waitForSelector('form', { state: 'visible', timeout: 10000 });
+    await page.waitForSelector('[data-testid="login-submit-btn"]', {
+      state: 'visible',
+      timeout: 30000,
+    });
     await prepareForScreenshot(page);
 
     await expect(page).toHaveScreenshot('login-page.png', screenshotOptions);
@@ -115,7 +131,7 @@ test.describe('Visual Regression - Auth Pages @visual @docker', () => {
 
   test('welcome page', async ({ page }) => {
     await page.goto('/welcome');
-    await page.waitForSelector('ion-content', { state: 'visible', timeout: 10000 });
+    await page.waitForSelector('ion-content', { state: 'visible', timeout: 30000 });
     await prepareForScreenshot(page);
 
     await expect(page).toHaveScreenshot('welcome-page.png', screenshotOptions);

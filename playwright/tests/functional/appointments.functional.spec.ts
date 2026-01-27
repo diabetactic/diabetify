@@ -38,8 +38,7 @@ test.describe('Appointments Functional Tests @functional @docker', () => {
     ]);
     await pages.appointmentsPage.waitForHydration();
 
-    const requestBtn = page.locator('text=/Solicitar|Request|Nueva/i');
-    await expect(requestBtn.first()).toBeVisible({ timeout: 10000 });
+    await expect(pages.appointmentsPage.requestButton.first()).toBeVisible({ timeout: 15000 });
   });
 
   test('should fetch appointment status via API', async ({ authenticatedApi }) => {

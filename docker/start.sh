@@ -6,6 +6,9 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+API_GATEWAY_PORT="${DIABETACTIC_API_PORT:-8000}"
+BACKOFFICE_PORT="${DIABETACTIC_BACKOFFICE_PORT:-8001}"
+
 export DOCKER_UID=$(id -u)
 export DOCKER_GID=$(id -g)
 
@@ -40,7 +43,7 @@ MAX_RETRIES=30
 RETRY_COUNT=0
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    if curl -s http://localhost:8000/docs > /dev/null 2>&1; then
+    if curl -s "http://localhost:${API_GATEWAY_PORT}/docs" > /dev/null 2>&1; then
         echo ""
         echo "✅ All services are ready!"
         break
@@ -66,9 +69,9 @@ fi
 
 echo ""
 echo "📊 Service Status:"
-echo "  API Gateway:            http://localhost:8000"
-echo "  API Gateway Backoffice: http://localhost:8001"
-echo "  API Gateway Docs:       http://localhost:8000/docs"
+echo "  API Gateway:            http://localhost:${API_GATEWAY_PORT}"
+echo "  API Gateway Backoffice: http://localhost:${BACKOFFICE_PORT}"
+echo "  API Gateway Docs:       http://localhost:${API_GATEWAY_PORT}/docs"
 echo ""
 echo "🔧 Useful commands:"
 echo "  View logs:        docker compose -f docker-compose.local.yml logs -f"

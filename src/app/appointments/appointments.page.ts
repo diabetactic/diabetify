@@ -34,6 +34,7 @@ import { Subject, takeUntil, firstValueFrom, interval } from 'rxjs';
 
 import { createOverlaySafely } from '@core/utils/ionic-overlays';
 import { AppointmentService } from '@services/appointment.service';
+import { ApiGatewayService } from '@services/api-gateway.service';
 import {
   Appointment,
   AppointmentQueueState,
@@ -76,6 +77,7 @@ import { AppIconComponent } from '@shared/components/app-icon/app-icon.component
 })
 export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillLeave {
   private envConfig = inject(EnvironmentConfigService);
+  private apiGateway = inject(ApiGatewayService);
   appointments: Appointment[] = [];
   loading = false;
   error: string | null = null;
@@ -151,18 +153,17 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
   }
 
   ngOnInit(): void {
-    this.initializeNetworkMonitoring().then(() => {
-      this.loadAppointments();
-      this.subscribeToAppointments();
-      // Initial load handled here, ensuring data is ready when view appears
-      if (!this.envConfig.isMockMode) {
-        this.queueLoading = true;
-        this.loadQueueState();
-      } else {
-        this.queueState = { state: 'NONE' };
-        this.logger.info('Queue', 'Mock mode: queue state set to NONE');
-      }
-    });
+    this.initializeNetworkMonitoring(); // Non-blocking
+    this.subscribeToAppointments();
+    this.loadAppointments();
+
+    if (!this.envConfig.isMockMode) {
+      this.queueLoading = true;
+      this.loadQueueState();
+    } else {
+      this.queueState = { state: 'NONE' };
+      this.logger.info('Queue', 'Mock mode: queue state set to NONE');
+    }
   }
 
   ngOnDestroy(): void {
@@ -280,11 +281,17 @@ export class AppointmentsPage implements OnInit, OnDestroy, ViewWillEnter, ViewW
         // CREATED continues polling to check for resolution
         if (newState.state === 'DENIED' || newState.state === 'NONE') {
           this.stopPolling();
+        } else if (newState.state === 'CREATED') {
+          // When state changes TO CREATED, refresh appointments to get the new one
+          // then poll for its resolution
+          this.apiGateway.clearCache('extservices.appointments.mine');
+          await this.loadAppointments();
+          await this.pollForResolution();
         }
 
         this.cdr.markForCheck();
       } else if (newState.state === 'CREATED') {
-        // When in CREATED state, poll for resolution
+        // When already in CREATED state, continue polling for resolution
         await this.pollForResolution();
       } else if (newState.state === 'PENDING') {
         // Update position even if state didn't change
