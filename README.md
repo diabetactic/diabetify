@@ -156,9 +156,7 @@ El proyecto soporta múltiples entornos:
 ## Documentación Adicional
 
 - [Arquitectura](docs/ARCHITECTURE.md)
-- [Guía de Estilos](docs/STYLING_GUIDE.md)
 - [Guía de Testing](docs/TESTING_GUIDE.md)
-- [Guía de Traducciones](docs/TRANSLATION_GUIDE.md)
 
 ## Autores
 
