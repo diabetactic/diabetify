@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   ChangeDetectionStrategy,
   OnInit,
+  OnDestroy,
 } from '@angular/core';
 import {
   FormBuilder,
@@ -15,7 +16,7 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { LoadingController, ToastController } from '@ionic/angular';
+import { LoadingController, ToastController, Platform } from '@ionic/angular';
 import {
   IonContent,
   IonButton,
@@ -51,12 +52,13 @@ import { createOverlaySafely } from '@core/utils/ionic-overlays';
     AppIconComponent,
   ],
 })
-export class ResetPasswordPage implements OnInit {
+export class ResetPasswordPage implements OnInit, OnDestroy {
   resetForm: FormGroup;
   isLoading = false;
   showPassword = false;
   showConfirmPassword = false;
   token: string | null = null;
+  private backButtonSub: { unsubscribe: () => void } | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -67,7 +69,8 @@ export class ResetPasswordPage implements OnInit {
     private toastCtrl: ToastController,
     private translate: TranslateService,
     private cdr: ChangeDetectorRef,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private platform: Platform
   ) {
     this.resetForm = this.fb.group(
       {
@@ -87,6 +90,19 @@ export class ResetPasswordPage implements OnInit {
         this.showErrorToast(this.translate.instant('resetPassword.errors.tokenInvalid'));
       });
     }
+
+    // Handle hardware back button
+    this.backButtonSub = this.platform.backButton.subscribeWithPriority(10, () => {
+      this.goBack();
+    });
+  }
+
+  ngOnDestroy() {
+    this.backButtonSub?.unsubscribe();
+  }
+
+  goBack() {
+    this.router.navigate(['/login']);
   }
 
   togglePasswordVisibility() {
