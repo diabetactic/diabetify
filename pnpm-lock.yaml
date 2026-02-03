@@ -40,40 +40,40 @@ importers:
         version: 7.1.6
       '@capacitor-mlkit/barcode-scanning':
         specifier: ^8.0.0
-        version: 8.0.0(@capacitor/core@8.0.1)
+        version: 8.0.0(@capacitor/core@8.0.2)
       '@capacitor/android':
-        specifier: ^8.0.1
-        version: 8.0.1(@capacitor/core@8.0.1)
+        specifier: ^8.0.2
+        version: 8.0.2(@capacitor/core@8.0.2)
       '@capacitor/app':
         specifier: ^8.0.0
-        version: 8.0.0(@capacitor/core@8.0.1)
+        version: 8.0.0(@capacitor/core@8.0.2)
       '@capacitor/core':
-        specifier: ^8.0.1
-        version: 8.0.1
+        specifier: ^8.0.2
+        version: 8.0.2
       '@capacitor/device':
         specifier: ^8.0.0
-        version: 8.0.0(@capacitor/core@8.0.1)
+        version: 8.0.0(@capacitor/core@8.0.2)
       '@capacitor/haptics':
         specifier: ^8.0.0
-        version: 8.0.0(@capacitor/core@8.0.1)
+        version: 8.0.0(@capacitor/core@8.0.2)
       '@capacitor/local-notifications':
         specifier: ^8.0.0
-        version: 8.0.0(@capacitor/core@8.0.1)
+        version: 8.0.0(@capacitor/core@8.0.2)
       '@capacitor/network':
         specifier: ^8.0.0
-        version: 8.0.0(@capacitor/core@8.0.1)
+        version: 8.0.0(@capacitor/core@8.0.2)
       '@capacitor/preferences':
         specifier: ^8.0.0
-        version: 8.0.0(@capacitor/core@8.0.1)
+        version: 8.0.0(@capacitor/core@8.0.2)
       '@capacitor/splash-screen':
         specifier: ^8.0.0
-        version: 8.0.0(@capacitor/core@8.0.1)
+        version: 8.0.0(@capacitor/core@8.0.2)
       '@capacitor/status-bar':
         specifier: ^8.0.0
-        version: 8.0.0(@capacitor/core@8.0.1)
+        version: 8.0.0(@capacitor/core@8.0.2)
       '@capgo/capacitor-native-biometric':
         specifier: ^8.3.2
-        version: 8.3.2(@capacitor/core@8.0.1)
+        version: 8.3.2(@capacitor/core@8.0.2)
       '@ionic/angular':
         specifier: ^8.7.17
         version: 8.7.17(9fafce56858244f1c034b013da79a9a5)
@@ -85,7 +85,7 @@ importers:
         version: 17.0.0(@angular/common@21.1.1(@angular/core@21.1.1(@angular/compiler@21.1.1)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.1.1(@angular/compiler@21.1.1)(rxjs@7.8.2)(zone.js@0.16.0))
       capacitor-widget-bridge:
         specifier: ^8.0.0
-        version: 8.0.0(@capacitor/core@8.0.1)
+        version: 8.0.0(@capacitor/core@8.0.2)
       chart.js:
         specifier: ^4.5.1
         version: 4.5.1
@@ -154,8 +154,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0(postcss@8.5.6)(tailwindcss@3.4.19)
       '@capacitor/cli':
-        specifier: ^8.0.1
-        version: 8.0.1
+        specifier: ^8.0.2
+        version: 8.0.2
       '@eslint/js':
         specifier: ^9.39.2
         version: 9.39.2
@@ -1206,13 +1206,13 @@ packages:
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
 
-  '@capacitor/android@7.4.4':
-    resolution: {integrity: sha512-y8knfV1JXNrd6XZZLZireGT+EBCN0lvOo+HZ/s7L8LkrPBu4nY5UZn0Wxz4yOezItEII9rqYJSHsS5fMJG9gdw==}
+  '@capacitor/android@7.4.5':
+    resolution: {integrity: sha512-G76C+PGIFkG+hxj6JLlY003txRaGZwsXBPo4b4xiZMZaD6DG++sDCoumYl/5xL40dL2b8P5tb3CKf/khWyL2Gw==}
     peerDependencies:
       '@capacitor/core': ^7.4.0
 
-  '@capacitor/android@8.0.1':
-    resolution: {integrity: sha512-Mrk2MFKSg9YA4BPLKm03wwFnGKcvzNBERUTcxjW1NkLrF6YhJwygAT69f/YGopFvOhhqdnDPsuZuASUfmpkSpw==}
+  '@capacitor/android@8.0.2':
+    resolution: {integrity: sha512-0D7j0YvzjnfCMKLvFkAbx8b3Vwx+QfHFG5NzoXpI9sAl3zWiLsfa+NX4x92Fy+k4MGjLSMAfLThCqILYGDDsgw==}
     peerDependencies:
       '@capacitor/core': ^8.0.0
 
@@ -1226,16 +1226,16 @@ packages:
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
 
-  '@capacitor/cli@8.0.1':
-    resolution: {integrity: sha512-okCNTsL8FNYrtPNeHWFjWb1S+PwBMhx5wFLhDC0MZOIrOLm+2ynMBtKu3BnR0Nv1hozoHcOCi6SuTF1TrRpb3w==}
+  '@capacitor/cli@8.0.2':
+    resolution: {integrity: sha512-/8qLYxhytMyUKTHK8i6YU+DMD3AuFiQgSuJCyMltcg9MN3W9En7zqQZSo/WN4eC7qif/oyZACzm7OkAZKani7g==}
     engines: {node: '>=22.0.0'}
     hasBin: true
 
-  '@capacitor/core@7.4.4':
-    resolution: {integrity: sha512-xzjxpr+d2zwTpCaN0k+C6wKSZzWFAb9OVEUtmO72ihjr/NEDoLvsGl4WLfjWPcCO2zOy0b2X52tfRWjECFUjtw==}
+  '@capacitor/core@7.4.5':
+    resolution: {integrity: sha512-JnUywi0WRbqm4QYoplNsMQ7KAVuyrQFha0dOH9YDVCyrVHUvPcvrnK+9j5elUMgy+pOh3ve+pk6BVoySr91c+A==}
 
-  '@capacitor/core@8.0.1':
-    resolution: {integrity: sha512-5UqSWxGMp/B8KhYu7rAijqNtYslhcLh+TrbfU48PfdMDsPfaU/VY48sMNzC22xL8BmoFoql/3SKyP+pavTOvOA==}
+  '@capacitor/core@8.0.2':
+    resolution: {integrity: sha512-EXZfxkL6GFJS2cb7TIBR7RiHA5iz6ufDcl1VmUpI2pga3lJ5Ck2+iqbx7N+osL3XYem9ad4XCidJEMm64DX6UQ==}
 
   '@capacitor/device@8.0.0':
     resolution: {integrity: sha512-qFmlTDnAvUwIg93YUF3u3ovqpDFqUl2RFkf2dVIF8Py7vTA+GjQIHQWITcBKfeUENoVXPNn04t5nxg5mAkjNEA==}
@@ -3256,6 +3256,9 @@ packages:
   '@types/node@25.0.8':
     resolution: {integrity: sha512-powIePYMmC3ibL0UJ2i2s0WIbq6cg6UyVFQxSCpaPxxzAaziRfimGivjdF943sSGV6RADVbk0Nvlm5P/FB44Zg==}
 
+  '@types/node@25.2.0':
+    resolution: {integrity: sha512-DZ8VwRFUNzuqJ5khrvwMXHmvPe+zGayJhr2CDNiKB1WBE1ST8Djl00D0IC4vvNmHMdj6DlbYRIaFE7WHjlDl5w==}
+
   '@types/qs@6.14.0':
     resolution: {integrity: sha512-eOunJqu0K1923aExK6y8p6fsihYEn/BYuQ4g0CxAAgFc4b/ZLN4CrsRZ55srTdqoiLzU2B2evC+apEIxprEzkQ==}
 
@@ -4006,10 +4009,6 @@ packages:
   chokidar@5.0.0:
     resolution: {integrity: sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw==}
     engines: {node: '>= 20.19.0'}
-
-  chownr@2.0.0:
-    resolution: {integrity: sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ==}
-    engines: {node: '>=10'}
 
   chownr@3.0.0:
     resolution: {integrity: sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==}
@@ -4860,10 +4859,6 @@ packages:
   fs-extra@9.1.0:
     resolution: {integrity: sha512-hcg3ZmepS30/7BSFqRvoo3DOMQu7IjqxO5nCDt+zM9XWjb33Wg7ziNT+Qvqbuc3+gWpzO02JubVyk2G4Zvo1OQ==}
     engines: {node: '>=10'}
-
-  fs-minipass@2.1.0:
-    resolution: {integrity: sha512-V/JgOLFCS+R6Vcq0slCuaeWEdNC3ouDlJMNIsacH2VtALiu9mV4LPrHc5cDl8k5aw6J8jwgWWpiTo5RYhmIzvg==}
-    engines: {node: '>= 8'}
 
   fs-minipass@3.0.3:
     resolution: {integrity: sha512-XUBA9XClHbnJWSfBzjkm6RvPsyg3sryZt06BEQoXcF7EK/xpGaQYJgQKDJSUH5SGZ76Y7pFx1QBnXz09rU5Fbw==}
@@ -5808,17 +5803,9 @@ packages:
     resolution: {integrity: sha512-DxiNidxSEK+tHG6zOIklvNOwm3hvCrbUrdtzY74U6HKTJxvIDfOUL5W5P2Ghd3DTkhhKPYGqeNUIh5qcM4YBfw==}
     engines: {node: '>=8'}
 
-  minipass@5.0.0:
-    resolution: {integrity: sha512-3FnjYuehv9k6ovOEbyOswadCDPX1piCfhV8ncmYtHOjuPwylVWsghTLo7rabjC3Rx5xD4HDx8Wm1xnMF7S5qFQ==}
-    engines: {node: '>=8'}
-
   minipass@7.1.2:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
-
-  minizlib@2.1.2:
-    resolution: {integrity: sha512-bAxsR8BVfj60DWXHE3u30oHzfl4G7khkSuPW+qvpd7jFRHm7dLxOjUk1EHACJ/hxLY8phGJ0YhYHZo7jil7Qdg==}
-    engines: {node: '>= 8'}
 
   minizlib@3.1.0:
     resolution: {integrity: sha512-KZxYo1BUkWD2TVFLr0MQoM8vUUigWD3LlD83a/75BqC+4qE0Hb1Vo5v1FgcfaNXvfXzr+5EhQ6ing/CaBijTlw==}
@@ -5826,11 +5813,6 @@ packages:
 
   mitt@3.0.1:
     resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
-
-  mkdirp@1.0.4:
-    resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
-    engines: {node: '>=10'}
-    hasBin: true
 
   mkdirp@3.0.1:
     resolution: {integrity: sha512-+NsyUUAZDmo6YVHzL/stxSu3t9YS1iljliy3BSDrXJ/dkn1KYdmtZODGGjLcc9XLgVVpH4KshHB8XmZgMhaBXg==}
@@ -6828,9 +6810,6 @@ packages:
   sax@1.1.4:
     resolution: {integrity: sha512-5f3k2PbGGp+YtKJjOItpg3P99IMD84E4HOvcfleTb5joCHNXYLsR9yWFPOYGgaeMPDubQILTCMdsFb2OMeOjtg==}
 
-  sax@1.4.3:
-    resolution: {integrity: sha512-yqYn1JhPczigF94DMS+shiDMjDowYO6y9+wB/4WgO0Y19jWYk0lQ4tuG5KI7kj4FTp1wxPj5IFfcrz/s1c3jjQ==}
-
   sax@1.4.4:
     resolution: {integrity: sha512-1n3r/tGXO6b6VXMdFT54SHzT9ytu9yr7TaELowdYpMqY/Ao7EnlQGmAQ1+RatX7Tkkdm6hONI2owqNx2aZj5Sw==}
     engines: {node: '>=11.0.0'}
@@ -7105,6 +7084,10 @@ packages:
     resolution: {integrity: sha512-Kxl3KJGb/gxkaUMOjRsQ8IrXiGW75O4E3RPjFIINOVH8AMl2SQ/yWdTzWwF3FevIX9LcMAjJW+GRwAlAbTSXdg==}
     engines: {node: '>=20'}
 
+  string-width@8.1.1:
+    resolution: {integrity: sha512-KpqHIdDL9KwYk22wEOg/VIqYbrnLeSApsKT/bSj6Ez7pn3CftUiLAv2Lccpq1ALcpLV9UX1Ppn92npZWu2w/aw==}
+    engines: {node: '>=20'}
+
   string_decoder@0.10.31:
     resolution: {integrity: sha512-ev2QzSzWPYmy9GuqfIVildA4OdcGLeFZQrq5ys6RtiuF+RQQiZWr8TZNyAcuVXyQRYfEO+MsoB/1BuQVhOJuoQ==}
 
@@ -7265,13 +7248,8 @@ packages:
   tar-stream@3.1.7:
     resolution: {integrity: sha512-qJj60CXt7IU1Ffyc3NJMjh6EkuCFej46zUqJ4J7pqYlThyd9bO0XBTmcOIhSzZJVWfsLks0+nle/j538YAW9RQ==}
 
-  tar@6.2.1:
-    resolution: {integrity: sha512-DZ4yORTwrbTj/7MZYq2w+/ZFdI6OZ/f9SFHR+71gIVUZhOQPHzVCLpvRnPgyaMpfWxxk/4ONva3GQSyNIKRv6A==}
-    engines: {node: '>=10'}
-    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exhorbitant rates) by contacting i@izs.me
-
-  tar@7.5.6:
-    resolution: {integrity: sha512-xqUeu2JAIJpXyvskvU3uvQW8PAmHrtXp2KDuMJwQqW8Sqq0CaZBAQ+dKS3RBXVhU4wC5NjAdKrmh84241gO9cA==}
+  tar@7.5.7:
+    resolution: {integrity: sha512-fov56fJiRuThVFXD6o6/Q354S7pnWMJIVlDBYijsTNx6jKSE4pvrDTs6lUnmGvNyfJwFQQwWy3owKz1ucIhveQ==}
     engines: {node: '>=18'}
 
   terser-webpack-plugin@5.3.16:
@@ -8495,10 +8473,10 @@ snapshots:
 
   '@aparajita/capacitor-secure-storage@7.1.6':
     dependencies:
-      '@capacitor/android': 7.4.4(@capacitor/core@7.4.4)
-      '@capacitor/app': 7.1.1(@capacitor/core@7.4.4)
-      '@capacitor/core': 7.4.4
-      '@capacitor/ios': 7.4.4(@capacitor/core@7.4.4)
+      '@capacitor/android': 7.4.5(@capacitor/core@7.4.5)
+      '@capacitor/app': 7.1.1(@capacitor/core@7.4.5)
+      '@capacitor/core': 7.4.5
+      '@capacitor/ios': 7.4.4(@capacitor/core@7.4.5)
 
   '@aparajita/tailwind-ionic@2.3.0(postcss@8.5.6)(tailwindcss@3.4.19)':
     dependencies:
@@ -9225,27 +9203,27 @@ snapshots:
       hashery: 1.3.0
       keyv: 5.5.5
 
-  '@capacitor-mlkit/barcode-scanning@8.0.0(@capacitor/core@8.0.1)':
+  '@capacitor-mlkit/barcode-scanning@8.0.0(@capacitor/core@8.0.2)':
     dependencies:
-      '@capacitor/core': 8.0.1
+      '@capacitor/core': 8.0.2
 
-  '@capacitor/android@7.4.4(@capacitor/core@7.4.4)':
+  '@capacitor/android@7.4.5(@capacitor/core@7.4.5)':
     dependencies:
-      '@capacitor/core': 7.4.4
+      '@capacitor/core': 7.4.5
 
-  '@capacitor/android@8.0.1(@capacitor/core@8.0.1)':
+  '@capacitor/android@8.0.2(@capacitor/core@8.0.2)':
     dependencies:
-      '@capacitor/core': 8.0.1
+      '@capacitor/core': 8.0.2
 
-  '@capacitor/app@7.1.1(@capacitor/core@7.4.4)':
+  '@capacitor/app@7.1.1(@capacitor/core@7.4.5)':
     dependencies:
-      '@capacitor/core': 7.4.4
+      '@capacitor/core': 7.4.5
 
-  '@capacitor/app@8.0.0(@capacitor/core@8.0.1)':
+  '@capacitor/app@8.0.0(@capacitor/core@8.0.2)':
     dependencies:
-      '@capacitor/core': 8.0.1
+      '@capacitor/core': 8.0.2
 
-  '@capacitor/cli@8.0.1':
+  '@capacitor/cli@8.0.2':
     dependencies:
       '@ionic/cli-framework-output': 2.2.8
       '@ionic/utils-subprocess': 3.0.1
@@ -9261,55 +9239,55 @@ snapshots:
       prompts: 2.4.2
       rimraf: 6.1.2
       semver: 7.7.3
-      tar: 6.2.1
+      tar: 7.5.7
       tslib: 2.8.1
       xml2js: 0.6.2
     transitivePeerDependencies:
       - supports-color
 
-  '@capacitor/core@7.4.4':
+  '@capacitor/core@7.4.5':
     dependencies:
       tslib: 2.8.1
 
-  '@capacitor/core@8.0.1':
+  '@capacitor/core@8.0.2':
     dependencies:
       tslib: 2.8.1
 
-  '@capacitor/device@8.0.0(@capacitor/core@8.0.1)':
+  '@capacitor/device@8.0.0(@capacitor/core@8.0.2)':
     dependencies:
-      '@capacitor/core': 8.0.1
+      '@capacitor/core': 8.0.2
 
-  '@capacitor/haptics@8.0.0(@capacitor/core@8.0.1)':
+  '@capacitor/haptics@8.0.0(@capacitor/core@8.0.2)':
     dependencies:
-      '@capacitor/core': 8.0.1
+      '@capacitor/core': 8.0.2
 
-  '@capacitor/ios@7.4.4(@capacitor/core@7.4.4)':
+  '@capacitor/ios@7.4.4(@capacitor/core@7.4.5)':
     dependencies:
-      '@capacitor/core': 7.4.4
+      '@capacitor/core': 7.4.5
 
-  '@capacitor/local-notifications@8.0.0(@capacitor/core@8.0.1)':
+  '@capacitor/local-notifications@8.0.0(@capacitor/core@8.0.2)':
     dependencies:
-      '@capacitor/core': 8.0.1
+      '@capacitor/core': 8.0.2
 
-  '@capacitor/network@8.0.0(@capacitor/core@8.0.1)':
+  '@capacitor/network@8.0.0(@capacitor/core@8.0.2)':
     dependencies:
-      '@capacitor/core': 8.0.1
+      '@capacitor/core': 8.0.2
 
-  '@capacitor/preferences@8.0.0(@capacitor/core@8.0.1)':
+  '@capacitor/preferences@8.0.0(@capacitor/core@8.0.2)':
     dependencies:
-      '@capacitor/core': 8.0.1
+      '@capacitor/core': 8.0.2
 
-  '@capacitor/splash-screen@8.0.0(@capacitor/core@8.0.1)':
+  '@capacitor/splash-screen@8.0.0(@capacitor/core@8.0.2)':
     dependencies:
-      '@capacitor/core': 8.0.1
+      '@capacitor/core': 8.0.2
 
-  '@capacitor/status-bar@8.0.0(@capacitor/core@8.0.1)':
+  '@capacitor/status-bar@8.0.0(@capacitor/core@8.0.2)':
     dependencies:
-      '@capacitor/core': 8.0.1
+      '@capacitor/core': 8.0.2
 
-  '@capgo/capacitor-native-biometric@8.3.2(@capacitor/core@8.0.1)':
+  '@capgo/capacitor-native-biometric@8.3.2(@capacitor/core@8.0.2)':
     dependencies:
-      '@capacitor/core': 8.0.1
+      '@capacitor/core': 8.0.2
 
   '@colors/colors@1.5.0':
     optional: true
@@ -11118,7 +11096,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.0.8
 
   '@types/cors@2.8.19':
     dependencies:
@@ -11154,7 +11132,7 @@ snapshots:
 
   '@types/fs-extra@8.1.5':
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.0.8
 
   '@types/hammerjs@2.0.46': {}
 
@@ -11183,6 +11161,11 @@ snapshots:
   '@types/node@25.0.8':
     dependencies:
       undici-types: 7.16.0
+
+  '@types/node@25.2.0':
+    dependencies:
+      undici-types: 7.16.0
+    optional: true
 
   '@types/qs@6.14.0': {}
 
@@ -11227,7 +11210,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.54.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.2(jiti@1.21.7))(typescript@5.9.3)':
@@ -12022,9 +12005,9 @@ snapshots:
 
   caniuse-lite@1.0.30001766: {}
 
-  capacitor-widget-bridge@8.0.0(@capacitor/core@8.0.1):
+  capacitor-widget-bridge@8.0.0(@capacitor/core@8.0.2):
     dependencies:
-      '@capacitor/core': 8.0.1
+      '@capacitor/core': 8.0.2
 
   centra@2.7.0(debug@4.4.0):
     dependencies:
@@ -12088,8 +12071,6 @@ snapshots:
     dependencies:
       readdirp: 5.0.0
 
-  chownr@2.0.0: {}
-
   chownr@3.0.0: {}
 
   chrome-trace-event@1.0.4: {}
@@ -12124,7 +12105,7 @@ snapshots:
   cli-truncate@5.1.1:
     dependencies:
       slice-ansi: 7.1.2
-      string-width: 8.1.0
+      string-width: 8.1.1
 
   cli-width@4.1.0: {}
 
@@ -13029,10 +13010,6 @@ snapshots:
       graceful-fs: 4.2.11
       jsonfile: 6.2.0
       universalify: 2.0.1
-
-  fs-minipass@2.1.0:
-    dependencies:
-      minipass: 3.3.6
 
   fs-minipass@3.0.3:
     dependencies:
@@ -14042,14 +14019,7 @@ snapshots:
     dependencies:
       yallist: 4.0.0
 
-  minipass@5.0.0: {}
-
   minipass@7.1.2: {}
-
-  minizlib@2.1.2:
-    dependencies:
-      minipass: 3.3.6
-      yallist: 4.0.0
 
   minizlib@3.1.0:
     dependencies:
@@ -14057,8 +14027,6 @@ snapshots:
 
   mitt@3.0.1:
     optional: true
-
-  mkdirp@1.0.4: {}
 
   mkdirp@3.0.1: {}
 
@@ -14221,7 +14189,7 @@ snapshots:
       nopt: 9.0.0
       proc-log: 6.1.0
       semver: 7.7.3
-      tar: 7.5.6
+      tar: 7.5.7
       tinyglobby: 0.2.15
       which: 6.0.0
     transitivePeerDependencies:
@@ -14477,7 +14445,7 @@ snapshots:
       promise-retry: 2.0.1
       sigstore: 4.1.0
       ssri: 13.0.0
-      tar: 7.5.6
+      tar: 7.5.7
     transitivePeerDependencies:
       - supports-color
 
@@ -15153,8 +15121,6 @@ snapshots:
 
   sax@1.1.4: {}
 
-  sax@1.4.3: {}
-
   sax@1.4.4: {}
 
   saxes@6.0.0:
@@ -15568,6 +15534,11 @@ snapshots:
       get-east-asian-width: 1.4.0
       strip-ansi: 7.1.2
 
+  string-width@8.1.1:
+    dependencies:
+      get-east-asian-width: 1.4.0
+      strip-ansi: 7.1.2
+
   string_decoder@0.10.31: {}
 
   string_decoder@1.1.1:
@@ -15801,16 +15772,7 @@ snapshots:
       - react-native-b4a
     optional: true
 
-  tar@6.2.1:
-    dependencies:
-      chownr: 2.0.0
-      fs-minipass: 2.1.0
-      minipass: 5.0.0
-      minizlib: 2.1.2
-      mkdirp: 1.0.4
-      yallist: 4.0.0
-
-  tar@7.5.6:
+  tar@7.5.7:
     dependencies:
       '@isaacs/fs-minipass': 4.0.1
       chownr: 3.0.0
@@ -16426,7 +16388,7 @@ snapshots:
 
   xml2js@0.6.2:
     dependencies:
-      sax: 1.4.3
+      sax: 1.4.4
       xmlbuilder: 11.0.1
 
   xmlbuilder@11.0.1: {}
