@@ -211,8 +211,8 @@ importers:
         specifier: ^6.2.5
         version: 6.2.5
       happy-dom:
-        specifier: ^20.3.9
-        version: 20.3.9
+        specifier: ^20.5.0
+        version: 20.5.0
       ionicons:
         specifier: ^8.0.13
         version: 8.0.13
@@ -281,7 +281,7 @@ importers:
         version: 8.54.0(eslint@9.39.2(jiti@1.21.7))(typescript@5.9.3)
       vitest:
         specifier: ^4.0.15
-        version: 4.0.16(@types/node@25.0.8)(@vitest/ui@4.0.16)(happy-dom@20.3.9)(jiti@1.21.7)(jsdom@27.4.0)(less@4.4.2)(msw@2.12.7(@types/node@25.0.8)(typescript@5.9.3))(sass@1.97.1)(terser@5.44.1)
+        version: 4.0.16(@types/node@25.0.8)(@vitest/ui@4.0.16)(happy-dom@20.5.0)(jiti@1.21.7)(jsdom@27.4.0)(less@4.4.2)(msw@2.12.7(@types/node@25.0.8)(typescript@5.9.3))(sass@1.97.1)(terser@5.44.1)
       wait-on:
         specifier: ^9.0.3
         version: 9.0.3
@@ -3250,11 +3250,11 @@ packages:
   '@types/node@16.9.1':
     resolution: {integrity: sha512-QpLcX9ZSsq3YYUUnD3nFDY8H7wctAhQj/TFKL8Ya8v5fMm3CFXxo8zStsLAl780ltoYoo1WvKUVGBQK+1ifr7g==}
 
-  '@types/node@25.0.10':
-    resolution: {integrity: sha512-zWW5KPngR/yvakJgGOmZ5vTBemDoSqF3AcV/LrO5u5wTWyEAVVh+IT39G4gtyAkh3CtTZs8aX/yRM82OfzHJRg==}
-
   '@types/node@25.0.8':
     resolution: {integrity: sha512-powIePYMmC3ibL0UJ2i2s0WIbq6cg6UyVFQxSCpaPxxzAaziRfimGivjdF943sSGV6RADVbk0Nvlm5P/FB44Zg==}
+
+  '@types/node@25.2.0':
+    resolution: {integrity: sha512-DZ8VwRFUNzuqJ5khrvwMXHmvPe+zGayJhr2CDNiKB1WBE1ST8Djl00D0IC4vvNmHMdj6DlbYRIaFE7WHjlDl5w==}
 
   '@types/qs@6.14.0':
     resolution: {integrity: sha512-eOunJqu0K1923aExK6y8p6fsihYEn/BYuQ4g0CxAAgFc4b/ZLN4CrsRZ55srTdqoiLzU2B2evC+apEIxprEzkQ==}
@@ -4993,8 +4993,8 @@ packages:
   handle-thing@2.0.1:
     resolution: {integrity: sha512-9Qn4yBxelxoh2Ow62nP+Ka/kMnOXRi8BXnRaUwezLNhqelnN49xKz4F/dPP8OYLxLxq6JDtZb2i9XznUQbNPTg==}
 
-  happy-dom@20.3.9:
-    resolution: {integrity: sha512-OIoj0PcK2JaxQuANHxWkxFRSNXAuSgO1vCzCT66KItE0W/ieZLG+/iW8OetlxB+F9EaPB7DoFYKAubFG1f4Mvw==}
+  happy-dom@20.5.0:
+    resolution: {integrity: sha512-VQe+Q5CYiGOgcCERXhcfNsbnrN92FDEKciMH/x6LppU9dd0j4aTjCTlqONFOIMcAm/5JxS3+utowbXV1OoFr+g==}
     engines: {node: '>=20.0.0'}
 
   has-flag@4.0.0:
@@ -7273,6 +7273,7 @@ packages:
   tar@7.5.6:
     resolution: {integrity: sha512-xqUeu2JAIJpXyvskvU3uvQW8PAmHrtXp2KDuMJwQqW8Sqq0CaZBAQ+dKS3RBXVhU4wC5NjAdKrmh84241gO9cA==}
     engines: {node: '>=18'}
+    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exhorbitant rates) by contacting i@izs.me
 
   terser-webpack-plugin@5.3.16:
     resolution: {integrity: sha512-h9oBFCWrq78NyWWVcSwZarJkZ01c2AyGrzs1crmHZO3QUg9D61Wu4NPjBy69n7JqylFF5y+CsUZYmYEIZ3mR+Q==}
@@ -8100,7 +8101,7 @@ snapshots:
     dependencies:
       '@analogjs/vite-plugin-angular': 2.2.0(897d0df5201b2745cdfe73ac486aa727)
       '@angular-devkit/architect': 0.2101.1(chokidar@5.0.0)
-      vitest: 4.0.16(@types/node@25.0.8)(@vitest/ui@4.0.16)(happy-dom@20.3.9)(jiti@1.21.7)(jsdom@27.4.0)(less@4.4.2)(msw@2.12.7(@types/node@25.0.8)(typescript@5.9.3))(sass@1.97.1)(terser@5.44.1)
+      vitest: 4.0.16(@types/node@25.0.8)(@vitest/ui@4.0.16)(happy-dom@20.5.0)(jiti@1.21.7)(jsdom@27.4.0)(less@4.4.2)(msw@2.12.7(@types/node@25.0.8)(typescript@5.9.3))(sass@1.97.1)(terser@5.44.1)
 
   '@angular-devkit/architect@0.2101.1(chokidar@5.0.0)':
     dependencies:
@@ -8370,7 +8371,7 @@ snapshots:
       lmdb: 3.4.4
       postcss: 8.5.6
       tailwindcss: 3.4.19
-      vitest: 4.0.16(@types/node@25.0.8)(@vitest/ui@4.0.16)(happy-dom@20.3.9)(jiti@1.21.7)(jsdom@27.4.0)(less@4.4.2)(msw@2.12.7(@types/node@25.0.8)(typescript@5.9.3))(sass@1.97.1)(terser@5.44.1)
+      vitest: 4.0.16(@types/node@25.0.8)(@vitest/ui@4.0.16)(happy-dom@20.5.0)(jiti@1.21.7)(jsdom@27.4.0)(less@4.4.2)(msw@2.12.7(@types/node@25.0.8)(typescript@5.9.3))(sass@1.97.1)(terser@5.44.1)
     transitivePeerDependencies:
       - '@types/node'
       - chokidar
@@ -11100,11 +11101,11 @@ snapshots:
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
 
   '@types/bonjour@3.5.13':
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
 
   '@types/chai@5.2.3':
     dependencies:
@@ -11114,15 +11115,15 @@ snapshots:
   '@types/connect-history-api-fallback@1.5.4':
     dependencies:
       '@types/express-serve-static-core': 4.19.8
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
 
   '@types/cors@2.8.19':
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
 
   '@types/deep-eql@4.0.2': {}
 
@@ -11140,7 +11141,7 @@ snapshots:
 
   '@types/express-serve-static-core@4.19.8':
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.1
@@ -11154,7 +11155,7 @@ snapshots:
 
   '@types/fs-extra@8.1.5':
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
 
   '@types/hammerjs@2.0.46': {}
 
@@ -11162,7 +11163,7 @@ snapshots:
 
   '@types/http-proxy@1.17.17':
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
 
   '@types/json-schema@7.0.15': {}
 
@@ -11172,15 +11173,15 @@ snapshots:
 
   '@types/node-forge@1.3.14':
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
 
   '@types/node@16.9.1': {}
 
-  '@types/node@25.0.10':
+  '@types/node@25.0.8':
     dependencies:
       undici-types: 7.16.0
 
-  '@types/node@25.0.8':
+  '@types/node@25.2.0':
     dependencies:
       undici-types: 7.16.0
 
@@ -11195,11 +11196,11 @@ snapshots:
   '@types/send@0.17.6':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
 
   '@types/send@1.2.1':
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
 
   '@types/serve-index@1.9.4':
     dependencies:
@@ -11208,14 +11209,14 @@ snapshots:
   '@types/serve-static@1.15.10':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
       '@types/send': 0.17.6
 
   '@types/slice-ansi@4.0.0': {}
 
   '@types/sockjs@0.3.36':
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
 
   '@types/statuses@2.0.6': {}
 
@@ -11223,11 +11224,11 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.54.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.2(jiti@1.21.7))(typescript@5.9.3)':
@@ -11396,7 +11397,7 @@ snapshots:
       obug: 2.1.1
       std-env: 3.10.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.16(@types/node@25.0.8)(@vitest/ui@4.0.16)(happy-dom@20.3.9)(jiti@1.21.7)(jsdom@27.4.0)(less@4.4.2)(msw@2.12.7(@types/node@25.0.8)(typescript@5.9.3))(sass@1.97.1)(terser@5.44.1)
+      vitest: 4.0.16(@types/node@25.0.8)(@vitest/ui@4.0.16)(happy-dom@20.5.0)(jiti@1.21.7)(jsdom@27.4.0)(less@4.4.2)(msw@2.12.7(@types/node@25.0.8)(typescript@5.9.3))(sass@1.97.1)(terser@5.44.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -11444,7 +11445,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vitest: 4.0.16(@types/node@25.0.8)(@vitest/ui@4.0.16)(happy-dom@20.3.9)(jiti@1.21.7)(jsdom@27.4.0)(less@4.4.2)(msw@2.12.7(@types/node@25.0.8)(typescript@5.9.3))(sass@1.97.1)(terser@5.44.1)
+      vitest: 4.0.16(@types/node@25.0.8)(@vitest/ui@4.0.16)(happy-dom@20.5.0)(jiti@1.21.7)(jsdom@27.4.0)(less@4.4.2)(msw@2.12.7(@types/node@25.0.8)(typescript@5.9.3))(sass@1.97.1)(terser@5.44.1)
 
   '@vitest/utils@4.0.16':
     dependencies:
@@ -12531,7 +12532,7 @@ snapshots:
   engine.io@6.6.5:
     dependencies:
       '@types/cors': 2.8.19
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
       accepts: 1.3.8
       base64id: 2.0.0
       cookie: 0.7.2
@@ -13170,9 +13171,9 @@ snapshots:
 
   handle-thing@2.0.1: {}
 
-  happy-dom@20.3.9:
+  happy-dom@20.5.0:
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
       '@types/whatwg-mimetype': 3.0.2
       '@types/ws': 8.18.1
       entities: 4.5.0
@@ -13559,7 +13560,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 25.0.10
+      '@types/node': 25.2.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -16119,7 +16120,7 @@ snapshots:
       sass: 1.97.1
       terser: 5.44.1
 
-  vitest@4.0.16(@types/node@25.0.8)(@vitest/ui@4.0.16)(happy-dom@20.3.9)(jiti@1.21.7)(jsdom@27.4.0)(less@4.4.2)(msw@2.12.7(@types/node@25.0.8)(typescript@5.9.3))(sass@1.97.1)(terser@5.44.1):
+  vitest@4.0.16(@types/node@25.0.8)(@vitest/ui@4.0.16)(happy-dom@20.5.0)(jiti@1.21.7)(jsdom@27.4.0)(less@4.4.2)(msw@2.12.7(@types/node@25.0.8)(typescript@5.9.3))(sass@1.97.1)(terser@5.44.1):
     dependencies:
       '@vitest/expect': 4.0.16
       '@vitest/mocker': 4.0.16(msw@2.12.7(@types/node@25.0.8)(typescript@5.9.3))(vite@7.3.0(@types/node@25.0.8)(jiti@1.21.7)(less@4.4.2)(sass@1.97.1)(terser@5.44.1))
@@ -16144,7 +16145,7 @@ snapshots:
     optionalDependencies:
       '@types/node': 25.0.8
       '@vitest/ui': 4.0.16(vitest@4.0.16)
-      happy-dom: 20.3.9
+      happy-dom: 20.5.0
       jsdom: 27.4.0
     transitivePeerDependencies:
       - jiti
