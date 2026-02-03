@@ -177,7 +177,7 @@
     "angular-eslint": "^21.0.1",
     "autoprefixer": "^10.4.23",
     "cyclomatic-complexity": "^1.2.5",
-    "daisyui": "^5.5.14",
+    "daisyui": "^5.5.17",
     "dpdm": "^3.14.0",
     "eslint": "^9.0.0",
     "fake-indexeddb": "^6.2.5",
